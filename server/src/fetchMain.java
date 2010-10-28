@@ -19,8 +19,7 @@ import javax.net.ssl.SSLServerSocketFactory;
 class berrySvrDeamon extends Thread{
 	fetchMgr	m_fetchMgr = null;
 	Socket		m_socket = null;
-	
-	
+		
 	
 	public berrySvrDeamon(Socket _s,fetchMgr _mgr){
 		m_fetchMgr 	= _mgr;
@@ -28,7 +27,6 @@ class berrySvrDeamon extends Thread{
 	}
 	
 	public void run(){
-		
 		
 		// loop
 		//
