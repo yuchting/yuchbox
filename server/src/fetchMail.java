@@ -1,0 +1,282 @@
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Date;
+import java.util.Vector;
+
+import javax.mail.Address;
+import javax.mail.Flags;
+import javax.mail.Message;
+import javax.mail.Multipart;
+import javax.mail.Part;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+
+
+public class  fetchMail{
+	
+	final static int	VERSION = 1;
+	    	
+	final static int	ANSWERED 	= 1 << 0;
+	final static int	DELETED 	= 1 << 1;
+	final static int	DRAFT 		= 1 << 2;
+	final static int	FLAGGED 	= 1 << 3;
+	final static int	RECENT 		= 1 << 4;
+	final static int	SEEN 		= 1 << 5;
+	
+	private int m_mailIndex = 0;
+	
+	private Vector<String>	m_vectFrom 		= new Vector<String>();
+	private Vector<String>	m_vectReplyTo	= new Vector<String>();
+	private Vector<String>	m_vectTo		= new Vector<String>();
+	private Vector<String>	m_vectGroup		= new Vector<String>();
+	
+	private String			m_subject 		= null;
+	private Date			m_sendDate 		= new Date();
+	private Flags			m_flags 		= null;
+	private String			m_XMailName 	= null;
+	
+	private String			m_contain		= null;
+	
+	private Vector<String>	m_vectAttachmentName = new Vector<String>();
+	private Vector<byte[]>	m_vectAttachment= new Vector<byte[]>();
+	
+	
+	
+	public void SetMailIndex(int _index)throws Exception{
+		if(_index <= 0){
+			throw new Exception("SetMailIndex Negative");
+		}
+		m_mailIndex =_index;		
+	}
+	
+	public int GetMailIndex(){
+		return m_mailIndex;
+	}
+	
+	public void ImportMail(Message m)throws Exception{
+		
+		Address[] a;
+		
+		// FROM 
+		if ((a = m.getFrom()) != null) {
+		    for (int j = 0; j < a.length; j++){
+		    	m_vectFrom.addElement(a[j].toString());
+		    }
+		}
+
+		// REPLY TO
+		if ((a = m.getReplyTo()) != null) {
+		    for (int j = 0; j < a.length; j++){
+		    	m_vectReplyTo.addElement(a[j].toString());
+		    }
+		}
+
+		// TO
+		if ((a = m.getRecipients(Message.RecipientType.TO)) != null) {
+		    for (int j = 0; j < a.length; j++) {
+		    	
+		    	m_vectTo.addElement(a[j].toString());
+			    
+				InternetAddress ia = (InternetAddress)a[j];
+				
+				if (ia.isGroup()) {
+				    InternetAddress[] aa = ia.getGroup(false);
+				    for (int k = 0; k < aa.length; k++){
+				    	m_vectGroup.addElement(aa[k].toString());
+				    }
+				}
+		    }
+		}
+		
+		m_subject 	= m.getSubject();
+		m_sendDate	= m.getSentDate();
+		m_flags		= m.getFlags();
+		
+		String[] hdrs = m.getHeader("X-Mailer");
+		
+		if (hdrs != null){
+			m_XMailName = hdrs[0];
+	    }
+		
+		ImportPart(m);	
+	}
+	
+	private void ImportPart(Part p)throws Exception{
+		
+		String filename = p.getFileName();
+		/*
+		 * Using isMimeType to determine the content type avoids
+		 * fetching the actual content data until we need it.
+		 */
+		if (p.isMimeType("text/plain")) {
+			
+		    try{
+		    	m_contain += (String)p.getContent();
+		    }catch(Exception e){
+		    	m_contain += "cant decode content " + e.getMessage();
+		    }	    
+		    
+		} else if (p.isMimeType("multipart/*")) {
+			
+		    Multipart mp = (Multipart)p.getContent();
+		    int count = mp.getCount();
+		    
+		    for (int i = 0; i < count; i++){
+		    	ImportPart(mp.getBodyPart(i));
+		    }
+		    
+		} else if (p.isMimeType("message/rfc822")) {
+
+			ImportPart((Part)p.getContent());
+		} else {
+			/*
+			 * If we actually want to see the data, and it's not a
+			 * MIME type we know, fetch it and check its Java type.
+			 */
+			Object o = p.getContent();
+			
+			if (o instanceof String) {
+			    
+			    m_contain += (String)o;
+			    
+			} else if (o instanceof InputStream) {
+
+			    InputStream is = (InputStream)o;
+			    int c;
+			    while ((c = is.read()) != -1){
+			    	//System.out.write(c);
+			    	m_contain += c;
+			    }
+			} else {
+			    m_contain += o.toString();
+			}			
+		}
+
+		/*
+		 * If we're saving attachments, write out anything that
+		 * looks like an attachment into an appropriately named
+		 * file.  Don't overwrite existing files to prevent
+		 * mistakes.
+		 */
+		if (!p.isMimeType("multipart") 
+			&& p instanceof MimeBodyPart){
+			
+		    String disp = p.getDisposition();
+		    
+		    // many mailers don't include a Content-Disposition
+		    if (disp != null && disp.equals("ATTACHMENT")) {
+				if (filename == null){	
+				    filename = "Attachment_" + m_vectAttachmentName.size();
+				}
+				
+				m_vectAttachmentName.addElement(filename);
+								
+				
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+			    ((MimeBodyPart)p).writeTo(os);
+			    
+			    m_vectAttachment.add(os.toByteArray());				
+		    }
+		}
+	}
+	
+	public void OutputMail(OutputStream _stream)throws Exception{
+		
+		_stream.write(VERSION);
+		_stream.write(GetMailIndex());
+		
+		WriteStringVector(_stream,m_vectFrom);
+		WriteStringVector(_stream,m_vectReplyTo);
+		WriteStringVector(_stream,m_vectTo);
+		WriteStringVector(_stream,m_vectGroup);
+		
+		WriteString(_stream,m_subject);
+		_stream.write((int)m_sendDate.getTime());
+		_stream.write((int)(m_sendDate.getTime() >>> 32));
+		
+		int t_flags = 0;
+		
+		Flags.Flag[] sf = m_flags.getSystemFlags(); // get the system flags
+
+		for (int i = 0; i < sf.length; i++) {
+		    Flags.Flag f = sf[i];
+		    if (f == Flags.Flag.ANSWERED)
+		    	t_flags |= ANSWERED;
+		    else if (f == Flags.Flag.DELETED)
+		    	t_flags |= DELETED;
+		    else if (f == Flags.Flag.DRAFT)
+		    	t_flags |= DRAFT;
+		    else if (f == Flags.Flag.FLAGGED)
+		    	t_flags |= FLAGGED;
+		    else if (f == Flags.Flag.RECENT)
+		    	t_flags |= RECENT;
+		    else if (f == Flags.Flag.SEEN)
+		    	t_flags |= SEEN;
+		    else
+		    	continue;	// skip it		
+		}
+		
+		_stream.write(t_flags);
+		
+		WriteString(_stream,m_XMailName);
+		WriteString(_stream,m_contain);
+		WriteStringVector(_stream,m_vectAttachmentName);
+		
+	}
+		
+	public void InputMail(InputStream _stream)throws Exception{
+		
+		final int t_version = _stream.read();
+		
+		ReadStringVector(_stream,m_vectFrom);
+		ReadStringVector(_stream,m_vectReplyTo);
+		ReadStringVector(_stream,m_vectTo);
+		ReadStringVector(_stream,m_vectGroup);
+		
+		m_subject = ReadString(_stream);
+		long t_time = _stream.read();
+		t_time |= ((long)_stream.read()) << 32;
+		
+		m_sendDate.setTime(t_time);
+		
+		m_contain = ReadString(_stream);
+		
+		ReadStringVector(_stream, m_vectAttachmentName);		
+	}
+	
+	private void WriteStringVector(OutputStream _stream,Vector<String> _vect)throws Exception{
+		
+		final int t_size = _vect.size();
+		_stream.write(t_size);
+		
+		for(int i = 0;i < t_size;i++){
+			WriteString(_stream,_vect.get(i));
+		}
+	}
+	
+	private void WriteString(OutputStream _stream,String _string)throws Exception{
+		_stream.write(_string.length());
+		_stream.write(_string.getBytes());
+	}
+		
+	private void ReadStringVector(InputStream _stream,Vector<String> _vect)throws Exception{
+		
+		_vect.clear();
+		
+		int t_size = 0;
+		t_size = _stream.read();
+		
+		for(int i = 0;i < t_size;i++){
+			_vect.addElement(ReadString(_stream));
+		}
+	}
+	
+	private String ReadString(InputStream _stream)throws Exception{
+		
+		byte[] t_buffer = new byte[_stream.read()];
+		
+		_stream.read(t_buffer);	
+		return new String(t_buffer);		
+	}
+}
