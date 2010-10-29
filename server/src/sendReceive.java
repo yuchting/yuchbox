@@ -21,8 +21,12 @@ public class sendReceive extends Thread{
 	}
 	
 	//! send buffer
-	public synchronized void SendBufferToSvr(byte[] _write)throws Exception{	
+	public synchronized void SendBufferToSvr(byte[] _write,boolean _sendImm)throws Exception{	
 		m_unsendedPackage.addElement(_write);
+		
+		if(_sendImm){
+			SendBufferToSvr_imple(PrepareOutputData());
+		}
 	}
 	
 	private synchronized byte[] PrepareOutputData()throws Exception{
@@ -37,6 +41,9 @@ public class sendReceive extends Thread{
 			byte[] t_package = m_unsendedPackage.get(i);	
 			
 			fetchMail.WriteInt(t_stream, t_package.length);
+			
+			prt("write package length " + t_package.length);
+			
 			t_stream.write(t_package);
 		}
 		
@@ -122,7 +129,14 @@ public class sendReceive extends Thread{
 		
 		GZIPInputStream zi	= new GZIPInputStream(
 								new ByteArrayInputStream(t_zipdata));
-		zi.read(t_orgdata);
+		
+
+		int t_readIndex = 0;
+		int t_readNum = 0;
+		while((t_readNum = zi.read(t_orgdata,t_readIndex,t_orglen - t_readIndex)) > 0){
+			t_readIndex += t_readNum;
+		}
+		
 		zi.close();
 		
 		byte[] t_ret = ParsePackage(t_orgdata);

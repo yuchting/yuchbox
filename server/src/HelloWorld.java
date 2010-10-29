@@ -2,11 +2,13 @@
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.security.KeyStore;
+import java.util.Properties;
 import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -39,7 +41,8 @@ public class HelloWorld {
 		test.test3();
 	}
 	
-	public void test3(){
+	
+	public void berryTest(){
 		try{
 			
 			Socket t_socket = GetSocketServer("111111","localhost",9716);
@@ -54,6 +57,24 @@ public class HelloWorld {
 						fetchMail t_mail = new fetchMail();
 						t_mail.InputMail(in);
 						prt("receive idx: " + t_mail.GetMailIndex() + " subject: " + t_mail.GetSubject());
+						
+						// send msgSendMail to increase fetch index imm
+						//
+						ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+						t_os.write(msg_head.msgSendMail);
+						fetchMail.WriteInt(t_os,t_mail.GetMailIndex());
+						t_receive.SendBufferToSvr(t_os.toByteArray(), true);
+						
+						// TODO display in berry
+						//
+						
+						break;
+					case msg_head.msgSendMail:
+						
+						// TODO display in berry
+						// the mail has been send
+						//
+						
 						break;
 				}
 			}
@@ -87,6 +108,18 @@ public class HelloWorld {
 		  
 	}
 
+	public void test3(){
+		
+		try{
+			
+			Properties p = new Properties(); 
+			p.load(new FileInputStream("config.ini"));
+			p.setProperty("userFetchIndex",Integer.toString(120));
+		}catch(Exception _e){
+			sendReceive.prt(_e.getMessage());
+			_e.printStackTrace();
+		}
+	}
 	public void test2(){
 		byte[] t_data = {0,2,3,4,5,6,7,8,9};
 		ByteArrayInputStream in = new ByteArrayInputStream(t_data);
@@ -99,8 +132,11 @@ public class HelloWorld {
 	}
 	public void test1(){
 		try{
-			byte[] t_data = {12,12,12,12,12,12,12,12,12,12,12};
+			byte[] t_data = new byte[6540];
 			
+			for(int i = 0;i < t_data.length ;i++){
+				t_data[i] = (byte)(Math.random() * 100);
+			}
 			
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			GZIPOutputStream zo = new GZIPOutputStream(os);
@@ -135,8 +171,12 @@ public class HelloWorld {
 			GZIPInputStream zi	= new GZIPInputStream(
 									new ByteArrayInputStream(t_zipdata));
 			
+			int t_readIndex = 0;
+			int t_readNum = 0;
+			while((t_readNum = zi.read(t_orgdata,t_readIndex,t_orgLength - t_readIndex)) > 0){
+				t_readIndex += t_readNum;
+			}
 			
-			zi.read(t_orgdata,0,t_orgLength);
 			
 			prtA(t_orgdata);
 			

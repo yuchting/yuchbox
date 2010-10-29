@@ -263,8 +263,11 @@ public class  fetchMail{
 	}
 	
 	static public void WriteString(OutputStream _stream,String _string)throws Exception{
-		WriteInt(_stream,_string.length());
-		_stream.write(_string.getBytes());
+		final byte[] t_strByte = _string.getBytes();
+		WriteInt(_stream,t_strByte.length);
+		if(t_strByte.length != 0){
+			_stream.write(t_strByte);
+		}		
 	}
 		
 	static public void ReadStringVector(InputStream _stream,Vector<String> _vect)throws Exception{
@@ -281,10 +284,16 @@ public class  fetchMail{
 	
 	static public String ReadString(InputStream _stream)throws Exception{
 		
-		byte[] t_buffer = new byte[ReadInt(_stream)];
+		final int len = ReadInt(_stream);
+		if(len != 0){
+			byte[] t_buffer = new byte[len];
+			
+			_stream.read(t_buffer);	
+			return new String(t_buffer);
+		}
 		
-		_stream.read(t_buffer);	
-		return new String(t_buffer);
+		return new String("");
+		
 	}
 	
 	static public int ReadInt(InputStream _stream)throws Exception{

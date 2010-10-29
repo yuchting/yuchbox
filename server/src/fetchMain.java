@@ -45,7 +45,7 @@ class berrySvrPush extends Thread{
 					t_output.write(msg_head.msgMail);
 					t_mail.OutputMail(t_output);
 					
-					m_sendReceive.SendBufferToSvr(t_output.toByteArray());					
+					m_sendReceive.SendBufferToSvr(t_output.toByteArray(),false);					
 				}				
 				
 			}catch(Exception _e){
@@ -113,7 +113,11 @@ class berrySvrDeamon extends Thread{
 			case msg_head.msgMail:
 				ProcessMail(in);
 				break;
-			
+			case msg_head.msgSendMail:
+				m_fetchMgr.SetBeginFetchIndex(fetchMail.ReadInt(in) + 1);
+				break;
+			default:
+				throw new Exception("illegal client connect");
 		}
 	}
 	
@@ -128,7 +132,7 @@ class berrySvrDeamon extends Thread{
 		os.write(msg_head.msgSendMail);
 		os.write(t_mail.GetMailIndex());
 		
-		m_sendReceive.SendBufferToSvr(os.toByteArray());
+		m_sendReceive.SendBufferToSvr(os.toByteArray(),false);
 	}
 }
 
@@ -136,9 +140,15 @@ class fetchMgr{
 	
 	final static int	ACCEPT_PORT = 9716;
 	
+	final static int	CHECK_NUM = 50;
+	
 	String 	m_protocol 	= null;
     String 	m_host 		= null;
     int		m_port		= 0;
+    
+    String 	m_protocol_send 	= null;
+    String 	m_host_send 		= null;
+    int		m_port_send			= 0;
     
     String 	m_inBox 	= "INBOX";
        
@@ -169,6 +179,9 @@ class fetchMgr{
 	public void InitConnect(String _protocol,
 							String _host,
 							int _port,
+							String _protocol_send,
+							String _host_send,
+							int _port_send,
 							String _username,
 							String _password,
 							String _userPassword) throws Exception{
@@ -185,9 +198,16 @@ class fetchMgr{
     	m_protocol	= _protocol;
     	m_host		= _host;
     	m_port		= _port;
+    	
+    	m_protocol_send	= _protocol_send;
+    	m_host_send		= _host_send;
+    	m_port_send		= _port_send;
+    	
     	m_userName	= _username;
     	m_password	= _password;
     	m_userPassword = _userPassword;
+    	
+    	m_beginFetchIndex = fetchMain.sm_fetchIndex;
     	
     	if(m_protocol == null){
     		m_protocol = "pop3";
@@ -234,8 +254,20 @@ class fetchMgr{
 		return m_totalMailCount;
 	}
 	
-	public void SetBeginFetchIndex(int _index){
+	public synchronized void SetBeginFetchIndex(int _index){
 		m_beginFetchIndex = _index;
+		
+		try{
+			
+			Properties p = new Properties(); 
+			p.load(new FileInputStream("config.ini"));
+			p.setProperty("userFetchIndex",Integer.toString(_index));
+			
+		}catch(Exception _e){
+			sendReceive.prt(_e.getMessage());
+			_e.printStackTrace();
+		}
+		
 	}
 	
 	public int GetBeginFetchIndex(){
@@ -268,7 +300,7 @@ class fetchMgr{
 	   
 	    if(m_totalMailCount != folder.getMessageCount()){
 	    	m_totalMailCount = folder.getMessageCount();	    
-		    final int t_startIndex = Math.max(m_totalMailCount - Math.min(10,m_totalMailCount) + 1,m_unreadFetchIndex);
+		    final int t_startIndex = Math.max(m_totalMailCount - Math.min(CHECK_NUM,m_totalMailCount) + 1,m_beginFetchIndex);
 		    
 		    Message[] t_msgs = folder.getMessages(t_startIndex, m_totalMailCount);
 		    
@@ -300,7 +332,6 @@ class fetchMgr{
 		    	}
 		    }
 		    		    
-		    m_beginFetchIndex = t_startIndex;
 		    
 	    }	       
 	    
@@ -361,6 +392,11 @@ public class fetchMain{
 	static String sm_protocol;
     static String sm_host;
     static int		sm_port	;
+    
+    static String sm_protocol_send;
+    static String sm_host_send;
+    static int		sm_port_send	;
+    
     static String sm_inBox;
     
     static boolean sm_debug 		= false;
@@ -369,6 +405,8 @@ public class fetchMain{
 	static String sm_strPassword ;
 	static String sm_strUserPassword;
 	static int		sm_pushInterval = 10000;
+	
+	static int		sm_fetchIndex = 1;
 	
 	public static void main(String[] _arg){
 			
@@ -380,15 +418,21 @@ public class fetchMain{
 			try{
 				
 				FileInputStream fs = new FileInputStream("config.ini");
-				
 				p.load(fs);
 				
 				sm_protocol			= p.getProperty("protocol");
 				sm_host				= p.getProperty("host");
 				sm_port				= Integer.valueOf(p.getProperty("port")).intValue();
+				
+				sm_protocol_send	= p.getProperty("protocol_send");
+				sm_host_send		= p.getProperty("host_send");
+				sm_port_send		= Integer.valueOf(p.getProperty("port_send")).intValue();
+				
 				sm_strUserName		= p.getProperty("account");
 				sm_strPassword		= p.getProperty("password");
 				sm_strUserPassword	= p.getProperty("userPassword");
+				
+				sm_fetchIndex		= Integer.valueOf(p.getProperty("userFetchIndex")).intValue();
 				
 				sm_pushInterval		= Integer.valueOf(p.getProperty("pushInterval")).intValue() * 1000;
 				
@@ -396,6 +440,7 @@ public class fetchMain{
 				p = null;
 				
 				t_manger.InitConnect(sm_protocol, sm_host, sm_port, 
+									sm_protocol_send, sm_host_send, sm_port_send, 
 									sm_strUserName, sm_strPassword,sm_strUserPassword);
 				
 				
