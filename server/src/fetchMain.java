@@ -17,6 +17,7 @@ import javax.net.ssl.SSLServerSocketFactory;
 
 
 class berrySvrDeamon extends Thread{
+	
 	fetchMgr	m_fetchMgr = null;
 	Socket		m_socket = null;
 		
@@ -37,9 +38,26 @@ class berrySvrDeamon extends Thread{
 		
 			// process....
 			//
+			try{
+				sendReceive t_receive = new sendReceive();
+				byte[] t_package = t_receive.RecvBufferFromSvr(m_socket);
+				
+				ProcessPackage(t_package);
+				
+			}catch(Exception _e){
+				try{
+					m_socket.close();
+				}catch(Exception e){}
+				
+				break;
+			}
 			
 		}
 
+	}
+	
+	public void ProcessPackage(byte[] _package)throws Exception{
+		
 	}
 	
 }
