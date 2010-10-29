@@ -1,3 +1,5 @@
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -15,16 +17,65 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 
+class berrySvrPush extends Thread{
+	
+	berrySvrDeamon		m_serverDeamon;
+	sendReceive			m_sendReceive;
+	
+	public berrySvrPush(berrySvrDeamon _svrDeamon){
+		m_serverDeamon = _svrDeamon;
+		m_sendReceive = new sendReceive(m_serverDeamon.m_socket);
+		m_sendReceive.start();
+	}
+	
+	public void run(){
+		
+		while(m_serverDeamon.isAlive() && m_serverDeamon.m_socket.isConnected()){
+			
+			try{
+				m_serverDeamon.m_fetchMgr.CheckFolder();
+				sleep(12000);
+
+				Vector<fetchMail> t_unreadMailVector = m_serverDeamon.m_fetchMgr.m_unreadMailVector;
+				for(int i = 0;i < t_unreadMailVector.size();i++){
+					fetchMail t_mail = t_unreadMailVector.get(i); 
+					
+					ByteArrayOutputStream t_output = new ByteArrayOutputStream();
+					
+					t_output.write(msg_head.msgMail);
+					t_mail.OutputMail(t_output);
+					
+					m_sendReceive.SendBufferToSvr(t_output.toByteArray());					
+				}				
+				
+			}catch(Exception _e){
+				break;
+			}
+			
+		}
+	}
+	
+}
 
 class berrySvrDeamon extends Thread{
 	
-	fetchMgr	m_fetchMgr = null;
-	Socket		m_socket = null;
-		
+	public fetchMgr		m_fetchMgr = null;
+	public Socket		m_socket = null;
 	
+	private berrySvrPush m_pushDeamon = null;
+	private sendReceive  m_sendReceive = null;
+		
 	public berrySvrDeamon(Socket _s,fetchMgr _mgr){
 		m_fetchMgr 	= _mgr;
 		m_socket	= _s;
+		
+		start();
+		
+		m_pushDeamon = new berrySvrPush(this);
+		m_pushDeamon.start();
+		
+		m_sendReceive = new sendReceive(m_socket);
+		m_sendReceive.start();
 	}
 	
 	public void run(){
@@ -39,8 +90,8 @@ class berrySvrDeamon extends Thread{
 			// process....
 			//
 			try{
-				sendReceive t_receive = new sendReceive();
-				byte[] t_package = t_receive.RecvBufferFromSvr(m_socket);
+									
+				byte[] t_package = m_sendReceive.RecvBufferFromSvr();
 				
 				ProcessPackage(t_package);
 				
@@ -51,15 +102,34 @@ class berrySvrDeamon extends Thread{
 				
 				break;
 			}
-			
 		}
 
 	}
 	
-	public void ProcessPackage(byte[] _package)throws Exception{
+	private void ProcessPackage(byte[] _package)throws Exception{
+		ByteArrayInputStream in = new ByteArrayInputStream(_package);
 		
+		switch(in.read()){
+			case msg_head.msgMail:
+				ProcessMail(in);
+				break;
+			
+		}
 	}
 	
+	private void ProcessMail(ByteArrayInputStream in)throws Exception{
+		fetchMail t_mail = new fetchMail();
+		t_mail.InputMail(in);
+		
+		m_fetchMgr.SendMail(t_mail);
+		
+		// receive send message to berry
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgSendMail);
+		os.write(t_mail.GetMailIndex());
+		
+		m_sendReceive.SendBufferToSvr(os.toByteArray());
+	}
 }
 
 class fetchMgr{
@@ -139,14 +209,25 @@ class fetchMgr{
     	//
     	//
     	ServerSocket t_svr = GetSocketServer();
-    	
-    	try{
-    		while(true){
+    	    	
+		while(true){
+			try{
     			m_vectConnect.addElement(new berrySvrDeamon(t_svr.accept(),this));
-        	}
-    	}finally{
-    		t_svr.close();
-    	}    	
+			}catch(Exception _e){
+				
+				for(int i = 0;i < m_vectConnect.size();i++){
+					berrySvrDeamon d = m_vectConnect.get(i);
+					if(d.m_socket.isClosed()){
+						d.destroy();
+										
+						m_vectConnect.remove(i);
+						
+						i--;
+					}
+				}				
+	    	}    
+    	}
+    		
 	}
 	
 	public int GetMailCountWhenFetched(){
@@ -226,6 +307,10 @@ class fetchMgr{
 	    folder.close(false);
 	}
 	
+	public void SendMail(fetchMail _mail)throws Exception{
+		
+	}
+	
 	public void DestroyConnect()throws Exception{
 		m_session = null;
 		
@@ -241,7 +326,7 @@ class fetchMgr{
 			m_store = null;
 		}
 	}
-	
+		
 	public boolean IsConnected(){
 		return m_session != null;
 	}
@@ -283,11 +368,10 @@ public class fetchMain{
 	static String sm_strUserName ;
 	static String sm_strPassword ;
 	static String sm_strUserPassword;
+	static int		sm_pushInterval = 10000;
 	
 	public static void main(String[] _arg){
-		
-		
-		
+			
 		Properties p = new Properties(); 
 		fetchMgr t_manger = new fetchMgr();
 		
@@ -305,7 +389,8 @@ public class fetchMain{
 				sm_strUserName		= p.getProperty("account");
 				sm_strPassword		= p.getProperty("password");
 				sm_strUserPassword	= p.getProperty("userPassword");
-					
+				
+				sm_pushInterval		= Integer.valueOf(p.getProperty("pushInterval")).intValue() * 1000;
 				
 				fs.close();
 				p = null;

@@ -33,7 +33,7 @@ public class  fetchMail{
 	
 	private String			m_subject 		= null;
 	private Date			m_sendDate 		= new Date();
-	private Flags			m_flags 		= null;
+	private int			m_flags 		= 0;
 	private String			m_XMailName 	= null;
 	
 	private String			m_contain		= null;
@@ -91,7 +91,26 @@ public class  fetchMail{
 		
 		m_subject 	= m.getSubject();
 		m_sendDate	= m.getSentDate();
-		m_flags		= m.getFlags();
+		
+		Flags.Flag[] sf = m.getFlags().getSystemFlags(); // get the system flags
+
+		for (int i = 0; i < sf.length; i++) {
+		    Flags.Flag f = sf[i];
+		    if (f == Flags.Flag.ANSWERED)
+		    	m_flags |= ANSWERED;
+		    else if (f == Flags.Flag.DELETED)
+		    	m_flags |= DELETED;
+		    else if (f == Flags.Flag.DRAFT)
+		    	m_flags |= DRAFT;
+		    else if (f == Flags.Flag.FLAGGED)
+		    	m_flags |= FLAGGED;
+		    else if (f == Flags.Flag.RECENT)
+		    	m_flags |= RECENT;
+		    else if (f == Flags.Flag.SEEN)
+		    	m_flags |= SEEN;
+		    else
+		    	continue;	// skip it		
+		}
 		
 		String[] hdrs = m.getHeader("X-Mailer");
 		
@@ -184,7 +203,8 @@ public class  fetchMail{
 	public void OutputMail(OutputStream _stream)throws Exception{
 		
 		_stream.write(VERSION);
-		_stream.write(GetMailIndex());
+		
+		WriteInt(_stream,GetMailIndex());
 		
 		WriteStringVector(_stream,m_vectFrom);
 		WriteStringVector(_stream,m_vectReplyTo);
@@ -192,32 +212,10 @@ public class  fetchMail{
 		WriteStringVector(_stream,m_vectGroup);
 		
 		WriteString(_stream,m_subject);
-		_stream.write((int)m_sendDate.getTime());
-		_stream.write((int)(m_sendDate.getTime() >>> 32));
-		
-		int t_flags = 0;
-		
-		Flags.Flag[] sf = m_flags.getSystemFlags(); // get the system flags
-
-		for (int i = 0; i < sf.length; i++) {
-		    Flags.Flag f = sf[i];
-		    if (f == Flags.Flag.ANSWERED)
-		    	t_flags |= ANSWERED;
-		    else if (f == Flags.Flag.DELETED)
-		    	t_flags |= DELETED;
-		    else if (f == Flags.Flag.DRAFT)
-		    	t_flags |= DRAFT;
-		    else if (f == Flags.Flag.FLAGGED)
-		    	t_flags |= FLAGGED;
-		    else if (f == Flags.Flag.RECENT)
-		    	t_flags |= RECENT;
-		    else if (f == Flags.Flag.SEEN)
-		    	t_flags |= SEEN;
-		    else
-		    	continue;	// skip it		
-		}
-		
-		_stream.write(t_flags);
+		WriteInt(_stream,(int)m_sendDate.getTime());
+		WriteInt(_stream,(int)(m_sendDate.getTime() >>> 32));
+				
+		WriteInt(_stream,m_flags);
 		
 		WriteString(_stream,m_XMailName);
 		WriteString(_stream,m_contain);
@@ -229,23 +227,27 @@ public class  fetchMail{
 		
 		final int t_version = _stream.read();
 		
+		m_mailIndex = ReadInt(_stream);
+		
 		ReadStringVector(_stream,m_vectFrom);
 		ReadStringVector(_stream,m_vectReplyTo);
 		ReadStringVector(_stream,m_vectTo);
 		ReadStringVector(_stream,m_vectGroup);
 		
 		m_subject = ReadString(_stream);
-		long t_time = _stream.read();
-		t_time |= ((long)_stream.read()) << 32;
-		
+		long t_time = ReadInt(_stream);
+		t_time |= ((long)ReadInt(_stream)) << 32;
 		m_sendDate.setTime(t_time);
 		
+		m_flags = ReadInt(_stream);
+		
+		m_XMailName = ReadString(_stream);
 		m_contain = ReadString(_stream);
 		
 		ReadStringVector(_stream, m_vectAttachmentName);		
 	}
 	
-	private void WriteStringVector(OutputStream _stream,Vector<String> _vect)throws Exception{
+	static public void WriteStringVector(OutputStream _stream,Vector<String> _vect)throws Exception{
 		
 		final int t_size = _vect.size();
 		_stream.write(t_size);
@@ -255,12 +257,12 @@ public class  fetchMail{
 		}
 	}
 	
-	private void WriteString(OutputStream _stream,String _string)throws Exception{
-		_stream.write(_string.length());
+	static public void WriteString(OutputStream _stream,String _string)throws Exception{
+		WriteInt(_stream,_string.length());
 		_stream.write(_string.getBytes());
 	}
 		
-	private void ReadStringVector(InputStream _stream,Vector<String> _vect)throws Exception{
+	static public void ReadStringVector(InputStream _stream,Vector<String> _vect)throws Exception{
 		
 		_vect.clear();
 		
@@ -272,11 +274,22 @@ public class  fetchMail{
 		}
 	}
 	
-	private String ReadString(InputStream _stream)throws Exception{
+	static public String ReadString(InputStream _stream)throws Exception{
 		
-		byte[] t_buffer = new byte[_stream.read()];
+		byte[] t_buffer = new byte[ReadInt(_stream)];
 		
 		_stream.read(t_buffer);	
-		return new String(t_buffer);		
+		return new String(t_buffer);
+	}
+	
+	static public int ReadInt(InputStream _stream)throws Exception{
+		return _stream.read() | (_stream.read() << 8) | (_stream.read() << 16) | (_stream.read() << 24);
+	}
+
+	static public void WriteInt(OutputStream _stream,int _val)throws Exception{
+		_stream.write(_val);
+		_stream.write(_val >>> 8 );
+		_stream.write(_val >>> 16);
+		_stream.write(_val >>> 24);
 	}
 }
