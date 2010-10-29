@@ -67,10 +67,14 @@ public class sendReceive extends Thread{
 			//
 			fetchMail.WriteInt(os,_write.length << 16);
 			os.write(_write);
+			
 		}else{
 			fetchMail.WriteInt(os,(_write.length << 16) | t_zipData.length);
 			os.write(t_zipData);
+			
 		}
+		
+		prt("send package length " + _write.length);	
 		
 	}
 	
@@ -78,8 +82,8 @@ public class sendReceive extends Thread{
 		
 		try{
 			while(m_socket.isConnected()){
-				wait(100);
 				SendBufferToSvr_imple(PrepareOutputData());
+				sleep(500);
 			}
 		}catch(Exception _e){
 						
@@ -102,6 +106,8 @@ public class sendReceive extends Thread{
 		
 		final int t_ziplen = t_len & 0x0000ffff;
 		final int t_orglen = t_len >>> 16;
+		
+		prt("receive whole package org length " + t_orglen + "zip length" + t_ziplen);
 		
 		byte[] t_orgdata = new byte[t_orglen];
 				
@@ -129,6 +135,8 @@ public class sendReceive extends Thread{
 		
 		ByteArrayInputStream t_packagein = new ByteArrayInputStream(_wholePackage);
 		int t_len = fetchMail.ReadInt(t_packagein);
+		
+		prt("receive package length " + t_len + " whole length " + _wholePackage.length);
 			
 		byte[] t_ret = new byte[t_len];
 		t_packagein.read(t_ret,0,t_len);
@@ -137,7 +145,8 @@ public class sendReceive extends Thread{
 		
 		while(t_len < _wholePackage.length){
 			
-			final int t_packageLen = fetchMail.ReadInt(t_packagein); 			
+			final int t_packageLen = fetchMail.ReadInt(t_packagein); 
+			
 			byte[] t_package = new byte[t_packageLen];
 			
 			t_packagein.read(t_package,0,t_packageLen);
@@ -147,6 +156,10 @@ public class sendReceive extends Thread{
 		}		
 		
 		return t_ret;		
+	}
+	
+	static void prt(String s) {
+		System.out.println(s);
 	}
 	
 	

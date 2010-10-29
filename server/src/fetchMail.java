@@ -31,12 +31,12 @@ public class  fetchMail{
 	private Vector<String>	m_vectTo		= new Vector<String>();
 	private Vector<String>	m_vectGroup		= new Vector<String>();
 	
-	private String			m_subject 		= null;
+	private String			m_subject 		= new String();
 	private Date			m_sendDate 		= new Date();
 	private int			m_flags 		= 0;
-	private String			m_XMailName 	= null;
+	private String			m_XMailName 	= new String();
 	
-	private String			m_contain		= null;
+	private String			m_contain		= new String();
 	
 	private Vector<String>	m_vectAttachmentName = new Vector<String>();
 	private Vector<byte[]>	m_vectAttachment= new Vector<byte[]>();
@@ -220,7 +220,6 @@ public class  fetchMail{
 		WriteString(_stream,m_XMailName);
 		WriteString(_stream,m_contain);
 		WriteStringVector(_stream,m_vectAttachmentName);
-		
 	}
 		
 	public void InputMail(InputStream _stream)throws Exception{
@@ -244,8 +243,14 @@ public class  fetchMail{
 		m_XMailName = ReadString(_stream);
 		m_contain = ReadString(_stream);
 		
-		ReadStringVector(_stream, m_vectAttachmentName);		
+		ReadStringVector(_stream, m_vectAttachmentName);
 	}
+	
+	public String GetSubject(){	return m_subject;}
+	public void SetSubject(String _subject){m_subject = _subject;}
+	
+	public String GetContain(){return m_contain;}
+	public void SetContain(String _contain){m_contain = _contain;}
 	
 	static public void WriteStringVector(OutputStream _stream,Vector<String> _vect)throws Exception{
 		

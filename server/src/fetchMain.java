@@ -34,7 +34,7 @@ class berrySvrPush extends Thread{
 			
 			try{
 				m_serverDeamon.m_fetchMgr.CheckFolder();
-				sleep(12000);
+				sleep(fetchMain.sm_pushInterval);
 
 				Vector<fetchMail> t_unreadMailVector = m_serverDeamon.m_fetchMgr.m_unreadMailVector;
 				for(int i = 0;i < t_unreadMailVector.size();i++){
@@ -208,24 +208,24 @@ class fetchMgr{
     	   	
     	//
     	//
-    	ServerSocket t_svr = GetSocketServer();
+    	ServerSocket t_svr = GetSocketServer(m_userPassword);
     	    	
 		while(true){
 			try{
     			m_vectConnect.addElement(new berrySvrDeamon(t_svr.accept(),this));
 			}catch(Exception _e){
 				
-				for(int i = 0;i < m_vectConnect.size();i++){
-					berrySvrDeamon d = m_vectConnect.get(i);
-					if(d.m_socket.isClosed()){
-						d.destroy();
-										
-						m_vectConnect.remove(i);
-						
-						i--;
-					}
-				}				
-	    	}    
+//				for(int i = 0;i < m_vectConnect.size();i++){
+//					berrySvrDeamon d = m_vectConnect.get(i);
+//					if(d.m_socket.isClosed()){
+//						d.destroy();
+//										
+//						m_vectConnect.remove(i);
+//						
+//						i--;
+//					}
+//				}			
+	    	}
     	}
     		
 	}
@@ -268,7 +268,7 @@ class fetchMgr{
 	   
 	    if(m_totalMailCount != folder.getMessageCount()){
 	    	m_totalMailCount = folder.getMessageCount();	    
-		    final int t_startIndex = Math.max(m_totalMailCount - Math.min(50,m_totalMailCount) + 1,m_unreadFetchIndex);
+		    final int t_startIndex = Math.max(m_totalMailCount - Math.min(10,m_totalMailCount) + 1,m_unreadFetchIndex);
 		    
 		    Message[] t_msgs = folder.getMessages(t_startIndex, m_totalMailCount);
 		    
@@ -331,12 +331,12 @@ class fetchMgr{
 		return m_session != null;
 	}
 	
-	public SSLServerSocket GetSocketServer()throws Exception{
+	public static SSLServerSocket GetSocketServer(String _userPassword)throws Exception{
 		
 		String	key				= "YuchBerryKey";  
 		
-		char[] keyStorePass		= m_userPassword.toCharArray();
-		char[] keyPassword		= m_userPassword.toCharArray();
+		char[] keyStorePass		= _userPassword.toCharArray();
+		char[] keyPassword		= _userPassword.toCharArray();
 		
 		KeyStore ks				= KeyStore.getInstance(KeyStore.getDefaultType());
 		
