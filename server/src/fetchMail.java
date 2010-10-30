@@ -190,7 +190,6 @@ public class  fetchMail{
 				}
 				
 				m_vectAttachmentName.addElement(filename);
-								
 				
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
 			    ((MimeBodyPart)p).writeTo(os);

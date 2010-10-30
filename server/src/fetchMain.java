@@ -1,6 +1,7 @@
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyStore;
@@ -263,6 +264,9 @@ class fetchMgr{
 			p.load(new FileInputStream("config.ini"));
 			p.setProperty("userFetchIndex",Integer.toString(_index));
 			
+			p.save(new FileOutputStream("config.ini"), "");
+			p.clear();
+			
 		}catch(Exception _e){
 			sendReceive.prt(_e.getMessage());
 			_e.printStackTrace();
@@ -293,9 +297,7 @@ class fetchMgr{
 	    if (folder == null) {
 	    	throw new Exception("Invalid INBOX folder");
 	    }
-	    
-	    m_unreadMailVector.clear();
-	    
+	    	    
 	    folder.open(Folder.READ_ONLY);
 	   
 	    if(m_totalMailCount != folder.getMessageCount()){
@@ -437,6 +439,8 @@ public class fetchMain{
 				sm_pushInterval		= Integer.valueOf(p.getProperty("pushInterval")).intValue() * 1000;
 				
 				fs.close();
+				p.clear();
+				
 				p = null;
 				
 				t_manger.InitConnect(sm_protocol, sm_host, sm_port, 

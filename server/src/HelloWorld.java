@@ -2,10 +2,9 @@
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.security.KeyStore;
 import java.util.Properties;
@@ -38,7 +37,7 @@ public class HelloWorld {
 	public static void main(String arg[]){
 		
 		HelloWorld test = new HelloWorld(); 
-		test.test3();
+		test.berryTest();
 	}
 	
 	
@@ -72,7 +71,7 @@ public class HelloWorld {
 					case msg_head.msgSendMail:
 						
 						// TODO display in berry
-						// the mail has been send
+						// the post mail has been send
 						//
 						
 						break;
@@ -115,6 +114,10 @@ public class HelloWorld {
 			Properties p = new Properties(); 
 			p.load(new FileInputStream("config.ini"));
 			p.setProperty("userFetchIndex",Integer.toString(120));
+			
+			p.save(new FileOutputStream("config.ini"), "");
+			p.clear();
+			
 		}catch(Exception _e){
 			sendReceive.prt(_e.getMessage());
 			_e.printStackTrace();
