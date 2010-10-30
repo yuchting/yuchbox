@@ -245,12 +245,55 @@ public class  fetchMail{
 		ReadStringVector(_stream, m_vectAttachmentName);
 	}
 	
+	
+	//set and gets function
+	//
 	public String GetSubject(){	return m_subject;}
 	public void SetSubject(String _subject){m_subject = _subject;}
 	
 	public String GetContain(){return m_contain;}
 	public void SetContain(String _contain){m_contain = _contain;}
 	
+	public void SetSendToVect(String[] _to){
+		m_vectTo.clear();
+		for(int i = 0;i < _to.length;i++){
+			m_vectTo.addElement(_to[i]);
+		}		
+	}
+	public Vector<String> GetSendToVect(){return m_vectTo;}
+	
+	public void SetReplyToVect(String[] _replyTo){
+		m_vectReplyTo.clear();
+		for(int i = 0;i < _replyTo.length;i++){
+			m_vectReplyTo.addElement(_replyTo[i]);
+		}		
+	}
+	public Vector<String> GetReplyToVect(){return m_vectReplyTo;}
+	
+	public Vector<String> GetFromVect(){return m_vectFrom;}
+	public void SetFromVect(String[] _from){
+		m_vectFrom.clear();
+		for(int i = 0;i < _from.length;i++){
+			m_vectFrom.addElement(_from[i]);
+		}		
+	}
+	
+	public void AddAttachment(String _name,byte[] _buffer)throws Exception{
+		if(_name == null || _name.length() <= 0){
+			throw new Exception("Error Attachment format!");
+		}
+		
+		m_vectAttachment.addElement(_buffer);
+		m_vectAttachmentName.addElement(_name);		
+	}
+	public void ClearAttachment(){
+		m_vectAttachment.clear();
+		m_vectAttachmentName.clear();
+	}
+	
+	
+	// static function to input and output integer
+	//
 	static public void WriteStringVector(OutputStream _stream,Vector<String> _vect)throws Exception{
 		
 		final int t_size = _vect.size();
@@ -266,8 +309,9 @@ public class  fetchMail{
 		WriteInt(_stream,t_strByte.length);
 		if(t_strByte.length != 0){
 			_stream.write(t_strByte);
-		}		
+		}
 	}
+	
 		
 	static public void ReadStringVector(InputStream _stream,Vector<String> _vect)throws Exception{
 		

@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyStore;
+import java.util.Date;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -13,10 +14,16 @@ import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.Store;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
+
+import com.sun.mail.smtp.SMTPTransport;
 
 class berrySvrPush extends Thread{
 	
@@ -159,10 +166,17 @@ class fetchMgr{
 	
 	// Get a Properties object
     Properties m_sysProps = System.getProperties();
+    Properties m_sysProps_send = System.getProperties();
+    
 
     // Get a Session object
     Session m_session 	= null;
     Store 	m_store		= null;
+    
+    
+    Session m_session_send 	= null;
+    SMTPTransport m_sendTransport = null;
+    
     	
     Vector<fetchMail> m_unreadMailVector = new Vector<fetchMail>();
     
@@ -226,6 +240,14 @@ class fetchMgr{
 		
     	m_store = m_session.getStore(m_protocol);
     	m_store.connect(m_host,m_port,m_userName,m_password);
+    	
+    	// initialize the smtp transfer
+    	//
+    	m_session_send = Session.getInstance(m_sysProps_send, null);
+    	m_session_send.setDebug(false);
+    	
+    	m_sendTransport = (SMTPTransport)m_session_send.getTransport(m_protocol_send);
+    	   	
     	   	
     	//
     	//
@@ -342,6 +364,59 @@ class fetchMgr{
 	
 	public void SendMail(fetchMail _mail)throws Exception{
 		
+		Message msg = new MimeMessage(m_session_send);
+
+		msg.setFrom(new InternetAddress(fetchMain.sm_strUserNameFull));
+		
+		String t_addressList = new String();
+
+		
+	    msg.setRecipients(Message.RecipientType.TO,
+					InternetAddress.parse(parseAddressList(), false));
+	    if (cc != null)
+		msg.setRecipients(Message.RecipientType.CC,
+					InternetAddress.parse(cc, false));
+	    if (bcc != null)
+		msg.setRecipients(Message.RecipientType.BCC,
+					InternetAddress.parse(bcc, false));
+
+	    msg.setSubject(subject);
+
+	    String text = collect(in);
+
+	    if (file != null) {
+		// Attach the specified file.
+		// We need a multipart message to hold the attachment.
+		MimeBodyPart mbp1 = new MimeBodyPart();
+		mbp1.setText(text);
+		MimeBodyPart mbp2 = new MimeBodyPart();
+		mbp2.attachFile(file);
+		MimeMultipart mp = new MimeMultipart();
+		mp.addBodyPart(mbp1);
+		mp.addBodyPart(mbp2);
+		msg.setContent(mp);
+	    } else {
+		// If the desired charset is known, you can use
+		// setText(text, charset)
+		msg.setText(text);
+	    }
+
+	    msg.setHeader("X-Mailer", mailer);
+	    msg.setSentDate(new Date());
+	    
+		m_sendTransport.connect(m_userName,m_password);
+		
+	}
+	
+	public String parseAddressList(Vector<String> _list)throws Exception{
+		String 	t_addressList = new String();
+		
+		for(int i = 0;i < _list.size();i++){
+			t_addressList += _list.get(i);
+			t_addressList += ",";
+		}
+		
+		return t_addressList;
 	}
 	
 	public void DestroyConnect()throws Exception{
@@ -404,6 +479,7 @@ public class fetchMain{
     static boolean sm_debug 		= false;
     
 	static String sm_strUserName ;
+	static String sm_strUserNameFull ;
 	static String sm_strPassword ;
 	static String sm_strUserPassword;
 	static int		sm_pushInterval = 10000;
@@ -430,7 +506,13 @@ public class fetchMain{
 				sm_host_send		= p.getProperty("host_send");
 				sm_port_send		= Integer.valueOf(p.getProperty("port_send")).intValue();
 				
-				sm_strUserName		= p.getProperty("account");
+				sm_strUserNameFull		= p.getProperty("account");
+				if(sm_strUserNameFull.indexOf('@') == -1 || sm_strUserNameFull.indexOf('.') == -1){
+					throw new Exception("account : xxxxx@xxx.xxx such as 1234@gmail.com");
+				}
+				
+				sm_strUserName = sm_strUserNameFull.substring(0, sm_strUserNameFull.indexOf('@'));
+				
 				sm_strPassword		= p.getProperty("password");
 				sm_strUserPassword	= p.getProperty("userPassword");
 				

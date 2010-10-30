@@ -1,12 +1,15 @@
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.security.KeyStore;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.zip.GZIPInputStream;
@@ -37,15 +40,62 @@ public class HelloWorld {
 	public static void main(String arg[]){
 		
 		HelloWorld test = new HelloWorld(); 
-		test.berryTest();
+		test.berryRecvTest();
 	}
 	
-	
-	public void berryTest(){
+	public void berrySendTest(){
+		
+		
 		try{
 			
-			Socket t_socket = GetSocketServer("111111","localhost",9716);
+			Socket t_socket = GetSocketServer("111111","localhost",9716);	
+			sendReceive t_receive = new sendReceive(t_socket);
 			
+			fetchMail t_mail = new fetchMail();
+			
+			String[] t_string = {"yuchting@gmail.com"};
+			t_mail.SetSendToVect(t_string);
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			t_mail.SetContain(df.format(new Date()));
+			t_mail.SetSubject(t_mail.GetContain());
+			
+			final int t_math = (int)(Math.random() * 100);
+			t_mail.SetMailIndex(t_math);
+			
+			t_mail.AddAttachment("HelloWorld.jar", readFileBuffer("HelloWorld.jar"));
+			t_mail.AddAttachment("YuchBerryKey", readFileBuffer("YuchBerryKey"));
+			
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			t_mail.OutputMail(os);
+			
+			t_receive.SendBufferToSvr(os.toByteArray(), true);
+			
+			ByteArrayInputStream in = new ByteArrayInputStream(t_receive.RecvBufferFromSvr());
+			
+			if(fetchMail.ReadInt(in) == msg_head.msgSendMail 
+				&& t_math == fetchMail.ReadInt(in)){
+				prt(t_mail.GetSubject() + " mail deliver succ id<" + Integer.toString(t_math) + ">");
+			}
+						
+		}catch(Exception _e){
+			prt(_e.getMessage());
+			_e.printStackTrace();
+		}
+	}
+	
+	private byte[] readFileBuffer(String _file)throws Exception{
+		File t_file = new File(_file);
+		byte[] t_buffer = new byte[(int)t_file.length()];
+		
+		FileInputStream in = new FileInputStream(_file);
+		in.read(t_buffer, 0, t_buffer.length);
+		
+		return t_buffer;
+	}
+	public void berryRecvTest(){
+		try{
+			
+			Socket t_socket = GetSocketServer("111111","localhost",9716);	
 			sendReceive t_receive = new sendReceive(t_socket);
 			
 			while(true){
