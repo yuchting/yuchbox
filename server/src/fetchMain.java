@@ -2,16 +2,19 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyStore;
-import java.util.Date;
 import java.util.Properties;
 import java.util.Vector;
 
+import javax.mail.Address;
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
+import javax.mail.Multipart;
+import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.internet.InternetAddress;
@@ -30,9 +33,10 @@ class berrySvrPush extends Thread{
 	berrySvrDeamon		m_serverDeamon;
 	sendReceive			m_sendReceive;
 	
-	public berrySvrPush(berrySvrDeamon _svrDeamon){
+	public berrySvrPush(berrySvrDeamon _svrDeamon)throws Exception{
 		m_serverDeamon = _svrDeamon;
-		m_sendReceive = new sendReceive(m_serverDeamon.m_socket);
+		m_sendReceive = new sendReceive(m_serverDeamon.m_socket.getOutputStream(),
+										m_serverDeamon.m_socket.getInputStream());
 		m_sendReceive.start();
 	}
 	
@@ -44,9 +48,9 @@ class berrySvrPush extends Thread{
 				m_serverDeamon.m_fetchMgr.CheckFolder();
 				sleep(fetchMain.sm_pushInterval);
 
-				Vector<fetchMail> t_unreadMailVector = m_serverDeamon.m_fetchMgr.m_unreadMailVector;
+				Vector t_unreadMailVector = m_serverDeamon.m_fetchMgr.m_unreadMailVector;
 				for(int i = 0;i < t_unreadMailVector.size();i++){
-					fetchMail t_mail = t_unreadMailVector.get(i); 
+					fetchMail t_mail = (fetchMail)t_unreadMailVector.elementAt(i); 
 					
 					ByteArrayOutputStream t_output = new ByteArrayOutputStream();
 					
@@ -72,8 +76,10 @@ class berrySvrDeamon extends Thread{
 	
 	private berrySvrPush m_pushDeamon = null;
 	private sendReceive  m_sendReceive = null;
+	
+	boolean m_confirmConnect	= false;
 		
-	public berrySvrDeamon(Socket _s,fetchMgr _mgr){
+	public berrySvrDeamon(Socket _s,fetchMgr _mgr)throws Exception{
 		m_fetchMgr 	= _mgr;
 		m_socket	= _s;
 		
@@ -82,7 +88,7 @@ class berrySvrDeamon extends Thread{
 		m_pushDeamon = new berrySvrPush(this);
 		m_pushDeamon.start();
 		
-		m_sendReceive = new sendReceive(m_socket);
+		m_sendReceive = new sendReceive(m_socket.getOutputStream(),m_socket.getInputStream());
 		m_sendReceive.start();
 	}
 	
@@ -106,7 +112,13 @@ class berrySvrDeamon extends Thread{
 			}catch(Exception _e){
 				try{
 					m_socket.close();
-				}catch(Exception e){}
+				}catch(Exception e){
+					//prt(e.getMessage());
+					e.printStackTrace();
+				}
+				
+				//sendReceive.prt(_e.getMessage());
+				_e.printStackTrace();
 				
 				break;
 			}
@@ -117,12 +129,23 @@ class berrySvrDeamon extends Thread{
 	private void ProcessPackage(byte[] _package)throws Exception{
 		ByteArrayInputStream in = new ByteArrayInputStream(_package);
 		
-		switch(in.read()){
+		final int t_msg_head = in.read();
+		
+		if(m_confirmConnect == false){
+			if(msg_head.msgConfirm != t_msg_head 
+			|| !sendReceive.ReadString(in).equals(fetchMain.sm_strUserPassword)){
+				throw new Exception("illegal client connect");
+			}
+			
+			m_confirmConnect = true;
+		}
+		
+		switch(t_msg_head){			
 			case msg_head.msgMail:
 				ProcessMail(in);
 				break;
 			case msg_head.msgSendMail:
-				m_fetchMgr.SetBeginFetchIndex(fetchMail.ReadInt(in) + 1);
+				m_fetchMgr.SetBeginFetchIndex(sendReceive.ReadInt(in) + 1);
 				break;
 			default:
 				throw new Exception("illegal client connect");
@@ -138,7 +161,7 @@ class berrySvrDeamon extends Thread{
 		// receive send message to berry
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		os.write(msg_head.msgSendMail);
-		os.write(t_mail.GetMailIndex());
+		sendReceive.WriteInt(os,t_mail.GetMailIndex());
 		
 		m_sendReceive.SendBufferToSvr(os.toByteArray(),false);
 	}
@@ -178,9 +201,9 @@ class fetchMgr{
     SMTPTransport m_sendTransport = null;
     
     	
-    Vector<fetchMail> m_unreadMailVector = new Vector<fetchMail>();
+    Vector m_unreadMailVector = new Vector();
     
-    Vector<berrySvrDeamon>	m_vectConnect = new Vector<berrySvrDeamon>();
+    Vector	m_vectConnect = new Vector();
     
     // pushed mail index vector 
     Vector m_vectPushedMailIndex = new Vector();
@@ -216,7 +239,7 @@ class fetchMgr{
     	
     	m_protocol_send	= _protocol_send;
     	m_host_send		= _host_send;
-    	m_port_send		= _port_send;
+		m_port_send		= _port_send;
     	
     	m_userName	= _username;
     	m_password	= _password;
@@ -243,6 +266,10 @@ class fetchMgr{
     	
     	// initialize the smtp transfer
     	//
+    	m_sysProps_send.put("mail.smtp.auth", "true");
+    	m_sysProps_send.put("mail.smtp.port", Integer.toString(m_port_send));
+    	m_sysProps_send.put("mail.smtp.starttls.enable","true");
+    	
     	m_session_send = Session.getInstance(m_sysProps_send, null);
     	m_session_send.setDebug(false);
     	
@@ -251,7 +278,7 @@ class fetchMgr{
     	   	
     	//
     	//
-    	ServerSocket t_svr = GetSocketServer(m_userPassword);
+    	ServerSocket t_svr = GetSocketServer(m_userPassword,false);
     	    	
 		while(true){
 			try{
@@ -290,7 +317,7 @@ class fetchMgr{
 			p.clear();
 			
 		}catch(Exception _e){
-			sendReceive.prt(_e.getMessage());
+			//prt(_e.getMessage());
 			_e.printStackTrace();
 		}
 		
@@ -350,7 +377,7 @@ class fetchMgr{
 		    		
 		    		fetchMail t_mail = new fetchMail();
 		    		t_mail.SetMailIndex(i + t_startIndex);
-		    		t_mail.ImportMail(t_msg);
+		    		ImportMail(t_msg,t_mail);
 		    		
 		    		m_unreadMailVector.addElement(t_mail);
 		    	}
@@ -365,59 +392,14 @@ class fetchMgr{
 	public void SendMail(fetchMail _mail)throws Exception{
 		
 		Message msg = new MimeMessage(m_session_send);
-
-		msg.setFrom(new InternetAddress(fetchMain.sm_strUserNameFull));
-		
-		String t_addressList = new String();
-
-		
-	    msg.setRecipients(Message.RecipientType.TO,
-					InternetAddress.parse(parseAddressList(), false));
-	    if (cc != null)
-		msg.setRecipients(Message.RecipientType.CC,
-					InternetAddress.parse(cc, false));
-	    if (bcc != null)
-		msg.setRecipients(Message.RecipientType.BCC,
-					InternetAddress.parse(bcc, false));
-
-	    msg.setSubject(subject);
-
-	    String text = collect(in);
-
-	    if (file != null) {
-		// Attach the specified file.
-		// We need a multipart message to hold the attachment.
-		MimeBodyPart mbp1 = new MimeBodyPart();
-		mbp1.setText(text);
-		MimeBodyPart mbp2 = new MimeBodyPart();
-		mbp2.attachFile(file);
-		MimeMultipart mp = new MimeMultipart();
-		mp.addBodyPart(mbp1);
-		mp.addBodyPart(mbp2);
-		msg.setContent(mp);
-	    } else {
-		// If the desired charset is known, you can use
-		// setText(text, charset)
-		msg.setText(text);
-	    }
-
-	    msg.setHeader("X-Mailer", mailer);
-	    msg.setSentDate(new Date());
+		ComposeMessage(msg,_mail);
 	    
-		m_sendTransport.connect(m_userName,m_password);
-		
+		m_sendTransport.connect(m_host_send,fetchMain.sm_strUserNameFull,m_password);
+		m_sendTransport.sendMessage(msg, msg.getAllRecipients());
+		m_sendTransport.close();
 	}
 	
-	public String parseAddressList(Vector<String> _list)throws Exception{
-		String 	t_addressList = new String();
-		
-		for(int i = 0;i < _list.size();i++){
-			t_addressList += _list.get(i);
-			t_addressList += ",";
-		}
-		
-		return t_addressList;
-	}
+	
 	
 	public void DestroyConnect()throws Exception{
 		m_session = null;
@@ -439,29 +421,251 @@ class fetchMgr{
 		return m_session != null;
 	}
 	
-	public static SSLServerSocket GetSocketServer(String _userPassword)throws Exception{
+	public static ServerSocket GetSocketServer(String _userPassword,boolean _ssl)throws Exception{
 		
-		String	key				= "YuchBerryKey";  
-		
-		char[] keyStorePass		= _userPassword.toCharArray();
-		char[] keyPassword		= _userPassword.toCharArray();
-		
-		KeyStore ks				= KeyStore.getInstance(KeyStore.getDefaultType());
-		
-		ks.load(new FileInputStream(key),keyStorePass);
-		
-		KeyManagerFactory kmf	= KeyManagerFactory.getInstance("SunX509");
-		kmf.init(ks,keyPassword);
-		
-		SSLContext sslContext = SSLContext.getInstance("SSLv3");
-		sslContext.init(kmf.getKeyManagers(),null,null);
-		  
-		SSLServerSocketFactory factory=sslContext.getServerSocketFactory();
-		
-		return (SSLServerSocket)factory.createServerSocket(ACCEPT_PORT);
-		  
+		if(_ssl){
+			String	key				= "YuchBerryKey";  
+			
+			char[] keyStorePass		= _userPassword.toCharArray();
+			char[] keyPassword		= _userPassword.toCharArray();
+			
+			KeyStore ks				= KeyStore.getInstance(KeyStore.getDefaultType());
+			
+			ks.load(new FileInputStream(key),keyStorePass);
+			
+			KeyManagerFactory kmf	= KeyManagerFactory.getInstance("SunX509");
+			kmf.init(ks,keyPassword);
+			
+			SSLContext sslContext = SSLContext.getInstance("SSLv3");
+			sslContext.init(kmf.getKeyManagers(),null,null);
+			  
+			SSLServerSocketFactory factory=sslContext.getServerSocketFactory();
+			
+			return (ServerSocket)factory.createServerSocket(ACCEPT_PORT);
+		}else{
+			return new ServerSocket(ACCEPT_PORT);
+		}		  
 	}
 	
+	static public void ImportMail(Message m,fetchMail _mail)throws Exception{
+		
+		Address[] a;
+		
+		// FROM 
+		if ((a = m.getFrom()) != null) {
+			Vector t_from = _mail.GetFromVect();
+			t_from.removeAllElements();
+		    for (int j = 0; j < a.length; j++){
+		    	t_from.addElement(a[j].toString());
+		    }
+		}
+
+		// REPLY TO
+		if ((a = m.getReplyTo()) != null) {
+			Vector t_vect = _mail.GetReplyToVect();
+			t_vect.removeAllElements();
+		    for (int j = 0; j < a.length; j++){
+		    	t_vect.addElement(a[j].toString());
+		    }
+		}
+
+		// TO
+		if ((a = m.getRecipients(Message.RecipientType.TO)) != null) {
+			Vector t_vect = _mail.GetSendToVect();
+			t_vect.removeAllElements();
+			
+			Vector t_vectGroup = _mail.GetGroupVect();
+			t_vectGroup.removeAllElements();
+			
+		    for (int j = 0; j < a.length; j++) {
+		    	
+		    	t_vect.addElement(a[j].toString());
+			    
+				InternetAddress ia = (InternetAddress)a[j];
+				
+				if (ia.isGroup()) {
+				    InternetAddress[] aa = ia.getGroup(false);
+				    for (int k = 0; k < aa.length; k++){
+				    	t_vectGroup.addElement(aa[k].toString());
+				    }
+				}
+		    }
+		}
+		
+		_mail.SetSubject(m.getSubject());
+		_mail.SetSendDate(m.getSentDate());
+		
+		int t_flags = 0;
+		Flags.Flag[] sf = m.getFlags().getSystemFlags(); // get the system flags
+
+		for (int i = 0; i < sf.length; i++) {
+		    Flags.Flag f = sf[i];
+		    if (f == Flags.Flag.ANSWERED)
+		    	t_flags |= fetchMail.ANSWERED;
+		    else if (f == Flags.Flag.DELETED)
+		    	t_flags |= fetchMail.DELETED;
+		    else if (f == Flags.Flag.DRAFT)
+		    	t_flags |= fetchMail.DRAFT;
+		    else if (f == Flags.Flag.FLAGGED)
+		    	t_flags |= fetchMail.FLAGGED;
+		    else if (f == Flags.Flag.RECENT)
+		    	t_flags |= fetchMail.RECENT;
+		    else if (f == Flags.Flag.SEEN)
+		    	t_flags |= fetchMail.SEEN;
+		    else
+		    	continue;	// skip it		
+		}
+		
+		_mail.SetFlags(t_flags);
+		
+		String[] hdrs = m.getHeader("X-Mailer");
+		
+		if (hdrs != null){
+			_mail.SetXMailer(hdrs[0]);
+	    }
+		_mail.GetAttachment().removeAllElements();
+		_mail.GetAttachmentFilename().removeAllElements();
+		
+		ImportPart(m,_mail);	
+	}
+	
+	static private void ImportPart(Part p,fetchMail _mail)throws Exception{
+		
+		String filename = p.getFileName();
+		
+		String t_getContain = _mail.GetContain();
+		/*
+		 * Using isMimeType to determine the content type avoids
+		 * fetching the actual content data until we need it.
+		 */
+		if (p.isMimeType("text/plain")) {
+			
+		    try{
+		    	t_getContain += (String)p.getContent();
+		    }catch(Exception e){
+		    	t_getContain += "cant decode content " + e.getMessage();
+		    }	    
+		    
+		} else if (p.isMimeType("multipart/*")) {
+			
+		    Multipart mp = (Multipart)p.getContent();
+		    int count = mp.getCount();
+		    
+		    for (int i = 0; i < count; i++){
+		    	ImportPart(mp.getBodyPart(i),_mail);
+		    }
+		    
+		} else if (p.isMimeType("message/rfc822")) {
+
+			ImportPart((Part)p.getContent(),_mail);
+		} else {
+			/*
+			 * If we actually want to see the data, and it's not a
+			 * MIME type we know, fetch it and check its Java type.
+			 */
+			Object o = p.getContent();
+			
+			if (o instanceof String) {
+			    
+			    t_getContain += (String)o;
+			    
+			} else if (o instanceof InputStream) {
+
+			    InputStream is = (InputStream)o;
+			    int c;
+			    while ((c = is.read()) != -1){
+			    	//System.out.write(c);
+			    	t_getContain += c;
+			    }
+			} else {
+				t_getContain += o.toString();
+			}			
+		}
+
+		/*
+		 * If we're saving attachments, write out anything that
+		 * looks like an attachment into an appropriately named
+		 * file.  Don't overwrite existing files to prevent
+		 * mistakes.
+		 */
+		if (!p.isMimeType("multipart") 
+			&& p instanceof MimeBodyPart){
+			
+			Vector t_vectName = _mail.GetAttachmentFilename();
+			Vector t_vectByte = _mail.GetAttachment();
+			
+		    String disp = p.getDisposition();
+		    
+		    // many mailers don't include a Content-Disposition
+		    if (disp != null && disp.equals("ATTACHMENT")) {
+				if (filename == null){	
+				    filename = "Attachment_" + t_vectName.size();
+				}
+				
+				t_vectName.addElement(filename);
+				
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+			    ((MimeBodyPart)p).writeTo(os);
+			    
+			    t_vectByte.addElement(os.toByteArray());				
+		    }
+		}
+	}
+	
+	static public void ComposeMessage(Message msg,fetchMail _mail)throws Exception{
+		
+		msg.setFrom(new InternetAddress(fetchMain.sm_strUserNameFull));
+				
+	    msg.setRecipients(Message.RecipientType.TO,
+					InternetAddress.parse(fetchMail.parseAddressList(_mail.GetSendToVect()), false));
+	    if (!_mail.GetReplyToVect().isEmpty()){
+			msg.setRecipients(Message.RecipientType.CC,
+						InternetAddress.parse(fetchMail.parseAddressList(_mail.GetReplyToVect()), false));
+	    }
+	    
+	    if(!_mail.GetGroupVect().isEmpty()){
+	    	msg.setRecipients(Message.RecipientType.BCC,
+					InternetAddress.parse(fetchMail.parseAddressList(_mail.GetGroupVect()), false));
+	    }
+		
+
+	    msg.setSubject(_mail.GetSubject());
+
+	    if(!_mail.GetAttachmentFilename().isEmpty()) {
+			// Attach the specified file.
+			// We need a multipart message to hold the attachment.
+		    	
+			MimeBodyPart t_containPart = new MimeBodyPart();
+			t_containPart.setText(_mail.GetContain());
+			
+			MimeMultipart t_mainPart = new MimeMultipart();
+			t_mainPart.addBodyPart(t_containPart);
+			
+			Vector t_filename = _mail.GetAttachmentFilename();
+			Vector t_contain = _mail.GetAttachment();
+			
+			for(int i = 0;i< t_contain.size();i++){
+
+				MimeBodyPart t_filePart = new MimeBodyPart();
+				
+				t_filePart.setFileName((String)t_filename.elementAt(i));
+				
+				t_filePart.getInputStream().read((byte[])t_contain.elementAt(i));
+				
+				t_mainPart.addBodyPart(t_filePart);
+			}
+				
+			msg.setContent(t_mainPart);
+			
+	    } else {
+			// If the desired charset is known, you can use
+			// setText(text, charset)
+			msg.setText(_mail.GetContain());
+	    }
+
+	    msg.setHeader("X-Mailer",_mail.GetXMailer());
+	    msg.setSentDate(_mail.GetSendDate());
+	}
 }
 
 public class fetchMain{

@@ -2,24 +2,24 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
 import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 
-public class sendReceive extends Thread{
+class sendReceive extends Thread{
 	
-	Socket			m_socket = null;
+	OutputStream		m_socketOutputStream = null;
+	InputStream			m_socketInputStream = null;
 	
-	private Vector<byte[]>	m_unsendedPackage 		= new Vector<byte[]>();
-	private Vector<byte[]>	m_unprocessedPackage 	= new Vector<byte[]>();
-	
-	
-	public sendReceive(Socket _socket){
-		m_socket = _socket;
+	private Vector		m_unsendedPackage 		= new Vector();
+	private Vector		m_unprocessedPackage 	= new Vector();
+		
+	public sendReceive(OutputStream _socketOut,InputStream _socketIn){
+		m_socketOutputStream = _socketOut;
+		m_socketInputStream = _socketIn;
 	}
-	
+		
 	//! send buffer
 	public synchronized void SendBufferToSvr(byte[] _write,boolean _sendImm)throws Exception{	
 		m_unsendedPackage.addElement(_write);
@@ -38,16 +38,14 @@ public class sendReceive extends Thread{
 		ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
 		
 		for(int i = 0;i < m_unsendedPackage.size();i++){
-			byte[] t_package = m_unsendedPackage.get(i);	
+			byte[] t_package = (byte[])m_unsendedPackage.elementAt(i);	
 			
-			fetchMail.WriteInt(t_stream, t_package.length);
-			
-			prt("write package length " + t_package.length);
-			
+			WriteInt(t_stream, t_package.length);
+						
 			t_stream.write(t_package);
 		}
 		
-		m_unsendedPackage.clear();
+		m_unsendedPackage.removeAllElements();
 		
 		return t_stream.toByteArray();
 	}
@@ -59,7 +57,7 @@ public class sendReceive extends Thread{
 			return;
 		}		
 		
-		OutputStream os = m_socket.getOutputStream();
+		OutputStream os = m_socketOutputStream;
 		
 		ByteArrayOutputStream zos = new ByteArrayOutputStream();
 		GZIPOutputStream zo = new GZIPOutputStream(zos);
@@ -72,26 +70,23 @@ public class sendReceive extends Thread{
 			// if the ZIP data is large than original length
 			// NOT convert
 			//
-			fetchMail.WriteInt(os,_write.length << 16);
+			WriteInt(os,_write.length << 16);
 			os.write(_write);
 			
 		}else{
-			fetchMail.WriteInt(os,(_write.length << 16) | t_zipData.length);
+			WriteInt(os,(_write.length << 16) | t_zipData.length);
 			os.write(t_zipData);
 			
 		}
-		
-		prt("send package length " + _write.length);	
-		
+				
 	}
 	
 	public void run(){
 		
 		try{
-			while(m_socket.isConnected()){
-				SendBufferToSvr_imple(PrepareOutputData());
-				sleep(500);
-			}
+			
+			SendBufferToSvr_imple(PrepareOutputData());
+			sleep(500);			
 		}catch(Exception _e){
 						
 		}
@@ -101,25 +96,23 @@ public class sendReceive extends Thread{
 	public byte[] RecvBufferFromSvr()throws Exception{
 		
 		if(!m_unprocessedPackage.isEmpty()){
-			byte[] t_ret = m_unprocessedPackage.get(0);
-			m_unprocessedPackage.remove(0);
+			byte[] t_ret = (byte[])m_unprocessedPackage.elementAt(0);
+			m_unprocessedPackage.removeElementAt(0);
 			
 			return t_ret;
 		}
 		
-		InputStream in = m_socket.getInputStream();
+		InputStream in = m_socketInputStream;
 
-		int t_len = fetchMail.ReadInt(in);
+		int t_len = ReadInt(in);
 		
 		final int t_ziplen = t_len & 0x0000ffff;
 		final int t_orglen = t_len >>> 16;
-		
-		prt("receive whole package org length " + t_orglen + "zip length" + t_ziplen);
-		
+				
 		byte[] t_orgdata = new byte[t_orglen];
 				
 		if(t_ziplen == 0){
-			t_len = fetchMail.ReadInt(in);
+			t_len = ReadInt(in);
 			in.read(t_orgdata,0,t_len);	
 			return t_orgdata;
 		}
@@ -148,10 +141,8 @@ public class sendReceive extends Thread{
 	private byte[] ParsePackage(byte[] _wholePackage)throws Exception{
 		
 		ByteArrayInputStream t_packagein = new ByteArrayInputStream(_wholePackage);
-		int t_len = fetchMail.ReadInt(t_packagein);
-		
-		prt("receive package length " + t_len + " whole length " + _wholePackage.length);
-			
+		int t_len = ReadInt(t_packagein);
+					
 		byte[] t_ret = new byte[t_len];
 		t_packagein.read(t_ret,0,t_len);
 		
@@ -159,7 +150,7 @@ public class sendReceive extends Thread{
 		
 		while(t_len < _wholePackage.length){
 			
-			final int t_packageLen = fetchMail.ReadInt(t_packagein); 
+			final int t_packageLen = ReadInt(t_packagein); 
 			
 			byte[] t_package = new byte[t_packageLen];
 			
@@ -171,10 +162,62 @@ public class sendReceive extends Thread{
 		
 		return t_ret;		
 	}
-	
-	static void prt(String s) {
-		System.out.println(s);
+	// static function to input and output integer
+	//
+	static public void WriteStringVector(OutputStream _stream,Vector _vect)throws Exception{
+		
+		final int t_size = _vect.size();
+		_stream.write(t_size);
+		
+		for(int i = 0;i < t_size;i++){
+			WriteString(_stream,(String)_vect.elementAt(i));
+		}
 	}
 	
+	static public void WriteString(OutputStream _stream,String _string)throws Exception{
+		final byte[] t_strByte = _string.getBytes();
+		WriteInt(_stream,t_strByte.length);
+		if(t_strByte.length != 0){
+			_stream.write(t_strByte);
+		}
+	}
+	
+		
+	static public void ReadStringVector(InputStream _stream,Vector _vect)throws Exception{
+		
+		_vect.removeAllElements();
+		
+		int t_size = 0;
+		t_size = _stream.read();
+		
+		for(int i = 0;i < t_size;i++){
+			_vect.addElement(ReadString(_stream));
+		}
+	}
+	
+	static public String ReadString(InputStream _stream)throws Exception{
+		
+		final int len = ReadInt(_stream);
+		if(len != 0){
+			byte[] t_buffer = new byte[len];
+			
+			_stream.read(t_buffer);	
+			return new String(t_buffer);
+		}
+		
+		return new String("");
+		
+	}
+	
+	static public int ReadInt(InputStream _stream)throws Exception{
+		return _stream.read() | (_stream.read() << 8) | (_stream.read() << 16) | (_stream.read() << 24);
+	}
+
+	static public void WriteInt(OutputStream _stream,int _val)throws Exception{
+		_stream.write(_val);
+		_stream.write(_val >>> 8 );
+		_stream.write(_val >>> 16);
+		_stream.write(_val >>> 24);
+	}
 	
 }

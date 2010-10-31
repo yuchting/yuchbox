@@ -40,16 +40,13 @@ public class HelloWorld {
 	public static void main(String arg[]){
 		
 		HelloWorld test = new HelloWorld(); 
-		test.berryRecvTest();
+		test.berrySendTest();
 	}
 	
 	public void berrySendTest(){
 		
-		
 		try{
-			
-			Socket t_socket = GetSocketServer("111111","localhost",9716);	
-			sendReceive t_receive = new sendReceive(t_socket);
+			sendReceive t_receive = new sendReceive(new FileInputStream(new File("YuchBerryKey")),"111111","localhost",9716);
 			
 			fetchMail t_mail = new fetchMail();
 			
@@ -66,14 +63,16 @@ public class HelloWorld {
 			t_mail.AddAttachment("YuchBerryKey", readFileBuffer("YuchBerryKey"));
 			
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			t_mail.OutputMail(os);
+			
+			os.write(msg_head.msgMail);
+			t_mail.OutputMail(os);		
 			
 			t_receive.SendBufferToSvr(os.toByteArray(), true);
 			
 			ByteArrayInputStream in = new ByteArrayInputStream(t_receive.RecvBufferFromSvr());
 			
-			if(fetchMail.ReadInt(in) == msg_head.msgSendMail 
-				&& t_math == fetchMail.ReadInt(in)){
+			if(in.read() == msg_head.msgSendMail
+				&& t_math == sendReceive.ReadInt(in)){
 				prt(t_mail.GetSubject() + " mail deliver succ id<" + Integer.toString(t_math) + ">");
 			}
 						
@@ -95,8 +94,8 @@ public class HelloWorld {
 	public void berryRecvTest(){
 		try{
 			
-			Socket t_socket = GetSocketServer("111111","localhost",9716);	
-			sendReceive t_receive = new sendReceive(t_socket);
+			//Socket t_socket = GetSocketServer();
+			sendReceive t_receive = new sendReceive(new FileInputStream(new File("YuchBerryKey")),"111111","localhost",9716);
 			
 			while(true){
 
@@ -111,7 +110,7 @@ public class HelloWorld {
 						//
 						ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 						t_os.write(msg_head.msgSendMail);
-						fetchMail.WriteInt(t_os,t_mail.GetMailIndex());
+						//fetchMail.WriteInt(t_os,t_mail.GetMailIndex());
 						t_receive.SendBufferToSvr(t_os.toByteArray(), true);
 						
 						// TODO display in berry
@@ -134,28 +133,7 @@ public class HelloWorld {
 		}
 	}
 	
-	public static Socket GetSocketServer(String _userPassword,String _host,int _port)throws Exception{
-		
-		String	key				= "YuchBerryKey";  
-		
-		char[] keyStorePass		= _userPassword.toCharArray();
-		char[] keyPassword		= _userPassword.toCharArray();
-		
-		KeyStore ks				= KeyStore.getInstance(KeyStore.getDefaultType());
-		
-		ks.load(new FileInputStream(key),keyStorePass);
-		
-		KeyManagerFactory kmf	= KeyManagerFactory.getInstance("SunX509");
-		kmf.init(ks,keyPassword);
-		
-		SSLContext sslContext = SSLContext.getInstance("SSLv3");
-		sslContext.init(kmf.getKeyManagers(),null,null);
-		  
-		SSLSocketFactory factory=sslContext.getSocketFactory();
-		
-		return factory.createSocket(_host,_port);
-		  
-	}
+	
 
 	public void test3(){
 		
@@ -169,7 +147,7 @@ public class HelloWorld {
 			p.clear();
 			
 		}catch(Exception _e){
-			sendReceive.prt(_e.getMessage());
+			//sendReceive.prt(_e.getMessage());
 			_e.printStackTrace();
 		}
 	}
