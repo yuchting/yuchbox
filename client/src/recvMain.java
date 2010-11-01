@@ -1,8 +1,3 @@
-/**
- *  HelloWorld.java
- *  Copyright (C) 2001-2005 Research In Motion Limited. All rights reserved.
- */
- 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -15,13 +10,19 @@ import javax.microedition.io.StreamConnection;
 import javax.microedition.io.file.FileConnection;
 
 import net.rim.blackberry.api.mail.Address;
+import net.rim.blackberry.api.mail.BodyPart;
+import net.rim.blackberry.api.mail.Folder;
 import net.rim.blackberry.api.mail.Message;
+import net.rim.blackberry.api.mail.MimeBodyPart;
 import net.rim.blackberry.api.mail.Multipart;
-import net.rim.blackberry.api.mail.Part;
 import net.rim.blackberry.api.mail.SendListener;
 import net.rim.blackberry.api.mail.Session;
 import net.rim.blackberry.api.mail.Store;
 import net.rim.blackberry.api.mail.SupportedAttachmentPart;
+import net.rim.blackberry.api.mail.TextBodyPart;
+import net.rim.blackberry.api.mail.Transport;
+import net.rim.blackberry.api.mail.UnsupportedAttachmentPart;
+import net.rim.blackberry.api.mail.BodyPart.ContentType;
 import net.rim.device.api.compress.GZIPInputStream;
 import net.rim.device.api.compress.GZIPOutputStream;
 import net.rim.device.api.ui.Field;
@@ -52,10 +53,14 @@ class sendReceive extends Thread{
 	
 	private Vector		m_unsendedPackage 		= new Vector();
 	private Vector		m_unprocessedPackage 	= new Vector();
+	
+	boolean			m_closed				= false;
 		
 	public sendReceive(OutputStream _socketOut,InputStream _socketIn){
 		m_socketOutputStream = _socketOut;
 		m_socketInputStream = _socketIn;
+		
+		start();
 	}
 		
 	//! send buffer
@@ -65,6 +70,21 @@ class sendReceive extends Thread{
 		if(_sendImm){
 			SendBufferToSvr_imple(PrepareOutputData());
 		}
+	}
+	
+	public void CloseSendReceive(){
+		
+		if(m_closed = false){
+			m_closed = true;
+			
+			notify();
+			
+			while(isAlive()){
+				try{
+					Thread.sleep(10);
+				}catch(Exception _e){};			
+			}	
+		}		
 	}
 	
 	private synchronized byte[] PrepareOutputData()throws Exception{
@@ -123,11 +143,17 @@ class sendReceive extends Thread{
 		
 		try{
 			
-			SendBufferToSvr_imple(PrepareOutputData());
-			sleep(500);			
-		}catch(Exception _e){
-						
-		}
+			while(!m_closed){
+				SendBufferToSvr_imple(PrepareOutputData());
+				wait(500);
+			}
+			
+		}catch(Exception _e){}
+		
+		try{
+			m_socketOutputStream.close();
+			m_socketInputStream.close();	
+		}catch(Exception _e){}
 	}
 
 	//! recv buffer
@@ -290,6 +316,7 @@ class  fetchMail{
 	private Vector	m_vectAttachmentName = new Vector();
 	private Vector	m_vectAttachment= new Vector();
 	
+	private Message m_attachMessage	= null; 
 	
 	
 	public void SetMailIndex(int _index)throws Exception{
@@ -303,68 +330,35 @@ class  fetchMail{
 		return m_mailIndex;
 	}
 	
-	
-	
-	/*
-	public void ComposeMessage(Message msg)throws Exception{
+	public void SetAttchMessage(Message m){ m_attachMessage = m;}
+	public Message GetAttchMessage(){return m_attachMessage;}
 		
-		//msg.setFrom(new InternetAddress(fetchMain.sm_strUserNameFull));
-		
-		String t_addressList = new String();
-		
-	    msg.setRecipients(Message.RecipientType.TO,
-					InternetAddress.parse(parseAddressList(GetSendToVect()), false));
-	    if (!GetReplyToVect().isEmpty()){
-			msg.setRecipients(Message.RecipientType.CC,
-						InternetAddress.parse(parseAddressList(GetReplyToVect()), false));
-	    }
-	    
-	    if(!m_vectGroup.isEmpty()){
-	    	msg.setRecipients(Message.RecipientType.BCC,
-					InternetAddress.parse(parseAddressList(m_vectGroup), false));
-	    }
-		
-
-	    msg.setSubject(GetSubject());
-
-	    if(!GetAttachmentFilename().isEmpty()) {
-			// Attach the specified file.
-			// We need a multipart message to hold the attachment.
-		    	
-			MimeBodyPart t_containPart = new MimeBodyPart();
-			t_containPart.setText(GetContain());
-			
-			MimeMultipart t_mainPart = new MimeMultipart();
-			t_mainPart.addBodyPart(t_containPart);
-			
-			Vector t_filename = GetAttachmentFilename();
-			for(int i = 0;i< t_filename.size();i++){
-
-				MimeBodyPart t_filePart = new MimeBodyPart();
-				//t_filePart.attachFile((String)t_filename.elementAt(i));
-				
-				t_mainPart.addBodyPart(t_filePart);
-			}
-				
-			msg.setContent(t_mainPart);
-			
-	    } else {
-			// If the desired charset is known, you can use
-			// setText(text, charset)
-			msg.setText(GetContain());
-	    }
-
-	    msg.setHeader("X-Mailer",GetXMailer());
-	    msg.setSentDate(GetSendDate());
-	}
-	*/
-	
-	private static String parseAddressList(Vector _list)throws Exception{
-		String 	t_addressList = new String();
+	public static Address[] parseAddressList(Vector _list)throws Exception{
+		Address[] 	t_addressList = new Address[_list.size()];
 		
 		for(int i = 0;i < _list.size();i++){
-			t_addressList += _list.elementAt(i);
-			t_addressList += ",";
+			String add = (String)_list.elementAt(i);
+			String t_name = null;
+			
+			final int t_start =add.indexOf('<');
+			final int t_end = add.indexOf('>');
+			
+			final int t_start_quotation = add.indexOf('"');
+			final int t_end_quotation = add.indexOf('"',t_start_quotation + 1);
+			
+			if(t_start_quotation != -1 && t_end_quotation != -1 ){			
+				t_name = add.substring(t_start_quotation + 1, t_end_quotation);
+			}else{
+				t_name = "";
+			}
+			
+			if(t_start != -1 && t_end != -1 ){			
+				add = add.substring(t_start + 1, t_end);
+			}else{
+				t_name = "";
+			}
+			
+			t_addressList[i] = new Address(add,t_name);
 		}
 		
 		return t_addressList;
@@ -459,7 +453,7 @@ class  fetchMail{
 	}
 	
 	public Vector GetGroupVect(){return m_vectGroup;}
-	public void GetFromVect(String[] _group){
+	public void SetGroupVect(String[] _group){
 		m_vectGroup.removeAllElements();
 		for(int i = 0;i < _group.length;i++){
 			m_vectGroup.addElement(_group[i]);
@@ -485,19 +479,33 @@ class  fetchMail{
 		return m_vectAttachmentName;
 	}
 }
-
  
 class connectDeamon extends Thread{
 	
 	 sendReceive		m_connect = null;
-	 sendReceive		m_sendDeamon = null;
-	 HelloWorldScreen	m_screen = null;
+	 	 
+	 static HelloWorldScreen	m_screen = null;
 	 
 	 String				m_hostname;
 	 int				m_hostport;
 	 String				m_userPassword;
 	 
 	 FileConnection		m_keyfile;
+	 
+	 StreamConnection	m_conn = null;
+	 
+	 Vector				m_sendingMail = new Vector();
+	 
+	 boolean			m_disconnect = false;
+	 
+	 
+	 // read the email temporary variables
+	 //
+	 static private boolean			sm_hasSupportedAttachment = false;
+	 static private boolean			sm_hasUnsupportedAttachment = false;
+	 static private String				sm_plainTextContain = new String();
+	 static private String				sm_htmlTextContain = new String();
+	 
 	 
 	 public connectDeamon(HelloWorldScreen _screen,
 			 				String _host,
@@ -508,18 +516,7 @@ class connectDeamon extends Thread{
 		 m_hostname		= _host;
 		 m_hostport		= _port;
 		 m_userPassword = _userPassword;
-		 
-		 try{
-			 m_keyfile = (FileConnection) Connector.open("file:///SDCard/YuchBerry/YuchBerryKey",Connector.READ);
-			 if(!m_keyfile.exists()){
-				 Dialog.alert("can't open the \n\"file:///SDCard/YuchBerry/YuchBerryKey\"\n to input the SSL key file");
-				 System.exit(0);
-			 } 
-		 }catch(Exception _e){
-			 Dialog.alert("open the \n\"file:///SDCard/YuchBerry/YuchBerryKey\"\n error:\n"+_e.getMessage());
-			 System.exit(0);
-		 }	
-		 
+		 		 
 		 start();
 		 
 	 }
@@ -529,10 +526,9 @@ class connectDeamon extends Thread{
 		while(true){
 			
 			try{
-				StreamConnection conn = GetConnection(false);
-				
-				m_connect = new sendReceive(conn.openOutputStream(),conn.openInputStream());
-				m_connect.start();
+
+				m_conn = GetConnection(false);	
+				m_connect = new sendReceive(m_conn.openOutputStream(),m_conn.openInputStream());
 							
 				// send the Auth info
 				//
@@ -542,15 +538,50 @@ class connectDeamon extends Thread{
 				
 				m_connect.SendBufferToSvr(t_os.toByteArray(), true);
 				
+				// set the text connect
+				//
+				m_screen.m_stateText.setText("connected.");
 				
 				while(true){
 					ProcessMsg(m_connect.RecvBufferFromSvr());
 				}
 				
 			}catch(Exception _e){
-				 Dialog.alert("Exception: \n"+_e.getMessage());
+				m_screen.DialogAlert("yuchBerry Exception: \n"+ _e.getMessage());
 			}
-		}		 
+			
+			m_screen.m_stateText.setText("disconnected retry later...");
+			
+			try{
+				wait(10000);
+			}catch(Exception _e){
+				
+			}
+			
+			try{
+				m_conn.close();
+				m_connect.CloseSendReceive();				
+			}catch(Exception _e){}
+					
+			
+			if(m_disconnect == true){
+				break;
+			}
+		}
+		
+		m_screen.m_stateText.setText("disconnect");		
+	 }
+	 
+	 public synchronized void Disconnect()throws Exception{
+		 if(m_conn != null){
+			 
+			 m_disconnect = true;
+			 
+			 m_conn.close();
+			 m_conn = null;
+			 
+			 notify();
+		 }
 	 }
 	 
 	 private StreamConnection GetConnection(boolean _ssl)throws Exception{
@@ -558,9 +589,9 @@ class connectDeamon extends Thread{
 		 String URL ;
 		 
 		 if(_ssl){
-			 URL =  "ssl://" + m_hostname + ":" + m_hostport;
+			 URL =  "ssl://" + m_hostname + ":" + m_hostport + ";deviceside=true";
 		 }else{
-			 URL =  "socket://" + m_hostname + ":" + m_hostport;
+			 URL =  "socket://" + m_hostname + ":" + m_hostport + ";deviceside=true";
 		 }
 		 
 		 return (StreamConnection)Connector.open(URL);
@@ -573,14 +604,79 @@ class connectDeamon extends Thread{
 		 
 		 switch(t_msg_head){
 		 	case msg_head.msgMail:
-			 
+		 		final Message m = new Message();
+		 		
+		 		fetchMail t_mail = new fetchMail();
+		 		t_mail.InputMail(in);
+		 		ComposeMessage(m,t_mail);				
+				
+				try{
+					connectDeamon.ComposeMessage(m,t_mail);
+					Store store = Session.waitForDefaultSession().getStore();
+					Folder folder = store.getFolder(Folder.INBOX);
+					m.setInbound(true);
+					m.setStatus(Message.Status.RX_RECEIVED,1);
+					folder.appendMessage(m);					
+					
+				}catch(Exception _e){
+					m_screen.DialogAlert("ComposeMessage error :\n" + _e.getMessage());
+				}			
+						 		
+		 		break;
+		 	case msg_head.msgSendMail:
+		 		ProcessSentMail(in);
+		 		break;
+		 	case msg_head.msgNote:
+		 		String t_string = sendReceive.ReadString(in);
+		 		m_screen.DialogAlert(t_string);
+		 		break;
 		 }
 	 }
 	 
+	public synchronized void ProcessSentMail(ByteArrayInputStream in)throws Exception{
+		
+		long t_time = sendReceive.ReadInt(in);
+		t_time |= ((long)sendReceive.ReadInt(in) << 32);
+		
+		for(int i = 0;i< m_sendingMail.size();i++){
+			fetchMail t_sending = (fetchMail)m_sendingMail.elementAt(i);
+			if(t_sending.GetSendDate().getTime() == t_time){
+				
+				t_sending.GetAttchMessage().setStatus(Message.Status.TX_SENT, 1);
+				m_sendingMail.removeElementAt(i);
+				
+				break;
+			}
+		}
+	}
+	 
+	public synchronized void AddSendingMail(fetchMail _mail)throws Exception{
+			
+		
+		for(int i = 0;i < m_sendingMail.size();i++){
+			fetchMail t_sending = (fetchMail)m_sendingMail.elementAt(i);
+			if(t_sending.GetSendDate().equals(_mail.GetSendDate())){
+				return;				 
+			}
+		}
+		 
+		m_sendingMail.addElement(_mail);
+		
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgMail);
+		_mail.OutputMail(os);
+		
+		m_connect.SendBufferToSvr(os.toByteArray(), false);
+		
+	}
+	
 
+	
 	static public void ImportMail(Message m,fetchMail _mail)throws Exception{
 		
-		Address[] a;
+		_mail.SetAttchMessage(m);
+		
+		Address[] a;		
 		
 		// FROM 
 		if (m.getFrom() != null) {
@@ -604,8 +700,7 @@ class connectDeamon extends Thread{
 		    for (int j = 0; j < a.length; j++) {
 		    	_mail.GetSendToVect().addElement(a[j].toString());
 		    }
-		}
-		
+		}		
 		
 		_mail.SetSubject(m.getSubject());
 		_mail.SetSendDate(m.getSentDate());
@@ -629,82 +724,182 @@ class connectDeamon extends Thread{
 		
 		_mail.GetAttachmentFilename().removeAllElements();
 		_mail.GetAttachment().removeAllElements();
-		_mail.SetContain("");
 		
-		ImportPart(m,_mail);	
+		sm_plainTextContain = "";
+		sm_htmlTextContain	= "";
+		
+		findEmailBody(m,_mail);
+		
+		_mail.SetContain(sm_plainTextContain + sm_htmlTextContain); 
 	}
 	
 	
-	static private void ImportPart(Part p,fetchMail _mail)throws Exception{
+	static private void findEmailBody(Object obj,fetchMail _mail)throws Exception{
+
+	   //Reset the attachment flags.
+	   sm_hasSupportedAttachment = false;
+	   sm_hasUnsupportedAttachment = false;
+		   
+	   if(obj instanceof Multipart)
+	   {
+	      Multipart mp = (Multipart)obj;
+	    
+	      for(int count=0; count < mp.getCount(); ++count)
+	      {
+	        findEmailBody(mp.getBodyPart(count),_mail);
+	      }
+	   }
+	   else if (obj instanceof TextBodyPart)
+	   {
+	      TextBodyPart tbp = (TextBodyPart) obj;
+	      readEmailBody(tbp,_mail);
+	   }
+	   else if (obj instanceof MimeBodyPart)
+	   {
+		   MimeBodyPart mbp = (MimeBodyPart)obj;
+		   
+	      if (mbp.getContentType().indexOf(ContentType.TYPE_TEXT_HTML_STRING) != -1)
+	      {
+	        readEmailBody(mbp,_mail);
+	      }
+	      else if (mbp.getContentType().equals(ContentType.TYPE_MULTIPART_MIXED_STRING) ||
+				   mbp.getContentType().equals(ContentType.TYPE_MULTIPART_ALTERNATIVE_STRING))
+		   {    
+		      //The message has attachments or we are at the top level of the message.
+			   //Extract all of the parts within the MimeBodyPart message.
+		      findEmailBody(mbp.getContent(),_mail);
+		   }
+	   }	   
+	   else if (obj instanceof SupportedAttachmentPart)  
+	   {
+	      sm_hasSupportedAttachment = true;
+	   }
 	
+	   else if (obj instanceof UnsupportedAttachmentPart) 
+	   {
+	      sm_hasUnsupportedAttachment = true;
+	   }
 		
-		String t_getContain = _mail.GetContain();
-		/*
-		 * Using isMimeType to determine the content type avoids
-		 * fetching the actual content data until we need it.
-		 */
-		if (p.isMimeType("text/plain")) {
-			
-		    try{
-		    	t_getContain += (String)p.getContent();
-		    }catch(Exception e){
-		    	t_getContain += "cant decode content " + e.getMessage();
-		    }	    
-		    
-		} else if (p.isMimeType("multipart/*")) {
-			
-		    Multipart mp = (Multipart)p.getContent();
-		    int count = mp.getCount();
-		    
-		    for (int i = 0; i < count; i++){
-		    	ImportPart(mp.getBodyPart(i),_mail);
-		    }
-		    
-		} else if (p.isMimeType("message/rfc822")) {
+	}
+	
+	static private void readEmailBody(MimeBodyPart mbp,fetchMail _mail)
+	{
+	   //Extract the content of the message.
+	   Object obj = mbp.getContent();
+	   String mimeType = mbp.getContentType();
+	   String body = null;
+   
+	   if (obj instanceof String)
+	   {
+	      body = (String)body;
+	   }
+	   else if (obj instanceof byte[])
+	   {
+	      body = new String((byte[])obj);
+	   }
 
-			ImportPart((Part)p.getContent(),_mail);
-		} else {
-			/*
-			 * If we actually want to see the data, and it's not a
-			 * MIME type we know, fetch it and check its Java type.
-			 */
-			Object o = p.getContent();
-			
-			if (o instanceof String) {
-			    
-			    t_getContain += (String)o;
-			    
-			} else if (o instanceof InputStream) {
+	   if (mimeType.indexOf(ContentType.TYPE_TEXT_PLAIN_STRING) != -1)
+	   {
+		   
+		  sm_plainTextContain.concat(body);
 
-			    InputStream is = (InputStream)o;
-			    int c;
-			    while ((c = is.read()) != -1){
-			    	//System.out.write(c);
-			    	t_getContain += c;
-			    }
-			} else {
-				t_getContain += o.toString();
-			}			
-		}
+	      //Determine if all of the text body part is present.
+	      if (mbp.hasMore() && !mbp.moreRequestSent())
+	      {
+	         try
+	         {
+	            Transport.more((BodyPart)mbp, true);
+	         }
+	         catch (Exception ex)
+	         {
+	        	 m_screen.DialogAlert("Exception: " + ex.toString());
+	         }
+	      }
+	   }
+	  
+	   else if (mimeType.indexOf(ContentType.TYPE_TEXT_HTML_STRING) != -1)
+	   {
+		   sm_htmlTextContain.concat(body);
 
-		/*
-		 * If we're saving attachments, write out anything that
-		 * looks like an attachment into an appropriately named
-		 * file.  Don't overwrite existing files to prevent
-		 * mistakes.
-		 */
-		if (p instanceof SupportedAttachmentPart){
+	      //Determine if all of the HTML body part is present.
+	      if (mbp.hasMore() && !mbp.moreRequestSent())
+	      {
+	         try
+	         {
+	            Transport.more((BodyPart)mbp, true);
+	         }
+	         catch (Exception ex)
+	         { 
+	        	 m_screen.DialogAlert("Exception: " + ex.toString());
+	         }
+	      }
+	   }
+	}
+	
+	static private void readEmailBody(TextBodyPart tbp,fetchMail _mail)
+	{
+		sm_plainTextContain.concat((String)tbp.getContent());
+
+	   if (tbp.hasMore() && !tbp.moreRequestSent())
+	   {
+	      try
+	      {
+	         Transport.more((BodyPart)tbp, true);
+	      }
+	      catch (Exception ex)
+	      {
+	    	  m_screen.DialogAlert("Exception: " + ex.toString());
+	      }
+	   }
+	}
+	
+	static public void ComposeMessage(Message msg,fetchMail _mail)throws Exception{
+		
+		msg.setFrom(fetchMail.parseAddressList(_mail.GetFromVect())[0]);
+				
+	    msg.addRecipients(Message.RecipientType.TO,
+	    				fetchMail.parseAddressList(_mail.GetSendToVect()));
+	    
+	    if (!_mail.GetReplyToVect().isEmpty()){
+	    	  msg.addRecipients(Message.RecipientType.CC,
+	    				fetchMail.parseAddressList(_mail.GetReplyToVect()));
+	    }
+	    
+	    if(!_mail.GetGroupVect().isEmpty()){
+	    	 msg.addRecipients(Message.RecipientType.BCC,
+	    				fetchMail.parseAddressList(_mail.GetGroupVect()));
+	    }
+		
+
+	    msg.setSubject(_mail.GetSubject());
+
+	    if(!_mail.GetAttachmentFilename().isEmpty()) {
+
+	    	Multipart multipart = new Multipart();
+	    	
+	    	TextBodyPart t_text = new TextBodyPart(multipart,_mail.GetContain());
+	    	multipart.addBodyPart(t_text);
+	    	
+	    	Vector t_filename = _mail.GetAttachmentFilename();
+			Vector t_contain = _mail.GetAttachment();
 			
-			Vector t_vectName = _mail.GetAttachmentFilename();
-			Vector t_vectByte = _mail.GetAttachment();
-			
-			t_vectName.addElement(((SupportedAttachmentPart) p).getName());
-			
-			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-			p.writeTo(t_os);
-			
-			t_vectByte.addElement(t_os.toByteArray());
-		}
+	    	for(int i = 0;i< t_contain.size();i++){
+	    		SupportedAttachmentPart attach = new SupportedAttachmentPart( multipart,
+						"application/x-example", (String)t_filename.elementAt(i), (byte[])t_contain.elementAt(i));
+	    		
+	    		multipart.addBodyPart(attach);
+	    	}
+	    	
+	    	msg.setContent(multipart);
+				
+	    } else {
+	    		    	
+			msg.setContent(_mail.GetContain());
+	    }
+
+	    msg.setHeader("X-Mailer",_mail.GetXMailer());
+	    msg.setSentDate(_mail.GetSendDate());	    
+	    
 	}
 	 
 }
@@ -725,14 +920,14 @@ public class recvMain extends UiApplication {
 final class HelloWorldScreen extends MainScreen implements FieldChangeListener,SendListener{
 										
         
-        EditField                       m_hostName              = null;
-        EditField						m_hostport				= null;
-        EditField                       m_userPassword              = null;
+        EditField                       m_hostName      = null;
+        EditField						m_hostport		= null;
+        EditField                       m_userPassword  = null;
         
         ButtonField                     m_connectBut    = null;
-        LabelField                      m_stateText             = null;
+        LabelField                      m_stateText     = null;
         
-        connectDeamon					m_connectDeamon;       
+        connectDeamon					m_connectDeamon	= null;       
         
         
     public HelloWorldScreen() {
@@ -756,7 +951,7 @@ final class HelloWorldScreen extends MainScreen implements FieldChangeListener,S
         m_hostName.setChangeListener(this);
         add(m_hostName);
         
-        m_hostport = new EditField("hostname:","",5, EditField.FILTER_INTEGER);
+        m_hostport = new EditField("port:","",5, EditField.FILTER_INTEGER);
         m_hostport.setChangeListener(this);
         add(m_hostport);
         
@@ -779,28 +974,39 @@ final class HelloWorldScreen extends MainScreen implements FieldChangeListener,S
         
     }
     
+    public void DialogAlert(final String _msg){
+    	
+    	UiApplication.getUiApplication().invokeLater(new Runnable() 
+		{
+		    public void run() {
+		       Dialog.alert(_msg);
+		    }
+		});
+    	
+    }
+    
     public boolean sendMessage(Message message){
-    	
-    	fetchMail t_mail = new fetchMail();
-    	try{
-    		connectDeamon.ImportMail(message, t_mail);
-    		Dialog.alert(t_mail.GetFromVect().elementAt(0).toString() + 
-    					" send to " + 
-    					t_mail.GetSendToVect().elementAt(0).toString());
-    		
-    	}catch(Exception _e){
-    	
-    		return false;
+    	if(m_connectDeamon != null){
+
+        	fetchMail t_mail = new fetchMail();
+        	try{
+        		connectDeamon.ImportMail(message, t_mail);
+        		t_mail.SetSendDate(new Date());
+        		
+        		message.setStatus(Message.Status.TX_SENDING,1);
+        		m_connectDeamon.AddSendingMail(t_mail);
+        		
+        	}catch(Exception _e){
+
+        		return false;
+        	}	
     	}
     	
     	return true;
     }
-    
-    public synchronized void InvokeMail(fetchMail _mail){
-    	
-    }
-      
+          
     public boolean onClose() {
+    	
         return true;
     }
         
@@ -809,20 +1015,43 @@ final class HelloWorldScreen extends MainScreen implements FieldChangeListener,S
 			// Perform action if user changed field. 
 			//
 			if(field == m_connectBut){
-				if(m_hostName.getText().length() == 0 
+				
+				if(/*m_hostName.getText().length() == 0 
 					|| m_userPassword.getText().length() == 0
-					|| m_hostport.getText().length() == 0){
+					|| m_hostport.getText().length() == 0*/false){
+					
 					Dialog.alert("the host name or port or user password is null");
 					
-					m_connectDeamon = new connectDeamon(this,
-														m_hostName.getText(),
-														Integer.valueOf(m_hostport.getText()).intValue(),
-														m_userPassword.getText());
 					return;
 				}
 				
-				m_stateText.setText("connect....");
-				
+				if(m_connectDeamon != null){
+					
+					try{
+						m_connectDeamon.Disconnect();
+					}catch(Exception _e){}
+					
+					m_connectDeamon = null;
+					
+					m_connectBut.setLabel("connect");
+					m_stateText.setText("disconnect");
+					
+				}else{
+
+//					m_connectDeamon = new connectDeamon(this,
+//														m_hostName.getText(),
+//														Integer.valueOf(m_hostport.getText()).intValue(),
+//														m_userPassword.getText());
+					
+					m_connectDeamon = new connectDeamon(this,
+														"192.168.10.20",
+														9716,
+														"111111");
+					
+					m_stateText.setText("connect....");
+					
+					m_connectBut.setLabel("disconnect");				
+				}				
 			}
         }else{
         	// Perform action if application changed field.

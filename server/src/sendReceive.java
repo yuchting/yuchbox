@@ -6,18 +6,21 @@ import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-
-class sendReceive extends Thread{
+public class sendReceive extends Thread{
 	
 	OutputStream		m_socketOutputStream = null;
 	InputStream			m_socketInputStream = null;
 	
 	private Vector		m_unsendedPackage 		= new Vector();
 	private Vector		m_unprocessedPackage 	= new Vector();
+	
+	boolean			m_closed				= false;
 		
 	public sendReceive(OutputStream _socketOut,InputStream _socketIn){
 		m_socketOutputStream = _socketOut;
 		m_socketInputStream = _socketIn;
+		
+		start();
 	}
 		
 	//! send buffer
@@ -27,6 +30,21 @@ class sendReceive extends Thread{
 		if(_sendImm){
 			SendBufferToSvr_imple(PrepareOutputData());
 		}
+	}
+	
+	public void CloseSendReceive(){
+		
+		if(m_closed = false){
+			m_closed = true;
+			
+			notify();
+			
+			while(isAlive()){
+				try{
+					Thread.sleep(10);
+				}catch(Exception _e){};			
+			}	
+		}		
 	}
 	
 	private synchronized byte[] PrepareOutputData()throws Exception{
@@ -85,11 +103,17 @@ class sendReceive extends Thread{
 		
 		try{
 			
-			SendBufferToSvr_imple(PrepareOutputData());
-			sleep(500);			
-		}catch(Exception _e){
-						
-		}
+			while(!m_closed){
+				SendBufferToSvr_imple(PrepareOutputData());
+				wait(500);
+			}
+			
+		}catch(Exception _e){}
+		
+		try{
+			m_socketOutputStream.close();
+			m_socketInputStream.close();	
+		}catch(Exception _e){}
 	}
 
 	//! recv buffer

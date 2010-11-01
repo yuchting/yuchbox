@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.security.KeyStore;
 import java.text.SimpleDateFormat;
@@ -15,6 +16,7 @@ import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import javax.mail.Address;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -23,8 +25,20 @@ import javax.net.ssl.SSLSocketFactory;
 
 class Inte{
 	int m_value;
+	
+	String m_test = new String();
 	Inte(int _val){
 		m_value = _val;
+	}
+	
+	String GetVector(){
+		return m_test;
+	}
+	
+	void p(){
+		//for(int i = 0;i < m_test.size();i++){
+			HelloWorld.prt((String)m_test);
+		//}
 	}
 }
 /*!
@@ -46,7 +60,14 @@ public class HelloWorld {
 	public void berrySendTest(){
 		
 		try{
-			sendReceive t_receive = new sendReceive(new FileInputStream(new File("YuchBerryKey")),"111111","localhost",9716);
+			
+			Socket t_socket = GetSocketServer("111111","localhost",9716,false);
+			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
+			
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			os.write(msg_head.msgConfirm);
+			sendReceive.WriteString(os, "111111");
+			t_receive.SendBufferToSvr(os.toByteArray(), false);
 			
 			fetchMail t_mail = new fetchMail();
 			
@@ -62,8 +83,8 @@ public class HelloWorld {
 			t_mail.AddAttachment("HelloWorld.jar", readFileBuffer("HelloWorld.jar"));
 			t_mail.AddAttachment("YuchBerryKey", readFileBuffer("YuchBerryKey"));
 			
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			
+			os.close();
 			os.write(msg_head.msgMail);
 			t_mail.OutputMail(os);		
 			
@@ -94,8 +115,8 @@ public class HelloWorld {
 	public void berryRecvTest(){
 		try{
 			
-			//Socket t_socket = GetSocketServer();
-			sendReceive t_receive = new sendReceive(new FileInputStream(new File("YuchBerryKey")),"111111","localhost",9716);
+			Socket t_socket = GetSocketServer("111111","localhost",9716,false);
+			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
 			
 			while(true){
 
@@ -133,7 +154,52 @@ public class HelloWorld {
 		}
 	}
 	
+	public void test4(){
+		Vector t_list = new Vector();
+		t_list.addElement("\"yuch\"<yuchting@gmail.com>");
+		t_list.addElement("yuch<yuchting@gmail.com>");
+		t_list.addElement("\"yuch\"");
+		try{
+			String[] t_add = parseAddressList(t_list);
+			for(int i = 0;i < t_add.length;i++){
+				prt(t_add[i]);				
+			}
+		}catch(Exception _e){
+			
+		}
+		
+	}
 	
+	public static String[] parseAddressList(Vector _list)throws Exception{
+		String[] 	t_addressList = new String[_list.size()];
+		
+		for(int i = 0;i < _list.size();i++){
+			String add = (String)_list.elementAt(i);
+			String t_name = null;
+			
+			final int t_start =add.indexOf('<');
+			final int t_end = add.indexOf('>');
+			
+			final int t_start_quotation = add.indexOf('"');
+			final int t_end_quotation = add.indexOf('"',t_start_quotation + 1);
+			
+			if(t_start_quotation != -1 && t_end_quotation != -1 ){			
+				t_name = add.substring(t_start_quotation + 1, t_end_quotation);
+			}else{
+				t_name = "";
+			}
+			
+			if(t_start != -1 && t_end != -1 ){			
+				add = add.substring(t_start + 1, t_end);
+			}else{
+				t_name = "";
+			}
+			
+			t_addressList[i] = add + t_name;
+		}
+		
+		return t_addressList;
+	}
 
 	public void test3(){
 		
@@ -220,7 +286,7 @@ public class HelloWorld {
 	public void test(){
 		try{
 			int t_version = 5000;
-			Vector<String> temp = new Vector<String>();
+			Vector temp = new Vector();
 			for(int i = 0;i < 5;i++){				
 				temp.addElement(new String("input " + Math.random()));
 			}
@@ -232,7 +298,7 @@ public class HelloWorld {
 			ByteArrayInputStream t_stream1 = new ByteArrayInputStream(t_stream.toByteArray());
 			
 			int t_version1 = 0;
-			Vector<String> temp1 = new Vector<String>();
+			Vector temp1 = new Vector();
 			
 			t_version1 = ReadInt(t_stream1);
 			ReadStringVector(t_stream1,temp1);
@@ -240,42 +306,67 @@ public class HelloWorld {
 			
 			prt("version " + t_version1);
 			for(int i = 0;i < temp1.size();i++){
-				prt(temp1.get(i));
+				prt((String)temp1.elementAt(i));
 			}
 		}catch(Exception _e){
 			prt(_e.getMessage());
 			_e.printStackTrace();
 		}
 	}
-	private void WriteStringVector(OutputStream _stream,Vector<String> _vect)throws Exception{
+	
+	public static Socket GetSocketServer(String _userPassword,String _host,int _port,boolean _ssl)throws Exception{
+		
+		if(_ssl){
+
+			String	key				= "YuchBerryKey";  
+			
+			char[] keyStorePass		= _userPassword.toCharArray();
+			char[] keyPassword		= _userPassword.toCharArray();
+			
+			KeyStore ks				= KeyStore.getInstance(KeyStore.getDefaultType());
+			
+			ks.load(new FileInputStream(key),keyStorePass);
+			
+			KeyManagerFactory kmf	= KeyManagerFactory.getInstance("SunX509");
+			kmf.init(ks,keyPassword);
+			
+			SSLContext sslContext = SSLContext.getInstance("SSLv3");
+			sslContext.init(kmf.getKeyManagers(),null,null);
+			  
+			SSLSocketFactory factory=sslContext.getSocketFactory();
+			
+			return factory.createSocket(_host,_port);
+			
+		}else{
+			
+			return new Socket(InetAddress.getByName(_host),_port); 
+		}	  
+	}
+	
+	// static function to input and output integer
+	//
+	static public void WriteStringVector(OutputStream _stream,Vector _vect)throws Exception{
 		
 		final int t_size = _vect.size();
 		_stream.write(t_size);
 		
 		for(int i = 0;i < t_size;i++){
-			WriteString(_stream,_vect.get(i));
+			WriteString(_stream,(String)_vect.elementAt(i));
 		}
 	}
-
-	private int ReadInt(InputStream _stream)throws Exception{
-		return _stream.read() | (_stream.read() << 8) | (_stream.read() << 16) | (_stream.read() << 24);
-	}
-
-	private void WriteInt(OutputStream _stream,int _val)throws Exception{
-		_stream.write(_val);
-		_stream.write(_val >>> 8 );
-		_stream.write(_val >>> 16);
-		_stream.write(_val >>> 24);
+	
+	static public void WriteString(OutputStream _stream,String _string)throws Exception{
+		final byte[] t_strByte = _string.getBytes();
+		WriteInt(_stream,t_strByte.length);
+		if(t_strByte.length != 0){
+			_stream.write(t_strByte);
+		}
 	}
 	
-	private void WriteString(OutputStream _stream,String _string)throws Exception{
-		WriteInt(_stream,_string.length());
-		_stream.write(_string.getBytes());
-	}
 		
-	private void ReadStringVector(InputStream _stream,Vector<String> _vect)throws Exception{
+	static public void ReadStringVector(InputStream _stream,Vector _vect)throws Exception{
 		
-		_vect.clear();
+		_vect.removeAllElements();
 		
 		int t_size = 0;
 		t_size = _stream.read();
@@ -285,12 +376,29 @@ public class HelloWorld {
 		}
 	}
 	
-	private String ReadString(InputStream _stream)throws Exception{
+	static public String ReadString(InputStream _stream)throws Exception{
 		
-		byte[] t_buffer = new byte[ReadInt(_stream)];
+		final int len = ReadInt(_stream);
+		if(len != 0){
+			byte[] t_buffer = new byte[len];
+			
+			_stream.read(t_buffer);	
+			return new String(t_buffer);
+		}
 		
-		_stream.read(t_buffer);	
-		return new String(t_buffer);
+		return new String("");
+		
+	}
+	
+	static public int ReadInt(InputStream _stream)throws Exception{
+		return _stream.read() | (_stream.read() << 8) | (_stream.read() << 16) | (_stream.read() << 24);
+	}
+
+	static public void WriteInt(OutputStream _stream,int _val)throws Exception{
+		_stream.write(_val);
+		_stream.write(_val >>> 8 );
+		_stream.write(_val >>> 16);
+		_stream.write(_val >>> 24);
 	}
 	
 	static void prt(String s) {

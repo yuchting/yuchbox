@@ -37,16 +37,24 @@ class berrySvrPush extends Thread{
 		m_serverDeamon = _svrDeamon;
 		m_sendReceive = new sendReceive(m_serverDeamon.m_socket.getOutputStream(),
 										m_serverDeamon.m_socket.getInputStream());
-		m_sendReceive.start();
+		
+		start();
 	}
 	
 	public void run(){
 		
-		while(m_serverDeamon.isAlive() && m_serverDeamon.m_socket.isConnected()){
+		while(true){
 			
 			try{
 				m_serverDeamon.m_fetchMgr.CheckFolder();
-				sleep(fetchMain.sm_pushInterval);
+								
+				if(!m_serverDeamon.isAlive() 
+					|| !m_serverDeamon.m_socket.isConnected()){
+					
+					break;
+				}
+								
+				wait(fetchMain.sm_pushInterval);
 
 				Vector t_unreadMailVector = m_serverDeamon.m_fetchMgr.m_unreadMailVector;
 				for(int i = 0;i < t_unreadMailVector.size();i++){
@@ -57,14 +65,19 @@ class berrySvrPush extends Thread{
 					t_output.write(msg_head.msgMail);
 					t_mail.OutputMail(t_output);
 					
-					m_sendReceive.SendBufferToSvr(t_output.toByteArray(),false);					
+					berrySvrDeamon.prt("CheckFolder OK and send mail!");
+					
+					m_sendReceive.SendBufferToSvr(t_output.toByteArray(),false);				
 				}				
 				
 			}catch(Exception _e){
+				_e.printStackTrace();
 				break;
 			}
 			
 		}
+		
+		m_sendReceive.CloseSendReceive();
 	}
 	
 }
@@ -76,31 +89,48 @@ class berrySvrDeamon extends Thread{
 	
 	private berrySvrPush m_pushDeamon = null;
 	private sendReceive  m_sendReceive = null;
-	
+		
 	boolean m_confirmConnect	= false;
+	
 		
 	public berrySvrDeamon(Socket _s,fetchMgr _mgr)throws Exception{
 		m_fetchMgr 	= _mgr;
 		m_socket	= _s;
+
+		try{
+			m_pushDeamon = new berrySvrPush(this);
+			
+			m_sendReceive = new sendReceive(m_socket.getOutputStream(),m_socket.getInputStream());	
+		}catch(Exception _e){
+			prt("construct berrySvrDeamon error " + _e.getMessage());
+			_e.printStackTrace();
+			throw _e;
+		}finally{
+			if(m_sendReceive != null){
+				m_sendReceive.CloseSendReceive();
+			}
+		}
 		
 		start();
 		
-		m_pushDeamon = new berrySvrPush(this);
-		m_pushDeamon.start();
-		
-		m_sendReceive = new sendReceive(m_socket.getOutputStream(),m_socket.getInputStream());
-		m_sendReceive.start();
+		prt("some client connect");
 	}
+	
+	static void prt(String s) {
+		System.out.println(s);
+	}
+	
 	
 	public void run(){
 		
 		// loop
 		//
 		while(true){
+			
 			if(!m_fetchMgr.IsConnected()){
 				break;
 			}
-		
+			
 			// process....
 			//
 			try{
@@ -113,12 +143,14 @@ class berrySvrDeamon extends Thread{
 				try{
 					m_socket.close();
 				}catch(Exception e){
-					//prt(e.getMessage());
+					prt(e.getMessage());
 					e.printStackTrace();
 				}
 				
-				//sendReceive.prt(_e.getMessage());
-				_e.printStackTrace();
+				m_sendReceive.CloseSendReceive();
+				
+				prt(_e.getMessage());
+				_e.printStackTrace();				
 				
 				break;
 			}
@@ -134,7 +166,14 @@ class berrySvrDeamon extends Thread{
 		if(m_confirmConnect == false){
 			if(msg_head.msgConfirm != t_msg_head 
 			|| !sendReceive.ReadString(in).equals(fetchMain.sm_strUserPassword)){
-				throw new Exception("illegal client connect");
+				
+				ByteArrayOutputStream os = new ByteArrayOutputStream ();
+				os.write(msg_head.msgNote);
+				sendReceive.WriteString(os, msg_head.noteErrorUserPassword);
+				
+				m_sendReceive.SendBufferToSvr(os.toByteArray(), true);
+				
+				throw new Exception( msg_head.noteErrorUserPassword);				
 			}
 			
 			m_confirmConnect = true;
@@ -161,7 +200,8 @@ class berrySvrDeamon extends Thread{
 		// receive send message to berry
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		os.write(msg_head.msgSendMail);
-		sendReceive.WriteInt(os,t_mail.GetMailIndex());
+		sendReceive.WriteInt(os,(int)t_mail.GetSendDate().getTime());
+		sendReceive.WriteInt(os,(int)(t_mail.GetSendDate().getTime() >>> 32));
 		
 		m_sendReceive.SendBufferToSvr(os.toByteArray(),false);
 	}
@@ -279,6 +319,8 @@ class fetchMgr{
     	//
     	//
     	ServerSocket t_svr = GetSocketServer(m_userPassword,false);
+    	
+    	berrySvrDeamon.prt("prepare account OK");
     	    	
 		while(true){
 			try{

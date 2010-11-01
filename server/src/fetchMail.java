@@ -69,6 +69,7 @@ public class  fetchMail{
 	
 	
 	
+	
 	public void OutputMail(OutputStream _stream)throws Exception{
 		
 		_stream.write(VERSION);
@@ -158,7 +159,7 @@ public class  fetchMail{
 	}
 	
 	public Vector GetGroupVect(){return m_vectGroup;}
-	public void GetFromVect(String[] _group){
+	public void SetGroupVect(String[] _group){
 		m_vectGroup.removeAllElements();
 		for(int i = 0;i < _group.length;i++){
 			m_vectGroup.addElement(_group[i]);
