@@ -37,11 +37,9 @@ public class sendReceive extends Thread{
 		if(m_closed = false){
 			m_closed = true;
 			
-			notify();
-			
 			while(isAlive()){
 				try{
-					Thread.sleep(10);
+					sleep(10);
 				}catch(Exception _e){};			
 			}	
 		}		
@@ -77,6 +75,7 @@ public class sendReceive extends Thread{
 		
 		OutputStream os = m_socketOutputStream;
 		
+		
 		ByteArrayOutputStream zos = new ByteArrayOutputStream();
 		GZIPOutputStream zo = new GZIPOutputStream(zos);
 		zo.write(_write);
@@ -105,7 +104,7 @@ public class sendReceive extends Thread{
 			
 			while(!m_closed){
 				SendBufferToSvr_imple(PrepareOutputData());
-				wait(500);
+				sleep(500);
 			}
 			
 		}catch(Exception _e){}
@@ -244,4 +243,7 @@ public class sendReceive extends Thread{
 		_stream.write(_val >>> 24);
 	}
 	
+	static void prt(String s) {
+		System.out.println(s);
+	}
 }

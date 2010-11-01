@@ -49,16 +49,14 @@ class berrySvrPush extends Thread{
 				m_serverDeamon.m_fetchMgr.CheckFolder();
 								
 				if(!m_serverDeamon.isAlive() 
-					|| !m_serverDeamon.m_socket.isConnected()){
+				|| !m_serverDeamon.m_socket.isConnected()){
 					
 					break;
 				}
-								
-				wait(fetchMain.sm_pushInterval);
 
 				Vector t_unreadMailVector = m_serverDeamon.m_fetchMgr.m_unreadMailVector;
-				for(int i = 0;i < t_unreadMailVector.size();i++){
-					fetchMail t_mail = (fetchMail)t_unreadMailVector.elementAt(i); 
+				while(!t_unreadMailVector.isEmpty()){
+					fetchMail t_mail = (fetchMail)t_unreadMailVector.elementAt(0); 
 					
 					ByteArrayOutputStream t_output = new ByteArrayOutputStream();
 					
@@ -67,8 +65,12 @@ class berrySvrPush extends Thread{
 					
 					berrySvrDeamon.prt("CheckFolder OK and send mail!");
 					
-					m_sendReceive.SendBufferToSvr(t_output.toByteArray(),false);				
-				}				
+					m_sendReceive.SendBufferToSvr(t_output.toByteArray(),false);
+					
+					t_unreadMailVector.remove(0);
+				}
+				
+				sleep(fetchMain.sm_pushInterval);
 				
 			}catch(Exception _e){
 				_e.printStackTrace();
@@ -137,6 +139,7 @@ class berrySvrDeamon extends Thread{
 									
 				byte[] t_package = m_sendReceive.RecvBufferFromSvr();
 				
+				prt("receive package length:" + t_package.length);
 				ProcessPackage(t_package);
 				
 			}catch(Exception _e){
@@ -177,6 +180,8 @@ class berrySvrDeamon extends Thread{
 			}
 			
 			m_confirmConnect = true;
+			
+			return;
 		}
 		
 		switch(t_msg_head){			
@@ -184,7 +189,7 @@ class berrySvrDeamon extends Thread{
 				ProcessMail(in);
 				break;
 			case msg_head.msgSendMail:
-				m_fetchMgr.SetBeginFetchIndex(sendReceive.ReadInt(in) + 1);
+				m_fetchMgr.SetBeginFetchIndex(sendReceive.ReadInt(in));
 				break;
 			default:
 				throw new Exception("illegal client connect");
@@ -347,13 +352,13 @@ class fetchMgr{
 	}
 	
 	public synchronized void SetBeginFetchIndex(int _index){
-		m_beginFetchIndex = _index;
+		m_beginFetchIndex = _index + 1;
 		
 		try{
 			
 			Properties p = new Properties(); 
 			p.load(new FileInputStream("config.ini"));
-			p.setProperty("userFetchIndex",Integer.toString(_index));
+			p.setProperty("userFetchIndex",Integer.toString(m_beginFetchIndex));
 			
 			p.save(new FileOutputStream("config.ini"), "");
 			p.clear();

@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.Vector;
 
 import javax.microedition.io.Connector;
+import javax.microedition.io.SocketConnection;
 import javax.microedition.io.StreamConnection;
 import javax.microedition.io.file.FileConnection;
 
@@ -76,12 +77,10 @@ class sendReceive extends Thread{
 		
 		if(m_closed = false){
 			m_closed = true;
-			
-			notify();
-			
+	
 			while(isAlive()){
 				try{
-					Thread.sleep(10);
+					sleep(10);
 				}catch(Exception _e){};			
 			}	
 		}		
@@ -145,7 +144,7 @@ class sendReceive extends Thread{
 			
 			while(!m_closed){
 				SendBufferToSvr_imple(PrepareOutputData());
-				wait(500);
+				sleep(500);
 			}
 			
 		}catch(Exception _e){}
@@ -492,7 +491,7 @@ class connectDeamon extends Thread{
 	 
 	 FileConnection		m_keyfile;
 	 
-	 StreamConnection	m_conn = null;
+	 SocketConnection	m_conn = null;
 	 
 	 Vector				m_sendingMail = new Vector();
 	 
@@ -553,16 +552,13 @@ class connectDeamon extends Thread{
 			m_screen.m_stateText.setText("disconnected retry later...");
 			
 			try{
-				wait(10000);
-			}catch(Exception _e){
-				
-			}
+				sleep(10000);
+			}catch(Exception _e){}
 			
 			try{
 				m_conn.close();
 				m_connect.CloseSendReceive();				
 			}catch(Exception _e){}
-					
 			
 			if(m_disconnect == true){
 				break;
@@ -573,18 +569,17 @@ class connectDeamon extends Thread{
 	 }
 	 
 	 public synchronized void Disconnect()throws Exception{
-		 if(m_conn != null){
-			 
-			 m_disconnect = true;
-			 
+		 
+		 m_disconnect = true;
+		 
+		 if(m_conn != null){			 
 			 m_conn.close();
-			 m_conn = null;
-			 
-			 notify();
+			 m_connect.CloseSendReceive();
+			 m_conn = null;			 
 		 }
 	 }
 	 
-	 private StreamConnection GetConnection(boolean _ssl)throws Exception{
+	 private SocketConnection GetConnection(boolean _ssl)throws Exception{
 		 
 		 String URL ;
 		 
@@ -594,7 +589,15 @@ class connectDeamon extends Thread{
 			 URL =  "socket://" + m_hostname + ":" + m_hostport + ";deviceside=true";
 		 }
 		 
-		 return (StreamConnection)Connector.open(URL);
+		 SocketConnection socket = (SocketConnection)Connector.open(URL,Connector.READ_WRITE,false);
+		 
+		 socket.setSocketOption(SocketConnection.DELAY, 0);
+		 socket.setSocketOption(SocketConnection.LINGER, 0);
+		 socket.setSocketOption(SocketConnection.KEEPALIVE, 2);
+		 socket.setSocketOption(SocketConnection.RCVBUF, 128);
+		 socket.setSocketOption(SocketConnection.SNDBUF, 128);
+		 
+		 return socket;
 	 }
 	 
 	 private void ProcessMsg(byte[] _package)throws Exception{
@@ -1044,7 +1047,7 @@ final class HelloWorldScreen extends MainScreen implements FieldChangeListener,S
 //														m_userPassword.getText());
 					
 					m_connectDeamon = new connectDeamon(this,
-														"192.168.10.20",
+														"192.168.10.102",
 														9716,
 														"111111");
 					
