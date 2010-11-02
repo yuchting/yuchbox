@@ -38,6 +38,7 @@ public class  fetchMail{
 	private String			m_XMailName 	= new String();
 	
 	private String			m_contain		= new String();
+	private String			m_contain_html		= new String();
 	
 	private Vector	m_vectAttachmentName = new Vector();
 	private Vector	m_vectAttachment= new Vector();
@@ -89,6 +90,7 @@ public class  fetchMail{
 		
 		sendReceive.WriteString(_stream,m_XMailName);
 		sendReceive.WriteString(_stream,m_contain);
+		sendReceive.WriteString(_stream,m_contain_html);
 		sendReceive.WriteStringVector(_stream,m_vectAttachmentName);
 	}
 		
@@ -112,6 +114,7 @@ public class  fetchMail{
 		
 		m_XMailName = sendReceive.ReadString(_stream);
 		m_contain = sendReceive.ReadString(_stream);
+		m_contain_html = sendReceive.ReadString(_stream);
 		
 		sendReceive.ReadStringVector(_stream, m_vectAttachmentName);
 	}
@@ -124,6 +127,9 @@ public class  fetchMail{
 	
 	public String GetContain(){return m_contain;}
 	public void SetContain(String _contain){m_contain = _contain;}
+	
+	public String GetContain_html(){return m_contain_html;}
+	public void SetContain_html(String _contain_html){m_contain_html = _contain_html;}
 	
 	public String GetXMailer(){return m_XMailName;}
 	public void SetXMailer(String _str){m_XMailName = _str;}

@@ -67,6 +67,8 @@ class berrySvrPush extends Thread{
 					
 					m_sendReceive.SendBufferToSvr(t_output.toByteArray(),false);
 					
+					m_serverDeamon.m_fetchMgr.SetBeginFetchIndex(t_mail.GetMailIndex());
+					
 					t_unreadMailVector.remove(0);
 				}
 				
@@ -188,8 +190,8 @@ class berrySvrDeamon extends Thread{
 			case msg_head.msgMail:
 				ProcessMail(in);
 				break;
-			case msg_head.msgSendMail:
-				m_fetchMgr.SetBeginFetchIndex(sendReceive.ReadInt(in));
+			case msg_head.msgBeenRead:
+				ProcessBeenReadMail(in);
 				break;
 			default:
 				throw new Exception("illegal client connect");
@@ -197,18 +199,41 @@ class berrySvrDeamon extends Thread{
 	}
 	
 	private void ProcessMail(ByteArrayInputStream in)throws Exception{
+		
 		fetchMail t_mail = new fetchMail();
 		t_mail.InputMail(in);
-		
-		m_fetchMgr.SendMail(t_mail);
-		
+
 		// receive send message to berry
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		os.write(msg_head.msgSendMail);
+		int t_succ = 1;
+		
+		try{
+			m_fetchMgr.SendMail(t_mail);
+			
+		}catch(Exception _e){
+			ByteArrayOutputStream error = new ByteArrayOutputStream();
+			error.write(msg_head.msgNote);
+			sendReceive.WriteString(error, _e.getMessage());
+			
+			m_sendReceive.SendBufferToSvr(error.toByteArray(), false);
+			
+			t_succ = 0;
+		}
+		
+		os.write(t_succ);
+		
 		sendReceive.WriteInt(os,(int)t_mail.GetSendDate().getTime());
 		sendReceive.WriteInt(os,(int)(t_mail.GetSendDate().getTime() >>> 32));
-		
-		m_sendReceive.SendBufferToSvr(os.toByteArray(),false);
+
+		m_sendReceive.SendBufferToSvr(os.toByteArray(),false);		
+	}
+	
+	private void ProcessBeenReadMail(ByteArrayInputStream in)throws Exception{
+		final int t_mailIndex = sendReceive.ReadInt(in);		
+		try{
+			m_fetchMgr.MarkReadMail(t_mailIndex);
+		}catch(Exception _e){}		
 	}
 }
 
@@ -258,6 +283,7 @@ class fetchMgr{
     
     int		m_unreadFetchIndex	= 0;
     
+    String m_tmpImportContain = new String();
         
 	public void InitConnect(String _protocol,
 							String _host,
@@ -443,7 +469,34 @@ class fetchMgr{
 	    
 		m_sendTransport.connect(m_host_send,fetchMain.sm_strUserNameFull,m_password);
 		m_sendTransport.sendMessage(msg, msg.getAllRecipients());
-		m_sendTransport.close();
+		m_sendTransport.close();		
+	}
+	
+	public void MarkReadMail(int _index)throws Exception{
+		
+		Folder folder = m_store.getDefaultFolder();
+	    if(folder == null) {
+	    	throw new Exception("Cant find default namespace");
+	    }
+	    
+	    folder = folder.getFolder("INBOX");
+	    if (folder == null) {
+	    	throw new Exception("Invalid INBOX folder");
+	    }
+	    try{
+			folder.open(Folder.READ_WRITE);  
+			
+			Message[] t_msg = folder.getMessages(_index, _index);
+			
+			if(t_msg.length != 0){
+				berrySvrDeamon.prt("set index " + _index + " read ");
+				t_msg[0].setFlag(Flags.Flag.SEEN, true);
+			}
+	 	    
+	    }finally{
+	    	
+	    	folder.close(false);
+	    }	        
 	}
 	
 	
@@ -572,15 +625,14 @@ class fetchMgr{
 	    }
 		_mail.GetAttachment().removeAllElements();
 		_mail.GetAttachmentFilename().removeAllElements();
-		
-		ImportPart(m,_mail);	
+
+		ImportPart(m,_mail);
 	}
 	
 	static private void ImportPart(Part p,fetchMail _mail)throws Exception{
 		
 		String filename = p.getFileName();
 		
-		String t_getContain = _mail.GetContain();
 		/*
 		 * Using isMimeType to determine the content type avoids
 		 * fetching the actual content data until we need it.
@@ -588,12 +640,20 @@ class fetchMgr{
 		if (p.isMimeType("text/plain")) {
 			
 		    try{
-		    	t_getContain += (String)p.getContent();
+		    	_mail.SetContain(_mail.GetContain().concat(p.getContent().toString()));
 		    }catch(Exception e){
-		    	t_getContain += "cant decode content " + e.getMessage();
+		    	_mail.SetContain(_mail.GetContain().concat("can't decode content " + e.getMessage()));
 		    }	    
 		    
-		} else if (p.isMimeType("multipart/*")) {
+		} else if(p.isMimeType("text/html")){
+			
+			try{
+		    	_mail.SetContain_html(_mail.GetContain_html().concat(p.getContent().toString()));
+		    }catch(Exception e){
+		    	_mail.SetContain_html(_mail.GetContain_html().concat("can't decode content " + e.getMessage()));
+		    }	
+		    
+		}else if (p.isMimeType("multipart/*")) {
 			
 		    Multipart mp = (Multipart)p.getContent();
 		    int count = mp.getCount();
@@ -605,6 +665,7 @@ class fetchMgr{
 		} else if (p.isMimeType("message/rfc822")) {
 
 			ImportPart((Part)p.getContent(),_mail);
+			
 		} else {
 			/*
 			 * If we actually want to see the data, and it's not a
@@ -614,18 +675,19 @@ class fetchMgr{
 			
 			if (o instanceof String) {
 			    
-			    t_getContain += (String)o;
+				_mail.SetContain(_mail.GetContain().concat((String)o));
 			    
 			} else if (o instanceof InputStream) {
 
 			    InputStream is = (InputStream)o;
 			    int c;
+			    String t_string = new String();
 			    while ((c = is.read()) != -1){
-			    	//System.out.write(c);
-			    	t_getContain += c;
+			    	t_string += c;
 			    }
+			    _mail.SetContain(_mail.GetContain().concat(t_string));
 			} else {
-				t_getContain += o.toString();
+				_mail.SetContain(_mail.GetContain().concat(o.toString()));
 			}			
 		}
 
@@ -657,6 +719,8 @@ class fetchMgr{
 			    t_vectByte.addElement(os.toByteArray());				
 		    }
 		}
+				
+		
 	}
 	
 	static public void ComposeMessage(Message msg,fetchMail _mail)throws Exception{

@@ -6,7 +6,7 @@ import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-public class sendReceive extends Thread{
+class sendReceive extends Thread{
 	
 	OutputStream		m_socketOutputStream = null;
 	InputStream			m_socketInputStream = null;
@@ -36,7 +36,7 @@ public class sendReceive extends Thread{
 		
 		if(m_closed = false){
 			m_closed = true;
-			
+	
 			while(isAlive()){
 				try{
 					sleep(10);
@@ -52,7 +52,7 @@ public class sendReceive extends Thread{
 		}
 		
 		ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
-		
+				
 		for(int i = 0;i < m_unsendedPackage.size();i++){
 			byte[] t_package = (byte[])m_unsendedPackage.elementAt(i);	
 			
@@ -74,7 +74,6 @@ public class sendReceive extends Thread{
 		}		
 		
 		OutputStream os = m_socketOutputStream;
-		
 		
 		ByteArrayOutputStream zos = new ByteArrayOutputStream();
 		GZIPOutputStream zo = new GZIPOutputStream(zos);
@@ -135,25 +134,22 @@ public class sendReceive extends Thread{
 		byte[] t_orgdata = new byte[t_orglen];
 				
 		if(t_ziplen == 0){
-			t_len = ReadInt(in);
-			in.read(t_orgdata,0,t_len);	
-			return t_orgdata;
-		}
-		
-		byte[] t_zipdata = new byte[t_ziplen];
-		in.read(t_zipdata,0,t_ziplen);
-		
-		GZIPInputStream zi	= new GZIPInputStream(
-								new ByteArrayInputStream(t_zipdata));
-		
+			
+			ForceReadByte(in, t_orgdata, t_orglen);
+			
+		}else{
+			
+			byte[] t_zipdata = new byte[t_ziplen];
+			
+			ForceReadByte(in, t_zipdata, t_ziplen);
+			
+			GZIPInputStream zi	= new GZIPInputStream(
+										new ByteArrayInputStream(t_zipdata));
 
-		int t_readIndex = 0;
-		int t_readNum = 0;
-		while((t_readNum = zi.read(t_orgdata,t_readIndex,t_orglen - t_readIndex)) > 0){
-			t_readIndex += t_readNum;
+			ForceReadByte(zi,t_orgdata,t_orglen);
+			
+			zi.close();
 		}
-		
-		zi.close();
 		
 		byte[] t_ret = ParsePackage(t_orgdata);
 		t_orgdata = null;
@@ -190,7 +186,7 @@ public class sendReceive extends Thread{
 	static public void WriteStringVector(OutputStream _stream,Vector _vect)throws Exception{
 		
 		final int t_size = _vect.size();
-		_stream.write(t_size);
+		WriteInt(_stream,t_size);
 		
 		for(int i = 0;i < t_size;i++){
 			WriteString(_stream,(String)_vect.elementAt(i));
@@ -210,9 +206,8 @@ public class sendReceive extends Thread{
 		
 		_vect.removeAllElements();
 		
-		int t_size = 0;
-		t_size = _stream.read();
-		
+		final int t_size = ReadInt(_stream);
+				
 		for(int i = 0;i < t_size;i++){
 			_vect.addElement(ReadString(_stream));
 		}
@@ -221,10 +216,12 @@ public class sendReceive extends Thread{
 	static public String ReadString(InputStream _stream)throws Exception{
 		
 		final int len = ReadInt(_stream);
+		
 		if(len != 0){
 			byte[] t_buffer = new byte[len];
 			
-			_stream.read(t_buffer);	
+			ForceReadByte(_stream,t_buffer,len);
+
 			return new String(t_buffer);
 		}
 		
@@ -243,7 +240,14 @@ public class sendReceive extends Thread{
 		_stream.write(_val >>> 24);
 	}
 	
-	static void prt(String s) {
-		System.out.println(s);
+	static public void ForceReadByte(InputStream _stream,byte[] _buffer,int _readLen)throws Exception{
+		int t_readIndex = 0;
+		while(_readLen > t_readIndex){
+			final int t_c = _stream.read(_buffer,t_readIndex,_readLen - t_readIndex);
+			if(t_c > 0){
+				t_readIndex += t_c;
+			}			 
+		}
 	}
+	
 }

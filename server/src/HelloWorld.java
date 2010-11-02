@@ -27,6 +27,8 @@ class Inte{
 	int m_value;
 	
 	String m_test = new String();
+	
+	 
 	Inte(int _val){
 		m_value = _val;
 	}
@@ -54,7 +56,7 @@ public class HelloWorld {
 	public static void main(String arg[]){
 		
 		HelloWorld test = new HelloWorld(); 
-		test.berrySendTest();
+		test.berryRecvTest();
 	}
 	
 	public void berrySendTest(){
@@ -118,6 +120,10 @@ public class HelloWorld {
 			Socket t_socket = GetSocketServer("111111","localhost",9716,false);
 			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
 			
+			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
+			t_stream.write(msg_head.msgConfirm);
+			sendReceive.WriteString(t_stream, "111111");
+			
 			while(true){
 
 				ByteArrayInputStream in = new ByteArrayInputStream(t_receive.RecvBufferFromSvr());
@@ -126,14 +132,7 @@ public class HelloWorld {
 						fetchMail t_mail = new fetchMail();
 						t_mail.InputMail(in);
 						prt("receive idx: " + t_mail.GetMailIndex() + " subject: " + t_mail.GetSubject());
-						
-						// send msgSendMail to increase fetch index imm
-						//
-						ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-						t_os.write(msg_head.msgSendMail);
-						//fetchMail.WriteInt(t_os,t_mail.GetMailIndex());
-						t_receive.SendBufferToSvr(t_os.toByteArray(), true);
-						
+												
 						// TODO display in berry
 						//
 						
