@@ -15,6 +15,7 @@ import net.rim.blackberry.api.mail.Folder;
 import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.mail.MimeBodyPart;
 import net.rim.blackberry.api.mail.Multipart;
+import net.rim.blackberry.api.mail.Part;
 import net.rim.blackberry.api.mail.SendListener;
 import net.rim.blackberry.api.mail.Session;
 import net.rim.blackberry.api.mail.Store;
@@ -27,7 +28,6 @@ import net.rim.blackberry.api.mail.event.MessageEvent;
 import net.rim.blackberry.api.mail.event.MessageListener;
 import net.rim.device.api.compress.GZIPInputStream;
 import net.rim.device.api.compress.GZIPOutputStream;
-import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.UiApplication;
@@ -36,7 +36,6 @@ import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.container.MainScreen;
-import net.rim.device.api.util.DataBuffer;
 
 class msg_head{
 	
@@ -810,11 +809,11 @@ class connectDeamon extends Thread{
 		final int t_flags = m.getFlags(); // get the system flags
 
 		int t_setFlags = 0;
-		if((t_flags | Message.Flag.DELETED) != 0){
+		if((t_flags & Message.Flag.DELETED) != 0){
 			t_setFlags |= fetchMail.DELETED;
 		}
 		
-		if((t_flags | Message.Flag.SAVED) != 0){
+		if((t_flags & Message.Flag.SAVED) != 0){
 			t_setFlags |= fetchMail.SEEN;
 		}
 		
@@ -830,7 +829,7 @@ class connectDeamon extends Thread{
 		m_plainTextContain = "";
 		m_htmlTextContain	= "";
 		
-		findEmailBody(m,_mail);
+		findEmailBody(m.getContent(),_mail);
 		
 		_mail.SetContain(m_plainTextContain);
 		_mail.SetContain_html(m_htmlTextContain); 
@@ -850,7 +849,7 @@ class connectDeamon extends Thread{
 	   //Reset the attachment flags.
 		m_hasSupportedAttachment = false;
 	   m_hasUnsupportedAttachment = false;
-		   
+	   	   
 	   if(obj instanceof Multipart)
 	   {
 	      Multipart mp = (Multipart)obj;
@@ -878,7 +877,7 @@ class connectDeamon extends Thread{
 		   {    
 		      //The message has attachments or we are at the top level of the message.
 			   //Extract all of the parts within the MimeBodyPart message.
-		      findEmailBody(mbp.getContent(),_mail);
+		      findEmailBody((MimeBodyPart)(mbp.getContent()),_mail);
 		   }
 	   }	   
 	   else if (obj instanceof SupportedAttachmentPart)  
@@ -893,7 +892,7 @@ class connectDeamon extends Thread{
 		
 	}
 	
-	private void readEmailBody(MimeBodyPart mbp,fetchMail _mail)
+	private void readEmailBody(MimeBodyPart mbp,fetchMail _mail)throws Exception
 	{
 	   //Extract the content of the message.
 	   Object obj = mbp.getContent();
@@ -902,11 +901,14 @@ class connectDeamon extends Thread{
    
 	   if (obj instanceof String)
 	   {
-	      body = (String)body;
+	      body = (String)obj;
 	   }
 	   else if (obj instanceof byte[])
 	   {
 	      body = new String((byte[])obj);
+	   }else{
+		   
+		   throw new Exception("error MimeBodyPart Contain type");
 	   }
 
 	   if (mimeType.indexOf(ContentType.TYPE_TEXT_PLAIN_STRING) != -1)
@@ -990,16 +992,16 @@ class connectDeamon extends Thread{
 	    if(_mail.GetContain_html().length() != 0
 	    	|| !_mail.GetAttachment().isEmpty()) {
 
-	    	Multipart multipart = new Multipart();
+	    	Multipart multipart = new Multipart(ContentType.TYPE_MULTIPART_ALTERNATIVE_STRING);
 	    	
 	    	TextBodyPart t_text = new TextBodyPart(multipart,_mail.GetContain());
 	    	multipart.addBodyPart(t_text);
 	    	
 	    	if(_mail.GetContain_html().length() != 0){
 
-		    	MimeBodyPart t_text1 = new MimeBodyPart(multipart);
-		    	t_text1.setContent(_mail.GetContain_html());
-		    	t_text1.setContentType(ContentType.TYPE_TEXT_HTML_STRING);	
+	    		TextBodyPart t_text1 = new TextBodyPart(multipart,_mail.GetContain_html());
+		    	t_text1.setContentType(ContentType.TYPE_TEXT_HTML_STRING);
+		    	
 	    	}
 	    	
 	    	if(!_mail.GetAttachment().isEmpty()){
@@ -1135,7 +1137,7 @@ final class HelloWorldScreen extends MainScreen implements FieldChangeListener,
         	}	
     	}
     	
-    	return true;
+    	return false;
     }
     
     public void changed(MessageEvent e){
@@ -1187,8 +1189,8 @@ final class HelloWorldScreen extends MainScreen implements FieldChangeListener,
 					
 				}else{
 										
-					//m_connectDeamon.Connect(m_hostName.getText(),Integer.valueOf(m_hostport.getText()).intValue(),m_userPassword.getText());
-					m_connectDeamon.Connect("192.168.10.20",9716,"111111");
+					m_connectDeamon.Connect(m_hostName.getText(),Integer.valueOf(m_hostport.getText()).intValue(),m_userPassword.getText());
+					//m_connectDeamon.Connect("192.168.10.20",9716,"111111");
 					
 					m_stateText.setText("connect....");
 					m_connectBut.setLabel("disconnect");				

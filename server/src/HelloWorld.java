@@ -124,6 +124,8 @@ public class HelloWorld {
 			t_stream.write(msg_head.msgConfirm);
 			sendReceive.WriteString(t_stream, "111111");
 			
+			t_receive.SendBufferToSvr(t_stream.toByteArray(), false);
+			
 			while(true){
 
 				ByteArrayInputStream in = new ByteArrayInputStream(t_receive.RecvBufferFromSvr());

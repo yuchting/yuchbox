@@ -46,30 +46,33 @@ class berrySvrPush extends Thread{
 		while(true){
 			
 			try{
-				m_serverDeamon.m_fetchMgr.CheckFolder();
-								
-				if(!m_serverDeamon.isAlive() 
-				|| !m_serverDeamon.m_socket.isConnected()){
-					
-					break;
-				}
+				
+				if(m_serverDeamon.IsConfirmConnect()){
 
-				Vector t_unreadMailVector = m_serverDeamon.m_fetchMgr.m_unreadMailVector;
-				while(!t_unreadMailVector.isEmpty()){
-					fetchMail t_mail = (fetchMail)t_unreadMailVector.elementAt(0); 
+					m_serverDeamon.m_fetchMgr.CheckFolder();
+									
+					if(!m_serverDeamon.m_socket.isConnected()){
+						break;
+					}
+
+					Vector t_unreadMailVector = m_serverDeamon.m_fetchMgr.m_unreadMailVector;
+					while(!t_unreadMailVector.isEmpty()){
+						fetchMail t_mail = (fetchMail)t_unreadMailVector.elementAt(0); 
+						
+						ByteArrayOutputStream t_output = new ByteArrayOutputStream();
+						
+						t_output.write(msg_head.msgMail);
+						t_mail.OutputMail(t_output);
+						
+						berrySvrDeamon.prt("CheckFolder OK and send mail!");
+						
+						m_sendReceive.SendBufferToSvr(t_output.toByteArray(),false);
+						
+						m_serverDeamon.m_fetchMgr.SetBeginFetchIndex(t_mail.GetMailIndex());
+						
+						t_unreadMailVector.remove(0);
+					}
 					
-					ByteArrayOutputStream t_output = new ByteArrayOutputStream();
-					
-					t_output.write(msg_head.msgMail);
-					t_mail.OutputMail(t_output);
-					
-					berrySvrDeamon.prt("CheckFolder OK and send mail!");
-					
-					m_sendReceive.SendBufferToSvr(t_output.toByteArray(),false);
-					
-					m_serverDeamon.m_fetchMgr.SetBeginFetchIndex(t_mail.GetMailIndex());
-					
-					t_unreadMailVector.remove(0);
 				}
 				
 				sleep(fetchMain.sm_pushInterval);
@@ -120,6 +123,10 @@ class berrySvrDeamon extends Thread{
 		prt("some client connect");
 	}
 	
+	public boolean IsConfirmConnect(){
+		return m_confirmConnect;
+	}
+	
 	static void prt(String s) {
 		System.out.println(s);
 	}
@@ -130,10 +137,6 @@ class berrySvrDeamon extends Thread{
 		// loop
 		//
 		while(true){
-			
-			if(!m_fetchMgr.IsConnected()){
-				break;
-			}
 			
 			// process....
 			//
@@ -152,7 +155,7 @@ class berrySvrDeamon extends Thread{
 					e.printStackTrace();
 				}
 				
-				m_sendReceive.CloseSendReceive();
+				m_sendReceive.CloseSendReceive();				
 				
 				prt(_e.getMessage());
 				_e.printStackTrace();				
@@ -831,7 +834,7 @@ public class fetchMain{
 				sm_strPassword		= p.getProperty("password");
 				sm_strUserPassword	= p.getProperty("userPassword");
 				
-				sm_fetchIndex		= Integer.valueOf(p.getProperty("userFetchIndex")).intValue();
+				sm_fetchIndex		= 1;//Integer.valueOf(p.getProperty("userFetchIndex")).intValue();
 				
 				sm_pushInterval		= Integer.valueOf(p.getProperty("pushInterval")).intValue() * 1000;
 				
