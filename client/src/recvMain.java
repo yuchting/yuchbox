@@ -1,3 +1,9 @@
+import java.io.InputStream;
+
+import local.localResource;
+import net.rim.device.api.i18n.ResourceBundle;
+import net.rim.device.api.io.IOUtilities;
+import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.UiApplication;
@@ -26,15 +32,15 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
         
         m_mainApp	= _app;        
         
-        m_hostName = new EditField("hostname:","",128, EditField.FILTER_DEFAULT);
+        m_hostName = new EditField(recvMain.sm_local.getString(localResource.HOST),"",128, EditField.FILTER_DEFAULT);
         m_hostName.setChangeListener(this);
         add(m_hostName);
         
-        m_hostport = new EditField("port:","",5, EditField.FILTER_INTEGER);
+        m_hostport = new EditField(recvMain.sm_local.getString(localResource.PORT),"",5, EditField.FILTER_INTEGER);
         m_hostport.setChangeListener(this);
         add(m_hostport);
         
-        m_userPassword = new EditField("userpassword:","",128, EditField.FILTER_DEFAULT);
+        m_userPassword = new EditField(recvMain.sm_local.getString(localResource.USER_PASSWORD),"",128, EditField.FILTER_DEFAULT);
         add(m_userPassword);
         
         m_connectBut = new ButtonField(m_mainApp.m_connectDeamon.IsConnected()?"disconnect":"connect",
@@ -86,7 +92,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 					|| m_userPassword.getText().length() == 0
 					|| m_hostport.getText().length() == 0*/false){
 					
-					Dialog.alert("the host name or port or user password is null");
+					Dialog.alert(recvMain.sm_local.getString(localResource.INPUT_FULL_SIGN_IN_SEG));
 					
 					return;
 				}				
@@ -125,7 +131,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
     
 }
 
-public class recvMain extends UiApplication /*implements clientResource*/ {
+public class recvMain extends UiApplication implements localResource {
 	
 	stateScreen 		m_stateScreen 		= null;
 	uploadFileScreen 	m_uploadFileScreen	= null;
@@ -136,8 +142,11 @@ public class recvMain extends UiApplication /*implements clientResource*/ {
 	
 	String				m_currentPath 	= new String("file:///store/");
 	
-//	private static ResourceBundle _resources = ResourceBundle.getBundle(
-//	           		clientResource.BUNDLE_ID, clientResource.BUNDLE_NAME);
+	
+	
+	
+	static ResourceBundle sm_local = ResourceBundle.getBundle(
+								localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
 	
 	public static void main(String[] args) {
 		recvMain t_theApp = new recvMain();		
@@ -158,6 +167,7 @@ public class recvMain extends UiApplication /*implements clientResource*/ {
 //        	DialogAlert("can't use the SDCard to store attachment!");
 //        	System.exit(0);
 //        }
+				
 		
 	}
 	

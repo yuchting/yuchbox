@@ -54,6 +54,9 @@ public class HelloWorld {
 	 *  @param arg  parameters
 	 */
 	public static void main(String arg[]){
+		String m_currDisplayPath = new String("file:///aa/bb/cc/dd/");
+		
+	
 		
 		HelloWorld test = new HelloWorld(); 
 		test.berryRecvTest();
