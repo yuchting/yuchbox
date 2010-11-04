@@ -11,21 +11,21 @@ import net.rim.device.api.ui.container.MainScreen;
 final class stateScreen extends MainScreen implements FieldChangeListener{
 										
         
-    EditField                       m_hostName      = null;
-    EditField						m_hostport		= null;
-    EditField                       m_userPassword  = null;
+    EditField           m_hostName      = null;
+    EditField			m_hostport		= null;
+    EditField           m_userPassword  = null;
     
-    ButtonField                     m_connectBut    = null;
-    LabelField                      m_stateText     = null;
-    
-    connectDeamon					m_connectDeamon	= null; 
-    
-    uploadFileScreen				m_uploadFileScreen = null;
-            
+    ButtonField         m_connectBut    = null;
+    LabelField          m_stateText     = null;
+    LabelField          m_errorText     = null;
         
-    public stateScreen() {
-        
+    recvMain			m_mainApp		= null;
+    
+    public stateScreen(recvMain _app) {
+    	        
         super();
+        
+        m_mainApp	= _app;        
         
         m_hostName = new EditField("hostname:","",128, EditField.FILTER_DEFAULT);
         m_hostName.setChangeListener(this);
@@ -38,43 +38,33 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
         m_userPassword = new EditField("userpassword:","",128, EditField.FILTER_DEFAULT);
         add(m_userPassword);
         
-        m_connectBut = new ButtonField("connect",ButtonField.CONSUME_CLICK
-                                                                | ButtonField.NEVER_DIRTY);
+        m_connectBut = new ButtonField(m_mainApp.m_connectDeamon.IsConnected()?"disconnect":"connect",
+        								ButtonField.CONSUME_CLICK| ButtonField.NEVER_DIRTY);
+        
         m_connectBut.setChangeListener(this);
         
         add(m_connectBut);              
         
-        m_stateText = new LabelField("disconnect", LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
+        m_stateText = new LabelField(m_mainApp.GetStateString(), LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
         add(m_stateText);
-
+        
+        m_errorText = new LabelField(m_mainApp.GetErrorString(), LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
+        add(m_errorText);
         
         
-        try{
-            // create the sdcard path 
-            //
-//            try{
-//            	FileConnection fc = (FileConnection) Connector.open("file:///SDCard/YuchBerry",Connector.READ_WRITE);
-//            	if(!fc.exists()){
-//            		fc.mkdir();
-//            	}
-//            }catch(Exception _e){
-//            	
-//            	DialogAlert("can't use the SDCard!");
-//            	System.exit(0);
-//            }
-        	
-			m_connectDeamon = new connectDeamon(this);
-			m_uploadFileScreen = new uploadFileScreen(m_connectDeamon);
-			
-        }catch(Exception _e){
-        	DialogAlert("Error to listen INBOX");
-        }
         
+               
     }
     
     public boolean onClose(){
-	   UiApplication.getUiApplication().requestBackground()
-	   return false;
+    	if(m_mainApp.m_connectDeamon.IsConnected()){
+    		m_mainApp.requestBackground();
+    		return false;
+    	}
+    	
+    	System.exit(0);
+    	
+    	return true;
     }
         
     public void DialogAlert(final String _msg){
@@ -85,7 +75,6 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 		       Dialog.alert(_msg);
 		    }
 		});
-    	
     }
         
     public void fieldChanged(Field field, int context) {
@@ -101,26 +90,33 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 					Dialog.alert("the host name or port or user password is null");
 					
 					return;
-				}
-				
-				
+				}				
 												
-				if(m_connectDeamon.IsConnected()){
+				if(m_mainApp.m_connectDeamon.IsConnected()){
 					
 					try{
-						m_connectDeamon.Disconnect();
+						m_mainApp.m_connectDeamon.Disconnect();
 					}catch(Exception _e){}
 					
 					m_connectBut.setLabel("connect");
-					m_stateText.setText("disconnect");
+					m_mainApp.SetStateString("disconnect");
 					
 				}else{
 										
-					//m_connectDeamon.Connect(m_hostName.getText(),Integer.valueOf(m_hostport.getText()).intValue(),m_userPassword.getText());
-					m_connectDeamon.Connect("192.168.10.20",9716,"111111");
 					
-					m_stateText.setText("connect....");
-					m_connectBut.setLabel("disconnect");				
+					try{
+						//m_mainApp.m_connectDeamon.Connect(m_hostName.getText(),
+						//									Integer.valueOf(m_hostport.getText()).intValue(),
+						//									m_userPassword.getText());
+						
+						m_mainApp.m_connectDeamon.Connect("192.168.10.20",9716,"111111");
+						
+						m_mainApp.SetStateString("connecting...");
+						m_connectBut.setLabel("disconnect");
+						
+					}catch(Exception e){
+						DialogAlert(e.getMessage());
+					}
 				}				
 			}
         }else{
@@ -132,19 +128,87 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 
 public class recvMain extends UiApplication {
 	
-	static stateScreen m_stateScreen = null;
+	stateScreen 		m_stateScreen 		= null;
+	uploadFileScreen 	m_uploadFileScreen	= null;
+	connectDeamon 		m_connectDeamon		= new connectDeamon(this);
+	
+	String				m_stateString		= new String("disconnect");
+	String				m_errorString		= new String();
+	
+	String				m_currentPath 	= new String("file:///store/");
+	
 	
 	public static void main(String[] args) {
-			
 		recvMain t_theApp = new recvMain();		
-		t_theApp.enterEventDispatcher();
+		t_theApp.enterEventDispatcher();		
 	}
    
 	public recvMain() {	
-		if(m_stateScreen == null){
-			m_stateScreen = new stateScreen();
-		}
-		pushScreen(m_stateScreen);
+				
+		// create the sdcard path 
+		//
+//        try{
+//        	FileConnection fc = (FileConnection) Connector.open("file:///SDCard/YuchBerry",Connector.READ_WRITE);
+//        	if(!fc.exists()){
+//        		fc.mkdir();
+//        	}
+//        }catch(Exception _e){
+//        	
+//        	DialogAlert("can't use the SDCard to store attachment!");
+//        	System.exit(0);
+//        }
+		
 	}
+	
+	public void activate(){
+//		if(m_stateScreen == null){
+//			m_stateScreen = new stateScreen(this);
+//			pushScreen(m_stateScreen);
+//		}
+		
+		if(m_uploadFileScreen == null){
+			m_uploadFileScreen = new uploadFileScreen(m_connectDeamon,this);
+			pushScreen(m_uploadFileScreen);
+		}
+	}
+	
+	public void deactivate(){
+//		if(m_stateScreen != null){
+//			popScreen(m_stateScreen);
+//			m_stateScreen = null;	
+//		}
+		
+		if(m_uploadFileScreen != null){
+			popScreen(m_uploadFileScreen);
+			m_uploadFileScreen = null;	
+		}
+	}
+	
+	public void SetStateString(String _state){
+		
+		if(m_stateScreen != null){
+			m_stateScreen.m_stateText.setText(_state);
+		}
+		
+		m_stateString = _state;
+	}
+
+	public String GetStateString(){
+		return m_stateString;
+	}
+	
+	public void SetErrorString(String _error){
+		if(m_stateScreen != null){
+			m_stateScreen.m_errorText.setText(_error);
+		}
+		
+		m_errorString = _error;
+	}
+	
+	public String GetErrorString(){
+		return m_errorString;
+	}
+	
+	
 }
 

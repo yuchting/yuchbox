@@ -303,7 +303,7 @@ class  fetchMail{
 	final static int	RECENT 		= 1 << 4;
 	final static int	SEEN 		= 1 << 5;
 	
-	private int m_mailIndex = 0;
+	private int 		m_mailIndex = 0;
 	
 	private Vector		m_vectFrom 		= new Vector();
 	private Vector		m_vectReplyTo	= new Vector();
@@ -511,8 +511,6 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 	
 	 sendReceive		m_connect = null;
-	 	 
-	 static stateScreen	m_screen = null;
 	 
 	 String				m_hostname;
 	 int				m_hostport;
@@ -537,21 +535,40 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 fetchMail			m_composingMail = new fetchMail();
 	 
+	 String				m_currStateString = new String();
 	 
-	 public connectDeamon(stateScreen _screen)throws Exception{
-		 m_screen = _screen;
+	 
+	 recvMain			m_mainApp = null;
+	 
+	 
+	 public connectDeamon(recvMain _app){
+		 m_mainApp = _app;
+		 start();	 
+	 }
+	 
+	 public void BeginListener()throws Exception{
+		// add the send listener
+		//
+
+		Store store = Session.getDefaultInstance().getStore();
+		store.addSendListener(this);
+		 
+		Session.getDefaultInstance().addViewListener(this);
+		 
+		AttachmentHandlerManager.getInstance().addAttachmentHandler(this);	      		 
+	 }
+	 
+	 
+	 public void EndListener()throws Exception{
 		 
 		 // add the send listener
          //
-		 
 		 Store store = Session.getDefaultInstance().getStore();
-         store.addSendListener(this);
+         store.removeSendListener(this);
          
-         Session.getDefaultInstance().addViewListener(this);
+         Session.getDefaultInstance().removeViewListener(this);
          
-         AttachmentHandlerManager.getInstance().addAttachmentHandler(this);	      
-              
-		 start();
+         AttachmentHandlerManager.getInstance().removeAttachmentHandler(this);	      
 	 }
 	 
 	 
@@ -593,8 +610,8 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	
 	//@{ AttachmentHandler
-	public void run(Message m, SupportedAttachmentPart p) {
-		m_screen.DialogAlert("hahah no reaction");
+	public void run(Message m, SupportedAttachmentPart p){
+		//m_screen.DialogAlert("hahah no reaction");
 	}
 	
 	public String	menuString(){
@@ -647,7 +664,7 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				// set the text connect
 				//
-				m_screen.m_stateText.setText("connected.");
+				m_mainApp.SetStateString("connected.");
 				
 				while(true){
 					ProcessMsg(m_connect.RecvBufferFromSvr());
@@ -656,9 +673,8 @@ public class connectDeamon extends Thread implements SendListener,
 			}catch(Exception _e){
 				
 				try{
-					m_screen.DialogAlert("yuchBerry Exception: \n"+ _e.getMessage());
-					m_screen.m_stateText.setText("disconnected retry later...");
-					
+					m_mainApp.SetStateString("disconnected retry later...");
+					m_mainApp.SetErrorString(_e.getMessage());
 				}catch(Exception e){}				
 			}		
 						
@@ -685,12 +701,14 @@ public class connectDeamon extends Thread implements SendListener,
 		
 	 }
 	 
-	 public void Connect(String _host,int _port,String _userPassword){
+	 public void Connect(String _host,int _port,String _userPassword)throws Exception{
 
 		 m_hostname		= _host;
 		 m_hostport		= _port;
 		 m_userPassword = _userPassword;
-
+		 
+		 BeginListener();
+		 
 		synchronized (this) {
 			m_disconnect = false;
 		}
@@ -703,6 +721,8 @@ public class connectDeamon extends Thread implements SendListener,
 	 public void Disconnect()throws Exception{
 		 
 		 m_disconnect = true;
+		 
+		 EndListener();
 		 
 		 synchronized (this) {
 
@@ -774,7 +794,7 @@ public class connectDeamon extends Thread implements SendListener,
 					//m_markReadVector.addElement(t_app);
 							
 				}catch(Exception _e){
-					m_screen.DialogAlert("ComposeMessage error :\n" + _e.getMessage());
+					m_mainApp.SetErrorString("ComposeMessage error :\n" + _e.getMessage());
 				}			
 						 		
 		 		break;
@@ -783,7 +803,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 		break;
 		 	case msg_head.msgNote:
 		 		String t_string = sendReceive.ReadString(in);
-		 		m_screen.DialogAlert(t_string);
+		 		m_mainApp.SetErrorString(t_string);
 		 		break;
 		 }
 	 }
@@ -1019,7 +1039,7 @@ public class connectDeamon extends Thread implements SendListener,
 	         }
 	         catch (Exception ex)
 	         {
-	        	 m_screen.DialogAlert("Exception: " + ex.toString());
+	        	 m_mainApp.SetErrorString("Exception: " + ex.toString());
 	         }
 	      }
 	   }
@@ -1037,7 +1057,7 @@ public class connectDeamon extends Thread implements SendListener,
 	         }
 	         catch (Exception ex)
 	         { 
-	        	 m_screen.DialogAlert("Exception: " + ex.toString());
+	        	 m_mainApp.SetErrorString("Exception: " + ex.toString());
 	         }
 	      }
 	   }
@@ -1055,7 +1075,7 @@ public class connectDeamon extends Thread implements SendListener,
 	      }
 	      catch (Exception ex)
 	      {
-	    	  m_screen.DialogAlert("Exception: " + ex.toString());
+	    	  m_mainApp.SetErrorString("Exception: " + ex.toString());
 	      }
 	   }
 	}

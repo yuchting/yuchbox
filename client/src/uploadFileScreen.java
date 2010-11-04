@@ -38,27 +38,32 @@ public class uploadFileScreen extends MainScreen implements
 										/*TrackwheelListener,*/
 										FieldChangeListener{
 	
-	String				m_currentPath 	= new String("file:///SDCard/");
 	
 	
-	LabelField			m_pathLabel 	= new LabelField(m_currentPath);
+	
+	LabelField			m_pathLabel 	= new LabelField("");
 	SeparatorField		m_split 		= new SeparatorField(SeparatorField.LINE_HORIZONTAL);
 	fileIconList		m_fileList 		= new fileIconList();
 	
 	uploadFileScreenMenu	m_ok		= new uploadFileScreenMenu("OK",0,100,this);
 	uploadFileScreenMenu	m_cancel	= new uploadFileScreenMenu("Cancel",1,100,this);
 	
-	connectDeamon			m_deamon	= null; 
+	connectDeamon		m_deamon	= null; 
 	
-	boolean				m_addAttachment = false;
+	boolean			m_addAttachment = false;
 	
-	uploadFileScreen(connectDeamon _deamon) {
+	recvMain			m_mainApp		= null;
+	
+	uploadFileScreen(connectDeamon _deamon,recvMain _app) {
+		
+		m_pathLabel.setText(_app.m_currentPath);
 		
 		add(m_pathLabel);
 		add(m_split);
 		add(m_fileList);
 		
-		m_deamon = _deamon;		
+		m_deamon = _deamon;
+		m_mainApp = _app;
 	}
 	
 	public void openAddAttachment(){
