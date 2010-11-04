@@ -21,9 +21,9 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 
 import com.sun.mail.smtp.SMTPTransport;
@@ -669,6 +669,59 @@ class fetchMgr{
 
 			ImportPart((Part)p.getContent(),_mail);
 			
+		} else if(p.isMimeType("application/*")){
+			
+			// attachment 
+			//
+			InputStream is = (InputStream)p.getContent();
+			int c;
+			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+			while ((c = is.read()) != -1){
+				t_os.write(c);
+			}
+			
+			_mail.AddAttachment(p.getFileName(),t_os.toByteArray());
+			_mail.GetAttachmentType().addElement(p.getContentType());
+			
+		}else if (p instanceof MimeBodyPart){
+		
+			/*
+			 * If we're saving attachments, write out anything that
+			 * looks like an attachment into an appropriately named
+			 * file.  Don't overwrite existing files to prevent
+			 * mistakes.
+			 */
+			
+		    String disp = p.getDisposition();
+		    
+		    // many mailers don't include a Content-Disposition
+		    if (disp != null && disp.equals("ATTACHMENT")) {
+		    	
+		    	Vector t_vectName = _mail.GetAttachmentFilename();
+				Vector t_vectByte = _mail.GetAttachment();
+				Vector t_vectType = _mail.GetAttachmentType();
+				
+				if (filename == null){	
+				    filename = "Attachment_" + t_vectName.size();
+				}else{
+					
+
+					if (filename.startsWith("=?GB") || filename.startsWith("=?gb")) {
+						filename = MimeUtility.decodeText(filename);
+					} else {
+						filename = new String(filename.getBytes("ISO8859_1"));
+					}
+				}
+				
+				t_vectName.addElement(filename);
+				
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+			    ((MimeBodyPart)p).writeTo(os);
+			    
+			    t_vectByte.addElement(os.toByteArray());
+			    t_vectType.addElement(p.getContentType());
+		    }
+		    
 		} else {
 			/*
 			 * If we actually want to see the data, and it's not a
@@ -684,46 +737,18 @@ class fetchMgr{
 
 			    InputStream is = (InputStream)o;
 			    int c;
-			    String t_string = new String();
+			    ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 			    while ((c = is.read()) != -1){
-			    	t_string += c;
+			    	t_os.write(c);
 			    }
-			    _mail.SetContain(_mail.GetContain().concat(t_string));
+			    
+			    _mail.AddAttachment("unknownFromat", t_os.toByteArray());
+			    
 			} else {
+				
 				_mail.SetContain(_mail.GetContain().concat(o.toString()));
 			}			
-		}
-
-		/*
-		 * If we're saving attachments, write out anything that
-		 * looks like an attachment into an appropriately named
-		 * file.  Don't overwrite existing files to prevent
-		 * mistakes.
-		 */
-		if (!p.isMimeType("multipart") 
-			&& p instanceof MimeBodyPart){
-			
-			Vector t_vectName = _mail.GetAttachmentFilename();
-			Vector t_vectByte = _mail.GetAttachment();
-			
-		    String disp = p.getDisposition();
-		    
-		    // many mailers don't include a Content-Disposition
-		    if (disp != null && disp.equals("ATTACHMENT")) {
-				if (filename == null){	
-				    filename = "Attachment_" + t_vectName.size();
-				}
-				
-				t_vectName.addElement(filename);
-				
-				ByteArrayOutputStream os = new ByteArrayOutputStream();
-			    ((MimeBodyPart)p).writeTo(os);
-			    
-			    t_vectByte.addElement(os.toByteArray());				
-		    }
-		}
-				
-		
+		}		
 	}
 	
 	static public void ComposeMessage(Message msg,fetchMail _mail)throws Exception{
@@ -763,9 +788,8 @@ class fetchMgr{
 				MimeBodyPart t_filePart = new MimeBodyPart();
 				
 				t_filePart.setFileName((String)t_filename.elementAt(i));
-				
 				t_filePart.getInputStream().read((byte[])t_contain.elementAt(i));
-				
+								
 				t_mainPart.addBodyPart(t_filePart);
 			}
 				

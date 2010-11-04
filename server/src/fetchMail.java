@@ -42,6 +42,7 @@ public class  fetchMail{
 	
 	private Vector	m_vectAttachmentName = new Vector();
 	private Vector	m_vectAttachment= new Vector();
+	private Vector	m_vectAttachmentType= new Vector();
 	
 	
 	
@@ -92,6 +93,7 @@ public class  fetchMail{
 		sendReceive.WriteString(_stream,m_contain);
 		sendReceive.WriteString(_stream,m_contain_html);
 		sendReceive.WriteStringVector(_stream,m_vectAttachmentName);
+		sendReceive.WriteStringVector(_stream,m_vectAttachmentType);
 	}
 		
 	public void InputMail(InputStream _stream)throws Exception{
@@ -117,6 +119,7 @@ public class  fetchMail{
 		m_contain_html = sendReceive.ReadString(_stream);
 		
 		sendReceive.ReadStringVector(_stream, m_vectAttachmentName);
+		sendReceive.ReadStringVector(_stream, m_vectAttachmentType);
 	}
 	
 	
@@ -189,6 +192,10 @@ public class  fetchMail{
 	}
 	public Vector GetAttachmentFilename(){
 		return m_vectAttachmentName;
+	}
+	
+	public Vector GetAttachmentType(){
+		return m_vectAttachmentType;
 	}
 	
 	
