@@ -1,4 +1,3 @@
-import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.UiApplication;
@@ -126,7 +125,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
     
 }
 
-public class recvMain extends UiApplication {
+public class recvMain extends UiApplication /*implements clientResource*/ {
 	
 	stateScreen 		m_stateScreen 		= null;
 	uploadFileScreen 	m_uploadFileScreen	= null;
@@ -137,6 +136,8 @@ public class recvMain extends UiApplication {
 	
 	String				m_currentPath 	= new String("file:///store/");
 	
+//	private static ResourceBundle _resources = ResourceBundle.getBundle(
+//	           		clientResource.BUNDLE_ID, clientResource.BUNDLE_NAME);
 	
 	public static void main(String[] args) {
 		recvMain t_theApp = new recvMain();		
