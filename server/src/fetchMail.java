@@ -13,7 +13,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
-
 public class  fetchMail{
 	
 	final static int	VERSION = 1;
@@ -25,7 +24,7 @@ public class  fetchMail{
 	final static int	RECENT 		= 1 << 4;
 	final static int	SEEN 		= 1 << 5;
 	
-	private int m_mailIndex = 0;
+	private int 		m_mailIndex = 0;
 	
 	private Vector		m_vectFrom 		= new Vector();
 	private Vector		m_vectReplyTo	= new Vector();
@@ -40,10 +39,15 @@ public class  fetchMail{
 	private String			m_contain		= new String();
 	private String			m_contain_html		= new String();
 	
-	private Vector	m_vectAttachmentName = new Vector();
-	private Vector	m_vectAttachment= new Vector();
-	private Vector	m_vectAttachmentType= new Vector();
+	class Attachment{
+		int 		m_size;
+		String 		m_name;
+		String		m_type;
+	}
 	
+	private Vector	m_vectAttachment	 	= new Vector();
+	
+	private Message m_attachMessage	= null; 
 	
 	
 	public void SetMailIndex(int _index)throws Exception{
@@ -57,7 +61,9 @@ public class  fetchMail{
 		return m_mailIndex;
 	}
 	
-	
+	public void SetAttchMessage(Message m){ m_attachMessage = m;}
+	public Message GetAttchMessage(){return m_attachMessage;}
+		
 	public static String parseAddressList(Vector _list)throws Exception{
 		String 	t_addressList = new String();
 		
@@ -68,8 +74,6 @@ public class  fetchMail{
 		
 		return t_addressList;
 	}
-	
-	
 	
 	
 	public void OutputMail(OutputStream _stream)throws Exception{
@@ -92,8 +96,17 @@ public class  fetchMail{
 		sendReceive.WriteString(_stream,m_XMailName);
 		sendReceive.WriteString(_stream,m_contain);
 		sendReceive.WriteString(_stream,m_contain_html);
-		sendReceive.WriteStringVector(_stream,m_vectAttachmentName);
-		sendReceive.WriteStringVector(_stream,m_vectAttachmentType);
+		
+		// write the Attachment
+		//
+		sendReceive.WriteInt(_stream, m_vectAttachment.size());
+		for(int i = 0;i < m_vectAttachment.size();i++){
+			Attachment t_attachment = (Attachment)m_vectAttachment.elementAt(i);
+			sendReceive.WriteInt(_stream,t_attachment.m_size);
+			sendReceive.WriteString(_stream,t_attachment.m_name);
+			sendReceive.WriteString(_stream,t_attachment.m_type);
+		}
+		
 	}
 		
 	public void InputMail(InputStream _stream)throws Exception{
@@ -118,10 +131,17 @@ public class  fetchMail{
 		m_contain = sendReceive.ReadString(_stream);
 		m_contain_html = sendReceive.ReadString(_stream);
 		
-		sendReceive.ReadStringVector(_stream, m_vectAttachmentName);
-		sendReceive.ReadStringVector(_stream, m_vectAttachmentType);
+		final int t_attachmentNum = sendReceive.ReadInt(_stream);
+		for(int i = 0;i < t_attachmentNum;i++){
+			Attachment t_attachment = new Attachment(); 
+			
+			t_attachment.m_size = sendReceive.ReadInt(_stream);
+			t_attachment.m_name = sendReceive.ReadString(_stream);
+			t_attachment.m_type = sendReceive.ReadString(_stream);
+			
+		}
+		
 	}
-	
 	
 	//set and gets function
 	//
@@ -161,7 +181,7 @@ public class  fetchMail{
 	
 	public Vector GetFromVect(){return m_vectFrom;}
 	public void SetFromVect(String[] _from){
-		m_vectFrom.clear();
+		m_vectFrom.removeAllElements();
 		for(int i = 0;i < _from.length;i++){
 			m_vectFrom.addElement(_from[i]);
 		}		
@@ -175,29 +195,24 @@ public class  fetchMail{
 		}
 	}
 	
-	public void AddAttachment(String _name,byte[] _buffer)throws Exception{
+	public void AddAttachment(String _name,String _type,int _size)throws Exception{
 		if(_name == null || _name.length() <= 0){
 			throw new Exception("Error Attachment format!");
 		}
+		Attachment t_attach = new Attachment();
+		t_attach.m_name = _name;
+		t_attach.m_size = _size;
+		t_attach.m_type = _type;
 		
-		m_vectAttachment.addElement(_buffer);
-		m_vectAttachmentName.addElement(_name);		
+		m_vectAttachment.addElement(t_attach);
+		
 	}
 	public void ClearAttachment(){
 		m_vectAttachment.removeAllElements();
-		m_vectAttachmentName.removeAllElements();
 	}
+	
 	public Vector GetAttachment(){
 		return m_vectAttachment;
-	}
-	public Vector GetAttachmentFilename(){
-		return m_vectAttachmentName;
-	}
+	}	
 	
-	public Vector GetAttachmentType(){
-		return m_vectAttachmentType;
-	}
-	
-	
-
 }

@@ -1,8 +1,10 @@
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyStore;
@@ -96,7 +98,9 @@ class berrySvrDeamon extends Thread{
 	
 	private berrySvrPush m_pushDeamon = null;
 	private sendReceive  m_sendReceive = null;
-		
+	
+	private Vector			m_recvMailAttach = new Vector();
+	
 	boolean m_confirmConnect	= false;
 	
 		
@@ -196,6 +200,9 @@ class berrySvrDeamon extends Thread{
 			case msg_head.msgBeenRead:
 				ProcessBeenReadMail(in);
 				break;
+			case msg_head.msgMailAttach:
+				ProcessMailAttach(in);
+				break;
 			default:
 				throw new Exception("illegal client connect");
 		}
@@ -205,16 +212,89 @@ class berrySvrDeamon extends Thread{
 		
 		fetchMail t_mail = new fetchMail();
 		t_mail.InputMail(in);
-
+		
+		if(t_mail.GetAttachment().isEmpty()){
+			SendMailToSvr(t_mail);
+		}else{
+			// create new thread to send mail
+			//
+			m_recvMailAttach.addElement(t_mail);
+			
+			CreateTmpSendMailAttachFile(t_mail);
+		}
+	}
+	
+	private void CreateTmpSendMailAttachFile(fetchMail _mail)throws Exception{
+		Vector t_list = _mail.GetAttachment();
+		
+		for(int i = 0;i < t_list.size();i++){
+			fetchMail.Attachment t_attachment = (fetchMail.Attachment)t_list.elementAt(i);
+			
+			String t_filename = "" + _mail.GetSendDate().getTime() + "_" + i + ".satt";
+			FileOutputStream fos = new FileOutputStream(t_filename);
+			
+			for(int j = 0;j < t_attachment.m_size;j++){
+				fos.write(0);
+			}
+			
+			fos.close();
+		}
+	}
+	
+	private void ProcessMailAttach(ByteArrayInputStream in)throws Exception{
+		
+		long t_time = sendReceive.ReadInt(in);
+		t_time |= ((long)sendReceive.ReadInt(in)) << 32;
+		
+		final int t_attachmentIdx = sendReceive.ReadInt(in);
+		final int t_segIdx = sendReceive.ReadInt(in);
+		final int t_segSize = sendReceive.ReadInt(in);
+		
+		String t_filename = "" + t_time + "_" + t_attachmentIdx + ".satt";
+		File t_file = new File(t_filename);
+		
+		if(t_segIdx + t_segSize > t_file.length()){
+			throw new Exception("error attach" + t_filename + " idx and size");
+		}
+		
+		byte[] t_bytes = new byte[t_segSize];
+		sendReceive.ForceReadByte(in, t_bytes, t_segSize);
+		
+		RandomAccessFile t_fwrite = new RandomAccessFile(t_file,"rw");
+		t_fwrite.seek(t_segIdx);
+		t_fwrite.write(t_bytes);
+		
+		t_fwrite.close();
+		
+		if(t_segIdx + t_segSize == t_file.length()){
+			// send the file...
+			//
+			for(int i = 0;i < m_recvMailAttach.size();i++){
+				fetchMail t_mail = (fetchMail)m_recvMailAttach.elementAt(i);
+				
+				if(t_mail.GetSendDate().getTime() == t_time){
+					
+					SendMailToSvr(t_mail);
+					m_recvMailAttach.remove(i);
+					break;
+				}
+			}
+		}
+	}
+	
+	public void SendMailToSvr(fetchMail _mail)throws Exception{
+		
 		// receive send message to berry
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		os.write(msg_head.msgSendMail);
 		int t_succ = 1;
 		
 		try{
-			m_fetchMgr.SendMail(t_mail);
+			
+			m_fetchMgr.SendMail(_mail);
 			
 		}catch(Exception _e){
+			
 			ByteArrayOutputStream error = new ByteArrayOutputStream();
 			error.write(msg_head.msgNote);
 			sendReceive.WriteString(error, _e.getMessage());
@@ -226,8 +306,8 @@ class berrySvrDeamon extends Thread{
 		
 		os.write(t_succ);
 		
-		sendReceive.WriteInt(os,(int)t_mail.GetSendDate().getTime());
-		sendReceive.WriteInt(os,(int)(t_mail.GetSendDate().getTime() >>> 32));
+		sendReceive.WriteInt(os,(int)_mail.GetSendDate().getTime());
+		sendReceive.WriteInt(os,(int)(_mail.GetSendDate().getTime() >>> 32));
 
 		m_sendReceive.SendBufferToSvr(os.toByteArray(),false);		
 	}
@@ -236,7 +316,7 @@ class berrySvrDeamon extends Thread{
 		final int t_mailIndex = sendReceive.ReadInt(in);		
 		try{
 			m_fetchMgr.MarkReadMail(t_mailIndex);
-		}catch(Exception _e){}		
+		}catch(Exception _e){}
 	}
 }
 
@@ -472,8 +552,9 @@ class fetchMgr{
 	    
 		m_sendTransport.connect(m_host_send,fetchMain.sm_strUserNameFull,m_password);
 		m_sendTransport.sendMessage(msg, msg.getAllRecipients());
-		m_sendTransport.close();		
+		m_sendTransport.close();	
 	}
+	
 	
 	public void MarkReadMail(int _index)throws Exception{
 		
@@ -626,8 +707,8 @@ class fetchMgr{
 		if (hdrs != null){
 			_mail.SetXMailer(hdrs[0]);
 	    }
-		_mail.GetAttachment().removeAllElements();
-		_mail.GetAttachmentFilename().removeAllElements();
+		
+		_mail.ClearAttachment();
 
 		ImportPart(m,_mail);
 	}
@@ -678,10 +759,12 @@ class fetchMgr{
 			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 			while ((c = is.read()) != -1){
 				t_os.write(c);
-			}
+			}			
 			
-			_mail.AddAttachment(p.getFileName(),t_os.toByteArray());
-			_mail.GetAttachmentType().addElement(p.getContentType());
+			byte[] t_bytes = t_os.toByteArray();
+			
+			StoreAttachment(_mail.GetMailIndex(), _mail.GetAttachment().size(), t_bytes);
+			_mail.AddAttachment(p.getFileName(),p.getContentType(),t_bytes.length);
 			
 		}else if (p instanceof MimeBodyPart){
 		
@@ -696,15 +779,12 @@ class fetchMgr{
 		    
 		    // many mailers don't include a Content-Disposition
 		    if (disp != null && disp.equals("ATTACHMENT")) {
-		    	
-		    	Vector t_vectName = _mail.GetAttachmentFilename();
-				Vector t_vectByte = _mail.GetAttachment();
-				Vector t_vectType = _mail.GetAttachmentType();
-				
+		    			    	
+				Vector t_vect = _mail.GetAttachment();
+								
 				if (filename == null){	
-				    filename = "Attachment_" + t_vectName.size();
+				    filename = "Attachment_" + t_vect.size();
 				}else{
-					
 
 					if (filename.startsWith("=?GB") || filename.startsWith("=?gb")) {
 						filename = MimeUtility.decodeText(filename);
@@ -713,13 +793,14 @@ class fetchMgr{
 					}
 				}
 				
-				t_vectName.addElement(filename);
-				
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
 			    ((MimeBodyPart)p).writeTo(os);
 			    
-			    t_vectByte.addElement(os.toByteArray());
-			    t_vectType.addElement(p.getContentType());
+			    byte[] t_bytes = os.toByteArray();
+			    
+			    _mail.AddAttachment(filename, p.getContentType(),t_bytes.length);
+			    StoreAttachment(_mail.GetMailIndex(), t_vect.size(), t_bytes);
+			    
 		    }
 		    
 		} else {
@@ -742,7 +823,11 @@ class fetchMgr{
 			    	t_os.write(c);
 			    }
 			    
-			    _mail.AddAttachment("unknownFromat", t_os.toByteArray());
+			    byte[] t_bytes = t_os.toByteArray();
+			    
+			    StoreAttachment(_mail.GetMailIndex(),_mail.GetAttachment().size(),t_bytes);
+			    
+			    _mail.AddAttachment("unknownFromat", "application",t_bytes.length);
 			    
 			} else {
 				
@@ -770,7 +855,7 @@ class fetchMgr{
 
 	    msg.setSubject(_mail.GetSubject());
 
-	    if(!_mail.GetAttachmentFilename().isEmpty()) {
+	    if(!_mail.GetAttachment().isEmpty()) {
 			// Attach the specified file.
 			// We need a multipart message to hold the attachment.
 		    	
@@ -780,19 +865,23 @@ class fetchMgr{
 			MimeMultipart t_mainPart = new MimeMultipart();
 			t_mainPart.addBodyPart(t_containPart);
 			
-			Vector t_filename = _mail.GetAttachmentFilename();
 			Vector t_contain = _mail.GetAttachment();
 			
-			for(int i = 0;i< t_contain.size();i++){
+			try{
 
-				MimeBodyPart t_filePart = new MimeBodyPart();
-				
-				t_filePart.setFileName((String)t_filename.elementAt(i));
-				t_filePart.getInputStream().read((byte[])t_contain.elementAt(i));
-								
-				t_mainPart.addBodyPart(t_filePart);
-			}
-				
+				for(int i = 0;i< t_contain.size();i++){
+
+					fetchMail.Attachment t_attachment = (fetchMail.Attachment)t_contain.elementAt(i);
+					
+					MimeBodyPart t_filePart = new MimeBodyPart();
+					t_filePart.setFileName(t_attachment.m_name);
+
+					t_filePart.getInputStream().read( ReadFileBuffer( "" + _mail.GetSendDate().getTime() + "_" + i + ".satt"));
+									
+					t_mainPart.addBodyPart(t_filePart);
+				}	
+			}catch(Exception _e){}
+			
 			msg.setContent(t_mainPart);
 			
 	    } else {
@@ -803,6 +892,33 @@ class fetchMgr{
 
 	    msg.setHeader("X-Mailer",_mail.GetXMailer());
 	    msg.setSentDate(_mail.GetSendDate());
+	}
+	
+	private static byte[] ReadFileBuffer(String _file)throws Exception{
+		File t_file = new File(_file);
+		byte[] t_buffer = new byte[(int)t_file.length()];
+		
+		FileInputStream in = new FileInputStream(_file);
+		in.read(t_buffer, 0, t_buffer.length);
+		
+		return t_buffer;
+	}
+	
+	private static  void StoreAttachment(int _mailIndex,int _attachmentIndex,byte[] _contain){
+		String t_filename = "" + _mailIndex + "_" + _attachmentIndex + ".att";
+		
+		File t_file = new File(t_filename);
+		if(t_file.exists() && t_file.length() == (long) _contain.length){
+			return;
+		}
+		
+		try{
+
+			FileOutputStream fos = new FileOutputStream(t_filename);
+			fos.write(_contain);
+			
+			fos.close();	
+		}catch(Exception _e){}		
 	}
 }
 

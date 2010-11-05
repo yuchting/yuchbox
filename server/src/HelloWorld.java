@@ -54,12 +54,36 @@ public class HelloWorld {
 	 *  @param arg  parameters
 	 */
 	public static void main(String arg[]){
-		String m_currDisplayPath = new String("file:///aa/bb/cc/dd/");
+
+//		HelloWorld test = new HelloWorld(); 
+//		test.berryRecvTest();
+		String m_currDisplayPath = "file:///SDCard/Map.dee";
 		
+		final int t_slash_rear = m_currDisplayPath.lastIndexOf('/', m_currDisplayPath.length());
+		m_currDisplayPath = m_currDisplayPath.substring( t_slash_rear + 1, m_currDisplayPath.length());
+		
+		byte[] t_bytes ={1,2,3,4,5,6,7,8,9};
+		
+		StoreAttachment(0,1,t_bytes);
+		StoreAttachment(0,1,t_bytes);
+		
+	}
 	
+	private static  void StoreAttachment(int _mailIndex,int _attachmentIndex,byte[] _contain){
+		String t_filename = "" + _mailIndex + "_" + _attachmentIndex + ".att";
 		
-		HelloWorld test = new HelloWorld(); 
-		test.berryRecvTest();
+//		File t_file = new File(t_filename);
+//		if(t_file.exists() && t_file.length() == (long) _contain.length){
+//			return;
+//		}
+		
+		try{
+
+			FileOutputStream fos = new FileOutputStream(t_filename);
+			fos.write(_contain);
+			
+			fos.close();	
+		}catch(Exception _e){}		
 	}
 	
 	public void berrySendTest(){
@@ -85,8 +109,7 @@ public class HelloWorld {
 			final int t_math = (int)(Math.random() * 100);
 			t_mail.SetMailIndex(t_math);
 			
-			t_mail.AddAttachment("HelloWorld.jar", readFileBuffer("HelloWorld.jar"));
-			t_mail.AddAttachment("YuchBerryKey", readFileBuffer("YuchBerryKey"));
+			t_mail.AddAttachment("HelloWorld.jar","application",readFileBuffer("HelloWorld.jar").length);
 			
 			
 			os.close();
@@ -117,6 +140,7 @@ public class HelloWorld {
 		
 		return t_buffer;
 	}
+	
 	public void berryRecvTest(){
 		try{
 			

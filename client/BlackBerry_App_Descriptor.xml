@@ -1,5 +1,5 @@
 <Properties ModelVersion="1.1.2">
-  <General Title="YuchBerry" Version="0.9" Vendor="BlackBerry Developer" Description="Push Personal Mail for your BlackBerry"/>
+  <General Title="YuchBerry" Version="0.8 alpha" Vendor="BlackBerry Developer" Description="Push Personal Mail for your BlackBerry"/>
   <Application Type="BlackBerry Application" MainMIDletName="" MainArgs="" HomeScreenPosition="0" StartupTier="7" IsSystemModule="false" IsAutostartup="false"/>
   <Resources hasTitleResource="true" TitleResourceBundleName="local" TitleResourceBundleRelativePath="src/local/local.rrh" TitleResourceBundleClassName="local.local" TitleResourceBundleKey="APPLICATION_TITLE" DescriptionId="APPLICATION_DESC">
     <Icons>

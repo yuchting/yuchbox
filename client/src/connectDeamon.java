@@ -41,6 +41,8 @@ class msg_head{
 	final public static byte msgNote = 3;
 	
 	final public static byte msgBeenRead = 4;
+	final public static byte msgMailAttach = 5;
+	
 
 }
 
@@ -318,9 +320,13 @@ class  fetchMail{
 	private String			m_contain		= new String();
 	private String			m_contain_html		= new String();
 	
-	private Vector	m_vectAttachmentName = new Vector();
-	private Vector	m_vectAttachment= new Vector();
-	private Vector	m_vectAttachmentType= new Vector();
+	class Attachment{
+		int 		m_size;
+		String 		m_name;
+		String		m_type;
+	}
+	
+	private Vector	m_vectAttachment	 	= new Vector();
 	
 	private Message m_attachMessage	= null; 
 	
@@ -391,8 +397,17 @@ class  fetchMail{
 		sendReceive.WriteString(_stream,m_XMailName);
 		sendReceive.WriteString(_stream,m_contain);
 		sendReceive.WriteString(_stream,m_contain_html);
-		sendReceive.WriteStringVector(_stream,m_vectAttachmentName);
-		sendReceive.WriteStringVector(_stream,m_vectAttachmentType);
+		
+		// write the Attachment
+		//
+		sendReceive.WriteInt(_stream, m_vectAttachment.size());
+		for(int i = 0;i < m_vectAttachment.size();i++){
+			Attachment t_attachment = (Attachment)m_vectAttachment.elementAt(i);
+			sendReceive.WriteInt(_stream,t_attachment.m_size);
+			sendReceive.WriteString(_stream,t_attachment.m_name);
+			sendReceive.WriteString(_stream,t_attachment.m_type);
+		}
+		
 	}
 		
 	public void InputMail(InputStream _stream)throws Exception{
@@ -417,8 +432,16 @@ class  fetchMail{
 		m_contain = sendReceive.ReadString(_stream);
 		m_contain_html = sendReceive.ReadString(_stream);
 		
-		sendReceive.ReadStringVector(_stream, m_vectAttachmentName);
-		sendReceive.ReadStringVector(_stream, m_vectAttachmentType);
+		final int t_attachmentNum = sendReceive.ReadInt(_stream);
+		for(int i = 0;i < t_attachmentNum;i++){
+			Attachment t_attachment = new Attachment(); 
+			
+			t_attachment.m_size = sendReceive.ReadInt(_stream);
+			t_attachment.m_name = sendReceive.ReadString(_stream);
+			t_attachment.m_type = sendReceive.ReadString(_stream);
+			
+		}
+		
 	}
 	
 	//set and gets function
@@ -473,31 +496,62 @@ class  fetchMail{
 		}
 	}
 	
-	public void AddAttachment(String _name,byte[] _buffer)throws Exception{
+	public void AddAttachment(String _name,String _type,int _size)throws Exception{
 		if(_name == null || _name.length() <= 0){
 			throw new Exception("Error Attachment format!");
 		}
+		Attachment t_attach = new Attachment();
+		t_attach.m_name = _name;
+		t_attach.m_size = _size;
+		t_attach.m_type = _type;
 		
-		m_vectAttachment.addElement(_buffer);
-		m_vectAttachmentName.addElement(_name);		
+		m_vectAttachment.addElement(t_attach);
+		
 	}
 	public void ClearAttachment(){
 		m_vectAttachment.removeAllElements();
-		m_vectAttachmentName.removeAllElements();
 	}
+	
 	public Vector GetAttachment(){
 		return m_vectAttachment;
-	}
-	public Vector GetAttachmentFilename(){
-		return m_vectAttachmentName;
-	}
-
-	public Vector GetAttachmentType(){
-		return m_vectAttachmentType;
-	}
-	
+	}	
 	
 }
+
+class sendMailAttachmentDeamon extends Thread{
+	
+	connectDeamon		m_connect = null;
+	fetchMail			m_sendMail = null;
+	
+	int 				m_beginIndex = 0;
+	Vector				m_vFileConnection = null;
+		
+	public sendMailAttachmentDeamon(connectDeamon _connect,fetchMail _mail,Vector _vFileConnection)throws Exception{
+		m_connect = _connect;
+		m_sendMail = _mail;
+		
+		m_vFileConnection  = _vFileConnection;
+				
+		start();
+	}
+	
+	public void run(){
+		
+		while(true){
+			if(!m_connect.IsConnected()){
+				try{
+					sleep(200);
+				}catch(Exception _e){
+					break;
+				}
+			}
+			
+			
+			
+		}
+	}	
+}
+
 
 public class connectDeamon extends Thread implements SendListener,
 												MessageListener,
@@ -521,6 +575,7 @@ public class connectDeamon extends Thread implements SendListener,
 	 SocketConnection	m_conn = null;
 	 
 	 Vector				m_sendingMail = new Vector();
+	 Vector				m_sendingMailAttachment = new Vector();
 	 
 	 boolean			m_disconnect = true;
 	
@@ -533,13 +588,13 @@ public class connectDeamon extends Thread implements SendListener,
 	 private String			m_plainTextContain = new String();
 	 private String			m_htmlTextContain = new String();
 	 
-	 fetchMail			m_composingMail = new fetchMail();
+	 //! current composing mail
+	 Message			m_composingMail = null;
+	 Vector				m_composingAttachment = new Vector();
 	 
 	 String				m_currStateString = new String();
-	 
-	 
+	 	 
 	 recvMain			m_mainApp = null;
-	 
 	 
 	 public connectDeamon(recvMain _app){
 		 m_mainApp = _app;
@@ -576,17 +631,20 @@ public class connectDeamon extends Thread implements SendListener,
 	 public boolean sendMessage(Message message){
     	
 		try{
-			ImportMail(message,m_composingMail);
-			m_composingMail.SetSendDate(new Date());
+			fetchMail t_mail = new fetchMail();
+			
+			ImportMail(message,t_mail);
+			t_mail.SetSendDate(new Date());
 			
 			message.setStatus(Message.Status.TX_SENDING,1);
-			AddSendingMail(m_composingMail);
+						
+			AddSendingMail(t_mail,m_composingAttachment);
+			
+			m_composingAttachment.removeAllElements();
 			
 		}catch(Exception _e){
 			return false;
 		}
-		
-		m_composingMail = new fetchMail();
 		
 		return true;
 		
@@ -628,16 +686,45 @@ public class connectDeamon extends Thread implements SendListener,
 	//@{ folder listener
 	public void open(MessageEvent e){
 		if(e.getMessageChangeType() == MessageEvent.NEW){
-			m_composingMail.SetAttchMessage(e.getMessage());
+			m_composingMail = e.getMessage();
+			m_composingAttachment.removeAllElements();
 		}
 	}
 	
 	public void close(MessageEvent e){
 		if(e.getMessageChangeType() == MessageEvent.CLOSED ){
-			m_composingMail.SetAttchMessage(null);
+			m_composingMail = null;
 		}
 	}
+	
 	//@}
+	
+	//! the attachment file selection screen(uploadFileScreen) will call
+	public void AddAttachmentFile(String _filename){
+		m_composingAttachment.addElement(_filename);
+	}
+		
+	//! refresh the attachment file html
+	public void RefreshAttachmentMailContain()throws Exception {
+		
+		if(m_composingMail != null && !m_composingAttachment.isEmpty()){
+			
+			for(int i = 0;i < m_composingAttachment.size();i++){
+				String t_name = (String)m_composingAttachment.elementAt(i);
+				
+				final int t_lastSplash = t_name.lastIndexOf('/');
+				if(t_lastSplash == -1){
+					throw new Exception("attachment file name error...");
+				}
+				
+				t_name = t_name.substring(t_lastSplash + 1,t_name.length());
+				
+				// TODO add the HTML text to the composing mail
+				//
+				
+			} 
+		}
+	}
 	 
 	 public void run(){
 		 		 
@@ -785,13 +872,13 @@ public class connectDeamon extends Thread implements SendListener,
 					// add the message listener to send message to server
 					// to remark the message is read
 					//
-					//AppendMessage t_app = new AppendMessage();
-					//t_app.m_date = m.getSentDate();
-					//t_app.m_from = m.getFrom().getAddr();
-					//t_app.m_mailIndex = t_mail.GetMailIndex();
-					//
-					//m.addMessageListener(m_screen);
-					//m_markReadVector.addElement(t_app);
+					AppendMessage t_app = new AppendMessage();
+					t_app.m_date = m.getSentDate();
+					t_app.m_from = m.getFrom().getAddr();
+					t_app.m_mailIndex = t_mail.GetMailIndex();
+					
+					m.addMessageListener(this);
+					m_markReadVector.addElement(t_app);
 							
 				}catch(Exception _e){
 					m_mainApp.SetErrorString("ComposeMessage error :\n" + _e.getMessage());
@@ -826,14 +913,20 @@ public class connectDeamon extends Thread implements SendListener,
 				}
 				
 				m_sendingMail.removeElementAt(i);
-				
+		
+				for(int j = 0;j < m_sendingMailAttachment.size();j++){
+					if(){
+						
+					}
+				}
 				break;
 			}
 		}
+		
+		
 	}
 	 
-	public synchronized void AddSendingMail(fetchMail _mail)throws Exception{
-			
+	public synchronized void AddSendingMail(fetchMail _mail,Vector _files)throws Exception{
 		
 		for(int i = 0;i < m_sendingMail.size();i++){
 			fetchMail t_sending = (fetchMail)m_sendingMail.elementAt(i);
@@ -844,12 +937,59 @@ public class connectDeamon extends Thread implements SendListener,
 		 
 		m_sendingMail.addElement(_mail);
 		
+		// load the attachment if has 
+		//
+		Vector t_vfileReader = null;
+		
+		if(!_files.isEmpty()){
+
+			t_vfileReader = new Vector();
+			
+			for(int i = 0;i< _files.size();i++){
+				String t_fullname = (String)_files.elementAt(i);
+				
+				FileConnection t_fileReader = (FileConnection) Connector.open(t_fullname,Connector.READ);
+		    	if(!t_fileReader.exists()){
+		    		throw new Exception("attachment file <" + t_fullname + "> not exsit!"); 
+		    	}
+		    	
+		    	t_vfileReader.addElement(t_fileReader);
+		    					
+				final int t_slash_rear = t_fullname.lastIndexOf('/', t_fullname.length());
+				String t_name = t_fullname.substring( t_slash_rear + 1, t_fullname.length());
+				int t_size = (int)t_fileReader.fileSize();
+				String t_type = null;
+				
+				if(uploadFileScreen.IsAudioFile(t_name)){
+					
+					t_type = BodyPart.ContentType.TYPE_AUDIO;
+					
+				}else if(uploadFileScreen.IsImageFile(t_name)){
+					
+					t_type = BodyPart.ContentType.TYPE_IMAGE;
+					
+				}else if(uploadFileScreen.IsTxtFile(t_name)){
+					
+					t_type = BodyPart.ContentType.TYPE_TEXT;
+				}else {
+					t_type = "application/";
+				}
+	
+				_mail.AddAttachment(t_name, t_type, t_size);
+			}	
+		}
+		
+		// send mail once if has not attachment 
+		//
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		os.write(msg_head.msgMail);
 		_mail.OutputMail(os);
 		
 		m_connect.SendBufferToSvr(os.toByteArray(), false);
 		
+		if(!_files.isEmpty()){
+			m_sendingMailAttachment.addElement(new sendMailAttachmentDeamon(this, _mail, t_vfileReader));			
+		}
 	}
 	
 	public synchronized void AddMarkReadMail(Message m){
@@ -878,10 +1018,7 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 	}
 	
-	
-	public void AddAttachmentFile(String _filename){
-		
-	}
+
 	
 	public void ImportMail(Message m,fetchMail _mail)throws Exception{
 		
@@ -933,8 +1070,7 @@ public class connectDeamon extends Thread implements SendListener,
 			_mail.SetXMailer(hdrs[0]);
 	    }
 		
-		_mail.GetAttachmentFilename().removeAllElements();
-		_mail.GetAttachment().removeAllElements();
+		_mail.ClearAttachment();
 		
 		m_plainTextContain = "";
 		m_htmlTextContain	= "";
@@ -993,10 +1129,7 @@ public class connectDeamon extends Thread implements SendListener,
 	   }	   
 	   else if (obj instanceof SupportedAttachmentPart)  
 	   {
-//	      m_hasSupportedAttachment = true;
-		   
-		   SupportedAttachmentPart t_attach = (SupportedAttachmentPart)obj;
-		   _mail.AddAttachment(t_attach.getName(), (byte[])t_attach.getContent());		   
+	      m_hasSupportedAttachment = true; 
 	   }
 	
 	   else if (obj instanceof UnsupportedAttachmentPart) 
@@ -1104,7 +1237,7 @@ public class connectDeamon extends Thread implements SendListener,
 
 	    
 	    if(_mail.GetContain_html().length() != 0
-	    	|| !_mail.GetAttachmentFilename().isEmpty()) {
+	    	|| !_mail.GetAttachment().isEmpty()) {
 
 	    	Multipart multipart = new Multipart();
 	    	
@@ -1118,16 +1251,17 @@ public class connectDeamon extends Thread implements SendListener,
 		    	
 	    	}
 	    	
-	    	if(!_mail.GetAttachmentFilename().isEmpty()){
+	    	if(!_mail.GetAttachment().isEmpty()){
 	    		
-	    		Vector t_filename	= _mail.GetAttachmentFilename();
 				Vector t_contain	= _mail.GetAttachment();
-				Vector t_type		= _mail.GetAttachmentType();
 				
-		    	for(int i = 0;i< t_filename.size();i++){
+		    	for(int i = 0;i< t_contain.size();i++){
+		    		
+		    		fetchMail.Attachment t_attachment = (fetchMail.Attachment)t_contain.elementAt(i);
+		    		
 		    		SupportedAttachmentPart attach = new SupportedAttachmentPart( multipart,
-		    																	(String)t_type.elementAt(i),
-															    				(String)t_filename.elementAt(i),
+		    																	(String)t_attachment.m_type,
+															    				(String)t_attachment.m_name,
 															    				("Fetching...").getBytes());
 		    		
 		    		multipart.addBodyPart(attach);

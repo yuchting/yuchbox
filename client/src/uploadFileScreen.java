@@ -231,7 +231,7 @@ public class uploadFileScreen extends MainScreen implements
 		
 		return b;
 	}
-	public boolean IsAudioFile(String _filename){
+	public static boolean IsAudioFile(String _filename){
 		String t_lower = _filename.toLowerCase();
 		t_lower = t_lower.substring(Math.max(0, t_lower.length() - 4));
 				
@@ -242,7 +242,7 @@ public class uploadFileScreen extends MainScreen implements
 				|| t_lower.equals(".mid");
 	}
 	
-	public boolean IsTxtFile(String _filename){
+	public static boolean IsTxtFile(String _filename){
 		
 		String t_lower = _filename.toLowerCase();
 		t_lower = t_lower.substring(Math.max(0, t_lower.length() - 4));
@@ -252,7 +252,7 @@ public class uploadFileScreen extends MainScreen implements
 				|| t_lower.equals(".dic");
 	}
 	
-	public boolean IsImageFile(String _filename){
+	public static boolean IsImageFile(String _filename){
 		
 		String t_lower = _filename.toLowerCase();
 		t_lower = t_lower.substring(Math.max(0, t_lower.length() - 4));

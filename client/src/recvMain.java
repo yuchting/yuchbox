@@ -55,9 +55,6 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
         
         m_errorText = new LabelField(m_mainApp.GetErrorString(), LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
         add(m_errorText);
-        
-        
-        
                
     }
     
@@ -172,27 +169,17 @@ public class recvMain extends UiApplication implements localResource {
 	}
 	
 	public void activate(){
-//		if(m_stateScreen == null){
-//			m_stateScreen = new stateScreen(this);
-//			pushScreen(m_stateScreen);
-//		}
-		
-		if(m_uploadFileScreen == null){
-			m_uploadFileScreen = new uploadFileScreen(m_connectDeamon,this);
-			pushScreen(m_uploadFileScreen);
-		}
+		if(m_stateScreen == null){
+			m_stateScreen = new stateScreen(this);
+			pushScreen(m_stateScreen);
+		}		
 	}
 	
 	public void deactivate(){
-//		if(m_stateScreen != null){
-//			popScreen(m_stateScreen);
-//			m_stateScreen = null;	
-//		}
-		
-		if(m_uploadFileScreen != null){
-			popScreen(m_uploadFileScreen);
-			m_uploadFileScreen = null;	
-		}
+		if(m_stateScreen != null){
+			popScreen(m_stateScreen);
+			m_stateScreen = null;	
+		}		
 	}
 	
 	public void SetStateString(String _state){
@@ -218,8 +205,6 @@ public class recvMain extends UiApplication implements localResource {
 	
 	public String GetErrorString(){
 		return m_errorString;
-	}
-	
-	
+	}	
 }
 
