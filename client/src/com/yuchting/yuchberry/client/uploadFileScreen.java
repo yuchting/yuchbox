@@ -1,3 +1,5 @@
+package com.yuchting.yuchberry.client;
+
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -130,7 +132,9 @@ public class uploadFileScreen extends MainScreen implements
 	
 	String				m_currDisplayPath = null;
 	
-	uploadFileScreen(connectDeamon _deamon,recvMain _app) {
+	boolean			m_delScreen		=false;
+	
+	uploadFileScreen(connectDeamon _deamon,recvMain _app,boolean _del) {
 		
 		try{
 			m_textFileBitmap 	= GetConstFileBitmap("/Crystal_Txt_resize.bmp");
@@ -144,64 +148,69 @@ public class uploadFileScreen extends MainScreen implements
 		
 		m_deamon = _deamon;
 		m_mainApp = _app;
+		m_delScreen = _del;
 				
 		DisplayFileList(fsm_rootPath);
 	}
 		
 	public void DisplayFileList(String _path){
 		
-		// clear all former file list
-		//
-		for(int i = 0;i < m_listCallback.m_iconList.size();i++){
-			m_fileList.delete(0);			
-		}
-		m_listCallback.m_iconList.removeAllElements();
-		
-		m_currDisplayPath = _path;
-		
-		setTitle(_path);
-		
-		try{
+		if(m_delScreen){
 			
-			
-			
-			FileConnection fc = (FileConnection) Connector.open(_path,Connector.READ);
-			int t_index = 0;
-			for(Enumeration e = fc.list("*",true); e.hasMoreElements() ;) {
-				String t_name = (String)e.nextElement();
-				String t_fullname = _path + t_name;
-				
-				FileConnection next = (FileConnection) Connector.open(t_fullname,Connector.READ);
-			    
-				Bitmap bitmap = null;
-				
-				if(next.isDirectory()){
-					bitmap = m_folderBitmap;
-				}else if(IsAudioFile(t_name)){
-					bitmap = m_audioFileBitmap;
-				}else if(IsTxtFile(t_name)){
-					bitmap = m_textFileBitmap;
-				}else if(IsImageFile(t_name)){
-					
-					bitmap = new Bitmap(fsm_bitmap_width,fsm_bitmap_height);
-					
-					byte[] t_image_bytes = IOUtilities.streamToBytes(next.openInputStream());
-					EncodedImage image = EncodedImage.createEncodedImage(t_image_bytes, 0, t_image_bytes.length);
-					
-					image.getBitmap().scaleInto(bitmap, Bitmap.FILTER_BILINEAR);
-					
-				}else{
-					bitmap = m_binFileBitmap;
-				}
-				
-				fileIcon t_icon = new fileIcon(t_name,t_fullname,bitmap,next.isDirectory());
-				
-				m_fileList.insert(t_index++);
-				m_listCallback.insert(t_icon);
-			}
+		}else{
 
-		}catch(Exception _e){
-			System.out.print(_e.getMessage());
+			// clear all former file list
+			//
+			for(int i = 0;i < m_listCallback.m_iconList.size();i++){
+				m_fileList.delete(0);			
+			}
+			m_listCallback.m_iconList.removeAllElements();
+			
+			m_currDisplayPath = _path;
+			
+			setTitle(_path);
+			
+			try{			
+				
+				
+				FileConnection fc = (FileConnection) Connector.open(_path,Connector.READ);
+				int t_index = 0;
+				for(Enumeration e = fc.list("*",true); e.hasMoreElements() ;) {
+					String t_name = (String)e.nextElement();
+					String t_fullname = _path + t_name;
+					
+					FileConnection next = (FileConnection) Connector.open(t_fullname,Connector.READ);
+				    
+					Bitmap bitmap = null;
+					
+					if(next.isDirectory()){
+						bitmap = m_folderBitmap;
+					}else if(IsAudioFile(t_name)){
+						bitmap = m_audioFileBitmap;
+					}else if(IsTxtFile(t_name)){
+						bitmap = m_textFileBitmap;
+					}else if(IsImageFile(t_name)){
+						
+						bitmap = new Bitmap(fsm_bitmap_width,fsm_bitmap_height);
+						
+						byte[] t_image_bytes = IOUtilities.streamToBytes(next.openInputStream());
+						EncodedImage image = EncodedImage.createEncodedImage(t_image_bytes, 0, t_image_bytes.length);
+						
+						image.getBitmap().scaleInto(bitmap, Bitmap.FILTER_BILINEAR);
+						
+					}else{
+						bitmap = m_binFileBitmap;
+					}
+					
+					fileIcon t_icon = new fileIcon(t_name,t_fullname,bitmap,next.isDirectory());
+					
+					m_fileList.insert(t_index++);
+					m_listCallback.insert(t_icon);
+				}
+
+			}catch(Exception _e){
+				System.out.print(_e.getMessage());
+			}
 		}
 		
 	}
@@ -289,7 +298,11 @@ public class uploadFileScreen extends MainScreen implements
 					
 					// add a attachment file
 					//
-					m_deamon.AddAttachmentFile(t_file.m_filename_null);
+					if(m_delScreen){
+						m_deamon.DelAttachmentFile(t_file.m_filename_null);
+					}else{
+						m_deamon.AddAttachmentFile(t_file.m_filename_null);
+					}				
 					
 					close();
 				}
@@ -301,6 +314,9 @@ public class uploadFileScreen extends MainScreen implements
 	}
 	
 	public boolean onClose(){
+		if(m_delScreen){
+			return true;
+		}
 		
 		if(m_currDisplayPath.equals(fsm_rootPath)){
 			

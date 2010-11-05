@@ -1,9 +1,13 @@
-import java.io.InputStream;
+package com.yuchting.yuchberry.client;
+
+import java.util.Vector;
 
 import local.localResource;
+import net.rim.blackberry.api.mail.Message;
+import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
+import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
+import net.rim.device.api.i18n.MessageFormat;
 import net.rim.device.api.i18n.ResourceBundle;
-import net.rim.device.api.io.IOUtilities;
-import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.UiApplication;
@@ -23,6 +27,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
     ButtonField         m_connectBut    = null;
     LabelField          m_stateText     = null;
     LabelField          m_errorText     = null;
+    LabelField			m_uploadingText = null;
         
     recvMain			m_mainApp		= null;
     
@@ -55,6 +60,11 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
         
         m_errorText = new LabelField(m_mainApp.GetErrorString(), LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
         add(m_errorText);
+        
+        m_uploadingText = new LabelField("", LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
+        add(m_uploadingText);
+        
+        RefreshUploadState(_app.m_uploadingDesc);
                
     }
     
@@ -77,6 +87,31 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 		       Dialog.alert(_msg);
 		    }
 		});
+    }
+    
+    public void RefreshUploadState(Vector _uploading){
+    	String t_total = new String();
+    	
+    	for(int i = 0;i < _uploading.size();i++){
+    		
+    		recvMain.UploadingDesc t_desc = (recvMain.UploadingDesc)_uploading.elementAt(i);
+    		
+    		if(t_desc.m_attachmentIdx != -1){
+    			t_total = t_total + "Subject: " + t_desc.m_mail.GetSubject() + "(Failed) \n";
+    		}else{
+    			Object[] t_arg = 
+        		{
+        			t_desc.m_mail.GetSubject(),
+        			new Integer(t_desc.m_attachmentIdx),
+        			new Integer(t_desc.m_mail.GetAttachment().size()),
+        			new Integer(t_desc.m_uploadedSize * 100 / t_desc.m_totalSize),
+        		};
+        		
+        		t_total = t_total + MessageFormat.format("Subject: {0} ({1,integer}/{2,integer} {3,integer}%)\n",t_arg);
+    		}   		
+    	}
+    	
+    	m_uploadingText.setText(t_total);    	
     }
         
     public void fieldChanged(Field field, int context) {
@@ -137,17 +172,70 @@ public class recvMain extends UiApplication implements localResource {
 	String				m_stateString		= new String("disconnect");
 	String				m_errorString		= new String();
 	
-	String				m_currentPath 	= new String("file:///store/");
+	String				m_currentPath 		= new String("file:///store/");
 	
+	Vector				m_uploadingDesc 	= new Vector();
 	
+	class UploadingDesc{
+		
+		fetchMail		m_mail = null;
+		int				m_attachmentIdx;
+		int				m_uploadedSize;
+		int				m_totalSize;		
+	}
 	
+	public class AddAattachmentItem extends ApplicationMenuItem{
+		
+		recvMain		m_mainApp = null;
+		
+		AddAattachmentItem(){
+			super(20);
+		}
+				
+		public String toString(){
+			return "Add YuchBerry File";
+		}
+		
+		public Object run(Object context){
+			if(context instanceof Message ){
+				m_mainApp.OpenAttachmentFileScreen(false);
+			}
+			
+			return context;			
+		}
+	}
+	
+	public class DelAattachmentItem extends ApplicationMenuItem{
+		
+		recvMain		m_mainApp = null;
+		
+		DelAattachmentItem(){
+			super(30);
+		}
+				
+		public String toString(){
+			return "Del YuchBerry File";
+		}
+		
+		public Object run(Object context){
+			if(context instanceof Message ){
+
+				m_mainApp.OpenAttachmentFileScreen(true);
+			}
+			
+			return context;			
+		}
+	}
+	
+	AddAattachmentItem 	m_addItem	= new AddAattachmentItem();
+	DelAattachmentItem	m_delItem	= new DelAattachmentItem();
 	
 	static ResourceBundle sm_local = ResourceBundle.getBundle(
 								localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
 	
 	public static void main(String[] args) {
 		recvMain t_theApp = new recvMain();		
-		t_theApp.enterEventDispatcher();		
+		t_theApp.enterEventDispatcher();
 	}
    
 	public recvMain() {	
@@ -164,8 +252,15 @@ public class recvMain extends UiApplication implements localResource {
 //        	DialogAlert("can't use the SDCard to store attachment!");
 //        	System.exit(0);
 //        }
-				
+	
+		m_addItem.m_mainApp = this;
+		m_delItem.m_mainApp = this;
 		
+		ApplicationMenuItemRepository.getInstance().
+			addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_addItem);
+		
+		ApplicationMenuItemRepository.getInstance().
+			addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);
 	}
 	
 	public void activate(){
@@ -182,6 +277,13 @@ public class recvMain extends UiApplication implements localResource {
 		}		
 	}
 	
+	public void OpenAttachmentFileScreen(boolean _del){
+		if(m_uploadFileScreen == null){
+			m_uploadFileScreen = new uploadFileScreen(m_connectDeamon, this,_del);
+			popScreen(m_uploadFileScreen);
+		}
+	}
+	
 	public void SetStateString(String _state){
 		
 		if(m_stateScreen != null){
@@ -189,6 +291,42 @@ public class recvMain extends UiApplication implements localResource {
 		}
 		
 		m_stateString = _state;
+	}
+	
+	public void SetUploadingDesc(fetchMail _mail,int _attachmentIdx,
+									int _uploadedSize,int _totalSize){
+						
+		boolean t_found = false;
+		for(int i = 0;i < m_uploadingDesc.size();i++){
+			UploadingDesc t_desc = (UploadingDesc)m_uploadingDesc.elementAt(i);
+			if(t_desc.m_mail == _mail){
+				t_found = true;
+				
+				t_desc.m_attachmentIdx	= _attachmentIdx;
+				t_desc.m_totalSize		= _totalSize;
+				t_desc.m_uploadedSize	= _uploadedSize;
+				
+				break;
+			}
+		}
+		
+		if(_attachmentIdx != -1 && !t_found){
+			UploadingDesc t_desc = new UploadingDesc();
+			
+			t_desc.m_mail 			= _mail;
+			t_desc.m_totalSize 		= _totalSize;
+			t_desc.m_uploadedSize	= _uploadedSize;
+			
+			m_uploadingDesc.addElement(t_desc);
+		}
+		
+		if(m_stateScreen != null){
+			m_stateScreen.RefreshUploadState(m_uploadingDesc);
+		}
+	}
+	
+	public Vector GetUploadingDesc(){
+		return m_uploadingDesc;
 	}
 
 	public String GetStateString(){

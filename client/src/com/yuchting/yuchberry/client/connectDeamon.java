@@ -1,3 +1,5 @@
+package com.yuchting.yuchberry.client;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -150,7 +152,7 @@ class sendReceive extends Thread{
 		
 		try{
 			m_socketOutputStream.close();
-			m_socketInputStream.close();	
+			m_socketInputStream.close();
 		}catch(Exception _e){}
 	}
 
@@ -524,14 +526,29 @@ class sendMailAttachmentDeamon extends Thread{
 	fetchMail			m_sendMail = null;
 	
 	int 				m_beginIndex = 0;
+	
+	int 				m_totalSize = 0;
+	int					m_uploadedSize = 0;
+	
+	int					m_attachmentIndex = 0;
 	Vector				m_vFileConnection = null;
+		
+	final static private int fsm_segmentSize = 512;
+	
+	byte[] 				m_bufferBytes 		= new byte[fsm_segmentSize];
+	ByteArrayOutputStream m_os = new ByteArrayOutputStream();
 		
 	public sendMailAttachmentDeamon(connectDeamon _connect,fetchMail _mail,Vector _vFileConnection)throws Exception{
 		m_connect = _connect;
 		m_sendMail = _mail;
 		
 		m_vFileConnection  = _vFileConnection;
-				
+		
+		for(int i = 0;i < m_vFileConnection.size();i++){
+			FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(i);
+			m_totalSize += (int)t_file.fileSize();
+		}
+						
 		start();
 	}
 	
@@ -546,8 +563,62 @@ class sendMailAttachmentDeamon extends Thread{
 				}
 			}
 			
-			
-			
+			try{
+				
+				FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(m_attachmentIndex);
+				InputStream in = t_file.openInputStream();
+				
+				in.reset();
+				in.skip(m_beginIndex);
+				
+				final int t_size = (m_beginIndex + fsm_segmentSize) > (int)t_file.fileSize()?
+									((int)t_file.fileSize() - m_beginIndex) : fsm_segmentSize;
+							
+				sendReceive.ForceReadByte(in, m_bufferBytes, t_size);
+				
+				
+				
+				m_os.write(msg_head.msgMailAttach);
+				final long t_time = m_sendMail.GetSendDate().getTime();
+				sendReceive.WriteInt(m_os,(int)t_time);
+				sendReceive.WriteInt(m_os,(int)(t_time >>> 32));
+				sendReceive.WriteInt(m_os, m_attachmentIndex);
+				sendReceive.WriteInt(m_os, m_beginIndex);
+				sendReceive.WriteInt(m_os, t_size);
+				m_os.write(m_bufferBytes,0,t_size);
+				
+				m_connect.m_connect.SendBufferToSvr(m_os.toByteArray(), false);
+				
+				m_connect.m_mainApp.SetUploadingDesc(m_sendMail,m_attachmentIndex,
+													m_uploadedSize,m_totalSize);
+				
+				
+				if((m_beginIndex + fsm_segmentSize) >= (int)t_file.fileSize()){
+					m_beginIndex = 0;
+					m_attachmentIndex++;
+					
+					t_file.close();
+				}else{
+					m_beginIndex += t_size;
+				}
+				
+				m_uploadedSize += t_size;
+				m_os.close();
+				
+				
+			}catch(Exception _e){
+				m_connect.m_mainApp.SetErrorString(_e.getMessage());
+				m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-1,0,0);
+				
+				try{
+					for(int i = 0;i < m_vFileConnection.size();i++){
+						FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(i);
+						t_file.close();
+					}
+				}catch(Exception e){}
+				
+				break;
+			}			
 		}
 	}	
 }
@@ -703,6 +774,19 @@ public class connectDeamon extends Thread implements SendListener,
 	public void AddAttachmentFile(String _filename){
 		m_composingAttachment.addElement(_filename);
 	}
+	public void DelAttachmentFile(String _filename){
+		for(int i = 0;i < m_composingAttachment.size();i++){
+			
+			String t_filename = (String)m_composingAttachment.elementAt(i);
+			
+			if(t_filename.equals(_filename)){
+				m_composingAttachment.removeElementAt(i);
+			}			
+		}		
+	}
+	public final Vector GetAttachmentFile(){
+		return m_composingAttachment;
+	}
 		
 	//! refresh the attachment file html
 	public void RefreshAttachmentMailContain()throws Exception {
@@ -721,6 +805,7 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				// TODO add the HTML text to the composing mail
 				//
+				
 				
 			} 
 		}
@@ -905,6 +990,7 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		for(int i = 0;i< m_sendingMail.size();i++){
 			fetchMail t_sending = (fetchMail)m_sendingMail.elementAt(i);
+			
 			if(t_sending.GetSendDate().getTime() == t_time){
 				if(t_succ){
 					t_sending.GetAttchMessage().setStatus(Message.Status.TX_DELIVERED, 1);					
@@ -915,8 +1001,10 @@ public class connectDeamon extends Thread implements SendListener,
 				m_sendingMail.removeElementAt(i);
 		
 				for(int j = 0;j < m_sendingMailAttachment.size();j++){
-					if(){
-						
+					sendMailAttachmentDeamon t_deamon = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
+					if(t_deamon.m_sendMail == t_sending){
+						m_sendingMailAttachment.removeElement(t_deamon);
+						break;
 					}
 				}
 				break;

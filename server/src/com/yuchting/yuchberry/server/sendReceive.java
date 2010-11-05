@@ -1,3 +1,5 @@
+package com.yuchting.yuchberry.server;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;

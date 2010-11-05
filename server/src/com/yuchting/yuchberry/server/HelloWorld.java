@@ -1,3 +1,5 @@
+package com.yuchting.yuchberry.server;
+
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -9,6 +11,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.security.KeyStore;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
@@ -16,7 +19,6 @@ import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import javax.mail.Address;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -57,16 +59,12 @@ public class HelloWorld {
 
 //		HelloWorld test = new HelloWorld(); 
 //		test.berryRecvTest();
-		String m_currDisplayPath = "file:///SDCard/Map.dee";
-		
-		final int t_slash_rear = m_currDisplayPath.lastIndexOf('/', m_currDisplayPath.length());
-		m_currDisplayPath = m_currDisplayPath.substring( t_slash_rear + 1, m_currDisplayPath.length());
-		
-		byte[] t_bytes ={1,2,3,4,5,6,7,8,9};
-		
-		StoreAttachment(0,1,t_bytes);
-		StoreAttachment(0,1,t_bytes);
-		
+
+		DecimalFormat df2 = new DecimalFormat(".00");
+
+		System.out.println(df2.format(123499.56));
+
+	
 	}
 	
 	private static  void StoreAttachment(int _mailIndex,int _attachmentIndex,byte[] _contain){
