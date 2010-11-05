@@ -11,6 +11,7 @@ import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.EditField;
@@ -31,7 +32,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
         
     recvMain			m_mainApp		= null;
     
-    public stateScreen(recvMain _app) {
+    public stateScreen(final recvMain _app) {
     	        
         super();
         
@@ -68,7 +69,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
                
     }
     
-    public boolean onClose(){
+    public final boolean onClose(){
     	if(m_mainApp.m_connectDeamon.IsConnected()){
     		m_mainApp.requestBackground();
     		return false;
@@ -89,7 +90,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 		});
     }
     
-    public void RefreshUploadState(Vector _uploading){
+    public void RefreshUploadState(final Vector _uploading){
     	String t_total = new String();
     	
     	for(int i = 0;i < _uploading.size();i++){
@@ -199,9 +200,10 @@ public class recvMain extends UiApplication implements localResource {
 		public Object run(Object context){
 			if(context instanceof Message ){
 				m_mainApp.OpenAttachmentFileScreen(false);
+				return m_mainApp.m_uploadFileScreen;
 			}
 			
-			return context;			
+			return context;
 		}
 	}
 	
@@ -221,9 +223,10 @@ public class recvMain extends UiApplication implements localResource {
 			if(context instanceof Message ){
 
 				m_mainApp.OpenAttachmentFileScreen(true);
+				return m_mainApp.m_uploadFileScreen;
 			}
 			
-			return context;			
+			return context;	
 		}
 	}
 	
@@ -273,15 +276,29 @@ public class recvMain extends UiApplication implements localResource {
 	public void deactivate(){
 		if(m_stateScreen != null){
 			popScreen(m_stateScreen);
-			m_stateScreen = null;	
+			m_stateScreen = null;
 		}		
 	}
 	
-	public void OpenAttachmentFileScreen(boolean _del){
-		if(m_uploadFileScreen == null){
-			m_uploadFileScreen = new uploadFileScreen(m_connectDeamon, this,_del);
-			popScreen(m_uploadFileScreen);
-		}
+	public void OpenAttachmentFileScreen(final boolean _del){
+		m_uploadFileScreen = new uploadFileScreen(m_connectDeamon, this,_del);
+		
+		invokeLater(new Runnable()
+					{
+					    public void run()
+						{
+					    	recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
+					    	t_mainApp.PushUploadingScreen();
+						}
+					});
+		
+	}
+	
+	public void PushUploadingScreen(){
+		pushGlobalScreen(m_uploadFileScreen,0,UiEngine.GLOBAL_MODAL);
+	}
+	public void ClearUploadingScreen(){
+		m_uploadFileScreen = null;
 	}
 	
 	public void SetStateString(String _state){
@@ -293,8 +310,8 @@ public class recvMain extends UiApplication implements localResource {
 		m_stateString = _state;
 	}
 	
-	public void SetUploadingDesc(fetchMail _mail,int _attachmentIdx,
-									int _uploadedSize,int _totalSize){
+	public void SetUploadingDesc(final fetchMail _mail,final int _attachmentIdx,
+								final int _uploadedSize,final int _totalSize){
 						
 		boolean t_found = false;
 		for(int i = 0;i < m_uploadingDesc.size();i++){
@@ -325,15 +342,15 @@ public class recvMain extends UiApplication implements localResource {
 		}
 	}
 	
-	public Vector GetUploadingDesc(){
+	public final Vector GetUploadingDesc(){
 		return m_uploadingDesc;
 	}
 
-	public String GetStateString(){
+	public final String GetStateString(){
 		return m_stateString;
 	}
 	
-	public void SetErrorString(String _error){
+	public void SetErrorString(final String _error){
 		if(m_stateScreen != null){
 			m_stateScreen.m_errorText.setText(_error);
 		}
@@ -341,7 +358,7 @@ public class recvMain extends UiApplication implements localResource {
 		m_errorString = _error;
 	}
 	
-	public String GetErrorString(){
+	public final String GetErrorString(){
 		return m_errorString;
 	}	
 }

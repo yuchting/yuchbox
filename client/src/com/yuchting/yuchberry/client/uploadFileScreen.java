@@ -154,17 +154,62 @@ public class uploadFileScreen extends MainScreen implements
 	}
 		
 	public void DisplayFileList(String _path){
+
+		// clear all former file list
+		//
+		for(int i = 0;i < m_listCallback.m_iconList.size();i++){
+			m_fileList.delete(0);			
+		}
+		m_listCallback.m_iconList.removeAllElements();
 		
 		if(m_delScreen){
-			
+			try{	
+				int t_index = 0;
+				Vector t_files = m_deamon.GetAttachmentFile();
+				for(int i = 0;i < t_files.size();i++){
+					String t_fullname = (String)t_files.elementAt(i);
+					String t_name = null;
+					
+					final int t_lastSplash = t_fullname.lastIndexOf('/');
+					if(t_lastSplash == -1){
+						t_name = "xxxxx";
+					}else{
+						t_name = t_fullname.substring(t_lastSplash + 1,t_name.length());
+					}				
+					
+					Bitmap bitmap;
+					
+					if(IsAudioFile(t_name)){
+						bitmap = m_audioFileBitmap;
+					}else if(IsTxtFile(t_name)){
+						bitmap = m_textFileBitmap;
+					}else if(IsImageFile(t_name)){
+						
+						bitmap = new Bitmap(fsm_bitmap_width,fsm_bitmap_height);
+						
+						FileConnection next = (FileConnection) Connector.open(t_fullname,Connector.READ);
+						
+						byte[] t_image_bytes = IOUtilities.streamToBytes(next.openInputStream());
+						EncodedImage image = EncodedImage.createEncodedImage(t_image_bytes, 0, t_image_bytes.length);
+						
+						image.getBitmap().scaleInto(bitmap, Bitmap.FILTER_BILINEAR);
+						
+					}else{
+						bitmap = m_binFileBitmap;
+					}
+					
+					fileIcon t_icon = new fileIcon(t_name,t_fullname,bitmap,false);
+					
+					m_fileList.insert(t_index++);
+					m_listCallback.insert(t_icon);
+				}
+				
+			}catch(Exception _e){
+				System.out.print(_e.getMessage());
+			}
+
 		}else{
 
-			// clear all former file list
-			//
-			for(int i = 0;i < m_listCallback.m_iconList.size();i++){
-				m_fileList.delete(0);			
-			}
-			m_listCallback.m_iconList.removeAllElements();
 			
 			m_currDisplayPath = _path;
 			
@@ -212,11 +257,11 @@ public class uploadFileScreen extends MainScreen implements
 				System.out.print(_e.getMessage());
 			}
 		}
-		
 	}
 	
+	
 	public Bitmap GetConstFileBitmap(String res)throws Exception{
-		Class classs = Class.forName("recvMain");
+		Class classs = Class.forName("com.yuchting.yuchberry.client.recvMain");
 		byte[] bytes = IOUtilities.streamToBytes(classs.getResourceAsStream(res));
 		
 		Bitmap b = new Bitmap(fsm_bitmap_width,fsm_bitmap_width);
@@ -304,17 +349,20 @@ public class uploadFileScreen extends MainScreen implements
 						m_deamon.AddAttachmentFile(t_file.m_filename_null);
 					}				
 					
+					m_mainApp.ClearUploadingScreen();
 					close();
 				}
 			}	
 			
 		}else if(_menu == m_cancel){
+			m_mainApp.ClearUploadingScreen();
 			close();
 		}	
 	}
 	
 	public boolean onClose(){
 		if(m_delScreen){
+			close();
 			return true;
 		}
 		
@@ -331,7 +379,6 @@ public class uploadFileScreen extends MainScreen implements
 			
 			return false;
 		}
-		
 	}
 	
 	public void fieldChanged(Field field, int context) {
