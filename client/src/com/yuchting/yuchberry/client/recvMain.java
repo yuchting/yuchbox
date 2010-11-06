@@ -97,18 +97,21 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
     		
     		recvMain.UploadingDesc t_desc = (recvMain.UploadingDesc)_uploading.elementAt(i);
     		
-    		if(t_desc.m_attachmentIdx != -1){
+    		if(t_desc.m_attachmentIdx == -1){
+    			
     			t_total = t_total + "Subject: " + t_desc.m_mail.GetSubject() + "(Failed) \n";
+    			
     		}else{
+    			
     			Object[] t_arg = 
         		{
         			t_desc.m_mail.GetSubject(),
         			new Integer(t_desc.m_attachmentIdx),
         			new Integer(t_desc.m_mail.GetAttachment().size()),
-        			new Integer(t_desc.m_uploadedSize * 100 / t_desc.m_totalSize),
+        			new Float((float)t_desc.m_uploadedSize / (float)t_desc.m_totalSize * 100),
         		};
         		
-        		t_total = t_total + MessageFormat.format("Subject: {0} ({1,integer}/{2,integer} {3,integer}%)\n",t_arg);
+        		t_total = t_total + MessageFormat.format("Subject: {0} ({1,number,integer}/{2,number,integer} attachment {3,number,##.#}%)\n",t_arg);
     		}   		
     	}
     	
@@ -326,12 +329,18 @@ public class recvMain extends UiApplication implements localResource {
 		for(int i = 0;i < m_uploadingDesc.size();i++){
 			UploadingDesc t_desc = (UploadingDesc)m_uploadingDesc.elementAt(i);
 			if(t_desc.m_mail == _mail){
+				
 				t_found = true;
 				
-				t_desc.m_attachmentIdx	= _attachmentIdx;
-				t_desc.m_totalSize		= _totalSize;
-				t_desc.m_uploadedSize	= _uploadedSize;
-				
+				if(_attachmentIdx == -2){					
+					m_uploadingDesc.removeElement(t_desc);
+					
+				}else{
+					t_desc.m_attachmentIdx	= _attachmentIdx;
+					t_desc.m_totalSize		= _totalSize;
+					t_desc.m_uploadedSize	= _uploadedSize;
+					
+				}
 				break;
 			}
 		}

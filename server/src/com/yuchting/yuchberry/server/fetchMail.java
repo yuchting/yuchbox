@@ -133,6 +133,7 @@ public class  fetchMail{
 		m_contain = sendReceive.ReadString(_stream);
 		m_contain_html = sendReceive.ReadString(_stream);
 		
+		m_vectAttachment.removeAllElements();
 		final int t_attachmentNum = sendReceive.ReadInt(_stream);
 		for(int i = 0;i < t_attachmentNum;i++){
 			Attachment t_attachment = new Attachment(); 
@@ -141,6 +142,7 @@ public class  fetchMail{
 			t_attachment.m_name = sendReceive.ReadString(_stream);
 			t_attachment.m_type = sendReceive.ReadString(_stream);
 			
+			m_vectAttachment.addElement(t_attachment);
 		}
 		
 	}

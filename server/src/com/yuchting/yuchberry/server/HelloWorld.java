@@ -12,6 +12,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.security.KeyStore;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
@@ -60,6 +61,24 @@ public class HelloWorld {
 //		HelloWorld test = new HelloWorld(); 
 //		test.berryRecvTest();
 
+		long n = 123456789;
+ 		String mask = "00000000000000";
+ 		String ds = Long.toString(n); 
+
+                // double to string
+ 	        String z = mask.substring(0 , mask.length() - ds.length()) + ds;
+ 	        System.out.println(z);
+ 	        
+		Object[] t_arg = 
+		{
+			"ddd",
+			new Integer(0),
+			new Integer(1),
+			new Float(0.3921),
+		};
+		
+		String t_form = MessageFormat.format("Subject: {0} ({1,number,integer}/{2,number,integer} attachment {3,number,##.#}%)\n",t_arg);
+		
 		DecimalFormat df2 = new DecimalFormat(".00");
 
 		System.out.println(df2.format(123499.56));

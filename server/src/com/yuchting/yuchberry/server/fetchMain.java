@@ -222,6 +222,8 @@ class berrySvrDeamon extends Thread{
 			//
 			m_recvMailAttach.addElement(t_mail);
 			
+			System.out.println("send mail with attachment " + t_mail.GetAttachment().size());
+			
 			CreateTmpSendMailAttachFile(t_mail);
 		}
 	}
@@ -238,6 +240,8 @@ class berrySvrDeamon extends Thread{
 			for(int j = 0;j < t_attachment.m_size;j++){
 				fos.write(0);
 			}
+			
+			System.out.println("store attachment " + t_filename + " size:" + t_attachment.m_size);
 			
 			fos.close();
 		}
@@ -542,8 +546,6 @@ class fetchMgr{
 		    		m_unreadMailVector.addElement(t_mail);
 		    	}
 		    }
-		    		    
-		    
 	    }	       
 	    
 	    folder.close(false);
@@ -554,9 +556,17 @@ class fetchMgr{
 		Message msg = new MimeMessage(m_session_send);
 		ComposeMessage(msg,_mail);
 	    
-		m_sendTransport.connect(m_host_send,fetchMain.sm_strUserNameFull,m_password);
+		m_sendTransport.connect(m_host_send,m_port_send,fetchMain.sm_strUserName,m_password);
 		m_sendTransport.sendMessage(msg, msg.getAllRecipients());
-		m_sendTransport.close();	
+		m_sendTransport.close();
+		
+		// delete the tmp files
+		//
+		for(int i = 0;i < _mail.GetAttachment().size();i++){
+			String t_fullname = "" + _mail.GetSendDate().getTime() + "_" + i + ".satt";
+			File t_file = new File(t_fullname);
+			t_file.delete();
+		}		
 	}
 	
 	
@@ -880,11 +890,14 @@ class fetchMgr{
 					MimeBodyPart t_filePart = new MimeBodyPart();
 					t_filePart.setFileName(t_attachment.m_name);
 
-					t_filePart.getInputStream().read( ReadFileBuffer( "" + _mail.GetSendDate().getTime() + "_" + i + ".satt"));
-									
+					String t_fullname = "" + _mail.GetSendDate().getTime() + "_" + i + ".satt";
+					t_filePart.setContent(ReadFileBuffer( t_fullname ), t_attachment.m_type);
+					
 					t_mainPart.addBodyPart(t_filePart);
 				}	
-			}catch(Exception _e){}
+			}catch(Exception _e){
+				System.out.println(_e.getMessage());
+			}
 			
 			msg.setContent(t_mainPart);
 			
