@@ -38,15 +38,17 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
         
         m_mainApp	= _app;        
         
-        m_hostName = new EditField(recvMain.sm_local.getString(localResource.HOST),"",128, EditField.FILTER_DEFAULT);
+        m_hostName = new EditField(recvMain.sm_local.getString(localResource.HOST),m_mainApp.m_hostname,128, EditField.FILTER_DEFAULT);
         m_hostName.setChangeListener(this);
         add(m_hostName);
         
-        m_hostport = new EditField(recvMain.sm_local.getString(localResource.PORT),"",5, EditField.FILTER_INTEGER);
+        m_hostport = new EditField(recvMain.sm_local.getString(localResource.PORT),
+        				m_mainApp.m_port == 0?"":Integer.toString(m_mainApp.m_port),5,EditField.FILTER_INTEGER);
+        
         m_hostport.setChangeListener(this);
         add(m_hostport);
         
-        m_userPassword = new EditField(recvMain.sm_local.getString(localResource.USER_PASSWORD),"",128, EditField.FILTER_DEFAULT);
+        m_userPassword = new EditField(recvMain.sm_local.getString(localResource.USER_PASSWORD),m_mainApp.m_hostname,128,EditField.FILTER_DEFAULT);
         add(m_userPassword);
         
         m_connectBut = new ButtonField(m_mainApp.m_connectDeamon.IsConnected()?"disconnect":"connect",
@@ -142,6 +144,10 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 										
 					
 					try{
+						//m_mainApp.m_hostname 		= m_hostName.getText();
+						//m_mainApp.m_port 			= Integer.valueOf(m_hostport.getText()).intValue();
+						//m_mainApp.m_userPassword 	= m_userPassword.getText();
+						
 						//m_mainApp.m_connectDeamon.Connect(m_hostName.getText(),
 						//									Integer.valueOf(m_hostport.getText()).intValue(),
 						//									m_userPassword.getText());
@@ -177,6 +183,10 @@ public class recvMain extends UiApplication implements localResource {
 	String				m_currentPath 		= new String("file:///store/");
 	
 	Vector				m_uploadingDesc 	= new Vector();
+	
+	String				m_hostname = new String();
+	int					m_port = 0;
+	String				m_userPassword = new String();
 	
 	class UploadingDesc{
 		
