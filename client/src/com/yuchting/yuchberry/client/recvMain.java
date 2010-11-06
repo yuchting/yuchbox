@@ -75,7 +75,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
     		return false;
     	}
     	
-    	System.exit(0);
+    	m_mainApp.Exit();
     	
     	return true;
     }
@@ -151,6 +151,8 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 						
 						m_mainApp.SetStateString("connecting...");
 						m_connectBut.setLabel("disconnect");
+						
+						m_mainApp.Start();
 						
 					}catch(Exception e){
 						DialogAlert(e.getMessage());
@@ -259,13 +261,20 @@ public class recvMain extends UiApplication implements localResource {
 		m_addItem.m_mainApp = this;
 		m_delItem.m_mainApp = this;
 		
-		ApplicationMenuItemRepository.getInstance().
-			addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_addItem);
 		
-		ApplicationMenuItemRepository.getInstance().
-			addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);
 	}
 	
+	public void Start(){
+		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_addItem);
+		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);
+	}
+	public void Exit(){
+		
+		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
+		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);
+		
+		System.exit(0);
+	}
 	public void activate(){
 		if(m_stateScreen == null){
 			m_stateScreen = new stateScreen(this);

@@ -576,8 +576,6 @@ class sendMailAttachmentDeamon extends Thread{
 							
 				sendReceive.ForceReadByte(in, m_bufferBytes, t_size);
 				
-				
-				
 				m_os.write(msg_head.msgMailAttach);
 				final long t_time = m_sendMail.GetSendDate().getTime();
 				sendReceive.WriteInt(m_os,(int)t_time);
@@ -588,6 +586,9 @@ class sendMailAttachmentDeamon extends Thread{
 				m_os.write(m_bufferBytes,0,t_size);
 				
 				m_connect.m_connect.SendBufferToSvr(m_os.toByteArray(), false);
+				
+				
+				System.out.println("send msgMailAttach time:"+ t_time + " beginIndex:" + m_beginIndex + " size:" + t_size);
 				
 				m_connect.m_mainApp.SetUploadingDesc(m_sendMail,m_attachmentIndex,
 													m_uploadedSize,m_totalSize);
@@ -603,7 +604,7 @@ class sendMailAttachmentDeamon extends Thread{
 				}
 				
 				m_uploadedSize += t_size;
-				m_os.close();
+				m_os.reset();
 				
 				
 			}catch(Exception _e){
@@ -802,11 +803,7 @@ public class connectDeamon extends Thread implements SendListener,
 				}
 				
 				t_name = t_name.substring(t_lastSplash + 1,t_name.length());
-				
-				// TODO add the HTML text to the composing mail
-				//
-				
-				
+								
 			} 
 		}
 	}

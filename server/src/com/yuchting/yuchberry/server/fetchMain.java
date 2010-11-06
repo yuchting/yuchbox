@@ -259,6 +259,8 @@ class berrySvrDeamon extends Thread{
 			throw new Exception("error attach" + t_filename + " idx and size");
 		}
 		
+		System.out.println("recv msgMailAttach time:"+ t_time + " beginIndex:" + t_segIdx + " size:" + t_segSize);
+		
 		byte[] t_bytes = new byte[t_segSize];
 		sendReceive.ForceReadByte(in, t_bytes, t_segSize);
 		

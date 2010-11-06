@@ -164,6 +164,9 @@ public class uploadFileScreen extends MainScreen implements
 		
 		if(m_delScreen){
 			try{	
+				
+				setTitle("Del your uploading attachment");
+				
 				int t_index = 0;
 				Vector t_files = m_deamon.GetAttachmentFile();
 				for(int i = 0;i < t_files.size();i++){
@@ -174,7 +177,7 @@ public class uploadFileScreen extends MainScreen implements
 					if(t_lastSplash == -1){
 						t_name = "xxxxx";
 					}else{
-						t_name = t_fullname.substring(t_lastSplash + 1,t_name.length());
+						t_name = t_fullname.substring(t_lastSplash + 1,t_fullname.length());
 					}				
 					
 					Bitmap bitmap;
