@@ -103,15 +103,11 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
     			
     		}else{
     			
-    			Object[] t_arg = 
-        		{
-        			t_desc.m_mail.GetSubject(),
-        			new Integer(t_desc.m_attachmentIdx),
-        			new Integer(t_desc.m_mail.GetAttachment().size()),
-        			new Float((float)t_desc.m_uploadedSize / (float)t_desc.m_totalSize * 100),
-        		};
+    			final int t_tmp = (int)((float)t_desc.m_uploadedSize / (float)t_desc.m_totalSize * 1000);
+    			final float t_percent = (float)t_tmp / 10;
         		
-        		t_total = t_total + MessageFormat.format("Subject: {0} ({1,number,integer}/{2,number,integer} attachment {3,number,##.#}%)\n",t_arg);
+        		t_total = t_total + "Subject: "+ t_desc.m_mail.GetSubject() + "(" +
+        				t_desc.m_attachmentIdx + "/" + t_desc.m_mail.GetAttachment().size() + " " + t_percent + "%) \n";
     		}   		
     	}
     	
