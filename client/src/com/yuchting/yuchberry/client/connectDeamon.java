@@ -174,7 +174,7 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			try{
 	
-				AddMarkReadMail(e.getMessage());
+				//AddMarkReadMail(e.getMessage());
 				e.getMessage().removeMessageListener(this);
 			}catch(Exception _e){}
 		}
@@ -186,52 +186,46 @@ public class connectDeamon extends Thread implements SendListener,
 	public void run(Message m, SupportedAttachmentPart p){
 		
 		//m_screen.DialogAlert("hahah no reaction");
-		String str = p.getContent().toString();
-		int t_slpashIndex = -1;
-		if(str.length() < 32 && (t_slpashIndex = str.indexOf('_')) != -1){
-			final int t_split = str.indexOf(' ');
-			if(t_split != -1){
+		ByteArrayInputStream in = new ByteArrayInputStream((byte[])p.getContent());
 
-				//  search the fetching attachment list
-				//
-				final String t_filename = str.substring(0, t_split);
-				final String t_filesize = str.substring(t_split + 1, str.length());
+		if(in.read() == 'y' && in.read() == 'u' 
+			&& in.read() == 'c' && in.read() == 'h'){
+			
+			try{
+					
+				final int t_mailIndex 		= sendReceive.ReadInt(in);
+				final int t_attachIndex	= sendReceive.ReadInt(in);
+				final int t_attachSize		= sendReceive.ReadInt(in);
 				
-				final int size = Integer.parseInt(t_filesize);
-
 				for(int i = 0;i < m_vectReceiveAttach.size();i++){
 					FetchAttachment t_att = (FetchAttachment)m_vectReceiveAttach.elementAt(i);
 											
 					if(t_att.m_message == m && t_att.m_attachPart == p){
 						
-						final String t_progress = p.getFilename() +" (" + t_att.m_completePercent + "%d) wait a moment";
+						final String t_progress = p.getFilename() +" (" + t_att.m_completePercent + "%) wait a moment";
 						
 						m_mainApp.DialogAlert(t_progress);
 						
 						return;
 					}
 				}			
-				
-				final int t_mailIdx = Integer.parseInt(str.substring(0,t_slpashIndex));
-				final int t_attachmentIdx = Integer.parseInt(str.substring(t_slpashIndex + 1,t_split));
-				
+		
 				FetchAttachment t_att = new FetchAttachment();
 				
-				t_att.m_mailIndex 		= t_mailIdx;
-				t_att.m_attachmentIdx	= t_attachmentIdx;
-				t_att.m_size			= size;
+				t_att.m_mailIndex 		= t_mailIndex;
+				t_att.m_attachmentIdx	= t_attachIndex;
+				t_att.m_size			= t_attachSize;
 				t_att.m_attachPart		= p;
 				t_att.m_message			= m;
-				t_att.m_completePercent	= 0;
+				t_att.m_completePercent	= 0;			
 				
-				try{
-					t_att.m_fileConnect		= SendFetchAttachmentFile(t_att);
-					m_vectReceiveAttach.addElement(t_att);
-					
-				}catch(Exception e){
-					m_mainApp.DialogAlert("create the attachment file failed:\n" + e.getMessage());
-				}		
+				t_att.m_fileConnect		= SendFetchAttachmentFile(t_att);
+				m_vectReceiveAttach.addElement(t_att);
+				
+			}catch(Exception e){
+				m_mainApp.DialogAlert("create the attachment file failed:\n" + e.getMessage());
 			}		
+				
 		}
 	}
 	
@@ -274,16 +268,19 @@ public class connectDeamon extends Thread implements SendListener,
 		final String t_filename = "" + _att.m_mailIndex + "_" + _att.m_attachmentIdx + ".att";
 		
 		FileConnection t_file = (FileConnection)Connector.open(recvMain.fsm_attachmentDir + t_filename,Connector.READ_WRITE);
-		if(!t_file.exists()){
-			t_file.create();
+		if(t_file.exists()){
+			t_file.delete();
 		}
+		
+		t_file.create();
 		
 		int t_writeIdx = 0;
 		DataOutputStream out = t_file.openDataOutputStream();
 		while(t_writeIdx < _att.m_size){
 			out.write(0);
+			t_writeIdx++;
 		}
-		out.close();		
+		out.close();
 		
 		return t_file;		
 	}
@@ -655,6 +652,9 @@ public class connectDeamon extends Thread implements SendListener,
 				t_os.write(t_bytes);
 				t_os.close();
 				
+				System.out.println("write msgMailAttach mailIndex:" + t_mailIndex + " attachIndex:" + t_attachIndex + " startIndex:" +
+									t_startIndex + " size:" + t_size);
+				
 				if(t_startIndex + t_size >= t_att.m_size){
 					// fetching attachment is over...
 					//
@@ -947,15 +947,25 @@ public class connectDeamon extends Thread implements SendListener,
 	    		
 				Vector t_contain	= _mail.GetAttachment();
 				
+				ByteArrayOutputStream t_tmpContent = new ByteArrayOutputStream();
+				
 		    	for(int i = 0;i< t_contain.size();i++){
 		    		
 		    		fetchMail.Attachment t_attachment = (fetchMail.Attachment)t_contain.elementAt(i);
+		    		t_tmpContent.reset();
+		    		
+		    		t_tmpContent.write('y');
+		    		t_tmpContent.write('u');
+		    		t_tmpContent.write('c');
+		    		t_tmpContent.write('h');
+		    		sendReceive.WriteInt(t_tmpContent, _mail.GetMailIndex());
+		    		sendReceive.WriteInt(t_tmpContent,i);
+		    		sendReceive.WriteInt(t_tmpContent, t_attachment.m_size);
 		    		
 		    		SupportedAttachmentPart attach = new SupportedAttachmentPart( multipart,
 		    																	(String)t_attachment.m_type,
 															    				(String)t_attachment.m_name + " (" + t_attachment.m_size / 1024 +"KB)",
-															    				("" + _mail.GetMailIndex() + "_" + i + ".att " + t_attachment.m_size).getBytes());
-	    		
+															    				t_tmpContent.toByteArray());
 		    		multipart.addBodyPart(attach);
 		    	}
 			}

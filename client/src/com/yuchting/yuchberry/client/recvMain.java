@@ -146,7 +146,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 						//									Integer.valueOf(m_hostport.getText()).intValue(),
 						//									m_userPassword.getText());
 						
-						m_mainApp.m_connectDeamon.Connect("www.google.com",80,"111111");
+						m_mainApp.m_connectDeamon.Connect("127.0.0.1",9716,"111111");
 						
 						m_mainApp.SetStateString("connecting...");
 						m_connectBut.setLabel("disconnect");
@@ -167,7 +167,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 
 public class recvMain extends UiApplication implements localResource {
 	
-	final static String fsm_attachmentDir = "file:///SDCard/YuchBerry/";
+	final static String fsm_attachmentDir = "file:///store/home/user/YuchBerry/";
 	
 	stateScreen 		m_stateScreen 		= null;
 	uploadFileScreen 	m_uploadFileScreen	= null;

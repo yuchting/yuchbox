@@ -245,11 +245,19 @@ class sendReceive extends Thread{
 	
 	static public void ForceReadByte(InputStream _stream,byte[] _buffer,int _readLen)throws Exception{
 		int t_readIndex = 0;
+		int t_counter = 0;
+		
 		while(_readLen > t_readIndex){
 			final int t_c = _stream.read(_buffer,t_readIndex,_readLen - t_readIndex);
 			if(t_c > 0){
 				t_readIndex += t_c;
-			}			 
+			}else{
+				t_counter++;
+				
+				if(t_counter > 10){
+					throw new Exception("FroceReadByte failed to read " + _readLen );
+				}
+			}
 		}
 	}
 	

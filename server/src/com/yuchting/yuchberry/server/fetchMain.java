@@ -84,6 +84,9 @@ class berrySendAttachment extends Thread{
 				sendReceive.WriteInt(t_os,t_startIndex);
 				sendReceive.WriteInt(t_os,t_size);
 				
+				System.out.println("send msgMailAttach mailIndex:" + m_mailIndex + " attachIndex:" + m_attachIndex + " startIndex:" +
+									t_startIndex + " size:" + t_size);
+				
 				while(m_fetchMain.GetClientConnected() == null){
 					sleep(200);
 				}
