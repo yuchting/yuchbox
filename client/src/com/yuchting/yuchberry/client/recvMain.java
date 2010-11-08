@@ -2,11 +2,13 @@ package com.yuchting.yuchberry.client;
 
 import java.util.Vector;
 
+import javax.microedition.io.Connector;
+import javax.microedition.io.file.FileConnection;
+
 import local.localResource;
 import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
-import net.rim.device.api.i18n.MessageFormat;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -82,15 +84,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
     	return true;
     }
         
-    public void DialogAlert(final String _msg){
-    	
-    	UiApplication.getUiApplication().invokeLater(new Runnable() 
-		{
-		    public void run(){
-		       Dialog.alert(_msg);
-		    }
-		});
-    }
+   
     
     public void RefreshUploadState(final Vector _uploading){
     	String t_total = new String();
@@ -172,6 +166,8 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 }
 
 public class recvMain extends UiApplication implements localResource {
+	
+	final static String fsm_attachmentDir = "file:///SDCard/YuchBerry/";
 	
 	stateScreen 		m_stateScreen 		= null;
 	uploadFileScreen 	m_uploadFileScreen	= null;
@@ -256,16 +252,16 @@ public class recvMain extends UiApplication implements localResource {
 				
 		// create the sdcard path 
 		//
-//        try{
-//        	FileConnection fc = (FileConnection) Connector.open("file:///SDCard/YuchBerry",Connector.READ_WRITE);
-//        	if(!fc.exists()){
-//        		fc.mkdir();
-//        	}
-//        }catch(Exception _e){
-//        	
-//        	DialogAlert("can't use the SDCard to store attachment!");
-//        	System.exit(0);
-//        }
+        try{
+        	FileConnection fc = (FileConnection) Connector.open(fsm_attachmentDir,Connector.READ_WRITE);
+        	if(!fc.exists()){
+        		fc.mkdir();
+        	}
+        }catch(Exception _e){
+        	
+        	Dialog.alert("can't use the SDCard to store attachment!");
+        	System.exit(0);
+        }
 	
 		m_addItem.m_mainApp = this;
 		m_delItem.m_mainApp = this;
@@ -328,6 +324,16 @@ public class recvMain extends UiApplication implements localResource {
 		m_stateString = _state;
 	}
 	
+	public void DialogAlert(final String _msg){
+	    	
+    	UiApplication.getUiApplication().invokeLater(new Runnable() 
+		{
+		    public void run(){
+		       Dialog.alert(_msg);
+		    }
+		});
+    }
+ 
 	public void SetUploadingDesc(final fetchMail _mail,final int _attachmentIdx,
 								final int _uploadedSize,final int _totalSize){
 						

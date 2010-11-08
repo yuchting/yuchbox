@@ -39,6 +39,9 @@ class sendReceive extends Thread{
 		if(m_closed = false){
 			m_closed = true;
 	
+			m_unsendedPackage.clear();
+			m_unprocessedPackage.clear();
+			
 			while(isAlive()){
 				try{
 					sleep(10);

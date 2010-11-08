@@ -61,28 +61,15 @@ public class HelloWorld {
 //		HelloWorld test = new HelloWorld(); 
 //		test.berryRecvTest();
 
-		long n = 123456789;
- 		String mask = "00000000000000";
- 		String ds = Long.toString(n); 
-
-                // double to string
- 	        String z = mask.substring(0 , mask.length() - ds.length()) + ds;
- 	        System.out.println(z);
- 	        
-		Object[] t_arg = 
-		{
-			"ddd",
-			new Integer(0),
-			new Integer(1),
-			new Float(0.3921),
-		};
+		String str = "12_485.att 12345";
+		int t_split = str.indexOf(' ');
 		
-		String t_form = MessageFormat.format("Subject: {0} ({1,number,integer}/{2,number,integer} attachment {3,number,##.#}%)\n",t_arg);
+		String t_filename = str.substring(0, t_split);
+		String t_filesize = str.substring(t_split + 1, str.length());
 		
-		DecimalFormat df2 = new DecimalFormat(".00");
-
-		System.out.println(df2.format(123499.56));
-
+		int  value = Integer.parseInt(t_filesize);
+		
+		System.out.println(str);
 	
 	}
 	

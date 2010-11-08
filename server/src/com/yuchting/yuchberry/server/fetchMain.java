@@ -32,6 +32,77 @@ import javax.net.ssl.SSLServerSocketFactory;
 
 import com.sun.mail.smtp.SMTPTransport;
 
+
+class berrySendAttachment extends Thread{
+	
+	FileInputStream		m_file;
+	berrySvrDeamon		m_deamon;
+	int					m_fileLength;
+	int					m_mailIndex;
+	int					m_attachIndex;
+	
+	
+	final static int	fsm_sendSize = 512;
+	
+	berrySendAttachment(int _mailIndex,int _attachIdx,berrySvrDeamon _deamon){
+		
+		m_deamon 		= _deamon;
+		m_mailIndex 	= _mailIndex;
+		m_attachIndex 	= _attachIdx;
+		
+		try{
+			File t_file = new File("" + _mailIndex +"_"+ _attachIdx + ".att");
+			
+			m_fileLength = (int)t_file.length();
+			
+			m_file = new FileInputStream(t_file);
+			
+		}catch(Exception _e){
+			return;
+		}
+		
+		start();
+	}
+	
+	public void run(){
+		
+		int t_startIndex = 0;
+		byte[] t_buffer = new byte[fsm_sendSize];
+		
+		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+		
+		while(true){
+			try{
+				t_os.reset();
+				
+				final int t_size = (t_startIndex + fsm_sendSize) > m_fileLength ?(m_fileLength - t_startIndex):fsm_sendSize;
+				m_file.read(t_buffer, 0, t_size);
+				t_os.write(msg_head.msgMailAttach);
+				
+				sendReceive.WriteInt(t_os,m_mailIndex);
+				sendReceive.WriteInt(t_os,m_attachIndex);
+				sendReceive.WriteInt(t_os,t_startIndex);
+				sendReceive.WriteInt(t_os,t_size);
+				
+				while(m_deamon.m_socket == null ){
+					sleep(200);
+				}
+				
+				m_deamon.m_sendReceive.SendBufferToSvr(t_buffer, true);
+				
+				t_startIndex += t_size;
+				
+				if(fsm_sendSize != t_size){
+					break;
+				}
+				
+			}catch(Exception _e){
+				
+			}			
+		}
+	}
+}
+
 class berrySvrPush extends Thread{
 	
 	berrySvrDeamon		m_serverDeamon;
@@ -51,33 +122,30 @@ class berrySvrPush extends Thread{
 			
 			try{
 				
-				if(m_serverDeamon.IsConfirmConnect()){
-
-					m_serverDeamon.m_fetchMgr.CheckFolder();
-									
-					if(!m_serverDeamon.m_socket.isConnected()){
-						break;
-					}
-
-					Vector t_unreadMailVector = m_serverDeamon.m_fetchMgr.m_unreadMailVector;
-					while(!t_unreadMailVector.isEmpty()){
-						fetchMail t_mail = (fetchMail)t_unreadMailVector.elementAt(0); 
-						
-						ByteArrayOutputStream t_output = new ByteArrayOutputStream();
-						
-						t_output.write(msg_head.msgMail);
-						t_mail.OutputMail(t_output);
-						
-						berrySvrDeamon.prt("CheckFolder OK and send mail!");
-						
-						m_sendReceive.SendBufferToSvr(t_output.toByteArray(),false);
-						
-						m_serverDeamon.m_fetchMgr.SetBeginFetchIndex(t_mail.GetMailIndex());
-						
-						t_unreadMailVector.remove(0);
-					}
-					
+				m_serverDeamon.m_fetchMgr.CheckFolder();
+								
+				if(m_serverDeamon.m_socket == null){
+					break;
 				}
+
+				Vector t_unreadMailVector = m_serverDeamon.m_fetchMgr.m_unreadMailVector;
+				while(!t_unreadMailVector.isEmpty()){
+					fetchMail t_mail = (fetchMail)t_unreadMailVector.elementAt(0); 
+					
+					ByteArrayOutputStream t_output = new ByteArrayOutputStream();
+					
+					t_output.write(msg_head.msgMail);
+					t_mail.OutputMail(t_output);
+					
+					berrySvrDeamon.prt("CheckFolder OK and send mail!");
+					
+					m_sendReceive.SendBufferToSvr(t_output.toByteArray(),false);
+					
+					m_serverDeamon.m_fetchMgr.SetBeginFetchIndex(t_mail.GetMailIndex());
+					
+					t_unreadMailVector.remove(0);
+				}
+				
 				
 				sleep(fetchMain.sm_pushInterval);
 				
@@ -93,26 +161,66 @@ class berrySvrPush extends Thread{
 	
 }
 
+
 class berrySvrDeamon extends Thread{
 	
 	public fetchMgr		m_fetchMgr = null;
 	public Socket		m_socket = null;
 	
+	sendReceive  m_sendReceive = null;
+	
+	
 	private berrySvrPush m_pushDeamon = null;
-	private sendReceive  m_sendReceive = null;
 	
 	private Vector			m_recvMailAttach = new Vector();
 	
-	boolean m_confirmConnect	= false;
+	public berrySvrDeamon(fetchMgr _mgr)throws Exception{
+		m_fetchMgr 	= _mgr;					
+	}
 	
+	public void StartDeamon(Socket _s)throws Exception{
 		
-	public berrySvrDeamon(Socket _s,fetchMgr _mgr)throws Exception{
-		m_fetchMgr 	= _mgr;
+		// wait for signIn first
+		//
+		_s.setSoTimeout(1000);
+		
+		try{
+			InputStream in = _s.getInputStream();
+			final int t_msg_head = in.read();
+		
+			if(msg_head.msgConfirm != t_msg_head 
+			|| !sendReceive.ReadString(in).equals(fetchMain.sm_strUserPassword)){
+				
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+				os.write(msg_head.msgNote);
+				sendReceive.WriteString(os, msg_head.noteErrorUserPassword);
+				
+				_s.getOutputStream().write(os.toByteArray());
+				_s.close();
+				
+				return;
+			}
+			
+		}catch(Exception _e){
+			// time out
+			//
+			_s.close();
+			
+			return;
+		}
+		
+		_s.setSoTimeout(0);
+		
+		if(m_socket != null){
+			m_socket.close();
+		}		
+	
+		// prepare receive and push deamon
+		//
 		m_socket	= _s;
 
 		try{
 			m_pushDeamon = new berrySvrPush(this);
-			
 			m_sendReceive = new sendReceive(m_socket.getOutputStream(),m_socket.getInputStream());	
 		}catch(Exception _e){
 			prt("construct berrySvrDeamon error " + _e.getMessage());
@@ -128,15 +236,10 @@ class berrySvrDeamon extends Thread{
 		
 		prt("some client connect");
 	}
-	
-	public boolean IsConfirmConnect(){
-		return m_confirmConnect;
-	}
-	
+		
 	static void prt(String s) {
 		System.out.println(s);
-	}
-	
+	}	
 	
 	public void run(){
 		
@@ -154,14 +257,16 @@ class berrySvrDeamon extends Thread{
 				ProcessPackage(t_package);
 				
 			}catch(Exception _e){
+				
 				try{
-					m_socket.close();
+					m_socket.close();					
 				}catch(Exception e){
 					prt(e.getMessage());
 					e.printStackTrace();
 				}
 				
-				m_sendReceive.CloseSendReceive();				
+				m_socket = null;
+				m_sendReceive.CloseSendReceive();
 				
 				prt(_e.getMessage());
 				_e.printStackTrace();				
@@ -176,25 +281,7 @@ class berrySvrDeamon extends Thread{
 		ByteArrayInputStream in = new ByteArrayInputStream(_package);
 		
 		final int t_msg_head = in.read();
-		
-		if(m_confirmConnect == false){
-			if(msg_head.msgConfirm != t_msg_head 
-			|| !sendReceive.ReadString(in).equals(fetchMain.sm_strUserPassword)){
 				
-				ByteArrayOutputStream os = new ByteArrayOutputStream ();
-				os.write(msg_head.msgNote);
-				sendReceive.WriteString(os, msg_head.noteErrorUserPassword);
-				
-				m_sendReceive.SendBufferToSvr(os.toByteArray(), true);
-				
-				throw new Exception( msg_head.noteErrorUserPassword);				
-			}
-			
-			m_confirmConnect = true;
-			
-			return;
-		}
-		
 		switch(t_msg_head){			
 			case msg_head.msgMail:
 				ProcessMail(in);
@@ -204,6 +291,9 @@ class berrySvrDeamon extends Thread{
 				break;
 			case msg_head.msgMailAttach:
 				ProcessMailAttach(in);
+				break;
+			case msg_head.msgFetchAttach:
+				ProcessFetchMailAttach(in);
 				break;
 			default:
 				throw new Exception("illegal client connect");
@@ -226,6 +316,13 @@ class berrySvrDeamon extends Thread{
 			
 			CreateTmpSendMailAttachFile(t_mail);
 		}
+	}
+	private void ProcessFetchMailAttach(InputStream in)throws Exception{
+		final int t_mailIndex = sendReceive.ReadInt(in);
+		final int t_attachIndex = sendReceive.ReadInt(in);
+		
+		new berrySendAttachment(t_mailIndex,t_attachIndex,this);
+		
 	}
 	
 	private void CreateTmpSendMailAttachFile(fetchMail _mail)throws Exception{
@@ -363,9 +460,7 @@ class fetchMgr{
     
     	
     Vector m_unreadMailVector = new Vector();
-    
-    Vector	m_vectConnect = new Vector();
-    
+
     // pushed mail index vector 
     Vector m_vectPushedMailIndex = new Vector();
     
@@ -441,12 +536,15 @@ class fetchMgr{
     	//
     	//
     	ServerSocket t_svr = GetSocketServer(m_userPassword,false);
-    	
     	berrySvrDeamon.prt("prepare account OK");
-    	    	
+    	
+    	berrySvrDeamon deamon = new berrySvrDeamon(this);
+    	
 		while(true){
 			try{
-    			m_vectConnect.addElement(new berrySvrDeamon(t_svr.accept(),this));
+				
+				deamon.StartDeamon(t_svr.accept());
+				
 			}catch(Exception _e){
 				
 //				for(int i = 0;i < m_vectConnect.size();i++){
@@ -605,7 +703,6 @@ class fetchMgr{
 		if(m_store != null){
 			
 		    m_unreadMailVector.clear();
-		    m_vectConnect.clear();
 		    
 		    // pushed mail index vector 
 		    m_vectPushedMailIndex.clear();
