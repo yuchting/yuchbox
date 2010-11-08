@@ -119,6 +119,8 @@ public class uploadFileScreen extends MainScreen implements
 	Bitmap				m_audioFileBitmap = null;
 	Bitmap				m_binFileBitmap	= null;
 	Bitmap				m_folderBitmap	= null;
+	Bitmap				m_pictureBitmap	= null;
+	Bitmap				m_movieBitmap	= null;
 	
 	IconListCallback	m_listCallback	= new IconListCallback();
 	
@@ -140,7 +142,10 @@ public class uploadFileScreen extends MainScreen implements
 			m_textFileBitmap 	= GetConstFileBitmap("/Crystal_Txt_resize.bmp");
 			m_audioFileBitmap 	= GetConstFileBitmap("/Crystal_Audio_resize.bmp");
 			m_binFileBitmap 	= GetConstFileBitmap("/Crystal_Generic_resize.bmp");
-			m_folderBitmap 		= GetConstFileBitmap("/Folder_yellow_resize.bmp");		
+			m_folderBitmap 		= GetConstFileBitmap("/Folder_yellow_resize.bmp");
+			m_pictureBitmap		= GetConstFileBitmap("/Picture.bmp");
+			m_movieBitmap		= GetConstFileBitmap("/Movie.bmp");
+			
 		}catch(Exception e){}	
 		
 		m_fileList.setCallback(m_listCallback);		
@@ -187,16 +192,9 @@ public class uploadFileScreen extends MainScreen implements
 					}else if(IsTxtFile(t_name)){
 						bitmap = m_textFileBitmap;
 					}else if(IsImageFile(t_name)){
-						
-						bitmap = new Bitmap(fsm_bitmap_width,fsm_bitmap_height);
-						
-						FileConnection next = (FileConnection) Connector.open(t_fullname,Connector.READ);
-						
-						byte[] t_image_bytes = IOUtilities.streamToBytes(next.openInputStream());
-						EncodedImage image = EncodedImage.createEncodedImage(t_image_bytes, 0, t_image_bytes.length);
-						
-						image.getBitmap().scaleInto(bitmap, Bitmap.FILTER_BILINEAR);
-						
+						bitmap = m_pictureBitmap;
+					}else if(IsMovieFile(t_name)){
+						bitmap = m_movieBitmap;
 					}else{
 						bitmap = m_binFileBitmap;
 					}
@@ -238,14 +236,9 @@ public class uploadFileScreen extends MainScreen implements
 					}else if(IsTxtFile(t_name)){
 						bitmap = m_textFileBitmap;
 					}else if(IsImageFile(t_name)){
-						
-						bitmap = new Bitmap(fsm_bitmap_width,fsm_bitmap_height);
-						
-						byte[] t_image_bytes = IOUtilities.streamToBytes(next.openInputStream());
-						EncodedImage image = EncodedImage.createEncodedImage(t_image_bytes, 0, t_image_bytes.length);
-						
-						image.getBitmap().scaleInto(bitmap, Bitmap.FILTER_BILINEAR);
-						
+						bitmap = m_pictureBitmap;
+					}else if(IsMovieFile(t_name)){
+						bitmap = m_movieBitmap;
 					}else{
 						bitmap = m_binFileBitmap;
 					}
@@ -318,6 +311,16 @@ public class uploadFileScreen extends MainScreen implements
 				|| t_lower.equals(".png")
 				|| t_lower.equals(".bmp")
 				|| t_lower.equals(".gif");
+	}
+	
+	public static boolean IsMovieFile(String _filename){
+
+		String t_lower = _filename.toLowerCase();
+		t_lower = t_lower.substring(Math.max(0, t_lower.length() - 4));
+				
+		return t_lower.equals(".3gp")
+				|| t_lower.equals(".mp4")
+				|| t_lower.equals(".wmv");
 	}
 
 	

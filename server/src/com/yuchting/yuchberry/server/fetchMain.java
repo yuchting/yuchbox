@@ -121,12 +121,11 @@ class berrySvrPush extends Thread{
 		while(true){
 			
 			try{
-				
-				m_serverDeamon.m_fetchMgr.CheckFolder();
-								
-				if(m_serverDeamon.m_socket == null){
+				if(!m_serverDeamon.m_socket.isConnected()){
 					break;
 				}
+				
+				m_serverDeamon.m_fetchMgr.CheckFolder();
 
 				Vector t_unreadMailVector = m_serverDeamon.m_fetchMgr.m_unreadMailVector;
 				while(!t_unreadMailVector.isEmpty()){
@@ -214,10 +213,16 @@ class berrySvrDeamon extends Thread{
 		
 		_s.setSoTimeout(0);
 		
-		if(m_socket != null){
-			m_socket.close();
+		if(m_fetchMgr.GetClientConnected() != null 
+		&& m_fetchMgr.GetClientConnected().m_socket != null){
+			
+			// kick the former client
+			//
+			m_fetchMgr.GetClientConnected().m_socket.close();
 		}		
 	
+		m_fetchMgr.SetClientConnected(this);
+		
 		// prepare receive and push deamon
 		//
 		m_socket	= _s;
@@ -271,9 +276,12 @@ class berrySvrDeamon extends Thread{
 					e.printStackTrace();
 				}
 				
+				
 				m_socket = null;
 				m_sendReceive.CloseSendReceive();
 				m_fetchMgr.SetClientConnected(null);
+				
+				m_pushDeamon.interrupt();
 				
 				prt(_e.getMessage());
 				_e.printStackTrace();				
@@ -487,16 +495,7 @@ class fetchMgr{
 							String _username,
 							String _password,
 							String _userPassword) throws Exception{
-
-    	DestroyConnect();
-    	
-		if(m_session != null){
-			throw new Exception("has been initialize the session");
-		}
-		
-    	m_session = Session.getInstance(m_sysProps, null);
-    	m_session.setDebug(false);
-		
+	
     	m_protocol	= _protocol;
     	m_host		= _host;
     	m_port		= _port;
@@ -511,44 +510,17 @@ class fetchMgr{
     	
     	m_beginFetchIndex = fetchMain.sm_fetchIndex;
     	
-    	if(m_protocol == null){
-    		m_protocol = "pop3";
-    	}else{
-    		
-    		if(!m_protocol.equals("imap") 
-    		&& !m_protocol.equals("pop3") 
-    		&& !m_protocol.equals("pop3s") 
-    		&& !m_protocol.equals("imaps")){
-    			
-    			m_protocol = "pop3";
-    		}   		
-	    }
     	
-		
-    	m_store = m_session.getStore(m_protocol);
-    	m_store.connect(m_host,m_port,m_userName,m_password);
-    	
-    	// initialize the smtp transfer
-    	//
-    	m_sysProps_send.put("mail.smtp.auth", "true");
-    	m_sysProps_send.put("mail.smtp.port", Integer.toString(m_port_send));
-    	m_sysProps_send.put("mail.smtp.starttls.enable","true");
-    	
-    	m_session_send = Session.getInstance(m_sysProps_send, null);
-    	m_session_send.setDebug(false);
-    	
-    	m_sendTransport = (SMTPTransport)m_session_send.getTransport(m_protocol_send);
-    	   	
-    	   	
-    	//
-    	//
+    	ResetSession();  	
+
+
     	ServerSocket t_svr = GetSocketServer(m_userPassword,false);
     	berrySvrDeamon.prt("prepare account OK");
     	
 		while(true){
 			try{
 				
-				new berrySvrDeamon(this, t_svr.accept());
+				m_currConnect = new berrySvrDeamon(this, t_svr.accept());
 				
 			}catch(Exception _e){
 				_e.printStackTrace();
@@ -564,8 +536,62 @@ class fetchMgr{
 //					}
 //				}			
 	    	}
-    	}
+    	}	
+	}
+	
+	public void ResetSession()throws Exception{
+		
+		DestroyConnect();
+    	
+		if(m_session != null){
+			throw new Exception("has been initialize the session");
+		}
+				
+		if(m_protocol == null){
+    		m_protocol = "pop3";
+    	}else{
     		
+    		if(!m_protocol.equals("imap") 
+    		&& !m_protocol.equals("pop3") 
+    		&& !m_protocol.equals("pop3s") 
+    		&& !m_protocol.equals("imaps")){
+    			
+    			m_protocol = "pop3";
+    		}   		
+	    }
+		
+		m_session = Session.getInstance(m_sysProps, null);
+    	m_session.setDebug(false);
+    			
+    	m_store = m_session.getStore(m_protocol);
+    	m_store.connect(m_host,m_port,m_userName,m_password);
+    	
+    	// initialize the smtp transfer
+    	//
+    	m_sysProps_send.put("mail.smtp.auth", "true");
+    	m_sysProps_send.put("mail.smtp.port", Integer.toString(m_port_send));
+    	m_sysProps_send.put("mail.smtp.starttls.enable","true");
+    	
+    	m_session_send = Session.getInstance(m_sysProps_send, null);
+    	m_session_send.setDebug(false);
+    	
+    	m_sendTransport = (SMTPTransport)m_session_send.getTransport(m_protocol_send);
+    	
+	}
+	
+	public void DestroyConnect()throws Exception{
+		m_session = null;
+		
+		if(m_store != null){
+			
+		    m_unreadMailVector.clear();
+		    
+		    // pushed mail index vector 
+		    m_vectPushedMailIndex.clear();
+		    
+			m_store.close();
+			m_store = null;
+		}
 	}
 	
 	public int GetMailCountWhenFetched(){
@@ -594,7 +620,7 @@ class fetchMgr{
 		return	m_currConnect;
 	}
 	
-	public void SetClientConnected(berrySvrDeamon _set){
+	public synchronized void SetClientConnected(berrySvrDeamon _set){
 		m_currConnect = _set;
 	}
 	
@@ -707,24 +733,7 @@ class fetchMgr{
 	    	folder.close(false);
 	    }	        
 	}
-	
-	
-	
-	public void DestroyConnect()throws Exception{
-		m_session = null;
-		
-		if(m_store != null){
 			
-		    m_unreadMailVector.clear();
-		    
-		    // pushed mail index vector 
-		    m_vectPushedMailIndex.clear();
-		    
-			m_store.close();
-			m_store = null;
-		}
-	}
-		
 	public boolean IsConnected(){
 		return m_session != null;
 	}

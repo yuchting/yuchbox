@@ -42,6 +42,8 @@ class sendReceive extends Thread{
 			m_unsendedPackage.clear();
 			m_unprocessedPackage.clear();
 			
+			interrupt();
+			
 			while(isAlive()){
 				try{
 					sleep(10);
