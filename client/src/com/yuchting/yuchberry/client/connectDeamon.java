@@ -64,6 +64,8 @@ public class connectDeamon extends Thread implements SendListener,
 	 sendReceive		m_connect = null;
 	 
 	 String				m_hostname;
+	 String				m_hostip = null;
+	 
 	 int				m_hostport;
 	 String				m_userPassword;
 	 
@@ -428,20 +430,37 @@ public class connectDeamon extends Thread implements SendListener,
 	 private SocketConnection GetConnection(boolean _ssl)throws Exception{
 		 
 		 String URL ;
+
+		 // first use IP address to decrease the DNS message  
+		 //		 
 		 
 		 if(_ssl){
-			 URL =  "ssl://" + m_hostname + ":" + m_hostport + ";deviceside=true";
+			 URL =  "ssl://" + ((m_hostip != null)?m_hostip:m_hostname) + ":" + m_hostport + ";deviceside=true";
 		 }else{
-			 URL =  "socket://" + m_hostname + ":" + m_hostport + ";deviceside=true";
+			 URL =  "socket://" +((m_hostip != null)?m_hostip:m_hostname) + ":" + m_hostport + ";deviceside=true";
 		 }
 		 
-		 SocketConnection socket = (SocketConnection)Connector.open(URL,Connector.READ_WRITE,false);
+		 SocketConnection socket = null;
 		 
-		 socket.setSocketOption(SocketConnection.DELAY, 0);
-		 socket.setSocketOption(SocketConnection.LINGER, 0);
-		 socket.setSocketOption(SocketConnection.KEEPALIVE, 2);
-		 socket.setSocketOption(SocketConnection.RCVBUF, 128);
-		 socket.setSocketOption(SocketConnection.SNDBUF, 128);
+		 try{
+			 socket = (SocketConnection)Connector.open(URL,Connector.READ_WRITE,false);
+			 
+			 socket.setSocketOption(SocketConnection.DELAY, 0);
+			 socket.setSocketOption(SocketConnection.LINGER, 0);
+			 socket.setSocketOption(SocketConnection.KEEPALIVE, 2);
+			 socket.setSocketOption(SocketConnection.RCVBUF, 128);
+			 socket.setSocketOption(SocketConnection.SNDBUF, 128);
+			 
+		 }catch(Exception _e){
+			 if(m_hostip != null){
+				 m_hostip = null;
+				 socket = GetConnection(_ssl);
+			 }else{
+				 throw _e;
+			 }
+		 } 
+
+		 m_hostip = socket.getAddress();
 		 
 		 return socket;
 	 }
@@ -680,7 +699,7 @@ public class connectDeamon extends Thread implements SendListener,
 									
 			}catch(Exception _e){
 				break;
-			}				
+			}
 		}
 	}
 	

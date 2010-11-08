@@ -146,7 +146,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 						//									Integer.valueOf(m_hostport.getText()).intValue(),
 						//									m_userPassword.getText());
 						
-						m_mainApp.m_connectDeamon.Connect("192.168.10.20",9716,"111111");
+						m_mainApp.m_connectDeamon.Connect("www.google.com",80,"111111");
 						
 						m_mainApp.SetStateString("connecting...");
 						m_connectBut.setLabel("disconnect");
