@@ -58,18 +58,10 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[]){
 
-//		HelloWorld test = new HelloWorld(); 
-//		test.berryRecvTest();
+		HelloWorld test = new HelloWorld(); 
+		test.berryRecvTest();
 
-		String str = "12_485.att 12345";
-		int t_split = str.indexOf(' ');
-		
-		String t_filename = str.substring(0, t_split);
-		String t_filesize = str.substring(t_split + 1, str.length());
-		
-		int  value = Integer.parseInt(t_filesize);
-		
-		System.out.println(str);
+
 	
 	}
 	

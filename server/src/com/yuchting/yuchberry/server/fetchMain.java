@@ -36,7 +36,7 @@ import com.sun.mail.smtp.SMTPTransport;
 class berrySendAttachment extends Thread{
 	
 	FileInputStream		m_file;
-	berrySvrDeamon		m_deamon;
+	fetchMgr			m_fetchMain;
 	int					m_fileLength;
 	int					m_mailIndex;
 	int					m_attachIndex;
@@ -44,9 +44,9 @@ class berrySendAttachment extends Thread{
 	
 	final static int	fsm_sendSize = 512;
 	
-	berrySendAttachment(int _mailIndex,int _attachIdx,berrySvrDeamon _deamon){
+	berrySendAttachment(int _mailIndex,int _attachIdx,fetchMgr _mgr){
 		
-		m_deamon 		= _deamon;
+		m_fetchMain 		= _mgr;
 		m_mailIndex 	= _mailIndex;
 		m_attachIndex 	= _attachIdx;
 		
@@ -84,15 +84,15 @@ class berrySendAttachment extends Thread{
 				sendReceive.WriteInt(t_os,t_startIndex);
 				sendReceive.WriteInt(t_os,t_size);
 				
-				while(m_deamon.m_socket == null ){
+				while(m_fetchMain.GetClientConnected() == null){
 					sleep(200);
 				}
 				
-				m_deamon.m_sendReceive.SendBufferToSvr(t_buffer, true);
+				m_fetchMain.GetClientConnected().m_sendReceive.SendBufferToSvr(t_buffer, true);
 				
 				t_startIndex += t_size;
 				
-				if(fsm_sendSize != t_size){
+				if(t_startIndex + t_size >= m_fileLength){
 					break;
 				}
 				
@@ -174,18 +174,17 @@ class berrySvrDeamon extends Thread{
 	
 	private Vector			m_recvMailAttach = new Vector();
 	
-	public berrySvrDeamon(fetchMgr _mgr)throws Exception{
-		m_fetchMgr 	= _mgr;					
-	}
-	
-	public void StartDeamon(Socket _s)throws Exception{
+	public berrySvrDeamon(fetchMgr _mgr,Socket _s)throws Exception{
+		m_fetchMgr 	= _mgr;
 		
 		// wait for signIn first
 		//
 		_s.setSoTimeout(1000);
 		
 		try{
-			InputStream in = _s.getInputStream();
+			sendReceive t_tmp = new sendReceive(_s.getOutputStream(),_s.getInputStream());
+			ByteArrayInputStream in = new ByteArrayInputStream(t_tmp.RecvBufferFromSvr());
+						
 			final int t_msg_head = in.read();
 		
 			if(msg_head.msgConfirm != t_msg_head 
@@ -198,8 +197,12 @@ class berrySvrDeamon extends Thread{
 				_s.getOutputStream().write(os.toByteArray());
 				_s.close();
 				
+				t_tmp.CloseSendReceive();
+				
 				return;
 			}
+			
+			t_tmp.CloseSendReceive();
 			
 		}catch(Exception _e){
 			// time out
@@ -225,18 +228,19 @@ class berrySvrDeamon extends Thread{
 		}catch(Exception _e){
 			prt("construct berrySvrDeamon error " + _e.getMessage());
 			_e.printStackTrace();
-			throw _e;
-		}finally{
+			
 			if(m_sendReceive != null){
 				m_sendReceive.CloseSendReceive();
 			}
+						
+			throw _e;
 		}
-		
+				
 		start();
 		
 		prt("some client connect");
 	}
-		
+	
 	static void prt(String s) {
 		System.out.println(s);
 	}	
@@ -250,7 +254,9 @@ class berrySvrDeamon extends Thread{
 			// process....
 			//
 			try{
-									
+				
+				m_fetchMgr.SetClientConnected(this);
+				
 				byte[] t_package = m_sendReceive.RecvBufferFromSvr();
 				
 				prt("receive package length:" + t_package.length);
@@ -267,6 +273,7 @@ class berrySvrDeamon extends Thread{
 				
 				m_socket = null;
 				m_sendReceive.CloseSendReceive();
+				m_fetchMgr.SetClientConnected(null);
 				
 				prt(_e.getMessage());
 				_e.printStackTrace();				
@@ -321,8 +328,7 @@ class berrySvrDeamon extends Thread{
 		final int t_mailIndex = sendReceive.ReadInt(in);
 		final int t_attachIndex = sendReceive.ReadInt(in);
 		
-		new berrySendAttachment(t_mailIndex,t_attachIndex,this);
-		
+		new berrySendAttachment(t_mailIndex,t_attachIndex,m_fetchMgr);
 	}
 	
 	private void CreateTmpSendMailAttachFile(fetchMail _mail)throws Exception{
@@ -454,11 +460,9 @@ class fetchMgr{
     Session m_session 	= null;
     Store 	m_store		= null;
     
-    
     Session m_session_send 	= null;
     SMTPTransport m_sendTransport = null;
-    
-    	
+        	
     Vector m_unreadMailVector = new Vector();
 
     // pushed mail index vector 
@@ -470,6 +474,9 @@ class fetchMgr{
     int		m_unreadFetchIndex	= 0;
     
     String m_tmpImportContain = new String();
+    
+    //! is connected?
+    berrySvrDeamon	m_currConnect = null;
         
 	public void InitConnect(String _protocol,
 							String _host,
@@ -538,14 +545,13 @@ class fetchMgr{
     	ServerSocket t_svr = GetSocketServer(m_userPassword,false);
     	berrySvrDeamon.prt("prepare account OK");
     	
-    	berrySvrDeamon deamon = new berrySvrDeamon(this);
-    	
 		while(true){
 			try{
 				
-				deamon.StartDeamon(t_svr.accept());
+				new berrySvrDeamon(this, t_svr.accept());
 				
 			}catch(Exception _e){
+				_e.printStackTrace();
 				
 //				for(int i = 0;i < m_vectConnect.size();i++){
 //					berrySvrDeamon d = m_vectConnect.get(i);
@@ -583,6 +589,13 @@ class fetchMgr{
 			_e.printStackTrace();
 		}
 		
+	}
+	public berrySvrDeamon GetClientConnected(){
+		return	m_currConnect;
+	}
+	
+	public void SetClientConnected(berrySvrDeamon _set){
+		m_currConnect = _set;
 	}
 	
 	public int GetBeginFetchIndex(){

@@ -1,14 +1,16 @@
-package com.yuchting.yuchberry.server;
+package com.yuchting.yuchberry.client;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Vector;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
-class sendReceive extends Thread{
+import net.rim.device.api.compress.GZIPInputStream;
+import net.rim.device.api.compress.GZIPOutputStream;
+
+
+public class sendReceive extends Thread{
 	
 	OutputStream		m_socketOutputStream = null;
 	InputStream			m_socketInputStream = null;
@@ -21,7 +23,7 @@ class sendReceive extends Thread{
 	public sendReceive(OutputStream _socketOut,InputStream _socketIn){
 		m_socketOutputStream = _socketOut;
 		m_socketInputStream = _socketIn;
-				
+		
 		start();
 	}
 		
@@ -39,9 +41,6 @@ class sendReceive extends Thread{
 		if(m_closed == false){
 			m_closed = true;
 	
-			m_unsendedPackage.clear();
-			m_unprocessedPackage.clear();
-			
 			while(isAlive()){
 				try{
 					sleep(10);
@@ -112,7 +111,6 @@ class sendReceive extends Thread{
 			}
 			
 		}catch(Exception _e){}
-		
 	}
 
 	//! recv buffer
@@ -252,3 +250,4 @@ class sendReceive extends Thread{
 	}
 	
 }
+

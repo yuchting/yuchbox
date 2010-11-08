@@ -154,7 +154,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 						m_mainApp.Start();
 						
 					}catch(Exception e){
-						DialogAlert(e.getMessage());
+						m_mainApp.DialogAlert(e.getMessage());
 					}
 				}				
 			}
@@ -250,6 +250,14 @@ public class recvMain extends UiApplication implements localResource {
    
 	public recvMain() {	
 				
+		m_addItem.m_mainApp = this;
+		m_delItem.m_mainApp = this;
+		
+		
+	}
+	
+	public void Start(){
+		
 		// create the sdcard path 
 		//
         try{
@@ -263,13 +271,7 @@ public class recvMain extends UiApplication implements localResource {
         	System.exit(0);
         }
 	
-		m_addItem.m_mainApp = this;
-		m_delItem.m_mainApp = this;
-		
-		
-	}
-	
-	public void Start(){
+        
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_addItem);
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);
 	}
