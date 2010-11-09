@@ -64,7 +64,7 @@ public class  fetchMail{
 	}
 	
 	public void SetAttchMessage(Message m){ m_attachMessage = m;}
-	public Message GetAttchMessage(){return m_attachMessage;}
+	public Message GetAttachMessage(){return m_attachMessage;}
 		
 	public static String parseAddressList(Vector _list)throws Exception{
 		String 	t_addressList = new String();
@@ -203,6 +203,7 @@ public class  fetchMail{
 		if(_name == null || _name.length() <= 0){
 			throw new Exception("Error Attachment format!");
 		}
+		
 		Attachment t_attach = new Attachment();
 		t_attach.m_name = _name;
 		t_attach.m_size = _size;

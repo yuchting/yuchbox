@@ -36,8 +36,8 @@ public class  fetchMail{
 	private String			m_XMailName 	= new String();
 	
 	private String			m_contain		= new String();
-	private String			m_contain_html		= new String();
-	
+	private String			m_contain_html	= new String();
+		
 	class Attachment{
 		int 		m_size;
 		String 		m_name;
@@ -46,7 +46,7 @@ public class  fetchMail{
 	
 	private Vector	m_vectAttachment	 	= new Vector();
 	
-	private Message m_attachMessage	= null; 
+	private Message m_attachMessage		= null; 
 	
 	
 	public void SetMailIndex(int _index)throws Exception{
@@ -61,7 +61,7 @@ public class  fetchMail{
 	}
 	
 	public void SetAttchMessage(Message m){ m_attachMessage = m;}
-	public Message GetAttchMessage(){return m_attachMessage;}
+	public Message GetAttachMessage(){return m_attachMessage;}
 		
 	public static Address[] parseAddressList(Vector _list)throws Exception{
 		Address[] 	t_addressList = new Address[_list.size()];
@@ -220,6 +220,7 @@ public class  fetchMail{
 		if(_name == null || _name.length() <= 0){
 			throw new Exception("Error Attachment format!");
 		}
+		
 		Attachment t_attach = new Attachment();
 		t_attach.m_name = _name;
 		t_attach.m_size = _size;
@@ -335,9 +336,6 @@ class sendMailAttachmentDeamon extends Thread{
 				
 				m_uploadedSize += t_size;
 				m_os.reset();
-				
-				sleep(500);
-				
 				
 			}catch(Exception _e){
 				m_connect.m_mainApp.SetErrorString(_e.getMessage());

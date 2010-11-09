@@ -58,6 +58,7 @@ class berrySendAttachment extends Thread{
 			m_file = new FileInputStream(t_file);
 			
 		}catch(Exception _e){
+			_e.printStackTrace();
 			return;
 		}
 		
@@ -83,24 +84,26 @@ class berrySendAttachment extends Thread{
 				sendReceive.WriteInt(t_os,m_attachIndex);
 				sendReceive.WriteInt(t_os,t_startIndex);
 				sendReceive.WriteInt(t_os,t_size);
+				t_os.write(t_buffer);
 				
 				System.out.println("send msgMailAttach mailIndex:" + m_mailIndex + " attachIndex:" + m_attachIndex + " startIndex:" +
-									t_startIndex + " size:" + t_size);
+									t_startIndex + " size:" + t_size + " first:" + (int)t_buffer[0]);
 				
 				while(m_fetchMain.GetClientConnected() == null){
 					sleep(200);
 				}
 				
-				m_fetchMain.GetClientConnected().m_sendReceive.SendBufferToSvr(t_buffer, true);
-				
-				t_startIndex += t_size;
+				m_fetchMain.GetClientConnected().m_sendReceive.SendBufferToSvr(t_os.toByteArray(), true);
 				
 				if(t_startIndex + t_size >= m_fileLength){
 					break;
 				}
 				
-			}catch(Exception _e){
+				t_startIndex += t_size;				
 				
+				
+			}catch(Exception _e){
+				_e.printStackTrace();
 			}			
 		}
 	}
@@ -124,11 +127,18 @@ class berrySvrPush extends Thread{
 		while(true){
 			
 			try{
-				if(!m_serverDeamon.m_socket.isConnected()){
+				if(m_serverDeamon.m_socket == null 
+				|| !m_serverDeamon.m_socket.isConnected()){
 					break;
 				}
 				
 				m_serverDeamon.m_fetchMgr.CheckFolder();
+				
+				if(m_serverDeamon.m_socket == null 
+				|| !m_serverDeamon.m_socket.isConnected()){
+					
+					break;
+				}
 
 				Vector t_unreadMailVector = m_serverDeamon.m_fetchMgr.m_unreadMailVector;
 				while(!t_unreadMailVector.isEmpty()){
@@ -222,6 +232,10 @@ class berrySvrDeamon extends Thread{
 			// kick the former client
 			//
 			m_fetchMgr.GetClientConnected().m_socket.close();
+			
+			while(m_fetchMgr.GetClientConnected() != null){
+				sleep(10);
+			}
 		}		
 	
 		m_fetchMgr.SetClientConnected(this);
@@ -900,6 +914,7 @@ class fetchMgr{
 			byte[] t_bytes = t_os.toByteArray();
 			
 			StoreAttachment(_mail.GetMailIndex(), _mail.GetAttachment().size(), t_bytes);
+			
 			_mail.AddAttachment(p.getFileName(),p.getContentType(),t_bytes.length);
 			
 		}else if (p instanceof MimeBodyPart){
@@ -928,14 +943,10 @@ class fetchMgr{
 						filename = new String(filename.getBytes("ISO8859_1"));
 					}
 				}
-				
-				ByteArrayOutputStream os = new ByteArrayOutputStream();
-			    ((MimeBodyPart)p).writeTo(os);
-			    
-			    byte[] t_bytes = os.toByteArray();
-			    
-			    _mail.AddAttachment(filename, p.getContentType(),t_bytes.length);
-			    StoreAttachment(_mail.GetMailIndex(), t_vect.size(), t_bytes);
+
+			    _mail.AddAttachment(filename, 
+			    					p.getContentType(),
+			    					StoreAttachment(((MimeBodyPart)p),_mail.GetMailIndex(), t_vect.size()));
 			    
 		    }
 		    
@@ -963,7 +974,7 @@ class fetchMgr{
 			    
 			    StoreAttachment(_mail.GetMailIndex(),_mail.GetAttachment().size(),t_bytes);
 			    
-			    _mail.AddAttachment("unknownFromat", "application",t_bytes.length);
+			    _mail.AddAttachment("unknownFromat", "application/*",t_bytes.length);
 			    
 			} else {
 				
@@ -1057,7 +1068,26 @@ class fetchMgr{
 			fos.write(_contain);
 			
 			fos.close();	
-		}catch(Exception _e){}		
+		}catch(Exception _e){
+			_e.printStackTrace();
+		}		
+	}
+	
+	private static  int StoreAttachment(MimeBodyPart p,int _mailIndex,int _attachmentIndex){
+		String t_filename = "" + _mailIndex + "_" + _attachmentIndex + ".att";
+		
+		File t_file = new File(t_filename);		
+		try{
+
+			p.saveFile(t_file);
+			
+			return (int)t_file.length();
+			
+		}catch(Exception _e){
+			_e.printStackTrace();
+		}	
+		
+		return 0;
 	}
 }
 

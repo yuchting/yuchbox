@@ -176,8 +176,6 @@ public class recvMain extends UiApplication implements localResource {
 	String				m_stateString		= new String("disconnect");
 	String				m_errorString		= new String();
 	
-	String				m_currentPath 		= new String("file:///store/");
-	
 	Vector				m_uploadingDesc 	= new Vector();
 	
 	String				m_hostname = new String();
@@ -275,6 +273,7 @@ public class recvMain extends UiApplication implements localResource {
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_addItem);
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);
 	}
+	
 	public void Exit(){
 		
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
@@ -327,7 +326,7 @@ public class recvMain extends UiApplication implements localResource {
 	}
 	
 	public void DialogAlert(final String _msg){
-	    	
+
     	UiApplication.getUiApplication().invokeLater(new Runnable() 
 		{
 		    public void run(){
