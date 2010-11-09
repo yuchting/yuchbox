@@ -1,9 +1,15 @@
 package com.yuchting.yuchberry.client;
 
+import java.io.IOException;
 import java.util.Vector;
 
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
+import javax.microedition.lcdui.Display;
+import javax.microedition.lcdui.Form;
+import javax.microedition.lcdui.Image;
+import javax.microedition.lcdui.ImageItem;
+import javax.microedition.midlet.MIDlet;
 
 import local.localResource;
 import net.rim.blackberry.api.mail.Message;
@@ -19,6 +25,7 @@ import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.container.MainScreen;
+
 
 final class stateScreen extends MainScreen implements FieldChangeListener{
 										
@@ -299,13 +306,13 @@ public class recvMain extends UiApplication implements localResource {
 		m_uploadFileScreen = new uploadFileScreen(m_connectDeamon, this,_del);
 		
 		invokeLater(new Runnable()
-					{
-					    public void run()
-						{
-					    	recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
-					    	t_mainApp.PushUploadingScreen();
-						}
-					});
+		{
+		    public void run()
+			{
+		    	recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
+		    	t_mainApp.PushUploadingScreen();
+			}
+		});
 		
 	}
 	
@@ -314,6 +321,21 @@ public class recvMain extends UiApplication implements localResource {
 	}
 	public void ClearUploadingScreen(){
 		m_uploadFileScreen = null;
+	}
+	
+	public void PushViewImageScree(final String _fileName){
+		invokeLater(new Runnable()
+		{
+		    public void run()
+			{
+		    	recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
+		    	try{
+		    		t_mainApp.pushGlobalScreen(new imageViewScreen(_fileName,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    	}catch(Exception _e){
+		    		t_mainApp.DialogAlert(_e.getMessage());
+		    	}		    	
+			}
+		});
 	}
 	
 	public void SetStateString(String _state){

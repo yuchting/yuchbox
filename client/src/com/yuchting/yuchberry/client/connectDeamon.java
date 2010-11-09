@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.client;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
@@ -11,6 +12,11 @@ import java.util.Vector;
 import javax.microedition.io.Connector;
 import javax.microedition.io.SocketConnection;
 import javax.microedition.io.file.FileConnection;
+import javax.microedition.lcdui.Display;
+import javax.microedition.lcdui.Form;
+import javax.microedition.lcdui.Image;
+import javax.microedition.lcdui.ImageItem;
+import javax.microedition.midlet.MIDlet;
 
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.blackberry.api.invoke.MessageArguments;
@@ -48,6 +54,47 @@ class msg_head{
 	final public static byte msgFetchAttach = 6;
 }
 
+
+class DisplayAnImage extends MIDlet
+{
+    private Form mForm;
+    private Display mDisplay;
+    private Image pngBackground;
+    String m_name;
+    
+    public DisplayAnImage(String _name)
+    {
+    	m_name = _name;
+    }
+    
+    public void destroyApp(boolean flag)
+    {
+    }
+    
+    public void startApp()
+    {
+            mDisplay = Display.getDisplay(this);
+            mForm = new Form("MIDlet Developer Guide: Display an image.");
+            
+            try
+            {
+                pngBackground = Image.createImage(m_name);
+                ImageItem img = new ImageItem("bg",pngBackground,
+                ImageItem.LAYOUT_EXPAND,"background"); 
+                mForm.append(img); 
+                mDisplay.setCurrent(mForm); 
+            }
+            catch(IOException e)
+            {
+                System.out.println(e.getMessage());
+            }
+    }
+    
+    public void pauseApp()
+    {
+    }
+} 
+
 public class connectDeamon extends Thread implements SendListener,
 												MessageListener,
 												AttachmentHandler,
@@ -77,7 +124,6 @@ public class connectDeamon extends Thread implements SendListener,
 	 boolean			m_disconnect = true;
 	
 	 public Vector 		m_markReadVector = new Vector();
-	 public Vector		m_attachmentMail = new Vector();
 	 	 
 	 // read the email temporary variables
 	 //
@@ -99,8 +145,9 @@ public class connectDeamon extends Thread implements SendListener,
 		 
 		 int						m_mailIndex;
 		 int						m_attachmentIdx;
-		 int						m_size;
+		 int						m_attachmentSize;
 		 
+		 String						m_realName;
 		 int						m_completePercent;
 		 
 		 ByteArrayOutputStream		m_fileContainBuffer = new ByteArrayOutputStream();
@@ -189,49 +236,66 @@ public class connectDeamon extends Thread implements SendListener,
 		final int t_messageCode = (m.getSentDate().toString() + m.getSubject()).hashCode();
 		
 		if(in.read() == 'y' && in.read() == 'u' 
-			&& in.read() == 'c' && in.read() == 'h'){
-			
+			&& in.read() == 'c' && in.read() == 'h'){	
+		
 			try{
 
 				final int t_mailIndex 		= sendReceive.ReadInt(in);
 				final int t_attachIndex	= sendReceive.ReadInt(in);
 				final int t_attachSize		= sendReceive.ReadInt(in);
+				final String t_realName		= sendReceive.ReadString(in);
 				
-				for(int i = 0;i < m_vectReceiveAttach.size();i++){
-					FetchAttachment t_att = (FetchAttachment)m_vectReceiveAttach.elementAt(i);
-											
-					if(t_att.m_messageHashCode == t_messageCode){
-						
-						final String t_progress = p.getFilename() +" (" + t_att.m_completePercent + "%) wait a moment";
-						
-						m_mainApp.DialogAlert(t_progress);
-						
-						return;
-					}
-				}			
-		
-				FetchAttachment t_att = new FetchAttachment();
+				final String t_filename = recvMain.fsm_attachmentDir + t_realName;
+				FileConnection t_file = (FileConnection)Connector.open(t_filename,Connector.READ_WRITE);
 				
-				t_att.m_mailIndex 		= t_mailIndex;
-				t_att.m_attachmentIdx	= t_attachIndex;
-				t_att.m_size			= t_attachSize;
-				t_att.m_messageHashCode	= t_messageCode;
-				t_att.m_completePercent	= 0;			
+				if(t_file.exists()){
+					
+					m_mainApp.PushViewImageScree(t_filename);
+					
+				}else{
+					
+					// fetch from the server 
+					//
+					for(int i = 0;i < m_vectReceiveAttach.size();i++){
+						FetchAttachment t_att = (FetchAttachment)m_vectReceiveAttach.elementAt(i);
+												
+						if(t_att.m_messageHashCode == t_messageCode){
+							
+							final String t_progress = p.getFilename() +" (" + t_att.m_completePercent + "%) wait a moment";
+							
+							m_mainApp.DialogAlert(t_progress);
+							
+							return;
+						}
+					}			
+			
+					FetchAttachment t_att = new FetchAttachment();
+					
+					t_att.m_mailIndex 		= t_mailIndex;
+					t_att.m_attachmentIdx	= t_attachIndex;
+					t_att.m_attachmentSize	= t_attachSize;
+					t_att.m_messageHashCode	= t_messageCode;
+					t_att.m_realName		= t_realName;
+					t_att.m_completePercent	= 0;			
+					
+					SendFetchAttachmentFile(t_att);
+					
+					m_vectReceiveAttach.addElement(t_att);
+				}
 				
-				SendFetchAttachmentFile(t_att);
+				t_file.close();
 				
-				m_vectReceiveAttach.addElement(t_att);
 				
 			}catch(Exception e){
-				m_mainApp.DialogAlert("create the attachment file failed:\n" + e.getMessage());
+				m_mainApp.DialogAlert("open the attachment file failed:\n" + e.getMessage());
 			}			
 		}else{
-			m_mainApp.DialogAlert("the attachment has been fetched from the server.");
+			m_mainApp.DialogAlert("the attachment has been fetched from the another server.");
 		}
 	}
 	
 	public String	menuString(){
-		return "Get YuchBerry Attachment";
+		return "Open YuchBerry Attachment";
 	}
 	
 	public boolean supports(String contentType){
@@ -477,10 +541,7 @@ public class connectDeamon extends Thread implements SendListener,
 					
 					m.addMessageListener(this);
 					m_markReadVector.addElement(t_app);
-					
-					if(!t_mail.GetAttachment().isEmpty()){
-						m_attachmentMail.addElement(t_mail);
-					}					
+									
 							
 				}catch(Exception _e){
 					m_mainApp.SetErrorString("ComposeMessage error :\n" + _e.getMessage());
@@ -571,7 +632,7 @@ public class connectDeamon extends Thread implements SendListener,
 			for(int i = 0;i< _files.size();i++){
 				String t_fullname = (String)_files.elementAt(i);
 				
-				FileConnection t_fileReader = (FileConnection) Connector.open(t_fullname,Connector.READ);
+				FileConnection t_fileReader = (FileConnection) Connector.open(t_fullname,Connector.READ_WRITE);
 		    	if(!t_fileReader.exists()){
 		    		throw new Exception("attachment file <" + t_fullname + "> not exsit!"); 
 		    	}
@@ -595,7 +656,7 @@ public class connectDeamon extends Thread implements SendListener,
 					
 					t_type = BodyPart.ContentType.TYPE_TEXT + "*";
 				}else {
-					t_type = "application/";
+					t_type = "application/*";
 				}
 	
 				_mail.AddAttachment(t_name, t_type, t_size);
@@ -629,8 +690,7 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		for(int i = 0;i < m_vectReceiveAttach.size();i++){
 			FetchAttachment t_att = (FetchAttachment)m_vectReceiveAttach.elementAt(i);
-			
-			
+						
 			if(t_att.m_mailIndex == t_mailIndex && t_attachIndex == t_attachIndex){
 				
 				byte[] t_bytes = new byte[t_size];
@@ -641,13 +701,19 @@ public class connectDeamon extends Thread implements SendListener,
 				System.out.println("write msgMailAttach mailIndex:" + t_mailIndex + " attachIndex:" + t_attachIndex + " startIndex:" +
 									t_startIndex + " size:" + t_size + " first:" + (int)t_bytes[0]);
 				
-				if(t_startIndex + t_size >= t_att.m_size){
+				t_att.m_completePercent = t_startIndex * 100 / t_att.m_attachmentSize;
+				
+				if(t_startIndex + t_size >= t_att.m_attachmentSize){
 					
 					// fetching attachment is over...
 					//
-					final String t_newName = "" + t_mailIndex + "_" + t_attachIndex + ".att";
-					FileConnection t_file = (FileConnection)Connector.open(recvMain.fsm_attachmentDir + t_newName,Connector.WRITE);
+					FileConnection t_file = (FileConnection)Connector.open(recvMain.fsm_attachmentDir + t_att.m_realName,Connector.READ_WRITE);
+					if(t_file.exists()){
+						t_file.delete();
+					}
+						
 					t_file.create();
+					
 					byte[] t_writeBytes = t_att.m_fileContainBuffer.toByteArray();
 					OutputStream os = t_file.openOutputStream();
 					os.write(t_writeBytes);
@@ -656,46 +722,6 @@ public class connectDeamon extends Thread implements SendListener,
 					t_file.close();
 
 					m_vectReceiveAttach.removeElementAt(i);
-					
-					// search the message and reload it...
-					//
-					Store store = Session.waitForDefaultSession().getStore();
-					Folder folder = store.getFolder(Folder.INBOX);
-					Message[] t_messages = folder.getMessages();
-					
-					Message t_m = null;
-					for(int index = 0;index < t_messages.length;index++){
-						if((t_messages[index].getSentDate().toString() + t_messages[index].getSubject()).hashCode() == t_att.m_messageHashCode){
-							t_m = t_messages[index];
-							break;
-						}
-					}
-					
-					if(t_m != null){
-						
-						for(int index = 0;index < m_attachmentMail.size();index++){
-							fetchMail t_mail = (fetchMail)m_attachmentMail.elementAt(index);
-							
-							if((t_mail.GetAttachMessage().getSentDate().toString() + t_mail.GetAttachMessage().getSubject()).hashCode() == t_att.m_messageHashCode){
-								folder.deleteMessage(t_m);
-																
-								t_m = new Message();
-								final boolean t_downloadAll = ComposeMessage(t_m, t_mail);
-								
-								t_m.setInbound(true);
-								folder.appendMessage(t_m);
-								
-								t_m.setStatus(Message.Status.TX_READ,1);
-																
-								if(t_downloadAll){
-									m_attachmentMail.removeElementAt(index);
-								}
-								
-								break;
-							}
-						}					
-					}	
-					
 					m_mainApp.DialogAlert("attachment fetchment over");
 				}
 				
@@ -703,49 +729,7 @@ public class connectDeamon extends Thread implements SendListener,
 			}
 		}
 	}
-	
-	private SupportedAttachmentPart findAttachment(Object _messageObj,int _attachmentIdx){
-		m_supportedAttachment = null;
 		
-		if(_messageObj instanceof Multipart){
-			Multipart mainMp = (Multipart)_messageObj;
-		    
-			int t_attachmentCounter = 0;
-			for(int count=0; count < mainMp.getCount(); ++count){
-				m_supportedAttachment = findAttachment_imple(mainMp.getBodyPart(count),_attachmentIdx,t_attachmentCounter);
-				if(m_supportedAttachment != null){
-					break;
-				}
-			}
-		}
-		
-		return m_supportedAttachment;
-	}
-	
-	private SupportedAttachmentPart findAttachment_imple(Object obj,int _attachmentIdx,int _attachmentCounter){
-		
-		if(obj instanceof Multipart){
-			Multipart mp = (Multipart)obj;
-		    
-			for(int count=0; count < mp.getCount(); ++count){
-				SupportedAttachmentPart t_ret = findAttachment_imple(mp.getBodyPart(count),_attachmentIdx,_attachmentCounter);
-				if(t_ret != null){
-					return t_ret;
-				}
-			}
-			
-		}else if(obj instanceof SupportedAttachmentPart){
-			if(_attachmentIdx == _attachmentCounter){
-				return (SupportedAttachmentPart)obj;
-			}else{
-				_attachmentCounter++;
-			}
-		}
-		
-		return null;
-	}
-	
-	
 	public synchronized void AddMarkReadMail(Message m){
 		
 		for(int i = 0;i < m_markReadVector.size();i++){
@@ -954,7 +938,7 @@ public class connectDeamon extends Thread implements SendListener,
 	   }
 	}
 	
-	static public boolean ComposeMessage(Message msg,fetchMail _mail)throws Exception{
+	static public void ComposeMessage(Message msg,fetchMail _mail)throws Exception{
 		
 		_mail.SetAttchMessage(msg);
 		
@@ -978,10 +962,10 @@ public class connectDeamon extends Thread implements SendListener,
 	    msg.setHeader("X-Mailer",_mail.GetXMailer());
 	    msg.setSentDate(_mail.GetSendDate());	      
 
-	    return ComposeMessageContent(msg,_mail);
+	    ComposeMessageContent(msg,_mail);
 	}
 	
-	static private boolean ComposeMessageContent(Message msg,fetchMail _mail)throws Exception{
+	static private void ComposeMessageContent(Message msg,fetchMail _mail)throws Exception{
 		
 		 if(_mail.GetContain_html().length() != 0
 			|| !_mail.GetAttachment().isEmpty()) {
@@ -1008,51 +992,30 @@ public class connectDeamon extends Thread implements SendListener,
 		    		
 		    		fetchMail.Attachment t_attachment = (fetchMail.Attachment)t_contain.elementAt(i);
 		    		t_tmpContent.reset();
-		    		
-		    		byte[] t_writeByte = null;
-		    		
-		    		final String t_filename = recvMain.fsm_attachmentDir + "" + _mail.GetMailIndex() + "_" + i + ".att";
-		    		
-		    		FileConnection t_file = (FileConnection)Connector.open(t_filename,Connector.READ);
-		    		
-		    		if(t_file.exists()){
-		    			
-		    			byte[] t_buffer = new byte[(int)t_file.fileSize()];
-		    			
-		    			sendReceive.ForceReadByte(t_file.openInputStream(),t_buffer,t_buffer.length);
-		    			t_writeByte = t_buffer;
-		    			
-		    		}else{
-			    		t_tmpContent.write('y');
-			    		t_tmpContent.write('u');
-			    		t_tmpContent.write('c');
-			    		t_tmpContent.write('h');
-			    		sendReceive.WriteInt(t_tmpContent, _mail.GetMailIndex());
-			    		sendReceive.WriteInt(t_tmpContent,i);
-			    		sendReceive.WriteInt(t_tmpContent, t_attachment.m_size);
-			    		
-			    		t_writeByte = t_tmpContent.toByteArray();
-			    		
-			    		t_downloadAllAttachment = false;
-		    		}
-
+		    				    		
+		    		t_tmpContent.write('y');
+		    		t_tmpContent.write('u');
+		    		t_tmpContent.write('c');
+		    		t_tmpContent.write('h');
+		    		sendReceive.WriteInt(t_tmpContent, _mail.GetMailIndex());
+		    		sendReceive.WriteInt(t_tmpContent,i);
+		    		sendReceive.WriteInt(t_tmpContent, t_attachment.m_size);
+		    		sendReceive.WriteString(t_tmpContent, t_attachment.m_name);		    		
 		    		
 		    		SupportedAttachmentPart attach = new SupportedAttachmentPart( multipart,
 		    																	(String)t_attachment.m_type,
 		    																	" (" + t_attachment.m_size / 1024 +"KB)" + t_attachment.m_name,
-															    				t_writeByte);
+		    																	t_tmpContent.toByteArray());
 		    		multipart.addBodyPart(attach);
 		    	}
 			}
 			
 			msg.setContent(multipart);
-			
-			return t_downloadAllAttachment;
+
 		} else {
 			
 			msg.setContent(_mail.GetContain());
 			
-			return true;
 		}
 	  
 	}
