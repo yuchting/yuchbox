@@ -323,14 +323,25 @@ public class recvMain extends UiApplication implements localResource {
 		m_uploadFileScreen = null;
 	}
 	
-	public void PushViewImageScree(final String _fileName){
+	public void PushViewFileScreen(final String _filename){
 		invokeLater(new Runnable()
 		{
 		    public void run()
 			{
 		    	recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
 		    	try{
-		    		t_mainApp.pushGlobalScreen(new imageViewScreen(_fileName,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    		if(uploadFileScreen.IsAudioFile(_filename)){
+		    			t_mainApp.pushGlobalScreen(new audioViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    		}else if(uploadFileScreen.IsTxtFile(_filename)){
+		    			t_mainApp.pushGlobalScreen(new textViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    		}else if(uploadFileScreen.IsMovieFile(_filename)){
+		    			t_mainApp.pushGlobalScreen(new videoViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    		}else if(uploadFileScreen.IsImageFile(_filename)){
+		    			t_mainApp.pushGlobalScreen(new imageViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    		}else {
+		    			t_mainApp.DialogAlert("unknow format");
+		    		}
+		    		
 		    	}catch(Exception _e){
 		    		t_mainApp.DialogAlert(_e.getMessage());
 		    	}		    	

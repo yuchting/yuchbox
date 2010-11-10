@@ -249,9 +249,7 @@ public class connectDeamon extends Thread implements SendListener,
 				FileConnection t_file = (FileConnection)Connector.open(t_filename,Connector.READ_WRITE);
 				
 				if(t_file.exists()){
-					
-					m_mainApp.PushViewImageScree(t_filename);
-					
+					m_mainApp.PushViewFileScreen(t_filename);
 				}else{
 					
 					// fetch from the server 

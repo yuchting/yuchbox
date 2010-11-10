@@ -22,14 +22,14 @@ import net.rim.device.api.ui.container.MainScreen;
 class fileIcon {
 
 	String			m_filename 	= null;
-	String			m_filename_null 	= null;
+	String			m_filename_full 	= null;
 	Bitmap			m_bitmap		= null;
 	boolean		m_isFolder	= false;
 	
 	public fileIcon(String _name,String _name_full,Bitmap _image,boolean _isFolder){
 		
 		m_filename	= _name;
-		m_filename_null = _name_full;
+		m_filename_full = _name_full;
 		m_bitmap		= _image;
 		m_isFolder	= _isFolder;
 	}
@@ -109,8 +109,10 @@ public class uploadFileScreen extends MainScreen implements
 	
 	fileIconList		m_fileList 		= new fileIconList();
 	
-	uploadFileScreenMenu	m_ok		= new uploadFileScreenMenu("OK",0,100,this);
-	uploadFileScreenMenu	m_cancel	= new uploadFileScreenMenu("Cancel",1,100,this);
+	uploadFileScreenMenu	m_check		= new uploadFileScreenMenu("Check",0,100,this);
+	uploadFileScreenMenu	m_ok		= new uploadFileScreenMenu("OK",1,100,this);
+	uploadFileScreenMenu	m_cancel	= new uploadFileScreenMenu("Cancel",2,100,this);
+	
 	
 	final static int fsm_bitmap_width	= 32;
 	final static int fsm_bitmap_height = 32;
@@ -287,7 +289,6 @@ public class uploadFileScreen extends MainScreen implements
 				
 		return t_lower.equals(".mp3") 
 				|| t_lower.equals(".wav")
-				|| t_lower.equals(".wma")
 				|| t_lower.equals(".ogg")
 				|| t_lower.equals(".mid");
 	}
@@ -320,7 +321,7 @@ public class uploadFileScreen extends MainScreen implements
 				
 		return t_lower.equals(".3gp")
 				|| t_lower.equals(".mp4")
-				|| t_lower.equals(".wmv");
+				|| t_lower.equals(".avi");
 	}
 
 	
@@ -333,26 +334,34 @@ public class uploadFileScreen extends MainScreen implements
 	}
 
 	protected void makeMenu(Menu menu, int instance) {
+		menu.add(m_check);
 	    menu.add(m_ok);
 	    menu.add(m_cancel);
 	}
 	
 	public void menuClicked(uploadFileScreenMenu _menu){
-		if(_menu == m_ok){
+		if(_menu == m_check){
+			final int t_index = m_fileList.getSelectedIndex();
+			if(t_index != -1){
+				final fileIcon t_file = (fileIcon)m_listCallback.m_iconList.elementAt(t_index);
+				m_mainApp.PushViewFileScreen(t_file.m_filename_full);
+			}
+			
+		}else if(_menu == m_ok){
 			
 			final int t_index = m_fileList.getSelectedIndex(); 
 			if(t_index != -1 ){
 				final fileIcon t_file = (fileIcon)m_listCallback.m_iconList.elementAt(t_index);
 				if(t_file.m_isFolder){
-					DisplayFileList(t_file.m_filename_null);
+					DisplayFileList(t_file.m_filename_full);
 				}else{
 					
 					// add a attachment file
 					//
 					if(m_delScreen){
-						m_deamon.DelAttachmentFile(t_file.m_filename_null);
+						m_deamon.DelAttachmentFile(t_file.m_filename_full);
 					}else{
-						m_deamon.AddAttachmentFile(t_file.m_filename_null);
+						m_deamon.AddAttachmentFile(t_file.m_filename_full);
 					}				
 					
 					m_mainApp.ClearUploadingScreen();
@@ -397,7 +406,7 @@ public class uploadFileScreen extends MainScreen implements
 		if(t_index != -1 ){
 			final fileIcon t_file = (fileIcon)m_listCallback.m_iconList.elementAt(t_index);
 			if(t_file.m_isFolder){
-				DisplayFileList(t_file.m_filename_null);
+				DisplayFileList(t_file.m_filename_full);
 				
 				return true;
 			}else{
