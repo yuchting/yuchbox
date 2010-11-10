@@ -303,7 +303,11 @@ public class recvMain extends UiApplication implements localResource {
 	}
 	
 	public void OpenAttachmentFileScreen(final boolean _del){
-		m_uploadFileScreen = new uploadFileScreen(m_connectDeamon, this,_del);
+		try{
+			m_uploadFileScreen = new uploadFileScreen(m_connectDeamon, this,_del);
+		}catch(Exception _e){
+			DialogAlert("some error:" + _e.getMessage());
+		}		
 		
 		invokeLater(new Runnable()
 		{
@@ -317,7 +321,9 @@ public class recvMain extends UiApplication implements localResource {
 	}
 	
 	public void PushUploadingScreen(){
-		pushGlobalScreen(m_uploadFileScreen,0,UiEngine.GLOBAL_MODAL);
+		if(m_uploadFileScreen != null){
+			pushGlobalScreen(m_uploadFileScreen,0,UiEngine.GLOBAL_MODAL);
+		}		
 	}
 	public void ClearUploadingScreen(){
 		m_uploadFileScreen = null;

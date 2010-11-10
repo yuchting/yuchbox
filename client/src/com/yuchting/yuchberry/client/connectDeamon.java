@@ -132,6 +132,16 @@ public class connectDeamon extends Thread implements SendListener,
 	 private String			m_plainTextContain = new String();
 	 private String			m_htmlTextContain = new String();
 	 
+	 class ComposingAttachment{
+		 String m_filename;
+		 int	m_fileSize;
+		 
+		 ComposingAttachment(String _filename,int _size){
+			 m_filename = _filename;
+			 m_fileSize = _size;
+		 }
+	 }
+	 
 	 //! current composing mail
 	 Message			m_composingMail = null;
 	 Vector				m_composingAttachment = new Vector();
@@ -331,18 +341,23 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 	
 	//! the attachment file selection screen(uploadFileScreen) will call
-	public void AddAttachmentFile(String _filename){
-		if(m_composingAttachment.indexOf(_filename) == -1){
-			m_composingAttachment.addElement(_filename);
-		}		
+	public void AddAttachmentFile(String _filename,int _fileSize){
+		for(int i = 0;i < m_composingAttachment.size();i++){
+			ComposingAttachment t_att = (ComposingAttachment)m_composingAttachment.elementAt(i);
+			if(t_att.equals(_filename)){
+				return;
+			}
+		}
+		
+		m_composingAttachment.addElement(new ComposingAttachment(_filename,_fileSize));
 	}
 	
 	public void DelAttachmentFile(String _filename){
 		for(int i = 0;i < m_composingAttachment.size();i++){
 			
-			String t_filename = (String)m_composingAttachment.elementAt(i);
+			ComposingAttachment t_att = (ComposingAttachment)m_composingAttachment.elementAt(i);
 			
-			if(t_filename.equals(_filename)){
+			if(t_att.m_filename.equals(_filename)){
 				m_composingAttachment.removeElementAt(i);
 			}			
 		}		
@@ -357,7 +372,7 @@ public class connectDeamon extends Thread implements SendListener,
 		if(m_composingMail != null && !m_composingAttachment.isEmpty()){
 			
 			for(int i = 0;i < m_composingAttachment.size();i++){
-				String t_name = (String)m_composingAttachment.elementAt(i);
+				String t_name = ((ComposingAttachment)m_composingAttachment.elementAt(i)).m_filename;
 				
 				final int t_lastSplash = t_name.lastIndexOf('/');
 				if(t_lastSplash == -1){
@@ -628,7 +643,7 @@ public class connectDeamon extends Thread implements SendListener,
 			t_vfileReader = new Vector();
 			
 			for(int i = 0;i< _files.size();i++){
-				String t_fullname = (String)_files.elementAt(i);
+				String t_fullname = ((ComposingAttachment)_files.elementAt(i)).m_filename;
 				
 				FileConnection t_fileReader = (FileConnection) Connector.open(t_fullname,Connector.READ_WRITE);
 		    	if(!t_fileReader.exists()){

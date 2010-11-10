@@ -27,23 +27,18 @@ import javax.net.ssl.SSLSocketFactory;
 
 
 class Inte{
-	int m_value;
 	
-	String m_test = new String();
-	
-	 
-	Inte(int _val){
-		m_value = _val;
+	String m_test ;
+
+	Inte(String _test){
+		m_test = _test;
 	}
 	
-	String GetVector(){
-		return m_test;
-	}
-	
-	void p(){
-		//for(int i = 0;i < m_test.size();i++){
-			HelloWorld.prt((String)m_test);
-		//}
+	public boolean equals(Object obj){
+		if(obj instanceof String){
+			return obj.toString().equals(m_test);
+		}
+		return false;
 	}
 }
 /*!
@@ -58,10 +53,18 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[]){
 
-		HelloWorld test = new HelloWorld(); 
-		test.berryRecvTest();
+		//HelloWorld test = new HelloWorld(); 
+		//test.berryRecvTest();
 
-
+		Vector t_vector = new Vector();
+		
+		t_vector.addElement(new Inte("aaa"));
+		t_vector.addElement(new Inte("aaa1"));
+		t_vector.addElement(new Inte("aaa2"));
+		
+		int t_search = t_vector.indexOf("aaa");
+		
+		System.out.println(t_search);
 	
 	}
 	
