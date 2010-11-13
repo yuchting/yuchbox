@@ -123,9 +123,9 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 			//
 			if(field == m_connectBut){
 				
-				if(/*m_hostName.getText().length() == 0 
+				if(m_hostName.getText().length() == 0 
 					|| m_userPassword.getText().length() == 0
-					|| m_hostport.getText().length() == 0*/false){
+					|| m_hostport.getText().length() == 0){
 					
 					Dialog.alert(recvMain.sm_local.getString(localResource.INPUT_FULL_SIGN_IN_SEG));
 					
@@ -145,15 +145,15 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 										
 					
 					try{
-						//m_mainApp.m_hostname 		= m_hostName.getText();
-						//m_mainApp.m_port 			= Integer.valueOf(m_hostport.getText()).intValue();
-						//m_mainApp.m_userPassword 	= m_userPassword.getText();
+						m_mainApp.m_hostname 		= m_hostName.getText();
+						m_mainApp.m_port 			= Integer.valueOf(m_hostport.getText()).intValue();
+						m_mainApp.m_userPassword 	= m_userPassword.getText();
 						
-						//m_mainApp.m_connectDeamon.Connect(m_hostName.getText(),
-						//									Integer.valueOf(m_hostport.getText()).intValue(),
-						//									m_userPassword.getText());
+						m_mainApp.m_connectDeamon.Connect(m_hostName.getText(),
+															Integer.valueOf(m_hostport.getText()).intValue(),
+															m_userPassword.getText());
 						
-						m_mainApp.m_connectDeamon.Connect("127.0.0.1",9716,"111111");
+						//m_mainApp.m_connectDeamon.Connect("127.0.0.1",9716,"111111");
 						
 						m_mainApp.SetStateString("connecting...");
 						m_connectBut.setLabel("disconnect");
