@@ -54,47 +54,6 @@ class msg_head{
 	final public static byte msgFetchAttach = 6;
 }
 
-
-class DisplayAnImage extends MIDlet
-{
-    private Form mForm;
-    private Display mDisplay;
-    private Image pngBackground;
-    String m_name;
-    
-    public DisplayAnImage(String _name)
-    {
-    	m_name = _name;
-    }
-    
-    public void destroyApp(boolean flag)
-    {
-    }
-    
-    public void startApp()
-    {
-            mDisplay = Display.getDisplay(this);
-            mForm = new Form("MIDlet Developer Guide: Display an image.");
-            
-            try
-            {
-                pngBackground = Image.createImage(m_name);
-                ImageItem img = new ImageItem("bg",pngBackground,
-                ImageItem.LAYOUT_EXPAND,"background"); 
-                mForm.append(img); 
-                mDisplay.setCurrent(mForm); 
-            }
-            catch(IOException e)
-            {
-                System.out.println(e.getMessage());
-            }
-    }
-    
-    public void pauseApp()
-    {
-    }
-} 
-
 public class connectDeamon extends Thread implements SendListener,
 												MessageListener,
 												AttachmentHandler,
