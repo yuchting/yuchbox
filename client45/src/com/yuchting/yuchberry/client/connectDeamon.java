@@ -219,7 +219,7 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			try{
 	
-				//AddMarkReadMail(e.getMessage());
+				AddMarkReadMail(e.getMessage());
 				e.getMessage().removeMessageListener(this);
 			}catch(Exception _e){}
 		}
