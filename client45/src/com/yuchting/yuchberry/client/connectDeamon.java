@@ -33,15 +33,17 @@ import net.rim.blackberry.api.mail.event.ViewListener;
 
 class msg_head{
 	
-	final public static byte msgMail = 0;
-	final public static byte msgSendMail = 1;
+	final public static byte msgMail 			= 0;
+	final public static byte msgSendMail 		= 1;
 
-	final public static byte msgConfirm = 2;
-	final public static byte msgNote = 3;
+	final public static byte msgConfirm 			= 2;
+	final public static byte msgNote 			= 3;
 	
-	final public static byte msgBeenRead = 4;
-	final public static byte msgMailAttach = 5;
-	final public static byte msgFetchAttach = 6;
+	final public static byte msgBeenRead 		= 4;
+	final public static byte msgMailAttach 		= 5;
+	final public static byte msgFetchAttach 		= 6;
+	
+	final public static byte msgKeepLive 		= 7;
 }
 
 public class connectDeamon extends Thread implements SendListener,

@@ -149,13 +149,12 @@ class berrySvrPush extends Thread{
 					t_output.write(msg_head.msgMail);
 					t_mail.OutputMail(t_output);
 					
-					berrySvrDeamon.prt("CheckFolder OK and send mail!");
-					
 					m_sendReceive.SendBufferToSvr(t_output.toByteArray(),false);
-					
 					m_serverDeamon.m_fetchMgr.SetBeginFetchIndex(t_mail.GetMailIndex());
 					
 					t_unreadMailVector.remove(0);
+					
+					berrySvrDeamon.prt("CheckFolder OK and send mail!");
 				}
 				
 				
@@ -327,6 +326,8 @@ class berrySvrDeamon extends Thread{
 				break;
 			case msg_head.msgFetchAttach:
 				ProcessFetchMailAttach(in);
+				break;
+			case msg_head.msgKeepLive:
 				break;
 			default:
 				throw new Exception("illegal client connect");

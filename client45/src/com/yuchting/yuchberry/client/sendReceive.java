@@ -104,13 +104,31 @@ public class sendReceive extends Thread{
 	public void run(){
 		
 		try{
+			int t_keepliveCounter = 0;
 			
 			while(!m_closed){
 				SendBufferToSvr_imple(PrepareOutputData());
 				sleep(500);
+				
+				t_keepliveCounter++;
+				
+				if(t_keepliveCounter > 20){
+					t_keepliveCounter = 0;
+					
+					ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+					WriteInt(t_os, 1);
+					t_os.write(msg_head.msgKeepLive);
+					
+					SendBufferToSvr_imple(t_os.toByteArray());
+				}
 			}
 			
-		}catch(Exception _e){}
+		}catch(Exception _e){
+			try{
+				m_socketOutputStream.close();
+				m_socketInputStream.close();	
+			}catch(Exception e){}
+		}
 	}
 
 	//! recv buffer
