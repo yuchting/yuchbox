@@ -40,6 +40,17 @@ public class sendReceive extends Thread{
 		
 		if(m_closed == false){
 			m_closed = true;
+			
+			m_unsendedPackage.removeAllElements();
+			m_unprocessedPackage.removeAllElements();
+			
+			interrupt();
+			
+			try{
+				m_socketOutputStream.close();
+				m_socketInputStream.close();
+			}catch(Exception _e){}
+			
 	
 			while(isAlive()){
 				try{
@@ -112,7 +123,7 @@ public class sendReceive extends Thread{
 				
 				t_keepliveCounter++;
 				
-				if(t_keepliveCounter > 20){
+				if(t_keepliveCounter > 200){
 					t_keepliveCounter = 0;
 					
 					ByteArrayOutputStream t_os = new ByteArrayOutputStream();

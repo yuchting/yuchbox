@@ -42,6 +42,11 @@ class sendReceive extends Thread{
 			m_unsendedPackage.clear();
 			m_unprocessedPackage.clear();
 			
+			try{
+				m_socketOutputStream.close();
+				m_socketInputStream.close();
+			}catch(Exception _e){}
+			
 			interrupt();
 			
 			while(isAlive()){

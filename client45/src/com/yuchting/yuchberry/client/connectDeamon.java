@@ -363,15 +363,15 @@ public class connectDeamon extends Thread implements SendListener,
 						
 			synchronized (this) {
 				try{
-					if(m_conn != null){
-						m_conn.close();
-						m_conn = null;
-					}
-					
 					if(m_connect == null){
 						m_connect.CloseSendReceive();
 						m_connect = null;
-					}				
+					}	
+					
+					if(m_conn != null){
+						m_conn.close();
+						m_conn = null;
+					}					
 					
 				}catch(Exception _e){}
 			}		
@@ -385,16 +385,19 @@ public class connectDeamon extends Thread implements SendListener,
 	 }
 	 
 	 public void Connect(String _host,int _port,String _userPassword)throws Exception{
-
-		 m_hostname		= _host;
-		 m_hostport		= _port;
-		 m_userPassword = _userPassword;
-		 
-		 BeginListener();
 		 
 		synchronized (this) {
+			
+			Disconnect();
+			
 			m_disconnect = false;
+			
+			BeginListener();
 		}
+		
+		m_hostname		= _host;
+		m_hostport		= _port;
+		m_userPassword = _userPassword;		
 	 }
 	 
 	 public boolean IsConnected(){
@@ -404,29 +407,27 @@ public class connectDeamon extends Thread implements SendListener,
 	 public void Disconnect()throws Exception{
 		 
 		 m_disconnect = true;
-		 
-		 EndListener();
-		 
-		
+		 	
 		 synchronized (this) {
+			 
+			 EndListener();	
 
-			 for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
-				 sendMailAttachmentDeamon send = (sendMailAttachmentDeamon) m_sendingMailAttachment.elementAt(i);
-				 send.interrupt();
+			 if(m_connect != null){
+				 m_connect.CloseSendReceive();
+				 m_connect = null;
 			 }
-			 
-			 m_sendingMailAttachment.removeAllElements();
-			 
 			 
 			 if(m_conn != null){			 
 				 m_conn.close();
 				 m_conn = null; 
+			 }			
+			 
+			 for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
+				 sendMailAttachmentDeamon send = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
+				 send.interrupt();
 			 }
 			 
-			 if(m_connect != null){
-				 m_connect.CloseSendReceive();
-				 m_connect = null;
-			 }	 
+			 m_sendingMailAttachment.removeAllElements();
 		 }
 	 }
 	 
