@@ -275,16 +275,44 @@ class sendMailAttachmentDeamon extends Thread{
 		
 		InputStream in = null;
 		
+		boolean t_sendContain = false;
+		
 		while(true){
+			
 			if(!m_connect.IsConnected()){
 				try{
-					sleep(200);
+					sleep(10000);
 				}catch(Exception _e){
 					break;
 				}
 			}
 			
 			try{
+				
+				if(!t_sendContain){
+					
+					// sleep little to wait system set the mail status error
+					// and set it back
+					//
+					sleep(100);
+					
+					m_sendMail.GetAttachMessage().setStatus(Message.Status.TX_SENDING,1);
+					
+					// send mail once if has not attachment 
+					//
+					ByteArrayOutputStream os = new ByteArrayOutputStream();
+					os.write(msg_head.msgMail);
+					m_sendMail.OutputMail(os);
+					
+					m_connect.m_connect.SendBufferToSvr(os.toByteArray(), false);
+					
+					if(m_vFileConnection.isEmpty()){
+						break;
+					}
+					
+					t_sendContain = true;
+				}
+				
 				
 				FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(m_attachmentIndex);
 				if(in == null){
@@ -338,18 +366,18 @@ class sendMailAttachmentDeamon extends Thread{
 				m_os.reset();
 				
 			}catch(Exception _e){
+				
 				m_connect.m_mainApp.SetErrorString(_e.getMessage());
 				m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-1,0,0);
 				
-				try{
-					for(int i = 0;i < m_vFileConnection.size();i++){
-						FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(i);
-						t_file.close();
-					}
-				}catch(Exception e){}
-				
-				break;
-			}			
+			}		
 		}
+		
+		try{
+			for(int i = 0;i < m_vFileConnection.size();i++){
+				FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(i);
+				t_file.close();
+			}
+		}catch(Exception e){}
 	}	
 }

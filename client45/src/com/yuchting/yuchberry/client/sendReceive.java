@@ -193,7 +193,7 @@ public class sendReceive extends Thread{
 	}
 	
 	static public void WriteString(OutputStream _stream,String _string)throws Exception{
-		final byte[] t_strByte = _string.getBytes("UTF8");
+		final byte[] t_strByte = _string.getBytes("UTF-8");
 		WriteInt(_stream,t_strByte.length);
 		if(t_strByte.length != 0){
 			_stream.write(t_strByte);
@@ -221,7 +221,7 @@ public class sendReceive extends Thread{
 			
 			ForceReadByte(_stream,t_buffer,len);
 
-			return new String(t_buffer,"UTF8");
+			return new String(t_buffer,"UTF-8");
 		}
 		
 		return new String("");

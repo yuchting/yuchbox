@@ -2,8 +2,6 @@ package com.yuchting.yuchberry.client;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
@@ -12,14 +10,7 @@ import java.util.Vector;
 import javax.microedition.io.Connector;
 import javax.microedition.io.SocketConnection;
 import javax.microedition.io.file.FileConnection;
-import javax.microedition.lcdui.Display;
-import javax.microedition.lcdui.Form;
-import javax.microedition.lcdui.Image;
-import javax.microedition.lcdui.ImageItem;
-import javax.microedition.midlet.MIDlet;
 
-import net.rim.blackberry.api.invoke.Invoke;
-import net.rim.blackberry.api.invoke.MessageArguments;
 import net.rim.blackberry.api.mail.Address;
 import net.rim.blackberry.api.mail.AttachmentHandler;
 import net.rim.blackberry.api.mail.AttachmentHandlerManager;
@@ -38,7 +29,6 @@ import net.rim.blackberry.api.mail.BodyPart.ContentType;
 import net.rim.blackberry.api.mail.event.MessageEvent;
 import net.rim.blackberry.api.mail.event.MessageListener;
 import net.rim.blackberry.api.mail.event.ViewListener;
-import net.rim.device.api.ui.component.Dialog;
 
 
 class msg_head{
@@ -85,9 +75,7 @@ public class connectDeamon extends Thread implements SendListener,
 	 public Vector 		m_markReadVector = new Vector();
 	 	 
 	 // read the email temporary variables
-	 //
-	 private SupportedAttachmentPart	m_supportedAttachment = null;
-	 
+	 // 
 	 private String			m_plainTextContain = new String();
 	 private String			m_htmlTextContain = new String();
 	 
@@ -98,6 +86,7 @@ public class connectDeamon extends Thread implements SendListener,
 	 String				m_currStateString = new String();
 	 recvMain			m_mainApp = null;
 	 
+	 int				m_ipConnectCounter = 10;
 	 
 	 class FetchAttachment{
 		 int						m_messageHashCode;
@@ -118,7 +107,7 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 public connectDeamon(recvMain _app){
 		 m_mainApp = _app;
-		 start();	 
+		 start();
 	 }
 	 
 	 public void BeginListener()throws Exception{
@@ -155,9 +144,7 @@ public class connectDeamon extends Thread implements SendListener,
 			ImportMail(message,t_mail);
 			
 			t_mail.SetSendDate(new Date());
-			
-			message.setStatus(Message.Status.TX_SENDING,1);
-						
+									
 			AddSendingMail(t_mail,m_composingAttachment);
 			m_composingAttachment.removeAllElements();
 			
@@ -341,6 +328,8 @@ public class connectDeamon extends Thread implements SendListener,
 				}catch(Exception _e){}
 			}
 			
+			m_ipConnectCounter = 10;
+			
 			try{
 
 				m_conn = GetConnection(false);
@@ -416,8 +405,17 @@ public class connectDeamon extends Thread implements SendListener,
 		 
 		 EndListener();
 		 
+		
 		 synchronized (this) {
 
+			 for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
+				 sendMailAttachmentDeamon send = (sendMailAttachmentDeamon) m_sendingMailAttachment.elementAt(i);
+				 send.interrupt();
+			 }
+			 
+			 m_sendingMailAttachment.removeAllElements();
+			 
+			 
 			 if(m_conn != null){			 
 				 m_conn.close();
 				 m_conn = null; 
@@ -459,7 +457,12 @@ public class connectDeamon extends Thread implements SendListener,
 				 m_hostip = null;
 				 socket = GetConnection(_ssl);
 			 }else{
-				 throw _e;
+				 if(_e.getMessage().indexOf("DNS") != -1 && m_ipConnectCounter > 0){
+					 m_ipConnectCounter--;
+					 socket = GetConnection(_ssl);
+				 }else{
+					 throw _e;
+				 }				
 			 }
 		 } 
 
@@ -582,11 +585,9 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		// load the attachment if has 
 		//
-		Vector t_vfileReader = null;
+		Vector t_vfileReader = new Vector();
 		
 		if(!_files.isEmpty()){
-
-			t_vfileReader = new Vector();
 			
 			for(int i = 0;i< _files.size();i++){
 				String t_fullname = (String)_files.elementAt(i);
@@ -626,18 +627,9 @@ public class connectDeamon extends Thread implements SendListener,
 			Message msg = _mail.GetAttachMessage();
 			ComposeMessageContent(msg, _mail);
 		}
+
+		m_sendingMailAttachment.addElement(new sendMailAttachmentDeamon(this, _mail, t_vfileReader));			
 		
-		// send mail once if has not attachment 
-		//
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		os.write(msg_head.msgMail);
-		_mail.OutputMail(os);
-		
-		m_connect.SendBufferToSvr(os.toByteArray(), false);
-		
-		if(!_files.isEmpty()){
-			m_sendingMailAttachment.addElement(new sendMailAttachmentDeamon(this, _mail, t_vfileReader));			
-		}
 	}
 	
 	public void ProcessMailAttach(InputStream in)throws Exception{

@@ -1,23 +1,21 @@
 package com.yuchting.yuchberry.client;
 
-import java.io.IOException;
+import java.util.Date;
 import java.util.Vector;
 
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
-import javax.microedition.lcdui.Display;
-import javax.microedition.lcdui.Form;
-import javax.microedition.lcdui.Image;
-import javax.microedition.lcdui.ImageItem;
-import javax.microedition.midlet.MIDlet;
 
 import local.localResource;
 import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
 import net.rim.device.api.i18n.ResourceBundle;
+import net.rim.device.api.i18n.SimpleDateFormat;
+import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.ButtonField;
@@ -26,6 +24,42 @@ import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.container.MainScreen;
 
+class ErrorLabelText extends Field{
+	Vector m_stringList;
+	static final int		fsm_space = 3;
+	
+	public ErrorLabelText(Vector _stringList){
+		super(Field.READONLY | Field.NON_FOCUSABLE | Field.USE_ALL_WIDTH);
+		
+		m_stringList = _stringList;
+	}
+	
+	public void layout(int _width,int _height){
+		final int t_width = Display.getWidth();
+		
+		final int t_size 	= m_stringList.size();
+		final int t_height = Math.max(0, (t_size - 1)) * fsm_space +  t_size * getFont().getHeight();
+		
+		setExtent(t_width, t_height);
+	}
+	
+	public void paint(Graphics _g){
+		int t_y = 0;
+		final int t_fontHeight = getFont().getHeight();
+		SimpleDateFormat t_format = new SimpleDateFormat("mm:ss");
+		
+		for(int i = m_stringList.size() -1 ;i >= 0 ;i--){
+			recvMain.ErrorInfo t_info = (recvMain.ErrorInfo)m_stringList.elementAt(i);
+			_g.drawText(t_format.format(t_info.m_time) + ": " + t_info.m_info,0,t_y,Graphics.ELLIPSIS);
+			
+			t_y += t_fontHeight + fsm_space;
+		}
+	}
+	
+	public boolean isFocusable(){
+		return false;
+	}
+}
 
 final class stateScreen extends MainScreen implements FieldChangeListener{
 										
@@ -36,7 +70,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
     
     ButtonField         m_connectBut    = null;
     LabelField          m_stateText     = null;
-    LabelField          m_errorText     = null;
+    ErrorLabelText      m_errorText     = null;
     LabelField			m_uploadingText = null;
         
     recvMain			m_mainApp		= null;
@@ -47,7 +81,9 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
         
         m_mainApp	= _app;        
         
-        m_hostName = new EditField(recvMain.sm_local.getString(localResource.HOST),m_mainApp.m_hostname,128, EditField.FILTER_DEFAULT);
+        m_hostName = new EditField(recvMain.sm_local.getString(localResource.HOST),
+        				m_mainApp.m_hostname,128, EditField.FILTER_DEFAULT);
+        
         m_hostName.setChangeListener(this);
         add(m_hostName);
         
@@ -57,7 +93,9 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
         m_hostport.setChangeListener(this);
         add(m_hostport);
         
-        m_userPassword = new EditField(recvMain.sm_local.getString(localResource.USER_PASSWORD),m_mainApp.m_hostname,128,EditField.FILTER_DEFAULT);
+        m_userPassword = new EditField(recvMain.sm_local.getString(localResource.USER_PASSWORD),
+        				m_mainApp.m_userPassword,128,EditField.FILTER_DEFAULT);
+        
         add(m_userPassword);
         
         m_connectBut = new ButtonField(m_mainApp.m_connectDeamon.IsConnected()?"disconnect":"connect",
@@ -70,7 +108,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
         m_stateText = new LabelField(m_mainApp.GetStateString(), LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
         add(m_stateText);
         
-        m_errorText = new LabelField(m_mainApp.GetErrorString(), LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
+        m_errorText = new ErrorLabelText(m_mainApp.GetErrorString());
         add(m_errorText);
         
         m_uploadingText = new LabelField("", LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
@@ -102,7 +140,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
     		
     		if(t_desc.m_attachmentIdx == -1){
     			
-    			t_total = t_total + "Subject: " + t_desc.m_mail.GetSubject() + "(Failed) \n";
+    			t_total = t_total + "Subject: " + t_desc.m_mail.GetSubject() + "(Failed) retry again\n";
     			
     		}else{
     			
@@ -181,7 +219,18 @@ public class recvMain extends UiApplication implements localResource {
 	connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
 	String				m_stateString		= new String("disconnect");
-	String				m_errorString		= new String();
+	
+	class ErrorInfo{
+		Date		m_time;
+		String		m_info;
+		
+		ErrorInfo(String _info){
+			m_info	= _info;
+			m_time	= new Date();
+		}
+	}
+	
+	Vector				m_errorString		= new Vector();
 	
 	Vector				m_uploadingDesc 	= new Vector();
 	
@@ -404,14 +453,18 @@ public class recvMain extends UiApplication implements localResource {
 	}
 	
 	public void SetErrorString(final String _error){
-		if(m_stateScreen != null){
-			m_stateScreen.m_errorText.setText(_error);
+		m_errorString.addElement(new ErrorInfo(_error));
+		if(m_errorString.size() > 5){
+			m_errorString.removeElementAt(0);
 		}
 		
-		m_errorString = _error;
+		if(m_stateScreen != null){
+			m_stateScreen.m_errorText.layout(0, 0);
+			m_stateScreen.invalidate();
+		}
 	}
 	
-	public final String GetErrorString(){
+	public final Vector GetErrorString(){
 		return m_errorString;
 	}	
 }

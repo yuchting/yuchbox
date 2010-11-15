@@ -225,6 +225,7 @@ class berrySvrDeamon extends Thread{
 		}
 		
 		_s.setSoTimeout(0);
+		_s.setKeepAlive(true);
 		
 		if(m_fetchMgr.GetClientConnected() != null 
 		&& m_fetchMgr.GetClientConnected().m_socket != null){
