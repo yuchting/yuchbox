@@ -804,6 +804,24 @@ class fetchMgr{
 		    	t_vect.addElement(a[j].toString());
 		    }
 		}
+		
+		// CC
+		if( (a = m.getRecipients(Message.RecipientType.CC)) != null){
+			Vector t_vect = _mail.GetCCToVect();
+			t_vect.removeAllElements();
+		    for (int j = 0; j < a.length; j++){
+		    	t_vect.addElement(a[j].toString());
+		    }
+		}
+		
+		// BCC
+		if( (a = m.getRecipients(Message.RecipientType.BCC)) != null){
+			Vector t_vect = _mail.GetBCCToVect();
+			t_vect.removeAllElements();
+		    for (int j = 0; j < a.length; j++){
+		    	t_vect.addElement(a[j].toString());
+		    }
+		}
 
 		// TO
 		if ((a = m.getRecipients(Message.RecipientType.TO)) != null) {

@@ -11,8 +11,6 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.security.KeyStore;
-import java.text.DecimalFormat;
-import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
@@ -41,6 +39,17 @@ class Inte{
 		return false;
 	}
 }
+
+class Address
+{
+	String m_name;
+	String m_add;
+	Address(String _add,String _name)
+	{
+		m_add = _add;
+		m_name = _name;
+	}
+}
 /*!
  *  @brief note
  *  @author tzz
@@ -53,21 +62,12 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[]){
 
-		//HelloWorld test = new HelloWorld(); 
-		//test.berryRecvTest();
+		HelloWorld test = new HelloWorld(); 
+		test.test4();
 
-		Vector t_vector = new Vector();
-		
-		t_vector.addElement(new Inte("aaa"));
-		t_vector.addElement(new Inte("aaa1"));
-		t_vector.addElement(new Inte("aaa2"));
-		
-		int t_search = t_vector.indexOf("aaa");
-		
-		System.out.println(t_search);
 	
 	}
-	
+		
 	private static  void StoreAttachment(int _mailIndex,int _attachmentIndex,byte[] _contain){
 		String t_filename = "" + _mailIndex + "_" + _attachmentIndex + ".att";
 		
@@ -183,13 +183,16 @@ public class HelloWorld {
 	
 	public void test4(){
 		Vector t_list = new Vector();
+		
 		t_list.addElement("\"yuch\"<yuchting@gmail.com>");
 		t_list.addElement("yuch<yuchting@gmail.com>");
 		t_list.addElement("\"yuch\"");
+		t_list.addElement("yuchting@gmail.com");
+		
 		try{
-			String[] t_add = parseAddressList(t_list);
+			Address[] t_add = parseAddressList(t_list);
 			for(int i = 0;i < t_add.length;i++){
-				prt(t_add[i]);				
+				prt(t_add[i].m_name + " " + t_add[i].m_add);			
 			}
 		}catch(Exception _e){
 			
@@ -197,32 +200,37 @@ public class HelloWorld {
 		
 	}
 	
-	public static String[] parseAddressList(Vector _list)throws Exception{
-		String[] 	t_addressList = new String[_list.size()];
+	public static Address[] parseAddressList(Vector _list)throws Exception{
+		Address[] 	t_addressList = new Address[_list.size()];
 		
 		for(int i = 0;i < _list.size();i++){
-			String add = (String)_list.elementAt(i);
+			String fullAdd = (String)_list.elementAt(i);
+			String add;
 			String t_name = null;
 			
-			final int t_start =add.indexOf('<');
-			final int t_end = add.indexOf('>');
+			final int t_start = fullAdd.indexOf('<');
+			final int t_end = fullAdd.indexOf('>');
 			
-			final int t_start_quotation = add.indexOf('"');
-			final int t_end_quotation = add.indexOf('"',t_start_quotation + 1);
+			final int t_start_quotation = fullAdd.indexOf('"');
+			final int t_end_quotation = fullAdd.indexOf('"',t_start_quotation + 1);
 			
 			if(t_start_quotation != -1 && t_end_quotation != -1 ){			
-				t_name = add.substring(t_start_quotation + 1, t_end_quotation);
+				t_name = fullAdd.substring(t_start_quotation + 1, t_end_quotation);
 			}else{
-				t_name = "";
+				if(t_start != -1 && t_start > 0){
+					t_name = fullAdd.substring(0,t_start);
+				}else{
+					t_name = "";
+				}				
 			}
 			
 			if(t_start != -1 && t_end != -1 ){			
-				add = add.substring(t_start + 1, t_end);
+				add = fullAdd.substring(t_start + 1, t_end);
 			}else{
-				t_name = "";
+				add = fullAdd;
 			}
 			
-			t_addressList[i] = add + t_name;
+			t_addressList[i] = new Address(add,t_name);
 		}
 		
 		return t_addressList;

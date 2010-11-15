@@ -27,6 +27,8 @@ public class  fetchMail{
 	
 	private Vector		m_vectFrom 		= new Vector();
 	private Vector		m_vectReplyTo	= new Vector();
+	private Vector		m_vectCCTo		= new Vector();
+	private Vector		m_vectBCCTo		= new Vector();
 	private Vector		m_vectTo		= new Vector();
 	private Vector		m_vectGroup		= new Vector();
 	
@@ -67,25 +69,30 @@ public class  fetchMail{
 		Address[] 	t_addressList = new Address[_list.size()];
 		
 		for(int i = 0;i < _list.size();i++){
-			String add = (String)_list.elementAt(i);
+			String fullAdd = (String)_list.elementAt(i);
+			String add;
 			String t_name = null;
 			
-			final int t_start =add.indexOf('<');
-			final int t_end = add.indexOf('>');
+			final int t_start = fullAdd.indexOf('<');
+			final int t_end = fullAdd.indexOf('>');
 			
-			final int t_start_quotation = add.indexOf('"');
-			final int t_end_quotation = add.indexOf('"',t_start_quotation + 1);
+			final int t_start_quotation = fullAdd.indexOf('"');
+			final int t_end_quotation = fullAdd.indexOf('"',t_start_quotation + 1);
 			
 			if(t_start_quotation != -1 && t_end_quotation != -1 ){			
-				t_name = add.substring(t_start_quotation + 1, t_end_quotation);
+				t_name = fullAdd.substring(t_start_quotation + 1, t_end_quotation);
 			}else{
-				t_name = "";
+				if(t_start != -1 && t_start > 0){
+					t_name = fullAdd.substring(0,t_start);
+				}else{
+					t_name = "";
+				}				
 			}
 			
 			if(t_start != -1 && t_end != -1 ){			
-				add = add.substring(t_start + 1, t_end);
+				add = fullAdd.substring(t_start + 1, t_end);
 			}else{
-				t_name = "";
+				add = fullAdd;
 			}
 			
 			t_addressList[i] = new Address(add,t_name);
@@ -103,6 +110,8 @@ public class  fetchMail{
 		
 		sendReceive.WriteStringVector(_stream,m_vectFrom);
 		sendReceive.WriteStringVector(_stream,m_vectReplyTo);
+		sendReceive.WriteStringVector(_stream,m_vectCCTo);
+		sendReceive.WriteStringVector(_stream,m_vectBCCTo);
 		sendReceive.WriteStringVector(_stream,m_vectTo);
 		sendReceive.WriteStringVector(_stream,m_vectGroup);
 		
@@ -136,6 +145,8 @@ public class  fetchMail{
 		
 		sendReceive.ReadStringVector(_stream,m_vectFrom);
 		sendReceive.ReadStringVector(_stream,m_vectReplyTo);
+		sendReceive.ReadStringVector(_stream,m_vectCCTo);
+		sendReceive.ReadStringVector(_stream,m_vectBCCTo);
 		sendReceive.ReadStringVector(_stream,m_vectTo);
 		sendReceive.ReadStringVector(_stream,m_vectGroup);
 		
@@ -199,6 +210,23 @@ public class  fetchMail{
 		}		
 	}
 	public Vector GetReplyToVect(){return m_vectReplyTo;}
+	
+	public void SetCCToVect(String[] _CCTo){
+		m_vectCCTo.removeAllElements();
+		for(int i = 0;i < _CCTo.length;i++){
+			m_vectCCTo.addElement(_CCTo[i]);
+		}		
+	}
+	public Vector GetCCToVect(){return m_vectCCTo;}
+	
+	public void SetBCCToVect(String[] _BCCTo){
+		m_vectBCCTo.removeAllElements();
+		for(int i = 0;i < _BCCTo.length;i++){
+			m_vectBCCTo.addElement(_BCCTo[i]);
+		}		
+	}
+	public Vector GetBCCToVect(){return m_vectBCCTo;}
+	
 	
 	public Vector GetFromVect(){return m_vectFrom;}
 	public void SetFromVect(String[] _from){
@@ -367,7 +395,7 @@ class sendMailAttachmentDeamon extends Thread{
 				
 			}catch(Exception _e){
 				
-				m_connect.m_mainApp.SetErrorString(_e.getMessage());
+				m_connect.m_mainApp.SetErrorString("SendError: " + _e.getMessage());
 				m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-1,0,0);
 				
 			}		

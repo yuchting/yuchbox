@@ -30,6 +30,8 @@ public class  fetchMail{
 	
 	private Vector		m_vectFrom 		= new Vector();
 	private Vector		m_vectReplyTo	= new Vector();
+	private Vector		m_vectCCTo		= new Vector();
+	private Vector		m_vectBCCTo		= new Vector();
 	private Vector		m_vectTo		= new Vector();
 	private Vector		m_vectGroup		= new Vector();
 	
@@ -86,6 +88,8 @@ public class  fetchMail{
 		
 		sendReceive.WriteStringVector(_stream,m_vectFrom);
 		sendReceive.WriteStringVector(_stream,m_vectReplyTo);
+		sendReceive.WriteStringVector(_stream,m_vectCCTo);
+		sendReceive.WriteStringVector(_stream,m_vectBCCTo);
 		sendReceive.WriteStringVector(_stream,m_vectTo);
 		sendReceive.WriteStringVector(_stream,m_vectGroup);
 		
@@ -119,6 +123,8 @@ public class  fetchMail{
 		
 		sendReceive.ReadStringVector(_stream,m_vectFrom);
 		sendReceive.ReadStringVector(_stream,m_vectReplyTo);
+		sendReceive.ReadStringVector(_stream,m_vectCCTo);
+		sendReceive.ReadStringVector(_stream,m_vectBCCTo);
 		sendReceive.ReadStringVector(_stream,m_vectTo);
 		sendReceive.ReadStringVector(_stream,m_vectGroup);
 		
@@ -182,6 +188,23 @@ public class  fetchMail{
 		}		
 	}
 	public Vector GetReplyToVect(){return m_vectReplyTo;}
+	
+	public void SetCCToVect(String[] _CCTo){
+		m_vectCCTo.removeAllElements();
+		for(int i = 0;i < _CCTo.length;i++){
+			m_vectCCTo.addElement(_CCTo[i]);
+		}		
+	}
+	public Vector GetCCToVect(){return m_vectCCTo;}
+	
+	public void SetBCCToVect(String[] _BCCTo){
+		m_vectBCCTo.removeAllElements();
+		for(int i = 0;i < _BCCTo.length;i++){
+			m_vectBCCTo.addElement(_BCCTo[i]);
+		}		
+	}
+	public Vector GetBCCToVect(){return m_vectBCCTo;}
+	
 	
 	public Vector GetFromVect(){return m_vectFrom;}
 	public void SetFromVect(String[] _from){

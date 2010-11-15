@@ -357,7 +357,7 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				try{
 					m_mainApp.SetStateString("disconnected retry later...");
-					m_mainApp.SetErrorString(_e.getMessage());
+					m_mainApp.SetErrorString("MainLoop: " + _e.getMessage());
 				}catch(Exception e){}				
 			}		
 						
@@ -518,7 +518,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 		break;
 		 	case msg_head.msgNote:
 		 		String t_string = sendReceive.ReadString(in);
-		 		m_mainApp.SetErrorString(t_string);
+		 		m_mainApp.SetErrorString("server:" + t_string);
 		 		break;
 		 	case msg_head.msgMailAttach:
 		 		ProcessMailAttach(in);
@@ -901,14 +901,18 @@ public class connectDeamon extends Thread implements SendListener,
 	    msg.addRecipients(Message.RecipientType.TO,
 	    				fetchMail.parseAddressList(_mail.GetSendToVect()));
 	    
-	    if (!_mail.GetReplyToVect().isEmpty()){
+	    if (!_mail.GetCCToVect().isEmpty()){
 	    	  msg.addRecipients(Message.RecipientType.CC,
-	    				fetchMail.parseAddressList(_mail.GetReplyToVect()));
+	    				fetchMail.parseAddressList(_mail.GetCCToVect()));
 	    }
 	    
-	    if(!_mail.GetGroupVect().isEmpty()){
+	    if(!_mail.GetReplyToVect().isEmpty()){
+	    	msg.setReplyTo(fetchMail.parseAddressList(_mail.GetReplyToVect()));
+	    }
+	    
+	    if(!_mail.GetBCCToVect().isEmpty()){
 	    	 msg.addRecipients(Message.RecipientType.BCC,
-	    				fetchMail.parseAddressList(_mail.GetGroupVect()));
+	    				fetchMail.parseAddressList(_mail.GetBCCToVect()));
 	    }
 		
 
