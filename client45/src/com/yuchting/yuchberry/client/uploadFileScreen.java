@@ -21,15 +21,17 @@ import net.rim.device.api.ui.container.MainScreen;
 
 class fileIcon {
 
+	int				m_fileSize;
 	String			m_filename 	= null;
-	String			m_filename_null 	= null;
+	String			m_filename_full 	= null;
 	Bitmap			m_bitmap		= null;
 	boolean		m_isFolder	= false;
 	
-	public fileIcon(String _name,String _name_full,Bitmap _image,boolean _isFolder){
+	public fileIcon(String _name,String _name_full,Bitmap _image,int _fileSize,boolean _isFolder){
 		
+		m_fileSize	= _fileSize;
 		m_filename	= _name;
-		m_filename_null = _name_full;
+		m_filename_full = _name_full;
 		m_bitmap		= _image;
 		m_isFolder	= _isFolder;
 	}
@@ -53,7 +55,20 @@ class IconListCallback implements ListFieldCallback {
 							uploadFileScreen.fsm_bitmap_width,
 							t_file.m_bitmap, 0, 0);
 		
-		graphics.drawText(t_file.m_filename, uploadFileScreen.fsm_bitmap_width, y);          
+		if(t_file.m_isFolder){
+			graphics.drawText(t_file.m_filename, uploadFileScreen.fsm_bitmap_width, y);
+		}else{
+			if(t_file.m_fileSize > 1024 * 1024){
+				 
+				graphics.drawText("(" + (t_file.m_fileSize / 1024 / 1024) + "MB) " + t_file.m_filename, uploadFileScreen.fsm_bitmap_width, y);
+			}else if(t_file.m_fileSize > 1024){
+				graphics.drawText("(" + (t_file.m_fileSize / 1024 ) + "KB) " + t_file.m_filename, uploadFileScreen.fsm_bitmap_width, y);
+			}else{
+				graphics.drawText("(" + (t_file.m_fileSize) + "B) " + t_file.m_filename, uploadFileScreen.fsm_bitmap_width, y);
+			}
+			
+		}
+		          
 	}
 		 
 	public Object get(ListField listField, int index){
@@ -109,8 +124,10 @@ public class uploadFileScreen extends MainScreen implements
 	
 	fileIconList		m_fileList 		= new fileIconList();
 	
-	uploadFileScreenMenu	m_ok		= new uploadFileScreenMenu("OK",0,100,this);
-	uploadFileScreenMenu	m_cancel	= new uploadFileScreenMenu("Cancel",1,100,this);
+	uploadFileScreenMenu	m_check		= new uploadFileScreenMenu("Check",0,100,this);
+	uploadFileScreenMenu	m_ok		= new uploadFileScreenMenu("OK",1,100,this);
+	uploadFileScreenMenu	m_cancel	= new uploadFileScreenMenu("Cancel",2,100,this);
+	
 	
 	final static int fsm_bitmap_width	= 32;
 	final static int fsm_bitmap_height = 32;
@@ -130,23 +147,23 @@ public class uploadFileScreen extends MainScreen implements
 	
 	recvMain			m_mainApp		= null;
 	
-	final static String fsm_rootPath	= new String("file:///store/home/user/");
+	final static String fsm_rootPath_back		= new String("file:///store/home/user/");
+	final static String fsm_rootPath_default	= new String("file:///SDCard/");
+	
+	String				m_rootPath = null;
 	
 	String				m_currDisplayPath = null;
 	
 	boolean			m_delScreen		=false;
 	
-	uploadFileScreen(connectDeamon _deamon,recvMain _app,boolean _del) {
+	uploadFileScreen(connectDeamon _deamon,recvMain _app,boolean _del) throws Exception {
 		
-		try{
-			m_textFileBitmap 	= GetConstFileBitmap("/Crystal_Txt_resize.bmp");
-			m_audioFileBitmap 	= GetConstFileBitmap("/Crystal_Audio_resize.bmp");
-			m_binFileBitmap 	= GetConstFileBitmap("/Crystal_Generic_resize.bmp");
-			m_folderBitmap 		= GetConstFileBitmap("/Folder_yellow_resize.bmp");
-			m_pictureBitmap		= GetConstFileBitmap("/Picture.bmp");
-			m_movieBitmap		= GetConstFileBitmap("/Movie.bmp");
-			
-		}catch(Exception e){}	
+		m_textFileBitmap 	= GetConstFileBitmap("/Text_resize.jpg");
+		m_audioFileBitmap 	= GetConstFileBitmap("/Audio_resize.jpg");
+		m_binFileBitmap 	= GetConstFileBitmap("/Unknown_resize.jpg");
+		m_folderBitmap 		= GetConstFileBitmap("/Folder_resize.jpg");
+		m_pictureBitmap		= GetConstFileBitmap("/Picture_resize.jpg");
+		m_movieBitmap		= GetConstFileBitmap("/Movie_resize.jpg");
 		
 		m_fileList.setCallback(m_listCallback);		
 		add(m_fileList);
@@ -154,8 +171,16 @@ public class uploadFileScreen extends MainScreen implements
 		m_deamon = _deamon;
 		m_mainApp = _app;
 		m_delScreen = _del;
-				
-		DisplayFileList(fsm_rootPath);
+		
+		try{
+			FileConnection fc = (FileConnection) Connector.open(fsm_rootPath_default,Connector.READ_WRITE);
+			m_rootPath = fsm_rootPath_default;
+			fc.close();
+		}catch(Exception _e){
+			m_rootPath = fsm_rootPath_back;
+		}
+		
+		DisplayFileList(m_rootPath);
 	}
 		
 	public void DisplayFileList(String _path){
@@ -175,14 +200,14 @@ public class uploadFileScreen extends MainScreen implements
 				int t_index = 0;
 				Vector t_files = m_deamon.GetAttachmentFile();
 				for(int i = 0;i < t_files.size();i++){
-					String t_fullname = (String)t_files.elementAt(i);
+					connectDeamon.ComposingAttachment t_att = (connectDeamon.ComposingAttachment)t_files.elementAt(i);
 					String t_name = null;
 					
-					final int t_lastSplash = t_fullname.lastIndexOf('/');
+					final int t_lastSplash = t_att.m_filename.lastIndexOf('/');
 					if(t_lastSplash == -1){
 						t_name = "xxxxx";
 					}else{
-						t_name = t_fullname.substring(t_lastSplash + 1,t_fullname.length());
+						t_name = t_att.m_filename.substring(t_lastSplash + 1,t_att.m_filename.length());
 					}				
 					
 					Bitmap bitmap;
@@ -199,14 +224,14 @@ public class uploadFileScreen extends MainScreen implements
 						bitmap = m_binFileBitmap;
 					}
 					
-					fileIcon t_icon = new fileIcon(t_name,t_fullname,bitmap,false);
+					fileIcon t_icon = new fileIcon(t_name,t_att.m_filename,bitmap,t_att.m_fileSize,false);
 					
 					m_fileList.insert(t_index++);
 					m_listCallback.insert(t_icon);
 				}
 				
 			}catch(Exception _e){
-				System.out.print(_e.getMessage());
+				System.out.println(_e.getMessage());
 			}
 
 		}else{
@@ -243,51 +268,62 @@ public class uploadFileScreen extends MainScreen implements
 						bitmap = m_binFileBitmap;
 					}
 					
-					fileIcon t_icon = new fileIcon(t_name,t_fullname,bitmap,next.isDirectory());
+					
+					fileIcon t_icon ;
+					if(next.isDirectory()){
+						t_icon = new fileIcon(t_name,t_fullname,bitmap,0,true);
+					}else{
+						t_icon = new fileIcon(t_name,t_fullname,bitmap,(int)next.fileSize(),false);
+					}
+					
 					
 					m_fileList.insert(t_index++);
 					m_listCallback.insert(t_icon);
 				}
 
 			}catch(Exception _e){
-				System.out.print(_e.getMessage());
+				System.out.println(_e.getMessage());
 			}
 		}
 	}
 	
-	
+		
 	public Bitmap GetConstFileBitmap(String res)throws Exception{
 		Class classs = Class.forName("com.yuchting.yuchberry.client.recvMain");
 		byte[] bytes = IOUtilities.streamToBytes(classs.getResourceAsStream(res));
 		
-		Bitmap b = new Bitmap(fsm_bitmap_width,fsm_bitmap_width);
-		b.createAlpha(Bitmap.ALPHA_BITDEPTH_8BPP);
+//		int[] t_data = new int[fsm_bitmap_width * fsm_bitmap_height];
+//		
+//		final int t_headSize = 0x35;
+//		
+//		for(int i = 0;i < fsm_bitmap_height;i++){
+//			
+//			for(int j = 0;j < fsm_bitmap_width; j++){
+//				
+//				final int int_index = fsm_bitmap_width * i + j;
+//				final int byte_index = (fsm_bitmap_width * ((fsm_bitmap_height - i) - 1) + j ) * 4 + t_headSize ;
+//				
+//				t_data[int_index] = (bytes[byte_index + 2]);
+//				t_data[int_index] |= (int)(bytes[byte_index + 1]) << 8;
+//				t_data[int_index] |= (int)(bytes[byte_index]) 	<< 16;
+//				t_data[int_index] |= (int)(bytes[byte_index + 3]) << 24;
+//			}
+//			
+//		}
+//		Bitmap b = new Bitmap(fsm_bitmap_width,fsm_bitmap_height);
+//		b.createAlpha(Bitmap.ALPHA_BITDEPTH_8BPP);
+//		b.setARGB(t_data, 0, fsm_bitmap_width, 0, 0, fsm_bitmap_width, fsm_bitmap_height);
 		
-		int[] t_data = new int[fsm_bitmap_width * fsm_bitmap_height];
 		
-		for(int i = 0;i < fsm_bitmap_height;i++){
-			
-			for(int j = 0;j < fsm_bitmap_width; j++){
-				
-				final int int_index = fsm_bitmap_width * i + j;
-				final int byte_index = (fsm_bitmap_width * ( fsm_bitmap_height  - i - 1) + j ) * 4 + 0x32 ;
-				t_data[int_index] = ((int)bytes[byte_index] ) | ((int)bytes[byte_index + 1] << 8)
-									| ((int)bytes[byte_index + 2] << 16)  | ((int)bytes[byte_index + 3] << 24);
-			}
-			
-		}
-		
-		b.setARGB(t_data, 0, fsm_bitmap_width, 0, 0, fsm_bitmap_width, fsm_bitmap_height);
-		
-		return b;
+		return EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
 	}
+	 
 	public static boolean IsAudioFile(String _filename){
 		String t_lower = _filename.toLowerCase();
 		t_lower = t_lower.substring(Math.max(0, t_lower.length() - 4));
 				
 		return t_lower.equals(".mp3") 
 				|| t_lower.equals(".wav")
-				|| t_lower.equals(".wma")
 				|| t_lower.equals(".ogg")
 				|| t_lower.equals(".mid");
 	}
@@ -320,7 +356,7 @@ public class uploadFileScreen extends MainScreen implements
 				
 		return t_lower.equals(".3gp")
 				|| t_lower.equals(".mp4")
-				|| t_lower.equals(".wmv");
+				|| t_lower.equals(".avi");
 	}
 
 	
@@ -333,26 +369,34 @@ public class uploadFileScreen extends MainScreen implements
 	}
 
 	protected void makeMenu(Menu menu, int instance) {
+		menu.add(m_check);
 	    menu.add(m_ok);
 	    menu.add(m_cancel);
 	}
 	
 	public void menuClicked(uploadFileScreenMenu _menu){
-		if(_menu == m_ok){
+		if(_menu == m_check){
+			final int t_index = m_fileList.getSelectedIndex();
+			if(t_index != -1){
+				final fileIcon t_file = (fileIcon)m_listCallback.m_iconList.elementAt(t_index);
+				m_mainApp.PushViewFileScreen(t_file.m_filename_full);
+			}
+			
+		}else if(_menu == m_ok){
 			
 			final int t_index = m_fileList.getSelectedIndex(); 
 			if(t_index != -1 ){
 				final fileIcon t_file = (fileIcon)m_listCallback.m_iconList.elementAt(t_index);
 				if(t_file.m_isFolder){
-					DisplayFileList(t_file.m_filename_null);
+					DisplayFileList(t_file.m_filename_full);
 				}else{
 					
 					// add a attachment file
 					//
 					if(m_delScreen){
-						m_deamon.DelAttachmentFile(t_file.m_filename_null);
+						m_deamon.DelAttachmentFile(t_file.m_filename_full);
 					}else{
-						m_deamon.AddAttachmentFile(t_file.m_filename_null);
+						m_deamon.AddAttachmentFile(t_file.m_filename_full,t_file.m_fileSize);
 					}				
 					
 					m_mainApp.ClearUploadingScreen();
@@ -372,7 +416,7 @@ public class uploadFileScreen extends MainScreen implements
 			return true;
 		}
 		
-		if(m_currDisplayPath.equals(fsm_rootPath)){
+		if(m_currDisplayPath.equals(m_rootPath)){
 			
 			close();
 			return true;
@@ -397,7 +441,7 @@ public class uploadFileScreen extends MainScreen implements
 		if(t_index != -1 ){
 			final fileIcon t_file = (fileIcon)m_listCallback.m_iconList.elementAt(t_index);
 			if(t_file.m_isFolder){
-				DisplayFileList(t_file.m_filename_null);
+				DisplayFileList(t_file.m_filename_full);
 				
 				return true;
 			}else{

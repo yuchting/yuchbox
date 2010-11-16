@@ -15,6 +15,7 @@ public class msg_head {
 	final public static byte msgFetchAttach 		= 6;
 	
 	final public static byte msgKeepLive 		= 7;
+	final public static byte msgMailConfirm		= 8;
 	
 	
 	final public static String noteErrorUserPassword = "illegal client connect\n meybe a error user password";

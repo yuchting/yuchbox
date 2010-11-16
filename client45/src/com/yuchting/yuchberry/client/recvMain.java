@@ -12,41 +12,53 @@ import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.i18n.SimpleDateFormat;
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Font;
+import net.rim.device.api.ui.FontFamily;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.Dialog;
+import net.rim.device.api.ui.component.DialogClosedListener;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.container.MainScreen;
 
 class ErrorLabelText extends Field{
 	Vector m_stringList;
-	static final int		fsm_space = 3;
+	static final int		fsm_space = 1;
+	static final int		fsm_fontHeight = 14;
 	
 	public ErrorLabelText(Vector _stringList){
 		super(Field.READONLY | Field.NON_FOCUSABLE | Field.USE_ALL_WIDTH);
 		
 		m_stringList = _stringList;
+		try{
+			Font myFont = FontFamily.forName("BBMillbankTall").getFont(Font.PLAIN,8,Ui.UNITS_pt);
+			setFont(myFont);
+		}catch(Exception _e){}
 	}
 	
 	public void layout(int _width,int _height){
 		final int t_width = Display.getWidth();
-		
+			
 		final int t_size 	= m_stringList.size();
-		final int t_height = Math.max(0, (t_size - 1)) * fsm_space +  t_size * getFont().getHeight();
+		final int t_height = Math.max(0, (t_size - 1)) * fsm_space +  t_size * fsm_fontHeight;
 		
 		setExtent(t_width, t_height);
 	}
 	
 	public void paint(Graphics _g){
 		int t_y = 0;
-		final int t_fontHeight = getFont().getHeight();
-		SimpleDateFormat t_format = new SimpleDateFormat("mm:ss");
+		final int t_fontHeight = fsm_fontHeight;
+		
+		SimpleDateFormat t_format = new SimpleDateFormat("HH:mm:ss");
 		
 		for(int i = m_stringList.size() -1 ;i >= 0 ;i--){
 			recvMain.ErrorInfo t_info = (recvMain.ErrorInfo)m_stringList.elementAt(i);
@@ -191,7 +203,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 															Integer.valueOf(m_hostport.getText()).intValue(),
 															m_userPassword.getText());
 						
-						//m_mainApp.m_connectDeamon.Connect("127.0.0.1",9716,"111111");
+//						m_mainApp.m_connectDeamon.Connect("192.168.10.20",9716,"111111");
 						
 						m_mainApp.SetStateString("connecting...");
 						m_connectBut.setLabel("disconnect");
@@ -212,7 +224,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 
 public class recvMain extends UiApplication implements localResource {
 	
-	final static String fsm_attachmentDir = "file:///store/home/user/YuchBerry/";
+	String m_attachmentDir = null;
 	
 	stateScreen 		m_stateScreen 		= null;
 	uploadFileScreen 	m_uploadFileScreen	= null;
@@ -312,10 +324,18 @@ public class recvMain extends UiApplication implements localResource {
 	
 	public void Start(){
 		
+		try{
+			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/",Connector.READ_WRITE);
+			m_attachmentDir = uploadFileScreen.fsm_rootPath_default + "YuchBerry/";
+			
+		}catch(Exception _e){
+			m_attachmentDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
+		}
+		
 		// create the sdcard path 
 		//
         try{
-        	FileConnection fc = (FileConnection) Connector.open(fsm_attachmentDir,Connector.READ_WRITE);
+        	FileConnection fc = (FileConnection) Connector.open(m_attachmentDir,Connector.READ_WRITE);
         	if(!fc.exists()){
         		fc.mkdir();
         	}
@@ -352,16 +372,22 @@ public class recvMain extends UiApplication implements localResource {
 	}
 	
 	public void OpenAttachmentFileScreen(final boolean _del){
-		m_uploadFileScreen = new uploadFileScreen(m_connectDeamon, this,_del);
 		
-		invokeLater(new Runnable()
-		{
-		    public void run()
+		try{
+
+			m_uploadFileScreen = new uploadFileScreen(m_connectDeamon, this,_del);
+			
+			invokeLater(new Runnable()
 			{
-		    	recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
-		    	t_mainApp.PushUploadingScreen();
-			}
-		});
+			    public void run()
+				{
+			    	recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
+			    	t_mainApp.PushUploadingScreen();
+				}
+			});	
+		}catch(Exception _e){
+			DialogAlert("construct attachment file screen error: " + _e.getMessage());
+		}
 		
 	}
 	
@@ -372,19 +398,62 @@ public class recvMain extends UiApplication implements localResource {
 		m_uploadFileScreen = null;
 	}
 	
-	public void PushViewImageScree(final String _fileName){
+	public void PushViewFileScreen(final String _filename){
+		
 		invokeLater(new Runnable()
 		{
 		    public void run()
 			{
 		    	recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
 		    	try{
-		    		t_mainApp.pushGlobalScreen(new imageViewScreen(_fileName,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    		if(uploadFileScreen.IsAudioFile(_filename)){
+		    			t_mainApp.pushGlobalScreen(new audioViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    		}else if(uploadFileScreen.IsTxtFile(_filename)){
+		    			t_mainApp.pushGlobalScreen(new textViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    		}else if(uploadFileScreen.IsMovieFile(_filename)){
+		    			t_mainApp.pushGlobalScreen(new videoViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    		}else if(uploadFileScreen.IsImageFile(_filename)){
+		    			t_mainApp.pushGlobalScreen(new imageViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    		}else {
+		    			t_mainApp.DialogAlert("unknow format");
+		    		}
+		    		
 		    	}catch(Exception _e){
 		    		t_mainApp.DialogAlert(_e.getMessage());
 		    	}		    	
 			}
 		});
+	}
+	
+	public void PopupDlgToOpenAttach(final connectDeamon.FetchAttachment _att){
+				
+		// prompt by the background thread
+		//
+		synchronized(getEventLock()){
+			
+			Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,_att.m_realName + "is Downloaded \nOpened?",
+		    							Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL);
+			
+			t_dlg.setDialogClosedListener(new DialogClosedListener(){
+				
+				public void dialogClosed(Dialog dialog, int choice) {
+					
+					switch (choice) {
+						case Dialog.OK:
+							recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
+							t_mainApp.PushViewFileScreen(t_mainApp.m_attachmentDir + _att.m_realName);
+							break;
+						
+						default:
+							break;
+					}
+				}
+			});
+			
+			t_dlg.setEscapeEnabled(true);			
+			UiApplication.getUiApplication().pushGlobalScreen(t_dlg,1, UiEngine.GLOBAL_QUEUE);
+		}
+		
 	}
 	
 	public void SetStateString(String _state){
@@ -454,7 +523,7 @@ public class recvMain extends UiApplication implements localResource {
 	
 	public void SetErrorString(final String _error){
 		m_errorString.addElement(new ErrorInfo(_error));
-		if(m_errorString.size() > 5){
+		if(m_errorString.size() > 8){
 			m_errorString.removeElementAt(0);
 		}
 		

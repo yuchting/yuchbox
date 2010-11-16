@@ -15,7 +15,7 @@ public class textViewScreen extends fileViewScreen{
 		
 		super(_filename,_mainApp,true);
 		
-		m_editText = new RichTextField(new String(m_fileContain));
+		m_editText = new RichTextField(new String(m_fileContain,"ISO-8859-1"));
 		add(m_editText);
 		
 	}

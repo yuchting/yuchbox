@@ -44,6 +44,7 @@ class msg_head{
 	final public static byte msgFetchAttach 		= 6;
 	
 	final public static byte msgKeepLive 		= 7;
+	final public static byte msgMailConfirm		= 8;
 }
 
 public class connectDeamon extends Thread implements SendListener,
@@ -80,6 +81,16 @@ public class connectDeamon extends Thread implements SendListener,
 	 // 
 	 private String			m_plainTextContain = new String();
 	 private String			m_htmlTextContain = new String();
+	 
+	 class ComposingAttachment{
+		 String m_filename;
+		 int	m_fileSize;
+		 
+		 ComposingAttachment(String _filename,int _size){
+			 m_filename = _filename;
+			 m_fileSize = _size;
+		 }
+	 }
 	 
 	 //! current composing mail
 	 Message			m_composingMail = null;
@@ -177,8 +188,7 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	//@{ AttachmentHandler
 	public void run(Message m, SupportedAttachmentPart p){
-		
-		//m_screen.DialogAlert("hahah no reaction");
+
 		ByteArrayInputStream in = new ByteArrayInputStream((byte[])p.getContent());
 
 		final int t_messageCode = (m.getSentDate().toString() + m.getSubject()).hashCode();
@@ -193,12 +203,12 @@ public class connectDeamon extends Thread implements SendListener,
 				final int t_attachSize		= sendReceive.ReadInt(in);
 				final String t_realName		= sendReceive.ReadString(in);
 				
-				final String t_filename = recvMain.fsm_attachmentDir + t_realName;
+				final String t_filename = m_mainApp.m_attachmentDir + t_realName;
 				FileConnection t_file = (FileConnection)Connector.open(t_filename,Connector.READ_WRITE);
 				
 				if(t_file.exists()){
 					
-					m_mainApp.PushViewImageScree(t_filename);
+					m_mainApp.PushViewFileScreen(t_filename);
 					
 				}else{
 					
@@ -281,18 +291,23 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 	
 	//! the attachment file selection screen(uploadFileScreen) will call
-	public void AddAttachmentFile(String _filename){
-		if(m_composingAttachment.indexOf(_filename) == -1){
-			m_composingAttachment.addElement(_filename);
-		}		
+	public void AddAttachmentFile(String _filename,int _fileSize){
+		for(int i = 0;i < m_composingAttachment.size();i++){
+			ComposingAttachment t_att = (ComposingAttachment)m_composingAttachment.elementAt(i);
+			if(t_att.equals(_filename)){
+				return;
+			}
+		}
+		
+		m_composingAttachment.addElement(new ComposingAttachment(_filename,_fileSize));
 	}
 	
 	public void DelAttachmentFile(String _filename){
 		for(int i = 0;i < m_composingAttachment.size();i++){
 			
-			String t_filename = (String)m_composingAttachment.elementAt(i);
+			ComposingAttachment t_att = (ComposingAttachment)m_composingAttachment.elementAt(i);
 			
-			if(t_filename.equals(_filename)){
+			if(t_att.m_filename.equals(_filename)){
 				m_composingAttachment.removeElementAt(i);
 			}			
 		}		
@@ -307,7 +322,7 @@ public class connectDeamon extends Thread implements SendListener,
 		if(m_composingMail != null && !m_composingAttachment.isEmpty()){
 			
 			for(int i = 0;i < m_composingAttachment.size();i++){
-				String t_name = (String)m_composingAttachment.elementAt(i);
+				String t_name = ((ComposingAttachment)m_composingAttachment.elementAt(i)).m_filename;
 				
 				final int t_lastSplash = t_name.lastIndexOf('/');
 				if(t_lastSplash == -1){
@@ -321,7 +336,7 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 	 
 	 public void run(){
-		 		 
+		 
 		while(true){
 
 			while(m_disconnect == true){
@@ -357,7 +372,7 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				try{
 					m_mainApp.SetStateString("disconnected retry later...");
-					m_mainApp.SetErrorString("MainLoop: " + _e.getMessage());
+					m_mainApp.SetErrorString("M: " + _e.getMessage());
 				}catch(Exception e){}				
 			}		
 						
@@ -506,10 +521,17 @@ public class connectDeamon extends Thread implements SendListener,
 					
 					m.addMessageListener(this);
 					m_markReadVector.addElement(t_app);
-									
+					
+					// send the msgMailConfirm to server to confirm receive this mail
+					//
+					ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+					t_os.write(msg_head.msgMailConfirm);
+					sendReceive.WriteInt(t_os, t_mail.GetMailIndex());
+					
+					m_connect.SendBufferToSvr(t_os.toByteArray(), false);									
 							
 				}catch(Exception _e){
-					m_mainApp.SetErrorString("ComposeMessage error :\n" + _e.getMessage());
+					m_mainApp.SetErrorString("C:\n" + _e.getMessage());
 				}			
 						 		
 		 		break;
@@ -518,7 +540,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 		break;
 		 	case msg_head.msgNote:
 		 		String t_string = sendReceive.ReadString(in);
-		 		m_mainApp.SetErrorString("server:" + t_string);
+		 		m_mainApp.SetErrorString("Svr:" + t_string);
 		 		break;
 		 	case msg_head.msgMailAttach:
 		 		ProcessMailAttach(in);
@@ -593,7 +615,7 @@ public class connectDeamon extends Thread implements SendListener,
 		if(!_files.isEmpty()){
 			
 			for(int i = 0;i< _files.size();i++){
-				String t_fullname = (String)_files.elementAt(i);
+				String t_fullname = ((ComposingAttachment)_files.elementAt(i)).m_filename;
 				
 				FileConnection t_fileReader = (FileConnection) Connector.open(t_fullname,Connector.READ_WRITE);
 		    	if(!t_fileReader.exists()){
@@ -661,7 +683,7 @@ public class connectDeamon extends Thread implements SendListener,
 					
 					// fetching attachment is over...
 					//
-					FileConnection t_file = (FileConnection)Connector.open(recvMain.fsm_attachmentDir + t_att.m_realName,Connector.READ_WRITE);
+					FileConnection t_file = (FileConnection)Connector.open(m_mainApp.m_attachmentDir + t_att.m_realName,Connector.READ_WRITE);
 					if(t_file.exists()){
 						t_file.delete();
 					}
@@ -676,7 +698,8 @@ public class connectDeamon extends Thread implements SendListener,
 					t_file.close();
 
 					m_vectReceiveAttach.removeElementAt(i);
-					m_mainApp.DialogAlert("attachment fetchment over");
+					
+					m_mainApp.PopupDlgToOpenAttach(t_att);
 				}
 				
 				break;
@@ -699,7 +722,7 @@ public class connectDeamon extends Thread implements SendListener,
 					t_os.write(msg_head.msgBeenRead);
 					sendReceive.WriteInt(t_os, t_mail.m_mailIndex);
 					
-					m_connect.SendBufferToSvr(t_os.toByteArray(), false);
+					//m_connect.SendBufferToSvr(t_os.toByteArray(), false);
 					
 					m_markReadVector.removeElementAt(i);
 				}
@@ -939,7 +962,7 @@ public class connectDeamon extends Thread implements SendListener,
 		    	t_text1.setContentType(ContentType.TYPE_TEXT_HTML_STRING);
 		    	
 	    	}
-	    	boolean t_downloadAllAttachment = true;
+    	
 	    	if(!_mail.GetAttachment().isEmpty()){
 	    		
 				Vector t_contain	= _mail.GetAttachment();
@@ -960,9 +983,19 @@ public class connectDeamon extends Thread implements SendListener,
 		    		sendReceive.WriteInt(t_tmpContent, t_attachment.m_size);
 		    		sendReceive.WriteString(t_tmpContent, t_attachment.m_name);		    		
 		    		
+		    		String t_sizeString;
+		    		
+		    		if(t_attachment.m_size > 1024 * 1024){
+		    			t_sizeString = " (" + (t_attachment.m_size/1024/1024) + "MB)"; 
+		    		}else if(t_attachment.m_size > 1024){
+		    			t_sizeString = " (" + (t_attachment.m_size/1024) + "KB)";
+		    		}else{
+		    			t_sizeString = " (" + (t_attachment.m_size) + "B)";
+		    		}
+		    		
 		    		SupportedAttachmentPart attach = new SupportedAttachmentPart( multipart,
 		    																	(String)t_attachment.m_type,
-		    																	" (" + t_attachment.m_size / 1024 +"KB)" + t_attachment.m_name,
+		    																	t_sizeString + t_attachment.m_name,
 		    																	t_tmpContent.toByteArray());
 		    		multipart.addBodyPart(attach);
 		    	}

@@ -395,7 +395,7 @@ class sendMailAttachmentDeamon extends Thread{
 				
 			}catch(Exception _e){
 				
-				m_connect.m_mainApp.SetErrorString("SendError: " + _e.getMessage());
+				m_connect.m_mainApp.SetErrorString("S: " + _e.getMessage());
 				m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-1,0,0);
 				
 			}		

@@ -86,7 +86,7 @@ class berrySendAttachment extends Thread{
 				sendReceive.WriteInt(t_os,t_size);
 				t_os.write(t_buffer);
 				
-				System.out.println("send msgMailAttach mailIndex:" + m_mailIndex + " attachIndex:" + m_attachIndex + " startIndex:" +
+				Logger.LogOut("send msgMailAttach mailIndex:" + m_mailIndex + " attachIndex:" + m_attachIndex + " startIndex:" +
 									t_startIndex + " size:" + t_size + " first:" + (int)t_buffer[0]);
 				
 				while(m_fetchMain.GetClientConnected() == null){
@@ -124,6 +124,8 @@ class berrySvrPush extends Thread{
 	
 	public void run(){
 		
+		int t_confirmTimer = 0;
+		
 		while(true){
 			
 			try{
@@ -141,7 +143,36 @@ class berrySvrPush extends Thread{
 				}
 
 				Vector t_unreadMailVector = m_serverDeamon.m_fetchMgr.m_unreadMailVector;
+				Vector t_unreadMailVector_confirm = m_serverDeamon.m_fetchMgr.m_unreadMailVector_confirm;
+				
+				if(t_confirmTimer > 10){
+					// send the mail without confirm
+					//
+					t_confirmTimer = 0;
+					
+					synchronized (m_serverDeamon.m_fetchMgr) {
+						for(int i = 0;i < t_unreadMailVector_confirm.size();i++){
+							fetchMail t_confirmMail = (fetchMail)t_unreadMailVector_confirm.elementAt(i);
+							
+							for(int j = 0;j < t_unreadMailVector.size();j++){
+								
+								fetchMail t_sendMail = (fetchMail)t_unreadMailVector.elementAt(j);
+								
+								if(t_confirmMail.GetMailIndex() != t_sendMail.GetMailIndex()){
+									t_unreadMailVector.add(t_confirmMail);
+									
+									Logger.LogOut("re-send mail<" + t_confirmMail.GetMailIndex() + "> again,wait confirm...");
+								}
+							}
+						}
+						
+						t_unreadMailVector_confirm.removeAllElements();
+					}
+				}
+				
+				
 				while(!t_unreadMailVector.isEmpty()){
+					
 					fetchMail t_mail = (fetchMail)t_unreadMailVector.elementAt(0); 
 					
 					ByteArrayOutputStream t_output = new ByteArrayOutputStream();
@@ -154,9 +185,12 @@ class berrySvrPush extends Thread{
 					
 					t_unreadMailVector.remove(0);
 					
-					berrySvrDeamon.prt("CheckFolder OK and send mail!");
-				}
-				
+					synchronized (m_serverDeamon.m_fetchMgr) {
+						t_unreadMailVector_confirm.addElement(t_mail);
+					}
+					
+					Logger.LogOut("CheckFolder and send mail<" + t_mail.GetMailIndex() + ">,wait confirm...");
+				}				
 				
 				sleep(fetchMain.sm_pushInterval);
 				
@@ -248,7 +282,7 @@ class berrySvrDeamon extends Thread{
 			m_pushDeamon = new berrySvrPush(this);
 			m_sendReceive = new sendReceive(m_socket.getOutputStream(),m_socket.getInputStream());	
 		}catch(Exception _e){
-			prt("construct berrySvrDeamon error " + _e.getMessage());
+			Logger.LogOut("construct berrySvrDeamon error " + _e.getMessage());
 			_e.printStackTrace();
 			
 			if(m_sendReceive != null){
@@ -260,13 +294,9 @@ class berrySvrDeamon extends Thread{
 				
 		start();
 		
-		prt("some client connect");
+		Logger.LogOut("some client connect IP<" + m_socket.getInetAddress().getHostAddress() + ">");
 	}
-	
-	static void prt(String s) {
-		System.out.println(s);
-	}	
-	
+		
 	public void run(){
 		
 		// loop
@@ -281,7 +311,8 @@ class berrySvrDeamon extends Thread{
 				
 				byte[] t_package = m_sendReceive.RecvBufferFromSvr();
 				
-				prt("receive package length:" + t_package.length);
+				Logger.LogOut("receive package length:" + t_package.length);
+				
 				ProcessPackage(t_package);
 				
 			}catch(Exception _e){
@@ -289,7 +320,7 @@ class berrySvrDeamon extends Thread{
 				try{
 					m_socket.close();					
 				}catch(Exception e){
-					prt(e.getMessage());
+					Logger.LogOut(e.getMessage());
 					e.printStackTrace();
 				}
 				
@@ -300,7 +331,7 @@ class berrySvrDeamon extends Thread{
 				
 				m_pushDeamon.interrupt();
 				
-				prt(_e.getMessage());
+				Logger.LogOut(_e.getMessage());
 				_e.printStackTrace();				
 				
 				break;
@@ -329,8 +360,31 @@ class berrySvrDeamon extends Thread{
 				break;
 			case msg_head.msgKeepLive:
 				break;
+			case msg_head.msgMailConfirm:
+				ProcessMailConfirm(in);
+				break;
 			default:
 				throw new Exception("illegal client connect");
+		}
+	}
+	
+	private void ProcessMailConfirm(ByteArrayInputStream in)throws Exception{
+		
+		final int t_mailIndex = sendReceive.ReadInt(in);
+		
+		synchronized(m_fetchMgr){
+			Vector t_unreadMailVector_confirm = m_fetchMgr.m_unreadMailVector_confirm;
+			
+			for(int i = 0;i < t_unreadMailVector_confirm.size();i++){
+				fetchMail t_confirmMail = (fetchMail)t_unreadMailVector_confirm.elementAt(i); 
+				if(t_confirmMail.GetMailIndex() == t_mailIndex){
+					t_unreadMailVector_confirm.removeElementAt(i);
+					
+					Logger.LogOut("Mail Index<" + t_mailIndex + "> confirmed");
+					break;
+				}
+			}
+			
 		}
 	}
 	
@@ -346,7 +400,7 @@ class berrySvrDeamon extends Thread{
 			//
 			m_recvMailAttach.addElement(t_mail);
 			
-			System.out.println("send mail with attachment " + t_mail.GetAttachment().size());
+			Logger.LogOut("send mail with attachment " + t_mail.GetAttachment().size());
 			
 			CreateTmpSendMailAttachFile(t_mail);
 		}
@@ -371,7 +425,7 @@ class berrySvrDeamon extends Thread{
 				fos.write(0);
 			}
 			
-			System.out.println("store attachment " + t_filename + " size:" + t_attachment.m_size);
+			Logger.LogOut("store attachment " + t_filename + " size:" + t_attachment.m_size);
 			
 			fos.close();
 		}
@@ -393,7 +447,7 @@ class berrySvrDeamon extends Thread{
 			throw new Exception("error attach" + t_filename + " idx and size");
 		}
 		
-		System.out.println("recv msgMailAttach time:"+ t_time + " beginIndex:" + t_segIdx + " size:" + t_segSize);
+		Logger.LogOut("recv msgMailAttach time:"+ t_time + " beginIndex:" + t_segIdx + " size:" + t_segSize);
 		
 		byte[] t_bytes = new byte[t_segSize];
 		sendReceive.ForceReadByte(in, t_bytes, t_segSize);
@@ -490,7 +544,8 @@ class fetchMgr{
     Session m_session_send 	= null;
     SMTPTransport m_sendTransport = null;
         	
-    Vector m_unreadMailVector = new Vector();
+    Vector m_unreadMailVector 			= new Vector();
+    Vector m_unreadMailVector_confirm 	= new Vector();
 
     // pushed mail index vector 
     Vector m_vectPushedMailIndex = new Vector();
@@ -534,7 +589,7 @@ class fetchMgr{
 
 
     	ServerSocket t_svr = GetSocketServer(m_userPassword,false);
-    	berrySvrDeamon.prt("prepare account OK");
+    	Logger.LogOut("prepare account OK <" + m_userName + ">" );
     	
 		while(true){
 			try{
@@ -630,7 +685,7 @@ class fetchMgr{
 			p.clear();
 			
 		}catch(Exception _e){
-			//prt(_e.getMessage());
+			//Logger.LogOut(_e.getMessage());
 			_e.printStackTrace();
 		}
 		
@@ -743,7 +798,7 @@ class fetchMgr{
 			Message[] t_msg = folder.getMessages(_index, _index);
 			
 			if(t_msg.length != 0){
-				berrySvrDeamon.prt("set index " + _index + " read ");
+				Logger.LogOut("set index " + _index + " read ");
 				t_msg[0].setFlag(Flags.Flag.SEEN, true);
 			}
 	 	    
@@ -1049,7 +1104,7 @@ class fetchMgr{
 					t_mainPart.addBodyPart(t_filePart);
 				}	
 			}catch(Exception _e){
-				System.out.println(_e.getMessage());
+				Logger.LogOut(_e.getMessage());
 			}
 			
 			msg.setContent(t_mainPart);
@@ -1179,13 +1234,13 @@ public class fetchMain{
 				
 			}catch(Exception ex){
 								
-				System.out.println("Oops, got exception! " + ex.getMessage());
+				Logger.LogOut("Oops, got exception! " + ex.getMessage());
 			    ex.printStackTrace();
 			    
 			    if(ex.getMessage().indexOf("Invalid credentials") != -1){
 					// the password or user name is invalid..
 					//
-					System.out.println("the password or user name is invalid");
+			    	Logger.LogOut("the password or user name is invalid");
 				}
 			    
 			    try{
