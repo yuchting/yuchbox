@@ -79,6 +79,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
     EditField           m_hostName      = null;
     EditField			m_hostport		= null;
     EditField           m_userPassword  = null;
+    EditField			m_APN			= null;
     
     ButtonField         m_connectBut    = null;
     LabelField          m_stateText     = null;
@@ -109,6 +110,11 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
         				m_mainApp.m_userPassword,128,EditField.FILTER_DEFAULT);
         
         add(m_userPassword);
+        
+        m_APN			= new EditField(recvMain.sm_local.getString(localResource.APN_LABEL),
+        			m_mainApp.m_APN,128,EditField.FILTER_DEFAULT);
+        
+        add(m_APN);
         
         m_connectBut = new ButtonField(m_mainApp.m_connectDeamon.IsConnected()?"disconnect":"connect",
         								ButtonField.CONSUME_CLICK| ButtonField.NEVER_DIRTY);
@@ -198,10 +204,12 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 						m_mainApp.m_hostname 		= m_hostName.getText();
 						m_mainApp.m_port 			= Integer.valueOf(m_hostport.getText()).intValue();
 						m_mainApp.m_userPassword 	= m_userPassword.getText();
+						m_mainApp.m_APN				= m_APN.getText();
 						
-						m_mainApp.m_connectDeamon.Connect(m_hostName.getText(),
-															Integer.valueOf(m_hostport.getText()).intValue(),
-															m_userPassword.getText());
+						m_mainApp.m_connectDeamon.Connect(m_mainApp.m_hostname,
+															m_mainApp.m_port,
+															m_mainApp.m_APN,
+															m_mainApp.m_userPassword);
 						
 //						m_mainApp.m_connectDeamon.Connect("192.168.10.20",9716,"111111");
 						
@@ -249,6 +257,7 @@ public class recvMain extends UiApplication implements localResource {
 	String				m_hostname = new String();
 	int					m_port = 0;
 	String				m_userPassword = new String();
+	String				m_APN = new String();
 	
 	class UploadingDesc{
 		

@@ -65,6 +65,7 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 int				m_hostport;
 	 String				m_userPassword;
+	 String				m_APN;
 	 
 	 FileConnection		m_keyfile;
 	 
@@ -129,9 +130,9 @@ public class connectDeamon extends Thread implements SendListener,
 
 		Store store = Session.getDefaultInstance().getStore();
 		store.addSendListener(this);
-		 
+		
 		Session.getDefaultInstance().addViewListener(this);
-		 
+				 
 		AttachmentHandlerManager.getInstance().addAttachmentHandler(this);	      		 
 	 }
 	 
@@ -162,7 +163,7 @@ public class connectDeamon extends Thread implements SendListener,
 			m_composingAttachment.removeAllElements();
 						
 		}catch(Exception _e){
-			return false;
+			m_mainApp.DialogAlert("send error: "+_e.getMessage());
 		}
 		
 		return true;
@@ -398,7 +399,7 @@ public class connectDeamon extends Thread implements SendListener,
 		
 	 }
 	 
-	 public void Connect(String _host,int _port,String _userPassword)throws Exception{
+	 public void Connect(String _host,int _port,String _APN,String _userPassword)throws Exception{
 		 
 		synchronized (this) {
 			
@@ -411,7 +412,8 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		m_hostname		= _host;
 		m_hostport		= _port;
-		m_userPassword = _userPassword;		
+		m_userPassword 	= _userPassword;	
+		m_APN			= _APN;
 	 }
 	 
 	 public boolean IsConnected(){
@@ -456,6 +458,10 @@ public class connectDeamon extends Thread implements SendListener,
 			 URL =  "ssl://" + ((m_hostip != null)?m_hostip:m_hostname) + ":" + m_hostport + ";deviceside=true";
 		 }else{
 			 URL =  "socket://" +((m_hostip != null)?m_hostip:m_hostname) + ":" + m_hostport + ";deviceside=true";
+		 }
+		 
+		 if(m_APN.length() != 0){
+			 URL = URL + ";apn=" + m_APN;
 		 }
 		 
 		 SocketConnection socket = null;
@@ -564,7 +570,7 @@ public class connectDeamon extends Thread implements SendListener,
 				}else{
 					t_sending.GetAttachMessage().setStatus(Message.Status.TX_ERROR, 1);
 				}
-				m_mainApp.updateDisplay();
+				t_sending.GetAttachMessage().updateUi();
 				
 				m_sendingMail.removeElementAt(i);
 		

@@ -325,7 +325,7 @@ class sendMailAttachmentDeamon extends Thread{
 					sleep(100);
 					
 					m_sendMail.GetAttachMessage().setStatus(Message.Status.TX_SENDING,1);
-					m_connect.m_mainApp.updateDisplay();
+					m_sendMail.GetAttachMessage().updateUi();
 					
 					// send mail once if has not attachment 
 					//

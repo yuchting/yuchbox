@@ -1,3 +1,4 @@
+APN_LABEL#0="APN:";
 APPLICATION_DESC#0="Push Personal Mail for your BlackBerry via your own Server";
 HOST#0="host:";
 INPUT_FULL_SIGN_IN_SEG#0="the host name or port or user password is null";
