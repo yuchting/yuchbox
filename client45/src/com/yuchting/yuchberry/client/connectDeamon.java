@@ -160,13 +160,12 @@ public class connectDeamon extends Thread implements SendListener,
 									
 			AddSendingMail(t_mail,m_composingAttachment);
 			m_composingAttachment.removeAllElements();
-			
+						
 		}catch(Exception _e){
 			return false;
 		}
 		
 		return true;
-		
 	}
 	
 	 
@@ -565,6 +564,7 @@ public class connectDeamon extends Thread implements SendListener,
 				}else{
 					t_sending.GetAttachMessage().setStatus(Message.Status.TX_ERROR, 1);
 				}
+				m_mainApp.updateDisplay();
 				
 				m_sendingMail.removeElementAt(i);
 		
@@ -722,7 +722,7 @@ public class connectDeamon extends Thread implements SendListener,
 					t_os.write(msg_head.msgBeenRead);
 					sendReceive.WriteInt(t_os, t_mail.m_mailIndex);
 					
-					//m_connect.SendBufferToSvr(t_os.toByteArray(), false);
+					m_connect.SendBufferToSvr(t_os.toByteArray(), false);
 					
 					m_markReadVector.removeElementAt(i);
 				}

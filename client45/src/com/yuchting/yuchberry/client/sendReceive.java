@@ -119,11 +119,11 @@ public class sendReceive extends Thread{
 			
 			while(!m_closed){
 				SendBufferToSvr_imple(PrepareOutputData());
-				sleep(500);
+				sleep(5000);
 				
 				t_keepliveCounter++;
 				
-				if(t_keepliveCounter > 200){
+				if(t_keepliveCounter > 100){
 					t_keepliveCounter = 0;
 					
 					ByteArrayOutputStream t_os = new ByteArrayOutputStream();
