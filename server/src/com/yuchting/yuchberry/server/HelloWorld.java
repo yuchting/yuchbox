@@ -44,10 +44,48 @@ class Address
 {
 	String m_name;
 	String m_add;
+	Vector m_APNList = new Vector();
 	Address(String _add,String _name)
 	{
 		m_add = _add;
 		m_name = _name;
+	}
+	
+	public void SetAPNName(String _APNList){
+		
+		m_APNList.removeAllElements();
+		
+		int t_beginIdx = 0;
+		int t_endIdx = -1;
+		
+		do{
+			t_endIdx = _APNList.indexOf(';',t_beginIdx);
+			
+			if(t_endIdx != -1){
+				String t_name = _APNList.substring(t_beginIdx, t_endIdx);
+				if(t_name.length() != 0){
+					m_APNList.addElement(t_name);
+				}
+				
+			}else{
+				String t_name = _APNList.substring(t_beginIdx, _APNList.length());
+				if(t_name.length() != 0){
+					m_APNList.addElement(t_name);
+				}
+				break;
+			}
+			
+			t_beginIdx = t_endIdx + 1;
+			
+		}while(t_beginIdx < _APNList.length());
+		
+		for(int i = 0;i < m_APNList.size();i++){
+			String t_string = (String)m_APNList.elementAt(i);
+			System.out.println(t_string);
+		}
+		
+		System.out.println("--------");
+		
 	}
 }
 /*!
@@ -62,9 +100,19 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[]){
 
-		HelloWorld test = new HelloWorld(); 
-		test.test4();
+//		HelloWorld test = new HelloWorld(); 
+//		test.test4();
 
+		Address t_add = new Address("", "");
+		
+		t_add.SetAPNName("aa;");
+		t_add.SetAPNName("aa;bb");
+		t_add.SetAPNName("aa;bb;");
+		t_add.SetAPNName("aa;bb;cc");
+		t_add.SetAPNName(";");
+		t_add.SetAPNName(";;");
+		t_add.SetAPNName("aa");
+		t_add.SetAPNName("");
 	
 	}
 		

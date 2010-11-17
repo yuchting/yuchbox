@@ -11,6 +11,7 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.SocketConnection;
 import javax.microedition.io.file.FileConnection;
 
+import net.rim.blackberry.api.homescreen.HomeScreen;
 import net.rim.blackberry.api.mail.Address;
 import net.rim.blackberry.api.mail.AttachmentHandler;
 import net.rim.blackberry.api.mail.AttachmentHandlerManager;
@@ -32,6 +33,7 @@ import net.rim.blackberry.api.mail.event.ViewListener;
 import net.rim.blackberry.api.phone.Phone;
 import net.rim.blackberry.api.phone.PhoneCall;
 import net.rim.device.api.system.Backlight;
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.LED;
 
 
@@ -69,7 +71,6 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 int				m_hostport;
 	 String				m_userPassword;
-	 String				m_APN;
 	 
 	 FileConnection		m_keyfile;
 	 
@@ -81,6 +82,8 @@ public class connectDeamon extends Thread implements SendListener,
 	 boolean			m_disconnect = true;
 	
 	 public Vector 		m_markReadVector = new Vector();
+	 
+	 InputStream		m_newMailNotifier;
 	 	 
 	 // read the email temporary variables
 	 // 
@@ -125,6 +128,9 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 public connectDeamon(recvMain _app){
 		 m_mainApp = _app;
+		 
+		 m_newMailNotifier = _app.getClass().getResourceAsStream("/NewMessage.mid");
+		 
 		 start();
 	 }
 	 
@@ -388,6 +394,8 @@ public class connectDeamon extends Thread implements SendListener,
 				//
 				m_mainApp.SetStateString("connected.");
 				
+				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main.png"));
+				
 				while(true){
 					ProcessMsg(m_connect.RecvBufferFromSvr());
 				}
@@ -399,7 +407,9 @@ public class connectDeamon extends Thread implements SendListener,
 					m_mainApp.SetErrorString("M: " + _e.getMessage());
 				}catch(Exception e){}				
 			}		
-						
+			
+			HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline.png"));
+			
 			synchronized (this) {
 				try{
 					if(m_connect == null){
@@ -423,7 +433,7 @@ public class connectDeamon extends Thread implements SendListener,
 		
 	 }
 	 
-	 public void Connect(String _host,int _port,String _APN,String _userPassword)throws Exception{
+	 public void Connect(String _host,int _port,String _userPassword)throws Exception{
 		 
 		synchronized (this) {
 			
@@ -437,7 +447,6 @@ public class connectDeamon extends Thread implements SendListener,
 		m_hostname		= _host;
 		m_hostport		= _port;
 		m_userPassword 	= _userPassword;	
-		m_APN			= _APN;
 	 }
 	 
 	 public boolean IsConnected(){
@@ -484,8 +493,10 @@ public class connectDeamon extends Thread implements SendListener,
 			 URL =  "socket://" +((m_hostip != null)?m_hostip:m_hostname) + ":" + m_hostport + ";deviceside=true";
 		 }
 		 
-		 if(m_APN.length() != 0){
-			 URL = URL + ";apn=" + m_APN;
+		 String t_APN = m_mainApp.GetAPNName();
+		 
+		 if(t_APN.length() != 0){
+			 URL = URL + ";apn=" + t_APN;
 		 }
 		 
 		 SocketConnection socket = null;
@@ -579,11 +590,13 @@ public class connectDeamon extends Thread implements SendListener,
 			// is backlight NOT on to open the LED
 			//
 			if(!Backlight.isEnabled()){
-				LED.setState(LED.STATE_BLINKING);
+				LED.setConfiguration(LED.LED_TYPE_STATUS,2000, 2000, LED.BRIGHTNESS_50);
+				LED.setState(LED.LED_TYPE_STATUS, LED.STATE_BLINKING);
 			}
 			
-			javax.microedition.media.Manager.createPlayer("file:///store/samples/ringtones/Notifier_Crystal.mid").start();
-					
+						
+			javax.microedition.media.Manager.createPlayer(m_newMailNotifier,"audio/midi").start();
+							
 		}catch(Exception _e){
 			m_mainApp.SetErrorString("C:\n" + _e.getMessage());
 		}

@@ -13,6 +13,7 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.MenuItem;
+import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.ListField;
 import net.rim.device.api.ui.component.ListFieldCallback;
 import net.rim.device.api.ui.component.Menu;
@@ -289,8 +290,7 @@ public class uploadFileScreen extends MainScreen implements
 	
 		
 	public Bitmap GetConstFileBitmap(String res)throws Exception{
-		Class classs = Class.forName("com.yuchting.yuchberry.client.recvMain");
-		byte[] bytes = IOUtilities.streamToBytes(classs.getResourceAsStream(res));
+		byte[] bytes = IOUtilities.streamToBytes(UiApplication.getUiApplication().getClass().getResourceAsStream(res));
 		
 //		int[] t_data = new int[fsm_bitmap_width * fsm_bitmap_height];
 //		

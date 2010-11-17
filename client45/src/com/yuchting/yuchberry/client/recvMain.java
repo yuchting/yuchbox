@@ -114,7 +114,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
         add(m_userPassword);
         
         m_APN			= new EditField(recvMain.sm_local.getString(localResource.APN_LABEL),
-        				m_mainApp.m_APN,128,EditField.FILTER_DEFAULT);
+        				m_mainApp.GetAPNList(),128,EditField.FILTER_DEFAULT);
         
         add(m_APN);
         
@@ -206,11 +206,11 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 						m_mainApp.m_hostname 		= m_hostName.getText();
 						m_mainApp.m_port 			= Integer.valueOf(m_hostport.getText()).intValue();
 						m_mainApp.m_userPassword 	= m_userPassword.getText();
-						m_mainApp.m_APN				= m_APN.getText();
+						
+						m_mainApp.SetAPNName(m_APN.getText());
 						
 						m_mainApp.m_connectDeamon.Connect(m_mainApp.m_hostname,
 															m_mainApp.m_port,
-															m_mainApp.m_APN,
 															m_mainApp.m_userPassword);
 						
 //						m_mainApp.m_connectDeamon.Connect("192.168.10.20",9716,"","111111");
@@ -256,10 +256,13 @@ public class recvMain extends UiApplication implements localResource {
 	
 	Vector				m_uploadingDesc 	= new Vector();
 	
-	String				m_hostname = new String();
-	int					m_port = 0;
-	String				m_userPassword = new String();
-	String				m_APN = new String();
+	String				m_hostname 			= new String();
+	int					m_port 				= 0;
+	String				m_userPassword 		= new String();
+	
+	Vector				m_APNList 			= new Vector();
+	int					m_currentAPNIdx 	= 0;
+	int					m_changeAPNCounter 	= 0;
 	
 	class UploadingDesc{
 		
@@ -354,6 +357,67 @@ public class recvMain extends UiApplication implements localResource {
         WriteReadIni(true);
 	}
 	
+	public String GetAPNName(){
+		
+		if(++m_changeAPNCounter > 3){
+			m_currentAPNIdx++;
+			if(m_currentAPNIdx > m_APNList.size()){
+				m_currentAPNIdx = 0;
+			}
+		}		
+		
+		if(m_currentAPNIdx < m_APNList.size()){
+			return (String)m_APNList.elementAt(m_currentAPNIdx);
+		}
+		
+		return "";
+	}
+	
+	public String GetAPNList(){
+		
+		if(!m_APNList.isEmpty()){
+			String t_str = (String)m_APNList.elementAt(0);
+			
+			for(int i = 1;i < m_APNList.size();i++){
+				t_str = t_str + ";" + (String)m_APNList.elementAt(i);
+			}
+			
+			return t_str;
+		}		
+		
+		return "";
+	}
+	
+	public void SetAPNName(String _APNList){
+		
+		m_APNList.removeAllElements();
+		
+		int t_beginIdx = 0;
+		int t_endIdx = -1;
+		
+		do{
+			t_endIdx = _APNList.indexOf(';',t_beginIdx);
+			
+			if(t_endIdx != -1){
+				String t_name = _APNList.substring(t_beginIdx, t_endIdx);
+				if(t_name.length() != 0){
+					m_APNList.addElement(t_name);
+				}
+				
+			}else{
+				String t_name = _APNList.substring(t_beginIdx, _APNList.length());
+				if(t_name.length() != 0){
+					m_APNList.addElement(t_name);
+				}
+				break;
+			}
+			
+			t_beginIdx = t_endIdx + 1;
+			
+		}while(t_beginIdx < _APNList.length());
+		
+	}
+	
 	private void WriteReadIni(boolean _read){
 		try{
 			FileConnection fc = (FileConnection) Connector.open(m_attachmentDir + "Init.data",Connector.READ_WRITE);
@@ -364,19 +428,21 @@ public class recvMain extends UiApplication implements localResource {
 		    		m_hostname		= sendReceive.ReadString(t_readFile);
 		    		m_port			= sendReceive.ReadInt(t_readFile);
 		    		m_userPassword	= sendReceive.ReadString(t_readFile);
-		    		m_APN			= sendReceive.ReadString(t_readFile);
+		    		sendReceive.ReadStringVector(t_readFile, m_APNList);
 		    		
 		    		t_readFile.close();
 		    		fc.close();
 		    	}	
 			}else{
-				fc.create();
+				if(!fc.exists()){
+					fc.create();
+				}				
 				
 				OutputStream t_writeFile = fc.openOutputStream();
 				sendReceive.WriteString(t_writeFile, m_hostname);
 				sendReceive.WriteInt(t_writeFile,m_port);
 				sendReceive.WriteString(t_writeFile, m_userPassword);
-				sendReceive.WriteString(t_writeFile, m_APN);
+				sendReceive.WriteStringVector(t_writeFile, m_APNList);
 				
 				t_writeFile.close();
 				fc.close();
