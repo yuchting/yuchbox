@@ -1,5 +1,7 @@
 package com.yuchting.yuchberry.client;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Date;
 import java.util.Vector;
 
@@ -328,11 +330,6 @@ public class recvMain extends UiApplication implements localResource {
 		m_addItem.m_mainApp = this;
 		m_delItem.m_mainApp = this;
 		
-		
-	}
-	
-	public void Start(){
-		
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/",Connector.READ_WRITE);
 			m_attachmentDir = uploadFileScreen.fsm_rootPath_default + "YuchBerry/";
@@ -353,16 +350,56 @@ public class recvMain extends UiApplication implements localResource {
         	Dialog.alert("can't use the SDCard to store attachment!");
         	System.exit(0);
         }
+        
+        WriteReadIni(true);
+	}
 	
+	private void WriteReadIni(boolean _read){
+		try{
+			FileConnection fc = (FileConnection) Connector.open(m_attachmentDir + "Init.data",Connector.READ_WRITE);
+			if(_read){
+
+		    	if(fc.exists()){
+		    		InputStream t_readFile = fc.openInputStream();
+		    		m_hostname		= sendReceive.ReadString(t_readFile);
+		    		m_port			= sendReceive.ReadInt(t_readFile);
+		    		m_userPassword	= sendReceive.ReadString(t_readFile);
+		    		m_APN			= sendReceive.ReadString(t_readFile);
+		    		
+		    		t_readFile.close();
+		    		fc.close();
+		    	}	
+			}else{
+				fc.create();
+				
+				OutputStream t_writeFile = fc.openOutputStream();
+				sendReceive.WriteString(t_writeFile, m_hostname);
+				sendReceive.WriteInt(t_writeFile,m_port);
+				sendReceive.WriteString(t_writeFile, m_userPassword);
+				sendReceive.WriteString(t_writeFile, m_APN);
+				
+				t_writeFile.close();
+				fc.close();
+			}
+			
+		}catch(Exception _e){
+			SetErrorString(_e.getMessage());
+		}
+	}
+	
+	
+	public void Start(){
         
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_addItem);
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);
+		
+		WriteReadIni(false);
 	}
 	
 	public void Exit(){
 		
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
-		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);
+		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);	
 		
 		System.exit(0);
 	}

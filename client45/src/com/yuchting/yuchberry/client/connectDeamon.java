@@ -29,6 +29,10 @@ import net.rim.blackberry.api.mail.BodyPart.ContentType;
 import net.rim.blackberry.api.mail.event.MessageEvent;
 import net.rim.blackberry.api.mail.event.MessageListener;
 import net.rim.blackberry.api.mail.event.ViewListener;
+import net.rim.blackberry.api.phone.Phone;
+import net.rim.blackberry.api.phone.PhoneCall;
+import net.rim.device.api.system.Backlight;
+import net.rim.device.api.system.LED;
 
 
 class msg_head{
@@ -268,13 +272,18 @@ public class connectDeamon extends Thread implements SendListener,
 		if(e.getMessageChangeType() == MessageEvent.NEW){
 			m_composingMail = e.getMessage();
 			m_composingAttachment.removeAllElements();
+			
 		}
+		
+		LED.setState(LED.STATE_OFF);
 	}
 	
 	public void close(MessageEvent e){
 		if(e.getMessageChangeType() == MessageEvent.CLOSED ){
 			m_composingMail = null;
 		}
+		
+		LED.setState(LED.STATE_OFF);
 	}
 	
 	//@}
@@ -344,6 +353,21 @@ public class connectDeamon extends Thread implements SendListener,
 					sleep(100);
 				}catch(Exception _e){}
 			}
+			
+			// if it is calling
+			//
+			try{
+				while(true){
+					final PhoneCall t_calling = Phone.getActiveCall();
+					if(t_calling != null){
+						m_mainApp.SetErrorString("sleep 10sec when is calling.");
+						sleep(30000);
+					}else{
+						break;
+					}
+				}
+				
+			}catch(Exception _e){}
 			
 			m_ipConnectCounter = 10;
 			
@@ -501,44 +525,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 
 		 switch(t_msg_head){
 		 	case msg_head.msgMail:
-		 		final Message m = new Message();
-		 		
-		 		fetchMail t_mail = new fetchMail();
-		 		t_mail.InputMail(in);
-				
-				try{
-					
-					ComposeMessage(m,t_mail);
-					
-					Store store = Session.waitForDefaultSession().getStore();
-					Folder folder = store.getFolder(Folder.INBOX);
-					m.setInbound(true);
-					m.setStatus(Message.Status.RX_RECEIVED,1);
-					folder.appendMessage(m);
-					
-					// add the message listener to send message to server
-					// to remark the message is read
-					//
-					AppendMessage t_app = new AppendMessage();
-					t_app.m_date = m.getSentDate();
-					t_app.m_from = m.getFrom().getAddr();
-					t_app.m_mailIndex = t_mail.GetMailIndex();
-					
-					m.addMessageListener(this);
-					m_markReadVector.addElement(t_app);
-					
-					// send the msgMailConfirm to server to confirm receive this mail
-					//
-					ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-					t_os.write(msg_head.msgMailConfirm);
-					sendReceive.WriteInt(t_os, t_mail.GetMailIndex());
-					
-					m_connect.SendBufferToSvr(t_os.toByteArray(), false);									
-							
-				}catch(Exception _e){
-					m_mainApp.SetErrorString("C:\n" + _e.getMessage());
-				}			
-						 		
+				ProcessRecvMail(in);		 		
 		 		break;
 		 	case msg_head.msgSendMail:
 		 		ProcessSentMail(in);
@@ -553,6 +540,55 @@ public class connectDeamon extends Thread implements SendListener,
 		 }
 	 }
 	 
+	private void ProcessRecvMail(InputStream in)throws Exception{
+		
+		final Message m = new Message();
+ 		
+ 		fetchMail t_mail = new fetchMail();
+ 		t_mail.InputMail(in);
+		
+		try{
+			
+			ComposeMessage(m,t_mail);
+			
+			Store store = Session.waitForDefaultSession().getStore();
+			Folder folder = store.getFolder(Folder.INBOX);
+			m.setInbound(true);
+			m.setStatus(Message.Status.RX_RECEIVED,1);
+			folder.appendMessage(m);
+								
+			// add the message listener to send message to server
+			// to remark the message is read
+			//
+			AppendMessage t_app = new AppendMessage();
+			t_app.m_date = m.getSentDate();
+			t_app.m_from = m.getFrom().getAddr();
+			t_app.m_mailIndex = t_mail.GetMailIndex();
+			
+			m.addMessageListener(this);
+			m_markReadVector.addElement(t_app);
+			
+			// send the msgMailConfirm to server to confirm receive this mail
+			//
+			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+			t_os.write(msg_head.msgMailConfirm);
+			sendReceive.WriteInt(t_os, t_mail.GetMailIndex());
+			
+			m_connect.SendBufferToSvr(t_os.toByteArray(), false);
+			
+			// is backlight NOT on to open the LED
+			//
+			if(!Backlight.isEnabled()){
+				LED.setState(LED.STATE_BLINKING);
+			}
+			
+			javax.microedition.media.Manager.createPlayer("file:///store/samples/ringtones/Notifier_Crystal.mid").start();
+					
+		}catch(Exception _e){
+			m_mainApp.SetErrorString("C:\n" + _e.getMessage());
+		}
+	}
+	
 	public synchronized void ProcessSentMail(ByteArrayInputStream in)throws Exception{
 		
 		boolean t_succ = (in.read() == 1);
@@ -943,8 +979,10 @@ public class connectDeamon extends Thread implements SendListener,
 	    	 msg.addRecipients(Message.RecipientType.BCC,
 	    				fetchMail.parseAddressList(_mail.GetBCCToVect()));
 	    }
-		
-
+	    
+	    
+	    msg.setFlag(Message.Flag.REPLY_ALLOWED, true);
+	    
 	    msg.setSubject(_mail.GetSubject());
 	    msg.setHeader("X-Mailer",_mail.GetXMailer());
 	    msg.setSentDate(_mail.GetSendDate());	      
