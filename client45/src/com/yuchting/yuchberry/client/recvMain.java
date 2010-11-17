@@ -112,7 +112,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
         add(m_userPassword);
         
         m_APN			= new EditField(recvMain.sm_local.getString(localResource.APN_LABEL),
-        			m_mainApp.m_APN,128,EditField.FILTER_DEFAULT);
+        				m_mainApp.m_APN,128,EditField.FILTER_DEFAULT);
         
         add(m_APN);
         
@@ -211,7 +211,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 															m_mainApp.m_APN,
 															m_mainApp.m_userPassword);
 						
-//						m_mainApp.m_connectDeamon.Connect("192.168.10.20",9716,"111111");
+//						m_mainApp.m_connectDeamon.Connect("192.168.10.20",9716,"","111111");
 						
 						m_mainApp.SetStateString("connecting...");
 						m_connectBut.setLabel("disconnect");

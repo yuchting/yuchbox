@@ -1,14 +1,9 @@
 package com.yuchting.yuchberry.client;
 
-import javax.microedition.io.Connector;
-import javax.microedition.io.file.FileConnection;
-
 import net.rim.device.api.math.Fixed32;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.component.BitmapField;
-import net.rim.device.api.ui.component.LabelField;
-import net.rim.device.api.ui.container.MainScreen;
 
 public class imageViewScreen extends fileViewScreen{
 

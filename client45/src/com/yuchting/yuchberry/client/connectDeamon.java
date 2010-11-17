@@ -570,7 +570,7 @@ public class connectDeamon extends Thread implements SendListener,
 				}else{
 					t_sending.GetAttachMessage().setStatus(Message.Status.TX_ERROR, 1);
 				}
-				t_sending.GetAttachMessage().updateUi();
+				t_sending.GetAttachMessage().updateUi();				
 				
 				m_sendingMail.removeElementAt(i);
 		
@@ -963,10 +963,11 @@ public class connectDeamon extends Thread implements SendListener,
 	    	multipart.addBodyPart(t_text);
 	    	
 	    	if(_mail.GetContain_html().length() != 0){
-	
-	    		TextBodyPart t_text1 = new TextBodyPart(multipart,_mail.GetContain_html());
-		    	t_text1.setContentType(ContentType.TYPE_TEXT_HTML_STRING);
-		    	
+		    		
+	    		SupportedAttachmentPart sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
+	    											"HtmlPart-DirectOpenIt.html",_mail.GetContain_html().getBytes("GB2312"));    			
+	    		
+		    	multipart.addBodyPart(sap);
 	    	}
     	
 	    	if(!_mail.GetAttachment().isEmpty()){

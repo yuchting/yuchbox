@@ -9,7 +9,10 @@ import java.util.Vector;
 import javax.microedition.io.file.FileConnection;
 
 import net.rim.blackberry.api.mail.Address;
+import net.rim.blackberry.api.mail.Folder;
 import net.rim.blackberry.api.mail.Message;
+import net.rim.blackberry.api.mail.Session;
+import net.rim.blackberry.api.mail.Store;
 
 
 public class  fetchMail{
@@ -299,6 +302,28 @@ class sendMailAttachmentDeamon extends Thread{
 		start();
 	}
 	
+	private void RefreshMessageStatus(){
+		
+		// sleep little to wait system set the mail status error
+		// and set it back
+		//							
+		Store store = Session.getDefaultInstance().getStore();
+		
+		try{
+			sleep(200);
+			
+			final int t_sendId = m_sendMail.GetAttachMessage().getMessageId();
+			Message t_sendMsg = store.getMessage(t_sendId);
+			
+			if(t_sendMsg != null){
+				t_sendMsg.setStatus(Message.Status.TX_SENT,0);
+				t_sendMsg.updateUi();
+			}
+			
+		}catch(Exception _e){}		
+
+	}
+	
 	public void run(){
 		
 		InputStream in = null;
@@ -318,14 +343,8 @@ class sendMailAttachmentDeamon extends Thread{
 			try{
 				
 				if(!t_sendContain){
-					
-					// sleep little to wait system set the mail status error
-					// and set it back
-					//
-					sleep(100);
-					
-					m_sendMail.GetAttachMessage().setStatus(Message.Status.TX_SENDING,1);
-					m_sendMail.GetAttachMessage().updateUi();
+				
+					RefreshMessageStatus();					
 					
 					// send mail once if has not attachment 
 					//
@@ -410,3 +429,4 @@ class sendMailAttachmentDeamon extends Thread{
 		}catch(Exception e){}
 	}	
 }
+

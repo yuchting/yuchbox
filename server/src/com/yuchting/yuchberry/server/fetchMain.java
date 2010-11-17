@@ -58,7 +58,7 @@ class berrySendAttachment extends Thread{
 			m_file = new FileInputStream(t_file);
 			
 		}catch(Exception _e){
-			_e.printStackTrace();
+			Logger.PrinterException(_e);
 			return;
 		}
 		
@@ -103,7 +103,7 @@ class berrySendAttachment extends Thread{
 				
 				
 			}catch(Exception _e){
-				_e.printStackTrace();
+				Logger.PrinterException(_e);
 			}			
 		}
 	}
@@ -141,35 +141,19 @@ class berrySvrPush extends Thread{
 					
 					break;
 				}
-
-				Vector t_unreadMailVector = m_serverDeamon.m_fetchMgr.m_unreadMailVector;
-				Vector t_unreadMailVector_confirm = m_serverDeamon.m_fetchMgr.m_unreadMailVector_confirm;
 				
-				if(t_confirmTimer > 10){
+				Logger.LogOut("CheckFolder OK confirm Timer:" + t_confirmTimer);
+				
+				if(++t_confirmTimer > 10){
 					// send the mail without confirm
 					//
 					t_confirmTimer = 0;
 					
-					synchronized (m_serverDeamon.m_fetchMgr) {
-						for(int i = 0;i < t_unreadMailVector_confirm.size();i++){
-							fetchMail t_confirmMail = (fetchMail)t_unreadMailVector_confirm.elementAt(i);
-							
-							for(int j = 0;j < t_unreadMailVector.size();j++){
-								
-								fetchMail t_sendMail = (fetchMail)t_unreadMailVector.elementAt(j);
-								
-								if(t_confirmMail.GetMailIndex() != t_sendMail.GetMailIndex()){
-									t_unreadMailVector.add(t_confirmMail);
-									
-									Logger.LogOut("re-send mail<" + t_confirmMail.GetMailIndex() + "> again,wait confirm...");
-								}
-							}
-						}
-						
-						t_unreadMailVector_confirm.removeAllElements();
-					}
-				}
-				
+					m_serverDeamon.m_fetchMgr.PrepareRepushUnconfirmMail();
+				}				
+
+				Vector t_unreadMailVector = m_serverDeamon.m_fetchMgr.m_unreadMailVector;
+				Vector t_unreadMailVector_confirm = m_serverDeamon.m_fetchMgr.m_unreadMailVector_confirm;
 				
 				while(!t_unreadMailVector.isEmpty()){
 					
@@ -181,21 +165,21 @@ class berrySvrPush extends Thread{
 					t_mail.OutputMail(t_output);
 					
 					m_sendReceive.SendBufferToSvr(t_output.toByteArray(),false);
+					
 					m_serverDeamon.m_fetchMgr.SetBeginFetchIndex(t_mail.GetMailIndex());
 					
-					t_unreadMailVector.remove(0);
-					
-					synchronized (m_serverDeamon.m_fetchMgr) {
+					synchronized(m_serverDeamon.m_fetchMgr) {
+						t_unreadMailVector.remove(0);
 						t_unreadMailVector_confirm.addElement(t_mail);
 					}
 					
-					Logger.LogOut("CheckFolder and send mail<" + t_mail.GetMailIndex() + ">,wait confirm...");
+					Logger.LogOut("send mail<" + t_mail.GetMailIndex() + ">,wait confirm...");
 				}				
 				
 				sleep(fetchMain.sm_pushInterval);
 				
 			}catch(Exception _e){
-				_e.printStackTrace();
+				Logger.PrinterException(_e);
 				break;
 			}
 			
@@ -283,7 +267,7 @@ class berrySvrDeamon extends Thread{
 			m_sendReceive = new sendReceive(m_socket.getOutputStream(),m_socket.getInputStream());	
 		}catch(Exception _e){
 			Logger.LogOut("construct berrySvrDeamon error " + _e.getMessage());
-			_e.printStackTrace();
+			_e.printStackTrace(Logger.GetPrintStream());
 			
 			if(m_sendReceive != null){
 				m_sendReceive.CloseSendReceive();
@@ -320,8 +304,7 @@ class berrySvrDeamon extends Thread{
 				try{
 					m_socket.close();					
 				}catch(Exception e){
-					Logger.LogOut(e.getMessage());
-					e.printStackTrace();
+					Logger.PrinterException(_e);
 				}
 				
 				
@@ -331,8 +314,11 @@ class berrySvrDeamon extends Thread{
 				
 				m_pushDeamon.interrupt();
 				
-				Logger.LogOut(_e.getMessage());
-				_e.printStackTrace();				
+				Logger.PrinterException(_e);
+				
+				// prepare repush unconfirm mail vector
+				//
+				m_fetchMgr.PrepareRepushUnconfirmMail();
 				
 				break;
 			}
@@ -597,18 +583,7 @@ class fetchMgr{
 				m_currConnect = new berrySvrDeamon(this, t_svr.accept());
 				
 			}catch(Exception _e){
-				_e.printStackTrace();
-				
-//				for(int i = 0;i < m_vectConnect.size();i++){
-//					berrySvrDeamon d = m_vectConnect.get(i);
-//					if(d.m_socket.isClosed()){
-//						d.destroy();
-//										
-//						m_vectConnect.remove(i);
-//						
-//						i--;
-//					}
-//				}			
+				Logger.PrinterException(_e);
 	    	}
     	}	
 	}
@@ -659,6 +634,7 @@ class fetchMgr{
 		if(m_store != null){
 			
 		    m_unreadMailVector.clear();
+		    m_unreadMailVector_confirm.clear();
 		    
 		    // pushed mail index vector 
 		    m_vectPushedMailIndex.clear();
@@ -685,11 +661,40 @@ class fetchMgr{
 			p.clear();
 			
 		}catch(Exception _e){
-			//Logger.LogOut(_e.getMessage());
-			_e.printStackTrace();
+			Logger.PrinterException(_e);
 		}
-		
 	}
+	
+	public void PrepareRepushUnconfirmMail(){
+		
+		synchronized (this) {
+						
+			for(int i = 0;i < m_unreadMailVector_confirm.size();i++){
+				fetchMail t_confirmMail = (fetchMail)m_unreadMailVector_confirm.elementAt(i);
+				
+				boolean t_add = true;
+				
+				for(int j = 0;j < m_unreadMailVector.size();j++){
+					
+					fetchMail t_sendMail = (fetchMail)m_unreadMailVector.elementAt(j);
+					
+					if(t_confirmMail.GetMailIndex() == t_sendMail.GetMailIndex()){
+						t_add = false;
+						break;
+					}
+				}
+				
+				if(t_add){
+					m_unreadMailVector.add(t_confirmMail);					
+					Logger.LogOut("load mail<" + t_confirmMail.GetMailIndex() + "> send again,wait confirm...");
+				}
+				
+			}
+			
+			m_unreadMailVector_confirm.removeAllElements();
+		}
+	}
+	
 	public berrySvrDeamon GetClientConnected(){
 		return	m_currConnect;
 	}
@@ -847,7 +852,7 @@ class fetchMgr{
 			Vector t_from = _mail.GetFromVect();
 			t_from.removeAllElements();
 		    for (int j = 0; j < a.length; j++){
-		    	t_from.addElement(a[j].toString());
+		    	t_from.addElement(DecondeName(a[j].toString(),false));
 		    }
 		}
 
@@ -856,7 +861,7 @@ class fetchMgr{
 			Vector t_vect = _mail.GetReplyToVect();
 			t_vect.removeAllElements();
 		    for (int j = 0; j < a.length; j++){
-		    	t_vect.addElement(a[j].toString());
+		    	t_vect.addElement(DecondeName(a[j].toString(),false));
 		    }
 		}
 		
@@ -865,7 +870,7 @@ class fetchMgr{
 			Vector t_vect = _mail.GetCCToVect();
 			t_vect.removeAllElements();
 		    for (int j = 0; j < a.length; j++){
-		    	t_vect.addElement(a[j].toString());
+		    	t_vect.addElement(DecondeName(a[j].toString(),false));
 		    }
 		}
 		
@@ -874,7 +879,7 @@ class fetchMgr{
 			Vector t_vect = _mail.GetBCCToVect();
 			t_vect.removeAllElements();
 		    for (int j = 0; j < a.length; j++){
-		    	t_vect.addElement(a[j].toString());
+		    	t_vect.addElement(DecondeName(a[j].toString(),false));
 		    }
 		}
 
@@ -888,14 +893,14 @@ class fetchMgr{
 			
 		    for (int j = 0; j < a.length; j++) {
 		    	
-		    	t_vect.addElement(a[j].toString());
+		    	t_vect.addElement(DecondeName(a[j].toString(),false));
 			    
 				InternetAddress ia = (InternetAddress)a[j];
 				
 				if (ia.isGroup()) {
 				    InternetAddress[] aa = ia.getGroup(false);
 				    for (int k = 0; k < aa.length; k++){
-				    	t_vectGroup.addElement(aa[k].toString());
+				    	t_vectGroup.addElement(DecondeName(aa[k].toString(),false));
 				    }
 				}
 		    }
@@ -1011,12 +1016,7 @@ class fetchMgr{
 				if (filename == null){	
 				    filename = "Attachment_" + t_vect.size();
 				}else{
-
-					if (filename.startsWith("=?GB") || filename.startsWith("=?gb")) {
-						filename = MimeUtility.decodeText(filename);
-					} else {
-						filename = new String(filename.getBytes("ISO8859_1"));
-					}
+					filename = DecondeName(filename,true);
 				}
 
 			    _mail.AddAttachment(filename, 
@@ -1056,6 +1056,19 @@ class fetchMgr{
 				_mail.SetContain(_mail.GetContain().concat(o.toString()));
 			}			
 		}		
+	}
+	
+	static public String DecondeName(String _name,boolean _convert)throws Exception{
+		
+		if(_name.startsWith("=?GB") || _name.startsWith("=?gb")){
+			_name = MimeUtility.decodeText(_name);
+		}else{
+			if(_convert){
+				_name = new String(_name.getBytes("ISO8859_1"));
+			}			
+		}
+		
+		return _name;
 	}
 	
 	static public void ComposeMessage(Message msg,fetchMail _mail)throws Exception{
@@ -1144,7 +1157,7 @@ class fetchMgr{
 			
 			fos.close();	
 		}catch(Exception _e){
-			_e.printStackTrace();
+			Logger.PrinterException(_e);
 		}		
 	}
 	
@@ -1159,7 +1172,7 @@ class fetchMgr{
 			return (int)t_file.length();
 			
 		}catch(Exception _e){
-			_e.printStackTrace();
+			Logger.PrinterException(_e);
 		}	
 		
 		return 0;
@@ -1235,7 +1248,7 @@ public class fetchMain{
 			}catch(Exception ex){
 								
 				Logger.LogOut("Oops, got exception! " + ex.getMessage());
-			    ex.printStackTrace();
+			    ex.printStackTrace(Logger.GetPrintStream());
 			    
 			    if(ex.getMessage().indexOf("Invalid credentials") != -1){
 					// the password or user name is invalid..

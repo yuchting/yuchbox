@@ -1,7 +1,10 @@
 package com.yuchting.yuchberry.server;
 
+import java.awt.print.PrinterException;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -10,6 +13,8 @@ public class Logger{
 	private static Logger		sm_instance;
 	
 	private FileOutputStream	m_logFileStream;
+	
+	private PrintStream		m_printStack;
 	
 	public Logger(){
 		File t_logFile = new File("log");
@@ -22,6 +27,7 @@ public class Logger{
 		
 		try{
 			m_logFileStream = new FileOutputStream("log" + "/" + format.format(new Date()) + ".log");
+			m_printStack 	= new PrintStream(m_logFileStream);			
 		}catch(Exception _e){
 			Logger.LogOut("seriously error : cant create log file.");
 		}
@@ -46,6 +52,23 @@ public class Logger{
 		}catch(Exception _e){
 			System.out.println("seriously error : cant write log file.");
 		}
+	}
+	
+	public static PrintStream GetPrintStream(){
 		
+		if(sm_instance == null){
+			sm_instance = new Logger();
+		}
+		return sm_instance.m_printStack;
+	}
+	
+	public static void PrinterException(Exception _e){
+		
+		if(sm_instance == null){
+			sm_instance = new Logger();
+		}
+		
+		_e.printStackTrace(sm_instance.m_printStack);
+		_e.printStackTrace();
 	}
 }
