@@ -234,6 +234,8 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 
 public class recvMain extends UiApplication implements localResource {
 	
+	final static int		fsm_clientVersion = 1;
+	
 	String m_attachmentDir = null;
 	
 	stateScreen 		m_stateScreen 		= null;
@@ -425,6 +427,10 @@ public class recvMain extends UiApplication implements localResource {
 
 		    	if(fc.exists()){
 		    		InputStream t_readFile = fc.openInputStream();
+		    		
+		    		final int t_currVer = sendReceive.ReadInt(t_readFile);
+		    		
+		    		
 		    		m_hostname		= sendReceive.ReadString(t_readFile);
 		    		m_port			= sendReceive.ReadInt(t_readFile);
 		    		m_userPassword	= sendReceive.ReadString(t_readFile);
@@ -439,12 +445,16 @@ public class recvMain extends UiApplication implements localResource {
 				}				
 				
 				OutputStream t_writeFile = fc.openOutputStream();
+				
+				sendReceive.WriteInt(t_writeFile,fsm_clientVersion);
+				
 				sendReceive.WriteString(t_writeFile, m_hostname);
 				sendReceive.WriteInt(t_writeFile,m_port);
 				sendReceive.WriteString(t_writeFile, m_userPassword);
 				sendReceive.WriteStringVector(t_writeFile, m_APNList);
 				
 				t_writeFile.close();
+				
 				fc.close();
 			}
 			

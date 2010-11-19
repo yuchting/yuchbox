@@ -142,7 +142,7 @@ class berrySvrPush extends Thread{
 					break;
 				}
 				
-				Logger.LogOut("CheckFolder OK confirm Timer:" + t_confirmTimer);
+				//Logger.LogOut("CheckFolder OK confirm Timer:" + t_confirmTimer);
 				
 				if(++t_confirmTimer > 10){
 					// send the mail without confirm
@@ -180,7 +180,20 @@ class berrySvrPush extends Thread{
 				
 			}catch(Exception _e){
 				Logger.PrinterException(_e);
-				break;
+				
+				if(_e instanceof javax.mail.MessagingException){
+					// the network is shutdown in a short time
+					//
+					try{
+						sleep(5000);
+						m_serverDeamon.m_fetchMgr.ResetSession();
+					}catch(Exception e){
+						Logger.PrinterException(e);
+						break;
+					}
+				}
+					
+				
 			}
 			
 		}
@@ -569,10 +582,8 @@ class fetchMgr{
     	m_userPassword = _userPassword;
     	
     	m_beginFetchIndex = fetchMain.sm_fetchIndex;
-    	
-    	
-    	ResetSession();  	
-
+       	
+    	ResetSession();
 
     	ServerSocket t_svr = GetSocketServer(m_userPassword,false);
     	Logger.LogOut("prepare account OK <" + m_userName + ">" );
@@ -588,7 +599,7 @@ class fetchMgr{
     	}	
 	}
 	
-	public void ResetSession()throws Exception{
+	public synchronized void ResetSession()throws Exception{
 		
 		DestroyConnect();
     	
@@ -628,7 +639,7 @@ class fetchMgr{
     	
 	}
 	
-	public void DestroyConnect()throws Exception{
+	public synchronized void DestroyConnect()throws Exception{
 		m_session = null;
 		
 		if(m_store != null){
@@ -962,7 +973,15 @@ class fetchMgr{
 		} else if(p.isMimeType("text/html")){
 			
 			try{
-		    	_mail.SetContain_html(_mail.GetContain_html().concat(p.getContent().toString()));
+				String t_contain = p.getContent().toString();
+				if(t_contain.indexOf("gb2312") == -1){
+					if(t_contain.indexOf("charset") == -1){
+						
+					}else{
+						
+					}
+				}
+		    	_mail.SetContain_html(_mail.GetContain_html().concat(t_contain));
 		    }catch(Exception e){
 		    	_mail.SetContain_html(_mail.GetContain_html().concat("can't decode content " + e.getMessage()));
 		    }	

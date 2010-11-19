@@ -10,6 +10,7 @@ import java.util.Vector;
 import javax.microedition.io.Connector;
 import javax.microedition.io.SocketConnection;
 import javax.microedition.io.file.FileConnection;
+import javax.microedition.media.Player;
 
 import net.rim.blackberry.api.homescreen.HomeScreen;
 import net.rim.blackberry.api.mail.Address;
@@ -30,8 +31,6 @@ import net.rim.blackberry.api.mail.BodyPart.ContentType;
 import net.rim.blackberry.api.mail.event.MessageEvent;
 import net.rim.blackberry.api.mail.event.MessageListener;
 import net.rim.blackberry.api.mail.event.ViewListener;
-import net.rim.blackberry.api.phone.Phone;
-import net.rim.blackberry.api.phone.PhoneCall;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.LED;
@@ -74,21 +73,21 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 FileConnection		m_keyfile;
 	 
-	 SocketConnection	m_conn = null;
+	 SocketConnection	m_conn 					= null;
 	 
-	 Vector				m_sendingMail = new Vector();
+	 Vector				m_sendingMail 			= new Vector();
 	 Vector				m_sendingMailAttachment = new Vector();
 	 
-	 boolean			m_disconnect = true;
+	 boolean			m_disconnect 			= true;
 	
-	 public Vector 		m_markReadVector = new Vector();
+	 public Vector 		m_markReadVector 		= new Vector();
 	 
-	 InputStream		m_newMailNotifier;
+	 Player				m_newMailNotifier		= null;
 	 	 
 	 // read the email temporary variables
 	 // 
-	 private String			m_plainTextContain = new String();
-	 private String			m_htmlTextContain = new String();
+	 private String			m_plainTextContain 	= new String();
+	 private String			m_htmlTextContain 	= new String();
 	 
 	 class ComposingAttachment{
 		 String m_filename;
@@ -101,13 +100,14 @@ public class connectDeamon extends Thread implements SendListener,
 	 }
 	 
 	 //! current composing mail
-	 Message			m_composingMail = null;
-	 Vector				m_composingAttachment = new Vector();
+	 Message			m_composingMail 		= null;
+	 Vector				m_composingAttachment 	= new Vector();
 	 
-	 String				m_currStateString = new String();
-	 recvMain			m_mainApp = null;
+	 String				m_currStateString 		= new String();
+	 recvMain			m_mainApp 				= null;
 	 
-	 int				m_ipConnectCounter = 10;
+	 
+	 int				m_ipConnectCounter 		= 10;
 	 
 	 class FetchAttachment{
 		 int						m_messageHashCode;
@@ -128,8 +128,14 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 public connectDeamon(recvMain _app){
 		 m_mainApp = _app;
-		 
-		 m_newMailNotifier = _app.getClass().getResourceAsStream("/NewMessage.mid");
+		 try{
+			 m_newMailNotifier = javax.microedition.media.Manager.createPlayer(_app.getClass().getResourceAsStream("/NewMessage.mid"),"audio/midi");
+			 
+			 m_newMailNotifier.realize();
+			 m_newMailNotifier.prefetch();
+		 }catch(Exception _e){
+			 _app.DialogAlert("read the sound res error!" + _e.getMessage());
+		 }		 
 		 
 		 start();
 	 }
@@ -362,18 +368,18 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			// if it is calling
 			//
-			try{
-				while(true){
-					final PhoneCall t_calling = Phone.getActiveCall();
-					if(t_calling != null){
-						m_mainApp.SetErrorString("sleep 10sec when is calling.");
-						sleep(30000);
-					}else{
-						break;
-					}
-				}
-				
-			}catch(Exception _e){}
+//			try{
+//				while(true){
+//					final PhoneCall t_calling = Phone.getActiveCall();
+//					if(t_calling != null){
+//						m_mainApp.SetErrorString("sleep 10sec when is calling.");
+//						sleep(30000);
+//					}else{
+//						break;
+//					}
+//				}
+//				
+//			}catch(Exception _e){}
 			
 			m_ipConnectCounter = 10;
 			
@@ -590,12 +596,11 @@ public class connectDeamon extends Thread implements SendListener,
 			// is backlight NOT on to open the LED
 			//
 			if(!Backlight.isEnabled()){
-				LED.setConfiguration(LED.LED_TYPE_STATUS,2000, 2000, LED.BRIGHTNESS_50);
+				LED.setConfiguration(LED.LED_TYPE_STATUS,500, 2000, LED.BRIGHTNESS_50);
 				LED.setState(LED.LED_TYPE_STATUS, LED.STATE_BLINKING);
 			}
 			
-						
-			javax.microedition.media.Manager.createPlayer(m_newMailNotifier,"audio/midi").start();
+			m_newMailNotifier.start();
 							
 		}catch(Exception _e){
 			m_mainApp.SetErrorString("C:\n" + _e.getMessage());
@@ -1016,7 +1021,7 @@ public class connectDeamon extends Thread implements SendListener,
 	    	if(_mail.GetContain_html().length() != 0){
 		    		
 	    		SupportedAttachmentPart sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
-	    											"HtmlPart-DirectOpenIt.html",_mail.GetContain_html().getBytes("GB2312"));    			
+	    											"Html_Part_Direct_Open_It.html",_mail.GetContain_html().getBytes("GB2312"));    			
 	    		
 		    	multipart.addBodyPart(sap);
 	    	}
