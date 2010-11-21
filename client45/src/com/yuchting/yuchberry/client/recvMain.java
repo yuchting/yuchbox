@@ -263,8 +263,8 @@ public class recvMain extends UiApplication implements localResource {
 	String				m_userPassword 		= new String();
 	
 	class APNSelector{
-		String		m_name;
-		int			m_validateNum;
+		String		m_name			= null;
+		int			m_validateNum	= 0;
 	}
 	
 	Vector				m_APNList 			= new Vector();
@@ -383,7 +383,7 @@ public class recvMain extends UiApplication implements localResource {
 	public String GetAPNList(){
 		
 		if(!m_APNList.isEmpty()){
-			String t_str = (String)m_APNList.elementAt(0);
+			String t_str = ((APNSelector)m_APNList.elementAt(0)).m_name;
 			
 			for(int i = 1;i < m_APNList.size();i++){
 				APNSelector t_sel = (APNSelector)m_APNList.elementAt(i); 
@@ -451,6 +451,7 @@ public class recvMain extends UiApplication implements localResource {
 		    			APNSelector t_sel = new APNSelector();
 		    			t_sel.m_name 		= sendReceive.ReadString(t_readFile);
 		    			t_sel.m_validateNum	= sendReceive.ReadInt(t_readFile);
+		    			m_APNList.addElement(t_sel);
 		    		}    		
 		    		
 		    		t_readFile.close();
