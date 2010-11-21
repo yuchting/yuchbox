@@ -9,7 +9,6 @@ import java.util.Vector;
 import javax.microedition.io.file.FileConnection;
 
 import net.rim.blackberry.api.mail.Address;
-import net.rim.blackberry.api.mail.Folder;
 import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.mail.Session;
 import net.rim.blackberry.api.mail.Store;

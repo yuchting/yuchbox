@@ -367,8 +367,9 @@ public class recvMain extends UiApplication implements localResource {
 	public String GetAPNName(){
 		
 		if(++m_changeAPNCounter > 3){
-			m_currentAPNIdx++;
-			if(m_currentAPNIdx > m_APNList.size()){
+			m_changeAPNCounter = 0;
+			
+			if(++m_currentAPNIdx >= m_APNList.size()){
 				m_currentAPNIdx = 0;
 			}
 		}		

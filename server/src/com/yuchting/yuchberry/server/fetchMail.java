@@ -1,19 +1,11 @@
 package com.yuchting.yuchberry.server;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Vector;
 
-import javax.mail.Address;
-import javax.mail.Flags;
 import javax.mail.Message;
-import javax.mail.Multipart;
-import javax.mail.Part;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMultipart;
 
 public class  fetchMail{
 	

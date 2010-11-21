@@ -88,6 +88,117 @@ class Address
 		
 	}
 }
+
+class recvMain {
+	
+	final static int		fsm_clientVersion = 1;
+	
+	String m_attachmentDir = null;
+	String				m_stateString		= new String("disconnect");
+	
+	class ErrorInfo{
+		Date		m_time;
+		String		m_info;
+		
+		ErrorInfo(String _info){
+			m_info	= _info;
+			m_time	= new Date();
+		}
+	}
+	
+	Vector				m_errorString		= new Vector();
+	
+	Vector				m_uploadingDesc 	= new Vector();
+	
+	String				m_hostname 			= new String();
+	int					m_port 				= 0;
+	String				m_userPassword 		= new String();
+	
+	class APNSelector{
+		String		m_name			= null;
+		int			m_validateNum	= 0;
+	}
+	
+	Vector				m_APNList 			= new Vector();
+	int					m_currentAPNIdx 	= 0;
+	int					m_changeAPNCounter 	= 0;
+	
+	class UploadingDesc{
+		
+		fetchMail		m_mail = null;
+		int				m_attachmentIdx;
+		int				m_uploadedSize;
+		int				m_totalSize;		
+	}
+	
+	
+	public String GetAPNName(){
+		
+		if(++m_changeAPNCounter > 3){
+			m_changeAPNCounter = 0;
+			
+			if(++m_currentAPNIdx >= m_APNList.size()){
+				m_currentAPNIdx = 0;
+			}
+		}		
+		
+		if(m_currentAPNIdx < m_APNList.size()){
+			return ((APNSelector)m_APNList.elementAt(m_currentAPNIdx)).m_name;
+		}
+		
+		return "";
+	}
+	
+	public String GetAPNList(){
+		
+		if(!m_APNList.isEmpty()){
+			String t_str = ((APNSelector)m_APNList.elementAt(0)).m_name;
+			
+			for(int i = 1;i < m_APNList.size();i++){
+				APNSelector t_sel = (APNSelector)m_APNList.elementAt(i); 
+				t_str = t_str + ";" + t_sel.m_name;
+			}
+			
+			return t_str;
+		}		
+		
+		return "";
+	}
+	
+	public void SetAPNName(String _APNList){
+		
+		m_APNList.removeAllElements();
+		
+		int t_beginIdx = 0;
+		int t_endIdx = -1;
+		
+		do{
+			t_endIdx = _APNList.indexOf(';',t_beginIdx);
+			
+			if(t_endIdx != -1){
+				String t_name = _APNList.substring(t_beginIdx, t_endIdx);
+				if(t_name.length() != 0){
+					APNSelector t_sel = new APNSelector();
+					t_sel.m_name = t_name;
+					m_APNList.addElement(t_sel);
+				}
+				
+			}else{
+				String t_name = _APNList.substring(t_beginIdx, _APNList.length());
+				if(t_name.length() != 0){
+					APNSelector t_sel = new APNSelector();
+					t_sel.m_name = t_name;
+					m_APNList.addElement(t_sel);
+				}
+				break;
+			}
+			
+			t_beginIdx = t_endIdx + 1;
+			
+		}while(t_beginIdx < _APNList.length());
+		
+	}
+}
 /*!
  *  @brief note
  *  @author tzz
@@ -102,10 +213,13 @@ public class HelloWorld {
 
 //		HelloWorld test = new HelloWorld(); 
 //		test.berryRecvTest();
+		recvMain t_test = new recvMain();
+		t_test.SetAPNName("aaa;bbb");
+		
+		for(int i = 0 ;i < 100;i++){
+			System.out.println(t_test.GetAPNName());
+		}
 
-	
-		String t_str = "charset=GBK\" charset= GBK\" charset = GBK\"";
-		System.out.println(t_str.replaceAll("charset.[^\"]*", "charset=gb2312"));
 	}
 		
 	private static  void StoreAttachment(int _mailIndex,int _attachmentIndex,byte[] _contain){

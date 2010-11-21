@@ -19,6 +19,8 @@ public class sendReceive extends Thread{
 	private Vector		m_unprocessedPackage 	= new Vector();
 	
 	boolean			m_closed				= false;
+	
+	int					m_keepliveCounter		= 0;
 		
 	public sendReceive(OutputStream _socketOut,InputStream _socketIn){
 		m_socketOutputStream = _socketOut;
@@ -33,6 +35,11 @@ public class sendReceive extends Thread{
 		
 		if(_sendImm){
 			SendBufferToSvr_imple(PrepareOutputData());
+			
+			synchronized (this) {
+				m_keepliveCounter = 0;
+			}
+			
 		}
 	}
 	
@@ -115,16 +122,22 @@ public class sendReceive extends Thread{
 	public void run(){
 		
 		try{
-			int t_keepliveCounter = 0;
+			boolean t_keeplive = false;
 			
 			while(!m_closed){
 				SendBufferToSvr_imple(PrepareOutputData());
-				sleep(5000);
+				sleep(5000);				
 				
-				t_keepliveCounter++;
 				
-				if(t_keepliveCounter > 100){
-					t_keepliveCounter = 0;
+				synchronized (this){
+					if(++m_keepliveCounter > 100){
+						m_keepliveCounter = 0;
+						t_keeplive = true;
+					}
+				}				
+				
+				if(t_keeplive){
+					t_keeplive = false;
 					
 					ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 					WriteInt(t_os, 1);
