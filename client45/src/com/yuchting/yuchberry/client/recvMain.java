@@ -262,6 +262,11 @@ public class recvMain extends UiApplication implements localResource {
 	int					m_port 				= 0;
 	String				m_userPassword 		= new String();
 	
+	class APNSelector{
+		String		m_name;
+		int			m_validateNum;
+	}
+	
 	Vector				m_APNList 			= new Vector();
 	int					m_currentAPNIdx 	= 0;
 	int					m_changeAPNCounter 	= 0;
@@ -369,7 +374,7 @@ public class recvMain extends UiApplication implements localResource {
 		}		
 		
 		if(m_currentAPNIdx < m_APNList.size()){
-			return (String)m_APNList.elementAt(m_currentAPNIdx);
+			return ((APNSelector)m_APNList.elementAt(m_currentAPNIdx)).m_name;
 		}
 		
 		return "";
@@ -381,7 +386,8 @@ public class recvMain extends UiApplication implements localResource {
 			String t_str = (String)m_APNList.elementAt(0);
 			
 			for(int i = 1;i < m_APNList.size();i++){
-				t_str = t_str + ";" + (String)m_APNList.elementAt(i);
+				APNSelector t_sel = (APNSelector)m_APNList.elementAt(i); 
+				t_str = t_str + ";" + t_sel.m_name;
 			}
 			
 			return t_str;
@@ -403,13 +409,17 @@ public class recvMain extends UiApplication implements localResource {
 			if(t_endIdx != -1){
 				String t_name = _APNList.substring(t_beginIdx, t_endIdx);
 				if(t_name.length() != 0){
-					m_APNList.addElement(t_name);
+					APNSelector t_sel = new APNSelector();
+					t_sel.m_name = t_name;
+					m_APNList.addElement(t_sel);
 				}
 				
 			}else{
 				String t_name = _APNList.substring(t_beginIdx, _APNList.length());
 				if(t_name.length() != 0){
-					m_APNList.addElement(t_name);
+					APNSelector t_sel = new APNSelector();
+					t_sel.m_name = t_name;
+					m_APNList.addElement(t_sel);
 				}
 				break;
 			}
@@ -430,11 +440,18 @@ public class recvMain extends UiApplication implements localResource {
 		    		
 		    		final int t_currVer = sendReceive.ReadInt(t_readFile);
 		    		
-		    		
 		    		m_hostname		= sendReceive.ReadString(t_readFile);
 		    		m_port			= sendReceive.ReadInt(t_readFile);
 		    		m_userPassword	= sendReceive.ReadString(t_readFile);
-		    		sendReceive.ReadStringVector(t_readFile, m_APNList);
+		    		
+		    		// read the APN validate 
+		    		//
+		    		final int t_apnNum = sendReceive.ReadInt(t_readFile);
+		    		for(int i = 0 ;i < t_apnNum;i++){
+		    			APNSelector t_sel = new APNSelector();
+		    			t_sel.m_name 		= sendReceive.ReadString(t_readFile);
+		    			t_sel.m_validateNum	= sendReceive.ReadInt(t_readFile);
+		    		}    		
 		    		
 		    		t_readFile.close();
 		    		fc.close();
@@ -451,7 +468,15 @@ public class recvMain extends UiApplication implements localResource {
 				sendReceive.WriteString(t_writeFile, m_hostname);
 				sendReceive.WriteInt(t_writeFile,m_port);
 				sendReceive.WriteString(t_writeFile, m_userPassword);
-				sendReceive.WriteStringVector(t_writeFile, m_APNList);
+				
+				// write the APN name and validate number
+				//
+				sendReceive.WriteInt(t_writeFile,m_APNList.size());
+				for(int i = 0 ;i < m_APNList.size();i++){
+					APNSelector t_sel = (APNSelector)m_APNList.elementAt(i);
+					sendReceive.WriteString(t_writeFile,t_sel.m_name);
+					sendReceive.WriteInt(t_writeFile,t_sel.m_validateNum);
+				}
 				
 				t_writeFile.close();
 				

@@ -521,14 +521,16 @@ public class connectDeamon extends Thread implements SendListener,
 				 m_hostip = null;
 				 socket = GetConnection(_ssl);
 			 }else{
-				 if(_e.getMessage().indexOf("DNS") != -1 && m_ipConnectCounter > 0){
-					 m_ipConnectCounter--;
-					 socket = GetConnection(_ssl);
-				 }else{
-					 throw _e;
-				 }				
+//				 if(_e.getMessage().indexOf("DNS") != -1 && m_ipConnectCounter > 0){
+//					 m_ipConnectCounter--;
+//					 socket = GetConnection(_ssl);
+//				 }else{
+//					 throw _e;
+//				 }
+				 
+				 throw new Exception(_e.getMessage() + " APN:" + t_APN);
 			 }
-		 } 
+		 }
 
 		 m_hostip = socket.getAddress();
 		 

@@ -316,7 +316,7 @@ class sendMailAttachmentDeamon extends Thread{
 			Message t_sendMsg = store.getMessage(t_sendId);
 			
 			if(t_sendMsg != null){
-				t_sendMsg.setStatus(Message.Status.TX_SENT,0);
+				t_sendMsg.setStatus(Message.Status.TX_SENDING,0);
 				t_sendMsg.updateUi();
 			}
 			

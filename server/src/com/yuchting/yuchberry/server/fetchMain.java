@@ -974,13 +974,19 @@ class fetchMgr{
 			
 			try{
 				String t_contain = p.getContent().toString();
-				if(t_contain.indexOf("gb2312") == -1){
-					if(t_contain.indexOf("charset") == -1){
-						
-					}else{
-						
+				final int t_charsetIdx = t_contain.indexOf("charset");
+				if(t_charsetIdx == -1){
+					final int t_headIdx = t_contain.indexOf("<head>");
+					if(t_headIdx != -1){
+						//
+						StringBuffer str = new StringBuffer(t_contain);
+						str.insert(t_headIdx + 6, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=gb2312\" />");
+						t_contain = str.toString();
 					}
+				}else{
+					t_contain = t_contain.replaceAll("charset.[^\"]*", "charset=gb2312");
 				}
+				
 		    	_mail.SetContain_html(_mail.GetContain_html().concat(t_contain));
 		    }catch(Exception e){
 		    	_mail.SetContain_html(_mail.GetContain_html().concat("can't decode content " + e.getMessage()));

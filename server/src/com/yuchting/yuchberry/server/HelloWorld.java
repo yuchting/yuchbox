@@ -101,19 +101,11 @@ public class HelloWorld {
 	public static void main(String arg[]){
 
 //		HelloWorld test = new HelloWorld(); 
-//		test.test4();
+//		test.berryRecvTest();
 
-		Address t_add = new Address("", "");
-		
-		t_add.SetAPNName("aa;");
-		t_add.SetAPNName("aa;bb");
-		t_add.SetAPNName("aa;bb;");
-		t_add.SetAPNName("aa;bb;cc");
-		t_add.SetAPNName(";");
-		t_add.SetAPNName(";;");
-		t_add.SetAPNName("aa");
-		t_add.SetAPNName("");
 	
+		String t_str = "charset=GBK\" charset= GBK\" charset = GBK\"";
+		System.out.println(t_str.replaceAll("charset.[^\"]*", "charset=gb2312"));
 	}
 		
 	private static  void StoreAttachment(int _mailIndex,int _attachmentIndex,byte[] _contain){
