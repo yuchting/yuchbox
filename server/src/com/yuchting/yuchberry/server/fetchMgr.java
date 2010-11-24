@@ -27,6 +27,13 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
 
+import org.htmlparser.Node;
+import org.htmlparser.NodeFilter;
+import org.htmlparser.Parser;
+import org.htmlparser.nodes.TextNode;
+import org.htmlparser.tags.LinkTag;
+import org.htmlparser.util.NodeList;
+
 import com.sun.mail.smtp.SMTPTransport;
 
 
@@ -95,10 +102,10 @@ public class fetchMgr{
     	m_host_send		= p.getProperty("host_send");
 		m_port_send		= Integer.valueOf(p.getProperty("port_send")).intValue();
 		
-		m_fetchInterval	= Integer.valueOf(p.getProperty("pushInterval")).intValue();
-		if(m_fetchInterval <= 0){
-			System.out.println("the pushInterval segment can't be Zero or negative value, set the defaul 10 sec now");
-			m_fetchInterval = 10;
+		m_fetchInterval	= Integer.valueOf(p.getProperty("pushInterval")).intValue() * 1000;
+		if(m_fetchInterval <= 1000){
+			System.out.println("the pushInterval segment can't be less than 1sec, set the defaul 10 sec now");
+			m_fetchInterval = 10000;
 		}
     	
 		m_strUserNameFull		= p.getProperty("account");
@@ -177,7 +184,13 @@ public class fetchMgr{
 		if(m_store != null){
 			
 		    m_unreadMailVector.clear();
-		    m_unreadMailVector_confirm.clear();
+		    
+		    // wouldn't clear confirm 
+		    // the DestroyConnect function will called when the CheckFolder throw 
+		    // javaMail exception 
+		    // and re-send when client re-connected
+		    //
+		    //m_unreadMailVector_confirm.clear();
 		    
 		    // pushed mail index vector 
 		    m_vectPushedMailIndex.clear();
@@ -214,8 +227,7 @@ public class fetchMgr{
 	
 	public void PrepareRepushUnconfirmMail(){
 		
-		synchronized (this) {
-						
+		synchronized(this){
 			for(int i = 0;i < m_unreadMailVector_confirm.size();i++){
 				fetchMail t_confirmMail = (fetchMail)m_unreadMailVector_confirm.elementAt(i);
 				
@@ -239,6 +251,34 @@ public class fetchMgr{
 			}
 			
 			m_unreadMailVector_confirm.removeAllElements();
+		}
+		
+	}
+	
+	public synchronized void PushMail(sendReceive _sendReceive)throws Exception{
+		
+		final Vector t_unreadMailVector = m_unreadMailVector;
+		final Vector t_unreadMailVector_confirm = m_unreadMailVector_confirm;
+		
+		while(!t_unreadMailVector.isEmpty()){
+			
+			fetchMail t_mail = (fetchMail)t_unreadMailVector.elementAt(0); 
+			
+			ByteArrayOutputStream t_output = new ByteArrayOutputStream();
+			
+			t_output.write(msg_head.msgMail);
+			t_mail.OutputMail(t_output);
+			
+			_sendReceive.SendBufferToSvr(t_output.toByteArray(),false);
+			
+			SetBeginFetchIndex(t_mail.GetMailIndex());
+			
+			synchronized(this){	
+				t_unreadMailVector.remove(0);
+				t_unreadMailVector_confirm.addElement(t_mail);
+			}
+			
+			Logger.LogOut("send mail<" + t_mail.GetMailIndex() + " : " + t_mail.GetSubject() + ">,wait confirm...");
 		}
 	}
 	
@@ -319,9 +359,15 @@ public class fetchMgr{
 		Message msg = new MimeMessage(m_session_send);
 		ComposeMessage(msg,_mail);
 	    
-		m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
-		m_sendTransport.sendMessage(msg, msg.getAllRecipients());
-		m_sendTransport.close();
+		int t_tryTime = 0;
+		while(t_tryTime++ < 5){
+			try{
+				m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
+				m_sendTransport.sendMessage(msg, msg.getAllRecipients());
+				m_sendTransport.close();
+				break;
+			}catch(Exception e){}
+		}
 		
 		// delete the tmp files
 		//
@@ -524,9 +570,15 @@ public class fetchMgr{
 				}
 				
 		    	_mail.SetContain_html(_mail.GetContain_html().concat(t_contain));
+
+			    // parser HTML append the plain text
+			    //
+		    	_mail.SetContain(_mail.GetContain().concat(ParseHTMLText(t_contain)));
+		    	
 		    }catch(Exception e){
 		    	_mail.SetContain_html(_mail.GetContain_html().concat("can't decode content " + e.getMessage()));
-		    }	
+		    }
+		    
 		    
 		}else if (p.isMimeType("multipart/*")) {
 			
@@ -617,6 +669,44 @@ public class fetchMgr{
 				_mail.SetContain(_mail.GetContain().concat(o.toString()));
 			}			
 		}		
+	}
+	
+	static public String ParseHTMLText(String _html){
+		StringBuffer t_text = new StringBuffer();
+		
+		try{
+			Parser parser = new Parser(_html,null);
+			parser.setEncoding("GB2312");
+			
+	        NodeList list = parser.parse(new  NodeFilter() {
+	        								public boolean accept(Node node) {
+	        									return true ;
+	        								}
+	        							});
+	        
+	        Node[] nodes = list.toNodeArray();
+
+            for (int i = 1; i < nodes.length; i++){
+                Node nextNode = nodes[i];
+
+                if (nextNode instanceof TextNode){
+                	
+                    TextNode textnode = (TextNode) nextNode;
+                    t_text.append(textnode.getText());
+                    t_text.append("\n");
+                    
+                }else if(nextNode instanceof LinkTag){
+                	
+                	LinkTag link = (LinkTag)nextNode;
+                	t_text.append(link.getLink());
+                	t_text.append("\n");
+                	
+                }              
+            }
+            
+		}catch(Exception _e	){}
+		
+		return t_text.toString();
 	}
 	
 	static public String DecondeName(String _name,boolean _convert)throws Exception{

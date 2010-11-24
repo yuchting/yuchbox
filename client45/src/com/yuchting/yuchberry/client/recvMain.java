@@ -9,6 +9,8 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
 import local.localResource;
+import net.rim.blackberry.api.invoke.Invoke;
+import net.rim.blackberry.api.invoke.MessageArguments;
 import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
@@ -549,10 +551,10 @@ public class recvMain extends UiApplication implements localResource {
 	
 	public void PushViewFileScreen(final String _filename){
 		
-		invokeLater(new Runnable()
-		{
-		    public void run()
-			{
+		invokeLater(new Runnable(){
+			
+		    public void run(){
+		    	
 		    	recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
 		    	try{
 		    		if(uploadFileScreen.IsAudioFile(_filename)){
@@ -570,6 +572,18 @@ public class recvMain extends UiApplication implements localResource {
 		    	}catch(Exception _e){
 		    		t_mainApp.DialogAlert(_e.getMessage());
 		    	}		    	
+			}
+		});
+	}
+	
+	public void UpdateMessageStatus(final Message m,final int _status){
+		
+		invokeLater(new Runnable(){
+			
+			public void run(){
+				m.setStatus(_status,0);
+				m.updateUi();
+				UiApplication.getUiApplication().relayout();
 			}
 		});
 	}

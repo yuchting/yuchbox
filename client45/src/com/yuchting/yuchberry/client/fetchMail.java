@@ -309,15 +309,10 @@ class sendMailAttachmentDeamon extends Thread{
 		Store store = Session.getDefaultInstance().getStore();
 		
 		try{
-			sleep(200);
 			
-			final int t_sendId = m_sendMail.GetAttachMessage().getMessageId();
-			Message t_sendMsg = store.getMessage(t_sendId);
+			sleep(100);
 			
-			if(t_sendMsg != null){
-				t_sendMsg.setStatus(Message.Status.TX_SENDING,0);
-				t_sendMsg.updateUi();
-			}
+			m_connect.m_mainApp.UpdateMessageStatus(m_sendMail.GetAttachMessage(), Message.Status.TX_SENDING);
 			
 		}catch(Exception _e){}		
 

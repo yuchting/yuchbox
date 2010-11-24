@@ -622,11 +622,10 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			if(t_sending.GetSendDate().getTime() == t_time){
 				if(t_succ){
-					t_sending.GetAttachMessage().setStatus(Message.Status.TX_DELIVERED, 1);
+					m_mainApp.UpdateMessageStatus(t_sending.GetAttachMessage(),Message.Status.TX_DELIVERED);
 				}else{
-					t_sending.GetAttachMessage().setStatus(Message.Status.TX_ERROR, 1);
+					m_mainApp.UpdateMessageStatus(t_sending.GetAttachMessage(),Message.Status.TX_ERROR);
 				}
-				t_sending.GetAttachMessage().updateUi();				
 				
 				m_sendingMail.removeElementAt(i);
 		
@@ -981,6 +980,8 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		_mail.SetAttchMessage(msg);
 		
+		msg.setPriority(Message.Priority.HIGH);
+	
 		msg.setFrom(fetchMail.parseAddressList(_mail.GetFromVect())[0]);
 				
 	    msg.addRecipients(Message.RecipientType.TO,

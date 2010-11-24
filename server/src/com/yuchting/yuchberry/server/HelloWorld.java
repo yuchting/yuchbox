@@ -1,12 +1,14 @@
 package com.yuchting.yuchberry.server;
 
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -21,6 +23,14 @@ import java.util.zip.GZIPOutputStream;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
+
+import org.htmlparser.Node;
+import org.htmlparser.NodeFilter;
+import org.htmlparser.Parser;
+import org.htmlparser.nodes.TextNode;
+import org.htmlparser.tags.LinkTag;
+import org.htmlparser.util.NodeList;
+
 
 
 
@@ -211,17 +221,67 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[]){
 
-//		HelloWorld test = new HelloWorld(); 
-//		test.berryRecvTest();
-		recvMain t_test = new recvMain();
-		t_test.SetAPNName("aaa;bbb");
+		HelloWorld test = new HelloWorld(); 
+		test.berryRecvTest();
+	
 		
-		for(int i = 0 ;i < 100;i++){
-			System.out.println(t_test.GetAPNName());
-		}
 
 	}
+	
+	private void ParserHTML(){
 		
+		try{
+			BufferedReader in = new BufferedReader(
+									new InputStreamReader(
+										new FileInputStream("htmlFile.htm")));
+			StringBuffer t_contain = new StringBuffer();
+			
+			String line = new String();
+			while((line = in.readLine())!= null){
+				t_contain.append(line);
+			}
+				
+			Parser parser = new Parser(t_contain.toString(),null);
+			parser.setEncoding("GB2312");
+			
+	        NodeList list = parser.parse(new  NodeFilter() {
+	        								public   boolean  accept(Node node) {
+	        										return   true ;
+	        								}
+	        							});
+	        
+	        Node[] nodes = list.toNodeArray();
+
+            StringBuffer result = new StringBuffer();
+
+            for (int i = 1; i < nodes.length; i++)
+            {
+
+                Node nextNode = nodes[i];
+
+                if (nextNode instanceof TextNode)
+                {
+                    TextNode textnode = (TextNode) nextNode;
+                    result.append(textnode.getText());
+                    result.append("\n");
+                }else if(nextNode instanceof LinkTag){
+                	
+                	LinkTag link = (LinkTag)nextNode;
+                	result.append(link.getLink());
+                	result.append("\n");
+                	
+                }
+
+               
+            }
+            
+	        System.out.println (result.toString());
+		}catch(Exception _e){
+			_e.printStackTrace();
+		}
+		
+	}
+	
 	private static  void StoreAttachment(int _mailIndex,int _attachmentIndex,byte[] _contain){
 		String t_filename = "" + _mailIndex + "_" + _attachmentIndex + ".att";
 		

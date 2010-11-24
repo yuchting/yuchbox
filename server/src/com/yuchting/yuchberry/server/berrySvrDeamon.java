@@ -112,9 +112,9 @@ class berrySvrPush extends Thread{
 				|| !m_serverDeamon.m_socket.isConnected()){
 					break;
 				}
-				
+
 				m_serverDeamon.m_fetchMgr.CheckFolder();
-				
+								
 				if(m_serverDeamon.m_socket == null 
 				|| !m_serverDeamon.m_socket.isConnected()){
 					
@@ -131,29 +131,7 @@ class berrySvrPush extends Thread{
 					m_serverDeamon.m_fetchMgr.PrepareRepushUnconfirmMail();
 				}				
 
-				Vector t_unreadMailVector = m_serverDeamon.m_fetchMgr.m_unreadMailVector;
-				Vector t_unreadMailVector_confirm = m_serverDeamon.m_fetchMgr.m_unreadMailVector_confirm;
-				
-				while(!t_unreadMailVector.isEmpty()){
-					
-					fetchMail t_mail = (fetchMail)t_unreadMailVector.elementAt(0); 
-					
-					ByteArrayOutputStream t_output = new ByteArrayOutputStream();
-					
-					t_output.write(msg_head.msgMail);
-					t_mail.OutputMail(t_output);
-					
-					m_sendReceive.SendBufferToSvr(t_output.toByteArray(),false);
-					
-					m_serverDeamon.m_fetchMgr.SetBeginFetchIndex(t_mail.GetMailIndex());
-					
-					synchronized(m_serverDeamon.m_fetchMgr) {
-						t_unreadMailVector.remove(0);
-						t_unreadMailVector_confirm.addElement(t_mail);
-					}
-					
-					Logger.LogOut("send mail<" + t_mail.GetMailIndex() + ">,wait confirm...");
-				}				
+				m_serverDeamon.m_fetchMgr.PushMail(m_sendReceive);
 				
 				sleep(m_serverDeamon.m_fetchMgr.GetPushInterval());
 				

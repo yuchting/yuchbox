@@ -39,7 +39,7 @@ public class Logger{
 		}
 		
 		
-		SimpleDateFormat format = new SimpleDateFormat("MM-dd hh:mm:ss");
+		SimpleDateFormat format = new SimpleDateFormat("MM-dd HH:mm:ss");
 		
 		String t_out = format.format(new Date()) + ": " + _log + "\n";
 		System.out.print(t_out);
@@ -67,6 +67,15 @@ public class Logger{
 		if(sm_instance == null){
 			sm_instance = new Logger();
 		}
+		
+		SimpleDateFormat format = new SimpleDateFormat("MM-dd HH:mm:ss :");
+		
+		String t_out = format.format(new Date());
+		System.out.print(t_out);
+		try{
+			sm_instance.m_printStack.write(t_out.getBytes());
+			sm_instance.m_logFileStream.flush();
+		}catch(Exception e){}
 		
 		_e.printStackTrace(sm_instance.m_printStack);
 		_e.printStackTrace();
