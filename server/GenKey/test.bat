@@ -1,0 +1,1 @@
+openssl ca -in YuchBerrySvr.csr -out tmp.crt -cert YuchBerryClient.crt -keyfile YuchBerryClient.key -notext -config openssl.conf

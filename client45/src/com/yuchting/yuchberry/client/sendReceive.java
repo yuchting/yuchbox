@@ -165,6 +165,10 @@ public class sendReceive extends Thread{
 			return t_ret;
 		}
 		
+		synchronized (this) {
+			m_keepliveCounter = 0;
+		}
+		
 		InputStream in = m_socketInputStream;
 
 		int t_len = ReadInt(in);
@@ -194,6 +198,7 @@ public class sendReceive extends Thread{
 		
 		byte[] t_ret = ParsePackage(t_orgdata);
 		t_orgdata = null;
+				
 		
 		return t_ret;
 	}

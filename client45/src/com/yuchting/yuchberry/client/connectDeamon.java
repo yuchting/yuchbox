@@ -385,7 +385,7 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			try{
 
-				m_conn = GetConnection(false);
+				m_conn = GetConnection(true);
 				m_connect = new sendReceive(m_conn.openOutputStream(),m_conn.openInputStream());
 							
 				// send the Auth info

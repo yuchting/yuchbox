@@ -81,6 +81,7 @@ public class fetchMgr{
     int		m_totalMailCount	= 0;
     
     int		m_unreadFetchIndex	= 0;
+    boolean m_userSSL			= false;
     
     String m_tmpImportContain = new String();
     
@@ -107,6 +108,11 @@ public class fetchMgr{
 			System.out.println("the pushInterval segment can't be less than 1sec, set the defaul 10 sec now");
 			m_fetchInterval = 10000;
 		}
+		
+		if(Integer.valueOf(p.getProperty("userSSL")).intValue() == 1){
+			m_userSSL = true;
+		}
+		
     	
 		m_strUserNameFull		= p.getProperty("account");
 		if(m_strUserNameFull.indexOf('@') == -1 || m_strUserNameFull.indexOf('.') == -1){
@@ -124,7 +130,7 @@ public class fetchMgr{
        	
     	ResetSession();
 
-    	ServerSocket t_svr = GetSocketServer(m_userPassword,false);
+    	ServerSocket t_svr = GetSocketServer(m_userPassword,m_userSSL);
     	Logger.LogOut("prepare account OK <" + m_userName + ">" );
     	
 		while(true){
@@ -413,7 +419,7 @@ public class fetchMgr{
 	public static ServerSocket GetSocketServer(String _userPassword,boolean _ssl)throws Exception{
 		
 		if(_ssl){
-			String	key				= "YuchBerryKey";  
+			String	key				= "YuchBerrySvr.key";  
 			
 			char[] keyStorePass		= _userPassword.toCharArray();
 			char[] keyPassword		= _userPassword.toCharArray();
