@@ -181,12 +181,20 @@ public class berrySvrDeamon extends Thread{
 	
 	public berrySvrDeamon(fetchMgr _mgr,Socket _s)throws Exception{
 		m_fetchMgr 	= _mgr;
-				
-		// wait for signIn first
-		//
-		_s.setSoTimeout(1000);
-		
+					
 		try{
+			
+			// first handshake with the client via CA instead of 
+			// InputStream.read function to get the information within 1sec time out
+			//
+			if(_s instanceof SSLSocket){
+				//((SSLSocket)_s).startHandshake();
+			}
+			
+			// wait for signIn first
+			//
+			_s.setSoTimeout(10000);
+			
 			sendReceive t_tmp = new sendReceive(_s.getOutputStream(),_s.getInputStream());
 			ByteArrayInputStream in = new ByteArrayInputStream(t_tmp.RecvBufferFromSvr());
 						
@@ -200,9 +208,14 @@ public class berrySvrDeamon extends Thread{
 				sendReceive.WriteString(os, msg_head.noteErrorUserPassword);
 				
 				_s.getOutputStream().write(os.toByteArray());
+				
+				Logger.LogOut("illeagel client<"+ _s.getLocalAddress().toString() +"> connected.");
+				
 				_s.close();
 				
 				t_tmp.CloseSendReceive();
+				
+				
 				
 				return;
 			}
@@ -210,7 +223,7 @@ public class berrySvrDeamon extends Thread{
 			t_tmp.CloseSendReceive();
 			
 		}catch(Exception _e){
-			// time out
+			// time out or other problem
 			//
 			_s.close();
 			Logger.PrinterException(_e);

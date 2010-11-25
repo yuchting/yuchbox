@@ -110,11 +110,12 @@ public class sendReceive extends Thread{
 			//
 			WriteInt(os,_write.length << 16);
 			os.write(_write);
+			os.flush();
 			
 		}else{
 			WriteInt(os,(_write.length << 16) | t_zipData.length);
 			os.write(t_zipData);
-			
+			os.flush();
 		}
 				
 	}

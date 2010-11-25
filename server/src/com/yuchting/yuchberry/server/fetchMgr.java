@@ -425,8 +425,7 @@ public class fetchMgr{
 			char[] keyStorePass		= _userPassword.toCharArray();
 			char[] keyPassword		= _userPassword.toCharArray();
 			
-			//KeyStore ks				= KeyStore.getInstance(KeyStore.getDefaultType());
-			KeyStore ks				= KeyStore.getInstance("JKS");
+			KeyStore ks				= KeyStore.getInstance(KeyStore.getDefaultType());
 			
 			ks.load(new FileInputStream(key),keyStorePass);
 			
@@ -439,7 +438,7 @@ public class fetchMgr{
 			SSLServerSocketFactory factory=sslContext.getServerSocketFactory();
 			
 			SSLServerSocket t_socket = (SSLServerSocket)factory.createServerSocket(ACCEPT_PORT); 
-			t_socket.setNeedClientAuth(true);
+			//t_socket.setNeedClientAuth(true);
 			
 			return t_socket;
 			

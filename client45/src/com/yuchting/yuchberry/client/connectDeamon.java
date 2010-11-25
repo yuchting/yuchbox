@@ -8,6 +8,8 @@ import java.util.Date;
 import java.util.Vector;
 
 import javax.microedition.io.Connector;
+import javax.microedition.io.SecureConnection;
+import javax.microedition.io.SecurityInfo;
 import javax.microedition.io.SocketConnection;
 import javax.microedition.io.file.FileConnection;
 import javax.microedition.media.Player;
@@ -510,13 +512,11 @@ public class connectDeamon extends Thread implements SendListener,
 		 try{
 			 socket = (SocketConnection)Connector.open(URL,Connector.READ_WRITE,false);
 			 
-			 if(!_ssl){
-				 socket.setSocketOption(SocketConnection.DELAY, 0);
-				 socket.setSocketOption(SocketConnection.LINGER, 0);
-				 socket.setSocketOption(SocketConnection.KEEPALIVE, 2);
-				 socket.setSocketOption(SocketConnection.RCVBUF, 128);
-				 socket.setSocketOption(SocketConnection.SNDBUF, 128);	 
-			 }			 
+			 socket.setSocketOption(SocketConnection.DELAY, 0);
+			 socket.setSocketOption(SocketConnection.KEEPALIVE, 2);
+			 socket.setSocketOption(SocketConnection.LINGER, 0);
+			 socket.setSocketOption(SocketConnection.RCVBUF, 128);
+			 socket.setSocketOption(SocketConnection.SNDBUF, 128);
 			 
 		 }catch(Exception _e){
 			 if(m_hostip != null){
