@@ -494,7 +494,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 //		 
 		 
 		 if(_ssl){
-			 URL =  "ssl://" + ((m_hostip != null)?m_hostip:m_hostname) + ":" + m_hostport + ";deviceside=true";
+			 URL =  "ssl://" + ((m_hostip != null)?m_hostip:m_hostname) + ":" + m_hostport + ";deviceside=true;EndToEndDesired";
 		 }else{
 			 URL =  "socket://" +((m_hostip != null)?m_hostip:m_hostname) + ":" + m_hostport + ";deviceside=true";
 		 }
@@ -510,11 +510,13 @@ public class connectDeamon extends Thread implements SendListener,
 		 try{
 			 socket = (SocketConnection)Connector.open(URL,Connector.READ_WRITE,false);
 			 
-			 socket.setSocketOption(SocketConnection.DELAY, 0);
-			 socket.setSocketOption(SocketConnection.LINGER, 0);
-			 socket.setSocketOption(SocketConnection.KEEPALIVE, 2);
-			 socket.setSocketOption(SocketConnection.RCVBUF, 128);
-			 socket.setSocketOption(SocketConnection.SNDBUF, 128);
+			 if(!_ssl){
+				 socket.setSocketOption(SocketConnection.DELAY, 0);
+				 socket.setSocketOption(SocketConnection.LINGER, 0);
+				 socket.setSocketOption(SocketConnection.KEEPALIVE, 2);
+				 socket.setSocketOption(SocketConnection.RCVBUF, 128);
+				 socket.setSocketOption(SocketConnection.SNDBUF, 128);	 
+			 }			 
 			 
 		 }catch(Exception _e){
 			 if(m_hostip != null){

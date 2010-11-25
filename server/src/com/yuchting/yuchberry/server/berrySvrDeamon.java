@@ -7,8 +7,14 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.math.BigInteger;
 import java.net.Socket;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.Vector;
+
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
 
 
 
@@ -175,7 +181,7 @@ public class berrySvrDeamon extends Thread{
 	
 	public berrySvrDeamon(fetchMgr _mgr,Socket _s)throws Exception{
 		m_fetchMgr 	= _mgr;
-		
+				
 		// wait for signIn first
 		//
 		_s.setSoTimeout(1000);
@@ -207,6 +213,7 @@ public class berrySvrDeamon extends Thread{
 			// time out
 			//
 			_s.close();
+			Logger.PrinterException(_e);
 			
 			return;
 		}

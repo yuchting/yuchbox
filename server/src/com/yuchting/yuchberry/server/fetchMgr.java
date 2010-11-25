@@ -25,6 +25,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 
 import org.htmlparser.Node;
@@ -83,6 +84,7 @@ public class fetchMgr{
     int		m_unreadFetchIndex	= 0;
     boolean m_userSSL			= false;
     
+    
     String m_tmpImportContain = new String();
     
     //! is connected?
@@ -112,7 +114,6 @@ public class fetchMgr{
 		if(Integer.valueOf(p.getProperty("userSSL")).intValue() == 1){
 			m_userSSL = true;
 		}
-		
     	
 		m_strUserNameFull		= p.getProperty("account");
 		if(m_strUserNameFull.indexOf('@') == -1 || m_strUserNameFull.indexOf('.') == -1){
@@ -424,7 +425,8 @@ public class fetchMgr{
 			char[] keyStorePass		= _userPassword.toCharArray();
 			char[] keyPassword		= _userPassword.toCharArray();
 			
-			KeyStore ks				= KeyStore.getInstance(KeyStore.getDefaultType());
+			//KeyStore ks				= KeyStore.getInstance(KeyStore.getDefaultType());
+			KeyStore ks				= KeyStore.getInstance("JKS");
 			
 			ks.load(new FileInputStream(key),keyStorePass);
 			
@@ -436,7 +438,11 @@ public class fetchMgr{
 			  
 			SSLServerSocketFactory factory=sslContext.getServerSocketFactory();
 			
-			return (ServerSocket)factory.createServerSocket(ACCEPT_PORT);
+			SSLServerSocket t_socket = (SSLServerSocket)factory.createServerSocket(ACCEPT_PORT); 
+			t_socket.setNeedClientAuth(true);
+			
+			return t_socket;
+			
 		}else{
 			return new ServerSocket(ACCEPT_PORT);
 		}		  
