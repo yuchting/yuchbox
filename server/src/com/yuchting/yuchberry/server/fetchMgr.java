@@ -124,7 +124,7 @@ public class fetchMgr{
     	m_password	= p.getProperty("password");
     	m_userPassword = p.getProperty("userPassword");
     	
-    	m_beginFetchIndex = 1;//Integer.valueOf(p.getProperty("userFetchIndex")).intValue();
+    	m_beginFetchIndex = Integer.valueOf(p.getProperty("userFetchIndex")).intValue();
     	
     	fs.close();
 		p.clear();
@@ -325,7 +325,8 @@ public class fetchMgr{
 	   
 	    if(m_totalMailCount != folder.getMessageCount()){
 	    	m_totalMailCount = folder.getMessageCount();	    
-		    final int t_startIndex = Math.max(m_totalMailCount - Math.min(CHECK_NUM,m_totalMailCount) + 1,m_beginFetchIndex);
+		    final int t_startIndex = Math.max(m_totalMailCount - Math.min(CHECK_NUM,m_totalMailCount) + 1,
+		    									Math.min(m_totalMailCount,m_beginFetchIndex));
 		    
 		    Message[] t_msgs = folder.getMessages(t_startIndex, m_totalMailCount);
 		    
