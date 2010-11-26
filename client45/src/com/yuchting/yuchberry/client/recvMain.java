@@ -312,7 +312,7 @@ public class recvMain extends UiApplication implements localResource {
 		}
 				
 		public String toString(){
-			return "Del YuchBerry File";
+			return "Check YuchBerry File";
 		}
 		
 		public Object run(Object context){
