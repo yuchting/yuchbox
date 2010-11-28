@@ -9,8 +9,6 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
 import local.localResource;
-import net.rim.blackberry.api.invoke.Invoke;
-import net.rim.blackberry.api.invoke.MessageArguments;
 import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
@@ -24,14 +22,17 @@ import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.FontFamily;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.ButtonField;
+import net.rim.device.api.ui.component.CheckboxField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
+import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.MainScreen;
 
 class ErrorLabelText extends Field{
@@ -89,9 +90,17 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
     LabelField          m_stateText     = null;
     ErrorLabelText      m_errorText     = null;
     LabelField			m_uploadingText = null;
+    
+    CheckboxField		m_useSSLCheckbox= null;
         
     recvMain			m_mainApp		= null;
     
+    MenuItem 	m_aboutMenu = new MenuItem(recvMain.sm_local.getString(localResource.ABOUT_MENU_TEXT), 100, 10) {
+												public void run() {
+													UiApplication.getUiApplication().pushScreen(new aboutScreen());
+												}
+											};
+
     public stateScreen(final recvMain _app) {
     	        
         super();
@@ -120,7 +129,11 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
         
         add(m_APN);
         
-        m_connectBut = new ButtonField(m_mainApp.m_connectDeamon.IsConnected()?"disconnect":"connect",
+        m_useSSLCheckbox	= new CheckboxField(recvMain.sm_local.getString(localResource.USE_SSL), m_mainApp.m_useSSL);
+        add(m_useSSLCheckbox);
+        
+        m_connectBut = new ButtonField(recvMain.sm_local.getString(m_mainApp.m_connectDeamon.IsConnectState()?
+        									localResource.DISCONNECT_BUTTON_LABEL:localResource.CONNECT_BUTTON_LABEL),
         								ButtonField.CONSUME_CLICK| ButtonField.NEVER_DIRTY);
         
         m_connectBut.setChangeListener(this);
@@ -130,18 +143,22 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
         m_stateText = new LabelField(m_mainApp.GetStateString(), LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
         add(m_stateText);
         
-        m_errorText = new ErrorLabelText(m_mainApp.GetErrorString());
-        add(m_errorText);
-        
         m_uploadingText = new LabelField("", LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
         add(m_uploadingText);
+        
+        m_errorText = new ErrorLabelText(m_mainApp.GetErrorString());
+        add(m_errorText);       
         
         RefreshUploadState(_app.m_uploadingDesc);
                
     }
     
+    protected void makeMenu(Menu _menu,int instance){
+    	_menu.add(m_aboutMenu);
+    }
+    
     public final boolean onClose(){
-    	if(m_mainApp.m_connectDeamon.IsConnected()){
+    	if(m_mainApp.m_connectDeamon.IsConnectState()){
     		m_mainApp.requestBackground();
     		return false;
     	}
@@ -169,7 +186,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
     			final int t_tmp = (int)((float)t_desc.m_uploadedSize / (float)t_desc.m_totalSize * 1000);
     			final float t_percent = (float)t_tmp / 10;
         		
-        		t_total = t_total + "Subject: "+ t_desc.m_mail.GetSubject() + "(" +
+        		t_total = t_total + t_desc.m_mail.GetSubject() + "(" +
         				t_desc.m_attachmentIdx + "/" + t_desc.m_mail.GetAttachment().size() + " " + t_percent + "%) \n";
     		}   		
     	}
@@ -192,14 +209,14 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 					return;
 				}				
 												
-				if(m_mainApp.m_connectDeamon.IsConnected()){
+				if(m_mainApp.m_connectDeamon.IsConnectState()){
 					
 					try{
 						m_mainApp.m_connectDeamon.Disconnect();
 					}catch(Exception _e){}
 					
-					m_connectBut.setLabel("connect");
-					m_mainApp.SetStateString("disconnect");
+					m_connectBut.setLabel(recvMain.sm_local.getString(localResource.CONNECT_BUTTON_LABEL));
+					m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
 					
 				}else{
 										
@@ -208,17 +225,16 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 						m_mainApp.m_hostname 		= m_hostName.getText();
 						m_mainApp.m_port 			= Integer.valueOf(m_hostport.getText()).intValue();
 						m_mainApp.m_userPassword 	= m_userPassword.getText();
+						m_mainApp.m_useSSL			= m_useSSLCheckbox.getChecked();
 						
 						m_mainApp.SetAPNName(m_APN.getText());
 						
-						m_mainApp.m_connectDeamon.Connect(m_mainApp.m_hostname,
-															m_mainApp.m_port,
-															m_mainApp.m_userPassword);
+						m_mainApp.m_connectDeamon.Connect();
 						
 //						m_mainApp.m_connectDeamon.Connect("192.168.10.20",9716,"","111111");
 						
-						m_mainApp.SetStateString("connecting...");
-						m_connectBut.setLabel("disconnect");
+						m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTING_LABEL));
+						m_connectBut.setLabel(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
 						
 						m_mainApp.Start();
 						
@@ -236,7 +252,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 
 public class recvMain extends UiApplication implements localResource {
 	
-	final static int		fsm_clientVersion = 1;
+	final static int		fsm_clientVersion = 2;
 	
 	String m_attachmentDir = null;
 	
@@ -244,7 +260,7 @@ public class recvMain extends UiApplication implements localResource {
 	uploadFileScreen 	m_uploadFileScreen	= null;
 	connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
-	String				m_stateString		= new String("disconnect");
+	String				m_stateString		= new String(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
 	
 	class ErrorInfo{
 		Date		m_time;
@@ -263,6 +279,7 @@ public class recvMain extends UiApplication implements localResource {
 	String				m_hostname 			= new String();
 	int					m_port 				= 0;
 	String				m_userPassword 		= new String();
+	boolean			m_useSSL			= false;
 	
 	class APNSelector{
 		String		m_name			= null;
@@ -290,7 +307,7 @@ public class recvMain extends UiApplication implements localResource {
 		}
 				
 		public String toString(){
-			return "Add YuchBerry File";
+			return recvMain.sm_local.getString(localResource.ADD_ATTACHMENT);
 		}
 		
 		public Object run(Object context){
@@ -312,7 +329,7 @@ public class recvMain extends UiApplication implements localResource {
 		}
 				
 		public String toString(){
-			return "Check YuchBerry File";
+			return recvMain.sm_local.getString(localResource.CHECK_DEL_ATTACHMENT);
 		}
 		
 		public Object run(Object context){
@@ -433,6 +450,22 @@ public class recvMain extends UiApplication implements localResource {
 		
 	}
 	
+	public String GetHostName(){
+		return m_hostname;
+	}
+	
+	public int GetHostPort(){
+		return m_port;
+	}
+	
+	public String GetUserPassword(){
+		return m_userPassword;
+	}
+	
+	public boolean IsUseSSL(){
+		return m_useSSL;
+	}
+	
 	private void WriteReadIni(boolean _read){
 		try{
 			FileConnection fc = (FileConnection) Connector.open(m_attachmentDir + "Init.data",Connector.READ_WRITE);
@@ -455,7 +488,11 @@ public class recvMain extends UiApplication implements localResource {
 		    			t_sel.m_name 		= sendReceive.ReadString(t_readFile);
 		    			t_sel.m_validateNum	= sendReceive.ReadInt(t_readFile);
 		    			m_APNList.addElement(t_sel);
-		    		}    		
+		    		}
+		    		
+		    		if(t_currVer >= 2){
+		    			m_useSSL = (t_readFile.read() == 0)?false:true;
+		    		}
 		    		
 		    		t_readFile.close();
 		    		fc.close();
@@ -481,6 +518,8 @@ public class recvMain extends UiApplication implements localResource {
 					sendReceive.WriteString(t_writeFile,t_sel.m_name);
 					sendReceive.WriteInt(t_writeFile,t_sel.m_validateNum);
 				}
+				
+				t_writeFile.write(m_useSSL?1:0);
 				
 				t_writeFile.close();
 				
@@ -620,12 +659,12 @@ public class recvMain extends UiApplication implements localResource {
 	}
 	
 	public void SetStateString(String _state){
+			
+		m_stateString = _state;
 		
 		if(m_stateScreen != null){
-			m_stateScreen.m_stateText.setText(_state);
+			m_stateScreen.m_stateText.setText(GetStateString());
 		}
-		
-		m_stateString = _state;
 	}
 	
 	public void DialogAlert(final String _msg){
@@ -681,7 +720,7 @@ public class recvMain extends UiApplication implements localResource {
 	}
 
 	public final String GetStateString(){
-		return m_stateString;
+		return recvMain.sm_local.getString(localResource.STATE_PROMPT) + m_stateString;
 	}
 	
 	public void SetErrorString(final String _error){

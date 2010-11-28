@@ -16,7 +16,7 @@ public class fileViewScreen extends MainScreen{
 	byte[]		m_fileContain	= null;
 	
 	public fileViewScreen(String _filename,recvMain _mainApp,boolean _readFile) throws Exception{
-		m_viewFileName = _filename;	
+		m_viewFileName = _filename;
 		m_mainApp = _mainApp;
 		
 		// prepare the image

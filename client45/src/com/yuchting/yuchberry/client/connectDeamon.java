@@ -8,12 +8,11 @@ import java.util.Date;
 import java.util.Vector;
 
 import javax.microedition.io.Connector;
-import javax.microedition.io.SecureConnection;
-import javax.microedition.io.SecurityInfo;
 import javax.microedition.io.SocketConnection;
 import javax.microedition.io.file.FileConnection;
 import javax.microedition.media.Player;
 
+import local.localResource;
 import net.rim.blackberry.api.homescreen.HomeScreen;
 import net.rim.blackberry.api.mail.Address;
 import net.rim.blackberry.api.mail.AttachmentHandler;
@@ -66,12 +65,9 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 	
 	 sendReceive		m_connect = null;
-	 
-	 String				m_hostname;
+
 	 String				m_hostip = null;
-	 
-	 int				m_hostport;
-	 String				m_userPassword;
+
 	 
 	 FileConnection		m_keyfile;
 	 
@@ -110,6 +106,8 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 
 	 int				m_ipConnectCounter 		= 10;
+	 
+	 int				m_connectCounter		= -1;
 	 
 	 class FetchAttachment{
 		 int						m_messageHashCode;
@@ -271,7 +269,7 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 	
 	public String	menuString(){
-		return "Open YuchBerry Attachment";
+		return recvMain.sm_local.getString(localResource.OPEN_ATTACHMENT);
 	}
 	
 	public boolean supports(String contentType){
@@ -387,20 +385,20 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			try{
 
-				m_conn = GetConnection(true);
+				m_conn = GetConnection(m_mainApp.IsUseSSL());
 				m_connect = new sendReceive(m_conn.openOutputStream(),m_conn.openInputStream());
 							
 				// send the Auth info
 				//
 				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 				t_os.write(msg_head.msgConfirm);
-				sendReceive.WriteString(t_os, m_userPassword);
+				sendReceive.WriteString(t_os, m_mainApp.GetUserPassword());
 				
 				m_connect.SendBufferToSvr(t_os.toByteArray(), true);
 				
 				// set the text connect
 				//
-				m_mainApp.SetStateString("connected.");
+				m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTED_LABEL));
 				
 				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main.png"));
 				
@@ -410,10 +408,12 @@ public class connectDeamon extends Thread implements SendListener,
 				
 			}catch(Exception _e){
 				
-				try{
-					m_mainApp.SetStateString("disconnected retry later...");
-					m_mainApp.SetErrorString("M: " + _e.getMessage());
-				}catch(Exception e){}				
+				if(m_disconnect != true){
+					try{
+						m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTING_RETRY_LABEL));
+						m_mainApp.SetErrorString("M: " + _e.getMessage());
+					}catch(Exception e){}	
+				}							
 			}		
 			
 			HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline.png"));
@@ -431,17 +431,12 @@ public class connectDeamon extends Thread implements SendListener,
 					}					
 					
 				}catch(Exception _e){}
-			}		
-			
-			try{
-				sleep(10000);
-			}catch(Exception _e){}
-			
+			}			
 		}
 		
 	 }
 	 
-	 public void Connect(String _host,int _port,String _userPassword)throws Exception{
+	 public void Connect()throws Exception{
 		 
 		synchronized (this) {
 			
@@ -451,19 +446,19 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			BeginListener();
 		}
-		
-		m_hostname		= _host;
-		m_hostport		= _port;
-		m_userPassword 	= _userPassword;	
 	 }
 	 
-	 public boolean IsConnected(){
+	 public boolean IsConnectState(){
 		 return !m_disconnect;
 	 }
 	 
 	 public void Disconnect()throws Exception{
 		 
 		 m_disconnect = true;
+		 
+		 interrupt();
+		 
+		 m_connectCounter = -1;
 		 	
 		 synchronized (this) {
 			 
@@ -481,7 +476,9 @@ public class connectDeamon extends Thread implements SendListener,
 			 
 			 for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
 				 sendMailAttachmentDeamon send = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
-				 send.interrupt();
+				 if(send.isAlive()){
+					 send.interrupt();
+				 }				 
 			 }
 			 
 			 m_sendingMailAttachment.removeAllElements();
@@ -490,15 +487,26 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 private SocketConnection GetConnection(boolean _ssl)throws Exception{
 		 
+		 final int t_sleep = GetConnectInterval();
+		 if(t_sleep != 0){
+			 sleep(t_sleep);
+		 }
+		 
+		 if(m_disconnect == true){
+			 throw new Exception("user closed");
+		 }
+		 
 		 String URL ;
 
 		 // first use IP address to decrease the DNS message  
-		 //		 
+		 //
+		 final String t_hostname = m_mainApp.GetHostName();
+		 final int		t_hostport = m_mainApp.GetHostPort();
 		 
 		 if(_ssl){
-			 URL =  "ssl://" + ((m_hostip != null)?m_hostip:m_hostname) + ":" + m_hostport + ";deviceside=true;EndToEndDesired";
+			 URL =  "ssl://" + ((m_hostip != null)?m_hostip:t_hostname) + ":" + t_hostport + ";deviceside=true;EndToEndDesired";
 		 }else{
-			 URL =  "socket://" +((m_hostip != null)?m_hostip:m_hostname) + ":" + m_hostport + ";deviceside=true";
+			 URL =  "socket://" +((m_hostip != null)?m_hostip:t_hostname) + ":" + t_hostport + ";deviceside=true";
 		 }
 		 
 		 String t_APN = m_mainApp.GetAPNName();
@@ -519,10 +527,26 @@ public class connectDeamon extends Thread implements SendListener,
 			 socket.setSocketOption(SocketConnection.SNDBUF, 128);
 			 
 		 }catch(Exception _e){
+
+			 if(_e.getMessage().indexOf("Peer") != -1){
+				 m_connectCounter = 1000;
+				 
+				 throw _e;
+			 }
+			 
 			 if(m_hostip != null){
+				 
 				 m_hostip = null;
 				 socket = GetConnection(_ssl);
+				 
+			 }else if(_e.getMessage().indexOf("Tunnel") != -1 
+					 || _e.getMessage().indexOf("tunnel") != -1){
+				 
+				 m_mainApp.SetErrorString("M: " +_e.getMessage() + " APN:" + t_APN);
+				 socket = GetConnection(_ssl);
+				 
 			 }else{
+				 
 //				 if(_e.getMessage().indexOf("DNS") != -1 && m_ipConnectCounter > 0){
 //					 m_ipConnectCounter--;
 //					 socket = GetConnection(_ssl);
@@ -537,6 +561,20 @@ public class connectDeamon extends Thread implements SendListener,
 		 m_hostip = socket.getAddress();
 		 
 		 return socket;
+	 }
+	 
+	 private int GetConnectInterval(){
+		 
+		 if(m_connectCounter++ == -1){
+			 return 0;
+		 }
+		 
+		 if(m_connectCounter++ > 6){
+			 m_connectCounter = 0;			 
+			 return 5 * 60 * 1000;
+		 }
+		 
+		 return 10000;
 	 }
 	 
 	 private synchronized void ProcessMsg(byte[] _package)throws Exception{
@@ -600,10 +638,10 @@ public class connectDeamon extends Thread implements SendListener,
 			// is backlight NOT on to open the LED
 			//
 			if(!Backlight.isEnabled()){
-				LED.setConfiguration(LED.LED_TYPE_STATUS,500, 2000, LED.BRIGHTNESS_50);
+				LED.setConfiguration(LED.LED_TYPE_STATUS,300, 5000, LED.BRIGHTNESS_50);
 				LED.setState(LED.LED_TYPE_STATUS, LED.STATE_BLINKING);
 			}
-			
+
 			m_newMailNotifier.start();
 							
 		}catch(Exception _e){
@@ -615,9 +653,7 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		boolean t_succ = (in.read() == 1);
 	
-		long t_time = sendReceive.ReadInt(in);
-		t_time |= ((long)sendReceive.ReadInt(in) << 32);
-			
+		final long t_time = sendReceive.ReadLong(in);
 		
 		for(int i = 0;i< m_sendingMail.size();i++){
 			fetchMail t_sending = (fetchMail)m_sendingMail.elementAt(i);
@@ -981,9 +1017,7 @@ public class connectDeamon extends Thread implements SendListener,
 	static public void ComposeMessage(Message msg,fetchMail _mail)throws Exception{
 		
 		_mail.SetAttchMessage(msg);
-		
-		msg.setPriority(Message.Priority.HIGH);
-	
+			
 		msg.setFrom(fetchMail.parseAddressList(_mail.GetFromVect())[0]);
 				
 	    msg.addRecipients(Message.RecipientType.TO,

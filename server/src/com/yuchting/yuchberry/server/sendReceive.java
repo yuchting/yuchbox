@@ -104,10 +104,12 @@ class sendReceive extends Thread{
 			//
 			WriteInt(os,_write.length << 16);
 			os.write(_write);
+			os.flush();
 			
 		}else{
 			WriteInt(os,(_write.length << 16) | t_zipData.length);
 			os.write(t_zipData);
+			os.flush();
 			
 		}
 				
@@ -243,6 +245,22 @@ class sendReceive extends Thread{
 	
 	static public int ReadInt(InputStream _stream)throws Exception{
 		return _stream.read() | (_stream.read() << 8) | (_stream.read() << 16) | (_stream.read() << 24);
+	}
+	
+	static public long ReadLong(InputStream _stream)throws Exception{
+		final int t_timeLow = sendReceive.ReadInt(_stream);
+		final long t_timeHigh = sendReceive.ReadInt(_stream);
+				
+		if(t_timeLow >= 0){
+			return ((t_timeHigh << 32) | (long)(t_timeLow));
+		}else{
+			return ((t_timeHigh << 32) | (((long)(t_timeLow & 0x7fffffff)) | 0x80000000L));
+		}
+	}
+		
+	static public void WriteLong(OutputStream _stream,long _val)throws Exception{		
+		sendReceive.WriteInt(_stream,(int)_val);
+		sendReceive.WriteInt(_stream,(int)(_val >>> 32));
 	}
 
 	static public void WriteInt(OutputStream _stream,int _val)throws Exception{

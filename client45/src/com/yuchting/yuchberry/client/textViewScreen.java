@@ -30,5 +30,5 @@ public class textViewScreen extends fileViewScreen{
 		add(m_editText);
 		
 	}
-
+	
 }

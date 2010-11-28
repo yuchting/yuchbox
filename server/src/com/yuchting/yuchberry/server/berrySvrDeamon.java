@@ -4,16 +4,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.math.BigInteger;
 import java.net.Socket;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.Vector;
 
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
 
@@ -172,12 +167,9 @@ public class berrySvrDeamon extends Thread{
 	public fetchMgr		m_fetchMgr = null;
 	public Socket		m_socket = null;
 	
-	sendReceive  m_sendReceive = null;
-	
+	sendReceive  m_sendReceive = null;	
 	
 	private berrySvrPush m_pushDeamon = null;
-	
-	private Vector			m_recvMailAttach = new Vector();
 	
 	public berrySvrDeamon(fetchMgr _mgr,Socket _s)throws Exception{
 		m_fetchMgr 	= _mgr;
@@ -372,13 +364,7 @@ public class berrySvrDeamon extends Thread{
 		if(t_mail.GetAttachment().isEmpty()){
 			SendMailToSvr(t_mail);
 		}else{
-			// create new thread to send mail
-			//
-			m_recvMailAttach.addElement(t_mail);
-			
-			Logger.LogOut("send mail with attachment " + t_mail.GetAttachment().size());
-			
-			CreateTmpSendMailAttachFile(t_mail);
+			m_fetchMgr.CreateTmpSendMailAttachFile(t_mail);
 		}
 	}
 	private void ProcessFetchMailAttach(InputStream in)throws Exception{
@@ -388,29 +374,11 @@ public class berrySvrDeamon extends Thread{
 		new berrySendAttachment(t_mailIndex,t_attachIndex,m_fetchMgr);
 	}
 	
-	private void CreateTmpSendMailAttachFile(fetchMail _mail)throws Exception{
-		Vector t_list = _mail.GetAttachment();
-		
-		for(int i = 0;i < t_list.size();i++){
-			fetchMail.Attachment t_attachment = (fetchMail.Attachment)t_list.elementAt(i);
-			
-			String t_filename = "" + _mail.GetSendDate().getTime() + "_" + i + ".satt";
-			FileOutputStream fos = new FileOutputStream(t_filename);
-			
-			for(int j = 0;j < t_attachment.m_size;j++){
-				fos.write(0);
-			}
-			
-			Logger.LogOut("store attachment " + t_filename + " size:" + t_attachment.m_size);
-			
-			fos.close();
-		}
-	}
+	
 	
 	private void ProcessMailAttach(ByteArrayInputStream in)throws Exception{
 		
-		long t_time = sendReceive.ReadInt(in);
-		t_time |= ((long)sendReceive.ReadInt(in)) << 32;
+		long t_time = sendReceive.ReadLong(in);
 		
 		final int t_attachmentIdx = sendReceive.ReadInt(in);
 		final int t_segIdx = sendReceive.ReadInt(in);
@@ -435,22 +403,16 @@ public class berrySvrDeamon extends Thread{
 		t_fwrite.close();
 		
 		if(t_segIdx + t_segSize == t_file.length()){
-			// send the file...
-			//
-			for(int i = 0;i < m_recvMailAttach.size();i++){
-				fetchMail t_mail = (fetchMail)m_recvMailAttach.elementAt(i);
-				
-				if(t_mail.GetSendDate().getTime() == t_time){
-					
-					SendMailToSvr(t_mail);
-					m_recvMailAttach.remove(i);
-					break;
-				}
+			
+			fetchMail t_mail;
+			
+			if((t_mail = m_fetchMgr.FindAttachMail(t_time)) != null){
+				SendMailToSvr(t_mail);
 			}
 		}
 	}
 	
-	public void SendMailToSvr(fetchMail _mail)throws Exception{
+	public void SendMailToSvr(final fetchMail _mail)throws Exception{
 		
 		// receive send message to berry
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -477,7 +439,9 @@ public class berrySvrDeamon extends Thread{
 		sendReceive.WriteInt(os,(int)_mail.GetSendDate().getTime());
 		sendReceive.WriteInt(os,(int)(_mail.GetSendDate().getTime() >>> 32));
 
-		m_sendReceive.SendBufferToSvr(os.toByteArray(),false);		
+		m_sendReceive.SendBufferToSvr(os.toByteArray(),false);
+		
+		Logger.LogOut("Mail <" +_mail.GetSendDate().getTime() +  "> send " + ((t_succ == 1)?"Succ":"Failed"));
 	}
 	
 	private void ProcessBeenReadMail(ByteArrayInputStream in)throws Exception{

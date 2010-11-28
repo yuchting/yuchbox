@@ -1,11 +1,15 @@
 package com.yuchting.yuchberry.server;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
+import java.net.URL;
+import java.net.URLConnection;
 import java.security.KeyStore;
 import java.util.Properties;
 import java.util.Vector;
@@ -40,7 +44,6 @@ import com.sun.mail.smtp.SMTPTransport;
 
 public class fetchMgr{
 	
-	final static int	ACCEPT_PORT = 9716;
 	final static int	CHECK_NUM = 50;
 	
 	String 	m_protocol 	= null;
@@ -57,6 +60,8 @@ public class fetchMgr{
 	String 	m_strUserNameFull = null;
 	String 	m_password 	= null;
 	String	m_userPassword	= null;
+	
+	int		m_listenPort = 9716;
 	
 	int		m_fetchInterval = 10;
 	
@@ -84,6 +89,8 @@ public class fetchMgr{
     int		m_unreadFetchIndex	= 0;
     boolean m_userSSL			= false;
     
+    private Vector	m_recvMailAttach = new Vector();
+    
     
     String m_tmpImportContain = new String();
     
@@ -104,6 +111,7 @@ public class fetchMgr{
     	m_protocol_send	= p.getProperty("protocol_send");
     	m_host_send		= p.getProperty("host_send");
 		m_port_send		= Integer.valueOf(p.getProperty("port_send")).intValue();
+		m_listenPort	= Integer.valueOf(p.getProperty("serverPort")).intValue();
 		
 		m_fetchInterval	= Integer.valueOf(p.getProperty("pushInterval")).intValue() * 1000;
 		if(m_fetchInterval <= 1000){
@@ -220,12 +228,26 @@ public class fetchMgr{
 		
 		try{
 			
-			Properties p = new Properties(); 
-			p.load(new FileInputStream("config.ini"));
-			p.setProperty("userFetchIndex",Integer.toString(m_beginFetchIndex));
+			BufferedReader in = new BufferedReader(
+									new InputStreamReader(
+										new FileInputStream("config.ini")));
+				
+			StringBuffer t_contain = new StringBuffer();
 			
-			p.save(new FileOutputStream("config.ini"), "");
-			p.clear();
+			String line = new String();
+			while((line = in.readLine())!= null){
+				if(line.indexOf("userFetchIndex=") != -1){
+					line = line.replaceAll("userFetchIndex=[^\n]*", "userFetchIndex=" + 100);
+				}
+				
+				t_contain.append(line + "\r\n");
+			}
+			
+			in.close();
+			
+			FileOutputStream os = new FileOutputStream("config.ini");
+			os.write(t_contain.toString().getBytes("GB2312"));
+			os.close();
 			
 		}catch(Exception _e){
 			Logger.PrinterException(_e);
@@ -287,6 +309,48 @@ public class fetchMgr{
 			
 			Logger.LogOut("send mail<" + t_mail.GetMailIndex() + " : " + t_mail.GetSubject() + ">,wait confirm...");
 		}
+	}
+	
+	public void CreateTmpSendMailAttachFile(fetchMail _mail)throws Exception{
+		
+		// create new thread to send mail
+		//
+		m_recvMailAttach.addElement(_mail);
+		
+		Logger.LogOut("send mail with attachment " + _mail.GetAttachment().size());
+		
+		Vector t_list = _mail.GetAttachment();
+		
+		for(int i = 0;i < t_list.size();i++){
+			fetchMail.Attachment t_attachment = (fetchMail.Attachment)t_list.elementAt(i);
+			
+			String t_filename = "" + _mail.GetSendDate().getTime() + "_" + i + ".satt";
+			FileOutputStream fos = new FileOutputStream(t_filename);
+			
+			for(int j = 0;j < t_attachment.m_size;j++){
+				fos.write(0);
+			}
+			
+			Logger.LogOut("store attachment " + t_filename + " size:" + t_attachment.m_size);
+			
+			fos.close();
+		}
+	}
+	
+	public fetchMail FindAttachMail(final long _time){
+		// send the file...
+		//
+		for(int i = 0;i < m_recvMailAttach.size();i++){
+			fetchMail t_mail = (fetchMail)m_recvMailAttach.elementAt(i);
+			
+			if(t_mail.GetSendDate().getTime() == _time){
+				m_recvMailAttach.remove(i);
+				
+				return t_mail;
+			}
+		}
+		
+		return null;
 	}
 	
 	public berrySvrDeamon GetClientConnected(){
@@ -414,11 +478,11 @@ public class fetchMgr{
 	    }	        
 	}
 			
-	public boolean IsConnected(){
+	public boolean IsConnectState(){
 		return m_session != null;
 	}
 	
-	public static ServerSocket GetSocketServer(String _userPassword,boolean _ssl)throws Exception{
+	public ServerSocket GetSocketServer(String _userPassword,boolean _ssl)throws Exception{
 		
 		if(_ssl){
 			String	key				= "YuchBerrySvr.key";  
@@ -438,13 +502,13 @@ public class fetchMgr{
 			  
 			SSLServerSocketFactory factory=sslContext.getServerSocketFactory();
 			
-			SSLServerSocket t_socket = (SSLServerSocket)factory.createServerSocket(ACCEPT_PORT); 
+			SSLServerSocket t_socket = (SSLServerSocket)factory.createServerSocket(m_listenPort); 
 			//t_socket.setNeedClientAuth(true);
 			
 			return t_socket;
 			
 		}else{
-			return new ServerSocket(ACCEPT_PORT);
+			return new ServerSocket(m_listenPort);
 		}		  
 	}
 	
@@ -567,20 +631,8 @@ public class fetchMgr{
 		} else if(p.isMimeType("text/html")){
 			
 			try{
-				String t_contain = p.getContent().toString();
-				final int t_charsetIdx = t_contain.indexOf("charset");
-				if(t_charsetIdx == -1){
-					final int t_headIdx = t_contain.indexOf("<head>");
-					if(t_headIdx != -1){
-						//
-						StringBuffer str = new StringBuffer(t_contain);
-						str.insert(t_headIdx + 6, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=gb2312\" />");
-						t_contain = str.toString();
-					}
-				}else{
-					t_contain = t_contain.replaceAll("charset.[^\"]*", "charset=gb2312");
-				}
-				
+				String t_contain = ChangeHTMLCharset(p.getContent().toString());
+								
 		    	_mail.SetContain_html(_mail.GetContain_html().concat(t_contain));
 
 			    // parser HTML append the plain text
@@ -683,8 +735,34 @@ public class fetchMgr{
 		}		
 	}
 	
+	static public String ChangeHTMLCharset(String _html){
+		
+		final String ft_meta = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=gb2312\" />";
+		final int t_charsetIdx = _html.indexOf("charset");
+		
+		if(t_charsetIdx == -1){
+			
+			final int t_headIdx = _html.indexOf("<head>");
+			if(t_headIdx != -1){
+				//
+				StringBuffer str = new StringBuffer(_html);
+				str.insert(t_headIdx + 6, ft_meta);
+				_html = str.toString();
+			}else{
+				_html = ft_meta + _html;
+			}
+		}else{
+			_html = _html.replaceAll("charset.[^\"]*", "charset=gb2312");
+		}
+		
+		return _html;
+	}
+	
 	static public String ParseHTMLText(String _html){
 		StringBuffer t_text = new StringBuffer();
+		t_text.append("[yuchberry prompt:the real URL would be shorten by http://is.gd/]\n\n");
+		
+		StringBuffer t_shorterText = new StringBuffer();
 		
 		try{
 			Parser parser = new Parser(_html,null);
@@ -692,7 +770,7 @@ public class fetchMgr{
 			
 	        NodeList list = parser.parse(new  NodeFilter() {
 	        								public boolean accept(Node node) {
-	        									return true ;
+	        									return node instanceof TextNode || node instanceof LinkTag ;
 	        								}
 	        							});
 	        
@@ -702,25 +780,70 @@ public class fetchMgr{
                 Node nextNode = nodes[i];
 
                 if (nextNode instanceof TextNode){
-                	
                     TextNode textnode = (TextNode) nextNode;
                     t_text.append(textnode.getText());
                     t_text.append("\n");
-                    
-                }else if(nextNode instanceof LinkTag){
+                }else{
                 	
                 	LinkTag link = (LinkTag)nextNode;
-                	t_text.append(link.getLink());
+                	t_text.append(GetShortURL(link.getLink()));
                 	t_text.append("\n");
-                	
                 }              
+            }            
+            
+            int t_emptyCharCounter = 0;
+            
+            for(int i = 0;i < t_text.length();i++){
+            	final char t_char = t_text.charAt(i);
+            	if(IsEmptyChar(t_char)){
+            		if(t_emptyCharCounter++ < 2){
+            			t_shorterText.append(t_char);
+            		}
+            	}else{
+            		t_emptyCharCounter = 0;
+            		t_shorterText.append(t_char);
+            	}            	
             }
             
 		}catch(Exception _e	){}
 		
-		return t_text.toString();
+		String t_result = t_shorterText.toString();
+		
+		t_result = t_result.replaceAll("&lt;", "<");
+		t_result = t_result.replaceAll("&gt;", ">");
+		t_result = t_result.replaceAll("&amp;", "&");
+		t_result = t_result.replaceAll("&apos;", "'");
+		t_result = t_result.replaceAll("&quot;", "\"");
+		t_result = t_result.replaceAll("&nbsp;", " ");	
+		
+		return t_result;
 	}
 	
+	static private boolean IsEmptyChar(final char _char){
+		return _char == ' ' || _char == '\n' || _char == '\t' || _char == '\r';
+	}
+	
+	static private String GetShortURL(String _longURL){
+		
+		try{
+			URL is_gd = new URL("http://is.gd/api.php?longurl=" + _longURL);
+			
+	        URLConnection yc = is_gd.openConnection();
+	        BufferedReader in = new BufferedReader(
+	                                new InputStreamReader(yc.getInputStream()));
+	        
+	        String inputLine = in.readLine();	        
+	        in.close();
+	        
+	        return (inputLine != null && inputLine.length() < _longURL.length()) ? inputLine:_longURL ;
+	        
+		}catch(Exception _e){}
+		
+		return _longURL;
+		
+        
+	}
+
 	static public String DecondeName(String _name,boolean _convert)throws Exception{
 		
 		if(_name.startsWith("=?GB") || _name.startsWith("=?gb")){

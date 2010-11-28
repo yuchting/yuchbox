@@ -118,9 +118,8 @@ public class  fetchMail{
 		sendReceive.WriteStringVector(_stream,m_vectGroup);
 		
 		sendReceive.WriteString(_stream,m_subject);
-		sendReceive.WriteInt(_stream,(int)m_sendDate.getTime());
-		sendReceive.WriteInt(_stream,(int)(m_sendDate.getTime() >>> 32));
-				
+		sendReceive.WriteLong(_stream,m_sendDate.getTime());
+
 		sendReceive.WriteInt(_stream,m_flags);
 		
 		sendReceive.WriteString(_stream,m_XMailName);
@@ -153,9 +152,7 @@ public class  fetchMail{
 		sendReceive.ReadStringVector(_stream,m_vectGroup);
 		
 		m_subject = sendReceive.ReadString(_stream);
-		long t_time = sendReceive.ReadInt(_stream);
-		t_time |= ((long)sendReceive.ReadInt(_stream)) << 32;
-		m_sendDate.setTime(t_time);
+		m_sendDate.setTime(sendReceive.ReadLong(_stream));
 		
 		m_flags = sendReceive.ReadInt(_stream);
 		
@@ -310,12 +307,21 @@ class sendMailAttachmentDeamon extends Thread{
 		
 		try{
 			
-			sleep(100);
+			sleep(500);
 			
 			m_connect.m_mainApp.UpdateMessageStatus(m_sendMail.GetAttachMessage(), Message.Status.TX_SENDING);
 			
 		}catch(Exception _e){}		
 
+	}
+	
+	private void ReleaseAttachFile(){
+		try{
+			for(int i = 0;i < m_vFileConnection.size();i++){
+				FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(i);
+				t_file.close();
+			}
+		}catch(Exception e){}
 	}
 	
 	public void run(){
@@ -326,19 +332,26 @@ class sendMailAttachmentDeamon extends Thread{
 		
 		while(true){
 			
-			if(!m_connect.IsConnected()){
+			while(m_connect.m_conn == null ){
 				try{
 					sleep(10000);
 				}catch(Exception _e){
 					break;
 				}
+				
+				if(!m_connect.IsConnectState()){
+					ReleaseAttachFile();
+					return;
+				}
 			}
+			
+			
 			
 			try{
 				
 				if(!t_sendContain){
 				
-					RefreshMessageStatus();					
+					RefreshMessageStatus();
 					
 					// send mail once if has not attachment 
 					//
@@ -367,9 +380,7 @@ class sendMailAttachmentDeamon extends Thread{
 				sendReceive.ForceReadByte(in, m_bufferBytes, t_size);
 				
 				m_os.write(msg_head.msgMailAttach);
-				final long t_time = m_sendMail.GetSendDate().getTime();
-				sendReceive.WriteInt(m_os,(int)t_time);
-				sendReceive.WriteInt(m_os,(int)(t_time >>> 32));
+				sendReceive.WriteLong(m_os,m_sendMail.GetSendDate().getTime());
 				sendReceive.WriteInt(m_os, m_attachmentIndex);
 				sendReceive.WriteInt(m_os, m_beginIndex);
 				sendReceive.WriteInt(m_os, t_size);
@@ -377,8 +388,7 @@ class sendMailAttachmentDeamon extends Thread{
 				
 				m_connect.m_connect.SendBufferToSvr(m_os.toByteArray(), true);
 				
-				
-				System.out.println("send msgMailAttach time:"+ t_time + " beginIndex:" + m_beginIndex + " size:" + t_size);
+				System.out.println("send msgMailAttach time:"+ m_sendMail.GetSendDate().getTime() + " beginIndex:" + m_beginIndex + " size:" + t_size);
 				
 				m_connect.m_mainApp.SetUploadingDesc(m_sendMail,m_attachmentIndex,
 													m_uploadedSize,m_totalSize);
@@ -415,12 +425,7 @@ class sendMailAttachmentDeamon extends Thread{
 			}		
 		}
 		
-		try{
-			for(int i = 0;i < m_vFileConnection.size();i++){
-				FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(i);
-				t_file.close();
-			}
-		}catch(Exception e){}
+		ReleaseAttachFile();
 	}	
 }
 

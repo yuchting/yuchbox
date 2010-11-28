@@ -86,8 +86,7 @@ public class  fetchMail{
 		sendReceive.WriteStringVector(_stream,m_vectGroup);
 		
 		sendReceive.WriteString(_stream,m_subject);
-		sendReceive.WriteInt(_stream,(int)m_sendDate.getTime());
-		sendReceive.WriteInt(_stream,(int)(m_sendDate.getTime() >>> 32));
+		sendReceive.WriteLong(_stream,m_sendDate.getTime());
 				
 		sendReceive.WriteInt(_stream,m_flags);
 		
@@ -120,10 +119,8 @@ public class  fetchMail{
 		sendReceive.ReadStringVector(_stream,m_vectTo);
 		sendReceive.ReadStringVector(_stream,m_vectGroup);
 		
-		m_subject = sendReceive.ReadString(_stream);
-		long t_time = sendReceive.ReadInt(_stream);
-		t_time |= ((long)sendReceive.ReadInt(_stream)) << 32;
-		m_sendDate.setTime(t_time);
+		m_subject = sendReceive.ReadString(_stream);	
+		m_sendDate.setTime(sendReceive.ReadLong(_stream));
 		
 		m_flags = sendReceive.ReadInt(_stream);
 		

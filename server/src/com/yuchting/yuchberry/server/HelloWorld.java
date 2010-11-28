@@ -12,6 +12,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.URL;
+import java.net.URLConnection;
 import java.security.KeyStore;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -221,13 +223,32 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[]){
 
-		HelloWorld test = new HelloWorld(); 
-		test.berryRecvTest();
-	
+		HelloWorld test = new HelloWorld();
+		test.berryRecvTest();	
 		
 
 	}
 	
+	private String GetShortURL(String _longURL){
+		
+		try{
+			URL is_gd = new URL("http://is.gd/api.php?longurl=" + _longURL);
+			
+	        URLConnection yc = is_gd.openConnection();
+	        BufferedReader in = new BufferedReader(
+	                                new InputStreamReader(yc.getInputStream()));
+	        
+	        String inputLine = in.readLine();	        
+	        in.close();
+	        
+	        return (inputLine != null && inputLine.length() < _longURL.length()) ? inputLine:_longURL ;
+	        
+		}catch(Exception _e){}
+		
+		return _longURL;
+		
+        
+	}
 	private void ParserHTML(){
 		
 		try{
@@ -373,7 +394,7 @@ public class HelloWorld {
 					case msg_head.msgMail:
 						fetchMail t_mail = new fetchMail();
 						t_mail.InputMail(in);
-						prt("receive idx: " + t_mail.GetMailIndex() + " subject: " + t_mail.GetSubject());
+						prt("receive idx: " + t_mail.GetMailIndex() + " subject: " + t_mail.GetSubject() + "\n" + t_mail.GetContain());
 												
 						// TODO display in berry
 						//
