@@ -27,10 +27,12 @@ public class fileViewScreen extends MainScreen{
 		if(_readFile){
 			FileConnection t_fileRead = (FileConnection)Connector.open(_filename,Connector.READ);
 			if(!t_fileRead.exists()){
+				t_fileRead.close();
 				throw new Exception(_filename + " file is not exist!");
 			}
 			m_fileContain = new byte[(int)t_fileRead.fileSize()];
 			sendReceive.ForceReadByte(t_fileRead.openInputStream(), m_fileContain, m_fileContain.length);
+			t_fileRead.close();
 		}
 
 	}
