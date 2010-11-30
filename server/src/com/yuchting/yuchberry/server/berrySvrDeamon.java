@@ -197,7 +197,7 @@ public class berrySvrDeamon extends Thread{
 				
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
 				os.write(msg_head.msgNote);
-				sendReceive.WriteString(os, msg_head.noteErrorUserPassword);
+				sendReceive.WriteString(os, msg_head.noteErrorUserPassword,m_fetchMgr.m_convertToSimpleChar);
 				
 				_s.getOutputStream().write(os.toByteArray());
 				
@@ -358,7 +358,7 @@ public class berrySvrDeamon extends Thread{
 	
 	private void ProcessMail(ByteArrayInputStream in)throws Exception{
 		
-		fetchMail t_mail = new fetchMail();
+		fetchMail t_mail = new fetchMail(m_fetchMgr.m_convertToSimpleChar);
 		t_mail.InputMail(in);
 		
 		if(t_mail.GetAttachment().isEmpty()){
@@ -427,7 +427,7 @@ public class berrySvrDeamon extends Thread{
 			
 			ByteArrayOutputStream error = new ByteArrayOutputStream();
 			error.write(msg_head.msgNote);
-			sendReceive.WriteString(error, _e.getMessage());
+			sendReceive.WriteString(error, _e.getMessage(),m_fetchMgr.m_convertToSimpleChar);
 			
 			m_sendReceive.SendBufferToSvr(error.toByteArray(), false);
 			

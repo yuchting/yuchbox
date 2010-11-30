@@ -41,10 +41,15 @@ public class  fetchMail{
 		String		m_type;
 	}
 	
+	private boolean m_convertoSimpleChar = false;
+	
 	private Vector	m_vectAttachment	 	= new Vector();
 	
 	private Message m_attachMessage	= null; 
 	
+	public fetchMail(boolean _convertoSimpleChar){
+		m_convertoSimpleChar = _convertoSimpleChar;
+	}
 	
 	public void SetMailIndex(int _index)throws Exception{
 		if(_index <= 0){
@@ -78,21 +83,21 @@ public class  fetchMail{
 		
 		sendReceive.WriteInt(_stream,GetMailIndex());
 		
-		sendReceive.WriteStringVector(_stream,m_vectFrom);
-		sendReceive.WriteStringVector(_stream,m_vectReplyTo);
-		sendReceive.WriteStringVector(_stream,m_vectCCTo);
-		sendReceive.WriteStringVector(_stream,m_vectBCCTo);
-		sendReceive.WriteStringVector(_stream,m_vectTo);
-		sendReceive.WriteStringVector(_stream,m_vectGroup);
+		sendReceive.WriteStringVector(_stream,m_vectFrom,m_convertoSimpleChar);
+		sendReceive.WriteStringVector(_stream,m_vectReplyTo,m_convertoSimpleChar);
+		sendReceive.WriteStringVector(_stream,m_vectCCTo,m_convertoSimpleChar);
+		sendReceive.WriteStringVector(_stream,m_vectBCCTo,m_convertoSimpleChar);
+		sendReceive.WriteStringVector(_stream,m_vectTo,m_convertoSimpleChar);
+		sendReceive.WriteStringVector(_stream,m_vectGroup,m_convertoSimpleChar);
 		
-		sendReceive.WriteString(_stream,m_subject);
+		sendReceive.WriteString(_stream,m_subject,m_convertoSimpleChar);
 		sendReceive.WriteLong(_stream,m_sendDate.getTime());
 				
 		sendReceive.WriteInt(_stream,m_flags);
 		
-		sendReceive.WriteString(_stream,m_XMailName);
-		sendReceive.WriteString(_stream,m_contain);
-		sendReceive.WriteString(_stream,m_contain_html);
+		sendReceive.WriteString(_stream,m_XMailName,m_convertoSimpleChar);
+		sendReceive.WriteString(_stream,m_contain,m_convertoSimpleChar);
+		sendReceive.WriteString(_stream,m_contain_html,m_convertoSimpleChar);
 		
 		// write the Attachment
 		//
@@ -100,8 +105,8 @@ public class  fetchMail{
 		for(int i = 0;i < m_vectAttachment.size();i++){
 			Attachment t_attachment = (Attachment)m_vectAttachment.elementAt(i);
 			sendReceive.WriteInt(_stream,t_attachment.m_size);
-			sendReceive.WriteString(_stream,t_attachment.m_name);
-			sendReceive.WriteString(_stream,t_attachment.m_type);
+			sendReceive.WriteString(_stream,t_attachment.m_name,m_convertoSimpleChar);
+			sendReceive.WriteString(_stream,t_attachment.m_type,m_convertoSimpleChar);
 		}
 		
 	}

@@ -11,12 +11,14 @@ import java.net.ServerSocket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyStore;
+import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
 
 import javax.mail.Address;
 import javax.mail.Flags;
 import javax.mail.Folder;
+import javax.mail.Header;
 import javax.mail.Message;
 import javax.mail.Multipart;
 import javax.mail.Part;
@@ -64,6 +66,8 @@ public class fetchMgr{
 	int		m_listenPort = 9716;
 	
 	int		m_fetchInterval = 10;
+	
+	boolean m_convertToSimpleChar = false;
 	
 	// Get a Properties object
     Properties m_sysProps = System.getProperties();
@@ -127,6 +131,8 @@ public class fetchMgr{
 		if(m_strUserNameFull.indexOf('@') == -1 || m_strUserNameFull.indexOf('.') == -1){
 			throw new Exception("account : xxxxx@xxx.xxx such as 1234@gmail.com");
 		}
+		
+		m_convertToSimpleChar = p.getProperty("convertoSimpleChar").equals("1");
 				
     	m_userName	= m_strUserNameFull.substring(0,m_strUserNameFull.indexOf('@'));
     	m_password	= p.getProperty("password");
@@ -414,7 +420,7 @@ public class fetchMgr{
 	        	
 		    	if(t_isNew){
 		    		
-		    		fetchMail t_mail = new fetchMail();
+		    		fetchMail t_mail = new fetchMail(m_convertToSimpleChar);
 		    		t_mail.SetMailIndex(i + t_startIndex);
 		    		ImportMail(t_msg,t_mail);
 		    		
@@ -575,7 +581,15 @@ public class fetchMgr{
 		    }
 		}
 		
-		_mail.SetSubject(m.getSubject());
+		String mailTitle = ""; 
+		Enumeration enumerationHeaderTmp = ((MimeMessage) m).getMatchingHeaders(new String[] { "Subject" });  
+		
+		while (enumerationHeaderTmp.hasMoreElements()) {  
+		    Header header = (Header) enumerationHeaderTmp.nextElement();  
+		    mailTitle = header.getValue();  
+		}
+
+		_mail.SetSubject(DecondeName(mailTitle,false));
 		_mail.SetSendDate(m.getSentDate());
 		
 		int t_flags = 0;
@@ -846,7 +860,7 @@ public class fetchMgr{
 
 	static public String DecondeName(String _name,boolean _convert)throws Exception{
 		
-		if(_name.startsWith("=?GB") || _name.startsWith("=?gb")){
+		if(_name.startsWith("=?GB") || _name.startsWith("=?gb") || _name.startsWith("=?UTF-8")){
 			_name = MimeUtility.decodeText(_name);
 		}else{
 			if(_convert){

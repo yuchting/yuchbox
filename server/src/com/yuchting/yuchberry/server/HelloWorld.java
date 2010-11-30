@@ -329,10 +329,10 @@ public class HelloWorld {
 			
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			os.write(msg_head.msgConfirm);
-			sendReceive.WriteString(os, "111111");
+			sendReceive.WriteString(os, "111111",false);
 			t_receive.SendBufferToSvr(os.toByteArray(), false);
 			
-			fetchMail t_mail = new fetchMail();
+			fetchMail t_mail = new fetchMail(false);
 			
 			String[] t_string = {"yuchting@gmail.com"};
 			t_mail.SetSendToVect(t_string);
@@ -383,7 +383,7 @@ public class HelloWorld {
 			
 			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
 			t_stream.write(msg_head.msgConfirm);
-			sendReceive.WriteString(t_stream, "111111");
+			sendReceive.WriteString(t_stream, "111111",false);
 			
 			t_receive.SendBufferToSvr(t_stream.toByteArray(), false);
 			
@@ -392,7 +392,7 @@ public class HelloWorld {
 				ByteArrayInputStream in = new ByteArrayInputStream(t_receive.RecvBufferFromSvr());
 				switch(in.read()){
 					case msg_head.msgMail:
-						fetchMail t_mail = new fetchMail();
+						fetchMail t_mail = new fetchMail(false);
 						t_mail.InputMail(in);
 						prt("receive idx: " + t_mail.GetMailIndex() + " subject: " + t_mail.GetSubject() + "\n" + t_mail.GetContain());
 												
