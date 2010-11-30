@@ -201,7 +201,7 @@ public class berrySvrDeamon extends Thread{
 				
 				_s.getOutputStream().write(os.toByteArray());
 				
-				Logger.LogOut("illeagel client<"+ _s.getLocalAddress().toString() +"> connected.");
+				Logger.LogOut("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> connected.");
 				
 				_s.close();
 				
