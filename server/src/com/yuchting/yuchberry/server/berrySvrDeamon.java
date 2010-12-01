@@ -284,7 +284,9 @@ public class berrySvrDeamon extends Thread{
 			}catch(Exception _e){
 				
 				try{
-					m_socket.close();					
+					if(m_socket != null){
+						m_socket.close();
+					}									
 				}catch(Exception e){
 					Logger.PrinterException(_e);
 				}

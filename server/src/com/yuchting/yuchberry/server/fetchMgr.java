@@ -180,8 +180,13 @@ public class fetchMgr{
     		}   		
 	    }
 		
+		
 		m_session = Session.getInstance(m_sysProps, null);
     	m_session.setDebug(false);
+    	
+    	if(m_protocol.indexOf("pop3") != -1){
+    		m_sysProps.setProperty("mail.pop3.disabletop", "true");
+    	}
     			
     	m_store = m_session.getStore(m_protocol);
     	m_store.connect(m_host,m_port,m_userName,m_password);
