@@ -32,6 +32,7 @@ import net.rim.blackberry.api.mail.BodyPart.ContentType;
 import net.rim.blackberry.api.mail.event.MessageEvent;
 import net.rim.blackberry.api.mail.event.MessageListener;
 import net.rim.blackberry.api.mail.event.ViewListener;
+import net.rim.blackberry.api.mail.event.ViewListenerExtended;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.LED;
@@ -56,7 +57,8 @@ class msg_head{
 public class connectDeamon extends Thread implements SendListener,
 												MessageListener,
 												AttachmentHandler,
-												ViewListener{
+												ViewListener,
+												ViewListenerExtended{
 	
 	class AppendMessage{
 		int		m_mailIndex;
@@ -64,6 +66,8 @@ public class connectDeamon extends Thread implements SendListener,
 		String	m_from;
 	}
 	
+	 final static int	fsm_clientVer = 1;
+	 
 	 sendReceive		m_connect = null;
 
 	 String				m_hostip = null;
@@ -99,6 +103,9 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 //! current composing mail
 	 Message			m_composingMail 		= null;
+	 Message			m_forwordReplyMail 		= null;
+	 int				m_sendStyle				= fetchMail.NOTHING_STYLE;
+	 
 	 Vector				m_composingAttachment 	= new Vector();
 	 
 	 String				m_currStateString 		= new String();
@@ -175,9 +182,15 @@ public class connectDeamon extends Thread implements SendListener,
 			fetchMail t_mail = new fetchMail();
 			ImportMail(message,t_mail);
 			
+			fetchMail t_forwardReplyMail = null;
+			if(m_sendStyle != fetchMail.NOTHING_STYLE && m_forwordReplyMail != null){
+				t_forwardReplyMail = new fetchMail();
+				ImportMail(m_forwordReplyMail,t_forwardReplyMail);
+			}
+			
 			t_mail.SetSendDate(new Date());
 									
-			AddSendingMail(t_mail,m_composingAttachment);
+			AddSendingMail(t_mail,m_composingAttachment,t_forwardReplyMail,m_sendStyle);
 			m_composingAttachment.removeAllElements();
 						
 		}catch(Exception _e){
@@ -281,12 +294,11 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	
 	
-	//@{ folder listener
+	//@{ ViewListener
 	public void open(MessageEvent e){
-		if(e.getMessageChangeType() == MessageEvent.NEW){
-			m_composingMail = e.getMessage();
-			m_composingAttachment.removeAllElements();
-			
+		
+		if(e.getMessageChangeType() == MessageEvent.OPENED){
+			m_forwordReplyMail = e.getMessage();
 		}
 		
 		LED.setState(LED.STATE_OFF);
@@ -295,11 +307,34 @@ public class connectDeamon extends Thread implements SendListener,
 	public void close(MessageEvent e){
 		if(e.getMessageChangeType() == MessageEvent.CLOSED ){
 			m_composingMail = null;
+			m_forwordReplyMail = null;
+			m_sendStyle = fetchMail.NOTHING_STYLE;
 		}
 		
 		LED.setState(LED.STATE_OFF);
 	}
+	//@}
 	
+	//@{ ViewListenerExtended
+	public void forward(MessageEvent e){
+		m_composingMail = e.getMessage();
+		m_composingAttachment.removeAllElements();
+		
+		m_sendStyle = fetchMail.FORWORD_STYLE;
+	}
+
+	public void newMessage(MessageEvent e){
+		m_composingMail = e.getMessage();
+		m_composingAttachment.removeAllElements();
+		
+		m_sendStyle = fetchMail.NOTHING_STYLE;
+	}
+	public void reply(MessageEvent e){
+		m_composingMail = e.getMessage();
+		m_composingAttachment.removeAllElements();
+		
+		m_sendStyle = fetchMail.REPLY_STYLE;
+	}
 	//@}
 	
 	public void SendFetchAttachmentFile(FetchAttachment _att)throws Exception{
@@ -397,8 +432,9 @@ public class connectDeamon extends Thread implements SendListener,
 				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 				t_os.write(msg_head.msgConfirm);
 				sendReceive.WriteString(t_os, m_mainApp.GetUserPassword());
+				sendReceive.WriteInt(t_os,fsm_clientVer);
 				
-				m_connect.SendBufferToSvr(t_os.toByteArray(), true);
+				m_connect.SendBufferToSvr(t_os.toByteArray(), true);				
 				
 				m_sendAuthMsg = true;
 				
@@ -702,7 +738,8 @@ public class connectDeamon extends Thread implements SendListener,
 		
 	}
 	 
-	public synchronized void AddSendingMail(fetchMail _mail,Vector _files)throws Exception{
+	public synchronized void AddSendingMail(fetchMail _mail,Vector _files,
+												fetchMail _forwardReply,int _sendStyle)throws Exception{
 		
 		for(int i = 0;i < m_sendingMail.size();i++){
 			fetchMail t_sending = (fetchMail)m_sendingMail.elementAt(i);
@@ -758,7 +795,7 @@ public class connectDeamon extends Thread implements SendListener,
 			ComposeMessageContent(msg, _mail);
 		}
 
-		m_sendingMailAttachment.addElement(new sendMailAttachmentDeamon(this, _mail, t_vfileReader));			
+		m_sendingMailAttachment.addElement(new sendMailAttachmentDeamon(this, _mail, t_vfileReader,_forwardReply,_sendStyle));			
 		
 	}
 	

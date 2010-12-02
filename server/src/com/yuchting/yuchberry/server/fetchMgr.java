@@ -7,10 +7,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.ServerSocket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyStore;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
@@ -43,6 +46,72 @@ import org.htmlparser.util.NodeList;
 
 import com.sun.mail.smtp.SMTPTransport;
 
+class RecvMailAttach{
+	
+	fetchMail m_sendMail 			= null;
+	fetchMail m_forwardReplyMail	= null;
+	
+	int			m_style;
+	
+	public RecvMailAttach(fetchMail _sendMail,fetchMail _forwardReplyMail,int _style){
+		m_sendMail = _sendMail;
+		m_forwardReplyMail = _forwardReplyMail;
+		
+		m_style = _style;
+	}
+	
+	public void PrepareForwardReplyContain(){
+		if(m_forwardReplyMail == null || m_style == fetchMail.NOTHING_STYLE){
+			return;
+		}
+		
+		StringBuffer t_string = new StringBuffer();
+		t_string.append(m_sendMail.GetContain());
+		
+		if(m_style == fetchMail.REPLY_STYLE){
+			
+			t_string.append("\n\n---------- 原始邮件 ----------");
+
+			try{
+				BufferedReader in = new BufferedReader(
+						new StringReader(m_forwardReplyMail.GetContain() + "\n\n------- HTML--------\n\n" +
+											fetchMgr.ParseHTMLText(m_forwardReplyMail.GetContain_html())));
+ 
+				String line = new String();
+				while((line = in.readLine())!= null){
+					t_string.append("> " + line);
+				}
+				
+			}catch(Exception e){
+				t_string.append("读取转发消息出现异常！！！");
+			}
+			
+			
+		}else if(m_style == fetchMail.FORWORD_STYLE){
+			
+			t_string.append("\n\n---------- 已转发邮件 ----------");
+
+			Vector t_form = m_forwardReplyMail.GetFromVect();
+			
+			t_string.append("发件人："+ (String)t_form.elementAt(0) + "\n");
+			for(int i = 1;i < t_form.size();i++){
+				t_string.append((String)t_form.elementAt(i) + "\n");
+			}
+			t_string.append("日期："+ new SimpleDateFormat("yyyy年MM月dd日 HH:mm").format(m_forwardReplyMail.GetSendDate()));
+			t_string.append("主题："+ m_forwardReplyMail.GetSubject());
+			
+			Vector t_sendto = m_forwardReplyMail.GetSendToVect();
+			t_string.append("收件人："+ (String)t_sendto.elementAt(0) + "\n");
+			for(int i = 1;i < t_sendto.size();i++){
+				t_string.append((String)t_sendto.elementAt(i) + "\n");
+			}
+			t_string.append(m_forwardReplyMail.GetContain());
+			t_string.append(fetchMgr.ParseHTMLText(m_forwardReplyMail.GetContain_html()));
+		}
+		
+		m_sendMail.SetContain(t_string.toString());
+	}
+}
 
 public class fetchMgr{
 	
@@ -92,7 +161,7 @@ public class fetchMgr{
     
     int		m_unreadFetchIndex	= 0;
     boolean m_userSSL			= false;
-    
+        
     private Vector	m_recvMailAttach = new Vector();
     
     
@@ -251,7 +320,7 @@ public class fetchMgr{
 			String line = new String();
 			while((line = in.readLine())!= null){
 				if(line.indexOf("userFetchIndex=") != -1){
-					line = line.replaceAll("userFetchIndex=[^\n]*", "userFetchIndex=" + 100);
+					line = line.replaceAll("userFetchIndex=[^\n]*", "userFetchIndex=" + m_beginFetchIndex);
 				}
 				
 				t_contain.append(line + "\r\n");
@@ -326,20 +395,20 @@ public class fetchMgr{
 		}
 	}
 	
-	public void CreateTmpSendMailAttachFile(fetchMail _mail)throws Exception{
+	public void CreateTmpSendMailAttachFile(final RecvMailAttach _mail)throws Exception{
 		
 		// create new thread to send mail
 		//
 		m_recvMailAttach.addElement(_mail);
 		
-		Logger.LogOut("send mail with attachment " + _mail.GetAttachment().size());
+		Logger.LogOut("send mail with attachment " + _mail.m_sendMail.GetAttachment().size());
 		
-		Vector t_list = _mail.GetAttachment();
+		Vector t_list = _mail.m_sendMail.GetAttachment();
 		
 		for(int i = 0;i < t_list.size();i++){
 			fetchMail.Attachment t_attachment = (fetchMail.Attachment)t_list.elementAt(i);
 			
-			String t_filename = "" + _mail.GetSendDate().getTime() + "_" + i + ".satt";
+			String t_filename = "" + _mail.m_sendMail.GetSendDate().getTime() + "_" + i + ".satt";
 			FileOutputStream fos = new FileOutputStream(t_filename);
 			
 			for(int j = 0;j < t_attachment.m_size;j++){
@@ -352,13 +421,13 @@ public class fetchMgr{
 		}
 	}
 	
-	public fetchMail FindAttachMail(final long _time){
+	public RecvMailAttach FindAttachMail(final long _time){
 		// send the file...
 		//
 		for(int i = 0;i < m_recvMailAttach.size();i++){
-			fetchMail t_mail = (fetchMail)m_recvMailAttach.elementAt(i);
+			RecvMailAttach t_mail = (RecvMailAttach)m_recvMailAttach.elementAt(i);
 			
-			if(t_mail.GetSendDate().getTime() == _time){
+			if(t_mail.m_sendMail.GetSendDate().getTime() == _time){
 				m_recvMailAttach.remove(i);
 				
 				return t_mail;
@@ -441,10 +510,12 @@ public class fetchMgr{
 	    folder.close(false);
 	}
 	
-	public void SendMail(fetchMail _mail)throws Exception{
+	public void SendMail(RecvMailAttach _mail)throws Exception{
 		
 		Message msg = new MimeMessage(m_session_send);
-		ComposeMessage(msg,_mail);
+		
+		_mail.PrepareForwardReplyContain();		
+		ComposeMessage(msg,_mail.m_sendMail);
 	    
 		int t_tryTime = 0;
 		while(t_tryTime++ < 5){
@@ -458,8 +529,8 @@ public class fetchMgr{
 		
 		// delete the tmp files
 		//
-		for(int i = 0;i < _mail.GetAttachment().size();i++){
-			String t_fullname = "" + _mail.GetSendDate().getTime() + "_" + i + ".satt";
+		for(int i = 0;i < _mail.m_sendMail.GetAttachment().size();i++){
+			String t_fullname = "" + _mail.m_sendMail.GetSendDate().getTime() + "_" + i + ".satt";
 			File t_file = new File(t_fullname);
 			t_file.delete();
 		}		

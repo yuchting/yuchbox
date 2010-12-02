@@ -25,6 +25,10 @@ public class  fetchMail{
 	final static int	RECENT 		= 1 << 4;
 	final static int	SEEN 		= 1 << 5;
 	
+	final static int	NOTHING_STYLE = 0;
+	final static int	FORWORD_STYLE = 1;
+	final static int	REPLY_STYLE = 2;
+	
 	private int 		m_mailIndex = 0;
 	
 	private Vector		m_vectFrom 		= new Vector();
@@ -51,7 +55,7 @@ public class  fetchMail{
 	private Vector	m_vectAttachment	 	= new Vector();
 	
 	private Message m_attachMessage		= null; 
-	
+			
 	
 	public void SetMailIndex(int _index)throws Exception{
 		if(_index <= 0){
@@ -268,8 +272,11 @@ public class  fetchMail{
 
 class sendMailAttachmentDeamon extends Thread{
 	
-	connectDeamon		m_connect = null;
-	fetchMail			m_sendMail = null;
+	connectDeamon		m_connect 	= null;
+	fetchMail			m_sendMail 	= null;
+	fetchMail			m_forwardReply 	= null;
+	
+	int					m_sendStyle = fetchMail.NOTHING_STYLE;
 	
 	int 				m_beginIndex = 0;
 	
@@ -284,9 +291,15 @@ class sendMailAttachmentDeamon extends Thread{
 	byte[] 				m_bufferBytes 		= new byte[fsm_segmentSize];
 	ByteArrayOutputStream m_os = new ByteArrayOutputStream();
 		
-	public sendMailAttachmentDeamon(connectDeamon _connect,fetchMail _mail,Vector _vFileConnection)throws Exception{
-		m_connect = _connect;
-		m_sendMail = _mail;
+	public sendMailAttachmentDeamon(connectDeamon _connect,
+									fetchMail _mail,
+									Vector _vFileConnection,
+									fetchMail _forwardReply,int _sendStyle)throws Exception{
+		m_connect	= _connect;
+		m_sendMail	= _mail;
+		m_forwardReply	= _forwardReply;
+		m_sendStyle = _sendStyle;
+
 		
 		m_vFileConnection  = _vFileConnection;
 		
@@ -356,6 +369,15 @@ class sendMailAttachmentDeamon extends Thread{
 					ByteArrayOutputStream os = new ByteArrayOutputStream();
 					os.write(msg_head.msgMail);
 					m_sendMail.OutputMail(os);
+					
+					// send the Mail of forward or reply
+					//
+					if(m_forwardReply != null && m_sendStyle != fetchMail.NOTHING_STYLE){
+						os.write(m_sendStyle);
+						m_forwardReply.OutputMail(os);
+					}else{
+						os.write(fetchMail.NOTHING_STYLE);
+					}
 					
 					m_connect.m_connect.SendBufferToSvr(os.toByteArray(), false);
 					

@@ -18,6 +18,10 @@ public class  fetchMail{
 	final static int	RECENT 		= 1 << 4;
 	final static int	SEEN 		= 1 << 5;
 	
+	final static int	NOTHING_STYLE = 0;
+	final static int	FORWORD_STYLE = 1;
+	final static int	REPLY_STYLE = 2;
+	
 	private int 		m_mailIndex = 0;
 	
 	private Vector		m_vectFrom 		= new Vector();

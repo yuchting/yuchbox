@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
@@ -223,32 +224,30 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[]){
 
-		//HelloWorld test = new HelloWorld();
-		//test.berryRecvTest();	
+		HelloWorld test = new HelloWorld();
+		test.ReadStringLineTest();	
 		
-		Vector m_unreadMailVector_confirm = new Vector();
 		
-		for(int i = 0;i < 10;i++){
-			m_unreadMailVector_confirm.add(new Integer(i));
-		}
-		Vector m_unreadMailVector = new Vector();
-		
-		for(int i = m_unreadMailVector_confirm.size() - 1;i >= 0 ;i--){
-			
-			Integer t_confirmMail = (Integer)m_unreadMailVector_confirm.elementAt(i);
-			
-			m_unreadMailVector.add(0,t_confirmMail);	
-			
-		}
-		
-		for(int i = 0;i < m_unreadMailVector.size();i++){
-			Integer t_val = (Integer)m_unreadMailVector.elementAt(i);
-			System.out.println(t_val.intValue());
-		}
 		
 
 	}
-	
+
+	void ReadStringLineTest(){
+		try{
+			String s1 = "11\n22\n333\n444\n5555\n";
+ 
+			BufferedReader in = new BufferedReader(
+						new StringReader(s1));
+			 
+			String line = new String();
+			while((line = in.readLine())!= null){
+				System.out.println(line);
+			}
+		}catch(Exception _e){
+			
+		}
+		 
+	}
 	private String GetShortURL(String _longURL){
 		
 		try{

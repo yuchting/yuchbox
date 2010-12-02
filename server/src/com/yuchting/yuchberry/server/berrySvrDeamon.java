@@ -176,7 +176,9 @@ public class berrySvrDeamon extends Thread{
 	public fetchMgr		m_fetchMgr = null;
 	public Socket		m_socket = null;
 		
-	sendReceive  m_sendReceive = null;	
+	sendReceive  		m_sendReceive = null;
+	
+	int					m_clientVer = 0;
 	
 	private berrySvrPush m_pushDeamon = null;
 	
@@ -204,25 +206,27 @@ public class berrySvrDeamon extends Thread{
 			final int t_msg_head = in.read();
 		
 			if(msg_head.msgConfirm != t_msg_head 
-			|| !sendReceive.ReadString(in).equals(m_fetchMgr.m_userPassword)){
+			|| !sendReceive.ReadString(in).equals(m_fetchMgr.m_userPassword)
+			|| (m_clientVer = sendReceive.ReadInt(in)) == 0){
 				
+				/* useless
+				 * 
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
 				os.write(msg_head.msgNote);
 				sendReceive.WriteString(os, msg_head.noteErrorUserPassword,m_fetchMgr.m_convertToSimpleChar);
 				
 				_s.getOutputStream().write(os.toByteArray());
+				*/
 				
 				Logger.LogOut("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> connected.");
 				
 				_s.close();
 				
 				t_tmp.CloseSendReceive();
-				
-				
-				
+								
 				return;
 			}
-			
+						
 			t_tmp.CloseSendReceive();
 			
 		}catch(Exception _e){
@@ -374,10 +378,19 @@ public class berrySvrDeamon extends Thread{
 		fetchMail t_mail = new fetchMail(m_fetchMgr.m_convertToSimpleChar);
 		t_mail.InputMail(in);
 		
+		fetchMail t_forwardReplyMail = null;
+				
+		final int t_style = in.read();
+		
+		if(t_style != fetchMail.NOTHING_STYLE){
+			t_forwardReplyMail = new fetchMail(m_fetchMgr.m_convertToSimpleChar);
+			t_forwardReplyMail.InputMail(in);
+		}
+		
 		if(t_mail.GetAttachment().isEmpty()){
-			SendMailToSvr(t_mail);
+			SendMailToSvr(new RecvMailAttach(t_mail,t_forwardReplyMail,t_style));
 		}else{
-			m_fetchMgr.CreateTmpSendMailAttachFile(t_mail);
+			m_fetchMgr.CreateTmpSendMailAttachFile(new RecvMailAttach(t_mail,t_forwardReplyMail,t_style));
 		}
 	}
 	private void ProcessFetchMailAttach(InputStream in)throws Exception{
@@ -417,7 +430,7 @@ public class berrySvrDeamon extends Thread{
 		
 		if(t_segIdx + t_segSize == t_file.length()){
 			
-			fetchMail t_mail;
+			RecvMailAttach t_mail;
 			
 			if((t_mail = m_fetchMgr.FindAttachMail(t_time)) != null){
 				SendMailToSvr(t_mail);
@@ -425,7 +438,7 @@ public class berrySvrDeamon extends Thread{
 		}
 	}
 	
-	public void SendMailToSvr(final fetchMail _mail)throws Exception{
+	public void SendMailToSvr(final RecvMailAttach _mail)throws Exception{
 		
 		// receive send message to berry
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -449,12 +462,12 @@ public class berrySvrDeamon extends Thread{
 		
 		os.write(t_succ);
 		
-		sendReceive.WriteInt(os,(int)_mail.GetSendDate().getTime());
-		sendReceive.WriteInt(os,(int)(_mail.GetSendDate().getTime() >>> 32));
+		sendReceive.WriteInt(os,(int)_mail.m_sendMail.GetSendDate().getTime());
+		sendReceive.WriteInt(os,(int)(_mail.m_sendMail.GetSendDate().getTime() >>> 32));
 
 		m_sendReceive.SendBufferToSvr(os.toByteArray(),false);
 		
-		Logger.LogOut("Mail <" +_mail.GetSendDate().getTime() +  "> send " + ((t_succ == 1)?"Succ":"Failed"));
+		Logger.LogOut("Mail <" +_mail.m_sendMail.GetSendDate().getTime() +  "> send " + ((t_succ == 1)?"Succ":"Failed"));
 	}
 	
 	private void ProcessBeenReadMail(ByteArrayInputStream in)throws Exception{
