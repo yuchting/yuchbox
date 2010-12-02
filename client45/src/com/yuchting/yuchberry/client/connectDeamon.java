@@ -299,6 +299,8 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		if(e.getMessageChangeType() == MessageEvent.OPENED){
 			m_forwordReplyMail = e.getMessage();
+			
+			String t_sub = m_forwordReplyMail.getSubject();
 		}
 		
 		LED.setState(LED.STATE_OFF);
@@ -319,6 +321,8 @@ public class connectDeamon extends Thread implements SendListener,
 	public void forward(MessageEvent e){
 		m_composingMail = e.getMessage();
 		m_composingAttachment.removeAllElements();
+		
+		String t_sub = m_composingMail.getSubject();
 		
 		m_sendStyle = fetchMail.FORWORD_STYLE;
 	}
