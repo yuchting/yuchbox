@@ -105,16 +105,25 @@ class berrySvrPush extends Thread{
 	public void run(){
 		
 		int t_confirmTimer = 0;
+		boolean t_isCheckFolderError = false;
 		
 		while(true){
+			
+			t_isCheckFolderError = false;
 			
 			try{
 				if(m_serverDeamon.m_socket == null 
 				|| !m_serverDeamon.m_socket.isConnected()){
 					break;
 				}
-
-				m_serverDeamon.m_fetchMgr.CheckFolder();
+				
+				try{
+					m_serverDeamon.m_fetchMgr.CheckFolder();
+				}catch(Exception e){
+					t_isCheckFolderError = true;
+					throw e;
+				}
+				
 								
 				if(m_serverDeamon.m_socket == null 
 				|| !m_serverDeamon.m_socket.isConnected()){
@@ -124,7 +133,7 @@ class berrySvrPush extends Thread{
 				
 				//Logger.LogOut("CheckFolder OK confirm Timer:" + t_confirmTimer);
 				
-				if(++t_confirmTimer > 10){
+				if(++t_confirmTimer > 30){
 					// send the mail without confirm
 					//
 					t_confirmTimer = 0;
@@ -139,19 +148,19 @@ class berrySvrPush extends Thread{
 			}catch(Exception _e){
 				Logger.PrinterException(_e);
 				
-				if(_e instanceof javax.mail.MessagingException){
-					// the network is shutdown in a short time
-					//
-					try{
-						sleep(5000);
-						m_serverDeamon.m_fetchMgr.ResetSession();
-					}catch(Exception e){
-						Logger.PrinterException(e);
-						break;
-					}
-				}
+				// the network is shutdown in a short time
+				//
+				try{
+					sleep(5000);
 					
-				
+					if(t_isCheckFolderError){
+						m_serverDeamon.m_fetchMgr.ResetSession();
+					}
+					
+				}catch(Exception e){
+					Logger.PrinterException(e);
+					break;
+				}
 			}
 			
 		}
@@ -166,7 +175,7 @@ public class berrySvrDeamon extends Thread{
 	
 	public fetchMgr		m_fetchMgr = null;
 	public Socket		m_socket = null;
-	
+		
 	sendReceive  m_sendReceive = null;	
 	
 	private berrySvrPush m_pushDeamon = null;
@@ -175,6 +184,8 @@ public class berrySvrDeamon extends Thread{
 		m_fetchMgr 	= _mgr;
 					
 		try{
+			
+			Logger.LogOut("some client<"+ _s.getInetAddress().getHostAddress() +"> connecting ,waiting for auth");
 			
 			// first handshake with the client via CA instead of 
 			// InputStream.read function to get the information within 1sec time out
@@ -185,7 +196,7 @@ public class berrySvrDeamon extends Thread{
 			
 			// wait for signIn first
 			//
-			_s.setSoTimeout(10000);
+			_s.setSoTimeout(10000);			
 			
 			sendReceive t_tmp = new sendReceive(_s.getOutputStream(),_s.getInputStream());
 			ByteArrayInputStream in = new ByteArrayInputStream(t_tmp.RecvBufferFromSvr());

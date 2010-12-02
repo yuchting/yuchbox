@@ -14,6 +14,8 @@ import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.i18n.SimpleDateFormat;
+import net.rim.device.api.servicebook.ServiceBook;
+import net.rim.device.api.servicebook.ServiceRecord;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Field;
@@ -527,7 +529,7 @@ public class recvMain extends UiApplication implements localResource {
 			}
 			
 		}catch(Exception _e){
-			SetErrorString(_e.getMessage());
+			SetErrorString("write/read config file from SDCard error :" + _e.getMessage());
 		}
 	}
 	

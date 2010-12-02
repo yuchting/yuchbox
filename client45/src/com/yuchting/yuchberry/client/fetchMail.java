@@ -299,14 +299,13 @@ class sendMailAttachmentDeamon extends Thread{
 	}
 	
 	private void RefreshMessageStatus(){
-		
-		// sleep little to wait system set the mail status error
-		// and set it back
-		//							
-		Store store = Session.getDefaultInstance().getStore();
+							
 		
 		try{
 			
+			// sleep little to wait system set the mail status error
+			// and set it back
+			//
 			sleep(500);
 			
 			m_connect.m_mainApp.UpdateMessageStatus(m_sendMail.GetAttachMessage(), Message.Status.TX_SENDING);
@@ -332,7 +331,7 @@ class sendMailAttachmentDeamon extends Thread{
 		
 		while(true){
 			
-			while(m_connect.m_conn == null ){
+			while(m_connect.m_conn == null || !m_connect.m_sendAuthMsg){
 				try{
 					sleep(10000);
 				}catch(Exception _e){
@@ -343,8 +342,7 @@ class sendMailAttachmentDeamon extends Thread{
 					ReleaseAttachFile();
 					return;
 				}
-			}
-			
+			}			
 			
 			
 			try{

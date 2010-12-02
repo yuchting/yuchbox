@@ -223,8 +223,28 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[]){
 
-		HelloWorld test = new HelloWorld();
-		test.berryRecvTest();	
+		//HelloWorld test = new HelloWorld();
+		//test.berryRecvTest();	
+		
+		Vector m_unreadMailVector_confirm = new Vector();
+		
+		for(int i = 0;i < 10;i++){
+			m_unreadMailVector_confirm.add(new Integer(i));
+		}
+		Vector m_unreadMailVector = new Vector();
+		
+		for(int i = m_unreadMailVector_confirm.size() - 1;i >= 0 ;i--){
+			
+			Integer t_confirmMail = (Integer)m_unreadMailVector_confirm.elementAt(i);
+			
+			m_unreadMailVector.add(0,t_confirmMail);	
+			
+		}
+		
+		for(int i = 0;i < m_unreadMailVector.size();i++){
+			Integer t_val = (Integer)m_unreadMailVector.elementAt(i);
+			System.out.println(t_val.intValue());
+		}
 		
 
 	}

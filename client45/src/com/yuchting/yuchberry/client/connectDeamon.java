@@ -104,6 +104,8 @@ public class connectDeamon extends Thread implements SendListener,
 	 String				m_currStateString 		= new String();
 	 recvMain			m_mainApp 				= null;
 	 
+	 boolean			m_sendAuthMsg			= false;
+	 
 	 
 	 int				m_ipConnectCounter 		= 10;
 	 
@@ -360,6 +362,8 @@ public class connectDeamon extends Thread implements SendListener,
 		 
 		while(true){
 
+			m_sendAuthMsg = false;
+			
 			while(m_disconnect == true){
 				try{
 					sleep(100);
@@ -395,6 +399,8 @@ public class connectDeamon extends Thread implements SendListener,
 				sendReceive.WriteString(t_os, m_mainApp.GetUserPassword());
 				
 				m_connect.SendBufferToSvr(t_os.toByteArray(), true);
+				
+				m_sendAuthMsg = true;
 				
 				// set the text connect
 				//

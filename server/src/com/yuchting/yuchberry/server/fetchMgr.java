@@ -132,7 +132,10 @@ public class fetchMgr{
 			throw new Exception("account : xxxxx@xxx.xxx such as 1234@gmail.com");
 		}
 		
-		m_convertToSimpleChar = p.getProperty("convertoSimpleChar").equals("1");
+		String t_simpleChar = p.getProperty("convertoSimpleChar");
+		if(t_simpleChar != null){
+			m_convertToSimpleChar = t_simpleChar.equals("1");
+		}		
 				
     	m_userName	= m_strUserNameFull.substring(0,m_strUserNameFull.indexOf('@'));
     	m_password	= p.getProperty("password");
@@ -268,7 +271,8 @@ public class fetchMgr{
 	public void PrepareRepushUnconfirmMail(){
 		
 		synchronized(this){
-			for(int i = 0;i < m_unreadMailVector_confirm.size();i++){
+			for(int i = m_unreadMailVector_confirm.size() - 1;i >= 0 ;i--){
+				
 				fetchMail t_confirmMail = (fetchMail)m_unreadMailVector_confirm.elementAt(i);
 				
 				boolean t_add = true;
@@ -284,7 +288,7 @@ public class fetchMgr{
 				}
 				
 				if(t_add){
-					m_unreadMailVector.add(t_confirmMail);					
+					m_unreadMailVector.add(0,t_confirmMail);
 					Logger.LogOut("load mail<" + t_confirmMail.GetMailIndex() + "> send again,wait confirm...");
 				}
 				
@@ -865,7 +869,7 @@ public class fetchMgr{
 
 	static public String DecondeName(String _name,boolean _convert)throws Exception{
 		
-		if(_name.startsWith("=?GB") || _name.startsWith("=?gb") || _name.startsWith("=?UTF-8")){
+		if(_name.startsWith("=?") && _name.indexOf("?=") != -1){
 			_name = MimeUtility.decodeText(_name);
 		}else{
 			if(_convert){
