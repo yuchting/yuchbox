@@ -70,7 +70,7 @@ class RecvMailAttach{
 		
 		if(m_style == fetchMail.REPLY_STYLE){
 			
-			t_string.append("\n\n---------- 原始邮件 ----------");
+			t_string.append("\n\n---------- 原始邮件 ----------\n");
 
 			try{
 				BufferedReader in = new BufferedReader(
@@ -89,7 +89,7 @@ class RecvMailAttach{
 			
 		}else if(m_style == fetchMail.FORWORD_STYLE){
 			
-			t_string.append("\n\n---------- 已转发邮件 ----------");
+			t_string.append("\n\n---------- 已转发邮件 ----------\n");
 
 			Vector t_form = m_forwardReplyMail.GetFromVect();
 			
@@ -97,8 +97,8 @@ class RecvMailAttach{
 			for(int i = 1;i < t_form.size();i++){
 				t_string.append((String)t_form.elementAt(i) + "\n");
 			}
-			t_string.append("日期："+ new SimpleDateFormat("yyyy年MM月dd日 HH:mm").format(m_forwardReplyMail.GetSendDate()));
-			t_string.append("主题："+ m_forwardReplyMail.GetSubject());
+			t_string.append("日期："+ new SimpleDateFormat("yyyy年MM月dd日 HH:mm").format(m_forwardReplyMail.GetSendDate()) + "\n");
+			t_string.append("主题："+ m_forwardReplyMail.GetSubject() + "\n");
 			
 			Vector t_sendto = m_forwardReplyMail.GetSendToVect();
 			t_string.append("收件人："+ (String)t_sendto.elementAt(0) + "\n");

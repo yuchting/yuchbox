@@ -156,22 +156,23 @@ public class connectDeamon extends Thread implements SendListener,
 		Store store = Session.getDefaultInstance().getStore();
 		store.addSendListener(this);
 		
-		Session.getDefaultInstance().addViewListener(this);
-				 
+		Session t_session  = Session.getDefaultInstance();
+		t_session.addViewListener(this);
+						 
 		AttachmentHandlerManager.getInstance().addAttachmentHandler(this);	      		 
 	 }
 	 
 	 
 	 public void EndListener()throws Exception{
 		 
-		 // add the send listener
-         //
-		 Store store = Session.getDefaultInstance().getStore();
-         store.removeSendListener(this);
-         
-         Session.getDefaultInstance().removeViewListener(this);
-         
-         AttachmentHandlerManager.getInstance().removeAttachmentHandler(this);	      
+		// add the send listener
+		//
+		Store store = Session.getDefaultInstance().getStore();
+		store.removeSendListener(this);
+		 
+		Session.getDefaultInstance().removeViewListener(this);
+		         
+        AttachmentHandlerManager.getInstance().removeAttachmentHandler(this);	      
 	 }
 	 
 	 
@@ -211,7 +212,12 @@ public class connectDeamon extends Thread implements SendListener,
 	
 				AddMarkReadMail(e.getMessage());
 				e.getMessage().removeMessageListener(this);
+				
 			}catch(Exception _e){}
+			
+		}else if(e.getMessageChangeType() == MessageEvent.FORWARD
+				|| e.getMessageChangeType() == MessageEvent.REPLY){
+			m_forwordReplyMail = e.getMessage();
 		}
 	}
 	//
@@ -297,22 +303,17 @@ public class connectDeamon extends Thread implements SendListener,
 	//@{ ViewListener
 	public void open(MessageEvent e){
 		
-		if(e.getMessageChangeType() == MessageEvent.OPENED){
-			m_forwordReplyMail = e.getMessage();
-			
-			String t_sub = m_forwordReplyMail.getSubject();
-		}
-		
 		LED.setState(LED.STATE_OFF);
 	}
 	
 	public void close(MessageEvent e){
+		
 		if(e.getMessageChangeType() == MessageEvent.CLOSED ){
 			m_composingMail = null;
 			m_forwordReplyMail = null;
 			m_sendStyle = fetchMail.NOTHING_STYLE;
 		}
-		
+
 		LED.setState(LED.STATE_OFF);
 	}
 	//@}
@@ -322,7 +323,7 @@ public class connectDeamon extends Thread implements SendListener,
 		m_composingMail = e.getMessage();
 		m_composingAttachment.removeAllElements();
 		
-		String t_sub = m_composingMail.getSubject();
+		m_forwordReplyMail = FindOrgMessage(e.getMessage(),fetchMail.FORWORD_STYLE);
 		
 		m_sendStyle = fetchMail.FORWORD_STYLE;
 	}
@@ -336,10 +337,59 @@ public class connectDeamon extends Thread implements SendListener,
 	public void reply(MessageEvent e){
 		m_composingMail = e.getMessage();
 		m_composingAttachment.removeAllElements();
+	
+		m_forwordReplyMail = FindOrgMessage(e.getMessage(),fetchMail.REPLY_STYLE);
 		
 		m_sendStyle = fetchMail.REPLY_STYLE;
 	}
 	//@}
+	
+	public Message FindOrgMessage(Message _message,int _style){
+		
+		Message t_org = null;
+		Store store = Session.getDefaultInstance().getStore();
+		try{
+			String t_messageSub = _message.getSubject();
+			String t_trimString = null;
+			if(_style == fetchMail.REPLY_STYLE){
+				t_trimString = _message.reply(false).getSubject();
+			}else{
+				t_trimString = _message.forward().getSubject();
+			}
+			
+			final int t_start = t_trimString.indexOf(t_messageSub);
+			if(t_start != -1 && t_start != 0){
+				t_trimString = t_trimString.substring(0,t_start);
+				t_messageSub = t_messageSub.substring(t_trimString.length());
+			}
+			
+			Folder t_folder = store.getFolder(Folder.INBOX);
+			Message[] t_messages = t_folder.getMessages();
+			for(int i = 0;i < t_messages.length;i++){
+				if(t_messageSub.equals(t_messages[i].getSubject())){
+					t_org = t_messages[i];
+					break;
+				}
+			}
+			
+			if(t_org == null){
+				if((t_folder = store.getFolder(Folder.OUTBOX)) != null){
+					t_messages = t_folder.getMessages();
+					for(int i = 0;i < t_messages.length;i++){
+						if(t_messageSub.equals(t_messages[i].getSubject())){
+							t_org = t_messages[i];
+							break;
+						}
+					}
+				}				
+			}
+			
+		}catch(Exception e){
+			
+		}
+		
+		return t_org;
+	}
 	
 	public void SendFetchAttachmentFile(FetchAttachment _att)throws Exception{
 		
