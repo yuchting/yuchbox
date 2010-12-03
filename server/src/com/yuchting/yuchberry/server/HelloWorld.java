@@ -23,6 +23,7 @@ import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import javax.mail.internet.MimeUtility;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -225,13 +226,34 @@ public class HelloWorld {
 	public static void main(String arg[]){
 
 		HelloWorld test = new HelloWorld();
-		test.ReadStringLineTest();	
+		test.berryRecvTest();	
 		
+		try{
+			System.out.println(DecodeName("start =?NdieldiehBId,e?= end",false));
+		}catch(Exception e){}
 		
 		
 
 	}
 
+	static public String DecodeName(String _name,boolean _convert)throws Exception{
+		
+		final int t_start = _name.indexOf("=?");
+		final int t_end = _name.lastIndexOf("?=");
+		
+		if(t_start != -1 && t_end != -1){
+			_name = _name.substring(0, t_start) + 
+					MimeUtility.decodeText(_name.substring(t_start, t_end + 2)) +
+					_name.substring(t_end + 2);
+		}else{
+			if(_convert){
+				_name = new String(_name.getBytes("ISO8859_1"));
+			}			
+		}
+		
+		return _name;
+	}
+	
 	void ReadStringLineTest(){
 		try{
 			String s1 = "11\n22\n333\n444\n5555\n";
@@ -403,6 +425,7 @@ public class HelloWorld {
 			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
 			t_stream.write(msg_head.msgConfirm);
 			sendReceive.WriteString(t_stream, "111111",false);
+			sendReceive.WriteInt(t_stream,1);
 			
 			t_receive.SendBufferToSvr(t_stream.toByteArray(), false);
 			

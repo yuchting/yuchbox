@@ -1060,7 +1060,7 @@ public class connectDeamon extends Thread implements SendListener,
 	    	if(_mail.GetContain_html().length() != 0){
 		    		
 	    		SupportedAttachmentPart sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
-	    											"Html_Part_Direct_Open_It.html",_mail.GetContain_html().getBytes("GB2312"));    			
+	    											"Html_Part_Direct_Open_It.html",_mail.GetContain_html().getBytes());    			
 	    		
 		    	multipart.addBodyPart(sap);
 	    	}

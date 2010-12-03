@@ -33,9 +33,12 @@ import net.rim.blackberry.api.mail.event.MessageEvent;
 import net.rim.blackberry.api.mail.event.MessageListener;
 import net.rim.blackberry.api.mail.event.ViewListener;
 import net.rim.blackberry.api.mail.event.ViewListenerExtended;
+import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.KeyListener;
 import net.rim.device.api.system.LED;
+import net.rim.device.api.ui.Keypad;
 
 
 class msg_head{
@@ -58,7 +61,8 @@ public class connectDeamon extends Thread implements SendListener,
 												MessageListener,
 												AttachmentHandler,
 												ViewListener,
-												ViewListenerExtended{
+												ViewListenerExtended,
+												KeyListener{
 	
 	class AppendMessage{
 		int		m_mailIndex;
@@ -85,6 +89,8 @@ public class connectDeamon extends Thread implements SendListener,
 	 public Vector 		m_markReadVector 		= new Vector();
 	 
 	 Player				m_newMailNotifier		= null;
+	 
+	 reminder			m_currentReminder		= null;
 	 	 
 	 // read the email temporary variables
 	 // 
@@ -137,16 +143,21 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 public connectDeamon(recvMain _app){
 		 m_mainApp = _app;
+		 LoadSound();
+		 		 
+		 start();
+	 }
+	 
+	 public void LoadSound(){
+		 
 		 try{
-			 m_newMailNotifier = javax.microedition.media.Manager.createPlayer(_app.getClass().getResourceAsStream("/NewMessage.mid"),"audio/midi");
+			 m_newMailNotifier = javax.microedition.media.Manager.createPlayer(m_mainApp.getClass().getResourceAsStream("/NewMessage.mid"),"audio/midi");
 			 
 			 m_newMailNotifier.realize();
 			 m_newMailNotifier.prefetch();
 		 }catch(Exception _e){
-			 _app.DialogAlert("read the sound res error!" + _e.getMessage());
-		 }		 
-		 
-		 start();
+			 m_mainApp.DialogAlert("read the sound res error!" + _e.getMessage());
+		 }	
 	 }
 	 
 	 public void BeginListener()throws Exception{
@@ -215,9 +226,6 @@ public class connectDeamon extends Thread implements SendListener,
 				
 			}catch(Exception _e){}
 			
-		}else if(e.getMessageChangeType() == MessageEvent.FORWARD
-				|| e.getMessageChangeType() == MessageEvent.REPLY){
-			m_forwordReplyMail = e.getMessage();
 		}
 	}
 	//
@@ -344,6 +352,26 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 	//@}
 	
+	//@{ KeyListener
+	public boolean keyDown(int keycode, int time){
+		
+		if(m_currentReminder != null && m_currentReminder.isAlive()){
+			m_currentReminder.interrupt();
+			m_currentReminder = null;
+		}
+
+		return false;
+	}
+	public boolean keyRepeat(int keycode, int time) { 
+		return false; 
+	}
+	public boolean keyStatus(int keycode, int time) { 
+		return false; 
+	}
+	public boolean keyUp(int keycode, int time) { return false; }
+	public boolean keyChar(char key, int status, int time) { return false; }
+	//@}
+	
 	public Message FindOrgMessage(Message _message,int _style){
 		
 		Message t_org = null;
@@ -352,36 +380,48 @@ public class connectDeamon extends Thread implements SendListener,
 			String t_messageSub = _message.getSubject();
 			String t_trimString = null;
 			if(_style == fetchMail.REPLY_STYLE){
-				t_trimString = _message.reply(false).getSubject();
-			}else{
-				t_trimString = _message.forward().getSubject();
-			}
-			
-			final int t_start = t_trimString.indexOf(t_messageSub);
-			if(t_start != -1 && t_start != 0){
-				t_trimString = t_trimString.substring(0,t_start);
-				t_messageSub = t_messageSub.substring(t_trimString.length());
-			}
-			
-			Folder t_folder = store.getFolder(Folder.INBOX);
-			Message[] t_messages = t_folder.getMessages();
-			for(int i = 0;i < t_messages.length;i++){
-				if(t_messageSub.equals(t_messages[i].getSubject())){
-					t_org = t_messages[i];
+				final int t_code = Locale.getDefaultForSystem().getCode();
+				
+				switch(t_code){
+				case Locale.LOCALE_zh_CN:
+				case Locale.LOCALE_zh:
+				case Locale.LOCALE_zh_HK:
+					t_trimString = "´ð¸´£º ";
+					break;
+				default:
+					t_trimString = "Re: ";
 					break;
 				}
+				
+				final int t_prefixIndex = t_messageSub.indexOf(t_trimString);
+				if(t_prefixIndex != -1){
+					t_messageSub = t_messageSub.substring(t_prefixIndex + t_trimString.length());
+				}
+				
+			}else{
+				
+				t_trimString = _message.forward().getSubject();
+				
+				final int t_start = t_trimString.indexOf(t_messageSub);
+				if(t_start != -1 && t_start != 0){
+					t_trimString = t_trimString.substring(0,t_start);
+					t_messageSub = t_messageSub.substring(t_trimString.length());
+				}
 			}
-			
-			if(t_org == null){
-				if((t_folder = store.getFolder(Folder.OUTBOX)) != null){
-					t_messages = t_folder.getMessages();
-					for(int i = 0;i < t_messages.length;i++){
-						if(t_messageSub.equals(t_messages[i].getSubject())){
-							t_org = t_messages[i];
-							break;
-						}
+				
+			Folder[] t_folders = store.list();
+			for(int i = 0 ;i < t_folders.length;i++){
+				Message[] t_messages = t_folders[i].getMessages();
+				for(int j = 0;j < t_messages.length;j++){
+					if(t_messageSub.equals(t_messages[j].getSubject())){
+						t_org = t_messages[i];
+						break;
 					}
-				}				
+				}
+				
+				if(t_org != null){
+					break;
+				}
 			}
 			
 		}catch(Exception e){
@@ -707,7 +747,20 @@ public class connectDeamon extends Thread implements SendListener,
 			ComposeMessage(m,t_mail);
 			
 			Store store = Session.waitForDefaultSession().getStore();
-			Folder folder = store.getFolder(Folder.INBOX);
+			Folder folder = null; 
+			Folder[] t_folders = store.list();
+			for(int i = 0;i < t_folders.length;i++){
+				String t_name = t_folders[i].toString();
+				if(t_name.indexOf("Email") != -1 && t_name.indexOf("Inbox") != -1){
+					folder = t_folders[i];
+					break;
+				}
+			}
+			
+			if(folder == null ){
+				folder = store.getFolder(Folder.INBOX);
+			}
+			
 			m.setInbound(true);
 			m.setStatus(Message.Status.RX_RECEIVED,1);
 			folder.appendMessage(m);
@@ -738,7 +791,9 @@ public class connectDeamon extends Thread implements SendListener,
 				LED.setState(LED.LED_TYPE_STATUS, LED.STATE_BLINKING);
 			}
 
-			m_newMailNotifier.start();
+			if(m_currentReminder == null || !m_currentReminder.isAlive()){
+				m_currentReminder = new reminder(m_mainApp);
+			}			 
 							
 		}catch(Exception _e){
 			m_mainApp.SetErrorString("C:\n" + _e.getMessage());

@@ -14,8 +14,6 @@ import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.i18n.SimpleDateFormat;
-import net.rim.device.api.servicebook.ServiceBook;
-import net.rim.device.api.servicebook.ServiceRecord;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Field;
@@ -29,7 +27,6 @@ import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.ButtonField;
-import net.rim.device.api.ui.component.CheckboxField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
 import net.rim.device.api.ui.component.EditField;
@@ -86,15 +83,12 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
     EditField           m_hostName      = null;
     EditField			m_hostport		= null;
     EditField           m_userPassword  = null;
-    EditField			m_APN			= null;
-    
+       
     ButtonField         m_connectBut    = null;
     LabelField          m_stateText     = null;
     ErrorLabelText      m_errorText     = null;
     LabelField			m_uploadingText = null;
-    
-    CheckboxField		m_useSSLCheckbox= null;
-        
+            
     recvMain			m_mainApp		= null;
     
     MenuItem 	m_aboutMenu = new MenuItem(recvMain.sm_local.getString(localResource.ABOUT_MENU_TEXT), 100, 10) {
@@ -102,6 +96,13 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 													UiApplication.getUiApplication().pushScreen(new aboutScreen());
 												}
 											};
+	
+	MenuItem 	m_setingMenu = new MenuItem(recvMain.sm_local.getString(localResource.SETTING_MENU_TEXT), 101, 10) {
+		public void run() {
+			UiApplication.getUiApplication().pushScreen(new settingScreen((recvMain)UiApplication.getUiApplication()));
+		}
+	};
+	
 
     public stateScreen(final recvMain _app) {
     	        
@@ -126,17 +127,10 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
         
         add(m_userPassword);
         
-        m_APN			= new EditField(recvMain.sm_local.getString(localResource.APN_LABEL),
-        				m_mainApp.GetAPNList(),128,EditField.FILTER_DEFAULT);
-        
-        add(m_APN);
-        
-        m_useSSLCheckbox	= new CheckboxField(recvMain.sm_local.getString(localResource.USE_SSL), m_mainApp.m_useSSL);
-        add(m_useSSLCheckbox);
-        
+       
         m_connectBut = new ButtonField(recvMain.sm_local.getString(m_mainApp.m_connectDeamon.IsConnectState()?
         									localResource.DISCONNECT_BUTTON_LABEL:localResource.CONNECT_BUTTON_LABEL),
-        								ButtonField.CONSUME_CLICK| ButtonField.NEVER_DIRTY);
+        									ButtonField.CONSUME_CLICK| ButtonField.NEVER_DIRTY | ButtonField.FIELD_HCENTER);
         
         m_connectBut.setChangeListener(this);
         
@@ -157,6 +151,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
     
     protected void makeMenu(Menu _menu,int instance){
     	_menu.add(m_aboutMenu);
+    	_menu.add(m_setingMenu);
     }
     
     public final boolean onClose(){
@@ -227,9 +222,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 						m_mainApp.m_hostname 		= m_hostName.getText();
 						m_mainApp.m_port 			= Integer.valueOf(m_hostport.getText()).intValue();
 						m_mainApp.m_userPassword 	= m_userPassword.getText();
-						m_mainApp.m_useSSL			= m_useSSLCheckbox.getChecked();
-						
-						m_mainApp.SetAPNName(m_APN.getText());
+
 						
 						m_mainApp.m_connectDeamon.Connect();
 						
@@ -254,7 +247,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 
 public class recvMain extends UiApplication implements localResource {
 	
-	final static int		fsm_clientVersion = 2;
+	final static int		fsm_clientVersion = 3;
 	
 	String m_attachmentDir = null;
 	
@@ -282,6 +275,9 @@ public class recvMain extends UiApplication implements localResource {
 	int					m_port 				= 0;
 	String				m_userPassword 		= new String();
 	boolean			m_useSSL			= false;
+	
+	int					m_vibrateTime		= 1;
+	int					m_soundVol			= 2;
 	
 	class APNSelector{
 		String		m_name			= null;
@@ -468,7 +464,7 @@ public class recvMain extends UiApplication implements localResource {
 		return m_useSSL;
 	}
 	
-	private void WriteReadIni(boolean _read){
+	public void WriteReadIni(boolean _read){
 		try{
 			FileConnection fc = (FileConnection) Connector.open(m_attachmentDir + "Init.data",Connector.READ_WRITE);
 			if(_read){
@@ -494,6 +490,11 @@ public class recvMain extends UiApplication implements localResource {
 		    		
 		    		if(t_currVer >= 2){
 		    			m_useSSL = (t_readFile.read() == 0)?false:true;
+		    		}
+		    		
+		    		if(t_currVer >= 3){
+		    			m_vibrateTime 	= t_readFile.read();
+		    			m_soundVol		= t_readFile.read();
 		    		}
 		    		
 		    		t_readFile.close();
@@ -522,6 +523,8 @@ public class recvMain extends UiApplication implements localResource {
 				}
 				
 				t_writeFile.write(m_useSSL?1:0);
+				t_writeFile.write(m_vibrateTime);
+				t_writeFile.write(m_soundVol);
 				
 				t_writeFile.close();
 				
@@ -539,6 +542,8 @@ public class recvMain extends UiApplication implements localResource {
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_addItem);
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);
 		
+		addKeyListener(m_connectDeamon);
+		
 		WriteReadIni(false);
 	}
 	
@@ -546,6 +551,8 @@ public class recvMain extends UiApplication implements localResource {
 		
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);	
+		
+		removeKeyListener(m_connectDeamon);
 		
 		System.exit(0);
 	}

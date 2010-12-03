@@ -74,12 +74,12 @@ class RecvMailAttach{
 
 			try{
 				BufferedReader in = new BufferedReader(
-						new StringReader(m_forwardReplyMail.GetContain() + "\n\n------- HTML--------\n\n" +
+						new StringReader(m_forwardReplyMail.GetContain() + "\n\n---------- HTML ----------\n\n" +
 											fetchMgr.ParseHTMLText(m_forwardReplyMail.GetContain_html())));
  
 				String line = new String();
 				while((line = in.readLine())!= null){
-					t_string.append("> " + line);
+					t_string.append("> " + line + "\n");
 				}
 				
 			}catch(Exception e){
@@ -607,7 +607,7 @@ public class fetchMgr{
 			Vector t_from = _mail.GetFromVect();
 			t_from.removeAllElements();
 		    for (int j = 0; j < a.length; j++){
-		    	t_from.addElement(DecondeName(a[j].toString(),false));
+		    	t_from.addElement(DecodeName(a[j].toString(),false));
 		    }
 		}
 
@@ -616,7 +616,7 @@ public class fetchMgr{
 			Vector t_vect = _mail.GetReplyToVect();
 			t_vect.removeAllElements();
 		    for (int j = 0; j < a.length; j++){
-		    	t_vect.addElement(DecondeName(a[j].toString(),false));
+		    	t_vect.addElement(DecodeName(a[j].toString(),false));
 		    }
 		}
 		
@@ -625,7 +625,7 @@ public class fetchMgr{
 			Vector t_vect = _mail.GetCCToVect();
 			t_vect.removeAllElements();
 		    for (int j = 0; j < a.length; j++){
-		    	t_vect.addElement(DecondeName(a[j].toString(),false));
+		    	t_vect.addElement(DecodeName(a[j].toString(),false));
 		    }
 		}
 		
@@ -634,7 +634,7 @@ public class fetchMgr{
 			Vector t_vect = _mail.GetBCCToVect();
 			t_vect.removeAllElements();
 		    for (int j = 0; j < a.length; j++){
-		    	t_vect.addElement(DecondeName(a[j].toString(),false));
+		    	t_vect.addElement(DecodeName(a[j].toString(),false));
 		    }
 		}
 
@@ -648,14 +648,14 @@ public class fetchMgr{
 			
 		    for (int j = 0; j < a.length; j++) {
 		    	
-		    	t_vect.addElement(DecondeName(a[j].toString(),false));
+		    	t_vect.addElement(DecodeName(a[j].toString(),false));
 			    
 				InternetAddress ia = (InternetAddress)a[j];
 				
 				if (ia.isGroup()) {
 				    InternetAddress[] aa = ia.getGroup(false);
 				    for (int k = 0; k < aa.length; k++){
-				    	t_vectGroup.addElement(DecondeName(aa[k].toString(),false));
+				    	t_vectGroup.addElement(DecodeName(aa[k].toString(),false));
 				    }
 				}
 		    }
@@ -669,7 +669,7 @@ public class fetchMgr{
 		    mailTitle = header.getValue();  
 		}
 
-		_mail.SetSubject(DecondeName(mailTitle,false));
+		_mail.SetSubject(DecodeName(mailTitle,false));
 		_mail.SetSendDate(m.getSentDate());
 		
 		int t_flags = 0;
@@ -787,7 +787,7 @@ public class fetchMgr{
 				if (filename == null){	
 				    filename = "Attachment_" + t_vect.size();
 				}else{
-					filename = DecondeName(filename,true);
+					filename = DecodeName(filename,true);
 				}
 
 			    _mail.AddAttachment(filename, 
@@ -854,7 +854,7 @@ public class fetchMgr{
 	
 	static public String ParseHTMLText(String _html){
 		StringBuffer t_text = new StringBuffer();
-		t_text.append("[yuchberry prompt:the real URL would be shorten by http://is.gd/]\n\n");
+		t_text.append("-------- HTML converted part --------\n[yuchberry prompt:the real URL would be shorten by http://is.gd/]\n\n");
 		
 		StringBuffer t_shorterText = new StringBuffer();
 		
@@ -938,10 +938,23 @@ public class fetchMgr{
         
 	}
 
-	static public String DecondeName(String _name,boolean _convert)throws Exception{
+	static public String DecodeName(String _name,boolean _convert)throws Exception{
 		
-		if(_name.startsWith("=?") && _name.indexOf("?=") != -1){
-			_name = MimeUtility.decodeText(_name);
+		int t_start = _name.indexOf("=?");
+		int t_end = _name.indexOf("?=");
+		
+		if(t_start != -1 && t_end != -1){
+			
+			do{
+				_name = _name.substring(0, t_start) + 
+									MimeUtility.decodeText(_name.substring(t_start, t_end + 2)) +
+									_name.substring(t_end + 2);
+				
+				t_start = _name.indexOf("=?");
+				t_end = _name.indexOf("?=");
+				
+			}while(t_start != -1 && t_end != -1);
+			
 		}else{
 			if(_convert){
 				_name = new String(_name.getBytes("ISO8859_1"));

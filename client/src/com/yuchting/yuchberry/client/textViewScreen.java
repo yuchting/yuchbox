@@ -26,7 +26,7 @@ public class textViewScreen extends fileViewScreen{
 			t_tmpContain = m_fileContain;
 		}
 		
-		m_editText = new RichTextField(new String(t_tmpContain,"GB2312"));
+		m_editText = new RichTextField(new String(t_tmpContain));
 		add(m_editText);
 		
 	}
