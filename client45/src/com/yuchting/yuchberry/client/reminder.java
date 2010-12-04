@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.client;
 import javax.microedition.media.control.VolumeControl;
 
 import net.rim.device.api.system.Alert;
+import net.rim.device.api.system.Backlight;
 
 public class reminder extends Thread{
 
@@ -25,7 +26,16 @@ public class reminder extends Thread{
 			
 			for(int i = 0;i < m_mainApp.m_vibrateTime;i++){
 				Alert.startVibrate(t_vibrate);
+				
+				if(Backlight.isEnabled()){
+					throw new Exception("");
+				}
+				
 				sleep(t_vibrate * 4);
+			}
+			
+			if(Backlight.isEnabled()){
+				throw new Exception("");
 			}
 			
 			if(m_mainApp.m_soundVol != 0){

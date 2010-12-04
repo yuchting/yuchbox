@@ -61,8 +61,7 @@ public class connectDeamon extends Thread implements SendListener,
 												MessageListener,
 												AttachmentHandler,
 												ViewListener,
-												ViewListenerExtended,
-												KeyListener{
+												ViewListenerExtended{
 	
 	class AppendMessage{
 		int		m_mailIndex;
@@ -351,27 +350,7 @@ public class connectDeamon extends Thread implements SendListener,
 		m_sendStyle = fetchMail.REPLY_STYLE;
 	}
 	//@}
-	
-	//@{ KeyListener
-	public boolean keyDown(int keycode, int time){
 		
-		if(m_currentReminder != null && m_currentReminder.isAlive()){
-			m_currentReminder.interrupt();
-			m_currentReminder = null;
-		}
-
-		return false;
-	}
-	public boolean keyRepeat(int keycode, int time) { 
-		return false; 
-	}
-	public boolean keyStatus(int keycode, int time) { 
-		return false; 
-	}
-	public boolean keyUp(int keycode, int time) { return false; }
-	public boolean keyChar(char key, int status, int time) { return false; }
-	//@}
-	
 	public Message FindOrgMessage(Message _message,int _style){
 		
 		Message t_org = null;
@@ -790,10 +769,10 @@ public class connectDeamon extends Thread implements SendListener,
 				LED.setConfiguration(LED.LED_TYPE_STATUS,300, 5000, LED.BRIGHTNESS_50);
 				LED.setState(LED.LED_TYPE_STATUS, LED.STATE_BLINKING);
 			}
-
+			
 			if(m_currentReminder == null || !m_currentReminder.isAlive()){
 				m_currentReminder = new reminder(m_mainApp);
-			}			 
+			}						 
 							
 		}catch(Exception _e){
 			m_mainApp.SetErrorString("C:\n" + _e.getMessage());

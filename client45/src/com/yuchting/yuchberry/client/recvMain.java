@@ -130,7 +130,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
        
         m_connectBut = new ButtonField(recvMain.sm_local.getString(m_mainApp.m_connectDeamon.IsConnectState()?
         									localResource.DISCONNECT_BUTTON_LABEL:localResource.CONNECT_BUTTON_LABEL),
-        									ButtonField.CONSUME_CLICK| ButtonField.NEVER_DIRTY | ButtonField.FIELD_HCENTER);
+        									ButtonField.CONSUME_CLICK| ButtonField.NEVER_DIRTY);
         
         m_connectBut.setChangeListener(this);
         
@@ -223,10 +223,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 						m_mainApp.m_port 			= Integer.valueOf(m_hostport.getText()).intValue();
 						m_mainApp.m_userPassword 	= m_userPassword.getText();
 
-						
 						m_mainApp.m_connectDeamon.Connect();
-						
-//						m_mainApp.m_connectDeamon.Connect("192.168.10.20",9716,"","111111");
 						
 						m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTING_LABEL));
 						m_connectBut.setLabel(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
@@ -249,7 +246,7 @@ public class recvMain extends UiApplication implements localResource {
 	
 	final static int		fsm_clientVersion = 3;
 	
-	String m_attachmentDir = null;
+	String 				m_attachmentDir 	= null;
 	
 	stateScreen 		m_stateScreen 		= null;
 	uploadFileScreen 	m_uploadFileScreen	= null;
@@ -542,8 +539,6 @@ public class recvMain extends UiApplication implements localResource {
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_addItem);
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);
 		
-		addKeyListener(m_connectDeamon);
-		
 		WriteReadIni(false);
 	}
 	
@@ -551,9 +546,7 @@ public class recvMain extends UiApplication implements localResource {
 		
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);	
-		
-		removeKeyListener(m_connectDeamon);
-		
+				
 		System.exit(0);
 	}
 	public void activate(){

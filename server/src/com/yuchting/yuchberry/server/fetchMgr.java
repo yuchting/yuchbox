@@ -172,8 +172,8 @@ public class fetchMgr{
         
 	public void InitConnect(String _configFile) throws Exception{
 		
+		FileInputStream fs = new FileInputStream(_configFile);
 		
-		FileInputStream fs = new FileInputStream("config.ini");
 		Properties p = new Properties(); 
 		p.load(fs);
 		
