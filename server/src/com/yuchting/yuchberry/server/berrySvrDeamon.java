@@ -1,17 +1,19 @@
 package com.yuchting.yuchberry.server;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.net.Socket;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Vector;
 
 import javax.net.ssl.SSLSocket;
-
-
 
 class berrySendAttachment extends Thread{
 	
@@ -21,6 +23,9 @@ class berrySendAttachment extends Thread{
 	int					m_mailIndex;
 	int					m_attachIndex;
 	
+	int					m_startIndex = 0;
+	byte[] 				m_buffer = new byte[fsm_sendSize];
+	ByteArrayOutputStream m_os = new ByteArrayOutputStream();
 	
 	final static int	fsm_sendSize = 512;
 	
@@ -44,42 +49,51 @@ class berrySendAttachment extends Thread{
 		
 		start();
 	}
-	
+	private boolean SendAttachment(boolean _send) throws Exception{
+		m_os.reset();
+		
+		final int t_size = (m_startIndex + fsm_sendSize) > m_fileLength ?(m_fileLength - m_startIndex):fsm_sendSize;
+		m_file.read(m_buffer, 0, t_size);
+		m_os.write(msg_head.msgMailAttach);
+		
+		sendReceive.WriteInt(m_os,m_mailIndex);
+		sendReceive.WriteInt(m_os,m_attachIndex);
+		sendReceive.WriteInt(m_os,m_startIndex);
+		sendReceive.WriteInt(m_os,t_size);
+		m_os.write(m_buffer);
+		
+		Logger.LogOut("send msgMailAttach mailIndex:" + m_mailIndex + " attachIndex:" + m_attachIndex + " startIndex:" +
+				m_startIndex + " size:" + t_size + " first:" + (int)m_buffer[0]);
+		
+		while(m_fetchMain.GetClientConnected() == null){
+			sleep(200);
+		}
+		
+		m_fetchMain.GetClientConnected().m_sendReceive.SendBufferToSvr(m_os.toByteArray(), _send);
+		
+		if(m_startIndex + t_size >= m_fileLength){
+			return true;
+		}
+		
+		m_startIndex += t_size;
+		
+		return false;
+	}
 	public void run(){
-		
-		int t_startIndex = 0;
-		byte[] t_buffer = new byte[fsm_sendSize];
-		
-		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-		
+
 		while(true){
 			try{
-				t_os.reset();
 				
-				final int t_size = (t_startIndex + fsm_sendSize) > m_fileLength ?(m_fileLength - t_startIndex):fsm_sendSize;
-				m_file.read(t_buffer, 0, t_size);
-				t_os.write(msg_head.msgMailAttach);
-				
-				sendReceive.WriteInt(t_os,m_mailIndex);
-				sendReceive.WriteInt(t_os,m_attachIndex);
-				sendReceive.WriteInt(t_os,t_startIndex);
-				sendReceive.WriteInt(t_os,t_size);
-				t_os.write(t_buffer);
-				
-				Logger.LogOut("send msgMailAttach mailIndex:" + m_mailIndex + " attachIndex:" + m_attachIndex + " startIndex:" +
-									t_startIndex + " size:" + t_size + " first:" + (int)t_buffer[0]);
-				
-				while(m_fetchMain.GetClientConnected() == null){
-					sleep(200);
+				int t_sendNum = 0;
+				while(t_sendNum++ < 4){
+					if(SendAttachment(false)){
+						return;
+					}
 				}
 				
-				m_fetchMain.GetClientConnected().m_sendReceive.SendBufferToSvr(t_os.toByteArray(), true);
-				
-				if(t_startIndex + t_size >= m_fileLength){
+				if(SendAttachment(true)){
 					break;
 				}
-				
-				t_startIndex += t_size;				
 				
 				
 			}catch(Exception _e){
@@ -348,9 +362,55 @@ public class berrySvrDeamon extends Thread{
 			case msg_head.msgMailConfirm:
 				ProcessMailConfirm(in);
 				break;
+			case msg_head.msgSponsorList:
+				ProcessSponsorList(in);
+				break;
 			default:
 				throw new Exception("illegal client connect");
 		}
+	}
+	
+	private void ProcessSponsorList(ByteArrayInputStream _in){
+		try{
+			
+			// read the google code host page
+			//
+			final String ft_URL = new String("http://code.google.com/p/yuchberry/wiki/Thanks_sheet");
+			
+			URL sponsor = new URL(ft_URL);
+			
+	        URLConnection yc = sponsor.openConnection();
+	        InputStream in = yc.getInputStream();
+	        
+	        StringBuffer t_stringBuffer = new StringBuffer();
+	        
+	        int t_readLineNum = 0;
+	        
+	        while((t_readLineNum = in.available()) != -1){
+	        	byte[] t_charBuffer = new byte[t_readLineNum];
+		        in.read(t_charBuffer);
+		        t_stringBuffer.append(new String(t_charBuffer,"UTF-8"));
+		        
+		        sleep(500);
+	        }   
+	        
+	        String t_line = fetchMgr.ParseHTMLText(t_stringBuffer.toString(),false);
+	        
+	        final int t_start = t_line.indexOf("##@##");
+	        final int t_end = t_line.indexOf("@@#@@");
+	        if(t_start != -1 && t_end != -1){
+	        	t_line = t_line.substring(t_start + 5 ,t_end);
+	        }
+	        t_line = t_line.replace("&para;","");
+	        
+	        ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+	        t_os.write(msg_head.msgSponsorList);
+	        sendReceive.WriteString(t_os,t_line,m_fetchMgr.m_convertToSimpleChar);
+	        
+	        m_sendReceive.SendBufferToSvr(t_os.toByteArray(),true);
+	        
+		}catch(Exception _e){}
+		
 	}
 	
 	private void ProcessMailConfirm(ByteArrayInputStream in)throws Exception{

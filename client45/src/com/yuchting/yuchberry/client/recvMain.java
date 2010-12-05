@@ -91,17 +91,21 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
             
     recvMain			m_mainApp		= null;
     
+    
     MenuItem 	m_aboutMenu = new MenuItem(recvMain.sm_local.getString(localResource.ABOUT_MENU_TEXT), 100, 10) {
 												public void run() {
-													UiApplication.getUiApplication().pushScreen(new aboutScreen());
+													recvMain t_app = (recvMain)UiApplication.getUiApplication();
+													t_app.PopupAboutScreen();
 												}
 											};
 	
 	MenuItem 	m_setingMenu = new MenuItem(recvMain.sm_local.getString(localResource.SETTING_MENU_TEXT), 101, 10) {
-		public void run() {
-			UiApplication.getUiApplication().pushScreen(new settingScreen((recvMain)UiApplication.getUiApplication()));
-		}
-	};
+												public void run() {
+													recvMain t_app = (recvMain)UiApplication.getUiApplication();
+													t_app.pushScreen(new settingScreen(t_app));
+													
+												}
+											};
 	
 
     public stateScreen(final recvMain _app) {
@@ -248,11 +252,13 @@ public class recvMain extends UiApplication implements localResource {
 	
 	String 				m_attachmentDir 	= null;
 	
+    aboutScreen			m_aboutScreen		= null;
 	stateScreen 		m_stateScreen 		= null;
 	uploadFileScreen 	m_uploadFileScreen	= null;
 	connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
-	String				m_stateString		= new String(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
+	String				m_stateString		= recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL);
+	String				m_aboutString		= recvMain.sm_local.getString(localResource.ABOUT_DESC);
 	
 	class ErrorInfo{
 		Date		m_time;
@@ -563,6 +569,31 @@ public class recvMain extends UiApplication implements localResource {
 		}		
 	}
 	
+	public void PopupAboutScreen(){
+		m_aboutScreen = new aboutScreen(this);
+		pushScreen(m_aboutScreen);
+		
+		m_connectDeamon.SendAboutInfoQuery();
+	}
+	
+	public void SetAboutInfo(String _about){
+		m_aboutString = _about;
+		
+		// prompt by the background thread
+		//
+		synchronized(getEventLock()){
+			
+			invokeLater(new Runnable(){
+				public void run(){
+					if(m_aboutScreen != null){
+						m_aboutScreen.RefreshText();
+					}
+				}
+			});
+			
+		}
+		
+	}
 	public void OpenAttachmentFileScreen(final boolean _del){
 		
 		try{

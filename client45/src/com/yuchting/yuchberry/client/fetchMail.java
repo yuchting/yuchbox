@@ -10,8 +10,6 @@ import javax.microedition.io.file.FileConnection;
 
 import net.rim.blackberry.api.mail.Address;
 import net.rim.blackberry.api.mail.Message;
-import net.rim.blackberry.api.mail.Session;
-import net.rim.blackberry.api.mail.Store;
 
 
 public class  fetchMail{
@@ -276,6 +274,9 @@ class sendMailAttachmentDeamon extends Thread{
 	fetchMail			m_sendMail 	= null;
 	fetchMail			m_forwardReply 	= null;
 	
+	InputStream 		m_fileIn 	= null;
+	FileConnection		m_fileConnection = null;
+	
 	int					m_sendStyle = fetchMail.NOTHING_STYLE;
 	
 	int 				m_beginIndex = 0;
@@ -303,11 +304,17 @@ class sendMailAttachmentDeamon extends Thread{
 		
 		m_vFileConnection  = _vFileConnection;
 		
-		for(int i = 0;i < m_vFileConnection.size();i++){
-			FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(i);
-			m_totalSize += (int)t_file.fileSize();
-		}
-						
+		if(!m_vFileConnection.isEmpty()){
+			
+			for(int i = 0;i < m_vFileConnection.size();i++){
+				FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(i);
+				m_totalSize += (int)t_file.fileSize();
+			}
+					
+			m_fileConnection = (FileConnection)m_vFileConnection.elementAt(m_attachmentIndex);
+			m_fileIn = m_fileConnection.openInputStream();
+		}	
+								
 		start();
 	}
 	
@@ -336,9 +343,59 @@ class sendMailAttachmentDeamon extends Thread{
 		}catch(Exception e){}
 	}
 	
-	public void run(){
+	private boolean SendFileSegment(final boolean _send)throws Exception{
+			
+		final int t_size = (m_beginIndex + fsm_segmentSize) > (int)m_fileConnection.fileSize()?
+							((int)m_fileConnection.fileSize() - m_beginIndex) : fsm_segmentSize;
+					
+		sendReceive.ForceReadByte(m_fileIn, m_bufferBytes, t_size);
 		
-		InputStream in = null;
+		m_os.write(msg_head.msgMailAttach);
+		sendReceive.WriteLong(m_os,m_sendMail.GetSendDate().getTime());
+		sendReceive.WriteInt(m_os, m_attachmentIndex);
+		sendReceive.WriteInt(m_os, m_beginIndex);
+		sendReceive.WriteInt(m_os, t_size);
+		m_os.write(m_bufferBytes,0,t_size);
+		
+		m_connect.m_connect.SendBufferToSvr(m_os.toByteArray(), _send);
+		
+		//System.out.println("send msgMailAttach time:"+ m_sendMail.GetSendDate().getTime() + " beginIndex:" + m_beginIndex + " size:" + t_size);
+		
+		m_connect.m_mainApp.SetUploadingDesc(m_sendMail,m_attachmentIndex,
+											m_uploadedSize,m_totalSize);
+		
+		
+		if((m_beginIndex + t_size) >= (int)m_fileConnection.fileSize()){
+			
+			m_beginIndex = 0;
+			m_attachmentIndex++;
+			
+			m_fileIn.close();
+			m_fileConnection.close();
+			
+			m_fileIn = null;
+			
+			if(m_attachmentIndex >= m_vFileConnection.size()){
+				// send over
+				//
+				m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-2,0,0);
+				return true;
+			}else{
+				m_fileConnection = (FileConnection)m_vFileConnection.elementAt(m_attachmentIndex);
+				m_fileIn = m_fileConnection.openInputStream();
+			}
+			
+		}else{
+			m_beginIndex += t_size;
+		}
+		
+		m_uploadedSize += t_size;
+		m_os.reset();
+		
+		return false;
+	}
+	
+	public void run(){		
 		
 		boolean t_sendContain = false;
 		
@@ -388,54 +445,18 @@ class sendMailAttachmentDeamon extends Thread{
 					t_sendContain = true;
 				}
 				
-				
-				FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(m_attachmentIndex);
-				if(in == null){
-					in = t_file.openInputStream();
+				int t_sendSegmentNum = 0;
+				while(t_sendSegmentNum++ < 4){
+					if(SendFileSegment(false)){
+						ReleaseAttachFile();
+						return;
+					}					
 				}
 				
-				final int t_size = (m_beginIndex + fsm_segmentSize) > (int)t_file.fileSize()?
-									((int)t_file.fileSize() - m_beginIndex) : fsm_segmentSize;
-							
-				sendReceive.ForceReadByte(in, m_bufferBytes, t_size);
-				
-				m_os.write(msg_head.msgMailAttach);
-				sendReceive.WriteLong(m_os,m_sendMail.GetSendDate().getTime());
-				sendReceive.WriteInt(m_os, m_attachmentIndex);
-				sendReceive.WriteInt(m_os, m_beginIndex);
-				sendReceive.WriteInt(m_os, t_size);
-				m_os.write(m_bufferBytes,0,t_size);
-				
-				m_connect.m_connect.SendBufferToSvr(m_os.toByteArray(), true);
-				
-				System.out.println("send msgMailAttach time:"+ m_sendMail.GetSendDate().getTime() + " beginIndex:" + m_beginIndex + " size:" + t_size);
-				
-				m_connect.m_mainApp.SetUploadingDesc(m_sendMail,m_attachmentIndex,
-													m_uploadedSize,m_totalSize);
-				
-				
-				if((m_beginIndex + t_size) >= (int)t_file.fileSize()){
-					m_beginIndex = 0;
-					m_attachmentIndex++;
-					
-					in.close();
-					t_file.close();
-					
-					in = null;
-					
-					if(m_attachmentIndex >= m_vFileConnection.size()){
-						// send over
-						//
-						m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-2,0,0);
-						break;
-					}
-					
-				}else{
-					m_beginIndex += t_size;
+				if(SendFileSegment(true)){
+					break;
 				}
 				
-				m_uploadedSize += t_size;
-				m_os.reset();
 				
 			}catch(Exception _e){
 				

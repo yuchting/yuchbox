@@ -36,9 +36,7 @@ import net.rim.blackberry.api.mail.event.ViewListenerExtended;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.KeyListener;
 import net.rim.device.api.system.LED;
-import net.rim.device.api.ui.Keypad;
 
 
 class msg_head{
@@ -55,6 +53,8 @@ class msg_head{
 	
 	final public static byte msgKeepLive 		= 7;
 	final public static byte msgMailConfirm		= 8;
+	
+	final public static byte msgSponsorList		= 9;
 }
 
 public class connectDeamon extends Thread implements SendListener,
@@ -90,6 +90,10 @@ public class connectDeamon extends Thread implements SendListener,
 	 Player				m_newMailNotifier		= null;
 	 
 	 reminder			m_currentReminder		= null;
+	 
+	 boolean			m_sendAboutText			= false;
+	 boolean			m_recvAboutText			= false;
+	 
 	 	 
 	 // read the email temporary variables
 	 // 
@@ -393,8 +397,26 @@ public class connectDeamon extends Thread implements SendListener,
 				Message[] t_messages = t_folders[i].getMessages();
 				for(int j = 0;j < t_messages.length;j++){
 					if(t_messageSub.equals(t_messages[j].getSubject())){
-						t_org = t_messages[i];
-						break;
+						
+						if(_style == fetchMail.REPLY_STYLE){
+							String t_from = t_messages[j].getFrom().getAddr();
+							
+							Address[] t_replyTo = _message.getRecipients(Message.RecipientType.TO);
+							for(int index = 0;index < t_replyTo.length;index++){
+								if(t_replyTo[index].getAddr().equals(t_from)){
+									t_org = t_messages[j];
+									break;
+								}
+							}
+							
+							if(t_org != null){
+								break;
+							}
+						}else{
+							t_org = t_messages[j];
+							break;
+						}
+						
 					}
 				}
 				
@@ -465,6 +487,24 @@ public class connectDeamon extends Thread implements SendListener,
 			} 
 		}
 	}
+	
+	public void SendAboutInfoQuery(){
+		synchronized (this) {
+			try{
+				
+				m_sendAboutText = true;
+				
+				if(m_connect != null){
+					if(m_sendAboutText && !m_recvAboutText){
+						ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+						t_os.write(msg_head.msgSponsorList);
+						m_connect.SendBufferToSvr(t_os.toByteArray(), false);
+					}
+				}
+				
+			}catch(Exception e){}			
+		}		
+	}
 	 
 	 public void run(){
 		 
@@ -507,9 +547,11 @@ public class connectDeamon extends Thread implements SendListener,
 				sendReceive.WriteString(t_os, m_mainApp.GetUserPassword());
 				sendReceive.WriteInt(t_os,fsm_clientVer);
 				
-				m_connect.SendBufferToSvr(t_os.toByteArray(), true);				
+				m_connect.SendBufferToSvr(t_os.toByteArray(), true);			
 				
 				m_sendAuthMsg = true;
+				
+				SendAboutInfoQuery();
 				
 				// set the text connect
 				//
@@ -710,6 +752,10 @@ public class connectDeamon extends Thread implements SendListener,
 		 		break;
 		 	case msg_head.msgMailAttach:
 		 		ProcessMailAttach(in);
+		 		break;
+		 	case msg_head.msgSponsorList:
+		 		m_mainApp.SetAboutInfo(sendReceive.ReadString(in));
+		 		m_recvAboutText = true;
 		 		break;
 		 }
 	 }
@@ -1189,9 +1235,18 @@ public class connectDeamon extends Thread implements SendListener,
 	    	multipart.addBodyPart(t_text);
 	    	
 	    	if(_mail.GetContain_html().length() != 0){
+	    		SupportedAttachmentPart sap;
+		    	try{
+		    		// if the GB2312 decode sytem is NOT present in current system
+					// will throw the exception
+					//
 		    		
-	    		SupportedAttachmentPart sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
-	    											"Html_Part_Direct_Open_It.html",_mail.GetContain_html().getBytes("GB2312"));    			
+		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
+							"Html_Part_Direct_Open_It.html",_mail.GetContain_html().getBytes("GB2312"));
+		    	}catch(Exception e){
+		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
+							"Html_Part_Direct_Open_It.html",_mail.GetContain_html().getBytes());
+		    	}	    		    			
 	    		
 		    	multipart.addBodyPart(sap);
 	    	}

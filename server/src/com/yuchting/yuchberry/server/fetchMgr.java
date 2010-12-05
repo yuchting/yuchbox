@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -13,7 +14,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyStore;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
@@ -60,54 +60,64 @@ class RecvMailAttach{
 		m_style = _style;
 	}
 	
-	public void PrepareForwardReplyContain(){
-		if(m_forwardReplyMail == null || m_style == fetchMail.NOTHING_STYLE){
-			return;
-		}
-		
+	public void PrepareForwardReplyContain(String _signature){
+				
 		StringBuffer t_string = new StringBuffer();
 		t_string.append(m_sendMail.GetContain());
+		t_string.append("\n\n\n" + _signature);
 		
-		if(m_style == fetchMail.REPLY_STYLE){
-			
-			t_string.append("\n\n---------- 原始邮件 ----------\n");
+		if(m_forwardReplyMail != null && m_style != fetchMail.NOTHING_STYLE){
+			if(m_style == fetchMail.REPLY_STYLE){
+				
+				t_string.append("\n\n---------- 原始邮件 ----------\n");
 
-			try{
-				BufferedReader in = new BufferedReader(
-						new StringReader(m_forwardReplyMail.GetContain() + "\n\n---------- HTML ----------\n\n" +
-											fetchMgr.ParseHTMLText(m_forwardReplyMail.GetContain_html())));
- 
-				String line = new String();
-				while((line = in.readLine())!= null){
-					t_string.append("> " + line + "\n");
+				try{
+					BufferedReader in = null;
+					if(m_forwardReplyMail.GetContain_html().isEmpty()){
+						in = new BufferedReader(new StringReader(m_forwardReplyMail.GetContain()));
+					}else{
+						in = new BufferedReader(new StringReader(m_forwardReplyMail.GetContain() + "\n\n---------- HTML ----------\n\n" +
+									fetchMgr.ParseHTMLText(m_forwardReplyMail.GetContain_html(),true)));
+					}						
+	 
+					String line = new String();
+					while((line = in.readLine())!= null){
+						t_string.append("> " + line + "\n");
+					}
+					
+				}catch(Exception e){
+					t_string.append("读取转发消息出现异常！！！");
 				}
 				
-			}catch(Exception e){
-				t_string.append("读取转发消息出现异常！！！");
-			}
-			
-			
-		}else if(m_style == fetchMail.FORWORD_STYLE){
-			
-			t_string.append("\n\n---------- 已转发邮件 ----------\n");
+				
+			}else if(m_style == fetchMail.FORWORD_STYLE){
+				
+				t_string.append("\n\n---------- 已转发邮件 ----------\n");
 
-			Vector t_form = m_forwardReplyMail.GetFromVect();
-			
-			t_string.append("发件人："+ (String)t_form.elementAt(0) + "\n");
-			for(int i = 1;i < t_form.size();i++){
-				t_string.append((String)t_form.elementAt(i) + "\n");
+				Vector t_form = m_forwardReplyMail.GetFromVect();
+				
+				t_string.append("发件人："+ (String)t_form.elementAt(0) + "\n");
+				for(int i = 1;i < t_form.size();i++){
+					t_string.append((String)t_form.elementAt(i) + "\n");
+				}
+				t_string.append("日期："+ new SimpleDateFormat("yyyy年MM月dd日 HH:mm").format(m_forwardReplyMail.GetSendDate()) + "\n");
+				t_string.append("主题："+ m_forwardReplyMail.GetSubject() + "\n");
+				
+				Vector t_sendto = m_forwardReplyMail.GetSendToVect();
+				t_string.append("收件人："+ (String)t_sendto.elementAt(0) + "\n");
+				for(int i = 1;i < t_sendto.size();i++){
+					t_string.append((String)t_sendto.elementAt(i) + "\n");
+				}
+				
+				t_string.append(m_forwardReplyMail.GetContain());
+				
+				if(!m_forwardReplyMail.GetContain_html().isEmpty()){					
+					t_string.append("\n\n---------- HTML ----------\n\n");
+					t_string.append(fetchMgr.ParseHTMLText(m_forwardReplyMail.GetContain_html(),true));
+				}
+				
 			}
-			t_string.append("日期："+ new SimpleDateFormat("yyyy年MM月dd日 HH:mm").format(m_forwardReplyMail.GetSendDate()) + "\n");
-			t_string.append("主题："+ m_forwardReplyMail.GetSubject() + "\n");
-			
-			Vector t_sendto = m_forwardReplyMail.GetSendToVect();
-			t_string.append("收件人："+ (String)t_sendto.elementAt(0) + "\n");
-			for(int i = 1;i < t_sendto.size();i++){
-				t_string.append((String)t_sendto.elementAt(i) + "\n");
-			}
-			t_string.append(m_forwardReplyMail.GetContain());
-			t_string.append(fetchMgr.ParseHTMLText(m_forwardReplyMail.GetContain_html()));
-		}
+		}	
 		
 		m_sendMail.SetContain(t_string.toString());
 	}
@@ -131,6 +141,8 @@ public class fetchMgr{
 	String 	m_strUserNameFull = null;
 	String 	m_password 	= null;
 	String	m_userPassword	= null;
+	
+	String	m_signature = new String();
 	
 	int		m_listenPort = 9716;
 	
@@ -214,6 +226,8 @@ public class fetchMgr{
     	
     	fs.close();
 		p.clear();
+		
+		ReadSignature();
        	
     	ResetSession();
 
@@ -229,6 +243,29 @@ public class fetchMgr{
 				Logger.PrinterException(_e);
 	    	}
     	}	
+	}
+	
+	private void ReadSignature(){
+		try{
+			File t_file = new File("signature.txt");
+			
+			if(t_file.exists()){
+				BufferedReader in = new BufferedReader( new FileReader(t_file));
+				
+				StringBuffer t_stringBuffer = new StringBuffer();
+				String t_line = null;
+				while((t_line = in.readLine()) != null){
+					if(!t_line.startsWith("#")){
+						t_stringBuffer.append(t_line);
+					}
+				}
+				
+				m_signature = t_stringBuffer.toString();
+			}
+		}catch(Exception e){
+			
+		}
+		
 	}
 	
 	public synchronized void ResetSession()throws Exception{
@@ -514,7 +551,7 @@ public class fetchMgr{
 		
 		Message msg = new MimeMessage(m_session_send);
 		
-		_mail.PrepareForwardReplyContain();		
+		_mail.PrepareForwardReplyContain(m_signature);		
 		ComposeMessage(msg,_mail.m_sendMail);
 	    
 		int t_tryTime = 0;
@@ -730,8 +767,8 @@ public class fetchMgr{
 		    	_mail.SetContain_html(_mail.GetContain_html().concat(t_contain));
 
 			    // parser HTML append the plain text
-			    //
-		    	_mail.SetContain(_mail.GetContain().concat(ParseHTMLText(t_contain)));
+			    //		    	
+		    	_mail.SetContain(_mail.GetContain().concat("\n\n---------- HTML part convert ----------\n\n" + ParseHTMLText(t_contain,true)));
 		    	
 		    }catch(Exception e){
 		    	_mail.SetContain_html(_mail.GetContain_html().concat("can't decode content " + e.getMessage()));
@@ -852,12 +889,11 @@ public class fetchMgr{
 		return _html;
 	}
 	
-	static public String ParseHTMLText(String _html){
-		StringBuffer t_text = new StringBuffer();
-		t_text.append("-------- HTML converted part --------\n[yuchberry prompt:the real URL would be shorten by http://is.gd/]\n\n");
-		
+	static public String ParseHTMLText(String _html,boolean _shortURL){
+		StringBuffer t_text = new StringBuffer();	
 		StringBuffer t_shorterText = new StringBuffer();
 		
+		boolean t_shorted = false;
 		try{
 			Parser parser = new Parser(_html,null);
 			parser.setEncoding("GB2312");
@@ -880,7 +916,13 @@ public class fetchMgr{
                 }else{
                 	
                 	LinkTag link = (LinkTag)nextNode;
-                	t_text.append(GetShortURL(link.getLink()));
+                	if(_shortURL){
+                		t_text.append(GetShortURL(link.getLink()));
+                		t_shorted = true;
+                	}else{
+                		t_text.append(link.getLink());
+                	}
+                	
                 	t_text.append("\n");
                 }              
             }            
@@ -910,7 +952,12 @@ public class fetchMgr{
 		t_result = t_result.replaceAll("&quot;", "\"");
 		t_result = t_result.replaceAll("&nbsp;", " ");	
 		
-		return t_result;
+		if(t_shorted){
+			return "\n[yuchberry prompt:some URL would be shorted]\n" + t_result;
+		}else{
+			return t_result;
+		}
+		
 	}
 	
 	static private boolean IsEmptyChar(final char _char){

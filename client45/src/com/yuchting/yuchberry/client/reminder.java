@@ -22,20 +22,26 @@ public class reminder extends Thread{
 		VolumeControl t_control = null;
 		
 		try{
-			final int t_vibrate = 1000;
+			final int 	t_vibrate 		= 1000;
+			final int 	t_vibrateFrag 	= 10;
+			
+			int 		t_vibrateNum 	= 0;
 			
 			for(int i = 0;i < m_mainApp.m_vibrateTime;i++){
 				Alert.startVibrate(t_vibrate);
 				
-				if(Backlight.isEnabled()){
-					throw new Exception("");
-				}
+				// check the BackLight is on
+				//
+				t_vibrateNum = 0;
 				
-				sleep(t_vibrate * 4);
-			}
-			
-			if(Backlight.isEnabled()){
-				throw new Exception("");
+				while(t_vibrateNum++ < t_vibrateFrag){
+					
+					sleep(t_vibrate/t_vibrateFrag);
+					
+					if(Backlight.isEnabled()){
+						throw new Exception("");
+					}
+				}
 			}
 			
 			if(m_mainApp.m_soundVol != 0){
@@ -55,7 +61,7 @@ public class reminder extends Thread{
 					m_mainApp.m_connectDeamon.LoadSound();
 				}				
 			}			
-		}	
+		}
 		
 	}
 }
