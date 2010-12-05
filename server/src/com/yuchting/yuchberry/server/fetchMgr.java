@@ -953,7 +953,7 @@ public class fetchMgr{
 		t_result = t_result.replaceAll("&nbsp;", " ");	
 		
 		if(t_shorted){
-			return "\n[yuchberry prompt:some URL would be shorted]\n" + t_result;
+			return "[yuchberry prompt:some URL would be shorted]\n" + t_result;
 		}else{
 			return t_result;
 		}

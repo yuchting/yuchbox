@@ -950,8 +950,8 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				t_att.m_fileContainBuffer.write(t_bytes);				
 				
-				System.out.println("write msgMailAttach mailIndex:" + t_mailIndex + " attachIndex:" + t_attachIndex + " startIndex:" +
-									t_startIndex + " size:" + t_size + " first:" + (int)t_bytes[0]);
+				//System.out.println("write msgMailAttach mailIndex:" + t_mailIndex + " attachIndex:" + t_attachIndex + " startIndex:" +
+				//					t_startIndex + " size:" + t_size + " first:" + (int)t_bytes[0]);
 				
 				t_att.m_completePercent = t_startIndex * 100 / t_att.m_attachmentSize;
 				

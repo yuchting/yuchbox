@@ -376,24 +376,35 @@ public class berrySvrDeamon extends Thread{
 			// read the google code host page
 			//
 			final String ft_URL = new String("http://code.google.com/p/yuchberry/wiki/Thanks_sheet");
+			String charSet = null;
+			StringBuffer t_stringBuffer = new StringBuffer();
 			
-			URL sponsor = new URL(ft_URL);
+			URL url = new URL(ft_URL);
+			URLConnection con = url.openConnection();
+			con.setAllowUserInteraction(false);
+			con.connect();
+			   
+			String type = URLConnection.guessContentTypeFromStream(con.getInputStream());
 			
-	        URLConnection yc = sponsor.openConnection();
-	        InputStream in = yc.getInputStream();
-	        
-	        StringBuffer t_stringBuffer = new StringBuffer();
-	        
-	        int t_readLineNum = 0;
-	        
-	        while((t_readLineNum = in.available()) != -1){
-	        	byte[] t_charBuffer = new byte[t_readLineNum];
-		        in.read(t_charBuffer);
-		        t_stringBuffer.append(new String(t_charBuffer,"UTF-8"));
-		        
-		        sleep(500);
-	        }   
-	        
+			if (type == null)
+				type = con.getContentType();
+			
+			if (type == null || type.trim().length() == 0 || type.trim().indexOf("text/html") < 0){
+				return ;
+			}
+			
+			if(type.indexOf("charset=") > 0){
+				charSet = type.substring(type.indexOf("charset=") + 8);
+			}
+						
+			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), charSet));
+			
+			String temp;
+			while ((temp = in.readLine()) != null) {
+				t_stringBuffer.append(temp+"\n");
+			}
+			in.close();
+	        	        
 	        String t_line = fetchMgr.ParseHTMLText(t_stringBuffer.toString(),false);
 	        
 	        final int t_start = t_line.indexOf("##@##");
