@@ -129,6 +129,8 @@ public class fetchMgr{
 	
 	Logger	m_logger	= null;
 	
+	ServerSocket m_svr 	= null;
+	
 	String	m_prefix	= null;
 	String 	m_protocol 	= null;
     String 	m_host 		= null;
@@ -235,17 +237,29 @@ public class fetchMgr{
 			p.clear();
 			
 			ReadSignature();
-	       	
-	    	ResetSession();
+			
+	    	
+		}catch(Exception ex){
+			m_logger.PrinterException(ex);
+		}
+			
+	}
 	
-	    	ServerSocket t_svr = GetSocketServer(m_userPassword,m_userSSL);
+	public synchronized void StartListening(){
+		
+		try{
+			
+			ResetSession();
+			
+	    	m_svr = GetSocketServer(m_userPassword,m_userSSL);
 	    	m_logger.LogOut("prepare account OK <" + m_userName + ">" );
 	    	
 			while(true){
 				try{
-					
-					m_currConnect = new berrySvrDeamon(this, t_svr.accept());
-					
+					if(m_svr == null){
+						break;
+					}
+					m_currConnect = new berrySvrDeamon(this, m_svr.accept());
 				}catch(Exception _e){
 					m_logger.PrinterException(_e);
 		    	}
@@ -253,16 +267,29 @@ public class fetchMgr{
 			
 		}catch(Exception ex){
 			
-			m_logger.LogOut("Oops, got exception! " + ex.getMessage());
-		    ex.printStackTrace(m_logger.GetPrintStream());
-		    
+			m_logger.PrinterException(ex);		    
 		    if(ex.getMessage().indexOf("Invalid credentials") != -1){
 				// the password or user name is invalid..
 				//
 		    	m_logger.LogOut("the password or user name is invalid");
 			}
 		}
+		
+		
+	}
+	
+	public synchronized void EndListening(){
+		
+		try{
+			DestroyConnect();
 			
+			if(m_svr != null){
+				m_svr.close();
+				m_svr = null;
+			}
+		}catch(Exception e){
+			
+		}		
 	}
 	
 	private void ReadSignature(){
@@ -403,7 +430,7 @@ public class fetchMgr{
 			
 			in.close();
 			
-			FileOutputStream os = new FileOutputStream("config.ini");
+			FileOutputStream os = new FileOutputStream(m_prefix + "config.ini");
 			os.write(t_contain.toString().getBytes("GB2312"));
 			os.close();
 			

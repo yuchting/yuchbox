@@ -10,8 +10,9 @@ public class fetchMain{
 		
 		while(true){
 
-			t_manger.InitConnect("yuchberry@gmail.com/","config.ini",t_logger);		
-										    
+			t_manger.InitConnect("yuchberry@gmail.com/","config.ini",t_logger);
+			t_manger.StartListening();
+			
 		    try{
 		    	Thread.sleep(10000);
 		    }catch(InterruptedException e){

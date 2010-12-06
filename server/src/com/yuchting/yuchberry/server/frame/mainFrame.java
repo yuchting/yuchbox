@@ -55,9 +55,29 @@ public class mainFrame extends JFrame implements ActionListener{
 		if(e.getSource() == m_addAccount){
 			// open the dialog for creating account of yuchberry
 			//
-			new createDialog(this,"imap.google.com","993","smtp.gmail.com","587");
+			new createDialog(this,"imap.google.com","993","smtp.gmail.com",
+								"587",GetRandomPassword(),"9716","10");
 		}
 		
+	}
+	
+	public String GetRandomPassword(){
+		String t_pass = new String();
+		
+		final int ft_maxPasswordBit = 8;
+		
+		for(int i = 0;i < ft_maxPasswordBit;i++){
+			final int style = (int)(Math.random() * 1000) % 3;
+			if(style == 0){
+				t_pass = t_pass + (char)((int)'0' + ((int)(Math.random() * 1000) % 10));
+			}else if(style == 1){
+				t_pass = t_pass + (char)((int)'a' + ((int)(Math.random() * 1000) % 26));
+			}else{
+				t_pass = t_pass + (char)((int)'A' + ((int)(Math.random() * 1000) % 26));
+			}
+		}
+		
+		return t_pass;
 	}
 
 }
