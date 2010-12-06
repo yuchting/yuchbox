@@ -758,7 +758,7 @@ public class recvMain extends UiApplication implements localResource {
 	
 	public void SetErrorString(final String _error){
 		m_errorString.addElement(new ErrorInfo(_error));
-		if(m_errorString.size() > 8){
+		if(m_errorString.size() > 16){
 			m_errorString.removeElementAt(0);
 		}
 		

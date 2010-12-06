@@ -58,7 +58,7 @@ public class settingScreen extends MainScreen {
 		m_mainApp.m_useSSL	= m_useSSLCheckbox.getChecked();
 		m_mainApp.SetAPNName(m_APN.getText());
 		m_mainApp.m_soundVol = m_soundList.getSelectedValue();
-		m_mainApp.m_vibrateTime = m_soundList.getSelectedValue();
+		m_mainApp.m_vibrateTime = m_vibrateList.getSelectedValue();
 		
 		m_mainApp.WriteReadIni(false);
 		

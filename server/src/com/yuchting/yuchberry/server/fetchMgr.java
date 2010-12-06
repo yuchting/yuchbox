@@ -256,7 +256,7 @@ public class fetchMgr{
 				String t_line = null;
 				while((t_line = in.readLine()) != null){
 					if(!t_line.startsWith("#")){
-						t_stringBuffer.append(t_line);
+						t_stringBuffer.append(t_line + "\n");
 					}
 				}
 				

@@ -10,7 +10,7 @@ public class fetchMain{
 		while(true){
 
 			try{		
-				t_manger.InitConnect("config.ini");				
+				t_manger.InitConnect("config.ini");
 			}catch(Exception ex){
 								
 				Logger.LogOut("Oops, got exception! " + ex.getMessage());
