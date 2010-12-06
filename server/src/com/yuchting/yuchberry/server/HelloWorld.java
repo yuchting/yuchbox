@@ -714,7 +714,7 @@ public class HelloWorld {
 	}
 	
 	static void prt(String s) {
-		Logger.LogOut(s);
+		System.out.println(s);
 	}
 	
 	static void prtA(byte[] a) {

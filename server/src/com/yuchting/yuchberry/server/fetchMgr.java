@@ -127,6 +127,9 @@ public class fetchMgr{
 	
 	final static int	CHECK_NUM = 50;
 	
+	Logger	m_logger	= null;
+	
+	String	m_prefix	= null;
 	String 	m_protocol 	= null;
     String 	m_host 		= null;
     int		m_port		= 0;
@@ -182,70 +185,88 @@ public class fetchMgr{
     //! is connected?
     berrySvrDeamon	m_currConnect = null;
         
-	public void InitConnect(String _configFile) throws Exception{
+	public void InitConnect(String _prefix,String _configFile,Logger _logger){
 		
-		FileInputStream fs = new FileInputStream(_configFile);
+		m_prefix	= _prefix;
+		m_logger	= _logger;
 		
-		Properties p = new Properties(); 
-		p.load(fs);
+		try{
+			FileInputStream fs = new FileInputStream(_configFile);
 		
-    	m_protocol	= p.getProperty("protocol");
-    	m_host		= p.getProperty("host");
-    	m_port		= Integer.valueOf(p.getProperty("port")).intValue();
-    	
-    	m_protocol_send	= p.getProperty("protocol_send");
-    	m_host_send		= p.getProperty("host_send");
-		m_port_send		= Integer.valueOf(p.getProperty("port_send")).intValue();
-		m_listenPort	= Integer.valueOf(p.getProperty("serverPort")).intValue();
-		
-		m_fetchInterval	= Integer.valueOf(p.getProperty("pushInterval")).intValue() * 1000;
-		if(m_fetchInterval <= 1000){
-			System.out.println("the pushInterval segment can't be less than 1sec, set the defaul 10 sec now");
-			m_fetchInterval = 10000;
-		}
-		
-		if(Integer.valueOf(p.getProperty("userSSL")).intValue() == 1){
-			m_userSSL = true;
-		}
-    	
-		m_strUserNameFull		= p.getProperty("account");
-		if(m_strUserNameFull.indexOf('@') == -1 || m_strUserNameFull.indexOf('.') == -1){
-			throw new Exception("account : xxxxx@xxx.xxx such as 1234@gmail.com");
-		}
-		
-		String t_simpleChar = p.getProperty("convertoSimpleChar");
-		if(t_simpleChar != null){
-			m_convertToSimpleChar = t_simpleChar.equals("1");
-		}		
-				
-    	m_userName	= m_strUserNameFull.substring(0,m_strUserNameFull.indexOf('@'));
-    	m_password	= p.getProperty("password");
-    	m_userPassword = p.getProperty("userPassword");
-    	
-    	m_beginFetchIndex = Integer.valueOf(p.getProperty("userFetchIndex")).intValue();
-    	
-    	fs.close();
-		p.clear();
-		
-		ReadSignature();
-       	
-    	ResetSession();
-
-    	ServerSocket t_svr = GetSocketServer(m_userPassword,m_userSSL);
-    	Logger.LogOut("prepare account OK <" + m_userName + ">" );
-    	
-		while(true){
-			try{
-				
-				m_currConnect = new berrySvrDeamon(this, t_svr.accept());
-				
-			}catch(Exception _e){
-				Logger.PrinterException(_e);
+			Properties p = new Properties(); 
+			p.load(fs);
+			
+	    	m_protocol	= p.getProperty("protocol");
+	    	m_host		= p.getProperty("host");
+	    	m_port		= Integer.valueOf(p.getProperty("port")).intValue();
+	    	
+	    	m_protocol_send	= p.getProperty("protocol_send");
+	    	m_host_send		= p.getProperty("host_send");
+			m_port_send		= Integer.valueOf(p.getProperty("port_send")).intValue();
+			m_listenPort	= Integer.valueOf(p.getProperty("serverPort")).intValue();
+			
+			m_fetchInterval	= Integer.valueOf(p.getProperty("pushInterval")).intValue() * 1000;
+			if(m_fetchInterval <= 1000){
+				System.out.println("the pushInterval segment can't be less than 1sec, set the defaul 10 sec now");
+				m_fetchInterval = 10000;
+			}
+			
+			if(Integer.valueOf(p.getProperty("userSSL")).intValue() == 1){
+				m_userSSL = true;
+			}
+	    	
+			m_strUserNameFull		= p.getProperty("account");
+			if(m_strUserNameFull.indexOf('@') == -1 || m_strUserNameFull.indexOf('.') == -1){
+				throw new Exception("account : xxxxx@xxx.xxx such as 1234@gmail.com");
+			}
+			
+			String t_simpleChar = p.getProperty("convertoSimpleChar");
+			if(t_simpleChar != null){
+				m_convertToSimpleChar = t_simpleChar.equals("1");
+			}		
+					
+	    	m_userName	= m_strUserNameFull.substring(0,m_strUserNameFull.indexOf('@'));
+	    	m_password	= p.getProperty("password");
+	    	m_userPassword = p.getProperty("userPassword");
+	    	
+	    	m_beginFetchIndex = Integer.valueOf(p.getProperty("userFetchIndex")).intValue();
+	    	
+	    	fs.close();
+			p.clear();
+			
+			ReadSignature();
+	       	
+	    	ResetSession();
+	
+	    	ServerSocket t_svr = GetSocketServer(m_userPassword,m_userSSL);
+	    	m_logger.LogOut("prepare account OK <" + m_userName + ">" );
+	    	
+			while(true){
+				try{
+					
+					m_currConnect = new berrySvrDeamon(this, t_svr.accept());
+					
+				}catch(Exception _e){
+					m_logger.PrinterException(_e);
+		    	}
 	    	}
-    	}	
+			
+		}catch(Exception ex){
+			
+			m_logger.LogOut("Oops, got exception! " + ex.getMessage());
+		    ex.printStackTrace(m_logger.GetPrintStream());
+		    
+		    if(ex.getMessage().indexOf("Invalid credentials") != -1){
+				// the password or user name is invalid..
+				//
+		    	m_logger.LogOut("the password or user name is invalid");
+			}
+		}
+			
 	}
 	
 	private void ReadSignature(){
+		
 		try{
 			File t_file = new File("signature.txt");
 			
@@ -263,9 +284,25 @@ public class fetchMgr{
 				m_signature = t_stringBuffer.toString();
 			}
 		}catch(Exception e){
-			
+			m_logger.PrinterException(e);
 		}
 		
+	}
+	
+	public String GetAccountName(){
+		return m_strUserNameFull;
+	}
+	
+	public int GetServerPort(){
+		return m_listenPort;
+	}
+	
+	public String GetUserPassword(){
+		return m_userPassword;
+	}
+	
+	public boolean IsUseSSL(){
+		return m_userSSL;
 	}
 	
 	public synchronized void ResetSession()throws Exception{
@@ -333,6 +370,7 @@ public class fetchMgr{
 			m_store.close();
 			m_store = null;
 		}
+		
 	}
 	
 	public int GetMailCountWhenFetched(){
@@ -370,7 +408,7 @@ public class fetchMgr{
 			os.close();
 			
 		}catch(Exception _e){
-			Logger.PrinterException(_e);
+			m_logger.PrinterException(_e);
 		}
 	}
 	
@@ -395,7 +433,7 @@ public class fetchMgr{
 				
 				if(t_add){
 					m_unreadMailVector.add(0,t_confirmMail);
-					Logger.LogOut("load mail<" + t_confirmMail.GetMailIndex() + "> send again,wait confirm...");
+					m_logger.LogOut("load mail<" + t_confirmMail.GetMailIndex() + "> send again,wait confirm...");
 				}
 				
 			}
@@ -428,7 +466,7 @@ public class fetchMgr{
 				t_unreadMailVector_confirm.addElement(t_mail);
 			}
 			
-			Logger.LogOut("send mail<" + t_mail.GetMailIndex() + " : " + t_mail.GetSubject() + ">,wait confirm...");
+			m_logger.LogOut("send mail<" + t_mail.GetMailIndex() + " : " + t_mail.GetSubject() + ">,wait confirm...");
 		}
 	}
 	
@@ -438,21 +476,21 @@ public class fetchMgr{
 		//
 		m_recvMailAttach.addElement(_mail);
 		
-		Logger.LogOut("send mail with attachment " + _mail.m_sendMail.GetAttachment().size());
+		m_logger.LogOut("send mail with attachment " + _mail.m_sendMail.GetAttachment().size());
 		
 		Vector t_list = _mail.m_sendMail.GetAttachment();
 		
 		for(int i = 0;i < t_list.size();i++){
 			fetchMail.Attachment t_attachment = (fetchMail.Attachment)t_list.elementAt(i);
 			
-			String t_filename = "" + _mail.m_sendMail.GetSendDate().getTime() + "_" + i + ".satt";
+			String t_filename = m_prefix + _mail.m_sendMail.GetSendDate().getTime() + "_" + i + ".satt";
 			FileOutputStream fos = new FileOutputStream(t_filename);
 			
 			for(int j = 0;j < t_attachment.m_size;j++){
 				fos.write(0);
 			}
 			
-			Logger.LogOut("store attachment " + t_filename + " size:" + t_attachment.m_size);
+			m_logger.LogOut("store attachment " + t_filename + " size:" + t_attachment.m_size);
 			
 			fos.close();
 		}
@@ -567,7 +605,7 @@ public class fetchMgr{
 		// delete the tmp files
 		//
 		for(int i = 0;i < _mail.m_sendMail.GetAttachment().size();i++){
-			String t_fullname = "" + _mail.m_sendMail.GetSendDate().getTime() + "_" + i + ".satt";
+			String t_fullname = m_prefix + _mail.m_sendMail.GetSendDate().getTime() + "_" + i + ".satt";
 			File t_file = new File(t_fullname);
 			t_file.delete();
 		}		
@@ -591,7 +629,7 @@ public class fetchMgr{
 			Message[] t_msg = folder.getMessages(_index, _index);
 			
 			if(t_msg.length != 0){
-				Logger.LogOut("set index " + _index + " read ");
+				m_logger.LogOut("set index " + _index + " read ");
 				t_msg[0].setFlag(Flags.Flag.SEEN, true);
 			}
 	 	    
@@ -635,7 +673,7 @@ public class fetchMgr{
 		}		  
 	}
 	
-	static public void ImportMail(Message m,fetchMail _mail)throws Exception{
+	public void ImportMail(Message m,fetchMail _mail)throws Exception{
 		
 		Address[] a;
 		
@@ -743,7 +781,7 @@ public class fetchMgr{
 		ImportPart(m,_mail);
 	}
 	
-	static private void ImportPart(Part p,fetchMail _mail)throws Exception{
+	public void ImportPart(Part p,fetchMail _mail)throws Exception{
 		
 		String filename = p.getFileName();
 		
@@ -1051,13 +1089,13 @@ public class fetchMgr{
 					MimeBodyPart t_filePart = new MimeBodyPart();
 					t_filePart.setFileName(MimeUtility.encodeText(t_attachment.m_name));
 
-					String t_fullname = "" + _mail.GetSendDate().getTime() + "_" + i + ".satt";
+					String t_fullname = m_prefix + "" + _mail.GetSendDate().getTime() + "_" + i + ".satt";
 					t_filePart.setContent(ReadFileBuffer( t_fullname ), t_attachment.m_type);
 					
 					t_mainPart.addBodyPart(t_filePart);
 				}	
 			}catch(Exception _e){
-				Logger.LogOut(_e.getMessage());
+				m_logger.LogOut(_e.getMessage());
 			}
 			
 			msg.setContent(t_mainPart);
@@ -1082,8 +1120,8 @@ public class fetchMgr{
 		return t_buffer;
 	}
 	
-	private static  void StoreAttachment(int _mailIndex,int _attachmentIndex,byte[] _contain){
-		String t_filename = "" + _mailIndex + "_" + _attachmentIndex + ".att";
+	private  void StoreAttachment(int _mailIndex,int _attachmentIndex,byte[] _contain){
+		String t_filename = m_prefix + _mailIndex + "_" + _attachmentIndex + ".att";
 		
 		File t_file = new File(t_filename);
 		if(t_file.exists() && t_file.length() == (long) _contain.length){
@@ -1097,12 +1135,12 @@ public class fetchMgr{
 			
 			fos.close();	
 		}catch(Exception _e){
-			Logger.PrinterException(_e);
+			m_logger.PrinterException(_e);
 		}		
 	}
 	
-	private static  int StoreAttachment(MimeBodyPart p,int _mailIndex,int _attachmentIndex){
-		String t_filename = "" + _mailIndex + "_" + _attachmentIndex + ".att";
+	private  int StoreAttachment(MimeBodyPart p,int _mailIndex,int _attachmentIndex){
+		String t_filename = m_prefix + _mailIndex + "_" + _attachmentIndex + ".att";
 		
 		File t_file = new File(t_filename);		
 		try{
@@ -1112,7 +1150,7 @@ public class fetchMgr{
 			return (int)t_file.length();
 			
 		}catch(Exception _e){
-			Logger.PrinterException(_e);
+			m_logger.PrinterException(_e);
 		}	
 		
 		return 0;

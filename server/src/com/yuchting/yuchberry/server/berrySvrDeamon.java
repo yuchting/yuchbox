@@ -36,14 +36,14 @@ class berrySendAttachment extends Thread{
 		m_attachIndex 	= _attachIdx;
 		
 		try{
-			File t_file = new File("" + _mailIndex +"_"+ _attachIdx + ".att");
+			File t_file = new File(m_fetchMain.m_prefix + _mailIndex +"_"+ _attachIdx + ".att");
 			
 			m_fileLength = (int)t_file.length();
 			
 			m_file = new FileInputStream(t_file);
 			
 		}catch(Exception _e){
-			Logger.PrinterException(_e);
+			m_fetchMain.m_logger.PrinterException(_e);
 			return;
 		}
 		
@@ -62,8 +62,8 @@ class berrySendAttachment extends Thread{
 		sendReceive.WriteInt(m_os,t_size);
 		m_os.write(m_buffer);
 		
-		Logger.LogOut("send msgMailAttach mailIndex:" + m_mailIndex + " attachIndex:" + m_attachIndex + " startIndex:" +
-				m_startIndex + " size:" + t_size + " first:" + (int)m_buffer[0]);
+		m_fetchMain.m_logger.LogOut("send msgMailAttach mailIndex:" + m_mailIndex + " attachIndex:" + m_attachIndex + " startIndex:" +
+									m_startIndex + " size:" + t_size + " first:" + (int)m_buffer[0]);
 		
 		while(m_fetchMain.GetClientConnected() == null){
 			sleep(200);
@@ -97,7 +97,7 @@ class berrySendAttachment extends Thread{
 				
 				
 			}catch(Exception _e){
-				Logger.PrinterException(_e);
+				m_fetchMain.m_logger.PrinterException(_e);
 			}			
 		}
 	}
@@ -145,7 +145,7 @@ class berrySvrPush extends Thread{
 					break;
 				}
 				
-				//Logger.LogOut("CheckFolder OK confirm Timer:" + t_confirmTimer);
+				//m_fetchMain.m_logger.LogOut("CheckFolder OK confirm Timer:" + t_confirmTimer);
 				
 				if(++t_confirmTimer > 30){
 					// send the mail without confirm
@@ -160,7 +160,7 @@ class berrySvrPush extends Thread{
 				sleep(m_serverDeamon.m_fetchMgr.GetPushInterval());
 				
 			}catch(Exception _e){
-				Logger.PrinterException(_e);
+				m_serverDeamon.m_fetchMgr.m_logger.PrinterException(_e);
 				
 				// the network is shutdown in a short time
 				//
@@ -172,7 +172,7 @@ class berrySvrPush extends Thread{
 					}
 					
 				}catch(Exception e){
-					Logger.PrinterException(e);
+					m_serverDeamon.m_fetchMgr.m_logger.PrinterException(e);
 					break;
 				}
 			}
@@ -201,7 +201,7 @@ public class berrySvrDeamon extends Thread{
 					
 		try{
 			
-			Logger.LogOut("some client<"+ _s.getInetAddress().getHostAddress() +"> connecting ,waiting for auth");
+			m_fetchMgr.m_logger.LogOut("some client<"+ _s.getInetAddress().getHostAddress() +"> connecting ,waiting for auth");
 			
 			// first handshake with the client via CA instead of 
 			// InputStream.read function to get the information within 1sec time out
@@ -232,7 +232,7 @@ public class berrySvrDeamon extends Thread{
 				_s.getOutputStream().write(os.toByteArray());
 				*/
 				
-				Logger.LogOut("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> connected.");
+				m_fetchMgr.m_logger.LogOut("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> connected.");
 				
 				_s.close();
 				
@@ -247,7 +247,7 @@ public class berrySvrDeamon extends Thread{
 			// time out or other problem
 			//
 			_s.close();
-			Logger.PrinterException(_e);
+			m_fetchMgr.m_logger.PrinterException(_e);
 			
 			return;
 		}
@@ -277,8 +277,8 @@ public class berrySvrDeamon extends Thread{
 			m_pushDeamon = new berrySvrPush(this);
 			m_sendReceive = new sendReceive(m_socket.getOutputStream(),m_socket.getInputStream());	
 		}catch(Exception _e){
-			Logger.LogOut("construct berrySvrDeamon error " + _e.getMessage());
-			_e.printStackTrace(Logger.GetPrintStream());
+			m_fetchMgr.m_logger.LogOut("construct berrySvrDeamon error " + _e.getMessage());
+			_e.printStackTrace(m_fetchMgr.m_logger.GetPrintStream());
 			
 			if(m_sendReceive != null){
 				m_sendReceive.CloseSendReceive();
@@ -289,7 +289,7 @@ public class berrySvrDeamon extends Thread{
 				
 		start();
 		
-		Logger.LogOut("some client connect IP<" + m_socket.getInetAddress().getHostAddress() + ">");
+		m_fetchMgr.m_logger.LogOut("some client connect IP<" + m_socket.getInetAddress().getHostAddress() + ">");
 	}
 		
 	public void run(){
@@ -306,7 +306,7 @@ public class berrySvrDeamon extends Thread{
 				
 				byte[] t_package = m_sendReceive.RecvBufferFromSvr();
 				
-				Logger.LogOut("receive package length:" + t_package.length);
+				m_fetchMgr.m_logger.LogOut("receive package length:" + t_package.length);
 				
 				ProcessPackage(t_package);
 				
@@ -317,7 +317,7 @@ public class berrySvrDeamon extends Thread{
 						m_socket.close();
 					}									
 				}catch(Exception e){
-					Logger.PrinterException(_e);
+					m_fetchMgr.m_logger.PrinterException(_e);
 				}
 				
 				
@@ -327,7 +327,7 @@ public class berrySvrDeamon extends Thread{
 				
 				m_pushDeamon.interrupt();
 				
-				Logger.PrinterException(_e);
+				m_fetchMgr.m_logger.PrinterException(_e);
 				
 				// prepare repush unconfirm mail vector
 				//
@@ -436,7 +436,7 @@ public class berrySvrDeamon extends Thread{
 				if(t_confirmMail.GetMailIndex() == t_mailIndex){
 					t_unreadMailVector_confirm.removeElementAt(i);
 					
-					Logger.LogOut("Mail Index<" + t_mailIndex + "> confirmed");
+					m_fetchMgr.m_logger.LogOut("Mail Index<" + t_mailIndex + "> confirmed");
 					break;
 				}
 			}
@@ -481,14 +481,14 @@ public class berrySvrDeamon extends Thread{
 		final int t_segIdx = sendReceive.ReadInt(in);
 		final int t_segSize = sendReceive.ReadInt(in);
 		
-		String t_filename = "" + t_time + "_" + t_attachmentIdx + ".satt";
+		String t_filename = m_fetchMgr.m_prefix + t_time + "_" + t_attachmentIdx + ".satt";
 		File t_file = new File(t_filename);
 		
 		if(t_segIdx + t_segSize > t_file.length()){
 			throw new Exception("error attach" + t_filename + " idx and size");
 		}
 		
-		Logger.LogOut("recv msgMailAttach time:"+ t_time + " beginIndex:" + t_segIdx + " size:" + t_segSize);
+		m_fetchMgr.m_logger.LogOut("recv msgMailAttach time:"+ t_time + " beginIndex:" + t_segIdx + " size:" + t_segSize);
 		
 		byte[] t_bytes = new byte[t_segSize];
 		sendReceive.ForceReadByte(in, t_bytes, t_segSize);
@@ -538,7 +538,7 @@ public class berrySvrDeamon extends Thread{
 
 		m_sendReceive.SendBufferToSvr(os.toByteArray(),false);
 		
-		Logger.LogOut("Mail <" +_mail.m_sendMail.GetSendDate().getTime() +  "> send " + ((t_succ == 1)?"Succ":"Failed"));
+		m_fetchMgr.m_logger.LogOut("Mail <" +_mail.m_sendMail.GetSendDate().getTime() +  "> send " + ((t_succ == 1)?"Succ":"Failed"));
 	}
 	
 	private void ProcessBeenReadMail(ByteArrayInputStream in)throws Exception{

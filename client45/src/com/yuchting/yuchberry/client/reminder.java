@@ -34,7 +34,7 @@ public class reminder extends Thread{
 				//
 				t_vibrateNum = 0;
 				
-				while(t_vibrateNum++ < t_vibrateFrag){
+				while(t_vibrateNum++ < t_vibrateFrag * 3){
 					
 					sleep(t_vibrate/t_vibrateFrag);
 					
@@ -45,7 +45,7 @@ public class reminder extends Thread{
 			}
 			
 			if(m_mainApp.m_soundVol != 0){
-				t_control = (VolumeControl)m_mainApp.m_connectDeamon.m_newMailNotifier.getControl("VolumeControl");
+				t_control = (VolumeControl)m_mainApp.m_connectDeamon.m_newMailNotifier.getControl("VolumeControl"); 
 				t_control.setLevel(m_mainApp.m_soundVol * 20);
 				m_mainApp.m_connectDeamon.m_newMailNotifier.start();
 			}
@@ -53,19 +53,21 @@ public class reminder extends Thread{
 		}catch(Exception e){
 			Alert.stopVibrate();
 			
-			if(t_control != null){
-				try{
-					m_mainApp.m_connectDeamon.m_newMailNotifier.stop();
-					m_mainApp.m_connectDeamon.m_newMailNotifier.prefetch();
-				}catch(Exception _e){
-					m_mainApp.m_connectDeamon.LoadSound();
-				}				
-			}
+//			if(t_control != null){
+//				try{
+//					m_mainApp.m_connectDeamon.m_newMailNotifier.stop();
+//					m_mainApp.m_connectDeamon.m_newMailNotifier.prefetch();
+//				}catch(Exception _e){
+//					m_mainApp.m_connectDeamon.LoadSound();
+//				}				
+//			}			
+
 		}
 		
+
 		try{
-			sleep(5000);
-		}catch(Exception _e	){}		
-		
+			sleep(10000);
+		}catch(Exception e){}
+
 	}
 }
