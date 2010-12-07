@@ -776,11 +776,9 @@ public class connectDeamon extends Thread implements SendListener,
 			Folder[] t_folders = store.list();
 			for(int i = 0;i < t_folders.length;i++){
 				String t_name = t_folders[i].toString();
-				
-				m_mainApp.SetErrorString(t_name);
-				
-				if(t_name.indexOf("Email") != -1 
-					&& (t_name.indexOf("Inbox") != -1 || t_name.indexOf("收件箱") != -1 )){
+				if((t_name.indexOf("Inbox") != -1 || t_name.indexOf("收件箱") != -1 ) 
+				&& (t_name.indexOf("no service book") == -1)){
+					
 					folder = t_folders[i];
 					break;
 				}
