@@ -357,9 +357,13 @@ public class fetchMgr{
     	m_session.setDebug(false);
     	
     	if(m_protocol.indexOf("pop3") != -1){
-    		m_sysProps.setProperty("mail.pop3.disabletop", "true");
+    		m_sysProps.put("mail.pop3.disabletop", "true");
     	}
-    			
+    	
+    	m_sysProps.put("mail.imap.timeout","10000");
+    	m_sysProps.put("mail.smtp.timeout","20000");
+    	m_sysProps.put("mail.pop3.timeout","10000");
+    	
     	m_store = m_session.getStore(m_protocol);
     	m_store.connect(m_host,m_port,m_userName,m_password);
     	
@@ -367,7 +371,12 @@ public class fetchMgr{
     	//
     	m_sysProps_send.put("mail.smtp.auth", "true");
     	m_sysProps_send.put("mail.smtp.port", Integer.toString(m_port_send));
-    	m_sysProps_send.put("mail.smtp.starttls.enable","true");
+    	
+    	if(m_protocol.indexOf("s") != -1){
+    		m_sysProps_send.put("mail.smtp.starttls.enable","true");
+    	}else{
+    		m_sysProps_send.put("mail.smtp.starttls.enable","false");
+    	}
     	
     	m_session_send = Session.getInstance(m_sysProps_send, null);
     	m_session_send.setDebug(false);
@@ -1029,8 +1038,18 @@ public class fetchMgr{
 		
 	}
 	
-	static private boolean IsEmptyChar(final char _char){
+	static public boolean IsEmptyChar(final char _char){
 		return _char == ' ' || _char == '\n' || _char == '\t' || _char == '\r';
+	}
+	
+	static public boolean IsEmptyLine(final String _string){
+		for(int i = 0;i < _string.length();i++){
+			if(!IsEmptyChar(_string.charAt(i))){
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	static private String GetShortURL(String _longURL){

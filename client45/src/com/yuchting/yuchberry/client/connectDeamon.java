@@ -823,7 +823,7 @@ public class connectDeamon extends Thread implements SendListener,
 			}						 
 							
 		}catch(Exception _e){
-			m_mainApp.SetErrorString("C:\n" + _e.getMessage());
+			m_mainApp.SetErrorString("C:" + _e.getMessage());
 		}
 	}
 	

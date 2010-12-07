@@ -5,13 +5,18 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -32,11 +37,13 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 
+import com.yuchting.yuchberry.server.fetchMgr;
+
 class NumberMaxMinLimitedDmt extends PlainDocument {
 	 
 	private int 		m_max;
 	private JTextField	m_ownText;
-   
+	   
 	public NumberMaxMinLimitedDmt(int max,JTextField _text) {
 		super();
 	   
@@ -71,15 +78,69 @@ class NumberMaxMinLimitedDmt extends PlainDocument {
 	       
 }
 
-public class createDialog extends JDialog implements DocumentListener,ActionListener{
+public class createDialog extends JDialog implements DocumentListener,
+															ActionListener,
+															ItemListener{
 	
 	final static int		fsm_width = 300;
 	final static int		fsm_height = 630;
+	
+	class commonConfig{
+		String	m_name;
+		String	m_protocalName;
+		String	m_host;
+		String	m_port;
+		
+		String	m_host_send;
+		String	m_port_send;
+		
+		public commonConfig(String _parserLine)throws Exception{
+			String[] t_data = _parserLine.split(",");
+			
+			if(t_data.length < 6){
+				throw new Exception("commonMailSvr.ini file contain '" + _parserLine + "' read error");
+			}
+			
+			for(int i = 0;i < t_data.length;i++){
+				if(t_data[i].length() == 0){
+					throw new Exception("commonMailSvr.ini file contain '" + _parserLine + "' read error");
+				}
+			}
+			
+			m_name 			= t_data[0];
+			m_protocalName 	= t_data[1];
+			m_host 			= t_data[2];
+			m_port 			= t_data[3];
+			m_host_send		= t_data[4];
+			m_port_send		= t_data[5];			
+		}
+		
+		public void SetConfig(createDialog _dlg){
+			if(m_host.equals("0")){
+				return;
+			}
+			
+			_dlg.m_host.setText(m_host);
+			_dlg.m_port.setText(m_port);
+			
+			for(int i = 0;i < _dlg.m_protocal.length;i++){
+				if(m_protocal[i].getText().equals(m_protocalName)){
+					m_protocal[i].setSelected(true);
+					break;
+				}
+			}
+			
+			_dlg.m_send_host.setText(m_host_send);
+			_dlg.m_send_port.setText(m_port_send);
+		}
+		
+	}
 	
 	mainFrame	m_mainFrame = null;
 	
 	JComboBox	m_commonConfigList = new JComboBox();
 	DefaultComboBoxModel m_commonConfigListModel = new DefaultComboBoxModel();
+	Vector		m_commonConfigData	= new Vector();
 	
 	JTextField 	m_account		= new JTextField();
 	JTextField 	m_password		= new JTextField();
@@ -128,6 +189,8 @@ public class createDialog extends JDialog implements DocumentListener,ActionList
 		
 
 		m_commonConfigList.setModel(m_commonConfigListModel);
+		m_commonConfigList.addItemListener(this);
+		
 		m_pushInterval.setDocument(new NumberMaxMinLimitedDmt(3600,m_pushInterval));
 		m_serverPort.setDocument(new NumberMaxMinLimitedDmt(20000,m_serverPort));
 		m_port.setDocument(new NumberMaxMinLimitedDmt(20000,m_port));
@@ -245,7 +308,16 @@ public class createDialog extends JDialog implements DocumentListener,ActionList
 				setVisible(false);
 				dispose();	
 			}
-		}		
+		}
+	}
+	
+	public void itemStateChanged(ItemEvent e){
+		if(e.getSource() == m_commonConfigList){
+			if(e.getStateChange() == ItemEvent.SELECTED){
+				commonConfig t_config = (commonConfig)m_commonConfigData.elementAt(m_commonConfigList.getSelectedIndex());
+				t_config.SetConfig(this);
+			}
+		}
 	}
 	
 	private void AddTextLabel(String _label,JTextField _text,int _length,String _defaultVal){
@@ -276,9 +348,37 @@ public class createDialog extends JDialog implements DocumentListener,ActionList
 	}
 	
 	private void AddCommonConfigList(){
-		m_commonConfigListModel.addElement("自定义");
-		m_commonConfigListModel.addElement("hahah");
-		m_commonConfigListModel.addElement("xxxx");
+		
+		m_commonConfigData.removeAllElements();
+		m_commonConfigListModel.removeAllElements();
+			
+		try{
+			BufferedReader in = new BufferedReader(
+					new InputStreamReader(
+							new FileInputStream("commonMailSvr.ini")));
+
+			String line = null;
+			while((line = in.readLine())!= null){
+				if(!line.startsWith("#") && !fetchMgr.IsEmptyLine(line)){
+					try{
+						commonConfig t_config = new commonConfig(line);
+						m_commonConfigData.addElement(t_config);
+						m_commonConfigListModel.addElement(t_config.m_name);
+						
+					}catch(Exception e){
+						JOptionPane.showMessageDialog(this, "读取" + "commonMailSvr.ini " + "出现问题：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+					}				
+					
+					line = line.replaceAll("userFetchIndex=[^\n]*", "userFetchIndex=0");
+				}
+			}
+			
+			in.close();
+			
+		}catch(Exception e){
+			JOptionPane.showMessageDialog(this, "读取" + "commonMailSvr.ini " + "出现问题：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+		}	
+
 	}
 	
 	private boolean CreateAccountAndTest(){
@@ -315,9 +415,13 @@ public class createDialog extends JDialog implements DocumentListener,ActionList
 		fetchThread t_thread = null;
 
 		try{
+			
+			WriteIniFile(t_prefix + "config.ini");
+			
 			t_thread = new fetchThread(t_prefix,t_prefix + "config.ini",Long.valueOf(m_expiredTime.getText()).longValue());
+			
 		}catch(Exception e){
-			JOptionPane.showMessageDialog(this,e.getMessage(), "连接错误", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this,e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
 				
@@ -325,6 +429,94 @@ public class createDialog extends JDialog implements DocumentListener,ActionList
 				
 		return true;
 	}
+	
+	private void WriteIniFile(String _iniFile)throws Exception{
+		
+		BufferedReader in = new BufferedReader(
+								new InputStreamReader(
+										new FileInputStream(_iniFile)));
+			
+		StringBuffer t_contain = new StringBuffer();
+		
+		String line = null;
+		while((line = in.readLine())!= null){
+			if(line.indexOf("userFetchIndex=") != -1){
+				line = line.replaceAll("userFetchIndex=[^\n]*", "userFetchIndex=0");
+			}else{
+				line = CheckIniFileLine(line);
+			}			
+			t_contain.append(line + "\r\n");
+		}		
+		in.close();
+		
+				
+		FileOutputStream os = new FileOutputStream(_iniFile);
+		os.write(t_contain.toString().getBytes("GB2312"));
+		os.close();
+		
+	}
+	
+	private String CheckIniFileLine(String _line){
+		if(_line.startsWith("#")){
+			return _line;
+		}
+		
+		if(_line.startsWith("\n") || _line.startsWith("\r")){
+			return _line;
+		}
+		
+		final Object[][] t_replace = 
+		{
+			{"account=",m_account},
+			{"password=",m_password},
+			{"protocol=",m_protocal},
+			{"host=",m_host},
+			{"port=",m_port},
+			{"host_send=",m_send_host},
+			{"port_send=",m_send_port},
+			{"userPassword=",m_userPassword},
+			{"serverPort=",m_serverPort},
+			{"pushInterval=",m_pushInterval},
+			{"userSSL=",m_useSSL},
+			{"convertoSimpleChar=",m_convertToSimple},
+		};
+		
+		for(int i = 0;i < t_replace.length;i++){
+			String t_segmentName = (String)t_replace[i][0];
+			if(_line.startsWith(t_segmentName)){
+				if(t_replace[i][1] instanceof JTextField){
+					
+					_line = _line.replaceFirst(t_segmentName + "[^\n]*", t_segmentName + ((JTextField)t_replace[i][1]).getText());
+					
+				}else if(t_replace[i][1] instanceof JCheckBox){
+					
+					JCheckBox t_check = (JCheckBox)t_replace[i][1];
+					_line = _line.replaceFirst(t_segmentName + "[^\n]*", t_segmentName + (t_check.isSelected()?"1":"0"));
+					
+				}else if(t_replace[i][1] instanceof JRadioButton[]){
+					
+					JRadioButton[] t_radioButton = (JRadioButton[])t_replace[i][1];
+					
+					String t_replaceRadio = null;
+					
+					for(int j = 0; j < t_radioButton.length;j++){
+						if(t_radioButton[j].isSelected()){
+							t_replaceRadio = t_radioButton[j].getText();
+							break;
+						}
+					}
+					
+					_line = _line.replaceFirst(t_segmentName + "[^\n]*", t_segmentName + t_replaceRadio);
+					
+				}
+				
+			}
+		}
+
+		return _line;		
+		
+	}
+	
 	
 	public static void CopyFile(String sourceFile,String targetFile) throws IOException{
 

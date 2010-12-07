@@ -12,9 +12,7 @@ public class fetchThread extends Thread{
 	
 	boolean	m_pauseState = false;
 	boolean	m_close		= false;
-	
-	boolean	m_failedState = false;
-	
+		
 	long		m_expiredTime	= 0;
 	
 	long		m_expiredTimer	= 0;
@@ -48,22 +46,20 @@ public class fetchThread extends Thread{
 				m_logger.PrinterException(e);
 			}
 			
-			// first test state variable
-			//
-			m_failedState = true;
-			
 			try{
 				sleep(1000);
 			}catch(Exception ex){}
 		}
 	}
 	
-	public boolean IsExpired(){
-		if(((new Date()).getTime() - m_formerTimer) > m_expiredTime){
-			return true;
+	
+	public long GetLastTime(){
+		if(m_expiredTime > 0){
+			return m_expiredTime - ((new Date()).getTime() - m_formerTimer);
 		}
 		
-		return false;
+		return 0;
+		
 	}
 	
 	public void Pause(){

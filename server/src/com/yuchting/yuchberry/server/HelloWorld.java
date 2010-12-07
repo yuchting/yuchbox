@@ -225,14 +225,17 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[]){
 
-		HelloWorld test = new HelloWorld();
-		test.berryRecvTest();	
+//		HelloWorld test = new HelloWorld();
+//		test.berryRecvTest();	
+//		
+//		try{
+//			System.out.println(DecodeName("start =?NdieldiehBId,e?= end",false));
+//		}catch(Exception e){}
 		
-		try{
-			System.out.println(DecodeName("start =?NdieldiehBId,e?= end",false));
-		}catch(Exception e){}
 		
-		
+		if(("   #sdkfsdkfh").startsWith("#")){
+			System.out.println("hahah");
+		}
 
 	}
 

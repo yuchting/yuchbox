@@ -76,19 +76,22 @@ public class mainFrame extends JFrame implements ActionListener{
 		m_addAccount = new JButton("+ 添加账户");
 		m_addAccount.setVerticalTextPosition(AbstractButton.CENTER);
 		m_addAccount.setHorizontalTextPosition(AbstractButton.LEADING);
-		m_addAccount.setAlignmentX(Component.CENTER_ALIGNMENT);  
+		m_addAccount.setAlignmentX(Component.LEFT_ALIGNMENT);
 		m_addAccount.setToolTipText("添加一个新的yuchberry账户");
 		m_addAccount.addActionListener(this);
 		
 		getContentPane().add(m_addAccount);		
 		
 		m_stateLabel = new JLabel("state:");
+		m_stateLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		getContentPane().add(m_stateLabel);
 		
 		m_accountTable = new accountTable(this);
 		getContentPane().add(new JScrollPane(m_accountTable));
 		
 		setVisible(true);
+		
+		new checkStateThread(this);
 	}
 	
 	public fetchThread SearchAccountThread(String _accountName,int _port){
@@ -132,7 +135,19 @@ public class mainFrame extends JFrame implements ActionListener{
 	}
 	
 	public synchronized void RefreshState(){
+		int t_connectNum = 0;
 		
+		for(int i = 0;i < m_accountList.size();i++){
+			fetchThread t_thread = (fetchThread)m_accountList.elementAt(i);
+			
+			if(!t_thread.m_pauseState){
+				t_connectNum++;
+			}
+		}
+		
+		m_stateLabel.setText("连接账户数：" + t_connectNum + "/" + m_accountList.size());
+		
+		m_accountTable.RefreshState();
 	}
 	
 	static public String GetRandomPassword(){

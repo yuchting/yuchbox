@@ -80,6 +80,25 @@ public class accountTable extends JTable{
 		m_fetchMgrListRef.addElement(_thread);
 	}
 	
+	public synchronized void RefreshState(){
+		
+		final int t_rowNum = m_defaultModel.getRowCount();
+		
+		for(int i = 0;i < t_rowNum;i++){
+			fetchThread t_thread = (fetchThread)m_fetchMgrListRef.elementAt(i);
+			
+			if(t_thread.m_pauseState){
+				m_defaultModel.setValueAt("暂停",i, 5);
+			}else if(t_thread.m_close){
+				m_defaultModel.setValueAt("关闭",i, 5);
+			}else{
+				m_defaultModel.setValueAt("运行中",i, 5);
+			}
+			
+			m_defaultModel.setValueAt(new Long(t_thread.GetLastTime() / 1000 / 3600),i,3);
+		}
+	}
+	
 	public void DelAccount(final fetchThread _thread){
 		final int t_rowNum = m_defaultModel.getRowCount();
 		
