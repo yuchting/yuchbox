@@ -5,6 +5,13 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -47,7 +54,7 @@ class NumberMaxMinLimitedDmt extends PlainDocument {
 	   
 		String t_current = m_ownText.getText().substring(0,offset) + str + m_ownText.getText().substring(offset);
 	   
-		if(Integer.valueOf(t_current).intValue() <= m_max){
+		if(m_max == -1 || Integer.valueOf(t_current).intValue() <= m_max){
 		   
 			char[] upper = str.toCharArray();
 			int length = 0;
@@ -67,7 +74,9 @@ class NumberMaxMinLimitedDmt extends PlainDocument {
 public class createDialog extends JDialog implements DocumentListener,ActionListener{
 	
 	final static int		fsm_width = 300;
-	final static int		fsm_height = 600;
+	final static int		fsm_height = 630;
+	
+	mainFrame	m_mainFrame = null;
 	
 	JComboBox	m_commonConfigList = new JComboBox();
 	DefaultComboBoxModel m_commonConfigListModel = new DefaultComboBoxModel();
@@ -96,6 +105,7 @@ public class createDialog extends JDialog implements DocumentListener,ActionList
 	
 	JCheckBox	m_useSSL			= new JCheckBox("使用SSL加密");
 	JCheckBox	m_convertToSimple	= new JCheckBox("转换繁体为简体");
+	JTextField	m_expiredTime		= new JTextField();
 	
 	JTextArea	m_signature			= new JTextArea();
 	
@@ -103,10 +113,12 @@ public class createDialog extends JDialog implements DocumentListener,ActionList
 	
 	public createDialog(mainFrame _main,String _formerHost,String _formerPort,
 										String _formerHost_send,String _formerPort_send,
-										String _userPassword,String _serverPort,String _pushInterval){
+										String _userPassword,String _serverPort,String _pushInterval,String _expiredTime){
 		
 		super(_main,"添加一个账户",true);
-				
+		
+		m_mainFrame = _main;
+		
 		setResizable(false);
 		getContentPane().setLayout(new FlowLayout());
 		
@@ -120,6 +132,7 @@ public class createDialog extends JDialog implements DocumentListener,ActionList
 		m_serverPort.setDocument(new NumberMaxMinLimitedDmt(20000,m_serverPort));
 		m_port.setDocument(new NumberMaxMinLimitedDmt(20000,m_port));
 		m_send_port.setDocument(new NumberMaxMinLimitedDmt(20000,m_send_port));
+		m_expiredTime.setDocument(new NumberMaxMinLimitedDmt(-1, m_expiredTime));
 		
 		m_host.getDocument().addDocumentListener(this);
 		m_signature.setLineWrap(true);
@@ -155,6 +168,8 @@ public class createDialog extends JDialog implements DocumentListener,ActionList
 		
 		AddTextLabel("用户密码:",m_userPassword,100,_userPassword);
 		AddTextLabel("用户端口:",m_serverPort,60,_serverPort);
+		
+		AddTextLabel("过期时间(单位小时，0为不过期):",m_expiredTime,90,_expiredTime);
 		
 		AddTextLabel("推送间隔（秒）：",m_pushInterval,180,_pushInterval);
 		m_useSSL.setPreferredSize(new Dimension(fsm_width - 20, 25));
@@ -198,55 +213,38 @@ public class createDialog extends JDialog implements DocumentListener,ActionList
 	
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == m_confirmBut){
-//			JTextField 	m_account		= new JTextField();
-//			JTextField 	m_password		= new JTextField();
-//			JTextField 	m_host			= new JTextField();
-//			JTextField 	m_port			= new JTextField();
-//			
-//			ButtonGroup m_protocalGroup = new ButtonGroup();
-//			JRadioButton[]	m_protocal	= new JRadioButton[]{
-//											new JRadioButton("imap"),
-//											new JRadioButton("imaps"),
-//											new JRadioButton("pop3"),
-//											new JRadioButton("pop3s"),
-//											};
-//			
-//			JTextField 	m_send_host			= new JTextField();
-//			JTextField 	m_send_port			= new JTextField();
-//			
-//			
-//			JTextField	m_userPassword		= new JTextField();
-//			JTextField	m_serverPort		= new JTextField();
-//			
-//			JTextField	m_pushInterval		= new JTextField();
-//			
-//			JCheckBox	m_useSSL			= new JCheckBox("使用SSL加密");
-//			JCheckBox	m_convertToSimple	= new JCheckBox("转换繁体为简体");
-//			
-//			JTextArea	m_signature			= new JTextArea();
-//			
-//			JButton		m_confirmBut		= new JButton("确定");
+
 			if(m_account.getText().length() == 0 || m_password.getText().length() == 0){
-				JOptionPane.showMessageDialog(null, "账户名、密码不能为空", "错误", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, "账户名、密码不能为空", "错误", JOptionPane.ERROR_MESSAGE);
+				return;
 			}
 			
 			if(m_host.getText().length() == 0 || m_port.getText().length() == 0){
-				JOptionPane.showMessageDialog(null, "邮件接受服务器地址、端口不能为空", "错误", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, "邮件接受服务器地址、端口不能为空", "错误", JOptionPane.ERROR_MESSAGE);
+				return;
 			}
 			
 			if(m_send_host.getText().length() == 0 || Integer.valueOf(m_send_port.getText()).intValue() <= 0){
-				JOptionPane.showMessageDialog(null, "邮件发送服务器地址不能为空，端口非法", "错误", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, "邮件发送服务器地址不能为空，端口非法", "错误", JOptionPane.ERROR_MESSAGE);
+				return;
 			}
 			
 			final int t_listenPort = 3000;
 			if(m_userPassword.getText().length() == 0 || Integer.valueOf(m_serverPort.getText()).intValue() <= t_listenPort){
-				JOptionPane.showMessageDialog(null, "用户密码不能为空，监听yuchberry端口不能小于" + t_listenPort, "错误", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, "用户密码不能为空，监听yuchberry端口不能小于 " + t_listenPort, "错误", JOptionPane.ERROR_MESSAGE);
+				return;
 			}
 			
+			final int t_minPushInterval = 2;
+			if(Integer.valueOf(m_pushInterval.getText()).intValue() <= t_minPushInterval){
+				JOptionPane.showMessageDialog(this, "推送间隔不能小于 " + t_minPushInterval, "错误", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 			
-			
-			setVisible(false);
-			dispose();
+			if(CreateAccountAndTest()){
+				setVisible(false);
+				dispose();	
+			}
 		}		
 	}
 	
@@ -282,4 +280,71 @@ public class createDialog extends JDialog implements DocumentListener,ActionList
 		m_commonConfigListModel.addElement("hahah");
 		m_commonConfigListModel.addElement("xxxx");
 	}
+	
+	private boolean CreateAccountAndTest(){
+		
+		File t_dir = new File(m_account.getText());
+		if(!t_dir.exists() || !t_dir.isDirectory()){
+			t_dir.mkdir();
+		}
+		
+		String t_prefix = m_account.getText() + "/";
+		try{
+			CopyFile("config.ini" , t_prefix + "config.ini");
+		}catch(Exception e){
+			JOptionPane.showMessageDialog(this, "复制创建" + t_prefix + "config.ini" + "出现问题：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		
+		final int t_serverPort = Integer.valueOf(m_serverPort.getText()).intValue();
+		
+		if(m_mainFrame.SearchAccountThread(m_account.getText(),t_serverPort) != null){
+			JOptionPane.showMessageDialog(this,m_account.getText() + " 账户重复，或者服务端口" + t_serverPort + "已经被使用" , "错误", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		
+		ServerSocket t_sockTest = null;
+		try{
+			t_sockTest = (new ServerSocket(t_serverPort));
+			t_sockTest.close();
+		}catch(Exception e){
+			JOptionPane.showMessageDialog(this,"服务端口" + t_serverPort + "无法开启：" + e.getMessage() , "错误", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}		
+		
+		fetchThread t_thread = null;
+
+		try{
+			t_thread = new fetchThread(t_prefix,t_prefix + "config.ini",Long.valueOf(m_expiredTime.getText()).longValue());
+		}catch(Exception e){
+			JOptionPane.showMessageDialog(this,e.getMessage(), "连接错误", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+				
+		m_mainFrame.AddAccountThread(t_thread);
+				
+		return true;
+	}
+	
+	public static void CopyFile(String sourceFile,String targetFile) throws IOException{
+
+		FileInputStream input = new FileInputStream(sourceFile); 
+		BufferedInputStream inBuff=new BufferedInputStream(input); 
+		 
+		FileOutputStream output = new FileOutputStream(targetFile); 
+		BufferedOutputStream outBuff=new BufferedOutputStream(output); 
+		
+		byte[] b = new byte[1024 * 5]; 
+		int len; 
+		while ((len =inBuff.read(b)) != -1) { 
+		    outBuff.write(b, 0, len); 
+		}
+		
+		outBuff.flush(); 
+
+	    inBuff.close(); 
+	    outBuff.close(); 
+	    output.close(); 
+	    input.close(); 
+	} 
 }

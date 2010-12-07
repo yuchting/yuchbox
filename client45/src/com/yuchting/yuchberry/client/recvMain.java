@@ -37,7 +37,8 @@ import net.rim.device.api.ui.container.MainScreen;
 class ErrorLabelText extends Field{
 	Vector m_stringList;
 	static final int		fsm_space = 1;
-	static final int		fsm_fontHeight = 14;
+	
+	static int sm_fontHeight = 15;
 	
 	public ErrorLabelText(Vector _stringList){
 		super(Field.READONLY | Field.NON_FOCUSABLE | Field.USE_ALL_WIDTH);
@@ -46,6 +47,8 @@ class ErrorLabelText extends Field{
 		try{
 			Font myFont = FontFamily.forName("BBMillbankTall").getFont(Font.PLAIN,8,Ui.UNITS_pt);
 			setFont(myFont);
+			
+			sm_fontHeight = myFont.getHeight() - 3;
 		}catch(Exception _e){}
 	}
 	
@@ -53,14 +56,14 @@ class ErrorLabelText extends Field{
 		final int t_width = Display.getWidth();
 			
 		final int t_size 	= m_stringList.size();
-		final int t_height = Math.max(0, (t_size - 1)) * fsm_space +  t_size * fsm_fontHeight;
+		final int t_height = Math.max(0, (t_size - 1)) * fsm_space +  t_size * sm_fontHeight;
 		
 		setExtent(t_width, t_height);
 	}
 	
 	public void paint(Graphics _g){
 		int t_y = 0;
-		final int t_fontHeight = fsm_fontHeight;
+		final int t_fontHeight = sm_fontHeight;
 		
 		SimpleDateFormat t_format = new SimpleDateFormat("HH:mm:ss");
 		

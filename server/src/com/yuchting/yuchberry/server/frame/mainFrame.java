@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.server.frame;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Vector;
 
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
@@ -11,6 +12,33 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 
+class checkStateThread extends Thread{
+	mainFrame	m_mainFrame	= null;
+	
+	public checkStateThread(mainFrame _main){
+		m_mainFrame = _main;
+		
+		start();
+	}
+	
+	public void run(){
+		while(true){
+			
+			try{
+				
+				try{
+					sleep(5000);
+				}catch(Exception e){}
+				
+				m_mainFrame.RefreshState();
+				
+			}catch(Exception ex){}
+		}
+		
+		
+	}
+}
+
 public class mainFrame extends JFrame implements ActionListener{
 	
 	final static int 	fsm_width 	= 800;
@@ -18,8 +46,20 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	JButton		m_addAccount		= null;
 	JLabel		m_stateLabel		= null;
-		
+
 	accountTable m_accountTable		= null;
+	
+	Vector		m_accountList		= new Vector();
+	
+	String		m_formerHost		= new String("imap.gmail.com");
+	int			m_formerHost_port	= 993;
+	
+	String		m_formerHost_send		= new String("smtp.gmail.com");
+	int			m_formerHost_port_send	= 587;
+	
+	int			m_formerServer_port		= 9716;
+	int			m_pushInterval			= 10;
+	int			m_expiredTime			= 0;
 	
 	static public void main(String _arg[]){
 		new mainFrame();
@@ -48,20 +88,54 @@ public class mainFrame extends JFrame implements ActionListener{
 		m_accountTable = new accountTable(this);
 		getContentPane().add(new JScrollPane(m_accountTable));
 		
-		setVisible(true);		
+		setVisible(true);
+	}
+	
+	public fetchThread SearchAccountThread(String _accountName,int _port){
+		
+		for(int i = 0;i < m_accountList.size();i++){
+			fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
+			if(t_fetch.m_fetchMgr.GetAccountName().equals(_accountName) 
+			|| t_fetch.m_fetchMgr.GetServerPort() == _port){
+				
+				return t_fetch;
+			}
+		}
+		
+		return null;
+	}
+	
+	public boolean AddAccountThread(fetchThread _thread){
+		
+		for(int i = 0;i < m_accountList.size();i++){
+			fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
+			if(t_fetch.m_fetchMgr.GetAccountName().equals(_thread.m_fetchMgr.GetAccountName())){
+				return false;
+			}
+		}
+		
+		m_accountList.addElement(_thread);
+		m_accountTable.AddAccount(_thread);
+		
+		return true;
 	}
 	
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == m_addAccount){
 			// open the dialog for creating account of yuchberry
 			//
-			new createDialog(this,"imap.google.com","993","smtp.gmail.com",
-								"587",GetRandomPassword(),"9716","10");
+			new createDialog(this,m_formerHost,"" + m_formerHost_port,m_formerHost_send,
+								"" + m_formerHost_port_send,GetRandomPassword(),
+								"" + (m_formerServer_port++),"" + m_pushInterval,"" + m_expiredTime);
 		}
 		
 	}
 	
-	public String GetRandomPassword(){
+	public synchronized void RefreshState(){
+		
+	}
+	
+	static public String GetRandomPassword(){
 		String t_pass = new String();
 		
 		final int ft_maxPasswordBit = 8;

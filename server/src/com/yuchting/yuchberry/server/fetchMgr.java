@@ -273,8 +273,7 @@ public class fetchMgr{
 				//
 		    	m_logger.LogOut("the password or user name is invalid");
 			}
-		}
-		
+		}		
 		
 	}
 	
@@ -374,6 +373,11 @@ public class fetchMgr{
     	m_session_send.setDebug(false);
     	
     	m_sendTransport = (SMTPTransport)m_session_send.getTransport(m_protocol_send);
+    	
+    	// test connected
+    	//
+    	m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
+    	m_sendTransport.close();
     	
 	}
 	

@@ -13,7 +13,7 @@ import com.yuchting.yuchberry.server.fetchMgr;
 
 class accountTableModel extends DefaultTableModel{
 	
-	final static String[] 	fsm_tableCol = {"账户","端口","用户密码","SSL 状态","当前状态"};
+	final static String[] 	fsm_tableCol = {"账户","端口","用户密码","剩余时间（小时）","SSL 状态","当前状态"};
 	final static Object[][] fsm_tableData = {{}};
 	
 	public String getColumnName(int col) {
@@ -53,7 +53,7 @@ public class accountTable extends JTable{
 		    column = getColumnModel().getColumn(i);
 		    switch(i){
 		    case 0:
-		    	column.setPreferredWidth(220); 
+		    	column.setPreferredWidth(200); 
 		    	break;
 		    case 1:
 		    case 2:
@@ -63,26 +63,29 @@ public class accountTable extends JTable{
 		}
 	}
 	
-	public void AddAccount(final fetchMgr _mgr){
+	public void AddAccount(final fetchThread _thread){
+		
+		fetchMgr _mgr = _thread.m_fetchMgr;
 		
 		Object[] t_row = {
 				_mgr.GetAccountName(),
 				new Integer(_mgr.GetServerPort()),
 				_mgr.GetUserPassword(),
+				new Long(_thread.m_expiredTime),
 				new Boolean(_mgr.IsUseSSL()),
 				"",
 		};
 		
 		m_defaultModel.addRow(t_row);
-		m_fetchMgrListRef.addElement(_mgr);
+		m_fetchMgrListRef.addElement(_thread);
 	}
 	
-	public void DelAccount(final fetchMgr _mgr){
+	public void DelAccount(final fetchThread _thread){
 		final int t_rowNum = m_defaultModel.getRowCount();
 		
 		for(int i = 0;i < t_rowNum;i++){
 			String name = (String)m_defaultModel.getValueAt(i, 0);
-			if(_mgr.GetAccountName().equals(name)){
+			if(_thread.m_fetchMgr.GetAccountName().equals(name)){
 				
 				m_fetchMgrListRef.remove(i);
 				m_defaultModel.removeRow(i);
