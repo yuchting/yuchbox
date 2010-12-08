@@ -656,11 +656,8 @@ public class recvMain extends UiApplication implements localResource {
 		invokeLater(new Runnable(){
 			
 			public void run(){
-				
-				synchronized(getEventLock()){
-					m.setStatus(_status,0);
-					m.updateUi();
-				}
+				m.setStatus(_status,0);
+				m.updateUi();
 			}
 		});
 	}

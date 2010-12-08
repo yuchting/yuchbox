@@ -341,6 +341,9 @@ class sendMailAttachmentDeamon extends Thread{
 				FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(i);
 				t_file.close();
 			}
+			
+			m_os.close();
+			
 		}catch(Exception e){}
 	}
 	
