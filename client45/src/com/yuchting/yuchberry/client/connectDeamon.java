@@ -568,7 +568,7 @@ public class connectDeamon extends Thread implements SendListener,
 				if(m_disconnect != true){
 					try{
 						m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTING_RETRY_LABEL));
-						m_mainApp.SetErrorString("M: " + _e.getMessage());
+						m_mainApp.SetErrorString("M: " + _e.getMessage() + _e.getClass().getName());
 					}catch(Exception e){}	
 				}							
 			}		
@@ -699,7 +699,7 @@ public class connectDeamon extends Thread implements SendListener,
 			 }else if(_e.getMessage().indexOf("Tunnel") != -1 
 					 || _e.getMessage().indexOf("tunnel") != -1){
 				 
-				 m_mainApp.SetErrorString("M: " +_e.getMessage() + " APN:" + t_APN);
+				 m_mainApp.SetErrorString("M: " +_e.getMessage() + " APN:" + t_APN + _e.getClass().getName());
 				 socket = GetConnection(_ssl);
 				 
 			 }else{
@@ -823,7 +823,7 @@ public class connectDeamon extends Thread implements SendListener,
 			}						 
 							
 		}catch(Exception _e){
-			m_mainApp.SetErrorString("C:" + _e.getMessage());
+			m_mainApp.SetErrorString("C:" + _e.getMessage() + _e.getClass().getName());
 		}
 	}
 	
@@ -1152,7 +1152,7 @@ public class connectDeamon extends Thread implements SendListener,
 	         }
 	         catch (Exception ex)
 	         {
-	        	 m_mainApp.SetErrorString("Exception: " + ex.toString());
+	        	 m_mainApp.SetErrorString("Exception: " + ex.toString() + ex.getClass().getName());
 	         }
 	      }
 	   }
@@ -1170,7 +1170,7 @@ public class connectDeamon extends Thread implements SendListener,
 	         }
 	         catch (Exception ex)
 	         { 
-	        	 m_mainApp.SetErrorString("Exception: " + ex.toString());
+	        	 m_mainApp.SetErrorString("Exception: " + ex.toString() + ex.getClass().getName());
 	         }
 	      }
 	   }
@@ -1188,7 +1188,7 @@ public class connectDeamon extends Thread implements SendListener,
 	      }
 	      catch (Exception ex)
 	      {
-	    	  m_mainApp.SetErrorString("Exception: " + ex.toString());
+	    	  m_mainApp.SetErrorString("Exception: " + ex.toString() + ex.getClass().getName());
 	      }
 	   }
 	}

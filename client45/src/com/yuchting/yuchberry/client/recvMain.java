@@ -538,7 +538,7 @@ public class recvMain extends UiApplication implements localResource {
 			}
 			
 		}catch(Exception _e){
-			SetErrorString("write/read config file from SDCard error :" + _e.getMessage());
+			SetErrorString("write/read config file from SDCard error :" + _e.getMessage() + _e.getClass().getName());
 		}
 	}
 	
