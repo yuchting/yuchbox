@@ -154,7 +154,15 @@ public class  fetchMail{
 	//set and gets function
 	//
 	public String GetSubject(){	return m_subject;}
-	public void SetSubject(String _subject){m_subject = _subject;}
+	
+	public void SetSubject(String _subject){
+		// remove all \r and \n 
+		// because the Blackberry ViewListenerExtended.forward or ViewListenerExtended.reply
+		// method's argument Message.getSubject without \n
+		// to make yuchberry can't find right orig message by subject
+		//
+		m_subject = _subject.replaceAll("[\r\n]", "");
+	}
 	
 	public String GetContain(){return m_contain;}
 	public void SetContain(String _contain){m_contain = _contain;}

@@ -233,9 +233,9 @@ public class HelloWorld {
 //		}catch(Exception e){}
 		
 		
-		if(("   #sdkfsdkfh").startsWith("#")){
-			System.out.println("hahah");
-		}
+		String t_test = "hahah\r\n,\rfdfsd\n";
+		System.out.println(t_test);
+		
 
 	}
 

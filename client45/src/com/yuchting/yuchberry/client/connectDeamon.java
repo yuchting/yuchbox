@@ -360,7 +360,7 @@ public class connectDeamon extends Thread implements SendListener,
 		Message t_org = null;
 		Store store = Session.getDefaultInstance().getStore();
 		try{
-			String t_messageSub = _message.getSubject();
+			String t_messageSub = _message.getSubject();			
 			String t_trimString = null;
 			if(_style == fetchMail.REPLY_STYLE){
 				final int t_code = Locale.getDefaultForSystem().getCode();
@@ -396,7 +396,8 @@ public class connectDeamon extends Thread implements SendListener,
 			for(int i = 0 ;i < t_folders.length;i++){
 				Message[] t_messages = t_folders[i].getMessages();
 				for(int j = 0;j < t_messages.length;j++){
-					if(t_messageSub.equals(t_messages[j].getSubject())){
+					final String t_sub = t_messages[j].getSubject();
+					if(t_messageSub.equals(t_sub)){
 						
 						if(_style == fetchMail.REPLY_STYLE){
 							String t_from = t_messages[j].getFrom().getAddr();
