@@ -656,9 +656,14 @@ public class recvMain extends UiApplication implements localResource {
 		invokeLater(new Runnable(){
 			
 			public void run(){
-				m.setStatus(_status,0);
-				m.updateUi();
-				UiApplication.getUiApplication().relayout();
+				
+				synchronized(getEventLock()){
+				
+					m.setStatus(_status,0);
+					m.updateUi();
+					UiApplication.getUiApplication().relayout();
+					
+				}
 			}
 		});
 	}
@@ -669,7 +674,7 @@ public class recvMain extends UiApplication implements localResource {
 		//
 		synchronized(getEventLock()){
 			
-			Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,_att.m_realName + "is Downloaded \nOpened?",
+			Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,_att.m_realName + sm_local.getString(localResource.DOWNLOAD_OVER_PROMPT),
 		    							Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL);
 			
 			t_dlg.setDialogClosedListener(new DialogClosedListener(){

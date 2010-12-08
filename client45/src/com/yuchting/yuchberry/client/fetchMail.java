@@ -325,7 +325,7 @@ class sendMailAttachmentDeamon extends Thread{
 			// sleep little to wait system set the mail status error
 			// and set it back
 			//
-			sleep(500);
+			sleep(100);
 			
 			m_connect.m_mainApp.UpdateMessageStatus(m_sendMail.GetAttachMessage(), Message.Status.TX_SENDING);
 			
