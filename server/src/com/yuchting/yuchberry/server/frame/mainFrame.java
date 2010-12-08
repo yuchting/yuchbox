@@ -264,7 +264,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		m_pauseAccountItem.setEnabled(!t_thread.m_pauseState);		
 	}
 		
-	public fetchThread SearchAccountThread(String _accountName,int _port){
+	public synchronized fetchThread SearchAccountThread(String _accountName,int _port){
 		
 		for(int i = 0;i < m_accountList.size();i++){
 			fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
@@ -278,7 +278,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		return null;
 	}
 	
-	public boolean AddAccountThread(fetchThread _thread,boolean _storeAccountInfo){
+	public synchronized boolean AddAccountThread(fetchThread _thread,boolean _storeAccountInfo){
 		
 		for(int i = 0;i < m_accountList.size();i++){
 			fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
@@ -297,7 +297,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		return true;
 	}
 	
-	public void DelAccoutThread(String _accountName,boolean _storeAccountInfo){
+	public synchronized void DelAccoutThread(String _accountName,boolean _storeAccountInfo){
 		
 		for(int i = 0;i < m_accountList.size();i++){
 			

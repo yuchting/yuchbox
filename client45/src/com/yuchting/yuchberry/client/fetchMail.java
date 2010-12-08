@@ -401,6 +401,8 @@ class sendMailAttachmentDeamon extends Thread{
 		
 		boolean t_sendContain = false;
 		
+		RefreshMessageStatus();
+		
 		while(true){
 			
 			while(m_connect.m_conn == null || !m_connect.m_sendAuthMsg){
@@ -420,9 +422,7 @@ class sendMailAttachmentDeamon extends Thread{
 			try{
 				
 				if(!t_sendContain){
-				
-					RefreshMessageStatus();
-					
+									
 					// send mail once if has not attachment 
 					//
 					m_os.reset();
