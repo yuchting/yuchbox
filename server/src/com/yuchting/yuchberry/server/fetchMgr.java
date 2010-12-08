@@ -249,7 +249,7 @@ public class fetchMgr{
 		
 		try{
 			
-			ResetSession();
+			ResetSession(false);
 			
 	    	m_svr = GetSocketServer(m_userPassword,m_userSSL);
 	    	m_logger.LogOut("prepare account OK <" + m_userName + ">" );
@@ -331,7 +331,7 @@ public class fetchMgr{
 		return m_userSSL;
 	}
 	
-	public synchronized void ResetSession()throws Exception{
+	public synchronized void ResetSession(boolean _testSMTP)throws Exception{
 		
 		DestroyConnect();
     	
@@ -385,8 +385,11 @@ public class fetchMgr{
     	
     	// test connected
     	//
-    	m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
-    	m_sendTransport.close();
+    	if(_testSMTP){
+    		m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
+        	m_sendTransport.close();
+        		
+    	}
     	
 	}
 	

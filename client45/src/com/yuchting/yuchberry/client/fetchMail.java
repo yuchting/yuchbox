@@ -330,7 +330,9 @@ class sendMailAttachmentDeamon extends Thread{
 			
 			m_connect.m_mainApp.UpdateMessageStatus(m_sendMail.GetAttachMessage(), Message.Status.TX_SENDING);
 			
-		}catch(Exception _e){}		
+		}catch(Exception _e){
+			m_connect.m_mainApp.SetErrorString("S: Status " + _e.getMessage() + _e.getClass().getName());
+		}		
 
 	}
 	
@@ -421,14 +423,12 @@ class sendMailAttachmentDeamon extends Thread{
 				
 					RefreshMessageStatus();
 					
-					m_connect.m_mainApp.SetErrorString("S: RefreshMessageStatus");
 					// send mail once if has not attachment 
 					//
 					ByteArrayOutputStream os = new ByteArrayOutputStream();
 					os.write(msg_head.msgMail);
 					m_sendMail.OutputMail(os);
 					
-					m_connect.m_mainApp.SetErrorString("S: OutputMail");
 					
 					// send the Mail of forward or reply
 					//
@@ -439,11 +439,7 @@ class sendMailAttachmentDeamon extends Thread{
 						os.write(fetchMail.NOTHING_STYLE);
 					}
 					
-					m_connect.m_mainApp.SetErrorString("S: NOTHING_STYLE");
-					
 					m_connect.m_connect.SendBufferToSvr(os.toByteArray(), false);
-					
-					m_connect.m_mainApp.SetErrorString("S: SendBufferToSvr");
 					
 					if(m_vFileConnection.isEmpty()){
 						break;

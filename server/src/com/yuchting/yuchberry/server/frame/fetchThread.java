@@ -14,25 +14,22 @@ public class fetchThread extends Thread{
 	boolean	m_close		= false;
 		
 	long		m_expiredTime	= 0;
-	
-	long		m_expiredTimer	= 0;
 	long		m_formerTimer	= 0;
 		
-	public fetchThread(String _prefix,String _configFile,long _expiredTime)throws Exception{
+	public fetchThread(String _prefix,String _configFile,long _expiredTime,long _formerTimer)throws Exception{
 		m_expiredTime = _expiredTime * 1000 * 3600;
 		
 		m_logger = new Logger(_prefix);
 		m_fetchMgr.InitConnect(_prefix, _configFile, m_logger);
 		
-		m_fetchMgr.ResetSession();
+		m_fetchMgr.ResetSession(true);
+		m_formerTimer = _formerTimer;
 		
 		start();
 	}
 	
 	public void run(){
-		
-		m_formerTimer = (new Date()).getTime();
-		
+				
 		while(!m_close){
 			
 			try{
@@ -59,7 +56,6 @@ public class fetchThread extends Thread{
 		}
 		
 		return 0;
-		
 	}
 	
 	public void Pause(){

@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.server.frame;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileOutputStream;
 import java.util.Vector;
 
 import javax.swing.AbstractButton;
@@ -10,11 +11,12 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 
 class checkStateThread extends Thread{
 	mainFrame	m_mainFrame	= null;
-	
+		
 	public checkStateThread(mainFrame _main){
 		m_mainFrame = _main;
 		
@@ -70,6 +72,13 @@ public class mainFrame extends JFrame implements ActionListener{
 		setSize(fsm_width,fsm_height);
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		addWindowListener(new java.awt.event.WindowAdapter() {
+		    public void windowClosing(java.awt.event.WindowEvent e) {
+		    	mainFrame t_frame = (mainFrame)e.getWindow();
+		    	t_frame.CloseProcess();
+		    }
+		});
 
 		getContentPane().setLayout(new BoxLayout(getContentPane(),BoxLayout.Y_AXIS));
 		
@@ -120,7 +129,26 @@ public class mainFrame extends JFrame implements ActionListener{
 		m_accountList.addElement(_thread);
 		m_accountTable.AddAccount(_thread);
 		
+		StoreAccountInfo();
+		
 		return true;
+	}
+	
+	public void DelAccoutThread(String _accountName){
+		for(int i = 0;i < m_accountList.size();i++){
+			fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
+			if(_accountName.equals(t_fetch.m_fetchMgr.GetAccountName())){
+				
+				t_fetch.Destroy();
+				
+				m_accountList.remove(t_fetch);
+				m_accountTable.DelAccount(t_fetch);
+				
+				StoreAccountInfo();
+				
+				break;
+			}
+		}
 	}
 	
 	public void actionPerformed(ActionEvent e) {
@@ -132,6 +160,25 @@ public class mainFrame extends JFrame implements ActionListener{
 								"" + (m_formerServer_port++),"" + m_pushInterval,"" + m_expiredTime);
 		}
 		
+	}
+	
+	public void CloseProcess(){
+		StoreAccountInfo();
+	}
+	
+	public void StoreAccountInfo(){
+		try{
+			FileOutputStream t_file = new FileOutputStream("account.info");
+			for(int i = 0;i < m_accountList.size();i++){
+				fetchThread t_thread = (fetchThread)m_accountList.elementAt(i);
+				t_file.write((t_thread.m_fetchMgr.GetAccountName() + "," + t_thread.m_formerTimer + "," + t_thread.m_expiredTime + "\r\n").getBytes("GB2312"));
+			}
+			t_file.flush();
+			t_file.close();
+			
+		}catch(Exception e){
+			JOptionPane.showMessageDialog(this,"服务器账户数据保存出错：" + e.getMessage() , "错误", JOptionPane.ERROR_MESSAGE);
+		}	
 	}
 	
 	public synchronized void RefreshState(){

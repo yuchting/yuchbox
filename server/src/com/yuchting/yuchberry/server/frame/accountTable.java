@@ -87,6 +87,14 @@ public class accountTable extends JTable{
 		for(int i = 0;i < t_rowNum;i++){
 			fetchThread t_thread = (fetchThread)m_fetchMgrListRef.elementAt(i);
 			
+			final long t_lastTime = t_thread.GetLastTime();
+			if(t_lastTime < 0){
+				m_defaultModel.setValueAt(new Long(-1),i,3);
+				t_thread.Pause();
+			}else{
+				m_defaultModel.setValueAt(new Long(t_thread.GetLastTime() / 1000 / 3600),i,3);
+			}
+			
 			if(t_thread.m_pauseState){
 				m_defaultModel.setValueAt("ÔÝÍ£",i, 5);
 			}else if(t_thread.m_close){
@@ -94,18 +102,17 @@ public class accountTable extends JTable{
 			}else{
 				m_defaultModel.setValueAt("ÔËÐÐÖÐ",i, 5);
 			}
-			
-			m_defaultModel.setValueAt(new Long(t_thread.GetLastTime() / 1000 / 3600),i,3);
 		}
 	}
 	
 	public void DelAccount(final fetchThread _thread){
+		
 		final int t_rowNum = m_defaultModel.getRowCount();
 		
 		for(int i = 0;i < t_rowNum;i++){
 			String name = (String)m_defaultModel.getValueAt(i, 0);
 			if(_thread.m_fetchMgr.GetAccountName().equals(name)){
-				
+								
 				m_fetchMgrListRef.remove(i);
 				m_defaultModel.removeRow(i);
 				

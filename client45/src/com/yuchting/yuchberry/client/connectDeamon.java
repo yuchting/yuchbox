@@ -685,6 +685,8 @@ public class connectDeamon extends Thread implements SendListener,
 			 
 		 }catch(Exception _e){
 
+			 m_mainApp.SetErrorString("M: " +_e.getMessage() + " APN:" + t_APN + _e.getClass().getName());
+			 
 			 if(_e.getMessage().indexOf("Peer") != -1){
 				 m_connectCounter = 1000;
 				 
@@ -699,7 +701,6 @@ public class connectDeamon extends Thread implements SendListener,
 			 }else if(_e.getMessage().indexOf("Tunnel") != -1 
 					 || _e.getMessage().indexOf("tunnel") != -1){
 				 
-				 m_mainApp.SetErrorString("M: " +_e.getMessage() + " APN:" + t_APN + _e.getClass().getName());
 				 socket = GetConnection(_ssl);
 				 
 			 }else{

@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
+import java.util.Date;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -418,7 +419,8 @@ public class createDialog extends JDialog implements DocumentListener,
 			
 			WriteIniFile(t_prefix + "config.ini");
 			
-			t_thread = new fetchThread(t_prefix,t_prefix + "config.ini",Long.valueOf(m_expiredTime.getText()).longValue());
+			t_thread = new fetchThread(t_prefix,t_prefix + "config.ini",
+									Long.valueOf(m_expiredTime.getText()).longValue(),(new Date()).getTime());
 			
 		}catch(Exception e){
 			JOptionPane.showMessageDialog(this,e.getMessage(), "´íÎó", JOptionPane.ERROR_MESSAGE);
