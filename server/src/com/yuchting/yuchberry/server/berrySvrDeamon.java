@@ -168,7 +168,7 @@ class berrySvrPush extends Thread{
 					sleep(5000);
 					
 					if(t_isCheckFolderError){
-						m_serverDeamon.m_fetchMgr.ResetSession();
+						m_serverDeamon.m_fetchMgr.ResetSession(false);
 					}
 					
 				}catch(Exception e){

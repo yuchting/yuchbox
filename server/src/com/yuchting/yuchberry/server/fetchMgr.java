@@ -245,7 +245,7 @@ public class fetchMgr{
 			
 	}
 	
-	public synchronized void StartListening(){
+	public void StartListening(){
 		
 		try{
 			

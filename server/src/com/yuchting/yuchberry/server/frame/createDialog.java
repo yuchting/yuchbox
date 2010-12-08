@@ -427,7 +427,7 @@ public class createDialog extends JDialog implements DocumentListener,
 			return false;
 		}
 				
-		m_mainFrame.AddAccountThread(t_thread);
+		m_mainFrame.AddAccountThread(t_thread,true);
 				
 		return true;
 	}

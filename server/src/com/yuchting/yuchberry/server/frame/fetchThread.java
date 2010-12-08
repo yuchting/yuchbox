@@ -88,7 +88,11 @@ public class fetchThread extends Thread{
 				sleep(100);
 			}catch(Exception e){}
 			
-			interrupt();
+			if(GetLastTime() < 0){
+				m_formerTimer = (new Date()).getTime();
+			}			
+			
+			interrupt();			
 		}
 	}
 	

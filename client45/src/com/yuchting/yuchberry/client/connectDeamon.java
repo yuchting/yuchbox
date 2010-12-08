@@ -568,7 +568,7 @@ public class connectDeamon extends Thread implements SendListener,
 				if(m_disconnect != true){
 					try{
 						m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTING_RETRY_LABEL));
-						m_mainApp.SetErrorString("M: " + _e.getMessage() + _e.getClass().getName());
+						m_mainApp.SetErrorString("M: " + _e.getMessage() + " "+ _e.getClass().getName());
 					}catch(Exception e){}	
 				}							
 			}		
@@ -685,7 +685,7 @@ public class connectDeamon extends Thread implements SendListener,
 			 
 		 }catch(Exception _e){
 
-			 m_mainApp.SetErrorString("M: " +_e.getMessage() + " APN:" + t_APN + _e.getClass().getName());
+			 m_mainApp.SetErrorString("M: " +_e.getMessage() + " APN:" + t_APN + " "+ _e.getClass().getName());
 			 
 			 if(_e.getMessage().indexOf("Peer") != -1){
 				 m_connectCounter = 1000;
@@ -824,7 +824,7 @@ public class connectDeamon extends Thread implements SendListener,
 			}						 
 							
 		}catch(Exception _e){
-			m_mainApp.SetErrorString("C:" + _e.getMessage() + _e.getClass().getName());
+			m_mainApp.SetErrorString("C:" + _e.getMessage() + " " + _e.getClass().getName());
 		}
 	}
 	
@@ -1153,7 +1153,7 @@ public class connectDeamon extends Thread implements SendListener,
 	         }
 	         catch (Exception ex)
 	         {
-	        	 m_mainApp.SetErrorString("Exception: " + ex.toString() + ex.getClass().getName());
+	        	 m_mainApp.SetErrorString("Ex: " + ex.toString() + " " + ex.getClass().getName());
 	         }
 	      }
 	   }
@@ -1171,7 +1171,7 @@ public class connectDeamon extends Thread implements SendListener,
 	         }
 	         catch (Exception ex)
 	         { 
-	        	 m_mainApp.SetErrorString("Exception: " + ex.toString() + ex.getClass().getName());
+	        	 m_mainApp.SetErrorString("Ex: " + ex.toString() + " " + ex.getClass().getName());
 	         }
 	      }
 	   }
@@ -1189,7 +1189,7 @@ public class connectDeamon extends Thread implements SendListener,
 	      }
 	      catch (Exception ex)
 	      {
-	    	  m_mainApp.SetErrorString("Exception: " + ex.toString() + ex.getClass().getName());
+	    	  m_mainApp.SetErrorString("Ex: " + ex.toString() + " " + ex.getClass().getName());
 	      }
 	   }
 	}

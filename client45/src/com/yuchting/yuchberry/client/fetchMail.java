@@ -301,7 +301,6 @@ class sendMailAttachmentDeamon extends Thread{
 		m_forwardReply	= _forwardReply;
 		m_sendStyle = _sendStyle;
 
-		
 		m_vFileConnection  = _vFileConnection;
 		
 		if(!m_vFileConnection.isEmpty()){
@@ -331,7 +330,7 @@ class sendMailAttachmentDeamon extends Thread{
 			m_connect.m_mainApp.UpdateMessageStatus(m_sendMail.GetAttachMessage(), Message.Status.TX_SENDING);
 			
 		}catch(Exception _e){
-			m_connect.m_mainApp.SetErrorString("S: Status " + _e.getMessage() + _e.getClass().getName());
+			m_connect.m_mainApp.SetErrorString("S: Status " + _e.getMessage() + " "+ _e.getClass().getName());
 		}		
 
 	}
@@ -346,7 +345,9 @@ class sendMailAttachmentDeamon extends Thread{
 	}
 	
 	private boolean SendFileSegment(final boolean _send)throws Exception{
-			
+		
+		m_os.reset();
+		
 		final int t_size = (m_beginIndex + fsm_segmentSize) > (int)m_fileConnection.fileSize()?
 							((int)m_fileConnection.fileSize() - m_beginIndex) : fsm_segmentSize;
 					
@@ -391,8 +392,7 @@ class sendMailAttachmentDeamon extends Thread{
 			m_beginIndex += t_size;
 		}
 		
-		m_uploadedSize += t_size;
-		m_os.reset();
+		m_uploadedSize += t_size;		
 		
 		return false;
 	}
@@ -425,27 +425,27 @@ class sendMailAttachmentDeamon extends Thread{
 					
 					// send mail once if has not attachment 
 					//
-					ByteArrayOutputStream os = new ByteArrayOutputStream();
-					os.write(msg_head.msgMail);
-					m_sendMail.OutputMail(os);
-					
+					m_os.reset();
+					m_os.write(msg_head.msgMail);
+					m_sendMail.OutputMail(m_os);					
 					
 					// send the Mail of forward or reply
 					//
 					if(m_forwardReply != null && m_sendStyle != fetchMail.NOTHING_STYLE){
-						os.write(m_sendStyle);
-						m_forwardReply.OutputMail(os);
+						m_os.write(m_sendStyle);
+						m_forwardReply.OutputMail(m_os);
 					}else{
-						os.write(fetchMail.NOTHING_STYLE);
+						m_os.write(fetchMail.NOTHING_STYLE);
 					}
 					
-					m_connect.m_connect.SendBufferToSvr(os.toByteArray(), false);
+					m_connect.m_connect.SendBufferToSvr(m_os.toByteArray(), false);
 					
 					if(m_vFileConnection.isEmpty()){
 						break;
 					}
-					
+									
 					t_sendContain = true;
+					
 				}
 				
 				int t_sendSegmentNum = 0;
@@ -463,7 +463,7 @@ class sendMailAttachmentDeamon extends Thread{
 				
 			}catch(Exception _e){
 				
-				m_connect.m_mainApp.SetErrorString("S: " + _e.getMessage() + _e.getClass().getName());
+				m_connect.m_mainApp.SetErrorString("S: " + _e.getMessage() + " " + _e.getClass().getName());
 				m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-1,0,0);
 				
 			}		
