@@ -26,7 +26,16 @@ public class textViewScreen extends fileViewScreen{
 			t_tmpContain = m_fileContain;
 		}
 		
-		m_editText = new RichTextField(new String(t_tmpContain,"GB2312"));
+		try{
+			// if the GB2312 decode sytem is NOT present in current system
+			// will throw the exception
+			//
+			m_editText = new RichTextField(new String(t_tmpContain,"GB2312"));
+		}catch(Exception e_){
+			m_editText = new RichTextField(new String(t_tmpContain));
+		}
+		
+		
 		add(m_editText);
 		
 	}

@@ -10,6 +10,7 @@ CONNECTING_RETRY_LABEL#0="disconnected retry later...";
 CONNECT_BUTTON_LABEL#0="connect";
 CONNECT_OPTION_LABEL#0="connection option:";
 DISCONNECT_BUTTON_LABEL#0="disconnect";
+DOWNLOAD_OVER_PROMPT#0="is Downloaded \nOpened?";
 HOST#0="host:";
 INPUT_FULL_SIGN_IN_SEG#0="the host name or port or user password is null";
 OPEN_ATTACHMENT#0="YuchBerry Open Attachment";

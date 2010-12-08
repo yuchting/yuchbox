@@ -241,7 +241,17 @@ public class sendReceive extends Thread{
 	}
 	
 	static public void WriteString(OutputStream _stream,String _string)throws Exception{
-		final byte[] t_strByte = _string.getBytes("GB2312");
+		byte[] t_strByte;
+		
+		try{
+			// if the GB2312 decode sytem is NOT present in current system
+			// will throw the exception
+			//
+			t_strByte = _string.getBytes("GB2312");
+		}catch(Exception e){
+			t_strByte = _string.getBytes();
+		}
+		
 		WriteInt(_stream,t_strByte.length);
 		if(t_strByte.length != 0){
 			_stream.write(t_strByte);
@@ -269,7 +279,15 @@ public class sendReceive extends Thread{
 			
 			ForceReadByte(_stream,t_buffer,len);
 
-			return new String(t_buffer,"GB2312");
+			try{
+				// if the GB2312 decode sytem is NOT present in current system
+				// will throw the exception
+				//
+				return new String(t_buffer,"GB2312");
+			}catch(Exception e){}
+			
+			return new String(t_buffer);
+			
 		}
 		
 		return new String("");
@@ -315,7 +333,7 @@ public class sendReceive extends Thread{
 				t_counter++;
 				
 				if(t_counter > 10){
-					throw new Exception("FroceReadByte failed to read " + _readLen );
+					throw new Exception("FroceReadByte failed " + _readLen );
 				}
 			}		
 		}

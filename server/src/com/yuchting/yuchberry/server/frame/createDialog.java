@@ -165,7 +165,7 @@ public class createDialog extends JDialog implements DocumentListener,
 	
 	JTextField	m_pushInterval		= new JTextField();
 	
-	JCheckBox	m_useSSL			= new JCheckBox("使用SSL加密");
+	JCheckBox	m_useSSL			= new JCheckBox("Push使用SSL加密");
 	JCheckBox	m_convertToSimple	= new JCheckBox("转换繁体为简体");
 	JTextField	m_expiredTime		= new JTextField();
 	
@@ -198,6 +198,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		m_send_port.setDocument(new NumberMaxMinLimitedDmt(20000,m_send_port));
 		m_expiredTime.setDocument(new NumberMaxMinLimitedDmt(-1, m_expiredTime));
 		
+		m_account.getDocument().addDocumentListener(this);
 		m_host.getDocument().addDocumentListener(this);
 		m_signature.setLineWrap(true);
 		m_signature.setBorder(BorderFactory.createLineBorder(Color.gray,1));		
@@ -268,10 +269,19 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 	}
 	public void insertUpdate(DocumentEvent e){
-		AutoSelectProtocal();
+		TextChangeEvent(e);
 	}
 	public void removeUpdate(DocumentEvent e){
-		AutoSelectProtocal();
+		TextChangeEvent(e);
+	}
+	
+	private void TextChangeEvent(DocumentEvent e){
+		if(e.getDocument() == m_host.getDocument()){
+			AutoSelectProtocal();
+		}else if(e.getDocument() == m_account.getDocument()){
+			AutoSelectMailHost();
+		}
+		
 	}
 	//@}
 	
@@ -348,6 +358,25 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 	}
 	
+	private void AutoSelectMailHost(){
+		String t_account = m_account.getText().toLowerCase();
+		final int t_atIndex = t_account.indexOf('@');
+		if(t_atIndex != -1){
+			
+			String t_addr = t_account.substring(t_atIndex + 1);
+			if(t_addr.indexOf('.') != -1){
+				
+				for(int i = 0;i < m_commonConfigData.size();i++){
+					commonConfig t_config = (commonConfig)m_commonConfigData.elementAt(i);
+					if(t_config.m_host.indexOf(t_addr) != -1){
+						t_config.SetConfig(this);
+						
+						break;
+					}
+				}
+			}
+		}
+	}
 	private void AddCommonConfigList(){
 		
 		m_commonConfigData.removeAllElements();

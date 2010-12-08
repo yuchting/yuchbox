@@ -232,7 +232,7 @@ public class uploadFileScreen extends MainScreen implements
 				}
 				
 			}catch(Exception _e){
-				System.out.println(_e.getMessage());
+				//System.out.println(_e.getMessage());
 			}
 
 		}else{
@@ -283,7 +283,7 @@ public class uploadFileScreen extends MainScreen implements
 				}
 
 			}catch(Exception _e){
-				System.out.println(_e.getMessage());
+				//System.out.println(_e.getMessage());
 			}
 		}
 	}

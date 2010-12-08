@@ -27,7 +27,6 @@ import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.ButtonField;
-import net.rim.device.api.ui.component.CheckboxField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
 import net.rim.device.api.ui.component.EditField;
@@ -38,7 +37,8 @@ import net.rim.device.api.ui.container.MainScreen;
 class ErrorLabelText extends Field{
 	Vector m_stringList;
 	static final int		fsm_space = 1;
-	static final int		fsm_fontHeight = 14;
+	
+	static int sm_fontHeight = 15;
 	
 	public ErrorLabelText(Vector _stringList){
 		super(Field.READONLY | Field.NON_FOCUSABLE | Field.USE_ALL_WIDTH);
@@ -47,6 +47,8 @@ class ErrorLabelText extends Field{
 		try{
 			Font myFont = FontFamily.forName("BBMillbankTall").getFont(Font.PLAIN,8,Ui.UNITS_pt);
 			setFont(myFont);
+			
+			sm_fontHeight = myFont.getHeight() - 3;
 		}catch(Exception _e){}
 	}
 	
@@ -54,14 +56,14 @@ class ErrorLabelText extends Field{
 		final int t_width = Display.getWidth();
 			
 		final int t_size 	= m_stringList.size();
-		final int t_height = Math.max(0, (t_size - 1)) * fsm_space +  t_size * fsm_fontHeight;
+		final int t_height = Math.max(0, (t_size - 1)) * fsm_space +  t_size * sm_fontHeight;
 		
 		setExtent(t_width, t_height);
 	}
 	
 	public void paint(Graphics _g){
 		int t_y = 0;
-		final int t_fontHeight = fsm_fontHeight;
+		final int t_fontHeight = sm_fontHeight;
 		
 		SimpleDateFormat t_format = new SimpleDateFormat("HH:mm:ss");
 		
@@ -84,22 +86,30 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
     EditField           m_hostName      = null;
     EditField			m_hostport		= null;
     EditField           m_userPassword  = null;
-    EditField			m_APN			= null;
-    
+       
     ButtonField         m_connectBut    = null;
     LabelField          m_stateText     = null;
     ErrorLabelText      m_errorText     = null;
     LabelField			m_uploadingText = null;
-    
-    CheckboxField		m_useSSLCheckbox= null;
-        
+            
     recvMain			m_mainApp		= null;
+    
     
     MenuItem 	m_aboutMenu = new MenuItem(recvMain.sm_local.getString(localResource.ABOUT_MENU_TEXT), 100, 10) {
 												public void run() {
-													UiApplication.getUiApplication().pushScreen(new aboutScreen());
+													recvMain t_app = (recvMain)UiApplication.getUiApplication();
+													t_app.PopupAboutScreen();
 												}
 											};
+	
+	MenuItem 	m_setingMenu = new MenuItem(recvMain.sm_local.getString(localResource.SETTING_MENU_TEXT), 101, 10) {
+												public void run() {
+													recvMain t_app = (recvMain)UiApplication.getUiApplication();
+													t_app.pushScreen(new settingScreen(t_app));
+													
+												}
+											};
+	
 
     public stateScreen(final recvMain _app) {
     	        
@@ -124,17 +134,10 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
         
         add(m_userPassword);
         
-        m_APN			= new EditField(recvMain.sm_local.getString(localResource.APN_LABEL),
-        				m_mainApp.GetAPNList(),128,EditField.FILTER_DEFAULT);
-        
-        add(m_APN);
-        
-        m_useSSLCheckbox	= new CheckboxField(recvMain.sm_local.getString(localResource.USE_SSL), m_mainApp.m_useSSL);
-        add(m_useSSLCheckbox);
-        
+       
         m_connectBut = new ButtonField(recvMain.sm_local.getString(m_mainApp.m_connectDeamon.IsConnectState()?
         									localResource.DISCONNECT_BUTTON_LABEL:localResource.CONNECT_BUTTON_LABEL),
-        								ButtonField.CONSUME_CLICK| ButtonField.NEVER_DIRTY);
+        									ButtonField.CONSUME_CLICK| ButtonField.NEVER_DIRTY);
         
         m_connectBut.setChangeListener(this);
         
@@ -155,6 +158,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
     
     protected void makeMenu(Menu _menu,int instance){
     	_menu.add(m_aboutMenu);
+    	_menu.add(m_setingMenu);
     }
     
     public final boolean onClose(){
@@ -225,13 +229,8 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 						m_mainApp.m_hostname 		= m_hostName.getText();
 						m_mainApp.m_port 			= Integer.valueOf(m_hostport.getText()).intValue();
 						m_mainApp.m_userPassword 	= m_userPassword.getText();
-						m_mainApp.m_useSSL			= m_useSSLCheckbox.getChecked();
-						
-						m_mainApp.SetAPNName(m_APN.getText());
-						
+
 						m_mainApp.m_connectDeamon.Connect();
-						
-//						m_mainApp.m_connectDeamon.Connect("192.168.10.20",9716,"","111111");
 						
 						m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTING_LABEL));
 						m_connectBut.setLabel(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
@@ -252,15 +251,17 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 
 public class recvMain extends UiApplication implements localResource {
 	
-	final static int		fsm_clientVersion = 2;
+	final static int		fsm_clientVersion = 3;
 	
-	String m_attachmentDir = null;
+	String 				m_attachmentDir 	= null;
 	
+    aboutScreen			m_aboutScreen		= null;
 	stateScreen 		m_stateScreen 		= null;
 	uploadFileScreen 	m_uploadFileScreen	= null;
 	connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
-	String				m_stateString		= new String(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
+	String				m_stateString		= recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL);
+	String				m_aboutString		= recvMain.sm_local.getString(localResource.ABOUT_DESC);
 	
 	class ErrorInfo{
 		Date		m_time;
@@ -280,6 +281,9 @@ public class recvMain extends UiApplication implements localResource {
 	int					m_port 				= 0;
 	String				m_userPassword 		= new String();
 	boolean			m_useSSL			= false;
+	
+	int					m_vibrateTime		= 1;
+	int					m_soundVol			= 2;
 	
 	class APNSelector{
 		String		m_name			= null;
@@ -466,7 +470,7 @@ public class recvMain extends UiApplication implements localResource {
 		return m_useSSL;
 	}
 	
-	private void WriteReadIni(boolean _read){
+	public void WriteReadIni(boolean _read){
 		try{
 			FileConnection fc = (FileConnection) Connector.open(m_attachmentDir + "Init.data",Connector.READ_WRITE);
 			if(_read){
@@ -492,6 +496,11 @@ public class recvMain extends UiApplication implements localResource {
 		    		
 		    		if(t_currVer >= 2){
 		    			m_useSSL = (t_readFile.read() == 0)?false:true;
+		    		}
+		    		
+		    		if(t_currVer >= 3){
+		    			m_vibrateTime 	= t_readFile.read();
+		    			m_soundVol		= t_readFile.read();
 		    		}
 		    		
 		    		t_readFile.close();
@@ -520,6 +529,8 @@ public class recvMain extends UiApplication implements localResource {
 				}
 				
 				t_writeFile.write(m_useSSL?1:0);
+				t_writeFile.write(m_vibrateTime);
+				t_writeFile.write(m_soundVol);
 				
 				t_writeFile.close();
 				
@@ -527,7 +538,7 @@ public class recvMain extends UiApplication implements localResource {
 			}
 			
 		}catch(Exception _e){
-			SetErrorString(_e.getMessage());
+			SetErrorString("write/read config file from SDCard error :" + _e.getMessage() + _e.getClass().getName());
 		}
 	}
 	
@@ -544,7 +555,7 @@ public class recvMain extends UiApplication implements localResource {
 		
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);	
-		
+				
 		System.exit(0);
 	}
 	public void activate(){
@@ -561,6 +572,31 @@ public class recvMain extends UiApplication implements localResource {
 		}		
 	}
 	
+	public void PopupAboutScreen(){
+		m_aboutScreen = new aboutScreen(this);
+		pushScreen(m_aboutScreen);
+		
+		m_connectDeamon.SendAboutInfoQuery();
+	}
+	
+	public void SetAboutInfo(String _about){
+		m_aboutString = _about;
+		
+		// prompt by the background thread
+		//
+		synchronized(getEventLock()){
+			
+			invokeLater(new Runnable(){
+				public void run(){
+					if(m_aboutScreen != null){
+						m_aboutScreen.RefreshText();
+					}
+				}
+			});
+			
+		}
+		
+	}
 	public void OpenAttachmentFileScreen(final boolean _del){
 		
 		try{
@@ -620,9 +656,10 @@ public class recvMain extends UiApplication implements localResource {
 		invokeLater(new Runnable(){
 			
 			public void run(){
-				m.setStatus(_status,0);
-				m.updateUi();
-				UiApplication.getUiApplication().relayout();
+				synchronized(getEventLock()){
+					m.setStatus(_status,0);
+					m.updateUi();
+				}
 			}
 		});
 	}
@@ -633,7 +670,7 @@ public class recvMain extends UiApplication implements localResource {
 		//
 		synchronized(getEventLock()){
 			
-			Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,_att.m_realName + "is Downloaded \nOpened?",
+			Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,_att.m_realName + sm_local.getString(localResource.DOWNLOAD_OVER_PROMPT),
 		    							Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL);
 			
 			t_dlg.setDialogClosedListener(new DialogClosedListener(){
@@ -725,7 +762,7 @@ public class recvMain extends UiApplication implements localResource {
 	
 	public void SetErrorString(final String _error){
 		m_errorString.addElement(new ErrorInfo(_error));
-		if(m_errorString.size() > 8){
+		if(m_errorString.size() > 16){
 			m_errorString.removeElementAt(0);
 		}
 		

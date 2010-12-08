@@ -360,7 +360,7 @@ public class connectDeamon extends Thread implements SendListener,
 		Message t_org = null;
 		Store store = Session.getDefaultInstance().getStore();
 		try{
-			String t_messageSub = _message.getSubject();
+			String t_messageSub = _message.getSubject();			
 			String t_trimString = null;
 			if(_style == fetchMail.REPLY_STYLE){
 				final int t_code = Locale.getDefaultForSystem().getCode();
@@ -396,7 +396,8 @@ public class connectDeamon extends Thread implements SendListener,
 			for(int i = 0 ;i < t_folders.length;i++){
 				Message[] t_messages = t_folders[i].getMessages();
 				for(int j = 0;j < t_messages.length;j++){
-					if(t_messageSub.equals(t_messages[j].getSubject())){
+					final String t_sub = t_messages[j].getSubject();
+					if(t_messageSub.equals(t_sub)){
 						
 						if(_style == fetchMail.REPLY_STYLE){
 							String t_from = t_messages[j].getFrom().getAddr();
@@ -568,7 +569,7 @@ public class connectDeamon extends Thread implements SendListener,
 				if(m_disconnect != true){
 					try{
 						m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTING_RETRY_LABEL));
-						m_mainApp.SetErrorString("M: " + _e.getMessage() + _e.getClass().getName());
+						m_mainApp.SetErrorString("M: " + _e.getMessage() + " "+ _e.getClass().getName());
 					}catch(Exception e){}	
 				}							
 			}		
@@ -685,6 +686,8 @@ public class connectDeamon extends Thread implements SendListener,
 			 
 		 }catch(Exception _e){
 
+			 m_mainApp.SetErrorString("M: " +_e.getMessage() + " APN:" + t_APN + " "+ _e.getClass().getName());
+			 
 			 if(_e.getMessage().indexOf("Peer") != -1){
 				 m_connectCounter = 1000;
 				 
@@ -699,7 +702,6 @@ public class connectDeamon extends Thread implements SendListener,
 			 }else if(_e.getMessage().indexOf("Tunnel") != -1 
 					 || _e.getMessage().indexOf("tunnel") != -1){
 				 
-				 m_mainApp.SetErrorString("M: " +_e.getMessage() + " APN:" + t_APN + _e.getClass().getName());
 				 socket = GetConnection(_ssl);
 				 
 			 }else{
@@ -823,7 +825,7 @@ public class connectDeamon extends Thread implements SendListener,
 			}						 
 							
 		}catch(Exception _e){
-			m_mainApp.SetErrorString("C:" + _e.getMessage() + _e.getClass().getName());
+			m_mainApp.SetErrorString("C:" + _e.getMessage() + " " + _e.getClass().getName());
 		}
 	}
 	
@@ -1152,7 +1154,7 @@ public class connectDeamon extends Thread implements SendListener,
 	         }
 	         catch (Exception ex)
 	         {
-	        	 m_mainApp.SetErrorString("Exception: " + ex.toString() + ex.getClass().getName());
+	        	 m_mainApp.SetErrorString("Ex: " + ex.toString() + " " + ex.getClass().getName());
 	         }
 	      }
 	   }
@@ -1170,7 +1172,7 @@ public class connectDeamon extends Thread implements SendListener,
 	         }
 	         catch (Exception ex)
 	         { 
-	        	 m_mainApp.SetErrorString("Exception: " + ex.toString() + ex.getClass().getName());
+	        	 m_mainApp.SetErrorString("Ex: " + ex.toString() + " " + ex.getClass().getName());
 	         }
 	      }
 	   }
@@ -1188,7 +1190,7 @@ public class connectDeamon extends Thread implements SendListener,
 	      }
 	      catch (Exception ex)
 	      {
-	    	  m_mainApp.SetErrorString("Exception: " + ex.toString() + ex.getClass().getName());
+	    	  m_mainApp.SetErrorString("Ex: " + ex.toString() + " " + ex.getClass().getName());
 	      }
 	   }
 	}

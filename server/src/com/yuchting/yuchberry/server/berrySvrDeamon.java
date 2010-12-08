@@ -501,9 +501,9 @@ public class berrySvrDeamon extends Thread{
 		
 		if(t_segIdx + t_segSize == t_file.length()){
 			
-			RecvMailAttach t_mail;
+			RecvMailAttach t_mail = m_fetchMgr.FindAttachMail(t_time);
 			
-			if((t_mail = m_fetchMgr.FindAttachMail(t_time)) != null){
+			if((t_mail) != null && (t_attachmentIdx + 1) >= t_mail.m_sendMail.GetAttachment().size()){
 				SendMailToSvr(t_mail);
 			}
 		}

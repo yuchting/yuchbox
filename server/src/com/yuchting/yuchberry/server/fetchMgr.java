@@ -424,6 +424,22 @@ public class fetchMgr{
 		return m_fetchInterval;
 	}
 	
+	public String GetHost(){
+		return m_host;
+	}
+	
+	public String GetSendHost(){
+		return m_host_send;
+	}
+	
+	public int GetHostPort(){
+		return m_port;
+	}
+	
+	public int GetSendPort(){
+		return m_port_send;
+	}
+	
 	public synchronized void SetBeginFetchIndex(int _index){
 		m_beginFetchIndex = _index + 1;
 		

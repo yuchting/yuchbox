@@ -14,7 +14,6 @@ import net.rim.blackberry.api.mail.Message;
 
 public class  fetchMail{
 	
-	public recvMain m_test = null;
 	final static int	VERSION = 1;
 	    	
 	final static int	ANSWERED 	= 1 << 0;
@@ -110,29 +109,24 @@ public class  fetchMail{
 	public void OutputMail(OutputStream _stream)throws Exception{
 		
 		_stream.write(VERSION);
-		if(m_test == null){m_test.SetErrorString("OutputMail 0");}
+		
 		sendReceive.WriteInt(_stream,GetMailIndex());
 		
 		sendReceive.WriteStringVector(_stream,m_vectFrom);
 		sendReceive.WriteStringVector(_stream,m_vectReplyTo);
 		sendReceive.WriteStringVector(_stream,m_vectCCTo);
-		if(m_test == null){m_test.SetErrorString("OutputMail 1");}
 		sendReceive.WriteStringVector(_stream,m_vectBCCTo);
 		sendReceive.WriteStringVector(_stream,m_vectTo);
 		sendReceive.WriteStringVector(_stream,m_vectGroup);
-		if(m_test == null){m_test.SetErrorString("OutputMail 2");}
 		
 		sendReceive.WriteString(_stream,m_subject);
 		sendReceive.WriteLong(_stream,m_sendDate.getTime());
-		if(m_test == null){m_test.SetErrorString("OutputMail 3");}
 
 		sendReceive.WriteInt(_stream,m_flags);
-		
 		
 		sendReceive.WriteString(_stream,m_XMailName);
 		sendReceive.WriteString(_stream,m_contain);
 		sendReceive.WriteString(_stream,m_contain_html);
-		if(m_test == null){m_test.SetErrorString("OutputMail 4");}
 		
 		// write the Attachment
 		//
@@ -143,8 +137,6 @@ public class  fetchMail{
 			sendReceive.WriteString(_stream,t_attachment.m_name);
 			sendReceive.WriteString(_stream,t_attachment.m_type);
 		}
-		
-		if(m_test == null){m_test.SetErrorString("OutputMail 5");}
 		
 	}
 		
@@ -298,7 +290,6 @@ class sendMailAttachmentDeamon extends Thread{
 	final static private int fsm_segmentSize = 512;
 	
 	byte[] 				m_bufferBytes 		= new byte[fsm_segmentSize];
-	ByteArrayOutputStream m_os = new ByteArrayOutputStream();
 		
 	public sendMailAttachmentDeamon(connectDeamon _connect,
 									fetchMail _mail,
@@ -308,16 +299,7 @@ class sendMailAttachmentDeamon extends Thread{
 		m_sendMail	= _mail;
 		m_forwardReply	= _forwardReply;
 		m_sendStyle = _sendStyle;
-		
-		if(_mail == null){
-			throw new Exception("null _mail argment");
-		}
-		
-		if(_connect == null){
-			throw new Exception("null _connect argment");
-		}
-				
-		m_sendMail.m_test = _connect.m_mainApp;
+
 		m_vFileConnection  = _vFileConnection;
 		
 		if(!m_vFileConnection.isEmpty()){
@@ -342,12 +324,14 @@ class sendMailAttachmentDeamon extends Thread{
 			// sleep little to wait system set the mail status error
 			// and set it back
 			//
+			// CAN NOT BE LESS THAN 500 !!!
+			//
 			sleep(500);
 			
 			m_connect.m_mainApp.UpdateMessageStatus(m_sendMail.GetAttachMessage(), Message.Status.TX_SENDING);
 			
 		}catch(Exception _e){
-			m_connect.m_mainApp.SetErrorString("S: Status " + _e.getMessage() + _e.getClass().getName());
+			m_connect.m_mainApp.SetErrorString("S: Status " + _e.getMessage() + " "+ _e.getClass().getName());
 		}		
 
 	}
@@ -358,28 +342,54 @@ class sendMailAttachmentDeamon extends Thread{
 				FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(i);
 				t_file.close();
 			}
+			
+			
 		}catch(Exception e){}
 	}
 	
 	private boolean SendFileSegment(final boolean _send)throws Exception{
 		
-		if(m_vFileConnection.isEmpty()){
-			return true;
-		}
-			
+		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+		
 		final int t_size = (m_beginIndex + fsm_segmentSize) > (int)m_fileConnection.fileSize()?
 							((int)m_fileConnection.fileSize() - m_beginIndex) : fsm_segmentSize;
-					
-		sendReceive.ForceReadByte(m_fileIn, m_bufferBytes, t_size);
+		try{
+			
+			sendReceive.ForceReadByte(m_fileIn, m_bufferBytes, t_size);
+			
+		}catch(Exception _e){
+			try{
+				sleep(5000);
+				m_connect.m_mainApp.SetErrorString("S: read file fail" + _e.getMessage() + _e.getClass().getName());
+			}catch(Exception ex){}
+			
+			m_fileIn.close();
+			
+			m_fileIn = m_fileConnection.openInputStream();
+			m_fileIn.skip(m_beginIndex);
+			
+			// try again...
+			//
+			try{
+				sendReceive.ForceReadByte(m_fileIn, m_bufferBytes, t_size);
+			}catch(Exception _ex){
+				// failed again...
+				//
+				m_connect.m_mainApp.SetErrorString("S: read file fail again, close. " + _e.getMessage() + _e.getClass().getName());
+				return true;
+			}
+			
+		}
 		
-		m_os.write(msg_head.msgMailAttach);
-		sendReceive.WriteLong(m_os,m_sendMail.GetSendDate().getTime());
-		sendReceive.WriteInt(m_os, m_attachmentIndex);
-		sendReceive.WriteInt(m_os, m_beginIndex);
-		sendReceive.WriteInt(m_os, t_size);
-		m_os.write(m_bufferBytes,0,t_size);
 		
-		m_connect.m_connect.SendBufferToSvr(m_os.toByteArray(), _send);
+		t_os.write(msg_head.msgMailAttach);
+		sendReceive.WriteLong(t_os,m_sendMail.GetSendDate().getTime());
+		sendReceive.WriteInt(t_os, m_attachmentIndex);
+		sendReceive.WriteInt(t_os, m_beginIndex);
+		sendReceive.WriteInt(t_os, t_size);
+		t_os.write(m_bufferBytes,0,t_size);
+		
+		m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), _send);
 		
 		//System.out.println("send msgMailAttach time:"+ m_sendMail.GetSendDate().getTime() + " beginIndex:" + m_beginIndex + " size:" + t_size);
 		
@@ -401,6 +411,7 @@ class sendMailAttachmentDeamon extends Thread{
 				// send over
 				//
 				m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-2,0,0);
+				t_os.close();
 				return true;
 			}else{
 				m_fileConnection = (FileConnection)m_vFileConnection.elementAt(m_attachmentIndex);
@@ -412,7 +423,7 @@ class sendMailAttachmentDeamon extends Thread{
 		}
 		
 		m_uploadedSize += t_size;
-		m_os.reset();
+		t_os.close();
 		
 		return false;
 	}
@@ -421,9 +432,8 @@ class sendMailAttachmentDeamon extends Thread{
 		
 		boolean t_sendContain = false;
 		
+		
 		while(true){
-			
-			m_connect.m_mainApp.SetErrorString("S: while");
 			
 			while(m_connect.m_conn == null || !m_connect.m_sendAuthMsg){
 				try{
@@ -442,48 +452,33 @@ class sendMailAttachmentDeamon extends Thread{
 			try{
 				
 				if(!t_sendContain){
-				
+								
 					RefreshMessageStatus();
-					
-					m_connect.m_mainApp.SetErrorString("S: RefreshMessageStatus");
 					
 					// send mail once if has not attachment 
 					//
-					if(m_os == null){
-						throw new Exception("ByteArrayOutputStream set null");
-					}
-					
-					m_os.reset();
-					m_os.write(msg_head.msgMail);
-					
-					if(m_sendMail == null){
-						throw new Exception("m_sendMail set null");
-					}
-					
-					m_sendMail.OutputMail(m_os);
-					
-					m_connect.m_mainApp.SetErrorString("S: OutputMail");
+					ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+					t_os.write(msg_head.msgMail);
+					m_sendMail.OutputMail(t_os);					
 					
 					// send the Mail of forward or reply
 					//
 					if(m_forwardReply != null && m_sendStyle != fetchMail.NOTHING_STYLE){
-						m_os.write(m_sendStyle);
-						m_forwardReply.OutputMail(m_os);
+						t_os.write(m_sendStyle);
+						m_forwardReply.OutputMail(t_os);
 					}else{
-						m_os.write(fetchMail.NOTHING_STYLE);
+						t_os.write(fetchMail.NOTHING_STYLE);
 					}
 					
-					m_connect.m_mainApp.SetErrorString("S: NOTHING_STYLE");
-					
-					m_connect.m_connect.SendBufferToSvr(m_os.toByteArray(), false);
-					
-					m_connect.m_mainApp.SetErrorString("S: SendBufferToSvr");
+					m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), false);
 					
 					if(m_vFileConnection.isEmpty()){
 						break;
 					}
-					
+									
 					t_sendContain = true;
+					
+					t_os.close();
 				}
 				
 				int t_sendSegmentNum = 0;
@@ -500,13 +495,9 @@ class sendMailAttachmentDeamon extends Thread{
 				
 				
 			}catch(Exception _e){
-								
-				m_connect.m_mainApp.SetErrorString("S: " + _e.getMessage() + _e.getClass().getName());
-				m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-1,0,0);
 				
-				try{
-					sleep(100000);
-				}catch(Exception e){}
+				m_connect.m_mainApp.SetErrorString("S: " + _e.getMessage() + " " + _e.getClass().getName());
+				m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-1,0,0);
 				
 			}		
 		}

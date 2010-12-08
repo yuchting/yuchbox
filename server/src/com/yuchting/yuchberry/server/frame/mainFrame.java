@@ -75,8 +75,8 @@ public class mainFrame extends JFrame implements ActionListener{
 	int			m_formerHost_port_send	= 587;
 	
 	int			m_formerServer_port		= 9716;
-	int			m_pushInterval			= 10;
-	int			m_expiredTime			= 0;
+	int			m_pushInterval			= 30;
+	long		m_expiredTime			= 0;
 	
 	JPopupMenu 	m_contextMenu			= new JPopupMenu();
 	JMenuItem	m_checkAccountItem		= new JMenuItem("ºÏ≤È’ ªß");
@@ -165,11 +165,7 @@ public class mainFrame extends JFrame implements ActionListener{
 											Long.valueOf(t_data[1]).longValue(),Long.valueOf(t_data[2]).longValue());
 				
 								t_mainFrame.AddAccountThread(t_thread,false);
-								
-								if(m_formerServer_port <= t_thread.m_fetchMgr.GetServerPort()){
-									m_formerServer_port = t_thread.m_fetchMgr.GetServerPort() + 1;
-								}
-								
+															
 								t_mainFrame.m_loadDialog.m_progress.setValue(i + 1);
 								
 							}catch(Exception e){
@@ -290,6 +286,19 @@ public class mainFrame extends JFrame implements ActionListener{
 		m_accountList.addElement(_thread);
 		m_accountTable.AddAccount(_thread);
 		
+		if(m_formerServer_port <= _thread.m_fetchMgr.GetServerPort()){
+			m_formerServer_port = _thread.m_fetchMgr.GetServerPort() + 1;
+		}
+		
+		m_formerHost		= _thread.m_fetchMgr.GetHost();
+		m_formerHost_port	= _thread.m_fetchMgr.GetHostPort();
+		
+		m_formerHost_send		= _thread.m_fetchMgr.GetSendHost();
+		m_formerHost_port_send	= _thread.m_fetchMgr.GetSendPort();
+		
+		m_pushInterval		= _thread.m_fetchMgr.GetPushInterval();
+		m_expiredTime		= _thread.m_expiredTime;
+		
 		if(_storeAccountInfo){
 			StoreAccountInfo();
 		}
@@ -324,7 +333,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			//
 			new createDialog(this,m_formerHost,"" + m_formerHost_port,m_formerHost_send,
 								"" + m_formerHost_port_send,GetRandomPassword(),
-								"" + (m_formerServer_port++),"" + m_pushInterval,"" + m_expiredTime);
+								"" + m_formerServer_port,"" + m_pushInterval,"" + m_expiredTime);
 			
 		}else{
 			final int t_selectIndex = m_accountTable.getSelectedRow();

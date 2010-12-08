@@ -333,7 +333,7 @@ public class sendReceive extends Thread{
 				t_counter++;
 				
 				if(t_counter > 10){
-					throw new Exception("FroceReadByte failed to read " + _readLen );
+					throw new Exception("FroceReadByte failed " + _readLen );
 				}
 			}		
 		}
