@@ -356,13 +356,12 @@ class sendMailAttachmentDeamon extends Thread{
 			
 		}catch(Exception _e){
 			try{
-				sleep(1000);
+				sleep(5000);
 				m_connect.m_mainApp.SetErrorString("S: read file fail" + _e.getMessage() + _e.getClass().getName());
 			}catch(Exception ex){}
 			
 			m_fileIn.close();
 			
-			m_fileConnection = (FileConnection)m_vFileConnection.elementAt(m_attachmentIndex);
 			m_fileIn = m_fileConnection.openInputStream();
 			m_fileIn.skip(m_beginIndex);
 			
