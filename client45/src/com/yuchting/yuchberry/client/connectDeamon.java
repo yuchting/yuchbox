@@ -209,7 +209,7 @@ public class connectDeamon extends Thread implements SendListener,
 			m_composingAttachment.removeAllElements();
 						
 		}catch(Exception _e){
-			m_mainApp.DialogAlert("send error: "+_e.getMessage());
+			m_mainApp.SetErrorString("sMsg: " + _e.getMessage() + " " + _e.getClass().getName());
 		}
 		
 		return true;

@@ -209,7 +209,7 @@ public class connectDeamon extends Thread implements SendListener,
 			m_composingAttachment.removeAllElements();
 						
 		}catch(Exception _e){
-			m_mainApp.DialogAlert("send error: "+_e.getMessage());
+			m_mainApp.SetErrorString("s: " + _e.getMessage() + " " + _e.getClass().getName());
 		}
 		
 		return true;
@@ -1047,9 +1047,18 @@ public class connectDeamon extends Thread implements SendListener,
 		    }
 		}		
 		
-		_mail.SetSubject(m.getSubject());
-		_mail.SetSendDate(m.getSentDate());
+		String t_sub = m.getSubject();
+		if(t_sub == null){
+			_mail.SetSubject("yuchberry has modified by other programme");
+		}else{
+			_mail.SetSubject(t_sub);	
+		}
 		
+		Date t_date = m.getSentDate();
+		if(t_date != null){	
+			_mail.SetSendDate(m.getSentDate());
+		}
+				
 		final int t_flags = m.getFlags(); // get the system flags
 
 		int t_setFlags = 0;
