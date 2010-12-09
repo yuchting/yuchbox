@@ -43,6 +43,8 @@ public class  fetchMail{
 	
 	private String			m_contain		= new String();
 	private String			m_contain_html	= new String();
+	
+	public recvMain		m_mainApp = null;
 		
 	class Attachment{
 		int 		m_size;
@@ -110,23 +112,31 @@ public class  fetchMail{
 		
 		_stream.write(VERSION);
 		
+		if(m_mainApp != null){m_mainApp.SetErrorString("Output 1");}
 		sendReceive.WriteInt(_stream,GetMailIndex());
 		
+		if(m_mainApp != null){m_mainApp.SetErrorString("Output 2");}
 		sendReceive.WriteStringVector(_stream,m_vectFrom);
 		sendReceive.WriteStringVector(_stream,m_vectReplyTo);
 		sendReceive.WriteStringVector(_stream,m_vectCCTo);
+		if(m_mainApp != null){m_mainApp.SetErrorString("Output 3");}
 		sendReceive.WriteStringVector(_stream,m_vectBCCTo);
 		sendReceive.WriteStringVector(_stream,m_vectTo);
 		sendReceive.WriteStringVector(_stream,m_vectGroup);
+		if(m_mainApp != null){m_mainApp.SetErrorString("Output 4");}
 		
 		sendReceive.WriteString(_stream,m_subject);
 		sendReceive.WriteLong(_stream,m_sendDate.getTime());
+		if(m_mainApp != null){m_mainApp.SetErrorString("Output 5");}
 
 		sendReceive.WriteInt(_stream,m_flags);
+		if(m_mainApp != null){m_mainApp.SetErrorString("Output 6");}
 		
 		sendReceive.WriteString(_stream,m_XMailName);
 		sendReceive.WriteString(_stream,m_contain);
+		if(m_mainApp != null){m_mainApp.SetErrorString("Output 7");}
 		sendReceive.WriteString(_stream,m_contain_html);
+		if(m_mainApp != null){m_mainApp.SetErrorString("Output 8");}
 		
 		// write the Attachment
 		//
@@ -137,7 +147,7 @@ public class  fetchMail{
 			sendReceive.WriteString(_stream,t_attachment.m_name);
 			sendReceive.WriteString(_stream,t_attachment.m_type);
 		}
-		
+		if(m_mainApp != null){m_mainApp.SetErrorString("Output 9");}
 	}
 		
 	public void InputMail(InputStream _stream)throws Exception{
@@ -301,6 +311,10 @@ class sendMailAttachmentDeamon extends Thread{
 		m_sendStyle = _sendStyle;
 
 		m_vFileConnection  = _vFileConnection;
+		
+		if(m_sendMail == null){
+			throw new Exception("sendMailAttachmentDeamon _mail null");
+		}
 		
 		if(!m_vFileConnection.isEmpty()){
 			
@@ -475,6 +489,7 @@ class sendMailAttachmentDeamon extends Thread{
 					
 					m_connect.m_mainApp.SetErrorString("S: 8");
 					
+					m_sendMail.m_mainApp = m_connect.m_mainApp;
 					m_sendMail.OutputMail(t_os);
 					
 					m_connect.m_mainApp.SetErrorString("S: 9");

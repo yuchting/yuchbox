@@ -878,6 +878,10 @@ public class connectDeamon extends Thread implements SendListener,
 	public synchronized void AddSendingMail(fetchMail _mail,Vector _files,
 												fetchMail _forwardReply,int _sendStyle)throws Exception{
 		
+		if(_mail == null){
+			throw new Exception("AddSendingMail _mail null");
+		}
+		
 		for(int i = 0;i < m_sendingMail.size();i++){
 			fetchMail t_sending = (fetchMail)m_sendingMail.elementAt(i);
 			if(t_sending.GetSendDate().equals(_mail.GetSendDate())){
