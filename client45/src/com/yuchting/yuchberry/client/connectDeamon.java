@@ -667,11 +667,8 @@ public class connectDeamon extends Thread implements SendListener,
 			 URL =  "socket://" +((m_hostip != null)?m_hostip:t_hostname) + ":" + t_hostport + ";deviceside=true";
 		 }
 		 
-		 String t_APN = m_mainApp.GetAPNName();
-		 
-		 if(t_APN.length() != 0){
-			 URL = URL + ";apn=" + t_APN;
-		 }
+		 String t_append = m_mainApp.GetURLAppendString();
+		 URL = URL + t_append;
 		 
 		 SocketConnection socket = null;
 		 
@@ -686,7 +683,7 @@ public class connectDeamon extends Thread implements SendListener,
 			 
 		 }catch(Exception _e){
 
-			 m_mainApp.SetErrorString("M: " +_e.getMessage() + " APN:" + t_APN + " "+ _e.getClass().getName());
+			 m_mainApp.SetErrorString("M: " +_e.getMessage() + t_append + " " + _e.getClass().getName());
 			 
 			 if(_e.getMessage().indexOf("Peer") != -1){
 				 m_connectCounter = 1000;
@@ -713,7 +710,7 @@ public class connectDeamon extends Thread implements SendListener,
 //					 throw _e;
 //				 }
 				 
-				 throw new Exception(_e.getMessage() + " APN:" + t_APN);
+				 throw new Exception(_e.getMessage() + " " + t_append + " " + _e.getClass().getName());
 			 }
 		 }
 

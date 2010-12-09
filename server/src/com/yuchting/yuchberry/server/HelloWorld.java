@@ -232,9 +232,29 @@ public class HelloWorld {
 //			System.out.println(DecodeName("start =?NdieldiehBId,e?= end",false));
 //		}catch(Exception e){}
 		
+		String m_appendString = "WapGatewayAPN=$apn$;WapGatewayIP=10.0.0.172";
 		
-		String t_test = "hahah\r\n,\rfdfsd\n";
-		System.out.println(t_test);
+		String t_result = new String();
+		
+		String t_APN = "cmnet";
+		
+		if(t_APN.length() != 0){
+			t_result = ";apn=" + t_APN;			
+		}
+		
+		if(m_appendString.length() != 0){
+			final String t_replaceSign = "$apn$";
+			
+			final int t_replaceIdx = m_appendString.indexOf(t_replaceSign); 
+			if( t_replaceIdx != -1 && t_APN.length() != 0){
+				t_result = t_result + ";" + m_appendString.substring(0,t_replaceIdx) + t_APN + m_appendString.substring(t_replaceIdx + t_replaceSign.length());
+			}else{
+				t_result = t_result + ";" + m_appendString;
+			}
+			
+		}
+		
+		System.out.println(t_result);
 		
 
 	}
