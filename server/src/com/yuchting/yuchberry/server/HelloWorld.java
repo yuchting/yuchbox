@@ -225,36 +225,11 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[]){
 
-//		HelloWorld test = new HelloWorld();
-//		test.berryRecvTest();	
-//		
-//		try{
-//			System.out.println(DecodeName("start =?NdieldiehBId,e?= end",false));
-//		}catch(Exception e){}
+		HelloWorld test = new HelloWorld();
+		test.berryRecvTest();	
 		
-		String m_appendString = "WapGatewayAPN=$apn$;WapGatewayIP=10.0.0.172";
+
 		
-		String t_result = new String();
-		
-		String t_APN = "cmnet";
-		
-		if(t_APN.length() != 0){
-			t_result = ";apn=" + t_APN;			
-		}
-		
-		if(m_appendString.length() != 0){
-			final String t_replaceSign = "$apn$";
-			
-			final int t_replaceIdx = m_appendString.indexOf(t_replaceSign); 
-			if( t_replaceIdx != -1 && t_APN.length() != 0){
-				t_result = t_result + ";" + m_appendString.substring(0,t_replaceIdx) + t_APN + m_appendString.substring(t_replaceIdx + t_replaceSign.length());
-			}else{
-				t_result = t_result + ";" + m_appendString;
-			}
-			
-		}
-		
-		System.out.println(t_result);
 		
 
 	}
@@ -442,12 +417,12 @@ public class HelloWorld {
 	public void berryRecvTest(){
 		try{
 			
-			Socket t_socket = GetSocketServer("111111","localhost",9716,false);
+			Socket t_socket = GetSocketServer("nvOuamhZ","localhost",9734,false);
 			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
 			
 			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
 			t_stream.write(msg_head.msgConfirm);
-			sendReceive.WriteString(t_stream, "111111",false);
+			sendReceive.WriteString(t_stream, "nvOuamhZ",false);
 			sendReceive.WriteInt(t_stream,1);
 			
 			t_receive.SendBufferToSvr(t_stream.toByteArray(), false);

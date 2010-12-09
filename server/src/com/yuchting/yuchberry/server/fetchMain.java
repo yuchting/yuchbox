@@ -6,11 +6,11 @@ public class fetchMain{
 	public static void main(String[] _arg){
 
 		fetchMgr t_manger = new fetchMgr();
-		Logger t_logger = new Logger("yuchberry@gmail.com/");
+		Logger t_logger = new Logger("");
 		
 		while(true){
 
-			t_manger.InitConnect("yuchberry@gmail.com/","config.ini",t_logger);
+			t_manger.InitConnect("","config.ini",t_logger);
 			t_manger.StartListening();
 			
 		    try{

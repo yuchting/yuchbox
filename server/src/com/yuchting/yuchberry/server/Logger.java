@@ -12,6 +12,8 @@ public class Logger{
 	private PrintStream		m_printStack;
 	private String				m_prefix;
 	
+	private String				m_logFilename = new String();
+	
 	public Logger(String _prefix){
 		m_prefix = _prefix;
 		
@@ -22,7 +24,7 @@ public class Logger{
 				t_logFile.mkdir();
 			}
 		}
-		
+				
 		File t_logFile = new File(m_prefix + "log");
 		
 		if(!t_logFile.exists() || !t_logFile.isDirectory()){
@@ -32,11 +34,16 @@ public class Logger{
 		SimpleDateFormat format = new SimpleDateFormat("MM-dd-HH_mm_ss");
 		
 		try{
-			m_logFileStream = new FileOutputStream(m_prefix + "log/" + format.format(new Date()) + ".log");
+			m_logFilename = m_prefix + "log/" + format.format(new Date()) + ".log";
+			m_logFileStream = new FileOutputStream(m_logFilename);
 			m_printStack 	= new PrintStream(m_logFileStream);			
 		}catch(Exception _e){
 			System.out.println(_prefix + " seriously error : cant create log file.");
 		}
+	}
+	
+	public String GetLogFileName(){
+		return m_logFilename;
 	}
 	
 	public synchronized void LogOut(String _log){

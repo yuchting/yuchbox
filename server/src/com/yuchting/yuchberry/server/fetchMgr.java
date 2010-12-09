@@ -267,7 +267,7 @@ public class fetchMgr{
 			
 		}catch(Exception ex){
 			
-			m_logger.PrinterException(ex);		    
+			m_logger.PrinterException(ex);
 		    if(ex.getMessage().indexOf("Invalid credentials") != -1){
 				// the password or user name is invalid..
 				//
@@ -329,6 +329,10 @@ public class fetchMgr{
 	
 	public boolean IsUseSSL(){
 		return m_userSSL;
+	}
+	
+	public String GetPrefixString(){
+		return m_prefix;
 	}
 	
 	public synchronized void ResetSession(boolean _testSMTP)throws Exception{
@@ -1095,19 +1099,16 @@ public class fetchMgr{
 	static public String DecodeName(String _name,boolean _convert)throws Exception{
 		
 		int t_start = _name.indexOf("=?");
-		int t_end = _name.indexOf("?=");
 		
-		if(t_start != -1 && t_end != -1){
+		if(t_start != -1){
 			
+			int t_count = 0;
 			do{
-				_name = _name.substring(0, t_start) + 
-									MimeUtility.decodeText(_name.substring(t_start, t_end + 2)) +
-									_name.substring(t_end + 2);
+				_name = _name.substring(0, t_start) + MimeUtility.decodeText(_name.substring(t_start));
 				
 				t_start = _name.indexOf("=?");
-				t_end = _name.indexOf("?=");
 				
-			}while(t_start != -1 && t_end != -1);
+			}while(t_start != -1 && t_count++ < 10);
 			
 		}else{
 			if(_convert){
