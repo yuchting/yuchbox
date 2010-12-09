@@ -10,6 +10,11 @@ copy /Y .\client45\src\local\*.* .\client46\src\local\
 copy /Y .\client45\src\local\*.* .\client47\src\local\
 copy /Y .\client45\src\local\*.* .\client60\src\local\
 
+copy /Y .\client45\BlackBerry_App_Descriptor.xml .\client\
+copy /Y .\client45\BlackBerry_App_Descriptor.xml .\client46\
+copy /Y .\client45\BlackBerry_App_Descriptor.xml .\client47\
+copy /Y .\client45\BlackBerry_App_Descriptor.xml .\client60\
+
 svn add .\client\src\local\*.*
 svn add .\client46\src\local\*.*
 svn add .\client47\src\local\*.*

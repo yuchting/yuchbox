@@ -209,7 +209,7 @@ public class connectDeamon extends Thread implements SendListener,
 			m_composingAttachment.removeAllElements();
 						
 		}catch(Exception _e){
-			m_mainApp.SetErrorString("s: " + _e.getMessage() + " " + _e.getClass().getName());
+			m_mainApp.SetErrorString("sMsg: " + _e.getMessage() + " " + _e.getClass().getName());
 		}
 		
 		return true;
@@ -878,10 +878,6 @@ public class connectDeamon extends Thread implements SendListener,
 	public synchronized void AddSendingMail(fetchMail _mail,Vector _files,
 												fetchMail _forwardReply,int _sendStyle)throws Exception{
 		
-		if(_mail == null){
-			throw new Exception("AddSendingMail _mail null");
-		}
-		
 		for(int i = 0;i < m_sendingMail.size();i++){
 			fetchMail t_sending = (fetchMail)m_sendingMail.elementAt(i);
 			if(t_sending.GetSendDate().equals(_mail.GetSendDate())){
@@ -1049,16 +1045,16 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		String t_sub = m.getSubject();
 		if(t_sub == null){
-			_mail.SetSubject("yuchberry has modified by other programme");
+			_mail.SetSubject("No Subject");
 		}else{
 			_mail.SetSubject(t_sub);	
 		}
 		
 		Date t_date = m.getSentDate();
 		if(t_date != null){	
-			_mail.SetSendDate(m.getSentDate());
+			_mail.SetSendDate(t_date);
 		}
-				
+		
 		final int t_flags = m.getFlags(); // get the system flags
 
 		int t_setFlags = 0;

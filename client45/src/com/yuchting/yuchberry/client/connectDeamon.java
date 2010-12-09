@@ -1043,8 +1043,17 @@ public class connectDeamon extends Thread implements SendListener,
 		    }
 		}		
 		
-		_mail.SetSubject(m.getSubject());
-		_mail.SetSendDate(m.getSentDate());
+		String t_sub = m.getSubject();
+		if(t_sub == null){
+			_mail.SetSubject("No Subject");
+		}else{
+			_mail.SetSubject(t_sub);	
+		}
+		
+		Date t_date = m.getSentDate();
+		if(t_date != null){	
+			_mail.SetSendDate(t_date);
+		}
 		
 		final int t_flags = m.getFlags(); // get the system flags
 
