@@ -15,7 +15,9 @@ import net.rim.device.api.ui.container.MainScreen;
 public class settingScreen extends MainScreen {
 	
 	 EditField			m_APN			= null;
+	 EditField			m_appendString	= null;
 	 CheckboxField		m_useSSLCheckbox= null;
+	 CheckboxField		m_useWifi		= null;
 	 
 	 NumericChoiceField	m_vibrateList	= null;
 	 NumericChoiceField	m_soundList		= null;
@@ -32,8 +34,15 @@ public class settingScreen extends MainScreen {
 		 									m_mainApp.GetAPNList(),128,EditField.FILTER_DEFAULT);
 		 add(m_APN);
 		 
-		 m_useSSLCheckbox	= new CheckboxField(recvMain.sm_local.getString(localResource.USE_SSL), m_mainApp.m_useSSL);
+		 m_appendString	= new EditField(recvMain.sm_local.getString(localResource.APPEND_STRING_LABEL),
+											m_mainApp.m_appendString,128,EditField.FILTER_DEFAULT);
+		 add(m_appendString);
+		 
+		 m_useSSLCheckbox	= new CheckboxField(recvMain.sm_local.getString(localResource.USE_SSL_LABEL), m_mainApp.m_useSSL);
 		 add(m_useSSLCheckbox);
+		 
+		 m_useWifi			= new CheckboxField(recvMain.sm_local.getString(localResource.USE_WIFI_LABEL), m_mainApp.m_useWifi);
+		 add(m_useWifi);
 		 //@}
 		 
 		 
@@ -59,6 +68,9 @@ public class settingScreen extends MainScreen {
 		m_mainApp.SetAPNName(m_APN.getText());
 		m_mainApp.m_soundVol = m_soundList.getSelectedValue();
 		m_mainApp.m_vibrateTime = m_vibrateList.getSelectedValue();
+		
+		m_mainApp.m_appendString = m_appendString.getText();
+		m_mainApp.m_useWifi = m_useWifi.getChecked();
 		
 		m_mainApp.WriteReadIni(false);
 		

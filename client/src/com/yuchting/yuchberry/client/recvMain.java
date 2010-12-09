@@ -251,7 +251,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 
 public class recvMain extends UiApplication implements localResource {
 	
-	final static int		fsm_clientVersion = 3;
+	final static int		fsm_clientVersion = 4;
 	
 	String 				m_attachmentDir 	= null;
 	
@@ -281,6 +281,7 @@ public class recvMain extends UiApplication implements localResource {
 	int					m_port 				= 0;
 	String				m_userPassword 		= new String();
 	boolean			m_useSSL			= false;
+	boolean			m_useWifi			= false;
 	
 	int					m_vibrateTime		= 1;
 	int					m_soundVol			= 2;
@@ -293,6 +294,7 @@ public class recvMain extends UiApplication implements localResource {
 	Vector				m_APNList 			= new Vector();
 	int					m_currentAPNIdx 	= 0;
 	int					m_changeAPNCounter 	= 0;
+	String				m_appendString		= new String();
 	
 	class UploadingDesc{
 		
@@ -454,6 +456,33 @@ public class recvMain extends UiApplication implements localResource {
 		
 	}
 	
+	public String GetURLAppendString(){
+
+		String t_result = new String();
+		
+		String t_APN = GetAPNName();
+		
+		if(t_APN.length() != 0){
+			t_result = ";apn=" + t_APN;			
+		}
+		
+		if(m_appendString.length() != 0){
+			
+			final String t_replaceSign = "$apn$";
+			
+			final int t_replaceIdx = m_appendString.indexOf(t_replaceSign); 
+			if( t_replaceIdx != -1 && t_APN.length() != 0){
+				t_result = t_result + ";" + m_appendString.substring(0,t_replaceIdx) + t_APN + m_appendString.substring(t_replaceIdx + t_replaceSign.length());
+			}else{
+				t_result = t_result + ";" + m_appendString;
+			}
+		}
+		 
+		return t_result;
+	}
+	
+	
+	
 	public String GetHostName(){
 		return m_hostname;
 	}
@@ -503,6 +532,11 @@ public class recvMain extends UiApplication implements localResource {
 		    			m_soundVol		= t_readFile.read();
 		    		}
 		    		
+		    		if(t_currVer >= 4){
+		    			m_useWifi = (t_readFile.read() == 0)?false:true;
+		    			m_appendString = sendReceive.ReadString(t_readFile);		    			
+		    		}
+		    		
 		    		t_readFile.close();
 		    		fc.close();
 		    	}	
@@ -531,6 +565,9 @@ public class recvMain extends UiApplication implements localResource {
 				t_writeFile.write(m_useSSL?1:0);
 				t_writeFile.write(m_vibrateTime);
 				t_writeFile.write(m_soundVol);
+				t_writeFile.write(m_useWifi?1:0);
+				
+				sendReceive.WriteString(t_writeFile,m_appendString);
 				
 				t_writeFile.close();
 				
