@@ -432,8 +432,11 @@ class sendMailAttachmentDeamon extends Thread{
 		
 		boolean t_sendContain = false;
 		
+		m_connect.m_mainApp.SetErrorString("S: 1");
 		
 		while(true){
+			
+			m_connect.m_mainApp.SetErrorString("S: 2");
 			
 			while(m_connect.m_conn == null || !m_connect.m_sendAuthMsg){
 				try{
@@ -442,24 +445,39 @@ class sendMailAttachmentDeamon extends Thread{
 					break;
 				}
 				
+				m_connect.m_mainApp.SetErrorString("S: 3");
+				
 				if(!m_connect.IsConnectState()){
 					ReleaseAttachFile();
 					return;
 				}
+				m_connect.m_mainApp.SetErrorString("S: 4");
 			}			
 			
 			
 			try{
 				
 				if(!t_sendContain){
-								
+			
+					m_connect.m_mainApp.SetErrorString("S: 5");
+					
 					RefreshMessageStatus();
+					
+					m_connect.m_mainApp.SetErrorString("S: 6");
 					
 					// send mail once if has not attachment 
 					//
 					ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+					
+					m_connect.m_mainApp.SetErrorString("S: 7");
+					
 					t_os.write(msg_head.msgMail);
-					m_sendMail.OutputMail(t_os);					
+					
+					m_connect.m_mainApp.SetErrorString("S: 8");
+					
+					m_sendMail.OutputMail(t_os);
+					
+					m_connect.m_mainApp.SetErrorString("S: 9");
 					
 					// send the Mail of forward or reply
 					//
@@ -469,16 +487,23 @@ class sendMailAttachmentDeamon extends Thread{
 					}else{
 						t_os.write(fetchMail.NOTHING_STYLE);
 					}
+					m_connect.m_mainApp.SetErrorString("S: 10");
 					
 					m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), false);
+					
+					m_connect.m_mainApp.SetErrorString("S: 11");
 					
 					if(m_vFileConnection.isEmpty()){
 						break;
 					}
-									
+					
+					m_connect.m_mainApp.SetErrorString("S: 12");
+					
 					t_sendContain = true;
 					
 					t_os.close();
+					
+					m_connect.m_mainApp.SetErrorString("S: 13");
 				}
 				
 				int t_sendSegmentNum = 0;
@@ -499,6 +524,9 @@ class sendMailAttachmentDeamon extends Thread{
 				m_connect.m_mainApp.SetErrorString("S: " + _e.getMessage() + " " + _e.getClass().getName());
 				m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-1,0,0);
 				
+				try{
+					sleep(100000);
+				}catch(Exception e){}
 			}		
 		}
 		

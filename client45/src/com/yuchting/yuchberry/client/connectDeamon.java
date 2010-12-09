@@ -224,6 +224,8 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			try{
 	
+				LED.setState(LED.STATE_OFF);
+				
 				AddMarkReadMail(e.getMessage());
 				e.getMessage().removeMessageListener(this);
 				
