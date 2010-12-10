@@ -226,7 +226,7 @@ public class HelloWorld {
 	public static void main(String arg[]){
 
 		HelloWorld test = new HelloWorld();
-		test.berryRecvTest();	
+		test.berrySendTest();	
 		
 
 		
@@ -363,12 +363,13 @@ public class HelloWorld {
 		
 		try{
 			
-			Socket t_socket = GetSocketServer("111111","localhost",9716,false);
+			Socket t_socket = GetSocketServer("Ga855e6a","localhost",9716,false);
 			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
 			
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			os.write(msg_head.msgConfirm);
-			sendReceive.WriteString(os, "111111",false);
+			sendReceive.WriteString(os, "Ga855e6a",false);
+			sendReceive.WriteInt(os,1);
 			t_receive.SendBufferToSvr(os.toByteArray(), false);
 			
 			fetchMail t_mail = new fetchMail(false);
@@ -382,12 +383,14 @@ public class HelloWorld {
 			final int t_math = (int)(Math.random() * 100);
 			t_mail.SetMailIndex(t_math);
 			
-			t_mail.AddAttachment("HelloWorld.jar","application",readFileBuffer("HelloWorld.jar").length);
+			//t_mail.AddAttachment("HelloWorld.jar","application",readFileBuffer("HelloWorld.jar").length);
 			
 			
-			os.close();
+			os = new ByteArrayOutputStream();
 			os.write(msg_head.msgMail);
-			t_mail.OutputMail(os);		
+			
+			t_mail.OutputMail(os);
+			os.write(fetchMail.NOTHING_STYLE);
 			
 			t_receive.SendBufferToSvr(os.toByteArray(), true);
 			

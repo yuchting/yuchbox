@@ -47,7 +47,7 @@ import org.htmlparser.util.NodeList;
 import com.sun.mail.smtp.SMTPTransport;
 
 class RecvMailAttach{
-	
+		
 	fetchMail m_sendMail 			= null;
 	fetchMail m_forwardReplyMail	= null;
 	
@@ -125,8 +125,10 @@ class RecvMailAttach{
 
 public class fetchMgr{
 	
-	final static int	CHECK_NUM = 50;
+	public final static String	fsm_signatureFilename = "signature.txt";
 	
+	final static int	CHECK_NUM = 50;
+		
 	Logger	m_logger	= null;
 	
 	ServerSocket m_svr 	= null;
@@ -301,7 +303,7 @@ public class fetchMgr{
 	private void ReadSignature(){
 		
 		try{
-			File t_file = new File("signature.txt");
+			File t_file = new File(m_prefix + fsm_signatureFilename);
 			
 			if(t_file.exists()){
 				BufferedReader in = new BufferedReader( new FileReader(t_file));

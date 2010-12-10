@@ -194,6 +194,9 @@ public class connectDeamon extends Thread implements SendListener,
 	 public boolean sendMessage(Message message){
     	
 		try{
+			
+			m_mainApp.SetErrorString("sendMsg:" + message.getSubject());
+			
 			fetchMail t_mail = new fetchMail();
 			ImportMail(message,t_mail);
 			

@@ -442,7 +442,9 @@ public class createDialog extends JDialog implements DocumentListener,
 		}catch(Exception e){
 			JOptionPane.showMessageDialog(this,"服务端口" + t_serverPort + "无法开启：" + e.getMessage() , "错误", JOptionPane.ERROR_MESSAGE);
 			return false;
-		}		
+		}
+		
+		WriteSignature(t_prefix);
 		
 		fetchThread t_thread = null;
 
@@ -463,6 +465,18 @@ public class createDialog extends JDialog implements DocumentListener,
 		return true;
 	}
 	
+	private void WriteSignature(String _prefix){
+		try{
+			
+			if(m_signature.getText().length() != 0){
+				FileOutputStream t_out = new FileOutputStream(_prefix + fetchMgr.fsm_signatureFilename);
+				t_out.write(m_signature.getText().getBytes("GB2312"));
+				t_out.flush();
+				t_out.close();
+			}
+			
+		}catch(Exception e){}
+	}
 	private void WriteIniFile(String _iniFile)throws Exception{
 		
 		BufferedReader in = new BufferedReader(
