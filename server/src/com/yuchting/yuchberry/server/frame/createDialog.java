@@ -250,6 +250,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 		getContentPane().add(t_label);
 		m_signature.setPreferredSize(new Dimension(fsm_width - 15, 170));
+		m_signature.setText("send from my Blackberry-----\nPowered by yuchberry");
 		getContentPane().add(m_signature);
 		
 		t_separator			= new JSeparator();
