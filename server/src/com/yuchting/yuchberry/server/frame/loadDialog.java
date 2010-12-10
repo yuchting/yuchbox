@@ -2,6 +2,7 @@ package com.yuchting.yuchberry.server.frame;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Image;
 
 import javax.swing.AbstractButton;
 import javax.swing.JDialog;

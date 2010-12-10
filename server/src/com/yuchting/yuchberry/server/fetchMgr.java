@@ -178,6 +178,8 @@ public class fetchMgr{
     
     int		m_unreadFetchIndex	= 0;
     boolean m_userSSL			= false;
+    
+    boolean m_useAppendHTML	= false;
         
     private Vector	m_recvMailAttach = new Vector();
     
@@ -225,7 +227,12 @@ public class fetchMgr{
 			String t_simpleChar = p.getProperty("convertoSimpleChar");
 			if(t_simpleChar != null){
 				m_convertToSimpleChar = t_simpleChar.equals("1");
-			}		
+			}
+			
+			String t_appendHTML = p.getProperty("appendHTML");
+			if(t_appendHTML != null){
+				m_useAppendHTML = t_appendHTML.equals("1");
+			}
 					
 	    	m_userName	= m_strUserNameFull.substring(0,m_strUserNameFull.indexOf('@'));
 	    	m_password	= p.getProperty("password");
@@ -866,10 +873,12 @@ public class fetchMgr{
 				String t_contain = ChangeHTMLCharset(p.getContent().toString());
 								
 		    	_mail.SetContain_html(_mail.GetContain_html().concat(t_contain));
-
-			    // parser HTML append the plain text
-			    //		    	
-		    	_mail.SetContain(_mail.GetContain().concat("\n\n---------- HTML part convert ----------\n\n" + ParseHTMLText(t_contain,true)));
+		    	
+		    	if(m_useAppendHTML){
+				    // parser HTML append the plain text
+				    //		    	
+			    	_mail.SetContain(_mail.GetContain().concat("\n\n---------- HTML part convert ----------\n\n" + ParseHTMLText(t_contain,true)));
+		    	}
 		    	
 		    }catch(Exception e){
 		    	_mail.SetContain_html(_mail.GetContain_html().concat("can't decode content " + e.getMessage()));

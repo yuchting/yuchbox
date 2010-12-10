@@ -2,9 +2,11 @@ package com.yuchting.yuchberry.server.frame;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -19,6 +21,7 @@ import java.util.Vector;
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -30,6 +33,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.MouseInputListener;
 
 import com.yuchting.yuchberry.server.fetchMgr;
 
@@ -48,7 +52,7 @@ class checkStateThread extends Thread{
 			try{
 				
 				try{
-					sleep(60000);
+					sleep(30000);
 				}catch(Exception e){}
 				
 				m_mainFrame.RefreshState();
@@ -64,13 +68,22 @@ public class mainFrame extends JFrame implements ActionListener{
 	final static int 	fsm_width 	= 800;
 	final static int	fsm_height	= 800;
 	
+	final static int	fsm_minAccountTableHeight = 200;
+	final static int	fsm_maxAccountTableHeight = 600;
+	
 	JButton		m_addAccount		= new JButton("+ 添加账户");
 	JButton		m_sponsor			= new JButton("赞助/技术支持");
-	JLabel		m_stateLabel		= null;
+	JLabel		m_stateLabel		= new JLabel("state:");
 
-	accountTable m_accountTable		= null;
+	accountTable m_accountTable		= new accountTable(this);
+	JScrollPane	m_accountTableScroll= new JScrollPane(m_accountTable);
+	
+	JSeparator	m_tableSeparator	= new JSeparator();
+	boolean	m_isResizeState		= false;
 	JTextArea	m_logInfo			= new JTextArea();
 	JScrollPane	m_logInfoScroll		= new JScrollPane(m_logInfo);
+	
+	JPanel		m_accountLogPane	= new JPanel();
 	
 	Vector		m_accountList		= new Vector();
 	
@@ -99,15 +112,23 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	
 	public mainFrame(){
-		setTitle("yuchberry setting frame");
+		setTitle("yuchberry 集成配置工具 beta");
 		setSize(fsm_width,fsm_height);
 		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		Image image = getToolkit().createImage(ClassLoader.getSystemResource("com/yuchting/yuchberry/server/frame/logo.png"));
+		setIconImage(image);		
+		
+		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		
 		addWindowListener(new java.awt.event.WindowAdapter() {
 		    public void windowClosing(java.awt.event.WindowEvent e) {
-		    	mainFrame t_frame = (mainFrame)e.getWindow();
-		    	t_frame.CloseProcess();
+		    	
+		    	if(JOptionPane.showConfirmDialog(JFrame.getFrames()[0],"真的想关闭所有的用户并退出？", "关闭？", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION){
+		    		mainFrame t_frame = (mainFrame)e.getWindow();
+			    	t_frame.CloseProcess();
+			    	
+			    	System.exit(0);
+		    	}
 		    }
 		});
 
@@ -127,33 +148,34 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 		getContentPane().add(panel,BorderLayout.PAGE_START);
 		
-		panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
+		m_accountLogPane.setLayout(new BoxLayout(m_accountLogPane,BoxLayout.Y_AXIS));
 		
-		m_stateLabel = new JLabel("state:");
 		m_stateLabel.setPreferredSize(new Dimension(fsm_width * 2,25));
 		m_stateLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		panel.add(m_stateLabel);
+		m_accountLogPane.add(m_stateLabel);
 		
-		m_accountTable = new accountTable(this);
-		JScrollPane t_scroll = new JScrollPane(m_accountTable);
-		t_scroll.setPreferredSize(new Dimension(fsm_width, 200));
-		panel.add(t_scroll);
+		m_accountTableScroll.setPreferredSize(new Dimension(fsm_width, 350));
+		m_accountLogPane.add(m_accountTableScroll);
+		
+		m_tableSeparator.setPreferredSize(new Dimension(fsm_width,8));
+		m_accountLogPane.add(m_tableSeparator);
 		
 		m_logInfo.setEditable(false);
-		panel.add(m_logInfoScroll);
+		m_logInfoScroll.setPreferredSize(new Dimension(fsm_width, fsm_height));
+		m_accountLogPane.add(m_logInfoScroll);
 		
-		getContentPane().add(panel,BoxLayout.Y_AXIS);
+		getContentPane().add(m_accountLogPane,BoxLayout.Y_AXIS);
 		
+		ConstructMoveSeparator();
 		ConstructContextMenu();
 		
 		setVisible(true);
 		
 		LoadStoreAccountInfo();
-		
+				
 		new checkStateThread(this);
 	}
-	
+		
 	public void LoadStoreAccountInfo(){
 		
 		Thread t_load = new Thread(){
@@ -175,6 +197,8 @@ public class mainFrame extends JFrame implements ActionListener{
 								t_lineContain.addElement(line);
 							}
 						}
+						in.close();
+						
 						t_mainFrame.m_loadDialog.m_progress.setMaximum(t_lineContain.size());
 						
 						for(int i = 0;i < t_lineContain.size();i++){
@@ -215,6 +239,62 @@ public class mainFrame extends JFrame implements ActionListener{
 		m_loadDialog.setVisible(true);		
 	}
 	
+	public void ConstructMoveSeparator(){
+		
+		MouseInputListener t_lister = new MouseInputListener() {
+			
+			Point startPos = null;
+			
+			public void mouseMoved(MouseEvent arg0) {
+				if(m_tableSeparator.hasFocus()){
+					setCursor(Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR));
+				}
+			}
+			
+			public void mouseDragged(MouseEvent arg0) {
+				if(startPos != null){
+					
+					int t_height = m_accountTableScroll.getPreferredSize().height + (arg0.getY() - startPos.y);
+					
+					if(t_height > fsm_maxAccountTableHeight){
+						t_height = fsm_maxAccountTableHeight;
+					}
+					
+					if(t_height < fsm_minAccountTableHeight){
+						t_height = fsm_minAccountTableHeight;
+					}
+					
+					m_accountTableScroll.setPreferredSize(new Dimension(fsm_width,t_height));
+					SwingUtilities.updateComponentTreeUI(m_accountLogPane);
+				}				
+				
+			}
+			
+			public void mouseReleased(MouseEvent arg0) {
+				startPos = null;
+			}
+			
+			public void mousePressed(MouseEvent arg0) {
+				startPos = arg0.getPoint();
+				m_tableSeparator.requestFocus();
+			}
+			
+			public void mouseExited(MouseEvent arg0) {
+				setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			}
+			
+			public void mouseEntered(MouseEvent arg0) {
+				setCursor(Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR));
+			}
+			
+			public void mouseClicked(MouseEvent arg0) {
+								
+			}
+		};
+		
+		m_tableSeparator.addMouseMotionListener(t_lister);
+		m_tableSeparator.addMouseListener(t_lister);
+	}
 	public void ConstructContextMenu(){
 		m_contextMenu.add(m_checkAccountItem);
 		m_checkAccountItem.addActionListener(this);
@@ -380,21 +460,6 @@ public class mainFrame extends JFrame implements ActionListener{
 								"" + m_formerHost_port_send,GetRandomPassword(),
 								"" + m_formerServer_port,"" + m_pushInterval,"" + m_expiredTime);
 			
-		}else if(e.getSource() == m_continueAccountItem 
-				|| e.getSource() == m_pauseAccountItem){
-			
-			final int t_selectIndex = m_accountTable.getSelectedRow();
-			if(t_selectIndex != -1){
-				fetchThread t_thread = (fetchThread)m_accountList.elementAt(t_selectIndex);
-				
-				if(e.getSource() == m_continueAccountItem){
-					t_thread.Reuse();
-				}else if(e.getSource() == m_pauseAccountItem){
-					t_thread.Pause();
-				}
-				
-				RefreshState();
-			}
 		}else if(e.getSource() == m_sponsor){
 
 			final String t_sponsorURL = "http://code.google.com/p/yuchberry/wiki/Sponsor_yuchberry";
@@ -405,6 +470,31 @@ public class mainFrame extends JFrame implements ActionListener{
 				JOptionPane.showMessageDialog(this,"打开网页出错 " + ex.getMessage() + ", 请访问\n" + t_sponsorURL, "错误", JOptionPane.ERROR_MESSAGE);
 			}
 			
+		}else if(e.getSource() == m_continueAccountItem 
+				|| e.getSource() == m_pauseAccountItem
+				|| e.getSource() == m_checkAccountItem){
+			
+			final int t_selectIndex = m_accountTable.getSelectedRow();
+			if(t_selectIndex != -1){
+				fetchThread t_thread = (fetchThread)m_accountList.elementAt(t_selectIndex);
+				
+				if(e.getSource() == m_continueAccountItem){
+					t_thread.Reuse();
+				}else if(e.getSource() == m_pauseAccountItem){
+					t_thread.Pause();
+				}else if(e.getSource() == m_checkAccountItem){
+					final String t_configFile = t_thread.m_fetchMgr.GetPrefixString() + "config.ini";
+					
+					try{
+						OpenFileEdit(t_configFile);
+					}catch(Exception ex){
+						JOptionPane.showMessageDialog(this,"打开" + t_configFile + "出错：" + ex.getMessage() + ", 请打开" + t_configFile, "错误", JOptionPane.ERROR_MESSAGE);
+					}
+					
+				}
+				
+				RefreshState();
+			}
 		}
 		
 	}
@@ -470,7 +560,7 @@ public class mainFrame extends JFrame implements ActionListener{
 	static public void OpenURL(String _URL)throws Exception{
 		
 		if( !java.awt.Desktop.isDesktopSupported() ) {
-            throw new Exception( "Desktop is not supported (fatal)" );
+            throw new Exception( "java.awt.Desktop is not supported (fatal)" );
         }
 
         java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
@@ -482,6 +572,21 @@ public class mainFrame extends JFrame implements ActionListener{
 	    java.net.URI uri = new java.net.URI( _URL );
 	    desktop.browse( uri );      
         
+	}
+	
+	static public void OpenFileEdit(String _filename)throws Exception{
+		
+		if( !java.awt.Desktop.isDesktopSupported() ) {
+            throw new Exception( "java.awt.Desktop is not supported (fatal)" );
+        }
+
+        java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
+
+        if( !desktop.isSupported( java.awt.Desktop.Action.EDIT ) ) {
+        	throw new Exception( "java.awt.Desktop doesn't support the edit action (fatal)" );
+        }
+
+	    desktop.open(new File(_filename));    
 	}
 
 }
