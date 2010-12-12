@@ -225,13 +225,55 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[]){
 
-		HelloWorld test = new HelloWorld();
-		test.berrySendTest();	
+		//HelloWorld test = new HelloWorld();
+		//test.berrySendTest();	
 		
 
+	}
+	
+	static public void GenALotPremiereSubtitle(){
 		
-		
+		try{
+			BufferedReader in = new BufferedReader(
+					new InputStreamReader(
+							new FileInputStream("temp.prtl"),"UTF-16"));
 
+			String tmp = in.readLine();
+			in.close();
+			
+			in = new BufferedReader(
+					new InputStreamReader(
+							new FileInputStream("×ÖÄ».txt")));
+			
+			String t_line;
+			final String t_startF = "<TRString>";
+			final String t_endF = "</TRString>";
+			final String t_countF = "CharacterAttributes RunCount=\"";
+			int t_countIndex = 1;
+			while((t_line = in.readLine()) != null){
+
+				if(t_line.length() != 0){
+					FileOutputStream out = new FileOutputStream("" + t_countIndex + " " + t_line + ".prtl");
+					
+					final int t_start = tmp.indexOf(t_startF) + t_startF.length();
+					final int t_end = tmp.indexOf(t_endF);
+					
+					final int t_count = tmp.indexOf(t_countF) + t_countF.length();
+					final int t_countEnd = tmp.indexOf("\"",t_count);
+					
+					t_line = tmp.substring(0,t_start ) + t_line + tmp.substring(t_end ,t_count) + (t_line.length() +1) + tmp.substring(t_countEnd);
+					out.write(t_line.getBytes("UTF-16"));
+					out.flush();
+					out.close();
+					
+					t_countIndex++;
+				}
+			}
+			
+			
+		}catch(Exception e){
+			
+		}
 	}
 
 	static public String DecodeName(String _name,boolean _convert)throws Exception{

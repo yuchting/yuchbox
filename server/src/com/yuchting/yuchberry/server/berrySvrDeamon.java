@@ -157,7 +157,7 @@ class berrySvrPush extends Thread{
 
 				m_serverDeamon.m_fetchMgr.PushMail(m_sendReceive);
 				
-				sleep(m_serverDeamon.m_fetchMgr.GetPushInterval());
+				sleep(m_serverDeamon.m_fetchMgr.GetPushInterval() * 1000);
 				
 			}catch(Exception _e){
 				m_serverDeamon.m_fetchMgr.m_logger.PrinterException(_e);

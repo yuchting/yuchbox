@@ -14,6 +14,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyStore;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
@@ -211,10 +212,10 @@ public class fetchMgr{
 			m_port_send		= Integer.valueOf(p.getProperty("port_send")).intValue();
 			m_listenPort	= Integer.valueOf(p.getProperty("serverPort")).intValue();
 			
-			m_fetchInterval	= Integer.valueOf(p.getProperty("pushInterval")).intValue() * 1000;
-			if(m_fetchInterval <= 1000){
+			m_fetchInterval	= Integer.valueOf(p.getProperty("pushInterval")).intValue();
+			if(m_fetchInterval < 1){
 				System.out.println("the pushInterval segment can't be less than 1sec, set the defaul 10 sec now");
-				m_fetchInterval = 10000;
+				m_fetchInterval = 10;
 			}
 			
 			if(Integer.valueOf(p.getProperty("userSSL")).intValue() == 1){
@@ -817,7 +818,12 @@ public class fetchMgr{
 		}
 
 		_mail.SetSubject(DecodeName(mailTitle,false));
-		_mail.SetSendDate(m.getSentDate());
+		
+		Date t_date = m.getSentDate();
+		if(t_date != null){
+			_mail.SetSendDate(t_date);
+		}
+		
 		
 		int t_flags = 0;
 		Flags.Flag[] sf = m.getFlags().getSystemFlags(); // get the system flags
@@ -1108,6 +1114,10 @@ public class fetchMgr{
 	}
 
 	static public String DecodeName(String _name,boolean _convert)throws Exception{
+		
+		if(_name == null){
+			return "No Subject";
+		}
 		
 		int t_start = _name.indexOf("=?");
 		
