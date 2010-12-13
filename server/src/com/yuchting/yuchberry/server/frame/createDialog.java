@@ -444,17 +444,14 @@ public class createDialog extends JDialog implements DocumentListener,
 
 		try{
 						
-			try{
-				
-				CopyFile("config.ini" , t_prefix + "config.ini");
-				
-				WriteIniFile(t_prefix + "config.ini");				
+			try{				
+				WriteIniFile(t_prefix + fetchMgr.fsm_configFilename);
 			}catch(Exception e){
-				JOptionPane.showMessageDialog(this, "复制创建" + t_prefix + "config.ini" + "出现问题：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, "复制创建" + t_prefix + fetchMgr.fsm_configFilename + "出现问题：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
 				return false;
 			}			
 			
-			t_thread = new fetchThread(t_prefix,t_prefix + "config.ini",
+			t_thread = new fetchThread(t_prefix,t_prefix + fetchMgr.fsm_configFilename,
 									Long.valueOf(m_expiredTime.getText()).longValue(),(new Date()).getTime());
 			
 		}catch(Exception e){
@@ -480,6 +477,8 @@ public class createDialog extends JDialog implements DocumentListener,
 		}catch(Exception e){}
 	}
 	private void WriteIniFile(String _iniFile)throws Exception{
+		
+		CopyFile(fetchMgr.fsm_configFilename, _iniFile);
 		
 		BufferedReader in = new BufferedReader(
 								new InputStreamReader(
@@ -517,18 +516,18 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 		final Object[][] t_replace = 
 		{
-			{"account=",m_account},
-			{"password=",m_password},
-			{"protocol=",m_protocal},
-			{"host=",m_host},
-			{"port=",m_port},
-			{"host_send=",m_send_host},
-			{"port_send=",m_send_port},
-			{"userPassword=",m_userPassword},
-			{"serverPort=",m_serverPort},
-			{"pushInterval=",m_pushInterval},
-			{"userSSL=",m_useSSL},
-			{"convertoSimpleChar=",m_convertToSimple},
+			{"account="				,m_account},
+			{"password="			,m_password},
+			{"protocol="			,m_protocal},
+			{"host="				,m_host},
+			{"port="				,m_port},
+			{"host_send="			,m_send_host},
+			{"port_send="			,m_send_port},
+			{"userPassword="		,m_userPassword},
+			{"serverPort="			,m_serverPort},
+			{"pushInterval="		,m_pushInterval},
+			{"userSSL="				,m_useSSL},
+			{"convertoSimpleChar="	,m_convertToSimple},
 		};
 		
 		for(int i = 0;i < t_replace.length;i++){

@@ -65,6 +65,8 @@ class checkStateThread extends Thread{
 
 public class mainFrame extends JFrame implements ActionListener{
 	
+	final static String fsm_accountDataFilename = "account.info";
+	
 	final static int 	fsm_width 	= 800;
 	final static int	fsm_height	= 800;
 	
@@ -183,7 +185,7 @@ public class mainFrame extends JFrame implements ActionListener{
 				mainFrame t_mainFrame = (mainFrame)JFrame.getFrames()[0];
 				try{
 					
-					File t_file = new File("account.info");
+					File t_file = new File(fsm_accountDataFilename);
 					if(t_file.exists()){
 						BufferedReader in = new BufferedReader(
 												new InputStreamReader(
@@ -210,7 +212,7 @@ public class mainFrame extends JFrame implements ActionListener{
 								t_mainFrame.m_loadDialog.m_state.setText("一共有" + t_lineContain.size()  + "个用户，正在载入第" + (i + 1) + "个用户：");
 								t_mainFrame.m_loadDialog.m_state1.setText(t_data[0]);
 								
-								fetchThread t_thread = new fetchThread(t_prefix,t_prefix + "config.ini",
+								fetchThread t_thread = new fetchThread(t_prefix,t_prefix + fetchMgr.fsm_configFilename,
 											Long.valueOf(t_data[1]).longValue(),Long.valueOf(t_data[2]).longValue());
 				
 								t_mainFrame.AddAccountThread(t_thread,false);
@@ -422,7 +424,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		m_formerHost_port_send	= _thread.m_fetchMgr.GetSendPort();
 		
 		m_pushInterval		= _thread.m_fetchMgr.GetPushInterval();
-		m_expiredTime		= _thread.m_expiredTime;
+		m_expiredTime		= _thread.m_expiredTime / (1000 * 3600);
 		
 		if(_storeAccountInfo){
 			StoreAccountInfo();
@@ -483,7 +485,7 @@ public class mainFrame extends JFrame implements ActionListener{
 				}else if(e.getSource() == m_pauseAccountItem){
 					t_thread.Pause();
 				}else if(e.getSource() == m_checkAccountItem){
-					final String t_configFile = t_thread.m_fetchMgr.GetPrefixString() + "config.ini";
+					final String t_configFile = t_thread.m_fetchMgr.GetPrefixString() + fetchMgr.fsm_configFilename ;
 					
 					try{
 						OpenFileEdit(t_configFile);
@@ -505,10 +507,10 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	public void StoreAccountInfo(){
 		try{
-			FileOutputStream t_file = new FileOutputStream("account.info");
+			FileOutputStream t_file = new FileOutputStream(fsm_accountDataFilename);
 			for(int i = 0;i < m_accountList.size();i++){
 				fetchThread t_thread = (fetchThread)m_accountList.elementAt(i);
-				t_file.write((t_thread.m_fetchMgr.GetAccountName() + "," + t_thread.m_expiredTime + "," + t_thread.m_formerTimer + "\r\n").getBytes("GB2312"));
+				t_file.write((t_thread.m_fetchMgr.GetAccountName() + "," + (t_thread.m_expiredTime / (1000 * 3600)) + "," + t_thread.m_formerTimer + "\r\n").getBytes("GB2312"));
 			}
 			t_file.flush();
 			t_file.close();

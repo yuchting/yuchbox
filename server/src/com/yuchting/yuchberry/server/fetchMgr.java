@@ -128,6 +128,8 @@ public class fetchMgr{
 	
 	public final static String	fsm_signatureFilename = "signature.txt";
 	
+	public final static String	fsm_configFilename = "config.ini";
+	
 	final static int	CHECK_NUM = 50;
 		
 	Logger	m_logger	= null;
@@ -458,10 +460,11 @@ public class fetchMgr{
 		m_beginFetchIndex = _index + 1;
 		
 		try{
+			String t_iniFile = m_prefix + fetchMgr.fsm_configFilename;
 			
 			BufferedReader in = new BufferedReader(
 									new InputStreamReader(
-										new FileInputStream("config.ini")));
+										new FileInputStream(t_iniFile)));
 				
 			StringBuffer t_contain = new StringBuffer();
 			
@@ -476,8 +479,9 @@ public class fetchMgr{
 			
 			in.close();
 			
-			FileOutputStream os = new FileOutputStream(m_prefix + "config.ini");
+			FileOutputStream os = new FileOutputStream(t_iniFile);
 			os.write(t_contain.toString().getBytes("GB2312"));
+			os.flush();
 			os.close();
 			
 		}catch(Exception _e){

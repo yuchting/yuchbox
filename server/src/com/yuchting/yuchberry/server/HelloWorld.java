@@ -561,10 +561,10 @@ public class HelloWorld {
 		try{
 			
 			Properties p = new Properties(); 
-			p.load(new FileInputStream("config.ini"));
+			p.load(new FileInputStream(fetchMgr.fsm_configFilename));
 			p.setProperty("userFetchIndex",Integer.toString(120));
 			
-			p.save(new FileOutputStream("config.ini"), "");
+			p.save(new FileOutputStream(fetchMgr.fsm_configFilename), "");
 			p.clear();
 			
 		}catch(Exception _e){

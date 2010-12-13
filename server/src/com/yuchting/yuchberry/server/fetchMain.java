@@ -10,7 +10,7 @@ public class fetchMain{
 		
 		while(true){
 
-			t_manger.InitConnect("","config.ini",t_logger);
+			t_manger.InitConnect("",fetchMgr.fsm_configFilename,t_logger);
 			t_manger.StartListening();
 			
 		    try{
