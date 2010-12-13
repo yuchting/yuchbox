@@ -420,15 +420,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		if(!t_dir.exists() || !t_dir.isDirectory()){
 			t_dir.mkdir();
 		}
-		
-		String t_prefix = m_account.getText() + "/";
-		try{
-			CopyFile("config.ini" , t_prefix + "config.ini");
-		}catch(Exception e){
-			JOptionPane.showMessageDialog(this, "复制创建" + t_prefix + "config.ini" + "出现问题：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
-			return false;
-		}
-		
+				
 		final int t_serverPort = Integer.valueOf(m_serverPort.getText()).intValue();
 		
 		if(m_mainFrame.SearchAccountThread(m_account.getText(),t_serverPort) != null){
@@ -445,13 +437,22 @@ public class createDialog extends JDialog implements DocumentListener,
 			return false;
 		}
 		
+		String t_prefix = m_account.getText() + "/";		
 		WriteSignature(t_prefix);
 		
 		fetchThread t_thread = null;
 
 		try{
-			
-			WriteIniFile(t_prefix + "config.ini");
+						
+			try{
+				
+				CopyFile("config.ini" , t_prefix + "config.ini");
+				
+				WriteIniFile(t_prefix + "config.ini");				
+			}catch(Exception e){
+				JOptionPane.showMessageDialog(this, "复制创建" + t_prefix + "config.ini" + "出现问题：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}			
 			
 			t_thread = new fetchThread(t_prefix,t_prefix + "config.ini",
 									Long.valueOf(m_expiredTime.getText()).longValue(),(new Date()).getTime());
@@ -500,6 +501,7 @@ public class createDialog extends JDialog implements DocumentListener,
 				
 		FileOutputStream os = new FileOutputStream(_iniFile);
 		os.write(t_contain.toString().getBytes("GB2312"));
+		os.flush();
 		os.close();
 		
 	}

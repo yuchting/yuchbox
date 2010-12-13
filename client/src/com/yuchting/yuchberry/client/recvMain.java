@@ -16,6 +16,7 @@ import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.i18n.SimpleDateFormat;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
+import net.rim.device.api.system.LED;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
@@ -381,7 +382,7 @@ public class recvMain extends UiApplication implements localResource {
         		fc.mkdir();
         	}
         }catch(Exception _e){
-        	
+        	       	
         	Dialog.alert("can't use the SDCard to store attachment!");
         	System.exit(0);
         }
@@ -592,7 +593,9 @@ public class recvMain extends UiApplication implements localResource {
 		
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);	
-				
+		
+		LED.setState(LED.STATE_OFF);
+		
 		System.exit(0);
 	}
 	public void activate(){
@@ -621,18 +624,13 @@ public class recvMain extends UiApplication implements localResource {
 		
 		// prompt by the background thread
 		//
-		synchronized(getEventLock()){
-			
-			invokeLater(new Runnable(){
-				public void run(){
-					if(m_aboutScreen != null){
-						m_aboutScreen.RefreshText();
-					}
+		invokeLater(new Runnable(){
+			public void run(){
+				if(m_aboutScreen != null){
+					m_aboutScreen.RefreshText();
 				}
-			});
-			
-		}
-		
+			}
+		});		
 	}
 	public void OpenAttachmentFileScreen(final boolean _del){
 		
@@ -649,7 +647,7 @@ public class recvMain extends UiApplication implements localResource {
 				}
 			});	
 		}catch(Exception _e){
-			DialogAlert("construct attachment file screen error: " + _e.getMessage());
+			SetErrorString("att screen error:" + _e.getMessage());
 		}
 		
 	}
@@ -735,15 +733,18 @@ public class recvMain extends UiApplication implements localResource {
 			
 		m_stateString = _state;
 		
-		if(m_stateScreen != null){
-			m_stateScreen.m_stateText.setText(GetStateString());
-		}
+		invokeLater(new Runnable() {
+			public void run(){
+				if(m_stateScreen != null){
+					m_stateScreen.m_stateText.setText(GetStateString());
+				}
+			}
+		});
 	}
 	
 	public void DialogAlert(final String _msg){
 
-    	UiApplication.getUiApplication().invokeLater(new Runnable() 
-		{
+    	invokeLater(new Runnable() {
 		    public void run(){
 		       Dialog.alert(_msg);
 		    }
@@ -783,9 +784,15 @@ public class recvMain extends UiApplication implements localResource {
 			m_uploadingDesc.addElement(t_desc);
 		}
 		
-		if(m_stateScreen != null){
-			m_stateScreen.RefreshUploadState(m_uploadingDesc);
-		}
+		invokeLater(new Runnable() {
+			
+			public void run() {
+				if(m_stateScreen != null){
+					m_stateScreen.RefreshUploadState(m_uploadingDesc);
+				}
+			}
+		});
+		
 	}
 	
 	public final Vector GetUploadingDesc(){
@@ -802,10 +809,16 @@ public class recvMain extends UiApplication implements localResource {
 			m_errorString.removeElementAt(0);
 		}
 		
-		if(m_stateScreen != null){
-			m_stateScreen.m_errorText.layout(0, 0);
-			m_stateScreen.invalidate();
-		}
+		invokeLater(new Runnable() {
+			
+			public void run() {
+				if(m_stateScreen != null){
+					m_stateScreen.m_errorText.layout(0, 0);
+					m_stateScreen.invalidate();
+				}
+				
+			}
+		});		
 	}
 	
 	public final Vector GetErrorString(){

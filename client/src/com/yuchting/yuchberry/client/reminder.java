@@ -22,7 +22,7 @@ public class reminder extends Thread{
 		VolumeControl t_control = null;
 		
 		try{
-			final int 	t_vibrate 		= 2000;
+			final int 	t_vibrate 		= 1000;
 			final int 	t_vibrateFrag 	= 10;
 			
 			int 		t_vibrateNum 	= 0;
