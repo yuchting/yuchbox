@@ -6,7 +6,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -126,7 +125,9 @@ public class mainFrame extends JFrame implements ActionListener{
 		addWindowListener(new java.awt.event.WindowAdapter() {
 		    public void windowClosing(java.awt.event.WindowEvent e) {
 		    	
-		    	if(JOptionPane.showConfirmDialog(JFrame.getFrames()[0],"真的想关闭所有的用户并退出？", "关闭？", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION){
+		    	if(JOptionPane.showConfirmDialog(JFrame.getFrames()[0],"真的想关闭所有的用户并退出？", 
+		    	"关闭？", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION){
+		    		
 		    		mainFrame t_frame = (mainFrame)e.getWindow();
 			    	t_frame.CloseProcess();
 			    	
