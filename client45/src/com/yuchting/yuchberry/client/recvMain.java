@@ -688,14 +688,11 @@ public class recvMain extends UiApplication implements localResource {
 	
 	public void UpdateMessageStatus(final Message m,final int _status){
 		
-		invokeLater(new Runnable(){
-			
-			public void run(){
-				m.setStatus(_status,0);
-				m.updateUi();
-				UiApplication.getUiApplication().relayout();
-			}
-		});
+		synchronized(getEventLock()){
+			m.setStatus(_status,0);
+			m.updateUi();
+			UiApplication.getUiApplication().relayout();
+		};
 	}
 	
 	public void PopupDlgToOpenAttach(final connectDeamon.FetchAttachment _att){
@@ -744,11 +741,9 @@ public class recvMain extends UiApplication implements localResource {
 	
 	public void DialogAlert(final String _msg){
 
-    	invokeLater(new Runnable() {
-		    public void run(){
-		       Dialog.alert(_msg);
-		    }
-		});
+		synchronized(getEventLock()){
+			Dialog.alert(_msg);
+		};
     }
  
 	public void SetUploadingDesc(final fetchMail _mail,final int _attachmentIdx,

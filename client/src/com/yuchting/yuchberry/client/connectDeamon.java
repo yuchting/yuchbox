@@ -245,9 +245,9 @@ public class connectDeamon extends Thread implements SendListener,
 		ByteArrayInputStream in = new ByteArrayInputStream((byte[])p.getContent());
 
 		final int t_messageCode = (m.getSentDate().toString() + m.getSubject()).hashCode();
-		
+				
 		if(in.read() == 'y' && in.read() == 'u' 
-			&& in.read() == 'c' && in.read() == 'h'){	
+			&& in.read() == 'c' && in.read() == 'h'){
 		
 			try{
 

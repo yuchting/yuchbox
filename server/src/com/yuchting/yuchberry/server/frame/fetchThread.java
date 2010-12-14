@@ -99,6 +99,7 @@ public class fetchThread extends Thread{
 	public synchronized void Destroy(){
 		
 		m_fetchMgr.EndListening();
+		m_logger.StopLogging();
 		
 		try{
 			sleep(100);

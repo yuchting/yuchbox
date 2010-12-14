@@ -36,10 +36,8 @@ class berrySendAttachment extends Thread{
 		m_attachIndex 	= _attachIdx;
 		
 		try{
-			File t_file = new File(m_fetchMain.m_prefix + _mailIndex +"_"+ _attachIdx + ".att");
-			
+			File t_file = new File(m_fetchMain.m_prefix + _mailIndex +"_"+ _attachIdx + ".att");	
 			m_fileLength = (int)t_file.length();
-			
 			m_file = new FileInputStream(t_file);
 			
 		}catch(Exception _e){
@@ -87,6 +85,7 @@ class berrySendAttachment extends Thread{
 				int t_sendNum = 0;
 				while(t_sendNum++ < 4){
 					if(SendAttachment(false)){
+						m_file.close();
 						return;
 					}
 				}
@@ -100,6 +99,11 @@ class berrySendAttachment extends Thread{
 				m_fetchMain.m_logger.PrinterException(_e);
 			}			
 		}
+		
+		try{
+			m_file.close();
+		}catch(Exception e){}
+		
 	}
 }
 

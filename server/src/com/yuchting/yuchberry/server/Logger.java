@@ -95,4 +95,23 @@ public class Logger{
 		
 		_e.printStackTrace();
 	}
+	
+	public void StopLogging(){
+		
+		try{
+			if(m_logFileStream != null){
+				m_logFileStream.close();
+			}
+			if(m_printStack != null){
+				m_printStack.close();
+			}
+			
+			m_logFileStream = null;
+			m_printStack = null;
+				
+		}catch(Exception e){
+			
+		}
+		
+	}
 }

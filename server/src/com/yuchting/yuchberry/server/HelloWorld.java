@@ -228,8 +228,23 @@ public class HelloWorld {
 		//HelloWorld test = new HelloWorld();
 		//test.berrySendTest();	
 		
-
+		DelDirectory("Test/");
 	}
+	
+	static public void DelDirectory(final String _dir){
+		File t_file = new File(_dir);
+		if(t_file.exists()){
+			if(t_file.isFile()){
+				t_file.delete();
+			}else if(t_file.isDirectory()){
+				File[] t_files = t_file.listFiles();
+				for(int i = 0;i < t_files.length;i++){
+					DelDirectory(t_files[i].getAbsolutePath());
+				}
+				t_file.delete();
+			}
+		}
+	}	
 	
 	static public void GenALotPremiereSubtitle(){
 		

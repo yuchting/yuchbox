@@ -101,6 +101,7 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	JPopupMenu 	m_contextMenu			= new JPopupMenu();
 	JMenuItem	m_checkAccountItem		= new JMenuItem("检查帐户");
+	JMenuItem	m_delAccountItem		= new JMenuItem("删除帐户");
 	JMenuItem	m_pauseAccountItem		= new JMenuItem("暂停");
 	JMenuItem	m_continueAccountItem	= new JMenuItem("继续");
 		
@@ -298,16 +299,60 @@ public class mainFrame extends JFrame implements ActionListener{
 		m_tableSeparator.addMouseListener(t_lister);
 	}
 	public void ConstructContextMenu(){
+		
+		ActionListener t_menuListener = new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				
+				final int t_selectIndex = m_accountTable.getSelectedRow();
+				if(t_selectIndex != -1){
+					fetchThread t_thread = (fetchThread)m_accountList.elementAt(t_selectIndex);
+					
+					if(e.getSource() == m_continueAccountItem){
+						t_thread.Reuse();
+					}else if(e.getSource() == m_pauseAccountItem){
+						t_thread.Pause();
+					}else if(e.getSource() == m_checkAccountItem){
+						final String t_configFile = t_thread.m_fetchMgr.GetPrefixString() + fetchMgr.fsm_configFilename ;
+						
+						try{
+							OpenFileEdit(t_configFile);
+						}catch(Exception ex){
+							JOptionPane.showMessageDialog(JFrame.getFrames()[0],
+									"打开" + t_configFile + "出错：" + ex.getMessage() + ", 请打开" + t_configFile, 
+									"错误", JOptionPane.ERROR_MESSAGE);
+						}
+						
+					}else if(e.getSource() == m_delAccountItem){
+						if(JOptionPane.showConfirmDialog(JFrame.getFrames()[0],"删除用户 " + t_thread.m_fetchMgr.GetAccountName() + "？", 
+							"删除", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION){
+					
+							DelAccoutThread(t_thread.m_fetchMgr.GetAccountName(),true);
+							
+						}else{
+							return;
+						}
+					}
+					
+					RefreshState();
+				}
+				
+			}
+		};
+		
 		m_contextMenu.add(m_checkAccountItem);
-		m_checkAccountItem.addActionListener(this);
+		m_checkAccountItem.addActionListener(t_menuListener);
+		
+		m_contextMenu.add(m_delAccountItem);
+		m_delAccountItem.addActionListener(t_menuListener);
 		
 		m_contextMenu.add(new JSeparator());
 		
 		m_contextMenu.add(m_pauseAccountItem);
-		m_pauseAccountItem.addActionListener(this);
+		m_pauseAccountItem.addActionListener(t_menuListener);
 		
 		m_contextMenu.add(m_continueAccountItem);
-		m_continueAccountItem.addActionListener(this);
+		m_continueAccountItem.addActionListener(t_menuListener);
 		
 		m_accountTable.addMouseListener(new MouseListener() {
 			
@@ -442,6 +487,8 @@ public class mainFrame extends JFrame implements ActionListener{
 				
 				t_fetch.Destroy();
 				
+				DelDirectory(t_fetch.m_fetchMgr.GetAccountName());
+				
 				m_accountList.remove(t_fetch);
 				m_accountTable.DelAccount(t_fetch);
 				
@@ -472,34 +519,25 @@ public class mainFrame extends JFrame implements ActionListener{
 				JOptionPane.showMessageDialog(this,"打开网页出错 " + ex.getMessage() + ", 请访问\n" + t_sponsorURL, "错误", JOptionPane.ERROR_MESSAGE);
 			}
 			
-		}else if(e.getSource() == m_continueAccountItem 
-				|| e.getSource() == m_pauseAccountItem
-				|| e.getSource() == m_checkAccountItem){
-			
-			final int t_selectIndex = m_accountTable.getSelectedRow();
-			if(t_selectIndex != -1){
-				fetchThread t_thread = (fetchThread)m_accountList.elementAt(t_selectIndex);
-				
-				if(e.getSource() == m_continueAccountItem){
-					t_thread.Reuse();
-				}else if(e.getSource() == m_pauseAccountItem){
-					t_thread.Pause();
-				}else if(e.getSource() == m_checkAccountItem){
-					final String t_configFile = t_thread.m_fetchMgr.GetPrefixString() + fetchMgr.fsm_configFilename ;
-					
-					try{
-						OpenFileEdit(t_configFile);
-					}catch(Exception ex){
-						JOptionPane.showMessageDialog(this,"打开" + t_configFile + "出错：" + ex.getMessage() + ", 请打开" + t_configFile, "错误", JOptionPane.ERROR_MESSAGE);
-					}
-					
+		}
+	}
+	
+	static public void DelDirectory(final String _dir){
+		
+		File t_file = new File(_dir);
+		
+		if(t_file.exists()){
+			if(t_file.isFile()){
+				t_file.delete();
+			}else if(t_file.isDirectory()){
+				File[] t_files = t_file.listFiles();
+				for(int i = 0;i < t_files.length;i++){
+					DelDirectory(t_files[i].getAbsolutePath());
 				}
-				
-				RefreshState();
+				t_file.delete();
 			}
 		}
-		
-	}
+	}		
 	
 	public void CloseProcess(){
 		StoreAccountInfo();

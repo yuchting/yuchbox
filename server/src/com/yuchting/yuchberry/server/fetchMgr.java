@@ -320,6 +320,8 @@ public class fetchMgr{
 				}
 				
 				m_signature = t_stringBuffer.toString();
+				
+				in.close();
 			}
 		}catch(Exception e){
 			m_logger.PrinterException(e);
