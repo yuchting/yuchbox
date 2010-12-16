@@ -225,10 +225,10 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[]){
 
-		//HelloWorld test = new HelloWorld();
-		//test.berrySendTest();	
+		HelloWorld test = new HelloWorld();
+		test.berryRecvTest();	
 		
-		DelDirectory("Test/");
+		//DelDirectory("Test/");
 	}
 	
 	static public void DelDirectory(final String _dir){
@@ -477,12 +477,12 @@ public class HelloWorld {
 	public void berryRecvTest(){
 		try{
 			
-			Socket t_socket = GetSocketServer("nvOuamhZ","localhost",9734,false);
+			Socket t_socket = GetSocketServer("111111","192.168.10.20",9716,false);
 			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
 			
 			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
 			t_stream.write(msg_head.msgConfirm);
-			sendReceive.WriteString(t_stream, "nvOuamhZ",false);
+			sendReceive.WriteString(t_stream, "111111",false);
 			sendReceive.WriteInt(t_stream,1);
 			
 			t_receive.SendBufferToSvr(t_stream.toByteArray(), false);

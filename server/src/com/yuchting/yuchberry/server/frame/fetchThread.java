@@ -16,13 +16,16 @@ public class fetchThread extends Thread{
 	long		m_expiredTime	= 0;
 	long		m_formerTimer	= 0;
 		
-	public fetchThread(String _prefix,String _configFile,long _expiredTime,long _formerTimer)throws Exception{
+	public fetchThread(String _prefix,String _configFile,long _expiredTime,long _formerTimer,boolean _testConnect)throws Exception{
 		m_expiredTime = _expiredTime * 1000 * 3600;
 		
 		m_logger = new Logger(_prefix);
 		m_fetchMgr.InitConnect(_prefix, _configFile, m_logger);
 		
-		m_fetchMgr.ResetSession(true);
+		if(_testConnect){
+			m_fetchMgr.ResetSession(true);
+		}
+		
 		m_formerTimer = _formerTimer;
 		
 		start();

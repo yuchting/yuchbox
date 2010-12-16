@@ -452,7 +452,7 @@ public class createDialog extends JDialog implements DocumentListener,
 			}			
 			
 			t_thread = new fetchThread(t_prefix,t_prefix + fetchMgr.fsm_configFilename,
-									Long.valueOf(m_expiredTime.getText()).longValue(),(new Date()).getTime());
+									Long.valueOf(m_expiredTime.getText()).longValue(),(new Date()).getTime(),true);
 			
 		}catch(Exception e){
 			JOptionPane.showMessageDialog(this,e.getMessage(), "´íÎó", JOptionPane.ERROR_MESSAGE);

@@ -215,12 +215,13 @@ public class mainFrame extends JFrame implements ActionListener{
 								t_mainFrame.m_loadDialog.m_state1.setText(t_data[0]);
 								
 								fetchThread t_thread = new fetchThread(t_prefix,t_prefix + fetchMgr.fsm_configFilename,
-											Long.valueOf(t_data[1]).longValue(),Long.valueOf(t_data[2]).longValue());
+											Long.valueOf(t_data[1]).longValue(),Long.valueOf(t_data[2]).longValue(),false);
 				
 								t_mainFrame.AddAccountThread(t_thread,false);
 															
 								t_mainFrame.m_loadDialog.m_progress.setValue(i + 1);
 								
+																
 							}catch(Exception e){
 								JOptionPane.showMessageDialog(t_mainFrame,"服务器账户连接错误：" + e.getMessage() , "错误", JOptionPane.ERROR_MESSAGE);
 							}
