@@ -47,7 +47,7 @@ public class fetchThread extends Thread{
 			}
 			
 			try{
-				sleep(1000);
+				sleep(60000);
 			}catch(Exception ex){}
 		}
 	}

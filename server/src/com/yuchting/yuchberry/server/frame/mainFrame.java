@@ -172,12 +172,12 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 		ConstructMoveSeparator();
 		ConstructContextMenu();
-		
-		setVisible(true);
-		
+				
 		LoadStoreAccountInfo();
 				
 		new checkStateThread(this);
+		
+		setVisible(true);
 	}
 		
 	public void LoadStoreAccountInfo(){

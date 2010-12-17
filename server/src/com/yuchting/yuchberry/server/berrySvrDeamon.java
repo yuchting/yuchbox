@@ -97,6 +97,7 @@ class berrySendAttachment extends Thread{
 				
 			}catch(Exception _e){
 				m_fetchMain.m_logger.PrinterException(_e);
+				break;
 			}			
 		}
 		
