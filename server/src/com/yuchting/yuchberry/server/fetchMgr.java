@@ -383,7 +383,16 @@ public class fetchMgr{
     	m_sysProps.put("mail.pop3.timeout","10000");
     	
     	m_store = m_session.getStore(m_protocol);
-    	m_store.connect(m_host,m_port,m_userName,m_password);
+    	try{
+    		m_store.connect(m_host,m_port,m_userName,m_password);
+    	}catch(Exception e){
+    		if(e.getMessage() != null && e.getMessage().indexOf("no such domain") != -1){
+    			m_store.connect(m_host,m_port,m_strUserNameFull,m_password);
+    		}else{
+    			throw e;
+    		}
+    	}
+    	
     	
     	// initialize the smtp transfer
     	//
