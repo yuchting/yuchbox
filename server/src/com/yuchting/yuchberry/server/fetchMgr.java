@@ -145,6 +145,8 @@ public class fetchMgr{
     String 	m_host_send 		= null;
     int		m_port_send			= 0;
     
+    boolean m_useFullNameSignIn = false;
+    
     String 	m_inBox 	= "INBOX";
        
 	String 	m_userName 	= null;
@@ -237,6 +239,11 @@ public class fetchMgr{
 			String t_appendHTML = p.getProperty("appendHTML");
 			if(t_appendHTML != null){
 				m_useAppendHTML = t_appendHTML.equals("1");
+			}
+			
+			String t_useFullname = p.getProperty("useFullNameSignIn");
+			if(t_useFullname != null){
+				m_useFullNameSignIn = t_useFullname.equals("1");
 			}
 					
 	    	m_userName	= m_strUserNameFull.substring(0,m_strUserNameFull.indexOf('@'));
@@ -384,7 +391,13 @@ public class fetchMgr{
     	
     	m_store = m_session.getStore(m_protocol);
     	try{
-    		m_store.connect(m_host,m_port,m_userName,m_password);
+    		
+    		if(m_useFullNameSignIn){
+    			m_store.connect(m_host,m_port,m_strUserNameFull,m_password);
+    		}else{
+    			m_store.connect(m_host,m_port,m_userName,m_password);
+    		}
+    		
     	}catch(Exception e){
     		if(e.getMessage() != null && e.getMessage().indexOf("no such domain") != -1){
     			m_store.connect(m_host,m_port,m_strUserNameFull,m_password);

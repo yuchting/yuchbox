@@ -45,9 +45,16 @@ public class reminder extends Thread{
 			}
 			
 			if(m_mainApp.m_soundVol != 0){
-				t_control = (VolumeControl)m_mainApp.m_connectDeamon.m_newMailNotifier.getControl("VolumeControl"); 
-				t_control.setLevel(m_mainApp.m_soundVol * 20);
-				m_mainApp.m_connectDeamon.m_newMailNotifier.start();
+				try{
+					
+					t_control = (VolumeControl)m_mainApp.m_connectDeamon.m_newMailNotifier.getControl("VolumeControl"); 
+					t_control.setLevel(m_mainApp.m_soundVol * 20);
+				
+					m_mainApp.m_connectDeamon.m_newMailNotifier.start();
+				}catch(Exception e){
+					m_mainApp.SetErrorString("R:" + e.getMessage() + " " + e.getClass().getName());
+					throw e;
+				}
 			}
 			
 		}catch(Exception e){

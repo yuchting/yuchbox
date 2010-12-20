@@ -900,6 +900,7 @@ public class connectDeamon extends Thread implements SendListener,
 				String t_fullname = ((ComposingAttachment)_files.elementAt(i)).m_filename;
 				
 				FileConnection t_fileReader = (FileConnection) Connector.open(t_fullname,Connector.READ_WRITE);
+				
 		    	if(!t_fileReader.exists()){
 		    		throw new Exception("attachment file <" + t_fullname + "> not exsit!"); 
 		    	}
@@ -927,6 +928,7 @@ public class connectDeamon extends Thread implements SendListener,
 				}
 	
 				_mail.AddAttachment(t_name, t_type, t_size);
+				t_fileReader.close();
 			}
 			
 			// reset the content of mail...

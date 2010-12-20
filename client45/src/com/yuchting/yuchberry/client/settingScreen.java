@@ -18,6 +18,7 @@ public class settingScreen extends MainScreen {
 	 EditField			m_appendString	= null;
 	 CheckboxField		m_useSSLCheckbox= null;
 	 CheckboxField		m_useWifi		= null;
+	 CheckboxField		m_autoRun		= null;
 	 
 	 NumericChoiceField	m_vibrateList	= null;
 	 NumericChoiceField	m_soundList		= null;
@@ -43,6 +44,9 @@ public class settingScreen extends MainScreen {
 		 
 		 m_useWifi			= new CheckboxField(recvMain.sm_local.getString(localResource.USE_WIFI_LABEL), m_mainApp.m_useWifi);
 		 add(m_useWifi);
+		 
+		 m_autoRun			= new CheckboxField(recvMain.sm_local.getString(localResource.AUTO_RUN_CHECK_BOX), m_mainApp.m_autoRun);
+		 add(m_autoRun);
 		 //@}
 		 
 		 
@@ -68,6 +72,7 @@ public class settingScreen extends MainScreen {
 		m_mainApp.SetAPNName(m_APN.getText());
 		m_mainApp.m_soundVol = m_soundList.getSelectedValue();
 		m_mainApp.m_vibrateTime = m_vibrateList.getSelectedValue();
+		m_mainApp.m_autoRun = m_autoRun.getChecked();
 		
 		m_mainApp.m_appendString = m_appendString.getText();
 		m_mainApp.m_useWifi = m_useWifi.getChecked();

@@ -1,6 +1,6 @@
 <Properties ModelVersion="1.1.2">
   <General Title="YuchBerry" Version="0.9.279" Vendor="Yuchting" Description="Push Personal Mail for your BlackBerry"/>
-  <Application Type="BlackBerry Application" MainMIDletName="" MainArgs="" HomeScreenPosition="0" StartupTier="7" IsSystemModule="false" IsAutostartup="false"/>
+  <Application Type="BlackBerry Application" MainMIDletName="" MainArgs="" HomeScreenPosition="0" StartupTier="7" IsSystemModule="false" IsAutostartup="true"/>
   <Resources hasTitleResource="true" TitleResourceBundleName="local" TitleResourceBundleRelativePath="src/local/local.rrh" TitleResourceBundleClassName="local.local" TitleResourceBundleKey="APPLICATION_TITLE" DescriptionId="APPLICATION_DESC">
     <Icons>
       <Icon CanonicalFileName="res/Main_offline.png" IsFocus="false"/>
@@ -16,14 +16,5 @@
     <ClassProtection/>
     <PackageProtection/>
   </HiddenProperties>
-  <AlternateEntryPoints>
-    <AlternateEntryPoint Title="auto_main" MainMIDletName="" ArgumentsForMain="auto" HomeScreenPosition="0" StartupTier="7" IsSystemModule="false" IsAutostartup="true" hasTitleResource="true" TitleResourceBundleKey="" TitleResourceBundleName="" TitleResourceBundleClassName="" TitleResourceBundleRelativePath="">
-      <Icons/>
-    </AlternateEntryPoint>
-    <AlternateEntryPoint Title="main" MainMIDletName="" ArgumentsForMain="" HomeScreenPosition="0" StartupTier="7" IsSystemModule="false" IsAutostartup="false" hasTitleResource="true" TitleResourceBundleKey="APPLICATION_TITLE" TitleResourceBundleName="local" TitleResourceBundleClassName="local.local" TitleResourceBundleRelativePath="src/local/local.rrh">
-      <Icons>
-        <Icon CanonicalFileName="res/Main_offline.png" IsFocus="false"/>
-      </Icons>
-    </AlternateEntryPoint>
-  </AlternateEntryPoints>
+  <AlternateEntryPoints/>
 </Properties>

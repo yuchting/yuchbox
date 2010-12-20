@@ -13,242 +13,15 @@ import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
 import net.rim.device.api.i18n.ResourceBundle;
-import net.rim.device.api.i18n.SimpleDateFormat;
+import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.Display;
 import net.rim.device.api.system.LED;
-import net.rim.device.api.ui.Field;
-import net.rim.device.api.ui.FieldChangeListener;
-import net.rim.device.api.ui.Font;
-import net.rim.device.api.ui.FontFamily;
-import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
-import net.rim.device.api.ui.MenuItem;
-import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
-import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
-import net.rim.device.api.ui.component.EditField;
-import net.rim.device.api.ui.component.LabelField;
-import net.rim.device.api.ui.component.Menu;
-import net.rim.device.api.ui.container.MainScreen;
 
-class ErrorLabelText extends Field{
-	Vector m_stringList;
-	static final int		fsm_space = 1;
-	
-	static int sm_fontHeight = 15;
-	
-	public ErrorLabelText(Vector _stringList){
-		super(Field.READONLY | Field.NON_FOCUSABLE | Field.USE_ALL_WIDTH);
-		
-		m_stringList = _stringList;
-		try{
-			Font myFont = FontFamily.forName("BBMillbankTall").getFont(Font.PLAIN,8,Ui.UNITS_pt);
-			setFont(myFont);
-			
-			sm_fontHeight = myFont.getHeight() - 3;
-		}catch(Exception _e){}
-	}
-	
-	public void layout(int _width,int _height){
-		final int t_width = Display.getWidth();
-			
-		final int t_size 	= m_stringList.size();
-		final int t_height = Math.max(0, (t_size - 1)) * fsm_space +  t_size * sm_fontHeight;
-		
-		setExtent(t_width, t_height);
-	}
-	
-	public void paint(Graphics _g){
-		int t_y = 0;
-		final int t_fontHeight = sm_fontHeight;
-		
-		SimpleDateFormat t_format = new SimpleDateFormat("HH:mm:ss");
-		
-		for(int i = m_stringList.size() -1 ;i >= 0 ;i--){
-			recvMain.ErrorInfo t_info = (recvMain.ErrorInfo)m_stringList.elementAt(i);
-			_g.drawText(t_format.format(t_info.m_time) + ": " + t_info.m_info,0,t_y,Graphics.ELLIPSIS);
-			
-			t_y += t_fontHeight + fsm_space;
-		}
-	}
-	
-	public boolean isFocusable(){
-		return false;
-	}
-}
-
-final class stateScreen extends MainScreen implements FieldChangeListener{
-										
-        
-    EditField           m_hostName      = null;
-    EditField			m_hostport		= null;
-    EditField           m_userPassword  = null;
-       
-    ButtonField         m_connectBut    = null;
-    LabelField          m_stateText     = null;
-    ErrorLabelText      m_errorText     = null;
-    LabelField			m_uploadingText = null;
-            
-    recvMain			m_mainApp		= null;
-    
-    
-    MenuItem 	m_aboutMenu = new MenuItem(recvMain.sm_local.getString(localResource.ABOUT_MENU_TEXT), 100, 10) {
-												public void run() {
-													recvMain t_app = (recvMain)UiApplication.getUiApplication();
-													t_app.PopupAboutScreen();
-												}
-											};
-	
-	MenuItem 	m_setingMenu = new MenuItem(recvMain.sm_local.getString(localResource.SETTING_MENU_TEXT), 101, 10) {
-												public void run() {
-													recvMain t_app = (recvMain)UiApplication.getUiApplication();
-													t_app.pushScreen(new settingScreen(t_app));
-													
-												}
-											};
-	
-
-    public stateScreen(final recvMain _app) {
-    	        
-        super();
-        
-        m_mainApp	= _app;        
-        
-        m_hostName = new EditField(recvMain.sm_local.getString(localResource.HOST),
-        				m_mainApp.m_hostname,128, EditField.FILTER_DEFAULT);
-        
-        m_hostName.setChangeListener(this);
-        add(m_hostName);
-        
-        m_hostport = new EditField(recvMain.sm_local.getString(localResource.PORT),
-        				m_mainApp.m_port == 0?"":Integer.toString(m_mainApp.m_port),5,EditField.FILTER_INTEGER);
-        
-        m_hostport.setChangeListener(this);
-        add(m_hostport);
-        
-        m_userPassword = new EditField(recvMain.sm_local.getString(localResource.USER_PASSWORD),
-        				m_mainApp.m_userPassword,128,EditField.FILTER_DEFAULT);
-        
-        add(m_userPassword);
-        
-       
-        m_connectBut = new ButtonField(recvMain.sm_local.getString(m_mainApp.m_connectDeamon.IsConnectState()?
-        									localResource.DISCONNECT_BUTTON_LABEL:localResource.CONNECT_BUTTON_LABEL),
-        									ButtonField.CONSUME_CLICK| ButtonField.NEVER_DIRTY);
-        
-        m_connectBut.setChangeListener(this);
-        
-        add(m_connectBut);              
-        
-        m_stateText = new LabelField(m_mainApp.GetStateString(), LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
-        add(m_stateText);
-        
-        m_uploadingText = new LabelField("", LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
-        add(m_uploadingText);
-        
-        m_errorText = new ErrorLabelText(m_mainApp.GetErrorString());
-        add(m_errorText);       
-        
-        RefreshUploadState(_app.m_uploadingDesc);
-               
-    }
-    
-    protected void makeMenu(Menu _menu,int instance){
-    	_menu.add(m_aboutMenu);
-    	_menu.add(m_setingMenu);
-    }
-    
-    public final boolean onClose(){
-    	if(m_mainApp.m_connectDeamon.IsConnectState()){
-    		m_mainApp.requestBackground();
-    		return false;
-    	}
-    	
-    	m_mainApp.Exit();
-    	
-    	return true;
-    }
-        
-   
-    
-    public void RefreshUploadState(final Vector _uploading){
-    	String t_total = new String();
-    	
-    	for(int i = 0;i < _uploading.size();i++){
-    		
-    		recvMain.UploadingDesc t_desc = (recvMain.UploadingDesc)_uploading.elementAt(i);
-    		
-    		if(t_desc.m_attachmentIdx == -1){
-    			
-    			t_total = t_total + "Subject: " + t_desc.m_mail.GetSubject() + "(Failed) retry again\n";
-    			
-    		}else{
-    			
-    			final int t_tmp = (int)((float)t_desc.m_uploadedSize / (float)t_desc.m_totalSize * 1000);
-    			final float t_percent = (float)t_tmp / 10;
-        		
-        		t_total = t_total + t_desc.m_mail.GetSubject() + "(" +
-        				t_desc.m_attachmentIdx + "/" + t_desc.m_mail.GetAttachment().size() + " " + t_percent + "%) \n";
-    		}   		
-    	}
-    	
-    	m_uploadingText.setText(t_total);    	
-    }
-        
-    public void fieldChanged(Field field, int context) {
-        if(context != FieldChangeListener.PROGRAMMATIC){
-			// Perform action if user changed field. 
-			//
-			if(field == m_connectBut){
-				
-				if(m_hostName.getText().length() == 0 
-					|| m_userPassword.getText().length() == 0
-					|| m_hostport.getText().length() == 0){
-					
-					Dialog.alert(recvMain.sm_local.getString(localResource.INPUT_FULL_SIGN_IN_SEG));
-					
-					return;
-				}				
-												
-				if(m_mainApp.m_connectDeamon.IsConnectState()){
-					
-					try{
-						m_mainApp.m_connectDeamon.Disconnect();
-					}catch(Exception _e){}
-					
-					m_connectBut.setLabel(recvMain.sm_local.getString(localResource.CONNECT_BUTTON_LABEL));
-					m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
-					
-				}else{
-										
-					
-					try{
-						m_mainApp.m_hostname 		= m_hostName.getText();
-						m_mainApp.m_port 			= Integer.valueOf(m_hostport.getText()).intValue();
-						m_mainApp.m_userPassword 	= m_userPassword.getText();
-
-						m_mainApp.m_connectDeamon.Connect();
-						
-						m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTING_LABEL));
-						m_connectBut.setLabel(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
-						
-						m_mainApp.Start();
-						
-					}catch(Exception e){
-						m_mainApp.DialogAlert(e.getMessage());
-					}
-				}				
-			}
-        }else{
-        	// Perform action if application changed field.
-        }
-    }
-    
-}
 
 public class recvMain extends UiApplication implements localResource {
 	
@@ -259,6 +32,8 @@ public class recvMain extends UiApplication implements localResource {
     aboutScreen			m_aboutScreen		= null;
 	stateScreen 		m_stateScreen 		= null;
 	uploadFileScreen 	m_uploadFileScreen	= null;
+	debugInfo			m_debugInfoScreen	= null;
+	
 	connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
 	String				m_stateString		= recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL);
@@ -287,7 +62,7 @@ public class recvMain extends UiApplication implements localResource {
 	int					m_vibrateTime		= 1;
 	int					m_soundVol			= 2;
 	
-	boolean			m_autoRun			= true;
+	boolean			m_autoRun			= false;
 	
 	class APNSelector{
 		String		m_name			= null;
@@ -359,14 +134,10 @@ public class recvMain extends UiApplication implements localResource {
 								localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
 	
 	public static void main(String[] args) {
-		recvMain t_theApp = new recvMain(false);		
+		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());		
 		t_theApp.enterEventDispatcher();
 	}
 	
-	public static void auto_main(String[] arg){
-		recvMain t_theApp = new recvMain(true);		
-		t_theApp.enterEventDispatcher();
-	}
    
 	public recvMain(boolean _systemRun) {	
 				
@@ -376,7 +147,7 @@ public class recvMain extends UiApplication implements localResource {
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/",Connector.READ_WRITE);
 			m_attachmentDir = uploadFileScreen.fsm_rootPath_default + "YuchBerry/";
-			
+			fc.close();
 		}catch(Exception _e){
 			m_attachmentDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
 		}
@@ -388,11 +159,13 @@ public class recvMain extends UiApplication implements localResource {
         	if(!fc.exists()){
         		fc.mkdir();
         	}
+        	fc.close();
         	
         	fc = (FileConnection) Connector.open(m_attachmentDir,Connector.READ_WRITE);
         	if(!fc.exists()){
         		fc.mkdir();
         	}
+        	fc.close();
         }catch(Exception _e){
         	
         	Dialog.alert("can't use the SDCard to store attachment!");
@@ -534,7 +307,6 @@ public class recvMain extends UiApplication implements localResource {
 			
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + "Init.data",
 																Connector.READ_WRITE);
-			
 			if(_read){
 
 		    	if(fc.exists()){
@@ -575,8 +347,8 @@ public class recvMain extends UiApplication implements localResource {
 		    		}
 		    		
 		    		t_readFile.close();
-		    		fc.close();
-		    	}	
+		    		
+		    	}
 			}else{
 				if(!fc.exists()){
 					fc.create();
@@ -603,14 +375,15 @@ public class recvMain extends UiApplication implements localResource {
 				t_writeFile.write(m_vibrateTime);
 				t_writeFile.write(m_soundVol);
 				t_writeFile.write(m_useWifi?1:0);
-				t_writeFile.write(m_autoRun?1:0);
-				
 				sendReceive.WriteString(t_writeFile,m_appendString);
+				
+				t_writeFile.write(m_autoRun?1:0);
 				
 				t_writeFile.close();
 				
-				fc.close();
 			}
+			
+			fc.close();
 			
 		}catch(Exception _e){
 			SetErrorString("write/read config file from SDCard error :" + _e.getMessage() + _e.getClass().getName());
@@ -817,7 +590,6 @@ public class recvMain extends UiApplication implements localResource {
 		}
 		
 		invokeLater(new Runnable() {
-			
 			public void run() {
 				if(m_stateScreen != null){
 					m_stateScreen.RefreshUploadState(m_uploadingDesc);
@@ -837,20 +609,13 @@ public class recvMain extends UiApplication implements localResource {
 	
 	public void SetErrorString(final String _error){
 		m_errorString.addElement(new ErrorInfo(_error));
-		if(m_errorString.size() > 16){
+		if(m_errorString.size() > 32){
 			m_errorString.removeElementAt(0);
 		}
 		
-		invokeLater(new Runnable() {
-			
-			public void run() {
-				if(m_stateScreen != null){
-					m_stateScreen.m_errorText.layout(0, 0);
-					m_stateScreen.invalidate();
-				}
-				
-			}
-		});		
+		if(m_debugInfoScreen != null){
+			m_debugInfoScreen.RefreshText();
+		}			
 	}
 	
 	public final Vector GetErrorString(){
