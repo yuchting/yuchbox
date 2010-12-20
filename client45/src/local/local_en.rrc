@@ -1,10 +1,10 @@
 ABOUT_DESC#0="reading the newest information from server after connected...";
 ABOUT_MENU_TEXT#0="About";
-ADD_ATTACHMENT#0="YuchBerry Add Attachment";
+ADD_ATTACHMENT#0="YB Add Attachment";
 APN_LABEL#0="APN:";
 APPEND_STRING_LABEL#0="Append String(mybe can prevent from net broken):";
 APPLICATION_DESC#0="Push Personal Mail for your BlackBerry via your own Server";
-CHECK_DEL_ATTACHMENT#0="YuchBerry Check Attachment";
+CHECK_DEL_ATTACHMENT#0="YB Check Attachment";
 CONNECTED_LABEL#0="connected";
 CONNECTING_LABEL#0="connecting...";
 CONNECTING_RETRY_LABEL#0="disconnected retry later...";

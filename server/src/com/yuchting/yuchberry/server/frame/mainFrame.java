@@ -6,6 +6,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -30,6 +31,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
@@ -76,6 +78,9 @@ public class mainFrame extends JFrame implements ActionListener{
 	JButton		m_sponsor			= new JButton("赞助/技术支持");
 	JLabel		m_stateLabel		= new JLabel("state:");
 
+	JTextField	m_searchAccount		= new JTextField();
+	JButton		m_searchButton		= new JButton("搜索帐户");
+	
 	accountTable m_accountTable		= new accountTable(this);
 	JScrollPane	m_accountTableScroll= new JScrollPane(m_accountTable);
 	
@@ -83,7 +88,7 @@ public class mainFrame extends JFrame implements ActionListener{
 	boolean	m_isResizeState		= false;
 	JTextArea	m_logInfo			= new JTextArea();
 	JScrollPane	m_logInfoScroll		= new JScrollPane(m_logInfo);
-	
+		
 	JPanel		m_accountLogPane	= new JPanel();
 	
 	Vector		m_accountList		= new Vector();
@@ -147,8 +152,12 @@ public class mainFrame extends JFrame implements ActionListener{
 		m_sponsor.addActionListener(this);
 		m_sponsor.setVerticalTextPosition(AbstractButton.CENTER);
 		
+		m_searchAccount.setMaximumSize(new Dimension(200,25));
+		
 		panel.add(m_addAccount);
 		panel.add(m_sponsor);
+		panel.add(m_searchAccount);
+		panel.add(m_searchButton);
 		
 		getContentPane().add(panel,BorderLayout.PAGE_START);
 		
@@ -157,6 +166,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		m_stateLabel.setPreferredSize(new Dimension(fsm_width * 2,25));
 		m_stateLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		m_accountLogPane.add(m_stateLabel);
+		
 		
 		m_accountTableScroll.setPreferredSize(new Dimension(fsm_width, 350));
 		m_accountLogPane.add(m_accountTableScroll);
@@ -521,6 +531,27 @@ public class mainFrame extends JFrame implements ActionListener{
 				JOptionPane.showMessageDialog(this,"打开网页出错 " + ex.getMessage() + ", 请访问\n" + t_sponsorURL, "错误", JOptionPane.ERROR_MESSAGE);
 			}
 			
+		}else if(e.getSource() == m_searchButton){
+			SelectAccount(m_searchAccount.getText());
+		}
+	}
+	
+	public void SelectAccount(final String _text){
+		
+		for(int i = 0;i < m_accountList.size();i++){
+			fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
+			if(t_fetch.m_fetchMgr.GetAccountName().indexOf(_text) != -1){
+				
+				m_accountTable.setRowSelectionInterval(i,i);
+				m_currentSelectThread = t_fetch;
+				
+				CheckLogInfo(i);
+				
+				Rectangle rect = m_accountTable.getCellRect(i, 0, true);
+				m_accountTable.scrollRectToVisible(rect);
+				
+				break;				
+			}
 		}
 	}
 	
@@ -562,16 +593,21 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	public synchronized void RefreshState(){
 		int t_connectNum = 0;
+		int t_usingNum = 0;
 		
 		for(int i = 0;i < m_accountList.size();i++){
 			fetchThread t_thread = (fetchThread)m_accountList.elementAt(i);
 			
 			if(!t_thread.m_pauseState){
+				t_usingNum++;
+			}
+			
+			if(t_thread.m_fetchMgr.GetClientConnected() != null){
 				t_connectNum++;
 			}
 		}
 		
-		m_stateLabel.setText("连接账户数：" + t_connectNum + "/" + m_accountList.size());
+		m_stateLabel.setText("连接账户/使用帐户/总帐户：" + t_connectNum + "/" + t_usingNum + "/" + m_accountList.size());
 		
 		m_accountTable.RefreshState();
 		

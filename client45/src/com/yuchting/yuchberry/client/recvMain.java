@@ -252,7 +252,7 @@ final class stateScreen extends MainScreen implements FieldChangeListener{
 
 public class recvMain extends UiApplication implements localResource {
 	
-	final static int		fsm_clientVersion = 4;
+	final static int		fsm_clientVersion = 5;
 	
 	String 				m_attachmentDir 	= null;
 	
@@ -286,6 +286,8 @@ public class recvMain extends UiApplication implements localResource {
 	
 	int					m_vibrateTime		= 1;
 	int					m_soundVol			= 2;
+	
+	boolean			m_autoRun			= true;
 	
 	class APNSelector{
 		String		m_name			= null;
@@ -357,11 +359,16 @@ public class recvMain extends UiApplication implements localResource {
 								localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
 	
 	public static void main(String[] args) {
-		recvMain t_theApp = new recvMain();		
+		recvMain t_theApp = new recvMain(false);		
+		t_theApp.enterEventDispatcher();
+	}
+	
+	public static void auto_main(String[] arg){
+		recvMain t_theApp = new recvMain(true);		
 		t_theApp.enterEventDispatcher();
 	}
    
-	public recvMain() {	
+	public recvMain(boolean _systemRun) {	
 				
 		m_addItem.m_mainApp = this;
 		m_delItem.m_mainApp = this;
@@ -377,17 +384,39 @@ public class recvMain extends UiApplication implements localResource {
 		// create the sdcard path 
 		//
         try{
-        	FileConnection fc = (FileConnection) Connector.open(m_attachmentDir,Connector.READ_WRITE);
+        	FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/",Connector.READ_WRITE);
+        	if(!fc.exists()){
+        		fc.mkdir();
+        	}
+        	
+        	fc = (FileConnection) Connector.open(m_attachmentDir,Connector.READ_WRITE);
         	if(!fc.exists()){
         		fc.mkdir();
         	}
         }catch(Exception _e){
-        	       	
+        	
         	Dialog.alert("can't use the SDCard to store attachment!");
         	System.exit(0);
         }
         
         WriteReadIni(true);
+        
+        if(_systemRun){
+        	
+        	if(!m_autoRun || m_hostname.length() == 0 || m_port == 0 || m_userPassword.length() == 0){
+        		System.exit(0);
+        	}else{
+        		try{
+        			m_connectDeamon.Connect();
+        			Start();
+        		}catch(Exception e){
+        			System.exit(0);
+        		}   		
+        		
+        	}
+        	
+        }
+        
 	}
 	
 	public String GetAPNName(){
@@ -502,7 +531,10 @@ public class recvMain extends UiApplication implements localResource {
 	
 	public void WriteReadIni(boolean _read){
 		try{
-			FileConnection fc = (FileConnection) Connector.open(m_attachmentDir + "Init.data",Connector.READ_WRITE);
+			
+			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + "Init.data",
+																Connector.READ_WRITE);
+			
 			if(_read){
 
 		    	if(fc.exists()){
@@ -538,6 +570,10 @@ public class recvMain extends UiApplication implements localResource {
 		    			m_appendString = sendReceive.ReadString(t_readFile);		    			
 		    		}
 		    		
+		    		if(t_currVer >= 5){
+		    			m_autoRun = (t_readFile.read() == 0)?false:true;		    			
+		    		}
+		    		
 		    		t_readFile.close();
 		    		fc.close();
 		    	}	
@@ -567,6 +603,7 @@ public class recvMain extends UiApplication implements localResource {
 				t_writeFile.write(m_vibrateTime);
 				t_writeFile.write(m_soundVol);
 				t_writeFile.write(m_useWifi?1:0);
+				t_writeFile.write(m_autoRun?1:0);
 				
 				sendReceive.WriteString(t_writeFile,m_appendString);
 				

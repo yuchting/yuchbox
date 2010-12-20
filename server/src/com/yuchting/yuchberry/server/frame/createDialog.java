@@ -460,6 +460,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		}
 				
 		m_mainFrame.AddAccountThread(t_thread,true);
+		m_mainFrame.SelectAccount(t_thread.m_fetchMgr.GetAccountName());
 				
 		return true;
 	}

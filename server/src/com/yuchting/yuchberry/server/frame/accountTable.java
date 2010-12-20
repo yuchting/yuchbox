@@ -71,7 +71,7 @@ public class accountTable extends JTable{
 				_mgr.GetAccountName(),
 				new Integer(_mgr.GetServerPort()),
 				_mgr.GetUserPassword(),
-				new Long(_thread.m_expiredTime),
+				new Long(_thread.m_expiredTime / (1000 * 3600)),
 				new Boolean(_mgr.IsUseSSL()),
 				"",
 		};
@@ -99,8 +99,10 @@ public class accountTable extends JTable{
 				m_defaultModel.setValueAt("暂停",i, 5);
 			}else if(t_thread.m_close){
 				m_defaultModel.setValueAt("关闭",i, 5);
+			}else if(t_thread.m_fetchMgr.GetClientConnected() != null){
+				m_defaultModel.setValueAt("客户端连接中",i, 5);
 			}else{
-				m_defaultModel.setValueAt("运行中",i, 5);
+				m_defaultModel.setValueAt("监听中",i, 5);
 			}
 		}
 	}
