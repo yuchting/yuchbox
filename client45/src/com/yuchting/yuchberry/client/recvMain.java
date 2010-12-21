@@ -264,22 +264,26 @@ public class recvMain extends UiApplication implements localResource {
 		String t_result = new String();
 		
 		String t_APN = GetAPNName();
-		
-		if(t_APN.length() != 0){
-			t_result = ";apn=" + t_APN;			
-		}
-		
-		if(m_appendString.length() != 0){
-			
-			final String t_replaceSign = "$apn$";
-			
-			final int t_replaceIdx = m_appendString.indexOf(t_replaceSign); 
-			if( t_replaceIdx != -1 && t_APN.length() != 0){
-				t_result = t_result + ";" + m_appendString.substring(0,t_replaceIdx) + t_APN + m_appendString.substring(t_replaceIdx + t_replaceSign.length());
-			}else{
-				t_result = t_result + ";" + m_appendString;
+				
+		if(m_useWifi){
+			t_result = ";interface=wifi";
+		}else{
+			if(t_APN.length() != 0){
+				t_result = ";apn=" + t_APN;			
 			}
-		}
+		
+			if(m_appendString.length() != 0){
+				
+				final String t_replaceSign = "$apn$";
+				
+				final int t_replaceIdx = m_appendString.indexOf(t_replaceSign); 
+				if( t_replaceIdx != -1 && t_APN.length() != 0){
+					t_result = t_result + ";" + m_appendString.substring(0,t_replaceIdx) + t_APN + m_appendString.substring(t_replaceIdx + t_replaceSign.length());
+				}else{
+					t_result = t_result + ";" + m_appendString;
+				}
+			}
+		}		
 		 
 		return t_result;
 	}

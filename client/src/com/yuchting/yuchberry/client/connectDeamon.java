@@ -1250,20 +1250,25 @@ public class connectDeamon extends Thread implements SendListener,
 	    	multipart.addBodyPart(t_text);
 	    	
 	    	if(_mail.GetContain_html().length() != 0){
-	    		SupportedAttachmentPart sap;
-		    	try{
-		    		// if the GB2312 decode sytem is NOT present in current system
-					// will throw the exception
-					//
-		    		
-		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
-							"Html_Part_Direct_Open_It.html",_mail.GetContain_html().getBytes("GB2312"));
-		    	}catch(Exception e){
-		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
-							"Html_Part_Direct_Open_It.html",_mail.GetContain_html().getBytes());
-		    	}	    		    			
+//	    		SupportedAttachmentPart sap;
+//		    	try{
+//		    		// if the GB2312 decode sytem is NOT present in current system
+//					// will throw the exception
+//					//
+//		    		
+//		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
+//							"Html_Part_Direct_Open_It.html",_mail.GetContain_html().getBytes("GB2312"));
+//		    	}catch(Exception e){
+//		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
+//							"Html_Part_Direct_Open_It.html",_mail.GetContain_html().getBytes());
+//		    	}
+//	    		multipart.addBodyPart(sap);
 	    		
-		    	multipart.addBodyPart(sap);
+	    		MimeBodyPart  t_html = new MimeBodyPart(multipart);
+	    		t_html.setContentType(ContentType.TYPE_TEXT_HTML_STRING);
+	    		t_html.setContent(_mail.GetContain_html().getBytes());
+	    		
+		    	multipart.addBodyPart(t_html);
 	    	}
     	
 	    	if(!_mail.GetAttachment().isEmpty()){
