@@ -217,7 +217,7 @@ public class berrySvrDeamon extends Thread{
 			
 			// wait for signIn first
 			//
-			_s.setSoTimeout(10000);			
+			_s.setSoTimeout(60000);			
 			
 			sendReceive t_tmp = new sendReceive(_s.getOutputStream(),_s.getInputStream());
 			ByteArrayInputStream in = new ByteArrayInputStream(t_tmp.RecvBufferFromSvr());
