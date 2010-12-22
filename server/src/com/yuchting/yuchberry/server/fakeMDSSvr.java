@@ -2,7 +2,7 @@ package com.yuchting.yuchberry.server;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.ServerSocket;
+import java.net.InetAddress;
 
 public class fakeMDSSvr extends Thread{
 	
@@ -28,12 +28,16 @@ public class fakeMDSSvr extends Thread{
 		byte[] t_packageBuf = new byte[fsm_activatePackageLength];
 		byte[] response = {0x10, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 		
+		
 		while(true){
 			
 			try{
 				DatagramPacket t_pack = new DatagramPacket(t_packageBuf,t_packageBuf.length);
 				m_udpSocket.receive(t_pack);
-												
+				
+				InetAddress t_addr =  t_pack.getAddress();
+				int t_port = t_pack.getPort();
+				
 				if(t_packageBuf[0] != 0x10 || t_packageBuf[1] != 0x08 
 				|| t_packageBuf[6] != 0 || t_packageBuf[7] != 0 || t_packageBuf[8] != 0 || t_packageBuf[9] != 0){
 					
@@ -47,7 +51,7 @@ public class fakeMDSSvr extends Thread{
 					
 					response[10] = (byte)(t_packageBuf[10] - (byte)0x80);
 
-					DatagramPacket t_sendPack = new DatagramPacket(response,response.length);
+					DatagramPacket t_sendPack = new DatagramPacket(response,response.length,t_addr,t_port);
 					m_udpSocket.send(t_sendPack);
 					
 				}

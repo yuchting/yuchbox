@@ -231,10 +231,13 @@ public class HelloWorld {
 		//DelDirectory("Test/");
 		
 		new fakeMDSSvr();
-		
-		try{
-			Thread.sleep(10000000);
-		}catch(Exception e){}
+		while(true){
+
+			try{
+				Thread.sleep(10000000);
+			}catch(Exception e){}
+			
+		}
 		
 	}
 	
