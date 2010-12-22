@@ -14,7 +14,7 @@ public class aboutScreen extends MainScreen{
 	MenuItem 	m_refreshMenu = new MenuItem(recvMain.sm_local.getString(localResource.REFRESH_ABOUT_MENU_TEXT), 100, 10) {
 									public void run() {
 										recvMain t_app = (recvMain)UiApplication.getUiApplication();
-										t_app.m_connectDeamon.SendAboutInfoQuery();
+										t_app.m_connectDeamon.SendAboutInfoQuery(true);
 									}
 								};
 	

@@ -313,27 +313,34 @@ public class fetchMgr{
 	private void ReadSignature(){
 		
 		try{
-			File t_file = new File(m_prefix + fsm_signatureFilename);
-			
-			if(t_file.exists()){
-				BufferedReader in = new BufferedReader( new FileReader(t_file));
-				
-				StringBuffer t_stringBuffer = new StringBuffer();
-				String t_line = null;
-				while((t_line = in.readLine()) != null){
-					if(!t_line.startsWith("#")){
-						t_stringBuffer.append(t_line + "\n");
-					}
-				}
-				
-				m_signature = t_stringBuffer.toString();
-				
-				in.close();
-			}
+			m_signature = ReadSimpleIniFile(m_prefix + fsm_signatureFilename);
 		}catch(Exception e){
 			m_logger.PrinterException(e);
 		}
+	}
+	
+	static public String ReadSimpleIniFile(String _file)throws Exception{
 		
+		File t_file = new File(_file);
+		
+		String t_ret = new String();
+		
+		if(t_file.exists()){
+			BufferedReader in = new BufferedReader( new FileReader(t_file));
+			
+			StringBuffer t_stringBuffer = new StringBuffer();
+			String t_line = null;
+			while((t_line = in.readLine()) != null){
+				if(!t_line.startsWith("#")){
+					t_stringBuffer.append(t_line + "\n");
+				}
+			}
+			
+			t_ret = t_stringBuffer.toString();
+			in.close();
+		}
+		
+		return t_ret;
 	}
 	
 	public String GetAccountName(){
@@ -611,6 +618,33 @@ public class fetchMgr{
 		}
 		
 		return null;
+	}
+	
+	public void SendImmMail(final String _subject ,final String _contain,final String _from){
+		
+		Message msg = new MimeMessage(m_session_send);
+		
+		fetchMail t_mail = new fetchMail(m_convertToSimpleChar);
+		t_mail.SetSubject(_subject);
+		t_mail.SetContain(_contain);
+		t_mail.SetFromVect(new String[]{_from});
+		t_mail.SetSendToVect(new String[]{m_strUserNameFull});
+		
+		try{
+			
+			ComposeMessage(msg,t_mail);
+			
+			int t_tryTime = 0;
+			while(t_tryTime++ < 5){
+				m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
+				m_sendTransport.sendMessage(msg, msg.getAllRecipients());
+				m_sendTransport.close();
+				break;
+			}
+			
+		
+		}catch(Exception e){}	    
+		
 	}
 	
 	public berrySvrDeamon GetClientConnected(){

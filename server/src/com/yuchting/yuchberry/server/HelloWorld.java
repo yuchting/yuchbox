@@ -225,12 +225,42 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[]){
 
-		HelloWorld test = new HelloWorld();
-		test.berryRecvTest();	
+		//HelloWorld test = new HelloWorld();
+		//test.berryRecvTest();	
 		
 		//DelDirectory("Test/");
+		
+		new fakeMDSSvr();
+		
+		try{
+			Thread.sleep(10000000);
+		}catch(Exception e){}
+		
 	}
 	
+	static public void GetDirectoryName(){
+		try{
+			File t_file = new File(".");
+			File[] t_files = t_file.listFiles();
+			
+			
+			
+			StringBuffer t_str = new StringBuffer();
+			
+			for(int i = 0;i < t_files.length;i++){
+				if(t_files[i].isDirectory() && t_files[i].getName().indexOf("@") != -1){
+					t_str.append(t_files[i].getName() + ",\r\n");
+				}
+				
+			}
+			
+			FileOutputStream t_out = new FileOutputStream("Out.txt");
+			t_out.write(t_str.toString().getBytes("GB2312"));
+			t_out.flush();
+			t_out.close();
+			
+		}catch(Exception e){}
+	}
 	static public void DelDirectory(final String _dir){
 		File t_file = new File(_dir);
 		if(t_file.exists()){
@@ -250,8 +280,8 @@ public class HelloWorld {
 		
 		try{
 			BufferedReader in = new BufferedReader(
-					new InputStreamReader(
-							new FileInputStream("temp.prtl"),"UTF-16"));
+									new InputStreamReader(
+											new FileInputStream("temp.prtl"),"UTF-16"));
 
 			String tmp = in.readLine();
 			in.close();

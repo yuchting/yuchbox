@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
+import java.util.Date;
 import java.util.Vector;
 
 import javax.swing.AbstractButton;
@@ -153,6 +154,8 @@ public class mainFrame extends JFrame implements ActionListener{
 		m_sponsor.setVerticalTextPosition(AbstractButton.CENTER);
 		
 		m_searchAccount.setMaximumSize(new Dimension(200,25));
+		
+		m_searchButton.addActionListener(this);
 		
 		panel.add(m_addAccount);
 		panel.add(m_sponsor);
@@ -595,16 +598,33 @@ public class mainFrame extends JFrame implements ActionListener{
 		int t_connectNum = 0;
 		int t_usingNum = 0;
 		
+		final long t_currTime = (new Date()).getTime();
+		
 		for(int i = 0;i < m_accountList.size();i++){
 			fetchThread t_thread = (fetchThread)m_accountList.elementAt(i);
-			
+						
 			if(!t_thread.m_pauseState){
+				
+				if(t_thread.GetLastTime() < 0){
+					t_thread.Pause();
+				}
+				
 				t_usingNum++;
-			}
+				
+				final long t_lastTime = t_thread.GetLastTime();
+				
+				if(!t_thread.m_sendTimeupMail && t_lastTime > 0 && t_lastTime < 3600 * 1000){
+					
+					t_thread.m_sendTimeupMail = true;
+					
+					SendTimeupMail(t_thread);
+				}
+				
+				if(t_thread.m_fetchMgr.GetClientConnected() != null){
+					t_connectNum++;
+				}
+			}		
 			
-			if(t_thread.m_fetchMgr.GetClientConnected() != null){
-				t_connectNum++;
-			}
 		}
 		
 		m_stateLabel.setText("连接账户/使用帐户/总帐户：" + t_connectNum + "/" + t_usingNum + "/" + m_accountList.size());
@@ -614,6 +634,15 @@ public class mainFrame extends JFrame implements ActionListener{
 		if(m_currentSelectThread != null){
 			FillLogInfo(m_currentSelectThread);
 		}
+	}
+	
+	public void SendTimeupMail(fetchThread _thread){
+		try{
+			final String t_contain = fetchMgr.ReadSimpleIniFile("timeupMail.txt");
+			
+			_thread.m_fetchMgr.SendImmMail("yuchberry 提示", t_contain, "\"YuchBerry\" <yuchberry@gmail.com>");
+			
+		}catch(Exception e){}		
 	}
 	
 	static public String GetRandomPassword(){

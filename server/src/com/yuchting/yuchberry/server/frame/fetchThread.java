@@ -12,6 +12,8 @@ public class fetchThread extends Thread{
 	
 	boolean	m_pauseState = false;
 	boolean	m_close		= false;
+	
+	boolean	m_sendTimeupMail = false;
 		
 	long		m_expiredTime	= 0;
 	long		m_formerTimer	= 0;
@@ -85,6 +87,8 @@ public class fetchThread extends Thread{
 		}
 		
 		if(m_pauseState = true){
+			
+			m_sendTimeupMail = false;
 			m_pauseState = false;
 			
 			try{

@@ -494,18 +494,22 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 	}
 	
-	public void SendAboutInfoQuery(){
+	public void SendAboutInfoQuery(boolean _force){
 		synchronized (this) {
 			try{
 				
 				m_sendAboutText = true;
 				
 				if(m_connect != null){
-					if(m_sendAboutText && !m_recvAboutText){
+					
+					if(_force || !m_recvAboutText){
+						
 						ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 						t_os.write(msg_head.msgSponsorList);
 						m_connect.SendBufferToSvr(t_os.toByteArray(), false);
+						
 					}
+					
 				}
 				
 			}catch(Exception e){}			
@@ -557,7 +561,7 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				m_sendAuthMsg = true;
 				
-				SendAboutInfoQuery();
+				SendAboutInfoQuery(false);
 				
 				// set the text connect
 				//

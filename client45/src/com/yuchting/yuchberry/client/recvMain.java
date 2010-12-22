@@ -430,7 +430,7 @@ public class recvMain extends UiApplication implements localResource {
 		m_aboutScreen = new aboutScreen(this);
 		pushScreen(m_aboutScreen);
 		
-		m_connectDeamon.SendAboutInfoQuery();
+		m_connectDeamon.SendAboutInfoQuery(false);
 	}
 	
 	public void SetAboutInfo(String _about){
