@@ -87,7 +87,6 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	 public Vector 		m_markReadVector 		= new Vector();
 	 
-	 Player				m_newMailNotifier		= null;
 	 
 	 reminder			m_currentReminder		= null;
 	 
@@ -145,23 +144,10 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 
 	 public connectDeamon(recvMain _app){
-		 m_mainApp = _app;
-		 LoadSound();
-		 		 
+		 m_mainApp = _app; 		 
 		 start();
 	 }
 	 
-	 public void LoadSound(){
-		 
-		 try{
-			 m_newMailNotifier = javax.microedition.media.Manager.createPlayer(m_mainApp.getClass().getResourceAsStream("/NewMessage.mid"),"audio/midi");
-			 
-			 m_newMailNotifier.realize();
-			 m_newMailNotifier.prefetch();
-		 }catch(Exception _e){
-			 m_mainApp.DialogAlert("read the sound res error!" + _e.getMessage());
-		 }	
-	 }
 	 
 	 public void BeginListener()throws Exception{
 		// add the send listener
@@ -193,27 +179,35 @@ public class connectDeamon extends Thread implements SendListener,
 	 //! SendListener
 	 public boolean sendMessage(Message message){
     	
-		try{
+		final Message t_msg = message;
+		
+		m_mainApp.invokeLater(new Runnable(){
 			
-			m_mainApp.SetErrorString("sendMsg:" + message.getSubject());
-			
-			fetchMail t_mail = new fetchMail();
-			ImportMail(message,t_mail);
-			
-			fetchMail t_forwardReplyMail = null;
-			if(m_sendStyle != fetchMail.NOTHING_STYLE && m_forwordReplyMail != null){
-				t_forwardReplyMail = new fetchMail();
-				ImportMail(m_forwordReplyMail,t_forwardReplyMail);
-			}
-			
-			t_mail.SetSendDate(new Date());
-									
-			AddSendingMail(t_mail,m_composingAttachment,t_forwardReplyMail,m_sendStyle);
-			m_composingAttachment.removeAllElements();
+			 public void run(){
+				 
+				 try{
 						
-		}catch(Exception _e){
-			m_mainApp.SetErrorString("sMsg: " + _e.getMessage() + " " + _e.getClass().getName());
-		}
+					m_mainApp.SetErrorString("sendMsg:" + t_msg.getSubject());
+					
+					fetchMail t_mail = new fetchMail();
+					ImportMail(t_msg,t_mail);
+					
+					fetchMail t_forwardReplyMail = null;
+					if(m_sendStyle != fetchMail.NOTHING_STYLE && m_forwordReplyMail != null){
+						t_forwardReplyMail = new fetchMail();
+						ImportMail(m_forwordReplyMail,t_forwardReplyMail);
+					}
+					
+					t_mail.SetSendDate(new Date());
+											
+					AddSendingMail(t_mail,m_composingAttachment,t_forwardReplyMail,m_sendStyle);
+					m_composingAttachment.removeAllElements();
+								
+				}catch(Exception _e){
+					m_mainApp.SetErrorString("sMsg: " + _e.getMessage() + " " + _e.getClass().getName());
+				}
+			 }
+		});
 		
 		return true;
 	}
@@ -226,9 +220,7 @@ public class connectDeamon extends Thread implements SendListener,
 		|| e.getMessageChangeType() == MessageEvent.OPENED){
 			
 			try{
-	
-				LED.setState(LED.STATE_OFF);
-				
+					
 				AddMarkReadMail(e.getMessage());
 				e.getMessage().removeMessageListener(this);
 				
@@ -265,21 +257,20 @@ public class connectDeamon extends Thread implements SendListener,
 					
 				}else{
 					
+					m_mainApp.PopupDownloadFileDlg(t_realName);
+					
 					// fetch from the server 
 					//
 					for(int i = 0;i < m_vectReceiveAttach.size();i++){
 						FetchAttachment t_att = (FetchAttachment)m_vectReceiveAttach.elementAt(i);
 												
 						if(t_att.m_messageHashCode == t_messageCode){
-							
-							final String t_progress = p.getFilename() +" (" + t_att.m_completePercent + "%) wait a moment";
-							
-							m_mainApp.DialogAlert(t_progress);
-							
+							// found...
+							//
 							return;
 						}
-					}			
-			
+					}				
+					
 					FetchAttachment t_att = new FetchAttachment();
 					
 					t_att.m_mailIndex 		= t_mailIndex;
@@ -318,8 +309,7 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	//@{ ViewListener
 	public void open(MessageEvent e){
-		
-		LED.setState(LED.STATE_OFF);
+		m_mainApp.StopNotification();
 	}
 	
 	public void close(MessageEvent e){
@@ -329,8 +319,8 @@ public class connectDeamon extends Thread implements SendListener,
 			m_forwordReplyMail = null;
 			m_sendStyle = fetchMail.NOTHING_STYLE;
 		}
-
-		LED.setState(LED.STATE_OFF);
+		
+		m_mainApp.StopNotification();
 	}
 	//@}
 	
@@ -818,14 +808,7 @@ public class connectDeamon extends Thread implements SendListener,
 			sendReceive.WriteInt(t_os, t_mail.GetMailIndex());
 			
 			m_connect.SendBufferToSvr(t_os.toByteArray(), false);
-			
-			// is backlight NOT on to open the LED
-			//
-			if(!Backlight.isEnabled()){
-				LED.setConfiguration(LED.LED_TYPE_STATUS,300, 5000, LED.BRIGHTNESS_50);
-				LED.setState(LED.LED_TYPE_STATUS, LED.STATE_BLINKING);
-			}
-			
+						
 			if(m_currentReminder == null || !m_currentReminder.isAlive()){
 				m_currentReminder = new reminder(m_mainApp);
 			}						 
@@ -966,6 +949,10 @@ public class connectDeamon extends Thread implements SendListener,
 				//					t_startIndex + " size:" + t_size + " first:" + (int)t_bytes[0]);
 				
 				t_att.m_completePercent = t_startIndex * 100 / t_att.m_attachmentSize;
+				
+				if(m_mainApp.m_downloadDlg != null){
+					m_mainApp.m_downloadDlg.RefreshProgress(t_att.m_completePercent);
+				}
 				
 				if(t_startIndex + t_size >= t_att.m_attachmentSize){
 					

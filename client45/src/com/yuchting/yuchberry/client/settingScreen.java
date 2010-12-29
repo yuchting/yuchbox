@@ -19,10 +19,7 @@ public class settingScreen extends MainScreen {
 	 CheckboxField		m_useSSLCheckbox= null;
 	 CheckboxField		m_useWifi		= null;
 	 CheckboxField		m_autoRun		= null;
-	 
-	 NumericChoiceField	m_vibrateList	= null;
-	 NumericChoiceField	m_soundList		= null;
-	 
+	 	 
 	 recvMain			m_mainApp		= null;
 	 
 	 public settingScreen(recvMain _app){
@@ -55,13 +52,7 @@ public class settingScreen extends MainScreen {
 		 
 		 //@{ reminder option
 		 add(new LabelField(recvMain.sm_local.getString(localResource.PROMPT_OPTION_LABEL)));
-		 m_vibrateList = new NumericChoiceField(recvMain.sm_local.getString(localResource.VIBRATE_OPTION_LABEL), 0, 3, 1);
-		 m_vibrateList.setSelectedValue(m_mainApp.m_vibrateTime);
-		 add(m_vibrateList);
-		 
-		 m_soundList	= new NumericChoiceField(recvMain.sm_local.getString(localResource.SOUND_OPTION_LABEL), 0, 5, 1);
-		 m_soundList.setSelectedValue(m_mainApp.m_soundVol);
-		 add(m_soundList);		 
+
 		 //@}
 		 
 	 }
@@ -70,8 +61,6 @@ public class settingScreen extends MainScreen {
 		 
 		m_mainApp.m_useSSL	= m_useSSLCheckbox.getChecked();
 		m_mainApp.SetAPNName(m_APN.getText());
-		m_mainApp.m_soundVol = m_soundList.getSelectedValue();
-		m_mainApp.m_vibrateTime = m_vibrateList.getSelectedValue();
 		m_mainApp.m_autoRun = m_autoRun.getChecked();
 		
 		m_mainApp.m_appendString = m_appendString.getText();

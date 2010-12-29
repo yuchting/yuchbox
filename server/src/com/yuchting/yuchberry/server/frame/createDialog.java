@@ -85,7 +85,7 @@ public class createDialog extends JDialog implements DocumentListener,
 															ItemListener{
 	
 	final static int		fsm_width = 300;
-	final static int		fsm_height = 630;
+	final static int		fsm_height = 660;
 	
 	class commonConfig{
 		String	m_name;
@@ -168,6 +168,7 @@ public class createDialog extends JDialog implements DocumentListener,
 	
 	JCheckBox	m_useSSL			= new JCheckBox("Push使用SSL加密");
 	JCheckBox	m_convertToSimple	= new JCheckBox("转换繁体为简体");
+	JCheckBox	m_signInAsFullname	= new JCheckBox("使用全地址作为用户名");
 	JTextField	m_expiredTime		= new JTextField();
 	
 	JTextArea	m_signature			= new JTextArea();
@@ -239,11 +240,16 @@ public class createDialog extends JDialog implements DocumentListener,
 		AddTextLabel("过期时间(单位小时，0为不过期):",m_expiredTime,90,_expiredTime);
 		
 		AddTextLabel("推送间隔（秒）：",m_pushInterval,180,_pushInterval);
+		
+		m_signInAsFullname.setPreferredSize(new Dimension(fsm_width - 20, 25));
+		getContentPane().add(m_signInAsFullname);
+		
 		m_useSSL.setPreferredSize(new Dimension(fsm_width - 20, 25));
 		getContentPane().add(m_useSSL);
 		
 		m_convertToSimple.setPreferredSize(new Dimension(fsm_width - 20,25));
 		getContentPane().add(m_convertToSimple);
+		
 		
 		t_label = new JLabel("签名：");
 		t_label.setPreferredSize(new Dimension(fsm_width - 20,25));
@@ -529,6 +535,7 @@ public class createDialog extends JDialog implements DocumentListener,
 			{"pushInterval="		,m_pushInterval},
 			{"userSSL="				,m_useSSL},
 			{"convertoSimpleChar="	,m_convertToSimple},
+			{"useFullNameSignIn="	,m_signInAsFullname},
 		};
 		
 		for(int i = 0;i < t_replace.length;i++){

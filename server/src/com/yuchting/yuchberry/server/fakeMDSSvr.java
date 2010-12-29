@@ -56,7 +56,11 @@ public class fakeMDSSvr extends Thread{
 					
 				}
 			}catch(Exception e){
-				
+				try{
+					sleep(10000);
+				}catch(Exception _e){
+					break;
+				}
 			}			
 		}
 	}

@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.client;
 import local.localResource;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.MainScreen;
 
@@ -20,7 +21,7 @@ public class aboutScreen extends MainScreen{
 	
 	public aboutScreen(recvMain _mainApp){
 		m_mainApp = _mainApp;
-		
+				
 		m_editText = new RichTextField(m_mainApp.m_aboutString);
 		add(m_editText);
 	}
@@ -36,4 +37,8 @@ public class aboutScreen extends MainScreen{
 		m_editText.setText(m_mainApp.m_aboutString);
 		invalidate();
 	}
+	
+	protected void makeMenu(Menu _menu,int instance){
+		_menu.add(m_refreshMenu);
+    }
 }

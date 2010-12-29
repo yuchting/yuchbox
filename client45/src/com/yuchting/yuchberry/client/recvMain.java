@@ -13,6 +13,8 @@ import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
 import net.rim.device.api.i18n.ResourceBundle;
+import net.rim.device.api.notification.NotificationsConstants;
+import net.rim.device.api.notification.NotificationsManager;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.LED;
@@ -27,12 +29,21 @@ public class recvMain extends UiApplication implements localResource {
 	
 	final static int		fsm_clientVersion = 5;
 	
+	final static long		fsm_notifyID_email = 767918509114947L;
+	
+	final static Object 	fsm_notifyEvent_email = new Object() {
+	    public String toString() {
+	       return recvMain.sm_local.getString(localResource.NOTIFY_EMAIL_LABEL);
+	    }
+	};
+	
 	String 				m_attachmentDir 	= null;
 	
     aboutScreen			m_aboutScreen		= null;
 	stateScreen 		m_stateScreen 		= null;
 	uploadFileScreen 	m_uploadFileScreen	= null;
 	debugInfo			m_debugInfoScreen	= null;
+	downloadDlg			m_downloadDlg		= null;
 	
 	connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
@@ -58,10 +69,7 @@ public class recvMain extends UiApplication implements localResource {
 	String				m_userPassword 		= new String();
 	boolean			m_useSSL			= false;
 	boolean			m_useWifi			= false;
-	
-	int					m_vibrateTime		= 1;
-	int					m_soundVol			= 2;
-	
+		
 	boolean			m_autoRun			= false;
 	
 	class APNSelector{
@@ -176,6 +184,10 @@ public class recvMain extends UiApplication implements localResource {
         
         if(_systemRun){
         	
+        	// register the notification
+        	//
+        	NotificationsManager.registerSource(fsm_notifyID_email, fsm_notifyEvent_email,NotificationsConstants.CASUAL);
+        	
         	if(!m_autoRun || m_hostname.length() == 0 || m_port == 0 || m_userPassword.length() == 0){
         		System.exit(0);
         	}else{
@@ -186,7 +198,7 @@ public class recvMain extends UiApplication implements localResource {
         			System.exit(0);
         		}   		
         		
-        	}
+        	}      	
         	
         }
         
@@ -336,10 +348,6 @@ public class recvMain extends UiApplication implements localResource {
 		    			m_useSSL = (t_readFile.read() == 0)?false:true;
 		    		}
 		    		
-		    		if(t_currVer >= 3){
-		    			m_vibrateTime 	= t_readFile.read();
-		    			m_soundVol		= t_readFile.read();
-		    		}
 		    		
 		    		if(t_currVer >= 4){
 		    			m_useWifi = (t_readFile.read() == 0)?false:true;
@@ -376,8 +384,6 @@ public class recvMain extends UiApplication implements localResource {
 				}
 				
 				t_writeFile.write(m_useSSL?1:0);
-				t_writeFile.write(m_vibrateTime);
-				t_writeFile.write(m_soundVol);
 				t_writeFile.write(m_useWifi?1:0);
 				sendReceive.WriteString(t_writeFile,m_appendString);
 				
@@ -408,15 +414,23 @@ public class recvMain extends UiApplication implements localResource {
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);	
 		
-		LED.setState(LED.STATE_OFF);
+		StopNotification();
 		
 		System.exit(0);
 	}
+	
 	public void activate(){
 		if(m_stateScreen == null){
 			m_stateScreen = new stateScreen(this);
 			pushScreen(m_stateScreen);
 		}		
+	}
+	
+	public void TriggerNotification(){
+		NotificationsManager.triggerImmediateEvent(fsm_notifyID_email, 0, this, null);
+	}
+	public void StopNotification(){
+		NotificationsManager.cancelImmediateEvent(fsm_notifyID_email, 0, this, null);
 	}
 	
 	public void deactivate(){
@@ -431,6 +445,16 @@ public class recvMain extends UiApplication implements localResource {
 		pushScreen(m_aboutScreen);
 		
 		m_connectDeamon.SendAboutInfoQuery(false);
+	}
+	
+	public void PopupDownloadFileDlg(String _filename){
+		if(m_downloadDlg == null){
+			m_downloadDlg = new downloadDlg(this, _filename);
+			
+			synchronized(getEventLock()){
+				UiApplication.getUiApplication().pushGlobalScreen(m_downloadDlg,1, UiEngine.GLOBAL_QUEUE);
+			}
+		}
 	}
 	
 	public void SetAboutInfo(String _about){
@@ -452,10 +476,8 @@ public class recvMain extends UiApplication implements localResource {
 
 			m_uploadFileScreen = new uploadFileScreen(m_connectDeamon, this,_del);
 			
-			invokeLater(new Runnable()
-			{
-			    public void run()
-				{
+			invokeLater(new Runnable(){
+			    public void run(){
 			    	recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
 			    	t_mainApp.PushUploadingScreen();
 				}
@@ -502,11 +524,14 @@ public class recvMain extends UiApplication implements localResource {
 	
 	public void UpdateMessageStatus(final Message m,final int _status){
 		
-		synchronized(getEventLock()){
-			m.setStatus(_status,0);
-			m.updateUi();
-			UiApplication.getUiApplication().relayout();
-		};
+		invokeLater(new Runnable() {
+			public void run(){
+				m.setStatus(_status,0);
+				m.updateUi();
+				UiApplication.getUiApplication().relayout();
+			}
+		});
+		
 	}
 	
 	public void PopupDlgToOpenAttach(final connectDeamon.FetchAttachment _att){
@@ -514,6 +539,10 @@ public class recvMain extends UiApplication implements localResource {
 		// prompt by the background thread
 		//
 		synchronized(getEventLock()){
+			
+			if(m_downloadDlg != null){
+				m_downloadDlg.onClose();
+			}
 			
 			Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,_att.m_realName + sm_local.getString(localResource.DOWNLOAD_OVER_PROMPT),
 		    							Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL);
@@ -539,7 +568,7 @@ public class recvMain extends UiApplication implements localResource {
 		}
 		
 	}
-	
+		
 	public void SetStateString(String _state){
 			
 		m_stateString = _state;
@@ -555,9 +584,21 @@ public class recvMain extends UiApplication implements localResource {
 	
 	public void DialogAlert(final String _msg){
 
-		synchronized(getEventLock()){
-			Dialog.alert(_msg);
-		};
+		invokeLater(new Runnable() {
+			public void run(){
+				synchronized(getEventLock()){
+					
+					Dialog t_dlg = new Dialog(Dialog.D_OK,_msg,
+							Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL);
+					
+					t_dlg.setEscapeEnabled(true);			
+					UiApplication.getUiApplication().pushGlobalScreen(t_dlg,1, UiEngine.GLOBAL_QUEUE);
+					
+				};
+			}
+		});
+		
+		
     }
  
 	public void SetUploadingDesc(final fetchMail _mail,final int _attachmentIdx,
