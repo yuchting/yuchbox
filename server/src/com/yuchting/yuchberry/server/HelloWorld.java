@@ -230,17 +230,149 @@ public class HelloWorld {
 		
 		//DelDirectory("Test/");
 		
-		new fakeMDSSvr();
-		while(true){
-
-			try{
-				Thread.sleep(10000000);
-			}catch(Exception e){}
-			
-		}
+//		new fakeMDSSvr();
+//		while(true){
+//
+//			try{
+//				Thread.sleep(10000000);
+//			}catch(Exception e){}
+//			
+//		}
+		
+		GenFanShuai();
 		
 	}
 	
+	static public int SumNumber(int[] _number){
+		int t_value = 0;
+		
+		for(int i = 0;i < _number.length;i++){
+			t_value += _number[i];
+		}
+		
+		return t_value;
+	}
+	static public Object[] GetSubNum(int _number){
+		if(_number == 1){
+			return new Object[]{new Integer(1)};
+		}else{
+			if(Math.random() > 0.5f){
+				return new Object[]{new Integer(_number)};
+			}
+		}
+		
+		final int n = (int)(Math.random() * 1000) % (_number - 1) + 1;
+		
+		return new Object[]{GetSubNum(_number - n),GetSubNum(n)};
+	}
+	
+	static public void FillNumber(Object _array,int[] _number,boolean _left,int _max){
+		
+		if(_array instanceof Integer){
+			
+			int idx = 0;
+			
+			if(_left){
+				idx = _number.length / 2 - ((Integer)_array).intValue();
+			}else{
+				idx = _number.length / 2 + ((Integer)_array).intValue();
+			}			
+			
+			if(SumNumber(_number) < _max){
+				_number[idx]++;
+			}
+			
+		}else{
+			Object[] t_arr = (Object[])_array;
+			
+			for(int i = 0;i < t_arr.length;i++){
+				FillNumber(t_arr[i],_number,_left,_max);
+			}
+		}	
+	}
+	
+	static public void GenFanShuai(){
+		
+		int[] t_number = {0,0,0,0,0,0,0,0,0,0,0};
+		final int t_totalValue = 4000;
+		final int t_totalNum = 100;
+
+		int t_total = 0;
+		StringBuffer t_buffer ;
+		
+		try{
+			while(true){
+				
+				while(true){
+					
+					int t_idx = ((int)(Math.random() * 100000)) % t_number.length;
+
+					Object[] t_array = null;
+					boolean t_left = true;
+					
+					if(t_idx == 5){
+						t_number[t_idx]++;						
+					}else if(t_idx < 5){
+						
+						t_number[t_idx]++;
+						
+						t_idx = 5 - t_idx;
+						t_array = (GetSubNum(t_idx));
+											
+						
+					}else{
+						t_number[t_idx]++;
+						
+						t_idx = t_idx - 5;
+						t_array = (GetSubNum(t_idx));
+						t_left = false;
+					}
+					
+					if(t_array != null){
+						for(int j = 0;j < t_array.length;j++){
+							FillNumber(t_array[j],t_number,t_left,t_totalNum);
+						}
+					}				
+					
+					if(SumNumber(t_number) == t_totalNum){
+						break;
+					}
+				}
+				
+				t_buffer = new StringBuffer();
+				
+				for(int i = 0 ;i < t_totalNum;i++){
+					while(true){
+						int t_delta = ((int)(Math.random() * 100)) % 11;
+						if(t_number[t_delta] > 0){
+							t_number[t_delta]--;
+							
+							t_delta += 35;
+							t_total += t_delta;
+							
+							t_buffer.append("" + t_delta + "\r\n"); 
+							break;
+						}
+					}
+				}
+				
+				if(t_total == t_totalValue){
+					break;
+				}				
+				
+				t_total = 0;
+			}
+			
+			
+			FileOutputStream t_file = new FileOutputStream("Array.txt");
+			t_file.write(t_buffer.toString().getBytes());
+			t_file.flush();
+			t_file.close();
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 	static public void GetDirectoryName(){
 		try{
 			File t_file = new File(".");
