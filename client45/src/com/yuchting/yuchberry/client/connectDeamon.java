@@ -10,7 +10,6 @@ import java.util.Vector;
 import javax.microedition.io.Connector;
 import javax.microedition.io.SocketConnection;
 import javax.microedition.io.file.FileConnection;
-import javax.microedition.media.Player;
 
 import local.localResource;
 import net.rim.blackberry.api.homescreen.HomeScreen;
@@ -34,9 +33,7 @@ import net.rim.blackberry.api.mail.event.MessageListener;
 import net.rim.blackberry.api.mail.event.ViewListener;
 import net.rim.blackberry.api.mail.event.ViewListenerExtended;
 import net.rim.device.api.i18n.Locale;
-import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.LED;
 
 
 class msg_head{
@@ -613,7 +610,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 
 		 m_disconnect = true;
 		 
-		 interrupt();
+		 interrupt();	 
 		 
 		 m_connectCounter = -1;
 		 	
@@ -809,9 +806,11 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			m_connect.SendBufferToSvr(t_os.toByteArray(), false);
 						
-			if(m_currentReminder == null || !m_currentReminder.isAlive()){
-				m_currentReminder = new reminder(m_mainApp);
-			}						 
+			//if(m_currentReminder == null || !m_currentReminder.isAlive()){
+			//	m_currentReminder = new reminder(m_mainApp);
+			//}
+			
+			m_mainApp.TriggerNotification();
 							
 		}catch(Exception _e){
 			m_mainApp.SetErrorString("C:" + _e.getMessage() + " " + _e.getClass().getName());
@@ -948,10 +947,10 @@ public class connectDeamon extends Thread implements SendListener,
 				//System.out.println("write msgMailAttach mailIndex:" + t_mailIndex + " attachIndex:" + t_attachIndex + " startIndex:" +
 				//					t_startIndex + " size:" + t_size + " first:" + (int)t_bytes[0]);
 				
-				t_att.m_completePercent = t_startIndex * 100 / t_att.m_attachmentSize;
+				t_att.m_completePercent = (t_startIndex + t_size) * 100 / t_att.m_attachmentSize;
 				
 				if(m_mainApp.m_downloadDlg != null){
-					m_mainApp.m_downloadDlg.RefreshProgress(t_att.m_completePercent);
+					m_mainApp.m_downloadDlg.RefreshProgress(t_att);
 				}
 				
 				if(t_startIndex + t_size >= t_att.m_attachmentSize){

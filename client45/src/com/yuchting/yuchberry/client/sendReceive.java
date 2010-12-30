@@ -21,6 +21,9 @@ public class sendReceive extends Thread{
 	boolean			m_closed				= false;
 	
 	int					m_keepliveCounter		= 0;
+	
+	long				m_uploadByte			= 0;
+	long				m_downloadByte			= 0;
 		
 	public sendReceive(OutputStream _socketOut,InputStream _socketIn){
 		m_socketOutputStream = _socketOut;

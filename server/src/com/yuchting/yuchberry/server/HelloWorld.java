@@ -256,7 +256,7 @@ public class HelloWorld {
 		if(_number == 1){
 			return new Object[]{new Integer(1)};
 		}else{
-			if(Math.random() > 0.5f){
+			if(Math.random() > 0.2f){
 				return new Object[]{new Integer(_number)};
 			}
 		}
@@ -291,6 +291,25 @@ public class HelloWorld {
 		}	
 	}
 	
+	static public int GetNumberIdx(int[] _number){
+		
+		final int t_sum = SumNumber(_number);
+		int t_delta = ((int)(Math.random() * 100000)) % t_sum;
+		
+		int t_begin = 0;
+		
+		for(int i = 0 ;i < _number.length;i++){
+			if(_number[i] != 0 && t_delta >= t_begin && t_delta < _number[i] + t_begin){
+				return i;
+			}
+			
+			t_begin += _number[i];			
+		}
+		
+		return _number.length - 1;
+		
+	}
+	
 	static public void GenFanShuai(){
 		
 		int[] t_number = {0,0,0,0,0,0,0,0,0,0,0};
@@ -298,7 +317,8 @@ public class HelloWorld {
 		final int t_totalNum = 100;
 
 		int t_total = 0;
-		StringBuffer t_buffer ;
+		StringBuffer t_buffer = new StringBuffer();
+		StringBuffer t_numberBuffer = new StringBuffer();
 		
 		try{
 			while(true){
@@ -339,18 +359,23 @@ public class HelloWorld {
 					}
 				}
 				
-				t_buffer = new StringBuffer();
+				t_buffer.delete(0, t_buffer.length());
+				t_numberBuffer.delete(0,t_numberBuffer.length());
+				
+				for(int i = 0;i < t_number.length;i++){
+					t_numberBuffer.append("" + (35 + i) + ":" + t_number[i] + "¸ö\r\n");
+				}
 				
 				for(int i = 0 ;i < t_totalNum;i++){
 					while(true){
-						int t_delta = ((int)(Math.random() * 100)) % 11;
-						if(t_number[t_delta] > 0){
-							t_number[t_delta]--;
+						int t_index = GetNumberIdx(t_number);
+						if(t_number[t_index] > 0){
+							t_number[t_index]--;
 							
-							t_delta += 35;
-							t_total += t_delta;
+							t_index += 35;
+							t_total += t_index;
 							
-							t_buffer.append("" + t_delta + "\r\n"); 
+							t_buffer.append("" + t_index + "\r\n"); 
 							break;
 						}
 					}
@@ -365,6 +390,8 @@ public class HelloWorld {
 			
 			
 			FileOutputStream t_file = new FileOutputStream("Array.txt");
+			t_file.write(t_numberBuffer.toString().getBytes());
+			t_file.write(("===================================================\r\n").getBytes());
 			t_file.write(t_buffer.toString().getBytes());
 			t_file.flush();
 			t_file.close();
@@ -604,9 +631,7 @@ public class HelloWorld {
 			
 			final int t_math = (int)(Math.random() * 100);
 			t_mail.SetMailIndex(t_math);
-			
-			//t_mail.AddAttachment("HelloWorld.jar","application",readFileBuffer("HelloWorld.jar").length);
-			
+						
 			
 			os = new ByteArrayOutputStream();
 			os.write(msg_head.msgMail);

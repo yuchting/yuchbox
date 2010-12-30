@@ -452,7 +452,8 @@ public class recvMain extends UiApplication implements localResource {
 			m_downloadDlg = new downloadDlg(this, _filename);
 			
 			synchronized(getEventLock()){
-				UiApplication.getUiApplication().pushGlobalScreen(m_downloadDlg,1, UiEngine.GLOBAL_QUEUE);
+				UiApplication t_app = UiApplication.getUiApplication();
+				t_app.pushScreen(m_downloadDlg);
 			}
 		}
 	}
@@ -535,35 +536,48 @@ public class recvMain extends UiApplication implements localResource {
 	}
 	
 	public void PopupDlgToOpenAttach(final connectDeamon.FetchAttachment _att){
+	
+//		UiApplication.getUiApplication().invokeLater(new Runnable() {
+//			public void run() {
+				if(m_downloadDlg != null){
+					synchronized (getEventLock()) {
+						if(m_downloadDlg != null){
+							UiApplication t_app = UiApplication.getUiApplication();
+							t_app.popScreen(m_downloadDlg);
+							m_downloadDlg = null;
+						}
+					}					
+					m_downloadDlg = null;
+				}				
+//			}
+//		});
 				
+		
 		// prompt by the background thread
 		//
-		synchronized(getEventLock()){
-			
-			if(m_downloadDlg != null){
-				m_downloadDlg.onClose();
-			}
-			
-			Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,_att.m_realName + sm_local.getString(localResource.DOWNLOAD_OVER_PROMPT),
-		    							Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL);
-			
-			t_dlg.setDialogClosedListener(new DialogClosedListener(){
 				
-				public void dialogClosed(Dialog dialog, int choice) {
-					
-					switch (choice) {
-						case Dialog.OK:
-							recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
-							t_mainApp.PushViewFileScreen(t_mainApp.m_attachmentDir + _att.m_realName);
-							break;
-						
-						default:
-							break;
-					}
-				}
-			});
+		Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,_att.m_realName + sm_local.getString(localResource.DOWNLOAD_OVER_PROMPT),
+	    							Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL);
+		
+		t_dlg.setDialogClosedListener(new DialogClosedListener(){
 			
-			t_dlg.setEscapeEnabled(true);			
+			public void dialogClosed(Dialog dialog, int choice) {
+				
+				switch (choice) {
+					case Dialog.OK:
+						recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
+						t_mainApp.PushViewFileScreen(t_mainApp.m_attachmentDir + _att.m_realName);
+						break;
+					
+					default:
+						break;
+				}
+			}
+		});
+		
+		t_dlg.setEscapeEnabled(true);
+		
+		synchronized(getEventLock()){
 			UiApplication.getUiApplication().pushGlobalScreen(t_dlg,1, UiEngine.GLOBAL_QUEUE);
 		}
 		

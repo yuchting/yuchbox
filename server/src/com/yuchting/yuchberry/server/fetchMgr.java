@@ -983,7 +983,7 @@ public class fetchMgr{
 			
 			StoreAttachment(_mail.GetMailIndex(), _mail.GetAttachment().size(), t_bytes);
 			
-			_mail.AddAttachment(p.getFileName(),p.getContentType(),t_bytes.length);
+			_mail.AddAttachment(DecodeName(p.getFileName(),false),p.getContentType(),t_bytes.length);
 			
 		}else if (p instanceof MimeBodyPart){
 		

@@ -180,7 +180,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 						m_mainApp.Start();
 						
 					}catch(Exception e){
-						m_mainApp.DialogAlert(e.getMessage());
+						m_mainApp.DialogAlert(e.getMessage() + e.getClass().getName());
 					}
 				}				
 			}

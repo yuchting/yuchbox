@@ -52,7 +52,6 @@ public class settingScreen extends MainScreen {
 		 
 		 //@{ reminder option
 		 add(new LabelField(recvMain.sm_local.getString(localResource.PROMPT_OPTION_LABEL)));
-
 		 //@}
 		 
 	 }
