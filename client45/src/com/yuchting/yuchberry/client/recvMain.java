@@ -27,7 +27,7 @@ import net.rim.device.api.ui.component.DialogClosedListener;
 
 public class recvMain extends UiApplication implements localResource {
 	
-	final static int		fsm_clientVersion = 5;
+	final static int		fsm_clientVersion = 6;
 	
 	final static long		fsm_notifyID_email = 767918509114947L;
 	
@@ -44,6 +44,7 @@ public class recvMain extends UiApplication implements localResource {
 	uploadFileScreen 	m_uploadFileScreen	= null;
 	debugInfo			m_debugInfoScreen	= null;
 	downloadDlg			m_downloadDlg		= null;
+	UiApplication		m_downloadDlgParent = null;
 	
 	connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
@@ -81,6 +82,9 @@ public class recvMain extends UiApplication implements localResource {
 	int					m_currentAPNIdx 	= 0;
 	int					m_changeAPNCounter 	= 0;
 	String				m_appendString		= new String();
+	
+	long				m_uploadByte		= 0;
+	long				m_downloadByte		= 0;
 	
 	class UploadingDesc{
 		
@@ -358,6 +362,11 @@ public class recvMain extends UiApplication implements localResource {
 		    			m_autoRun = (t_readFile.read() == 0)?false:true;		    			
 		    		}
 		    		
+		    		if(t_currVer >= 6){
+		    			m_uploadByte = sendReceive.ReadLong(t_readFile);
+		    			m_downloadByte = sendReceive.ReadLong(t_readFile);
+		    		}
+		    		
 		    		t_readFile.close();
 		    		
 		    	}
@@ -389,6 +398,9 @@ public class recvMain extends UiApplication implements localResource {
 				
 				t_writeFile.write(m_autoRun?1:0);
 				
+				sendReceive.WriteLong(t_writeFile,m_uploadByte);
+				sendReceive.WriteLong(t_writeFile, m_downloadByte);
+				
 				t_writeFile.close();
 				
 			}
@@ -398,6 +410,19 @@ public class recvMain extends UiApplication implements localResource {
 		}catch(Exception _e){
 			SetErrorString("write/read config file from SDCard error :" + _e.getMessage() + _e.getClass().getName());
 		}
+	}
+	
+	public void StoreUpDownloadByte(long _uploadByte,long _downloadByte){
+		m_uploadByte += _uploadByte;
+		m_downloadByte += _downloadByte;
+		
+		WriteReadIni(false);
+	}
+	
+	public void ClearUpDownloadByte(){
+		m_uploadByte = m_downloadByte = 0;
+		
+		WriteReadIni(false);
 	}
 	
 	
@@ -415,6 +440,10 @@ public class recvMain extends UiApplication implements localResource {
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);	
 		
 		StopNotification();
+		
+		if(m_connectDeamon.m_connect != null){
+			m_connectDeamon.m_connect.StoreUpDownloadByteImm();
+		}
 		
 		System.exit(0);
 	}
@@ -443,19 +472,15 @@ public class recvMain extends UiApplication implements localResource {
 	public void PopupAboutScreen(){
 		m_aboutScreen = new aboutScreen(this);
 		pushScreen(m_aboutScreen);
-		
-		m_connectDeamon.SendAboutInfoQuery(false);
 	}
 	
-	public void PopupDownloadFileDlg(String _filename){
+	public void PopupDownloadFileDlg(final String _filename){
 		if(m_downloadDlg == null){
-			m_downloadDlg = new downloadDlg(this, _filename);
-			
-			synchronized(getEventLock()){
-				UiApplication t_app = UiApplication.getUiApplication();
-				t_app.pushScreen(m_downloadDlg);
-			}
+			m_downloadDlgParent = UiApplication.getUiApplication();
+			m_downloadDlg = new downloadDlg(this,m_downloadDlgParent, _filename);
+			m_downloadDlgParent.pushScreen(m_downloadDlg);
 		}
+			
 	}
 	
 	public void SetAboutInfo(String _about){
@@ -536,22 +561,17 @@ public class recvMain extends UiApplication implements localResource {
 	}
 	
 	public void PopupDlgToOpenAttach(final connectDeamon.FetchAttachment _att){
-	
-//		UiApplication.getUiApplication().invokeLater(new Runnable() {
-//			public void run() {
-				if(m_downloadDlg != null){
-					synchronized (getEventLock()) {
-						if(m_downloadDlg != null){
-							UiApplication t_app = UiApplication.getUiApplication();
-							t_app.popScreen(m_downloadDlg);
-							m_downloadDlg = null;
-						}
-					}					
-					m_downloadDlg = null;
-				}				
-//			}
-//		});
 				
+		if(m_downloadDlg != null){
+			m_downloadDlgParent.invokeLater(new Runnable() {
+				public void run() {
+
+					m_downloadDlgParent.popScreen(m_downloadDlg);
+					m_downloadDlg = null;
+					m_downloadDlgParent = null;
+				}
+			});			
+		}
 		
 		// prompt by the background thread
 		//
@@ -576,11 +596,9 @@ public class recvMain extends UiApplication implements localResource {
 		});
 		
 		t_dlg.setEscapeEnabled(true);
-		
-		synchronized(getEventLock()){
-			UiApplication.getUiApplication().pushGlobalScreen(t_dlg,1, UiEngine.GLOBAL_QUEUE);
-		}
-		
+		synchronized (getEventLock()) {
+			pushGlobalScreen(t_dlg,1, UiEngine.GLOBAL_QUEUE);
+		}		
 	}
 		
 	public void SetStateString(String _state){
@@ -606,8 +624,7 @@ public class recvMain extends UiApplication implements localResource {
 							Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL);
 					
 					t_dlg.setEscapeEnabled(true);			
-					UiApplication.getUiApplication().pushGlobalScreen(t_dlg,1, UiEngine.GLOBAL_QUEUE);
-					
+					pushGlobalScreen(t_dlg,1, UiEngine.GLOBAL_QUEUE);
 				};
 			}
 		});

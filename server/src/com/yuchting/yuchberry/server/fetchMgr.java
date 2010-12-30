@@ -781,7 +781,7 @@ public class fetchMgr{
 	public ServerSocket GetSocketServer(String _userPassword,boolean _ssl)throws Exception{
 		
 		if(_ssl){
-			String	key				= "YuchBerrySvr.key";  
+			String	key				= m_prefix + "YuchBerrySvr.key";  
 			
 			char[] keyStorePass		= _userPassword.toCharArray();
 			char[] keyPassword		= _userPassword.toCharArray();

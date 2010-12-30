@@ -296,7 +296,7 @@ public class uploadFileScreen extends MainScreen implements
 	
 		
 	public Bitmap GetConstFileBitmap(String res)throws Exception{
-		byte[] bytes = IOUtilities.streamToBytes(UiApplication.getUiApplication().getClass().getResourceAsStream(res));
+		byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass().getResourceAsStream(res));
 		
 //		int[] t_data = new int[fsm_bitmap_width * fsm_bitmap_height];
 //		

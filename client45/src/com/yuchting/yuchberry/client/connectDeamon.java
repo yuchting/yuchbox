@@ -264,6 +264,7 @@ public class connectDeamon extends Thread implements SendListener,
 						if(t_att.m_messageHashCode == t_messageCode){
 							// found...
 							//
+							m_mainApp.m_downloadDlg.RefreshProgress(t_att);
 							return;
 						}
 					}				
@@ -275,7 +276,7 @@ public class connectDeamon extends Thread implements SendListener,
 					t_att.m_attachmentSize	= t_attachSize;
 					t_att.m_messageHashCode	= t_messageCode;
 					t_att.m_realName		= t_realName;
-					t_att.m_completePercent	= 0;			
+					t_att.m_completePercent	= 0;
 					
 					SendFetchAttachmentFile(t_att);
 					
@@ -485,11 +486,11 @@ public class connectDeamon extends Thread implements SendListener,
 		synchronized (this) {
 			try{
 				
-				m_sendAboutText = true;
-				
 				if(m_connect != null){
 					
 					if(_force || !m_recvAboutText){
+						
+						m_sendAboutText = true;
 						
 						ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 						t_os.write(msg_head.msgSponsorList);
@@ -536,6 +537,12 @@ public class connectDeamon extends Thread implements SendListener,
 
 				m_conn = GetConnection(m_mainApp.IsUseSSL());
 				m_connect = new sendReceive(m_conn.openOutputStream(),m_conn.openInputStream());
+				
+				m_connect.RegisterStoreUpDownloadByte(new sendReceive.IStoreUpDownloadByte() {
+					public void Store(long uploadByte, long downloadByte) {
+						m_mainApp.StoreUpDownloadByte(uploadByte,downloadByte);				
+					}
+				});
 							
 				// send the Auth info
 				//
@@ -548,7 +555,6 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				m_sendAuthMsg = true;
 				
-				SendAboutInfoQuery(false);
 				
 				// set the text connect
 				//

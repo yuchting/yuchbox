@@ -12,6 +12,10 @@ import net.rim.device.api.compress.GZIPOutputStream;
 
 public class sendReceive extends Thread{
 	
+	interface IStoreUpDownloadByte{
+		void Store(long _uploadByte,long _downloadByte);
+	}
+	
 	OutputStream		m_socketOutputStream = null;
 	InputStream			m_socketInputStream = null;
 	
@@ -24,6 +28,10 @@ public class sendReceive extends Thread{
 	
 	long				m_uploadByte			= 0;
 	long				m_downloadByte			= 0;
+	
+	int					m_keepliveInterval		= 60 * 5;
+	
+	IStoreUpDownloadByte	m_storeInterface	= null;
 		
 	public sendReceive(OutputStream _socketOut,InputStream _socketIn){
 		m_socketOutputStream = _socketOut;
@@ -32,6 +40,10 @@ public class sendReceive extends Thread{
 		start();
 	}
 		
+	public void RegisterStoreUpDownloadByte(IStoreUpDownloadByte _interface){
+		m_storeInterface = _interface;
+	}
+	
 	//! send buffer
 	public synchronized void SendBufferToSvr(byte[] _write,boolean _sendImm)throws Exception{	
 		m_unsendedPackage.addElement(_write);
@@ -46,9 +58,20 @@ public class sendReceive extends Thread{
 		}
 	}
 	
+	public void StoreUpDownloadByteImm(){
+		if(m_storeInterface != null){
+			m_storeInterface.Store(m_uploadByte,m_downloadByte);
+			m_uploadByte = 0;
+			m_downloadByte = 0;
+		}
+	}
+	
 	public void CloseSendReceive(){
 		
 		if(m_closed == false){
+			
+			StoreUpDownloadByteImm();
+			
 			m_closed = true;
 			
 			m_unsendedPackage.removeAllElements();
@@ -115,10 +138,14 @@ public class sendReceive extends Thread{
 			os.write(_write);
 			os.flush();
 			
+			m_uploadByte += _write.length + 4;
+			
 		}else{
 			WriteInt(os,(_write.length << 16) | t_zipData.length);
 			os.write(t_zipData);
 			os.flush();
+			
+			m_uploadByte += t_zipData.length + 4;
 		}
 				
 	}
@@ -130,11 +157,11 @@ public class sendReceive extends Thread{
 			
 			while(!m_closed){
 				SendBufferToSvr_imple(PrepareOutputData());
-				sleep(5000);				
+				sleep(1000);				
 				
 				
 				synchronized (this){
-					if(++m_keepliveCounter > 100){
+					if(++m_keepliveCounter > m_keepliveInterval){
 						m_keepliveCounter = 0;
 						t_keeplive = true;
 					}
@@ -186,11 +213,15 @@ public class sendReceive extends Thread{
 			
 			ForceReadByte(in, t_orgdata, t_orglen);
 			
+			m_downloadByte += t_orglen + 4;
+			
 		}else{
 			
 			byte[] t_zipdata = new byte[t_ziplen];
 			
 			ForceReadByte(in, t_zipdata, t_ziplen);
+			
+			m_downloadByte += t_ziplen + 4;
 			
 			GZIPInputStream zi	= new GZIPInputStream(
 										new ByteArrayInputStream(t_zipdata));

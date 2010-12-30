@@ -24,6 +24,8 @@ public class aboutScreen extends MainScreen{
 				
 		m_editText = new RichTextField(m_mainApp.m_aboutString);
 		add(m_editText);
+		
+		m_mainApp.m_connectDeamon.SendAboutInfoQuery(false);
 	}
 	
 	public boolean onClose(){

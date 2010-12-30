@@ -63,8 +63,16 @@ class berrySendAttachment extends Thread{
 		m_fetchMain.m_logger.LogOut("send msgMailAttach mailIndex:" + m_mailIndex + " attachIndex:" + m_attachIndex + " startIndex:" +
 									m_startIndex + " size:" + t_size + " first:" + (int)m_buffer[0]);
 		
-		while(m_fetchMain.GetClientConnected() == null){
-			sleep(200);
+		int t_waitTimer = 0;
+		while(m_fetchMain.GetClientConnected() == null || m_fetchMain.GetClientConnected().m_sendReceive == null){
+			
+			t_waitTimer++;
+			
+			sleep(10000);
+			
+			if(t_waitTimer > 5){
+				throw new Exception("Client closed when send attachment!");
+			}			
 		}
 		
 		m_fetchMain.GetClientConnected().m_sendReceive.SendBufferToSvr(m_os.toByteArray(), _send);
@@ -220,7 +228,13 @@ public class berrySvrDeamon extends Thread{
 			_s.setSoTimeout(60000);			
 			
 			sendReceive t_tmp = new sendReceive(_s.getOutputStream(),_s.getInputStream());
-			ByteArrayInputStream in = new ByteArrayInputStream(t_tmp.RecvBufferFromSvr());
+			ByteArrayInputStream in = null;
+			try{
+				in = new ByteArrayInputStream(t_tmp.RecvBufferFromSvr());
+			}catch(Exception e){
+				t_tmp.CloseSendReceive();
+			}
+			
 						
 			final int t_msg_head = in.read();
 		

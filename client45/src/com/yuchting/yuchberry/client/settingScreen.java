@@ -1,29 +1,33 @@
 package com.yuchting.yuchberry.client;
 
 import local.localResource;
-import net.rim.device.api.i18n.SimpleDateFormat;
-import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Field;
-import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.CheckboxField;
+import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
-import net.rim.device.api.ui.component.NumericChoiceField;
 import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
 
-public class settingScreen extends MainScreen {
+public class settingScreen extends MainScreen implements FieldChangeListener{
 	
 	 EditField			m_APN			= null;
 	 EditField			m_appendString	= null;
 	 CheckboxField		m_useSSLCheckbox= null;
 	 CheckboxField		m_useWifi		= null;
 	 CheckboxField		m_autoRun		= null;
+	 
+	 LabelField			m_uploadByte	= new LabelField();
+	 LabelField			m_downloadByte	= new LabelField();
+	 ButtonField		m_clearByteBut	= new ButtonField(recvMain.sm_local.getString(localResource.CLEAR_STATISTICS),Field.FIELD_RIGHT);
 	 	 
 	 recvMain			m_mainApp		= null;
 	 
 	 public settingScreen(recvMain _app){
 		 m_mainApp = _app;
+		 
 		 
 		 //@{ connection option
 		 add(new LabelField(recvMain.sm_local.getString(localResource.CONNECT_OPTION_LABEL)));
@@ -46,6 +50,21 @@ public class settingScreen extends MainScreen {
 		 add(m_autoRun);
 		 //@}
 		 
+		 add(new SeparatorField());
+		 
+		 //@{ upload and download bytes statistics
+		 add(new LabelField(recvMain.sm_local.getString(localResource.BYTE_STATISTICS)));
+		 add(m_uploadByte);
+		 add(m_downloadByte);
+		 add(m_clearByteBut);
+		 m_clearByteBut.setChangeListener(this);
+		 
+		 if(m_mainApp.m_connectDeamon.m_connect != null){
+			 m_mainApp.m_connectDeamon.m_connect.StoreUpDownloadByteImm();
+		 }
+		 
+		 RefreshUpDownloadByte();
+		 //@}
 		 
 		 add(new SeparatorField());
 		 
@@ -55,6 +74,20 @@ public class settingScreen extends MainScreen {
 		 //@}
 		 
 	 }
+	 public void fieldChanged(Field field, int context) {
+	    if(context != FieldChangeListener.PROGRAMMATIC){
+			// Perform action if user changed field. 
+			//
+			if(field == m_clearByteBut){
+				if(Dialog.ask(Dialog.D_YES_NO,recvMain.sm_local.getString(localResource.CLEAR_STATISTICS_PROMPT),Dialog.NO) == Dialog.YES){
+					m_mainApp.ClearUpDownloadByte();
+					RefreshUpDownloadByte();
+				}
+			}
+	    }else{
+	    	// Perform action if application changed field.
+	    }
+	}
 	 
 	 public boolean onClose(){
 		 
@@ -69,5 +102,24 @@ public class settingScreen extends MainScreen {
 		
 		close();
 		return true;
+	 }
+	 
+	 public void RefreshUpDownloadByte(){
+		 m_mainApp.invokeLater(new Runnable() {
+			public void run() {
+				m_uploadByte.setText(recvMain.sm_local.getString(localResource.UPLOAD_STATISTICS) + GetByteStr(m_mainApp.m_uploadByte));
+				m_downloadByte.setText(recvMain.sm_local.getString(localResource.DOWNLOAD_STATISTICS) + GetByteStr(m_mainApp.m_downloadByte));
+			}
+		});
+	 }
+	 
+	 private String GetByteStr(long _byte){
+		 if(_byte < 1024){
+			 return "" + _byte + "B";
+		 }else if(_byte >= 1024 && _byte < 1024 * 1024){
+			 return "" + (_byte / 1024) + "KB";
+		 }else{
+			 return "" + (_byte / 1024 / 1024) + "MB";
+		 }
 	 }
 }

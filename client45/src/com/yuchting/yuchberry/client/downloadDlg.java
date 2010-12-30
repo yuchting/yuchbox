@@ -5,56 +5,25 @@ import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.Dialog;
+import net.rim.device.api.ui.component.DialogClosedListener;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.container.DialogFieldManager;
 
-
-class progressLabel extends LabelField{
-	connectDeamon.FetchAttachment 	m_att	= null;
-	
-	Dialog		m_parentDlg					= null;			
-	int			m_fontHeight				= 0;
-	int			m_parentWidth				= 0;
-	
-	public progressLabel(Dialog _parent){
-		m_fontHeight = getFont().getHeight();
-		m_parentDlg = _parent;
-		
-		m_parentWidth = m_parentDlg.getPreferredWidth();
-	}
-	
-	public void layout(int _width,int _height){		
-		setExtent(m_parentWidth, m_fontHeight);
-	}
-	
-	public void paint(Graphics _g){
-		String t_str = null;
-		if(m_att == null){
-			t_str = "0%";
-		}else{
-			t_str = "" + m_att.m_completePercent + "%";
-		}
-		
-		_g.drawText(t_str,0,0,Graphics.ELLIPSIS);
-						
-	}
-	
-	public boolean isFocusable(){
-		return false;
-	}
-}
 public class downloadDlg extends Dialog{
 
-	progressLabel       m_stateText  	= new progressLabel(this);
+	LabelField       	m_stateText  	= new LabelField();
 	
 	recvMain			m_mainApp		= null;
+	UiApplication		m_parent		= null;
 			
-	public downloadDlg(recvMain _mainApp,String _filename){
+	public downloadDlg(recvMain _mainApp,UiApplication _parent,String _filename){
 		super("Download " + _filename,new Object[]{recvMain.sm_local.getString(localResource.DOWNLOAD_BACKGROUND)},new int[]{0},
 				Dialog.OK, Bitmap.getPredefinedBitmap(Bitmap.INFORMATION), Dialog.GLOBAL_STATUS);
 		
-		m_mainApp = _mainApp;
+		m_parent	= _parent;
+		m_mainApp	= _mainApp;
 		
 		Manager delegate = getDelegate();
 		if( delegate instanceof DialogFieldManager ){
@@ -68,11 +37,29 @@ public class downloadDlg extends Dialog{
             }
         }
 		
+		setDialogClosedListener(new DialogClosedListener(){
+			
+			public void dialogClosed(Dialog dialog, int choice) {
+				
+				switch (choice) {
+					case Dialog.OK:
+						onClose();
+						break;
+					
+					default:
+						break;
+				}
+			}
+		});
+		
 	}
 	
-	public void RefreshProgress(connectDeamon.FetchAttachment _att){
-		m_stateText.m_att = _att;
-		invalidate();
+	public void RefreshProgress(final connectDeamon.FetchAttachment _att){
+		m_parent.invokeAndWait(new Runnable(){
+			public void run() {
+				m_stateText.setText("" + _att.m_completePercent + "%");
+			}
+		});
 	}
 	
 	public boolean onClose(){
