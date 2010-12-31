@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -130,6 +129,8 @@ public class fetchMgr{
 	
 	public final static String	fsm_configFilename = "config.ini";
 	
+	public final static String	fsm_mailIndexAttachFilename = "totalMailIndexAtt.data";
+	
 	final static int	CHECK_NUM = 50;
 		
 	Logger	m_logger	= null;
@@ -190,16 +191,47 @@ public class fetchMgr{
         
     private Vector	m_recvMailAttach = new Vector();
     
-    
     String m_tmpImportContain = new String();
     
     //! is connected?
     berrySvrDeamon	m_currConnect = null;
+    
+    
+    class MailIndexAttachment{
+    	int			m_mailHashCode;
+    	
+    	boolean	m_send;
+    	long		m_mailIndexOrTime;
+    	
+    	Vector		m_attachmentName = null;
+    	
+    	public MailIndexAttachment(){
+    		m_attachmentName = new Vector();
+    	}
+    	
+    	public MailIndexAttachment(fetchMail _mail,boolean _send){
+    		
+    		m_mailHashCode		= _mail.GetSimpleHashCode();
+    		m_send 				= _send;
+    		
+    		if(_send){
+    			m_mailIndexOrTime	= _mail.GetSendDate().getTime();
+    		}else{
+    			m_mailIndexOrTime	= _mail.GetMailIndex();
+    		}    		
+    		
+    		m_attachmentName	= _mail.GetAttachment();
+    	}
+    }
+    
+    Vector	m_mailIndexAttachName = new Vector();
         
 	public void InitConnect(String _prefix,String _configFile,Logger _logger){
 		
 		m_prefix	= _prefix;
 		m_logger	= _logger;
+		
+		ReadWriteMailIndexAttach(true);
 		
 		try{
 			FileInputStream fs = new FileInputStream(_configFile);
@@ -313,26 +345,60 @@ public class fetchMgr{
 	private void ReadSignature(){
 		
 		try{
-			m_signature = ReadSimpleIniFile(m_prefix + fsm_signatureFilename);
+			m_signature = ReadSimpleIniFile(m_prefix + fsm_signatureFilename,"UTF-8",null);
 		}catch(Exception e){
 			m_logger.PrinterException(e);
 		}
 	}
 	
-	static public String ReadSimpleIniFile(String _file)throws Exception{
+	static public String ReadSimpleIniFile(String _file,String _decodeName,Vector _lines)throws Exception{
 		
 		File t_file = new File(_file);
 		
 		String t_ret = new String();
 		
+		if(_lines != null){
+			_lines.removeAllElements();
+		}
+		
 		if(t_file.exists()){
-			BufferedReader in = new BufferedReader( new FileReader(t_file));
+			BufferedReader in = new BufferedReader(
+									new InputStreamReader(
+											new FileInputStream(_file),_decodeName));
 			
 			StringBuffer t_stringBuffer = new StringBuffer();
 			String t_line = null;
+			
+			boolean t_firstLine = true;
 			while((t_line = in.readLine()) != null){
+				
+				if(t_firstLine && _decodeName.equals("UTF-8")){
+									
+					byte[] t_bytes = t_line.getBytes(_decodeName);
+					if(t_bytes.length >= 3 
+						&& (int)t_bytes[0] == 0xEF && (int)t_bytes[1] == 0xBB && (int)t_bytes[2] == 0xBF){						
+						
+						if(t_bytes.length == 3){
+							
+						}else{
+							byte[] t_newBytes = new byte[t_bytes.length - 3];
+							System.arraycopy(t_bytes,3,t_newBytes,0,t_bytes.length - 3);
+							
+							t_bytes = t_newBytes;
+						}
+																		
+						t_line = new String(t_bytes,"UTF-8");
+					}
+				}
+				
+				t_firstLine = false;
+								
 				if(!t_line.startsWith("#")){
 					t_stringBuffer.append(t_line + "\n");
+					
+					if(_lines != null){
+						_lines.addElement(t_line);
+					}
 				}
 			}
 			
@@ -495,7 +561,7 @@ public class fetchMgr{
 			
 			BufferedReader in = new BufferedReader(
 									new InputStreamReader(
-										new FileInputStream(t_iniFile)));
+										new FileInputStream(t_iniFile),"UTF-8"));
 				
 			StringBuffer t_contain = new StringBuffer();
 			
@@ -511,7 +577,7 @@ public class fetchMgr{
 			in.close();
 			
 			FileOutputStream os = new FileOutputStream(t_iniFile);
-			os.write(t_contain.toString().getBytes("GB2312"));
+			os.write(t_contain.toString().getBytes("UTF-8"));
 			os.flush();
 			os.close();
 			
@@ -523,6 +589,7 @@ public class fetchMgr{
 	public void PrepareRepushUnconfirmMail(){
 		
 		synchronized(this){
+			
 			for(int i = m_unreadMailVector_confirm.size() - 1;i >= 0 ;i--){
 				
 				fetchMail t_confirmMail = (fetchMail)m_unreadMailVector_confirm.elementAt(i);
@@ -540,8 +607,15 @@ public class fetchMgr{
 				}
 				
 				if(t_add){
-					m_unreadMailVector.add(0,t_confirmMail);
-					m_logger.LogOut("load mail<" + t_confirmMail.GetMailIndex() + "> send again,wait confirm...");
+					
+					final int t_maxConfirmNum = 3;
+					
+					if(t_confirmMail.m_sendConfirmNum < t_maxConfirmNum){
+						m_unreadMailVector.add(0,t_confirmMail);
+						m_logger.LogOut("load mail<" + t_confirmMail.GetMailIndex() + "> send again,wait confirm...");	
+					}else{
+						m_logger.LogOut("load mail<" + t_confirmMail.GetMailIndex() + "> send " + t_maxConfirmNum + "times, give up.");
+					}
 				}
 				
 			}
@@ -553,12 +627,10 @@ public class fetchMgr{
 	
 	public synchronized void PushMail(sendReceive _sendReceive)throws Exception{
 		
-		final Vector t_unreadMailVector = m_unreadMailVector;
-		final Vector t_unreadMailVector_confirm = m_unreadMailVector_confirm;
 		
-		while(!t_unreadMailVector.isEmpty()){
+		while(!m_unreadMailVector.isEmpty()){
 			
-			fetchMail t_mail = (fetchMail)t_unreadMailVector.elementAt(0); 
+			fetchMail t_mail = (fetchMail)m_unreadMailVector.elementAt(0); 
 			
 			ByteArrayOutputStream t_output = new ByteArrayOutputStream();
 			
@@ -569,10 +641,12 @@ public class fetchMgr{
 			
 			SetBeginFetchIndex(t_mail.GetMailIndex());
 			
-			synchronized(this){	
-				t_unreadMailVector.remove(0);
-				t_unreadMailVector_confirm.addElement(t_mail);
+			synchronized(this){
+				m_unreadMailVector.remove(0);
+				m_unreadMailVector_confirm.addElement(t_mail);
 			}
+			
+			t_mail.m_sendConfirmNum++;
 			
 			m_logger.LogOut("send mail<" + t_mail.GetMailIndex() + " : " + t_mail.GetSubject() + ">,wait confirm...");
 		}
@@ -589,7 +663,7 @@ public class fetchMgr{
 		Vector t_list = _mail.m_sendMail.GetAttachment();
 		
 		for(int i = 0;i < t_list.size();i++){
-			fetchMail.Attachment t_attachment = (fetchMail.Attachment)t_list.elementAt(i);
+			MailAttachment t_attachment = (MailAttachment)t_list.elementAt(i);
 			
 			String t_filename = m_prefix + _mail.m_sendMail.GetSendDate().getTime() + "_" + i + ".satt";
 			FileOutputStream fos = new FileOutputStream(t_filename);
@@ -632,7 +706,7 @@ public class fetchMgr{
 		
 		try{
 			
-			ComposeMessage(msg,t_mail);
+			ComposeMessage(msg,t_mail,null);
 			
 			int t_tryTime = 0;
 			while(t_tryTime++ < 5){
@@ -710,7 +784,13 @@ public class fetchMgr{
 		    		
 		    		fetchMail t_mail = new fetchMail(m_convertToSimpleChar);
 		    		t_mail.SetMailIndex(i + t_startIndex);
-		    		ImportMail(t_msg,t_mail);
+		    		try{
+		    			ImportMail(t_msg,t_mail);
+		    		}catch(Exception e){
+		    			t_mail.SetContain(t_mail.GetContain() + "\n\n\n" + e.getMessage() + "\nThe yuchberry ImportMail Error! Please read the Mail via another way!\n\n\n");
+		    		}
+		    		
+		    		AddMailIndexAttach(t_mail,false);		    		
 		    		
 		    		m_unreadMailVector.addElement(t_mail);
 		    	}
@@ -725,7 +805,10 @@ public class fetchMgr{
 		Message msg = new MimeMessage(m_session_send);
 		
 		_mail.PrepareForwardReplyContain(m_signature);		
-		ComposeMessage(msg,_mail.m_sendMail);
+		ComposeMessage(msg,_mail.m_sendMail,
+					(_mail.m_style == fetchMail.FORWORD_STYLE)?_mail.m_forwardReplyMail:null);
+		
+		AddMailIndexAttach(_mail.m_sendMail,true);
 	    
 		int t_tryTime = 0;
 		while(t_tryTime++ < 5){
@@ -745,8 +828,107 @@ public class fetchMgr{
 			t_file.delete();
 		}		
 	}
+
+	private MailIndexAttachment FindMailIndexAttach(int _hashCode){
+		for(int i = 0;i < m_mailIndexAttachName.size();i++){
+			MailIndexAttachment t_att = (MailIndexAttachment)m_mailIndexAttachName.elementAt(i);
+			if(t_att.m_mailHashCode == _hashCode){
+				return t_att;
+			}
+		}
+		
+		return null;
+	}
+	
+	private void AddMailIndexAttach(fetchMail _mail,boolean _send){
+		
+		if(_mail.GetAttachment().isEmpty()){
+			return ;
+		}
+		
+		final int t_hashCode = _mail.GetSimpleHashCode();
+		
+		if(FindMailIndexAttach(t_hashCode) == null){
+			m_mailIndexAttachName.addElement(new MailIndexAttachment(_mail, _send));
+			
+			ReadWriteMailIndexAttach(false);
+		}
+	}
+	
+	private void ReadWriteMailIndexAttach(boolean _read){
+		
+		final int ft_currentVersion	= 1;
+		
+		try{
+			if(_read){
+				m_mailIndexAttachName.removeAllElements();
+				
+				final String t_filename = m_prefix + fsm_mailIndexAttachFilename;
+				if(!(new File(t_filename)).exists()){
+					return;
+				}
+				
+				FileInputStream t_fileRead = new FileInputStream(t_filename);				
+				
+				final int t_version = t_fileRead.read();
+				
+				final int t_mainNum = sendReceive.ReadInt(t_fileRead);
+				for(int i = 0;i < t_mainNum;i++){
+					MailIndexAttachment t_mailAtt 		= new MailIndexAttachment();
+					t_mailAtt.m_mailHashCode 			= sendReceive.ReadInt(t_fileRead);
+					t_mailAtt.m_send 					= (t_fileRead.read() == 0)?false:true;
+					t_mailAtt.m_mailIndexOrTime			= sendReceive.ReadLong(t_fileRead);
+					
+					final int t_attNum = sendReceive.ReadInt(t_fileRead);
+					for(int j = 0;j < t_attNum;j++){
+						MailAttachment t_att 	= new MailAttachment();
+						
+						t_att.m_size			= sendReceive.ReadInt(t_fileRead);
+						t_att.m_name			= sendReceive.ReadString(t_fileRead);
+						t_att.m_type			= sendReceive.ReadString(t_fileRead);
+						
+						t_mailAtt.m_attachmentName.addElement(t_att);
+					}
+					
+					m_mailIndexAttachName.addElement(t_mailAtt);
+				}
+				
+				t_fileRead.close();
+				
+			}else{
+				FileOutputStream t_fileWrite = new FileOutputStream(m_prefix + fsm_mailIndexAttachFilename);
+				
+				t_fileWrite.write(ft_currentVersion);
+				
+				sendReceive.WriteInt(t_fileWrite,m_mailIndexAttachName.size());
+				for(int i = 0 ; i< m_mailIndexAttachName.size();i++){
+					MailIndexAttachment t_att = (MailIndexAttachment)m_mailIndexAttachName.elementAt(i);
+										
+					sendReceive.WriteInt(t_fileWrite,t_att.m_mailHashCode);
+					t_fileWrite.write(t_att.m_send?1:0);
+					sendReceive.WriteLong(t_fileWrite,t_att.m_mailIndexOrTime);
+					
+					sendReceive.WriteInt(t_fileWrite,t_att.m_attachmentName.size());
+					for(int j = 0 ;j < t_att.m_attachmentName.size();i++){
+						MailAttachment t_attachment = (MailAttachment)t_att.m_attachmentName.elementAt(j);
+						sendReceive.WriteInt(t_fileWrite,t_attachment.m_size);
+						sendReceive.WriteString(t_fileWrite,t_attachment.m_name,m_convertToSimpleChar);
+						sendReceive.WriteString(t_fileWrite,t_attachment.m_type,m_convertToSimpleChar);
+					}
+					
+				}
+				
+				t_fileWrite.flush();
+				t_fileWrite.close();
+			}
+		}catch(Exception e){
+			m_logger.PrinterException(e);
+		}
+		
+	}
 	
 	
+		
 	public void MarkReadMail(int _index)throws Exception{
 		
 		Folder folder = m_store.getDefaultFolder();
@@ -924,7 +1106,7 @@ public class fetchMgr{
 	public void ImportPart(Part p,fetchMail _mail)throws Exception{
 		
 		String filename = p.getFileName();
-		
+				
 		/*
 		 * Using isMimeType to determine the content type avoids
 		 * fetching the actual content data until we need it.
@@ -1048,7 +1230,7 @@ public class fetchMgr{
 	
 	static public String ChangeHTMLCharset(String _html){
 		
-		final String ft_meta = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=gb2312\" />";
+		final String ft_meta = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
 		final int t_charsetIdx = _html.indexOf("charset");
 		
 		if(t_charsetIdx == -1){
@@ -1063,7 +1245,7 @@ public class fetchMgr{
 				_html = ft_meta + _html;
 			}
 		}else{
-			_html = _html.replaceAll("charset.[^\"]*", "charset=gb2312");
+			_html = _html.replaceAll("charset.[^\"]*", "charset=utf-8");
 		}
 		
 		return _html;
@@ -1076,7 +1258,7 @@ public class fetchMgr{
 		boolean t_shorted = false;
 		try{
 			Parser parser = new Parser(_html,null);
-			parser.setEncoding("GB2312");
+			parser.setEncoding("UTF-8");
 			
 	        NodeList list = parser.parse(new  NodeFilter() {
 	        								public boolean accept(Node node) {
@@ -1202,7 +1384,7 @@ public class fetchMgr{
 		return _name;
 	}
 	
-	public void ComposeMessage(Message msg,fetchMail _mail)throws Exception{
+	public void ComposeMessage(Message msg,fetchMail _mail,fetchMail _forwardMail)throws Exception{
 		
 		msg.setFrom(new InternetAddress(m_strUserNameFull));
 				
@@ -1220,8 +1402,13 @@ public class fetchMgr{
 		
 
 	    msg.setSubject(_mail.GetSubject());
+	    
+	    MailIndexAttachment t_forwardMailAttach = null;
+	    if(_forwardMail != null){
+	    	t_forwardMailAttach = FindMailIndexAttach(_forwardMail.GetSimpleHashCode());
+	    }
 
-	    if(!_mail.GetAttachment().isEmpty()) {
+	    if(!_mail.GetAttachment().isEmpty() || t_forwardMailAttach != null) {
 			// Attach the specified file.
 			// We need a multipart message to hold the attachment.
 		    	
@@ -1237,7 +1424,7 @@ public class fetchMgr{
 
 				for(int i = 0;i< t_contain.size();i++){
 
-					fetchMail.Attachment t_attachment = (fetchMail.Attachment)t_contain.elementAt(i);
+					MailAttachment t_attachment = (MailAttachment)t_contain.elementAt(i);
 					
 					MimeBodyPart t_filePart = new MimeBodyPart();
 					t_filePart.setFileName(MimeUtility.encodeText(t_attachment.m_name));
@@ -1246,7 +1433,32 @@ public class fetchMgr{
 					t_filePart.setContent(ReadFileBuffer( t_fullname ), t_attachment.m_type);
 					
 					t_mainPart.addBodyPart(t_filePart);
-				}	
+				}
+				
+				t_contain = t_forwardMailAttach.m_attachmentName;
+				
+				for(int i = 0;i < t_contain.size();i++){
+					MailAttachment t_attachment = (MailAttachment)t_contain.elementAt(i);
+										
+					String t_fullname = m_prefix + "" + t_forwardMailAttach.m_mailIndexOrTime + "_" + i;
+					
+					if(t_forwardMailAttach.m_send){
+						t_fullname = t_fullname + ".satt";
+					}else{
+						t_fullname = t_fullname + ".att";
+					}
+					
+					File t_file = new File(t_fullname);
+					
+					if(t_file.exists()){
+						MimeBodyPart t_filePart = new MimeBodyPart();
+						t_filePart.setFileName(MimeUtility.encodeText(t_attachment.m_name));
+						t_filePart.setContent(ReadFileBuffer(t_fullname), t_attachment.m_type);
+						
+						t_mainPart.addBodyPart(t_filePart);
+					}
+				}
+				
 			}catch(Exception _e){
 				m_logger.LogOut(_e.getMessage());
 			}
@@ -1269,6 +1481,7 @@ public class fetchMgr{
 		
 		FileInputStream in = new FileInputStream(_file);
 		in.read(t_buffer, 0, t_buffer.length);
+		in.close();
 		
 		return t_buffer;
 	}

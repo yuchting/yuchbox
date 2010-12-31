@@ -204,7 +204,7 @@ public class mainFrame extends JFrame implements ActionListener{
 					if(t_file.exists()){
 						BufferedReader in = new BufferedReader(
 												new InputStreamReader(
-													new FileInputStream(t_file)));
+													new FileInputStream(t_file),"UTF-8"));
 
 						String line = null;
 						Vector t_lineContain = new Vector();
@@ -428,7 +428,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		try{
 			BufferedReader in = new BufferedReader(
 									new InputStreamReader(
-										new FileInputStream(_thread.m_logger.GetLogFileName())));
+										new FileInputStream(_thread.m_logger.GetLogFileName()),"UTF-8"));
 
 			
 			
@@ -584,7 +584,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			FileOutputStream t_file = new FileOutputStream(fsm_accountDataFilename);
 			for(int i = 0;i < m_accountList.size();i++){
 				fetchThread t_thread = (fetchThread)m_accountList.elementAt(i);
-				t_file.write((t_thread.m_fetchMgr.GetAccountName() + "," + (t_thread.m_expiredTime / (1000 * 3600)) + "," + t_thread.m_formerTimer + "\r\n").getBytes("GB2312"));
+				t_file.write((t_thread.m_fetchMgr.GetAccountName() + "," + (t_thread.m_expiredTime / (1000 * 3600)) + "," + t_thread.m_formerTimer + "\r\n").getBytes("UTF-8"));
 			}
 			t_file.flush();
 			t_file.close();
@@ -638,7 +638,7 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	public void SendTimeupMail(fetchThread _thread){
 		try{
-			final String t_contain = fetchMgr.ReadSimpleIniFile("timeupMail.txt");
+			final String t_contain = fetchMgr.ReadSimpleIniFile("timeupMail.txt","UTF-8",null);
 			
 			_thread.m_fetchMgr.SendImmMail("yuchberry ÌבÊ¾", t_contain, "\"YuchBerry\" <yuchberry@gmail.com>");
 			

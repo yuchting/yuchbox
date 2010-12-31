@@ -417,7 +417,7 @@ public class HelloWorld {
 			}
 			
 			FileOutputStream t_out = new FileOutputStream("Out.txt");
-			t_out.write(t_str.toString().getBytes("GB2312"));
+			t_out.write(t_str.toString().getBytes("UTF-8"));
 			t_out.flush();
 			t_out.close();
 			
@@ -551,7 +551,7 @@ public class HelloWorld {
 			}
 				
 			Parser parser = new Parser(t_contain.toString(),null);
-			parser.setEncoding("GB2312");
+			parser.setEncoding("UTF-8");
 			
 	        NodeList list = parser.parse(new  NodeFilter() {
 	        								public   boolean  accept(Node node) {

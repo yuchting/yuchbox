@@ -17,7 +17,6 @@ import net.rim.device.api.notification.NotificationsConstants;
 import net.rim.device.api.notification.NotificationsManager;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.LED;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
@@ -27,7 +26,7 @@ import net.rim.device.api.ui.component.DialogClosedListener;
 
 public class recvMain extends UiApplication implements localResource {
 	
-	final static int		fsm_clientVersion = 6;
+	final static int		fsm_clientVersion = 7;
 	
 	final static long		fsm_notifyID_email = 767918509114947L;
 	
@@ -46,6 +45,8 @@ public class recvMain extends UiApplication implements localResource {
 	downloadDlg			m_downloadDlg		= null;
 	UiApplication		m_downloadDlgParent = null;
 	
+	UiApplication		m_messageApplication = null;
+	
 	connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
 	String				m_stateString		= recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL);
@@ -61,8 +62,7 @@ public class recvMain extends UiApplication implements localResource {
 		}
 	}
 	
-	Vector				m_errorString		= new Vector();
-	
+	Vector				m_errorString		= new Vector();	
 	Vector				m_uploadingDesc 	= new Vector();
 	
 	String				m_hostname 			= new String();
@@ -365,7 +365,8 @@ public class recvMain extends UiApplication implements localResource {
 		    		if(t_currVer >= 6){
 		    			m_uploadByte = sendReceive.ReadLong(t_readFile);
 		    			m_downloadByte = sendReceive.ReadLong(t_readFile);
-		    		}
+		    		}		    		
+		    		
 		    		
 		    		t_readFile.close();
 		    		
@@ -400,7 +401,7 @@ public class recvMain extends UiApplication implements localResource {
 				
 				sendReceive.WriteLong(t_writeFile,m_uploadByte);
 				sendReceive.WriteLong(t_writeFile, m_downloadByte);
-				
+								
 				t_writeFile.close();
 				
 			}
@@ -411,7 +412,7 @@ public class recvMain extends UiApplication implements localResource {
 			SetErrorString("write/read config file from SDCard error :" + _e.getMessage() + _e.getClass().getName());
 		}
 	}
-	
+		
 	public void StoreUpDownloadByte(long _uploadByte,long _downloadByte){
 		m_uploadByte += _uploadByte;
 		m_downloadByte += _downloadByte;
@@ -550,13 +551,23 @@ public class recvMain extends UiApplication implements localResource {
 	
 	public void UpdateMessageStatus(final Message m,final int _status){
 		
-		invokeLater(new Runnable() {
-			public void run(){
-				m.setStatus(_status,0);
-				m.updateUi();
-				UiApplication.getUiApplication().relayout();
-			}
-		});
+		if(m_messageApplication != null){
+			m_messageApplication.invokeAndWait(new Runnable() {
+				public void run(){
+					m.setStatus(_status,0);
+					m.updateUi();
+					m_messageApplication.relayout();
+				}
+			});
+		}else{
+			invokeLater(new Runnable() {
+				
+				public void run() {
+					m.setStatus(_status,0);
+					m.updateUi();
+				}
+			});							
+		}		
 		
 	}
 	

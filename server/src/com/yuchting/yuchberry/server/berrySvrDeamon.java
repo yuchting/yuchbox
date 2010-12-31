@@ -212,62 +212,7 @@ public class berrySvrDeamon extends Thread{
 	public berrySvrDeamon(fetchMgr _mgr,Socket _s)throws Exception{
 		m_fetchMgr 	= _mgr;
 					
-		try{
-			
-			m_fetchMgr.m_logger.LogOut("some client<"+ _s.getInetAddress().getHostAddress() +"> connecting ,waiting for auth");
-			
-			// first handshake with the client via CA instead of 
-			// InputStream.read function to get the information within 1sec time out
-			//
-			if(_s instanceof SSLSocket){
-				//((SSLSocket)_s).startHandshake();
-			}
-			
-			// wait for signIn first
-			//
-			_s.setSoTimeout(60000);			
-			
-			sendReceive t_tmp = new sendReceive(_s.getOutputStream(),_s.getInputStream());
-			ByteArrayInputStream in = null;
-			try{
-				in = new ByteArrayInputStream(t_tmp.RecvBufferFromSvr());
-			}catch(Exception e){
-				t_tmp.CloseSendReceive();
-			}
-			
-						
-			final int t_msg_head = in.read();
-		
-			if(msg_head.msgConfirm != t_msg_head 
-			|| !sendReceive.ReadString(in).equals(m_fetchMgr.m_userPassword)
-			|| (m_clientVer = sendReceive.ReadInt(in)) == 0){
-				
-				/* useless
-				 * 
-				ByteArrayOutputStream os = new ByteArrayOutputStream();
-				os.write(msg_head.msgNote);
-				sendReceive.WriteString(os, msg_head.noteErrorUserPassword,m_fetchMgr.m_convertToSimpleChar);
-				
-				_s.getOutputStream().write(os.toByteArray());
-				*/
-				
-				m_fetchMgr.m_logger.LogOut("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> connected.");
-				
-				_s.close();
-				
-				t_tmp.CloseSendReceive();
-								
-				return;
-			}
-						
-			t_tmp.CloseSendReceive();
-			
-		}catch(Exception _e){
-			// time out or other problem
-			//
-			_s.close();
-			m_fetchMgr.m_logger.PrinterException(_e);
-			
+		if(!ValidateClient(_s)){
 			return;
 		}
 		
@@ -309,6 +254,64 @@ public class berrySvrDeamon extends Thread{
 		start();
 		
 		m_fetchMgr.m_logger.LogOut("some client connect IP<" + m_socket.getInetAddress().getHostAddress() + ">");
+	}
+	
+	public boolean ValidateClient(Socket _s){
+		
+		sendReceive t_tmp = null;
+		try{
+			
+			t_tmp = new sendReceive(_s.getOutputStream(),_s.getInputStream());
+			
+			m_fetchMgr.m_logger.LogOut("some client<"+ _s.getInetAddress().getHostAddress() +"> connecting ,waiting for auth");
+			
+			// first handshake with the client via CA instead of 
+			// InputStream.read function to get the information within 1sec time out
+			//
+			if(_s instanceof SSLSocket){
+				//((SSLSocket)_s).startHandshake();
+			}
+			
+			// wait for signIn first
+			//
+			_s.setSoTimeout(60000);			
+			
+			ByteArrayInputStream in = new ByteArrayInputStream(t_tmp.RecvBufferFromSvr());
+									
+			final int t_msg_head = in.read();
+		
+			if(msg_head.msgConfirm != t_msg_head 
+			|| !sendReceive.ReadString(in).equals(m_fetchMgr.m_userPassword)
+			|| (m_clientVer = sendReceive.ReadInt(in)) == 0){
+				
+				/* useless
+				 * 
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+				os.write(msg_head.msgNote);
+				sendReceive.WriteString(os, msg_head.noteErrorUserPassword,m_fetchMgr.m_convertToSimpleChar);
+				
+				_s.getOutputStream().write(os.toByteArray());
+				*/
+				
+				throw new Exception("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> connected.");				
+			}
+						
+			t_tmp.CloseSendReceive();
+			
+		}catch(Exception _e){
+			// time out or other problem
+			//
+			try{
+				_s.close();
+			}catch(Exception e){}			
+			
+			m_fetchMgr.m_logger.PrinterException(_e);
+			t_tmp.CloseSendReceive();
+			
+			return false;
+		}
+		
+		return true;
 	}
 		
 	public void run(){

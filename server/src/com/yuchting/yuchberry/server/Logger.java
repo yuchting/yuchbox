@@ -55,7 +55,7 @@ public class Logger{
 		
 		try{
 			if(m_logFileStream != null){
-				m_logFileStream.write(t_out.getBytes());
+				m_logFileStream.write(t_out.getBytes("UTF-8"));
 				m_logFileStream.flush();
 			}			
 		}catch(Exception _e){

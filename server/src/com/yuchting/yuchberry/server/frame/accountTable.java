@@ -4,10 +4,8 @@ import java.awt.Dimension;
 import java.util.Vector;
 
 import javax.swing.JTable;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
 
 import com.yuchting.yuchberry.server.fetchMgr;
 

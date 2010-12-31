@@ -1,9 +1,5 @@
 package com.yuchting.yuchberry.client;
 
-import javax.microedition.media.control.VolumeControl;
-
-import net.rim.device.api.system.Alert;
-import net.rim.device.api.system.Backlight;
 
 public class reminder extends Thread{
 

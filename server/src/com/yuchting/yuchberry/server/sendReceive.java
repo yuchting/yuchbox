@@ -210,7 +210,7 @@ class sendReceive extends Thread{
 	
 	static public void WriteString(OutputStream _stream,String _string,boolean _converToSimpleChar)throws Exception{
 		
-		final byte[] t_strByte = _converToSimpleChar?complTosimple(_string).getBytes("GB2312"):_string.getBytes("GB2312");
+		final byte[] t_strByte = _converToSimpleChar?complTosimple(_string).getBytes("UTF-8"):_string.getBytes("UTF-8");
 		
 		WriteInt(_stream,t_strByte.length);
 		if(t_strByte.length != 0){
@@ -239,7 +239,7 @@ class sendReceive extends Thread{
 			
 			ForceReadByte(_stream,t_buffer,len);
 
-			return new String(t_buffer,"GB2312");
+			return new String(t_buffer,"UTF-8");
 		}
 		
 		return new String("");

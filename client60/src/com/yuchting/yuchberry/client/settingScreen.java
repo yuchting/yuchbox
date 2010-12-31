@@ -1,10 +1,6 @@
 package com.yuchting.yuchberry.client;
 
 import local.localResource;
-import net.rim.device.api.i18n.SimpleDateFormat;
-import net.rim.device.api.system.Display;
-import net.rim.device.api.ui.Field;
-import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.component.CheckboxField;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;

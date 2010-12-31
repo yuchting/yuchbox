@@ -34,6 +34,7 @@ import net.rim.blackberry.api.mail.event.ViewListener;
 import net.rim.blackberry.api.mail.event.ViewListenerExtended;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.ui.UiApplication;
 
 
 class msg_head{
@@ -178,7 +179,9 @@ public class connectDeamon extends Thread implements SendListener,
     	
 		final Message t_msg = message;
 		
-		m_mainApp.invokeLater(new Runnable(){
+		m_mainApp.m_messageApplication = UiApplication.getUiApplication();
+		
+		m_mainApp.invokeAndWait(new Runnable(){
 			
 			 public void run(){
 				 
@@ -188,15 +191,13 @@ public class connectDeamon extends Thread implements SendListener,
 					
 					fetchMail t_mail = new fetchMail();
 					ImportMail(t_msg,t_mail);
-					
+										
 					fetchMail t_forwardReplyMail = null;
 					if(m_sendStyle != fetchMail.NOTHING_STYLE && m_forwordReplyMail != null){
 						t_forwardReplyMail = new fetchMail();
 						ImportMail(m_forwordReplyMail,t_forwardReplyMail);
 					}
-					
-					t_mail.SetSendDate(new Date());
-											
+																
 					AddSendingMail(t_mail,m_composingAttachment,t_forwardReplyMail,m_sendStyle);
 					m_composingAttachment.removeAllElements();
 								
@@ -792,7 +793,7 @@ public class connectDeamon extends Thread implements SendListener,
 			m.setInbound(true);
 			m.setStatus(Message.Status.RX_RECEIVED,1);
 			folder.appendMessage(m);
-								
+											
 			// add the message listener to send message to server
 			// to remark the message is read
 			//
@@ -808,7 +809,7 @@ public class connectDeamon extends Thread implements SendListener,
 			//
 			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 			t_os.write(msg_head.msgMailConfirm);
-			sendReceive.WriteInt(t_os, t_mail.GetMailIndex());
+			sendReceive.WriteInt(t_os,t_mail.GetMailIndex());
 			
 			m_connect.SendBufferToSvr(t_os.toByteArray(), false);
 						
@@ -1046,7 +1047,7 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		String t_sub = m.getSubject();
 		if(t_sub == null){
-			_mail.SetSubject("No Subject");
+			_mail.SetSubject(fetchMail.fsm_noSubjectTile);
 		}else{
 			_mail.SetSubject(t_sub);	
 		}
@@ -1250,12 +1251,12 @@ public class connectDeamon extends Thread implements SendListener,
 	    	if(_mail.GetContain_html().length() != 0){
 	    		SupportedAttachmentPart sap;
 		    	try{
-		    		// if the GB2312 decode sytem is NOT present in current system
+		    		// if the UTF-8 decode sytem is NOT present in current system
 					// will throw the exception
 					//
 		    		
 		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
-							"Html_Part_Direct_Open_It.html",_mail.GetContain_html().getBytes("GB2312"));
+							"Html_Part_Direct_Open_It.html",_mail.GetContain_html().getBytes("UTF-8"));
 		    	}catch(Exception e){
 		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
 							"Html_Part_Direct_Open_It.html",_mail.GetContain_html().getBytes());
@@ -1272,14 +1273,14 @@ public class connectDeamon extends Thread implements SendListener,
 				
 		    	for(int i = 0;i< t_contain.size();i++){
 		    		
-		    		fetchMail.Attachment t_attachment = (fetchMail.Attachment)t_contain.elementAt(i);
+		    		MailAttachment t_attachment = (MailAttachment)t_contain.elementAt(i);
 		    		t_tmpContent.reset();
 		    				    		
 		    		t_tmpContent.write('y');
 		    		t_tmpContent.write('u');
 		    		t_tmpContent.write('c');
 		    		t_tmpContent.write('h');
-		    		sendReceive.WriteInt(t_tmpContent, _mail.GetMailIndex());
+		    		sendReceive.WriteInt(t_tmpContent,_mail.GetMailIndex());
 		    		sendReceive.WriteInt(t_tmpContent,i);
 		    		sendReceive.WriteInt(t_tmpContent, t_attachment.m_size);
 		    		sendReceive.WriteString(t_tmpContent, t_attachment.m_name);		    		

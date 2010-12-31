@@ -12,15 +12,15 @@ import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.Menu;
+import net.rim.device.api.ui.component.PasswordEditField;
 import net.rim.device.api.ui.container.MainScreen;
-
 
 public class stateScreen extends MainScreen implements FieldChangeListener{
 										
         
     EditField           m_hostName      = null;
     EditField			m_hostport		= null;
-    EditField           m_userPassword  = null;
+    PasswordEditField   m_userPassword  = null;
        
     ButtonField         m_connectBut    = null;
     LabelField          m_stateText     = null;
@@ -73,8 +73,8 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
         m_hostport.setChangeListener(this);
         add(m_hostport);
         
-        m_userPassword = new EditField(recvMain.sm_local.getString(localResource.USER_PASSWORD),
-        				m_mainApp.m_userPassword,128,EditField.FILTER_DEFAULT);
+        m_userPassword = new PasswordEditField(recvMain.sm_local.getString(localResource.USER_PASSWORD),
+        								m_mainApp.m_userPassword,128,EditField.NO_COMPLEX_INPUT);
         
         add(m_userPassword);
         

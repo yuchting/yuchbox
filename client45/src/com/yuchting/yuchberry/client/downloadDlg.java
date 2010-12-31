@@ -2,8 +2,6 @@ package com.yuchting.yuchberry.client;
 
 import local.localResource;
 import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.Display;
-import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.Dialog;

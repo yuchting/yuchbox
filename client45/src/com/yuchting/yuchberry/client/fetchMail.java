@@ -11,10 +11,17 @@ import javax.microedition.io.file.FileConnection;
 import net.rim.blackberry.api.mail.Address;
 import net.rim.blackberry.api.mail.Message;
 
+class MailAttachment{
+	int 		m_size;
+	String 		m_name;
+	String		m_type;
+}
 
 public class  fetchMail{
 	
 	final static int	VERSION = 1;
+	
+	public final static String	fsm_noSubjectTile = "No Subject";
 	    	
 	final static int	ANSWERED 	= 1 << 0;
 	final static int	DELETED 	= 1 << 1;
@@ -43,13 +50,7 @@ public class  fetchMail{
 	
 	private String			m_contain		= new String();
 	private String			m_contain_html	= new String();
-		
-	class Attachment{
-		int 		m_size;
-		String 		m_name;
-		String		m_type;
-	}
-	
+			
 	private Vector	m_vectAttachment	 	= new Vector();
 	
 	private Message m_attachMessage		= null; 
@@ -64,6 +65,10 @@ public class  fetchMail{
 	
 	public int GetMailIndex(){
 		return m_mailIndex;
+	}
+	
+	public int GetSimpleHashCode(){
+		return (GetSubject() + GetSendDate().getTime()).hashCode();
 	}
 	
 	public void SetAttchMessage(Message m){ m_attachMessage = m;}
@@ -132,7 +137,7 @@ public class  fetchMail{
 		//
 		sendReceive.WriteInt(_stream, m_vectAttachment.size());
 		for(int i = 0;i < m_vectAttachment.size();i++){
-			Attachment t_attachment = (Attachment)m_vectAttachment.elementAt(i);
+			MailAttachment t_attachment = (MailAttachment)m_vectAttachment.elementAt(i);
 			sendReceive.WriteInt(_stream,t_attachment.m_size);
 			sendReceive.WriteString(_stream,t_attachment.m_name);
 			sendReceive.WriteString(_stream,t_attachment.m_type);
@@ -143,8 +148,8 @@ public class  fetchMail{
 	public void InputMail(InputStream _stream)throws Exception{
 		
 		final int t_version = _stream.read();
-		
-		m_mailIndex = sendReceive.ReadInt(_stream);
+
+		m_mailIndex = sendReceive.ReadInt(_stream);		
 		
 		sendReceive.ReadStringVector(_stream,m_vectFrom);
 		sendReceive.ReadStringVector(_stream,m_vectReplyTo);
@@ -165,7 +170,7 @@ public class  fetchMail{
 		m_vectAttachment.removeAllElements();
 		final int t_attachmentNum = sendReceive.ReadInt(_stream);
 		for(int i = 0;i < t_attachmentNum;i++){
-			Attachment t_attachment = new Attachment(); 
+			MailAttachment t_attachment = new MailAttachment(); 
 			
 			t_attachment.m_size = sendReceive.ReadInt(_stream);
 			t_attachment.m_name = sendReceive.ReadString(_stream);
@@ -250,7 +255,7 @@ public class  fetchMail{
 			throw new Exception("Error Attachment format!");
 		}
 		
-		Attachment t_attach = new Attachment();
+		MailAttachment t_attach = new MailAttachment();
 		t_attach.m_name = _name;
 		t_attach.m_size = _size;
 		t_attach.m_type = _type;

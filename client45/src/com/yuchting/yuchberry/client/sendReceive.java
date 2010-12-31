@@ -278,10 +278,10 @@ public class sendReceive extends Thread{
 		byte[] t_strByte;
 		
 		try{
-			// if the GB2312 decode sytem is NOT present in current system
+			// if the UTF-8 decode sytem is NOT present in current system
 			// will throw the exception
 			//
-			t_strByte = _string.getBytes("GB2312");
+			t_strByte = _string.getBytes("UTF-8");
 		}catch(Exception e){
 			t_strByte = _string.getBytes();
 		}
@@ -314,10 +314,10 @@ public class sendReceive extends Thread{
 			ForceReadByte(_stream,t_buffer,len);
 
 			try{
-				// if the GB2312 decode sytem is NOT present in current system
+				// if the UTF-8 decode sytem is NOT present in current system
 				// will throw the exception
 				//
-				return new String(t_buffer,"GB2312");
+				return new String(t_buffer,"UTF-8");
 			}catch(Exception e){}
 			
 			return new String(t_buffer);

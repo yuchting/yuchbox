@@ -3,7 +3,6 @@ package com.yuchting.yuchberry.server.frame;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -392,13 +391,12 @@ public class createDialog extends JDialog implements DocumentListener,
 		m_commonConfigListModel.removeAllElements();
 			
 		try{
-			BufferedReader in = new BufferedReader(
-					new InputStreamReader(
-							new FileInputStream("commonMailSvr.ini")));
-
-			String line = null;
-			while((line = in.readLine())!= null){
-				if(!line.startsWith("#") && !fetchMgr.IsEmptyLine(line)){
+			Vector t_lines = new Vector();
+			fetchMgr.ReadSimpleIniFile("commonMailSvr.ini", "UTF-8", t_lines);
+			
+			for(int i = 0 ;i < t_lines.size();i++){
+				String line = (String)t_lines.elementAt(i);
+				if(!fetchMgr.IsEmptyLine(line)){
 					try{
 						commonConfig t_config = new commonConfig(line);
 						m_commonConfigData.addElement(t_config);
@@ -406,13 +404,10 @@ public class createDialog extends JDialog implements DocumentListener,
 						
 					}catch(Exception e){
 						JOptionPane.showMessageDialog(this, "读取" + "commonMailSvr.ini " + "出现问题：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
-					}				
-					
-					line = line.replaceAll("userFetchIndex=[^\n]*", "userFetchIndex=0");
+					}
 				}
 			}
 			
-			in.close();
 			
 		}catch(Exception e){
 			JOptionPane.showMessageDialog(this, "读取" + "commonMailSvr.ini " + "出现问题：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
@@ -443,7 +438,7 @@ public class createDialog extends JDialog implements DocumentListener,
 			return false;
 		}
 		
-		String t_prefix = m_account.getText() + "/";		
+		String t_prefix = m_account.getText() + "/";
 		WriteSignature(t_prefix);
 		
 		fetchThread t_thread = null;
@@ -476,7 +471,7 @@ public class createDialog extends JDialog implements DocumentListener,
 			
 			if(m_signature.getText().length() != 0){
 				FileOutputStream t_out = new FileOutputStream(_prefix + fetchMgr.fsm_signatureFilename);
-				t_out.write(m_signature.getText().getBytes("GB2312"));
+				t_out.write(m_signature.getText().getBytes("UTF-8"));
 				t_out.flush();
 				t_out.close();
 			}
@@ -489,7 +484,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 		BufferedReader in = new BufferedReader(
 								new InputStreamReader(
-										new FileInputStream(_iniFile)));
+										new FileInputStream(_iniFile),"UTF-8"));
 			
 		StringBuffer t_contain = new StringBuffer();
 		
@@ -506,7 +501,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 				
 		FileOutputStream os = new FileOutputStream(_iniFile);
-		os.write(t_contain.toString().getBytes("GB2312"));
+		os.write(t_contain.toString().getBytes("UTF-8"));
 		os.flush();
 		os.close();
 		
