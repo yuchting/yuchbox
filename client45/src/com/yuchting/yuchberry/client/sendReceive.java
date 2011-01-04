@@ -175,6 +175,8 @@ public class sendReceive extends Thread{
 					t_os.write(msg_head.msgKeepLive);
 					
 					SendBufferToSvr_imple(t_os.toByteArray());
+					
+					StoreUpDownloadByteImm();
 				}
 			}
 			

@@ -55,7 +55,7 @@ class ErrorLabelText extends Field{
 	}
 	
 	public boolean isFocusable(){
-		return false;
+		return true;
 	}
 }
 

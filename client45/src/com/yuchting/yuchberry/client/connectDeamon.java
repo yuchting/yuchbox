@@ -889,6 +889,7 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		if(!_files.isEmpty()){
 			
+			
 			for(int i = 0;i< _files.size();i++){
 				String t_fullname = ((ComposingAttachment)_files.elementAt(i)).m_filename;
 				
@@ -921,7 +922,6 @@ public class connectDeamon extends Thread implements SendListener,
 				}
 	
 				_mail.AddAttachment(t_name, t_type, t_size);
-				t_fileReader.close();
 			}
 			
 			// reset the content of mail...

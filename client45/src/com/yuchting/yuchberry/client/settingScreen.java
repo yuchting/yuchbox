@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.client;
 import local.localResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.CheckboxField;
 import net.rim.device.api.ui.component.Dialog;
@@ -30,7 +31,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 
 		 
 		 //@{ connection option
-		 add(new LabelField(recvMain.sm_local.getString(localResource.CONNECT_OPTION_LABEL)));
+		 LabelField t_title = new LabelField(recvMain.sm_local.getString(localResource.CONNECT_OPTION_LABEL));
+		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
+		 add(t_title);
 		 
 		 m_APN			= new EditField(recvMain.sm_local.getString(localResource.APN_LABEL),
 		 									m_mainApp.GetAPNList(),128,EditField.FILTER_DEFAULT);
@@ -53,7 +56,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 add(new SeparatorField());
 		 
 		 //@{ upload and download bytes statistics
-		 add(new LabelField(recvMain.sm_local.getString(localResource.BYTE_STATISTICS)));
+		 t_title = new LabelField(recvMain.sm_local.getString(localResource.BYTE_STATISTICS));
+		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
+		 add(t_title);
+		 
 		 add(m_uploadByte);
 		 add(m_downloadByte);
 		 add(m_clearByteBut);
@@ -70,7 +76,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 
 		 
 		 //@{ reminder option
-		 add(new LabelField(recvMain.sm_local.getString(localResource.PROMPT_OPTION_LABEL)));
+		 t_title = new LabelField(recvMain.sm_local.getString(localResource.PROMPT_OPTION_LABEL));
+		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
+		 add(t_title);
 		 //@}
 		 
 	 }
@@ -113,13 +121,13 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		});
 	 }
 	 
-	 private String GetByteStr(long _byte){
+	 static private String GetByteStr(long _byte){
 		 if(_byte < 1024){
 			 return "" + _byte + "B";
 		 }else if(_byte >= 1024 && _byte < 1024 * 1024){
-			 return "" + (_byte / 1024) + "KB";
+			 return "" + (_byte / 1024) + "." + (_byte % 1024)+ "KB";
 		 }else{
-			 return "" + (_byte / 1024 / 1024) + "MB";
+			 return "" + (_byte / (1024 * 1024)) + "." + ((_byte / 1024) % 1024) + "MB";
 		 }
 	 }
 }

@@ -28,6 +28,9 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 import org.htmlparser.Node;
 import org.htmlparser.NodeFilter;
 import org.htmlparser.Parser;
@@ -225,8 +228,8 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[]){
 
-		HelloWorld test = new HelloWorld();
-		test.berryRecvTest();	
+		//HelloWorld test = new HelloWorld();
+		//test.berryRecvTest();	
 		
 		//DelDirectory("Test/");
 		
@@ -241,8 +244,26 @@ public class HelloWorld {
 		
 		//GenFanShuai();
 		
+		//System.out.println(GetByteStr(123412321));
+		
+		ReadConfigXML();
+		
 	}
-	
+	static public void ReadConfigXML(){
+		try{
+			SAXReader xmlReader = new SAXReader();
+			Document doc = xmlReader.read(new FileInputStream("config.xml")); 
+			Element root = doc.getRootElement();
+			
+			String t_string = root.attributeValue("userPassword");
+			
+			System.out.println(t_string);
+			
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 	static public int SumNumber(int[] _number){
 		int t_value = 0;
 		
@@ -400,6 +421,7 @@ public class HelloWorld {
 			e.printStackTrace();
 		}
 	}
+	
 	static public void GetDirectoryName(){
 		try{
 			File t_file = new File(".");
@@ -667,12 +689,12 @@ public class HelloWorld {
 	public void berryRecvTest(){
 		try{
 			
-			Socket t_socket = GetSocketServer("520530","192.168.10.20",9716,false);
+			Socket t_socket = GetSocketServer("111111","192.168.10.20",9716,false);
 			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
 			
 			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
 			t_stream.write(msg_head.msgConfirm);
-			sendReceive.WriteString(t_stream, "520530",false);
+			sendReceive.WriteString(t_stream, "111111",false);
 			sendReceive.WriteInt(t_stream,1);
 			
 			t_receive.SendBufferToSvr(t_stream.toByteArray(), false);
