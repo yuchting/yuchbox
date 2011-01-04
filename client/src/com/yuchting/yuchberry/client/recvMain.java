@@ -637,24 +637,14 @@ public class recvMain extends UiApplication implements localResource {
 		try{
 
 			m_uploadFileScreen = new uploadFileScreen(m_connectDeamon, this,_del);
+			UiApplication.getUiApplication().pushScreen(m_uploadFileScreen);
 			
-			invokeLater(new Runnable()
-			{
-			    public void run()
-				{
-			    	recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
-			    	t_mainApp.PushUploadingScreen();
-				}
-			});	
 		}catch(Exception _e){
 			SetErrorString("att screen error:" + _e.getMessage());
 		}
 		
 	}
 	
-	public void PushUploadingScreen(){
-		pushGlobalScreen(m_uploadFileScreen,0,UiEngine.GLOBAL_MODAL);
-	}
 	public void ClearUploadingScreen(){
 		m_uploadFileScreen = null;
 	}

@@ -158,6 +158,10 @@ public class uploadFileScreen extends MainScreen implements
 	
 	uploadFileScreen(connectDeamon _deamon,recvMain _app,boolean _del) throws Exception {
 		
+		m_deamon = _deamon;
+		m_mainApp = _app;
+		m_delScreen = _del;
+		
 		m_textFileBitmap 	= GetConstFileBitmap("/Text_resize.jpg");
 		m_audioFileBitmap 	= GetConstFileBitmap("/Audio_resize.jpg");
 		m_binFileBitmap 	= GetConstFileBitmap("/Unknown_resize.jpg");
@@ -165,12 +169,8 @@ public class uploadFileScreen extends MainScreen implements
 		m_pictureBitmap		= GetConstFileBitmap("/Picture_resize.jpg");
 		m_movieBitmap		= GetConstFileBitmap("/Movie_resize.jpg");
 		
-		m_fileList.setCallback(m_listCallback);		
-		add(m_fileList);
-		
-		m_deamon = _deamon;
-		m_mainApp = _app;
-		m_delScreen = _del;
+		m_fileList.setCallback(m_listCallback);	
+		add(m_fileList);		
 		
 		if(_del){
 			m_ok.setText(recvMain.sm_local.getString(localResource.DEL_UPLOAD_FILE));

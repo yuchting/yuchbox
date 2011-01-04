@@ -373,21 +373,20 @@ public class fetchMgr{
 			while((t_line = in.readLine()) != null){
 				
 				if(t_firstLine && _decodeName.equals("UTF-8")){
-									
-					byte[] t_bytes = t_line.getBytes(_decodeName);
-					if(t_bytes.length >= 3 
-						&& (int)t_bytes[0] == 0xEF && (int)t_bytes[1] == 0xBB && (int)t_bytes[2] == 0xBF){						
+					
+					byte[] t_bytes = t_line.getBytes("UTF-8");
+					
+					// BOM process
+					//
+					if(t_bytes.length >= 3
+						&& t_bytes[0] == -17 && t_bytes[1] == -69 && t_bytes[2] == -65){						
 						
 						if(t_bytes.length == 3){
-							
+							t_line = "";
 						}else{
-							byte[] t_newBytes = new byte[t_bytes.length - 3];
-							System.arraycopy(t_bytes,3,t_newBytes,0,t_bytes.length - 3);
-							
-							t_bytes = t_newBytes;
+							t_line = new String(t_bytes,3,t_bytes.length - 3,"UTF-8");
 						}
-																		
-						t_line = new String(t_bytes,"UTF-8");
+															
 					}
 				}
 				
@@ -909,7 +908,7 @@ public class fetchMgr{
 					sendReceive.WriteLong(t_fileWrite,t_att.m_mailIndexOrTime);
 					
 					sendReceive.WriteInt(t_fileWrite,t_att.m_attachmentName.size());
-					for(int j = 0 ;j < t_att.m_attachmentName.size();i++){
+					for(int j = 0 ;j < t_att.m_attachmentName.size();j++){
 						MailAttachment t_attachment = (MailAttachment)t_att.m_attachmentName.elementAt(j);
 						sendReceive.WriteInt(t_fileWrite,t_attachment.m_size);
 						sendReceive.WriteString(t_fileWrite,t_attachment.m_name,m_convertToSimpleChar);
@@ -1058,10 +1057,15 @@ public class fetchMgr{
 		
 		while (enumerationHeaderTmp.hasMoreElements()) {  
 		    Header header = (Header) enumerationHeaderTmp.nextElement();  
-		    mailTitle = header.getValue();  
+		    mailTitle = header.getValue();
 		}
 
-		_mail.SetSubject(DecodeName(mailTitle,false));
+		if(mailTitle.indexOf("=?") != -1 && mailTitle.indexOf("?=") != 1){
+			_mail.SetSubject(DecodeName(mailTitle,false));
+		}else{
+			_mail.SetSubject(m.getSubject());
+		}
+		
 		
 		Date t_date = m.getSentDate();
 		if(t_date != null){
