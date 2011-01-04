@@ -225,6 +225,7 @@ public class connectDeamon extends Thread implements SendListener,
 			}catch(Exception _e){}
 			
 		}
+		
 	}
 	//
 	
