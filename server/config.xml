@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!-- 
+# 服务器配置文件
+#
+# 详细请访问 http://code.google.com/p/yuchberry/wiki/fill_config_xml
+#
+-->
+<Yuchberry	userPassword="111111"	serverPort="9716"	pushInterval="30"	userSSL="0"	convertoSimpleChar="0"	>
+	<EmailAccount
+		account="yuchberry@gmail.com"
+		password="dIaWFxxXIaYwZvAeWm2t"
+		
+		useFullNameSignIn="0"
+		
+		protocol="imaps"
+		host="imap.gmail.com"
+		port="993"
+		
+		protocol_send="smtp"
+		host_send="smtp.gmail.com"
+		port_send="587"
+		
+		appendHTML="0"
+	/>
+</Yuchberry>
+	
+	
+
+
+
