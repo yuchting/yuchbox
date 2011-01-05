@@ -25,7 +25,7 @@ public class fetchThread extends Thread{
 		m_fetchMgr.InitConnect(_prefix, _configFile, m_logger);
 		
 		if(_testConnect){
-			m_fetchMgr.ResetSession(true);
+			m_fetchMgr.ResetAllAccountSession(true);
 		}
 		
 		m_formerTimer = _formerTimer;

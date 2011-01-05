@@ -25,6 +25,11 @@ abstract public class fetchAccount {
 	abstract public void InitAccount(Element _elem)throws Exception;
 	
 	/**
+	 * get the account name (Email address)
+	 */
+	abstract public String GetAccountName();
+	
+	/**
 	 * check the folder to find the news to push
 	 */
 	abstract public void CheckFolder()throws Exception;
@@ -44,14 +49,24 @@ abstract public class fetchAccount {
 	/**
 	 * destroy the session connection
 	 */
-	abstract public void DestroySession()throws Exception;
+	abstract public void DestroySession();
 	
 	/**
 	 * network package process function
 	 * 
 	 * @return boolean		: has been processed?
 	 */
-	abstract public boolean ProcessNetworkPackage(byte[] _package);
+	abstract public boolean ProcessNetworkPackage(byte[] _package)throws Exception;
+	
+	/**
+	 * prepare the re-push unconfirm msg
+	 */
+	abstract public void PrepareRepushUnconfirmMsg();
+	
+	/**
+	 * push the message to client
+	 */
+	abstract public void PushMsg(sendReceive _sendReceive)throws Exception;
 	
 	
 	

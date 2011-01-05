@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.io.StringReader;
 import java.net.URL;
 import java.net.URLConnection;
@@ -42,6 +43,108 @@ import org.htmlparser.util.NodeList;
 
 import com.sun.mail.smtp.SMTPTransport;
 
+class EmailSendAttachment extends Thread{
+	
+	FileInputStream		m_file;
+	fetchEmail			m_fetchEmail;
+	int					m_fileLength;
+	int					m_mailIndex;
+	int					m_attachIndex;
+	
+	int					m_startIndex = 0;
+	byte[] 				m_buffer = new byte[fsm_sendSize];
+	ByteArrayOutputStream m_os = new ByteArrayOutputStream();
+	
+	final static int	fsm_sendSize = 512;
+	
+	EmailSendAttachment(int _mailIndex,int _attachIdx,fetchEmail _mgr){
+		
+		m_fetchEmail 	= _mgr;
+		m_mailIndex 	= _mailIndex;
+		m_attachIndex 	= _attachIdx;
+		
+		try{
+			File t_file = new File(m_fetchEmail.GetAccountPrefix() + _mailIndex +"_"+ _attachIdx + ".att");	
+			m_fileLength = (int)t_file.length();
+			m_file = new FileInputStream(t_file);
+			
+		}catch(Exception _e){
+			m_fetchEmail.m_mainMgr.m_logger.PrinterException(_e);
+			return;
+		}
+		
+		start();
+	}
+	
+	private boolean SendAttachment(boolean _send) throws Exception{
+		m_os.reset();
+		
+		final int t_size = (m_startIndex + fsm_sendSize) > m_fileLength ?(m_fileLength - m_startIndex):fsm_sendSize;
+		m_file.read(m_buffer, 0, t_size);
+		m_os.write(msg_head.msgMailAttach);
+		
+		sendReceive.WriteInt(m_os,m_mailIndex);
+		sendReceive.WriteInt(m_os,m_attachIndex);
+		sendReceive.WriteInt(m_os,m_startIndex);
+		sendReceive.WriteInt(m_os,t_size);
+		m_os.write(m_buffer);
+		
+		m_fetchEmail.m_mainMgr.m_logger.LogOut("send msgMailAttach mailIndex:" + m_mailIndex + " attachIndex:" + m_attachIndex + " startIndex:" +
+									m_startIndex + " size:" + t_size + " first:" + (int)m_buffer[0]);
+		
+		int t_waitTimer = 0;
+		while(m_fetchEmail.m_mainMgr.GetClientConnected() == null || m_fetchEmail.m_mainMgr.GetClientConnected().m_sendReceive == null){
+			
+			t_waitTimer++;
+			
+			sleep(10000);
+			
+			if(t_waitTimer > 5){
+				throw new Exception("Client closed when send attachment!");
+			}			
+		}
+		
+		m_fetchEmail.m_mainMgr.SendData(m_os,_send);
+		
+		if(m_startIndex + t_size >= m_fileLength){
+			return true;
+		}
+		
+		m_startIndex += t_size;
+		
+		return false;
+	}
+	
+	public void run(){
+
+		while(true){
+			try{
+				
+				int t_sendNum = 0;
+				while(t_sendNum++ < 4){
+					if(SendAttachment(false)){
+						m_file.close();
+						return;
+					}
+				}
+				
+				if(SendAttachment(true)){
+					break;
+				}
+				
+				
+			}catch(Exception _e){
+				m_fetchEmail.m_mainMgr.m_logger.PrinterException(_e);
+				break;
+			}			
+		}
+		
+		try{
+			m_file.close();
+		}catch(Exception e){}
+		
+	}
+}
 
 class RecvMailAttach{
 		
@@ -74,7 +177,7 @@ class RecvMailAttach{
 						in = new BufferedReader(new StringReader(m_forwardReplyMail.GetContain()));
 					}else{
 						in = new BufferedReader(new StringReader(m_forwardReplyMail.GetContain() + "\n\n---------- HTML ----------\n\n" +
-									fetchEmail.ParseHTMLText(m_forwardReplyMail.GetContain_html(),true)));
+									fetchMgr.ParseHTMLText(m_forwardReplyMail.GetContain_html(),true)));
 					}						
 	 
 					String line = new String();
@@ -110,7 +213,7 @@ class RecvMailAttach{
 				
 				if(!m_forwardReplyMail.GetContain_html().isEmpty()){					
 					t_string.append("\n\n---------- HTML ----------\n\n");
-					t_string.append(fetchEmail.ParseHTMLText(m_forwardReplyMail.GetContain_html(),true));
+					t_string.append(fetchMgr.ParseHTMLText(m_forwardReplyMail.GetContain_html(),true));
 				}
 			}
 		}	
@@ -153,6 +256,7 @@ public class fetchEmail extends fetchAccount{
         	
     Vector m_unreadMailVector 			= new Vector();
     Vector m_unreadMailVector_confirm 	= new Vector();
+    Vector m_unreadMailVector_marking	= new Vector();
 
     // pushed mail index vector 
     Vector m_vectPushedMailIndex 		= new Vector();
@@ -238,6 +342,10 @@ public class fetchEmail extends fetchAccount{
 	
 	public int GetSendPort(){
 		return m_port_send;
+	}
+	
+	public String GetAccountName(){
+		return m_strUserNameFull;
 	}	
 	
 	public void InitAccount(Element _elem)throws Exception{
@@ -269,8 +377,8 @@ public class fetchEmail extends fetchAccount{
 		
 		ReadWriteMailIndexAttach(true);	
 		ReadSignature();
-	}	
-	
+	}
+		
 	public void CheckFolder()throws Exception{
 		
 		Folder folder = m_store.getDefaultFolder();
@@ -330,7 +438,7 @@ public class fetchEmail extends fetchAccount{
 	    folder.close(false);
 	}
 	
-	public boolean ProcessNetworkPackage(byte[] _package){
+	public boolean ProcessNetworkPackage(byte[] _package)throws Exception{
 		
 		ByteArrayInputStream in = new ByteArrayInputStream(_package);
 		
@@ -340,24 +448,19 @@ public class fetchEmail extends fetchAccount{
 		
 		switch(t_msg_head){			
 			case msg_head.msgMail:
-				ProcessMail(in);
+				t_processed = ProcessMail(in);
 				break;
 			case msg_head.msgBeenRead:
-				ProcessBeenReadMail(in);
+				t_processed = ProcessBeenReadMail(in);
 				break;
 			case msg_head.msgMailAttach:
-				ProcessMailAttach(in);
+				t_processed = ProcessMailAttach(in);
 				break;
 			case msg_head.msgFetchAttach:
-				ProcessFetchMailAttach(in);
-				break;
-			case msg_head.msgKeepLive:
+				t_processed = ProcessFetchMailAttach(in);
 				break;
 			case msg_head.msgMailConfirm:
-				ProcessMailConfirm(in);
-				break;
-			case msg_head.msgSponsorList:
-				ProcessSponsorList(in);
+				t_processed = ProcessMailConfirm(in);
 				break;
 			default:
 				t_processed = false;
@@ -365,6 +468,173 @@ public class fetchEmail extends fetchAccount{
 		
 		return t_processed;
 	}
+	
+	private boolean ProcessMail(ByteArrayInputStream in)throws Exception{
+		
+		fetchMail t_mail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
+		t_mail.InputMail(in);
+		
+		if(!t_mail.GetFromVect().isEmpty()){
+			String t_string = (String)t_mail.GetFromVect().elementAt(0);
+			if(t_string.toLowerCase().indexOf(m_strUserNameFull.toLowerCase()) == -1){
+				return false;
+			}
+		}
+		
+		fetchMail t_forwardReplyMail = null;
+				
+		final int t_style = in.read();
+		
+		if(t_style != fetchMail.NOTHING_STYLE){
+			t_forwardReplyMail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
+			t_forwardReplyMail.InputMail(in);
+		}
+		
+		if(t_mail.GetAttachment().isEmpty()){
+			SendMailToSvr(new RecvMailAttach(t_mail,t_forwardReplyMail,t_style));
+		}else{
+			CreateTmpSendMailAttachFile(new RecvMailAttach(t_mail,t_forwardReplyMail,t_style));
+		}
+		
+		return true;
+	}
+	
+	private boolean ProcessMailConfirm(ByteArrayInputStream in)throws Exception{
+		
+		final int t_mailHash = sendReceive.ReadInt(in);
+		
+		synchronized(m_mainMgr){
+			
+			for(int i = 0;i < m_unreadMailVector_confirm.size();i++){
+				fetchMail t_confirmMail = (fetchMail)m_unreadMailVector_confirm.elementAt(i); 
+				if(t_confirmMail.GetSimpleHashCode() == t_mailHash){
+					
+					m_unreadMailVector_confirm.removeElementAt(i);
+					
+					m_unreadMailVector_marking.addElement(t_confirmMail);
+					
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " Mail Index<" + t_confirmMail.GetMailIndex() + "> confirmed");
+					
+					return true;
+				}
+			}
+			
+		}
+		
+		return false;
+	}	
+	
+	private boolean ProcessFetchMailAttach(InputStream in)throws Exception{
+		
+		final int t_mailIndex		= sendReceive.ReadInt(in);
+		final int t_attachIndex	= sendReceive.ReadInt(in);
+		
+		File t_file = new File(GetAccountPrefix() + t_mailIndex +"_"+ t_attachIndex + ".att");
+		if(t_file.exists()){
+			new EmailSendAttachment(t_mailIndex,t_attachIndex,this);
+			return true;
+		}
+		
+		return false;
+		
+	}
+		
+	private boolean ProcessMailAttach(ByteArrayInputStream in)throws Exception{
+		
+		final int t_hashCode = sendReceive.ReadInt(in);
+		
+		RecvMailAttach t_mail = FindAttachMail(t_hashCode);
+		if(t_mail == null){
+			return false;
+		}
+		
+		final int t_attachmentIdx = sendReceive.ReadInt(in);
+		final int t_segIdx = sendReceive.ReadInt(in);
+		final int t_segSize = sendReceive.ReadInt(in);
+		
+		String t_filename = GetAccountPrefix() + t_mail.m_sendMail.GetSendDate().getTime() + "_" + t_attachmentIdx + ".satt";
+		File t_file = new File(t_filename);
+		
+		if(t_segIdx + t_segSize > t_file.length()){
+			throw new Exception("error attach" + t_filename + " idx and size");
+		}
+		
+		m_mainMgr.m_logger.LogOut("recv msgMailAttach time:"+ t_mail.m_sendMail.GetSendDate().getTime() + " beginIndex:" + t_segIdx + " size:" + t_segSize);
+		
+		byte[] t_bytes = new byte[t_segSize];
+		sendReceive.ForceReadByte(in, t_bytes, t_segSize);
+		
+		RandomAccessFile t_fwrite = new RandomAccessFile(t_file,"rw");
+		t_fwrite.seek(t_segIdx);
+		t_fwrite.write(t_bytes);
+		
+		t_fwrite.close();
+		
+		if(t_segIdx + t_segSize == t_file.length()){
+			
+			m_recvMailAttach.removeElement(t_mail);
+			
+			if((t_attachmentIdx + 1) >= t_mail.m_sendMail.GetAttachment().size()){
+				SendMailToSvr(t_mail);
+			}		
+			
+		}
+		
+		return true;
+	}
+	
+	public void SendMailToSvr(final RecvMailAttach _mail)throws Exception{
+		
+		// receive send message to berry
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgSendMail);
+		int t_succ = 1;
+		
+		try{
+			
+			SendMail(_mail);
+			
+		}catch(Exception _e){
+			
+			ByteArrayOutputStream error = new ByteArrayOutputStream();
+			error.write(msg_head.msgNote);
+			sendReceive.WriteString(error, _e.getMessage(),m_mainMgr.m_convertToSimpleChar);
+			
+			m_mainMgr.SendData(error, false);
+			
+			t_succ = 0;
+		}
+		
+		os.write(t_succ);
+		
+		sendReceive.WriteInt(os,(int)_mail.m_sendMail.GetSendDate().getTime());
+		sendReceive.WriteInt(os,(int)(_mail.m_sendMail.GetSendDate().getTime() >>> 32));
+
+		m_mainMgr.SendData(os,false);
+		
+		m_mainMgr.m_logger.LogOut("Mail <" +_mail.m_sendMail.GetSendDate().getTime() +  "> send " + ((t_succ == 1)?"Succ":"Failed"));
+	}
+	
+	private boolean ProcessBeenReadMail(ByteArrayInputStream in)throws Exception{
+		final int t_mailHashCode	= sendReceive.ReadInt(in);
+		
+		for(int i = 0 ;i < m_unreadMailVector_marking.size();i++){
+			fetchMail t_mail = (fetchMail)m_unreadMailVector_marking.elementAt(i);
+			if(t_mail.GetSimpleHashCode() == t_mailHashCode){
+				
+				m_unreadMailVector_marking.removeElementAt(i);
+				
+				try{
+					MarkReadMail(t_mail.GetMailIndex());
+				}catch(Exception _e){}
+				
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	
 	public void SendMail(RecvMailAttach _mail)throws Exception{
 		
@@ -491,10 +761,7 @@ public class fetchEmail extends fetchAccount{
 			m_mainMgr.m_logger.PrinterException(e);
 		}
 	}
-	
-	public String GetAccountName(){
-		return m_strUserNameFull;
-	}		
+		
 		
 	public void MarkReadMail(int _index)throws Exception{
 		
@@ -517,8 +784,7 @@ public class fetchEmail extends fetchAccount{
 				t_msg[0].setFlag(Flags.Flag.SEEN, true);
 			}
 	 	    
-	    }finally{
-	    	
+	    }finally{	    	
 	    	folder.close(false);
 	    }	        
 	}
@@ -614,27 +880,29 @@ public class fetchEmail extends fetchAccount{
     	
 	}
 	
-	public synchronized void DestroySession()throws Exception{
-		m_session = null;
+	public synchronized void DestroySession(){
 		
-		if(m_store != null){
+		try{
+			m_session = null;
 			
-		    m_unreadMailVector.clear();
-		    
-		    // wouldn't clear confirm 
-		    // the DestroyConnect function will called when the CheckFolder throw 
-		    // javaMail exception 
-		    // and re-send when client re-connected
-		    //
-		    //m_unreadMailVector_confirm.clear();
-		    
-		    // pushed mail index vector 
-		    m_vectPushedMailIndex.clear();
-		    
-			m_store.close();
-			m_store = null;
-		}
-		
+			if(m_store != null){
+				
+			    m_unreadMailVector.clear();
+			    
+			    // wouldn't clear confirm 
+			    // the DestroyConnect function will called when the CheckFolder throw 
+			    // javaMail exception 
+			    // and re-send when client re-connected
+			    //
+			    //m_unreadMailVector_confirm.clear();
+			    
+			    // pushed mail index vector 
+			    m_vectPushedMailIndex.clear();
+			    
+				m_store.close();
+				m_store = null;
+			}	
+		}catch(Exception e){}	
 	}
 	
 	public synchronized void SetBeginFetchIndex(int _index){
@@ -670,48 +938,44 @@ public class fetchEmail extends fetchAccount{
 //		}
 	}
 	
-	public void PrepareRepushUnconfirmMail(){
+	public synchronized void PrepareRepushUnconfirmMsg(){
 		
-		synchronized(this){
+		for(int i = m_unreadMailVector_confirm.size() - 1;i >= 0 ;i--){
 			
-			for(int i = m_unreadMailVector_confirm.size() - 1;i >= 0 ;i--){
+			fetchMail t_confirmMail = (fetchMail)m_unreadMailVector_confirm.elementAt(i);
+			
+			boolean t_add = true;
+			
+			for(int j = 0;j < m_unreadMailVector.size();j++){
 				
-				fetchMail t_confirmMail = (fetchMail)m_unreadMailVector_confirm.elementAt(i);
+				fetchMail t_sendMail = (fetchMail)m_unreadMailVector.elementAt(j);
 				
-				boolean t_add = true;
-				
-				for(int j = 0;j < m_unreadMailVector.size();j++){
-					
-					fetchMail t_sendMail = (fetchMail)m_unreadMailVector.elementAt(j);
-					
-					if(t_confirmMail.GetMailIndex() == t_sendMail.GetMailIndex()){
-						t_add = false;
-						break;
-					}
+				if(t_confirmMail.GetMailIndex() == t_sendMail.GetMailIndex()){
+					t_add = false;
+					break;
 				}
-				
-				if(t_add){
-					
-					final int t_maxConfirmNum = 3;
-					
-					if(t_confirmMail.m_sendConfirmNum < t_maxConfirmNum){
-						m_unreadMailVector.add(0,t_confirmMail);
-						m_mainMgr.m_logger.LogOut("load mail<" + t_confirmMail.GetMailIndex() + "> send again,wait confirm...");	
-					}else{
-						m_mainMgr.m_logger.LogOut("load mail<" + t_confirmMail.GetMailIndex() + "> send " + t_maxConfirmNum + "times, give up.");
-					}
-				}
-				
 			}
 			
-			m_unreadMailVector_confirm.removeAllElements();
+			if(t_add){
+				
+				final int t_maxConfirmNum = 5;
+				
+				if(t_confirmMail.m_sendConfirmNum < t_maxConfirmNum){
+					m_unreadMailVector.add(0,t_confirmMail);
+					m_mainMgr.m_logger.LogOut("load mail<" + t_confirmMail.GetMailIndex() + "> send again,wait confirm...");	
+				}else{
+					m_mainMgr.m_logger.LogOut("load mail<" + t_confirmMail.GetMailIndex() + "> send " + t_maxConfirmNum + " times, give up.");
+				}
+			}
+			
 		}
 		
+		m_unreadMailVector_confirm.removeAllElements();
+		m_unreadMailVector_marking.removeAllElements();				
 	}
 	
-	public synchronized void PushMail(sendReceive _sendReceive)throws Exception{
-		
-		
+	public synchronized void PushMsg(sendReceive _sendReceive)throws Exception{ 
+				
 		while(!m_unreadMailVector.isEmpty()){
 			
 			fetchMail t_mail = (fetchMail)m_unreadMailVector.elementAt(0); 
@@ -721,7 +985,7 @@ public class fetchEmail extends fetchAccount{
 			t_output.write(msg_head.msgMail);
 			t_mail.OutputMail(t_output);
 			
-			_sendReceive.SendBufferToSvr(t_output.toByteArray(),false);
+			m_mainMgr.SendData(t_output,false);
 			
 			SetBeginFetchIndex(t_mail.GetMailIndex());
 			
@@ -762,15 +1026,14 @@ public class fetchEmail extends fetchAccount{
 		}
 	}
 	
-	public RecvMailAttach FindAttachMail(final long _time){
+	public RecvMailAttach FindAttachMail(final int _hashCode){
 		// send the file...
 		//
 		for(int i = 0;i < m_recvMailAttach.size();i++){
 			RecvMailAttach t_mail = (RecvMailAttach)m_recvMailAttach.elementAt(i);
 			
-			if(t_mail.m_sendMail.GetSendDate().getTime() == _time){
-				m_recvMailAttach.remove(i);
-				
+			if(t_mail.m_sendMail.GetSimpleHashCode() == _hashCode){
+								
 				return t_mail;
 			}
 		}
@@ -948,7 +1211,8 @@ public class fetchEmail extends fetchAccount{
 		    	if(m_useAppendHTML){
 				    // parser HTML append the plain text
 				    //		    	
-			    	_mail.SetContain(_mail.GetContain().concat("\n\n---------- HTML part convert ----------\n\n" + ParseHTMLText(t_contain,true)));
+			    	_mail.SetContain(_mail.GetContain().concat("\n\n---------- HTML part convert ----------\n\n" + 
+			    						fetchMgr.ParseHTMLText(t_contain,true)));
 		    	}
 		    	
 		    }catch(Exception e){
@@ -1070,111 +1334,7 @@ public class fetchEmail extends fetchAccount{
 		return _html;
 	}
 	
-	static public String ParseHTMLText(String _html,boolean _shortURL){
-		StringBuffer t_text = new StringBuffer();	
-		StringBuffer t_shorterText = new StringBuffer();
-		
-		boolean t_shorted = false;
-		try{
-			Parser parser = new Parser(_html,null);
-			parser.setEncoding("UTF-8");
-			
-	        NodeList list = parser.parse(new  NodeFilter() {
-	        								public boolean accept(Node node) {
-	        									return node instanceof TextNode || node instanceof LinkTag ;
-	        								}
-	        							});
-	        
-	        Node[] nodes = list.toNodeArray();
-
-            for (int i = 1; i < nodes.length; i++){
-                Node nextNode = nodes[i];
-
-                if (nextNode instanceof TextNode){
-                    TextNode textnode = (TextNode) nextNode;
-                    t_text.append(textnode.getText());
-                    t_text.append("\n");
-                }else{
-                	
-                	LinkTag link = (LinkTag)nextNode;
-                	if(_shortURL){
-                		t_text.append(GetShortURL(link.getLink()));
-                		t_shorted = true;
-                	}else{
-                		t_text.append(link.getLink());
-                	}
-                	
-                	t_text.append("\n");
-                }              
-            }            
-            
-            int t_emptyCharCounter = 0;
-            
-            for(int i = 0;i < t_text.length();i++){
-            	final char t_char = t_text.charAt(i);
-            	if(IsEmptyChar(t_char)){
-            		if(t_emptyCharCounter++ < 2){
-            			t_shorterText.append(t_char);
-            		}
-            	}else{
-            		t_emptyCharCounter = 0;
-            		t_shorterText.append(t_char);
-            	}            	
-            }
-            
-		}catch(Exception _e	){}
-		
-		String t_result = t_shorterText.toString();
-		
-		t_result = t_result.replaceAll("&lt;", "<");
-		t_result = t_result.replaceAll("&gt;", ">");
-		t_result = t_result.replaceAll("&amp;", "&");
-		t_result = t_result.replaceAll("&apos;", "'");
-		t_result = t_result.replaceAll("&quot;", "\"");
-		t_result = t_result.replaceAll("&nbsp;", " ");	
-		
-		if(t_shorted){
-			return "[yuchberry prompt:some URL would be shorted]\n" + t_result;
-		}else{
-			return t_result;
-		}
-		
-	}
 	
-	static public boolean IsEmptyChar(final char _char){
-		return _char == ' ' || _char == '\n' || _char == '\t' || _char == '\r';
-	}
-	
-	static public boolean IsEmptyLine(final String _string){
-		for(int i = 0;i < _string.length();i++){
-			if(!IsEmptyChar(_string.charAt(i))){
-				return false;
-			}
-		}
-		
-		return true;
-	}
-	
-	static private String GetShortURL(String _longURL){
-		
-		try{
-			URL is_gd = new URL("http://is.gd/api.php?longurl=" + _longURL);
-			
-	        URLConnection yc = is_gd.openConnection();
-	        BufferedReader in = new BufferedReader(
-	                                new InputStreamReader(yc.getInputStream()));
-	        
-	        String inputLine = in.readLine();	        
-	        in.close();
-	        
-	        return (inputLine != null && inputLine.length() < _longURL.length()) ? inputLine:_longURL ;
-	        
-		}catch(Exception _e){}
-		
-		return _longURL;
-		
-        
-	}
 
 	static public String DecodeName(String _name,boolean _convert)throws Exception{
 		
@@ -1248,7 +1408,7 @@ public class fetchEmail extends fetchAccount{
 					MimeBodyPart t_filePart = new MimeBodyPart();
 					t_filePart.setFileName(MimeUtility.encodeText(t_attachment.m_name));
 
-					String t_fullname = GetAccountPrefix() + "" + _mail.GetSendDate().getTime() + "_" + i + ".satt";
+					String t_fullname = GetAccountPrefix() + _mail.GetSendDate().getTime() + "_" + i + ".satt";
 					t_filePart.setContent(ReadFileBuffer( t_fullname ), t_attachment.m_type);
 					
 					t_mainPart.addBodyPart(t_filePart);
@@ -1259,7 +1419,7 @@ public class fetchEmail extends fetchAccount{
 				for(int i = 0;i < t_contain.size();i++){
 					MailAttachment t_attachment = (MailAttachment)t_contain.elementAt(i);
 										
-					String t_fullname = GetAccountPrefix() + "" + t_forwardMailAttach.m_mailIndexOrTime + "_" + i;
+					String t_fullname = GetAccountPrefix() + t_forwardMailAttach.m_mailIndexOrTime + "_" + i;
 					
 					if(t_forwardMailAttach.m_send){
 						t_fullname = t_fullname + ".satt";

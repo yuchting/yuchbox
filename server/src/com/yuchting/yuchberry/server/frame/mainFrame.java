@@ -477,11 +477,11 @@ public class mainFrame extends JFrame implements ActionListener{
 			m_formerServer_port = _thread.m_fetchMgr.GetServerPort() + 1;
 		}
 		
-		m_formerHost		= _thread.m_fetchMgr.GetHost();
-		m_formerHost_port	= _thread.m_fetchMgr.GetHostPort();
-		
-		m_formerHost_send		= _thread.m_fetchMgr.GetSendHost();
-		m_formerHost_port_send	= _thread.m_fetchMgr.GetSendPort();
+//		m_formerHost		= _thread.m_fetchMgr.GetHost();
+//		m_formerHost_port	= _thread.m_fetchMgr.GetHostPort();
+//		
+//		m_formerHost_send		= _thread.m_fetchMgr.GetSendHost();
+//		m_formerHost_port_send	= _thread.m_fetchMgr.GetSendPort();
 		
 		m_pushInterval		= _thread.m_fetchMgr.GetPushInterval();
 		m_expiredTime		= _thread.m_expiredTime / (1000 * 3600);
@@ -640,7 +640,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		try{
 			final String t_contain = fetchMgr.ReadSimpleIniFile("timeupMail.txt","UTF-8",null);
 			
-			_thread.m_fetchMgr.SendImmMail("yuchberry 提示", t_contain, "\"YuchBerry\" <yuchberry@gmail.com>");
+			//_thread.m_fetchMgr.SendImmMail("yuchberry 提示", t_contain, "\"YuchBerry\" <yuchberry@gmail.com>");
 			
 		}catch(Exception e){}		
 	}

@@ -20,16 +20,22 @@ import java.util.Date;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -38,6 +44,11 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 
+import org.dom4j.Document;
+import org.dom4j.DocumentFactory;
+import org.dom4j.Element;
+
+import com.yuchting.yuchberry.server.fetchEmail;
 import com.yuchting.yuchberry.server.fetchMgr;
 
 class NumberMaxMinLimitedDmt extends PlainDocument {
@@ -83,10 +94,23 @@ public class createDialog extends JDialog implements DocumentListener,
 															ActionListener,
 															ItemListener{
 	
-	final static int		fsm_width = 300;
-	final static int		fsm_height = 660;
+	final static int		fsm_width = 600;
+	final static int		fsm_height = 560;
 	
-	class commonConfig{
+	JTextField	m_userPassword		= new JTextField();
+	JTextField	m_serverPort		= new JTextField();
+	
+	JTextField	m_pushInterval		= new JTextField();
+	
+	JCheckBox	m_useSSL			= new JCheckBox("Push使用SSL加密");
+	JCheckBox	m_convertToSimple	= new JCheckBox("转换繁体为简体");
+	
+	JTextField	m_expiredTime		= new JTextField();	
+	JTextArea	m_signature			= new JTextArea();
+	
+	mainFrame	m_mainFrame = null;
+	
+	final private class commonConfig{
 		String	m_name;
 		String	m_protocalName;
 		String	m_host;
@@ -137,7 +161,15 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 	}
 	
-	mainFrame	m_mainFrame = null;
+	JButton		m_addAccountBut		= new JButton("添加");
+	JButton		m_delAccountBut		= new JButton("删除");
+	
+	
+	JList		m_accountList		= new JList();
+	JScrollPane	m_accountListScroll	= new JScrollPane(m_accountList);
+	
+	JTabbedPane m_tabbedPane 		= new JTabbedPane();
+	
 	
 	JComboBox	m_commonConfigList = new JComboBox();
 	DefaultComboBoxModel m_commonConfigListModel = new DefaultComboBoxModel();
@@ -157,40 +189,32 @@ public class createDialog extends JDialog implements DocumentListener,
 									};
 	
 	JTextField 	m_send_host			= new JTextField();
-	JTextField 	m_send_port			= new JTextField();
+	JTextField 	m_send_port			= new JTextField();	
 	
-	
-	JTextField	m_userPassword		= new JTextField();
-	JTextField	m_serverPort		= new JTextField();
-	
-	JTextField	m_pushInterval		= new JTextField();
-	
-	JCheckBox	m_useSSL			= new JCheckBox("Push使用SSL加密");
-	JCheckBox	m_convertToSimple	= new JCheckBox("转换繁体为简体");
-	JCheckBox	m_signInAsFullname	= new JCheckBox("使用全地址作为用户名");
-	JTextField	m_expiredTime		= new JTextField();
-	
-	JTextArea	m_signature			= new JTextArea();
+	JCheckBox	m_signInAsFullname	= new JCheckBox("使用全地址作为用户名");	
 	
 	JButton		m_confirmBut		= new JButton("确定");
 	
+	Document	m_createConfigDoc	= DocumentFactory.getInstance().createDocument();
+	Element		m_createConfigDoc_root = m_createConfigDoc.addElement("Yuchberry");
+	
 	public createDialog(mainFrame _main,String _formerHost,String _formerPort,
 										String _formerHost_send,String _formerPort_send,
-										String _userPassword,String _serverPort,String _pushInterval,String _expiredTime){
+										String _userPassword,String _serverPort,
+										String _pushInterval,String _expiredTime){
 		
 		super(_main,"添加一个账户",true);
 		
 		m_mainFrame = _main;
 		
 		setResizable(false);
-		
+								
 		getContentPane().setLayout(new FlowLayout());
 		
 		setSize(fsm_width,fsm_height);
 		setLocation(_main.getLocation().x + (_main.getWidth()- fsm_width) / 2,
 					_main.getLocation().y + (_main.getHeight() -  fsm_height) / 2);
 		
-
 		m_commonConfigList.setModel(m_commonConfigListModel);
 		m_commonConfigList.addItemListener(this);
 		
@@ -203,73 +227,121 @@ public class createDialog extends JDialog implements DocumentListener,
 		m_account.getDocument().addDocumentListener(this);
 		m_host.getDocument().addDocumentListener(this);
 		m_signature.setLineWrap(true);
-		m_signature.setBorder(BorderFactory.createLineBorder(Color.gray,1));		
+		m_signature.setBorder(BorderFactory.createLineBorder(Color.gray,1));
 		
-		JLabel t_label = new JLabel("常用配置：");
-		t_label.setPreferredSize(new Dimension(80,25));
-		getContentPane().add(t_label);
-		m_commonConfigList.setPreferredSize(new Dimension(200, 25));
-		getContentPane().add(m_commonConfigList);
-		
-		JSeparator	t_separator			= new JSeparator();
-		t_separator.setPreferredSize(new Dimension(fsm_width, 5));
-		getContentPane().add(t_separator);
-		
-		AddTextLabel("帐号名称:",m_account,220,"");
-		AddTextLabel("帐号密码:",m_password,220,"");
-		AddTextLabel("主机地址:",m_host,120,_formerHost);
-		AddTextLabel("端口:",m_port,60,_formerPort);
-
-		getContentPane().add(new JLabel("协议:"));
-		for(int i = 0;i < m_protocal.length;i++){
-			m_protocalGroup.add(m_protocal[i]);
-			getContentPane().add(m_protocal[i]);
-		}
-		
-		AddTextLabel("发送主机地址:",m_send_host,100,_formerHost_send);
-		AddTextLabel("端口:",m_send_port,60,_formerPort_send);
-		
-		t_separator = new JSeparator();
-		t_separator.setPreferredSize(new Dimension(fsm_width, 5));
-		getContentPane().add(t_separator);
-		
-		AddTextLabel("用户密码:",m_userPassword,100,_userPassword);
-		AddTextLabel("用户端口:",m_serverPort,60,_serverPort);
-		
-		AddTextLabel("过期时间(单位小时，0为不过期):",m_expiredTime,90,_expiredTime);
-		
-		AddTextLabel("推送间隔（秒）：",m_pushInterval,180,_pushInterval);
-		
-		m_signInAsFullname.setPreferredSize(new Dimension(fsm_width - 20, 25));
-		getContentPane().add(m_signInAsFullname);
-		
-		m_useSSL.setPreferredSize(new Dimension(fsm_width - 20, 25));
-		getContentPane().add(m_useSSL);
-		
-		m_convertToSimple.setPreferredSize(new Dimension(fsm_width - 20,25));
-		getContentPane().add(m_convertToSimple);
+		m_confirmBut.addActionListener(this);
+		m_addAccountBut.addActionListener(this);
+		m_delAccountBut.addActionListener(this);		
 		
 		
-		t_label = new JLabel("签名：");
+		////////////////////////////////////////////////////////////////////
+		// main push attribute data
+		
+		JPanel t_mainPanel = new JPanel();
+		t_mainPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		t_mainPanel.setPreferredSize(new Dimension(fsm_width, fsm_height * 2 / 5));
+				
+		AddTextLabel(t_mainPanel,"用户密码:",m_userPassword,100,_userPassword);
+		AddTextLabel(t_mainPanel,"用户端口:",m_serverPort,60,_serverPort);
+		AddTextLabel(t_mainPanel,"推送间隔(秒):",m_pushInterval,60,_pushInterval);
+		AddTextLabel(t_mainPanel,"过期时间(单位小时，0为不过期):",m_expiredTime,80,_expiredTime);
+		
+		t_mainPanel.add(m_useSSL);
+		t_mainPanel.add(m_convertToSimple);
+		
+		JLabel t_label = new JLabel("签名：");
 		t_label.setPreferredSize(new Dimension(fsm_width - 20,25));
 		
-		getContentPane().add(t_label);
-		m_signature.setPreferredSize(new Dimension(fsm_width - 15, 170));
-		m_signature.setText("send from my Blackberry-----\nPowered by yuchberry");
-		getContentPane().add(m_signature);
+		t_mainPanel.add(t_label);
+		m_signature.setPreferredSize(new Dimension(fsm_width - 15, 120));
+		m_signature.setText("--send from my Blackberry\nPowered by yuchberry");
+		t_mainPanel.add(m_signature);		
 		
-		t_separator			= new JSeparator();
+		JSeparator t_separator	= new JSeparator();
+		t_separator.setPreferredSize(new Dimension(fsm_width, 5));
+		t_mainPanel.add(t_separator);
+		
+		getContentPane().add(t_mainPanel);
+		
+		
+		
+		////////////////////////////////////////////////////////////////////
+		// account data
+		
+		JPanel t_accountMainPanel = new JPanel();
+		t_accountMainPanel.setLayout(new FlowLayout());
+		t_accountMainPanel.setPreferredSize(new Dimension(fsm_width, 240));
+		
+		m_accountListScroll.setPreferredSize(new Dimension(220,230));
+		t_accountMainPanel.add(m_accountListScroll);
+		
+		t_accountMainPanel.add(PrepareAccountBut());
+		
+		t_accountMainPanel.add(PrepareAccountDataPanel(_formerHost,_formerPort,_formerHost_send,_formerPort_send));				
+		
+		getContentPane().add(t_accountMainPanel);
+		
+		
+		
+		////////////////////////////////////////////////////////////////////
+		// confirm button data
+		
+		t_separator	= new JSeparator();
 		t_separator.setPreferredSize(new Dimension(fsm_width, 5));
 		getContentPane().add(t_separator);
-		
 		getContentPane().add(m_confirmBut);
-		m_confirmBut.addActionListener(this);
-		
+	
 		AutoSelectProtocal();
 		
 		AddCommonConfigList();
 		
 		setVisible(true);	
+	}
+	
+	private JComponent PrepareAccountDataPanel(String _formerHost,String _formerPort,String _formerHost_send,String _formerPort_send){
+				
+		JPanel t_accountPanel = new JPanel();
+		t_accountPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		
+		JLabel t_label = new JLabel("常用配置：");
+		t_label.setPreferredSize(new Dimension(80,25));
+		t_accountPanel.add(t_label);
+		m_commonConfigList.setPreferredSize(new Dimension(200, 25));
+		t_accountPanel.add(m_commonConfigList);
+		
+		JSeparator	t_separator			= new JSeparator();
+		t_separator.setPreferredSize(new Dimension(fsm_width, 5));
+		t_accountPanel.add(t_separator);
+		
+		AddTextLabel(t_accountPanel,"帐号名称:",m_account,220,"");
+		AddTextLabel(t_accountPanel,"帐号密码:",m_password,220,"");
+		AddTextLabel(t_accountPanel,"主机地址:",m_host,120,_formerHost);
+		AddTextLabel(t_accountPanel,"端口:",m_port,60,_formerPort);
+
+		t_accountPanel.add(new JLabel("协议:"));
+		for(int i = 0;i < m_protocal.length;i++){
+			m_protocalGroup.add(m_protocal[i]);
+			t_accountPanel.add(m_protocal[i]);
+		}
+		
+		AddTextLabel(t_accountPanel,"发送主机地址:",m_send_host,100,_formerHost_send);
+		AddTextLabel(t_accountPanel,"端口:",m_send_port,60,_formerPort_send);
+		
+		m_tabbedPane.addTab("邮件",null,t_accountPanel,"添加邮件账户");
+		m_tabbedPane.setPreferredSize(new Dimension(300, 230));
+		
+		return m_tabbedPane;
+	}
+	
+	private JComponent PrepareAccountBut(){
+
+		JPanel t_butPanel = new JPanel();
+		
+		t_butPanel.setLayout(new BoxLayout(t_butPanel,BoxLayout.Y_AXIS));
+		t_butPanel.add(m_addAccountBut);
+		t_butPanel.add(m_delAccountBut);
+		
+		return t_butPanel;
 	}
 	
 	//@{ DocumentListener for JTextField change
@@ -294,25 +366,32 @@ public class createDialog extends JDialog implements DocumentListener,
 	//@}
 	
 	public void actionPerformed(ActionEvent e) {
-		if(e.getSource() == m_confirmBut){
-
-			if(m_account.getText().length() == 0 || m_password.getText().length() == 0){
-				JOptionPane.showMessageDialog(this, "账户名、密码不能为空", "错误", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
+		if(e.getSource() == m_addAccountBut){
 			
-			if(m_host.getText().length() == 0 || m_port.getText().length() == 0){
-				JOptionPane.showMessageDialog(this, "邮件接受服务器地址、端口不能为空", "错误", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
+			String t_accountName	= m_account.getText();
+			String t_password		= m_password.getText();
+			String t_host			= m_host.getText();
+			String t_port			= m_port.getText();
 			
-			if(m_send_host.getText().length() == 0 || Integer.valueOf(m_send_port.getText()).intValue() <= 0){
-				JOptionPane.showMessageDialog(this, "邮件发送服务器地址不能为空，端口非法", "错误", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
+			String t_send_host		= m_send_host.getText();
+			String t_send_port		= m_send_port.getText();
+			
+			try{
+				CreateAccountAndTest(t_accountName,
+										t_password,
+										t_host,
+										t_send_host);
+				setVisible(false);
+				dispose();	
+				
+			}catch(Exception ex){
+				JOptionPane.showMessageDialog(this, ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+			}			
+			
+		}else if(e.getSource() == m_confirmBut){
 			
 			final int t_listenPort = 3000;
-			if(m_userPassword.getText().length() == 0 || Integer.valueOf(m_serverPort.getText()).intValue() <= t_listenPort){
+			if(m_serverPort.getText().length() == 0 || Integer.valueOf(m_serverPort.getText()).intValue() <= t_listenPort){
 				JOptionPane.showMessageDialog(this, "用户密码不能为空，监听yuchberry端口不能小于 " + t_listenPort, "错误", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
@@ -322,13 +401,63 @@ public class createDialog extends JDialog implements DocumentListener,
 				JOptionPane.showMessageDialog(this, "推送间隔不能小于 " + t_minPushInterval, "错误", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			
-			if(CreateAccountAndTest()){
-				setVisible(false);
-				dispose();	
-			}
 		}
 	}
+		
+	private void CreateAccountAndTest(String _accountName,String _password,
+											String _host,String _port,
+											String _send_host,String _send_port,
+											String _serverPort,String _signature)throws Exception{
+	
+		if(_accountName.length() == 0 || _password.length() == 0){
+			throw new Exception("账户名、密码不能为空");
+		}
+		
+		if(_host.length() == 0 || _port.length() == 0){
+			throw new Exception("邮件接受服务器地址、端口不能为空");
+		}
+		
+		if(_send_host.length() == 0 || Integer.valueOf(_send_port).intValue() <= 0){
+			throw new Exception("邮件发送服务器地址不能为空，端口非法");
+		}
+		
+		final int t_serverPort = Integer.valueOf(_serverPort).intValue();
+		if(m_mainFrame.SearchAccountThread(_accountName,t_serverPort) != null){
+			throw new Exception(_accountName + " 账户重复，或者服务端口" + t_serverPort + "已经被使用");
+		}
+		
+		File t_dir = new File(m_account.getText());
+		if(!t_dir.exists() || !t_dir.isDirectory()){
+			t_dir.mkdir();
+		}		
+		
+		ServerSocket t_sockTest = null;
+		try{
+			t_sockTest = (new ServerSocket(t_serverPort));
+			t_sockTest.close();
+		}catch(Exception e){
+			throw new Exception("服务端口" + t_serverPort + "无法开启：" + e.getMessage());
+		}
+		
+		String t_prefix = _accountName + "/";
+		WriteSignature(t_prefix,_signature);
+		
+		fetchThread t_thread = null;
+						
+		try{				
+			WriteIniFile(t_prefix + fetchMgr.fsm_configFilename);
+		}catch(Exception e){
+			throw new Exception("复制创建" + t_prefix + fetchMgr.fsm_configFilename + "出现问题：" + e.getMessage());
+		}			
+		
+		t_thread = new fetchThread(t_prefix,t_prefix + fetchMgr.fsm_configFilename,
+								Long.valueOf(m_expiredTime.getText()).longValue(),(new Date()).getTime(),true);
+				
+		m_mainFrame.AddAccountThread(t_thread,true);
+		m_mainFrame.SelectAccount(t_thread.m_fetchMgr.GetAccountName());
+
+	}
+
 	
 	public void itemStateChanged(ItemEvent e){
 		if(e.getSource() == m_commonConfigList){
@@ -339,17 +468,16 @@ public class createDialog extends JDialog implements DocumentListener,
 		}
 	}
 	
-	private void AddTextLabel(String _label,JTextField _text,int _length,String _defaultVal){
+	static public void AddTextLabel(JPanel _panel,String _label,JTextField _text,int _length,String _defaultVal){
 		JLabel t_label = new JLabel(_label);
-		getContentPane().add(t_label);
+		_panel.add(t_label);
 		_text.setPreferredSize(new Dimension(_length, 25));
 		
 		if(_defaultVal.length() != 0){
 			_text.setText(_defaultVal);
 		}
 		
-		getContentPane().add(_text);
-		
+		_panel.add(_text);
 	}
 	
 	private void AutoSelectProtocal(){
@@ -415,68 +543,13 @@ public class createDialog extends JDialog implements DocumentListener,
 
 	}
 	
-	private boolean CreateAccountAndTest(){
-		
-		File t_dir = new File(m_account.getText());
-		if(!t_dir.exists() || !t_dir.isDirectory()){
-			t_dir.mkdir();
+	private void WriteSignature(String _prefix,String _signature)throws Exception{
+		if(_signature.length() != 0){
+			FileOutputStream t_out = new FileOutputStream(_prefix + fetchEmail.fsm_signatureFilename);
+			t_out.write(m_signature.getText().getBytes("UTF-8"));
+			t_out.flush();
+			t_out.close();
 		}
-				
-		final int t_serverPort = Integer.valueOf(m_serverPort.getText()).intValue();
-		
-		if(m_mainFrame.SearchAccountThread(m_account.getText(),t_serverPort) != null){
-			JOptionPane.showMessageDialog(this,m_account.getText() + " 账户重复，或者服务端口" + t_serverPort + "已经被使用" , "错误", JOptionPane.ERROR_MESSAGE);
-			return false;
-		}
-		
-		ServerSocket t_sockTest = null;
-		try{
-			t_sockTest = (new ServerSocket(t_serverPort));
-			t_sockTest.close();
-		}catch(Exception e){
-			JOptionPane.showMessageDialog(this,"服务端口" + t_serverPort + "无法开启：" + e.getMessage() , "错误", JOptionPane.ERROR_MESSAGE);
-			return false;
-		}
-		
-		String t_prefix = m_account.getText() + "/";
-		WriteSignature(t_prefix);
-		
-		fetchThread t_thread = null;
-
-		try{
-						
-			try{				
-				WriteIniFile(t_prefix + fetchMgr.fsm_configFilename);
-			}catch(Exception e){
-				JOptionPane.showMessageDialog(this, "复制创建" + t_prefix + fetchMgr.fsm_configFilename + "出现问题：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
-				return false;
-			}			
-			
-			t_thread = new fetchThread(t_prefix,t_prefix + fetchMgr.fsm_configFilename,
-									Long.valueOf(m_expiredTime.getText()).longValue(),(new Date()).getTime(),true);
-			
-		}catch(Exception e){
-			JOptionPane.showMessageDialog(this,e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
-			return false;
-		}
-				
-		m_mainFrame.AddAccountThread(t_thread,true);
-		m_mainFrame.SelectAccount(t_thread.m_fetchMgr.GetAccountName());
-				
-		return true;
-	}
-	
-	private void WriteSignature(String _prefix){
-		try{
-			
-			if(m_signature.getText().length() != 0){
-				FileOutputStream t_out = new FileOutputStream(_prefix + fetchMgr.fsm_signatureFilename);
-				t_out.write(m_signature.getText().getBytes("UTF-8"));
-				t_out.flush();
-				t_out.close();
-			}
-			
-		}catch(Exception e){}
 	}
 	private void WriteIniFile(String _iniFile)throws Exception{
 		

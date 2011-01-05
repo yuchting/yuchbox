@@ -388,7 +388,7 @@ class sendMailAttachmentDeamon extends Thread{
 		
 		
 		t_os.write(msg_head.msgMailAttach);
-		sendReceive.WriteLong(t_os,m_sendMail.GetSendDate().getTime());
+		sendReceive.WriteInt(t_os,m_sendMail.GetSimpleHashCode());
 		sendReceive.WriteInt(t_os, m_attachmentIndex);
 		sendReceive.WriteInt(t_os, m_beginIndex);
 		sendReceive.WriteInt(t_os, t_size);

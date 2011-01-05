@@ -60,14 +60,8 @@ public class connectDeamon extends Thread implements SendListener,
 												AttachmentHandler,
 												ViewListener,
 												ViewListenerExtended{
-	
-	class AppendMessage{
-		int		m_mailIndex;
-		Date	m_date;
-		String	m_from;
-	}
-	
-	 final static int	fsm_clientVer = 1;
+		
+	 final static int	fsm_clientVer = 2;
 	 
 	 sendReceive		m_connect = null;
 
@@ -85,9 +79,7 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	 public Vector 		m_markReadVector 		= new Vector();
 	 
-	 
-	 reminder			m_currentReminder		= null;
-	 
+		 
 	 boolean			m_sendAboutText			= false;
 	 boolean			m_recvAboutText			= false;
 	 
@@ -97,7 +89,7 @@ public class connectDeamon extends Thread implements SendListener,
 	 private String			m_plainTextContain 	= new String();
 	 private String			m_htmlTextContain 	= new String();
 	 
-	 class ComposingAttachment{
+	 final class ComposingAttachment{
 		 String m_filename;
 		 int	m_fileSize;
 		 
@@ -798,26 +790,18 @@ public class connectDeamon extends Thread implements SendListener,
 			// add the message listener to send message to server
 			// to remark the message is read
 			//
-			AppendMessage t_app = new AppendMessage();
-			t_app.m_date = m.getSentDate();
-			t_app.m_from = m.getFrom().getAddr();
-			t_app.m_mailIndex = t_mail.GetMailIndex();
 			
 			m.addMessageListener(this);
-			m_markReadVector.addElement(t_app);
+			m_markReadVector.addElement(t_mail);
 			
 			// send the msgMailConfirm to server to confirm receive this mail
 			//
 			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 			t_os.write(msg_head.msgMailConfirm);
-			sendReceive.WriteInt(t_os,t_mail.GetMailIndex());
+			sendReceive.WriteInt(t_os,t_mail.GetSimpleHashCode());
 			
 			m_connect.SendBufferToSvr(t_os.toByteArray(), false);
-						
-			//if(m_currentReminder == null || !m_currentReminder.isAlive()){
-			//	m_currentReminder = new reminder(m_mainApp);
-			//}
-			
+									
 			m_mainApp.TriggerNotification();
 							
 		}catch(Exception _e){
@@ -995,14 +979,14 @@ public class connectDeamon extends Thread implements SendListener,
 		
 			try{
 				
-				AppendMessage t_mail = (AppendMessage)m_markReadVector.elementAt(i);
+				fetchMail t_mail = (fetchMail)m_markReadVector.elementAt(i);
 				
-				if(t_mail.m_date.equals(m.getSentDate())
-					&& t_mail.m_from.equals(m.getFrom().getAddr())){
+				if(t_mail.GetSendDate().equals(m.getSentDate())
+					&& ((String)t_mail.GetFromVect().elementAt(0)).indexOf(m.getFrom().getAddr()) != -1){
 					
 					ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 					t_os.write(msg_head.msgBeenRead);
-					sendReceive.WriteInt(t_os, t_mail.m_mailIndex);
+					sendReceive.WriteInt(t_os, t_mail.GetSimpleHashCode());
 					
 					m_connect.SendBufferToSvr(t_os.toByteArray(), false);
 					
@@ -1025,7 +1009,7 @@ public class connectDeamon extends Thread implements SendListener,
 		// FROM 
 		if (m.getFrom() != null) {
 			_mail.GetFromVect().removeAllElements();
-			_mail.GetFromVect().addElement(m.getFrom().getAddr());
+			_mail.GetFromVect().addElement(composeAddress(m.getFrom()));			
 		}
 
 		// REPLY TO

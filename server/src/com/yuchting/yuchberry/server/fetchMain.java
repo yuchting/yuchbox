@@ -20,7 +20,7 @@ public class fetchMain{
 		    }
 			
 			try{
-				t_manger.DestroyConnect();
+				t_manger.EndListening();
 			}catch(Exception _e){
 				System.exit(0);
 			}
