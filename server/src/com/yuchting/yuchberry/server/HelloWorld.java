@@ -228,8 +228,8 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[]){
 
-		//HelloWorld test = new HelloWorld();
-		//test.berryRecvTest();	
+		HelloWorld test = new HelloWorld();
+		test.berryRecvTest();	
 		
 		//DelDirectory("Test/");
 		
@@ -246,16 +246,17 @@ public class HelloWorld {
 		
 		//System.out.println(GetByteStr(123412321));
 		try{
-			String t_title = "aaa =?GB2312?B?QURJ1NrP39HQzNa74aO61rG907HkxrW908rVu/q\n 1xNX9 vbu6zdaxwffQo9X9o6gx1MIxM8jVyc/O5zEwo7owMKOpKEFEKQ==?= sdfsdfsd =?GB2312?B?QURJ1NrP39HQzNa74aO61rG907HkxrW908rVu/q\n 1xNX9 vbu6zdaxwffQo9X9o6gx1MIxM8jVyc/O5z\r\nEwo7owMKOpKE  FEKQ==?=";
+			String t_title = "aaa =?gb2312?Q?=D7=A2=B2 \n=E1=B3=C9=B9=A6!_=BB=B6=D3=AD=C4=FA=B3=C9=CE=AA=CE=F7=B2=BF=CA=FD=C2=EB=D3=C3=BB=A7!?= sdfsdfsd =?GB2312?B?QURJ1NrP39HQzNa74aO61rG907HkxrW908rVu/q\n 1xNX9 vbu6zdaxwffQo9X9o6gx1MIxM8jVyc/O5z\r\nEwo7owMKOpKE  FEKQ==?=";
 			System.out.println(DecodeName(t_title,false));
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		
-		
-		ReadConfigXML();
+
+		//ReadConfigXML();
 		
 	}
+	
 	static public String DecodeName(String _name,boolean _convert)throws Exception{
 		
 		if(_name == null){
@@ -265,10 +266,15 @@ public class HelloWorld {
 		int t_start = _name.indexOf("=?");
 		
 		if(t_start != -1){
-
+			
 			int t_count = 0;
 			do{
-				int t_end = _name.indexOf("?=", t_start + 2);
+				int t_endStart = _name.indexOf("?",t_start + 2);
+				if(t_endStart != -1){
+					t_endStart = _name.indexOf("?",t_endStart + 1);
+				}
+				
+				int t_end = t_endStart == -1?-1:_name.indexOf("?=", t_endStart + 1);
 				
 				if(t_end == -1){
 					_name = _name.substring(0, t_start) + MimeUtility.decodeText(_name.substring(t_start));
@@ -290,6 +296,7 @@ public class HelloWorld {
 		
 		return _name;
 	}
+
 	static public void ReadConfigXML(){
 		try{
 			SAXReader xmlReader = new SAXReader();
@@ -713,13 +720,13 @@ public class HelloWorld {
 	public void berryRecvTest(){
 		try{
 			
-			Socket t_socket = GetSocketServer("111111","192.168.10.20",9716,false);
+			Socket t_socket = GetSocketServer("520530","192.168.10.20",9716,false);
 			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
 			
 			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
 			t_stream.write(msg_head.msgConfirm);
-			sendReceive.WriteString(t_stream, "111111",false);
-			sendReceive.WriteInt(t_stream,1);
+			sendReceive.WriteString(t_stream, "520530",false);
+			sendReceive.WriteInt(t_stream,2);
 			
 			t_receive.SendBufferToSvr(t_stream.toByteArray(), false);
 			

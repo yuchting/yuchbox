@@ -1385,14 +1385,24 @@ public class fetchEmail extends fetchAccount{
 		int t_start = _name.indexOf("=?");
 		
 		if(t_start != -1){
-
+			
 			int t_count = 0;
 			do{
-				int t_end = _name.indexOf("?=", t_start + 2);
+				// find the third ? to identified "=?gb2312?Q?=deinvueHF?="
+				//
+				int t_endStart = _name.indexOf("?",t_start + 2);
+				if(t_endStart != -1){
+					t_endStart = _name.indexOf("?",t_endStart + 1);
+				}
+				
+				int t_end = t_endStart == -1?-1:_name.indexOf("?=", t_endStart + 1);
 				
 				if(t_end == -1){
 					_name = _name.substring(0, t_start) + MimeUtility.decodeText(_name.substring(t_start));
 				}else{
+					
+					// replace all \r \n blank char to identified "=?gb2312?Q?=dei \n \r nvueHF?=" 
+					//
 					_name = _name.substring(0, t_start) + 
 							MimeUtility.decodeText(_name.substring(t_start,t_end + 2).replaceAll("[\r\n ]", "")) + 
 							_name.substring(t_end + 2);
