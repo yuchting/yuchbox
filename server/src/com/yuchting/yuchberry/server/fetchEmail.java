@@ -225,7 +225,7 @@ class RecvMailAttach{
 
 public class fetchEmail extends fetchAccount{
 	
-	final static int	CHECK_NUM 		= 50;
+	final static int	CHECK_NUM 		= 20;
 	
 	public final static String	fsm_signatureFilename 		= "signature.txt";
 	
@@ -431,6 +431,16 @@ public class fetchEmail extends fetchAccount{
 		    		AddMailIndexAttach(t_mail,false);		    		
 		    		
 		    		m_unreadMailVector.addElement(t_mail);
+		    		
+		    		synchronized (m_unreadMailVector_marking) {
+		    			
+		    			// prepare the marking reading vector
+		    			//
+			    		if(m_unreadMailVector_marking.size() > 50){
+			    			m_unreadMailVector_marking.removeElementAt(0);
+			    		}
+						m_unreadMailVector_marking.addElement(t_mail);
+					}
 		    	}
 		    }
 	    }	       
@@ -473,14 +483,7 @@ public class fetchEmail extends fetchAccount{
 		
 		fetchMail t_mail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
 		t_mail.InputMail(in);
-		
-		if(!t_mail.GetFromVect().isEmpty()){
-			String t_string = (String)t_mail.GetFromVect().elementAt(0);
-			if(t_string.toLowerCase().indexOf(m_strUserNameFull.toLowerCase()) == -1){
-				return false;
-			}
-		}
-		
+				
 		fetchMail t_forwardReplyMail = null;
 				
 		final int t_style = in.read();
@@ -488,6 +491,25 @@ public class fetchEmail extends fetchAccount{
 		if(t_style != fetchMail.NOTHING_STYLE){
 			t_forwardReplyMail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
 			t_forwardReplyMail.InputMail(in);
+			
+			if(t_style == fetchMail.REPLY_STYLE){
+				Vector t_replyAddr = t_forwardReplyMail.GetSendToVect();
+				if(!t_replyAddr.isEmpty()){
+
+					boolean t_found = false;
+					
+					for(int i= 0 ;i < t_replyAddr.size();i++){
+						String t_addr = (String)t_replyAddr.elementAt(i);
+						if(t_addr.toLowerCase().indexOf(GetAccountName().toLowerCase()) != -1){
+							t_found = true;
+							break;
+						}
+					}
+					if(!t_found){
+						return false;
+					}
+				}
+			}
 		}
 		
 		if(t_mail.GetAttachment().isEmpty()){
@@ -510,8 +532,6 @@ public class fetchEmail extends fetchAccount{
 				if(t_confirmMail.GetSimpleHashCode() == t_mailHash){
 					
 					m_unreadMailVector_confirm.removeElementAt(i);
-					
-					m_unreadMailVector_marking.addElement(t_confirmMail);
 					
 					m_mainMgr.m_logger.LogOut(GetAccountName() + " Mail Index<" + t_confirmMail.GetMailIndex() + "> confirmed");
 					
@@ -612,27 +632,38 @@ public class fetchEmail extends fetchAccount{
 
 		m_mainMgr.SendData(os,false);
 		
-		m_mainMgr.m_logger.LogOut("Mail <" +_mail.m_sendMail.GetSendDate().getTime() +  "> send " + ((t_succ == 1)?"Succ":"Failed"));
+		m_mainMgr.m_logger.LogOut(GetAccountName() + " Mail <" +_mail.m_sendMail.GetSendDate().getTime() +  "> send " + ((t_succ == 1)?"Succ":"Failed"));
 	}
 	
-	private boolean ProcessBeenReadMail(ByteArrayInputStream in)throws Exception{
-		final int t_mailHashCode	= sendReceive.ReadInt(in);
+	private  boolean ProcessBeenReadMail(ByteArrayInputStream in)throws Exception{
 		
-		for(int i = 0 ;i < m_unreadMailVector_marking.size();i++){
-			fetchMail t_mail = (fetchMail)m_unreadMailVector_marking.elementAt(i);
-			if(t_mail.GetSimpleHashCode() == t_mailHashCode){
-				
-				m_unreadMailVector_marking.removeElementAt(i);
-				
-				try{
-					MarkReadMail(t_mail.GetMailIndex());
-				}catch(Exception _e){}
-				
-				return true;
-			}
+		final int t_mailHashCode	= sendReceive.ReadInt(in);
+
+		boolean t_found = false;
+		fetchMail t_mail = null;
+		
+		synchronized (m_unreadMailVector_marking) {
+			for(int i = 0 ;i < m_unreadMailVector_marking.size();i++){
+				t_mail = (fetchMail)m_unreadMailVector_marking.elementAt(i);
+				if(t_mail.GetSimpleHashCode() == t_mailHashCode){
+					m_unreadMailVector_marking.removeElementAt(i);
+					
+					t_found = true;
+					
+					break;					
+				}
+			}	
 		}
 		
-		return false;
+		if(t_found){
+			try{
+				MarkReadMail(t_mail.GetMailIndex());
+			}catch(Exception _e){
+				m_mainMgr.m_logger.PrinterException(_e);
+			}
+		}	
+		
+		return t_found;
 	}
 	
 	
@@ -780,7 +811,7 @@ public class fetchEmail extends fetchAccount{
 			Message[] t_msg = folder.getMessages(_index, _index);
 			
 			if(t_msg.length != 0){
-				m_mainMgr.m_logger.LogOut("set index " + _index + " read ");
+				m_mainMgr.m_logger.LogOut(GetAccountName() + " Set index " + _index + " read ");
 				t_msg[0].setFlag(Flags.Flag.SEEN, true);
 			}
 	 	    
@@ -970,8 +1001,7 @@ public class fetchEmail extends fetchAccount{
 			
 		}
 		
-		m_unreadMailVector_confirm.removeAllElements();
-		m_unreadMailVector_marking.removeAllElements();				
+		m_unreadMailVector_confirm.removeAllElements();	
 	}
 	
 	public synchronized void PushMsg(sendReceive _sendReceive)throws Exception{ 
@@ -1136,14 +1166,24 @@ public class fetchEmail extends fetchAccount{
 		while (enumerationHeaderTmp.hasMoreElements()) {  
 		    Header header = (Header) enumerationHeaderTmp.nextElement();  
 		    mailTitle = header.getValue();
-		}
-
+		}		
+			
 		if(mailTitle.indexOf("=?") != -1 && mailTitle.indexOf("?=") != 1){
-			_mail.SetSubject(DecodeName(mailTitle,false));
+			mailTitle = DecodeName(mailTitle,false);
 		}else{
-			_mail.SetSubject(m.getSubject());
+			if(m.getSubject() != null){
+				mailTitle = m.getSubject();
+			}else{
+				mailTitle = fetchMail.fsm_noSubjectTile;
+			}
 		}
 		
+		// remove all \r and \n 
+		// because the Blackberry ViewListenerExtended.forward or ViewListenerExtended.reply
+		// method's argument Message.getSubject without \n
+		// to make yuchberry can't find right orig message by subject
+		//
+		_mail.SetSubject(mailTitle.replaceAll("[\r\n]", ""));		
 		
 		Date t_date = m.getSentDate();
 		if(t_date != null){
@@ -1345,10 +1385,18 @@ public class fetchEmail extends fetchAccount{
 		int t_start = _name.indexOf("=?");
 		
 		if(t_start != -1){
-			
+
 			int t_count = 0;
 			do{
-				_name = _name.substring(0, t_start) + MimeUtility.decodeText(_name.substring(t_start));
+				int t_end = _name.indexOf("?=", t_start + 2);
+				
+				if(t_end == -1){
+					_name = _name.substring(0, t_start) + MimeUtility.decodeText(_name.substring(t_start));
+				}else{
+					_name = _name.substring(0, t_start) + 
+							MimeUtility.decodeText(_name.substring(t_start,t_end + 2).replaceAll("[\r\n ]", "")) + 
+							_name.substring(t_end + 2);
+				}				
 				
 				t_start = _name.indexOf("=?");
 				

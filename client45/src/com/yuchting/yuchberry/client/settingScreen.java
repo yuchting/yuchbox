@@ -115,19 +115,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 	 public void RefreshUpDownloadByte(){
 		 m_mainApp.invokeLater(new Runnable() {
 			public void run() {
-				m_uploadByte.setText(recvMain.sm_local.getString(localResource.UPLOAD_STATISTICS) + GetByteStr(m_mainApp.m_uploadByte));
-				m_downloadByte.setText(recvMain.sm_local.getString(localResource.DOWNLOAD_STATISTICS) + GetByteStr(m_mainApp.m_downloadByte));
+				m_uploadByte.setText(recvMain.sm_local.getString(localResource.UPLOAD_STATISTICS) + recvMain.GetByteStr(m_mainApp.m_uploadByte));
+				m_downloadByte.setText(recvMain.sm_local.getString(localResource.DOWNLOAD_STATISTICS) + recvMain.GetByteStr(m_mainApp.m_downloadByte));
 			}
 		});
-	 }
-	 
-	 static private String GetByteStr(long _byte){
-		 if(_byte < 1024){
-			 return "" + _byte + "B";
-		 }else if(_byte >= 1024 && _byte < 1024 * 1024){
-			 return "" + (_byte / 1024) + "." + (_byte % 1024)+ "KB";
-		 }else{
-			 return "" + (_byte / (1024 * 1024)) + "." + ((_byte / 1024) % 1024) + "MB";
-		 }
 	 }
 }

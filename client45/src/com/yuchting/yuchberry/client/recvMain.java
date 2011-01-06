@@ -700,6 +700,16 @@ public class recvMain extends UiApplication implements localResource {
 	
 	public final Vector GetErrorString(){
 		return m_errorString;
-	}	
+	}
+	
+	static public String GetByteStr(long _byte){
+		 if(_byte < 1024){
+			 return "" + _byte + "B";
+		 }else if(_byte >= 1024 && _byte < 1024 * 1024){
+			 return "" + (_byte / 1024) + "." + (_byte % 1024)+ "KB";
+		 }else{
+			 return "" + (_byte / (1024 * 1024)) + "." + ((_byte / 1024) % 1024) + "MB";
+		 }
+	 }
 }
 

@@ -1270,16 +1270,8 @@ public class connectDeamon extends Thread implements SendListener,
 		    		sendReceive.WriteInt(t_tmpContent, t_attachment.m_size);
 		    		sendReceive.WriteString(t_tmpContent, t_attachment.m_name);		    		
 		    		
-		    		String t_sizeString;
-		    		
-		    		if(t_attachment.m_size > 1024 * 1024){
-		    			t_sizeString = " (" + (t_attachment.m_size/1024/1024) + "MB)"; 
-		    		}else if(t_attachment.m_size > 1024){
-		    			t_sizeString = " (" + (t_attachment.m_size/1024) + "KB)";
-		    		}else{
-		    			t_sizeString = " (" + (t_attachment.m_size) + "B)";
-		    		}
-		    		
+		    		String t_sizeString = "(" + recvMain.GetByteStr(t_attachment.m_size) + ")";		    		
+
 		    		SupportedAttachmentPart attach = new SupportedAttachmentPart( multipart,
 		    																	(String)t_attachment.m_type,
 		    																	t_sizeString + t_attachment.m_name,

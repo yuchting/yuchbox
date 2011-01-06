@@ -114,7 +114,7 @@ public class fetchMgr{
 			throw new Exception("Client has been closed");
 		}
 		
-		m_currConnect.m_sendReceive.SendBufferToSvr(_os.toByteArray(), _sendImm);
+		m_currConnect.m_sendReceive.SendBufferToSvr(_os.toByteArray(), _sendImm);		
 	}
         
 	public void InitConnect(String _prefix,String _configFile,Logger _logger){
@@ -232,11 +232,14 @@ public class fetchMgr{
 	}
 	
 	public void CheckAccountFolders(){
-		
+				
 		for(int i = 0;i < m_fetchAccount.size();i++){
 			fetchAccount account = (fetchAccount)m_fetchAccount.elementAt(i);
+			
 			try{
+				
 				account.CheckFolder();
+				
 			}catch(Exception e){
 				
 				m_logger.PrinterException(e);
@@ -244,7 +247,6 @@ public class fetchMgr{
 				try{
 					
 					Thread.sleep(5000);
-					
 					account.ResetSession(false);
 					
 				}catch(Exception _e){
@@ -252,11 +254,10 @@ public class fetchMgr{
 					break;
 				}
 				
-			}	
+			}
 		}
-		
 	}
-	
+		
 	public void Push(sendReceive _send){
 		
 		boolean t_repush = false;
@@ -284,7 +285,7 @@ public class fetchMgr{
 			}			
 		}
 	}
-	
+		
 	private void ProcessSponsorList(ByteArrayInputStream _in){
 		try{
 			

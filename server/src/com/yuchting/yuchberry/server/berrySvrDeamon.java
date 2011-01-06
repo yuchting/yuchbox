@@ -21,6 +21,8 @@ class berrySvrPush extends Thread{
 	berrySvrDeamon		m_serverDeamon;
 	sendReceive			m_sendReceive;
 	
+	boolean			m_closed = false;
+	
 	public berrySvrPush(berrySvrDeamon _svrDeamon)throws Exception{
 		m_serverDeamon = _svrDeamon;
 		m_sendReceive = new sendReceive(m_serverDeamon.m_socket.getOutputStream(),
@@ -31,27 +33,15 @@ class berrySvrPush extends Thread{
 	
 	public void run(){
 				
-		while(true){
+		while(!m_closed){
 						
 			try{
-				if(m_serverDeamon.m_socket == null 
-				|| !m_serverDeamon.m_socket.isConnected()){
-					break;
-				}				
-				
-				m_serverDeamon.m_fetchMgr.CheckAccountFolders();				
-				
-								
-				if(m_serverDeamon.m_socket == null 
-				|| !m_serverDeamon.m_socket.isConnected()){
-					
-					break;
-				}
-
+			
+				m_serverDeamon.m_fetchMgr.CheckAccountFolders();
 				m_serverDeamon.m_fetchMgr.Push(m_sendReceive);
 				
-				sleep(m_serverDeamon.m_fetchMgr.GetPushInterval() * 1000);
-				
+				sleep(m_serverDeamon.m_fetchMgr.GetPushInterval() * 1000);				
+							
 			}catch(Exception _e){
 				m_serverDeamon.m_fetchMgr.m_logger.PrinterException(_e);
 			}
@@ -72,7 +62,7 @@ public class berrySvrDeamon extends Thread{
 	sendReceive  		m_sendReceive = null;
 	
 	int					m_clientVer = 0;
-	
+		
 	private berrySvrPush m_pushDeamon = null;
 	
 	public berrySvrDeamon(fetchMgr _mgr,Socket _s)throws Exception{
@@ -93,7 +83,7 @@ public class berrySvrDeamon extends Thread{
 			m_fetchMgr.GetClientConnected().m_socket.close();
 			
 			while(m_fetchMgr.GetClientConnected() != null){
-				sleep(10);
+				sleep(50);
 			}
 		}		
 	
@@ -203,17 +193,17 @@ public class berrySvrDeamon extends Thread{
 				try{
 					if(m_socket != null){
 						m_socket.close();
-					}									
+					}
 				}catch(Exception e){
 					m_fetchMgr.m_logger.PrinterException(_e);
-				}
-				
+				}				
 				
 				m_socket = null;
 				m_sendReceive.CloseSendReceive();
 				m_fetchMgr.SetClientConnected(null);
 				
-				m_pushDeamon.interrupt();
+				m_pushDeamon.m_closed = true;
+				m_pushDeamon.interrupt();				
 				
 				m_fetchMgr.m_logger.PrinterException(_e);
 								

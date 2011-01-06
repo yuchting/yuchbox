@@ -245,9 +245,50 @@ public class HelloWorld {
 		//GenFanShuai();
 		
 		//System.out.println(GetByteStr(123412321));
+		try{
+			String t_title = "aaa =?GB2312?B?QURJ1NrP39HQzNa74aO61rG907HkxrW908rVu/q\n 1xNX9 vbu6zdaxwffQo9X9o6gx1MIxM8jVyc/O5zEwo7owMKOpKEFEKQ==?= sdfsdfsd =?GB2312?B?QURJ1NrP39HQzNa74aO61rG907HkxrW908rVu/q\n 1xNX9 vbu6zdaxwffQo9X9o6gx1MIxM8jVyc/O5z\r\nEwo7owMKOpKE  FEKQ==?=";
+			System.out.println(DecodeName(t_title,false));
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
 		
 		ReadConfigXML();
 		
+	}
+	static public String DecodeName(String _name,boolean _convert)throws Exception{
+		
+		if(_name == null){
+			return "No Subject";
+		}
+		
+		int t_start = _name.indexOf("=?");
+		
+		if(t_start != -1){
+
+			int t_count = 0;
+			do{
+				int t_end = _name.indexOf("?=", t_start + 2);
+				
+				if(t_end == -1){
+					_name = _name.substring(0, t_start) + MimeUtility.decodeText(_name.substring(t_start));
+				}else{
+					_name = _name.substring(0, t_start) + 
+							MimeUtility.decodeText(_name.substring(t_start,t_end + 2).replaceAll("[\r\n ]", "")) + 
+							_name.substring(t_end + 2);
+				}				
+				
+				t_start = _name.indexOf("=?");
+				
+			}while(t_start != -1 && t_count++ < 10);
+			
+		}else{
+			if(_convert){
+				_name = new String(_name.getBytes("ISO8859_1"));
+			}			
+		}
+		
+		return _name;
 	}
 	static public void ReadConfigXML(){
 		try{
@@ -505,23 +546,6 @@ public class HelloWorld {
 		}
 	}
 
-	static public String DecodeName(String _name,boolean _convert)throws Exception{
-		
-		final int t_start = _name.indexOf("=?");
-		final int t_end = _name.lastIndexOf("?=");
-		
-		if(t_start != -1 && t_end != -1){
-			_name = _name.substring(0, t_start) + 
-					MimeUtility.decodeText(_name.substring(t_start, t_end + 2)) +
-					_name.substring(t_end + 2);
-		}else{
-			if(_convert){
-				_name = new String(_name.getBytes("ISO8859_1"));
-			}			
-		}
-		
-		return _name;
-	}
 	
 	void ReadStringLineTest(){
 		try{

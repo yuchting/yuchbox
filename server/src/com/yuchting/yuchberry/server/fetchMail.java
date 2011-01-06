@@ -16,6 +16,8 @@ class MailAttachment{
 public class  fetchMail{
 	
 	final static int	VERSION = 1;
+	
+	public final static String	fsm_noSubjectTile = "No Subject";
 	    	
 	final static int	ANSWERED 	= 1 << 0;
 	final static int	DELETED 	= 1 << 1;
@@ -162,15 +164,7 @@ public class  fetchMail{
 	//set and gets function
 	//
 	public String GetSubject(){	return m_subject;}
-	
-	public void SetSubject(String _subject){
-		// remove all \r and \n 
-		// because the Blackberry ViewListenerExtended.forward or ViewListenerExtended.reply
-		// method's argument Message.getSubject without \n
-		// to make yuchberry can't find right orig message by subject
-		//
-		m_subject = _subject.replaceAll("[\r\n]", "");
-	}
+	public void SetSubject(String _subject){m_subject = _subject;}
 	
 	public String GetContain(){return m_contain;}
 	public void SetContain(String _contain){m_contain = _contain;}
