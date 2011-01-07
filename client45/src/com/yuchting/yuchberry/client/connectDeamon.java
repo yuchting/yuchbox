@@ -210,7 +210,9 @@ public class connectDeamon extends Thread implements SendListener,
 		|| e.getMessageChangeType() == MessageEvent.OPENED){
 			
 			try{
-					
+				
+				m_mainApp.StopNotification();
+				
 				AddMarkReadMail(e.getMessage());
 				e.getMessage().removeMessageListener(this);
 				

@@ -382,6 +382,7 @@ public class fetchEmail extends fetchAccount{
 	public void CheckFolder()throws Exception{
 		
 		Folder folder = m_store.getDefaultFolder();
+		
 	    if(folder == null) {
 	    	throw new Exception("Cant find default namespace");
 	    }
