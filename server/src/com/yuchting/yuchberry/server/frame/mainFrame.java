@@ -130,8 +130,8 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 		addWindowListener(new java.awt.event.WindowAdapter() {
 		    public void windowClosing(java.awt.event.WindowEvent e) {
-		    	
-		    	if(JOptionPane.showConfirmDialog(JFrame.getFrames()[0],"真的想关闭所有的用户并退出？", 
+		    	  	
+		    	if(m_accountList.isEmpty() || JOptionPane.showConfirmDialog(JFrame.getFrames()[0],"真的想关闭所有的用户并退出？", 
 		    	"关闭？", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION){
 		    		
 		    		mainFrame t_frame = (mainFrame)e.getWindow();

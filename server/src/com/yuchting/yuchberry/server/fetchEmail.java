@@ -302,8 +302,7 @@ public class fetchEmail extends fetchAccount{
     }
     
     Vector	m_mailIndexAttachName = new Vector();
-    
-    
+        
     public fetchEmail(fetchMgr _mainMgr){
     	super(_mainMgr);
     }

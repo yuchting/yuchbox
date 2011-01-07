@@ -29,8 +29,11 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
 import org.htmlparser.Node;
 import org.htmlparser.NodeFilter;
 import org.htmlparser.Parser;
@@ -226,10 +229,10 @@ public class HelloWorld {
 	 *  @brief main function
 	 *  @param arg  parameters
 	 */
-	public static void main(String arg[]){
+	public static void main(String arg[])throws Exception{
 
-		HelloWorld test = new HelloWorld();
-		test.berryRecvTest();	
+		//HelloWorld test = new HelloWorld();
+		//test.berryRecvTest();	
 		
 		//DelDirectory("Test/");
 		
@@ -250,11 +253,35 @@ public class HelloWorld {
 			System.out.println(DecodeName(t_title,false));
 		}catch(Exception e){
 			e.printStackTrace();
-		}
-		
+		}		
 
 		//ReadConfigXML();
 		
+		TextXML();
+		
+	}
+	
+	static public void TextXML(){
+		try{
+			 Document document = DocumentFactory.getInstance().createDocument();
+			 Element root = document.addElement( "Yuchberry" );
+			 root.addAttribute("aa", "1");
+			 root.addAttribute("bb", "2");
+			 Element t_email = root.addElement("EmailAccount");
+			 t_email.addAttribute("cc","3");
+			 
+			 OutputFormat outformat = OutputFormat.createPrettyPrint();
+			 outformat.setEncoding("UTF-8");
+		   XMLWriter writer = new XMLWriter(new FileOutputStream("test.xml"), outformat);
+		   writer.write(document);
+		   writer.flush();
+		   
+		   writer.close();
+		}catch(Exception e){
+			
+		}
+		
+		 
 	}
 	
 	static public String DecodeName(String _name,boolean _convert)throws Exception{
