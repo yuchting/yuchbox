@@ -994,9 +994,9 @@ public class fetchEmail extends fetchAccount{
 				
 				if(t_confirmMail.m_sendConfirmNum < t_maxConfirmNum){
 					m_unreadMailVector.add(0,t_confirmMail);
-					m_mainMgr.m_logger.LogOut("load mail<" + t_confirmMail.GetMailIndex() + "> send again,wait confirm...");	
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " load mail<" + t_confirmMail.GetMailIndex() + "> send again,wait confirm...");	
 				}else{
-					m_mainMgr.m_logger.LogOut("load mail<" + t_confirmMail.GetMailIndex() + "> send " + t_maxConfirmNum + " times, give up.");
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " load mail<" + t_confirmMail.GetMailIndex() + "> send " + t_maxConfirmNum + " times, give up.");
 				}
 			}
 			
@@ -1027,7 +1027,7 @@ public class fetchEmail extends fetchAccount{
 			
 			t_mail.m_sendConfirmNum++;
 			
-			m_mainMgr.m_logger.LogOut("send mail<" + t_mail.GetMailIndex() + " : " + t_mail.GetSubject() + ">,wait confirm...");
+			m_mainMgr.m_logger.LogOut(GetAccountName() + " send mail<" + t_mail.GetMailIndex() + " : " + t_mail.GetSubject() + ">,wait confirm...");
 		}
 	}
 	
@@ -1051,7 +1051,7 @@ public class fetchEmail extends fetchAccount{
 				fos.write(0);
 			}
 			
-			m_mainMgr.m_logger.LogOut("store attachment " + t_filename + " size:" + t_attachment.m_size);
+			m_mainMgr.m_logger.LogOut(GetAccountName() + " store attachment " + t_filename + " size:" + t_attachment.m_size);
 			
 			fos.close();
 		}
