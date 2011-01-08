@@ -2,7 +2,7 @@
 <!-- 
 # 服务器配置文件
 #
-# 详细请访问 http://code.google.com/p/yuchberry/wiki/fill_config_xml
+# 详细请访问 http://code.google.com/p/yuchberry/wiki/fill_config_ini
 #
 -->
 <Yuchberry	userPassword="111111"	serverPort="9716"	pushInterval="30"	userSSL="0"	convertoSimpleChar="0"	>
