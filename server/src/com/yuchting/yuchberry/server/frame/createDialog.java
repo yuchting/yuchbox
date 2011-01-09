@@ -15,12 +15,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -48,6 +50,7 @@ import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
+import com.yuchting.yuchberry.server.Logger;
 import com.yuchting.yuchberry.server.fetchAccount;
 import com.yuchting.yuchberry.server.fetchEmail;
 import com.yuchting.yuchberry.server.fetchMgr;
@@ -108,13 +111,14 @@ final class createEmailData{
 	boolean m_useFullNameSignIn;
 }
 
-final class createData{
+final class mainAttrData{
 	
 	// main attribute
 	String m_serverProt		;
 	String m_signature		;
 	
 	String m_pushInterval	;
+	String m_userPassword	;
 	
 	boolean m_useSSL		;
 		
@@ -198,7 +202,8 @@ public class createDialog extends JDialog implements DocumentListener,
 	JButton		m_delAccountBut		= new JButton("删除");
 	
 	
-	JList		m_accountList		= new JList();
+	DefaultListModel m_accountlistModel = new DefaultListModel();
+	JList		m_accountList		= new JList(m_accountlistModel);
 	JScrollPane	m_accountListScroll	= new JScrollPane(m_accountList);
 	
 	JTabbedPane m_tabbedPane 		= new JTabbedPane();
@@ -234,7 +239,7 @@ public class createDialog extends JDialog implements DocumentListener,
 	Element		m_createConfigDoc_root = m_createConfigDoc.addElement("Yuchberry");
 	
 	Vector		m_createAccountList	= new Vector();
-	
+
 	fetchMgr	m_fetchMgrCreate	= new fetchMgr();
 	
 	public createDialog(mainFrame _main,String _formerHost,String _formerPort,
@@ -249,7 +254,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		setResizable(false);
 								
 		getContentPane().setLayout(new FlowLayout());
-		
+				
 		setSize(fsm_width,fsm_height);
 		setLocation(_main.getLocation().x + (_main.getWidth()- fsm_width) / 2,
 					_main.getLocation().y + (_main.getHeight() -  fsm_height) / 2);
@@ -432,75 +437,133 @@ public class createDialog extends JDialog implements DocumentListener,
 					break;
 				}
 			}
-			
+						
 			try{
 				
-				CreateAccountAndTest(t_email);
-				
-				setVisible(false);
-				dispose();	
+				CreateAccountAndTest(t_email);	
 				
 			}catch(Exception ex){
 				JOptionPane.showMessageDialog(this, ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
 			}			
 			
+		}else if(e.getSource() == m_delAccountBut){
+			final int t_selectIndex = m_accountList.getSelectedIndex();
+			if(t_selectIndex != -1){
+				
+				fetchAccount t_account = (fetchAccount)m_createAccountList.elementAt(t_selectIndex);
+				
+				if(JOptionPane.showConfirmDialog(this,"删除这个 <"+ t_account.GetAccountName() + "> 账户？", 
+				    "删除？", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION){
+					
+					return;
+				}
+				
+				Iterator elementIterator = m_createConfigDoc_root.elementIterator();
+				while(elementIterator.hasNext()){
+					Element element = (Element)elementIterator.next();
+					if(element.attributeValue("account").equals(t_account.GetAccountName())){
+						
+						m_createConfigDoc_root.remove(element);
+						break;
+					}
+			    }
+				
+				m_createAccountList.removeElementAt(t_selectIndex);
+				
+				RefreshAccountList();
+			}
 		}else if(e.getSource() == m_confirmBut){
 			
-			final int t_serverPort = Integer.valueOf(m_serverPort.getText()).intValue();
-			final int t_listenPort = 3000;
-			
-			if(m_serverPort.getText().length() == 0 || t_serverPort <= t_listenPort){
-				JOptionPane.showMessageDialog(this, "用户密码不能为空，监听yuchberry端口不能小于 " + t_listenPort, "错误", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
-			
-			final int t_minPushInterval = 2;
-			if(Integer.valueOf(m_pushInterval.getText()).intValue() <= t_minPushInterval){
-				JOptionPane.showMessageDialog(this, "推送间隔不能小于 " + t_minPushInterval, "错误", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
-			
-			if(m_mainFrame.SearchAccountThread("",t_serverPort) != null){
-				JOptionPane.showMessageDialog(this, "服务端口" + t_serverPort + "已经被使用");
-				return;
-			}
-			
-
-			ServerSocket t_sockTest = null;
+			fetchAccount t_account = (fetchAccount)m_createAccountList.elementAt(0);
 			try{
-				t_sockTest = (new ServerSocket(t_serverPort));
-				t_sockTest.close();
-			}catch(Exception e){
-				throw new Exception("服务端口" + t_serverPort + "无法开启：" + e.getMessage());
+				
+				String t_prefix = t_account.GetAccountName() + "/";
+				WriteXmlFile(m_createConfigDoc,t_prefix + fetchMgr.fsm_configFilename);
+				
+				m_mainFrame.AddAccountThread(new fetchThread(m_fetchMgrCreate,t_prefix,
+															Long.valueOf(m_expiredTime.getText()).longValue(),
+															(new Date()).getTime(),false),
+											true);
+				
+				setVisible(false);
+				dispose();
+				
+			}catch(Exception ex){
+				JOptionPane.showMessageDialog(this, ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
 			}
-			
-			if(m_createAccountList.isEmpty()){
-				throw new Exception("没有任何账户Push");
-			}
-			
-			String t_prefix = _accountName + "/";
-			WriteSignature(t_prefix,_email);
-			
-			fetchThread t_thread = null;
-			
-			try{				
-				WriteXmlFile(t_prefix + fetchMgr.fsm_configFilename);
-			}catch(Exception e){
-				throw new Exception("复制创建" + t_prefix + fetchMgr.fsm_configFilename + "出现问题：" + e.getMessage());
-			}			
-			
-			t_thread = new fetchThread(t_prefix,t_prefix + fetchMgr.fsm_configFilename,
-									Long.valueOf(m_expiredTime.getText()).longValue(),(new Date()).getTime(),true);
-					
-			m_mainFrame.AddAccountThread(t_thread,true);
-			m_mainFrame.SelectAccount(t_thread.m_fetchMgr.GetAccountName());
+						
 		}
 	}
 	
-	private void Check
+	private void CheckMainAttr()throws Exception{
+		mainAttrData t_mainData = new mainAttrData();
 		
-	private void CreateAccountAndTest(createEmailData _email)throws Exception{
+		t_mainData.m_userPassword		= m_userPassword.getText();
+		t_mainData.m_serverProt			= m_serverPort.getText();
+		t_mainData.m_pushInterval		= m_pushInterval.getText();
+		t_mainData.m_useSSL				= m_useSSL.isSelected();
+		t_mainData.m_convertToSimple	= m_convertToSimple.isSelected();
+		t_mainData.m_signature			= m_signature.getText();
+		
+		
+		CheckMainAttr(t_mainData);
+	}
 	
+	private void CheckMainAttr(final mainAttrData _data)throws Exception{
+		
+		if(_data.m_userPassword.length() == 0){
+			throw new Exception("用户密码不能为空");
+		}
+		
+		final int t_serverPort = Integer.valueOf(_data.m_serverProt).intValue();
+		final int t_listenPort = 3000;
+		
+		if(t_serverPort <= t_listenPort){
+			throw new Exception("监听yuchberry端口不能小于 " + t_listenPort);
+		}
+		
+		if(m_mainFrame.SearchAccountThread("",t_serverPort) != null){
+			throw new Exception("服务端口" + t_serverPort + "已经被使用");
+		}
+		
+		final int t_minPushInterval = 2;
+		if(Integer.valueOf(_data.m_pushInterval).intValue() <= t_minPushInterval){
+			throw new Exception("推送间隔不能小于 " + t_minPushInterval);
+		}
+		
+		ServerSocket t_sockTest = null;
+		try{
+			t_sockTest = (new ServerSocket(t_serverPort));
+			t_sockTest.close();
+		}catch(Exception e){
+			throw new Exception("服务端口" + t_serverPort + "无法开启：" + e.getMessage());
+		}
+					
+		m_createConfigDoc_root.addAttribute("userPassword", _data.m_userPassword);
+		m_createConfigDoc_root.addAttribute("serverPort", _data.m_serverProt);
+		m_createConfigDoc_root.addAttribute("pushInterval", _data.m_pushInterval);
+		m_createConfigDoc_root.addAttribute("userSSL", _data.m_useSSL?"1":"0");
+		m_createConfigDoc_root.addAttribute("convertoSimpleChar", _data.m_convertToSimple?"1":"0");
+		
+		if(m_fetchMgrCreate.GetPrefixString() == null){
+			
+			final String t_tmpCreateDir = "tmpCreate/";
+			File t_tmpFile = new File(t_tmpCreateDir);
+			if(!t_tmpFile.exists()){
+				t_tmpFile.mkdir();
+			}
+			
+			WriteXmlFile(m_createConfigDoc,t_tmpCreateDir + fetchMgr.fsm_configFilename);
+			
+			m_fetchMgrCreate.InitConnect(t_tmpCreateDir,new Logger(t_tmpCreateDir));			
+		}
+		
+	}
+		
+	private void CreateAccountAndTest(final createEmailData _email)throws Exception{
+		
+		CheckMainAttr();
+		
 		if(_email.m_accountName.length() == 0 || _email.m_password.length() == 0){
 			throw new Exception("账户名、密码不能为空");
 		}
@@ -532,9 +595,20 @@ public class createDialog extends JDialog implements DocumentListener,
 		}
 		
 		m_createAccountList.addElement(CheckEmailConnect(_email));
+		
+		RefreshAccountList();
+	}
+	
+	private void RefreshAccountList(){
+		m_accountlistModel.removeAllElements();
+		
+		for(int i = 0 ;i < m_createAccountList.size();i++){
+			fetchAccount t_account = (fetchAccount)m_createAccountList.elementAt(i);
+			m_accountlistModel.addElement(t_account);
+		}
 	}
 
-	public fetchEmail CheckEmailConnect(createEmailData _email)throws Exception{
+	public fetchEmail CheckEmailConnect(final createEmailData _email)throws Exception{
 		
 		Element t_elem = DocumentFactory.getInstance().createDocument().addElement("EmailAccount");
 		t_elem.addAttribute("account", _email.m_accountName);
@@ -545,18 +619,20 @@ public class createDialog extends JDialog implements DocumentListener,
 		t_elem.addAttribute("host", _email.m_host);
 		t_elem.addAttribute("port", _email.m_port);
 		
-		t_elem.addAttribute("protocol_send", "stmp");
+		t_elem.addAttribute("protocol_send", "smtp");
 		t_elem.addAttribute("host_send", _email.m_send_host);
 		t_elem.addAttribute("port_send", _email.m_send_port);
 		t_elem.addAttribute("appendHTML", _email.m_appendHTML?"1":"0");
-		
-		if(m_fetchMgrCreate.GetPrefixString().length() == 0){
-			String t_prefix = _email.m_accountName + "/";
-			m_fetchMgrCreate.InitConnect(t_prefix, t_prefix + _configFile, _logger)
-		}
+				
 		fetchEmail t_emailAccount = new fetchEmail(m_fetchMgrCreate);
 		t_emailAccount.InitAccount(t_elem);
 		
+		t_emailAccount.ResetSession(true);
+		t_emailAccount.DestroySession();
+		
+		m_createConfigDoc_root.add((Element)t_elem.clone());
+		
+		return t_emailAccount;
 	}
 	
 	public void itemStateChanged(ItemEvent e){
@@ -643,36 +719,27 @@ public class createDialog extends JDialog implements DocumentListener,
 
 	}
 	
-	private void WriteSignature(String _prefix,String _signature)throws Exception{
+	static public  void WriteSignature(String _prefix,String _signature)throws Exception{
+		
 		if(_signature.length() != 0){
 			FileOutputStream t_out = new FileOutputStream(_prefix + fetchEmail.fsm_signatureFilename);
-			t_out.write(m_signature.getText().getBytes("UTF-8"));
+			t_out.write(_signature.getBytes("UTF-8"));
 			t_out.flush();
 			t_out.close();
 		}
 	}
-	private void WriteXmlFile(String _iniFile)throws Exception{
-		
-		Document document = DocumentFactory.getInstance().createDocument();
-		Element root = document.addElement( "Yuchberry" );
-		root.addAttribute("aa", "1");
-		root.addAttribute("bb", "2");
-		Element t_email = root.addElement("EmailAccount");
-		t_email.addAttribute("cc","3");
-		 
+	
+	static public void WriteXmlFile(Document _doc,String _iniFile)throws Exception{
+				 
 		OutputFormat outformat = OutputFormat.createPrettyPrint();
 		outformat.setEncoding("UTF-8");
 		XMLWriter writer = new XMLWriter(new FileOutputStream(_iniFile), outformat);
-		writer.write(document);
+		writer.write(_doc);
 		writer.flush();
 		writer.close();		
-	}
+	}	
 	
-	
-	
-	
-	
-	public static void CopyFile(String sourceFile,String targetFile) throws IOException{
+	static public void CopyFile(String sourceFile,String targetFile) throws IOException{
 
 		FileInputStream input = new FileInputStream(sourceFile); 
 		BufferedInputStream inBuff=new BufferedInputStream(input); 

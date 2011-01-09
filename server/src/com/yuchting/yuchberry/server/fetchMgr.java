@@ -117,22 +117,24 @@ public class fetchMgr{
 		m_currConnect.m_sendReceive.SendBufferToSvr(_os.toByteArray(), _sendImm);		
 	}
         
-	public void InitConnect(String _prefix,String _configFile,Logger _logger){
+	public void InitConnect(String _prefix,Logger _logger)throws Exception{
 		
 		m_prefix	= _prefix;
 		m_logger	= _logger;
-			
+		
+		DestroyAllAcount();
+		
 		try{
 			
 			SAXReader t_xmlReader = new SAXReader();
-			Document t_doc = t_xmlReader.read(new FileInputStream(_configFile)); 
+			Document t_doc = t_xmlReader.read(new FileInputStream(m_prefix + fsm_configFilename)); 
 			Element t_root = t_doc.getRootElement();
 			
 			m_userPassword					= fetchAccount.ReadStringAttr(t_root,"userPassword");
 			m_listenPort					= fetchAccount.ReadIntegerAttr(t_root,"serverPort");
 			m_fetchInterval					= fetchAccount.ReadIntegerAttr(t_root,"pushInterval");
 			m_userSSL						= fetchAccount.ReadBooleanAttr(t_root,"userSSL");
-			m_convertToSimpleChar			= fetchAccount.ReadBooleanAttr(t_root,"convertoSimpleChar");
+			m_convertToSimpleChar			= fetchAccount.ReadBooleanAttr(t_root,"convertoSimpleChar");			
 			
 			for( Iterator i = t_root.elementIterator("EmailAccount"); i.hasNext();){
 	            Element element = (Element) i.next();
@@ -191,6 +193,14 @@ public class fetchMgr{
 		}		
 	}
 	
+	public void DestroyAllAcount()throws Exception{
+		for(int i = 0;i < m_fetchAccount.size();i++){
+			fetchAccount accout =(fetchAccount)m_fetchAccount.elementAt(i);
+			accout.DestroySession();
+		}
+		
+		m_fetchAccount.removeAllElements();
+	}
 	public void ResetAllAccountSession(boolean _testAll)throws Exception{
 		
 		for(int i = 0;i < m_fetchAccount.size();i++){

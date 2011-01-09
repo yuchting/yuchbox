@@ -10,8 +10,12 @@ public class fetchMain{
 		
 		while(true){
 
-			t_manger.InitConnect("",fetchMgr.fsm_configFilename,t_logger);
-			t_manger.StartListening();
+			try{
+				t_manger.InitConnect("",t_logger);
+				t_manger.StartListening();	
+			}catch(Exception e){
+				t_logger.PrinterException(e);
+			}			
 			
 		    try{
 		    	Thread.sleep(10000);

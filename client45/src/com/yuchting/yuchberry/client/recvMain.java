@@ -26,7 +26,7 @@ import net.rim.device.api.ui.component.DialogClosedListener;
 
 public class recvMain extends UiApplication implements localResource {
 	
-	final static int		fsm_clientVersion = 7;
+	final static int		fsm_clientVersion = 8;
 	
 	final static long		fsm_notifyID_email = 767918509114947L;
 	
@@ -52,7 +52,7 @@ public class recvMain extends UiApplication implements localResource {
 	String				m_stateString		= recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL);
 	String				m_aboutString		= recvMain.sm_local.getString(localResource.ABOUT_DESC);
 	
-	class ErrorInfo{
+	final class ErrorInfo{
 		Date		m_time;
 		String		m_info;
 		
@@ -73,7 +73,7 @@ public class recvMain extends UiApplication implements localResource {
 		
 	boolean			m_autoRun			= false;
 	
-	class APNSelector{
+	final class APNSelector{
 		String		m_name			= null;
 		int			m_validateNum	= 0;
 	}
@@ -86,7 +86,11 @@ public class recvMain extends UiApplication implements localResource {
 	long				m_uploadByte		= 0;
 	long				m_downloadByte		= 0;
 	
-	class UploadingDesc{
+	static final String[]	fsm_pulseIntervalString = {"1","5","10","30"};
+	static final int[]	fsm_pulseInterval		= {1,5,10,30};
+	int						m_pulseIntervalIndex = 2;
+	
+	final class UploadingDesc{
 		
 		fetchMail		m_mail = null;
 		int				m_attachmentIdx;
@@ -322,6 +326,10 @@ public class recvMain extends UiApplication implements localResource {
 		return m_useSSL;
 	}
 	
+	public int GetPulseInterval(){
+		return fsm_pulseInterval[m_pulseIntervalIndex];
+	}
+	
 	public void WriteReadIni(boolean _read){
 		try{
 			
@@ -365,7 +373,11 @@ public class recvMain extends UiApplication implements localResource {
 		    		if(t_currVer >= 6){
 		    			m_uploadByte = sendReceive.ReadLong(t_readFile);
 		    			m_downloadByte = sendReceive.ReadLong(t_readFile);
-		    		}		    		
+		    		}
+		    		
+		    		if(t_currVer >= 7){
+		    			m_pulseIntervalIndex = sendReceive.ReadInt(t_readFile);
+		    		}
 		    		
 		    		
 		    		t_readFile.close();
@@ -401,6 +413,8 @@ public class recvMain extends UiApplication implements localResource {
 				
 				sendReceive.WriteLong(t_writeFile,m_uploadByte);
 				sendReceive.WriteLong(t_writeFile, m_downloadByte);
+				
+				sendReceive.WriteInt(t_writeFile,m_pulseIntervalIndex);
 								
 				t_writeFile.close();
 				

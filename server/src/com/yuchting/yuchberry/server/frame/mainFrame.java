@@ -70,7 +70,7 @@ public class mainFrame extends JFrame implements ActionListener{
 	final static String fsm_accountDataFilename = "account.info";
 	
 	final static int 	fsm_width 	= 800;
-	final static int	fsm_height	= 800;
+	final static int	fsm_height	= 600;
 	
 	final static int	fsm_minAccountTableHeight = 200;
 	final static int	fsm_maxAccountTableHeight = 600;
@@ -227,8 +227,8 @@ public class mainFrame extends JFrame implements ActionListener{
 								t_mainFrame.m_loadDialog.m_state.setText("一共有" + t_lineContain.size()  + "个用户，正在载入第" + (i + 1) + "个用户：");
 								t_mainFrame.m_loadDialog.m_state1.setText(t_data[0]);
 								
-								fetchThread t_thread = new fetchThread(t_prefix,t_prefix + fetchMgr.fsm_configFilename,
-											Long.valueOf(t_data[1]).longValue(),Long.valueOf(t_data[2]).longValue(),false);
+								fetchThread t_thread = new fetchThread(new fetchMgr(),t_prefix,
+													Long.valueOf(t_data[1]).longValue(),Long.valueOf(t_data[2]).longValue(),false);
 				
 								t_mainFrame.AddAccountThread(t_thread,false);
 															

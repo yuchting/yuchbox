@@ -19,6 +19,19 @@ class ErrorLabelText extends Field{
 	
 	static int sm_fontHeight = 15;
 	
+	static int sm_display_width	= Display.getWidth();
+	static int sm_display_height	= Display.getHeight();
+	
+	int			m_viewPixel_x		= 0;
+	int			m_viewPixel_y		= 0;
+	
+	int			m_movePixel_y		= 0;
+	int			m_movePixel_x		= 0;
+		
+	int			m_selectLine		= 0;
+	
+
+	
 	public ErrorLabelText(Vector _stringList){
 		super(Field.READONLY | Field.NON_FOCUSABLE | Field.USE_ALL_WIDTH);
 		
@@ -32,12 +45,11 @@ class ErrorLabelText extends Field{
 	}
 	
 	public void layout(int _width,int _height){
-		final int t_width = Display.getWidth();
 			
 		final int t_size 	= m_stringList.size();
 		final int t_height = Math.max(0, (t_size - 1)) * fsm_space +  t_size * sm_fontHeight;
 		
-		setExtent(t_width, t_height);
+		setExtent(sm_display_width, t_height);
 	}
 	
 	public void paint(Graphics _g){
@@ -48,14 +60,56 @@ class ErrorLabelText extends Field{
 		
 		for(int i = m_stringList.size() -1 ;i >= 0 ;i--){
 			recvMain.ErrorInfo t_info = (recvMain.ErrorInfo)m_stringList.elementAt(i);
-			_g.drawText(t_format.format(t_info.m_time) + ": " + t_info.m_info,0,t_y,Graphics.ELLIPSIS);
+			
+			if(m_stringList.size() - m_selectLine - 1 == i){
+				_g.drawText(t_format.format(t_info.m_time) + ": ssssss" + t_info.m_info,0,t_y,Graphics.DRAWSTYLE_SELECT );
+			}else{
+				_g.drawText(t_format.format(t_info.m_time) + ": " + t_info.m_info,0,t_y,Graphics.ELLIPSIS);
+			}
 			
 			t_y += t_fontHeight + fsm_space;
 		}
 	}
 	
-	public boolean isFocusable(){
-		return true;
+	public void IncreaseRenderSize(int _dx,int _dy){
+		m_movePixel_y += _dy;
+		if(m_movePixel_y < 0){
+			m_movePixel_y = 0;
+		}
+		
+		if(m_movePixel_y > m_stringList.size() * sm_fontHeight){
+			m_movePixel_y -= _dy;
+		}
+		
+		boolean t_refreshFull = false;
+		if(m_movePixel_y > sm_display_height){
+			final int t_former_y = m_viewPixel_y;
+			m_viewPixel_y = m_movePixel_y - sm_display_height;
+			
+			if(t_former_y != m_viewPixel_y){
+				t_refreshFull = true;
+			}
+		}
+		
+		final int t_formerLine = m_selectLine;
+		m_selectLine = m_movePixel_y / sm_fontHeight;
+		
+		if(t_refreshFull){
+			invalidate();
+		}else{
+			if(t_formerLine != m_selectLine){
+				
+				final int t_pos_x = m_movePixel_y - m_viewPixel_y;
+				final int t_line_x = t_pos_x / sm_fontHeight;
+				
+				if(m_selectLine > t_formerLine){
+					invalidate(0,t_line_x - sm_fontHeight,Display.getWidth(),2 * sm_fontHeight);
+				}else{
+					invalidate(0,t_line_x,Display.getWidth(),2 * sm_fontHeight);
+				}				
+			}
+		}
+		
 	}
 }
 
@@ -88,6 +142,11 @@ public class debugInfo extends MainScreen{
 				invalidate();			
 			}
 		});
+	}
+	
+	protected boolean navigationMovement(int dx,int dy,int status,int time){
+		m_errorText.IncreaseRenderSize(dx,dy);
+		return true;
 	}
 
 }

@@ -7,7 +7,7 @@ import com.yuchting.yuchberry.server.fetchMgr;
 
 public class fetchThread extends Thread{
 	
-	fetchMgr 	m_fetchMgr = new fetchMgr();
+	fetchMgr 	m_fetchMgr = null;
 	Logger 		m_logger = null;
 	
 	boolean	m_pauseState = false;
@@ -18,11 +18,13 @@ public class fetchThread extends Thread{
 	long		m_expiredTime	= 0;
 	long		m_formerTimer	= 0;
 		
-	public fetchThread(String _prefix,String _configFile,long _expiredTime,long _formerTimer,boolean _testConnect)throws Exception{
+	public fetchThread(fetchMgr _mainMgr,String _prefix,long _expiredTime,
+					long _formerTimer,boolean _testConnect)throws Exception{
 		m_expiredTime = _expiredTime * 1000 * 3600;
 		
+		m_fetchMgr = _mainMgr;
 		m_logger = new Logger(_prefix);
-		m_fetchMgr.InitConnect(_prefix, _configFile, m_logger);
+		m_fetchMgr.InitConnect(_prefix,m_logger);
 		
 		if(_testConnect){
 			m_fetchMgr.ResetAllAccountSession(true);

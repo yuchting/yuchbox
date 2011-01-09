@@ -39,6 +39,12 @@ public class sendReceive extends Thread{
 		
 		start();
 	}
+	
+	public void SetKeepliveInterval(int _minutes){
+		if(_minutes >= 0){
+			m_keepliveInterval = _minutes * 60;
+		}
+	}
 		
 	public void RegisterStoreUpDownloadByte(IStoreUpDownloadByte _interface){
 		m_storeInterface = _interface;
@@ -161,7 +167,7 @@ public class sendReceive extends Thread{
 				
 				
 				synchronized (this){
-					if(++m_keepliveCounter > m_keepliveInterval){
+					if(m_keepliveInterval != 0 && ++m_keepliveCounter > m_keepliveInterval){
 						m_keepliveCounter = 0;
 						t_keeplive = true;
 					}

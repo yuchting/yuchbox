@@ -270,6 +270,9 @@ public class HelloWorld {
 			 Element t_email = root.addElement("EmailAccount");
 			 t_email.addAttribute("cc","3");
 			 
+			 root.add((Element) t_email.clone());
+			 
+			 
 			 OutputFormat outformat = OutputFormat.createPrettyPrint();
 			 outformat.setEncoding("UTF-8");
 		   XMLWriter writer = new XMLWriter(new FileOutputStream("test.xml"), outformat);

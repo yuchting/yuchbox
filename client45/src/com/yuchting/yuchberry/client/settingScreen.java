@@ -9,6 +9,7 @@ import net.rim.device.api.ui.component.CheckboxField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
+import net.rim.device.api.ui.component.ObjectChoiceField;
 import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
 
@@ -19,6 +20,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 	 CheckboxField		m_useSSLCheckbox= null;
 	 CheckboxField		m_useWifi		= null;
 	 CheckboxField		m_autoRun		= null;
+	 ObjectChoiceField	m_pulseInterval	= null;
 	 
 	 LabelField			m_uploadByte	= new LabelField();
 	 LabelField			m_downloadByte	= new LabelField();
@@ -43,7 +45,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 											m_mainApp.m_appendString,128,EditField.FILTER_DEFAULT);
 		 add(m_appendString);
 		 
-		 m_useSSLCheckbox	= new CheckboxField(recvMain.sm_local.getString(localResource.USE_SSL_LABEL), m_mainApp.m_useSSL);
+		 m_useSSLCheckbox	= new CheckboxField(recvMain.sm_local.getString(localResource.USE_SSL_LABEL),m_mainApp.m_useSSL);
 		 add(m_useSSLCheckbox);
 		 
 		 m_useWifi			= new CheckboxField(recvMain.sm_local.getString(localResource.USE_WIFI_LABEL), m_mainApp.m_useWifi);
@@ -51,6 +53,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 
 		 m_autoRun			= new CheckboxField(recvMain.sm_local.getString(localResource.AUTO_RUN_CHECK_BOX), m_mainApp.m_autoRun);
 		 add(m_autoRun);
+		 
+		 m_pulseInterval	= new ObjectChoiceField(recvMain.sm_local.getString(localResource.PULSE_INTERVAL_LABEL),
+				 				recvMain.fsm_pulseIntervalString,m_mainApp.m_pulseIntervalIndex);
+		 add(m_pulseInterval);
 		 //@}
 		 
 		 add(new SeparatorField());
@@ -105,6 +111,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		
 		m_mainApp.m_appendString = m_appendString.getText();
 		m_mainApp.m_useWifi = m_useWifi.getChecked();
+		
+		m_mainApp.m_pulseIntervalIndex = m_pulseInterval.getSelectedIndex();
 		
 		m_mainApp.WriteReadIni(false);
 		

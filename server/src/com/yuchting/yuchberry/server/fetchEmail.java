@@ -222,7 +222,6 @@ class RecvMailAttach{
 	}
 }
 
-
 public class fetchEmail extends fetchAccount{
 	
 	final static int	CHECK_NUM 		= 20;
@@ -345,7 +344,11 @@ public class fetchEmail extends fetchAccount{
 	
 	public String GetAccountName(){
 		return m_strUserNameFull;
-	}	
+	}
+	
+	public String toString(){
+		return "Email <" + GetAccountName() + ">"; 
+	}
 	
 	public void InitAccount(Element _elem)throws Exception{
 		
