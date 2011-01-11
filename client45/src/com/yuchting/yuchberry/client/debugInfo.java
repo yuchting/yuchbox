@@ -15,9 +15,10 @@ import net.rim.device.api.ui.container.MainScreen;
 
 class ErrorLabelText extends Field{
 	Vector m_stringList;
-	static final int		fsm_space = 1;
+	static final int		fsm_space = 3;
 	
 	static int sm_fontHeight = 15;
+	static int sm_lineHeight = sm_fontHeight + fsm_space;
 	
 	static int sm_display_width	= Display.getWidth();
 	static int sm_display_height	= Display.getHeight();
@@ -41,20 +42,22 @@ class ErrorLabelText extends Field{
 			setFont(myFont);
 			
 			sm_fontHeight = myFont.getHeight() - 3;
+			sm_lineHeight = sm_fontHeight + fsm_space;
+			
 		}catch(Exception _e){}
+		
 	}
 	
 	public void layout(int _width,int _height){
 			
 		final int t_size 	= m_stringList.size();
-		final int t_height = Math.max(0, (t_size - 1)) * fsm_space +  t_size * sm_fontHeight;
+		final int t_height = t_size * sm_lineHeight;
 		
 		setExtent(sm_display_width, t_height);
 	}
 	
 	public void paint(Graphics _g){
 		int t_y = 0;
-		final int t_fontHeight = sm_fontHeight;
 		
 		SimpleDateFormat t_format = new SimpleDateFormat("HH:mm:ss");
 		
@@ -62,22 +65,30 @@ class ErrorLabelText extends Field{
 			recvMain.ErrorInfo t_info = (recvMain.ErrorInfo)m_stringList.elementAt(i);
 			
 			if(m_stringList.size() - m_selectLine - 1 == i){
-				_g.drawText(t_format.format(t_info.m_time) + ": ssssss" + t_info.m_info,0,t_y,Graphics.DRAWSTYLE_SELECT );
+				
+				
+				String t_text = t_format.format(t_info.m_time) + ":" + t_info.m_info;
+				_g.drawText(t_text.substring(m_movePixel_x),1,t_y + 1,Graphics.DRAWSTYLE_SELECT);
+				
+				_g.drawRoundRect(0,t_y,sm_display_width,sm_lineHeight,1,1);
 			}else{
-				_g.drawText(t_format.format(t_info.m_time) + ": " + t_info.m_info,0,t_y,Graphics.ELLIPSIS);
+				_g.drawText(t_format.format(t_info.m_time) + ":" + t_info.m_info,0,t_y,Graphics.ELLIPSIS);
 			}
 			
-			t_y += t_fontHeight + fsm_space;
+			t_y += sm_lineHeight;
 		}
 	}
 	
 	public void IncreaseRenderSize(int _dx,int _dy){
-		m_movePixel_y += _dy;
+						
+		_dy = _dy * sm_fontHeight;
+		
+		m_movePixel_y += _dy ;
 		if(m_movePixel_y < 0){
 			m_movePixel_y = 0;
 		}
 		
-		if(m_movePixel_y > m_stringList.size() * sm_fontHeight){
+		if(m_movePixel_y > m_stringList.size() * sm_lineHeight){
 			m_movePixel_y -= _dy;
 		}
 		
@@ -92,23 +103,43 @@ class ErrorLabelText extends Field{
 		}
 		
 		final int t_formerLine = m_selectLine;
-		m_selectLine = m_movePixel_y / sm_fontHeight;
+		m_selectLine = m_movePixel_y / sm_lineHeight;
 		
 		if(t_refreshFull){
 			invalidate();
 		}else{
+			final int t_pos_y	= m_movePixel_y - m_viewPixel_y;
+			final int t_line_y	= t_pos_y / (sm_lineHeight);
+			
 			if(t_formerLine != m_selectLine){
-				
-				final int t_pos_x = m_movePixel_y - m_viewPixel_y;
-				final int t_line_x = t_pos_x / sm_fontHeight;
-				
+															
 				if(m_selectLine > t_formerLine){
-					invalidate(0,t_line_x - sm_fontHeight,Display.getWidth(),2 * sm_fontHeight);
+					
+					final int t_delta	= t_pos_y - t_line_y * sm_lineHeight;
+					invalidate(0,t_pos_y - sm_lineHeight - t_delta,Display.getWidth(),2 * sm_lineHeight);
 				}else{
-					invalidate(0,t_line_x,Display.getWidth(),2 * sm_fontHeight);
+					invalidate(0,t_line_y * sm_lineHeight,Display.getWidth(),2 * sm_lineHeight);
+				}
+				
+				m_movePixel_x = 0;
+				
+			}else{
+				final int t_former_x = m_movePixel_x;
+				
+				m_movePixel_x += _dx;
+				if(m_movePixel_x < 0){
+					m_movePixel_x = 0;
+				}
+				
+				if(t_former_x != m_movePixel_x){
+					invalidate(0,t_pos_y,Display.getWidth(),2 * sm_lineHeight);
 				}				
 			}
 		}
+		
+		
+		
+		
 		
 	}
 }
@@ -126,6 +157,8 @@ public class debugInfo extends MainScreen{
 		
 		m_errorText = new ErrorLabelText(m_mainApp.GetErrorString());
         add(m_errorText);
+        
+        
 	}
 	
 	public boolean onClose(){
