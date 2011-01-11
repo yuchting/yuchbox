@@ -57,11 +57,16 @@ class ErrorLabelText extends Field{
 	}
 	
 	public void paint(Graphics _g){
+		
 		int t_y = 0;
+		int t_startIdx = 0;
+		if(m_viewPixel_y < 0){
+			t_startIdx = Math.abs(m_viewPixel_y) / sm_lineHeight;
+		}
 		
 		SimpleDateFormat t_format = new SimpleDateFormat("HH:mm:ss");
 		
-		for(int i = m_stringList.size() -1 ;i >= 0 ;i--){
+		for(int i = m_stringList.size() - 1 - t_startIdx ;i >= 0 ;i--){
 			recvMain.ErrorInfo t_info = (recvMain.ErrorInfo)m_stringList.elementAt(i);
 			
 			if(m_stringList.size() - m_selectLine - 1 == i){
@@ -83,6 +88,9 @@ class ErrorLabelText extends Field{
 						
 		_dy = _dy * sm_fontHeight;
 		
+		final int t_former_move_x = m_movePixel_x;
+		final int t_former_move_y = m_movePixel_y;
+		
 		m_movePixel_y += _dy ;
 		if(m_movePixel_y < 0){
 			m_movePixel_y = 0;
@@ -95,11 +103,13 @@ class ErrorLabelText extends Field{
 		boolean t_refreshFull = false;
 		if(m_movePixel_y > sm_display_height){
 			final int t_former_y = m_viewPixel_y;
-			m_viewPixel_y = m_movePixel_y - sm_display_height;
+			m_viewPixel_y = sm_display_height - m_movePixel_y;
 			
 			if(t_former_y != m_viewPixel_y){
 				t_refreshFull = true;
 			}
+		}else{
+			m_viewPixel_y = 0;
 		}
 		
 		final int t_formerLine = m_selectLine;
@@ -108,6 +118,7 @@ class ErrorLabelText extends Field{
 		if(t_refreshFull){
 			invalidate();
 		}else{
+			
 			final int t_pos_y	= m_movePixel_y - m_viewPixel_y;
 			final int t_line_y	= t_pos_y / (sm_lineHeight);
 			
