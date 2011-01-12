@@ -36,25 +36,6 @@ import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.UiApplication;
 
-
-class msg_head{
-	
-	final public static byte msgMail 			= 0;
-	final public static byte msgSendMail 		= 1;
-
-	final public static byte msgConfirm 			= 2;
-	final public static byte msgNote 			= 3;
-	
-	final public static byte msgBeenRead 		= 4;
-	final public static byte msgMailAttach 		= 5;
-	final public static byte msgFetchAttach 		= 6;
-	
-	final public static byte msgKeepLive 		= 7;
-	final public static byte msgMailConfirm		= 8;
-	
-	final public static byte msgSponsorList		= 9;
-}
-
 public class connectDeamon extends Thread implements SendListener,
 												MessageListener,
 												AttachmentHandler,
@@ -533,6 +514,7 @@ public class connectDeamon extends Thread implements SendListener,
 
 				m_conn = GetConnection(m_mainApp.IsUseSSL());
 				m_connect = new sendReceive(m_conn.openOutputStream(),m_conn.openInputStream());
+				m_connect.SetKeepliveInterval(m_mainApp.m_pulseIntervalIndex);
 				
 				m_connect.RegisterStoreUpDownloadByte(new sendReceive.IStoreUpDownloadByte() {
 					public void Store(long uploadByte, long downloadByte) {
@@ -724,8 +706,8 @@ public class connectDeamon extends Thread implements SendListener,
 		 }
 		 
 		 if(m_connectCounter++ > 6){
-			 m_connectCounter = 0;			 
-			 return 5 * 60 * 1000;
+			 m_connectCounter = 0;		 
+			 return m_mainApp.GetPulseIntervalMinutes() * 60 * 1000;
 		 }
 		 
 		 return 10000;

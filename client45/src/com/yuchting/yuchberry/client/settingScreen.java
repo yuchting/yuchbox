@@ -9,6 +9,7 @@ import net.rim.device.api.ui.component.CheckboxField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
+import net.rim.device.api.ui.component.NumericChoiceField;
 import net.rim.device.api.ui.component.ObjectChoiceField;
 import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
@@ -25,7 +26,11 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 	 LabelField			m_uploadByte	= new LabelField();
 	 LabelField			m_downloadByte	= new LabelField();
 	 ButtonField		m_clearByteBut	= new ButtonField(recvMain.sm_local.getString(localResource.CLEAR_STATISTICS),Field.FIELD_RIGHT);
-	 	 
+	 
+	 CheckboxField		m_fulldayPrompt = null;
+	 NumericChoiceField	m_startPromptHour = null;
+	 NumericChoiceField	m_endPromptHour = null;
+	 
 	 recvMain			m_mainApp		= null;
 	 
 	 public settingScreen(recvMain _app){
@@ -45,6 +50,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 											m_mainApp.m_appendString,128,EditField.FILTER_DEFAULT);
 		 add(m_appendString);
 		 
+		 m_pulseInterval	= new ObjectChoiceField(recvMain.sm_local.getString(localResource.PULSE_INTERVAL_LABEL),
+				 							recvMain.fsm_pulseIntervalString,m_mainApp.m_pulseIntervalIndex);
+		 add(m_pulseInterval);
+
 		 m_useSSLCheckbox	= new CheckboxField(recvMain.sm_local.getString(localResource.USE_SSL_LABEL),m_mainApp.m_useSSL);
 		 add(m_useSSLCheckbox);
 		 
@@ -53,10 +62,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 
 		 m_autoRun			= new CheckboxField(recvMain.sm_local.getString(localResource.AUTO_RUN_CHECK_BOX), m_mainApp.m_autoRun);
 		 add(m_autoRun);
-		 
-		 m_pulseInterval	= new ObjectChoiceField(recvMain.sm_local.getString(localResource.PULSE_INTERVAL_LABEL),
-				 				recvMain.fsm_pulseIntervalString,m_mainApp.m_pulseIntervalIndex);
-		 add(m_pulseInterval);
+		
 		 //@}
 		 
 		 add(new SeparatorField());
@@ -85,6 +91,15 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 t_title = new LabelField(recvMain.sm_local.getString(localResource.PROMPT_OPTION_LABEL));
 		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
 		 add(t_title);
+		 
+		 m_fulldayPrompt 	= new CheckboxField(recvMain.sm_local.getString(localResource.FULLDAY_PROMT_LABEL),m_mainApp.m_fulldayPrompt);
+		 add(m_fulldayPrompt);
+		 
+		 m_startPromptHour	= new NumericChoiceField(recvMain.sm_local.getString(localResource.START_HOUR_PROMPT_LABEL),0,24,1,m_mainApp.m_startPromptHour);
+		 add(m_startPromptHour);
+		 
+		 m_endPromptHour	= new NumericChoiceField(recvMain.sm_local.getString(localResource.END_HOUR_PROMPT_LABEL),0,24,1,m_mainApp.m_endPromptHour);
+		 add(m_endPromptHour);
 		 //@}
 		 
 	 }
@@ -104,7 +119,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 	}
 	 
 	 public boolean onClose(){
-		 
+		
 		m_mainApp.m_useSSL	= m_useSSLCheckbox.getChecked();
 		m_mainApp.SetAPNName(m_APN.getText());
 		m_mainApp.m_autoRun = m_autoRun.getChecked();
@@ -113,6 +128,15 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		m_mainApp.m_useWifi = m_useWifi.getChecked();
 		
 		m_mainApp.m_pulseIntervalIndex = m_pulseInterval.getSelectedIndex();
+		
+		m_mainApp.m_fulldayPrompt	= m_fulldayPrompt.getChecked();
+		if(m_startPromptHour.getSelectedIndex() < m_endPromptHour.getSelectedIndex()){
+			m_mainApp.m_startPromptHour	= m_startPromptHour.getSelectedIndex();
+			m_mainApp.m_endPromptHour	= m_endPromptHour.getSelectedIndex();
+		}else{
+			m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.START_BIGGER_THAN_END_PROMPT));
+			return false;
+		}		
 		
 		m_mainApp.WriteReadIni(false);
 		

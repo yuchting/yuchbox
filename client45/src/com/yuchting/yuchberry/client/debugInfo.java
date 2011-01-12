@@ -20,8 +20,8 @@ class ErrorLabelText extends Field{
 	static int sm_fontHeight = 15;
 	static int sm_lineHeight = sm_fontHeight + fsm_space;
 	
-	static int sm_display_width	= Display.getWidth();
-	static int sm_display_height	= Display.getHeight();
+	final static int fsm_display_width		= Display.getWidth();
+	final static int fsm_display_height		= Display.getHeight();
 	
 	int			m_viewPixel_x		= 0;
 	int			m_viewPixel_y		= 0;
@@ -53,7 +53,7 @@ class ErrorLabelText extends Field{
 		final int t_size 	= m_stringList.size();
 		final int t_height = t_size * sm_lineHeight;
 		
-		setExtent(sm_display_width, t_height);
+		setExtent(fsm_display_width, t_height);
 	}
 	
 	public void paint(Graphics _g){
@@ -71,11 +71,10 @@ class ErrorLabelText extends Field{
 			
 			if(m_stringList.size() - m_selectLine - 1 == i){
 				
-				
 				String t_text = t_format.format(t_info.m_time) + ":" + t_info.m_info;
-				_g.drawText(t_text.substring(m_movePixel_x),1,t_y + 1,Graphics.DRAWSTYLE_SELECT);
+				_g.drawText(t_text.substring(m_movePixel_x),1,t_y + 1,Graphics.ELLIPSIS);
 				
-				_g.drawRoundRect(0,t_y,sm_display_width,sm_lineHeight,1,1);
+				_g.drawRoundRect(0,t_y,fsm_display_width,sm_lineHeight,1,1);
 			}else{
 				_g.drawText(t_format.format(t_info.m_time) + ":" + t_info.m_info,0,t_y,Graphics.ELLIPSIS);
 			}
@@ -87,72 +86,80 @@ class ErrorLabelText extends Field{
 	public void IncreaseRenderSize(int _dx,int _dy){
 						
 		_dy = _dy * sm_fontHeight;
-		
-		final int t_former_move_x = m_movePixel_x;
+
 		final int t_former_move_y = m_movePixel_y;
 		
-		m_movePixel_y += _dy ;
-		if(m_movePixel_y < 0){
+		final int t_former_view_y = m_viewPixel_y;		
+		
+		final int t_maxHeight = m_stringList.size() * sm_lineHeight;
+		
+		if(m_movePixel_y + _dy < Math.min(t_maxHeight,fsm_display_height)){
+			if(m_movePixel_y + _dy < 0 ){
+				m_viewPixel_y -= m_movePixel_y + _dy;
+			}else{
+				if(m_movePixel_y + _dy - m_viewPixel_y < t_maxHeight){
+					m_movePixel_y += _dy;
+				}
+			}			
+		}else{
+			if(m_movePixel_y + _dy - m_viewPixel_y < t_maxHeight){
+				m_viewPixel_y -= _dy;
+			}				
+		}
+		
+		if(m_viewPixel_y > 0){
+			m_viewPixel_y = 0;
 			m_movePixel_y = 0;
 		}
 		
-		if(m_movePixel_y > m_stringList.size() * sm_lineHeight){
-			m_movePixel_y -= _dy;
-		}
-		
-		boolean t_refreshFull = false;
-		if(m_movePixel_y > sm_display_height){
-			final int t_former_y = m_viewPixel_y;
-			m_viewPixel_y = sm_display_height - m_movePixel_y;
-			
-			if(t_former_y != m_viewPixel_y){
-				t_refreshFull = true;
-			}
-		}else{
-			m_viewPixel_y = 0;
-		}
-		
+		final boolean t_refreshFull = (t_former_view_y != m_viewPixel_y);
+				
 		final int t_formerLine = m_selectLine;
-		m_selectLine = m_movePixel_y / sm_lineHeight;
+		m_selectLine = (m_movePixel_y - m_viewPixel_y) / sm_lineHeight;
 		
 		if(t_refreshFull){
 			invalidate();
 		}else{
 			
-			final int t_pos_y	= m_movePixel_y - m_viewPixel_y;
-			final int t_line_y	= t_pos_y / (sm_lineHeight);
 			
 			if(t_formerLine != m_selectLine){
-															
-				if(m_selectLine > t_formerLine){
-					
-					final int t_delta	= t_pos_y - t_line_y * sm_lineHeight;
-					invalidate(0,t_pos_y - sm_lineHeight - t_delta,Display.getWidth(),2 * sm_lineHeight);
-				}else{
-					invalidate(0,t_line_y * sm_lineHeight,Display.getWidth(),2 * sm_lineHeight);
-				}
+				
+				RefreshRect(m_movePixel_y,t_former_move_y);	
 				
 				m_movePixel_x = 0;
 				
 			}else{
+				
 				final int t_former_x = m_movePixel_x;
 				
-				m_movePixel_x += _dx;
-				if(m_movePixel_x < 0){
-					m_movePixel_x = 0;
+				if(m_movePixel_x + _dx >= 0){
+					m_movePixel_x += _dx;
 				}
 				
 				if(t_former_x != m_movePixel_x){
-					invalidate(0,t_pos_y,Display.getWidth(),2 * sm_lineHeight);
+					RefreshRect(m_movePixel_y,t_former_move_y);	
 				}				
 			}
+		}		
+	}
+	
+	private void RefreshRect(int _y,int _y1){
+		
+		int t_pos_y			= _y;
+		int t_former_pos_y	= _y1;
+						
+		if(t_pos_y < t_former_pos_y){
+			final int t_tmp = t_pos_y;
+			t_pos_y = t_former_pos_y;
+			t_former_pos_y = t_tmp; 
 		}
 		
+		t_pos_y 		+= sm_lineHeight - (t_pos_y % sm_lineHeight);
+		t_former_pos_y	-= (t_former_pos_y % sm_lineHeight);
 		
-		
-		
-		
+		invalidate(0,t_former_pos_y,Display.getWidth(),t_pos_y - t_former_pos_y);
 	}
+		
 }
 
 

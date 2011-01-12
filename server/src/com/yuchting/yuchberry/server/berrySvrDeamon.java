@@ -37,6 +37,7 @@ class berrySvrPush extends Thread{
 						
 			try{
 			
+				
 				m_serverDeamon.m_fetchMgr.CheckAccountFolders();
 				m_serverDeamon.m_fetchMgr.Push(m_sendReceive);
 				

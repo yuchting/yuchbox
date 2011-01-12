@@ -8,7 +8,7 @@
 <Yuchberry	userPassword="520530"	serverPort="9716"	pushInterval="10"	userSSL="1"	convertoSimpleChar="1"	>
 	<EmailAccount
 		account="yuchting@gmail.com"
-		password="
+		password=""
 		
 		useFullNameSignIn="0"
 		

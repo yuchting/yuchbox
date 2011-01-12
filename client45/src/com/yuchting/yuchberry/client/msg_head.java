@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.server;
+package com.yuchting.yuchberry.client;
 
 final public class msg_head {
 	
@@ -16,9 +16,4 @@ final public class msg_head {
 	final public static byte msgMailConfirm		= 8;
 	
 	final public static byte msgSponsorList		= 9;
-	
-	
-	final public static String noteErrorUserPassword = "illegal client connect\n meybe a error user password";
-
-		
 }

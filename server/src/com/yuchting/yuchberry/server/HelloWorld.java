@@ -248,18 +248,19 @@ public class HelloWorld {
 		//GenFanShuai();
 		
 		//System.out.println(GetByteStr(123412321));
-		try{
-			String t_title = "aaa =?gb2312?Q?=D7=A2=B2 \n=E1=B3=C9=B9=A6!_=BB=B6=D3=AD=C4=FA=B3=C9=CE=AA=CE=F7=B2=BF=CA=FD=C2=EB=D3=C3=BB=A7!?= sdfsdfsd =?GB2312?B?QURJ1NrP39HQzNa74aO61rG907HkxrW908rVu/q\n 1xNX9 vbu6zdaxwffQo9X9o6gx1MIxM8jVyc/O5z\r\nEwo7owMKOpKE  FEKQ==?=";
-			System.out.println(DecodeName(t_title,false));
-		}catch(Exception e){
-			e.printStackTrace();
-		}		
+//		try{
+//			String t_title = "aaa =?gb2312?Q?=D7=A2=B2 \n=E1=B3=C9=B9=A6!_=BB=B6=D3=AD=C4=FA=B3=C9=CE=AA=CE=F7=B2=BF=CA=FD=C2=EB=D3=C3=BB=A7!?= sdfsdfsd =?GB2312?B?QURJ1NrP39HQzNa74aO61rG907HkxrW908rVu/q\n 1xNX9 vbu6zdaxwffQo9X9o6gx1MIxM8jVyc/O5z\r\nEwo7owMKOpKE  FEKQ==?=";
+//			System.out.println(DecodeName(t_title,false));
+//		}catch(Exception e){
+//			e.printStackTrace();
+//		}		
 
 		//ReadConfigXML();
 		
-		TextXML();
-		
+		//TextXML();
+	
 	}
+	
 	
 	static public void TextXML(){
 		try{

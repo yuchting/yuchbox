@@ -13,6 +13,7 @@ import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
 import net.rim.device.api.i18n.ResourceBundle;
+import net.rim.device.api.i18n.SimpleDateFormat;
 import net.rim.device.api.notification.NotificationsConstants;
 import net.rim.device.api.notification.NotificationsManager;
 import net.rim.device.api.system.ApplicationManager;
@@ -22,7 +23,6 @@ import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
-
 
 public class recvMain extends UiApplication implements localResource {
 	
@@ -88,7 +88,11 @@ public class recvMain extends UiApplication implements localResource {
 	
 	static final String[]	fsm_pulseIntervalString = {"1","5","10","30"};
 	static final int[]	fsm_pulseInterval		= {1,5,10,30};
-	int						m_pulseIntervalIndex = 2;
+	int						m_pulseIntervalIndex = 1;
+	
+	boolean			m_fulldayPrompt		= true;
+	int					m_startPromptHour	= 8;
+	int					m_endPromptHour		= 22;
 	
 	final class UploadingDesc{
 		
@@ -309,7 +313,15 @@ public class recvMain extends UiApplication implements localResource {
 	}
 	
 	
-	
+	public boolean IsPromptTime(){
+		
+		if(!m_fulldayPrompt){
+			SimpleDateFormat t_format = new SimpleDateFormat("HH");
+			final int t_hour = Integer.valueOf(t_format.format(new Date())).intValue();
+			return t_hour > m_startPromptHour && t_hour + 1 <= m_endPromptHour;
+		}
+		return true;
+	}
 	public String GetHostName(){
 		return m_hostname;
 	}
@@ -326,7 +338,7 @@ public class recvMain extends UiApplication implements localResource {
 		return m_useSSL;
 	}
 	
-	public int GetPulseInterval(){
+	public int GetPulseIntervalMinutes(){
 		return fsm_pulseInterval[m_pulseIntervalIndex];
 	}
 	
@@ -379,6 +391,11 @@ public class recvMain extends UiApplication implements localResource {
 		    			m_pulseIntervalIndex = sendReceive.ReadInt(t_readFile);
 		    		}
 		    		
+		    		if(t_currVer >= 8){
+		    			m_fulldayPrompt = t_readFile.read() == 1?true:false;
+		    			m_startPromptHour = sendReceive.ReadInt(t_readFile);
+	    				m_endPromptHour = sendReceive.ReadInt(t_readFile);		    			
+		    		}		    		
 		    		
 		    		t_readFile.close();
 		    		
@@ -415,8 +432,17 @@ public class recvMain extends UiApplication implements localResource {
 				sendReceive.WriteLong(t_writeFile, m_downloadByte);
 				
 				sendReceive.WriteInt(t_writeFile,m_pulseIntervalIndex);
+				
+				
+				t_writeFile.write(m_fulldayPrompt?1:0);
+				sendReceive.WriteInt(t_writeFile,m_startPromptHour);
+				sendReceive.WriteInt(t_writeFile,m_endPromptHour);			
 								
 				t_writeFile.close();
+				
+				if(m_connectDeamon.m_connect != null){
+					m_connectDeamon.m_connect.SetKeepliveInterval(m_pulseIntervalIndex);
+				}
 				
 			}
 			
@@ -471,7 +497,9 @@ public class recvMain extends UiApplication implements localResource {
 	}
 	
 	public void TriggerNotification(){
-		NotificationsManager.triggerImmediateEvent(fsm_notifyID_email, 0, this, null);
+		if(IsPromptTime()){
+			NotificationsManager.triggerImmediateEvent(fsm_notifyID_email, 0, this, null);
+		}		
 	}
 	public void StopNotification(){
 		NotificationsManager.cancelImmediateEvent(fsm_notifyID_email, 0, this, null);
@@ -703,7 +731,7 @@ public class recvMain extends UiApplication implements localResource {
 	
 	public void SetErrorString(final String _error){
 		m_errorString.addElement(new ErrorInfo(_error));
-		if(m_errorString.size() > 32){
+		if(m_errorString.size() > 100){
 			m_errorString.removeElementAt(0);
 		}
 		

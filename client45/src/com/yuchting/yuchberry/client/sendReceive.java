@@ -144,14 +144,16 @@ public class sendReceive extends Thread{
 			os.write(_write);
 			os.flush();
 			
-			m_uploadByte += _write.length + 4;
+			// 20 is TCP pack head length			
+			m_uploadByte += _write.length + 4 + 20;
 			
 		}else{
 			WriteInt(os,(_write.length << 16) | t_zipData.length);
 			os.write(t_zipData);
 			os.flush();
 			
-			m_uploadByte += t_zipData.length + 4;
+			// 20 is TCP pack head length
+			m_uploadByte += t_zipData.length + 4 + 20;
 		}
 				
 	}
@@ -221,7 +223,8 @@ public class sendReceive extends Thread{
 			
 			ForceReadByte(in, t_orgdata, t_orglen);
 			
-			m_downloadByte += t_orglen + 4;
+			// 20 is TCP pack head length
+			m_downloadByte += t_orglen + 4 + 20;
 			
 		}else{
 			
@@ -229,7 +232,8 @@ public class sendReceive extends Thread{
 			
 			ForceReadByte(in, t_zipdata, t_ziplen);
 			
-			m_downloadByte += t_ziplen + 4;
+			// 20 is TCP pack head length
+			m_downloadByte += t_ziplen + 4 + 20;
 			
 			GZIPInputStream zi	= new GZIPInputStream(
 										new ByteArrayInputStream(t_zipdata));
