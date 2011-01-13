@@ -70,14 +70,14 @@ public class broadcastDialog extends JDialog implements ActionListener{
 			    	Session t_session_send = Session.getInstance(t_sysProps_send, null);
 			    	t_session_send.setDebug(false);
 			    	
-			    	SMTPTransport t_sendTransport = (SMTPTransport)m_session_send.getTransport(m_protocol_send);
+			    	//SMTPTransport t_sendTransport = (SMTPTransport)m_session_send.getTransport(m_protocol_send);
 			    	
 			    	// test connected
 			    	//
-			    	m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
+			    	//m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
 			        	    		
-			    	}
-				}catch(Exception e){
+			    	
+				}catch(Exception ex){
 					
 				}
 				

@@ -27,10 +27,10 @@ public class textViewScreen extends fileViewScreen{
 		}
 		
 		try{
-			// if the GB2312 decode sytem is NOT present in current system
+			// if the UTF-8 decode sytem is NOT present in current system
 			// will throw the exception
 			//
-			m_editText = new RichTextField(new String(t_tmpContain,"GB2312"));
+			m_editText = new RichTextField(new String(t_tmpContain,"UTF-8"));
 		}catch(Exception e_){
 			m_editText = new RichTextField(new String(t_tmpContain));
 		}

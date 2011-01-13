@@ -6,6 +6,7 @@ import java.util.Vector;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
+import local.localResource;
 import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
@@ -13,7 +14,6 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.MenuItem;
-import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.ListField;
 import net.rim.device.api.ui.component.ListFieldCallback;
 import net.rim.device.api.ui.component.Menu;
@@ -125,9 +125,8 @@ public class uploadFileScreen extends MainScreen implements
 	
 	fileIconList		m_fileList 		= new fileIconList();
 	
-	uploadFileScreenMenu	m_check		= new uploadFileScreenMenu("Check",0,100,this);
-	uploadFileScreenMenu	m_ok		= new uploadFileScreenMenu("OK",1,100,this);
-	uploadFileScreenMenu	m_cancel	= new uploadFileScreenMenu("Cancel",2,100,this);
+	uploadFileScreenMenu	m_ok		= new uploadFileScreenMenu(" ",0,100,this);
+	uploadFileScreenMenu	m_check		= new uploadFileScreenMenu(recvMain.sm_local.getString(localResource.CHECK_UPLOAD_FILE),1,100,this);	
 	
 	
 	final static int fsm_bitmap_width	= 32;
@@ -159,6 +158,10 @@ public class uploadFileScreen extends MainScreen implements
 	
 	uploadFileScreen(connectDeamon _deamon,recvMain _app,boolean _del) throws Exception {
 		
+		m_deamon = _deamon;
+		m_mainApp = _app;
+		m_delScreen = _del;
+		
 		m_textFileBitmap 	= GetConstFileBitmap("/Text_resize.jpg");
 		m_audioFileBitmap 	= GetConstFileBitmap("/Audio_resize.jpg");
 		m_binFileBitmap 	= GetConstFileBitmap("/Unknown_resize.jpg");
@@ -166,12 +169,14 @@ public class uploadFileScreen extends MainScreen implements
 		m_pictureBitmap		= GetConstFileBitmap("/Picture_resize.jpg");
 		m_movieBitmap		= GetConstFileBitmap("/Movie_resize.jpg");
 		
-		m_fileList.setCallback(m_listCallback);		
-		add(m_fileList);
+		m_fileList.setCallback(m_listCallback);	
+		add(m_fileList);		
 		
-		m_deamon = _deamon;
-		m_mainApp = _app;
-		m_delScreen = _del;
+		if(_del){
+			m_ok.setText(recvMain.sm_local.getString(localResource.DEL_UPLOAD_FILE));
+		}else{
+			m_ok.setText(recvMain.sm_local.getString(localResource.ADD_UPLOAD_FILE));
+		}
 		
 		try{
 			FileConnection fc = (FileConnection) Connector.open(fsm_rootPath_default,Connector.READ_WRITE);
@@ -290,7 +295,7 @@ public class uploadFileScreen extends MainScreen implements
 	
 		
 	public Bitmap GetConstFileBitmap(String res)throws Exception{
-		byte[] bytes = IOUtilities.streamToBytes(UiApplication.getUiApplication().getClass().getResourceAsStream(res));
+		byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass().getResourceAsStream(res));
 		
 //		int[] t_data = new int[fsm_bitmap_width * fsm_bitmap_height];
 //		
@@ -371,7 +376,6 @@ public class uploadFileScreen extends MainScreen implements
 	protected void makeMenu(Menu menu, int instance) {
 		menu.add(m_check);
 	    menu.add(m_ok);
-	    menu.add(m_cancel);
 	}
 	
 	public void menuClicked(uploadFileScreenMenu _menu){
@@ -384,7 +388,7 @@ public class uploadFileScreen extends MainScreen implements
 			
 		}else if(_menu == m_ok){
 			
-			final int t_index = m_fileList.getSelectedIndex(); 
+			final int t_index = m_fileList.getSelectedIndex();
 			if(t_index != -1 ){
 				final fileIcon t_file = (fileIcon)m_listCallback.m_iconList.elementAt(t_index);
 				if(t_file.m_isFolder){
@@ -395,19 +399,19 @@ public class uploadFileScreen extends MainScreen implements
 					//
 					if(m_delScreen){
 						m_deamon.DelAttachmentFile(t_file.m_filename_full);
+						m_mainApp.DialogAlert(m_mainApp.sm_local.getString(localResource.DEL_ATTACHMENT_SUCC));
 					}else{
 						m_deamon.AddAttachmentFile(t_file.m_filename_full,t_file.m_fileSize);
+						m_mainApp.DialogAlert(m_mainApp.sm_local.getString(localResource.ADD_ATTACHMENT_SUCC));
 					}				
 					
 					m_mainApp.ClearUploadingScreen();
-					close();
+					
+					close();					
 				}
 			}	
 			
-		}else if(_menu == m_cancel){
-			m_mainApp.ClearUploadingScreen();
-			close();
-		}	
+		}
 	}
 	
 	public boolean onClose(){

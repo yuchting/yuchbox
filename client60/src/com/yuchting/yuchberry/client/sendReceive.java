@@ -12,6 +12,10 @@ import net.rim.device.api.compress.GZIPOutputStream;
 
 public class sendReceive extends Thread{
 	
+	interface IStoreUpDownloadByte{
+		void Store(long _uploadByte,long _downloadByte);
+	}
+	
 	OutputStream		m_socketOutputStream = null;
 	InputStream			m_socketInputStream = null;
 	
@@ -21,6 +25,13 @@ public class sendReceive extends Thread{
 	boolean			m_closed				= false;
 	
 	int					m_keepliveCounter		= 0;
+	
+	long				m_uploadByte			= 0;
+	long				m_downloadByte			= 0;
+	
+	int					m_keepliveInterval		= 60 * 5;
+	
+	IStoreUpDownloadByte	m_storeInterface	= null;
 		
 	public sendReceive(OutputStream _socketOut,InputStream _socketIn){
 		m_socketOutputStream = _socketOut;
@@ -28,7 +39,17 @@ public class sendReceive extends Thread{
 		
 		start();
 	}
+	
+	public void SetKeepliveInterval(int _minutes){
+		if(_minutes >= 0){
+			m_keepliveInterval = _minutes * 60;
+		}
+	}
 		
+	public void RegisterStoreUpDownloadByte(IStoreUpDownloadByte _interface){
+		m_storeInterface = _interface;
+	}
+	
 	//! send buffer
 	public synchronized void SendBufferToSvr(byte[] _write,boolean _sendImm)throws Exception{	
 		m_unsendedPackage.addElement(_write);
@@ -43,9 +64,20 @@ public class sendReceive extends Thread{
 		}
 	}
 	
+	public void StoreUpDownloadByteImm(){
+		if(m_storeInterface != null){
+			m_storeInterface.Store(m_uploadByte,m_downloadByte);
+			m_uploadByte = 0;
+			m_downloadByte = 0;
+		}
+	}
+	
 	public void CloseSendReceive(){
 		
 		if(m_closed == false){
+			
+			StoreUpDownloadByteImm();
+			
 			m_closed = true;
 			
 			m_unsendedPackage.removeAllElements();
@@ -112,10 +144,16 @@ public class sendReceive extends Thread{
 			os.write(_write);
 			os.flush();
 			
+			// 20 is TCP pack head length			
+			m_uploadByte += _write.length + 4 + 20;
+			
 		}else{
 			WriteInt(os,(_write.length << 16) | t_zipData.length);
 			os.write(t_zipData);
 			os.flush();
+			
+			// 20 is TCP pack head length
+			m_uploadByte += t_zipData.length + 4 + 20;
 		}
 				
 	}
@@ -127,11 +165,11 @@ public class sendReceive extends Thread{
 			
 			while(!m_closed){
 				SendBufferToSvr_imple(PrepareOutputData());
-				sleep(5000);				
+				sleep(1000);				
 				
 				
 				synchronized (this){
-					if(++m_keepliveCounter > 100){
+					if(m_keepliveInterval != 0 && ++m_keepliveCounter > m_keepliveInterval){
 						m_keepliveCounter = 0;
 						t_keeplive = true;
 					}
@@ -145,6 +183,8 @@ public class sendReceive extends Thread{
 					t_os.write(msg_head.msgKeepLive);
 					
 					SendBufferToSvr_imple(t_os.toByteArray());
+					
+					StoreUpDownloadByteImm();
 				}
 			}
 			
@@ -183,11 +223,17 @@ public class sendReceive extends Thread{
 			
 			ForceReadByte(in, t_orgdata, t_orglen);
 			
+			// 20 is TCP pack head length
+			m_downloadByte += t_orglen + 4 + 20;
+			
 		}else{
 			
 			byte[] t_zipdata = new byte[t_ziplen];
 			
 			ForceReadByte(in, t_zipdata, t_ziplen);
+			
+			// 20 is TCP pack head length
+			m_downloadByte += t_ziplen + 4 + 20;
 			
 			GZIPInputStream zi	= new GZIPInputStream(
 										new ByteArrayInputStream(t_zipdata));
@@ -244,10 +290,10 @@ public class sendReceive extends Thread{
 		byte[] t_strByte;
 		
 		try{
-			// if the GB2312 decode sytem is NOT present in current system
+			// if the UTF-8 decode sytem is NOT present in current system
 			// will throw the exception
 			//
-			t_strByte = _string.getBytes("GB2312");
+			t_strByte = _string.getBytes("UTF-8");
 		}catch(Exception e){
 			t_strByte = _string.getBytes();
 		}
@@ -280,10 +326,10 @@ public class sendReceive extends Thread{
 			ForceReadByte(_stream,t_buffer,len);
 
 			try{
-				// if the GB2312 decode sytem is NOT present in current system
+				// if the UTF-8 decode sytem is NOT present in current system
 				// will throw the exception
 				//
-				return new String(t_buffer,"GB2312");
+				return new String(t_buffer,"UTF-8");
 			}catch(Exception e){}
 			
 			return new String(t_buffer);

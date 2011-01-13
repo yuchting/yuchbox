@@ -5,7 +5,7 @@
 # 详细请访问 http://code.google.com/p/yuchberry/wiki/fill_config_ini
 #
 -->
-<Yuchberry	userPassword="520530"	serverPort="9716"	pushInterval="10"	userSSL="1"	convertoSimpleChar="1"	>
+<Yuchberry	userPassword="111111"	serverPort="9716"	pushInterval="10"	userSSL="0"	convertoSimpleChar="0"	>
 	<EmailAccount
 		account="yuchting@gmail.com"
 		password=""
@@ -20,7 +20,7 @@
 		host_send="smtp.gmail.com"
 		port_send="587"
 		
-		appendHTML="1"
+		appendHTML="0"
 	/>
 	<EmailAccount
 		account="yuchberry@gmail.com"
