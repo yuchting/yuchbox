@@ -94,6 +94,8 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
         add(m_uploadingText);
             
         RefreshUploadState(_app.m_uploadingDesc);
+        
+        setTitle(new LabelField(recvMain.sm_local.getString(localResource.STATE_TITLE_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
                
     }
     

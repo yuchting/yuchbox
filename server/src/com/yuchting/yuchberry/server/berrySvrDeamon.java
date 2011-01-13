@@ -36,7 +36,6 @@ class berrySvrPush extends Thread{
 		while(!m_closed){
 						
 			try{
-			
 				
 				m_serverDeamon.m_fetchMgr.CheckAccountFolders();
 				m_serverDeamon.m_fetchMgr.Push(m_sendReceive);
@@ -68,8 +67,9 @@ public class berrySvrDeamon extends Thread{
 	
 	public berrySvrDeamon(fetchMgr _mgr,Socket _s)throws Exception{
 		m_fetchMgr 	= _mgr;
-					
-		if(!ValidateClient(_s)){
+		
+		sendReceive t_connect = ValidateClient(_s); 
+		if(t_connect == null){
 			return;
 		}
 		
@@ -95,8 +95,11 @@ public class berrySvrDeamon extends Thread{
 		m_socket	= _s;
 
 		try{
+			
+			m_sendReceive = t_connect;
 			m_pushDeamon = new berrySvrPush(this);
-			m_sendReceive = new sendReceive(m_socket.getOutputStream(),m_socket.getInputStream());	
+			
+			
 		}catch(Exception _e){
 			m_fetchMgr.m_logger.LogOut("construct berrySvrDeamon error " + _e.getMessage());
 			_e.printStackTrace(m_fetchMgr.m_logger.GetPrintStream());
@@ -113,7 +116,7 @@ public class berrySvrDeamon extends Thread{
 		m_fetchMgr.m_logger.LogOut("some client connect IP<" + m_socket.getInetAddress().getHostAddress() + ">");
 	}
 	
-	public boolean ValidateClient(Socket _s){
+	public sendReceive ValidateClient(Socket _s){
 		
 		sendReceive t_tmp = null;
 		try{
@@ -149,11 +152,12 @@ public class berrySvrDeamon extends Thread{
 				
 				_s.getOutputStream().write(os.toByteArray());
 				*/
-				
-				throw new Exception("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> connected.");				
+				throw new Exception("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> connected.");			
 			}
-						
-			t_tmp.CloseSendReceive();
+			
+			// read the language state
+			//
+			m_fetchMgr.m_clientLanguage = in.read();
 			
 		}catch(Exception _e){
 			// time out or other problem
@@ -165,10 +169,10 @@ public class berrySvrDeamon extends Thread{
 			m_fetchMgr.m_logger.PrinterException(_e);
 			t_tmp.CloseSendReceive();
 			
-			return false;
+			return null;
 		}
 		
-		return true;
+		return t_tmp;
 	}
 		
 	public void run(){

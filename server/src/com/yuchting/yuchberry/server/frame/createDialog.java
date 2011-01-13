@@ -1,6 +1,7 @@
 package com.yuchting.yuchberry.server.frame;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -644,7 +645,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		}
 	}
 	
-	static public void AddTextLabel(JPanel _panel,String _label,JTextField _text,int _length,String _defaultVal){
+	static public void AddTextLabel(Container _panel,String _label,JTextField _text,int _length,String _defaultVal){
 		JLabel t_label = new JLabel(_label);
 		_panel.add(t_label);
 		_text.setPreferredSize(new Dimension(_length, 25));

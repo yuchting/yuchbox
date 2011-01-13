@@ -16,4 +16,5 @@ final public class msg_head {
 	final public static byte msgMailConfirm		= 8;
 	
 	final public static byte msgSponsorList		= 9;
+
 }

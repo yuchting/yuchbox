@@ -12,6 +12,7 @@ import local.localResource;
 import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
+import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.i18n.SimpleDateFormat;
 import net.rim.device.api.notification.NotificationsConstants;
@@ -745,13 +746,33 @@ public class recvMain extends UiApplication implements localResource {
 	}
 	
 	static public String GetByteStr(long _byte){
-		 if(_byte < 1024){
-			 return "" + _byte + "B";
-		 }else if(_byte >= 1024 && _byte < 1024 * 1024){
-			 return "" + (_byte / 1024) + "." + (_byte % 1024)+ "KB";
-		 }else{
-			 return "" + (_byte / (1024 * 1024)) + "." + ((_byte / 1024) % 1024) + "MB";
-		 }
-	 }
+		if(_byte < 1024){
+			return "" + _byte + "B";
+		}else if(_byte >= 1024 && _byte < 1024 * 1024){
+			return "" + (_byte / 1024) + "." + (_byte % 1024)+ "KB";
+		}else{
+			return "" + (_byte / (1024 * 1024)) + "." + ((_byte / 1024) % 1024) + "MB";
+		}
+	}
+	
+	static public int GetClientLanguage(){
+		int t_code = Locale.getDefaultForSystem().getCode();
+		
+		switch(t_code){
+			case Locale.LOCALE_zh:
+			case Locale.LOCALE_zh_CN:
+				t_code = 0;
+				break;
+			case Locale.LOCALE_zh_HK:
+				t_code = 1;
+				break;
+			default:
+				t_code = 2;
+				break;
+		}
+		
+		return t_code;
+	}
+	
 }
 

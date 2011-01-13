@@ -1,9 +1,4 @@
 @echo off
-
-mkdir newcerts
-mkdir certs
-mkdir crl
-
 del YuchBerrySvr.key
 
 echo ------------…˙≥…√‹‘ø∂‘------------

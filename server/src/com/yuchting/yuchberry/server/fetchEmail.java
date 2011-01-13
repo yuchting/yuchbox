@@ -148,12 +148,14 @@ class EmailSendAttachment extends Thread{
 
 class RecvMailAttach{
 		
-	fetchMail m_sendMail 			= null;
-	fetchMail m_forwardReplyMail	= null;
+	fetchMail	m_sendMail 			= null;
+	fetchMail	m_forwardReplyMail	= null;
+	fetchMgr	m_fetchMgr			= null;
 	
 	int			m_style;
 	
-	public RecvMailAttach(fetchMail _sendMail,fetchMail _forwardReplyMail,int _style){
+	public RecvMailAttach(fetchMgr _mainMgr,fetchMail _sendMail,fetchMail _forwardReplyMail,int _style){
+		m_fetchMgr	= _mainMgr;
 		m_sendMail = _sendMail;
 		m_forwardReplyMail = _forwardReplyMail;
 		
@@ -166,17 +168,59 @@ class RecvMailAttach{
 		t_string.append(m_sendMail.GetContain());
 		t_string.append("\n\n\n" + _signature);
 		
+		String t_originalMsgLine;
+		String t_forwordErrorMsg;
+		String t_forwordMsgLine;
+		String t_sender;
+		String t_dateTile;
+		String t_dateFormat;
+		String t_subject;
+		String t_receiver;
+		
+		switch (m_fetchMgr.GetClientLanguage()) {
+			case 0:
+				t_originalMsgLine	= "\n\n-- 原始邮件 --\n";
+				t_forwordMsgLine	= "\n\n-- 已转发邮件 --\n";
+				t_forwordErrorMsg	= "！！！读取转发消息出现异常！！！";
+				t_sender			= "发件人：";
+				t_dateTile			= "日期：";
+				t_dateFormat		= "yyyy年MM月dd日 HH:mm";
+				t_subject			= "主题：";
+				t_receiver			= "收件人：";
+				break;
+			case 1:
+				t_originalMsgLine	= "\n\n-- 原始郵件 --\n";
+				t_forwordMsgLine	= "\n\n-- 已轉發郵件 --\n";
+				t_forwordErrorMsg	= "！！！讀取轉發消息出現異常！！！";
+				t_sender			= "發件人：";
+				t_dateTile			= "日期：";
+				t_dateFormat		= "yyyy年MM月dd日 HH:mm";
+				t_subject			= "主題：";
+				t_receiver			= "收件人：";
+				break;
+			default:
+				t_originalMsgLine 	= "\n\n-- original message --\n";
+				t_forwordMsgLine	= "\n\n-- forword message --\n";
+				t_forwordErrorMsg	= "！！！reading forword message exception！！！";
+				t_sender			= "Sender:";
+				t_dateTile			= "Date:";
+				t_dateFormat		= "MM-dd yyyy HH:mm";
+				t_subject			= "subject:";
+				t_receiver			= "receiver:";
+				break;
+		}
+		
 		if(m_forwardReplyMail != null && m_style != fetchMail.NOTHING_STYLE){
-			if(m_style == fetchMail.REPLY_STYLE){
+			if(m_style == fetchMail.REPLY_STYLE){				
 				
-				t_string.append("\n\n---------- 原始邮件 ----------\n");
+				t_string.append(t_originalMsgLine);
 
 				try{
 					BufferedReader in = null;
 					if(m_forwardReplyMail.GetContain_html().isEmpty()){
 						in = new BufferedReader(new StringReader(m_forwardReplyMail.GetContain()));
 					}else{
-						in = new BufferedReader(new StringReader(m_forwardReplyMail.GetContain() + "\n\n---------- HTML ----------\n\n" +
+						in = new BufferedReader(new StringReader(m_forwardReplyMail.GetContain() + "\n\n-- HTML --\n\n" +
 									fetchMgr.ParseHTMLText(m_forwardReplyMail.GetContain_html(),true)));
 					}						
 	 
@@ -186,25 +230,25 @@ class RecvMailAttach{
 					}
 					
 				}catch(Exception e){
-					t_string.append("读取转发消息出现异常！！！");
+					t_string.append(t_forwordErrorMsg);
 				}
 				
 				
 			}else if(m_style == fetchMail.FORWORD_STYLE){
 				
-				t_string.append("\n\n---------- 已转发邮件 ----------\n");
+				t_string.append(t_forwordMsgLine);
 
 				Vector t_form = m_forwardReplyMail.GetFromVect();
 				
-				t_string.append("发件人："+ (String)t_form.elementAt(0) + "\n");
+				t_string.append(t_sender+ (String)t_form.elementAt(0) + "\n");
 				for(int i = 1;i < t_form.size();i++){
 					t_string.append((String)t_form.elementAt(i) + "\n");
 				}
-				t_string.append("日期："+ new SimpleDateFormat("yyyy年MM月dd日 HH:mm").format(m_forwardReplyMail.GetSendDate()) + "\n");
-				t_string.append("主题："+ m_forwardReplyMail.GetSubject() + "\n");
+				t_string.append(t_dateTile+ new SimpleDateFormat(t_dateFormat).format(m_forwardReplyMail.GetSendDate()) + "\n");
+				t_string.append(t_subject+ m_forwardReplyMail.GetSubject() + "\n");
 				
 				Vector t_sendto = m_forwardReplyMail.GetSendToVect();
-				t_string.append("收件人："+ (String)t_sendto.elementAt(0) + "\n");
+				t_string.append(t_receiver+ (String)t_sendto.elementAt(0) + "\n");
 				for(int i = 1;i < t_sendto.size();i++){
 					t_string.append((String)t_sendto.elementAt(i) + "\n");
 				}
@@ -212,7 +256,7 @@ class RecvMailAttach{
 				t_string.append(m_forwardReplyMail.GetContain());
 				
 				if(!m_forwardReplyMail.GetContain_html().isEmpty()){					
-					t_string.append("\n\n---------- HTML ----------\n\n");
+					t_string.append("\n\n-- HTML --\n\n");
 					t_string.append(fetchMgr.ParseHTMLText(m_forwardReplyMail.GetContain_html(),true));
 				}
 			}
@@ -516,9 +560,9 @@ public class fetchEmail extends fetchAccount{
 		}
 		
 		if(t_mail.GetAttachment().isEmpty()){
-			SendMailToSvr(new RecvMailAttach(t_mail,t_forwardReplyMail,t_style));
+			SendMailToSvr(new RecvMailAttach(m_mainMgr,t_mail,t_forwardReplyMail,t_style));
 		}else{
-			CreateTmpSendMailAttachFile(new RecvMailAttach(t_mail,t_forwardReplyMail,t_style));
+			CreateTmpSendMailAttachFile(new RecvMailAttach(m_mainMgr,t_mail,t_forwardReplyMail,t_style));
 		}
 		
 		return true;

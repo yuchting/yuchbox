@@ -622,8 +622,17 @@ public class mainFrame extends JFrame implements ActionListener{
 				
 				if(t_thread.m_fetchMgr.GetClientConnected() != null){
 					t_connectNum++;
+					t_thread.m_clientDisconnectTime = 0;
+				}else{
+					if(t_thread.m_clientDisconnectTime == 0){
+						t_thread.m_clientDisconnectTime = t_currTime;
+					}
 				}
-			}		
+			}else{
+				if(t_thread.m_clientDisconnectTime == 0){
+					t_thread.m_clientDisconnectTime = t_currTime;
+				}
+			}
 			
 		}
 		

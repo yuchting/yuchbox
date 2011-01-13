@@ -17,6 +17,8 @@ public class fetchThread extends Thread{
 		
 	long		m_expiredTime	= 0;
 	long		m_formerTimer	= 0;
+	
+	long		m_clientDisconnectTime	= 0;
 		
 	public fetchThread(fetchMgr _mainMgr,String _prefix,long _expiredTime,
 					long _formerTimer,boolean _testConnect)throws Exception{
@@ -42,7 +44,7 @@ public class fetchThread extends Thread{
 			try{
 				while(m_pauseState){
 					sleep(2000);
-				}
+				}				
 				
 				m_fetchMgr.StartListening();
 				
@@ -94,12 +96,18 @@ public class fetchThread extends Thread{
 			m_pauseState = false;
 			
 			try{
-				sleep(100);
-			}catch(Exception e){}
+				
+				m_fetchMgr.InitConnect(m_fetchMgr.GetPrefixString(),m_logger);
+				
+				sleep(100);				
+				
+			}catch(Exception e){
+				m_logger.PrinterException(e);
+			}
 			
 			if(GetLastTime() < 0){
 				m_formerTimer = (new Date()).getTime();
-			}			
+			}
 			
 			interrupt();			
 		}

@@ -102,6 +102,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 add(m_endPromptHour);
 		 //@}
 		 
+		 
+		 setTitle(new LabelField(recvMain.sm_local.getString(localResource.ADVANCE_SETTING_TITEL_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
+		 
 	 }
 	 public void fieldChanged(Field field, int context) {
 	    if(context != FieldChangeListener.PROGRAMMATIC){

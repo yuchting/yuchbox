@@ -1,6 +1,8 @@
 package com.yuchting.yuchberry.server.frame;
 
 import java.awt.Dimension;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Vector;
 
 import javax.swing.JTable;
@@ -12,7 +14,9 @@ import com.yuchting.yuchberry.server.fetchMgr;
 class accountTableModel extends DefaultTableModel{
 	
 	final static String[] 	fsm_tableCol = {"账户","端口","用户密码","剩余时间（小时）","SSL 状态","当前状态"};
+	final static int[] fsm_colWidth = {150,50,100,120,110,200};
 	final static Object[][] fsm_tableData = {{}};
+	
 	
 	public String getColumnName(int col) {
         return fsm_tableCol[col].toString();
@@ -46,18 +50,8 @@ public class accountTable extends JTable{
 		setPreferredScrollableViewportSize(new Dimension(500, 70));
 		setFillsViewportHeight(true);
 		
-		TableColumn column = null;
 		for (int i = 0; i < accountTableModel.fsm_tableCol.length; i++) {
-		    column = getColumnModel().getColumn(i);
-		    switch(i){
-		    case 0:
-		    	column.setPreferredWidth(200); 
-		    	break;
-		    case 1:
-		    case 2:
-		    	column.setPreferredWidth(100);
-		    	break;
-		    }
+		    getColumnModel().getColumn(i).setPreferredWidth(accountTableModel.fsm_colWidth[i]); 		    
 		}
 	}
 	
@@ -82,6 +76,8 @@ public class accountTable extends JTable{
 		
 		final int t_rowNum = m_defaultModel.getRowCount();
 		
+		Date t_date = new Date();
+		
 		for(int i = 0;i < t_rowNum;i++){
 			fetchThread t_thread = (fetchThread)m_fetchMgrListRef.elementAt(i);
 			
@@ -98,7 +94,12 @@ public class accountTable extends JTable{
 			}else if(t_thread.m_fetchMgr.GetClientConnected() != null){
 				m_defaultModel.setValueAt("客户端连接中",i, 5);
 			}else{
-				m_defaultModel.setValueAt("监听中",i, 5);
+				String t_clientDate = "(未连接过)";
+				if(t_thread.m_clientDisconnectTime != 0){
+					t_date.setTime(t_thread.m_clientDisconnectTime);
+					t_clientDate = (new SimpleDateFormat("(上次链接时间 yyyy年MM月dd日 HH:mm)")).format(t_date);
+				}
+				m_defaultModel.setValueAt("监听中" + t_clientDate,i, 5);
 			}
 		}
 	}

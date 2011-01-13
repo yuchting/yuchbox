@@ -73,7 +73,9 @@ public class fetchMgr{
     //! is connected?
     berrySvrDeamon	m_currConnect		= null;
     
-    int m_confirmTimer 					= 0;
+    int 			m_confirmTimer 		= 0;
+    
+    int				m_clientLanguage	= 0;
     
 	
 	public int GetServerPort(){
@@ -98,6 +100,10 @@ public class fetchMgr{
 	
 	public berrySvrDeamon GetClientConnected(){
 		return	m_currConnect;
+	}
+	
+	public int GetClientLanguage(){
+		return m_clientLanguage;
 	}
 	
 	public synchronized void SetClientConnected(berrySvrDeamon _set){
@@ -171,7 +177,7 @@ public class fetchMgr{
 			
 		}catch(Exception ex){
 			m_logger.PrinterException(ex);
-		}		
+		}
 		
 	}
 	
@@ -189,7 +195,9 @@ public class fetchMgr{
 				m_svr = null;
 			}
 		}catch(Exception e){
-			
+			if(m_logger != null){
+				m_logger.PrinterException(e);
+			}
 		}		
 	}
 	
