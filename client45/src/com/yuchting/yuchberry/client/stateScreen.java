@@ -58,18 +58,19 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     public stateScreen(final recvMain _app) {
     	        
         super();
-        
+              
         m_mainApp	= _app;        
         
         m_hostName = new EditField(recvMain.sm_local.getString(localResource.HOST),
         				m_mainApp.m_hostname,128, EditField.FILTER_DEFAULT);
         
+       
         m_hostName.setChangeListener(this);
         add(m_hostName);
         
         m_hostport = new EditField(recvMain.sm_local.getString(localResource.PORT),
         				m_mainApp.m_port == 0?"":Integer.toString(m_mainApp.m_port),5,EditField.FILTER_INTEGER);
-        
+
         m_hostport.setChangeListener(this);
         add(m_hostport);
         
@@ -96,6 +97,14 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
         RefreshUploadState(_app.m_uploadingDesc);
         
         setTitle(new LabelField(recvMain.sm_local.getString(localResource.STATE_TITLE_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
+        
+        if(m_mainApp.m_connectDeamon.IsConnectState()){
+        	m_connectBut.setFocus();
+        }else{        	
+            if(m_mainApp.m_hostname.length() != 0){
+            	m_connectBut.setFocus();            	
+            }
+        }    
                
     }
     

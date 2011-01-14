@@ -22,21 +22,10 @@
 		
 		appendHTML="0"
 	/>
-	<EmailAccount
+	<SinaWeiboAccount
 		account="yuchberry@gmail.com"
-		password=""
-		
-		useFullNameSignIn="0"
-		
-		protocol="imaps"
-		host="imap.gmail.com"
-		port="993"
-		
-		protocol_send="smtp"
-		host_send="smtp.gmail.com"
-		port_send="587"
-		
-		appendHTML="0"
+		accessToken="b4c85da2f35040dbc55e15febfd3d0c3"
+		secretToken="f1338d08eb944a15170d0a986e1e139e"
 	/>
 </Yuchberry>
 	

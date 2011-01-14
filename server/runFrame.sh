@@ -1,2 +1,2 @@
-#!/bin/sh
+﻿#!/bin/sh
 javaw -jar frame.jar &

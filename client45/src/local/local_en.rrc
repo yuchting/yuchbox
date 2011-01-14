@@ -1,4 +1,4 @@
-ABOUT_DESC#0="reading the newest information from server after connected...";
+ABOUT_DESC#0="reading the newest information from server after connected,\nOr open http://code.google.com/p/yuchberry/wiki/Thanks_sheet for detail";
 ABOUT_MENU_TEXT#0="About";
 ADD_ATTACHMENT#0="Add Attachment(YB)";
 ADD_ATTACHMENT_SUCC#0="Add Attachment Successfully";

@@ -518,7 +518,7 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				m_connect.RegisterStoreUpDownloadByte(new sendReceive.IStoreUpDownloadByte() {
 					public void Store(long uploadByte, long downloadByte) {
-						m_mainApp.StoreUpDownloadByte(uploadByte,downloadByte);				
+						m_mainApp.StoreUpDownloadByte(uploadByte,downloadByte,true);
 					}
 				});
 							
@@ -694,7 +694,11 @@ public class connectDeamon extends Thread implements SendListener,
 				 throw new Exception(_e.getMessage() + " " + t_append + " " + _e.getClass().getName());
 			 }
 		 }
-
+		 
+		 // TCP connect flowing bytes statistics 
+		 //
+		 m_mainApp.StoreUpDownloadByte(72,40,false);
+		 
 		 m_hostip = socket.getAddress();
 		 
 		 return socket;

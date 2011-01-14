@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.client;
 import local.localResource;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.MainScreen;
@@ -26,6 +27,8 @@ public class aboutScreen extends MainScreen{
 		add(m_editText);
 		
 		m_mainApp.m_connectDeamon.SendAboutInfoQuery(false);
+		
+		setTitle(new LabelField(recvMain.sm_local.getString(localResource.ABOUT_MENU_TEXT),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
 	}
 	
 	public boolean onClose(){
@@ -44,3 +47,4 @@ public class aboutScreen extends MainScreen{
 		_menu.add(m_refreshMenu);
     }
 }
+

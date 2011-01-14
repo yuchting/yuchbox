@@ -1,3 +1,2 @@
-﻿@echo off
+﻿#!/bin/sh
 java -jar svr.jar
-pause

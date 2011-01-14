@@ -343,7 +343,8 @@ public class recvMain extends UiApplication implements localResource {
 		return fsm_pulseInterval[m_pulseIntervalIndex];
 	}
 	
-	public void WriteReadIni(boolean _read){
+	public synchronized void WriteReadIni(boolean _read){
+		
 		try{
 			
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + "Init.data",
@@ -454,16 +455,19 @@ public class recvMain extends UiApplication implements localResource {
 		}
 	}
 		
-	public void StoreUpDownloadByte(long _uploadByte,long _downloadByte){
+	public synchronized void StoreUpDownloadByte(long _uploadByte,long _downloadByte,boolean _writeIni){
 		m_uploadByte += _uploadByte;
-		m_downloadByte += _downloadByte;
-		
-		WriteReadIni(false);
+		m_downloadByte += _downloadByte;	
+				
+		if(_writeIni){
+			WriteReadIni(false);
+		}
 	}
 	
-	public void ClearUpDownloadByte(){
+	public synchronized void ClearUpDownloadByte(){
+
 		m_uploadByte = m_downloadByte = 0;
-		
+				
 		WriteReadIni(false);
 	}
 	
