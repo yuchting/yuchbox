@@ -514,11 +514,11 @@ public class connectDeamon extends Thread implements SendListener,
 
 				m_conn = GetConnection(m_mainApp.IsUseSSL());
 				m_connect = new sendReceive(m_conn.openOutputStream(),m_conn.openInputStream());
-				m_connect.SetKeepliveInterval(m_mainApp.m_pulseIntervalIndex);
+				m_connect.SetKeepliveInterval(m_mainApp.GetPulseIntervalMinutes());
 				
 				m_connect.RegisterStoreUpDownloadByte(new sendReceive.IStoreUpDownloadByte() {
 					public void Store(long uploadByte, long downloadByte) {
-						m_mainApp.StoreUpDownloadByte(uploadByte,downloadByte);				
+						m_mainApp.StoreUpDownloadByte(uploadByte,downloadByte,true);
 					}
 				});
 							
@@ -694,7 +694,11 @@ public class connectDeamon extends Thread implements SendListener,
 				 throw new Exception(_e.getMessage() + " " + t_append + " " + _e.getClass().getName());
 			 }
 		 }
-
+		 
+		 // TCP connect flowing bytes statistics 
+		 //
+		 m_mainApp.StoreUpDownloadByte(72,40,false);
+		 
 		 m_hostip = socket.getAddress();
 		 
 		 return socket;
@@ -898,6 +902,11 @@ public class connectDeamon extends Thread implements SendListener,
 			//
 			Message msg = _mail.GetAttachMessage();
 			ComposeMessageContent(msg, _mail);
+		}
+		
+		if(m_mainApp.m_useLocationInfo){
+			_mail.SetLocationInfo(m_mainApp.m_longitude, m_mainApp.m_latitude, 
+								m_mainApp.m_altitude, m_mainApp.m_movingSpeed, m_mainApp.m_locationHeading);
 		}
 
 		m_sendingMailAttachment.addElement(new sendMailAttachmentDeamon(this, _mail, t_vfileReader,_forwardReply,_sendStyle));			

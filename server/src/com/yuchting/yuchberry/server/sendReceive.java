@@ -273,6 +273,43 @@ class sendReceive extends Thread{
 		_stream.write(_val >>> 24);
 	}
 	
+	static public void WriteDouble(OutputStream _stream,double _val)throws Exception{
+		if(_val == 0){
+			WriteInt(_stream,0);
+		}else{
+			String t_valString = Double.toString(_val);
+			WriteString(_stream,t_valString,false);
+		}		
+	}
+	
+	static public void WriteFloat(OutputStream _stream,float _val)throws Exception{
+		if(_val == 0){
+			WriteInt(_stream,0);
+		}else{
+			String t_valString = Float.toString(_val);
+			WriteString(_stream,t_valString,false);
+		}
+	}
+	
+	static public double ReadDouble(InputStream _stream)throws Exception{
+		String t_valString = ReadString(_stream);
+		if(t_valString.length() == 0){
+			return 0;
+		}else{
+			return Double.valueOf(t_valString).doubleValue();			
+		}
+		
+	}
+	
+	static public float ReadFloat(InputStream _stream)throws Exception{
+		String t_valString = ReadString(_stream);
+		if(t_valString.length() == 0){
+			return 0;
+		}else{
+			return Float.valueOf(t_valString).floatValue();
+		}
+	}
+	
 	static public void ForceReadByte(InputStream _stream,byte[] _buffer,int _readLen)throws Exception{
 		int t_readIndex = 0;
 		int t_counter = 0;

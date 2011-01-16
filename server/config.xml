@@ -8,7 +8,7 @@
 <Yuchberry	userPassword="111111"	serverPort="9716"	pushInterval="10"	userSSL="0"	convertoSimpleChar="0"	>
 	<EmailAccount
 		account="yuchting@gmail.com"
-		password=""
+		password="fullmental@@@"
 		
 		useFullNameSignIn="0"
 		
@@ -23,7 +23,7 @@
 		appendHTML="0"
 	/>
 	<SinaWeiboAccount
-		account="yuchberry@gmail.com"
+		account="yuchberry"
 		accessToken="b4c85da2f35040dbc55e15febfd3d0c3"
 		secretToken="f1338d08eb944a15170d0a986e1e139e"
 	/>

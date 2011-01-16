@@ -1,5 +1,8 @@
 package com.yuchting.yuchberry.server;
 
+import java.io.ByteArrayInputStream;
+import java.util.Vector;
+
 import org.dom4j.Element;
 
 import weibo4j.Weibo;
@@ -15,6 +18,10 @@ public class fetchSinaWeibo extends fetchAccount{
 	String	m_accessToken		= null;
 	String	m_secretToken		= null;
 	
+	long	m_fetchWeiboIndex	= 0;
+	
+	Vector	m_weiboTimeline			= new Vector();
+		
 	public fetchSinaWeibo(fetchMgr _mainMgr){
 		super(_mainMgr);
 	}
@@ -43,6 +50,7 @@ public class fetchSinaWeibo extends fetchAccount{
 	 * check the folder to find the news to push
 	 */
 	public void CheckFolder()throws Exception{
+		
 		
 	}
 	
@@ -75,7 +83,18 @@ public class fetchSinaWeibo extends fetchAccount{
 	 * @return boolean		: has been processed?
 	 */
 	public boolean ProcessNetworkPackage(byte[] _package)throws Exception{
-		return false;
+		ByteArrayInputStream in = new ByteArrayInputStream(_package);
+		
+		boolean t_processed = false;
+		
+		final int t_head = in.read();
+		switch(t_head){
+			case msg_head.msgWeibo:
+				t_processed = ProcessWeiboUpdate(in);
+				break;
+		}
+		
+		return t_processed;
 	}
 	
 	/**
@@ -90,6 +109,29 @@ public class fetchSinaWeibo extends fetchAccount{
 	 */
 	public void PushMsg(sendReceive _sendReceive)throws Exception{
 		
+	}
+	
+	
+	public boolean ProcessWeiboUpdate(ByteArrayInputStream in)throws Exception{
+		
+		fetchWeibo t_weibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
+		t_weibo.InputWeibo(in);
+
+		try{
+			
+			if(t_weibo.GetCommentWeiboId() == 0 && t_weibo.GetReplyWeiboId() == 0){
+				m_weibo.updateStatus(t_weibo.GetText());
+			}else if(t_weibo.GetCommentWeiboId() != 0){
+				m_weibo.updateComment(t_weibo.GetText(),Long.toString(t_weibo.GetCommentWeiboId()),null);
+			}else if(t_weibo.GetReplyWeiboId() != 0){
+				m_weibo.updateStatus(t_weibo.GetText(),t_weibo.GetReplyWeiboId());
+			}
+			
+		}catch(Exception e){
+			m_mainMgr.m_logger.LogOut(GetAccountName() + "[SinaWeiBo] Exception:" + e.getMessage());
+		}
+		
+		return false;
 	}
 
 }

@@ -85,7 +85,7 @@ class ErrorLabelText extends Field{
 	
 	public void IncreaseRenderSize(int _dx,int _dy){
 						
-		_dy = _dy * sm_fontHeight;
+		_dy = _dy * sm_lineHeight;
 
 		final int t_former_move_y = m_movePixel_y;
 		
@@ -98,7 +98,11 @@ class ErrorLabelText extends Field{
 				m_viewPixel_y -= m_movePixel_y + _dy;
 			}else{
 				if(m_movePixel_y + _dy - m_viewPixel_y < t_maxHeight){
-					m_movePixel_y += _dy;
+					if(m_movePixel_y + _dy + sm_lineHeight <= fsm_display_height){
+						m_movePixel_y += _dy;
+					}else{
+						m_viewPixel_y -= _dy;
+					}					
 				}
 			}			
 		}else{
@@ -144,20 +148,13 @@ class ErrorLabelText extends Field{
 	}
 	
 	private void RefreshRect(int _y,int _y1){
-		
-		int t_pos_y			= _y;
-		int t_former_pos_y	= _y1;
-						
-		if(t_pos_y < t_former_pos_y){
-			final int t_tmp = t_pos_y;
-			t_pos_y = t_former_pos_y;
-			t_former_pos_y = t_tmp; 
+		if(_y < _y1){
+			final int t_tmp = _y;
+			_y = _y1;
+			_y1 = t_tmp; 
 		}
 		
-		t_pos_y 		+= sm_lineHeight - (t_pos_y % sm_lineHeight);
-		t_former_pos_y	-= (t_former_pos_y % sm_lineHeight);
-		
-		invalidate(0,t_former_pos_y,Display.getWidth(),t_pos_y - t_former_pos_y);
+		invalidate(0,_y1,Display.getWidth(),_y - _y1 + sm_lineHeight);
 	}
 		
 }

@@ -258,6 +258,9 @@ public class HelloWorld {
 		//ReadConfigXML();
 		
 		//TextXML();
+		
+		String t_test = "sfdafdafsd $mail_content$ fasdfsdfsda";	
+		System.out.print(t_test.replace("$mail_content$", "I'm here"));
 	
 	}
 	
@@ -773,6 +776,13 @@ public class HelloWorld {
 						// TODO display in berry
 						//
 						
+						break;
+						
+					case msg_head.msgWeibo:
+						fetchWeibo t_weibo = new fetchWeibo(false);
+						t_weibo.InputWeibo(in);
+						
+						prt("receive weibo id" + t_weibo.GetId() + " text:" + t_weibo.GetText());
 						break;
 					case msg_head.msgSendMail:
 						

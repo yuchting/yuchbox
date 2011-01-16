@@ -31,6 +31,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 	 NumericChoiceField	m_startPromptHour = null;
 	 NumericChoiceField	m_endPromptHour = null;
 	 
+	 CheckboxField		m_useLocationInfo = null;
+	 LabelField			m_longitude		= new LabelField();
+	 LabelField			m_latitude		= new LabelField();
+	 
 	 recvMain			m_mainApp		= null;
 	 
 	 public settingScreen(recvMain _app){
@@ -102,12 +106,27 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 add(m_endPromptHour);
 		 //@}
 		 
+		 add(new SeparatorField());
+		 //@{ other option
+		 t_title = new LabelField(recvMain.sm_local.getString(localResource.LOCATION_OPTIION_LABEL));
+		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
+		 add(t_title);
+		 
+		 m_useLocationInfo	= new CheckboxField(recvMain.sm_local.getString(localResource.USE_LOCATION_LABEL), m_mainApp.m_useLocationInfo);
+		 add(m_useLocationInfo);
+		 
+		 add(m_longitude);
+		 add(m_latitude);
+		 
+		 RefreshLocation();
+		 //@}		 
 		 
 		 setTitle(new LabelField(recvMain.sm_local.getString(localResource.ADVANCE_SETTING_TITEL_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
 		 
 	 }
+	 
 	 public void fieldChanged(Field field, int context) {
-	    if(context != FieldChangeListener.PROGRAMMATIC){
+		if(context != FieldChangeListener.PROGRAMMATIC){
 			// Perform action if user changed field. 
 			//
 			if(field == m_clearByteBut){
@@ -116,13 +135,21 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 					RefreshUpDownloadByte();
 				}
 			}
-	    }else{
-	    	// Perform action if application changed field.
-	    }
-	}
+		}else{
+			// Perform action if application changed field.
+		}
+	 }
 	 
 	 public boolean onClose(){
 		
+		if(m_startPromptHour.getSelectedIndex() < m_endPromptHour.getSelectedIndex()){
+			m_mainApp.m_startPromptHour	= m_startPromptHour.getSelectedIndex();
+			m_mainApp.m_endPromptHour	= m_endPromptHour.getSelectedIndex();
+		}else{
+			m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.START_BIGGER_THAN_END_PROMPT));
+			return false;
+		}
+	 
 		m_mainApp.m_useSSL	= m_useSSLCheckbox.getChecked();
 		m_mainApp.SetAPNName(m_APN.getText());
 		m_mainApp.m_autoRun = m_autoRun.getChecked();
@@ -131,17 +158,13 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		m_mainApp.m_useWifi = m_useWifi.getChecked();
 		
 		m_mainApp.m_pulseIntervalIndex = m_pulseInterval.getSelectedIndex();
+		m_mainApp.m_useLocationInfo = m_useLocationInfo.getChecked();
 		
-		m_mainApp.m_fulldayPrompt	= m_fulldayPrompt.getChecked();
-		if(m_startPromptHour.getSelectedIndex() < m_endPromptHour.getSelectedIndex()){
-			m_mainApp.m_startPromptHour	= m_startPromptHour.getSelectedIndex();
-			m_mainApp.m_endPromptHour	= m_endPromptHour.getSelectedIndex();
-		}else{
-			m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.START_BIGGER_THAN_END_PROMPT));
-			return false;
-		}		
+		m_mainApp.m_fulldayPrompt	= m_fulldayPrompt.getChecked();				
 		
 		m_mainApp.WriteReadIni(false);
+		
+		m_mainApp.m_settingScreen = null;
 		
 		close();
 		return true;
@@ -152,6 +175,15 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 			public void run() {
 				m_uploadByte.setText(recvMain.sm_local.getString(localResource.UPLOAD_STATISTICS) + recvMain.GetByteStr(m_mainApp.m_uploadByte));
 				m_downloadByte.setText(recvMain.sm_local.getString(localResource.DOWNLOAD_STATISTICS) + recvMain.GetByteStr(m_mainApp.m_downloadByte));
+			}
+		});
+	 }
+	 
+	 public void RefreshLocation(){
+		 m_mainApp.invokeLater(new Runnable() {
+			public void run() {
+				m_longitude.setText(recvMain.sm_local.getString(localResource.CURRENT_LONGITUDE_LABEL) + m_mainApp.m_longitude);
+				m_latitude.setText(recvMain.sm_local.getString(localResource.CURRENT_LATITUDE_LABEL) + m_mainApp.m_latitude);
 			}
 		});
 	 }

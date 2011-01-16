@@ -10,15 +10,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.io.StringReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
 
+import javax.activation.DataHandler;
 import javax.mail.Address;
+import javax.mail.BodyPart;
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Header;
@@ -32,14 +32,9 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
+import javax.mail.util.ByteArrayDataSource;
 
 import org.dom4j.Element;
-import org.htmlparser.Node;
-import org.htmlparser.NodeFilter;
-import org.htmlparser.Parser;
-import org.htmlparser.nodes.TextNode;
-import org.htmlparser.tags.LinkTag;
-import org.htmlparser.util.NodeList;
 
 import com.sun.mail.smtp.SMTPTransport;
 
@@ -273,6 +268,8 @@ public class fetchEmail extends fetchAccount{
 	public final static String	fsm_signatureFilename 		= "signature.txt";
 	
 	public final static String	fsm_mailIndexAttachFilename = "totalMailIndexAtt.data";
+	
+	public final static String	fsm_googleMapInfoFilename 	= "mapInfo.html";
 	
 	String		m_protocol				= null;
 	String		m_host					= null;
@@ -1492,19 +1489,50 @@ public class fetchEmail extends fetchAccount{
 	    	t_forwardMailAttach = FindMailIndexAttach(_forwardMail.GetSimpleHashCode());
 	    }
 
-	    if(!_mail.GetAttachment().isEmpty() || t_forwardMailAttach != null) {
+	    if(!_mail.GetAttachment().isEmpty() || t_forwardMailAttach != null || _mail.m_hasLocationInfo) {
 			// Attach the specified file.
 			// We need a multipart message to hold the attachment.
-		    	
-			MimeBodyPart t_containPart = new MimeBodyPart();
-			t_containPart.setText(_mail.GetContain());
+		    
+	    	MimeMultipart t_mainPart = new MimeMultipart();
+	    				
+	    	if(_mail.m_hasLocationInfo){
+				// load the location information
+				//	    	
+				BufferedReader in = new BufferedReader(
+						new InputStreamReader(
+								new FileInputStream(m_mainMgr.GetPrefixString() + fsm_googleMapInfoFilename),"UTF-8"));
 			
-			MimeMultipart t_mainPart = new MimeMultipart();
-			t_mainPart.addBodyPart(t_containPart);
+				StringBuilder t_stringBuffer = new StringBuilder();
+				String t_line = null;
+				
+				while((t_line = in.readLine()) != null){
+					
+					if(t_line.indexOf("$mail_sign$") != -1){
+						t_line = t_line.replace("$mail_sign$","YBBer:I'm Here!");
+					}else if(t_line.indexOf("$map_y$") != -1){
+						t_line = t_line.replace("$map_y$",Double.toString(_mail.m_longitude));
+					}else if(t_line.indexOf("$map_x$") != -1){
+						t_line = t_line.replace("$map_x$",Double.toString(_mail.m_latitude));
+					}else if(t_line.indexOf("$mail_content$") != -1){
+						t_line = t_line.replace("$mail_content$",_mail.GetContain());
+					}
+					
+					t_stringBuffer.append(t_line).append("\n");
+				}
+				BodyPart t_htmlBodyPart = new MimeBodyPart();
+				t_htmlBodyPart.setContent(t_stringBuffer.toString(), "text/html;charset=utf-8");
+				t_mainPart.addBodyPart(t_htmlBodyPart);
+								
+			}else{
+				MimeBodyPart t_containPart = new MimeBodyPart();
+				t_containPart.setText(_mail.GetContain());
+				
+				t_mainPart.addBodyPart(t_containPart);			
+			}			
 			
 			Vector t_contain = _mail.GetAttachment();
 			
-			try{
+			try{				
 
 				for(int i = 0;i< t_contain.size();i++){
 
@@ -1519,29 +1547,31 @@ public class fetchEmail extends fetchAccount{
 					t_mainPart.addBodyPart(t_filePart);
 				}
 				
-				t_contain = t_forwardMailAttach.m_attachmentName;
-				
-				for(int i = 0;i < t_contain.size();i++){
-					MailAttachment t_attachment = (MailAttachment)t_contain.elementAt(i);
-										
-					String t_fullname = GetAccountPrefix() + t_forwardMailAttach.m_mailIndexOrTime + "_" + i;
+				if(t_forwardMailAttach != null){
+					t_contain = t_forwardMailAttach.m_attachmentName;
 					
-					if(t_forwardMailAttach.m_send){
-						t_fullname = t_fullname + ".satt";
-					}else{
-						t_fullname = t_fullname + ".att";
-					}
-					
-					File t_file = new File(t_fullname);
-					
-					if(t_file.exists()){
-						MimeBodyPart t_filePart = new MimeBodyPart();
-						t_filePart.setFileName(MimeUtility.encodeText(t_attachment.m_name));
-						t_filePart.setContent(ReadFileBuffer(t_fullname), t_attachment.m_type);
+					for(int i = 0;i < t_contain.size();i++){
+						MailAttachment t_attachment = (MailAttachment)t_contain.elementAt(i);
+											
+						String t_fullname = GetAccountPrefix() + t_forwardMailAttach.m_mailIndexOrTime + "_" + i;
 						
-						t_mainPart.addBodyPart(t_filePart);
+						if(t_forwardMailAttach.m_send){
+							t_fullname = t_fullname + ".satt";
+						}else{
+							t_fullname = t_fullname + ".att";
+						}
+						
+						File t_file = new File(t_fullname);
+						
+						if(t_file.exists()){
+							MimeBodyPart t_filePart = new MimeBodyPart();
+							t_filePart.setFileName(MimeUtility.encodeText(t_attachment.m_name));
+							t_filePart.setContent(ReadFileBuffer(t_fullname), t_attachment.m_type);
+							
+							t_mainPart.addBodyPart(t_filePart);
+						}
 					}
-				}
+				}				
 				
 			}catch(Exception _e){
 				m_mainMgr.m_logger.LogOut(_e.getMessage());
@@ -1557,6 +1587,8 @@ public class fetchEmail extends fetchAccount{
 
 	    msg.setHeader("X-Mailer",_mail.GetXMailer());
 	    msg.setSentDate(_mail.GetSendDate());
+	    
+	   
 	}
 	
 	private static byte[] ReadFileBuffer(String _file)throws Exception{

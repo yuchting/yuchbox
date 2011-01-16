@@ -280,7 +280,7 @@ public class fetchMgr{
 		
 		boolean t_repush = false;
 		
-		if(++m_confirmTimer > 50){
+		if(++m_confirmTimer > 200){
 			// send the mail without confirm
 			//
 			m_confirmTimer 	= 0;

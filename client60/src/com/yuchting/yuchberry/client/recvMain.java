@@ -7,6 +7,10 @@ import java.util.Vector;
 
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
+import javax.microedition.location.Criteria;
+import javax.microedition.location.Location;
+import javax.microedition.location.LocationListener;
+import javax.microedition.location.LocationProvider;
 
 import local.localResource;
 import net.rim.blackberry.api.mail.Message;
@@ -25,9 +29,9 @@ import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
 
-public class recvMain extends UiApplication implements localResource {
+public class recvMain extends UiApplication implements localResource,LocationListener {
 	
-	final static int		fsm_clientVersion = 8;
+	final static int		fsm_clientVersion = 9;
 	
 	final static long		fsm_notifyID_email = 767918509114947L;
 	
@@ -44,6 +48,7 @@ public class recvMain extends UiApplication implements localResource {
 	uploadFileScreen 	m_uploadFileScreen	= null;
 	debugInfo			m_debugInfoScreen	= null;
 	downloadDlg			m_downloadDlg		= null;
+	settingScreen		m_settingScreen		= null;
 	UiApplication		m_downloadDlgParent = null;
 	
 	UiApplication		m_messageApplication = null;
@@ -104,9 +109,7 @@ public class recvMain extends UiApplication implements localResource {
 	}
 	
 	public class AddAattachmentItem extends ApplicationMenuItem{
-		
-		recvMain		m_mainApp = null;
-		
+			
 		AddAattachmentItem(){
 			super(20);
 		}
@@ -117,8 +120,8 @@ public class recvMain extends UiApplication implements localResource {
 		
 		public Object run(Object context){
 			if(context instanceof Message ){
-				m_mainApp.OpenAttachmentFileScreen(false);
-				return m_mainApp.m_uploadFileScreen;
+				OpenAttachmentFileScreen(false);
+				return m_uploadFileScreen;
 			}
 			
 			return context;
@@ -126,8 +129,6 @@ public class recvMain extends UiApplication implements localResource {
 	}
 	
 	public class DelAattachmentItem extends ApplicationMenuItem{
-		
-		recvMain		m_mainApp = null;
 		
 		DelAattachmentItem(){
 			super(30);
@@ -140,8 +141,8 @@ public class recvMain extends UiApplication implements localResource {
 		public Object run(Object context){
 			if(context instanceof Message ){
 
-				m_mainApp.OpenAttachmentFileScreen(true);
-				return m_mainApp.m_uploadFileScreen;
+				OpenAttachmentFileScreen(true);
+				return m_uploadFileScreen;
 			}
 			
 			return context;	
@@ -154,6 +155,17 @@ public class recvMain extends UiApplication implements localResource {
 	static ResourceBundle sm_local = ResourceBundle.getBundle(
 								localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
 	
+	//@{ location information
+	LocationProvider m_locationProvider = null;
+	boolean		 m_useLocationInfo = false;
+	
+	double			 m_longitude		= 0;
+	double			 m_latitude			= 0;
+	float			 m_altitude			= 0;
+	float			 m_movingSpeed		= 0;
+	float			 m_locationHeading = 0;
+	//@}
+	
 	public static void main(String[] args) {
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());		
 		t_theApp.enterEventDispatcher();
@@ -161,9 +173,6 @@ public class recvMain extends UiApplication implements localResource {
 	
    
 	public recvMain(boolean _systemRun) {	
-				
-		m_addItem.m_mainApp = this;
-		m_delItem.m_mainApp = this;
 		
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/",Connector.READ_WRITE);
@@ -193,6 +202,21 @@ public class recvMain extends UiApplication implements localResource {
         	System.exit(0);
         }
         
+        Criteria t_criteria = new Criteria();
+		t_criteria.setCostAllowed(false);
+		t_criteria.setHorizontalAccuracy(50);
+		t_criteria.setVerticalAccuracy(50);
+		
+		try{
+			m_locationProvider = LocationProvider.getInstance(t_criteria);
+			if(m_locationProvider == null){
+				SetErrorString("your device can't support location");
+			}
+		}catch(Exception e){
+			SetErrorString("location:"+e.getMessage()+" " + e.getClass().getName());
+		}
+		
+		
         WriteReadIni(true);
         
         if(_systemRun){
@@ -212,9 +236,7 @@ public class recvMain extends UiApplication implements localResource {
         		}   		
         		
         	}      	
-        	
-        }
-        
+        }        
 	}
 	
 	public String GetAPNName(){
@@ -343,7 +365,8 @@ public class recvMain extends UiApplication implements localResource {
 		return fsm_pulseInterval[m_pulseIntervalIndex];
 	}
 	
-	public void WriteReadIni(boolean _read){
+	public synchronized void WriteReadIni(boolean _read){
+		
 		try{
 			
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + "Init.data",
@@ -396,7 +419,11 @@ public class recvMain extends UiApplication implements localResource {
 		    			m_fulldayPrompt = t_readFile.read() == 1?true:false;
 		    			m_startPromptHour = sendReceive.ReadInt(t_readFile);
 	    				m_endPromptHour = sendReceive.ReadInt(t_readFile);		    			
-		    		}		    		
+		    		}	
+		    		
+		    		if(t_currVer >= 8){
+		    			m_useLocationInfo = t_readFile.read() == 1?true:false;
+		    		}
 		    		
 		    		t_readFile.close();
 		    		
@@ -437,12 +464,14 @@ public class recvMain extends UiApplication implements localResource {
 				
 				t_writeFile.write(m_fulldayPrompt?1:0);
 				sendReceive.WriteInt(t_writeFile,m_startPromptHour);
-				sendReceive.WriteInt(t_writeFile,m_endPromptHour);			
+				sendReceive.WriteInt(t_writeFile,m_endPromptHour);
+				
+				t_writeFile.write(m_useLocationInfo?1:0);
 								
 				t_writeFile.close();
 				
 				if(m_connectDeamon.m_connect != null){
-					m_connectDeamon.m_connect.SetKeepliveInterval(m_pulseIntervalIndex);
+					m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
 				}
 				
 			}
@@ -452,18 +481,66 @@ public class recvMain extends UiApplication implements localResource {
 		}catch(Exception _e){
 			SetErrorString("write/read config file from SDCard error :" + _e.getMessage() + _e.getClass().getName());
 		}
-	}
 		
-	public void StoreUpDownloadByte(long _uploadByte,long _downloadByte){
-		m_uploadByte += _uploadByte;
-		m_downloadByte += _downloadByte;
-		
-		WriteReadIni(false);
+		if(m_locationProvider != null){
+			if(m_useLocationInfo){
+				m_locationProvider.setLocationListener(this, -1, 1, 1);
+			}else{
+				m_locationProvider.reset();
+				m_locationProvider.setLocationListener(null, -1, -1, -1);
+			}
+		}
+	
 	}
 	
-	public void ClearUpDownloadByte(){
-		m_uploadByte = m_downloadByte = 0;
+	//@{ LocationListener
+	public void locationUpdated(LocationProvider provider, Location location){
+	    // Respond to the updated location.
+	    // If the application registered the location listener with an interval of
+	    // 0, the location provider does not provide location updates.
+		if(location.isValid()){
+			m_locationHeading 	= location.getCourse();
+			m_longitude 		= location.getQualifiedCoordinates().getLongitude();
+			m_latitude 			= location.getQualifiedCoordinates().getLatitude();
+			m_altitude 			= location.getQualifiedCoordinates().getAltitude();
+			m_movingSpeed 		= location.getSpeed();
+			
+			if(m_settingScreen != null){
+				m_settingScreen.RefreshLocation();
+			}
+		}
+    }
+   
+	public void providerStateChanged(LocationProvider provider, int newState){
+	   switch (newState) {
+	     case LocationProvider.AVAILABLE :
+	         // The location provider is available.
+	    	 break;
+	     case LocationProvider.OUT_OF_SERVICE :
+	    	 // The location provider is permanently unavailable.
+	    	 // Consider cancelling the location listener by calling
+	    	 // provider.setLocationListener() with null as the listener.
+	    	 break;
+	     case LocationProvider.TEMPORARILY_UNAVAILABLE :
+	    	 // The location provider is temporarily unavailable.
+	        break;
+	   	}
+       
+	}
 		
+	public synchronized void StoreUpDownloadByte(long _uploadByte,long _downloadByte,boolean _writeIni){
+		m_uploadByte += _uploadByte;
+		m_downloadByte += _downloadByte;	
+				
+		if(_writeIni){
+			WriteReadIni(false);
+		}
+	}
+	
+	public synchronized void ClearUpDownloadByte(){
+
+		m_uploadByte = m_downloadByte = 0;
+				
 		WriteReadIni(false);
 	}
 	
@@ -472,7 +549,7 @@ public class recvMain extends UiApplication implements localResource {
         
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_addItem);
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);
-		
+				
 		WriteReadIni(false);
 	}
 	
@@ -486,6 +563,13 @@ public class recvMain extends UiApplication implements localResource {
 		if(m_connectDeamon.m_connect != null){
 			m_connectDeamon.m_connect.StoreUpDownloadByteImm();
 		}
+		
+		if(m_locationProvider != null){
+			if(m_useLocationInfo){
+				m_locationProvider.reset();
+				m_locationProvider.setLocationListener(null, -1, -1, -1);
+			}
+		}	
 		
 		System.exit(0);
 	}
@@ -516,6 +600,11 @@ public class recvMain extends UiApplication implements localResource {
 	public void PopupAboutScreen(){
 		m_aboutScreen = new aboutScreen(this);
 		pushScreen(m_aboutScreen);
+	}
+	
+	public void PopupSettingScreen(){
+		m_settingScreen = new settingScreen(this);
+		pushScreen(m_settingScreen);
 	}
 	
 	public void PopupDownloadFileDlg(final String _filename){

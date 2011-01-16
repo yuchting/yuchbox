@@ -7,7 +7,7 @@ import java.util.Vector;
 
 import javax.mail.Message;
 
-class MailAttachment{
+final class MailAttachment{
 	int 		m_size;
 	String 		m_name;
 	String		m_type;
@@ -47,7 +47,14 @@ public class  fetchMail{
 	private String			m_contain		= new String();
 	private String			m_contain_html	= new String();
 	
-	
+	// location information
+	boolean m_hasLocationInfo		= false;
+	double m_longitude 			= 0;
+    double m_latitude				= 0;
+    float	 m_altitude				= 0;
+	float	 m_speed				= 0;
+	float	 m_heading				= 0;
+		
 	public	int				m_sendConfirmNum = 0;	
 	
 	private boolean m_convertoSimpleChar = false;
@@ -123,6 +130,15 @@ public class  fetchMail{
 			sendReceive.WriteString(_stream,t_attachment.m_type,m_convertoSimpleChar);
 		}
 		
+		_stream.write(m_hasLocationInfo?1:0);
+		if(m_hasLocationInfo){
+			sendReceive.WriteDouble(_stream,m_longitude);
+			sendReceive.WriteDouble(_stream,m_latitude);
+			sendReceive.WriteFloat(_stream,m_altitude);
+			sendReceive.WriteFloat(_stream,m_speed);
+			sendReceive.WriteFloat(_stream,m_heading);
+		}
+		
 	}
 		
 	public void InputMail(InputStream _stream)throws Exception{
@@ -157,6 +173,15 @@ public class  fetchMail{
 			t_attachment.m_type = sendReceive.ReadString(_stream);
 			
 			m_vectAttachment.addElement(t_attachment);
+		}
+		
+		m_hasLocationInfo = _stream.read() == 1?true:false;
+		if(m_hasLocationInfo){
+			m_longitude	= sendReceive.ReadDouble(_stream);
+			m_latitude	= sendReceive.ReadDouble(_stream);
+			m_altitude	= sendReceive.ReadFloat(_stream);
+			m_speed		= sendReceive.ReadFloat(_stream);
+			m_heading	= sendReceive.ReadFloat(_stream);
 		}
 		
 	}
@@ -249,6 +274,21 @@ public class  fetchMail{
 	
 	public Vector GetAttachment(){
 		return m_vectAttachment;
-	}	
+	}
+	
+	public void SetLocationInfo(final double _longitude,final double _latitude,
+								final float _altitude,final float _speed,final float _heading){
+		if(_longitude != 0 || _latitude != 0){
+			m_hasLocationInfo = true;
+			
+			m_longitude = _longitude;
+			m_latitude	= _latitude;
+			m_altitude	= _altitude;
+			m_speed		= _speed;
+			m_heading	= _heading;
+		}else{
+			m_hasLocationInfo = true;
+		}
+	}
 	
 }

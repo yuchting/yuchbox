@@ -40,8 +40,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 	MenuItem 	m_setingMenu = new MenuItem(recvMain.sm_local.getString(localResource.SETTING_MENU_TEXT), 101, 10) {
 												public void run() {
 													recvMain t_app = (recvMain)UiApplication.getUiApplication();
-													t_app.pushScreen(new settingScreen(t_app));
-													
+													t_app.PopupSettingScreen();													
 												}
 											};
 											
