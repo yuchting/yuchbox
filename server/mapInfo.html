@@ -3,37 +3,11 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-    <title>Yuchberry location information via Google Maps JavaScript API</title>
-    <script src="http://ditu.google.cn/maps?file=api&amp;v=2&amp;key=ABQIAAAAQhqsV_MHFoxYF1DFJn5jhxRE1DC-SlaDQf7-7uTB2cw1XSGT9RSyoxpufsvVTvgsUoHIh_0U3VMxSg&sensor=true_or_false"
-            type="text/javascript"></script>
-    <script type="text/javascript">
-
-	function getMarker(_x,_y){
-		var yuchberryIcon = new GIcon(G_DEFAULT_ICON);
-		yuchberryIcon.iconSize = new GSize(16, 16);
-		yuchberryIcon.shadow = "";
-		yuchberryIcon.iconAnchor = new GPoint(8, 8);
-		yuchberryIcon.infoWindowAnchor = new GPoint(8, 8);
-		yuchberryIcon.image = "http://code.google.com/p/yuchberry/logo?cct=1294378512";
-		var ret = new GMarker(new GLatLng(_x,_y),yuchberryIcon);
-		ret.openInfoWindowHtml("$mail_sign$");
-		return ret;
-	}
-    function initialize() {
-      if (GBrowserIsCompatible()) {
-        var map = new GMap2(document.getElementById("map_canvas"));
-		x=$map_x$;
-		y=$map_y$;
-        map.setCenter(new GLatLng(x,y), 13);
-		map.addOverlay(getMarker(x,y));
-      }
-    }
-
-    </script>
+    <title>Yuchberry location information via Google Maps</title>
   </head>
-  <body onload="initialize()" onunload="GUnload()">
+  <body>
 	<pre>$mail_content$</pre>
-    <div id="map_canvas" style="width: 500px; height: 300px"></div>
-	<iframe width="425" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="http://ditu.google.cn/maps?ie=UTF8&amp;hq=&amp;hnear=%E5%8C%97%E4%BA%AC%E5%B8%82&amp;ll=39.929353,116.400318&amp;spn=0.07398,0.154324&amp;t=h&amp;z=13&amp;brcurrent=3,0x35f0525303f10153:0x6b772a2a053ba4a0,1%3B5,0,1&amp;output=embed"></iframe><br /><small><a href="http://ditu.google.cn/maps?ie=UTF8&amp;hq=&amp;hnear=%E5%8C%97%E4%BA%AC%E5%B8%82&amp;ll=39.929353,116.400318&amp;spn=0.07398,0.154324&amp;t=h&amp;z=13&amp;brcurrent=3,0x35f0525303f10153:0x6b772a2a053ba4a0,1%3B5,0,1&amp;source=embed" style="color:#0000FF;text-align:left">查看大图</a></small>
+	<small><a href="http://ditu.google.cn/maps?q=$map_x$,$map_y$&amp;num=1&amp;sll=$map_x$,$map_y$&amp;sspn=0.624564,0.790957&amp;brcurrent=3,0x35f055a160ba85ff:0x36bd143f9b2e9d93,0,0x35f05137c865ad63:0xd348af83c67dc389%3B5,0,0&amp;ie=UTF8&amp;ll=$map_x$,$map_y$&amp;spn=0.021823,0.045447&amp;z=14&amp;source=embed" style="color:#0000FF;text-align:left">$mail_sign$</a></small><br />
+	<small><a href="http://code.google.com/p/yuchberry">Yuchberry PushMessage</a></small>
   </body>
 </html>

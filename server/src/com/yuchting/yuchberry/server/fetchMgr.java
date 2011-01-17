@@ -73,7 +73,7 @@ public class fetchMgr{
     //! is connected?
     berrySvrDeamon	m_currConnect		= null;
     
-    int 			m_confirmTimer 		= 0;
+    long 			m_confirmTimer 		= 0;
     
     int				m_clientLanguage	= 0;
     
@@ -161,6 +161,8 @@ public class fetchMgr{
 		try{
 			
 			ResetAllAccountSession(false);
+			
+			m_confirmTimer = (new Date()).getTime();
 			
 	    	m_svr = GetSocketServer(m_userPassword,m_userSSL);	    	
 	    	
@@ -280,10 +282,12 @@ public class fetchMgr{
 		
 		boolean t_repush = false;
 		
-		if(++m_confirmTimer > 200){
+		final long t_currentTime = (new Date()).getTime();
+		
+		if(t_currentTime - m_confirmTimer > 5 * 60 * 1000){
 			// send the mail without confirm
 			//
-			m_confirmTimer 	= 0;
+			m_confirmTimer 	= t_currentTime;
 			t_repush 		= true;
 			
 		}

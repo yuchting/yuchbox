@@ -1496,31 +1496,9 @@ public class fetchEmail extends fetchAccount{
 	    	MimeMultipart t_mainPart = new MimeMultipart();
 	    				
 	    	if(_mail.m_hasLocationInfo){
-				// load the location information
-				//	    	
-				BufferedReader in = new BufferedReader(
-						new InputStreamReader(
-								new FileInputStream(m_mainMgr.GetPrefixString() + fsm_googleMapInfoFilename),"UTF-8"));
-			
-				StringBuilder t_stringBuffer = new StringBuilder();
-				String t_line = null;
 				
-				while((t_line = in.readLine()) != null){
-					
-					if(t_line.indexOf("$mail_sign$") != -1){
-						t_line = t_line.replace("$mail_sign$","YBBer:I'm Here!");
-					}else if(t_line.indexOf("$map_y$") != -1){
-						t_line = t_line.replace("$map_y$",Double.toString(_mail.m_longitude));
-					}else if(t_line.indexOf("$map_x$") != -1){
-						t_line = t_line.replace("$map_x$",Double.toString(_mail.m_latitude));
-					}else if(t_line.indexOf("$mail_content$") != -1){
-						t_line = t_line.replace("$mail_content$",_mail.GetContain());
-					}
-					
-					t_stringBuffer.append(t_line).append("\n");
-				}
 				BodyPart t_htmlBodyPart = new MimeBodyPart();
-				t_htmlBodyPart.setContent(t_stringBuffer.toString(), "text/html;charset=utf-8");
+				t_htmlBodyPart.setContent(GetLocationHTML(_mail), "text/html;charset=utf-8");
 				t_mainPart.addBodyPart(t_htmlBodyPart);
 								
 			}else{
@@ -1548,6 +1526,7 @@ public class fetchEmail extends fetchAccount{
 				}
 				
 				if(t_forwardMailAttach != null){
+					
 					t_contain = t_forwardMailAttach.m_attachmentName;
 					
 					for(int i = 0;i < t_contain.size();i++){
@@ -1587,8 +1566,41 @@ public class fetchEmail extends fetchAccount{
 
 	    msg.setHeader("X-Mailer",_mail.GetXMailer());
 	    msg.setSentDate(_mail.GetSendDate());
-	    
-	   
+
+	}
+	
+	private String GetLocationHTML(fetchMail _mail){
+		
+		String t_ret = _mail.GetContain();
+		
+		try{
+			// load the location information
+			//	    	
+			BufferedReader in = new BufferedReader(
+									new InputStreamReader(
+											new FileInputStream(fsm_googleMapInfoFilename),"UTF-8"));
+		
+			StringBuilder t_stringBuffer = new StringBuilder();
+			String t_line = null;
+			
+			while((t_line = in.readLine()) != null){
+				
+				t_line = t_line.replace("$map_y$",Double.toString(_mail.m_longitude));
+				t_line = t_line.replace("$map_x$",Double.toString(_mail.m_latitude));
+				
+				t_line = t_line.replace("$mail_content$",_mail.GetContain());
+				t_line = t_line.replace("$mail_sign$","YBBer:I'm Here!");
+				
+				t_stringBuffer.append(t_line).append("\n");
+			}
+			
+			t_ret = t_stringBuffer.toString();
+			
+		}catch(Exception e){
+			m_mainMgr.m_logger.LogOut(e.getMessage());
+		}
+		
+		return t_ret;
 	}
 	
 	private static byte[] ReadFileBuffer(String _file)throws Exception{
