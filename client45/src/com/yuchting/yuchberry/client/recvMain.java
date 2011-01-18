@@ -23,6 +23,7 @@ import net.rim.device.api.notification.NotificationsConstants;
 import net.rim.device.api.notification.NotificationsManager;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
@@ -30,6 +31,9 @@ import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
 
 public class recvMain extends UiApplication implements localResource,LocationListener {
+	
+	final static int 		fsm_display_width		= Display.getWidth();
+	final static int 		fsm_display_height		= Display.getHeight();
 	
 	final static int		fsm_clientVersion = 9;
 	
@@ -49,6 +53,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	debugInfo			m_debugInfoScreen	= null;
 	downloadDlg			m_downloadDlg		= null;
 	settingScreen		m_settingScreen		= null;
+	weiboTimeLineScreen	m_weiboTimeLineScreen = new weiboTimeLineScreen(this);
 	UiApplication		m_downloadDlgParent = null;
 	
 	UiApplication		m_messageApplication = null;
@@ -605,6 +610,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public void PopupSettingScreen(){
 		m_settingScreen = new settingScreen(this);
 		pushScreen(m_settingScreen);
+	}
+	
+	public void PopupWeiboScreen(){
+		pushScreen(m_weiboTimeLineScreen);
 	}
 	
 	public void PopupDownloadFileDlg(final String _filename){
