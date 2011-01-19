@@ -259,8 +259,9 @@ public class HelloWorld {
 		
 		//TextXML();
 		
-		String t_test = "sfdafdafsd $mail_content$ fasdfsdfsda";	
-		System.out.print(t_test.replace("$mail_content$", "I'm here"));
+		//String t_test = "sfdafdafsd $mail_content$ fasdfsdfsda";	
+		//System.out.print(t_test.replace("$mail_content$", "I'm here"));
+		System.out.print("aaaa " + (12 % 100));
 	
 	}
 	

@@ -102,7 +102,7 @@ public class HyperlinkButtonField extends LabelField
         return super.keyChar( character, status, time );
     }
 
-    protected boolean trackwheelClick( int status, int time ) {        
+    protected boolean navigationClick( int status, int time ) {        
         keyChar(Characters.ENTER, status, time );            
         return true;
     }

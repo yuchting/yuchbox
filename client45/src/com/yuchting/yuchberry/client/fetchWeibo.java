@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.server;
+package com.yuchting.yuchberry.client;
 
 import java.io.InputStream;
 import java.io.OutputStream;
