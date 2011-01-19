@@ -12,6 +12,7 @@ import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.container.MainScreen;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 
 
 class WeiboItemField extends Manager{
@@ -137,9 +138,8 @@ class WeiboItemField extends Manager{
 		}							
 	}
 	
-	static public int RefreshEditTextAreHeight(){
-		sm_editTextAreaHeight = sm_editTextArea.getContentHeight() + fsm_headImageTextInterval;
-		return sm_editTextAreaHeight;
+	static public void RefreshEditTextAreHeight(){
+		sm_editTextAreaHeight = sm_editTextArea.getPreferredHeight() + fsm_headImageTextInterval;
 	}
 	
 	
@@ -158,21 +158,6 @@ class WeiboItemField extends Manager{
 		}else{
 			return m_height;
 		}
-	}
-	
-	protected int nextFocus(int direction,boolean alt){
-		int t_next = super.nextFocus(direction, alt);
-		
-		if(t_next == 4){
-			if(sm_editWeiboItem != this){
-				if(direction > 0){
-					t_next = 0;
-				}else{
-					t_next = 3;
-				}
-			}			
-		}
-		return t_next;		
 	}
 	
 	public void sublayout(int width, int height){
@@ -238,7 +223,7 @@ class WeiboItemField extends Manager{
 	}	
 }
 
-class MainManager extends Manager implements FieldChangeListener{
+class MainManager extends VerticalFieldManager implements FieldChangeListener{
 	
 	recvMain			m_mainApp;
 	
@@ -387,10 +372,13 @@ class MainManager extends Manager implements FieldChangeListener{
 			final String t_text = "@" + _item.m_weibo.GetUserName() + " ";
 			
 			WeiboItemField.sm_editTextArea.setText(t_text);
+			WeiboItemField.sm_editTextArea.setfo
+			
 			WeiboItemField.RefreshEditTextAreHeight();
-			 
-			invalidate();
+			
 			sublayout(0,0);
+			invalidate();
+			
 			
 			WeiboItemField.sm_editTextArea.setCursorPosition(t_text.length());
 			WeiboItemField.sm_editTextArea.setFocus();
