@@ -371,9 +371,7 @@ class MainManager extends VerticalFieldManager implements FieldChangeListener{
 			
 			final String t_text = "@" + _item.m_weibo.GetUserName() + " ";
 			
-			WeiboItemField.sm_editTextArea.setText(t_text);
-			WeiboItemField.sm_editTextArea.setfo
-			
+			WeiboItemField.sm_editTextArea.setText(t_text);			
 			WeiboItemField.RefreshEditTextAreHeight();
 			
 			sublayout(0,0);

@@ -230,9 +230,9 @@ public class fetchMgr{
 	public void ProcessPackage(byte[] _package)throws Exception{
 		
 		ByteArrayInputStream in = new ByteArrayInputStream(_package);
-		
+				
 		final int t_msg_head = in.read();
-			
+		
 		switch(t_msg_head){			
 			case msg_head.msgKeepLive:
 				break;

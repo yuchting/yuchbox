@@ -559,6 +559,7 @@ public class fetchEmail extends fetchAccount{
 		if(t_mail.GetAttachment().isEmpty()){
 			SendMailToSvr(new RecvMailAttach(m_mainMgr,t_mail,t_forwardReplyMail,t_style));
 		}else{
+			m_mainMgr.m_logger.LogOut("Create Tmp Send Maill Attach file");
 			CreateTmpSendMailAttachFile(new RecvMailAttach(m_mainMgr,t_mail,t_forwardReplyMail,t_style));
 		}
 		
@@ -1565,7 +1566,7 @@ public class fetchEmail extends fetchAccount{
 	    }
 
 	    msg.setHeader("X-Mailer",_mail.GetXMailer());
-	    msg.setSentDate(_mail.GetSendDate());
+	    msg.setSentDate((_mail.GetSendDate().getTime() == 0)?(new Date()):_mail.GetSendDate());
 
 	}
 	

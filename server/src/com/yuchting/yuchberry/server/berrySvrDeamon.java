@@ -188,8 +188,7 @@ public class berrySvrDeamon extends Thread{
 				m_fetchMgr.SetClientConnected(this);
 				
 				byte[] t_package = m_sendReceive.RecvBufferFromSvr();
-				
-				m_fetchMgr.m_logger.LogOut("receive package length:" + t_package.length);
+				m_fetchMgr.m_logger.LogOut("receive package head<" + t_package[0] + "> length<" + t_package.length + ">");
 				
 				m_fetchMgr.ProcessPackage(t_package);
 				
