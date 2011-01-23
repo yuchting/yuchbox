@@ -68,8 +68,8 @@ public class fetchWeibo {
 		
 		sendReceive.WriteLong(_stream,m_id);
 		sendReceive.WriteLong(_stream,m_userId);
-		sendReceive.WriteString(_stream,m_userName);
-		sendReceive.WriteString(_stream,m_text);
+		sendReceive.WriteString(_stream,m_userName,m_convertoSimpleChar);
+		sendReceive.WriteString(_stream,m_text,m_convertoSimpleChar);
 		
 		sendReceive.WriteLong(_stream,m_dateTime);
 		sendReceive.WriteLong(_stream,m_commentWeiboId);

@@ -438,12 +438,12 @@ public class fetchEmail extends fetchAccount{
 	    folder.open(Folder.READ_ONLY);
 	   
 	    if(m_totalMailCount != folder.getMessageCount()){
-	    	m_totalMailCount = folder.getMessageCount();	    
+	    	final int t_totalMailCount = folder.getMessageCount();
 		    final int t_startIndex = Math.max(m_totalMailCount - Math.min(CHECK_NUM,m_totalMailCount) + 1,
 		    									Math.min(m_totalMailCount,m_beginFetchIndex));
 		    
 		    Message[] t_msgs = folder.getMessages(t_startIndex, m_totalMailCount);
-		    
+		    		    
 		    for(int i = 0;i < t_msgs.length;i++){
 		    	
 		    	Message t_msg = t_msgs[i];
@@ -487,6 +487,8 @@ public class fetchEmail extends fetchAccount{
 					}
 		    	}
 		    }
+		    
+		    m_totalMailCount = t_totalMailCount;
 	    }	       
 	    
 	    folder.close(false);
@@ -912,22 +914,12 @@ public class fetchEmail extends fetchAccount{
     	m_sysProps.put("mail.pop3.timeout","10000");
     	
     	m_store = m_session.getStore(m_protocol);
-    	try{
-    		
-    		if(m_useFullNameSignIn){
-    			m_store.connect(m_host,m_port,m_strUserNameFull,m_password);
-    		}else{
-    			m_store.connect(m_host,m_port,m_userName,m_password);
-    		}
-    		
-    	}catch(Exception e){
-    		if(e.getMessage() != null && e.getMessage().indexOf("no such domain") != -1){
-    			m_store.connect(m_host,m_port,m_strUserNameFull,m_password);
-    		}else{
-    			throw e;
-    		}
-    	}
     	
+		if(m_useFullNameSignIn){
+			m_store.connect(m_host,m_port,m_strUserNameFull,m_password);
+		}else{
+			m_store.connect(m_host,m_port,m_userName,m_password);
+		}    	
     	
     	// initialize the smtp transfer
     	//

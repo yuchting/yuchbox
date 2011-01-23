@@ -8,6 +8,8 @@ public class fetchMain{
 		fetchMgr t_manger = new fetchMgr();
 		Logger t_logger = new Logger("");
 		
+		new fakeMDSSvr();
+		
 		while(true){
 
 			try{

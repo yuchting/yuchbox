@@ -37,6 +37,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
+import com.yuchting.yuchberry.server.fakeMDSSvr;
 import com.yuchting.yuchberry.server.fetchMgr;
 
 class checkStateThread extends Thread{
@@ -115,6 +116,7 @@ public class mainFrame extends JFrame implements ActionListener{
 	fetchThread	m_currentSelectThread	= null;
 	
 	static public void main(String _arg[]){
+		new fakeMDSSvr();
 		new mainFrame();
 	}
 	
