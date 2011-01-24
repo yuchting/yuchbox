@@ -231,8 +231,8 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[])throws Exception{
 
-		//HelloWorld test = new HelloWorld();
-		//test.berryRecvTest();	
+		HelloWorld test = new HelloWorld();
+		test.berryRecvTest();	
 		
 		//DelDirectory("Test/");
 		
@@ -261,7 +261,7 @@ public class HelloWorld {
 		
 		//String t_test = "sfdafdafsd $mail_content$ fasdfsdfsda";	
 		//System.out.print(t_test.replace("$mail_content$", "I'm here"));
-		System.out.print("aaaa " + (12 % 100));
+		///System.out.print("aaaa " + (12 % 100));
 	
 	}
 	
@@ -755,12 +755,12 @@ public class HelloWorld {
 	public void berryRecvTest(){
 		try{
 			
-			Socket t_socket = GetSocketServer("520530","192.168.10.20",9716,false);
+			Socket t_socket = GetSocketServer("111111","192.168.10.20",9716,false);
 			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
 			
 			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
 			t_stream.write(msg_head.msgConfirm);
-			sendReceive.WriteString(t_stream, "520530",false);
+			sendReceive.WriteString(t_stream, "111111",false);
 			sendReceive.WriteInt(t_stream,2);
 			
 			t_receive.SendBufferToSvr(t_stream.toByteArray(), false);

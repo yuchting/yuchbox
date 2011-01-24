@@ -148,7 +148,15 @@ public class fetchMgr{
 	            t_email.InitAccount(element);
 	            
 	            m_fetchAccount.addElement(t_email);
-	        }			
+	        }
+			
+			for( Iterator i = t_root.elementIterator("SinaWeiboAccount"); i.hasNext();){
+	            Element element = (Element) i.next();
+	            fetchSinaWeibo t_email = new fetchSinaWeibo(this);
+	            t_email.InitAccount(element);
+	            
+	            m_fetchAccount.addElement(t_email);
+	        }
 	    	
 		}catch(Exception ex){
 			m_logger.PrinterException(ex);

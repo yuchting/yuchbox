@@ -437,12 +437,14 @@ public class fetchEmail extends fetchAccount{
 	    	    
 	    folder.open(Folder.READ_ONLY);
 	   
-	    if(m_totalMailCount != folder.getMessageCount()){
-	    	final int t_totalMailCount = folder.getMessageCount();
-		    final int t_startIndex = Math.max(m_totalMailCount - Math.min(CHECK_NUM,m_totalMailCount) + 1,
-		    									Math.min(m_totalMailCount,m_beginFetchIndex));
+	    final int t_totalMailCount = folder.getMessageCount();
+	    
+	    if(m_totalMailCount != t_totalMailCount){	    	
+	    	
+		    final int t_startIndex = Math.max(t_totalMailCount - Math.min(CHECK_NUM,t_totalMailCount) + 1,
+		    									Math.min(t_totalMailCount,m_beginFetchIndex));
 		    
-		    Message[] t_msgs = folder.getMessages(t_startIndex, m_totalMailCount);
+		    Message[] t_msgs = folder.getMessages(t_startIndex, t_totalMailCount);
 		    		    
 		    for(int i = 0;i < t_msgs.length;i++){
 		    	
@@ -473,8 +475,9 @@ public class fetchEmail extends fetchAccount{
 		    		}
 		    		
 		    		AddMailIndexAttach(t_mail,false);		    		
-		    		
 		    		m_unreadMailVector.addElement(t_mail);
+		    		
+		    		SetBeginFetchIndex(t_mail.GetMailIndex());
 		    		
 		    		synchronized (m_unreadMailVector_marking) {
 		    			
@@ -486,8 +489,8 @@ public class fetchEmail extends fetchAccount{
 						m_unreadMailVector_marking.addElement(t_mail);
 					}
 		    	}
-		    }
-		    
+		    }		    
+		   
 		    m_totalMailCount = t_totalMailCount;
 	    }	       
 	    
@@ -1053,9 +1056,7 @@ public class fetchEmail extends fetchAccount{
 			t_mail.OutputMail(t_output);
 			
 			m_mainMgr.SendData(t_output,false);
-			
-			SetBeginFetchIndex(t_mail.GetMailIndex());
-			
+						
 			synchronized(this){
 				m_unreadMailVector.remove(0);
 				m_unreadMailVector_confirm.addElement(t_mail);

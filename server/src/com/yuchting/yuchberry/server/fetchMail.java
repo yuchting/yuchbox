@@ -287,7 +287,7 @@ public class  fetchMail{
 			m_speed		= _speed;
 			m_heading	= _heading;
 		}else{
-			m_hasLocationInfo = true;
+			m_hasLocationInfo = false;
 		}
 	}
 	

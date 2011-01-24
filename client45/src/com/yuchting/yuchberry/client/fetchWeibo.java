@@ -19,10 +19,10 @@ public class fetchWeibo {
 	
 	long	m_dateTime 	= 0;
 	
-	long 	m_commentWeiboId = 0;
+	long 	m_commentWeiboId = -1;
 	fetchWeibo	m_commentWeibo = null;
 	
-	long 	m_replyWeiboId = 0;
+	long 	m_replyWeiboId = -1;
 	fetchWeibo	m_replyWeibo = null;
 	
 	private boolean m_convertoSimpleChar = false;

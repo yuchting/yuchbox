@@ -9,6 +9,8 @@ public class fetchWeibo {
 	final static int	VERSION = 1;
 	final public static int	SINA_WEIBO = 0;
 	
+	int		m_sendConfirmCount = 0;
+	
 	int		m_WeiboStyle;
 	
 	long	m_id;
@@ -19,10 +21,10 @@ public class fetchWeibo {
 	
 	long	m_dateTime 	= 0;
 	
-	long 	m_commentWeiboId = 0;
+	long 	m_commentWeiboId = -1;
 	fetchWeibo	m_commentWeibo = null;
 	
-	long 	m_replyWeiboId = 0;
+	long 	m_replyWeiboId = -1;
 	fetchWeibo	m_replyWeibo = null;
 	
 	private boolean m_convertoSimpleChar = false;
