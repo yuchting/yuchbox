@@ -6,7 +6,7 @@
 #
 -->
 <Yuchberry	userPassword="111111"	serverPort="9716"	pushInterval="10"	userSSL="0"	convertoSimpleChar="0"	>
-	<EmailAccount
+	<!-- EmailAccount
 		account="yuchting@gmail.com"
 		password="fullmental@@@"
 		
@@ -21,7 +21,7 @@
 		port_send="587"
 		
 		appendHTML="0"
-	/>
+	/ -->
 	<SinaWeiboAccount
 		account="yuchberry"
 		accessToken="b4c85da2f35040dbc55e15febfd3d0c3"

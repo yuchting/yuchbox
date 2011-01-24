@@ -54,6 +54,7 @@ public class fetchSinaWeibo extends fetchAccount{
 		m_secretToken		= _elem.attributeValue("secretToken");
 		
 		m_prefix			= m_accountName + "/";
+		
 	}
 	
 	/**
@@ -86,7 +87,7 @@ public class fetchSinaWeibo extends fetchAccount{
 			}
 			
 			if(t_insert){
-				for(fetchWeibo weibo : m_weiboTimeline){
+				for(fetchWeibo weibo : m_weiboTimeLineConfirm){
 					if(weibo.GetId() == fetchOne.getId()){
 						t_insert = false;
 					}
@@ -103,7 +104,7 @@ public class fetchSinaWeibo extends fetchAccount{
 		
 		
 		if(!t_fetch.isEmpty()){
-			Status t_lashOne = t_fetch.get(t_fetch.size() - 1);
+			Status t_lashOne = t_fetch.get(0);
 			m_fetchWeiboIndex = t_lashOne.getId() + 1;
 		}		
 	}
@@ -220,11 +221,11 @@ public class fetchSinaWeibo extends fetchAccount{
 
 		try{
 			
-			if(t_weibo.GetCommentWeiboId() == 0 && t_weibo.GetReplyWeiboId() == 0){
+			if(t_weibo.GetCommentWeiboId() == -1 && t_weibo.GetReplyWeiboId() == -1){
 				m_weibo.updateStatus(t_weibo.GetText());
-			}else if(t_weibo.GetCommentWeiboId() != 0){
+			}else if(t_weibo.GetCommentWeiboId() != -1){
 				m_weibo.updateComment(t_weibo.GetText(),Long.toString(t_weibo.GetCommentWeiboId()),null);
-			}else if(t_weibo.GetReplyWeiboId() != 0){
+			}else if(t_weibo.GetReplyWeiboId() != -1){
 				m_weibo.updateStatus(t_weibo.GetText(),t_weibo.GetReplyWeiboId());
 			}
 			

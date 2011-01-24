@@ -75,21 +75,19 @@ public class fetchWeibo {
 		
 		sendReceive.WriteLong(_stream,m_dateTime);
 		sendReceive.WriteLong(_stream,m_commentWeiboId);
-		if(m_commentWeiboId != 0){
-			if(m_commentWeibo == null){
-				throw new Exception("Comment Weibo can't be null");
-			}
-			
-			m_commentWeibo.OutputWeibo(_stream);
+		if(m_commentWeiboId != -1){
+			_stream.write(m_commentWeibo != null?1:0);
+			if(m_commentWeibo != null){				
+				m_commentWeibo.OutputWeibo(_stream);
+			}			
 		}
 		
 		sendReceive.WriteLong(_stream,m_replyWeiboId);
-		if(m_replyWeiboId != 0){
-			if(m_replyWeibo == null){
-				throw new Exception("Reply Weibo can't be null");
-			}
-			
-			m_replyWeibo.OutputWeibo(_stream);
+		if(m_replyWeiboId != -1){
+			_stream.write(m_replyWeibo != null?1:0);
+			if(m_replyWeibo != null){
+				m_replyWeibo.OutputWeibo(_stream);
+			}			
 		}
 		
 	}
@@ -106,15 +104,19 @@ public class fetchWeibo {
 		m_dateTime	= sendReceive.ReadLong(_stream);
 		
 		m_commentWeiboId	= sendReceive.ReadLong(_stream);
-		if(m_commentWeiboId != 0){
-			m_commentWeibo = new fetchWeibo(m_convertoSimpleChar);
-			m_commentWeibo.InputWeibo(_stream);
+		if(m_commentWeiboId != -1){
+			if(_stream.read() == 1){
+				m_commentWeibo = new fetchWeibo(m_convertoSimpleChar);
+				m_commentWeibo.InputWeibo(_stream);
+			}			
 		}
 		
 		m_replyWeiboId	= sendReceive.ReadLong(_stream);
-		if(m_replyWeiboId != 0){
-			m_replyWeibo = new fetchWeibo(m_convertoSimpleChar);
-			m_replyWeibo.InputWeibo(_stream);
+		if(m_replyWeiboId != -1){
+			if(_stream.read() == 1){
+				m_replyWeibo = new fetchWeibo(m_convertoSimpleChar);
+				m_replyWeibo.InputWeibo(_stream);
+			}			
 		}
 	}
 }

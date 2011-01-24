@@ -232,7 +232,7 @@ public class HelloWorld {
 	public static void main(String arg[])throws Exception{
 
 		HelloWorld test = new HelloWorld();
-		test.berryRecvTest();	
+		test.berrySendWeiboTest();	
 		
 		//DelDirectory("Test/");
 		
@@ -750,6 +750,38 @@ public class HelloWorld {
 		in.read(t_buffer, 0, t_buffer.length);
 		
 		return t_buffer;
+	}
+	
+	public void berrySendWeiboTest(){
+		try{
+			
+			Socket t_socket = GetSocketServer("111111","192.168.10.20",9716,false);
+			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
+			
+			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
+			t_stream.write(msg_head.msgConfirm);
+			sendReceive.WriteString(t_stream, "111111",false);
+			sendReceive.WriteInt(t_stream,2);
+			
+			t_receive.SendBufferToSvr(t_stream.toByteArray(), false);
+			
+			fetchWeibo t_weibo = new fetchWeibo(false);
+			t_weibo.SetText("我要发发试试,评论发不了？");
+			t_weibo.SetCommectWeiboId(5572863863L);
+			
+			t_stream.reset();
+			t_stream.write(msg_head.msgWeibo);
+			
+			t_weibo.OutputWeibo(t_stream);
+			
+			t_receive.SendBufferToSvr(t_stream.toByteArray(), true);
+			
+			Thread.sleep(10000000);
+			
+		}catch(Exception _e){
+			prt(_e.getMessage());
+			_e.printStackTrace();
+		}
 	}
 	
 	public void berryRecvTest(){

@@ -1187,11 +1187,15 @@ public class connectDeamon extends Thread implements SendListener,
 	static public void ComposeMessage(Message msg,fetchMail _mail)throws Exception{
 		
 		_mail.SetAttchMessage(msg);
-			
-		msg.setFrom(fetchMail.parseAddressList(_mail.GetFromVect())[0]);
-				
-	    msg.addRecipients(Message.RecipientType.TO,
+		
+		if(!_mail.GetFromVect().isEmpty()){
+			msg.setFrom(fetchMail.parseAddressList(_mail.GetFromVect())[0]);
+		}		
+		
+		if(!_mail.GetSendToVect().isEmpty()){
+			 msg.addRecipients(Message.RecipientType.TO,
 	    				fetchMail.parseAddressList(_mail.GetSendToVect()));
+		}	   
 	    
 	    if (!_mail.GetCCToVect().isEmpty()){
 	    	  msg.addRecipients(Message.RecipientType.CC,
