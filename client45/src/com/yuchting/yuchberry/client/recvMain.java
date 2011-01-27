@@ -46,6 +46,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	};
 	
 	String 				m_attachmentDir 	= null;
+	String 				m_weiboHeadImageDir = null;
 	
     aboutScreen			m_aboutScreen		= null;
 	stateScreen 		m_stateScreen 		= null;
@@ -187,6 +188,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			m_attachmentDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
 		}
 		
+		m_weiboHeadImageDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/WeiboImage/";
+		
 		// create the sdcard path 
 		//
         try{
@@ -201,6 +204,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         		fc.mkdir();
         	}
         	fc.close();
+        	
+        	
+        	fc = (FileConnection) Connector.open(m_weiboHeadImageDir,Connector.READ_WRITE);
+        	if(!fc.exists()){
+        		fc.mkdir();
+        	}
+        	fc.close();
+        	
         }catch(Exception _e){
         	
         	Dialog.alert("can't use the SDCard to store attachment!");
@@ -242,6 +253,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         		
         	}      	
         }        
+	}
+	
+	public String GetWeiboHeadImageDir(){
+		return m_weiboHeadImageDir;
 	}
 	
 	public String GetAPNName(){

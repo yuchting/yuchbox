@@ -30,7 +30,6 @@ public class fetchMain{
 			}catch(Exception _e){
 				System.exit(0);
 			}
-			
 		}
 	}
 }

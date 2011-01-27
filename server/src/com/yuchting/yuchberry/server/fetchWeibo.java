@@ -7,14 +7,24 @@ import java.io.OutputStream;
 public class fetchWeibo {
 	
 	final static int	VERSION = 1;
-	final public static int	SINA_WEIBO = 0;
+	final public static int	SINA_WEIBO_STYLE 		= 0;
+	
+	final public static int	TIMELINE_CLASS 			= 0;
+	final public static int	DIRECT_MESSAGE_CLASS 	= 1;
+	final public static int	AT_ME_CLASS 			= 2;
+	final public static int	COMMENT_ME_CLASS 		= 3;
+	
+	final public static int	fsm_headImageSize		= 32;
 	
 	int		m_sendConfirmCount = 0;
 	
 	int		m_WeiboStyle;
+	int		m_WeiboClass;
 	
 	long	m_id;
 	long	m_userId;
+	
+	int		m_userHeadImageHashCode = 0;
 	
 	String	m_userName	= new String();
 	String	m_text		= new String();
@@ -36,11 +46,17 @@ public class fetchWeibo {
 	public int GetWeiboStyle(){return m_WeiboStyle;}
 	public void SetWeiboStyle(int _style){m_WeiboStyle = _style;}
 	
+	public int GetWeiboClass(){return m_WeiboClass;}
+	public void SetWeiboClass(int _style){m_WeiboClass = _style;}
+	
 	public long GetId(){return m_id;}
 	public void SetId(final long _id){m_id = _id;}
 	
 	public long GetUserId(){return m_userId;}
 	public void SetUserId(final long _id){m_userId = _id;}
+	
+	public long GetUserHeadImageHashCode(){return m_userHeadImageHashCode;}
+	public void SetUserHeadImageHashCode(final int _hashCode){m_userHeadImageHashCode = _hashCode;}	
 	
 	public String GetUserName(){return m_userName;}
 	public void SetUserName(final String _name){m_userName = _name;}
@@ -68,10 +84,15 @@ public class fetchWeibo {
 		
 		_stream.write(VERSION);
 		
+		_stream.write(m_WeiboStyle);
+		sendReceive.WriteInt(_stream,m_WeiboClass);
+		
 		sendReceive.WriteLong(_stream,m_id);
 		sendReceive.WriteLong(_stream,m_userId);
 		sendReceive.WriteString(_stream,m_userName,m_convertoSimpleChar);
 		sendReceive.WriteString(_stream,m_text,m_convertoSimpleChar);
+		
+		sendReceive.WriteInt(_stream,m_userHeadImageHashCode);
 		
 		sendReceive.WriteLong(_stream,m_dateTime);
 		sendReceive.WriteLong(_stream,m_commentWeiboId);
@@ -88,18 +109,22 @@ public class fetchWeibo {
 			if(m_replyWeibo != null){
 				m_replyWeibo.OutputWeibo(_stream);
 			}			
-		}
-		
+		}		
 	}
 	
 	public void InputWeibo(InputStream _stream)throws Exception{
 		
 		final int t_version = _stream.read();
 		
+		m_WeiboStyle= _stream.read();
+		m_WeiboClass= sendReceive.ReadInt(_stream);
+		
 		m_id		= sendReceive.ReadLong(_stream);
-		m_userId	= sendReceive.ReadLong(_stream);	
+		m_userId	= sendReceive.ReadLong(_stream);
 		m_userName	= sendReceive.ReadString(_stream);
 		m_text		= sendReceive.ReadString(_stream);
+		
+		m_userHeadImageHashCode = sendReceive.ReadInt(_stream);
 	
 		m_dateTime	= sendReceive.ReadLong(_stream);
 		

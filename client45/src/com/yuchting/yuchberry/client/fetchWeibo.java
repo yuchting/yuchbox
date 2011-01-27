@@ -3,16 +3,29 @@ package com.yuchting.yuchberry.client;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-
 public class fetchWeibo {
 	
 	final static int	VERSION = 1;
-	final public static int	SINA_WEIBO = 0;
+	final public static int	SINA_WEIBO_STYLE 		= 0;
+	
+	final public static int	TIMELINE_CLASS 			= 0;
+	final public static int	DIRECT_MESSAGE_CLASS 	= 1;
+	final public static int	AT_ME_CLASS 			= 2;
+	final public static int	COMMENT_ME_CLASS 		= 3;
+	
+	final public static int	fsm_headImageSize		= 32;
+	
+	int		m_sendConfirmCount = 0;
 	
 	int		m_WeiboStyle;
+	int		m_WeiboClass;
 	
 	long	m_id;
 	long	m_userId;
+	
+	int		m_userHeadImageHashCode = 0;
+	
+	boolean m_isRead	= false;
 	
 	String	m_userName	= new String();
 	String	m_text		= new String();
@@ -31,14 +44,23 @@ public class fetchWeibo {
 		m_convertoSimpleChar = _convertToSimple;
 	}
 	
+	public boolean IsRead(){return m_isRead;}
+	public void SetRead(boolean _read){m_isRead = _read;}
+	
 	public int GetWeiboStyle(){return m_WeiboStyle;}
 	public void SetWeiboStyle(int _style){m_WeiboStyle = _style;}
+	
+	public int GetWeiboClass(){return m_WeiboClass;}
+	public void SetWeiboClass(int _style){m_WeiboClass = _style;}
 	
 	public long GetId(){return m_id;}
 	public void SetId(final long _id){m_id = _id;}
 	
 	public long GetUserId(){return m_userId;}
 	public void SetUserId(final long _id){m_userId = _id;}
+	
+	public long GetUserHeadImageHashCode(){return m_userHeadImageHashCode;}
+	public void SetUserHeadImageHashCode(final int _hashCode){m_userHeadImageHashCode = _hashCode;}	
 	
 	public String GetUserName(){return m_userName;}
 	public void SetUserName(final String _name){m_userName = _name;}
@@ -66,53 +88,66 @@ public class fetchWeibo {
 		
 		_stream.write(VERSION);
 		
+		_stream.write(m_WeiboStyle);
+		_stream.write(m_isRead?1:0);
+		sendReceive.WriteInt(_stream,m_WeiboClass);
+		
 		sendReceive.WriteLong(_stream,m_id);
 		sendReceive.WriteLong(_stream,m_userId);
 		sendReceive.WriteString(_stream,m_userName);
 		sendReceive.WriteString(_stream,m_text);
 		
+		sendReceive.WriteInt(_stream,m_userHeadImageHashCode);
+		
 		sendReceive.WriteLong(_stream,m_dateTime);
 		sendReceive.WriteLong(_stream,m_commentWeiboId);
-		if(m_commentWeiboId != 0){
-			if(m_commentWeibo == null){
-				throw new Exception("Comment Weibo can't be null");
-			}
-			
-			m_commentWeibo.OutputWeibo(_stream);
+		if(m_commentWeiboId != -1){
+			_stream.write(m_commentWeibo != null?1:0);
+			if(m_commentWeibo != null){				
+				m_commentWeibo.OutputWeibo(_stream);
+			}			
 		}
 		
 		sendReceive.WriteLong(_stream,m_replyWeiboId);
-		if(m_replyWeiboId != 0){
-			if(m_replyWeibo == null){
-				throw new Exception("Reply Weibo can't be null");
-			}
-			
-			m_replyWeibo.OutputWeibo(_stream);
-		}
-		
+		if(m_replyWeiboId != -1){
+			_stream.write(m_replyWeibo != null?1:0);
+			if(m_replyWeibo != null){
+				m_replyWeibo.OutputWeibo(_stream);
+			}			
+		}		
 	}
 	
 	public void InputWeibo(InputStream _stream)throws Exception{
 		
 		final int t_version = _stream.read();
 		
+		m_WeiboStyle= _stream.read();
+		m_isRead	= _stream.read() == 1?true:false;
+		m_WeiboClass= sendReceive.ReadInt(_stream);
+		
 		m_id		= sendReceive.ReadLong(_stream);
-		m_userId	= sendReceive.ReadLong(_stream);	
+		m_userId	= sendReceive.ReadLong(_stream);
 		m_userName	= sendReceive.ReadString(_stream);
 		m_text		= sendReceive.ReadString(_stream);
+		
+		m_userHeadImageHashCode = sendReceive.ReadInt(_stream);
 	
 		m_dateTime	= sendReceive.ReadLong(_stream);
 		
 		m_commentWeiboId	= sendReceive.ReadLong(_stream);
-		if(m_commentWeiboId != 0){
-			m_commentWeibo = new fetchWeibo(m_convertoSimpleChar);
-			m_commentWeibo.InputWeibo(_stream);
+		if(m_commentWeiboId != -1){
+			if(_stream.read() == 1){
+				m_commentWeibo = new fetchWeibo(m_convertoSimpleChar);
+				m_commentWeibo.InputWeibo(_stream);
+			}			
 		}
 		
 		m_replyWeiboId	= sendReceive.ReadLong(_stream);
-		if(m_replyWeiboId != 0){
-			m_replyWeibo = new fetchWeibo(m_convertoSimpleChar);
-			m_replyWeibo.InputWeibo(_stream);
+		if(m_replyWeiboId != -1){
+			if(_stream.read() == 1){
+				m_replyWeibo = new fetchWeibo(m_convertoSimpleChar);
+				m_replyWeibo.InputWeibo(_stream);
+			}			
 		}
 	}
 }

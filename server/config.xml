@@ -26,6 +26,11 @@
 		account="yuchberry"
 		accessToken="b4c85da2f35040dbc55e15febfd3d0c3"
 		secretToken="f1338d08eb944a15170d0a986e1e139e"
+		
+		timelineSum="5"
+		directMessageSum="1"
+		atMeSum="2"
+		commentSum="2"
 	/>
 </Yuchberry>
 	

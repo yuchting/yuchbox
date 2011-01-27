@@ -19,7 +19,8 @@ final public class msg_head {
 	
 	
 	final public static byte msgWeibo			= 10;
-	final public static byte msgWeiboConfirm		= 11;	
+	final public static byte msgWeiboConfirm		= 11;
+	final public static byte msgWeiboHeadImage	= 12;
 		
 	
 	final public static String noteErrorUserPassword = "illegal client connect\n meybe a error user password";

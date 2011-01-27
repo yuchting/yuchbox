@@ -1,22 +1,22 @@
-ï»¿@echo off
-echo ------------yuchberry æç¤º------------
-echo è¯·ä½¿ç”¨å‰ä»”ç»†é˜…è¯» 
+@echo off
+echo ------------yuchberry ÌáÊ¾------------
+echo ÇëÊ¹ÓÃÇ°×ÐÏ¸ÔÄ¶Á 
 echo.
 echo           http://code.google.com/p/yuchberry/wiki/SSL_yuchberry 
 echo. 
-echo å¼„æ¸…æ¥šSSLæ–¹å¼çš„yuchberryä¹‹åŽï¼Œå†ç”Ÿæˆå¯†é’¥
+echo ÅªÇå³þSSL·½Ê½µÄyuchberryÖ®ºó£¬ÔÙÉú³ÉÃÜÔ¿
 echo.
-echo å¦‚æžœå‡ºçŽ° keytoolä¸æ˜¯å†…éƒ¨å‘½ä»¤ ä¹‹ç±»çš„æ–‡å­—æç¤ºï¼Œè¯·åœ¨JREå®‰è£…ç›®å½•ä¸‹é¢æŸ¥æ‰¾ï¼Œä¾‹å¦‚ï¼š
+echo Èç¹û³öÏÖ keytool²»ÊÇÄÚ²¿ÃüÁî Ö®ÀàµÄÎÄ×ÖÌáÊ¾£¬ÇëÔÚJRE°²×°Ä¿Â¼ÏÂÃæ²éÕÒ£¬ÀýÈç£º
 echo.
 echo           C:\Program Files\Java\jre6\bin
 echo.
-echo å°†è¿™ä¸ªæ‰¹å¤„ç†æ–‡ä»¶æ‹·è´åˆ°è¿™ä¸ªç›®å½•ä¸‹è¿è¡Œï¼Œç„¶åŽå†å§ç”Ÿæˆçš„å¯†é’¥ YuchBerrySvr.key å¤åˆ¶å›žæ¥ã€‚æˆ–è€…è®¾ç½®PATHçŽ¯å¢ƒå˜é‡ï¼Œä¸ä¼šè®¾ç½®çš„è¯·è‡ªè¡Œæœç´¢ã€‚
+echo ½«Õâ¸öÅú´¦ÀíÎÄ¼þ¿½±´µ½Õâ¸öÄ¿Â¼ÏÂÔËÐÐ£¬È»ºóÔÙ°ÉÉú³ÉµÄÃÜÔ¿ YuchBerrySvr.key ¸´ÖÆ»ØÀ´¡£»òÕßÉèÖÃPATH»·¾³±äÁ¿£¬²»»áÉèÖÃµÄÇë×ÔÐÐËÑË÷¡£
 
 
 
 if exist YuchBerrySvr.key del YuchBerrySvr.key
 
-echo ------------ä¸‹é¢ç”Ÿæˆå¯†é’¥å¯¹------------
+echo ------------ÏÂÃæÉú³ÉÃÜÔ¿¶Ô------------
 keytool -genkey -alias serverkey -keystore YuchBerrySvr.key
 
 pause

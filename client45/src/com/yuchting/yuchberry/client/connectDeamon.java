@@ -365,7 +365,10 @@ public class connectDeamon extends Thread implements SendListener,
 			Folder[] t_folders = store.list();
 			for(int i = 0 ;i < t_folders.length;i++){
 				Message[] t_messages = t_folders[i].getMessages();
-				for(int j = 0;j < t_messages.length;j++){
+				
+				// backword search the message
+				for(int j = t_messages.length - 1;j >= 0 ;j++){
+					
 					final String t_sub = t_messages[j].getSubject();
 					if(t_messageSub.equals(t_sub)){
 						
