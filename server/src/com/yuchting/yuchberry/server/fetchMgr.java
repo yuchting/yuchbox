@@ -259,6 +259,16 @@ public class fetchMgr{
 		}		
 	}
 	
+	public void SendImmMail(final String _subject ,final String _contain,final String _from){
+		for(int i = 0;i < m_fetchAccount.size();i++){
+			fetchAccount account = (fetchAccount)m_fetchAccount.elementAt(i);
+			
+			if(account instanceof fetchEmail){
+				((fetchEmail)account).SendImmMail(_subject, _contain, _from);
+				break;
+			}
+		}
+	}
 	public void CheckAccountFolders(){
 				
 		for(int i = 0;i < m_fetchAccount.size();i++){

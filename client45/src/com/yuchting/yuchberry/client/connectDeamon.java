@@ -12,6 +12,8 @@ import javax.microedition.io.SocketConnection;
 import javax.microedition.io.file.FileConnection;
 
 import local.localResource;
+import net.rim.blackberry.api.browser.Browser;
+import net.rim.blackberry.api.browser.BrowserSession;
 import net.rim.blackberry.api.homescreen.HomeScreen;
 import net.rim.blackberry.api.mail.Address;
 import net.rim.blackberry.api.mail.AttachmentHandler;
@@ -210,6 +212,32 @@ public class connectDeamon extends Thread implements SendListener,
 
 		ByteArrayInputStream in = new ByteArrayInputStream((byte[])p.getContent());
 
+		String t_attName = p.getFilename();
+		if(t_attName.equals(recvMain.sm_local.getString(localResource.HTML_PART_FILENAME))){
+			final String t_filename = m_mainApp.m_attachmentDir + t_attName;
+			try{
+				
+				FileConnection t_file = (FileConnection)Connector.open(t_filename,Connector.READ_WRITE);
+				if(t_file.exists()){
+					t_file.delete();
+				}
+				t_file.create();
+				
+				OutputStream t_os = t_file.openOutputStream();
+				t_os.write((byte[])p.getContent());
+				t_os.close();
+				t_file.close();
+				
+				BrowserSession browserSession = Browser.getDefaultSession();
+				browserSession.displayPage(t_filename);
+								
+			}catch(Exception e){
+				m_mainApp.DialogAlert("open the attachment file failed:\n" + e.getMessage());
+			}
+			
+			return;
+		}
+		
 		final int t_messageCode = (m.getSentDate().toString() + m.getSubject()).hashCode();
 				
 		if(in.read() == 'y' && in.read() == 'u' 
@@ -662,7 +690,7 @@ public class connectDeamon extends Thread implements SendListener,
 			 socket.setSocketOption(SocketConnection.DELAY, 0);
 			 socket.setSocketOption(SocketConnection.KEEPALIVE, 2);
 			 socket.setSocketOption(SocketConnection.LINGER, 0);
-			 socket.setSocketOption(SocketConnection.RCVBUF, 128);
+			 socket.setSocketOption(SocketConnection.RCVBUF, 512);
 			 socket.setSocketOption(SocketConnection.SNDBUF, 128);
 			 
 		 }catch(Exception _e){

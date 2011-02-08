@@ -119,7 +119,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     	_menu.add(m_aboutMenu);
     	_menu.add(m_setingMenu);
     	_menu.add(m_debugInfoMenu);
-    	_menu.add(m_weiboMenu);
+    	//_menu.add(m_weiboMenu);
     }
     
     public final boolean onClose(){

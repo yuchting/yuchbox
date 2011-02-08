@@ -5,6 +5,8 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.Vector;
 
+import javax.microedition.content.Invocation;
+import javax.microedition.content.Registry;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 import javax.microedition.location.Criteria;
@@ -23,6 +25,7 @@ import net.rim.device.api.notification.NotificationsConstants;
 import net.rim.device.api.notification.NotificationsManager;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
@@ -30,6 +33,9 @@ import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
 
 public class recvMain extends UiApplication implements localResource,LocationListener {
+	
+	final static int 		fsm_display_width		= Display.getWidth();
+	final static int 		fsm_display_height		= Display.getHeight();
 	
 	final static int		fsm_clientVersion = 9;
 	
@@ -42,6 +48,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	};
 	
 	String 				m_attachmentDir 	= null;
+	String 				m_weiboHeadImageDir = null;
 	
     aboutScreen			m_aboutScreen		= null;
 	stateScreen 		m_stateScreen 		= null;
@@ -49,6 +56,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	debugInfo			m_debugInfoScreen	= null;
 	downloadDlg			m_downloadDlg		= null;
 	settingScreen		m_settingScreen		= null;
+	weiboTimeLineScreen	m_weiboTimeLineScreen = new weiboTimeLineScreen(this);
 	UiApplication		m_downloadDlgParent = null;
 	
 	UiApplication		m_messageApplication = null;
@@ -176,11 +184,13 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/",Connector.READ_WRITE);
-			m_attachmentDir = uploadFileScreen.fsm_rootPath_default + "YuchBerry/";
+			m_attachmentDir = uploadFileScreen.fsm_rootPath_default + "YuchBerry/AttDir/";
 			fc.close();
 		}catch(Exception _e){
-			m_attachmentDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
+			m_attachmentDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/AttDir/";
 		}
+		
+		m_weiboHeadImageDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/WeiboImage/";
 		
 		// create the sdcard path 
 		//
@@ -196,6 +206,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         		fc.mkdir();
         	}
         	fc.close();
+        	
+        	
+        	fc = (FileConnection) Connector.open(m_weiboHeadImageDir,Connector.READ_WRITE);
+        	if(!fc.exists()){
+        		fc.mkdir();
+        	}
+        	fc.close();
+        	
         }catch(Exception _e){
         	
         	Dialog.alert("can't use the SDCard to store attachment!");
@@ -237,6 +255,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         		
         	}      	
         }        
+	}
+	
+	public String GetWeiboHeadImageDir(){
+		return m_weiboHeadImageDir;
 	}
 	
 	public String GetAPNName(){
@@ -341,7 +363,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		if(!m_fulldayPrompt){
 			SimpleDateFormat t_format = new SimpleDateFormat("HH");
 			final int t_hour = Integer.valueOf(t_format.format(new Date())).intValue();
-			return t_hour > m_startPromptHour && t_hour + 1 <= m_endPromptHour;
+			return t_hour >= m_startPromptHour && t_hour + 1 <= m_endPromptHour;
 		}
 		return true;
 	}
@@ -607,6 +629,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		pushScreen(m_settingScreen);
 	}
 	
+	public void PopupWeiboScreen(){
+		pushScreen(m_weiboTimeLineScreen);
+	}
+	
 	public void PopupDownloadFileDlg(final String _filename){
 		if(m_downloadDlg == null){
 			m_downloadDlgParent = UiApplication.getUiApplication();
@@ -652,6 +678,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 		    public void run(){
 		    	
+		    	if(CheckMediaNativeApps(_filename)){
+		    		return;
+		    	}
+		    	
 		    	recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
 		    	try{
 		    		if(uploadFileScreen.IsAudioFile(_filename)){
@@ -659,11 +689,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		    		}else if(uploadFileScreen.IsTxtFile(_filename)){
 		    			t_mainApp.pushGlobalScreen(new textViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
 		    		}else if(uploadFileScreen.IsMovieFile(_filename)){
-		    			t_mainApp.pushGlobalScreen(new videoViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    			t_mainApp.pushGlobalScreen(new videoViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);		    					    			
 		    		}else if(uploadFileScreen.IsImageFile(_filename)){
-		    			t_mainApp.pushGlobalScreen(new imageViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    			t_mainApp.pushGlobalScreen(new imageViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);			
 		    		}else {
-		    			t_mainApp.DialogAlert("unknow format");
+		    			t_mainApp.DialogAlert("yuchberry prompt:unknow format");		    					    			
 		    		}
 		    		
 		    	}catch(Exception _e){
@@ -671,6 +701,21 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		    	}		    	
 			}
 		});
+	}
+	
+	public boolean CheckMediaNativeApps(String _filename){
+		
+		try{
+			Invocation request = new Invocation(_filename);
+			Registry registry = Registry.getRegistry("net.rim.device.api.content.BlackBerryContentHandler");
+			registry.invoke(request);
+			
+			return true;
+		}catch(Exception e){
+			DialogAlert("Invoke native apps failed:"+ e.getMessage());
+		}
+		
+		return false;		
 	}
 	
 	public void UpdateMessageStatus(final Message m,final int _status){

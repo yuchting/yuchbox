@@ -651,7 +651,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		try{
 			final String t_contain = fetchMgr.ReadSimpleIniFile("timeupMail.txt","UTF-8",null);
 			
-			//_thread.m_fetchMgr.SendImmMail("yuchberry 提示", t_contain, "\"YuchBerry\" <yuchberry@gmail.com>");
+			_thread.m_fetchMgr.SendImmMail("yuchberry 提示", t_contain, "\"YuchBerry\" <yuchberry@gmail.com>");
 			
 		}catch(Exception e){}		
 	}

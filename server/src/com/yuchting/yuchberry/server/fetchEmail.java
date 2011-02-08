@@ -285,7 +285,6 @@ public class fetchEmail extends fetchAccount{
 	boolean m_useFullNameSignIn		= false;
 	String 	m_password 					= null;
 	
-	String	m_signature 				= new String();
 	
 	 // Get a Session object
     Session m_session 					= null;
@@ -419,7 +418,6 @@ public class fetchEmail extends fetchAccount{
 		}
 		
 		ReadWriteMailIndexAttach(true);	
-		ReadSignature();
 	}
 		
 	public void CheckFolder()throws Exception{
@@ -721,7 +719,16 @@ public class fetchEmail extends fetchAccount{
 		
 		Message msg = new MimeMessage(m_session_send);
 		
-		_mail.PrepareForwardReplyContain(m_signature);		
+		String t_signature = "";
+		
+		try{
+			t_signature = fetchMgr.ReadSimpleIniFile(m_mainMgr.GetPrefixString() + fsm_signatureFilename,"UTF-8",null);
+		}catch(Exception e){
+			m_mainMgr.m_logger.PrinterException(e);
+		}
+		
+		_mail.PrepareForwardReplyContain(t_signature);
+		
 		ComposeMessage(msg,_mail.m_sendMail,
 					(_mail.m_style == fetchMail.FORWORD_STYLE)?_mail.m_forwardReplyMail:null);
 		
@@ -873,16 +880,7 @@ public class fetchEmail extends fetchAccount{
 	public boolean IsConnectState(){
 		return m_session != null;
 	}
-	
-	private void ReadSignature(){
 		
-		try{
-			m_signature = fetchMgr.ReadSimpleIniFile(m_mainMgr.GetPrefixString() + fsm_signatureFilename,"UTF-8",null);
-		}catch(Exception e){
-			m_mainMgr.m_logger.PrinterException(e);
-		}
-	}
-	
 	public synchronized void ResetSession(boolean _fullTest)throws Exception{
 		
 		DestroySession();
@@ -1287,10 +1285,21 @@ public class fetchEmail extends fetchAccount{
 		    	_mail.SetContain_html(_mail.GetContain_html().concat(t_contain));
 		    	
 		    	if(m_useAppendHTML){
+		    		
+		    		String t_prompt = "\n\n--following converting HTML part--\n\n";
+		    		
+		    		switch (m_mainMgr.GetClientLanguage()) {
+						case 0:
+							t_prompt	= "\n\n--以下为 HTML 转换部分--\n\n";							
+							break;
+						case 1:
+							t_prompt	= "\n\n--以下為 HTML 轉換部分--\n\n";
+							break;
+						
+					}
 				    // parser HTML append the plain text
 				    //		    	
-			    	_mail.SetContain(_mail.GetContain().concat("\n\n---------- HTML part convert ----------\n\n" + 
-			    						fetchMgr.ParseHTMLText(t_contain,true)));
+			    	_mail.SetContain(_mail.GetContain() + t_prompt + fetchMgr.ParseHTMLText(t_contain,true));
 		    	}
 		    	
 		    }catch(Exception e){

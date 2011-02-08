@@ -5,6 +5,8 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.Vector;
 
+import javax.microedition.content.Invocation;
+import javax.microedition.content.Registry;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 import javax.microedition.location.Criteria;
@@ -182,10 +184,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/",Connector.READ_WRITE);
-			m_attachmentDir = uploadFileScreen.fsm_rootPath_default + "YuchBerry/";
+			m_attachmentDir = uploadFileScreen.fsm_rootPath_default + "YuchBerry/AttDir/";
 			fc.close();
 		}catch(Exception _e){
-			m_attachmentDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
+			m_attachmentDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/AttDir/";
 		}
 		
 		m_weiboHeadImageDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/WeiboImage/";
@@ -361,7 +363,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		if(!m_fulldayPrompt){
 			SimpleDateFormat t_format = new SimpleDateFormat("HH");
 			final int t_hour = Integer.valueOf(t_format.format(new Date())).intValue();
-			return t_hour > m_startPromptHour && t_hour + 1 <= m_endPromptHour;
+			return t_hour >= m_startPromptHour && t_hour + 1 <= m_endPromptHour;
 		}
 		return true;
 	}
@@ -676,6 +678,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 		    public void run(){
 		    	
+		    	if(CheckMediaNativeApps(_filename)){
+		    		return;
+		    	}
+		    	
 		    	recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
 		    	try{
 		    		if(uploadFileScreen.IsAudioFile(_filename)){
@@ -683,11 +689,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		    		}else if(uploadFileScreen.IsTxtFile(_filename)){
 		    			t_mainApp.pushGlobalScreen(new textViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
 		    		}else if(uploadFileScreen.IsMovieFile(_filename)){
-		    			t_mainApp.pushGlobalScreen(new videoViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    			t_mainApp.pushGlobalScreen(new videoViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);		    					    			
 		    		}else if(uploadFileScreen.IsImageFile(_filename)){
-		    			t_mainApp.pushGlobalScreen(new imageViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    			t_mainApp.pushGlobalScreen(new imageViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);			
 		    		}else {
-		    			t_mainApp.DialogAlert("unknow format");
+		    			t_mainApp.DialogAlert("yuchberry prompt:unknow format");		    					    			
 		    		}
 		    		
 		    	}catch(Exception _e){
@@ -695,6 +701,21 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		    	}		    	
 			}
 		});
+	}
+	
+	public boolean CheckMediaNativeApps(String _filename){
+		
+		try{
+			Invocation request = new Invocation(_filename);
+			Registry registry = Registry.getRegistry("net.rim.device.api.content.BlackBerryContentHandler");
+			registry.invoke(request);
+			
+			return true;
+		}catch(Exception e){
+			DialogAlert("Invoke native apps failed:"+ e.getMessage());
+		}
+		
+		return false;		
 	}
 	
 	public void UpdateMessageStatus(final Message m,final int _status){

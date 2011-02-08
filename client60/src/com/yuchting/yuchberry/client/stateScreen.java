@@ -52,6 +52,14 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 													
 												}
 											};
+											
+	MenuItem	m_weiboMenu = new MenuItem(recvMain.sm_local.getString(localResource.YB_WEIBO_MENU_LABEL), 102, 10) {
+											public void run() {
+												recvMain t_app = (recvMain)UiApplication.getUiApplication();
+												t_app.PopupWeiboScreen();
+												
+											}
+										};
 	
 
     public stateScreen(final recvMain _app) {
@@ -111,6 +119,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     	_menu.add(m_aboutMenu);
     	_menu.add(m_setingMenu);
     	_menu.add(m_debugInfoMenu);
+    	//_menu.add(m_weiboMenu);
     }
     
     public final boolean onClose(){
