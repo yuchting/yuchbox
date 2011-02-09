@@ -254,7 +254,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         		}   		
         		
         	}      	
-        }        
+        }
+        
+        DialogAlert("Just fine!");
+        
 	}
 	
 	public String GetWeiboHeadImageDir(){
@@ -597,10 +600,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	
 	public void activate(){
-		if(m_stateScreen == null){
-			m_stateScreen = new stateScreen(this);
-			pushScreen(m_stateScreen);
-		}		
+		try{
+			if(m_stateScreen == null){
+				m_stateScreen = new stateScreen(this);
+				pushScreen(m_stateScreen);
+			}
+		}catch(Exception e){
+			DialogAlert("activate :" + e.getMessage() + " " + e.getClass().getName());
+		}
+				
 	}
 	
 	public void TriggerNotification(){
