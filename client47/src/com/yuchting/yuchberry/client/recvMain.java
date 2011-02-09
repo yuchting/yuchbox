@@ -182,32 +182,43 @@ public class recvMain extends UiApplication implements localResource,LocationLis
    
 	public recvMain(boolean _systemRun) {	
 		
+		boolean t_SDCardUse = false;
+		
+		try{
+			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/",Connector.READ_WRITE);
+			if(!fc.exists()){
+				fc.mkdir();
+			}
+			fc.close();
+		}catch (Exception _e) {
+			System.exit(0);
+		}
+		
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/",Connector.READ_WRITE);
-			m_attachmentDir = uploadFileScreen.fsm_rootPath_default + "YuchBerry/AttDir/";
+			if(!fc.exists()){
+				fc.mkdir();
+			}
 			fc.close();
-		}catch(Exception _e){
-			m_attachmentDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/AttDir/";
+			t_SDCardUse = true;
+		}catch(Exception e){
+			
 		}
+				
+		m_attachmentDir = (t_SDCardUse?uploadFileScreen.fsm_rootPath_default:uploadFileScreen.fsm_rootPath_back) + "YuchBerry/AttDir/";
 		
 		m_weiboHeadImageDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/WeiboImage/";
 		
 		// create the sdcard path 
 		//
         try{
-        	FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/",Connector.READ_WRITE);
+        	
+        	FileConnection fc = (FileConnection) Connector.open(m_attachmentDir,Connector.READ_WRITE);
         	if(!fc.exists()){
         		fc.mkdir();
         	}
         	fc.close();
-        	
-        	fc = (FileConnection) Connector.open(m_attachmentDir,Connector.READ_WRITE);
-        	if(!fc.exists()){
-        		fc.mkdir();
-        	}
-        	fc.close();
-        	
-        	
+        	        	
         	fc = (FileConnection) Connector.open(m_weiboHeadImageDir,Connector.READ_WRITE);
         	if(!fc.exists()){
         		fc.mkdir();
@@ -810,7 +821,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			}
 		});
 		
-		
+		SetErrorString(_msg);		
     }
  
 	public void SetUploadingDesc(final fetchMail _mail,final int _attachmentIdx,
