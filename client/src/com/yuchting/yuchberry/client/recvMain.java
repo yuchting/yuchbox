@@ -182,6 +182,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
    
 	public recvMain(boolean _systemRun) {	
 		
+		SetErrorString("recvMain 0");
+		
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/",Connector.READ_WRITE);
 			m_attachmentDir = uploadFileScreen.fsm_rootPath_default + "YuchBerry/AttDir/";
@@ -190,7 +192,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			m_attachmentDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/AttDir/";
 		}
 		
+		SetErrorString("recvMain 1");
+		
 		m_weiboHeadImageDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/WeiboImage/";
+		
+		SetErrorString("recvMain 2");
 		
 		// create the sdcard path 
 		//
@@ -200,6 +206,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         		fc.mkdir();
         	}
         	fc.close();
+        
+        	SetErrorString("recvMain 3");
         	
         	fc = (FileConnection) Connector.open(m_attachmentDir,Connector.READ_WRITE);
         	if(!fc.exists()){
@@ -207,6 +215,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	}
         	fc.close();
         	
+        	SetErrorString("recvMain 4");
         	
         	fc = (FileConnection) Connector.open(m_weiboHeadImageDir,Connector.READ_WRITE);
         	if(!fc.exists()){
@@ -219,6 +228,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	Dialog.alert("can't use the SDCard to store attachment!");
         	System.exit(0);
         }
+        
+        SetErrorString("recvMain 6");
         
         Criteria t_criteria = new Criteria();
 		t_criteria.setCostAllowed(false);
@@ -234,18 +245,23 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			SetErrorString("location:"+e.getMessage()+" " + e.getClass().getName());
 		}
 		
+		SetErrorString("recvMain 7");
 		
         WriteReadIni(true);
         
         if(_systemRun){
         	
+        	SetErrorString("recvMain 8");
+        	  
         	// register the notification
         	//
         	NotificationsManager.registerSource(fsm_notifyID_email, fsm_notifyEvent_email,NotificationsConstants.CASUAL);
         	
         	if(!m_autoRun || m_hostname.length() == 0 || m_port == 0 || m_userPassword.length() == 0){
+        		SetErrorString("recvMain 9");
         		System.exit(0);
         	}else{
+        		SetErrorString("recvMain 10");
         		try{
         			m_connectDeamon.Connect();
         			Start();
@@ -253,11 +269,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         			System.exit(0);
         		}   		
         		
-        	}      	
+        	}
+        	
+        	SetErrorString("recvMain 11");
         }
         
         DialogAlert("Just fine!");
-        
 	}
 	
 	public String GetWeiboHeadImageDir(){
@@ -601,7 +618,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public void activate(){
 		try{
+			SetErrorString("Enter activate()");
 			if(m_stateScreen == null){
+				
+				SetErrorString("create stateScreen");
+				
 				m_stateScreen = new stateScreen(this);
 				pushScreen(m_stateScreen);
 			}
@@ -818,7 +839,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			}
 		});
 		
-		
+		SetErrorString(_msg);		
     }
  
 	public void SetUploadingDesc(final fetchMail _mail,final int _attachmentIdx,
@@ -880,7 +901,30 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		if(m_debugInfoScreen != null){
 			m_debugInfoScreen.RefreshText();
-		}			
+		}
+		
+		try{
+			
+			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + "log.txt",
+					Connector.READ_WRITE);
+			
+			if(!fc.exists()){
+				fc.create();
+			}
+			
+			OutputStream t_stream = fc.openOutputStream();
+			for(int i = 0;i < m_errorString.size();i++){
+				ErrorInfo t_error = (ErrorInfo)m_errorString.elementAt(i);
+				t_stream.write((t_error.m_info + "\r\n").getBytes());
+			}
+			
+			t_stream.close();
+			fc.close();
+			
+		}catch(Exception e){
+			
+		}
+		
 	}
 	
 	public final Vector GetErrorString(){
