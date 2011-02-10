@@ -723,7 +723,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 			return true;
 		}catch(Exception e){
-			DialogAlert("Invoke native apps failed:"+ e.getMessage());
+			SetErrorString("Invoke native apps failed:"+ e.getMessage());
 		}
 		
 		return false;		

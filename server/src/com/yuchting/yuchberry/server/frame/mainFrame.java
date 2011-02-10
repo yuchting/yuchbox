@@ -490,6 +490,8 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 		if(_storeAccountInfo){
 			StoreAccountInfo();
+			
+			m_accountTable.setRowSelectionInterval(m_accountList.size() - 1, m_accountList.size() - 1);
 		}
 		
 		return true;
