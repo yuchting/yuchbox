@@ -1,7 +1,11 @@
+package com.yuchting.yuchberry.server.frame;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -12,15 +16,12 @@ import java.net.Socket;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
-
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
+import java.util.Vector;
 
 /**
  * A simple, tiny, nicely embeddable HTTP 1.0 server in Java

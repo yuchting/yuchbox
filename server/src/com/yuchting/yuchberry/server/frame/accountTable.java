@@ -13,7 +13,7 @@ import com.yuchting.yuchberry.server.fetchMgr;
 
 class accountTableModel extends DefaultTableModel{
 	
-	final static String[] 	fsm_tableCol = {"ÕË»§","¶Ë¿Ú","ÓÃ»§ÃÜÂë","Ê£ÓàÊ±¼ä£¨Ğ¡Ê±£©","SSL ×´Ì¬","µ±Ç°×´Ì¬"};
+	final static String[] 	fsm_tableCol = {"è´¦æˆ·","ç«¯å£","ç”¨æˆ·å¯†ç ","å‰©ä½™æ—¶é—´ï¼ˆå°æ—¶ï¼‰","SSL çŠ¶æ€","å½“å‰çŠ¶æ€"};
 	final static int[] fsm_colWidth = {150,50,100,120,110,200};
 	final static Object[][] fsm_tableData = {{}};
 	
@@ -88,18 +88,18 @@ public class accountTable extends JTable{
 			}
 			
 			if(t_thread.m_pauseState){
-				m_defaultModel.setValueAt("ÔİÍ£",i, 5);
+				m_defaultModel.setValueAt("æš‚åœ",i, 5);
 			}else if(t_thread.m_close){
-				m_defaultModel.setValueAt("¹Ø±Õ",i, 5);
+				m_defaultModel.setValueAt("å…³é—­",i, 5);
 			}else if(t_thread.m_fetchMgr.GetClientConnected() != null){
-				m_defaultModel.setValueAt("¿Í»§¶ËÁ¬½ÓÖĞ",i, 5);
+				m_defaultModel.setValueAt("å®¢æˆ·ç«¯è¿æ¥ä¸­",i, 5);
 			}else{
-				String t_clientDate = "(Î´Á¬½Ó¹ı)";
+				String t_clientDate = "(æœªè¿æ¥è¿‡)";
 				if(t_thread.m_clientDisconnectTime != 0){
 					t_date.setTime(t_thread.m_clientDisconnectTime);
-					t_clientDate = (new SimpleDateFormat("(ÉÏ´ÎÁ´½ÓÊ±¼ä yyyyÄêMMÔÂddÈÕ HH:mm)")).format(t_date);
+					t_clientDate = (new SimpleDateFormat("(ä¸Šæ¬¡é“¾æ¥æ—¶é—´ yyyyå¹´MMæœˆddæ—¥ HH:mm)")).format(t_date);
 				}
-				m_defaultModel.setValueAt("¼àÌıÖĞ" + t_clientDate,i, 5);
+				m_defaultModel.setValueAt("ç›‘å¬ä¸­" + t_clientDate,i, 5);
 			}
 		}
 	}

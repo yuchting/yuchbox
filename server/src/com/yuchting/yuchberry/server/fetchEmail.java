@@ -16,7 +16,6 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
 
-import javax.activation.DataHandler;
 import javax.mail.Address;
 import javax.mail.BodyPart;
 import javax.mail.Flags;
@@ -32,7 +31,6 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
-import javax.mail.util.ByteArrayDataSource;
 
 import org.dom4j.Element;
 
@@ -174,29 +172,29 @@ class RecvMailAttach{
 		
 		switch (m_fetchMgr.GetClientLanguage()) {
 			case 0:
-				t_originalMsgLine	= "\n\n-- Ô­Ê¼ÓÊ¼ş --\n";
-				t_forwordMsgLine	= "\n\n-- ÒÑ×ª·¢ÓÊ¼ş --\n";
-				t_forwordErrorMsg	= "£¡£¡£¡¶ÁÈ¡×ª·¢ÏûÏ¢³öÏÖÒì³££¡£¡£¡";
-				t_sender			= "·¢¼şÈË£º";
-				t_dateTile			= "ÈÕÆÚ£º";
-				t_dateFormat		= "yyyyÄêMMÔÂddÈÕ HH:mm";
-				t_subject			= "Ö÷Ìâ£º";
-				t_receiver			= "ÊÕ¼şÈË£º";
+				t_originalMsgLine	= "\n\n-- åŸå§‹é‚®ä»¶ --\n";
+				t_forwordMsgLine	= "\n\n-- å·²è½¬å‘é‚®ä»¶ --\n";
+				t_forwordErrorMsg	= "ï¼ï¼ï¼è¯»å–è½¬å‘æ¶ˆæ¯å‡ºç°å¼‚å¸¸ï¼ï¼ï¼";
+				t_sender			= "å‘ä»¶äººï¼š";
+				t_dateTile			= "æ—¥æœŸï¼š";
+				t_dateFormat		= "yyyyå¹´MMæœˆddæ—¥ HH:mm";
+				t_subject			= "ä¸»é¢˜ï¼š";
+				t_receiver			= "æ”¶ä»¶äººï¼š";
 				break;
 			case 1:
-				t_originalMsgLine	= "\n\n-- Ô­Ê¼à]¼ş --\n";
-				t_forwordMsgLine	= "\n\n-- ÒÑŞD°là]¼ş --\n";
-				t_forwordErrorMsg	= "£¡£¡£¡×xÈ¡ŞD°lÏûÏ¢³ö¬F®³££¡£¡£¡";
-				t_sender			= "°l¼şÈË£º";
-				t_dateTile			= "ÈÕÆÚ£º";
-				t_dateFormat		= "yyyyÄêMMÔÂddÈÕ HH:mm";
-				t_subject			= "Ö÷î}£º";
-				t_receiver			= "ÊÕ¼şÈË£º";
+				t_originalMsgLine	= "\n\n-- åŸå§‹éƒµä»¶ --\n";
+				t_forwordMsgLine	= "\n\n-- å·²è½‰ç™¼éƒµä»¶ --\n";
+				t_forwordErrorMsg	= "ï¼ï¼ï¼è®€å–è½‰ç™¼æ¶ˆæ¯å‡ºç¾ç•°å¸¸ï¼ï¼ï¼";
+				t_sender			= "ç™¼ä»¶äººï¼š";
+				t_dateTile			= "æ—¥æœŸï¼š";
+				t_dateFormat		= "yyyyå¹´MMæœˆddæ—¥ HH:mm";
+				t_subject			= "ä¸»é¡Œï¼š";
+				t_receiver			= "æ”¶ä»¶äººï¼š";
 				break;
 			default:
 				t_originalMsgLine 	= "\n\n-- original message --\n";
 				t_forwordMsgLine	= "\n\n-- forword message --\n";
-				t_forwordErrorMsg	= "£¡£¡£¡reading forword message exception£¡£¡£¡";
+				t_forwordErrorMsg	= "ï¼ï¼ï¼reading forword message exceptionï¼ï¼ï¼";
 				t_sender			= "Sender:";
 				t_dateTile			= "Date:";
 				t_dateFormat		= "MM-dd yyyy HH:mm";
@@ -472,7 +470,26 @@ public class fetchEmail extends fetchAccount{
 		    			t_mail.SetContain(t_mail.GetContain() + "\n\n\n" + e.getMessage() + "\nThe yuchberry ImportMail Error! Please read the Mail via another way!\n\n\n");
 		    		}
 		    		
-		    		AddMailIndexAttach(t_mail,false);		    		
+		    		AddMailIndexAttach(t_mail,false);
+		    		
+		    		// if some client connect very fast many times
+		    		// it will load same mail 
+		    		//
+		    		// check the duplicating mail
+		    		//
+		    		boolean t_hasLoad = false;
+		    		for(int index = 0;index < m_unreadMailVector.size();index++ ){
+		    			fetchMail t_loadMail = (fetchMail)m_unreadMailVector.elementAt(i); 
+		    			if(t_loadMail.GetMailIndex() == t_mail.GetMailIndex()){
+		    				t_hasLoad = true;
+		    				break;
+		    			}
+		    		}
+		    		
+		    		if(t_hasLoad){
+		    			continue;
+		    		}
+		    		
 		    		m_unreadMailVector.addElement(t_mail);
 		    		
 		    		SetBeginFetchIndex(t_mail.GetMailIndex());
@@ -572,6 +589,8 @@ public class fetchEmail extends fetchAccount{
 	private boolean ProcessMailConfirm(ByteArrayInputStream in)throws Exception{
 		
 		final int t_mailHash = sendReceive.ReadInt(in);
+		
+		m_mainMgr.m_logger.LogOut(GetAccountName() + " Check Mail simpleHash code: " + t_mailHash);
 		
 		synchronized(m_mainMgr){
 			
@@ -733,15 +752,22 @@ public class fetchEmail extends fetchAccount{
 					(_mail.m_style == fetchMail.FORWORD_STYLE)?_mail.m_forwardReplyMail:null);
 		
 		AddMailIndexAttach(_mail.m_sendMail,true);
-	    
+	    		
 		int t_tryTime = 0;
 		while(t_tryTime++ < 5){
 			try{
-				m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
+				if(m_useFullNameSignIn){
+					m_sendTransport.connect(m_host_send,m_port_send,m_strUserNameFull,m_password);
+				}else{
+					m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
+				}
+				
 				m_sendTransport.sendMessage(msg, msg.getAllRecipients());
 				m_sendTransport.close();
 				break;
-			}catch(Exception e){}
+			}catch(Exception e){
+				m_mainMgr.m_logger.PrinterException(e);
+			}
 		}
 		
 		// delete the tmp files
@@ -751,6 +777,7 @@ public class fetchEmail extends fetchAccount{
 			File t_file = new File(t_fullname);
 			t_file.delete();
 		}		
+			
 	}
 
 	private MailIndexAttachment FindMailIndexAttach(int _hashCode){
@@ -1062,7 +1089,8 @@ public class fetchEmail extends fetchAccount{
 			
 			t_mail.m_sendConfirmNum++;
 			
-			m_mainMgr.m_logger.LogOut(GetAccountName() + " send mail<" + t_mail.GetMailIndex() + " : " + t_mail.GetSubject() + ">,wait confirm...");
+			m_mainMgr.m_logger.LogOut(GetAccountName() + " send mail<" + t_mail.GetMailIndex() + " : " + 
+									t_mail.GetSubject() + "> simpleHash<"+ t_mail.GetSimpleHashCode() +">,wait confirm...");
 		}
 	}
 	
@@ -1290,10 +1318,10 @@ public class fetchEmail extends fetchAccount{
 		    		
 		    		switch (m_mainMgr.GetClientLanguage()) {
 						case 0:
-							t_prompt	= "\n\n--ÒÔÏÂÎª HTML ×ª»»²¿·Ö--\n\n";							
+							t_prompt	= "\n\n--ä»¥ä¸‹ä¸º HTML è½¬æ¢éƒ¨åˆ†--\n\n";							
 							break;
 						case 1:
-							t_prompt	= "\n\n--ÒÔÏÂé HTML ŞD“Q²¿·Ö--\n\n";
+							t_prompt	= "\n\n--ä»¥ä¸‹ç‚º HTML è½‰æ›éƒ¨åˆ†--\n\n";
 							break;
 						
 					}

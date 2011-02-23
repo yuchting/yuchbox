@@ -5,32 +5,15 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyStore;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.Vector;
 
-import javax.mail.Address;
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Header;
-import javax.mail.Message;
-import javax.mail.Multipart;
-import javax.mail.Part;
-import javax.mail.Session;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimeUtility;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
@@ -45,9 +28,6 @@ import org.htmlparser.Parser;
 import org.htmlparser.nodes.TextNode;
 import org.htmlparser.tags.LinkTag;
 import org.htmlparser.util.NodeList;
-
-import com.sun.mail.smtp.SMTPTransport;
-import com.yuchting.yuchberry.server.fetchEmail.MailIndexAttachment;
 
 public class fetchMgr{
 		
@@ -111,7 +91,10 @@ public class fetchMgr{
 		
 		// set the confirm timer to prepare the unconfirm
 		//
-		m_confirmTimer = 10000000;
+		if(_set != null){
+			m_confirmTimer = 0;
+		}
+		
 	}
 	
 	public void SendData(ByteArrayOutputStream _os,boolean _sendImm)throws Exception{
@@ -303,10 +286,15 @@ public class fetchMgr{
 		final long t_currentTime = (new Date()).getTime();
 		
 		if(t_currentTime - m_confirmTimer > 5 * 60 * 1000){
+			
+			m_logger.LogOut("m_confirmTimer:" + m_confirmTimer);
+			
 			// send the mail without confirm
 			//
 			m_confirmTimer 	= t_currentTime;
 			t_repush 		= true;
+			
+			m_logger.LogOut("t_currentTime:" + t_currentTime);
 			
 		}
 		

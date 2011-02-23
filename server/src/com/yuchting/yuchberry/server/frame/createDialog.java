@@ -138,8 +138,8 @@ public class createDialog extends JDialog implements DocumentListener,
 	
 	JTextField	m_pushInterval		= new JTextField();
 	
-	JCheckBox	m_useSSL			= new JCheckBox("PushÊ¹ÓÃSSL¼ÓÃÜ");
-	JCheckBox	m_convertToSimple	= new JCheckBox("×ª»»·±ÌåÎª¼òÌå");
+	JCheckBox	m_useSSL			= new JCheckBox("Pushä½¿ç”¨SSLåŠ å¯†");
+	JCheckBox	m_convertToSimple	= new JCheckBox("è½¬æ¢ç¹ä½“ä¸ºç®€ä½“");
 	
 	JTextField	m_expiredTime		= new JTextField();	
 	JTextArea	m_signature			= new JTextArea();
@@ -199,8 +199,8 @@ public class createDialog extends JDialog implements DocumentListener,
 	
 	
 	
-	JButton		m_addAccountBut		= new JButton("Ìí¼Ó");
-	JButton		m_delAccountBut		= new JButton("É¾³ı");
+	JButton		m_addAccountBut		= new JButton("æ·»åŠ ");
+	JButton		m_delAccountBut		= new JButton("åˆ é™¤");
 	
 	
 	DefaultListModel m_accountlistModel = new DefaultListModel();
@@ -230,10 +230,10 @@ public class createDialog extends JDialog implements DocumentListener,
 	JTextField 	m_send_host			= new JTextField();
 	JTextField 	m_send_port			= new JTextField();	
 	
-	JCheckBox	m_signInAsFullname	= new JCheckBox("Ê¹ÓÃÈ«µØÖ·×÷ÎªÓÃ»§Ãû");
-	JCheckBox	m_appendHTML		= new JCheckBox("×·¼ÓHTMLµ½ÕıÎÄ");
+	JCheckBox	m_signInAsFullname	= new JCheckBox("ä½¿ç”¨å…¨åœ°å€ä½œä¸ºç”¨æˆ·å");
+	JCheckBox	m_appendHTML		= new JCheckBox("è¿½åŠ HTMLåˆ°æ­£æ–‡");
 	
-	JButton		m_confirmBut		= new JButton("È·¶¨");
+	JButton		m_confirmBut		= new JButton("ç¡®å®š");
 	
 	// write xml data
 	Document	m_createConfigDoc	= DocumentFactory.getInstance().createDocument();
@@ -248,7 +248,7 @@ public class createDialog extends JDialog implements DocumentListener,
 										String _userPassword,String _serverPort,
 										String _pushInterval,String _expiredTime){
 		
-		super(_main,"Ìí¼ÓÒ»¸öÕË»§",true);
+		super(_main,"æ·»åŠ ä¸€ä¸ªè´¦æˆ·",true);
 		
 		m_mainFrame = _main;
 		
@@ -286,16 +286,16 @@ public class createDialog extends JDialog implements DocumentListener,
 		t_mainPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		t_mainPanel.setPreferredSize(new Dimension(fsm_width, 255));
 				
-		AddTextLabel(t_mainPanel,"ÓÃ»§ÃÜÂë:",m_userPassword,100,_userPassword);
-		AddTextLabel(t_mainPanel,"ÓÃ»§¶Ë¿Ú:",m_serverPort,60,_serverPort);
-		AddTextLabel(t_mainPanel,"ÍÆËÍ¼ä¸ô(Ãë):",m_pushInterval,60,_pushInterval);
-		AddTextLabel(t_mainPanel,"¹ıÆÚÊ±¼ä(µ¥Î»Ğ¡Ê±£¬0Îª²»¹ıÆÚ):",m_expiredTime,80,_expiredTime);
+		AddTextLabel(t_mainPanel,"ç”¨æˆ·å¯†ç :",m_userPassword,100,_userPassword);
+		AddTextLabel(t_mainPanel,"ç”¨æˆ·ç«¯å£:",m_serverPort,60,_serverPort);
+		AddTextLabel(t_mainPanel,"æ¨é€é—´éš”(ç§’):",m_pushInterval,60,_pushInterval);
+		AddTextLabel(t_mainPanel,"è¿‡æœŸæ—¶é—´(å•ä½å°æ—¶ï¼Œ0ä¸ºä¸è¿‡æœŸ):",m_expiredTime,80,_expiredTime);
 		
 		m_useSSL.setPreferredSize(new Dimension(250, 20));
 		t_mainPanel.add(m_useSSL);
 		t_mainPanel.add(m_convertToSimple);
 		
-		JLabel t_label = new JLabel("Ç©Ãû£º");
+		JLabel t_label = new JLabel("ç­¾åï¼š");
 		t_label.setPreferredSize(new Dimension(fsm_width - 20,20));
 		
 		t_mainPanel.add(t_label);
@@ -349,7 +349,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		JPanel t_accountPanel = new JPanel();
 		t_accountPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		
-		JLabel t_label = new JLabel("³£ÓÃÅäÖÃ£º");
+		JLabel t_label = new JLabel("å¸¸ç”¨é…ç½®ï¼š");
 		t_label.setPreferredSize(new Dimension(80,25));
 		t_accountPanel.add(t_label);
 		m_commonConfigList.setPreferredSize(new Dimension(200, 25));
@@ -359,19 +359,19 @@ public class createDialog extends JDialog implements DocumentListener,
 		t_separator.setPreferredSize(new Dimension(fsm_width, 5));
 		t_accountPanel.add(t_separator);
 		
-		AddTextLabel(t_accountPanel,"ÕÊºÅÃû³Æ:",m_account,220,"");
-		AddTextLabel(t_accountPanel,"ÕÊºÅÃÜÂë:",m_password,220,"");
-		AddTextLabel(t_accountPanel,"Ö÷»úµØÖ·:",m_host,120,_formerHost);
-		AddTextLabel(t_accountPanel,"¶Ë¿Ú:",m_port,60,_formerPort);
+		AddTextLabel(t_accountPanel,"å¸å·åç§°:",m_account,220,"");
+		AddTextLabel(t_accountPanel,"å¸å·å¯†ç :",m_password,220,"");
+		AddTextLabel(t_accountPanel,"ä¸»æœºåœ°å€:",m_host,120,_formerHost);
+		AddTextLabel(t_accountPanel,"ç«¯å£:",m_port,60,_formerPort);
 		
-		t_accountPanel.add(new JLabel("Ğ­Òé:"));
+		t_accountPanel.add(new JLabel("åè®®:"));
 		for(int i = 0;i < m_protocal.length;i++){
 			m_protocalGroup.add(m_protocal[i]);
 			t_accountPanel.add(m_protocal[i]);
 		}
 		
-		AddTextLabel(t_accountPanel,"·¢ËÍÖ÷»úµØÖ·:",m_send_host,100,_formerHost_send);
-		AddTextLabel(t_accountPanel,"¶Ë¿Ú:",m_send_port,60,_formerPort_send);
+		AddTextLabel(t_accountPanel,"å‘é€ä¸»æœºåœ°å€:",m_send_host,100,_formerHost_send);
+		AddTextLabel(t_accountPanel,"ç«¯å£:",m_send_port,60,_formerPort_send);
 		
 		m_signInAsFullname.setPreferredSize(new Dimension(fsm_width, 20));
 		t_accountPanel.add(m_signInAsFullname);
@@ -380,7 +380,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		t_accountPanel.add(m_appendHTML);
 
 		
-		m_tabbedPane.addTab("ÓÊ¼ş",null,t_accountPanel,"Ìí¼ÓÓÊ¼şÕË»§");
+		m_tabbedPane.addTab("é‚®ä»¶",null,t_accountPanel,"æ·»åŠ é‚®ä»¶è´¦æˆ·");
 		m_tabbedPane.setPreferredSize(new Dimension(300, 270));
 		
 		return m_tabbedPane;
@@ -444,7 +444,7 @@ public class createDialog extends JDialog implements DocumentListener,
 				CreateAccountAndTest(t_email);	
 				
 			}catch(Exception ex){
-				JOptionPane.showMessageDialog(this, ex.getMessage(), "´íÎó", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, ex.getMessage(), "é”™è¯¯", JOptionPane.ERROR_MESSAGE);
 			}			
 			
 		}else if(e.getSource() == m_delAccountBut){
@@ -453,8 +453,8 @@ public class createDialog extends JDialog implements DocumentListener,
 				
 				fetchAccount t_account = (fetchAccount)m_createAccountList.elementAt(t_selectIndex);
 				
-				if(JOptionPane.showConfirmDialog(this,"É¾³ıÕâ¸ö <"+ t_account.GetAccountName() + "> ÕË»§£¿", 
-				    "É¾³ı£¿", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION){
+				if(JOptionPane.showConfirmDialog(this,"åˆ é™¤è¿™ä¸ª <"+ t_account.GetAccountName() + "> è´¦æˆ·ï¼Ÿ", 
+				    "åˆ é™¤ï¼Ÿ", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION){
 					
 					return;
 				}
@@ -490,7 +490,7 @@ public class createDialog extends JDialog implements DocumentListener,
 				dispose();
 				
 			}catch(Exception ex){
-				JOptionPane.showMessageDialog(this, ex.getMessage(), "´íÎó", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, ex.getMessage(), "é”™è¯¯", JOptionPane.ERROR_MESSAGE);
 			}
 						
 		}
@@ -513,23 +513,23 @@ public class createDialog extends JDialog implements DocumentListener,
 	private void CheckMainAttr(final mainAttrData _data)throws Exception{
 		
 		if(_data.m_userPassword.length() == 0){
-			throw new Exception("ÓÃ»§ÃÜÂë²»ÄÜÎª¿Õ");
+			throw new Exception("ç”¨æˆ·å¯†ç ä¸èƒ½ä¸ºç©º");
 		}
 		
 		final int t_serverPort = Integer.valueOf(_data.m_serverProt).intValue();
 		final int t_listenPort = 3000;
 		
 		if(t_serverPort <= t_listenPort){
-			throw new Exception("¼àÌıyuchberry¶Ë¿Ú²»ÄÜĞ¡ÓÚ " + t_listenPort);
+			throw new Exception("ç›‘å¬yuchberryç«¯å£ä¸èƒ½å°äº " + t_listenPort);
 		}
 		
 		if(m_mainFrame.SearchAccountThread("",t_serverPort) != null){
-			throw new Exception("·şÎñ¶Ë¿Ú" + t_serverPort + "ÒÑ¾­±»Ê¹ÓÃ");
+			throw new Exception("æœåŠ¡ç«¯å£" + t_serverPort + "å·²ç»è¢«ä½¿ç”¨");
 		}
 		
 		final int t_minPushInterval = 2;
 		if(Integer.valueOf(_data.m_pushInterval).intValue() <= t_minPushInterval){
-			throw new Exception("ÍÆËÍ¼ä¸ô²»ÄÜĞ¡ÓÚ " + t_minPushInterval);
+			throw new Exception("æ¨é€é—´éš”ä¸èƒ½å°äº " + t_minPushInterval);
 		}
 		
 		ServerSocket t_sockTest = null;
@@ -537,7 +537,7 @@ public class createDialog extends JDialog implements DocumentListener,
 			t_sockTest = (new ServerSocket(t_serverPort));
 			t_sockTest.close();
 		}catch(Exception e){
-			throw new Exception("·şÎñ¶Ë¿Ú" + t_serverPort + "ÎŞ·¨¿ªÆô£º" + e.getMessage());
+			throw new Exception("æœåŠ¡ç«¯å£" + t_serverPort + "æ— æ³•å¼€å¯ï¼š" + e.getMessage());
 		}
 					
 		m_createConfigDoc_root.addAttribute("userPassword", _data.m_userPassword);
@@ -566,19 +566,19 @@ public class createDialog extends JDialog implements DocumentListener,
 		CheckMainAttr();
 		
 		if(_email.m_accountName.length() == 0 || _email.m_password.length() == 0){
-			throw new Exception("ÕË»§Ãû¡¢ÃÜÂë²»ÄÜÎª¿Õ");
+			throw new Exception("è´¦æˆ·åã€å¯†ç ä¸èƒ½ä¸ºç©º");
 		}
 		
 		if(_email.m_host.length() == 0 || _email.m_port.length() == 0){
-			throw new Exception("ÓÊ¼ş½ÓÊÜ·şÎñÆ÷µØÖ·¡¢¶Ë¿Ú²»ÄÜÎª¿Õ");
+			throw new Exception("é‚®ä»¶æ¥å—æœåŠ¡å™¨åœ°å€ã€ç«¯å£ä¸èƒ½ä¸ºç©º");
 		}
 		
 		if(_email.m_send_host.length() == 0 || Integer.valueOf(_email.m_send_port).intValue() <= 0){
-			throw new Exception("ÓÊ¼ş·¢ËÍ·şÎñÆ÷µØÖ·²»ÄÜÎª¿Õ£¬¶Ë¿Ú·Ç·¨");
+			throw new Exception("é‚®ä»¶å‘é€æœåŠ¡å™¨åœ°å€ä¸èƒ½ä¸ºç©ºï¼Œç«¯å£éæ³•");
 		}		
 
 		if(m_mainFrame.SearchAccountThread(_email.m_accountName,0) != null){
-			throw new Exception(_email.m_accountName + " ÕË»§ÖØ¸´");
+			throw new Exception(_email.m_accountName + " è´¦æˆ·é‡å¤");
 		}	
 		
 		if(m_createAccountList.isEmpty()){
@@ -590,7 +590,7 @@ public class createDialog extends JDialog implements DocumentListener,
 			for(int i = 0;i < m_createAccountList.size();i++){
 				fetchAccount account = (fetchAccount)m_createAccountList.elementAt(i);
 				if(account.GetAccountName().equals(_email.m_accountName)){
-					throw new Exception(_email.m_accountName + " ÕË»§ÒÑ¾­Ìí¼Ó");
+					throw new Exception(_email.m_accountName + " è´¦æˆ·å·²ç»æ·»åŠ ");
 				}				
 			}
 		}
@@ -708,14 +708,14 @@ public class createDialog extends JDialog implements DocumentListener,
 						m_commonConfigListModel.addElement(t_config.m_name);
 						
 					}catch(Exception e){
-						JOptionPane.showMessageDialog(this, "¶ÁÈ¡" + "commonMailSvr.ini " + "³öÏÖÎÊÌâ£º" + e.getMessage(), "´íÎó", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(this, "è¯»å–" + "commonMailSvr.ini " + "å‡ºç°é—®é¢˜ï¼š" + e.getMessage(), "é”™è¯¯", JOptionPane.ERROR_MESSAGE);
 					}
 				}
 			}
 			
 			
 		}catch(Exception e){
-			JOptionPane.showMessageDialog(this, "¶ÁÈ¡" + "commonMailSvr.ini " + "³öÏÖÎÊÌâ£º" + e.getMessage(), "´íÎó", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "è¯»å–" + "commonMailSvr.ini " + "å‡ºç°é—®é¢˜ï¼š" + e.getMessage(), "é”™è¯¯", JOptionPane.ERROR_MESSAGE);
 		}	
 
 	}

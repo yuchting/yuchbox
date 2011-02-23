@@ -17,7 +17,11 @@ public class fakeMDSSvr extends Thread{
 			m_udpSocket = new DatagramSocket(fsm_MDSPort);
 			
 			start();
-		}catch(Exception e){}		
+		}catch(Exception e){
+			// illegal client connect
+			//
+			System.out.print("fakeMDSSvr Has Been exist!");
+		}		
 	}
 	
 	public void run(){
@@ -43,6 +47,8 @@ public class fakeMDSSvr extends Thread{
 					
 					// illegal client connect
 					//
+					System.out.print("illegal client");
+					
 				}else{
 					
 					for(int i = 0;i < 4;i++){

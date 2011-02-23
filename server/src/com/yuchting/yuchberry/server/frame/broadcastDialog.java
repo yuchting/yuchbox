@@ -26,12 +26,12 @@ public class broadcastDialog extends JDialog implements ActionListener{
 	JTextField	m_port			= new JTextField();
 	
 	JTextArea	m_text			= new JTextArea();
-	JButton		m_confirmBut	= new JButton("È·¶¨");
+	JButton		m_confirmBut	= new JButton("ç¡®å®š");
 	
 	mainFrame	m_mainFrame		= null;
 	
 	public broadcastDialog(mainFrame _main){
-		super(_main,"¹ã²¥ÏûÏ¢",false);
+		super(_main,"å¹¿æ’­æ¶ˆæ¯",false);
 		m_mainFrame = _main;
 		
 		setResizable(false);
@@ -42,9 +42,9 @@ public class broadcastDialog extends JDialog implements ActionListener{
 		setLocation(_main.getLocation().x + (_main.getWidth()- fsm_width) / 2,
 					_main.getLocation().y + (_main.getHeight() -  fsm_height) / 2);
 		
-		createDialog.AddTextLabel(getContentPane(),"SMTPÓÃ»§Ãû£¨Áô¿Õ¾ÍÊÇÊ¹ÓÃÓÃ»§×Ô¼ºµÄÕÊ»§·¢£©£º",m_username,100,"");
-		createDialog.AddTextLabel(getContentPane(),"SMTPÖ÷»ú£º",m_host,80,"");
-		createDialog.AddTextLabel(getContentPane(),"SMTP¶Ë¿Ú£º",m_port,50,"");
+		createDialog.AddTextLabel(getContentPane(),"SMTPç”¨æˆ·åï¼ˆç•™ç©ºå°±æ˜¯ä½¿ç”¨ç”¨æˆ·è‡ªå·±çš„å¸æˆ·å‘ï¼‰ï¼š",m_username,100,"");
+		createDialog.AddTextLabel(getContentPane(),"SMTPä¸»æœºï¼š",m_host,80,"");
+		createDialog.AddTextLabel(getContentPane(),"SMTPç«¯å£ï¼š",m_port,50,"");
 		
 		m_text.setLineWrap(true);
 		m_text.setBorder(BorderFactory.createLineBorder(Color.gray,1));

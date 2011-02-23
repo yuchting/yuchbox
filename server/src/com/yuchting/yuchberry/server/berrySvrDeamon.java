@@ -99,14 +99,14 @@ public class berrySvrDeamon extends Thread{
 			m_sendReceive = t_connect;
 			m_pushDeamon = new berrySvrPush(this);
 			
-			
 		}catch(Exception _e){
-			m_fetchMgr.m_logger.LogOut("construct berrySvrDeamon error " + _e.getMessage());
-			_e.printStackTrace(m_fetchMgr.m_logger.GetPrintStream());
+			m_fetchMgr.m_logger.PrinterException(_e);
 			
 			if(m_sendReceive != null){
 				m_sendReceive.CloseSendReceive();
 			}
+			
+			m_fetchMgr.SetClientConnected(null);
 						
 			throw _e;
 		}
@@ -184,9 +184,7 @@ public class berrySvrDeamon extends Thread{
 			// process....
 			//
 			try{
-				
-				m_fetchMgr.SetClientConnected(this);
-				
+								
 				byte[] t_package = m_sendReceive.RecvBufferFromSvr();
 				m_fetchMgr.m_logger.LogOut("receive package head<" + t_package[0] + "> length<" + t_package.length + ">");
 				

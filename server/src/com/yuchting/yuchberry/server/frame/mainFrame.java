@@ -76,12 +76,12 @@ public class mainFrame extends JFrame implements ActionListener{
 	final static int	fsm_minAccountTableHeight = 200;
 	final static int	fsm_maxAccountTableHeight = 600;
 	
-	JButton		m_addAccount		= new JButton("+ Ìí¼ÓÕË»§");
-	JButton		m_sponsor			= new JButton("ÔŞÖú/¼¼ÊõÖ§³Ö");
+	JButton		m_addAccount		= new JButton("+ æ·»åŠ è´¦æˆ·");
+	JButton		m_sponsor			= new JButton("èµåŠ©/æŠ€æœ¯æ”¯æŒ");
 	JLabel		m_stateLabel		= new JLabel("state:");
 
 	JTextField	m_searchAccount		= new JTextField();
-	JButton		m_searchButton		= new JButton("ËÑË÷ÕÊ»§");
+	JButton		m_searchButton		= new JButton("æœç´¢å¸æˆ·");
 	
 	accountTable m_accountTable		= new accountTable(this);
 	JScrollPane	m_accountTableScroll= new JScrollPane(m_accountTable);
@@ -106,10 +106,10 @@ public class mainFrame extends JFrame implements ActionListener{
 	long		m_expiredTime			= 0;
 	
 	JPopupMenu 	m_contextMenu			= new JPopupMenu();
-	JMenuItem	m_checkAccountItem		= new JMenuItem("¼ì²éÕÊ»§");
-	JMenuItem	m_delAccountItem		= new JMenuItem("É¾³ıÕÊ»§");
-	JMenuItem	m_pauseAccountItem		= new JMenuItem("ÔİÍ£");
-	JMenuItem	m_continueAccountItem	= new JMenuItem("¼ÌĞø");
+	JMenuItem	m_checkAccountItem		= new JMenuItem("æ£€æŸ¥å¸æˆ·");
+	JMenuItem	m_delAccountItem		= new JMenuItem("åˆ é™¤å¸æˆ·");
+	JMenuItem	m_pauseAccountItem		= new JMenuItem("æš‚åœ");
+	JMenuItem	m_continueAccountItem	= new JMenuItem("ç»§ç»­");
 		
 	loadDialog	m_loadDialog			= null;
 	
@@ -122,7 +122,7 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	
 	public mainFrame(){
-		setTitle("yuchberry ¼¯³ÉÅäÖÃ¹¤¾ß beta");
+		setTitle("yuchberry é›†æˆé…ç½®å·¥å…· beta");
 		setSize(fsm_width,fsm_height);
 		
 		Image image = getToolkit().createImage(ClassLoader.getSystemResource("com/yuchting/yuchberry/server/frame/logo.png"));
@@ -133,8 +133,8 @@ public class mainFrame extends JFrame implements ActionListener{
 		addWindowListener(new java.awt.event.WindowAdapter() {
 		    public void windowClosing(java.awt.event.WindowEvent e) {
 		    	  	
-		    	if(m_accountList.isEmpty() || JOptionPane.showConfirmDialog(JFrame.getFrames()[0],"ÕæµÄÏë¹Ø±ÕËùÓĞµÄÓÃ»§²¢ÍË³ö£¿", 
-		    	"¹Ø±Õ£¿", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION){
+		    	if(m_accountList.isEmpty() || JOptionPane.showConfirmDialog(JFrame.getFrames()[0],"çœŸçš„æƒ³å…³é—­æ‰€æœ‰çš„ç”¨æˆ·å¹¶é€€å‡ºï¼Ÿ", 
+		    	"å…³é—­ï¼Ÿ", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION){
 		    		
 		    		mainFrame t_frame = (mainFrame)e.getWindow();
 			    	t_frame.CloseProcess();
@@ -148,10 +148,10 @@ public class mainFrame extends JFrame implements ActionListener{
 		panel.setLayout(new BoxLayout(panel,BoxLayout.X_AXIS));
 
 		m_addAccount.setVerticalTextPosition(AbstractButton.CENTER);
-		m_addAccount.setToolTipText("Ìí¼ÓÒ»¸öĞÂµÄyuchberryÕË»§");
+		m_addAccount.setToolTipText("æ·»åŠ ä¸€ä¸ªæ–°çš„yuchberryè´¦æˆ·");
 		m_addAccount.addActionListener(this);
 		
-		m_sponsor.setToolTipText("ÔŞÖúyuchberryÏîÄ¿/¸¶·Ñ»ñµÃ¼¼ÊõÖ§³Ö»òÕß¶ş´Î¿ª·¢");
+		m_sponsor.setToolTipText("èµåŠ©yuchberryé¡¹ç›®/ä»˜è´¹è·å¾—æŠ€æœ¯æ”¯æŒæˆ–è€…äºŒæ¬¡å¼€å‘");
 		m_sponsor.addActionListener(this);
 		m_sponsor.setVerticalTextPosition(AbstractButton.CENTER);
 		
@@ -226,7 +226,7 @@ public class mainFrame extends JFrame implements ActionListener{
 							String t_prefix = t_data[0] + "/";
 							
 							try{
-								t_mainFrame.m_loadDialog.m_state.setText("Ò»¹²ÓĞ" + t_lineContain.size()  + "¸öÓÃ»§£¬ÕıÔÚÔØÈëµÚ" + (i + 1) + "¸öÓÃ»§£º");
+								t_mainFrame.m_loadDialog.m_state.setText("ä¸€å…±æœ‰" + t_lineContain.size()  + "ä¸ªç”¨æˆ·ï¼Œæ­£åœ¨è½½å…¥ç¬¬" + (i + 1) + "ä¸ªç”¨æˆ·ï¼š");
 								t_mainFrame.m_loadDialog.m_state1.setText(t_data[0]);
 								
 								fetchThread t_thread = new fetchThread(new fetchMgr(),t_prefix,
@@ -238,7 +238,7 @@ public class mainFrame extends JFrame implements ActionListener{
 								
 																
 							}catch(Exception e){
-								JOptionPane.showMessageDialog(t_mainFrame,"·şÎñÆ÷ÕË»§Á¬½Ó´íÎó£º" + e.getMessage() , "´íÎó", JOptionPane.ERROR_MESSAGE);
+								JOptionPane.showMessageDialog(t_mainFrame,"æœåŠ¡å™¨è´¦æˆ·è¿æ¥é”™è¯¯ï¼š" + e.getMessage() , "é”™è¯¯", JOptionPane.ERROR_MESSAGE);
 							}
 						}
 					}					
@@ -247,7 +247,7 @@ public class mainFrame extends JFrame implements ActionListener{
 					t_mainFrame.m_loadDialog.dispose();
 					
 				}catch(Exception e){
-					JOptionPane.showMessageDialog(t_mainFrame,"·şÎñÆ÷ÕË»§Êı¾İ¶ÁÈ¡³ö´í£º" + e.getMessage() , "´íÎó", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(t_mainFrame,"æœåŠ¡å™¨è´¦æˆ·æ•°æ®è¯»å–å‡ºé”™ï¼š" + e.getMessage() , "é”™è¯¯", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		};
@@ -336,13 +336,13 @@ public class mainFrame extends JFrame implements ActionListener{
 							OpenFileEdit(t_configFile);
 						}catch(Exception ex){
 							JOptionPane.showMessageDialog(JFrame.getFrames()[0],
-									"´ò¿ª" + t_configFile + "³ö´í£º" + ex.getMessage() + ", Çë´ò¿ª" + t_configFile, 
-									"´íÎó", JOptionPane.ERROR_MESSAGE);
+									"æ‰“å¼€" + t_configFile + "å‡ºé”™ï¼š" + ex.getMessage() + ", è¯·æ‰“å¼€" + t_configFile, 
+									"é”™è¯¯", JOptionPane.ERROR_MESSAGE);
 						}
 						
 					}else if(e.getSource() == m_delAccountItem){
-						if(JOptionPane.showConfirmDialog(JFrame.getFrames()[0],"É¾³ıÓÃ»§ " + t_thread.m_fetchMgr.GetAccountName() + "£¿", 
-							"É¾³ı", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION){
+						if(JOptionPane.showConfirmDialog(JFrame.getFrames()[0],"åˆ é™¤ç”¨æˆ· " + t_thread.m_fetchMgr.GetAccountName() + "ï¼Ÿ", 
+							"åˆ é™¤", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION){
 					
 							DelAccoutThread(t_thread.m_fetchMgr.GetAccountName(),true);
 							
@@ -535,7 +535,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			try{
 				OpenURL(t_sponsorURL);
 			}catch(Exception ex){
-				JOptionPane.showMessageDialog(this,"´ò¿ªÍøÒ³³ö´í " + ex.getMessage() + ", Çë·ÃÎÊ\n" + t_sponsorURL, "´íÎó", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this,"æ‰“å¼€ç½‘é¡µå‡ºé”™ " + ex.getMessage() + ", è¯·è®¿é—®\n" + t_sponsorURL, "é”™è¯¯", JOptionPane.ERROR_MESSAGE);
 			}
 			
 		}else if(e.getSource() == m_searchButton){
@@ -594,7 +594,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			t_file.close();
 			
 		}catch(Exception e){
-			JOptionPane.showMessageDialog(this,"·şÎñÆ÷ÕË»§Êı¾İ±£´æ³ö´í£º" + e.getMessage() , "´íÎó", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this,"æœåŠ¡å™¨è´¦æˆ·æ•°æ®ä¿å­˜å‡ºé”™ï¼š" + e.getMessage() , "é”™è¯¯", JOptionPane.ERROR_MESSAGE);
 		}	
 	}
 	
@@ -640,7 +640,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			
 		}
 		
-		m_stateLabel.setText("Á¬½ÓÕË»§/Ê¹ÓÃÕÊ»§/×ÜÕÊ»§£º" + t_connectNum + "/" + t_usingNum + "/" + m_accountList.size());
+		m_stateLabel.setText("è¿æ¥è´¦æˆ·/ä½¿ç”¨å¸æˆ·/æ€»å¸æˆ·ï¼š" + t_connectNum + "/" + t_usingNum + "/" + m_accountList.size());
 		
 		m_accountTable.RefreshState();
 		
@@ -653,7 +653,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		try{
 			final String t_contain = fetchMgr.ReadSimpleIniFile("timeupMail.txt","UTF-8",null);
 			
-			_thread.m_fetchMgr.SendImmMail("yuchberry ÌáÊ¾", t_contain, "\"YuchBerry\" <yuchberry@gmail.com>");
+			_thread.m_fetchMgr.SendImmMail("yuchberry æç¤º", t_contain, "\"YuchBerry\" <yuchberry@gmail.com>");
 			
 		}catch(Exception e){}		
 	}

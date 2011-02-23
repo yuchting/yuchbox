@@ -20,7 +20,7 @@ public class loadDialog extends JDialog{
 	final static int		fsm_height = 110;
 	
 	public loadDialog(mainFrame _main){
-		super(_main,"正在读取帐户...",true);
+		super(_main,"姝ｅ湪璇诲彇璐︽埛淇℃伅...",true);
 		
 		setResizable(false);
 		getContentPane().setLayout(new FlowLayout());
