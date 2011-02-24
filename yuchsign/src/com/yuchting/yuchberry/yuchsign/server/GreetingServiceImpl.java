@@ -34,26 +34,56 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements
 	public String logonServer(String name,String password) throws Exception {
 		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
-
-		try{		
-			
+		yuchbber t_bber = null;
+		
+		try{			
 			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(), name);
 			try{
-				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);				
+				t_bber = t_pm.getObjectById(yuchbber.class, k);				
 
 				if(!t_bber.GetPassword().equals(password)){
 					return "<Error>密码错误！</Error>";
 				}
 				
 			}catch(javax.jdo.JDOObjectNotFoundException e){
-				return "<Error>找不到用户</Error>";
+				return "<Error>找不到用户!</Error>";
 			}		
 			
 		}finally{
 			t_pm.close();
 		}
 				
-		return "logon OK";
+		return t_bber.OuputXMLData();
+	}
+	
+	public String signinAccount(String _name,String _password)throws Exception{
+		
+		PersistenceManager t_pm = PMF.get().getPersistenceManager();
+		yuchbber t_newbber = null;
+		
+		try{
+			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(), _name);
+			try{
+				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);				
+
+				if(t_bber != null){
+					return "<Error>用户名已经存在!</Error>";
+				}				
+				
+			}catch(javax.jdo.JDOObjectNotFoundException e){
+								
+				// create account
+				//
+				t_newbber = new yuchbber(_name,_password);
+				
+				t_pm.makePersistent(t_newbber);
+			}		
+			
+		}finally{
+			t_pm.close();
+		}
+				
+		return t_newbber.OuputXMLData();
 	}
 
 }

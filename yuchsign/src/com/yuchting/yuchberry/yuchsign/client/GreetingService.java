@@ -8,5 +8,8 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("greet")
 public interface GreetingService extends RemoteService {
+	
 	String logonServer(String name,String password) throws Exception;
+	
+	String signinAccount(String name,String password)throws Exception;
 }

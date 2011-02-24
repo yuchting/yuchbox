@@ -29,13 +29,15 @@ public class Yuchsign implements EntryPoint {
 	 */
 	private final static Logger fsm_logger = Logger.getLogger("ClientLogger");
 	
-	private LogonDialog m_logonDlg = null; 
+	private LogonDialog m_logonDlg = null;
 	
 	/**
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
+		
 		m_logonDlg = new LogonDialog(this);
+		m_logonDlg.show();	
 		
 //		final Button sendButton = new Button("Send");
 //		final TextBox nameField = new TextBox();
@@ -164,6 +166,9 @@ public class Yuchsign implements EntryPoint {
 				
 	}
 	
+	public void ShowYuchbberPanel(String _bberXMLData){
+		
+	}
 	
 	
 	

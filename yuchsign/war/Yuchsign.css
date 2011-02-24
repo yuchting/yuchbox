@@ -38,6 +38,12 @@ h1 {
 	background: #FFFFF0
 }
 
+.BberPanel{
+	padding:5px 5px 5px 5px;
+	border:1px solid #F0F0F0;
+	background: #FFFFF0
+}
+
 .logonVPanel {
   margin: 5px;
   width: 180px;

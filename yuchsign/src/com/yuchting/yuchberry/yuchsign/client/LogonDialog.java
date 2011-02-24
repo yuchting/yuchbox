@@ -68,8 +68,7 @@ public final class LogonDialog extends DialogBox{
 	}
 	  
 	// waiting label
-	final waitingLabel			m_waitingLable		= new waitingLabel();
-	
+	final waitingLabel			m_waitingLable		= new waitingLabel();	
 
 	public LogonDialog(Yuchsign _clientSign){
 		m_clientSign = _clientSign;
@@ -82,54 +81,43 @@ public final class LogonDialog extends DialogBox{
 		
 		t_logonPane.add(new HTML("用户名(邮箱地址):"));
 		t_logonPane.add(m_logonName);
-		t_logonPane.add(new HTML("<br />密码:"));
+		t_logonPane.add(new HTML("<br />密码(多于6位的字母或数字):"));
 		t_logonPane.add(m_logonPassword);
 		t_logonPane.add(new HTML("<br />"));
 		t_logonPane.add(m_logonBut);
 		t_logonPane.add(new HTML("<br />"));
-		t_logonPane.add(m_errorLabel);		
+		t_logonPane.add(m_errorLabel);
+		
+		final AsyncCallback<String> t_callback = new AsyncCallback<String>(){
+			public void onFailure(Throwable caught) {
+				m_errorLabel.setText(caught.getMessage());
+				m_waitingLable.Hide();
+			}
+
+			public void onSuccess(String result) {
+				CallOnSuccess(result);
+			}
+		};
 		
 		m_logonBut.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				final String m_name = m_logonName.getText();
-				final String m_pass = m_logonPassword.getText();
+				final String t_name = m_logonName.getText();
+				final String t_pass = m_logonPassword.getText();
 				
-				if(!isValidEmail(m_name)){
+				if(!IsValidEmail(t_name)){
 					m_errorLabel.setText("用户名不是合法的Email地址！");
 					return;
 				}
 				
-				if(m_pass.length() < 6){
-					m_errorLabel.setText("密码不能小于6个字符！");
+				if(!IsValidPassword(t_pass)){
+					m_errorLabel.setText("密码非法！");
 					return;
-				}				
+				}
 				
 				try{
 					
-					m_waitingLable.ShowText("正在登录...");
-										
-					m_clientSign.greetingService.logonServer(m_name,m_pass,
-					new AsyncCallback<String>() {
-						public void onFailure(Throwable caught) {
-							m_errorLabel.setText(caught.getMessage());
-							m_waitingLable.Hide();
-						}
-	
-						public void onSuccess(String result) {
-							try{
-								Document m_doc = XMLParser.parse(result);
-								Element m_elem = m_doc.getDocumentElement();
-								String m_name = m_elem.getTagName();
-								if(m_name.equals("Error")){
-									m_errorLabel.setText(m_elem.getFirstChild().toString());
-								}
-							}catch(Exception e){
-								m_errorLabel.setText(e.getMessage());
-							}
-							
-							m_waitingLable.Hide();
-						}
-					});
+					m_waitingLable.ShowText("正在登录...");				
+					m_clientSign.greetingService.logonServer(t_name,t_pass,t_callback);
 	
 				}catch(Exception e){
 					m_errorLabel.setText(e.getMessage());
@@ -151,6 +139,38 @@ public final class LogonDialog extends DialogBox{
 		t_signinPane.add(m_signinPass1);
 		t_signinPane.add(m_signinBut);
 		
+		m_signinBut.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				final String t_name = m_signinName.getText();
+				final String t_pass = m_signinPass.getText();
+				final String t_pass1 = m_signinPass1.getText();
+				
+				if(!IsValidEmail(t_name)){
+					m_errorLabel.setText("用户名不是合法的Email地址！");
+					return;
+				}
+				
+				if(!t_pass.equals(t_pass1)){
+					m_errorLabel.setText("两次密码不一样！");
+					return;
+				}
+				
+				if(!IsValidPassword(t_pass)){
+					m_errorLabel.setText("密码非法！");
+					return;
+				}						
+				
+				try{					
+					m_waitingLable.ShowText("正在提交注册...");
+					m_clientSign.greetingService.signinAccount(t_name,t_pass,t_callback);
+	
+				}catch(Exception e){
+					m_errorLabel.setText(e.getMessage());
+					m_waitingLable.Hide();
+				}
+			}
+		});
+		
 		// add the two panel to the dialog
 		//
 		final HorizontalPanel t_horzPane = new HorizontalPanel();
@@ -162,13 +182,47 @@ public final class LogonDialog extends DialogBox{
 		setPopupPosition(0, 50);
 		setAnimationEnabled(true);
 		setWidget(t_horzPane);
-		show();
-				
+			
 	}
 	
-	private native static boolean isValidEmail(String name)/*-{
+	private void CallOnSuccess(String _result){
+		
+		try{
+			Document m_doc = XMLParser.parse(_result);
+			Element m_elem = m_doc.getDocumentElement();
+			if(m_elem.getTagName().equals("Error")){
+				m_errorLabel.setText(m_elem.getFirstChild().toString());
+			}else{
+				hide();
+				m_clientSign.ShowYuchbberPanel(_result);
+			}			
+			
+		}catch(Exception e){
+			m_errorLabel.setText(e.getMessage());
+		}
+		
+		m_waitingLable.Hide();
+	}
+	
+	private native static boolean IsValidEmail(String name)/*-{
 	    var regex = new RegExp("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$");
 	    return regex.test(name);
 	}-*/;
+	
+	private static boolean IsValidPassword(String _password){
+		
+		if(_password.length() < 6){
+			return false;
+		}
+		
+		int t_index = 0;
+		while(t_index < _password.length()){
+			if(Character.isLetterOrDigit(_password.charAt(t_index)) == false){
+				return false;
+			}			
+		}
+		
+		return true;
+	}
 	
 }
