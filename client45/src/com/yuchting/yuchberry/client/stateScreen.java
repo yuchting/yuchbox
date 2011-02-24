@@ -5,6 +5,7 @@ import java.util.Vector;
 import local.localResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.ButtonField;
@@ -132,7 +133,25 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     	
     	return true;
     }
-        
+    
+    protected boolean keyDown(int keycode,int time){
+    	if(m_connectBut.isFocus()){
+    		final int key = Keypad.key(keycode);
+        	switch(key){
+        	case 'A':
+        		m_aboutMenu.run();
+        		return true;
+        	case 'S':
+        		m_setingMenu.run();
+        		return true;
+        	case 'D':
+        		m_debugInfoMenu.run();
+        		return true;
+        	}
+    	}
+    	
+    	return false;    	
+    }       
    
     
     public void RefreshUploadState(final Vector _uploading){
