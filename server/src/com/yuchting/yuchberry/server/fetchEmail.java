@@ -479,7 +479,7 @@ public class fetchEmail extends fetchAccount{
 		    		//
 		    		boolean t_hasLoad = false;
 		    		for(int index = 0;index < m_unreadMailVector.size();index++ ){
-		    			fetchMail t_loadMail = (fetchMail)m_unreadMailVector.elementAt(i); 
+		    			fetchMail t_loadMail = (fetchMail)m_unreadMailVector.elementAt(index); 
 		    			if(t_loadMail.GetMailIndex() == t_mail.GetMailIndex()){
 		    				t_hasLoad = true;
 		    				break;
@@ -1034,11 +1034,11 @@ public class fetchEmail extends fetchAccount{
 //		}
 	}
 	
-	public synchronized void PrepareRepushUnconfirmMsg(){
+	public synchronized void PrepareRepushUnconfirmMsg(long _currTime){
 		
-		for(int i = m_unreadMailVector_confirm.size() - 1;i >= 0 ;i--){
+		while(!m_unreadMailVector.isEmpty()){
 			
-			fetchMail t_confirmMail = (fetchMail)m_unreadMailVector_confirm.elementAt(i);
+			fetchMail t_confirmMail = (fetchMail)m_unreadMailVector_confirm.elementAt(m_unreadMailVector.size() - 1);
 			
 			boolean t_add = true;
 			
@@ -1054,23 +1054,29 @@ public class fetchEmail extends fetchAccount{
 			
 			if(t_add){
 				
-				final int t_maxConfirmNum = 5;
-				
-				if(t_confirmMail.m_sendConfirmNum < t_maxConfirmNum){
-					m_unreadMailVector.add(0,t_confirmMail);
-					m_mainMgr.m_logger.LogOut(GetAccountName() + " load mail<" + t_confirmMail.GetMailIndex() + "> send again,wait confirm...");	
-				}else{
-					m_mainMgr.m_logger.LogOut(GetAccountName() + " load mail<" + t_confirmMail.GetMailIndex() + "> send " + t_maxConfirmNum + " times, give up.");
-				}
+				if(Math.abs(_currTime - t_confirmMail.m_sendConfirmTime) >= 2 * 60 * 1000){
+					
+					final int t_maxConfirmNum = 5;
+					
+					if(t_confirmMail.m_sendConfirmNum < t_maxConfirmNum){
+						m_unreadMailVector.add(0,t_confirmMail);
+						m_mainMgr.m_logger.LogOut(GetAccountName() + " load mail<" + t_confirmMail.GetMailIndex() + "> send again,wait confirm...");	
+					}else{
+						m_mainMgr.m_logger.LogOut(GetAccountName() + " load mail<" + t_confirmMail.GetMailIndex() + "> send " + t_maxConfirmNum + " times, give up.");
+					}
+			
+					m_unreadMailVector_confirm.removeElement(t_confirmMail);
+				}				
 			}
 			
 		}
 		
-		m_unreadMailVector_confirm.removeAllElements();	
 	}
 	
 	public synchronized void PushMsg(sendReceive _sendReceive)throws Exception{ 
-				
+		
+		
+		final long t_currTime = (new Date()).getTime();
 		while(!m_unreadMailVector.isEmpty()){
 			
 			fetchMail t_mail = (fetchMail)m_unreadMailVector.elementAt(0); 
@@ -1084,6 +1090,8 @@ public class fetchEmail extends fetchAccount{
 						
 			synchronized(this){
 				m_unreadMailVector.remove(0);
+				t_mail.m_sendConfirmTime = t_currTime;
+				
 				m_unreadMailVector_confirm.addElement(t_mail);
 			}
 			
@@ -1247,7 +1255,13 @@ public class fetchEmail extends fetchAccount{
 		// method's argument Message.getSubject without \n
 		// to make yuchberry can't find right orig message by subject
 		//
-		_mail.SetSubject(mailTitle.replaceAll("[\r\n]", ""));		
+		mailTitle = mailTitle.replaceAll("[\r\n]", "");
+		
+		// convert to UTF-8 byte to compute the SimpleHashCode
+		//
+		mailTitle = new String(mailTitle.getBytes("UTF-8"),"UTF-8");
+		
+		_mail.SetSubject(mailTitle);		
 		
 		Date t_date = m.getSentDate();
 		if(t_date != null){

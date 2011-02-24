@@ -274,7 +274,7 @@ public class HelloWorld {
 		//System.out.print(t_test.replace("$mail_content$", "I'm here"));
 		///System.out.print("aaaa " + (12 % 100));
 		
-		ProcessSponsorList(null);
+		System.out.print(("1298444136000").hashCode());
 	
 	}
 	static private void ProcessSponsorList(ByteArrayInputStream _in){
@@ -283,74 +283,74 @@ public class HelloWorld {
 			ServerSocket serverSocket = new ServerSocket(8080);   
 			 while(true) {
 		            try {
-		                Socket client=null;//¿Í»§Socket
-		                client=serverSocket.accept();//¿Í»§»ú(ÕâÀïÊÇ IE µÈä¯ÀÀÆ÷)ÒÑ¾­Á¬½Óµ½µ±Ç°·şÎñÆ÷
+		                Socket client=null;//å®¢æˆ·Socket
+		                client=serverSocket.accept();//å®¢æˆ·æœº(è¿™é‡Œæ˜¯ IE ç­‰æµè§ˆå™¨)å·²ç»è¿æ¥åˆ°å½“å‰æœåŠ¡å™¨
 		                if(client!=null) {
-		                    System.out.println("Á¬½Óµ½·şÎñÆ÷µÄÓÃ»§:"+client);
+		                    System.out.println("è¿æ¥åˆ°æœåŠ¡å™¨çš„ç”¨æˆ·:"+client);
 		                    try {
-		                        // µÚÒ»½×¶Î: ´ò¿ªÊäÈëÁ÷
+		                        // ç¬¬ä¸€é˜¶æ®µ: æ‰“å¼€è¾“å…¥æµ
 		                        BufferedReader in=new BufferedReader(new InputStreamReader(
 		                                client.getInputStream()));
 		                        
-		                        System.out.println("¿Í»§¶Ë·¢ËÍµÄÇëÇóĞÅÏ¢:\n***************");
-		                        // ¶ÁÈ¡µÚÒ»ĞĞ, ÇëÇóµØÖ·
+		                        System.out.println("å®¢æˆ·ç«¯å‘é€çš„è¯·æ±‚ä¿¡æ¯:\n***************");
+		                        // è¯»å–ç¬¬ä¸€è¡Œ, è¯·æ±‚åœ°å€
 		                        String line=in.readLine();
 		                        System.out.println(line);
 		                        String resource=line.substring(line.indexOf('/'),line.lastIndexOf('/')-5);
-		                        //»ñµÃÇëÇóµÄ×ÊÔ´µÄµØÖ·
-		                        resource=URLDecoder.decode(resource, "UTF-8");//·´±àÂë URL µØÖ·
-		                        String method = new StringTokenizer(line).nextElement().toString();// »ñÈ¡ÇëÇó·½·¨, GET »òÕß POST
+		                        //è·å¾—è¯·æ±‚çš„èµ„æºçš„åœ°å€
+		                        resource=URLDecoder.decode(resource, "UTF-8");//åç¼–ç  URL åœ°å€
+		                        String method = new StringTokenizer(line).nextElement().toString();// è·å–è¯·æ±‚æ–¹æ³•, GET æˆ–è€… POST
 
-		                        // ¶ÁÈ¡ËùÓĞä¯ÀÀÆ÷·¢ËÍ¹ıÀ´µÄÇëÇó²ÎÊıÍ·²¿ĞÅÏ¢
+		                        // è¯»å–æ‰€æœ‰æµè§ˆå™¨å‘é€è¿‡æ¥çš„è¯·æ±‚å‚æ•°å¤´éƒ¨ä¿¡æ¯
 		                        while( (line = in.readLine()) != null) {
 		                            System.out.println(line);
 		                            
 		                            if(line.equals("")) break;
 		                        }
 		                        
-		                        // ÏÔÊ¾ POST ±íµ¥Ìá½»µÄÄÚÈİ, Õâ¸öÄÚÈİÎ»ÓÚÇëÇóµÄÖ÷Ìå²¿·Ö
+		                        // æ˜¾ç¤º POST è¡¨å•æäº¤çš„å†…å®¹, è¿™ä¸ªå†…å®¹ä½äºè¯·æ±‚çš„ä¸»ä½“éƒ¨åˆ†
 		                        if("POST".equalsIgnoreCase(method)) {
 		                            System.out.println(in.readLine());
 		                        }
 		                        
-		                        System.out.println("ÇëÇóĞÅÏ¢½áÊø\n***************");
-		                        System.out.println("ÓÃ»§ÇëÇóµÄ×ÊÔ´ÊÇ:"+resource);
-		                        System.out.println("ÇëÇóµÄÀàĞÍÊÇ: " + method);
+		                        System.out.println("è¯·æ±‚ä¿¡æ¯ç»“æŸ\n***************");
+		                        System.out.println("ç”¨æˆ·è¯·æ±‚çš„èµ„æºæ˜¯:"+resource);
+		                        System.out.println("è¯·æ±‚çš„ç±»å‹æ˜¯: " + method);
 
 		                       		                        
-		                        // ÇëÇó JPG ¸ñÊ½¾Í±¨´í 404
+		                        // è¯·æ±‚ JPG æ ¼å¼å°±æŠ¥é”™ 404
 		                        if(resource.endsWith(".jpg")) {
 		                                                    PrintWriter out=new PrintWriter(client.getOutputStream(),true);
-		                        out.println("HTTP/1.0 404 Not found");//·µ»ØÓ¦´ğÏûÏ¢,²¢½áÊøÓ¦´ğ
-		                        out.println();// ¸ù¾İ HTTP Ğ­Òé, ¿ÕĞĞ½«½áÊøÍ·ĞÅÏ¢
+		                        out.println("HTTP/1.0 404 Not found");//è¿”å›åº”ç­”æ¶ˆæ¯,å¹¶ç»“æŸåº”ç­”
+		                        out.println();// æ ¹æ® HTTP åè®®, ç©ºè¡Œå°†ç»“æŸå¤´ä¿¡æ¯
 		                        out.close();
 		                        client.close();
 		                        continue;
 		                        } else {
-		                            // ÓÃ writer ¶Ô¿Í»§¶Ë socket Êä³öÒ»¶Î HTML ´úÂë
+		                            // ç”¨ writer å¯¹å®¢æˆ·ç«¯ socket è¾“å‡ºä¸€æ®µ HTML ä»£ç 
 		                            PrintWriter out=new PrintWriter(client.getOutputStream(),true);
-		                            out.println("HTTP/1.0 200 OK");//·µ»ØÓ¦´ğÏûÏ¢,²¢½áÊøÓ¦´ğ
+		                            out.println("HTTP/1.0 200 OK");//è¿”å›åº”ç­”æ¶ˆæ¯,å¹¶ç»“æŸåº”ç­”
 		                            out.println("Content-Type:text/html;charset=GBK");
-		                            out.println();// ¸ù¾İ HTTP Ğ­Òé, ¿ÕĞĞ½«½áÊøÍ·ĞÅÏ¢
+		                            out.println();// æ ¹æ® HTTP åè®®, ç©ºè¡Œå°†ç»“æŸå¤´ä¿¡æ¯
 
 		                            out.println("<h1> Hello Http Server</h1>");
-		                            out.println("ÄãºÃ, ÕâÊÇÒ»¸ö Java HTTP ·şÎñÆ÷ demo Ó¦ÓÃ.<br>");
-		                            out.println("ÄúÇëÇóµÄÂ·¾¶ÊÇ: " + resource + "<br>");
-		                            out.println("ÕâÊÇÒ»¸öÖ§³ÖĞéÄâÂ·¾¶µÄÍ¼Æ¬:<img src='abc.gif'><br>" +
-		                                    "<a href='abc.gif'>µã»÷´ò¿ªabc.gif, ÊÇ¸ö·şÎñÆ÷ĞéÄâÂ·¾¶µÄÍ¼Æ¬ÎÄ¼ş.</a>");
-		                            out.println("<br>ÕâÊÇ¸ö»á·´À¡ 404 ´íÎóµÄµÄÍ¼Æ¬:<img src='test.jpg'><br><a href='test.jpg'>µã»÷´ò¿ªtest.jpg</a><br>");
-		                            out.println("<form method=post action='/'>POST ±íµ¥ <input name=username value='ÓÃ»§'> <input name=submit type=submit value=submit></form>");
+		                            out.println("ä½ å¥½, è¿™æ˜¯ä¸€ä¸ª Java HTTP æœåŠ¡å™¨ demo åº”ç”¨.<br>");
+		                            out.println("æ‚¨è¯·æ±‚çš„è·¯å¾„æ˜¯: " + resource + "<br>");
+		                            out.println("è¿™æ˜¯ä¸€ä¸ªæ”¯æŒè™šæ‹Ÿè·¯å¾„çš„å›¾ç‰‡:<img src='abc.gif'><br>" +
+		                                    "<a href='abc.gif'>ç‚¹å‡»æ‰“å¼€abc.gif, æ˜¯ä¸ªæœåŠ¡å™¨è™šæ‹Ÿè·¯å¾„çš„å›¾ç‰‡æ–‡ä»¶.</a>");
+		                            out.println("<br>è¿™æ˜¯ä¸ªä¼šåé¦ˆ 404 é”™è¯¯çš„çš„å›¾ç‰‡:<img src='test.jpg'><br><a href='test.jpg'>ç‚¹å‡»æ‰“å¼€test.jpg</a><br>");
+		                            out.println("<form method=post action='/'>POST è¡¨å• <input name=username value='ç”¨æˆ·'> <input name=submit type=submit value=submit></form>");
 		                            out.close();
 
 		                            client.close();
 		                        }
 		                    } catch(Exception e) {
-		                        System.out.println("HTTP·şÎñÆ÷´íÎó:"+e.getLocalizedMessage());
+		                        System.out.println("HTTPæœåŠ¡å™¨é”™è¯¯:"+e.getLocalizedMessage());
 		                    }
 		                }
-		                //System.out.println(client+"Á¬½Óµ½HTTP·şÎñÆ÷");//Èç¹û¼ÓÈëÕâÒ»¾ä,·şÎñÆ÷ÏìÓ¦ËÙ¶È»áºÜÂı
+		                //System.out.println(client+"è¿æ¥åˆ°HTTPæœåŠ¡å™¨");//å¦‚æœåŠ å…¥è¿™ä¸€å¥,æœåŠ¡å™¨å“åº”é€Ÿåº¦ä¼šå¾ˆæ…¢
 		            } catch(Exception e) {
-		                System.out.println("HTTP·şÎñÆ÷´íÎó:"+e.getLocalizedMessage());
+		                System.out.println("HTTPæœåŠ¡å™¨é”™è¯¯:"+e.getLocalizedMessage());
 		            }
 		        }
 	        
@@ -574,7 +574,7 @@ public class HelloWorld {
 				t_numberBuffer.delete(0,t_numberBuffer.length());
 				
 				for(int i = 0;i < t_number.length;i++){
-					t_numberBuffer.append("" + (35 + i) + ":" + t_number[i] + "¸ö\r\n");
+					t_numberBuffer.append("" + (35 + i) + ":" + t_number[i] + "ä¸ª\r\n");
 				}
 				
 				for(int i = 0 ;i < t_totalNum;i++){
@@ -662,7 +662,7 @@ public class HelloWorld {
 			
 			in = new BufferedReader(
 					new InputStreamReader(
-							new FileInputStream("×ÖÄ».txt")));
+							new FileInputStream("å­—å¹•.txt")));
 			
 			String t_line;
 			final String t_startF = "<TRString>";
@@ -873,7 +873,7 @@ public class HelloWorld {
 			t_receive.SendBufferToSvr(t_stream.toByteArray(), false);
 			
 			fetchWeibo t_weibo = new fetchWeibo(false);
-			t_weibo.SetText("ÎÒÒª·¢·¢ÊÔÊÔ,ÆÀÂÛ·¢²»ÁË£¿");
+			t_weibo.SetText("æˆ‘è¦å‘å‘è¯•è¯•,è¯„è®ºå‘ä¸äº†ï¼Ÿ");
 			t_weibo.SetCommectWeiboId(5572863863L);
 			
 			t_stream.reset();

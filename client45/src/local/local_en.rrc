@@ -49,6 +49,7 @@ START_BIGGER_THAN_END_PROMPT#0="start hour must less than end hour";
 START_HOUR_PROMPT_LABEL#0="start prompt hour";
 STATE_PROMPT#0="connect state:";
 STATE_TITLE_LABEL#0="Yuchberry Account State";
+TOTAL_STATISTICS#0="Total:   ";
 UPDATE_WEIBO_LABEL#0="I want to say...";
 UPLOAD_STATISTICS#0="Upload:   ";
 USER_PASSWORD#0="user password:";

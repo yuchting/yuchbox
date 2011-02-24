@@ -306,7 +306,7 @@ public class fetchSinaWeibo extends fetchAccount{
 	/**
 	 * prepare the re-push unconfirm msg
 	 */
-	public synchronized void PrepareRepushUnconfirmMsg(){
+	public synchronized void PrepareRepushUnconfirmMsg(long _currTime){
 				
 		PrepareRepushUnconfirmMsg_impl(m_timeline);
 		PrepareRepushUnconfirmMsg_impl(m_directMessage);

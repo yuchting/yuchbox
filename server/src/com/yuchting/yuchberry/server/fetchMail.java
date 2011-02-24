@@ -55,7 +55,8 @@ public class  fetchMail{
 	float	 m_speed				= 0;
 	float	 m_heading				= 0;
 		
-	public	int				m_sendConfirmNum = 0;	
+	public	int				m_sendConfirmNum = 0;
+	public long			m_sendConfirmTime = 0;
 	
 	private boolean m_convertoSimpleChar = false;
 	

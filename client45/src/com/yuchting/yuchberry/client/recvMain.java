@@ -166,6 +166,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	//@{ location information
 	LocationProvider m_locationProvider = null;
 	boolean		 m_useLocationInfo = false;
+	boolean		 m_setLocationListener = false;
 	
 	double			 m_longitude		= 0;
 	double			 m_latitude			= 0;
@@ -258,7 +259,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         		System.exit(0);
         	}else{
         		try{
-        			m_connectDeamon.Connect();
+        			m_connectDeamon.Connect(true);
         			Start();
         		}catch(Exception e){
         			System.exit(0);
@@ -517,10 +518,21 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		if(m_locationProvider != null){
 			if(m_useLocationInfo){
-				m_locationProvider.setLocationListener(this, -1, 1, 1);
+				
+				if(m_setLocationListener == false){
+					m_setLocationListener = true;
+					
+					m_locationProvider.setLocationListener(this, -1, 1, 1);
+				}
+				
 			}else{
-				m_locationProvider.reset();
-				m_locationProvider.setLocationListener(null, -1, -1, -1);
+				
+				if(m_setLocationListener == true){
+					
+					m_setLocationListener = false;
+					m_locationProvider.reset();
+					m_locationProvider.setLocationListener(null, -1, -1, -1);
+				}				
 			}
 		}
 	
@@ -594,7 +606,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		StopNotification();
 		
 		if(m_connectDeamon.m_connect != null){
-			m_connectDeamon.m_connect.StoreUpDownloadByteImm();
+			m_connectDeamon.m_connect.StoreUpDownloadByteImm(true);
 		}
 		
 		if(m_locationProvider != null){

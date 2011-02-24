@@ -61,7 +61,7 @@ abstract public class fetchAccount {
 	/**
 	 * prepare the re-push unconfirm msg
 	 */
-	abstract public void PrepareRepushUnconfirmMsg();
+	abstract public void PrepareRepushUnconfirmMsg(long _currTime);
 	
 	/**
 	 * push the message to client

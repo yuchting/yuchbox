@@ -285,23 +285,17 @@ public class fetchMgr{
 		
 		final long t_currentTime = (new Date()).getTime();
 		
-		if(t_currentTime - m_confirmTimer > 5 * 60 * 1000){
-			
-			m_logger.LogOut("m_confirmTimer:" + m_confirmTimer);
-			
+		if(t_currentTime - m_confirmTimer > 2 * 60 * 1000){
 			// send the mail without confirm
 			//
 			m_confirmTimer 	= t_currentTime;
-			t_repush 		= true;
-			
-			m_logger.LogOut("t_currentTime:" + t_currentTime);
-			
+			t_repush 		= true;			
 		}
 		
 		for(int i = 0;i < m_fetchAccount.size();i++){
 			fetchAccount account = (fetchAccount)m_fetchAccount.elementAt(i);
 			if(t_repush){
-				account.PrepareRepushUnconfirmMsg();
+				account.PrepareRepushUnconfirmMsg(t_currentTime);
 			}
 			
 			try{
