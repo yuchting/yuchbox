@@ -432,84 +432,90 @@ public class fetchEmail extends fetchAccount{
 	    }
 	    	    
 	    folder.open(Folder.READ_ONLY);
+	    try{
+	    	 final int t_totalMailCount = folder.getMessageCount();
+	 	    
+	 	    if(m_totalMailCount != t_totalMailCount){	    	
+	 	    	
+	 		    final int t_startIndex = Math.max(t_totalMailCount - Math.min(CHECK_NUM,t_totalMailCount) + 1,
+	 		    									Math.min(t_totalMailCount,m_beginFetchIndex));
+	 		    
+	 		    Message[] t_msgs = folder.getMessages(t_startIndex, t_totalMailCount);
+	 		    		    
+	 		    for(int i = 0;i < t_msgs.length;i++){
+	 		    	
+	 		    	Message t_msg = t_msgs[i];
+	 		    	
+	 		    	Flags flags = t_msg.getFlags();
+	 	        	Flags.Flag[] flag = flags.getSystemFlags();  
+	 	        	
+	 	        	boolean t_isNew = true;
+	 	        	for(int j = 0; j < flag.length; j++){
+	 	                if (flag[j] == Flags.Flag.SEEN 
+	 	                	&& flag[j] != Flags.Flag.DELETED
+	 	                	&& flag[j] != Flags.Flag.DRAFT) {
+	 	                	
+	 	                    t_isNew = false;
+	 	                    break;      
+	 	                }
+	 	            }      
+	 	        	
+	 		    	if(t_isNew){
+	 		    		
+	 		    		fetchMail t_mail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
+	 		    		t_mail.SetMailIndex(i + t_startIndex);
+	 		    		try{
+	 		    			ImportMail(t_msg,t_mail);
+	 		    		}catch(Exception e){
+	 		    			t_mail.SetContain(t_mail.GetContain() + "\n\n\n" + e.getMessage() + "\nThe yuchberry ImportMail Error! Please read the Mail via another way!\n\n\n");
+	 		    		}
+	 		    		 
+	 		    		AddMailIndexAttach(t_mail,false);
+	 		    		
+	 		    		// if some client connect very fast many times
+	 		    		// it will load same mail 
+	 		    		//
+	 		    		// check the duplicating mail
+	 		    		//
+	 		    		boolean t_hasLoad = false;
+	 		    		for(int index = 0;index < m_unreadMailVector.size();index++ ){
+	 		    			fetchMail t_loadMail = (fetchMail)m_unreadMailVector.elementAt(index); 
+	 		    			if(t_loadMail.GetMailIndex() == t_mail.GetMailIndex()){
+	 		    				t_hasLoad = true;
+	 		    				break;
+	 		    			}
+	 		    		}
+	 		    		
+	 		    		if(t_hasLoad){
+	 		    			continue;
+	 		    		}
+	 		    		
+	 		    		m_unreadMailVector.addElement(t_mail);
+	 		    		
+	 		    		SetBeginFetchIndex(t_mail.GetMailIndex());
+	 		    		
+	 		    		synchronized (m_unreadMailVector_marking) {
+	 		    			
+	 		    			// prepare the marking reading vector
+	 		    			//
+	 			    		if(m_unreadMailVector_marking.size() > 50){
+	 			    			m_unreadMailVector_marking.removeElementAt(0);
+	 			    		}
+	 						m_unreadMailVector_marking.addElement(t_mail);
+	 					}
+	 		    	}
+	 		    }		    
+	 		   
+	 		    m_totalMailCount = t_totalMailCount;
+	 	    }
+	 	    
+	    }finally{
+	    	 folder.close(false);
+	    }
 	   
-	    final int t_totalMailCount = folder.getMessageCount();
+	          
 	    
-	    if(m_totalMailCount != t_totalMailCount){	    	
-	    	
-		    final int t_startIndex = Math.max(t_totalMailCount - Math.min(CHECK_NUM,t_totalMailCount) + 1,
-		    									Math.min(t_totalMailCount,m_beginFetchIndex));
-		    
-		    Message[] t_msgs = folder.getMessages(t_startIndex, t_totalMailCount);
-		    		    
-		    for(int i = 0;i < t_msgs.length;i++){
-		    	
-		    	Message t_msg = t_msgs[i];
-		    	
-		    	Flags flags = t_msg.getFlags();
-	        	Flags.Flag[] flag = flags.getSystemFlags();  
-	        	
-	        	boolean t_isNew = true;
-	        	for(int j = 0; j < flag.length; j++){
-	                if (flag[j] == Flags.Flag.SEEN 
-	                	&& flag[j] != Flags.Flag.DELETED
-	                	&& flag[j] != Flags.Flag.DRAFT) {
-	                	
-	                    t_isNew = false;
-	                    break;      
-	                }
-	            }      
-	        	
-		    	if(t_isNew){
-		    		
-		    		fetchMail t_mail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
-		    		t_mail.SetMailIndex(i + t_startIndex);
-		    		try{
-		    			ImportMail(t_msg,t_mail);
-		    		}catch(Exception e){
-		    			t_mail.SetContain(t_mail.GetContain() + "\n\n\n" + e.getMessage() + "\nThe yuchberry ImportMail Error! Please read the Mail via another way!\n\n\n");
-		    		}
-		    		
-		    		AddMailIndexAttach(t_mail,false);
-		    		
-		    		// if some client connect very fast many times
-		    		// it will load same mail 
-		    		//
-		    		// check the duplicating mail
-		    		//
-		    		boolean t_hasLoad = false;
-		    		for(int index = 0;index < m_unreadMailVector.size();index++ ){
-		    			fetchMail t_loadMail = (fetchMail)m_unreadMailVector.elementAt(index); 
-		    			if(t_loadMail.GetMailIndex() == t_mail.GetMailIndex()){
-		    				t_hasLoad = true;
-		    				break;
-		    			}
-		    		}
-		    		
-		    		if(t_hasLoad){
-		    			continue;
-		    		}
-		    		
-		    		m_unreadMailVector.addElement(t_mail);
-		    		
-		    		SetBeginFetchIndex(t_mail.GetMailIndex());
-		    		
-		    		synchronized (m_unreadMailVector_marking) {
-		    			
-		    			// prepare the marking reading vector
-		    			//
-			    		if(m_unreadMailVector_marking.size() > 50){
-			    			m_unreadMailVector_marking.removeElementAt(0);
-			    		}
-						m_unreadMailVector_marking.addElement(t_mail);
-					}
-		    	}
-		    }		    
-		   
-		    m_totalMailCount = t_totalMailCount;
-	    }	       
-	    
-	    folder.close(false);
+	   
 	}
 	
 	public boolean ProcessNetworkPackage(byte[] _package)throws Exception{
@@ -1033,50 +1039,38 @@ public class fetchEmail extends fetchAccount{
 //			m_logger.PrinterException(_e);
 //		}
 	}
-	
-	public synchronized void PrepareRepushUnconfirmMsg(long _currTime){
 		
-		while(!m_unreadMailVector.isEmpty()){
-			
-			fetchMail t_confirmMail = (fetchMail)m_unreadMailVector_confirm.elementAt(m_unreadMailVector.size() - 1);
-			
-			boolean t_add = true;
-			
-			for(int j = 0;j < m_unreadMailVector.size();j++){
-				
-				fetchMail t_sendMail = (fetchMail)m_unreadMailVector.elementAt(j);
-				
-				if(t_confirmMail.GetMailIndex() == t_sendMail.GetMailIndex()){
-					t_add = false;
-					break;
-				}
-			}
-			
-			if(t_add){
-				
-				if(Math.abs(_currTime - t_confirmMail.m_sendConfirmTime) >= 2 * 60 * 1000){
-					
-					final int t_maxConfirmNum = 5;
-					
-					if(t_confirmMail.m_sendConfirmNum < t_maxConfirmNum){
-						m_unreadMailVector.add(0,t_confirmMail);
-						m_mainMgr.m_logger.LogOut(GetAccountName() + " load mail<" + t_confirmMail.GetMailIndex() + "> send again,wait confirm...");	
-					}else{
-						m_mainMgr.m_logger.LogOut(GetAccountName() + " load mail<" + t_confirmMail.GetMailIndex() + "> send " + t_maxConfirmNum + " times, give up.");
-					}
-			
-					m_unreadMailVector_confirm.removeElement(t_confirmMail);
-				}				
-			}
-			
-		}
-		
-	}
-	
 	public synchronized void PushMsg(sendReceive _sendReceive)throws Exception{ 
 		
-		
 		final long t_currTime = (new Date()).getTime();
+		
+		for(int i = m_unreadMailVector_confirm.size() - 1;i >= 0;i--){
+			
+			fetchMail t_confirmMail = (fetchMail)m_unreadMailVector_confirm.elementAt(i);
+							
+			if(Math.abs(t_currTime - t_confirmMail.m_sendConfirmTime) >= (2 * 60 * 1000) ){
+				
+				final int t_maxConfirmNum = 5;
+				
+				if(t_confirmMail.m_sendConfirmNum < t_maxConfirmNum){
+					
+					t_confirmMail.m_sendConfirmTime = t_currTime;
+					m_unreadMailVector.add(0,t_confirmMail);
+					
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " load mail<" + t_confirmMail.GetMailIndex() + "> send again");	
+				}else{
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " load mail<" + t_confirmMail.GetMailIndex() + "> send " + t_maxConfirmNum + " times, give up.");
+				}
+		
+				m_unreadMailVector_confirm.removeElement(t_confirmMail);
+			
+			}else{
+				
+				m_mainMgr.m_logger.LogOut(GetAccountName() + "mail<" + t_confirmMail.GetMailIndex() + "> has not reach re-pushTime. currentTime<" 
+														+ t_currTime + "> sendConfirmTime<" + t_confirmMail.m_sendConfirmTime + ">");
+			}
+		}
+		
 		while(!m_unreadMailVector.isEmpty()){
 			
 			fetchMail t_mail = (fetchMail)m_unreadMailVector.elementAt(0); 
@@ -1090,8 +1084,7 @@ public class fetchEmail extends fetchAccount{
 						
 			synchronized(this){
 				m_unreadMailVector.remove(0);
-				t_mail.m_sendConfirmTime = t_currTime;
-				
+				t_mail.m_sendConfirmTime = (new Date()).getTime();
 				m_unreadMailVector_confirm.addElement(t_mail);
 			}
 			

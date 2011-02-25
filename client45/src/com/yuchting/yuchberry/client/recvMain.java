@@ -903,12 +903,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	
 	static public String GetByteStr(long _byte){
-		if(_byte < 1024){
+		if(_byte < 1000){
 			return "" + _byte + "B";
-		}else if(_byte >= 1024 && _byte < 1024 * 1024){
-			return "" + (_byte / 1024) + "." + (_byte % 1024)+ "KB";
+		}else if(_byte >= 1000 && _byte < 1000000){
+			return "" + (_byte / 1000) + "." + (_byte % 1000)+ "KB";
 		}else{
-			return "" + (_byte / (1024 * 1024)) + "." + ((_byte / 1024) % 1024) + "MB";
+			return "" + (_byte / (1000000)) + "." + ((_byte / 1000) % 1000) + "MB";
 		}
 	}
 	

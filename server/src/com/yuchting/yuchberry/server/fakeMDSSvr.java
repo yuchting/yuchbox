@@ -20,7 +20,7 @@ public class fakeMDSSvr extends Thread{
 		}catch(Exception e){
 			// illegal client connect
 			//
-			System.out.print("fakeMDSSvr Has Been exist!");
+			System.out.println("fakeMDSSvr Has Been exist!");
 		}		
 	}
 	

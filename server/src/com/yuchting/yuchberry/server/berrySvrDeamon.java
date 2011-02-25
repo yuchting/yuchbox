@@ -38,6 +38,11 @@ class berrySvrPush extends Thread{
 			try{
 				
 				m_serverDeamon.m_fetchMgr.CheckAccountFolders();
+				
+				if(m_closed){
+					break;
+				}
+				
 				m_serverDeamon.m_fetchMgr.Push(m_sendReceive);
 				
 				sleep(m_serverDeamon.m_fetchMgr.GetPushInterval() * 1000);				
@@ -56,14 +61,14 @@ class berrySvrPush extends Thread{
 
 public class berrySvrDeamon extends Thread{
 	
-	public fetchMgr		m_fetchMgr = null;
-	public Socket		m_socket = null;
+	public fetchMgr		m_fetchMgr		= null;
+	public Socket		m_socket		= null;
 		
-	sendReceive  		m_sendReceive = null;
+	sendReceive  		m_sendReceive	= null;
 	
-	int					m_clientVer = 0;
+	int					m_clientVer		= 0;
 		
-	private berrySvrPush m_pushDeamon = null;
+	private berrySvrPush m_pushDeamon	= null;
 	
 	public berrySvrDeamon(fetchMgr _mgr,Socket _s)throws Exception{
 		m_fetchMgr 	= _mgr;
@@ -184,6 +189,8 @@ public class berrySvrDeamon extends Thread{
 			// process....
 			//
 			try{
+				
+				m_fetchMgr.SetClientConnected(this);
 								
 				byte[] t_package = m_sendReceive.RecvBufferFromSvr();
 				m_fetchMgr.m_logger.LogOut("receive package head<" + t_package[0] + "> length<" + t_package.length + ">");

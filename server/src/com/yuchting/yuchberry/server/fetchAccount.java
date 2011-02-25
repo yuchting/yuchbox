@@ -57,12 +57,7 @@ abstract public class fetchAccount {
 	 * @return boolean		: has been processed?
 	 */
 	abstract public boolean ProcessNetworkPackage(byte[] _package)throws Exception;
-	
-	/**
-	 * prepare the re-push unconfirm msg
-	 */
-	abstract public void PrepareRepushUnconfirmMsg(long _currTime);
-	
+		
 	/**
 	 * push the message to client
 	 */

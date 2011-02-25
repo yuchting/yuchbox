@@ -52,9 +52,7 @@ public class fetchMgr{
         
     //! is connected?
     berrySvrDeamon	m_currConnect		= null;
-    
-    long 			m_confirmTimer 		= 0;
-    
+        
     int				m_clientLanguage	= 0;
     
 	
@@ -88,13 +86,6 @@ public class fetchMgr{
 	
 	public synchronized void SetClientConnected(berrySvrDeamon _set){
 		m_currConnect = _set;
-		
-		// set the confirm timer to prepare the unconfirm
-		//
-		if(_set != null){
-			m_confirmTimer = 0;
-		}
-		
 	}
 	
 	public void SendData(ByteArrayOutputStream _os,boolean _sendImm)throws Exception{
@@ -152,9 +143,7 @@ public class fetchMgr{
 		try{
 			
 			ResetAllAccountSession(false);
-			
-			m_confirmTimer = (new Date()).getTime();
-			
+						
 	    	m_svr = GetSocketServer(m_userPassword,m_userSSL);	    	
 	    	
 			while(true){
@@ -280,28 +269,12 @@ public class fetchMgr{
 	}
 		
 	public void Push(sendReceive _send){
-		
-		boolean t_repush = false;
-		
-		final long t_currentTime = (new Date()).getTime();
-		
-		if(t_currentTime - m_confirmTimer > 2 * 60 * 1000){
-			// send the mail without confirm
-			//
-			m_confirmTimer 	= t_currentTime;
-			t_repush 		= true;			
-		}
-		
+						
 		for(int i = 0;i < m_fetchAccount.size();i++){
 			fetchAccount account = (fetchAccount)m_fetchAccount.elementAt(i);
-			if(t_repush){
-				account.PrepareRepushUnconfirmMsg(t_currentTime);
-			}
-			
-			try{
-				
+					
+			try{				
 				account.PushMsg(_send);
-				
 			}catch(Exception e){
 				m_logger.PrinterException(e);
 			}			
