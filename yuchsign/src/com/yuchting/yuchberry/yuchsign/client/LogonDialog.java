@@ -126,7 +126,6 @@ public final class LogonDialog extends DialogBox{
 			}
 		});
 		
-		
 		m_signinBut.setStyleName("defaultButton");
 		
 		final VerticalPanel t_signinPane = new VerticalPanel();
@@ -187,11 +186,12 @@ public final class LogonDialog extends DialogBox{
 	
 	private void CallOnSuccess(String _result){
 		
+		
 		try{
-			Document m_doc = XMLParser.parse(_result);
-			Element m_elem = m_doc.getDocumentElement();
-			if(m_elem.getTagName().equals("Error")){
-				m_errorLabel.setText(m_elem.getFirstChild().toString());
+			Document t_doc = XMLParser.parse(_result);
+			Element t_elem = t_doc.getDocumentElement();
+			if(t_elem.getTagName().equals("Error")){
+				m_errorLabel.setText(t_elem.getFirstChild().toString());
 			}else{
 				hide();
 				m_clientSign.ShowYuchbberPanel(_result);

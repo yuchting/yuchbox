@@ -12,6 +12,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.yuchting.yuchberry.yuchsign.client.GreetingService;
 import com.yuchting.yuchberry.yuchsign.shared.yuchbber;
 
+
 final class PMF {
 	private static final PersistenceManagerFactory pmfInstance =
 	        JDOHelper.getPersistenceManagerFactory("transactions-optional");
