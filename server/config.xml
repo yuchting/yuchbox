@@ -7,17 +7,17 @@
 -->
 <Yuchberry	userPassword="111111"	serverPort="9716"	pushInterval="10"	userSSL="0"	convertoSimpleChar="0"	>
 	<EmailAccount
-		account="yuchting@gmail.com"
-		password="Ps3H2OaRnHBTwca"
+		account="233010045@qq.com"
+		password="superman@@@"
 		
 		useFullNameSignIn="0"
 		
-		protocol="imaps"
-		host="imap.gmail.com"
-		port="993"
+		protocol="imap"
+		host="imap.qq.com"
+		port="143"
 		
 		protocol_send="smtp"
-		host_send="smtp.gmail.com"
+		host_send="smtp.qq.com"
 		port_send="587"
 		
 		appendHTML="0"

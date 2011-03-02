@@ -933,19 +933,22 @@ public class fetchEmail extends fetchAccount{
     			
     			m_protocol = "pop3";
     		}   		
-	    }
-		
-		
-		m_session = Session.getInstance(m_sysProps, null);
-    	m_session.setDebug(false);
+	    }	
     	
     	if(m_protocol.indexOf("pop3") != -1){
     		m_sysProps.put("mail.pop3.disabletop", "true");
     	}
     	
+    	if(m_protocol.indexOf("imap") != -1 && m_host.indexOf("imap.qq.com") != -1){
+    		m_sysProps.put("mail.imap.auth.login.disable","true");
+    	}
+    	    	
     	m_sysProps.put("mail.imap.timeout","10000");
     	m_sysProps.put("mail.smtp.timeout","20000");
     	m_sysProps.put("mail.pop3.timeout","10000");
+    	
+    	m_session = Session.getInstance(m_sysProps, null);
+    	m_session.setDebug(true);
     	
     	m_store = m_session.getStore(m_protocol);
     	
