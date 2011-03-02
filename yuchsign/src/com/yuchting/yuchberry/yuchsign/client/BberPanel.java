@@ -4,6 +4,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabPanel;
@@ -25,10 +26,14 @@ public class BberPanel extends SimplePanel{
 	final CheckBox m_usingSSL		= new CheckBox("使用SSL");
 	final CheckBox m_convertToSimple = new CheckBox("转换繁体到简体");
 	
+	final ListBox	m_pushList	= new ListBox();
+	
 	final ContentTab m_pushContent	= new ContentTab();
 	
 	public BberPanel(){
 		setStyleName("BberPanel");
+		
+		m_pushList.setPixelSize(100, 300);
 		
 		final FlowPanel t_subPane =new FlowPanel();
 		
@@ -42,6 +47,8 @@ public class BberPanel extends SimplePanel{
 		t_subPane.add(m_usingSSL);
 		t_subPane.add(new HTML("<br />"));
 		t_subPane.add(m_convertToSimple);
+		t_subPane.add(new HTML("<br />"));
+		t_subPane.add(m_pushList);
 		
 		RootPanel.get("mainTab").add(this);
 	}
