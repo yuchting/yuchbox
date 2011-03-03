@@ -30,127 +30,145 @@ import net.rim.blackberry.api.mail.SupportedAttachmentPart;
 import net.rim.blackberry.api.mail.TextBodyPart;
 import net.rim.blackberry.api.mail.Transport;
 import net.rim.blackberry.api.mail.BodyPart.ContentType;
+import net.rim.blackberry.api.mail.event.FolderEvent;
+import net.rim.blackberry.api.mail.event.FolderListener;
 import net.rim.blackberry.api.mail.event.MessageEvent;
 import net.rim.blackberry.api.mail.event.MessageListener;
 import net.rim.blackberry.api.mail.event.ViewListener;
 import net.rim.blackberry.api.mail.event.ViewListenerExtended;
 import net.rim.device.api.i18n.Locale;
+import net.rim.device.api.io.Base64OutputStream;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.UiApplication;
 
 public class connectDeamon extends Thread implements SendListener,
 												MessageListener,
+												FolderListener,
 												AttachmentHandler,
 												ViewListener,
 												ViewListenerExtended{
 		
-	 final static int	fsm_clientVer = 2;
+	final static int	fsm_clientVer = 2;
 	 
-	 sendReceive		m_connect = null;
-
-	 String				m_hostip = null;
-
-	 
-	 FileConnection		m_keyfile;
-	 
-	 SocketConnection	m_conn 					= null;
-	 
-	 Vector				m_sendingMail 			= new Vector();
-	 Vector				m_sendingMailAttachment = new Vector();
-	 
-	 boolean			m_disconnect 			= true;
+	sendReceive		m_connect = null;
 	
-	 public Vector 		m_markReadVector 		= new Vector();
+	String				m_hostip = null;
+	
+	 
+	FileConnection		m_keyfile;
+	 
+	SocketConnection	m_conn 					= null;
+	 
+	Vector				m_sendingMail 			= new Vector();
+	Vector				m_sendingMailAttachment = new Vector();
+	
+	boolean			m_systemStart			= false;
+	boolean			m_disconnect 			= true;
+	
+	public Vector 		m_markReadVector 		= new Vector();
 	 
 		 
-	 boolean			m_sendAboutText			= false;
-	 boolean			m_recvAboutText			= false;
+	boolean			m_sendAboutText			= false;
+	boolean			m_recvAboutText			= false;
 	 
 	 	 
-	 // read the email temporary variables
-	 // 
-	 private String			m_plainTextContain 	= new String();
-	 private String			m_htmlTextContain 	= new String();
+	// read the email temporary variables
+	// 
+	private String			m_plainTextContain 	= new String();
+	private String			m_htmlTextContain 	= new String();
 	 
-	 final class ComposingAttachment{
-		 String m_filename;
-		 int	m_fileSize;
+	final class ComposingAttachment{
+		String m_filename;
+		int	m_fileSize;
 		 
-		 ComposingAttachment(String _filename,int _size){
-			 m_filename = _filename;
-			 m_fileSize = _size;
-		 }
-	 }
+		ComposingAttachment(String _filename,int _size){
+			m_filename = _filename;
+			m_fileSize = _size;
+		}
+	}
 	 
-	 //! current composing mail
-	 Message			m_composingMail 		= null;
-	 Message			m_forwordReplyMail 		= null;
-	 int				m_sendStyle				= fetchMail.NOTHING_STYLE;
+	//! current composing mail
+	Message			m_composingMail 		= null;
+	Message			m_forwordReplyMail 		= null;
+	int				m_sendStyle				= fetchMail.NOTHING_STYLE;
 	 
-	 Vector				m_composingAttachment 	= new Vector();
+	Vector				m_composingAttachment 	= new Vector();
 	 
-	 String				m_currStateString 		= new String();
-	 recvMain			m_mainApp 				= null;
+	String				m_currStateString 		= new String();
+	recvMain			m_mainApp 				= null;
 	 
-	 boolean			m_sendAuthMsg			= false;
+	boolean			m_sendAuthMsg			= false;
 	 
 	 
-	 int				m_ipConnectCounter 		= 10;
+	int				m_ipConnectCounter 		= 10;
 	 
-	 int				m_connectCounter		= -1;
+	int				m_connectCounter		= -1;
 	 
-	 class FetchAttachment{
-		 int						m_messageHashCode;
+	class FetchAttachment{
+		int						m_messageHashCode;
 		 
-		 int						m_mailIndex;
-		 int						m_attachmentIdx;
-		 int						m_attachmentSize;
+		int						m_mailIndex;
+		int						m_attachmentIdx;
+		int						m_attachmentSize;
 		 
-		 String						m_realName;
-		 int						m_completePercent;
+		String						m_realName;
+		int						m_completePercent;
 		 
-		 ByteArrayOutputStream		m_fileContainBuffer = new ByteArrayOutputStream();
+		ByteArrayOutputStream		m_fileContainBuffer = new ByteArrayOutputStream();
 		 
-	 }
-	 //! receive the attachment
-	 Vector				m_vectReceiveAttach = new Vector();
+	}
+	 
+	//! receive the attachment
+	Vector				m_vectReceiveAttach = new Vector();
+	 
+	//! the listening folder to add message
+	Folder				m_listeningMessageFolder = null;
 	 
 	 
-	 public connectDeamon(recvMain _app){
-		 m_mainApp = _app; 		 
-		 start();
-	 }
+	public connectDeamon(recvMain _app){
+		m_mainApp = _app; 		 
+		start();
+	}
 	 
 	 
-	 public void BeginListener()throws Exception{
+	public void BeginListener()throws Exception{
 		// add the send listener
 		//
-
 		Store store = Session.getDefaultInstance().getStore();
 		store.addSendListener(this);
 		
 		Session t_session  = Session.getDefaultInstance();
 		t_session.addViewListener(this);
 						 
-		AttachmentHandlerManager.getInstance().addAttachmentHandler(this);	      		 
-	 }
+		AttachmentHandlerManager.getInstance().addAttachmentHandler(this);
+		
+		m_listeningMessageFolder = GetDefaultFolder();
+		m_listeningMessageFolder.addFolderListener(this);
+	}
 	 
 	 
-	 public void EndListener()throws Exception{
-		 
-		// add the send listener
-		//
-		Store store = Session.getDefaultInstance().getStore();
-		store.removeSendListener(this);
-		 
-		Session.getDefaultInstance().removeViewListener(this);
-		         
-        AttachmentHandlerManager.getInstance().removeAttachmentHandler(this);	      
-	 }
+	public void EndListener()throws Exception{
+		
+		if(m_listeningMessageFolder != null){
+			
+			// add the send listener
+			//
+			Store store = Session.getDefaultInstance().getStore();
+			store.removeSendListener(this);
+			 
+			Session.getDefaultInstance().removeViewListener(this);
+					         
+	        AttachmentHandlerManager.getInstance().removeAttachmentHandler(this);
+        
+	        m_listeningMessageFolder.removeFolderListener(this);
+	        			
+			m_listeningMessageFolder = null;		 
+        }        
+	}
 	 
 	 
-	 //! SendListener
-	 public boolean sendMessage(Message message){
+	//! SendListener
+	public boolean sendMessage(Message message){
     	
 		final Message t_msg = message;
 		
@@ -186,7 +204,7 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 	
 	 
-	//! MessageListener
+	//@{ MessageListener
 	public void changed(MessageEvent e){
 		
 		if(e.getMessageChangeType() == MessageEvent.UPDATED
@@ -204,33 +222,42 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 		
 	}
-	//
+	//@}
+	
+	//@{ FolderListener
+	public void messagesAdded(FolderEvent e){}
+	
+	public void messagesRemoved(FolderEvent e){
+		if(e.getType() == FolderEvent.MESSAGE_REMOVED){
+			if(AddMarkReadMail(e.getMessage())){
+				m_mainApp.StopNotification();
+			}
+		}
+	}
+	//@}
 	
 	
 	//@{ AttachmentHandler
 	public void run(Message m, SupportedAttachmentPart p){
 
-		ByteArrayInputStream in = new ByteArrayInputStream((byte[])p.getContent());
-
 		String t_attName = p.getFilename();
+		
 		if(t_attName.equals(recvMain.sm_local.getString(localResource.HTML_PART_FILENAME))){
-			final String t_filename = m_mainApp.m_attachmentDir + t_attName;
+			
 			try{
 				
-				FileConnection t_file = (FileConnection)Connector.open(t_filename,Connector.READ_WRITE);
-				if(t_file.exists()){
-					t_file.delete();
-				}
-				t_file.create();
+				final ByteArrayOutputStream output = new ByteArrayOutputStream();
+	            final Base64OutputStream boutput = new Base64OutputStream( output );
+	            output.write( "data:text/html;base64,".getBytes() );
+	            boutput.write( (byte[])p.getContent() );
+	            boutput.flush();
+	            boutput.close();
+	            output.flush();
+	            output.close();
+	            
+	            BrowserSession browserSession = Browser.getDefaultSession();
+				browserSession.displayPage(output.toString());	
 				
-				OutputStream t_os = t_file.openOutputStream();
-				t_os.write((byte[])p.getContent());
-				t_os.close();
-				t_file.close();
-				
-				BrowserSession browserSession = Browser.getDefaultSession();
-				browserSession.displayPage(t_filename);
-								
 			}catch(Exception e){
 				m_mainApp.DialogAlert("open the attachment file failed:\n" + e.getMessage());
 			}
@@ -239,7 +266,8 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 		
 		final int t_messageCode = (m.getSentDate().toString() + m.getSubject()).hashCode();
-				
+		ByteArrayInputStream in = new ByteArrayInputStream((byte[])p.getContent());
+		
 		if(in.read() == 'y' && in.read() == 'u' 
 			&& in.read() == 'c' && in.read() == 'h'){
 		
@@ -367,7 +395,7 @@ public class connectDeamon extends Thread implements SendListener,
 				case Locale.LOCALE_zh_CN:
 				case Locale.LOCALE_zh:
 				case Locale.LOCALE_zh_HK:
-					t_trimString = "¥∏¥£∫ ";
+					t_trimString = "Á≠îÂ§çÔºö ";
 					break;
 				default:
 					t_trimString = "Re: ";
@@ -513,16 +541,26 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 	 
 	 public void run(){
-		 
+		
 		while(true){
 
 			m_sendAuthMsg = false;
+			
+			if(m_systemStart){
+				// wait 15.sec for geting GPRS if it's system start connect 
+				//
+				m_systemStart = false;
+				try{
+					sleep(15000);
+				}catch(Exception _e){}
+			}
 			
 			while(m_disconnect == true){
 				try{
 					sleep(100);
 				}catch(Exception _e){}
-			}
+			}			
+			
 			
 			// if it is calling
 			//
@@ -563,8 +601,7 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				m_connect.SendBufferToSvr(t_os.toByteArray(), true);			
 				
-				m_sendAuthMsg = true;
-				
+				m_sendAuthMsg = true;				
 				
 				// set the text connect
 				//
@@ -606,15 +643,19 @@ public class connectDeamon extends Thread implements SendListener,
 		
 	 }
 	 
-	 public void Connect()throws Exception{
+	 public void Connect(boolean _systemStart)throws Exception{
 		 
 		synchronized (this) {
 			
 			Disconnect();
 			
+			m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTING_LABEL));
+			m_systemStart = _systemStart;
 			m_disconnect = false;
 			
 			BeginListener();
+			
+			
 		}
 	 }
 	 
@@ -774,7 +815,32 @@ public class connectDeamon extends Thread implements SendListener,
 		 		break;
 		 }
 	 }
-	 
+	
+	private Folder GetDefaultFolder()throws Exception{
+		
+		Store store = Session.waitForDefaultSession().getStore();
+		Folder folder = null; 
+		Folder[] t_folders = store.list();
+		for(int i = 0;i < t_folders.length;i++){
+			String t_name = t_folders[i].toString();
+			if((t_name.indexOf("Inbox") != -1 || t_name.indexOf("Êî∂‰ª∂ÁÆ±") != -1 ) 
+			&& (t_name.indexOf("no service book") == -1)){
+				
+				folder = t_folders[i];
+				break;
+			}
+		}
+		
+		if(folder == null ){
+			folder = store.getFolder(Folder.INBOX);
+		}
+		
+		if(folder == null){
+			throw new Exception("Can't be retrieve the Folder!");
+		}
+		
+		return folder;
+	}
 	private void ProcessRecvMail(InputStream in)throws Exception{
 		
 		final Message m = new Message();
@@ -786,26 +852,10 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			ComposeMessage(m,t_mail);
 			
-			Store store = Session.waitForDefaultSession().getStore();
-			Folder folder = null; 
-			Folder[] t_folders = store.list();
-			for(int i = 0;i < t_folders.length;i++){
-				String t_name = t_folders[i].toString();
-				if((t_name.indexOf("Inbox") != -1 || t_name.indexOf(" ’º˛œ‰") != -1 ) 
-				&& (t_name.indexOf("no service book") == -1)){
-					
-					folder = t_folders[i];
-					break;
-				}
-			}
-			
-			if(folder == null ){
-				folder = store.getFolder(Folder.INBOX);
-			}
-			
 			m.setInbound(true);
 			m.setStatus(Message.Status.RX_RECEIVED,1);
-			folder.appendMessage(m);
+			
+			m_listeningMessageFolder.appendMessage(m);
 											
 			// add the message listener to send message to server
 			// to remark the message is read
@@ -998,7 +1048,7 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 	}
 		
-	public synchronized void AddMarkReadMail(Message m){
+	public synchronized boolean AddMarkReadMail(Message m){
 		
 		for(int i = 0;i < m_markReadVector.size();i++){
 		
@@ -1016,12 +1066,16 @@ public class connectDeamon extends Thread implements SendListener,
 					m_connect.SendBufferToSvr(t_os.toByteArray(), false);
 					
 					m_markReadVector.removeElementAt(i);
+					
+					return true;
 				}
 									
 			}catch(Exception _e){
 				break;
 			}
 		}
+		
+		return false;
 	}
 
 	

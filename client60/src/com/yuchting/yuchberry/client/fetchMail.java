@@ -364,7 +364,7 @@ class sendMailAttachmentDeamon extends Thread{
 		start();
 	}
 	
-	private void RefreshMessageStatus(){
+	private void RefreshMessageStatus(int t_style){
 							
 		
 		try{
@@ -376,7 +376,7 @@ class sendMailAttachmentDeamon extends Thread{
 			//
 			sleep(500);
 			
-			m_connect.m_mainApp.UpdateMessageStatus(m_sendMail.GetAttachMessage(), Message.Status.TX_SENDING);
+			m_connect.m_mainApp.UpdateMessageStatus(m_sendMail.GetAttachMessage(),t_style);
 			
 		}catch(Exception _e){
 			m_connect.m_mainApp.SetErrorString("S: Status " + _e.getMessage() + " "+ _e.getClass().getName());
@@ -479,29 +479,35 @@ class sendMailAttachmentDeamon extends Thread{
 	public void run(){		
 		
 		boolean t_sendContain = false;
-		
+		boolean t_setPaddingState = false;
 		
 		while(true){
 			
 			while(m_connect.m_conn == null || !m_connect.m_sendAuthMsg){
+				
+				if(!m_connect.IsConnectState()){
+					ReleaseAttachFile();
+					return;
+				}else{
+				
+					if(!t_setPaddingState){
+						t_setPaddingState = true;
+						RefreshMessageStatus(Message.Status.TX_PENDING);
+					}
+				}
+				
 				try{
 					sleep(10000);
 				}catch(Exception _e){
 					break;
 				}
-				
-				if(!m_connect.IsConnectState()){
-					ReleaseAttachFile();
-					return;
-				}
 			}			
-			
 			
 			try{
 				
 				if(!t_sendContain){
 								
-					RefreshMessageStatus();
+					RefreshMessageStatus(Message.Status.TX_SENDING);
 					
 					// send mail once if has not attachment 
 					//

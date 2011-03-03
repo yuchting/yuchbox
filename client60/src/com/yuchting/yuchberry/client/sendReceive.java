@@ -31,6 +31,8 @@ public class sendReceive extends Thread{
 	
 	int					m_keepliveInterval		= 60 * 5;
 	
+	int					m_storeByteTimer		= 0;
+	
 	IStoreUpDownloadByte	m_storeInterface	= null;
 		
 	public sendReceive(OutputStream _socketOut,InputStream _socketIn){
@@ -64,11 +66,15 @@ public class sendReceive extends Thread{
 		}
 	}
 	
-	public void StoreUpDownloadByteImm(){
+	public void StoreUpDownloadByteImm(boolean _force){
 		if(m_storeInterface != null){
-			m_storeInterface.Store(m_uploadByte,m_downloadByte);
-			m_uploadByte = 0;
-			m_downloadByte = 0;
+			if(m_storeByteTimer++ > 5 || _force){
+				m_storeByteTimer = 0;
+				
+				m_storeInterface.Store(m_uploadByte,m_downloadByte);
+				m_uploadByte = 0;
+				m_downloadByte = 0;				
+			}			
 		}
 	}
 	
@@ -76,7 +82,7 @@ public class sendReceive extends Thread{
 		
 		if(m_closed == false){
 			
-			StoreUpDownloadByteImm();
+			StoreUpDownloadByteImm(true);
 			
 			m_closed = true;
 			
@@ -184,7 +190,7 @@ public class sendReceive extends Thread{
 					
 					SendBufferToSvr_imple(t_os.toByteArray());
 					
-					StoreUpDownloadByteImm();
+					StoreUpDownloadByteImm(false);										
 				}
 			}
 			

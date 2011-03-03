@@ -8,6 +8,7 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.FontFamily;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.MainScreen;
@@ -188,6 +189,7 @@ public class debugInfo extends MainScreen{
 			}
 		});
 	}
+	  
 	
 	protected boolean navigationMovement(int dx,int dy,int status,int time){
 		m_errorText.IncreaseRenderSize(dx,dy);

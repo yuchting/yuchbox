@@ -25,6 +25,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 	 
 	 LabelField			m_uploadByte	= new LabelField();
 	 LabelField			m_downloadByte	= new LabelField();
+	 LabelField			m_totalByte		= new LabelField();
 	 ButtonField		m_clearByteBut	= new ButtonField(recvMain.sm_local.getString(localResource.CLEAR_STATISTICS),Field.FIELD_RIGHT);
 	 
 	 CheckboxField		m_fulldayPrompt = null;
@@ -78,11 +79,12 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 
 		 add(m_uploadByte);
 		 add(m_downloadByte);
+		 add(m_totalByte);
 		 add(m_clearByteBut);
 		 m_clearByteBut.setChangeListener(this);
 		 
 		 if(m_mainApp.m_connectDeamon.m_connect != null){
-			 m_mainApp.m_connectDeamon.m_connect.StoreUpDownloadByteImm();
+			 m_mainApp.m_connectDeamon.m_connect.StoreUpDownloadByteImm(true);
 		 }
 		 
 		 RefreshUpDownloadByte();
@@ -175,6 +177,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 			public void run() {
 				m_uploadByte.setText(recvMain.sm_local.getString(localResource.UPLOAD_STATISTICS) + recvMain.GetByteStr(m_mainApp.m_uploadByte));
 				m_downloadByte.setText(recvMain.sm_local.getString(localResource.DOWNLOAD_STATISTICS) + recvMain.GetByteStr(m_mainApp.m_downloadByte));
+				m_totalByte.setText(recvMain.sm_local.getString(localResource.TOTAL_STATISTICS) + recvMain.GetByteStr(m_mainApp.m_downloadByte + m_mainApp.m_uploadByte));
 			}
 		});
 	 }

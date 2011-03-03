@@ -166,6 +166,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	//@{ location information
 	LocationProvider m_locationProvider = null;
 	boolean		 m_useLocationInfo = false;
+	boolean		 m_setLocationListener = false;
 	
 	double			 m_longitude		= 0;
 	double			 m_latitude			= 0;
@@ -258,7 +259,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         		System.exit(0);
         	}else{
         		try{
-        			m_connectDeamon.Connect();
+        			m_connectDeamon.Connect(true);
         			Start();
         		}catch(Exception e){
         			System.exit(0);
@@ -517,10 +518,21 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		if(m_locationProvider != null){
 			if(m_useLocationInfo){
-				m_locationProvider.setLocationListener(this, -1, 1, 1);
+				
+				if(m_setLocationListener == false){
+					m_setLocationListener = true;
+					
+					m_locationProvider.setLocationListener(this, -1, 1, 1);
+				}
+				
 			}else{
-				m_locationProvider.reset();
-				m_locationProvider.setLocationListener(null, -1, -1, -1);
+				
+				if(m_setLocationListener == true){
+					
+					m_setLocationListener = false;
+					m_locationProvider.reset();
+					m_locationProvider.setLocationListener(null, -1, -1, -1);
+				}				
 			}
 		}
 	
@@ -594,7 +606,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		StopNotification();
 		
 		if(m_connectDeamon.m_connect != null){
-			m_connectDeamon.m_connect.StoreUpDownloadByteImm();
+			m_connectDeamon.m_connect.StoreUpDownloadByteImm(true);
 		}
 		
 		if(m_locationProvider != null){
@@ -723,7 +735,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 			return true;
 		}catch(Exception e){
-			DialogAlert("Invoke native apps failed:"+ e.getMessage());
+			SetErrorString("Invoke native apps failed:"+ e.getMessage());
 		}
 		
 		return false;		
@@ -891,12 +903,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	
 	static public String GetByteStr(long _byte){
-		if(_byte < 1024){
+		if(_byte < 1000){
 			return "" + _byte + "B";
-		}else if(_byte >= 1024 && _byte < 1024 * 1024){
-			return "" + (_byte / 1024) + "." + (_byte % 1024)+ "KB";
+		}else if(_byte >= 1000 && _byte < 1000000){
+			return "" + (_byte / 1000) + "." + (_byte % 1000)+ "KB";
 		}else{
-			return "" + (_byte / (1024 * 1024)) + "." + ((_byte / 1024) % 1024) + "MB";
+			return "" + (_byte / (1000000)) + "." + ((_byte / 1000) % 1000) + "MB";
 		}
 	}
 	
