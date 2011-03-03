@@ -219,7 +219,8 @@ public final class LogonDialog extends DialogBox{
 		while(t_index < _password.length()){
 			if(Character.isLetterOrDigit(_password.charAt(t_index)) == false){
 				return false;
-			}			
+			}
+			t_index++;
 		}
 		
 		return true;

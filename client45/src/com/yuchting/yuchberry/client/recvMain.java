@@ -203,7 +203,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			fc.close();
 			t_SDCardUse = true;
 		}catch(Exception e){
-			
+			SetErrorString("SDCard can't be used :(");
 		}
 				
 		m_attachmentDir = (t_SDCardUse?uploadFileScreen.fsm_rootPath_default:uploadFileScreen.fsm_rootPath_back) + "YuchBerry/AttDir/";

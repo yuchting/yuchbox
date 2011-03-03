@@ -1,5 +1,6 @@
 package com.yuchting.yuchberry.yuchsign.server;
 
+
 import java.util.logging.Logger;
 
 import javax.jdo.JDOHelper;
@@ -11,6 +12,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.yuchting.yuchberry.yuchsign.client.GreetingService;
 import com.yuchting.yuchberry.yuchsign.shared.yuchbber;
+
 
 
 final class PMF {
@@ -40,11 +42,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements
 		try{			
 			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(), name);
 			try{
-				t_bber = t_pm.getObjectById(yuchbber.class, k);				
-
+				t_bber = t_pm.getObjectById(yuchbber.class, k);	
+				
 				if(!t_bber.GetPassword().equals(password)){
 					return "<Error>密码错误！</Error>";
-				}
+				}				
 				
 			}catch(javax.jdo.JDOObjectNotFoundException e){
 				return "<Error>找不到用户!</Error>";
@@ -86,5 +88,6 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements
 				
 		return t_newbber.OuputXMLData();
 	}
+	
 
 }

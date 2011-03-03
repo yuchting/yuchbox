@@ -5,17 +5,20 @@ import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+import javax.persistence.FetchType;
+import javax.persistence.ManyToOne;
 
-import com.google.gwt.xml.client.Document;
+import com.google.appengine.api.datastore.Key;
 import com.google.gwt.xml.client.Element;
-import com.google.gwt.xml.client.NodeList;
-import com.google.gwt.xml.client.XMLParser;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class yuchEmail {
 	
 	@PrimaryKey
-	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    private Key m_key;
+	
+	@Persistent
 	public String m_emailAddr = "";
 	
 	@Persistent

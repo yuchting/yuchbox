@@ -8,7 +8,6 @@ import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
-
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.NodeList;
@@ -43,6 +42,7 @@ public final class yuchbber {
 	private boolean m_convertSimpleChar = false;
 	
 	@Persistent(mappedBy = "m_yuchbber")
+	@javax.jdo.annotations.Element(dependent = "true")
 	private Vector<yuchEmail>	m_emailList = new Vector<yuchEmail>();
 	
 	public yuchbber(final String _name,final String _pass){
@@ -82,7 +82,7 @@ public final class yuchbber {
 	
 	public void InputXMLData(final String _data)throws Exception{
 		Document t_doc = XMLParser.parse(_data);
-		Element t_elem = t_doc.getDocumentElement();
+		com.google.gwt.xml.client.Element t_elem = t_doc.getDocumentElement();
 		
 		m_signinName	= ReadStringAttr(t_elem,"name");
 		m_password		= ReadStringAttr(t_elem,"pass");
