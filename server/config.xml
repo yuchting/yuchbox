@@ -8,7 +8,7 @@
 <Yuchberry	userPassword="111111"	serverPort="9716"	pushInterval="10"	userSSL="0"	convertoSimpleChar="0"	>
 	<EmailAccount
 		account="233010045@qq.com"
-		password="superman@@@"
+		password=""
 		
 		useFullNameSignIn="0"
 		
