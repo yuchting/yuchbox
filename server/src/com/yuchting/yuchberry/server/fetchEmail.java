@@ -948,7 +948,7 @@ public class fetchEmail extends fetchAccount{
     	m_sysProps.put("mail.pop3.timeout","10000");
     	
     	m_session = Session.getInstance(m_sysProps, null);
-    	m_session.setDebug(true);
+    	m_session.setDebug(false);
     	
     	m_store = m_session.getStore(m_protocol);
     	
@@ -1069,7 +1069,7 @@ public class fetchEmail extends fetchAccount{
 			
 			}else{
 				
-				m_mainMgr.m_logger.LogOut(GetAccountName() + "mail<" + t_confirmMail.GetMailIndex() + "> has not reach re-pushTime. currentTime<" 
+				m_mainMgr.m_logger.LogOut(GetAccountName() + " mail<" + t_confirmMail.GetMailIndex() + "> has not reach re-pushTime. currentTime<" 
 														+ t_currTime + "> sendConfirmTime<" + t_confirmMail.m_sendConfirmTime + ">");
 			}
 		}

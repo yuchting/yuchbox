@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.yuchsign.shared;
+package com.yuchting.yuchberry.yuchsign.server;
 
 import java.util.Date;
 import java.util.Vector;
@@ -8,10 +8,13 @@ import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
+import com.google.gwt.xml.client.Node;
 import com.google.gwt.xml.client.NodeList;
 import com.google.gwt.xml.client.XMLParser;
+import com.yuchting.yuchberry.yuchsign.client.yuchEmail;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public final class yuchbber {
@@ -51,6 +54,7 @@ public final class yuchbber {
 		
 		m_createTime 	= (new Date()).getTime();
 	}
+	public yuchbber(){}
 	
 	public void SetSigninName(final String _name){m_signinName = _name;}
 	public String GetSigninName(){return m_signinName;}
@@ -58,6 +62,25 @@ public final class yuchbber {
 	public void SetPassword(final String _pass){m_password = _pass;}
 	public String GetPassword(){return m_password;}
 	
+	public int GetServerPort(){return m_serverPort;}
+	public void SetServerProt(int _port){m_serverPort = _port;}
+	
+	public int GetPushInterval(){return m_pushInterval;}
+	public void SetPusnInterval(int _pushInterval){m_pushInterval = _pushInterval;}
+	
+	public boolean IsUsingSSL(){return m_usingSSL;}
+	public void SetUsingSSL(boolean _ssl){m_usingSSL = _ssl;}
+	
+	public boolean IsConvertSimpleChar(){return m_convertSimpleChar;}
+	public void SetConvertSimpleChar(boolean _convert){m_convertSimpleChar = _convert;}
+	
+	public long GetUsingHours(){return m_usingHours;}
+	public void SetUsingHours(long _hours){m_usingHours = _hours;}
+	
+	public long GetCreateTime(){return m_createTime;}
+	public void SetCreateTime(long _time){m_createTime = _time;}
+	
+	public Vector<yuchEmail> GetEmailList(){return m_emailList;}
 	
 	public String OuputXMLData(){
 		StringBuffer t_output = new StringBuffer();
@@ -97,14 +120,20 @@ public final class yuchbber {
 		m_emailList.removeAllElements();
 		
 		NodeList t_nodeElem = t_elem.getChildNodes();
+		
 		for(int i = 0;i < t_nodeElem.getLength();i++){
-			Element t_element = (Element)t_nodeElem.item(i);
-			if(t_element.getTagName().equals("email")){
-				yuchEmail t_email = new yuchEmail();
-				
-				t_email.InputXMLData(t_element);
-				
-				m_emailList.add(t_email);
+			Node t_node = t_nodeElem.item(i);
+			
+			if(t_node instanceof Element){
+
+				Element t_element = (Element)t_node;
+				if(t_element.getTagName().equals("email")){
+					yuchEmail t_email = new yuchEmail();
+					
+					t_email.InputXMLData(t_element);
+					
+					m_emailList.add(t_email);
+				}
 			}
 		}		
 	}

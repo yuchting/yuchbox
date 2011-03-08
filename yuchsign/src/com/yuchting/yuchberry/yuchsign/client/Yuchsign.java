@@ -31,14 +31,19 @@ public class Yuchsign implements EntryPoint {
 	
 	private LogonDialog m_logonDlg = null;
 	
+	private BberPanel	m_bberPane = null;
+	
 	/**
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
 		
+		
 		m_logonDlg = new LogonDialog(this);
 		m_logonDlg.show();	
 		
+		m_bberPane = new BberPanel();
+				
 //		final Button sendButton = new Button("Send");
 //		final TextBox nameField = new TextBox();
 //		nameField.setText("GWT User");
@@ -166,8 +171,11 @@ public class Yuchsign implements EntryPoint {
 				
 	}
 	
-	public void ShowYuchbberPanel(String _bberXMLData){
+	public void ShowYuchbberPanel(String _bberXMLData)throws Exception{
+		yuchbber t_bber = new yuchbber();
+		t_bber.InputXMLData(_bberXMLData);		
 		
+		m_bberPane.SetYuchbberData(t_bber);
 	}
 	
 	

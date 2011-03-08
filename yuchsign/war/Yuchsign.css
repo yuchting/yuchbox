@@ -35,13 +35,14 @@ h1 {
 .waitingLabel{
 	padding:2px 2px 2px 2px;
 	border:1px solid #F0F0F0;
-	background: #FFFFF0
+	background: #FFFFF0;
 }
 
 .BberPanel{
 	padding:5px 5px 5px 5px;
 	border:1px solid #F0F0F0;
-	background: #FFFFF0
+	background: #FFFFF0;
+	width: 420px;
 }
 
 .logonVPanel {

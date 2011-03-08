@@ -90,8 +90,16 @@ public class fetchMgr{
 	
 	public void SendData(ByteArrayOutputStream _os,boolean _sendImm)throws Exception{
 		
-		if(m_currConnect == null || m_currConnect.m_sendReceive == null || !m_currConnect.m_sendReceive.isAlive()){
-			throw new Exception("Client has been closed");
+		if(m_currConnect == null){
+			throw new Exception("Client has been closed <m_currConnect == null>");
+		}
+		
+		if(m_currConnect.m_sendReceive == null ){
+			throw new Exception("Client has been closed <m_currConnect.m_sendReceive == null>");
+		}
+		
+		if(!m_currConnect.m_sendReceive.isAlive()){
+			throw new Exception("Client has been closed <!m_currConnect.m_sendReceive.isAlive()>");
 		}
 		
 		m_currConnect.m_sendReceive.SendBufferToSvr(_os.toByteArray(), _sendImm);		

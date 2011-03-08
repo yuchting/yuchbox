@@ -1,51 +1,36 @@
-package com.yuchting.yuchberry.yuchsign.shared;
+package com.yuchting.yuchberry.yuchsign.client;
 
-import javax.jdo.annotations.IdGeneratorStrategy;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-import javax.persistence.FetchType;
-import javax.persistence.ManyToOne;
-
-import com.google.appengine.api.datastore.Key;
 import com.google.gwt.xml.client.Element;
 
-@PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class yuchEmail {
 	
-	@PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private Key m_key;
-	
-	@Persistent
+
 	public String m_emailAddr = "";
 	
-	@Persistent
+
 	public String m_password = "";
 	
-	@Persistent
+
 	public yuchbber m_yuchbber; 
 	
-	@Persistent
+
 	public boolean m_fullnameSignIn = false;
 	
-	@Persistent
+
 	public String m_protocol = "imaps";
 	
-	@Persistent
+
 	public String m_host = "";
 	
-	@Persistent
+
 	public int m_port = 993;
 		
-	@Persistent
+
 	public String m_host_send = "";
 	
-	@Persistent
+
 	public int m_port_send = 587;
 	
-	@Persistent
 	public boolean m_appendHTML = false;
 	
 	
@@ -77,6 +62,10 @@ public class yuchEmail {
 		m_port_send		= yuchbber.ReadIntegerAttr(_elem, "ports");
 		
 		m_appendHTML	= yuchbber.ReadBooleanAttr(_elem, "appHTML");		
+	}
+	
+	public String toString(){
+		return "Email <" + m_emailAddr + ">"; 
 	}
 	
 }

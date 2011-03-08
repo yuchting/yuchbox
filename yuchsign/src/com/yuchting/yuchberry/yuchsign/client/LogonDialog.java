@@ -193,8 +193,9 @@ public final class LogonDialog extends DialogBox{
 			if(t_elem.getTagName().equals("Error")){
 				m_errorLabel.setText(t_elem.getFirstChild().toString());
 			}else{
-				hide();
 				m_clientSign.ShowYuchbberPanel(_result);
+				
+				hide();
 			}			
 			
 		}catch(Exception e){
