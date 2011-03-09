@@ -4,6 +4,9 @@ import java.util.logging.Logger;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.ui.DecoratedPopupPanel;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Widget;
 
 
 /**
@@ -33,6 +36,13 @@ public class Yuchsign implements EntryPoint {
 	
 	private BberPanel	m_bberPane = null;
 	
+	static private final DecoratedPopupPanel fsm_simplePopup = new DecoratedPopupPanel(true);
+	
+	static 
+	{
+		fsm_simplePopup.setWidth("200px");
+	}
+	
 	/**
 	 * This is the entry point method.
 	 */
@@ -40,7 +50,7 @@ public class Yuchsign implements EntryPoint {
 		
 		
 		m_logonDlg = new LogonDialog(this);
-		m_logonDlg.show();	
+		//m_logonDlg.show();	
 		
 		m_bberPane = new BberPanel();
 				
@@ -176,6 +186,29 @@ public class Yuchsign implements EntryPoint {
 		t_bber.InputXMLData(_bberXMLData);		
 		
 		m_bberPane.SetYuchbberData(t_bber);
+	}
+	
+	static void PopupPrompt(String _prompt,Widget _attachWidget){
+
+		fsm_simplePopup.setWidget(new HTML(_prompt));
+		fsm_simplePopup.setWidth("" + (_prompt.length() + 2) + "em");
+		fsm_simplePopup.setHeight("2em");
+		
+		int left;
+		int top;
+		
+		if(_attachWidget == null){
+			left = 100;
+	        top = 300;
+		}else{
+			left = _attachWidget.getAbsoluteLeft() + (_attachWidget.getOffsetWidth() - fsm_simplePopup.getOffsetWidth()) / 2;
+	        top = _attachWidget.getAbsoluteTop() + (_attachWidget.getOffsetHeight() - fsm_simplePopup.getOffsetHeight()) / 2;	
+		}
+		
+        fsm_simplePopup.setPopupPosition(left, top);
+
+        // Show the popup
+        fsm_simplePopup.show();
 	}
 	
 	

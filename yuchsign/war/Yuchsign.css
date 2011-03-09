@@ -23,9 +23,6 @@ h1 {
 	margin: 0;
 	padding: 0;
 }
-.defaultButton {
-  font-size: 12pt;
-}
 
 /** Most GWT widgets already have a style name defined */
 .gwt-DialogBox {
@@ -42,7 +39,7 @@ h1 {
 	padding:5px 5px 5px 5px;
 	border:1px solid #F0F0F0;
 	background: #FFFFF0;
-	width: 420px;
+	width: 440px;
 }
 
 .logonVPanel {

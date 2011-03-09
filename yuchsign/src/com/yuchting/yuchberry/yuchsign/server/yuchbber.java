@@ -24,10 +24,13 @@ public final class yuchbber {
 	private String m_signinName = "";
 	
 	@Persistent
+	private String m_connectHost = "";
+	
+	@Persistent
 	private String m_password = "";
 	
 	@Persistent
-	private long m_usingHours = 72;
+	private long m_usingHours = 168;
 	
 	@Persistent
 	private long m_createTime = 0;
@@ -44,6 +47,9 @@ public final class yuchbber {
 	@Persistent
 	private boolean m_convertSimpleChar = false;
 	
+	@Persistent
+	private String m_signature = "";
+	
 	@Persistent(mappedBy = "m_yuchbber")
 	@javax.jdo.annotations.Element(dependent = "true")
 	private Vector<yuchEmail>	m_emailList = new Vector<yuchEmail>();
@@ -58,6 +64,9 @@ public final class yuchbber {
 	
 	public void SetSigninName(final String _name){m_signinName = _name;}
 	public String GetSigninName(){return m_signinName;}
+	
+	public void SetConnetHost(final String _host){m_connectHost = _host;}
+	public String GetConnectHost(){return m_connectHost;}
 	
 	public void SetPassword(final String _pass){m_password = _pass;}
 	public String GetPassword(){return m_password;}
@@ -82,9 +91,18 @@ public final class yuchbber {
 	
 	public Vector<yuchEmail> GetEmailList(){return m_emailList;}
 	
-	public String OuputXMLData(){
+public String OuputXMLData(){
+		
+		String t_signature = m_signature.replaceAll("<","&lt;");
+		t_signature = t_signature.replaceAll(">","&gt;");
+		t_signature = t_signature.replaceAll("&","&amp;");
+		t_signature = t_signature.replaceAll("'","&apos;");
+		t_signature = t_signature.replaceAll("\"","&quot;");
+		t_signature = t_signature.replaceAll(" ","&nbsp;");
+		
 		StringBuffer t_output = new StringBuffer();
 		t_output.append("<yuchbber ").append("name=\"").append(m_signinName).
+									append("\" connect=\"").append(m_connectHost).
 									append("\" pass=\"").append(m_password).
 									append("\" hour=\"").append(m_usingHours).
 									append("\" time=\"").append(m_createTime).
@@ -92,8 +110,9 @@ public final class yuchbber {
 									append("\" interval=\"").append(m_pushInterval).
 									append("\" SSL=\"").append(m_usingSSL?1:0).
 									append("\" T2S=\"").append(m_convertSimpleChar?1:0).
+									append("\" signature=\"").append(t_signature).
 									append("\">\n");
-		
+				
 		for(yuchEmail email : m_emailList){
 			email.OuputXMLData(t_output);										
 		}	
@@ -108,6 +127,7 @@ public final class yuchbber {
 		com.google.gwt.xml.client.Element t_elem = t_doc.getDocumentElement();
 		
 		m_signinName	= ReadStringAttr(t_elem,"name");
+		m_connectHost	= ReadStringAttr(t_elem,"connect");		
 		m_password		= ReadStringAttr(t_elem,"pass");
 		m_usingHours	= ReadLongAttr(t_elem,"hour");
 		m_createTime	= ReadLongAttr(t_elem, "time");
@@ -116,6 +136,14 @@ public final class yuchbber {
 		m_usingSSL		= ReadBooleanAttr(t_elem, "SSL");
 		m_convertSimpleChar = ReadBooleanAttr(t_elem, "T2S");
 		
+		m_signature = ReadStringAttr(t_elem,"signature");
+		
+		m_signature = m_signature.replaceAll("&lt;", "<");
+		m_signature = m_signature.replaceAll("&gt;", ">");
+		m_signature = m_signature.replaceAll("&amp;", "&");
+		m_signature = m_signature.replaceAll("&apos;", "'");
+		m_signature = m_signature.replaceAll("&quot;", "\"");
+		m_signature = m_signature.replaceAll("&nbsp;", " ");		
 		
 		m_emailList.removeAllElements();
 		

@@ -742,7 +742,7 @@ public class fetchEmail extends fetchAccount{
 	
 	public void SendMail(RecvMailAttach _mail)throws Exception{
 		
-		Message msg = new MimeMessage(m_session_send);
+		MimeMessage msg = new MimeMessage(m_session_send);
 		
 		String t_signature = "";
 		
@@ -1141,7 +1141,7 @@ public class fetchEmail extends fetchAccount{
 	
 	public void SendImmMail(final String _subject ,final String _contain,final String _from){
 		
-		Message msg = new MimeMessage(m_session_send);
+		MimeMessage msg = new MimeMessage(m_session_send);
 		
 		fetchMail t_mail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
 		t_mail.SetSubject(_subject);
@@ -1506,7 +1506,7 @@ public class fetchEmail extends fetchAccount{
 		return _name;
 	}
 	
-	public void ComposeMessage(Message msg,fetchMail _mail,fetchMail _forwardMail)throws Exception{
+	public void ComposeMessage(MimeMessage msg,fetchMail _mail,fetchMail _forwardMail)throws Exception{
 		
 		msg.setFrom(new InternetAddress(m_strUserNameFull));
 				
@@ -1523,7 +1523,7 @@ public class fetchEmail extends fetchAccount{
 	    }
 		
 
-	    msg.setSubject(_mail.GetSubject());
+	    msg.setSubject(_mail.GetSubject(),"UTF-8");
 	    
 	    MailIndexAttachment t_forwardMailAttach = null;
 	    if(_forwardMail != null){
@@ -1544,7 +1544,7 @@ public class fetchEmail extends fetchAccount{
 								
 			}else{
 				MimeBodyPart t_containPart = new MimeBodyPart();
-				t_containPart.setText(_mail.GetContain());
+				t_containPart.setText(_mail.GetContain(),"UTF-8");
 				
 				t_mainPart.addBodyPart(t_containPart);			
 			}			
@@ -1602,7 +1602,7 @@ public class fetchEmail extends fetchAccount{
 	    } else {
 			// If the desired charset is known, you can use
 			// setText(text, charset)
-			msg.setText(_mail.GetContain());
+			msg.setText(_mail.GetContain(),"UTF-8");
 	    }
 
 	    msg.setHeader("X-Mailer",_mail.GetXMailer());

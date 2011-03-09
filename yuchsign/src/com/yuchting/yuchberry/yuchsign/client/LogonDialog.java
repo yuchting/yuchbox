@@ -73,7 +73,6 @@ public final class LogonDialog extends DialogBox{
 	public LogonDialog(Yuchsign _clientSign){
 		m_clientSign = _clientSign;
 		
-		m_logonBut.setStyleName("defaultButton");		
 		m_errorLabel.setStyleName("serverResponseLabelError");
 		
 		final VerticalPanel t_logonPane = new VerticalPanel();
@@ -125,9 +124,7 @@ public final class LogonDialog extends DialogBox{
 				}
 			}
 		});
-		
-		m_signinBut.setStyleName("defaultButton");
-		
+				
 		final VerticalPanel t_signinPane = new VerticalPanel();
 		t_signinPane.setStyleName("signinVPanel");
 		t_signinPane.add(new HTML("用户名(邮箱地址):"));
@@ -205,12 +202,12 @@ public final class LogonDialog extends DialogBox{
 		m_waitingLable.Hide();
 	}
 	
-	private native static boolean IsValidEmail(String name)/*-{
+	public native static boolean IsValidEmail(String name)/*-{
 	    var regex = new RegExp("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$");
 	    return regex.test(name);
 	}-*/;
 	
-	private static boolean IsValidPassword(String _password){
+	public static boolean IsValidPassword(String _password){
 		
 		if(_password.length() < 6){
 			return false;
