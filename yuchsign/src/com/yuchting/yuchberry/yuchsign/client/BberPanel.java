@@ -165,43 +165,58 @@ class ContentTab extends TabPanel{
 		}
 	}
 	
-	public void AddAccount(){
-		// TODO Auto-generated method stub
+	public yuchEmail AddAccount(){
+		
 		if(LogonDialog.IsValidEmail(m_account.getText())){
 			Yuchsign.PopupPrompt("不是合法的邮件地址", m_account);
-			return;
+			return null;
 		}
 		
 		if(m_password.getText().length() == 0){
 			Yuchsign.PopupPrompt("不是合法的邮件地址", m_password);
-			return;
+			return null;
 		}
 		
 		if(m_host.getText().length() == 0){
 			m_advancedDisclosure.setOpen(true);
 			Yuchsign.PopupPrompt("邮件接受服务器地址不能为空", m_port);
-			return;
+			return null;
 		}
 		
 		if(m_port.getText().length() == 0){
 			m_advancedDisclosure.setOpen(true);
 			Yuchsign.PopupPrompt("邮件接受服务器端口不能为空", m_port);
-			return ;
+			return null;
 		}
 		
 		if(m_host_send.getText().length() == 0){ 
-			
 			m_advancedDisclosure.setOpen(true);
 			Yuchsign.PopupPrompt("邮件发送服务器地址不能为空", m_host_send);
-			return ;
+			return null;
 		}
 		
 		if(Integer.valueOf(m_port_send.getText()).intValue() <= 0){
 			m_advancedDisclosure.setOpen(true);
 			Yuchsign.PopupPrompt("邮件发送服务器端口非法", m_port_send);
-			return ;
-		}		
-	
+			return null;
+		}
+		
+		// TODO Auto-generated method stub
+		yuchEmail t_email = new yuchEmail();
+		t_email.m_appendHTML 		= m_appendHTML.getValue();
+		t_email.m_fullnameSignIn	= m_usingFullname.getValue();
+		
+		t_email.m_emailAddr			= m_account.getText();
+		t_email.m_password			= m_password.getText();
+		
+		t_email.m_host				= m_host.getText();
+		t_email.m_port				= Integer.valueOf(m_port.getText()).intValue();
+		
+		t_email.m_host_send			= m_host_send.getText();
+		t_email.m_port_send			= Integer.valueOf(m_port_send.getText()).intValue();
+		
+		
+		return t_email;
 	}
 }
 
@@ -218,15 +233,13 @@ public class BberPanel extends SimplePanel{
 	final CheckBox m_convertToSimple = new CheckBox("转换繁体到简体");
 	
 	final TextArea m_signature		= new TextArea();
-	
-	
-	final ListBox	m_pushList	= new ListBox(true);
+		
+	final ListBox	m_pushList		= new ListBox(true);
 	
 	final Button	m_addPushAccountBut = new Button("添加");
 	final Button	m_delPushAccountBut = new Button("删除");
 	
 	final ContentTab m_pushContent	= new ContentTab();
-	
 	final Button	m_startSync = new Button("开始同步");
 			
 	yuchbber m_currentBber = null;
@@ -285,7 +298,12 @@ public class BberPanel extends SimplePanel{
 			
 			@Override
 			public void onClick(ClickEvent event) {
-				m_pushContent.AddAccount();
+				yuchEmail t_email = m_pushContent.AddAccount();
+				if(t_email != null){
+					m_currentBber.GetEmailList().add(t_email);
+					
+					retur
+				}
 			}
 		});
 		
