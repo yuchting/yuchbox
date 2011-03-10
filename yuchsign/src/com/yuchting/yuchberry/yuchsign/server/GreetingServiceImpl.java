@@ -51,11 +51,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements
 				return "<Error>找不到用户!</Error>";
 			}		
 			
+			return t_bber.OuputXMLData();
+			
 		}finally{
 			t_pm.close();
-		}
-				
-		return t_bber.OuputXMLData();
+		}		
 	}
 	
 	public String signinAccount(String _name,String _password)throws Exception{
@@ -79,13 +79,14 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements
 				t_newbber = new yuchbber(_name,_password);
 				
 				t_pm.makePersistent(t_newbber);
-			}		
+			}
+			
+			return t_newbber.OuputXMLData();
 			
 		}finally{
 			t_pm.close();
-		}
-				
-		return t_newbber.OuputXMLData();
+		}				
+		
 	}
 	
 

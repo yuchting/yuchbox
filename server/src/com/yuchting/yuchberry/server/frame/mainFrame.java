@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.util.Date;
+import java.util.Properties;
 import java.util.Vector;
 
 import javax.swing.AbstractButton;
@@ -115,11 +116,12 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	fetchThread	m_currentSelectThread	= null;
 	
+	NanoHTTPD	m_httpd					= null;
+	
 	static public void main(String _arg[]){
 		new fakeMDSSvr();
 		new mainFrame();
-	}
-	
+	}	
 	
 	public mainFrame(){
 		setTitle("yuchberry 集成配置工具 beta");
@@ -193,6 +195,8 @@ public class mainFrame extends JFrame implements ActionListener{
 		new checkStateThread(this);
 		
 		setVisible(true);
+		
+		LoadYuchsign();
 	}
 		
 	public void LoadStoreAccountInfo(){
@@ -656,6 +660,40 @@ public class mainFrame extends JFrame implements ActionListener{
 			_thread.m_fetchMgr.SendImmMail("yuchberry 提示", t_contain, "\"YuchBerry\" <yuchberry@gmail.com>");
 			
 		}catch(Exception e){}		
+	}
+	
+	private void LoadYuchsign(){
+		try{
+			BufferedReader in = new BufferedReader(
+									new InputStreamReader(
+										new FileInputStream("yuchsign"),"UTF-8"));
+			try{
+				final String t_pass = in.readLine();
+				final String t_port = in.readLine();
+				
+				m_httpd = new NanoHTTPD(Integer.valueOf(t_port).intValue()){
+					public Response serve( String uri, String method, Properties header, Properties parms, Properties files ){
+												
+						String t_queryPass = parms.getProperty("pass");
+						
+						if(t_queryPass == null || !t_queryPass.equals(t_pass)){
+							return new NanoHTTPD.Response( HTTP_FORBIDDEN, MIME_HTML, "");
+						}
+						
+						return new NanoHTTPD.Response( HTTP_OK, MIME_PLAINTEXT, ProcessHTTPD(method,header,parms));
+					}
+				};
+				
+			}finally{
+				in.close();
+			}
+		}catch(Exception e){
+			
+		}
+	}
+	
+	private String ProcessHTTPD(String method, Properties header, Properties parms){
+		return "";
 	}
 	
 	static public String GetRandomPassword(){

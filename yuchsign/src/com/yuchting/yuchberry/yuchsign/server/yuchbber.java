@@ -33,7 +33,7 @@ public final class yuchbber {
 	private long m_usingHours = 168;
 	
 	@Persistent
-	private long m_createTime = 0;
+	private long m_createTime = (new Date()).getTime();
 	
 	@Persistent
 	private int m_serverPort = 0;
@@ -48,7 +48,7 @@ public final class yuchbber {
 	private boolean m_convertSimpleChar = false;
 	
 	@Persistent
-	private String m_signature = "";
+	private String m_signature = "--send from my yuchberry\nhttp://code.google.com/p/yuchberry";
 	
 	@Persistent(mappedBy = "m_yuchbber")
 	@javax.jdo.annotations.Element(dependent = "true")
@@ -89,16 +89,18 @@ public final class yuchbber {
 	public long GetCreateTime(){return m_createTime;}
 	public void SetCreateTime(long _time){m_createTime = _time;}
 	
+	public String GetSignature(){return m_signature;}
+	public void SetSignature(final String _signature){m_signature = _signature;}
+	
 	public Vector<yuchEmail> GetEmailList(){return m_emailList;}
 	
-public String OuputXMLData(){
-		
+	public String OuputXMLData(){
+				
 		String t_signature = m_signature.replaceAll("<","&lt;");
 		t_signature = t_signature.replaceAll(">","&gt;");
 		t_signature = t_signature.replaceAll("&","&amp;");
 		t_signature = t_signature.replaceAll("'","&apos;");
 		t_signature = t_signature.replaceAll("\"","&quot;");
-		t_signature = t_signature.replaceAll(" ","&nbsp;");
 		
 		StringBuffer t_output = new StringBuffer();
 		t_output.append("<yuchbber ").append("name=\"").append(m_signinName).
@@ -143,7 +145,6 @@ public String OuputXMLData(){
 		m_signature = m_signature.replaceAll("&amp;", "&");
 		m_signature = m_signature.replaceAll("&apos;", "'");
 		m_signature = m_signature.replaceAll("&quot;", "\"");
-		m_signature = m_signature.replaceAll("&nbsp;", " ");		
 		
 		m_emailList.removeAllElements();
 		

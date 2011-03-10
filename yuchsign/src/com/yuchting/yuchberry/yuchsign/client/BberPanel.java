@@ -5,17 +5,17 @@ import java.util.Vector;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.DecoratorPanel;
 import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -23,20 +23,21 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+
 class ContentTab extends TabPanel{
 	
 	final TextBox			m_account	= new TextBox();
-	final PasswordTextBox	m_password	= new  PasswordTextBox();
+	final PasswordTextBox	m_password	= new PasswordTextBox();
 	
 	final TextBox			m_host		= new TextBox();
 	final TextBox			m_port		= new TextBox();
+	
 	final RadioButton[]		m_protocal	= {
 											new RadioButton("protocal","imap"),
 											new RadioButton("protocal","imaps"),
@@ -110,23 +111,69 @@ class ContentTab extends TabPanel{
 	
 	public ContentTab(){
 		setAnimationEnabled(true);
-		setPixelSize(200, 300);
+		setPixelSize(250, 200);
+		
+		m_account.addKeyUpHandler(new KeyUpHandler() {
+			@Override
+			public void onKeyUp(KeyUpEvent event) {
+				AutoSelHost();				
+			}
+		});
+		
+		KeyPressHandler t_socketPortHandler = new KeyPressHandler() {
+			
+			@Override
+			public void onKeyPress(KeyPressEvent event){
+				TextBox t_box = (TextBox) event.getSource();
+				if(!Character.isDigit(event.getCharCode())) {
+					t_box.cancelKey();
+			    }
+				
+				final int t_maxPort = 65535;
+				if(Integer.valueOf(t_box.getText() + event.getCharCode()).intValue() > t_maxPort){
+					t_box.cancelKey();
+					t_box.setText(Integer.toString(t_maxPort));
+				}
+			}
+		};
+		
+		
+		m_port.addKeyPressHandler(t_socketPortHandler);
+		m_port_send.addKeyPressHandler(t_socketPortHandler);
+		
+		// the IE and firefox is Compatible but Chrome
+		m_port.setStyleName("gwt-TextBox-SocketPort");
+		m_port_send.setStyleName("gwt-TextBox-SocketPort");
+		
 		
 		final FlowPanel t_subPane =new FlowPanel();
 		
 		BberPanel.AddLabelWidget(t_subPane, "邮件地址:", m_account);
 		BberPanel.AddLabelWidget(t_subPane, "邮件密码:", m_password);
 
-		final FlowPanel t_subPane1 =new FlowPanel();
-		BberPanel.AddLabelWidget(t_subPane1, "主机地址:", m_host);
-		BberPanel.AddLabelWidget(t_subPane1, "端口:", m_port);
+		final FlowPanel t_subPane1 = new FlowPanel();
+		
 		for(RadioButton but : m_protocal){
 			t_subPane1.add(but);
 		}
-		BberPanel.AddLabelWidget(t_subPane1, "发送主机:", m_host_send);
-		BberPanel.AddLabelWidget(t_subPane1, "发送端口:", m_port_send);
 		
+		final FlexTable t_hostPane = new FlexTable();
+		m_host.setWidth("10em");
+		m_port.setWidth("10em");
+		BberPanel.AddLabelWidget(t_hostPane, "主机地址:", m_host,0);
+		BberPanel.AddLabelWidget(t_hostPane, "端口:", m_port,1);
+		t_subPane1.add(t_hostPane);
+		
+		final FlexTable t_hostPane_send = new FlexTable();
+		m_host_send.setWidth("10em");
+		m_port_send.setWidth("10em");
+		BberPanel.AddLabelWidget(t_hostPane_send, "发送主机:", m_host_send,0);
+		BberPanel.AddLabelWidget(t_hostPane_send, "发送端口:", m_port_send,1);
+		t_subPane1.add(t_hostPane_send);
+		
+		t_subPane1.add(new HTML("<br />"));
 		t_subPane1.add(m_usingFullname);
+		t_subPane1.add(new HTML("<br />"));
 		t_subPane1.add(m_appendHTML);
 		
 		m_advancedDisclosure.add(t_subPane1);
@@ -134,15 +181,7 @@ class ContentTab extends TabPanel{
 		t_subPane.add(m_advancedDisclosure);
 		
 		add(t_subPane,"邮件");
-		selectTab(0);
-		
-		m_account.addKeyUpHandler(new KeyUpHandler() {
-			
-			@Override
-			public void onKeyUp(KeyUpEvent event) {
-				AutoSelHost();				
-			}
-		});
+		selectTab(0);		
 	}
 	
 	public void AutoSelHost(){
@@ -167,7 +206,7 @@ class ContentTab extends TabPanel{
 	
 	public yuchEmail AddAccount(){
 		
-		if(LogonDialog.IsValidEmail(m_account.getText())){
+		if(!LogonDialog.IsValidEmail(m_account.getText())){
 			Yuchsign.PopupPrompt("不是合法的邮件地址", m_account);
 			return null;
 		}
@@ -183,9 +222,10 @@ class ContentTab extends TabPanel{
 			return null;
 		}
 		
-		if(m_port.getText().length() == 0){
+		final int t_port = Integer.valueOf(m_port.getText()).intValue(); 
+		if(t_port <= 0 || t_port >= 65535){
 			m_advancedDisclosure.setOpen(true);
-			Yuchsign.PopupPrompt("邮件接受服务器端口不能为空", m_port);
+			Yuchsign.PopupPrompt("邮件接受服务器端口非法", m_port);
 			return null;
 		}
 		
@@ -195,13 +235,13 @@ class ContentTab extends TabPanel{
 			return null;
 		}
 		
-		if(Integer.valueOf(m_port_send.getText()).intValue() <= 0){
+		final int t_port_send = Integer.valueOf(m_port_send.getText()).intValue(); 
+		if(t_port_send <= 0 || t_port_send >= 65535){
 			m_advancedDisclosure.setOpen(true);
 			Yuchsign.PopupPrompt("邮件发送服务器端口非法", m_port_send);
 			return null;
 		}
 		
-		// TODO Auto-generated method stub
 		yuchEmail t_email = new yuchEmail();
 		t_email.m_appendHTML 		= m_appendHTML.getValue();
 		t_email.m_fullnameSignIn	= m_usingFullname.getValue();
@@ -215,12 +255,56 @@ class ContentTab extends TabPanel{
 		t_email.m_host_send			= m_host_send.getText();
 		t_email.m_port_send			= Integer.valueOf(m_port_send.getText()).intValue();
 		
+		for(RadioButton but : m_protocal){
+			if(but.getValue()){
+				t_email.m_protocol = but.getText();
+				break;
+			}
+		}		
 		
 		return t_email;
 	}
+	
+	public void RefreshEmail(final yuchEmail _email){
+		if(_email != null){
+			m_appendHTML.setValue(_email.m_appendHTML);
+			m_usingFullname.setValue(_email.m_fullnameSignIn);
+			
+			m_account.setText(_email.m_emailAddr);
+			m_password.setText(_email.m_password);
+			
+			m_host.setText(_email.m_host);
+			m_port.setText(Integer.toString(_email.m_port));
+			
+			m_host_send.setText(_email.m_host_send);
+			m_port_send.setText(Integer.toString(_email.m_port_send));
+			
+			for(RadioButton but : m_protocal){
+				if(but.getText().equals(_email.m_protocol)){
+					but.setValue(true);
+					break;
+				}
+			}
+			
+		}else{
+			m_appendHTML.setValue(false);
+			m_usingFullname.setValue(false);
+			
+			m_account.setText("");
+			m_password.setText("");
+			
+			m_host.setText("");
+			m_port.setText("");
+			
+			m_host_send.setText("");
+			m_port_send.setText("");
+			
+			m_protocal[0].setValue(true);
+		}
+	}
 }
 
-public class BberPanel extends SimplePanel{
+public class BberPanel extends TabPanel{
 
 	final Label m_signinName 		= new Label();
 	final Label m_connectHost		= new Label();
@@ -240,42 +324,48 @@ public class BberPanel extends SimplePanel{
 	final Button	m_delPushAccountBut = new Button("删除");
 	
 	final ContentTab m_pushContent	= new ContentTab();
-	final Button	m_startSync = new Button("开始同步");
 			
 	yuchbber m_currentBber = null;
 	
 	public BberPanel(){
-		setStyleName("BberPanel");
 		
-		m_pushList.setPixelSize(200, 200);
-		m_signature.setPixelSize(410,100);
-				
+		AddAccountAttr();
+		AddPushAttr();
+		selectTab(0);
 		
-		final VerticalPanel	 t_mainPane = new VerticalPanel();
-		t_mainPane.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		RootPanel.get("mainTab").add(this);
 		
+	}
+	
+	private void AddAccountAttr(){
+		
+		m_signature.setPixelSize(420,100);
+		
+		final VerticalPanel t_attrPane = new VerticalPanel();
 		final FlexTable  t_layout = new FlexTable();
-		t_layout.setCellSpacing(3);
 		
 		int t_line = 0;
-		
-		AddLabelWidget(t_layout,"用户名:",m_signature,t_line++);
-		AddLabelWidget(t_layout,"主机地址:",m_connectHost,t_line++);
+		AddLabelWidget(t_layout,"用户名:",m_signinName,t_line++);
 		AddLabelWidget(t_layout,"充值时间:",m_createTime,t_line++);
 		AddLabelWidget(t_layout,"到期时间:",m_endTime,t_line++);
+		AddLabelWidget(t_layout,"主机地址:",m_connectHost,t_line++);
 		AddLabelWidget(t_layout,"端口:",m_serverPort,t_line++);
 		AddLabelWidget(t_layout,"推送间隔:",m_pushInterval,t_line++);
-				
-		t_layout.setWidget(t_line++, 0, m_usingSSL);
-		t_layout.setWidget(t_line++, 0, m_convertToSimple);
-		t_layout.setHTML(t_line++, 0, "签名:");
-		t_layout.setWidget(t_line++, 0, m_signature);		
 		
-		final DecoratorPanel decPanel = new DecoratorPanel();
-	    decPanel.setWidget(t_layout);
-	    
-	    t_mainPane.add(decPanel);
+		t_attrPane.add(t_layout);
+		t_attrPane.add( m_usingSSL);
+		t_attrPane.add(m_convertToSimple);
+		t_attrPane.add(new HTML( "签名:<br />"));
+		t_attrPane.add(m_signature);
 		
+		add(t_attrPane,"账户属性");
+		
+	}
+	
+	private void AddPushAttr(){
+		
+		m_pushList.setPixelSize(200, 200);
+							
 		final HorizontalPanel t_horzPane = new HorizontalPanel(); 
 		t_horzPane.add(m_pushList);
 		
@@ -287,13 +377,9 @@ public class BberPanel extends SimplePanel{
 		t_horzPane.add(t_vertPane);
 		t_horzPane.add(m_pushContent);
 		
-		t_mainPane.add(t_horzPane);	
-		t_mainPane.add(m_startSync);		
-		
-		setWidget(t_mainPane);
-		
-		RootPanel.get("mainTab").add(this);
-		
+
+		add(t_horzPane,"推送列表");		
+			
 		m_addPushAccountBut.addClickHandler(new ClickHandler() {
 			
 			@Override
@@ -301,8 +387,8 @@ public class BberPanel extends SimplePanel{
 				yuchEmail t_email = m_pushContent.AddAccount();
 				if(t_email != null){
 					m_currentBber.GetEmailList().add(t_email);
-					
-					retur
+					RefreshPushList(m_currentBber);
+					m_pushContent.RefreshEmail(null);
 				}
 			}
 		});
@@ -310,9 +396,18 @@ public class BberPanel extends SimplePanel{
 		m_delPushAccountBut.addClickHandler(new ClickHandler() {
 			
 			@Override
-			public void onClick(ClickEvent event) {
-				// TODO Auto-generated method stub
-				
+			public void onClick(ClickEvent event){
+
+				final int t_index = m_pushList.getSelectedIndex();
+				if(t_index != -1 && t_index < m_currentBber.GetEmailList().size()){
+					
+					Yuchsign.PopupYesNoDlg("你确定要删除这个 "+ m_currentBber.GetEmailList().elementAt(t_index).toString() +" 账户么?",new YesNoHandler(){
+						public void Process(){
+							m_currentBber.GetEmailList().remove(t_index);
+							RefreshPushList(m_currentBber);
+						}
+					},null);
+				}
 			}
 		});
 	}
@@ -324,10 +419,10 @@ public class BberPanel extends SimplePanel{
 		m_connectHost.setText(_bber.GetConnectHost());
 		
 		Date date = new Date(_bber.GetCreateTime());
-	    m_createTime.setText(DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_FULL).format(date));
+	    m_createTime.setText(DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(date));
 	    
-	    date.setTime(_bber.GetCreateTime() + _bber.GetUsingHours());
-	    m_endTime.setText(DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_FULL).format(date));	    
+	    date.setTime(_bber.GetCreateTime() + _bber.GetUsingHours() * 3600000);
+	    m_endTime.setText(DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(date));	    
 	        
 		m_serverPort.setText("" + _bber.GetServerPort());
 		
@@ -338,6 +433,10 @@ public class BberPanel extends SimplePanel{
 		
 		m_signature.setText(_bber.GetSignature());
 		
+		RefreshPushList(_bber);
+	}
+	
+	public void RefreshPushList(yuchbber _bber){
 		while(m_pushList.getItemCount() != 0){
 			m_pushList.removeItem(0);
 		}

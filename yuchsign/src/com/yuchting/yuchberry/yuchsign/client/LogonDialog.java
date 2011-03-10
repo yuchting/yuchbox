@@ -2,6 +2,9 @@ package com.yuchting.yuchberry.yuchsign.client;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -12,6 +15,7 @@ import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.XMLParser;
@@ -49,16 +53,22 @@ public final class LogonDialog extends DialogBox{
 			  
 			// waiting label
 			setStyleName("waitingLabel");
-			  
-			// popup position
-			setPopupPosition(100, 60);
-	      
+			    
 	    }
 	    
-	    public void ShowText(String _text){
+	    public void ShowText(String _text,Widget _attach){
 	    	setModal(true);
-	    	show();	    	
-	    	m_label.setText(_text);
+	    	show();
+	    	
+	    	if(_attach != null){
+	    		final int t_left 	= _attach.getAbsoluteLeft() + (_attach.getOffsetWidth() - getOffsetWidth()) / 2;
+	    		final int t_top	= _attach.getAbsoluteTop() + (_attach.getOffsetHeight() - getOffsetHeight()) / 2;
+	    		
+	    		// popup position
+				setPopupPosition(100, 60);	  
+	    	}
+	    	
+	    	m_label.setText(_text);	    	
 	    }
 	    
 	    public void Hide(){
@@ -68,7 +78,18 @@ public final class LogonDialog extends DialogBox{
 	}
 	  
 	// waiting label
-	final waitingLabel			m_waitingLable		= new waitingLabel();	
+	final waitingLabel			m_waitingLable		= new waitingLabel();
+	
+	final AsyncCallback<String>	m_callback			= new AsyncCallback<String>(){
+		public void onFailure(Throwable caught) {
+			m_errorLabel.setText(caught.getMessage());
+			m_waitingLable.Hide();
+		}
+
+		public void onSuccess(String result) {
+			CallOnSuccess(result);
+		}
+	};
 
 	public LogonDialog(Yuchsign _clientSign){
 		m_clientSign = _clientSign;
@@ -86,45 +107,36 @@ public final class LogonDialog extends DialogBox{
 		t_logonPane.add(m_logonBut);
 		t_logonPane.add(new HTML("<br />"));
 		t_logonPane.add(m_errorLabel);
-		
-		final AsyncCallback<String> t_callback = new AsyncCallback<String>(){
-			public void onFailure(Throwable caught) {
-				m_errorLabel.setText(caught.getMessage());
-				m_waitingLable.Hide();
-			}
-
-			public void onSuccess(String result) {
-				CallOnSuccess(result);
+			
+		final KeyUpHandler t_logonKeyup = new KeyUpHandler() {
+			
+			@Override
+			public void onKeyUp(KeyUpEvent event) {
+				if(event.getNativeKeyCode() ==  KeyCodes.KEY_ENTER){
+					m_logonBut.click();
+				}				
 			}
 		};
 		
+		m_logonName.addKeyUpHandler(t_logonKeyup);
+		m_logonPassword.addKeyUpHandler(t_logonKeyup);
+		
 		m_logonBut.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				final String t_name = m_logonName.getText();
-				final String t_pass = m_logonPassword.getText();
-				
-				if(!IsValidEmail(t_name)){
-					m_errorLabel.setText("用户名不是合法的Email地址！");
-					return;
-				}
-				
-				if(!IsValidPassword(t_pass)){
-					m_errorLabel.setText("密码非法！");
-					return;
-				}
-				
-				try{
-					
-					m_waitingLable.ShowText("正在登录...");				
-					m_clientSign.greetingService.logonServer(t_name,t_pass,t_callback);
-	
-				}catch(Exception e){
-					m_errorLabel.setText(e.getMessage());
-					m_waitingLable.Hide();
-				}
+				LogonEvent();
 			}
 		});
-				
+		
+		final KeyUpHandler t_signinKeyup = new KeyUpHandler() {
+			
+			@Override
+			public void onKeyUp(KeyUpEvent event) {
+				if(event.getNativeKeyCode() ==  KeyCodes.KEY_ENTER){
+					m_signinBut.click();
+				}
+			}
+		};
+		
 		final VerticalPanel t_signinPane = new VerticalPanel();
 		t_signinPane.setStyleName("signinVPanel");
 		t_signinPane.add(new HTML("用户名(邮箱地址):"));
@@ -135,37 +147,15 @@ public final class LogonDialog extends DialogBox{
 		t_signinPane.add(m_signinPass1);
 		t_signinPane.add(m_signinBut);
 		
+		m_signinName.addKeyUpHandler(t_signinKeyup);
+		m_signinPass.addKeyUpHandler(t_signinKeyup);
+		m_signinPass1.addKeyUpHandler(t_signinKeyup);
+		
 		m_signinBut.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				final String t_name = m_signinName.getText();
-				final String t_pass = m_signinPass.getText();
-				final String t_pass1 = m_signinPass1.getText();
-				
-				if(!IsValidEmail(t_name)){
-					m_errorLabel.setText("用户名不是合法的Email地址！");
-					return;
-				}
-				
-				if(!t_pass.equals(t_pass1)){
-					m_errorLabel.setText("两次密码不一样！");
-					return;
-				}
-				
-				if(!IsValidPassword(t_pass)){
-					m_errorLabel.setText("密码非法！");
-					return;
-				}						
-				
-				try{					
-					m_waitingLable.ShowText("正在提交注册...");
-					m_clientSign.greetingService.signinAccount(t_name,t_pass,t_callback);
-	
-				}catch(Exception e){
-					m_errorLabel.setText(e.getMessage());
-					m_waitingLable.Hide();
-				}
+				SigninEvent();
 			}
-		});
+		});		
 		
 		// add the two panel to the dialog
 		//
@@ -183,7 +173,6 @@ public final class LogonDialog extends DialogBox{
 	
 	private void CallOnSuccess(String _result){
 		
-		
 		try{
 			Document t_doc = XMLParser.parse(_result);
 			Element t_elem = t_doc.getDocumentElement();
@@ -200,6 +189,61 @@ public final class LogonDialog extends DialogBox{
 		}
 		
 		m_waitingLable.Hide();
+	}
+	
+	private void LogonEvent(){
+		final String t_name = m_logonName.getText();
+		final String t_pass = m_logonPassword.getText();
+		
+		if(!IsValidEmail(t_name)){
+			m_errorLabel.setText("用户名不是合法的Email地址！");
+			return;
+		}
+		
+		if(!IsValidPassword(t_pass)){
+			m_errorLabel.setText("密码非法！");
+			return;
+		}
+		
+		try{
+			
+			m_waitingLable.ShowText("正在登录...",this);				
+			m_clientSign.greetingService.logonServer(t_name,t_pass,m_callback);
+
+		}catch(Exception e){
+			m_errorLabel.setText(e.getMessage());
+			m_waitingLable.Hide();
+		}
+	}
+	
+	private void SigninEvent(){
+		final String t_name = m_signinName.getText();
+		final String t_pass = m_signinPass.getText();
+		final String t_pass1 = m_signinPass1.getText();
+		
+		if(!IsValidEmail(t_name)){
+			m_errorLabel.setText("用户名不是合法的Email地址！");
+			return;
+		}
+		
+		if(!t_pass.equals(t_pass1)){
+			m_errorLabel.setText("两次密码不一样！");
+			return;
+		}
+		
+		if(!IsValidPassword(t_pass)){
+			m_errorLabel.setText("密码非法！");
+			return;
+		}						
+		
+		try{					
+			m_waitingLable.ShowText("正在提交注册...",this);
+			m_clientSign.greetingService.signinAccount(t_name,t_pass,m_callback);
+
+		}catch(Exception e){
+			m_errorLabel.setText(e.getMessage());
+			m_waitingLable.Hide();
+		}
 	}
 	
 	public native static boolean IsValidEmail(String name)/*-{
