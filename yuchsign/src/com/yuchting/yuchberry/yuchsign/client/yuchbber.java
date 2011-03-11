@@ -124,7 +124,7 @@ public final class yuchbber {
 		m_signature = m_signature.replaceAll("&amp;", "&");
 		m_signature = m_signature.replaceAll("&apos;", "'");
 		m_signature = m_signature.replaceAll("&quot;", "\"");
-		m_signature = m_signature.replaceAll("&nbsp;", " ");		
+		m_signature = m_signature.replaceAll("&nbsp;", " ");
 		
 		m_emailList.removeAllElements();
 		

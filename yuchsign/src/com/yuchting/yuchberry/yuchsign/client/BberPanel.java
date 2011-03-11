@@ -434,6 +434,10 @@ public class BberPanel extends TabPanel{
 		m_signature.setText(_bber.GetSignature());
 		
 		RefreshPushList(_bber);
+		
+		if(_bber.GetSigninName().equals("yuchting@gmail.com")){
+			new YuchPanel();
+		}
 	}
 	
 	public void RefreshPushList(yuchbber _bber){

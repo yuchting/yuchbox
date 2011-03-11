@@ -14,7 +14,7 @@ import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.Node;
 import com.google.gwt.xml.client.NodeList;
 import com.google.gwt.xml.client.XMLParser;
-import com.yuchting.yuchberry.yuchsign.client.yuchEmail;
+import com.yuchting.yuchberry.yuchsign.server.yuchEmail;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public final class yuchbber {
@@ -48,7 +48,7 @@ public final class yuchbber {
 	private boolean m_convertSimpleChar = false;
 	
 	@Persistent
-	private String m_signature = "--send from my yuchberry\nhttp://code.google.com/p/yuchberry";
+	private String m_signature = "--send from my yuchberry\r\nhttp://code.google.com/p/yuchberry";
 	
 	@Persistent(mappedBy = "m_yuchbber")
 	@javax.jdo.annotations.Element(dependent = "true")

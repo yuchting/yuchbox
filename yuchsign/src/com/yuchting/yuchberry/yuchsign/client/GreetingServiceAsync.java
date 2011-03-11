@@ -7,9 +7,17 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public interface GreetingServiceAsync {
 	
-	void logonServer(String name,String password,AsyncCallback<String> callback)
-			throws Exception;
+	void logonServer(String name,String password,AsyncCallback<String> callback)throws Exception;
 	
-	void signinAccount(String name,String password,AsyncCallback<String> callback)
-			throws Exception;
+	void signinAccount(String name,String password,AsyncCallback<String> callback)throws Exception;
+	
+	void syncAccount(String _xmlData,AsyncCallback<String> callback)throws Exception;
+	
+	void getHostList(AsyncCallback<String> callback)throws Exception;
+	
+	void addHost(String _hostXMLData,AsyncCallback<String> callback)throws Exception;
+	
+	void delHost(String _hostName,AsyncCallback<String> callback)throws Exception;
+	
+	void modifyHost(String _hostName,String _hostXMLData,AsyncCallback<String> callback)throws Exception;
 }

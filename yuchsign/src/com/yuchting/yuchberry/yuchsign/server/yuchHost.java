@@ -1,0 +1,45 @@
+package com.yuchting.yuchberry.yuchsign.server;
+
+import javax.jdo.annotations.IdGeneratorStrategy;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+
+import com.google.gwt.xml.client.Document;
+import com.google.gwt.xml.client.Element;
+import com.google.gwt.xml.client.XMLParser;
+import com.yuchting.yuchberry.yuchsign.client.yuchbber;
+
+@PersistenceCapable(identityType = IdentityType.APPLICATION)
+public class yuchHost {
+
+	@PrimaryKey
+	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+	public String m_hostName = "";
+	
+	@Persistent
+	public int m_httpPort = 4929;
+	
+	@Persistent
+	public String m_httpPassword = "";
+	
+	@Persistent
+	public String m_recommendHost = "";
+	
+	public void OutputXMLData(StringBuffer _buffer){
+		_buffer.append("<Host ").append("name=\"").append(m_hostName)
+								.append("\" port=\"").append(Integer.toString(m_httpPort))
+								.append("\" pass=\"").append(m_httpPassword)
+								.append("\" recom=\"").append(m_recommendHost)
+				.append("\" />");
+	}
+	
+	public void InputXMLData(final Element _elem)throws Exception{
+		
+		m_hostName		= yuchbber.ReadStringAttr(_elem,"name");
+		m_httpPort		= yuchbber.ReadIntegerAttr(_elem,"port");
+		m_httpPassword	= yuchbber.ReadStringAttr(_elem,"pass");
+		m_recommendHost	= yuchbber.ReadStringAttr(_elem,"recom");
+	}
+}

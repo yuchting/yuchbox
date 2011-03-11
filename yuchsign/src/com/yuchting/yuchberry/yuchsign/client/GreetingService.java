@@ -12,4 +12,16 @@ public interface GreetingService extends RemoteService {
 	String logonServer(String name,String password) throws Exception;
 	
 	String signinAccount(String name,String password)throws Exception;
+	
+	String syncAccount(String _xmlData)throws Exception;
+	
+	String getHostList()throws Exception;
+	
+	String addHost(String _hostXMLData)throws Exception;
+	
+	String delHost(String _hostName)throws Exception;
+	
+	String modifyHost(String _hostName,String _hostXMLData)throws Exception;
+	
+	
 }

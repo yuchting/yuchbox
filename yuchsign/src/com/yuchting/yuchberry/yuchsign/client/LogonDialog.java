@@ -192,7 +192,7 @@ public final class LogonDialog extends DialogBox{
 	}
 	
 	private void LogonEvent(){
-		final String t_name = m_logonName.getText();
+		final String t_name = m_logonName.getText().toLowerCase();
 		final String t_pass = m_logonPassword.getText();
 		
 		if(!IsValidEmail(t_name)){
@@ -217,7 +217,7 @@ public final class LogonDialog extends DialogBox{
 	}
 	
 	private void SigninEvent(){
-		final String t_name = m_signinName.getText();
+		final String t_name = m_signinName.getText().toLowerCase();
 		final String t_pass = m_signinPass.getText();
 		final String t_pass1 = m_signinPass1.getText();
 		
