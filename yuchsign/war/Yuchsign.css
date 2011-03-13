@@ -31,6 +31,7 @@ h1 {
 
 .gwt-TextBox-SocketPort{
 	ime-mode:disabled;
+	height:20;
 }
 
 .waitingLabel{
@@ -53,10 +54,6 @@ h1 {
 
 .dialogHPanel {
   margin: 5px;
-}
-
-.serverResponseLabelError {
-  color: red;
 }
 
 /** Set ids using widget.getElement().setId("idOfElement") */

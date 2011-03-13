@@ -1,5 +1,6 @@
 package com.yuchting.yuchberry.yuchsign.server;
 
+import java.io.StringReader;
 import java.util.Date;
 import java.util.Vector;
 
@@ -8,13 +9,14 @@ import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
-import com.google.gwt.xml.client.Document;
-import com.google.gwt.xml.client.Element;
-import com.google.gwt.xml.client.Node;
-import com.google.gwt.xml.client.NodeList;
-import com.google.gwt.xml.client.XMLParser;
-import com.yuchting.yuchberry.yuchsign.server.yuchEmail;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public final class yuchbber {
@@ -48,7 +50,7 @@ public final class yuchbber {
 	private boolean m_convertSimpleChar = false;
 	
 	@Persistent
-	private String m_signature = "--send from my yuchberry\r\nhttp://code.google.com/p/yuchberry";
+	private String m_signature = "--send from my yuchberry\nhttp://code.google.com/p/yuchberry";
 	
 	@Persistent(mappedBy = "m_yuchbber")
 	@javax.jdo.annotations.Element(dependent = "true")
@@ -101,6 +103,7 @@ public final class yuchbber {
 		t_signature = t_signature.replaceAll("&","&amp;");
 		t_signature = t_signature.replaceAll("'","&apos;");
 		t_signature = t_signature.replaceAll("\"","&quot;");
+		t_signature = t_signature.replaceAll("\n","#r");
 		
 		StringBuffer t_output = new StringBuffer();
 		t_output.append("<yuchbber ").append("name=\"").append(m_signinName).
@@ -125,8 +128,12 @@ public final class yuchbber {
 	}
 	
 	public void InputXMLData(final String _data)throws Exception{
-		Document t_doc = XMLParser.parse(_data);
-		com.google.gwt.xml.client.Element t_elem = t_doc.getDocumentElement();
+
+		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance(); 
+		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder(); 
+		Document t_doc = docBuilder.parse(new InputSource(new StringReader(_data))); 
+
+		Element t_elem = t_doc.getDocumentElement();
 		
 		m_signinName	= ReadStringAttr(t_elem,"name");
 		m_connectHost	= ReadStringAttr(t_elem,"connect");		
@@ -145,6 +152,7 @@ public final class yuchbber {
 		m_signature = m_signature.replaceAll("&amp;", "&");
 		m_signature = m_signature.replaceAll("&apos;", "'");
 		m_signature = m_signature.replaceAll("&quot;", "\"");
+		m_signature = m_signature.replaceAll("#r", "\n");
 		
 		m_emailList.removeAllElements();
 		
@@ -164,9 +172,9 @@ public final class yuchbber {
 					m_emailList.add(t_email);
 				}
 			}
-		}		
+		}
 	}
-	
+			
 	/**
 	 * read String attribute from xml
 	 */

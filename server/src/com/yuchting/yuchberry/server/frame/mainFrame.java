@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
+import java.net.URLDecoder;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Vector;
@@ -38,7 +39,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
+import com.yuchting.yuchberry.server.Logger;
 import com.yuchting.yuchberry.server.fakeMDSSvr;
+import com.yuchting.yuchberry.server.fetchEmail;
 import com.yuchting.yuchberry.server.fetchMgr;
 
 class checkStateThread extends Thread{
@@ -662,11 +665,19 @@ public class mainFrame extends JFrame implements ActionListener{
 		}catch(Exception e){}		
 	}
 	
+	private static final String	fsm_yuchsign_tmpDir = "tmpCreate_yuchsign/";
 	private void LoadYuchsign(){
+		
 		try{
 			BufferedReader in = new BufferedReader(
 									new InputStreamReader(
 										new FileInputStream("yuchsign"),"UTF-8"));
+			
+			File t_file = new File(fsm_yuchsign_tmpDir);
+			if(!t_file.exists()){
+				t_file.mkdir();
+			}
+			
 			try{
 				final String t_pass = in.readLine();
 				final String t_port = in.readLine();
@@ -692,8 +703,100 @@ public class mainFrame extends JFrame implements ActionListener{
 		}
 	}
 	
-	private String ProcessHTTPD(String method, Properties header, Properties parms){
-		return "";
+	private synchronized String ProcessHTTPD(String method, Properties header, Properties parms){
+		String t_string = parms.getProperty("bber");
+		if( t_string == null){
+			return "<Error>没有bber参数的URL</Error>";
+		}
+		
+		try{
+			
+			t_string = URLDecoder.decode(t_string, "UTF-8");
+			
+			yuchbber t_bber = new yuchbber();
+			t_bber.InputXMLData(URLDecoder.decode(t_string,"UTF-8"));
+						
+			FileOutputStream t_config_file = new FileOutputStream(fsm_yuchsign_tmpDir + fetchMgr.fsm_configFilename);
+			try{
+				StringBuffer t_configBuffer = new StringBuffer();
+				t_configBuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+				
+				t_configBuffer.append("<Yuchberry userPassword=\"").append(t_bber.GetPassword())
+										.append("\" serverPort=\"").append(m_formerServer_port)
+										.append("\" pushInterval=\"").append(t_bber.GetPushInterval())
+										.append("\" userSSL=\"").append(t_bber.IsUsingSSL()?1:0)
+										.append("\" convertoSimpleChar=\"").append(t_bber.IsConvertSimpleChar()?1:0)
+							.append("\" >");
+				
+				
+				if(t_bber.GetEmailList().isEmpty()){
+					return "<Error>没有账户信息</Error>";
+				}
+				
+				
+				for(yuchEmail email:t_bber.GetEmailList()){
+					t_configBuffer.append("<EmailAccount account=\"").append(email.m_emailAddr)
+													.append("\" password=\"").append(email.m_password)
+													.append("\" useFullNameSignIn=\"").append(email.m_fullnameSignIn?1:0)
+													.append("\" protocol=\"").append(email.m_protocol)
+													.append("\" host=\"").append(email.m_host)
+													.append("\" port=\"").append(email.m_port)
+													.append("\" protocol_send=\"").append("smtp")
+													.append("\" host_send=\"").append(email.m_host_send)
+													.append("\" port_send=\"").append(email.m_port_send)
+													.append("\" appendHTML=\"").append(email.m_appendHTML?1:0)
+									.append("\" />");
+				}
+				
+				t_configBuffer.append("</Yuchberry>");
+				t_config_file.write(t_configBuffer.toString().getBytes("UTF-8"));
+				
+			}finally{
+				t_config_file.flush();
+				t_config_file.close();
+			}
+			
+			
+			fetchMgr t_manger = new fetchMgr();
+			Logger t_logger = new Logger(fsm_yuchsign_tmpDir);
+			t_manger.InitConnect(fsm_yuchsign_tmpDir,t_logger);
+			
+			t_manger.ResetAllAccountSession(true);	
+			
+			// copy the account information 
+			//
+			final String t_emailAddr = t_bber.GetEmailList().get(0).m_emailAddr + "/";
+			File t_accountFolder = new File(t_emailAddr);
+			if(!t_accountFolder.exists()){
+				t_accountFolder.mkdir();
+			}
+			
+			createDialog.CopyFile(fsm_yuchsign_tmpDir + fetchMgr.fsm_configFilename,
+					t_emailAddr  + fetchMgr.fsm_configFilename);
+			
+			// copy the account signature
+			//
+			FileOutputStream t_signature_file = new FileOutputStream(t_emailAddr + fetchEmail.fsm_signatureFilename);
+			try{
+				t_signature_file.write(t_bber.GetSignature().getBytes("UTF-8"));
+			}finally{
+				t_signature_file.flush();
+				t_signature_file.close();
+			}			
+			fetchThread t_newThread = new fetchThread(t_manger,t_emailAddr,
+												t_bber.GetUsingHours(),
+													t_bber.GetCreateTime(),false);
+			
+			AddAccountThread(t_newThread, true);
+			
+			t_bber.SetServerProt(m_formerServer_port);
+			m_formerServer_port++;
+						
+			return t_bber.OuputXMLData();
+			
+		}catch(Exception e){
+			return "<Error>" + e.getMessage() + "</Error>";
+		}
 	}
 	
 	static public String GetRandomPassword(){

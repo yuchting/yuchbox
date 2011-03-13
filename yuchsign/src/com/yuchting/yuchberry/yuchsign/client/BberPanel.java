@@ -3,6 +3,8 @@ package com.yuchting.yuchberry.yuchsign.client;
 import java.util.Date;
 import java.util.Vector;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyPressEvent;
@@ -10,6 +12,7 @@ import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DisclosurePanel;
@@ -28,6 +31,9 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.xml.client.Document;
+import com.google.gwt.xml.client.Element;
+import com.google.gwt.xml.client.XMLParser;
 
 
 class ContentTab extends TabPanel{
@@ -120,26 +126,8 @@ class ContentTab extends TabPanel{
 			}
 		});
 		
-		KeyPressHandler t_socketPortHandler = new KeyPressHandler() {
-			
-			@Override
-			public void onKeyPress(KeyPressEvent event){
-				TextBox t_box = (TextBox) event.getSource();
-				if(!Character.isDigit(event.getCharCode())) {
-					t_box.cancelKey();
-			    }
-				
-				final int t_maxPort = 65535;
-				if(Integer.valueOf(t_box.getText() + event.getCharCode()).intValue() > t_maxPort){
-					t_box.cancelKey();
-					t_box.setText(Integer.toString(t_maxPort));
-				}
-			}
-		};
-		
-		
-		m_port.addKeyPressHandler(t_socketPortHandler);
-		m_port_send.addKeyPressHandler(t_socketPortHandler);
+		m_port.addKeyPressHandler(BberPanel.fsm_socketPortHandler);
+		m_port_send.addKeyPressHandler(BberPanel.fsm_socketPortHandler);
 		
 		// the IE and firefox is Compatible but Chrome
 		m_port.setStyleName("gwt-TextBox-SocketPort");
@@ -324,10 +312,30 @@ public class BberPanel extends TabPanel{
 	final Button	m_delPushAccountBut = new Button("删除");
 	
 	final ContentTab m_pushContent	= new ContentTab();
+	
+	Yuchsign	m_mainServer	= null;
 			
 	yuchbber m_currentBber = null;
 	
-	public BberPanel(){
+	public static final KeyPressHandler 	fsm_socketPortHandler = new KeyPressHandler() {
+		
+		@Override
+		public void onKeyPress(KeyPressEvent event){
+			TextBox t_box = (TextBox) event.getSource();
+			if(!Character.isDigit(event.getCharCode())) {
+				t_box.cancelKey();
+		    }
+			
+			final int t_maxPort = 65535;
+			if(Integer.valueOf(t_box.getText() + event.getCharCode()).intValue() > t_maxPort){
+				t_box.cancelKey();
+				t_box.setText(Integer.toString(t_maxPort));
+			}
+		}
+	};
+	
+	public BberPanel(final Yuchsign _sign){
+		m_mainServer = _sign;
 		
 		AddAccountAttr();
 		AddPushAttr();
@@ -339,10 +347,19 @@ public class BberPanel extends TabPanel{
 	
 	private void AddAccountAttr(){
 		
+		Button t_syncBut = new Button("同步账户");
+		t_syncBut.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				StartSync();
+			}
+		});
+		
 		m_signature.setPixelSize(420,100);
 		
 		final VerticalPanel t_attrPane = new VerticalPanel();
-		final FlexTable  t_layout = new FlexTable();
+		final FlexTable  t_layout = new FlexTable();	
 		
 		int t_line = 0;
 		AddLabelWidget(t_layout,"用户名:",m_signinName,t_line++);
@@ -358,9 +375,13 @@ public class BberPanel extends TabPanel{
 		t_attrPane.add(new HTML( "签名:<br />"));
 		t_attrPane.add(m_signature);
 		
+		t_attrPane.add(t_syncBut);
+		
 		add(t_attrPane,"账户属性");
 		
 	}
+	
+	
 	
 	private void AddPushAttr(){
 		
@@ -378,7 +399,20 @@ public class BberPanel extends TabPanel{
 		t_horzPane.add(m_pushContent);
 		
 
-		add(t_horzPane,"推送列表");		
+		add(t_horzPane,"推送列表");
+		
+		m_pushList.addChangeHandler(new ChangeHandler() {
+			
+			@Override
+			public void onChange(ChangeEvent event) {
+				final int t_index = m_pushList.getSelectedIndex();
+				if(t_index != -1 && t_index < m_currentBber.GetEmailList().size()){
+					
+					m_pushContent.RefreshEmail(m_currentBber.GetEmailList().get(t_index));
+				}
+				
+			}
+		});
 			
 		m_addPushAccountBut.addClickHandler(new ClickHandler() {
 			
@@ -412,6 +446,52 @@ public class BberPanel extends TabPanel{
 		});
 	}
 	
+	private void StartSync(){
+		m_currentBber.SetSignature(m_signature.getText());
+		
+		if(m_currentBber.GetEmailList().isEmpty()){
+			Yuchsign.PopupPrompt("没有推送账户，无法同步", this);
+			return;
+		}
+		
+		Yuchsign.PopupWaiting("正在同步，可能需要3-5分钟，请耐心等待。", this);
+		
+		final Widget t_bberPanel = this;
+		try{
+			m_mainServer.greetingService.syncAccount(m_currentBber.OuputXMLData(), new AsyncCallback<String>() {
+				
+				@Override
+				public void onSuccess(String result) {
+					try{
+						Document t_doc = XMLParser.parse(result);
+						Element t_elem = t_doc.getDocumentElement();
+						
+						if(t_elem.getTagName().equals("Error")){
+							Yuchsign.PopupPrompt("同步错误:" + t_elem.getFirstChild().toString(),t_bberPanel);
+						}else{
+							m_currentBber.InputXMLData(result);
+							SetYuchbberData(m_currentBber);
+						}						
+						
+					}catch(Exception ex){
+						Yuchsign.PopupPrompt("数据错误:" + ex.getMessage(), t_bberPanel);
+					}			
+				}
+				
+				@Override
+				public void onFailure(Throwable caught) {
+					Yuchsign.PopupPrompt("同步错误:" + caught.getMessage(),t_bberPanel);
+				}
+			});
+			
+		}catch(Exception e){
+			Yuchsign.PopupPrompt("同步错误:" + e.getMessage(), this);
+		}finally{
+			Yuchsign.HideWaiting();
+		}
+		
+	}
+	
 	public void SetYuchbberData(final yuchbber _bber){
 		m_currentBber = _bber;
 		
@@ -435,9 +515,6 @@ public class BberPanel extends TabPanel{
 		
 		RefreshPushList(_bber);
 		
-		if(_bber.GetSigninName().equals("yuchting@gmail.com")){
-			new YuchPanel();
-		}
 	}
 	
 	public void RefreshPushList(yuchbber _bber){

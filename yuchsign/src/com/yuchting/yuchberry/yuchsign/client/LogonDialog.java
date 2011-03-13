@@ -1,5 +1,7 @@
 package com.yuchting.yuchberry.yuchsign.client;
 
+
+
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -10,6 +12,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -28,7 +31,6 @@ public final class LogonDialog extends DialogBox{
 	final TextBox m_logonName 				= new TextBox();
 	final PasswordTextBox m_logonPassword 	= new PasswordTextBox();
 	final Button m_logonBut					= new Button("登录");
-	final Label m_errorLabel 				= new Label();
 	
 	// signIn Vertical panel
 	//
@@ -37,53 +39,12 @@ public final class LogonDialog extends DialogBox{
 	final PasswordTextBox m_signinPass1 	= new PasswordTextBox();
 	final Button m_signinBut 				= new Button("注册");
 	
-	private static class waitingLabel extends PopupPanel{
-
-		final Label		m_label = new Label();
-		
-	    public waitingLabel() {
-			// PopupPanel's constructor takes 'auto-hide' as its boolean parameter.
-			// If this is set, the panel closes itself automatically when the user
-			// clicks outside of it.
-			super();
-			
-			// PopupPanel is a SimplePanel, so you have to set it's widget property to
-			// whatever you want its contents to be.
-			setWidget(m_label);
-			  
-			// waiting label
-			setStyleName("waitingLabel");
-			    
-	    }
-	    
-	    public void ShowText(String _text,Widget _attach){
-	    	setModal(true);
-	    	show();
-	    	
-	    	if(_attach != null){
-	    		final int t_left 	= _attach.getAbsoluteLeft() + (_attach.getOffsetWidth() - getOffsetWidth()) / 2;
-	    		final int t_top	= _attach.getAbsoluteTop() + (_attach.getOffsetHeight() - getOffsetHeight()) / 2;
-	    		
-	    		// popup position
-				setPopupPosition(100, 60);	  
-	    	}
-	    	
-	    	m_label.setText(_text);	    	
-	    }
-	    
-	    public void Hide(){
-	    	setModal(false);
-	    	hide();	    	
-	    }
-	}
-	  
-	// waiting label
-	final waitingLabel			m_waitingLable		= new waitingLabel();
+	
 	
 	final AsyncCallback<String>	m_callback			= new AsyncCallback<String>(){
 		public void onFailure(Throwable caught) {
-			m_errorLabel.setText(caught.getMessage());
-			m_waitingLable.Hide();
+			Yuchsign.PopupPrompt(caught.getMessage(),null);
+			Yuchsign.HideWaiting();
 		}
 
 		public void onSuccess(String result) {
@@ -94,19 +55,17 @@ public final class LogonDialog extends DialogBox{
 	public LogonDialog(Yuchsign _clientSign){
 		m_clientSign = _clientSign;
 		
-		m_errorLabel.setStyleName("serverResponseLabelError");
 		
 		final VerticalPanel t_logonPane = new VerticalPanel();
 		t_logonPane.setStyleName("logonVPanel");
 		
 		t_logonPane.add(new HTML("用户名(邮箱地址):"));
 		t_logonPane.add(m_logonName);
-		t_logonPane.add(new HTML("<br />密码(多于6位的字母或数字):"));
+		t_logonPane.add(new HTML("<br />密码(大于等于6位的字母或数字):"));
 		t_logonPane.add(m_logonPassword);
 		t_logonPane.add(new HTML("<br />"));
 		t_logonPane.add(m_logonBut);
 		t_logonPane.add(new HTML("<br />"));
-		t_logonPane.add(m_errorLabel);
 			
 		final KeyUpHandler t_logonKeyup = new KeyUpHandler() {
 			
@@ -168,7 +127,7 @@ public final class LogonDialog extends DialogBox{
 		setPopupPosition(0, 50);
 		setAnimationEnabled(true);
 		setWidget(t_horzPane);
-			
+					
 	}
 	
 	private void CallOnSuccess(String _result){
@@ -177,7 +136,7 @@ public final class LogonDialog extends DialogBox{
 			Document t_doc = XMLParser.parse(_result);
 			Element t_elem = t_doc.getDocumentElement();
 			if(t_elem.getTagName().equals("Error")){
-				m_errorLabel.setText(t_elem.getFirstChild().toString());
+				Yuchsign.PopupPrompt(t_elem.getFirstChild().toString(),this);
 			}else{
 				m_clientSign.ShowYuchbberPanel(_result);
 				
@@ -185,10 +144,10 @@ public final class LogonDialog extends DialogBox{
 			}			
 			
 		}catch(Exception e){
-			m_errorLabel.setText(e.getMessage());
+			Yuchsign.PopupPrompt(e.getMessage(),this);
 		}
 		
-		m_waitingLable.Hide();
+		Yuchsign.HideWaiting();
 	}
 	
 	private void LogonEvent(){
@@ -196,23 +155,23 @@ public final class LogonDialog extends DialogBox{
 		final String t_pass = m_logonPassword.getText();
 		
 		if(!IsValidEmail(t_name)){
-			m_errorLabel.setText("用户名不是合法的Email地址！");
+			Yuchsign.PopupPrompt("用户名不是合法的Email地址！",m_logonName);
 			return;
 		}
 		
 		if(!IsValidPassword(t_pass)){
-			m_errorLabel.setText("密码非法！");
+			Yuchsign.PopupPrompt("密码非法(大于等于6位的字母或数字)！",m_logonPassword);
 			return;
 		}
 		
 		try{
 			
-			m_waitingLable.ShowText("正在登录...",this);				
+			Yuchsign.PopupWaiting("正在登录...",this);				
 			m_clientSign.greetingService.logonServer(t_name,t_pass,m_callback);
 
 		}catch(Exception e){
-			m_errorLabel.setText(e.getMessage());
-			m_waitingLable.Hide();
+			Yuchsign.PopupPrompt(e.getMessage(),this);
+			Yuchsign.HideWaiting();
 		}
 	}
 	
@@ -222,27 +181,27 @@ public final class LogonDialog extends DialogBox{
 		final String t_pass1 = m_signinPass1.getText();
 		
 		if(!IsValidEmail(t_name)){
-			m_errorLabel.setText("用户名不是合法的Email地址！");
+			Yuchsign.PopupPrompt("用户名不是合法的Email地址！",m_signinName);
 			return;
 		}
 		
 		if(!t_pass.equals(t_pass1)){
-			m_errorLabel.setText("两次密码不一样！");
+			Yuchsign.PopupPrompt("两次密码不一样！",m_signinPass1);
 			return;
 		}
 		
 		if(!IsValidPassword(t_pass)){
-			m_errorLabel.setText("密码非法！");
+			Yuchsign.PopupPrompt("密码非法(大于等于6位的字母或数字)！",m_signinPass);
 			return;
 		}						
 		
 		try{					
-			m_waitingLable.ShowText("正在提交注册...",this);
+			Yuchsign.PopupWaiting("正在提交注册...",this);
 			m_clientSign.greetingService.signinAccount(t_name,t_pass,m_callback);
 
 		}catch(Exception e){
-			m_errorLabel.setText(e.getMessage());
-			m_waitingLable.Hide();
+			Yuchsign.PopupPrompt(e.getMessage(),this);
+			Yuchsign.HideWaiting();
 		}
 	}
 	

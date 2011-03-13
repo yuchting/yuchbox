@@ -1,13 +1,15 @@
-package com.yuchting.yuchberry.yuchsign.client;
+package com.yuchting.yuchberry.server.frame;
 
+import java.io.StringReader;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Vector;
 
-import com.google.gwt.xml.client.Document;
-import com.google.gwt.xml.client.Element;
-import com.google.gwt.xml.client.Node;
-import com.google.gwt.xml.client.NodeList;
-import com.google.gwt.xml.client.XMLParser;
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
+import org.xml.sax.InputSource;
+
 
 
 public final class yuchbber {
@@ -104,8 +106,11 @@ public final class yuchbber {
 	}
 	
 	public void InputXMLData(final String _data)throws Exception{
-		Document t_doc = XMLParser.parse(_data);
-		com.google.gwt.xml.client.Element t_elem = t_doc.getDocumentElement();
+		SAXReader t_xmlReader = new SAXReader();
+		Document t_doc = t_xmlReader.read(new InputSource(
+											new StringReader(_data))); 
+		
+		Element t_elem = t_doc.getRootElement();
 		
 		m_signinName	= ReadStringAttr(t_elem,"name");
 		m_connectHost	= ReadStringAttr(t_elem,"connect");		
@@ -128,30 +133,22 @@ public final class yuchbber {
 		
 		m_emailList.removeAllElements();
 		
-		NodeList t_nodeElem = t_elem.getChildNodes();
-		
-		for(int i = 0;i < t_nodeElem.getLength();i++){
-			Node t_node = t_nodeElem.item(i);
+		for( Iterator i = t_elem.elementIterator("email"); i.hasNext();){
+            Element element = (Element) i.next();
+            yuchEmail t_email = new yuchEmail();
 			
-			if(t_node instanceof Element){
-
-				Element t_element = (Element)t_node;
-				if(t_element.getTagName().equals("email")){
-					yuchEmail t_email = new yuchEmail();
-					
-					t_email.InputXMLData(t_element);
-					
-					m_emailList.add(t_email);
-				}
-			}
-		}		
+			t_email.InputXMLData(element);
+			
+			m_emailList.add(t_email);
+        }
+			
 	}
 		
 	/**
 	 * read String attribute from xml
 	 */
 	static public String ReadStringAttr(Element _elem,String _attrName)throws Exception{
-		String attr = _elem.getAttribute(_attrName);
+		String attr = _elem.attributeValue(_attrName);
 		if(attr == null){
 			throw new Exception("Element without attribute:" + _attrName);
 		}

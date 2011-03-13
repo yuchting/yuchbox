@@ -1,19 +1,30 @@
 package com.yuchting.yuchberry.yuchsign.server;
 
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.List;
+import java.util.Random;
 import java.util.Vector;
 import java.util.logging.Logger;
 
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-import com.google.gwt.xml.client.Document;
-import com.google.gwt.xml.client.XMLParser;
 import com.yuchting.yuchberry.yuchsign.client.GreetingService;
 
 
@@ -111,7 +122,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				}
 				
 				if(!t_syncbber.GetEmailList().isEmpty()){
-					String query = "select from " + yuchHost.class.getName() + " where *";
+					String query = "select from " + yuchHost.class.getName();
 					
 					yuchHost t_recommendhost =  FindProperHost((List<yuchHost>)t_pm.newQuery(query).execute(),
 																t_syncbber.GetEmailList());
@@ -120,18 +131,67 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						return "<Error>没有可用的服务器主机！</Error>";
 					}
 					
+					StringBuffer t_stringBuffer = new StringBuffer();
+					
+					try{
+						// Post the account
+						//
+						StringBuffer t_URL = new StringBuffer();
+						t_URL.append("http://").append(t_recommendhost.m_hostName).append(":")
+							.append(t_recommendhost.m_httpPort).append("/?pass=").append(URLEncoder.encode(t_recommendhost.m_httpPassword,"UTF-8"))
+							.append("&bber=").append(URLEncoder.encode(_xmlData,"UTF-8"));
+											
+						URL url = new URL(t_URL.toString());
+						HttpURLConnection con = (HttpURLConnection)url.openConnection();
+						
+						con.setDoInput(true);
+						con.setReadTimeout(5*60*1000);
+						con.setRequestMethod("GET");
+					       
+						con.setAllowUserInteraction(false);
+						con.connect();
+						 		
+						BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+						
+						String temp;
+						while ((temp = in.readLine()) != null) {
+							t_stringBuffer.append(temp+"\n");
+						}
+						in.close();
+						
+					}catch(Exception e){
+						return "<Error>读取主机URL时出错</Error>";
+					}					
+			        
+					// read the information
+					//
+					String t_result = t_stringBuffer.toString();
+					DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance(); 
+					DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder(); 
+					Document t_doc = docBuilder.parse(new InputSource(
+														new StringReader(t_result)));
+					
+					Element t_elem = t_doc.getDocumentElement();
+					if(t_elem.getTagName().equals("Error")){
+						return t_stringBuffer.toString();
+					}else if(t_elem.getTagName().equals("yuchbber")){
+						
+						t_bber.InputXMLData(t_result);
+						t_bber.SetConnetHost(t_recommendhost.m_hostName);
+						
+						return t_bber.OuputXMLData();
+						
+					}else{
+						return "<Error>无法请求页面</Error>";
+					}					
 					
 				}else{
-					
 					return "<Error>没有添加推送账户，无法同步！</Error>";
 				}
-				
 				
 			}catch(javax.jdo.JDOObjectNotFoundException e){
 				return "<Error>找不到用户!</Error>";
 			}
-			
-			return t_syncbber.OuputXMLData();
 			
 		}finally{
 			t_pm.close();
@@ -144,6 +204,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			return null;
 		}
 		
+		Vector<yuchHost> t_listHost = new Vector<yuchHost>();
+		
+		
 		for(int i = 1;i < _hostList.size();i++){
 			yuchHost host = _hostList.get(i);
 			
@@ -154,14 +217,18 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					
 					for(String addr:t_string){
 						if(email.m_emailAddr.indexOf(addr) !=-1){
-							return host;
+							t_listHost.add(host);
 						}
 					}								
 				}
 			}
+		}	
+		
+		if(t_listHost.isEmpty()){
+			return _hostList.get(0);
 		}
 		
-		return _hostList.get(0);
+		return t_listHost.get((new Random()).nextInt(t_listHost.size()));
 	}
 	
 	public String getHostList()throws Exception{
@@ -170,7 +237,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				
 		try{
 			
-			String query = "select from " + yuchHost.class.getName() + " where *";
+			String query = "select from " + yuchHost.class.getName();
 			List<yuchHost> t_hostList = (List<yuchHost>)t_pm.newQuery(query).execute();
 			
 			StringBuffer t_xmlData = new StringBuffer();
@@ -197,8 +264,14 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
 		
 		try{
-			yuchHost t_newHost = new yuchHost();	
-			t_newHost.InputXMLData(XMLParser.parse(_hostXMLData).getDocumentElement());
+			yuchHost t_newHost = new yuchHost();
+			
+			DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance(); 
+			DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder(); 
+			Document t_doc = docBuilder.parse(new InputSource(
+											new StringReader(_hostXMLData))); 
+			
+			t_newHost.InputXMLData(t_doc.getDocumentElement());
 			
 			Key k = KeyFactory.createKey(yuchHost.class.getSimpleName(), t_newHost.m_hostName);
 			try{
@@ -209,11 +282,17 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				}				
 				
 			}catch(javax.jdo.JDOObjectNotFoundException e){
-												
-				t_pm.makePersistent(t_newHost);
+									
+				try{
+					t_pm.makePersistent(t_newHost);
+				}catch(Exception ex){
+					return "<Error>"+ex.getMessage()+"</Error>";
+				}				
 			}
 			
-			return "<OK />";
+			StringBuffer t_output = new StringBuffer();
+			t_newHost.OutputXMLData(t_output);
+			return t_output.toString();
 			
 		}finally{
 			t_pm.close();
@@ -250,7 +329,14 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			try{
 				
 				yuchHost t_host = t_pm.getObjectById(yuchHost.class, k);
-				t_host.InputXMLData(XMLParser.parse(_hostXMLData).getDocumentElement());
+				
+				DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance(); 
+				DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder(); 
+				Document t_doc = docBuilder.parse(new InputSource(
+													new StringReader(_hostXMLData))); 
+				
+				
+				t_host.InputXMLData(t_doc.getDocumentElement());
 				
 			}catch(javax.jdo.JDOObjectNotFoundException e){					
 				return "<Error>主机 "+_hostName+" 不存在!</Error>";

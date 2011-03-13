@@ -142,6 +142,7 @@ public class fetchMgr{
 	    	
 		}catch(Exception ex){
 			m_logger.PrinterException(ex);
+			throw ex;
 		}
 			
 	}

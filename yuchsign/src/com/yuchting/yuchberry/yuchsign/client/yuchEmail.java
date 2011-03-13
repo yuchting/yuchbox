@@ -45,7 +45,7 @@ public class yuchEmail {
 									append("\" hosts=\"").append(m_host_send).
 									append("\" ports=\"").append(m_port_send).
 									append("\" appHTML=\"").append(m_appendHTML?1:0).
-									append("\">\n");
+									append("\" />\n");
 	}
 	
 	public void InputXMLData(final Element _elem)throws Exception{

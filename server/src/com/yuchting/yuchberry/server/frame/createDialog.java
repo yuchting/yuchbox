@@ -510,7 +510,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		CheckMainAttr(t_mainData);
 	}
 	
-	private void CheckMainAttr(final mainAttrData _data)throws Exception{
+	public void CheckMainAttr(final mainAttrData _data)throws Exception{
 		
 		if(_data.m_userPassword.length() == 0){
 			throw new Exception("用户密码不能为空");
@@ -556,7 +556,7 @@ public class createDialog extends JDialog implements DocumentListener,
 			
 			WriteXmlFile(m_createConfigDoc,t_tmpCreateDir + fetchMgr.fsm_configFilename);
 			
-			m_fetchMgrCreate.InitConnect(t_tmpCreateDir,new Logger(t_tmpCreateDir));			
+			m_fetchMgrCreate.InitConnect(t_tmpCreateDir,new Logger(t_tmpCreateDir));
 		}
 		
 	}

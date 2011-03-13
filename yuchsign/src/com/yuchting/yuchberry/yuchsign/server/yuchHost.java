@@ -6,10 +6,8 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
-import com.google.gwt.xml.client.Document;
-import com.google.gwt.xml.client.Element;
-import com.google.gwt.xml.client.XMLParser;
-import com.yuchting.yuchberry.yuchsign.client.yuchbber;
+import org.w3c.dom.Element;
+
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class yuchHost {
