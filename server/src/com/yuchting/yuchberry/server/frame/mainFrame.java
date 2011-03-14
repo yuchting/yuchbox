@@ -17,7 +17,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -97,7 +100,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 	JPanel		m_accountLogPane	= new JPanel();
 	
-	Vector		m_accountList		= new Vector();
+	Vector<fetchThread>		m_accountList		= new Vector<fetchThread>();
 	
 	String		m_formerHost		= new String("imap.gmail.com");
 	int			m_formerHost_port	= 993;
@@ -105,7 +108,6 @@ public class mainFrame extends JFrame implements ActionListener{
 	String		m_formerHost_send		= new String("smtp.gmail.com");
 	int			m_formerHost_port_send	= 587;
 	
-	int			m_formerServer_port		= 9716;
 	int			m_pushInterval			= 30;
 	long		m_expiredTime			= 0;
 	
@@ -481,11 +483,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 		m_accountList.addElement(_thread);
 		m_accountTable.AddAccount(_thread);
-		
-		if(m_formerServer_port <= _thread.m_fetchMgr.GetServerPort()){
-			m_formerServer_port = _thread.m_fetchMgr.GetServerPort() + 1;
-		}
-		
+				
 //		m_formerHost		= _thread.m_fetchMgr.GetHost();
 //		m_formerHost_port	= _thread.m_fetchMgr.GetHostPort();
 //		
@@ -533,7 +531,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			//
 			new createDialog(this,m_formerHost,"" + m_formerHost_port,m_formerHost_send,
 								"" + m_formerHost_port_send,GetRandomPassword(),
-								"" + m_formerServer_port,"" + m_pushInterval,"" + m_expiredTime);
+								"" + GetAvailableServerPort(),"" + m_pushInterval,"" + m_expiredTime);
 			
 		}else if(e.getSource() == m_sponsor){
 
@@ -654,6 +652,20 @@ public class mainFrame extends JFrame implements ActionListener{
 		if(m_currentSelectThread != null){
 			FillLogInfo(m_currentSelectThread);
 		}
+		
+		// close the timeup Bber Request
+		//
+		for(int i = 0;i < m_bberRequestList.size();i++){
+			BberRequestThread bber = m_bberRequestList.get(i);
+			
+			if(Math.abs(bber.m_requestTime - t_currTime) > 10 * 60 * 1000){
+				
+				bber.interrupt();
+				m_bberRequestList.remove(i);
+				
+				i--;
+			}
+		}
 	}
 	
 	public void SendTimeupMail(fetchThread _thread){
@@ -663,140 +675,6 @@ public class mainFrame extends JFrame implements ActionListener{
 			_thread.m_fetchMgr.SendImmMail("yuchberry 提示", t_contain, "\"YuchBerry\" <yuchberry@gmail.com>");
 			
 		}catch(Exception e){}		
-	}
-	
-	private static final String	fsm_yuchsign_tmpDir = "tmpCreate_yuchsign/";
-	private void LoadYuchsign(){
-		
-		try{
-			BufferedReader in = new BufferedReader(
-									new InputStreamReader(
-										new FileInputStream("yuchsign"),"UTF-8"));
-			
-			File t_file = new File(fsm_yuchsign_tmpDir);
-			if(!t_file.exists()){
-				t_file.mkdir();
-			}
-			
-			try{
-				final String t_pass = in.readLine();
-				final String t_port = in.readLine();
-				
-				m_httpd = new NanoHTTPD(Integer.valueOf(t_port).intValue()){
-					public Response serve( String uri, String method, Properties header, Properties parms, Properties files ){
-												
-						String t_queryPass = parms.getProperty("pass");
-						
-						if(t_queryPass == null || !t_queryPass.equals(t_pass)){
-							return new NanoHTTPD.Response( HTTP_FORBIDDEN, MIME_HTML, "");
-						}
-						
-						return new NanoHTTPD.Response( HTTP_OK, MIME_PLAINTEXT, ProcessHTTPD(method,header,parms));
-					}
-				};
-				
-			}finally{
-				in.close();
-			}
-		}catch(Exception e){
-			
-		}
-	}
-	
-	private synchronized String ProcessHTTPD(String method, Properties header, Properties parms){
-		String t_string = parms.getProperty("bber");
-		if( t_string == null){
-			return "<Error>没有bber参数的URL</Error>";
-		}
-		
-		try{
-			
-			t_string = URLDecoder.decode(t_string, "UTF-8");
-			
-			yuchbber t_bber = new yuchbber();
-			t_bber.InputXMLData(URLDecoder.decode(t_string,"UTF-8"));
-						
-			FileOutputStream t_config_file = new FileOutputStream(fsm_yuchsign_tmpDir + fetchMgr.fsm_configFilename);
-			try{
-				StringBuffer t_configBuffer = new StringBuffer();
-				t_configBuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-				
-				t_configBuffer.append("<Yuchberry userPassword=\"").append(t_bber.GetPassword())
-										.append("\" serverPort=\"").append(m_formerServer_port)
-										.append("\" pushInterval=\"").append(t_bber.GetPushInterval())
-										.append("\" userSSL=\"").append(t_bber.IsUsingSSL()?1:0)
-										.append("\" convertoSimpleChar=\"").append(t_bber.IsConvertSimpleChar()?1:0)
-							.append("\" >");
-				
-				
-				if(t_bber.GetEmailList().isEmpty()){
-					return "<Error>没有账户信息</Error>";
-				}
-				
-				
-				for(yuchEmail email:t_bber.GetEmailList()){
-					t_configBuffer.append("<EmailAccount account=\"").append(email.m_emailAddr)
-													.append("\" password=\"").append(email.m_password)
-													.append("\" useFullNameSignIn=\"").append(email.m_fullnameSignIn?1:0)
-													.append("\" protocol=\"").append(email.m_protocol)
-													.append("\" host=\"").append(email.m_host)
-													.append("\" port=\"").append(email.m_port)
-													.append("\" protocol_send=\"").append("smtp")
-													.append("\" host_send=\"").append(email.m_host_send)
-													.append("\" port_send=\"").append(email.m_port_send)
-													.append("\" appendHTML=\"").append(email.m_appendHTML?1:0)
-									.append("\" />");
-				}
-				
-				t_configBuffer.append("</Yuchberry>");
-				t_config_file.write(t_configBuffer.toString().getBytes("UTF-8"));
-				
-			}finally{
-				t_config_file.flush();
-				t_config_file.close();
-			}
-			
-			
-			fetchMgr t_manger = new fetchMgr();
-			Logger t_logger = new Logger(fsm_yuchsign_tmpDir);
-			t_manger.InitConnect(fsm_yuchsign_tmpDir,t_logger);
-			
-			t_manger.ResetAllAccountSession(true);	
-			
-			// copy the account information 
-			//
-			final String t_emailAddr = t_bber.GetEmailList().get(0).m_emailAddr + "/";
-			File t_accountFolder = new File(t_emailAddr);
-			if(!t_accountFolder.exists()){
-				t_accountFolder.mkdir();
-			}
-			
-			createDialog.CopyFile(fsm_yuchsign_tmpDir + fetchMgr.fsm_configFilename,
-					t_emailAddr  + fetchMgr.fsm_configFilename);
-			
-			// copy the account signature
-			//
-			FileOutputStream t_signature_file = new FileOutputStream(t_emailAddr + fetchEmail.fsm_signatureFilename);
-			try{
-				t_signature_file.write(t_bber.GetSignature().getBytes("UTF-8"));
-			}finally{
-				t_signature_file.flush();
-				t_signature_file.close();
-			}			
-			fetchThread t_newThread = new fetchThread(t_manger,t_emailAddr,
-												t_bber.GetUsingHours(),
-													t_bber.GetCreateTime(),false);
-			
-			AddAccountThread(t_newThread, true);
-			
-			t_bber.SetServerProt(m_formerServer_port);
-			m_formerServer_port++;
-						
-			return t_bber.OuputXMLData();
-			
-		}catch(Exception e){
-			return "<Error>" + e.getMessage() + "</Error>";
-		}
 	}
 	
 	static public String GetRandomPassword(){
@@ -849,5 +727,239 @@ public class mainFrame extends JFrame implements ActionListener{
 
 	    desktop.open(new File(_filename));    
 	}
+	
+	/*
+	 * the HTTP process... 
+	 */
+	public synchronized int GetAvailableServerPort(){
+				
+		if(m_accountList.isEmpty() && m_bberRequestList.isEmpty()){
+			return 9716;
+		}
+		
+		List<Integer> t_portList = new ArrayList<Integer>();
+						
+		for(fetchThread acc : m_accountList){
+			t_portList.add(new Integer(acc.m_fetchMgr.GetServerPort()));
+		}
+		
+		for(BberRequestThread req : m_bberRequestList){
+			t_portList.add(new Integer(req.m_serverPort));
+		}
+		
+		Collections.sort(t_portList);
+		
+		for(int i = 0 ;i < t_portList.size() - 1;i++){
+			int port = t_portList.get(i).intValue() + 1;
+			if(port < t_portList.get(i + 1).intValue()){
+				return port;
+			}
+		}
+		
+		return t_portList.get(t_portList.size() - 1).intValue();		
+	}
+	/*
+	 * the process thread to create/response the GAE URL requeset
+	 */
+	final class BberRequestThread extends Thread{
+		String	m_result = null;
+		mainFrame	m_mainApp = null;
+		
+		yuchbber	m_currbber = null;
+		
+		long		m_requestTime = (new Date()).getTime();
+		int			m_serverPort = 0;
+				
+		BberRequestThread(mainFrame _frame,yuchbber _bber,int _serverPort){
+			m_mainApp = _frame;
+			m_currbber = _bber;
+			
+			m_serverPort = _serverPort;
+			
+			start();
+		}
+		
+		@Override
+		public void run(){
+			try{
+								
+				FileOutputStream t_config_file = new FileOutputStream(fsm_yuchsign_tmpDir + fetchMgr.fsm_configFilename);
+				try{
+					StringBuffer t_configBuffer = new StringBuffer();
+					t_configBuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+					
+					t_configBuffer.append("<Yuchberry userPassword=\"").append(m_currbber.GetPassword())
+											.append("\" serverPort=\"").append(m_serverPort)
+											.append("\" pushInterval=\"").append(m_currbber.GetPushInterval())
+											.append("\" userSSL=\"").append(m_currbber.IsUsingSSL()?1:0)
+											.append("\" convertoSimpleChar=\"").append(m_currbber.IsConvertSimpleChar()?1:0)
+								.append("\" >");
+					
+					
+					if(m_currbber.GetEmailList().isEmpty()){
+						m_result = "<Error>没有账户信息</Error>";
+					}
+					
+					
+					for(yuchEmail email:m_currbber.GetEmailList()){
+						t_configBuffer.append("<EmailAccount account=\"").append(email.m_emailAddr)
+														.append("\" password=\"").append(email.m_password)
+														.append("\" useFullNameSignIn=\"").append(email.m_fullnameSignIn?1:0)
+														.append("\" protocol=\"").append(email.m_protocol)
+														.append("\" host=\"").append(email.m_host)
+														.append("\" port=\"").append(email.m_port)
+														.append("\" protocol_send=\"").append("smtp")
+														.append("\" host_send=\"").append(email.m_host_send)
+														.append("\" port_send=\"").append(email.m_port_send)
+														.append("\" appendHTML=\"").append(email.m_appendHTML?1:0)
+										.append("\" />");
+					}
+					
+					t_configBuffer.append("</Yuchberry>");
+					t_config_file.write(t_configBuffer.toString().getBytes("UTF-8"));
+					
+				}finally{
+					t_config_file.flush();
+					t_config_file.close();
+				}
+				
+				
+				fetchMgr t_manger = new fetchMgr();
+				Logger t_logger = new Logger(fsm_yuchsign_tmpDir);
+				t_manger.InitConnect(fsm_yuchsign_tmpDir,t_logger);
+				
+				t_manger.ResetAllAccountSession(true);	
+				
+				// copy the account information 
+				//
+				final String t_emailAddr = m_currbber.GetEmailList().get(0).m_emailAddr + "/";
+				File t_accountFolder = new File(t_emailAddr);
+				if(!t_accountFolder.exists()){
+					t_accountFolder.mkdir();
+				}
+				
+				createDialog.CopyFile(fsm_yuchsign_tmpDir + fetchMgr.fsm_configFilename,
+						t_emailAddr  + fetchMgr.fsm_configFilename);
+				
+				// copy the account signature
+				//
+				FileOutputStream t_signature_file = new FileOutputStream(t_emailAddr + fetchEmail.fsm_signatureFilename);
+				try{
+					t_signature_file.write(m_currbber.GetSignature().getBytes("UTF-8"));
+				}finally{
+					t_signature_file.flush();
+					t_signature_file.close();
+				}			
+				fetchThread t_newThread = new fetchThread(t_manger,t_emailAddr,
+															m_currbber.GetUsingHours(),
+															m_currbber.GetCreateTime(),false);
+				
+				AddAccountThread(t_newThread, true);
+				
+				m_currbber.SetServerProt(m_serverPort);
+				m_result = m_currbber.OuputXMLData();
+				
+			}catch(Exception e){
+				m_result = "<Error>" + e.getMessage() + "</Error>";
+			}
+		}
+	}
+	
+	/*
+	 * current request thread
+	 */
+	Vector<BberRequestThread> m_bberRequestList = new Vector<BberRequestThread>();
+	
+	private static final String	fsm_yuchsign_tmpDir = "tmpCreate_yuchsign/";
+	private void LoadYuchsign(){
+		
+		try{
+			BufferedReader in = new BufferedReader(
+									new InputStreamReader(
+										new FileInputStream("yuchsign"),"UTF-8"));
+			
+			File t_file = new File(fsm_yuchsign_tmpDir);
+			if(!t_file.exists()){
+				t_file.mkdir();
+			}
+			
+			try{
+				final String t_pass = in.readLine();
+				final String t_port = in.readLine();
+				
+				m_httpd = new NanoHTTPD(Integer.valueOf(t_port).intValue()){
+					public Response serve( String uri, String method, Properties header, Properties parms, Properties files ){
+						
+						String t_pass = header.getProperty("Pass");
+						
+						if(t_pass == null || !t_pass.equals(t_pass)){
+							return new NanoHTTPD.Response( HTTP_FORBIDDEN, MIME_PLAINTEXT, "");
+						}
+						
+						return new NanoHTTPD.Response( HTTP_OK, MIME_PLAINTEXT, ProcessHTTPD(method,header,parms));
+					}
+				};
+				
+			}finally{
+				in.close();
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	private synchronized String ProcessHTTPD(String method, Properties header, Properties parms){
+		
+		String t_string = parms.getProperty("bber");
+		if( t_string == null){
+			return "<Error>没有bber参数的URL</Error>";
+		}
+		
+		boolean t_checkState = (header.getProperty("CheckState") == null);
+		
+		try{
+			String t_bberParam = URLDecoder.decode(t_string, "UTF-8");
+			
+			String t_signinName = null;
+			yuchbber t_bber = null;
+			if(t_checkState){
+				t_signinName = t_bberParam;
+			}else{
+				t_bber = new yuchbber();
+				t_bber.InputXMLData(t_bberParam);
+				
+				t_signinName = t_bber.GetSigninName();
+			}
+					
+			for(BberRequestThread bber : m_bberRequestList){
+				if(bber.m_currbber.GetSigninName().equals(t_signinName)){
+					if(t_checkState){
+						if(bber.isAlive()){
+							return "<Loading />";
+						}else{
+							
+							m_bberRequestList.remove(bber);
+							return bber.m_result;
+						}
+					}else{
+						return "<Error>这个账户已经有一个请求正在同步，请等10分钟再试</Error>";
+					}					 
+				}
+			}
+			
+			if(t_checkState){
+				return "<Error>之前没有请求过这个账户的同步</Error>";
+			}else{				
+				m_bberRequestList.add(new BberRequestThread(this, t_bber, GetAvailableServerPort()));
+				return "<Loading />";
+			}
+			
+		}catch(Exception e){
+			
+			return "<Error>" + e.getMessage() + "</Error>";
+		}
+	}
+	
+	
 
 }

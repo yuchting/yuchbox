@@ -1,5 +1,6 @@
 package com.yuchting.yuchberry.yuchsign.client;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
@@ -14,6 +15,8 @@ public interface GreetingService extends RemoteService {
 	String signinAccount(String name,String password)throws Exception;
 	
 	String syncAccount(String _xmlData)throws Exception;
+	
+	String syncAccount_check(String _signinName,String _pass)throws Exception;
 	
 	String getHostList()throws Exception;
 	

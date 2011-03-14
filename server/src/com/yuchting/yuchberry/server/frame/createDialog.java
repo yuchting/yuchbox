@@ -480,12 +480,13 @@ public class createDialog extends JDialog implements DocumentListener,
 				
 				String t_prefix = t_account.GetAccountName() + "/";
 				WriteXmlFile(m_createConfigDoc,t_prefix + fetchMgr.fsm_configFilename);
+				WriteSignature(t_prefix,m_signature.getText());
 				
 				m_mainFrame.AddAccountThread(new fetchThread(m_fetchMgrCreate,t_prefix,
 															Long.valueOf(m_expiredTime.getText()).longValue(),
 															(new Date()).getTime(),false),
 											true);
-				
+								
 				setVisible(false);
 				dispose();
 				
@@ -594,7 +595,7 @@ public class createDialog extends JDialog implements DocumentListener,
 				}				
 			}
 		}
-		
+				
 		m_createAccountList.addElement(CheckEmailConnect(_email));
 		
 		RefreshAccountList();

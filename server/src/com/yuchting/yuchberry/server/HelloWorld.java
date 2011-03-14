@@ -22,8 +22,12 @@ import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.security.KeyStore;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.zip.GZIPInputStream;
@@ -274,8 +278,25 @@ public class HelloWorld {
 		//System.out.print(t_test.replace("$mail_content$", "I'm here"));
 		///System.out.print("aaaa " + (12 % 100));
 		
-		System.out.print(("1298444136000").hashCode());
-	
+
+		List<Integer> t_portList = new ArrayList<Integer>();
+
+		int t_index = 0;
+		while(t_index++ < 10){
+			t_portList.add(t_index);
+		}
+		
+		
+		
+		for(Integer integer : t_portList){
+			if(integer.intValue() == 2 || integer.intValue() == 3){
+				t_portList.remove(integer);
+			}
+		}
+		
+		for(Integer integer : t_portList){
+			System.out.println(integer.intValue());			
+		}
 	}
 	static private void ProcessSponsorList(ByteArrayInputStream _in){
 		try{

@@ -683,17 +683,15 @@ public class fetchEmail extends fetchAccount{
 		os.write(msg_head.msgSendMail);
 		int t_succ = 1;
 		
+		String t_exception = "";
+		
 		try{
 			
 			SendMail(_mail);
 			
 		}catch(Exception _e){
-			
-			ByteArrayOutputStream error = new ByteArrayOutputStream();
-			error.write(msg_head.msgNote);
-			sendReceive.WriteString(error, _e.getMessage(),m_mainMgr.m_convertToSimpleChar);
-			
-			m_mainMgr.SendData(error, false);
+						
+			t_exception = _e.getMessage() + " name:" + _e.getClass().getName();
 			
 			t_succ = 0;
 		}
@@ -705,7 +703,7 @@ public class fetchEmail extends fetchAccount{
 
 		m_mainMgr.SendData(os,false);
 		
-		m_mainMgr.m_logger.LogOut(GetAccountName() + " Mail <" +_mail.m_sendMail.GetSendDate().getTime() +  "> send " + ((t_succ == 1)?"Succ":"Failed"));
+		m_mainMgr.m_logger.LogOut(GetAccountName() + " Mail <" +_mail.m_sendMail.GetSendDate().getTime() +  "> send " + (((t_succ == 1)?"Succ":"Failed") + t_exception));
 	}
 	
 	private  boolean ProcessBeenReadMail(ByteArrayInputStream in)throws Exception{
@@ -1509,9 +1507,14 @@ public class fetchEmail extends fetchAccount{
 	public void ComposeMessage(MimeMessage msg,fetchMail _mail,fetchMail _forwardMail)throws Exception{
 		
 		msg.setFrom(new InternetAddress(m_strUserNameFull));
-				
+	
+		String t_sendTo = fetchMail.parseAddressList(_mail.GetSendToVect());
+		
+		m_mainMgr.m_logger.LogOut("ComposeMessage sendTo:'"+t_sendTo+"'");
+		
 	    msg.setRecipients(Message.RecipientType.TO,
-					InternetAddress.parse(fetchMail.parseAddressList(_mail.GetSendToVect()), false));
+					InternetAddress.parse(t_sendTo, false));
+	    
 	    if (!_mail.GetReplyToVect().isEmpty()){
 			msg.setRecipients(Message.RecipientType.CC,
 						InternetAddress.parse(fetchMail.parseAddressList(_mail.GetReplyToVect()), false));

@@ -7,7 +7,9 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -46,6 +48,8 @@ final class PMF {
 public class GreetingServiceImpl extends RemoteServiceServlet implements GreetingService {
 
 	private final static Logger fsm_logger = Logger.getLogger("ServerLogger");
+	
+	yuchHost m_currSyncHost = null;
 	
 	public String logonServer(String name,String password) throws Exception {
 		
@@ -121,69 +125,41 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					return "<Error>密码错误！</Error>";
 				}
 				
+				t_bber.InputXMLData(_xmlData);
+								
 				if(!t_syncbber.GetEmailList().isEmpty()){
 					String query = "select from " + yuchHost.class.getName();
 					
-					yuchHost t_recommendhost =  FindProperHost((List<yuchHost>)t_pm.newQuery(query).execute(),
+					m_currSyncHost =  FindProperHost((List<yuchHost>)t_pm.newQuery(query).execute(),
 																t_syncbber.GetEmailList());
 					
-					if(t_recommendhost == null){
+					if(m_currSyncHost == null){
 						return "<Error>没有可用的服务器主机！</Error>";
 					}
 					
-					StringBuffer t_stringBuffer = new StringBuffer();
+					t_bber.SetConnetHost(m_currSyncHost.m_hostName);					
 					
 					try{
-						// Post the account
+						
+						// query the account
 						//
 						StringBuffer t_URL = new StringBuffer();
-						t_URL.append("http://").append(t_recommendhost.m_hostName).append(":")
-							.append(t_recommendhost.m_httpPort).append("/?pass=").append(URLEncoder.encode(t_recommendhost.m_httpPassword,"UTF-8"))
-							.append("&bber=").append(URLEncoder.encode(_xmlData,"UTF-8"));
-											
-						URL url = new URL(t_URL.toString());
-						HttpURLConnection con = (HttpURLConnection)url.openConnection();
+						t_URL.append("http://").append(m_currSyncHost.m_hostName).append(":")
+							.append(m_currSyncHost.m_httpPort);
 						
-						con.setDoInput(true);
-						con.setReadTimeout(5*60*1000);
-						con.setRequestMethod("GET");
-					       
-						con.setAllowUserInteraction(false);
-						con.connect();
-						 		
-						BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+						Properties t_header = new Properties();
+						t_header.put("Pass",m_currSyncHost.m_httpPassword);
 						
-						String temp;
-						while ((temp = in.readLine()) != null) {
-							t_stringBuffer.append(temp+"\n");
-						}
-						in.close();
+						Properties t_param = new Properties();
+						t_param.put("bber",_xmlData);
+						
+						return RequestURL(t_URL.toString(), t_header, t_param);											
 						
 					}catch(Exception e){
 						return "<Error>读取主机URL时出错</Error>";
 					}					
 			        
-					// read the information
-					//
-					String t_result = t_stringBuffer.toString();
-					DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance(); 
-					DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder(); 
-					Document t_doc = docBuilder.parse(new InputSource(
-														new StringReader(t_result)));
-					
-					Element t_elem = t_doc.getDocumentElement();
-					if(t_elem.getTagName().equals("Error")){
-						return t_stringBuffer.toString();
-					}else if(t_elem.getTagName().equals("yuchbber")){
-						
-						t_bber.InputXMLData(t_result);
-						t_bber.SetConnetHost(t_recommendhost.m_hostName);
-						
-						return t_bber.OuputXMLData();
-						
-					}else{
-						return "<Error>无法请求页面</Error>";
-					}					
+										
 					
 				}else{
 					return "<Error>没有添加推送账户，无法同步！</Error>";
@@ -198,6 +174,122 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}	
 	}
 	
+	public String syncAccount_check(String _signinName,String _pass)throws Exception{
+		
+		if(m_currSyncHost == null){
+			return "<Error>请先同步</Error>";
+		}
+		
+		PersistenceManager t_pm = PMF.get().getPersistenceManager();
+		try{
+			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(),_signinName);
+			try{
+				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);				
+
+				if(!t_bber.GetPassword().equals(_pass)){
+					return "<Error>密码错误！</Error>";
+				}
+								
+				// query the account
+				//
+				StringBuffer t_URL = new StringBuffer();
+				t_URL.append("http://").append(m_currSyncHost.m_hostName).append(":")
+					.append(m_currSyncHost.m_httpPort);
+				
+				Properties t_header = new Properties();
+				t_header.put("Pass",m_currSyncHost.m_httpPassword);
+				t_header.put("CheckState",_signinName);
+				
+				Properties t_param = new Properties();
+				t_param.put("bber",_signinName);
+				
+				String t_result = RequestURL(t_URL.toString(), t_header, t_param);
+				
+				// read the information
+				//
+				DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance(); 
+				DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder(); 
+				Document t_doc = docBuilder.parse(new InputSource(
+													new StringReader(t_result)));
+				
+				Element t_elem = t_doc.getDocumentElement();
+				
+				if(t_elem.getTagName().equals("yuchbber")){
+					
+					t_bber.InputXMLData(t_result);
+					t_bber.SetConnetHost(m_currSyncHost.m_hostName);
+					
+					m_currSyncHost = null;
+				}				
+				
+				return t_result;
+				
+			}catch(javax.jdo.JDOObjectNotFoundException e){
+				return "<Error>找不到用户!</Error>";
+			}
+			
+			
+		}finally{
+			
+			t_pm.close();
+		}		
+	}
+	
+	
+	
+	private String RequestURL(String _string,Properties header, Properties parms)throws Exception{
+		
+		StringBuffer t_final = new StringBuffer();
+		t_final.append(_string);
+		if(_string.charAt(_string.length() - 1) != '/'){
+			t_final.append("/");
+		}	
+		
+		if(parms != null){
+			t_final.append("?");
+			Enumeration e = parms.propertyNames();
+			while(true){
+				String value = (String)e.nextElement();
+				t_final.append(value).append("=").append(URLEncoder.encode(parms.getProperty( value ),"UTF-8"));
+				if(e.hasMoreElements()){
+					t_final.append("&");
+				}else{
+					break;
+				}
+			}
+		}
+		
+		URL url = new URL(t_final.toString());
+		HttpURLConnection con = (HttpURLConnection)url.openConnection();
+		
+		if(header != null){
+			Enumeration e = header.propertyNames();
+			while ( e.hasMoreElements()){
+				String value = (String)e.nextElement();
+				con.setRequestProperty(value,parms.getProperty(value));		
+			}
+		}
+		
+		con.setDoInput(true);
+		con.setRequestMethod("GET");
+		con.setAllowUserInteraction(false);
+		con.connect();
+		
+		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+		try{
+			StringBuffer t_stringBuffer = new StringBuffer();
+			
+			String temp;
+			while ((temp = in.readLine()) != null) {
+				t_stringBuffer.append(temp+"\n");
+			}
+			
+			return t_stringBuffer.toString();
+		}finally{
+			in.close();	
+		}
+	}
+
 	private yuchHost FindProperHost(List<yuchHost> _hostList, Vector<yuchEmail> _emailList){
 		
 		if(_hostList == null || _hostList.size() == 0){

@@ -21,7 +21,6 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.HTMLTable.CellFormatter;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.ProvidesKey;
@@ -296,7 +295,7 @@ public class YuchPanel extends TabPanel{
 			}
 		});
 		
-		t_hostAddr.setWidth("10em");
+		t_hostAddr.setWidth("9em");
 		t_hostPort.setWidth("5em");
 		t_hostPass.setWidth("10em");
 		t_hostRecommend.setWidth("10em");

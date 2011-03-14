@@ -12,6 +12,7 @@ import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -462,20 +463,7 @@ public class BberPanel extends TabPanel{
 				
 				@Override
 				public void onSuccess(String result) {
-					try{
-						Document t_doc = XMLParser.parse(result);
-						Element t_elem = t_doc.getDocumentElement();
-						
-						if(t_elem.getTagName().equals("Error")){
-							Yuchsign.PopupPrompt("同步错误:" + t_elem.getFirstChild().toString(),t_bberPanel);
-						}else{
-							m_currentBber.InputXMLData(result);
-							SetYuchbberData(m_currentBber);
-						}						
-						
-					}catch(Exception ex){
-						Yuchsign.PopupPrompt("数据错误:" + ex.getMessage(), t_bberPanel);
-					}			
+					SyncOnSuccess(result,t_bberPanel);			
 				}
 				
 				@Override
@@ -489,7 +477,78 @@ public class BberPanel extends TabPanel{
 		}finally{
 			Yuchsign.HideWaiting();
 		}
+	}
+	
+	Timer m_checkStateTimer		= null;
+	private void SyncOnSuccess(String result,final Widget _panel){
+		try{
+			
+			Document t_doc = XMLParser.parse(result);
+			Element t_elem = t_doc.getDocumentElement();
+			
+			if(t_elem.getTagName().equals("Error")){
+				Yuchsign.PopupPrompt("同步错误:" + t_elem.getFirstChild().toString(),_panel);
+			}else{
+				
+				// Setup timer to refresh list automatically.
+				m_checkStateTimer = new Timer() {
+			    	@Override
+			    	public void run() {
+			    		CheckSyncStateTimer(_panel);
+			    	}
+			    };
+			    
+			    m_checkStateTimer.scheduleRepeating(15);
+			}	
+		}catch(Exception ex){
+			Yuchsign.PopupPrompt("数据错误:" + ex.getMessage(), _panel);
+		}			
+	}
+	
+	private void CheckSyncStateTimer(final Widget _panel){
+		try{
+			m_mainServer.greetingService.syncAccount_check(m_currentBber.GetSigninName(),m_currentBber.GetPassword(),
+	    		new AsyncCallback<String>() {
+					
+					@Override
+					public void onSuccess(String result) {
+						CheckSyncOnSuccess(result,_panel);
+					}
+					
+					@Override
+					public void onFailure(Throwable caught) {
+						Yuchsign.PopupPrompt("同步错误:" + caught.getMessage(),_panel);
+					}
+				});
+		}catch(Exception e){
+			m_checkStateTimer.cancel();
+			m_checkStateTimer = null;
+			Yuchsign.PopupPrompt("数据错误:" + e.getMessage(), _panel);
+		}
 		
+	}
+	
+	private void CheckSyncOnSuccess(String _result,final Widget _panel){
+		Document t_doc = XMLParser.parse(_result);
+		Element t_elem = t_doc.getDocumentElement();
+		
+		if(t_elem.getTagName().equals("Error")){
+			Yuchsign.PopupPrompt("同步错误:" + t_elem.getFirstChild().toString(),_panel);
+			m_checkStateTimer.cancel();
+			m_checkStateTimer = null;
+		}else if(t_elem.getTagName().equals("yuchbber")){
+			
+			m_checkStateTimer.cancel();
+			m_checkStateTimer = null;
+			
+			try{
+				m_currentBber.InputXMLData(_result);
+			}catch(Exception e){
+				Yuchsign.PopupPrompt("数据错误:" + e.getMessage() , _panel);
+			}
+			
+			SetYuchbberData(m_currentBber);
+		}
 	}
 	
 	public void SetYuchbberData(final yuchbber _bber){
