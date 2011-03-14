@@ -241,16 +241,13 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		
 		StringBuffer t_final = new StringBuffer();
 		t_final.append(_string);
-		if(_string.charAt(_string.length() - 1) != '/'){
-			t_final.append("/");
-		}	
 		
 		if(parms != null){
 			t_final.append("?");
 			Enumeration e = parms.propertyNames();
 			while(true){
 				String value = (String)e.nextElement();
-				t_final.append(value).append("=").append(URLEncoder.encode(parms.getProperty( value ),"UTF-8"));
+				t_final.append(value).append("=").append(URLEncoder.encode(parms.getProperty(value),"UTF-8"));
 				if(e.hasMoreElements()){
 					t_final.append("&");
 				}else{
@@ -265,8 +262,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		if(header != null){
 			Enumeration e = header.propertyNames();
 			while ( e.hasMoreElements()){
-				String value = (String)e.nextElement();
-				con.setRequestProperty(value,parms.getProperty(value));		
+				String name = (String)e.nextElement();
+				String value = header.getProperty(name);
+				con.setRequestProperty(name,value);
 			}
 		}
 		
