@@ -90,7 +90,7 @@ public class fetchThread extends Thread{
 			return;
 		}
 		
-		if(m_pauseState = true){
+		if(m_pauseState == true){
 			
 			m_sendTimeupMail = false;
 			m_pauseState = false;

@@ -756,34 +756,55 @@ public class mainFrame extends JFrame implements ActionListener{
 			}
 		}
 		
-		return t_portList.get(t_portList.size() - 1).intValue();		
+		return t_portList.get(t_portList.size() - 1).intValue() + 1;		
 	}
 	/*
 	 * the process thread to create/response the GAE URL requeset
 	 */
 	final class BberRequestThread extends Thread{
-		String	m_result = null;
-		mainFrame	m_mainApp = null;
+		String		m_result		= null;
+		mainFrame	m_mainApp		= null;
 		
-		yuchbber	m_currbber = null;
+		yuchbber	m_currbber		= null;
 		
-		long		m_requestTime = (new Date()).getTime();
-		int			m_serverPort = 0;
+		long		m_requestTime	= (new Date()).getTime();
+		int			m_serverPort	= 0;
+		
+		String		m_prefix		= fsm_yuchsign_tmpDir;
+		
+		fetchThread	m_orgThread = null;
 				
-		BberRequestThread(mainFrame _frame,yuchbber _bber,int _serverPort){
-			m_mainApp = _frame;
-			m_currbber = _bber;
+		BberRequestThread(mainFrame _frame,yuchbber _bber,fetchThread _orgThread){
+
+			m_mainApp	= _frame;
+			m_currbber	= _bber;
 			
-			m_serverPort = _serverPort;
+			m_orgThread = _orgThread; 
 			
-			start();
+			if(m_orgThread != null){
+				m_serverPort	= _orgThread.m_fetchMgr.GetServerPort();
+				m_prefix		= _orgThread.m_fetchMgr.GetPrefixString();
+				
+				// start listening
+				//
+				m_orgThread.Pause();
+				
+			}else{
+				m_serverPort = GetAvailableServerPort();
+			}
+						
+			if(m_currbber.GetEmailList().isEmpty()){
+				m_result = "<Error>没有账户信息</Error>";
+			}else{
+				start();
+			}
 		}
-		
+				
 		@Override
 		public void run(){
 			try{
-								
-				FileOutputStream t_config_file = new FileOutputStream(fsm_yuchsign_tmpDir + fetchMgr.fsm_configFilename);
+				
+				FileOutputStream t_config_file = new FileOutputStream(m_prefix + fetchMgr.fsm_configFilename);
 				try{
 					StringBuffer t_configBuffer = new StringBuffer();
 					t_configBuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -793,13 +814,7 @@ public class mainFrame extends JFrame implements ActionListener{
 											.append("\" pushInterval=\"").append(m_currbber.GetPushInterval())
 											.append("\" userSSL=\"").append(m_currbber.IsUsingSSL()?1:0)
 											.append("\" convertoSimpleChar=\"").append(m_currbber.IsConvertSimpleChar()?1:0)
-								.append("\" >");
-					
-					
-					if(m_currbber.GetEmailList().isEmpty()){
-						m_result = "<Error>没有账户信息</Error>";
-					}
-					
+								.append("\" >");					
 					
 					for(yuchEmail email:m_currbber.GetEmailList()){
 						t_configBuffer.append("<EmailAccount account=\"").append(email.m_emailAddr)
@@ -822,39 +837,51 @@ public class mainFrame extends JFrame implements ActionListener{
 					t_config_file.flush();
 					t_config_file.close();
 				}
-				
-				
-				fetchMgr t_manger = new fetchMgr();
-				Logger t_logger = new Logger(fsm_yuchsign_tmpDir);
-				t_manger.InitConnect(fsm_yuchsign_tmpDir,t_logger);
-				
-				t_manger.ResetAllAccountSession(true);	
-				
-				// copy the account information 
-				//
-				final String t_emailAddr = m_currbber.GetEmailList().get(0).m_emailAddr + "/";
-				File t_accountFolder = new File(t_emailAddr);
-				if(!t_accountFolder.exists()){
-					t_accountFolder.mkdir();
+											
+				if(m_orgThread != null){
+					
+					createDialog.WriteSignature(m_orgThread.m_fetchMgr.GetPrefixString(), m_currbber.GetSignature());
+					
+					m_orgThread.Reuse();
+					
+				}else{
+					
+					fetchMgr t_manger = new fetchMgr();
+					Logger t_logger = new Logger(m_prefix);
+					t_manger.InitConnect(m_prefix,t_logger);
+					
+					t_manger.ResetAllAccountSession(true);	
+					
+					// copy the account information 
+					//
+					final String t_emailAddr = m_currbber.GetEmailList().get(0).m_emailAddr + "/";
+					File t_accountFolder = new File(t_emailAddr);
+					if(!t_accountFolder.exists()){
+						t_accountFolder.mkdir();
+					}
+					
+					createDialog.CopyFile(m_prefix + fetchMgr.fsm_configFilename,
+											t_emailAddr + fetchMgr.fsm_configFilename);
+					
+					createDialog.WriteSignature(t_emailAddr, m_currbber.GetSignature());
+					
+					// copy the account signature
+					//
+					FileOutputStream t_signature_file = new FileOutputStream(t_emailAddr + fetchEmail.fsm_signatureFilename);
+					try{
+						t_signature_file.write(m_currbber.GetSignature().getBytes("UTF-8"));
+					}finally{
+						t_signature_file.flush();
+						t_signature_file.close();
+					}
+					
+					fetchThread t_newThread = new fetchThread(t_manger,t_emailAddr,
+							m_currbber.GetUsingHours(),
+							m_currbber.GetCreateTime(),false);
+
+					AddAccountThread(t_newThread, true);
 				}
 				
-				createDialog.CopyFile(fsm_yuchsign_tmpDir + fetchMgr.fsm_configFilename,
-						t_emailAddr  + fetchMgr.fsm_configFilename);
-				
-				// copy the account signature
-				//
-				FileOutputStream t_signature_file = new FileOutputStream(t_emailAddr + fetchEmail.fsm_signatureFilename);
-				try{
-					t_signature_file.write(m_currbber.GetSignature().getBytes("UTF-8"));
-				}finally{
-					t_signature_file.flush();
-					t_signature_file.close();
-				}			
-				fetchThread t_newThread = new fetchThread(t_manger,t_emailAddr,
-															m_currbber.GetUsingHours(),
-															m_currbber.GetCreateTime(),false);
-				
-				AddAccountThread(t_newThread, true);
 				
 				m_currbber.SetServerProt(m_serverPort);
 				m_result = m_currbber.OuputXMLData();
@@ -863,6 +890,7 @@ public class mainFrame extends JFrame implements ActionListener{
 				m_result = "<Error>" + e.getMessage() + "</Error>";
 			}
 		}
+		
 	}
 	
 	/*
@@ -890,7 +918,7 @@ public class mainFrame extends JFrame implements ActionListener{
 				m_httpd = new NanoHTTPD(Integer.valueOf(t_port).intValue()){
 					public Response serve( String uri, String method, Properties header, Properties parms, Properties files ){
 						
-						String t_pass = header.getProperty("Pass");
+						String t_pass = header.getProperty("pass");
 						
 						if(t_pass == null || !t_pass.equals(t_pass)){
 							return new NanoHTTPD.Response( HTTP_FORBIDDEN, MIME_PLAINTEXT, "");
@@ -915,7 +943,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			return "<Error>没有bber参数的URL</Error>";
 		}
 		
-		boolean t_checkState = (header.getProperty("CheckState") == null);
+		boolean t_checkState = (header.getProperty("check") != null);
 		
 		try{
 			String t_bberParam = URLDecoder.decode(t_string, "UTF-8");
@@ -930,7 +958,9 @@ public class mainFrame extends JFrame implements ActionListener{
 				
 				t_signinName = t_bber.GetSigninName();
 			}
-					
+			
+			// find the requested bber
+			//
 			for(BberRequestThread bber : m_bberRequestList){
 				if(bber.m_currbber.GetSigninName().equals(t_signinName)){
 					if(t_checkState){
@@ -949,7 +979,10 @@ public class mainFrame extends JFrame implements ActionListener{
 			
 			if(t_checkState){
 				return "<Error>之前没有请求过这个账户的同步</Error>";
-			}else{				
+			}else{
+
+				// create new request thread
+				//
 				m_bberRequestList.add(new BberRequestThread(this, t_bber, GetAvailableServerPort()));
 				return "<Loading />";
 			}

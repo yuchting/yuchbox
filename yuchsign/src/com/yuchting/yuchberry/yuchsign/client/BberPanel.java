@@ -7,6 +7,8 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
@@ -358,7 +360,7 @@ public class BberPanel extends TabPanel{
 		});
 		
 		m_signature.setPixelSize(420,100);
-		
+				
 		final VerticalPanel t_attrPane = new VerticalPanel();
 		final FlexTable  t_layout = new FlexTable();	
 		
@@ -448,6 +450,12 @@ public class BberPanel extends TabPanel{
 	}
 	
 	private void StartSync(){
+		
+		if(m_signature.getText().length() > 200){
+			Yuchsign.PopupPrompt("签名不能大于200个字符", this);
+			return;
+		}
+		
 		m_currentBber.SetSignature(m_signature.getText());
 		
 		if(m_currentBber.GetEmailList().isEmpty()){
@@ -469,12 +477,12 @@ public class BberPanel extends TabPanel{
 				@Override
 				public void onFailure(Throwable caught) {
 					Yuchsign.PopupPrompt("同步错误:" + caught.getMessage(),t_bberPanel);
+					Yuchsign.HideWaiting();
 				}
 			});
 			
 		}catch(Exception e){
 			Yuchsign.PopupPrompt("同步错误:" + e.getMessage(), this);
-		}finally{
 			Yuchsign.HideWaiting();
 		}
 	}
@@ -488,6 +496,7 @@ public class BberPanel extends TabPanel{
 			
 			if(t_elem.getTagName().equals("Error")){
 				Yuchsign.PopupPrompt("同步错误:" + t_elem.getFirstChild().toString(),_panel);
+				Yuchsign.HideWaiting();
 			}else{
 				
 				// Setup timer to refresh list automatically.
@@ -498,10 +507,11 @@ public class BberPanel extends TabPanel{
 			    	}
 			    };
 			    
-			    m_checkStateTimer.scheduleRepeating(15);
+			    m_checkStateTimer.scheduleRepeating(15*1000);
 			}	
 		}catch(Exception ex){
 			Yuchsign.PopupPrompt("数据错误:" + ex.getMessage(), _panel);
+			Yuchsign.HideWaiting();
 		}			
 	}
 	
@@ -518,12 +528,16 @@ public class BberPanel extends TabPanel{
 					@Override
 					public void onFailure(Throwable caught) {
 						Yuchsign.PopupPrompt("同步错误:" + caught.getMessage(),_panel);
+						Yuchsign.HideWaiting();
 					}
 				});
+			
 		}catch(Exception e){
 			m_checkStateTimer.cancel();
 			m_checkStateTimer = null;
+			
 			Yuchsign.PopupPrompt("数据错误:" + e.getMessage(), _panel);
+			Yuchsign.HideWaiting();
 		}
 		
 	}
@@ -534,12 +548,17 @@ public class BberPanel extends TabPanel{
 		
 		if(t_elem.getTagName().equals("Error")){
 			Yuchsign.PopupPrompt("同步错误:" + t_elem.getFirstChild().toString(),_panel);
+			Yuchsign.HideWaiting();
+			
 			m_checkStateTimer.cancel();
 			m_checkStateTimer = null;
+			
 		}else if(t_elem.getTagName().equals("yuchbber")){
 			
 			m_checkStateTimer.cancel();
 			m_checkStateTimer = null;
+			
+			Yuchsign.PopupPrompt("同步成功！", _panel);
 			
 			try{
 				m_currentBber.InputXMLData(_result);
@@ -548,6 +567,8 @@ public class BberPanel extends TabPanel{
 			}
 			
 			SetYuchbberData(m_currentBber);
+			
+			Yuchsign.HideWaiting();
 		}
 	}
 	
@@ -562,11 +583,16 @@ public class BberPanel extends TabPanel{
 	    
 	    date.setTime(_bber.GetCreateTime() + _bber.GetUsingHours() * 3600000);
 	    m_endTime.setText(DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(date));	    
-	        
-		m_serverPort.setText("" + _bber.GetServerPort());
+	    
+	    if(_bber.GetServerPort() != 0){
+	    	m_serverPort.setText("" + _bber.GetServerPort());
+	    }else{
+	    	m_serverPort.setText("<没有同步>");
+	    }	
 		
 		m_pushInterval.setText("" + _bber.GetPushInterval());
 		
+		m_usingSSL.setEnabled(false);
 		m_usingSSL.setValue(_bber.IsUsingSSL());
 		m_convertToSimple.setValue(_bber.IsConvertSimpleChar());
 		

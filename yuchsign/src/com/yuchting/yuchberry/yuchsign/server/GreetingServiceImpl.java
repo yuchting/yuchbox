@@ -4,8 +4,8 @@ package com.yuchting.yuchberry.yuchsign.server;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Enumeration;
 import java.util.List;
@@ -123,21 +123,35 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 
 				if(!t_bber.GetPassword().equals(t_syncbber.GetPassword())){
 					return "<Error>密码错误！</Error>";
-				}
-				
-				t_bber.InputXMLData(_xmlData);
+				}				
 								
 				if(!t_syncbber.GetEmailList().isEmpty()){
-					String query = "select from " + yuchHost.class.getName();
 					
-					m_currSyncHost =  FindProperHost((List<yuchHost>)t_pm.newQuery(query).execute(),
-																t_syncbber.GetEmailList());
+					t_bber.InputXMLData(_xmlData);
+					
+					String query = "select from " + yuchHost.class.getName();
+					List<yuchHost> t_hostList = (List<yuchHost>)t_pm.newQuery(query).execute();
+					
+					if(t_bber.GetConnectHost().isEmpty()){		
+						m_currSyncHost =  FindProperHost(t_hostList,t_syncbber.GetEmailList());	
+					}else{
+						for(yuchHost host : t_hostList){
+							if(host.m_hostName.equalsIgnoreCase(t_bber.GetConnectHost())){
+								m_currSyncHost = host;
+								break;
+							}
+						}
+						
+						if(m_currSyncHost == null){
+							m_currSyncHost =  FindProperHost(t_hostList,t_syncbber.GetEmailList());	
+						}
+					}
 					
 					if(m_currSyncHost == null){
 						return "<Error>没有可用的服务器主机！</Error>";
-					}
+					}					
 					
-					t_bber.SetConnetHost(m_currSyncHost.m_hostName);					
+					t_bber.SetConnetHost(m_currSyncHost.m_hostName);
 					
 					try{
 						
@@ -148,7 +162,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 							.append(m_currSyncHost.m_httpPort);
 						
 						Properties t_header = new Properties();
-						t_header.put("Pass",m_currSyncHost.m_httpPassword);
+						t_header.put("pass",m_currSyncHost.m_httpPassword);
 						
 						Properties t_param = new Properties();
 						t_param.put("bber",_xmlData);
@@ -156,8 +170,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						return RequestURL(t_URL.toString(), t_header, t_param);											
 						
 					}catch(Exception e){
-						return "<Error>读取主机URL时出错</Error>";
-					}					
+						return "<Error>请求主机URL时出错:" + e.getMessage() + "</Error>";
+					}
 			        
 										
 					
@@ -177,7 +191,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	public String syncAccount_check(String _signinName,String _pass)throws Exception{
 		
 		if(m_currSyncHost == null){
-			return "<Error>请先同步</Error>";
+			return "<Error>请先同步！</Error>";
 		}
 		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
@@ -197,8 +211,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					.append(m_currSyncHost.m_httpPort);
 				
 				Properties t_header = new Properties();
-				t_header.put("Pass",m_currSyncHost.m_httpPassword);
-				t_header.put("CheckState",_signinName);
+				t_header.put("pass",m_currSyncHost.m_httpPassword);
+				t_header.put("check",_signinName);
 				
 				Properties t_param = new Properties();
 				t_param.put("bber",_signinName);
@@ -207,17 +221,19 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				
 				// read the information
 				//
-				DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance(); 
-				DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder(); 
-				Document t_doc = docBuilder.parse(new InputSource(
-													new StringReader(t_result)));
+//				DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance(); 
+//				DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder(); 
+//				Document t_doc = docBuilder.parse(new InputSource(
+//													new StringReader(t_result)));
+//				
+//				Element t_elem = t_doc.getDocumentElement();
 				
-				Element t_elem = t_doc.getDocumentElement();
-				
-				if(t_elem.getTagName().equals("yuchbber")){
+				if(t_result.indexOf("<yuchberry") != -1){
 					
 					t_bber.InputXMLData(t_result);
 					t_bber.SetConnetHost(m_currSyncHost.m_hostName);
+					
+					t_result = t_bber.OuputXMLData();
 					
 					m_currSyncHost = null;
 				}				
@@ -234,8 +250,6 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			t_pm.close();
 		}		
 	}
-	
-	
 	
 	private String RequestURL(String _string,Properties header, Properties parms)throws Exception{
 		
@@ -257,7 +271,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}
 		
 		URL url = new URL(t_final.toString());
-		HttpURLConnection con = (HttpURLConnection)url.openConnection();
+		URLConnection con = url.openConnection();
+		con.setAllowUserInteraction(false);
 		
 		if(header != null){
 			Enumeration e = header.propertyNames();
@@ -266,11 +281,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				String value = header.getProperty(name);
 				con.setRequestProperty(name,value);
 			}
-		}
-		
-		con.setDoInput(true);
-		con.setRequestMethod("GET");
-		con.setAllowUserInteraction(false);
+		}		
 		con.connect();
 		
 		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
