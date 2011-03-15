@@ -21,7 +21,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
 import com.google.appengine.api.datastore.Key;
@@ -50,7 +49,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	private final static Logger fsm_logger = Logger.getLogger("ServerLogger");
 	
 	yuchHost m_currSyncHost = null;
-	
+		
 	public String logonServer(String name,String password) throws Exception {
 		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
@@ -132,8 +131,10 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					String query = "select from " + yuchHost.class.getName();
 					List<yuchHost> t_hostList = (List<yuchHost>)t_pm.newQuery(query).execute();
 					
+					Vector<yuchHost> t_exceptList = new Vector<yuchHost>();
+					
 					if(t_bber.GetConnectHost().isEmpty()){		
-						m_currSyncHost =  FindProperHost(t_hostList,t_syncbber.GetEmailList());	
+						m_currSyncHost =  FindProperHost(t_hostList,t_syncbber.GetEmailList(),t_exceptList);	
 					}else{
 						for(yuchHost host : t_hostList){
 							if(host.m_hostName.equalsIgnoreCase(t_bber.GetConnectHost())){
@@ -143,31 +144,45 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						}
 						
 						if(m_currSyncHost == null){
-							m_currSyncHost =  FindProperHost(t_hostList,t_syncbber.GetEmailList());	
+							m_currSyncHost =  FindProperHost(t_hostList,t_syncbber.GetEmailList(),t_exceptList);	
 						}
 					}
 					
 					if(m_currSyncHost == null){
 						return "<Error>没有可用的服务器主机！</Error>";
-					}					
+					}
 					
-					t_bber.SetConnetHost(m_currSyncHost.m_hostName);
+					t_exceptList.add(m_currSyncHost);
 					
 					try{
 						
-						// query the account
-						//
-						StringBuffer t_URL = new StringBuffer();
-						t_URL.append("http://").append(m_currSyncHost.m_hostName).append(":")
-							.append(m_currSyncHost.m_httpPort);
+						while(m_currSyncHost != null){
+							
+							t_bber.SetConnetHost(m_currSyncHost.m_hostName);
+							
+							// query the account
+							//
+							StringBuffer t_URL = new StringBuffer();
+							t_URL.append("http://").append(m_currSyncHost.m_hostName).append(":")
+								.append(m_currSyncHost.m_httpPort);
+							
+							Properties t_header = new Properties();
+							t_header.put("pass",m_currSyncHost.m_httpPassword);
+							
+							Properties t_param = new Properties();
+							t_param.put("bber",_xmlData);
+							
+							String t_result =  RequestURL(t_URL.toString(), t_header, t_param);
+							if(t_result.equals("<Max />")){
+								// find the other host if the host is full
+								//
+								m_currSyncHost =  FindProperHost(t_hostList,t_syncbber.GetEmailList(),t_exceptList);
+							}else{
+								return t_result;
+							}
+						}
 						
-						Properties t_header = new Properties();
-						t_header.put("pass",m_currSyncHost.m_httpPassword);
-						
-						Properties t_param = new Properties();
-						t_param.put("bber",_xmlData);
-						
-						return RequestURL(t_URL.toString(), t_header, t_param);											
+						return "<Error>所有的主机用户已经满员！</Error>";
 						
 					}catch(Exception e){
 						return "<Error>请求主机URL时出错:" + e.getMessage() + "</Error>";
@@ -299,7 +314,10 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}
 	}
 
-	private yuchHost FindProperHost(List<yuchHost> _hostList, Vector<yuchEmail> _emailList){
+	private yuchHost FindProperHost(List<yuchHost> _hostList,
+									Vector<yuchEmail> _emailList,
+										Vector<yuchHost> _exceptList){
+		
 		
 		if(_hostList == null || _hostList.size() == 0){
 			return null;
@@ -307,7 +325,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		
 		Vector<yuchHost> t_listHost = new Vector<yuchHost>();
 		
-		
+		yuchHost t_resultHost = null;
 		for(int i = 1;i < _hostList.size();i++){
 			yuchHost host = _hostList.get(i);
 			
@@ -326,10 +344,20 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}	
 		
 		if(t_listHost.isEmpty()){
-			return _hostList.get(0);
+			t_resultHost = _hostList.get(0);
 		}
 		
-		return t_listHost.get((new Random()).nextInt(t_listHost.size()));
+		t_resultHost = t_listHost.get((new Random()).nextInt(t_listHost.size()));
+		
+		// find if 
+		//
+		for(yuchHost host : _exceptList){
+			if(host == t_resultHost){
+				return null;
+			}
+		}
+		
+		return t_resultHost;
 	}
 	
 	public String getHostList()throws Exception{

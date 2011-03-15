@@ -61,7 +61,7 @@ public class YuchPanel extends TabPanel{
 			CallOnFailed(caught);
 		}
 
-		public void onSuccess(String result) {
+		public void onSuccess(String result){
 			CallOnSuccess_list(result);
 		}
 	};
@@ -95,7 +95,7 @@ public class YuchPanel extends TabPanel{
 		
 		add(t_panel,"可用主机列表");
 		
-		setPixelSize(500,300);
+		setPixelSize(600,300);
 		selectTab(0);		
 		
 		RootPanel.get("yuchTab").add(this);

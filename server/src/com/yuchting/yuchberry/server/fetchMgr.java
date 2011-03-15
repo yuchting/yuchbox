@@ -209,11 +209,11 @@ public class fetchMgr{
 	}
 	
 	public String GetAccountName(){
-		if(!m_fetchAccount.isEmpty()){
-			fetchAccount accout =(fetchAccount)m_fetchAccount.elementAt(0);
-			return accout.GetAccountName();
+		final int t_slash = m_prefix.lastIndexOf("/");
+		if(t_slash != -1){
+			return m_prefix.substring(0, t_slash);
 		}
-		return "No Account Name!";
+		return m_prefix;
 	}
 	
 	public void ProcessPackage(byte[] _package)throws Exception{

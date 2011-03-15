@@ -163,7 +163,7 @@ public class Yuchsign implements EntryPoint {
 	    		
 		    	if(_attach != null){
 		    		
-		    		t_left 	= _attach.getAbsoluteLeft() + (_attach.getOffsetWidth() - _text.length() * 10) / 2;
+		    		t_left 	= _attach.getAbsoluteLeft() + (_attach.getOffsetWidth() - _text.length() * 9) / 2;
 		    		t_top	= _attach.getAbsoluteTop() + 10; 
 		    		
 		    	}

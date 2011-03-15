@@ -84,7 +84,7 @@ public class fetchThread extends Thread{
 		}
 	}
 	
-	public void Reuse(){
+	public void Reuse()throws Exception{
 		
 		if(m_close == true){
 			return;
@@ -103,13 +103,18 @@ public class fetchThread extends Thread{
 				
 			}catch(Exception e){
 				m_logger.PrinterException(e);
+				
+				throw e;
+				
+			}finally{
+				if(GetLastTime() < 0){
+					m_formerTimer = (new Date()).getTime();
+				}
+				
+				interrupt();
 			}
 			
-			if(GetLastTime() < 0){
-				m_formerTimer = (new Date()).getTime();
-			}
-			
-			interrupt();			
+						
 		}
 	}
 	

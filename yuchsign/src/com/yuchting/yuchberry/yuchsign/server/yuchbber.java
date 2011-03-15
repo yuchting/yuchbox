@@ -52,6 +52,9 @@ public final class yuchbber {
 	@Persistent
 	private String m_signature = "--send from my yuchberry\nhttp://code.google.com/p/yuchberry";
 	
+	@Persistent
+	private int m_bberLev = 0;
+	
 	@Persistent(mappedBy = "m_yuchbber")
 	@javax.jdo.annotations.Element(dependent = "true")
 	private Vector<yuchEmail>	m_emailList = new Vector<yuchEmail>();
@@ -63,6 +66,9 @@ public final class yuchbber {
 		m_createTime 	= (new Date()).getTime();
 	}
 	public yuchbber(){}
+	
+	public int GetLevel(){return m_bberLev;}
+	public void SetLevel(int _level){ m_bberLev = _level;}
 	
 	public void SetSigninName(final String _name){m_signinName = _name;}
 	public String GetSigninName(){return m_signinName;}
@@ -116,6 +122,7 @@ public final class yuchbber {
 									append("\" SSL=\"").append(m_usingSSL?1:0).
 									append("\" T2S=\"").append(m_convertSimpleChar?1:0).
 									append("\" signature=\"").append(t_signature).
+									append("\" lev=\"").append(m_bberLev).
 									append("\">\n");
 				
 		for(yuchEmail email : m_emailList){
@@ -146,6 +153,7 @@ public final class yuchbber {
 		m_convertSimpleChar = ReadBooleanAttr(t_elem, "T2S");
 		
 		m_signature = ReadStringAttr(t_elem,"signature");
+		m_bberLev	= ReadIntegerAttr(t_elem, "lev");
 		
 		m_signature = m_signature.replaceAll("&lt;", "<");
 		m_signature = m_signature.replaceAll("&gt;", ">");

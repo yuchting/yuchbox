@@ -335,7 +335,10 @@ public class mainFrame extends JFrame implements ActionListener{
 					fetchThread t_thread = (fetchThread)m_accountList.elementAt(t_selectIndex);
 					
 					if(e.getSource() == m_continueAccountItem){
-						t_thread.Reuse();
+						try{
+							t_thread.Reuse();
+						}catch(Exception ex){}
+						
 					}else if(e.getSource() == m_pauseAccountItem){
 						t_thread.Pause();
 					}else if(e.getSource() == m_checkAccountItem){
@@ -854,20 +857,20 @@ public class mainFrame extends JFrame implements ActionListener{
 					
 					// copy the account information 
 					//
-					final String t_emailAddr = m_currbber.GetEmailList().get(0).m_emailAddr + "/";
-					File t_accountFolder = new File(t_emailAddr);
+					final String t_copyPrefix = m_currbber.GetSigninName() + "/";
+					File t_accountFolder = new File(t_copyPrefix);
 					if(!t_accountFolder.exists()){
 						t_accountFolder.mkdir();
 					}
 					
 					createDialog.CopyFile(m_prefix + fetchMgr.fsm_configFilename,
-											t_emailAddr + fetchMgr.fsm_configFilename);
+							t_copyPrefix + fetchMgr.fsm_configFilename);
 					
-					createDialog.WriteSignature(t_emailAddr, m_currbber.GetSignature());
+					createDialog.WriteSignature(t_copyPrefix, m_currbber.GetSignature());
 					
 					// copy the account signature
 					//
-					FileOutputStream t_signature_file = new FileOutputStream(t_emailAddr + fetchEmail.fsm_signatureFilename);
+					FileOutputStream t_signature_file = new FileOutputStream(t_copyPrefix + fetchEmail.fsm_signatureFilename);
 					try{
 						t_signature_file.write(m_currbber.GetSignature().getBytes("UTF-8"));
 					}finally{
@@ -875,9 +878,9 @@ public class mainFrame extends JFrame implements ActionListener{
 						t_signature_file.close();
 					}
 					
-					fetchThread t_newThread = new fetchThread(t_manger,t_emailAddr,
-							m_currbber.GetUsingHours(),
-							m_currbber.GetCreateTime(),false);
+					fetchThread t_newThread = new fetchThread(t_manger,t_copyPrefix,
+																m_currbber.GetUsingHours(),
+																m_currbber.GetCreateTime(),false);
 
 					AddAccountThread(t_newThread, true);
 				}
@@ -914,6 +917,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			try{
 				final String t_pass = in.readLine();
 				final String t_port = in.readLine();
+				final int 	  t_maxBber = Integer.valueOf(in.readLine()).intValue();
 				
 				m_httpd = new NanoHTTPD(Integer.valueOf(t_port).intValue()){
 					public Response serve( String uri, String method, Properties header, Properties parms, Properties files ){
@@ -924,7 +928,7 @@ public class mainFrame extends JFrame implements ActionListener{
 							return new NanoHTTPD.Response( HTTP_FORBIDDEN, MIME_PLAINTEXT, "");
 						}
 						
-						return new NanoHTTPD.Response( HTTP_OK, MIME_PLAINTEXT, ProcessHTTPD(method,header,parms));
+						return new NanoHTTPD.Response( HTTP_OK, MIME_PLAINTEXT, ProcessHTTPD(method,header,parms,t_maxBber));
 					}
 				};
 				
@@ -936,7 +940,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		}
 	}
 	
-	private synchronized String ProcessHTTPD(String method, Properties header, Properties parms){
+	private synchronized String ProcessHTTPD(String method, Properties header, Properties parms,int _maxBber){
 		
 		String t_string = parms.getProperty("bber");
 		if( t_string == null){
@@ -980,10 +984,20 @@ public class mainFrame extends JFrame implements ActionListener{
 			if(t_checkState){
 				return "<Error>之前没有请求过这个账户的同步</Error>";
 			}else{
-
+				
+				if(m_accountList.size() >= _maxBber){
+					// if reach the max bber
+					//
+					return "<Max />";
+				}
+				
+				// search the former thread
+				//
+				fetchThread t_thread = SearchAccountThread(t_bber.GetSigninName(), t_bber.GetServerPort());
+				
 				// create new request thread
 				//
-				m_bberRequestList.add(new BberRequestThread(this, t_bber, GetAvailableServerPort()));
+				m_bberRequestList.add(new BberRequestThread(this,t_bber,t_thread));
 				return "<Loading />";
 			}
 			

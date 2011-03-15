@@ -278,25 +278,13 @@ public class HelloWorld {
 		//System.out.print(t_test.replace("$mail_content$", "I'm here"));
 		///System.out.print("aaaa " + (12 % 100));
 		
-
-		List<Integer> t_portList = new ArrayList<Integer>();
-
-		int t_index = 0;
-		while(t_index++ < 10){
-			t_portList.add(t_index);
+		String m_prefix = "yuchting@gmail.com/";
+		final int t_slash = m_prefix.lastIndexOf("/");
+		if(t_slash != -1){
+			System.out.println( m_prefix.substring(0, t_slash));
 		}
+		System.out.println(m_prefix);
 		
-		
-		
-		for(Integer integer : t_portList){
-			if(integer.intValue() == 2 || integer.intValue() == 3){
-				t_portList.remove(integer);
-			}
-		}
-		
-		for(Integer integer : t_portList){
-			System.out.println(integer.intValue());			
-		}
 	}
 	static private void ProcessSponsorList(ByteArrayInputStream _in){
 		try{

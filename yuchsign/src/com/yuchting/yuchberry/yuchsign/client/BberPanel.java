@@ -423,6 +423,14 @@ public class BberPanel extends TabPanel{
 			public void onClick(ClickEvent event) {
 				yuchEmail t_email = m_pushContent.AddAccount();
 				if(t_email != null){
+					
+					for(yuchEmail mail : m_currentBber.GetEmailList()){
+						if(t_email.m_emailAddr.equalsIgnoreCase(mail.m_emailAddr)){
+							Yuchsign.PopupPrompt(mail.toString() + "账户重复!", m_pushList);
+							return;
+						}
+					}
+					
 					m_currentBber.GetEmailList().add(t_email);
 					RefreshPushList(m_currentBber);
 					m_pushContent.RefreshEmail(null);
@@ -442,6 +450,7 @@ public class BberPanel extends TabPanel{
 						public void Process(){
 							m_currentBber.GetEmailList().remove(t_index);
 							RefreshPushList(m_currentBber);
+							m_pushContent.RefreshEmail(null);
 						}
 					},null);
 				}
