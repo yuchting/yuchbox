@@ -1,7 +1,5 @@
 package com.yuchting.yuchberry.yuchsign.client;
 
-import java.io.BufferedReader;
-import java.io.StringReader;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -12,6 +10,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DecoratedPopupPanel;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
@@ -121,12 +120,7 @@ public class Yuchsign implements EntryPoint {
 	private BberPanel	m_bberPane = null;
 	
 	static private final DecoratedPopupPanel fsm_simplePopup = new DecoratedPopupPanel(true);
-	
-	static 
-	{
-		fsm_simplePopup.setWidth("180px");
-	}
-	
+		
 	static YesNoDialog		sm_yesNoDlg = null;
 	
 	private static class waitingLabel extends PopupPanel{
@@ -191,7 +185,7 @@ public class Yuchsign implements EntryPoint {
 	public void onModuleLoad() {
 		m_logonDlg = new LogonDialog(this);
 		m_logonDlg.show();
-			
+				
 		m_logonDlg.setModal(true);
 	}
 	
@@ -211,10 +205,8 @@ public class Yuchsign implements EntryPoint {
 	
 	public static void PopupPrompt(String _prompt,Widget _attachWidget){
 
-		final Label t_label =new Label(_prompt);
-		t_label.setWordWrap(true);
-		
-		fsm_simplePopup.setWidget(t_label);		
+		_prompt = _prompt.replaceAll("\n", "<br />");		
+		fsm_simplePopup.setWidget(new HTML(_prompt));		
 		
 		int left;
 		int top;

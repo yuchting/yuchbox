@@ -153,6 +153,17 @@ public final class yuchbber {
 			}
 		}		
 	}
+	
+	public int GetMaxPushNum(){
+		switch(m_bberLev){
+			case 0: return 1;
+			case 1: return 2;
+			case 2: return 3;
+			default:
+				return 4;
+		}
+	}
+	
 		
 	/**
 	 * read String attribute from xml

@@ -301,8 +301,8 @@ public class BberPanel extends TabPanel{
 	final Label m_connectHost		= new Label();
 	final Label m_serverPort 		= new Label();	
 	final Label m_pushInterval 		= new Label();
-	final Label m_createTime		= new Label();
-	final Label m_endTime		= new Label();
+	final Label m_bberLev			= new Label();
+	final Label m_endTime			= new Label();
 	
 	final CheckBox m_usingSSL		= new CheckBox("使用SSL");
 	final CheckBox m_convertToSimple = new CheckBox("转换繁体到简体");
@@ -366,7 +366,8 @@ public class BberPanel extends TabPanel{
 		
 		int t_line = 0;
 		AddLabelWidget(t_layout,"用户名:",m_signinName,t_line++);
-		AddLabelWidget(t_layout,"充值时间:",m_createTime,t_line++);
+		AddLabelWidget(t_layout,"用户等级:",m_bberLev,t_line++);
+		t_layout.setWidget(t_line - 1, 2, new HTML("<a href=\"http://www.google.com\" target=_blank><--这是什么?</a>"));
 		AddLabelWidget(t_layout,"到期时间:",m_endTime,t_line++);
 		AddLabelWidget(t_layout,"主机地址:",m_connectHost,t_line++);
 		AddLabelWidget(t_layout,"端口:",m_serverPort,t_line++);
@@ -423,6 +424,11 @@ public class BberPanel extends TabPanel{
 			public void onClick(ClickEvent event) {
 				yuchEmail t_email = m_pushContent.AddAccount();
 				if(t_email != null){
+					
+					if(m_currentBber.GetEmailList().size() >= m_currentBber.GetMaxPushNum()){
+						Yuchsign.PopupPrompt("已经达到当前推送的最大数量:"+ m_currentBber.GetMaxPushNum() + "(需要升级)", m_pushList);
+						return;
+					}
 					
 					for(yuchEmail mail : m_currentBber.GetEmailList()){
 						if(t_email.m_emailAddr.equalsIgnoreCase(mail.m_emailAddr)){
@@ -587,10 +593,9 @@ public class BberPanel extends TabPanel{
 		m_signinName.setText(_bber.GetSigninName());
 		m_connectHost.setText(_bber.GetConnectHost());
 		
-		Date date = new Date(_bber.GetCreateTime());
-	    m_createTime.setText(DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(date));
+		m_bberLev.setText(GetBberLevelString(_bber.GetLevel()));
 	    
-	    date.setTime(_bber.GetCreateTime() + _bber.GetUsingHours() * 3600000);
+	    Date date = new Date(_bber.GetCreateTime() + _bber.GetUsingHours() * 3600000);
 	    m_endTime.setText(DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(date));	    
 	    
 	    if(_bber.GetServerPort() != 0){
@@ -609,6 +614,15 @@ public class BberPanel extends TabPanel{
 		
 		RefreshPushList(_bber);
 		
+	}
+	
+	private String GetBberLevelString(int _bberLev){
+		switch(_bberLev){
+		case 0: return "一般用户";
+		case 1: return "VIP";
+		case 2: return "VIP2";
+		default: return "VIP3";
+		}
 	}
 	
 	public void RefreshPushList(yuchbber _bber){

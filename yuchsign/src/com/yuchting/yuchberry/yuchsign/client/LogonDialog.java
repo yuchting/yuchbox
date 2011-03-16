@@ -1,7 +1,5 @@
 package com.yuchting.yuchberry.yuchsign.client;
 
-
-
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -9,16 +7,13 @@ import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PasswordTextBox;
-import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.XMLParser;
@@ -38,6 +33,8 @@ public final class LogonDialog extends DialogBox{
 	final PasswordTextBox m_signinPass 		= new PasswordTextBox();
 	final PasswordTextBox m_signinPass1 	= new PasswordTextBox();
 	final Button m_signinBut 				= new Button("注册");
+	
+	final CheckBox m_agreeCheckbox			= new CheckBox("我同意");
 	
 	
 	
@@ -104,6 +101,13 @@ public final class LogonDialog extends DialogBox{
 		t_signinPane.add(m_signinPass);
 		t_signinPane.add(new HTML("<br />确认密码:"));
 		t_signinPane.add(m_signinPass1);
+		
+		final HorizontalPanel t_agreePane = new HorizontalPanel();
+		t_agreePane.add(m_agreeCheckbox);
+		t_agreePane.add(new HTML("<a  href=\"http://code.google.com/p/yuchberry/wiki/User_Agreement_YuchberrySign\" target=_blank>用户使用协议</a>"));
+		t_signinPane.add(t_agreePane);
+		
+		t_signinPane.add(new HTML("<br />"));
 		t_signinPane.add(m_signinBut);
 		
 		m_signinName.addKeyUpHandler(t_signinKeyup);
@@ -193,7 +197,12 @@ public final class LogonDialog extends DialogBox{
 		if(!IsValidPassword(t_pass)){
 			Yuchsign.PopupPrompt("密码非法(大于等于6位的字母或数字)！",m_signinPass);
 			return;
-		}						
+		}
+		
+		if(!m_agreeCheckbox.getValue()){
+			Yuchsign.PopupPrompt("需要同意用户使用协议",m_agreeCheckbox);
+			return ;
+		}
 		
 		try{					
 			Yuchsign.PopupWaiting("正在提交注册...",this);
