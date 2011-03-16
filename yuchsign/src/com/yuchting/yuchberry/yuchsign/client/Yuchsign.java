@@ -134,7 +134,7 @@ public class Yuchsign implements EntryPoint {
 			super();
 			
 			final HorizontalPanel t_horz = new HorizontalPanel();
-			Image t_waiting = new Image("yuchsign/logon.gif");
+			Image t_waiting = new Image("logon.gif");
 			t_horz.add(t_waiting);
 			t_horz.add(m_label);
 			
@@ -205,7 +205,7 @@ public class Yuchsign implements EntryPoint {
 	
 	public static void PopupPrompt(String _prompt,Widget _attachWidget){
 
-		_prompt = _prompt.replaceAll("\n", "<br />");		
+		_prompt = _prompt.replaceAll("\n", "<br />");
 		fsm_simplePopup.setWidget(new HTML(_prompt));		
 		
 		int left;

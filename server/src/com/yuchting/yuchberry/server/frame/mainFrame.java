@@ -985,15 +985,15 @@ public class mainFrame extends JFrame implements ActionListener{
 				return "<Error>之前没有请求过这个账户的同步</Error>";
 			}else{
 				
-				if(m_accountList.size() >= _maxBber){
+				// search the former thread
+				//
+				fetchThread t_thread = SearchAccountThread(t_bber.GetSigninName(), t_bber.GetServerPort());
+				
+				if(t_thread == null && m_accountList.size() >= _maxBber){
 					// if reach the max bber
 					//
 					return "<Max />";
 				}
-				
-				// search the former thread
-				//
-				fetchThread t_thread = SearchAccountThread(t_bber.GetSigninName(), t_bber.GetServerPort());
 				
 				// create new request thread
 				//

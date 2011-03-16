@@ -7,8 +7,6 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
@@ -359,6 +357,27 @@ public class BberPanel extends TabPanel{
 			}
 		});
 		
+		final Button t_levelUpBut		= new Button("升级");
+		t_levelUpBut.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				// TODO level up the bber
+				
+			}
+		});
+		
+		final Button t_payTime			= new Button("充值时间");
+		t_payTime.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				// TODO pay the time
+				
+			}
+		});
+		
+		
 		m_signature.setPixelSize(420,100);
 				
 		final VerticalPanel t_attrPane = new VerticalPanel();
@@ -366,9 +385,13 @@ public class BberPanel extends TabPanel{
 		
 		int t_line = 0;
 		AddLabelWidget(t_layout,"用户名:",m_signinName,t_line++);
+		
+		t_layout.setWidget(t_line, 2, t_levelUpBut);
 		AddLabelWidget(t_layout,"用户等级:",m_bberLev,t_line++);
-		t_layout.setWidget(t_line - 1, 2, new HTML("<a href=\"http://www.google.com\" target=_blank><--这是什么?</a>"));
+		
+		t_layout.setWidget(t_line, 2, t_payTime);
 		AddLabelWidget(t_layout,"到期时间:",m_endTime,t_line++);
+		
 		AddLabelWidget(t_layout,"主机地址:",m_connectHost,t_line++);
 		AddLabelWidget(t_layout,"端口:",m_serverPort,t_line++);
 		AddLabelWidget(t_layout,"推送间隔:",m_pushInterval,t_line++);

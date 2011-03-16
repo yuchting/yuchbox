@@ -173,7 +173,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 							t_param.put("bber",_xmlData);
 							
 							String t_result =  RequestURL(t_URL.toString(), t_header, t_param);
-							if(t_result.equals("<Max />")){
+							if(t_result.indexOf("<Max />") != -1){
 								// find the other host if the host is full
 								//
 								m_currSyncHost =  FindProperHost(t_hostList,t_syncbber.GetEmailList(),t_exceptList);
@@ -243,7 +243,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 //				
 //				Element t_elem = t_doc.getDocumentElement();
 				
-				if(t_result.indexOf("<yuchberry") != -1){
+				if(t_result.indexOf("<yuchbber") != -1){
 					
 					t_bber.InputXMLData(t_result);
 					t_bber.SetConnetHost(m_currSyncHost.m_hostName);
@@ -326,8 +326,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		Vector<yuchHost> t_listHost = new Vector<yuchHost>();
 		
 		yuchHost t_resultHost = null;
-		for(int i = 1;i < _hostList.size();i++){
-			yuchHost host = _hostList.get(i);
+		
+		for(yuchHost host : _hostList){
 			
 			if(host.m_recommendHost.length() != 0){
 				String[] t_string = host.m_recommendHost.split(" ");
@@ -336,24 +336,27 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					
 					for(String addr:t_string){
 						if(email.m_emailAddr.indexOf(addr) !=-1){
-							t_listHost.add(host);
+							t_listHost.add(0,host);
 						}
 					}								
 				}
+			}else{
+				t_listHost.add(host);
 			}
 		}	
 		
-		if(t_listHost.isEmpty()){
-			t_resultHost = _hostList.get(0);
-		}
-		
-		t_resultHost = t_listHost.get((new Random()).nextInt(t_listHost.size()));
-		
-		// find if 
-		//
-		for(yuchHost host : _exceptList){
-			if(host == t_resultHost){
-				return null;
+		if(!t_listHost.isEmpty()){
+			
+			search_tag:
+			for(yuchHost host : t_listHost){
+				for(yuchHost except : _exceptList){
+					if(host == except){
+						continue search_tag;
+					}
+				}
+				
+				t_resultHost = host;
+				break;
 			}
 		}
 		
