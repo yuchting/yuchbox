@@ -98,6 +98,11 @@ public class YuchPanel extends TabPanel{
 		setPixelSize(600,300);
 		selectTab(0);		
 		
+		ShowYuchPanel();
+	}
+	
+	public void ShowYuchPanel(){
+		
 		RootPanel.get("yuchTab").add(this);
 		
 		// query the host list
@@ -106,6 +111,10 @@ public class YuchPanel extends TabPanel{
 	    }catch(Exception e){
 	    	Yuchsign.PopupPrompt("get list of host exception:" + e.getMessage(),m_table);
 	    }	
+	}
+	
+	public void HideYuchPanel(){
+		RootPanel.get("yuchTab").remove(this);
 	}
 	
 	private void PrepareHostListPanel(){
@@ -231,6 +240,8 @@ public class YuchPanel extends TabPanel{
 	    		
 	    	}
 		});
+	    
+	    m_hostList.addDataDisplay(m_table);
 	        
 	}
 	
@@ -372,7 +383,6 @@ public class YuchPanel extends TabPanel{
 			}			
 		}
 		
-		m_hostList.addDataDisplay(m_table);
 		m_hostList.refresh();
 	}
 	

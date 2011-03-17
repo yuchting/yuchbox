@@ -1,5 +1,6 @@
 package com.yuchting.yuchberry.yuchsign.client;
 
+import java.net.HttpURLConnection;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -119,6 +120,8 @@ public class Yuchsign implements EntryPoint {
 	
 	private BberPanel	m_bberPane = null;
 	
+	private YuchPanel	m_yuchPanel = null;
+	
 	static private final DecoratedPopupPanel fsm_simplePopup = new DecoratedPopupPanel(true);
 		
 	static YesNoDialog		sm_yesNoDlg = null;
@@ -157,7 +160,7 @@ public class Yuchsign implements EntryPoint {
 	    		
 		    	if(_attach != null){
 		    		
-		    		t_left 	= _attach.getAbsoluteLeft() + (_attach.getOffsetWidth() - _text.length() * 9) / 2;
+		    		t_left 	= _attach.getAbsoluteLeft() + (_attach.getOffsetWidth() - _text.length() * 8) / 2;
 		    		t_top	= _attach.getAbsoluteTop() + 10; 
 		    		
 		    	}
@@ -183,24 +186,45 @@ public class Yuchsign implements EntryPoint {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
+				
 		m_logonDlg = new LogonDialog(this);
 		m_logonDlg.show();
 				
-		m_logonDlg.setModal(true);
+		m_logonDlg.setModal(true);		
 	}
 	
 	public void ShowYuchbberPanel(String _bberXMLData)throws Exception{
-		if(m_bberPane == null){
-			yuchbber t_bber = new yuchbber();
-			t_bber.InputXMLData(_bberXMLData);		
-			
+		
+		yuchbber t_bber = new yuchbber();
+		t_bber.InputXMLData(_bberXMLData);
+		
+		if(m_bberPane == null){		
 			m_bberPane = new BberPanel(this);
-			m_bberPane.SetYuchbberData(t_bber);
-			
-			if(t_bber.GetSigninName().equals("yuchting@gmail.com")){
-				new YuchPanel(this);
+		}
+		
+		m_bberPane.ShowBberPanle();		
+		m_bberPane.ShowYuchbberData(t_bber);
+		
+		if(t_bber.GetSigninName().equalsIgnoreCase("yuchting@gmail.com")){
+			if(m_yuchPanel == null){
+				m_yuchPanel = new YuchPanel(this);
 			}
-		}		
+			
+			m_yuchPanel.ShowYuchPanel();		
+		}
+	}
+	
+	public void Signout(){
+		m_logonDlg.show();
+		m_logonDlg.setModal(true);
+		
+		if(m_yuchPanel != null){
+			m_yuchPanel.HideYuchPanel();
+		}
+		
+		if(m_bberPane != null){		
+			m_bberPane.HideBberPanel();
+		}
 	}
 	
 	public static void PopupPrompt(String _prompt,Widget _attachWidget){

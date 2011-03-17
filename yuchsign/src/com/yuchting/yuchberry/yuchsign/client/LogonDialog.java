@@ -113,6 +113,7 @@ public final class LogonDialog extends DialogBox{
 		m_signinName.addKeyUpHandler(t_signinKeyup);
 		m_signinPass.addKeyUpHandler(t_signinKeyup);
 		m_signinPass1.addKeyUpHandler(t_signinKeyup);
+		m_agreeCheckbox.addKeyUpHandler(t_signinKeyup);
 		
 		m_signinBut.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
@@ -142,6 +143,14 @@ public final class LogonDialog extends DialogBox{
 			if(t_elem.getTagName().equals("Error")){
 				Yuchsign.PopupPrompt(t_elem.getFirstChild().toString(),this);
 			}else{
+				
+				m_signinName.setText("");
+				m_signinPass.setText("");
+				m_signinPass1.setText("");
+				
+				m_logonName.setText("");
+				m_logonPassword.setText("");
+				
 				m_clientSign.ShowYuchbberPanel(_result);
 				
 				hide();
@@ -203,6 +212,9 @@ public final class LogonDialog extends DialogBox{
 			Yuchsign.PopupPrompt("需要同意用户使用协议",m_agreeCheckbox);
 			return ;
 		}
+		
+		m_logonName.setText("");
+		m_logonPassword.setText("");
 		
 		try{					
 			Yuchsign.PopupWaiting("正在提交注册...",this);

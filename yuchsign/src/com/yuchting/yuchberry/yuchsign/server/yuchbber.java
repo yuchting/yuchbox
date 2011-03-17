@@ -35,7 +35,7 @@ public final class yuchbber {
 	private long m_usingHours = 168;
 	
 	@Persistent
-	private long m_createTime = (new Date()).getTime();
+	private long m_createTime = 0;
 	
 	@Persistent
 	private int m_serverPort = 0;

@@ -342,12 +342,19 @@ public class BberPanel extends TabPanel{
 		AddPushAttr();
 		selectTab(0);
 		
-		RootPanel.get("mainTab").add(this);
 		
 	}
 	
-	private void AddAccountAttr(){
+	public void ShowBberPanle(){
+		RootPanel.get("mainTab").add(this);
+	}
+	
+	public void HideBberPanel(){
+		RootPanel.get("mainTab").remove(this);
+	}
 		
+	private void AddAccountAttr(){
+			
 		Button t_syncBut = new Button("同步账户");
 		t_syncBut.addClickHandler(new ClickHandler() {
 			
@@ -377,6 +384,15 @@ public class BberPanel extends TabPanel{
 			}
 		});
 		
+		final Button t_signoutBut		= new Button("退出");
+		t_signoutBut.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				m_mainServer.Signout();
+			}
+		});
+		
 		
 		m_signature.setPixelSize(420,100);
 				
@@ -384,6 +400,7 @@ public class BberPanel extends TabPanel{
 		final FlexTable  t_layout = new FlexTable();	
 		
 		int t_line = 0;
+		t_layout.setWidget(t_line,2,t_signoutBut);
 		AddLabelWidget(t_layout,"用户名:",m_signinName,t_line++);
 		
 		t_layout.setWidget(t_line, 2, t_levelUpBut);
@@ -604,13 +621,13 @@ public class BberPanel extends TabPanel{
 				Yuchsign.PopupPrompt("数据错误:" + e.getMessage() , _panel);
 			}
 			
-			SetYuchbberData(m_currentBber);
+			ShowYuchbberData(m_currentBber);
 			
 			Yuchsign.HideWaiting();
 		}
 	}
 	
-	public void SetYuchbberData(final yuchbber _bber){
+	public void ShowYuchbberData(final yuchbber _bber){
 		m_currentBber = _bber;
 		
 		m_signinName.setText(_bber.GetSigninName());
@@ -636,9 +653,8 @@ public class BberPanel extends TabPanel{
 		m_signature.setText(_bber.GetSignature());
 		
 		RefreshPushList(_bber);
-		
 	}
-	
+		
 	private String GetBberLevelString(int _bberLev){
 		switch(_bberLev){
 		case 0: return "一般用户";

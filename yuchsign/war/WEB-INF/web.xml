@@ -13,7 +13,27 @@
   
   <servlet-mapping>
     <servlet-name>greetServlet</servlet-name>
-    <url-pattern>/yuchsign/greet</url-pattern>
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>payServlet</servlet-name>
+    <servlet-class>com.yuchting.yuchberry.yuchsign.server.PayServiceImpl</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>payServlet</servlet-name>
+    <url-pattern>/pay/*</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>payLevServlet</servlet-name>
+    <servlet-class>com.yuchting.yuchberry.yuchsign.server.PayLevServiceImpl</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>payLevServlet</servlet-name>
+    <url-pattern>/paylev/*</url-pattern>
   </servlet-mapping>
   
   <!-- Default page to serve -->

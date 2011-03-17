@@ -2,21 +2,26 @@ package com.yuchting.yuchberry.yuchsign.server;
 
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
-import java.util.Random;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -46,9 +51,10 @@ final class PMF {
 @SuppressWarnings("serial")
 public class GreetingServiceImpl extends RemoteServiceServlet implements GreetingService {
 
-	private final static Logger fsm_logger = Logger.getLogger("ServerLogger");
+	public final static Logger fsm_logger = Logger.getLogger("ServerLogger");
 	
 	yuchHost m_currSyncHost = null;
+	
 		
 	public String logonServer(String name,String password) throws Exception {
 		
@@ -177,6 +183,19 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 								// find the other host if the host is full
 								//
 								m_currSyncHost =  FindProperHost(t_hostList,t_syncbber.GetEmailList(),t_exceptList);
+								
+								t_exceptList.add(m_currSyncHost);
+								
+							}else if(t_result.indexOf("<Loading />") != -1){
+								
+								// set the createTime has been synchronized if didn't before
+								//
+								if(t_bber.GetCreateTime() == 0){
+									t_bber.SetCreateTime((new Date()).getTime());
+								}
+								
+								return t_result;
+								
 							}else{
 								return t_result;
 							}
@@ -247,6 +266,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					
 					t_bber.InputXMLData(t_result);
 					t_bber.SetConnetHost(m_currSyncHost.m_hostName);
+					
 					
 					t_result = t_bber.OuputXMLData();
 					
@@ -332,13 +352,20 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			if(host.m_recommendHost.length() != 0){
 				String[] t_string = host.m_recommendHost.split(" ");
 				
+				boolean t_add = false;
+				
 				for(yuchEmail email:_emailList){
 					
 					for(String addr:t_string){
 						if(email.m_emailAddr.indexOf(addr) !=-1){
+							t_add = true;
 							t_listHost.add(0,host);
 						}
 					}								
+				}
+				
+				if(!t_add){
+					t_listHost.add(host);
 				}
 			}else{
 				t_listHost.add(host);
@@ -359,7 +386,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				break;
 			}
 		}
-		
+
 		return t_resultHost;
 	}
 	

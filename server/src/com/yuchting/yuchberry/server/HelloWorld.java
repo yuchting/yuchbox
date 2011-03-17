@@ -22,12 +22,8 @@ import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.security.KeyStore;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Properties;
-import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.zip.GZIPInputStream;
@@ -50,8 +46,6 @@ import org.htmlparser.Parser;
 import org.htmlparser.nodes.TextNode;
 import org.htmlparser.tags.LinkTag;
 import org.htmlparser.util.NodeList;
-
-
 
 
 class Inte{
@@ -278,8 +272,28 @@ public class HelloWorld {
 		//System.out.print(t_test.replace("$mail_content$", "I'm here"));
 		///System.out.print("aaaa " + (12 % 100));
 		
-		if(("").isEmpty()){
-			System.out.println("haha");
+		Vector<Integer> t_listHost = new Vector<Integer>();
+		Vector<Integer> _exceptList = new Vector<Integer>();
+		
+		t_listHost.add(new Integer(1));
+		t_listHost.add(new Integer(2));
+		t_listHost.add(new Integer(3));
+		t_listHost.add(new Integer(4));
+		t_listHost.add(new Integer(5));
+		
+		_exceptList.add(new Integer(1));
+		_exceptList.add(new Integer(2));
+		
+		search_tag:
+		for(Integer host : t_listHost){
+			for(Integer except : _exceptList){
+				if(host.intValue() == except.intValue()){
+					break search_tag;
+				}
+			}
+			
+			System.out.println(host.intValue());
+
 		}
 		
 	}
