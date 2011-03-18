@@ -124,26 +124,49 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			
 			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(), t_syncbber.GetSigninName());
 			try{
-				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);				
+				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);		
 
+				long t_createTime	= t_bber.GetCreateTime();
+				long t_hours		= t_bber.GetUsingHours();
+				
 				if(!t_bber.GetPassword().equals(t_syncbber.GetPassword())){
 					return "<Error>密码错误！</Error>";
 				}				
 								
 				if(!t_syncbber.GetEmailList().isEmpty()){
 					
-					t_bber.InputXMLData(_xmlData);
+					t_bber.InputXMLData(_xmlData);					
+
+					// restore backup the time and using hours
+					//
+					t_bber.SetCreateTime(t_createTime);
+					t_bber.SetUsingHours(t_hours);
 					
+					//set the sync bber
+					//
+					if(t_createTime == 0){
+						// first sync
+						//
+						t_syncbber.SetCreateTime((new Date()).getTime());
+					}else{
+						t_syncbber.SetCreateTime(t_createTime);
+					}
+					
+					t_syncbber.SetUsingHours(t_hours);
+					
+					
+					// search the proper host to synchronize
+					//
 					String query = "select from " + yuchHost.class.getName();
 					List<yuchHost> t_hostList = (List<yuchHost>)t_pm.newQuery(query).execute();
 					
 					Vector<yuchHost> t_exceptList = new Vector<yuchHost>();
 					
-					if(t_bber.GetConnectHost().isEmpty()){		
+					if(t_syncbber.GetConnectHost().isEmpty()){		
 						m_currSyncHost =  FindProperHost(t_hostList,t_syncbber.GetEmailList(),t_exceptList);	
 					}else{
 						for(yuchHost host : t_hostList){
-							if(host.m_hostName.equalsIgnoreCase(t_bber.GetConnectHost())){
+							if(host.m_hostName.equalsIgnoreCase(t_syncbber.GetConnectHost())){
 								m_currSyncHost = host;
 								break;
 							}
@@ -164,7 +187,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						
 						while(m_currSyncHost != null){
 							
-							t_bber.SetConnetHost(m_currSyncHost.m_hostName);
+							t_syncbber.SetConnetHost(m_currSyncHost.m_hostName);
 							
 							// query the account
 							//
@@ -176,7 +199,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 							t_header.put("pass",m_currSyncHost.m_httpPassword);
 							
 							Properties t_param = new Properties();
-							t_param.put("bber",_xmlData);
+							t_param.put("bber",t_syncbber.OuputXMLData());
 							
 							String t_result =  RequestURL(t_URL.toString(), t_header, t_param);
 							if(t_result.indexOf("<Max />") != -1){
@@ -185,16 +208,6 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 								m_currSyncHost =  FindProperHost(t_hostList,t_syncbber.GetEmailList(),t_exceptList);
 								
 								t_exceptList.add(m_currSyncHost);
-								
-							}else if(t_result.indexOf("<Loading />") != -1){
-								
-								// set the createTime has been synchronized if didn't before
-								//
-								if(t_bber.GetCreateTime() == 0){
-									t_bber.SetCreateTime((new Date()).getTime());
-								}
-								
-								return t_result;
 								
 							}else{
 								return t_result;
@@ -234,6 +247,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			try{
 				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);				
 
+				long t_createTime = t_bber.GetCreateTime();
+				long t_usingHours = t_bber.GetUsingHours();
+				
 				if(!t_bber.GetPassword().equals(_pass)){
 					return "<Error>密码错误！</Error>";
 				}
@@ -266,7 +282,6 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					
 					t_bber.InputXMLData(t_result);
 					t_bber.SetConnetHost(m_currSyncHost.m_hostName);
-					
 					
 					t_result = t_bber.OuputXMLData();
 					

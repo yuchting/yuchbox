@@ -11,6 +11,7 @@ import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -411,6 +412,7 @@ public class BberPanel extends TabPanel{
 		
 		AddLabelWidget(t_layout,"主机地址:",m_connectHost,t_line++);
 		AddLabelWidget(t_layout,"端口:",m_serverPort,t_line++);
+		AddLabelWidget(t_layout,"用户密码:",new HTML("<登录密码>"),t_line++);
 		AddLabelWidget(t_layout,"推送间隔:",m_pushInterval,t_line++);
 		
 		t_attrPane.add(t_layout);
@@ -531,13 +533,13 @@ public class BberPanel extends TabPanel{
 				
 				@Override
 				public void onFailure(Throwable caught) {
-					Yuchsign.PopupPrompt("同步错误:" + caught.getMessage(),t_bberPanel);
+					PopupProblemAndSearchHelp(caught.getMessage(),t_bberPanel);
 					Yuchsign.HideWaiting();
 				}
 			});
 			
 		}catch(Exception e){
-			Yuchsign.PopupPrompt("同步错误:" + e.getMessage(), this);
+			PopupProblemAndSearchHelp(e.getMessage(),this);
 			Yuchsign.HideWaiting();
 		}
 	}
@@ -550,7 +552,7 @@ public class BberPanel extends TabPanel{
 			Element t_elem = t_doc.getDocumentElement();
 			
 			if(t_elem.getTagName().equals("Error")){
-				Yuchsign.PopupPrompt("同步错误:" + t_elem.getFirstChild().toString(),_panel);
+				PopupProblemAndSearchHelp(t_elem.getFirstChild().toString(),_panel);
 				Yuchsign.HideWaiting();
 			}else{
 				
@@ -565,7 +567,7 @@ public class BberPanel extends TabPanel{
 			    m_checkStateTimer.scheduleRepeating(15*1000);
 			}	
 		}catch(Exception ex){
-			Yuchsign.PopupPrompt("数据错误:" + ex.getMessage(), _panel);
+			PopupProblemAndSearchHelp(ex.getMessage(),_panel);
 			Yuchsign.HideWaiting();
 		}			
 	}
@@ -582,7 +584,7 @@ public class BberPanel extends TabPanel{
 					
 					@Override
 					public void onFailure(Throwable caught) {
-						Yuchsign.PopupPrompt("同步错误:" + caught.getMessage(),_panel);
+						PopupProblemAndSearchHelp(caught.getMessage(),_panel);
 						Yuchsign.HideWaiting();
 					}
 				});
@@ -591,7 +593,7 @@ public class BberPanel extends TabPanel{
 			m_checkStateTimer.cancel();
 			m_checkStateTimer = null;
 			
-			Yuchsign.PopupPrompt("数据错误:" + e.getMessage(), _panel);
+			PopupProblemAndSearchHelp(e.getMessage(),_panel);
 			Yuchsign.HideWaiting();
 		}
 		
@@ -602,7 +604,7 @@ public class BberPanel extends TabPanel{
 		Element t_elem = t_doc.getDocumentElement();
 		
 		if(t_elem.getTagName().equals("Error")){
-			Yuchsign.PopupPrompt("同步错误:" + t_elem.getFirstChild().toString(),_panel);
+			PopupProblemAndSearchHelp(t_elem.getFirstChild().toString(),_panel);
 			Yuchsign.HideWaiting();
 			
 			m_checkStateTimer.cancel();
@@ -613,30 +615,49 @@ public class BberPanel extends TabPanel{
 			m_checkStateTimer.cancel();
 			m_checkStateTimer = null;
 			
-			Yuchsign.PopupPrompt("同步成功！", _panel);
+			Yuchsign.PopupPrompt("同步成功！可以使用手机连接服务器了。\n<body color=red>注意：</body>如果手机没有连接服务器超过14天，\n就需要再次同步。", _panel);
+			Yuchsign.HideWaiting();
 			
 			try{
 				m_currentBber.InputXMLData(_result);
 			}catch(Exception e){
-				Yuchsign.PopupPrompt("数据错误:" + e.getMessage() , _panel);
+				PopupProblemAndSearchHelp(e.getMessage(), _panel);
 			}
 			
-			ShowYuchbberData(m_currentBber);
-			
-			Yuchsign.HideWaiting();
+			ShowYuchbberData(m_currentBber);			
 		}
+	}
+	
+	private void PopupProblemAndSearchHelp(String _help,final Widget _panel){
+		
+		StringBuffer t_search = new StringBuffer();
+		t_search.append("错误：").append(_help).append("\n");
+
+		t_search.append("<a href=\"http://www.google.com.hk/search?hl=zh-CN&source=hp&q=").append(URL.encode(_help)).
+				append("\" target=_blank>搜索获得帮助</a>");		
+		
+		Yuchsign.PopupPrompt(t_search.toString(),_panel);
 	}
 	
 	public void ShowYuchbberData(final yuchbber _bber){
 		m_currentBber = _bber;
 		
 		m_signinName.setText(_bber.GetSigninName());
-		m_connectHost.setText(_bber.GetConnectHost());
+		
+		if(_bber.GetConnectHost().isEmpty()){
+			m_connectHost.setText("<没有同步>");
+		}else{
+			m_connectHost.setText(_bber.GetConnectHost());
+		}		
 		
 		m_bberLev.setText(GetBberLevelString(_bber.GetLevel()));
 	    
-	    Date date = new Date(_bber.GetCreateTime() + _bber.GetUsingHours() * 3600000);
-	    m_endTime.setText(DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(date));	    
+		if(_bber.GetCreateTime() == 0){
+		    m_endTime.setText("<没有同步>");
+		}else{
+			Date date = new Date(_bber.GetCreateTime() + _bber.GetUsingHours() * 3600000);
+		    m_endTime.setText(DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(date));
+		}	    	    
 	    
 	    if(_bber.GetServerPort() != 0){
 	    	m_serverPort.setText("" + _bber.GetServerPort());
@@ -653,6 +674,7 @@ public class BberPanel extends TabPanel{
 		m_signature.setText(_bber.GetSignature());
 		
 		RefreshPushList(_bber);
+
 	}
 		
 	private String GetBberLevelString(int _bberLev){

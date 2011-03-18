@@ -1,6 +1,5 @@
 package com.yuchting.yuchberry.yuchsign.client;
 
-import java.net.HttpURLConnection;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -160,8 +159,8 @@ public class Yuchsign implements EntryPoint {
 	    		
 		    	if(_attach != null){
 		    		
-		    		t_left 	= _attach.getAbsoluteLeft() + (_attach.getOffsetWidth() - _text.length() * 8) / 2;
-		    		t_top	= _attach.getAbsoluteTop() + 10; 
+		    		t_left 	= _attach.getAbsoluteLeft() + (_attach.getOffsetWidth() - _text.length() * 12) / 2;
+		    		t_top	= _attach.getAbsoluteTop() + 30; 
 		    		
 		    	}
 	    	}catch(Exception e){}	    	
@@ -186,7 +185,7 @@ public class Yuchsign implements EntryPoint {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
-				
+		
 		m_logonDlg = new LogonDialog(this);
 		m_logonDlg.show();
 				
@@ -230,7 +229,20 @@ public class Yuchsign implements EntryPoint {
 	public static void PopupPrompt(String _prompt,Widget _attachWidget){
 
 		_prompt = _prompt.replaceAll("\n", "<br />");
-		fsm_simplePopup.setWidget(new HTML(_prompt));		
+		fsm_simplePopup.setWidget(new HTML(_prompt));
+		
+		int t_maxLine = 0;
+		String[] t_lines =_prompt.split("<br />");
+		
+		for(String line:t_lines){
+			// get ride of HTML tag
+			//
+			if(line.indexOf("/>") == -1 && line.indexOf("</") == -1
+					
+			&& t_maxLine < line.length()){
+				t_maxLine = line.length();
+			}
+		}
 		
 		int left;
 		int top;
@@ -239,8 +251,12 @@ public class Yuchsign implements EntryPoint {
 			left = 100;
 	        top = 300;
 		}else{
-			left = _attachWidget.getAbsoluteLeft() + (_attachWidget.getOffsetWidth()) / 2;
+			left = _attachWidget.getAbsoluteLeft() + (_attachWidget.getOffsetWidth() - t_maxLine * 13) / 2;
 	        top = _attachWidget.getAbsoluteTop() + (_attachWidget.getOffsetHeight()) / 2;	
+		}
+		
+		if(left < 0){
+			left = 0;
 		}
 		
         fsm_simplePopup.setPopupPosition(left, top);

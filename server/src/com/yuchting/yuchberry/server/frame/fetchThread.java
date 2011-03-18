@@ -15,14 +15,14 @@ public class fetchThread extends Thread{
 	
 	boolean	m_sendTimeupMail = false;
 		
-	long		m_expiredTime	= 0;
+	long		m_usingHours	= 0;
 	long		m_formerTimer	= 0;
 	
 	long		m_clientDisconnectTime	= 0;
 		
 	public fetchThread(fetchMgr _mainMgr,String _prefix,long _expiredTime,
 					long _formerTimer,boolean _testConnect)throws Exception{
-		m_expiredTime = _expiredTime * 1000 * 3600;
+		m_usingHours = _expiredTime;
 		
 		m_fetchMgr = _mainMgr;
 		m_logger = new Logger(_prefix);
@@ -38,7 +38,7 @@ public class fetchThread extends Thread{
 	}
 	
 	public void run(){
-				
+		
 		while(!m_close){
 			
 			try{
@@ -52,16 +52,21 @@ public class fetchThread extends Thread{
 				m_logger.PrinterException(e);
 			}
 			
-			try{
-				sleep(60000);
-			}catch(Exception ex){}
+			if(m_close){
+				break;
+			}else{
+
+				try{
+					sleep(600000);
+				}catch(Exception ex){}	
+			}
 		}
 	}
 	
 	
-	public long GetLastTime(){
-		if(m_expiredTime > 0){
-			return m_expiredTime - ((new Date()).getTime() - m_formerTimer);
+	public long GetLastTime(long _currTime){
+		if(m_usingHours > 0){
+			return m_usingHours * 3600000 - (_currTime - m_formerTimer);
 		}
 		
 		return 0;
@@ -107,10 +112,7 @@ public class fetchThread extends Thread{
 				throw e;
 				
 			}finally{
-				if(GetLastTime() < 0){
-					m_formerTimer = (new Date()).getTime();
-				}
-				
+								
 				interrupt();
 			}
 			

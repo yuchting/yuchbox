@@ -491,7 +491,7 @@ public class createDialog extends JDialog implements DocumentListener,
 				dispose();
 				
 			}catch(Exception ex){
-				JOptionPane.showMessageDialog(this, ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+				m_mainFrame.PromptAndLog(ex);
 			}
 						
 		}
@@ -709,14 +709,14 @@ public class createDialog extends JDialog implements DocumentListener,
 						m_commonConfigListModel.addElement(t_config.m_name);
 						
 					}catch(Exception e){
-						JOptionPane.showMessageDialog(this, "读取" + "commonMailSvr.ini " + "出现问题：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+						m_mainFrame.PromptAndLog(e);
 					}
 				}
 			}
 			
 			
 		}catch(Exception e){
-			JOptionPane.showMessageDialog(this, "读取" + "commonMailSvr.ini " + "出现问题：" + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+			m_mainFrame.PromptAndLog(e);
 		}	
 
 	}

@@ -123,6 +123,8 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	NanoHTTPD	m_httpd					= null;
 	
+	Logger		m_logger				= new Logger("");
+	
 	static public void main(String _arg[]){
 		new fakeMDSSvr();
 		new mainFrame();
@@ -203,7 +205,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 		LoadYuchsign();
 	}
-		
+			
 	public void LoadStoreAccountInfo(){
 		
 		Thread t_load = new Thread(){
@@ -240,6 +242,10 @@ public class mainFrame extends JFrame implements ActionListener{
 								
 								fetchThread t_thread = new fetchThread(new fetchMgr(),t_prefix,
 													Long.valueOf(t_data[1]).longValue(),Long.valueOf(t_data[2]).longValue(),false);
+								
+								if(t_data.length >= 4){
+									t_thread.m_clientDisconnectTime = Long.valueOf(t_data[3]).longValue();
+								}
 				
 								t_mainFrame.AddAccountThread(t_thread,false);
 															
@@ -247,7 +253,7 @@ public class mainFrame extends JFrame implements ActionListener{
 								
 																
 							}catch(Exception e){
-								JOptionPane.showMessageDialog(t_mainFrame,"服务器账户连接错误：" + e.getMessage() , "错误", JOptionPane.ERROR_MESSAGE);
+								PromptAndLog(e);
 							}
 						}
 					}					
@@ -256,7 +262,7 @@ public class mainFrame extends JFrame implements ActionListener{
 					t_mainFrame.m_loadDialog.dispose();
 					
 				}catch(Exception e){
-					JOptionPane.showMessageDialog(t_mainFrame,"服务器账户数据读取出错：" + e.getMessage() , "错误", JOptionPane.ERROR_MESSAGE);
+					PromptAndLog(e);
 				}
 			}
 		};
@@ -266,6 +272,34 @@ public class mainFrame extends JFrame implements ActionListener{
 		t_load.start();
 		
 		m_loadDialog.setVisible(true);		
+	}
+	
+	public void StoreAccountInfo(){
+		try{
+			FileOutputStream t_file = new FileOutputStream(fsm_accountDataFilename);
+			
+			StringBuffer t_buffer = new StringBuffer();
+			for(int i = 0;i < m_accountList.size();i++){
+				fetchThread t_thread = (fetchThread)m_accountList.elementAt(i);
+				t_buffer.append(t_thread.m_fetchMgr.GetAccountName()).append(",")
+						.append((t_thread.m_usingHours)).append(",")
+						.append(t_thread.m_formerTimer).append(",")
+						.append(t_thread.m_clientDisconnectTime).append(",")
+						.append("\r\n");
+			}
+			
+			t_file.write(t_buffer.toString().getBytes("UTF-8"));
+			t_file.flush();
+			t_file.close();
+			
+		}catch(Exception e){
+			PromptAndLog(e);
+		}	
+	}
+	
+	public void PromptAndLog(Exception _e){
+		m_logger.PrinterException(_e);
+		JOptionPane.showMessageDialog(this,"请查看Log:" + _e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
 	}
 	
 	public void ConstructMoveSeparator(){
@@ -347,9 +381,7 @@ public class mainFrame extends JFrame implements ActionListener{
 						try{
 							OpenFileEdit(t_configFile);
 						}catch(Exception ex){
-							JOptionPane.showMessageDialog(JFrame.getFrames()[0],
-									"打开" + t_configFile + "出错：" + ex.getMessage() + ", 请打开" + t_configFile, 
-									"错误", JOptionPane.ERROR_MESSAGE);
+							PromptAndLog(ex);
 						}
 						
 					}else if(e.getSource() == m_delAccountItem){
@@ -494,7 +526,7 @@ public class mainFrame extends JFrame implements ActionListener{
 //		m_formerHost_port_send	= _thread.m_fetchMgr.GetSendPort();
 		
 		m_pushInterval		= _thread.m_fetchMgr.GetPushInterval();
-		m_expiredTime		= _thread.m_expiredTime / (1000 * 3600);
+		m_expiredTime		= _thread.m_usingHours;
 		
 		if(_storeAccountInfo){
 			StoreAccountInfo();
@@ -543,7 +575,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			try{
 				OpenURL(t_sponsorURL);
 			}catch(Exception ex){
-				JOptionPane.showMessageDialog(this,"打开网页出错 " + ex.getMessage() + ", 请访问\n" + t_sponsorURL, "错误", JOptionPane.ERROR_MESSAGE);
+				PromptAndLog(ex);
 			}
 			
 		}else if(e.getSource() == m_searchButton){
@@ -591,39 +623,26 @@ public class mainFrame extends JFrame implements ActionListener{
 		StoreAccountInfo();
 	}
 	
-	public void StoreAccountInfo(){
-		try{
-			FileOutputStream t_file = new FileOutputStream(fsm_accountDataFilename);
-			for(int i = 0;i < m_accountList.size();i++){
-				fetchThread t_thread = (fetchThread)m_accountList.elementAt(i);
-				t_file.write((t_thread.m_fetchMgr.GetAccountName() + "," + (t_thread.m_expiredTime / (1000 * 3600)) + "," + t_thread.m_formerTimer + "\r\n").getBytes("UTF-8"));
-			}
-			t_file.flush();
-			t_file.close();
-			
-		}catch(Exception e){
-			JOptionPane.showMessageDialog(this,"服务器账户数据保存出错：" + e.getMessage() , "错误", JOptionPane.ERROR_MESSAGE);
-		}	
-	}
-	
 	public synchronized void RefreshState(){
 		int t_connectNum = 0;
 		int t_usingNum = 0;
 		
 		final long t_currTime = (new Date()).getTime();
 		
+		Vector<fetchThread> t_deadPool = new Vector<fetchThread>();
+		
 		for(int i = 0;i < m_accountList.size();i++){
 			fetchThread t_thread = (fetchThread)m_accountList.elementAt(i);
 						
 			if(!t_thread.m_pauseState){
 				
-				if(t_thread.GetLastTime() < 0){
+				if(t_thread.GetLastTime(t_currTime) < 0){
 					t_thread.Pause();
 				}
 				
 				t_usingNum++;
 				
-				final long t_lastTime = t_thread.GetLastTime();
+				final long t_lastTime = t_thread.GetLastTime(t_currTime);
 				
 				if(!t_thread.m_sendTimeupMail && t_lastTime > 0 && t_lastTime < 3600 * 1000){
 					
@@ -646,10 +665,26 @@ public class mainFrame extends JFrame implements ActionListener{
 				}
 			}
 			
+			if(t_thread.m_clientDisconnectTime != 0){
+				if(Math.abs(t_currTime - t_thread.m_clientDisconnectTime) >= 14 * 24 * 3600 * 1000  ){
+					t_deadPool.add(t_thread);
+				}
+			}
+			
+		}
+		
+		// delete the disconnect time-up thread
+		//
+		for(fetchThread thread : t_deadPool){
+			DelAccoutThread(thread.m_fetchMgr.GetAccountName(), false);
+			m_logger.LogOut("未连接时间超过14天，删除帐户 " + thread.m_fetchMgr.GetAccountName());
+		}
+		
+		if(!t_deadPool.isEmpty()){
+			StoreAccountInfo();
 		}
 		
 		m_stateLabel.setText("连接账户/使用帐户/总帐户：" + t_connectNum + "/" + t_usingNum + "/" + m_accountList.size());
-		
 		m_accountTable.RefreshState();
 		
 		if(m_currentSelectThread != null){
@@ -737,7 +772,7 @@ public class mainFrame extends JFrame implements ActionListener{
 	public synchronized int GetAvailableServerPort(){
 				
 		if(m_accountList.isEmpty() && m_bberRequestList.isEmpty()){
-			return 9716;
+			return 9717;
 		}
 		
 		List<Integer> t_portList = new ArrayList<Integer>();
@@ -787,6 +822,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			if(m_orgThread != null){
 				m_serverPort	= _orgThread.m_fetchMgr.GetServerPort();
 				m_prefix		= _orgThread.m_fetchMgr.GetPrefixString();
+				
 				
 				// start listening
 				//
@@ -845,7 +881,13 @@ public class mainFrame extends JFrame implements ActionListener{
 					
 					createDialog.WriteSignature(m_orgThread.m_fetchMgr.GetPrefixString(), m_currbber.GetSignature());
 					
+					m_orgThread.m_fetchMgr.InitConnect(m_orgThread.m_fetchMgr.GetPrefixString(),m_orgThread.m_logger);
+					m_orgThread.m_fetchMgr.ResetAllAccountSession(true);
+					
 					m_orgThread.Reuse();
+					
+					m_orgThread.m_usingHours = m_currbber.GetUsingHours();
+					m_orgThread.m_formerTimer = m_currbber.GetCreateTime();
 					
 				}else{
 					
@@ -892,6 +934,8 @@ public class mainFrame extends JFrame implements ActionListener{
 			}catch(Exception e){
 				m_result = "<Error>" + e.getMessage() + "</Error>";
 			}
+			
+			m_logger.LogOut(m_currbber.GetSigninName() + " 同步结果: " + m_result);
 		}
 		
 	}
@@ -915,16 +959,16 @@ public class mainFrame extends JFrame implements ActionListener{
 			}
 			
 			try{
-				final String t_pass = in.readLine();
+				final String t_framePass = in.readLine();
 				final String t_port = in.readLine();
 				final int 	  t_maxBber = Integer.valueOf(in.readLine()).intValue();
 				
 				m_httpd = new NanoHTTPD(Integer.valueOf(t_port).intValue()){
 					public Response serve( String uri, String method, Properties header, Properties parms, Properties files ){
 						
-						String t_pass = header.getProperty("pass");
+						String pass = header.getProperty("pass");
 						
-						if(t_pass == null || !t_pass.equals(t_pass)){
+						if(pass == null || !pass.equals(t_framePass)){
 							return new NanoHTTPD.Response( HTTP_FORBIDDEN, MIME_PLAINTEXT, "");
 						}
 						
@@ -998,6 +1042,9 @@ public class mainFrame extends JFrame implements ActionListener{
 				// create new request thread
 				//
 				m_bberRequestList.add(new BberRequestThread(this,t_bber,t_thread));
+				
+				m_logger.LogOut("bber" + t_bber.GetSigninName() + " sync, current Thread:" + m_bberRequestList.size());
+				
 				return "<Loading />";
 			}
 			

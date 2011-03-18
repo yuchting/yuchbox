@@ -63,7 +63,7 @@ public class accountTable extends JTable{
 				_mgr.GetAccountName(),
 				new Integer(_mgr.GetServerPort()),
 				_mgr.GetUserPassword(),
-				new Long(_thread.m_expiredTime / (1000 * 3600)),
+				new Long(_thread.m_usingHours),
 				new Boolean(_mgr.IsUseSSL()),
 				"",
 		};
@@ -78,14 +78,12 @@ public class accountTable extends JTable{
 		
 		Date t_date = new Date();
 		
+		long t_currTime = t_date.getTime();
+				
 		for(int i = 0;i < t_rowNum;i++){
 			fetchThread t_thread = (fetchThread)m_fetchMgrListRef.elementAt(i);
 			
-			if(t_thread.m_pauseState){
-				m_defaultModel.setValueAt(new Long(-1),i,3);
-			}else{
-				m_defaultModel.setValueAt(new Long(t_thread.GetLastTime() / 1000 / 3600),i,3);
-			}
+			m_defaultModel.setValueAt(new Long(t_thread.GetLastTime(t_currTime) / 3600000),i,3);			
 			
 			if(t_thread.m_pauseState){
 				m_defaultModel.setValueAt("暂停",i, 5);
@@ -95,10 +93,11 @@ public class accountTable extends JTable{
 				m_defaultModel.setValueAt("客户端连接中",i, 5);
 			}else{
 				String t_clientDate = "(未连接过)";
-				if(t_thread.m_clientDisconnectTime != 0){
+				if(t_thread.m_clientDisconnectTime != 0){	
 					t_date.setTime(t_thread.m_clientDisconnectTime);
 					t_clientDate = (new SimpleDateFormat("(上次链接时间 yyyy年MM月dd日 HH:mm)")).format(t_date);
 				}
+				
 				m_defaultModel.setValueAt("监听中" + t_clientDate,i, 5);
 			}
 		}
