@@ -928,8 +928,9 @@ public class mainFrame extends JFrame implements ActionListener{
 				}
 				
 				
-				m_currbber.SetServerProt(m_serverPort);
-				m_result = m_currbber.OuputXMLData();
+				// to tell the web server port
+				//
+				m_result = "<Port>" + m_serverPort +"</Port>";
 				
 			}catch(Exception e){
 				m_result = "<Error>" + e.getMessage() + "</Error>";
@@ -986,7 +987,7 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	private synchronized String ProcessHTTPD(String method, Properties header, Properties parms,int _maxBber){
 		
-		String t_string = parms.getProperty("bber");
+		String t_string = header.getProperty("bber");
 		if( t_string == null){
 			return "<Error>没有bber参数的URL</Error>";
 		}
@@ -1020,7 +1021,11 @@ public class mainFrame extends JFrame implements ActionListener{
 							return bber.m_result;
 						}
 					}else{
-						return "<Error>这个账户已经有一个请求正在同步，请等10分钟再试</Error>";
+						if(bber.isAlive()){
+							return "<Error>这个账户已经有一个请求正在同步，请等10分钟再试</Error>";
+						}
+						m_bberRequestList.remove(bber);
+						break;
 					}					 
 				}
 			}

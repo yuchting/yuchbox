@@ -413,7 +413,7 @@ public class BberPanel extends TabPanel{
 		AddLabelWidget(t_layout,"主机地址:",m_connectHost,t_line++);
 		AddLabelWidget(t_layout,"端口:",m_serverPort,t_line++);
 		AddLabelWidget(t_layout,"用户密码:",new HTML("<登录密码>"),t_line++);
-		AddLabelWidget(t_layout,"推送间隔:",m_pushInterval,t_line++);
+		AddLabelWidget(t_layout,"推送间隔(秒):",m_pushInterval,t_line++);
 		
 		t_attrPane.add(t_layout);
 		t_attrPane.add( m_usingSSL);

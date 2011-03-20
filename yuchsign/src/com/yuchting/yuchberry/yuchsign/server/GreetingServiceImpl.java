@@ -2,7 +2,6 @@ package com.yuchting.yuchberry.yuchsign.server;
 
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
@@ -13,15 +12,11 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -55,6 +50,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	
 	yuchHost m_currSyncHost = null;
 	
+	long m_createTime = 0;
 		
 	public String logonServer(String name,String password) throws Exception {
 		
@@ -126,30 +122,44 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			try{
 				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);		
 
-				long t_createTime	= t_bber.GetCreateTime();
+				m_createTime	= t_bber.GetCreateTime();
 				long t_hours		= t_bber.GetUsingHours();
+				int t_lev			= t_bber.GetLevel();
+				long t_latesSyncTime = t_bber.GetLatestSyncTime();
 				
 				if(!t_bber.GetPassword().equals(t_syncbber.GetPassword())){
 					return "<Error>密码错误！</Error>";
-				}				
+				}
+				
+				if(t_latesSyncTime != 0){
+					// judge the sync time
+					//
+					if(Math.abs((new Date()).getTime() - t_latesSyncTime) < 10 * 60 * 1000){
+						return "<Error>一个账户同步时间的最小间隔是10分钟，请不要过于频繁。</Error>";
+					}
+				}
 								
+				
 				if(!t_syncbber.GetEmailList().isEmpty()){
 					
 					t_bber.InputXMLData(_xmlData);					
 
 					// restore backup the time and using hours
 					//
-					t_bber.SetCreateTime(t_createTime);
+					t_bber.SetCreateTime(m_createTime);
 					t_bber.SetUsingHours(t_hours);
+					t_bber.SetLevel(t_lev);
+					t_bber.SetLatestSyncTime(t_latesSyncTime);
 					
 					//set the sync bber
 					//
-					if(t_createTime == 0){
+					if(m_createTime == 0){
 						// first sync
 						//
-						t_syncbber.SetCreateTime((new Date()).getTime());
+						m_createTime = (new Date()).getTime();
+						t_syncbber.SetCreateTime(m_createTime);
 					}else{
-						t_syncbber.SetCreateTime(t_createTime);
+						t_syncbber.SetCreateTime(m_createTime);
 					}
 					
 					t_syncbber.SetUsingHours(t_hours);
@@ -197,11 +207,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 							
 							Properties t_header = new Properties();
 							t_header.put("pass",m_currSyncHost.m_httpPassword);
+							t_header.put("bber",t_syncbber.OuputXMLData());
 							
-							Properties t_param = new Properties();
-							t_param.put("bber",t_syncbber.OuputXMLData());
-							
-							String t_result =  RequestURL(t_URL.toString(), t_header, t_param);
+							String t_result =  RequestURL(t_URL.toString(), t_header, null);
 							if(t_result.indexOf("<Max />") != -1){
 								// find the other host if the host is full
 								//
@@ -247,9 +255,6 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			try{
 				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);				
 
-				long t_createTime = t_bber.GetCreateTime();
-				long t_usingHours = t_bber.GetUsingHours();
-				
 				if(!t_bber.GetPassword().equals(_pass)){
 					return "<Error>密码错误！</Error>";
 				}
@@ -263,11 +268,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				Properties t_header = new Properties();
 				t_header.put("pass",m_currSyncHost.m_httpPassword);
 				t_header.put("check",_signinName);
+				t_header.put("bber",_signinName);
 				
-				Properties t_param = new Properties();
-				t_param.put("bber",_signinName);
-				
-				String t_result = RequestURL(t_URL.toString(), t_header, t_param);
+				String t_result = RequestURL(t_URL.toString(), t_header, null);
 				
 				// read the information
 				//
@@ -278,10 +281,18 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 //				
 //				Element t_elem = t_doc.getDocumentElement();
 				
-				if(t_result.indexOf("<yuchbber") != -1){
+				int t_portTag_start		= t_result.indexOf("<Port>");
+				int t_portTag_end		= t_result.indexOf("</Port>");
+				if(t_portTag_start != -1){
 					
-					t_bber.InputXMLData(t_result);
+					t_result = t_result.substring(t_portTag_start + 6,t_portTag_end);
+					int t_port = Integer.valueOf(t_result).intValue();
+					
+					t_bber.SetServerProt(t_port);
 					t_bber.SetConnetHost(m_currSyncHost.m_hostName);
+					
+					t_bber.SetCreateTime(m_createTime);
+					t_bber.SetLatestSyncTime((new Date()).getTime());
 					
 					t_result = t_bber.OuputXMLData();
 					
@@ -329,7 +340,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			while ( e.hasMoreElements()){
 				String name = (String)e.nextElement();
 				String value = header.getProperty(name);
-				con.setRequestProperty(name,value);
+				con.setRequestProperty(name,URLEncoder.encode(value,"UTF-8"));
 			}
 		}		
 		con.connect();

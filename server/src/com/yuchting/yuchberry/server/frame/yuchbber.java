@@ -34,6 +34,8 @@ public final class yuchbber {
 	
 	private int m_bberLev = 0;
 
+	private long m_latestSyncTime = 0;
+	
 	private Vector<yuchEmail>	m_emailList = new Vector<yuchEmail>();
 	
 	public yuchbber(final String _name,final String _pass){
@@ -46,6 +48,9 @@ public final class yuchbber {
 	
 	public int GetLevel(){return m_bberLev;}
 	public void SetLevel(int _level){ m_bberLev = _level;}
+	
+	public long GetLatestSyncTime(){return m_latestSyncTime;}
+	public void SetLatestSyncTime(long _time){m_latestSyncTime = _time;}
 	
 	public void SetSigninName(final String _name){m_signinName = _name;}
 	public String GetSigninName(){return m_signinName;}
@@ -100,6 +105,7 @@ public final class yuchbber {
 									append("\" T2S=\"").append(m_convertSimpleChar?1:0).
 									append("\" signature=\"").append(t_signature).
 									append("\" lev=\"").append(m_bberLev).
+									append("\" sync=\"").append(m_latestSyncTime).
 									append("\">\n");
 				
 		for(yuchEmail email : m_emailList){
@@ -130,6 +136,7 @@ public final class yuchbber {
 		
 		m_signature = ReadStringAttr(t_elem,"signature");
 		m_bberLev	= ReadIntegerAttr(t_elem, "lev");
+		m_latestSyncTime = ReadLongAttr(t_elem,"sync");
 		
 		m_signature = m_signature.replaceAll("&lt;", "<");
 		m_signature = m_signature.replaceAll("&gt;", ">");
