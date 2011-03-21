@@ -992,11 +992,16 @@ public class mainFrame extends JFrame implements ActionListener{
 			return "<Error>没有bber参数的URL</Error>";
 		}
 		
-		boolean t_checkState = (header.getProperty("check") != null);
-		
 		try{
+			
 			String t_bberParam = URLDecoder.decode(t_string, "UTF-8");
 			
+			if((header.getProperty("log") != null)){
+				return ProcessLogQuery(t_bberParam);
+			}
+			
+			boolean t_checkState = (header.getProperty("check") != null);		
+					
 			String t_signinName = null;
 			yuchbber t_bber = null;
 			if(t_checkState){
@@ -1036,7 +1041,7 @@ public class mainFrame extends JFrame implements ActionListener{
 				
 				// search the former thread
 				//
-				fetchThread t_thread = SearchAccountThread(t_bber.GetSigninName(), t_bber.GetServerPort());
+				fetchThread t_thread = SearchAccountThread(t_bber.GetSigninName(),0);
 				
 				if(t_thread == null && m_accountList.size() >= _maxBber){
 					// if reach the max bber
@@ -1058,6 +1063,43 @@ public class mainFrame extends JFrame implements ActionListener{
 			return "<Error>" + e.getMessage() + "</Error>";
 		}
 	}
+	
+	static final int fsm_maxReadLogLen = 4096;
+	
+	
+	private String ProcessLogQuery(String _bberName){
+		// search the former thread
+		//
+		fetchThread t_thread = SearchAccountThread(_bberName,0);
+		if(t_thread == null){
+			return "<Error>在主机上查询不到账户，请先同步，获得有效主机。</Error>";
+		}
+		
+		try{
+			FileInputStream t_stream = new FileInputStream(t_thread.m_logger.GetLogFileName());
+			try{
+				int t_fileLen = t_stream.available();
+				if(t_fileLen == 0){
+					return "null";
+				}
+				
+				t_stream.skip(Math.max(t_fileLen - fsm_maxReadLogLen,0));
+				
+				
+				byte[] t_readLogBuffer = new byte[Math.min(t_fileLen - 1, fsm_maxReadLogLen)];
+				t_stream.read(t_readLogBuffer);
+				
+				return (new String(t_readLogBuffer,"UTF-8"));
+				
+			}finally{
+				t_stream.close();
+			}
+		}catch(Exception e){
+			return "<Error>读取文件失败:"+e.getMessage()+"</Error>";
+		}
+		
+	}
+	
 	
 	
 

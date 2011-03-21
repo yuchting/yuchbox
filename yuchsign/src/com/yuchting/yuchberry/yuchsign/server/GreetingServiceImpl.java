@@ -134,7 +134,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				if(t_latesSyncTime != 0){
 					// judge the sync time
 					//
-					if(Math.abs((new Date()).getTime() - t_latesSyncTime) < 10 * 60 * 1000){
+					if(Math.abs((new Date()).getTime() - t_latesSyncTime) < 6 * 1000){
 						return "<Error>一个账户同步时间的最小间隔是10分钟，请不要过于频繁。</Error>";
 					}
 				}
@@ -311,11 +311,56 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			t_pm.close();
 		}		
 	}
-	
-	private String RequestURL(String _string,Properties header, Properties parms)throws Exception{
+	public String checkAccountLog(String _signinName,String _pass)throws Exception{
+		PersistenceManager t_pm = PMF.get().getPersistenceManager();
+		try{
+			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(),_signinName);
+			try{
+				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);				
+
+				if(!t_bber.GetPassword().equals(_pass)){
+					return "<Error>密码错误！</Error>";
+				}
+				
+				if(t_bber.GetConnectHost().isEmpty()){
+					return "<Error>没有获得主机，无法查询日志</Error>";
+				}
+				
+				// search the proper host to synchronize
+				//
+				String query = "select from " + yuchHost.class.getName();
+				List<yuchHost> t_hostList = (List<yuchHost>)t_pm.newQuery(query).execute();
+				
+				for(yuchHost host : t_hostList){
+					if(host.m_hostName.equalsIgnoreCase(t_bber.GetConnectHost())){
+						StringBuffer t_URL = new StringBuffer();
+						t_URL.append("http://").append(host.m_hostName).append(":").append(host.m_httpPort);
+						
+						Properties t_header = new Properties();
+						t_header.put("pass",host.m_httpPassword);
+						t_header.put("bber",_signinName);
+						t_header.put("log",_signinName);
+						
+						return RequestURL(t_URL.toString(), t_header, null);
+					}
+				}
+				
+				return "<Error>之前同步过的主机已经被删除，请先同步</Error>";				
+				
+			}catch(javax.jdo.JDOObjectNotFoundException e){
+				return "<Error>找不到用户!</Error>";
+			}
+			
+			
+		}finally{
+			
+			t_pm.close();
+		}	
+	}
+	private String RequestURL(String _url,Properties header, Properties parms)throws Exception{
 		
 		StringBuffer t_final = new StringBuffer();
-		t_final.append(_string);
+		t_final.append(_url);
 		
 		if(parms != null){
 			t_final.append("?");

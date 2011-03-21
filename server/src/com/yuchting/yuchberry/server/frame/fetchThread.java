@@ -42,9 +42,12 @@ public class fetchThread extends Thread{
 		while(!m_close){
 			
 			try{
-				while(m_pauseState){
-					sleep(2000);
-				}				
+				try{
+					while(m_pauseState){
+						sleep(2000);
+					}	
+				}catch(Exception e){}
+							
 				
 				m_fetchMgr.StartListening();
 				

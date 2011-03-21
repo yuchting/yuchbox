@@ -283,6 +283,11 @@ public class Yuchsign implements EntryPoint {
 		fsm_waitingLable.Hide();
 	}
 	
+	public static native String openNewTab(String url)/*-{
+		return $wnd.open('url', 
+		'target=_blank')
+	}-*/;
+	
 	
 	
 	

@@ -14,6 +14,7 @@ import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -315,6 +316,8 @@ public class BberPanel extends TabPanel{
 	
 	final ContentTab m_pushContent	= new ContentTab();
 	
+	final TextArea	m_logText		= new TextArea();
+	
 	Yuchsign	m_mainServer	= null;
 			
 	yuchbber m_currentBber = null;
@@ -341,6 +344,8 @@ public class BberPanel extends TabPanel{
 		
 		AddAccountAttr();
 		AddPushAttr();
+		AddCheckLog();
+		
 		selectTab(0);
 		
 		
@@ -504,6 +509,77 @@ public class BberPanel extends TabPanel{
 				}
 			}
 		});
+	}
+	
+	private void AddCheckLog(){
+		final Button t_checkBut = new Button("检查日志");
+		final Button t_seekHelp = new Button("查找帮助");
+		
+		m_logText.setSize("500px", "300px");
+		m_logText.setReadOnly(true);
+		
+		final HorizontalPanel t_buttonPane = new HorizontalPanel();
+		t_buttonPane.add(t_checkBut);
+		t_buttonPane.add(t_seekHelp);
+		
+		final VerticalPanel t_mainPane = new VerticalPanel();
+		t_mainPane.add(t_buttonPane);
+		t_mainPane.add(m_logText);
+		
+		t_checkBut.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				try{
+					
+					Yuchsign.PopupWaiting("正在查询日志", t_mainPane);
+					
+					m_mainServer.greetingService.checkAccountLog(m_currentBber.GetSigninName(),m_currentBber.GetPassword(),
+					new AsyncCallback<String>() {
+						
+						@Override
+						public void onSuccess(String result) {
+							Yuchsign.HideWaiting();
+							
+							if(result.startsWith("<Error>")){
+								int t_begin = result.indexOf("<Error>");
+								int t_end = result.indexOf("</Error>");
+								if(t_end != -1){
+									PopupProblemAndSearchHelp(result.substring(t_begin + 7,t_end),t_mainPane);
+								}else{
+									PopupProblemAndSearchHelp(result,t_mainPane);
+								}								
+							
+							}else{
+								m_logText.setText(result);
+							}						
+						}
+						
+						@Override
+						public void onFailure(Throwable caught) {
+							PopupProblemAndSearchHelp(caught.getMessage(),t_mainPane);
+							Yuchsign.HideWaiting();
+						}
+					});
+				}catch(Exception e){
+					PopupProblemAndSearchHelp(e.getMessage(),t_mainPane);
+					Yuchsign.HideWaiting();
+				}
+				
+				
+			}
+		});
+		
+		t_seekHelp.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				Window.open("http://code.google.com/p/yuchberry/wiki/Connect_Error_info#服务器条目", "_blank", "");
+			}
+		});
+		
+		
+		add(t_mainPane,"查询日志");
 	}
 	
 	private void StartSync(){
@@ -672,6 +748,8 @@ public class BberPanel extends TabPanel{
 		m_convertToSimple.setValue(_bber.IsConvertSimpleChar());
 		
 		m_signature.setText(_bber.GetSignature());
+		
+		m_logText.setText("");
 		
 		RefreshPushList(_bber);
 

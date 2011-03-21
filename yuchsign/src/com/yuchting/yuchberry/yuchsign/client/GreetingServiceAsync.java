@@ -15,6 +15,8 @@ public interface GreetingServiceAsync {
 	
 	void syncAccount_check(String _signinName,String _pass,AsyncCallback<String> callback)throws Exception;
 	
+	void checkAccountLog(String _signinName,String _pass,AsyncCallback<String> callback)throws Exception;
+	
 	void getHostList(AsyncCallback<String> callback)throws Exception;
 	
 	void addHost(String _hostXMLData,AsyncCallback<String> callback)throws Exception;
