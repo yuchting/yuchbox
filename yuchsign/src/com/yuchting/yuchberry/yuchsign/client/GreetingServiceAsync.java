@@ -11,6 +11,8 @@ public interface GreetingServiceAsync {
 	
 	void signinAccount(String name,String password,AsyncCallback<String> callback)throws Exception;
 	
+	void findPassword(String _signinName,AsyncCallback<String> callback)throws Exception;
+	
 	void syncAccount(String _xmlData,AsyncCallback<String> callback)throws Exception;
 	
 	void syncAccount_check(String _signinName,String _pass,AsyncCallback<String> callback)throws Exception;

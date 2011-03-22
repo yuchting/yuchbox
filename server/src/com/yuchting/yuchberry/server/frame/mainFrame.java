@@ -1065,7 +1065,7 @@ public class mainFrame extends JFrame implements ActionListener{
 	}
 	
 	static final int fsm_maxReadLogLen = 4096;
-	
+	static final byte[] fsm_readLogBuffer = new byte[4096]; 
 	
 	private String ProcessLogQuery(String _bberName){
 		// search the former thread
@@ -1086,10 +1086,10 @@ public class mainFrame extends JFrame implements ActionListener{
 				t_stream.skip(Math.max(t_fileLen - fsm_maxReadLogLen,0));
 				
 				
-				byte[] t_readLogBuffer = new byte[Math.min(t_fileLen - 1, fsm_maxReadLogLen)];
-				t_stream.read(t_readLogBuffer);
+				final int t_bufferLen = Math.min(t_fileLen - 1, fsm_maxReadLogLen);
+				t_stream.read(fsm_readLogBuffer,0,t_bufferLen);
 				
-				return (new String(t_readLogBuffer,"UTF-8"));
+				return (new String(fsm_readLogBuffer,0,t_bufferLen,"UTF-8"));
 				
 			}finally{
 				t_stream.close();

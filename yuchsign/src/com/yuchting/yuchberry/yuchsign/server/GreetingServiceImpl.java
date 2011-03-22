@@ -17,6 +17,11 @@ import java.util.logging.Logger;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -48,9 +53,15 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 
 	public final static Logger fsm_logger = Logger.getLogger("ServerLogger");
 	
-	yuchHost m_currSyncHost = null;
+	yuchHost	m_currSyncHost = null;
 	
-	long m_createTime = 0;
+	boolean 	m_isAdministrator = false;
+	
+	long		m_createTime = 0;
+	
+	long		m_checkLogTime = 0;
+	
+	boolean	m_foundPassword = false;
 		
 	public String logonServer(String name,String password) throws Exception {
 		
@@ -65,7 +76,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				
 				if(!t_bber.GetPassword().equals(password)){
 					return "<Error>密码错误！</Error>";
-				}				
+				}
+				
+				m_isAdministrator = t_bber.GetSigninName().equalsIgnoreCase("yuchting@gmail.com");
 				
 			}catch(javax.jdo.JDOObjectNotFoundException e){
 				return "<Error>找不到用户!</Error>";
@@ -91,7 +104,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 
 				if(t_bber != null){
 					return "<Error>用户名已经存在!</Error>";
-				}				
+				}
+				
+				m_isAdministrator = t_bber.GetSigninName().equalsIgnoreCase("yuchting@gmail.com");
 				
 			}catch(javax.jdo.JDOObjectNotFoundException e){
 								
@@ -122,10 +137,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			try{
 				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);		
 
-				m_createTime	= t_bber.GetCreateTime();
-				long t_hours		= t_bber.GetUsingHours();
-				int t_lev			= t_bber.GetLevel();
-				long t_latesSyncTime = t_bber.GetLatestSyncTime();
+				m_createTime			= t_bber.GetCreateTime();
+				long t_hours			= t_bber.GetUsingHours();
+				int t_lev				= t_bber.GetLevel();
+				long t_latesSyncTime	= t_bber.GetLatestSyncTime();
+				int t_interval			= t_bber.GetPushInterval();
 				
 				if(!t_bber.GetPassword().equals(t_syncbber.GetPassword())){
 					return "<Error>密码错误！</Error>";
@@ -134,7 +150,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				if(t_latesSyncTime != 0){
 					// judge the sync time
 					//
-					if(Math.abs((new Date()).getTime() - t_latesSyncTime) < 6 * 1000){
+					if(!m_isAdministrator && Math.abs((new Date()).getTime() - t_latesSyncTime) < 10 * 60 * 1000){
 						return "<Error>一个账户同步时间的最小间隔是10分钟，请不要过于频繁。</Error>";
 					}
 				}
@@ -150,6 +166,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					t_bber.SetUsingHours(t_hours);
 					t_bber.SetLevel(t_lev);
 					t_bber.SetLatestSyncTime(t_latesSyncTime);
+					t_bber.SetPusnInterval(t_interval);
 					
 					//set the sync bber
 					//
@@ -312,7 +329,17 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}		
 	}
 	public String checkAccountLog(String _signinName,String _pass)throws Exception{
+		
+		if(m_checkLogTime != 0){
+
+			long t_currentTime = (new Date()).getTime();
+			if(!m_isAdministrator && Math.abs(t_currentTime - m_checkLogTime) < 2 * 60 * 1000){
+				return "<Error>在2分钟内不要重复提交查询</Error>";
+			}	
+		}
+		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
+		
 		try{
 			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(),_signinName);
 			try{
@@ -341,7 +368,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						t_header.put("bber",_signinName);
 						t_header.put("log",_signinName);
 						
-						return RequestURL(t_URL.toString(), t_header, null);
+						String t_result = RequestURL(t_URL.toString(), t_header, null);
+						if(!t_result.startsWith("<Error>")){
+							m_checkLogTime = (new Date()).getTime();
+						}
+						return t_result; 
 					}
 				}
 				
@@ -357,6 +388,51 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			t_pm.close();
 		}	
 	}
+	
+	public String findPassword(String _signinName)throws Exception{
+		
+		if(m_foundPassword){
+			return "你已经提交过找回密码的信息";
+		}
+		
+		PersistenceManager t_pm = PMF.get().getPersistenceManager();
+		
+		try{
+			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(),_signinName);
+			try{
+				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);				
+				
+				Properties props = new Properties();
+		        Session session = Session.getDefaultInstance(props, null);
+
+		        StringBuffer t_body = new StringBuffer();
+		        t_body.append("您好！\n\n您收到这封邮件，是因为您在登录 Yuchberry 账户时忘记了密码，您使用这个邮箱地址注册时的密码为：\n    ")
+		        	.append(t_bber.GetPassword()).append("\n\n   请您务必保管好，以防下次遗失。\n\n致\n  敬！\nhttp://code.google.com/p/yuchberry/");
+		        		        	
+	            Message msg = new MimeMessage(session);
+	            
+	            msg.setFrom(new InternetAddress("yuchting@yuchberry.info"));
+	            msg.addRecipient(Message.RecipientType.TO,new InternetAddress(_signinName,""));
+	            msg.setSubject("YuchBerry 找回密码");
+	            msg.setText(t_body.toString());
+	            
+	            Transport.send(msg);
+	            
+	            m_foundPassword = true;		    
+				
+		        return "已经将邮件发送到<" + t_bber.GetSigninName() +"> 请及时查收\n如果没有请在垃圾邮件箱内查找一下。";
+		        
+			}catch(javax.jdo.JDOObjectNotFoundException e){
+				return "找不到用户!";
+			}
+			
+			
+		}finally{
+			
+			t_pm.close();
+		}	
+	}
+	
 	private String RequestURL(String _url,Properties header, Properties parms)throws Exception{
 		
 		StringBuffer t_final = new StringBuffer();
@@ -463,6 +539,10 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	
 	public String getHostList()throws Exception{
 		
+		if(!m_isAdministrator){
+			return "<Error>you're not administrator</Error>";
+		}
+		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
 				
 		try{
@@ -490,6 +570,10 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	}
 	
 	public String addHost(String _hostXMLData)throws Exception{
+		
+		if(!m_isAdministrator){
+			return "<Error>you're not administrator</Error>";
+		}
 		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
 		
@@ -531,6 +615,10 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	
 	public String delHost(String _hostName)throws Exception{
 		
+		if(!m_isAdministrator){
+			return "<Error>you're not administrator</Error>";
+		}		
+		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
 		
 		try{
@@ -551,6 +639,10 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	}
 	
 	public String modifyHost(String _hostName,String _hostXMLData)throws Exception{
+		
+		if(!m_isAdministrator){
+			return "<Error>you're not administrator</Error>";
+		}
 		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
 		

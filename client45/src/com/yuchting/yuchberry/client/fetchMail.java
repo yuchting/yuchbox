@@ -338,6 +338,8 @@ class sendMailAttachmentDeamon extends Thread{
 	final static private int fsm_segmentSize = 512;
 	
 	byte[] 				m_bufferBytes 		= new byte[fsm_segmentSize];
+	
+	public	boolean	m_closeState = false;
 		
 	public sendMailAttachmentDeamon(connectDeamon _connect,
 									fetchMail _mail,
@@ -390,7 +392,6 @@ class sendMailAttachmentDeamon extends Thread{
 				FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(i);
 				t_file.close();
 			}
-			
 			
 		}catch(Exception e){}
 	}
@@ -483,6 +484,10 @@ class sendMailAttachmentDeamon extends Thread{
 		
 		while(true){
 			
+			if(m_closeState){
+				break;
+			}
+			
 			while(m_connect.m_conn == null || !m_connect.m_sendAuthMsg){
 				
 				if(!m_connect.IsConnectState()){
@@ -501,7 +506,11 @@ class sendMailAttachmentDeamon extends Thread{
 				}catch(Exception _e){
 					break;
 				}
-			}			
+			}
+			
+			if(m_closeState){
+				break;
+			}
 			
 			try{
 				
@@ -526,33 +535,44 @@ class sendMailAttachmentDeamon extends Thread{
 					
 					m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), false);
 					
-					if(m_vFileConnection.isEmpty()){
-						break;
-					}
-									
 					t_sendContain = true;
 					
 					t_os.close();
 				}
 				
-				int t_sendSegmentNum = 0;
-				while(t_sendSegmentNum++ < 4){
-					if(SendFileSegment(false)){
-						ReleaseAttachFile();
-						return;
-					}					
+				if(!m_vFileConnection.isEmpty()){
+
+					int t_sendSegmentNum = 0;
+					while(t_sendSegmentNum++ < 4){
+						if(SendFileSegment(false)){
+							ReleaseAttachFile();
+							return;
+						}					
+					}
+					
+					if(SendFileSegment(true)){
+						break;
+					}
 				}
 				
-				if(SendFileSegment(true)){
+				try{
+
+					// waiting for the server to confirm 
+					// except mail with attachment
+					//
+					sleep(60000);
+					
+					t_setPaddingState = false;
+					t_sendContain = false;
+					
+				}catch(Exception _e){
 					break;
-				}
-				
+				}				
 				
 			}catch(Exception _e){
 				
 				m_connect.m_mainApp.SetErrorString("S: " + _e.getMessage() + " " + _e.getClass().getName());
-				m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-1,0,0);
-				
+				m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-1,0,0);				
 			}		
 		}
 		

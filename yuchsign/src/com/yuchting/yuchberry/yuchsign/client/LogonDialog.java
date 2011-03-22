@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -52,17 +53,51 @@ public final class LogonDialog extends DialogBox{
 	public LogonDialog(Yuchsign _clientSign){
 		m_clientSign = _clientSign;
 		
+		final Button t_forgetPass = new Button("忘记密码");
+		
 		
 		final VerticalPanel t_logonPane = new VerticalPanel();
 		t_logonPane.setStyleName("logonVPanel");
 		
 		t_logonPane.add(new HTML("用户名(邮箱地址):"));
 		t_logonPane.add(m_logonName);
-		t_logonPane.add(new HTML("<br />密码(大于等于6位的字母或数字):"));
+		t_logonPane.add(new HTML("密码(大于等于6位的字母或数字):"));
 		t_logonPane.add(m_logonPassword);
-		t_logonPane.add(new HTML("<br />"));
 		t_logonPane.add(m_logonBut);
-		t_logonPane.add(new HTML("<br />"));
+		
+		t_logonPane.add(new HTML("<br /><br />"));
+		t_logonPane.add(t_forgetPass);
+		
+		t_forgetPass.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				try{
+					if(!IsValidEmail(m_logonName.getText())){
+						Yuchsign.PopupPrompt("请输入正确的邮件地址作为用户名", m_logonName);
+					}
+					
+					Yuchsign.PopupWaiting("正在提交申请", t_logonPane);
+					
+					m_clientSign.greetingService.findPassword(m_logonName.getText(),new AsyncCallback<String>() {
+						
+						public void onSuccess(String result) {
+							Yuchsign.HideWaiting();
+							Yuchsign.PopupPrompt(result,t_logonPane);	
+						}
+						
+						public void onFailure(Throwable caught) {
+							Yuchsign.HideWaiting();
+							Yuchsign.PopupPrompt("失败：" + caught.getMessage(),t_logonPane);							
+						}
+					});
+					
+				}catch(Exception e){
+					Yuchsign.HideWaiting();
+					Yuchsign.PopupPrompt("错误："+ e.getMessage(), t_logonPane);
+				}
+			}
+		});
 			
 		final KeyUpHandler t_logonKeyup = new KeyUpHandler() {
 			
@@ -97,9 +132,9 @@ public final class LogonDialog extends DialogBox{
 		t_signinPane.setStyleName("signinVPanel");
 		t_signinPane.add(new HTML("用户名(邮箱地址):"));
 		t_signinPane.add(m_signinName);
-		t_signinPane.add(new HTML("<br />密码:"));
+		t_signinPane.add(new HTML("密码:"));
 		t_signinPane.add(m_signinPass);
-		t_signinPane.add(new HTML("<br />确认密码:"));
+		t_signinPane.add(new HTML("确认密码:"));
 		t_signinPane.add(m_signinPass1);
 		
 		final HorizontalPanel t_agreePane = new HorizontalPanel();

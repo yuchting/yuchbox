@@ -187,9 +187,8 @@ public class Yuchsign implements EntryPoint {
 	public void onModuleLoad() {
 		
 		m_logonDlg = new LogonDialog(this);
-		m_logonDlg.show();
-				
-		m_logonDlg.setModal(true);		
+		m_logonDlg.setModal(false);
+		m_logonDlg.show();	
 	}
 	
 	public void ShowYuchbberPanel(String _bberXMLData)throws Exception{
@@ -215,7 +214,6 @@ public class Yuchsign implements EntryPoint {
 	
 	public void Signout(){
 		m_logonDlg.show();
-		m_logonDlg.setModal(true);
 		
 		if(m_yuchPanel != null){
 			m_yuchPanel.HideYuchPanel();
@@ -282,13 +280,6 @@ public class Yuchsign implements EntryPoint {
 	public static void HideWaiting(){
 		fsm_waitingLable.Hide();
 	}
-	
-	public static native String openNewTab(String url)/*-{
-		return $wnd.open('url', 
-		'target=_blank')
-	}-*/;
-	
-	
-	
+		
 	
 }

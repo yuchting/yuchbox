@@ -283,6 +283,8 @@ public class fetchEmail extends fetchAccount{
 	boolean m_useFullNameSignIn		= false;
 	String 	m_password 					= null;
 	
+	Vector<Long> m_vectHasBeenSent		= new Vector<Long>();
+	
 	
 	 // Get a Session object
     Session m_session 					= null;
@@ -553,6 +555,16 @@ public class fetchEmail extends fetchAccount{
 		
 		fetchMail t_mail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
 		t_mail.InputMail(in);
+		
+		for(Long t_time : m_vectHasBeenSent){
+			if(t_time.longValue() == t_mail.GetSendDate().getTime()){
+				
+				// check the has been sent mails
+				//
+				m_mainMgr.m_logger.LogOut("Message<" + t_time.longValue() + "> has been sent! Ignore it.");
+				return true;
+			}
+		}
 				
 		fetchMail t_forwardReplyMail = null;
 				
@@ -609,7 +621,7 @@ public class fetchEmail extends fetchAccount{
 					m_mainMgr.m_logger.LogOut(GetAccountName() + " Mail Index<" + t_confirmMail.GetMailIndex() + "> confirmed");
 					
 					return true;
-				}
+				}			
 			}
 			
 		}
@@ -692,18 +704,19 @@ public class fetchEmail extends fetchAccount{
 		}catch(Exception _e){
 						
 			t_exception = _e.getMessage() + " name:" + _e.getClass().getName();
-			
 			t_succ = 0;
 		}
 		
 		os.write(t_succ);
 		
-		sendReceive.WriteInt(os,(int)_mail.m_sendMail.GetSendDate().getTime());
-		sendReceive.WriteInt(os,(int)(_mail.m_sendMail.GetSendDate().getTime() >>> 32));
-
-		m_mainMgr.SendData(os,false);
+		sendReceive.WriteLong(os,_mail.m_sendMail.GetSendDate().getTime());
 		
+		m_mainMgr.SendData(os,false);
 		m_mainMgr.m_logger.LogOut(GetAccountName() + " Mail <" +_mail.m_sendMail.GetSendDate().getTime() +  "> send " + (((t_succ == 1)?"Succ":"Failed") + t_exception));
+		
+		if(t_succ == 1){
+			m_vectHasBeenSent.add(new Long(_mail.m_sendMail.GetSendDate().getTime()));
+		}
 	}
 	
 	private  boolean ProcessBeenReadMail(ByteArrayInputStream in)throws Exception{
@@ -1091,8 +1104,8 @@ public class fetchEmail extends fetchAccount{
 			
 			t_mail.m_sendConfirmNum++;
 			
-			m_mainMgr.m_logger.LogOut(GetAccountName() + " send mail<" + t_mail.GetMailIndex() + " : " + 
-									t_mail.GetSubject() + "> simpleHash<"+ t_mail.GetSimpleHashCode() +">,wait confirm...");
+			m_mainMgr.m_logger.LogOut(GetAccountName() + " send mail<" + t_mail.GetMailIndex() + " : "
+					 				+ "simpleHash<"+ t_mail.GetSimpleHashCode() +t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime() + ">,wait confirm...");
 		}
 	}
 	

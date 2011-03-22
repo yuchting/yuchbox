@@ -515,7 +515,7 @@ public class BberPanel extends TabPanel{
 		final Button t_checkBut = new Button("检查日志");
 		final Button t_seekHelp = new Button("查找帮助");
 		
-		m_logText.setSize("500px", "300px");
+		m_logText.setSize("600px", "300px");
 		m_logText.setReadOnly(true);
 		
 		final HorizontalPanel t_buttonPane = new HorizontalPanel();
@@ -691,7 +691,7 @@ public class BberPanel extends TabPanel{
 			m_checkStateTimer.cancel();
 			m_checkStateTimer = null;
 			
-			Yuchsign.PopupPrompt("同步成功！可以使用手机连接服务器了。\n<body color=red>注意：</body>如果手机没有连接服务器超过14天，\n就需要再次同步。", _panel);
+			Yuchsign.PopupPrompt("同步成功！可以使用手机连接服务器了。\n注意：如果手机没有连接服务器超过14天，\n就需要再次同步。", _panel);
 			Yuchsign.HideWaiting();
 			
 			try{

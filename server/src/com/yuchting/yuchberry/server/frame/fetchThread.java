@@ -60,7 +60,7 @@ public class fetchThread extends Thread{
 			}else{
 
 				try{
-					sleep(600000);
+					sleep(5 * 60000);
 				}catch(Exception ex){}	
 			}
 		}
