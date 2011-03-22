@@ -55,6 +55,12 @@ public class fetchMgr{
         
     int				m_clientLanguage	= 0;
     
+    String			m_latestVersion		= null;
+    
+    
+    public void SetLatestVersion(String _version){
+    	m_latestVersion = _version;
+    }
 	
 	public int GetServerPort(){
 		return m_listenPort;

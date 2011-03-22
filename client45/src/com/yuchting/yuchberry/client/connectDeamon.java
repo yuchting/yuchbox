@@ -38,6 +38,7 @@ import net.rim.blackberry.api.mail.event.ViewListener;
 import net.rim.blackberry.api.mail.event.ViewListenerExtended;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.io.Base64OutputStream;
+import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.UiApplication;
 
@@ -48,7 +49,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListener,
 												ViewListenerExtended{
 		
-	final static int	fsm_clientVer = 2;
+	final static int	fsm_clientVer = 3;
 	 
 	sendReceive		m_connect = null;
 	
@@ -122,10 +123,14 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	//! the listening folder to add message
 	Folder				m_listeningMessageFolder = null;
-	 
+	Folder				m_listeningMessageFolder_out = null;
+	
+	String m_currentVersion = null;
+	boolean m_latestVersionPrompt = false;
 	 
 	public connectDeamon(recvMain _app){
-		m_mainApp = _app; 		 
+		m_mainApp = _app;
+		m_currentVersion = ApplicationDescriptor.currentApplicationDescriptor().getVersion();
 		start();
 	}
 	 
@@ -143,6 +148,9 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		m_listeningMessageFolder = GetDefaultFolder();
 		m_listeningMessageFolder.addFolderListener(this);
+		
+		m_listeningMessageFolder_out = GetDefaultOutFolder();
+		m_listeningMessageFolder_out.addFolderListener(this	);
 	}
 	 
 	 
@@ -159,9 +167,11 @@ public class connectDeamon extends Thread implements SendListener,
 					         
 	        AttachmentHandlerManager.getInstance().removeAttachmentHandler(this);
         
-	        m_listeningMessageFolder.removeFolderListener(this);
-	        			
-			m_listeningMessageFolder = null;		 
+	        m_listeningMessageFolder.removeFolderListener(this);       			
+			m_listeningMessageFolder = null;
+			
+			m_listeningMessageFolder_out.removeFolderListener(this);
+			m_listeningMessageFolder_out = null;
         }        
 	}
 	 
@@ -172,7 +182,7 @@ public class connectDeamon extends Thread implements SendListener,
 		final Message t_msg = message;
 		
 		m_mainApp.m_messageApplication = UiApplication.getUiApplication();
-		
+			
 		m_mainApp.invokeAndWait(new Runnable(){
 			
 			 public void run(){
@@ -233,6 +243,7 @@ public class connectDeamon extends Thread implements SendListener,
 			}
 			
 			try{
+				
 				for(int i = 0;i < m_sendingMailAttachment.size();i++){
 					sendMailAttachmentDeamon t_mail = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
 					if(t_mail.m_sendMail.GetSendDate().equals(e.getMessage().getSentDate())
@@ -243,7 +254,8 @@ public class connectDeamon extends Thread implements SendListener,
 						
 						break;
 					}
-				}	
+				}
+				
 			}catch(Exception ex){
 				m_mainApp.SetErrorString("D:"+ex.getMessage());
 			}
@@ -614,6 +626,7 @@ public class connectDeamon extends Thread implements SendListener,
 				sendReceive.WriteString(t_os, m_mainApp.GetUserPassword());
 				sendReceive.WriteInt(t_os,fsm_clientVer);
 				t_os.write(recvMain.GetClientLanguage());
+				sendReceive.WriteString(t_os,m_currentVersion);				
 				
 				m_connect.SendBufferToSvr(t_os.toByteArray(), true);			
 				
@@ -643,17 +656,20 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			synchronized (this) {
 				try{
-					if(m_connect == null){
+					if(m_connect != null){
 						m_connect.CloseSendReceive();
-						m_connect = null;
 					}	
 					
 					if(m_conn != null){
 						m_conn.close();
-						m_conn = null;
 					}					
 					
-				}catch(Exception _e){}
+				}catch(Exception _e){
+				}finally{
+					m_connect = null;
+					m_conn = null;
+				}
+				
 			}			
 		}
 		
@@ -704,7 +720,7 @@ public class connectDeamon extends Thread implements SendListener,
 			 for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
 				 sendMailAttachmentDeamon send = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
 				 if(send.isAlive()){
-					 send.m_sendMail.GetAttachMessage().removeMessageListener(this);
+
 					 send.m_closeState = true;						
 					 send.interrupt();
 				 }				 
@@ -831,6 +847,12 @@ public class connectDeamon extends Thread implements SendListener,
 		 		m_mainApp.SetAboutInfo(sendReceive.ReadString(in));
 		 		m_recvAboutText = true;
 		 		break;
+		 	case msg_head.msgLatestVersion:
+		 		if(m_latestVersionPrompt == false){
+		 			m_latestVersionPrompt = true;
+		 			m_mainApp.SetReportLatestVersion(true);		 			
+		 		}
+		 		break;
 		 }
 	 }
 	
@@ -859,6 +881,33 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		return folder;
 	}
+	
+	private Folder GetDefaultOutFolder()throws Exception{
+		
+		Store store = Session.waitForDefaultSession().getStore();
+		Folder folder = null; 
+		Folder[] t_folders = store.list();
+		for(int i = 0;i < t_folders.length;i++){
+			String t_name = t_folders[i].toString();
+			if((t_name.indexOf("Outbox") != -1 || t_name.indexOf("发件箱") != -1 || t_name.indexOf("發件箱") != -1) 
+			&& (t_name.indexOf("no service book") == -1)){
+				
+				folder = t_folders[i];
+				break;
+			}
+		}
+		
+		if(folder == null ){
+			folder = store.getFolder(Folder.OUTBOX);
+		}
+		
+		if(folder == null){
+			throw new Exception("Can't be retrieve the Folder!");
+		}
+		
+		return folder;
+	}
+	
 	private void ProcessRecvMail(InputStream in)throws Exception{
 		
 		final Message m = new Message();
@@ -918,7 +967,6 @@ public class connectDeamon extends Thread implements SendListener,
 					m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_ERROR);
 				}
 				
-				t_deamon.m_sendMail.GetAttachMessage().removeMessageListener(this);
 				t_deamon.m_closeState = true;
 				t_deamon.interrupt();
 				
@@ -996,10 +1044,7 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 
 		sendMailAttachmentDeamon t_mailDeamon = new sendMailAttachmentDeamon(this, _mail, t_vfileReader,_forwardReply,_sendStyle);
-		m_sendingMailAttachment.addElement(t_mailDeamon);
-		
-		t_mailDeamon.m_sendMail.GetAttachMessage().addMessageListener(this);
-		
+		m_sendingMailAttachment.addElement(t_mailDeamon);	
 	}
 	
 	public void ProcessMailAttach(InputStream in)throws Exception{
@@ -1062,16 +1107,45 @@ public class connectDeamon extends Thread implements SendListener,
 		
 			try{
 				
-				fetchMail t_mail = (fetchMail)m_markReadVector.elementAt(i);
+				final fetchMail t_mail = (fetchMail)m_markReadVector.elementAt(i);
 				
 				if(t_mail.GetSendDate().equals(m.getSentDate())
 					&& ((String)t_mail.GetFromVect().elementAt(0)).indexOf(m.getFrom().getAddr()) != -1){
 					
-					ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-					t_os.write(msg_head.msgBeenRead);
-					sendReceive.WriteInt(t_os, t_mail.GetSimpleHashCode());
+					// start 
+					//
+					Thread t_sendMark = new Thread(){
+						public void run(){
+							fetchMail t_markMail = t_mail;
+							int t_time = 0;
+							try{
+								
+								while(m_connect == null){
+									if(m_disconnect){
+										return;
+									}
+									
+									if(t_time++ > 3){
+										return;
+									}
+									
+									sleep(60000);
+								}
+								
+								ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+								t_os.write(msg_head.msgBeenRead);
+								sendReceive.WriteInt(t_os, t_markMail.GetSimpleHashCode());
+								
+								m_connect.SendBufferToSvr(t_os.toByteArray(), false);
+								
+							}catch(Exception e){
+								m_mainApp.SetErrorString("Mark:"+ e.getMessage() + e.getClass().getName());
+							}
+							
+						}
+					};
 					
-					m_connect.SendBufferToSvr(t_os.toByteArray(), false);
+					t_sendMark.start();
 					
 					m_markReadVector.removeElementAt(i);
 					

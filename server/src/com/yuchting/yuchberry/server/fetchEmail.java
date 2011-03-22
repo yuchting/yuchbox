@@ -562,6 +562,13 @@ public class fetchEmail extends fetchAccount{
 				// check the has been sent mails
 				//
 				m_mainMgr.m_logger.LogOut("Message<" + t_time.longValue() + "> has been sent! Ignore it.");
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+				
+				os.write(msg_head.msgSendMail);				
+				os.write(1);
+				sendReceive.WriteLong(os,t_time.longValue());
+				
+				m_mainMgr.SendData(os,false);
 				return true;
 			}
 		}

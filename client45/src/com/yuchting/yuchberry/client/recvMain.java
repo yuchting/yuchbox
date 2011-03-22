@@ -15,6 +15,8 @@ import javax.microedition.location.LocationListener;
 import javax.microedition.location.LocationProvider;
 
 import local.localResource;
+import net.rim.blackberry.api.browser.Browser;
+import net.rim.blackberry.api.browser.BrowserSession;
 import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
@@ -163,6 +165,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	static ResourceBundle sm_local = ResourceBundle.getBundle(
 								localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
 	
+	boolean m_reportLatestVersion = false;
+	
 	//@{ location information
 	LocationProvider m_locationProvider = null;
 	boolean		 m_useLocationInfo = false;
@@ -182,7 +186,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
    
 	public recvMain(boolean _systemRun) {	
-		
+				
 		boolean t_SDCardUse = false;
 		
 		try{
@@ -267,6 +271,46 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         		
         	}      	
         }        
+	}
+	
+	public void SetReportLatestVersion(boolean _report){
+		m_reportLatestVersion = _report;
+		if(m_reportLatestVersion){
+			if(m_stateScreen != null){
+				PopupLatestVersionDlg();
+			}			
+		}
+	}
+	
+	private void PopupLatestVersionDlg(){
+		
+		if(m_reportLatestVersion){
+			m_reportLatestVersion = false;
+			
+			Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,sm_local.getString(localResource.LATEST_VER_REPORT),
+					Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL);
+			
+			t_dlg.setDialogClosedListener(new DialogClosedListener(){
+			
+				public void dialogClosed(Dialog dialog, int choice) {
+					
+					switch (choice) {
+						case Dialog.OK:
+							BrowserSession browserSession = Browser.getDefaultSession();
+							browserSession.displayPage("http://code.google.com/p/yuchberry/downloads/list");
+							break;
+						
+						default:
+							break;
+					}
+				}
+			});
+			
+			t_dlg.setEscapeEnabled(true);
+			synchronized (getEventLock()) {
+				pushGlobalScreen(t_dlg,1, UiEngine.GLOBAL_QUEUE);
+			}
+		}
 	}
 	
 	public String GetWeiboHeadImageDir(){
@@ -623,6 +667,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		if(m_stateScreen == null){
 			m_stateScreen = new stateScreen(this);
 			pushScreen(m_stateScreen);
+			
+			PopupLatestVersionDlg();
 		}		
 	}
 	

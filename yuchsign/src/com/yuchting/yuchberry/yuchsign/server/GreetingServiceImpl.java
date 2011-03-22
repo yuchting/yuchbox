@@ -191,7 +191,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					
 					if(t_syncbber.GetConnectHost().isEmpty()){		
 						m_currSyncHost =  FindProperHost(t_hostList,t_syncbber.GetEmailList(),t_exceptList);	
-					}else{
+					}else{						
 						for(yuchHost host : t_hostList){
 							if(host.m_hostName.equalsIgnoreCase(t_syncbber.GetConnectHost())){
 								m_currSyncHost = host;

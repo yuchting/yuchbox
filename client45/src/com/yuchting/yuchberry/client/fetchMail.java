@@ -482,6 +482,8 @@ class sendMailAttachmentDeamon extends Thread{
 		boolean t_sendContain = false;
 		boolean t_setPaddingState = false;
 		
+		int t_resend_time = 0;
+		
 		while(true){
 			
 			if(m_closeState){
@@ -560,11 +562,16 @@ class sendMailAttachmentDeamon extends Thread{
 					// waiting for the server to confirm 
 					// except mail with attachment
 					//
-					sleep(60000);
-					
-					t_setPaddingState = false;
-					t_sendContain = false;
-					
+					if(t_resend_time++ < 3){
+						sleep(2 * 60000);
+						
+						t_setPaddingState = false;
+						t_sendContain = false;
+					}else{
+						m_connect.m_mainApp.SetErrorString("S:resend 3 time,give up.");
+						break;
+					}
+
 				}catch(Exception _e){
 					break;
 				}				
