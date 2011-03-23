@@ -165,7 +165,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	static ResourceBundle sm_local = ResourceBundle.getBundle(
 								localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
 	
-	boolean m_reportLatestVersion = false;
+	String m_latestVersion			= null;
 	
 	//@{ location information
 	LocationProvider m_locationProvider = null;
@@ -273,9 +273,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         }        
 	}
 	
-	public void SetReportLatestVersion(boolean _report){
-		m_reportLatestVersion = _report;
-		if(m_reportLatestVersion){
+	public void SetReportLatestVersion(String _latestVersion){
+		m_latestVersion = _latestVersion;
+		
+		if(m_latestVersion != null){
+			
 			if(m_stateScreen != null){
 				PopupLatestVersionDlg();
 			}			
@@ -284,10 +286,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	private void PopupLatestVersionDlg(){
 		
-		if(m_reportLatestVersion){
-			m_reportLatestVersion = false;
-			
-			Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,sm_local.getString(localResource.LATEST_VER_REPORT),
+		if(m_latestVersion != null){
+						
+			Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,sm_local.getString(localResource.LATEST_VER_REPORT) + m_latestVersion,
 					Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL);
 			
 			t_dlg.setDialogClosedListener(new DialogClosedListener(){
@@ -310,6 +311,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			synchronized (getEventLock()) {
 				pushGlobalScreen(t_dlg,1, UiEngine.GLOBAL_QUEUE);
 			}
+			
+			m_latestVersion = null;
 		}
 	}
 	

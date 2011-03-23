@@ -147,7 +147,7 @@ public class berrySvrDeamon extends Thread{
 		
 			if(msg_head.msgConfirm != t_msg_head 
 			|| !sendReceive.ReadString(in).equals(m_fetchMgr.m_userPassword)
-			|| (m_clientVer = sendReceive.ReadInt(in)) != 2){
+			|| (m_clientVer = sendReceive.ReadInt(in)) < 2){
 				
 				/* useless
 				 * 
@@ -160,9 +160,21 @@ public class berrySvrDeamon extends Thread{
 				throw new Exception("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> connected.");			
 			}
 			
+			
 			// read the language state
 			//
 			m_fetchMgr.m_clientLanguage = in.read();
+			
+			if(m_clientVer >= 3){
+				String t_clientVersion = sendReceive.ReadString(in);
+				
+				if(m_fetchMgr.GetLatestVersion() != null
+				&& !m_fetchMgr.GetLatestVersion().equals(t_clientVersion)){
+					// send the latest version information
+					//
+					m_fetchMgr.SendNewVersionPrompt(t_tmp);
+				}
+			}
 			
 		}catch(Exception _e){
 			// time out or other problem

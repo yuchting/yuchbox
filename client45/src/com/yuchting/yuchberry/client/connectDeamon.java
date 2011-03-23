@@ -126,7 +126,6 @@ public class connectDeamon extends Thread implements SendListener,
 	Folder				m_listeningMessageFolder_out = null;
 	
 	String m_currentVersion = null;
-	boolean m_latestVersionPrompt = false;
 	 
 	public connectDeamon(recvMain _app){
 		m_mainApp = _app;
@@ -250,7 +249,10 @@ public class connectDeamon extends Thread implements SendListener,
 					&& ((String)t_mail.m_sendMail.GetFromVect().elementAt(0)).indexOf(e.getMessage().getFrom().getAddr()) != -1){
 						
 						t_mail.m_closeState = true;
-						t_mail.interrupt();
+						if(t_mail.isAlive()){
+							t_mail.interrupt();
+						}
+						
 						
 						break;
 					}
@@ -626,7 +628,7 @@ public class connectDeamon extends Thread implements SendListener,
 				sendReceive.WriteString(t_os, m_mainApp.GetUserPassword());
 				sendReceive.WriteInt(t_os,fsm_clientVer);
 				t_os.write(recvMain.GetClientLanguage());
-				sendReceive.WriteString(t_os,m_currentVersion);				
+				sendReceive.WriteString(t_os,m_currentVersion);	
 				
 				m_connect.SendBufferToSvr(t_os.toByteArray(), true);			
 				
@@ -721,8 +723,11 @@ public class connectDeamon extends Thread implements SendListener,
 				 sendMailAttachmentDeamon send = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
 				 if(send.isAlive()){
 
-					 send.m_closeState = true;						
-					 send.interrupt();
+					 send.m_closeState = true;
+					 if(send.isAlive()){
+						 send.interrupt();
+					 }
+					 
 				 }				 
 			 }
 			 
@@ -848,10 +853,11 @@ public class connectDeamon extends Thread implements SendListener,
 		 		m_recvAboutText = true;
 		 		break;
 		 	case msg_head.msgLatestVersion:
-		 		if(m_latestVersionPrompt == false){
-		 			m_latestVersionPrompt = true;
-		 			m_mainApp.SetReportLatestVersion(true);		 			
-		 		}
+		 		String t_latestVersion = sendReceive.ReadString(in);
+		 		if(!m_currentVersion.equals(t_latestVersion)){
+		 			m_currentVersion = t_latestVersion;
+		 			m_mainApp.SetReportLatestVersion(t_latestVersion);
+		 		}		 		 			
 		 		break;
 		 }
 	 }
@@ -968,7 +974,9 @@ public class connectDeamon extends Thread implements SendListener,
 				}
 				
 				t_deamon.m_closeState = true;
-				t_deamon.interrupt();
+				if(t_deamon.isAlive()){
+					t_deamon.interrupt();
+				}				
 				
 				m_sendingMailAttachment.removeElement(t_deamon);
 				

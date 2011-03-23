@@ -57,9 +57,41 @@ public class fetchMgr{
     
     String			m_latestVersion		= null;
     
+    boolean		m_hasPrompt			= false;
+    
     
     public void SetLatestVersion(String _version){
-    	m_latestVersion = _version;
+    	
+    	if(m_latestVersion == null || !m_latestVersion.equals(_version)){
+    		
+    		m_latestVersion = _version;
+        	
+        	if(m_latestVersion != null && GetClientConnected() != null){
+        		try{
+        			m_hasPrompt = true;
+        			SendNewVersionPrompt(GetClientConnected().m_sendReceive);
+        		}catch(Exception e){}
+        	}else{
+        		m_hasPrompt = true;
+        	}
+    	}
+    }
+    
+    public String GetLatestVersion(){
+    	return m_latestVersion;
+    }
+    
+    public void SendNewVersionPrompt(sendReceive _sendRecv)throws Exception{
+    	if(m_hasPrompt){
+    		
+    		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+    		t_os.write(msg_head.msgLatestVersion);
+    		sendReceive.WriteString(t_os, m_latestVersion, true);
+    		
+    		_sendRecv.SendBufferToSvr(t_os.toByteArray(), false);
+    		
+    		m_hasPrompt = false;
+    	}
     }
 	
 	public int GetServerPort(){

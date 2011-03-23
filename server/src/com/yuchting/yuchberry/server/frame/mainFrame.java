@@ -16,6 +16,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,6 +59,9 @@ class checkStateThread extends Thread{
 	}
 	
 	public void run(){
+		
+		int t_counter = 0;
+		
 		while(true){
 			
 			try{
@@ -66,6 +71,24 @@ class checkStateThread extends Thread{
 				}catch(Exception e){}
 				
 				m_mainFrame.RefreshState();
+				
+				if(t_counter++ > 24 * 120){
+					t_counter = 0;
+					
+					URL is_gd = new URL("http://yuchberry.googlecode.com/files/latest_version");
+					
+			        URLConnection yc = is_gd.openConnection();
+			        BufferedReader in = new BufferedReader(
+			                                new InputStreamReader(yc.getInputStream()));
+			        
+			        String t_version = in.readLine();
+			        
+			        for(fetchThread t_thread:m_mainFrame.m_accountList){
+			        	t_thread.m_fetchMgr.SetLatestVersion(t_version);
+			        }
+
+					in.close();
+				}
 				
 			}catch(Exception ex){}
 		}		

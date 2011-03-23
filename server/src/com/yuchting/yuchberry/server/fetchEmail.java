@@ -1391,7 +1391,14 @@ public class fetchEmail extends fetchAccount{
 			
 			StoreAttachment(_mail.GetMailIndex(), _mail.GetAttachment().size(), t_bytes);
 			
-			_mail.AddAttachment(DecodeName(p.getFileName(),false),p.getContentType(),t_bytes.length);
+			Vector t_vect = _mail.GetAttachment();
+			if (filename == null){	
+			    filename = "Attachment_" + t_vect.size();
+			}else{
+				filename = DecodeName(filename,false);
+			}
+			
+			_mail.AddAttachment(filename,p.getContentType(),t_bytes.length);
 			
 		}else if (p instanceof MimeBodyPart){
 		
@@ -1405,19 +1412,39 @@ public class fetchEmail extends fetchAccount{
 		    String disp = p.getDisposition();
 		    
 		    // many mailers don't include a Content-Disposition
-		    if (disp != null && disp.equals("ATTACHMENT")) {
-		    			    	
-				Vector t_vect = _mail.GetAttachment();
-								
-				if (filename == null){	
-				    filename = "Attachment_" + t_vect.size();
-				}else{
-					filename = DecodeName(filename,true);
-				}
+		    if (disp != null && disp.equalsIgnoreCase("ATTACHMENT")) {
 
-			    _mail.AddAttachment(filename, 
-			    					p.getContentType(),
-			    					StoreAttachment(((MimeBodyPart)p),_mail.GetMailIndex(), t_vect.size()));
+			    /*
+				 * If we actually want to see the data, and it's not a
+				 * MIME type we know, fetch it and check its Java type.
+				 */
+				Object o = p.getContent();
+				
+				if (o instanceof InputStream) {
+
+				    InputStream is = (InputStream)o;
+				    int c;
+				    ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+				    while ((c = is.read()) != -1){
+				    	t_os.write(c);
+				    }
+				    
+				    byte[] t_bytes = t_os.toByteArray();
+				    
+				    StoreAttachment(_mail.GetMailIndex(),_mail.GetAttachment().size(),t_bytes);
+				    				 
+				    Vector t_vect = _mail.GetAttachment();
+					
+					if (filename == null){	
+					    filename = "Attachment_" + t_vect.size();
+					}else{
+						filename = DecodeName(filename,true);
+					}
+
+				    _mail.AddAttachment(filename, 
+				    					p.getContentType(),
+				    					StoreAttachment(((MimeBodyPart)p),_mail.GetMailIndex(), t_vect.size()));
+				} 
 			    
 		    }
 		    
