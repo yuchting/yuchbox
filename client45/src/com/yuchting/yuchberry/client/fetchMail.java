@@ -555,26 +555,29 @@ class sendMailAttachmentDeamon extends Thread{
 					if(SendFileSegment(true)){
 						break;
 					}
-				}
-				
-				try{
+					
+				}else{
+					
+					try{
 
-					// waiting for the server to confirm 
-					// except mail with attachment
-					//
-					if(t_resend_time++ < 3){
-						sleep(2 * 60000);
-						
-						t_setPaddingState = false;
-						t_sendContain = false;
-					}else{
-						m_connect.m_mainApp.SetErrorString("S:resend 3 time,give up.");
+						// waiting for the server to confirm 
+						// except mail with attachment
+						//
+						if(t_resend_time++ < 3){
+							sleep(2 * 60000);
+							
+							t_setPaddingState = false;
+							t_sendContain = false;
+						}else{
+							m_connect.m_mainApp.SetErrorString("S:resend 3 time,give up.");
+							break;
+						}
+
+					}catch(Exception _e){
 						break;
 					}
-
-				}catch(Exception _e){
-					break;
-				}				
+				}	
+							
 				
 			}catch(Exception _e){
 				
