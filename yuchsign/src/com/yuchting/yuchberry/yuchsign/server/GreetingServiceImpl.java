@@ -9,8 +9,11 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Vector;
 import java.util.logging.Logger;
 
@@ -219,7 +222,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 							// query the account
 							//
 							StringBuffer t_URL = new StringBuffer();
-							t_URL.append("http://").append(m_currSyncHost.m_hostName).append(":")
+							t_URL.append("http://").append(m_currSyncHost.m_connectHost).append(":")
 								.append(m_currSyncHost.m_httpPort);
 							
 							Properties t_header = new Properties();
@@ -279,7 +282,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				// query the account
 				//
 				StringBuffer t_URL = new StringBuffer();
-				t_URL.append("http://").append(m_currSyncHost.m_hostName).append(":")
+				t_URL.append("http://").append(m_currSyncHost.m_connectHost).append(":")
 					.append(m_currSyncHost.m_httpPort);
 				
 				Properties t_header = new Properties();
@@ -433,6 +436,90 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}	
 	}
 	
+	public String payTime(String _signinName,int _payType,int _fee)throws Exception{
+		
+		PersistenceManager t_pm = PMF.get().getPersistenceManager();
+		
+		try{
+			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(),_signinName);
+			try{
+				
+				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);				
+				
+				StringBuffer t_payURL = new StringBuffer();
+				
+				String query = "select from " + yuchAlipay.class.getName();
+				List<yuchAlipay> t_alipayList = (List<yuchAlipay>)t_pm.newQuery(query).execute();
+								
+				if(t_alipayList != null && !t_alipayList.isEmpty()){
+					
+					yuchAlipay t_alipay = t_alipayList.get(0);					
+					String t_out_trade_no = "" + (new Date()).getTime() + (new Random()).nextInt(1000);
+					
+					// check the out trade no
+					//
+					Key t_order_key = KeyFactory.createKey(yuchOrder.class.getSimpleName(),t_out_trade_no);
+					try{
+						yuchOrder t_order = t_pm.getObjectById(yuchOrder.class, t_order_key);
+						if(t_order != null){
+							return  "内部错误，请重新操作";
+						}						
+					}catch(Exception ex){}
+					
+					
+					// generate the URL 
+					//
+					String t_subject = "充值时间";
+					
+					switch(_payType){
+					case 1: t_subject = "用户类型升级";break;
+					case 2: t_subject = "推送间隔升级";break;
+					}
+					
+					StringBuffer t_body = new StringBuffer();
+										
+					t_body.append("_input_charset=utf-8&")
+							.append("out_trade_no=" + t_out_trade_no + "&")
+							.append("partner=" + t_alipay.m_partner +"&")
+							.append("payment_type=1&")
+							.append("paymethod=directPay&")
+							.append("return_url=http://127.0.0.1/pay&")
+							.append("seller_email=yuchting@gmail.com&")
+							.append("service=create_direct_pay_by_user&")
+							.append("subject="+ t_subject +"&")
+							.append("total_fee=" + (m_isAdministrator?0.01f:_fee));
+					
+					String t_md5 = Md5Encrypt.md5(t_body.toString() + t_alipay.m_key);
+					
+					t_payURL.append("https://www.alipay.com/cooperate/gateway.do?sign=")
+							.append(t_md5).append("&").append(t_body).append("&sign_type=MD5");
+					
+					yuchOrder t_order = new yuchOrder();
+					
+					t_order.m_out_trade_no	= t_out_trade_no;
+					t_order.m_total_fee			= _fee;
+					t_order.m_subject			= t_subject;
+					t_order.m_buyer_email		= _signinName;
+					t_order.m_payType			= _payType;
+					
+					t_pm.makePersistent(t_order);
+					
+					return t_payURL.toString();
+					
+				}else{
+					return "暂时无法付费";
+				}
+		        
+			}catch(javax.jdo.JDOObjectNotFoundException e){
+				return "找不到用户!";
+			}
+						
+		}finally{
+			
+			t_pm.close();
+		}	
+	}
+		
 	private String RequestURL(String _url,Properties header, Properties parms)throws Exception{
 		
 		StringBuffer t_final = new StringBuffer();
@@ -535,6 +622,71 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}
 
 		return t_resultHost;
+	}
+	
+	public String queryAlipay()throws Exception{
+		
+		if(!m_isAdministrator){
+			return "<Error>you're not administrator</Error>";
+		}
+		
+		PersistenceManager t_pm = PMF.get().getPersistenceManager();
+				
+		try{
+			
+			String query = "select from " + yuchAlipay.class.getName();
+			List<yuchAlipay> t_alipayList = (List<yuchAlipay>)t_pm.newQuery(query).execute();
+						
+			if(t_alipayList != null){
+				for(yuchAlipay partner :t_alipayList){
+					return partner.m_partner + ":" + partner.m_key;
+				}
+				
+				return "";
+			}else{
+				return "";
+			}
+						
+		}finally{
+			
+			t_pm.close();
+		}
+	}
+	public String modifyAlipay(String _partnerID,String _key)throws Exception{
+		
+		if(!m_isAdministrator){
+			return "<Error>you're not administrator</Error>";
+		}
+		
+		PersistenceManager t_pm = PMF.get().getPersistenceManager();
+				
+		try{
+			
+			String query = "select from " + yuchAlipay.class.getName();
+			List<yuchAlipay> t_alipayList = (List<yuchAlipay>)t_pm.newQuery(query).execute();
+						
+			if(t_alipayList != null){
+				for(yuchAlipay partner :t_alipayList){
+					t_pm.deletePersistent(partner);
+				}	
+			}
+			
+			yuchAlipay t_pay = new yuchAlipay();
+			t_pay.m_partner = _partnerID;
+			t_pay.m_key = _key;
+			
+			try{
+				t_pm.makePersistent(t_pay);
+			}catch(Exception ex){
+				return "<Error>"+ex.getMessage()+"</Error>";
+			}	
+			
+			return "<OK />";
+			
+		}finally{
+			
+			t_pm.close();
+		}	
 	}
 	
 	public String getHostList()throws Exception{

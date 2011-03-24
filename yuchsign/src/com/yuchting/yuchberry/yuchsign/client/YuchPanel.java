@@ -17,6 +17,7 @@ import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
@@ -88,12 +89,7 @@ public class YuchPanel extends TabPanel{
 		m_mainServer = _main;
 		
 		PrepareHostListPanel();
-		final FlexTable t_addTable = PrepareAddHostPanel();
-		final VerticalPanel t_panel = new VerticalPanel();
-		t_panel.add(m_table);
-		t_panel.add(t_addTable);		
-		
-		add(t_panel,"可用主机列表");
+		PrepareAlipayPanel();
 		
 		setPixelSize(600,300);
 		selectTab(0);		
@@ -144,6 +140,26 @@ public class YuchPanel extends TabPanel{
 	    		return host.m_hostName;
 	    	}
 	    },null);
+	    
+	    // 连接地址
+	    addColumn(new EditTextCell(),"同步地址",new GetValue<String>(){
+	    	public String getValue(yuchHost host){
+	    		return host.m_connectHost;
+	    	}
+	    },new FieldUpdater<yuchHost,String>(){
+	    	public void update(int index, yuchHost object, String value){
+	    		object.m_connectHost = value;
+	    		
+	    		final StringBuffer t_data = new StringBuffer();	    		
+	    		
+	    		try{
+	    			object.OutputXMLData(t_data);
+	    			m_mainServer.greetingService.modifyHost(object.m_hostName,t_data.toString(),m_changeCallback);
+	    		}catch(Exception e){
+	    			Yuchsign.PopupPrompt("change host'port exception:" + e.getMessage(),m_table);
+	    		}
+	    	}
+	    });
 	    
 	    
 	    // 主机端口
@@ -242,13 +258,21 @@ public class YuchPanel extends TabPanel{
 		});
 	    
 	    m_hostList.addDataDisplay(m_table);
-	        
+	    
+
+		final FlexTable t_addTable = PrepareAddHostPanel();
+		final VerticalPanel t_panel = new VerticalPanel();
+		t_panel.add(m_table);
+		t_panel.add(t_addTable);		
+		
+		add(t_panel,"可用主机列表");	        
 	}
 	
 	private final FlexTable PrepareAddHostPanel(){
 		
 		final FlexTable t_table = new FlexTable();
 		final TextBox t_hostAddr = new TextBox();
+		final TextBox t_connetHost = new TextBox();
 		final TextBox t_hostPort = new TextBox();
 		final TextBox t_hostPass = new TextBox();
 		final TextBox t_hostRecommend = new TextBox();
@@ -264,6 +288,11 @@ public class YuchPanel extends TabPanel{
 				if(t_hostAddr.getText().length() == 0){
 					Yuchsign.PopupPrompt("地址不能为空", t_hostAddr);
 					return;
+				}
+				
+				if(t_connetHost.getText().isEmpty()){
+					Yuchsign.PopupPrompt("同步地址不能为空", t_connetHost);
+					return ;
 				}
 				
 				for(yuchHost host : m_hostList.getList()){
@@ -285,6 +314,7 @@ public class YuchPanel extends TabPanel{
 				
 				yuchHost t_host = new yuchHost();
 				t_host.m_hostName = t_hostAddr.getText();
+				t_host.m_connectHost = t_connetHost.getText();
 				t_host.m_httpPort = t_port;
 				t_host.m_httpPassword = t_hostPass.getText();
 				t_host.m_recommendHost = t_hostRecommend.getText();
@@ -296,6 +326,7 @@ public class YuchPanel extends TabPanel{
 					m_mainServer.greetingService.addHost(t_data.toString(),m_addCallback);
 					
 					t_hostAddr.setText("");
+					t_connetHost.setText("");
 					t_hostPort.setText("");
 					t_hostPass.setText("");
 					t_hostRecommend.setText("");
@@ -307,22 +338,111 @@ public class YuchPanel extends TabPanel{
 		});
 		
 		t_hostAddr.setWidth("9em");
+		t_connetHost.setWidth("9em");
 		t_hostPort.setWidth("5em");
 		t_hostPass.setWidth("10em");
 		t_hostRecommend.setWidth("10em");
 		
 		t_table.setWidget(0,0,t_hostAddr);
-		t_table.setWidget(0,1,t_hostPort);
-		t_table.setWidget(0,2,t_hostPass);
-		t_table.setWidget(0,3,t_hostRecommend);
+		t_table.setWidget(0,1,t_connetHost);
+		t_table.setWidget(0,2,t_hostPort);
+		t_table.setWidget(0,3,t_hostPass);
+		t_table.setWidget(0,4,t_hostRecommend);
 		
 		t_addHostBut.setWidth("6em");
-		t_table.setWidget(0,4,t_addHostBut);
+		t_table.setWidget(0,5,t_addHostBut);
 		
 		t_table.setPixelSize(600, 25);
 	
 		return t_table;
 	}
+	
+	private void PrepareAlipayPanel(){
+		final VerticalPanel t_pane = new VerticalPanel();
+		
+		final TextBox t_partner = new TextBox();
+		final TextBox t_key		= new TextBox();
+		
+		final Button t_confirm = new Button("确认");
+		
+		t_pane.add(new HTML("Alipay合作者ID:"));
+		t_pane.add(t_partner);
+		t_pane.add(new HTML("Alipay合作者Key:"));
+		t_pane.add(t_key);
+		
+		t_pane.add(t_confirm);
+		
+		t_confirm.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				String t_partnerID = t_partner.getText();
+				
+				for(int i = 0;i < t_partnerID.length();i++){
+					if(!Character.isDigit(t_partnerID.charAt(i))){
+						Yuchsign.PopupPrompt("Alipay合作者ID 必须是全数字", t_partner);
+						return ;
+					}
+				}
+				if(!t_partnerID.startsWith("2088") || t_partnerID.length() != 16){
+					Yuchsign.PopupPrompt("Alipay合作者ID 必须是 2088开头，16的全数字", t_partner);
+					return ;
+				}
+				
+				String t_keyStr = t_key.getText();
+				
+				for(int i = 0;i < t_partnerID.length();i++){
+					if(!Character.isDigit(t_partnerID.charAt(i)) && !Character.isLetter(t_partnerID.charAt(i))){
+						Yuchsign.PopupPrompt("Alipay合作者Key 必须是由数字和字母组成", t_partner);
+						return ;
+					}
+				}
+				
+				if(t_keyStr.length() != 32){
+					Yuchsign.PopupPrompt("Alipay合作者Key 必须是32位", t_partner);
+					return ;
+				}
+				
+				try{
+					m_mainServer.greetingService.modifyAlipay(t_partnerID, t_keyStr, new AsyncCallback<String>() {
+						public void onFailure(Throwable caught) {
+							Yuchsign.PopupPrompt("获取Alipay出错："+caught.getMessage(), t_pane);
+						}
+
+						public void onSuccess(String result){
+							Yuchsign.PopupPrompt("修改成功"+result, t_pane);
+						}
+					});
+				}catch(Exception e){
+					Yuchsign.PopupPrompt("获取Alipay出错："+e.getMessage(), t_pane);
+				}
+			}
+		});
+		
+		add(t_pane,"AliPay");
+		
+		try{
+			
+			m_mainServer.greetingService.queryAlipay(new AsyncCallback<String>() {
+				public void onFailure(Throwable caught) {
+					Yuchsign.PopupPrompt("获取Alipay出错："+caught.getMessage(), t_pane);
+				}
+	
+				public void onSuccess(String result){
+					if(!result.isEmpty()){
+						String[] t_str = result.split(":");
+						
+						t_partner.setText(t_str[0]);
+						t_key.setText(t_str[1]);
+					}
+				}
+			});
+			
+		}catch(Exception e){
+			Yuchsign.PopupPrompt("获取Alipay出错："+e.getMessage(), t_pane);
+		}
+	}
+	
 	/**
 	* copy from GWT Showcase
 	* 

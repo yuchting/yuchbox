@@ -385,8 +385,8 @@ public class BberPanel extends TabPanel{
 			
 			@Override
 			public void onClick(ClickEvent event) {
-				// TODO pay the time
-				
+				PayTimeDlg t_dlg = new PayTimeDlg(m_mainServer, m_currentBber);
+				t_dlg.show();				
 			}
 		});
 		

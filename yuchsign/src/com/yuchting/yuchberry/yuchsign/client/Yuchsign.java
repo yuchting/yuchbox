@@ -32,6 +32,7 @@ final class YesNoDialog extends DialogBox{
 	Label			m_text 		= new Label();
 	
 	public YesNoDialog(){
+		super(false,false);
 		final VerticalPanel t_vert = new VerticalPanel();
 		t_vert.add(m_text);
 		t_vert.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
@@ -97,14 +98,6 @@ final class YesNoDialog extends DialogBox{
  */
 public class Yuchsign implements EntryPoint {
 		  
-	/**
-	 * The message displayed to the user when the server cannot be reached or
-	 * returns an error.
-	 */
-	private static final String SERVER_ERROR = "An error occurred while "
-			+ "attempting to contact the server. Please check your network "
-			+ "connection and try again.";
-
 	/**
 	 * Create a remote service proxy to talk to the server-side Greeting service.
 	 */

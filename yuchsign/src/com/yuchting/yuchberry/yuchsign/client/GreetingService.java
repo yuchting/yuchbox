@@ -21,6 +21,14 @@ public interface GreetingService extends RemoteService {
 	
 	String checkAccountLog(String _signinName,String _pass)throws Exception;
 	
+	String payTime(String _signinName,int _payType,int _fee)throws Exception;
+	
+	// administrator function
+	//
+	String queryAlipay()throws Exception;
+	
+	String modifyAlipay(String _partnerID,String _key)throws Exception;
+	
 	String getHostList()throws Exception;
 	
 	String addHost(String _hostXMLData)throws Exception;

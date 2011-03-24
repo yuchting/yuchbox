@@ -19,6 +19,14 @@ public interface GreetingServiceAsync {
 	
 	void checkAccountLog(String _signinName,String _pass,AsyncCallback<String> callback)throws Exception;
 	
+	void payTime(String _signinName,int _payType,int _fee,AsyncCallback<String> callback)throws Exception;
+	
+	// administrator function
+	//
+	void queryAlipay(AsyncCallback<String> callback)throws Exception;
+	
+	void modifyAlipay(String _partnerID,String _key,AsyncCallback<String> callback)throws Exception;
+	
 	void getHostList(AsyncCallback<String> callback)throws Exception;
 	
 	void addHost(String _hostXMLData,AsyncCallback<String> callback)throws Exception;
