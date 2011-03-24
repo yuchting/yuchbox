@@ -2,6 +2,7 @@ package com.yuchting.yuchberry.yuchsign.client;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -66,6 +67,7 @@ public class PayTimeDlg extends DialogBox{
 				if(m_buyURL != null){
 					
 					hide();
+					m_buyURL = URL.encode(m_buyURL);
 					Window.open(m_buyURL,"_blank","");
 					
 				}else{

@@ -26,7 +26,13 @@ public class PayServiceImpl extends HttpServlet {
 		final String t_buyer_email	= (String)request.getParameter("buyer_email");
 		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
+		
+		request.setCharacterEncoding("UTF-8");
+        response.setContentType("UTF-8");
+        response.setContentType("type=text/html; charset=UTF-8");
+        
 		PrintWriter out = response.getWriter();
+		 
 		
 		if(t_out_trade_no == null){
 			out.println("<Error>你是怎么找到这个地方的呢？</Error>");
@@ -37,9 +43,11 @@ public class PayServiceImpl extends HttpServlet {
 			try{
 				
 				yuchOrder t_order = t_pm.getObjectById(yuchOrder.class, t_order_key);
-				if(t_order != null){
+				if(t_order == null){
 				    out.println( "<Error>内部错误，请重新操作</Error>");
-				}				
+				}
+				
+				out.println("处理成功！");
 		        
 			}catch(javax.jdo.JDOObjectNotFoundException e){
 				 out.println("<Error>找不到订单</Error>");

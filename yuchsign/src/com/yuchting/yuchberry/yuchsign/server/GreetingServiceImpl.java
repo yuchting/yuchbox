@@ -469,11 +469,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					
 					// generate the URL 
 					//
-					String t_subject = "充值时间";
+					String t_subject = "yuchberry充值时间";
 					
 					switch(_payType){
-					case 1: t_subject = "用户类型升级";break;
-					case 2: t_subject = "推送间隔升级";break;
+					case 1: t_subject = "yuchberry用户类型升级";break;
+					case 2: t_subject = "yuchberry推送间隔升级";break;
 					}
 					
 					StringBuffer t_body = new StringBuffer();
@@ -483,11 +483,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 							.append("partner=" + t_alipay.m_partner +"&")
 							.append("payment_type=1&")
 							.append("paymethod=directPay&")
-							.append("return_url=http://127.0.0.1/pay&")
+							.append("return_url=http://127.0.0.1:8888/pay&")
 							.append("seller_email=yuchting@gmail.com&")
 							.append("service=create_direct_pay_by_user&")
 							.append("subject="+ t_subject +"&")
-							.append("total_fee=" + (m_isAdministrator?0.01f:_fee));
+							.append("total_fee=" + (0.01f));
 					
 					String t_md5 = Md5Encrypt.md5(t_body.toString() + t_alipay.m_key);
 					
