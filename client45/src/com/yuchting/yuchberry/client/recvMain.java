@@ -184,27 +184,36 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		t_theApp.enterEventDispatcher();
 	}
 	
-   
+	
 	public recvMain(boolean _systemRun) {	
 				
 		boolean t_SDCardUse = false;
 		
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/",Connector.READ_WRITE);
-			if(!fc.exists()){
-				fc.mkdir();
-			}
-			fc.close();
+			try{
+				if(!fc.exists()){
+					fc.mkdir();
+				}
+			}finally{
+				fc.close();
+				fc = null;
+			}			
 		}catch (Exception _e) {
-			System.exit(0);
+			DialogAlertAndExit("can't use the dev ROM to store config file!");
+        	return;
 		}
 		
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/",Connector.READ_WRITE);
-			if(!fc.exists()){
-				fc.mkdir();
-			}
-			fc.close();
+			try{
+				if(!fc.exists()){
+					fc.mkdir();
+				}	
+			}finally{
+				fc.close();
+				fc = null;
+			}			
 			t_SDCardUse = true;
 		}catch(Exception e){
 			SetErrorString("SDCard can't be used :(");
@@ -219,21 +228,28 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         try{
         	
         	FileConnection fc = (FileConnection) Connector.open(m_attachmentDir,Connector.READ_WRITE);
-        	if(!fc.exists()){
-        		fc.mkdir();
+        	try{
+            	if(!fc.exists()){
+            		fc.mkdir();
+            	}	
+        	}finally{
+        		fc.close();
+        		fc = null;
         	}
-        	fc.close();
-        	        	
+        	
         	fc = (FileConnection) Connector.open(m_weiboHeadImageDir,Connector.READ_WRITE);
-        	if(!fc.exists()){
-        		fc.mkdir();
-        	}
-        	fc.close();
+        	try{
+        		if(!fc.exists()){
+            		fc.mkdir();
+            	}	
+        	}finally{
+        		fc.close();
+        		fc = null;
+        	}        	
         	
         }catch(Exception _e){
-        	
-        	Dialog.alert("can't use the SDCard to store attachment!");
-        	System.exit(0);
+        	DialogAlertAndExit("can't use the SDCard to store attachment!");
+        	return;
         }
         
         Criteria t_criteria = new Criteria();
@@ -271,6 +287,19 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         		
         	}      	
         }        
+	}
+	
+	private void DialogAlertAndExit(final String _msg) {
+
+		invokeLater(new Runnable() {
+			public void run() {
+				synchronized(getEventLock()) {
+					Dialog.alert(_msg);
+					System.exit(0);
+				}
+			}
+		});
+	
 	}
 	
 	public void SetReportLatestVersion(String _latestVersion){

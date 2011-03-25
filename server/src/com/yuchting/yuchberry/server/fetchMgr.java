@@ -220,8 +220,11 @@ public class fetchMgr{
 			}
 			
 			if(m_svr != null){
-				m_svr.close();
-				m_svr = null;
+				try{
+					m_svr.close();
+				}finally{
+					m_svr = null;
+				}
 			}
 		}catch(Exception e){
 			if(m_logger != null){

@@ -435,7 +435,12 @@ public class fetchEmail extends fetchAccount{
 	    	    
 	    folder.open(Folder.READ_ONLY);
 	    try{
-	    	 final int t_totalMailCount = folder.getMessageCount();
+	    	final int t_totalMailCount = folder.getMessageCount();
+	    	
+	    	if(m_totalMailCount > t_totalMailCount){
+	    		m_totalMailCount = t_totalMailCount;
+	    		return;
+	    	}
 	 	    
 	 	    if(m_totalMailCount != t_totalMailCount){	    	
 	 	    	
@@ -1007,6 +1012,7 @@ public class fetchEmail extends fetchAccount{
 		
 		try{
 			m_session = null;
+			m_session_send = null;
 			
 			if(m_store != null){
 				
@@ -1024,7 +1030,13 @@ public class fetchEmail extends fetchAccount{
 			    
 				m_store.close();
 				m_store = null;
-			}	
+				
+				try{
+					m_sendTransport.close();
+				}catch(Exception e){}
+				
+				m_sendTransport = null;
+			}
 		}catch(Exception e){}	
 	}
 	

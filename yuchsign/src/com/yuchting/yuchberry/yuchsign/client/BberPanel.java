@@ -622,6 +622,7 @@ public class BberPanel extends TabPanel{
 	
 	Timer m_checkStateTimer		= null;
 	private void SyncOnSuccess(String result,final Widget _panel){
+		
 		try{
 			
 			Document t_doc = XMLParser.parse(result);
@@ -630,7 +631,7 @@ public class BberPanel extends TabPanel{
 			if(t_elem.getTagName().equals("Error")){
 				PopupProblemAndSearchHelp(t_elem.getFirstChild().toString(),_panel);
 				Yuchsign.HideWaiting();
-			}else{
+			}else if(t_elem.getTagName().equals("Loading")){
 				
 				// Setup timer to refresh list automatically.
 				m_checkStateTimer = new Timer() {
@@ -641,6 +642,9 @@ public class BberPanel extends TabPanel{
 			    };
 			    
 			    m_checkStateTimer.scheduleRepeating(15*1000);
+			    
+			}else{
+				CheckSyncOnSuccess(result,_panel);				
 			}	
 		}catch(Exception ex){
 			PopupProblemAndSearchHelp(ex.getMessage(),_panel);
@@ -683,13 +687,7 @@ public class BberPanel extends TabPanel{
 			PopupProblemAndSearchHelp(t_elem.getFirstChild().toString(),_panel);
 			Yuchsign.HideWaiting();
 			
-			m_checkStateTimer.cancel();
-			m_checkStateTimer = null;
-			
-		}else if(t_elem.getTagName().equals("yuchbber")){
-			
-			m_checkStateTimer.cancel();
-			m_checkStateTimer = null;
+		}else if(t_elem.getTagName().equals("yuchbber")){	
 			
 			Yuchsign.PopupPrompt("同步成功！可以使用手机连接服务器了。\n注意：如果手机没有连接服务器超过14天，\n就需要再次同步。", _panel);
 			Yuchsign.HideWaiting();
@@ -702,10 +700,18 @@ public class BberPanel extends TabPanel{
 			
 			ShowYuchbberData(m_currentBber);			
 		}
+		
+		if(m_checkStateTimer != null){
+			m_checkStateTimer.cancel();
+			m_checkStateTimer = null;
+		}
 	}
 	
 	private void PopupProblemAndSearchHelp(String _help,final Widget _panel){
 		
+		if(_help != null){
+			_help = "null";
+		}
 		StringBuffer t_search = new StringBuffer();
 		t_search.append("错误：").append(_help).append("\n");
 

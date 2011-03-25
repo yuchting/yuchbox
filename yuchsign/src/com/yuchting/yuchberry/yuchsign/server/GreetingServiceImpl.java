@@ -9,9 +9,7 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Vector;
@@ -238,6 +236,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 								t_exceptList.add(m_currSyncHost);
 								
 							}else{
+								
+								if(t_result.indexOf("<Port>") != -1){
+									return ProcessSyncSucc(t_result,t_bber);
+								}
+								
 								return t_result;
 							}
 						}
@@ -301,22 +304,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 //				
 //				Element t_elem = t_doc.getDocumentElement();
 				
-				int t_portTag_start		= t_result.indexOf("<Port>");
-				int t_portTag_end		= t_result.indexOf("</Port>");
-				if(t_portTag_start != -1){
-					
-					t_result = t_result.substring(t_portTag_start + 6,t_portTag_end);
-					int t_port = Integer.valueOf(t_result).intValue();
-					
-					t_bber.SetServerProt(t_port);
-					t_bber.SetConnetHost(m_currSyncHost.m_hostName);
-					
-					t_bber.SetCreateTime(m_createTime);
-					t_bber.SetLatestSyncTime((new Date()).getTime());
-					
-					t_result = t_bber.OuputXMLData();
-					
-					m_currSyncHost = null;
+				if(t_result.indexOf("<Port>") != -1){
+					return ProcessSyncSucc(t_result,t_bber);
 				}				
 				
 				return t_result;
@@ -331,6 +320,30 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			t_pm.close();
 		}		
 	}
+	
+	private String ProcessSyncSucc(String _result,yuchbber _bber){
+				
+		int t_portTag_start		= _result.indexOf("<Port>");
+		int t_portTag_end		= _result.indexOf("</Port>");
+		
+		assert  t_portTag_start != -1;
+					
+		_result = _result.substring(t_portTag_start + 6,t_portTag_end);
+		int t_port = Integer.valueOf(_result).intValue();
+		
+		_bber.SetServerProt(t_port);
+		_bber.SetConnetHost(m_currSyncHost.m_hostName);
+		
+		_bber.SetCreateTime(m_createTime);
+		_bber.SetLatestSyncTime((new Date()).getTime());
+		
+		_result = _bber.OuputXMLData();
+		
+		m_currSyncHost = null;
+		
+		return _result;		
+	}
+	
 	public String checkAccountLog(String _signinName,String _pass)throws Exception{
 		
 		if(m_checkLogTime != 0){

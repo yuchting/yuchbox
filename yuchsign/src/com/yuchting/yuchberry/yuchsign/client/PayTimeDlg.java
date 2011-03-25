@@ -121,8 +121,7 @@ public class PayTimeDlg extends DialogBox{
 		});
 		
 		final HorizontalPanel t_buttonPane = new HorizontalPanel();
-		t_buttonPane.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		t_buttonPane.setSpacing(30);
+		t_buttonPane.setSpacing(10);
 		
 		t_buttonPane.add(t_confirm);
 		t_buttonPane.add(t_cancel);

@@ -577,11 +577,11 @@ public class connectDeamon extends Thread implements SendListener,
 			m_sendAuthMsg = false;
 			
 			if(m_systemStart){
-				// wait 15.sec for geting GPRS if it's system start connect 
+				// wait 25.sec for geting GPRS if it's system start connect 
 				//
 				m_systemStart = false;
 				try{
-					sleep(15000);
+					sleep(25000);
 				}catch(Exception _e){}
 			}
 			
@@ -677,20 +677,15 @@ public class connectDeamon extends Thread implements SendListener,
 		
 	 }
 	 
-	 public void Connect(boolean _systemStart)throws Exception{
+	 public synchronized void Connect(boolean _systemStart)throws Exception{
 		 
-		synchronized (this) {
-			
-			Disconnect();
-			
-			m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTING_LABEL));
-			m_systemStart = _systemStart;
-			m_disconnect = false;
-			
-			BeginListener();
-			
-			
-		}
+		 Disconnect();
+		
+		 m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTING_LABEL));
+		 m_systemStart = _systemStart;
+		 m_disconnect = false;
+		
+		 BeginListener();
 	 }
 	 
 	 public boolean IsConnectState(){

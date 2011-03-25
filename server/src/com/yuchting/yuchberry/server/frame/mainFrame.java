@@ -667,7 +667,7 @@ public class mainFrame extends JFrame implements ActionListener{
 				
 				final long t_lastTime = t_thread.GetLastTime(t_currTime);
 				
-				if(!t_thread.m_sendTimeupMail && t_lastTime > 0 && t_lastTime < 24 * 3600 * 1000){
+				if(!t_thread.m_sendTimeupMail && t_lastTime > 0 && t_lastTime < 2 * 3600 * 1000){
 					
 					t_thread.m_sendTimeupMail = true;
 					
@@ -719,7 +719,13 @@ public class mainFrame extends JFrame implements ActionListener{
 		for(int i = 0;i < m_bberRequestList.size();i++){
 			BberRequestThread bber = m_bberRequestList.get(i);
 			
-			if(Math.abs(bber.m_requestTime - t_currTime) > 10 * 60 * 1000){
+			if(Math.abs(t_currTime - bber.m_requestTime) > 10 * 60 * 1000){
+				
+				if(bber.m_orgThread != null){
+					bber.m_orgThread.Destroy();
+				}else{
+					bber.m_mainMgr.EndListening();
+				}
 				
 				bber.interrupt();
 				m_bberRequestList.remove(i);
@@ -833,6 +839,10 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 		String		m_prefix		= fsm_yuchsign_tmpDir;
 		
+		fetchMgr	m_mainMgr		= null;
+		
+		boolean	m_prepareSucc 	= false;
+		
 		fetchThread	m_orgThread = null;
 				
 		BberRequestThread(mainFrame _frame,yuchbber _bber,fetchThread _orgThread){
@@ -914,49 +924,81 @@ public class mainFrame extends JFrame implements ActionListener{
 					
 				}else{
 					
-					fetchMgr t_manger = new fetchMgr();
+					m_mainMgr = new fetchMgr();
 					Logger t_logger = new Logger(m_prefix);
-					t_manger.InitConnect(m_prefix,t_logger);
-					
-					t_manger.ResetAllAccountSession(true);	
-					
-					// copy the account information 
-					//
-					final String t_copyPrefix = m_currbber.GetSigninName() + "/";
-					File t_accountFolder = new File(t_copyPrefix);
-					if(!t_accountFolder.exists()){
-						t_accountFolder.mkdir();
-					}
-					
-					createDialog.CopyFile(m_prefix + fetchMgr.fsm_configFilename,
-							t_copyPrefix + fetchMgr.fsm_configFilename);
-					
-					createDialog.WriteSignature(t_copyPrefix, m_currbber.GetSignature());
-					
-					// copy the account signature
-					//
-					FileOutputStream t_signature_file = new FileOutputStream(t_copyPrefix + fetchEmail.fsm_signatureFilename);
 					try{
-						t_signature_file.write(m_currbber.GetSignature().getBytes("UTF-8"));
-					}finally{
-						t_signature_file.flush();
-						t_signature_file.close();
+						m_mainMgr.InitConnect(m_prefix,t_logger);
+						
+						m_mainMgr.ResetAllAccountSession(true);	
+						
+						// copy the account information 
+						//
+						String t_copyPrefix = m_currbber.GetSigninName() + "/";
+						File t_accountFolder = new File(t_copyPrefix);
+						if(!t_accountFolder.exists()){
+							t_accountFolder.mkdir();
+						}
+						
+						createDialog.CopyFile(m_prefix + fetchMgr.fsm_configFilename,
+								t_copyPrefix + fetchMgr.fsm_configFilename);
+						
+						createDialog.WriteSignature(t_copyPrefix, m_currbber.GetSignature());
+						
+						// copy the account signature
+						//
+						FileOutputStream t_signature_file = new FileOutputStream(t_copyPrefix + fetchEmail.fsm_signatureFilename);
+						try{
+							t_signature_file.write(m_currbber.GetSignature().getBytes("UTF-8"));
+						}finally{
+							t_signature_file.flush();
+							t_signature_file.close();
+						}
+						
+					}catch(Exception e){
+						
+						m_mainMgr.EndListening();
+						t_logger.StopLogging();
+						
+						throw e;
 					}
 					
-					fetchThread t_newThread = new fetchThread(t_manger,t_copyPrefix,
-																m_currbber.GetUsingHours(),
-																m_currbber.GetCreateTime(),false);
-
-					AddAccountThread(t_newThread, true);
 				}
 				
-				
-				// to tell the web server port
-				//
-				m_result = "<Port>" + m_serverPort +"</Port>";
+				m_prepareSucc = true;			
 				
 			}catch(Exception e){
 				m_result = "<Error>" + e.getMessage() + "</Error>";
+			}
+		}
+		
+		public void CheckStartRequest(){
+
+			try{
+				
+				if(m_prepareSucc){
+
+					if(m_orgThread == null){
+
+						String t_copyPrefix = m_currbber.GetSigninName() + "/";
+						
+						fetchThread t_newThread = new fetchThread(m_mainMgr,t_copyPrefix,
+																	m_currbber.GetUsingHours(),
+																	m_currbber.GetCreateTime(),false);
+
+						AddAccountThread(t_newThread, true);	
+					}
+					
+					// to tell the web server port
+					//
+					m_result = "<Port>" + m_serverPort +"</Port>";
+					
+				}else{
+					
+				}
+				
+			}catch(Exception e){
+				
+				m_result = "<Error>" + e.getMessage() +"</Error>";
 			}
 			
 			m_logger.LogOut(m_currbber.GetSigninName() + " 同步结果: " + m_result);
@@ -1040,46 +1082,37 @@ public class mainFrame extends JFrame implements ActionListener{
 			//
 			for(BberRequestThread bber : m_bberRequestList){
 				if(bber.m_currbber.GetSigninName().equals(t_signinName)){
-					if(t_checkState){
-						if(bber.isAlive()){
-							return "<Loading />";
-						}else{
-							
-							m_bberRequestList.remove(bber);
-							return bber.m_result;
-						}
+
+					if(bber.isAlive()){
+						return "<Loading />";
 					}else{
-						if(bber.isAlive()){
-							return "<Error>这个账户已经有一个请求正在同步，请等10分钟再试</Error>";
-						}
+						
+						bber.CheckStartRequest();
+						
 						m_bberRequestList.remove(bber);
-						break;
-					}					 
+						
+						return bber.m_result;
+					}									 
 				}
+			}
+						
+			// search the former thread
+			//
+			fetchThread t_thread = SearchAccountThread(t_bber.GetSigninName(),0);
+			
+			if(t_thread == null && m_accountList.size() >= _maxBber){
+				// if reach the max bber
+				//
+				return "<Max />";
 			}
 			
-			if(t_checkState){
-				return "<Error>之前没有请求过这个账户的同步</Error>";
-			}else{
-				
-				// search the former thread
-				//
-				fetchThread t_thread = SearchAccountThread(t_bber.GetSigninName(),0);
-				
-				if(t_thread == null && m_accountList.size() >= _maxBber){
-					// if reach the max bber
-					//
-					return "<Max />";
-				}
-				
-				// create new request thread
-				//
-				m_bberRequestList.add(new BberRequestThread(this,t_bber,t_thread));
-				
-				m_logger.LogOut("bber" + t_bber.GetSigninName() + " sync, current Thread:" + m_bberRequestList.size());
-				
-				return "<Loading />";
-			}
+			// create new request thread
+			//
+			m_bberRequestList.add(new BberRequestThread(this,t_bber,t_thread));
+			
+			m_logger.LogOut("bber <" + t_bber.GetSigninName() + "> sync, current syncing Thread:" + m_bberRequestList.size());
+			
+			return "<Loading />";			
 			
 		}catch(Exception e){
 			
