@@ -102,8 +102,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	long				m_uploadByte		= 0;
 	long				m_downloadByte		= 0;
 	
-	static final String[]	fsm_pulseIntervalString = {"1","5","10","30"};
-	static final int[]	fsm_pulseInterval		= {1,5,10,30};
+	static final String[]	fsm_pulseIntervalString = {"1","3","5","10","30"};
+	static final int[]	fsm_pulseInterval		= {1,3,5,10,30};
 	int						m_pulseIntervalIndex = 1;
 	
 	boolean			m_fulldayPrompt		= true;
@@ -264,10 +264,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			}
 		}catch(Exception e){
 			SetErrorString("location:"+e.getMessage()+" " + e.getClass().getName());
-		}
-		
-		
-        WriteReadIni(true);
+		}     
         
         if(_systemRun){
         	
@@ -286,7 +283,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         		}   		
         		
         	}      	
-        }        
+        }
+        
+        WriteReadIni(true);
 	}
 	
 	private void DialogAlertAndExit(final String _msg) {
@@ -475,122 +474,225 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return fsm_pulseInterval[m_pulseIntervalIndex];
 	}
 	
-	public synchronized void WriteReadIni(boolean _read){
+	
+	static synchronized void Copyfile(String _from,String _to,boolean _deleteFrom)throws Exception{
+		
+		byte[] t_buffer = null;
+		
+		FileConnection t_fromFile = (FileConnection) Connector.open(_from,Connector.READ_WRITE);
+		try{
+			if(t_fromFile.exists()){
+
+				t_buffer = new byte[(int)t_fromFile.fileSize()];
+				InputStream t_readFile = t_fromFile.openInputStream();
+				try{
+					t_readFile.read(t_buffer);
+				}finally{
+					
+					t_readFile.close();
+					t_readFile = null;
+				}
+				
+				if(_deleteFrom){
+					t_fromFile.delete();
+				}
+				
+			}else{
+				return ;
+			}
+			
+		}finally{		
+			
+			t_fromFile.close();
+			t_fromFile = null;
+		}	
+		
+		
+		FileConnection t_toFile  = (FileConnection) Connector.open(_to,Connector.READ_WRITE);
+		try{
+			if(!t_toFile.exists()){
+				t_toFile.create();
+			}
+			
+			OutputStream t_writeFile = t_toFile.openOutputStream();
+			try{
+				t_writeFile.write(t_buffer);
+			}finally{
+				t_writeFile.close();
+				t_writeFile = null;							
+			}
+		}finally{
+			t_toFile.close();
+			t_toFile = null;
+		}		
+	}
+	
+	static final String fsm_initFilename = uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + "Init.data";
+	static final String fsm_backInitFilename = uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + "~Init.data";
+	
+	private synchronized void PreWriteReadIni(boolean _read){
 		
 		try{
 			
-			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + "Init.data",
-																Connector.READ_WRITE);
+			FileConnection t_back = (FileConnection) Connector.open(fsm_backInitFilename,Connector.READ_WRITE);
+			
 			if(_read){
-
-		    	if(fc.exists()){
-		    		InputStream t_readFile = fc.openInputStream();
-		    		
-		    		final int t_currVer = sendReceive.ReadInt(t_readFile);
-		    		
-		    		m_hostname		= sendReceive.ReadString(t_readFile);
-		    		m_port			= sendReceive.ReadInt(t_readFile);
-		    		m_userPassword	= sendReceive.ReadString(t_readFile);
-		    		
-		    		// read the APN validate 
-		    		//
-		    		final int t_apnNum = sendReceive.ReadInt(t_readFile);
-		    		for(int i = 0 ;i < t_apnNum;i++){
-		    			APNSelector t_sel = new APNSelector();
-		    			t_sel.m_name 		= sendReceive.ReadString(t_readFile);
-		    			t_sel.m_validateNum	= sendReceive.ReadInt(t_readFile);
-		    			m_APNList.addElement(t_sel);
-		    		}
-		    		
-		    		if(t_currVer >= 2){
-		    			m_useSSL = (t_readFile.read() == 0)?false:true;
-		    		}
-		    		
-		    		
-		    		if(t_currVer >= 4){
-		    			m_useWifi = (t_readFile.read() == 0)?false:true;
-		    			m_appendString = sendReceive.ReadString(t_readFile);		    			
-		    		}
-		    		
-		    		if(t_currVer >= 5){
-		    			m_autoRun = (t_readFile.read() == 0)?false:true;		    			
-		    		}
-		    		
-		    		if(t_currVer >= 6){
-		    			m_uploadByte = sendReceive.ReadLong(t_readFile);
-		    			m_downloadByte = sendReceive.ReadLong(t_readFile);
-		    		}
-		    		
-		    		if(t_currVer >= 7){
-		    			m_pulseIntervalIndex = sendReceive.ReadInt(t_readFile);
-		    		}
-		    		
-		    		if(t_currVer >= 8){
-		    			m_fulldayPrompt = t_readFile.read() == 1?true:false;
-		    			m_startPromptHour = sendReceive.ReadInt(t_readFile);
-	    				m_endPromptHour = sendReceive.ReadInt(t_readFile);		    			
-		    		}	
-		    		
-		    		if(t_currVer >= 8){
-		    			m_useLocationInfo = t_readFile.read() == 1?true:false;
-		    		}
-		    		
-		    		t_readFile.close();
-		    		
-		    	}
+				if(t_back.exists()){
+					t_back.close();
+					t_back = null;
+					
+					Copyfile(fsm_backInitFilename,fsm_initFilename,true);			
+				}
 			}else{
-				if(!fc.exists()){
-					fc.create();
-				}				
-				
-				OutputStream t_writeFile = fc.openOutputStream();
-				
-				sendReceive.WriteInt(t_writeFile,fsm_clientVersion);
-				
-				sendReceive.WriteString(t_writeFile, m_hostname);
-				sendReceive.WriteInt(t_writeFile,m_port);
-				sendReceive.WriteString(t_writeFile, m_userPassword);
-				
-				// write the APN name and validate number
-				//
-				sendReceive.WriteInt(t_writeFile,m_APNList.size());
-				for(int i = 0 ;i < m_APNList.size();i++){
-					APNSelector t_sel = (APNSelector)m_APNList.elementAt(i);
-					sendReceive.WriteString(t_writeFile,t_sel.m_name);
-					sendReceive.WriteInt(t_writeFile,t_sel.m_validateNum);
-				}
-				
-				t_writeFile.write(m_useSSL?1:0);
-				t_writeFile.write(m_useWifi?1:0);
-				sendReceive.WriteString(t_writeFile,m_appendString);
-				
-				t_writeFile.write(m_autoRun?1:0);
-				
-				sendReceive.WriteLong(t_writeFile,m_uploadByte);
-				sendReceive.WriteLong(t_writeFile, m_downloadByte);
-				
-				sendReceive.WriteInt(t_writeFile,m_pulseIntervalIndex);
-				
-				
-				t_writeFile.write(m_fulldayPrompt?1:0);
-				sendReceive.WriteInt(t_writeFile,m_startPromptHour);
-				sendReceive.WriteInt(t_writeFile,m_endPromptHour);
-				
-				t_writeFile.write(m_useLocationInfo?1:0);
-								
-				t_writeFile.close();
-				
-				if(m_connectDeamon.m_connect != null){
-					m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
-				}
-				
+				Copyfile(fsm_initFilename,fsm_backInitFilename,false);
 			}
 			
-			fc.close();
+		}catch(Exception e){
+			SetErrorString("write/read PreWriteReadIni file from SDCard error :" + e.getMessage() + e.getClass().getName());
+		}
+		
+	}
+	public synchronized void WriteReadIni(boolean _read){
+		
+		// process the ~Init.data file to restore the destroy original file
+		// that writing when device is down  
+		//
+		// check the issue 85 
+		// http://code.google.com/p/yuchberry/issues/detail?id=85&colspec=ID%20Type%20Status%20Priority%20Stars%20Summary
+		//
+		PreWriteReadIni(_read);
+		
+		try{
 			
+			FileConnection fc = (FileConnection) Connector.open(fsm_initFilename,Connector.READ_WRITE);
+			try{
+				if(_read){
+					
+			    	if(fc.exists()){
+			    		InputStream t_readFile = fc.openInputStream();
+			    		try{
+			    			final int t_currVer = sendReceive.ReadInt(t_readFile);
+				    		
+				    		m_hostname		= sendReceive.ReadString(t_readFile);
+				    		m_port			= sendReceive.ReadInt(t_readFile);
+				    		m_userPassword	= sendReceive.ReadString(t_readFile);
+				    		
+				    		// read the APN validate 
+				    		//
+				    		final int t_apnNum = sendReceive.ReadInt(t_readFile);
+				    		for(int i = 0 ;i < t_apnNum;i++){
+				    			APNSelector t_sel = new APNSelector();
+				    			t_sel.m_name 		= sendReceive.ReadString(t_readFile);
+				    			t_sel.m_validateNum	= sendReceive.ReadInt(t_readFile);
+				    			m_APNList.addElement(t_sel);
+				    		}
+				    		
+				    		if(t_currVer >= 2){
+				    			m_useSSL = (t_readFile.read() == 0)?false:true;
+				    		}
+				    		
+				    		
+				    		if(t_currVer >= 4){
+				    			m_useWifi = (t_readFile.read() == 0)?false:true;
+				    			m_appendString = sendReceive.ReadString(t_readFile);		    			
+				    		}
+				    		
+				    		if(t_currVer >= 5){
+				    			m_autoRun = (t_readFile.read() == 0)?false:true;		    			
+				    		}
+				    		
+				    		if(t_currVer >= 6){
+				    			m_uploadByte = sendReceive.ReadLong(t_readFile);
+				    			m_downloadByte = sendReceive.ReadLong(t_readFile);
+				    		}
+				    		
+				    		if(t_currVer >= 7){
+				    			m_pulseIntervalIndex = sendReceive.ReadInt(t_readFile);
+				    		}
+				    		
+				    		if(t_currVer >= 8){
+				    			m_fulldayPrompt = t_readFile.read() == 1?true:false;
+				    			m_startPromptHour = sendReceive.ReadInt(t_readFile);
+			    				m_endPromptHour = sendReceive.ReadInt(t_readFile);		    			
+				    		}	
+				    		
+				    		if(t_currVer >= 8){
+				    			m_useLocationInfo = t_readFile.read() == 1?true:false;
+				    		}
+			    		}finally{
+			    			t_readFile.close();
+			    			t_readFile = null;
+			    		}
+			    	}
+				}else{
+					if(!fc.exists()){
+						fc.create();
+					}				
+					
+					OutputStream t_writeFile = fc.openOutputStream();
+					try{
+						sendReceive.WriteInt(t_writeFile,fsm_clientVersion);
+						
+						sendReceive.WriteString(t_writeFile, m_hostname);
+						sendReceive.WriteInt(t_writeFile,m_port);
+						sendReceive.WriteString(t_writeFile, m_userPassword);
+						
+						// write the APN name and validate number
+						//
+						sendReceive.WriteInt(t_writeFile,m_APNList.size());
+						for(int i = 0 ;i < m_APNList.size();i++){
+							APNSelector t_sel = (APNSelector)m_APNList.elementAt(i);
+							sendReceive.WriteString(t_writeFile,t_sel.m_name);
+							sendReceive.WriteInt(t_writeFile,t_sel.m_validateNum);
+						}
+						
+						t_writeFile.write(m_useSSL?1:0);
+						t_writeFile.write(m_useWifi?1:0);
+						sendReceive.WriteString(t_writeFile,m_appendString);
+						
+						t_writeFile.write(m_autoRun?1:0);
+						
+						sendReceive.WriteLong(t_writeFile,m_uploadByte);
+						sendReceive.WriteLong(t_writeFile, m_downloadByte);
+						
+						sendReceive.WriteInt(t_writeFile,m_pulseIntervalIndex);
+						
+						
+						t_writeFile.write(m_fulldayPrompt?1:0);
+						sendReceive.WriteInt(t_writeFile,m_startPromptHour);
+						sendReceive.WriteInt(t_writeFile,m_endPromptHour);
+						
+						t_writeFile.write(m_useLocationInfo?1:0);
+																
+						if(m_connectDeamon.m_connect != null){
+							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
+						}
+						
+					}finally{
+						t_writeFile.close();
+						t_writeFile = null;
+					}
+					
+					// delete the back file ~Init.data
+					//
+					FileConnection t_backFile = (FileConnection) Connector.open(fsm_backInitFilename,Connector.READ_WRITE);
+					try{
+						if(t_backFile.exists()){
+							t_backFile.delete();
+						}
+					}finally{
+						t_backFile.close();
+						t_backFile = null;
+					}
+				}
+			}finally{
+				fc.close();
+				fc = null;
+			}
+						
 		}catch(Exception _e){
 			SetErrorString("write/read config file from SDCard error :" + _e.getMessage() + _e.getClass().getName());
-		}
+		}	
 		
 		if(m_locationProvider != null){
 			if(m_useLocationInfo){
