@@ -11,8 +11,16 @@ public class yuchAlipay {
 	
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-	public String m_partner = "";
+	private String m_partner = "";
 	
 	@Persistent
-	public String m_key = "";
+	private String m_key = "";
+	
+	
+	public String GetPartnerID(){return m_partner;}
+	public void SetPartnerID(String _id){m_partner = _id;}
+	
+	public String GetKey(){return m_key;}
+	public void SetKey(String _key){m_key = _key;}
+	
 }

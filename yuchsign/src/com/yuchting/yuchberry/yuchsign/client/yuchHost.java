@@ -4,15 +4,30 @@ import com.google.gwt.xml.client.Element;
 
 public class yuchHost {
 
-	public String m_hostName = "";
+	private String m_hostName = "";
 	
-	public String m_connectHost = "";
+	private String m_connectHost = "";
+
+	private int m_httpPort = 4929;
 	
-	public int m_httpPort = 4929;
+	private String m_httpPassword = "";
 	
-	public String m_httpPassword = "";
+	private String m_recommendHost = "";
 	
-	public String m_recommendHost = "";
+	public String GetHostName(){return m_hostName;}
+	public void SetHostName(String _name){m_hostName = _name;}
+	
+	public String GetConnectHost(){return m_connectHost;}
+	public void SetConnectHost(String _host){m_connectHost = _host;}
+	
+	public int GetHTTPPort(){return m_httpPort;}
+	public void SetHTTPPort(int _port){m_httpPort = _port;}
+	
+	public String GetHTTPPass(){return m_httpPassword;}
+	public void SetHTTPPass(String _pass){m_httpPassword = _pass;}
+	
+	public String GetRecommendHost(){return m_recommendHost;}
+	public void SetRecommendHost(String _recommendHost){m_recommendHost = _recommendHost;}
 	
 	public void OutputXMLData(StringBuffer _buffer){
 		_buffer.append("<Host ").append("name=\"").append(m_hostName)

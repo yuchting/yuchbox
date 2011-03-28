@@ -184,6 +184,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					
 					t_syncbber.SetUsingHours(t_hours);
 					
+					// set the curr sync host null
+					//
+					m_currSyncHost = null;
 					
 					// search the proper host to synchronize
 					//
@@ -196,7 +199,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						m_currSyncHost =  FindProperHost(t_hostList,t_syncbber.GetEmailList(),t_exceptList);	
 					}else{						
 						for(yuchHost host : t_hostList){
-							if(host.m_hostName.equalsIgnoreCase(t_syncbber.GetConnectHost())){
+							if(host.GetHostName().equalsIgnoreCase(t_syncbber.GetConnectHost())){
 								m_currSyncHost = host;
 								break;
 							}
@@ -217,7 +220,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						
 						while(m_currSyncHost != null){
 							
-							t_syncbber.SetConnetHost(m_currSyncHost.m_hostName);
+							t_syncbber.SetConnetHost(m_currSyncHost.GetHostName());
 							
 							// query the account
 							//
@@ -325,7 +328,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		int t_port = Integer.valueOf(_result).intValue();
 		
 		_bber.SetServerProt(t_port);
-		_bber.SetConnetHost(m_currSyncHost.m_hostName);
+		_bber.SetConnetHost(m_currSyncHost.GetHostName());
 		
 		_bber.SetCreateTime(m_createTime);
 		_bber.SetLatestSyncTime((new Date()).getTime());
@@ -368,7 +371,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				List<yuchHost> t_hostList = (List<yuchHost>)t_pm.newQuery(query).execute();
 				
 				for(yuchHost host : t_hostList){
-					if(host.m_hostName.equalsIgnoreCase(t_bber.GetConnectHost())){
+					if(host.GetHostName().equalsIgnoreCase(t_bber.GetConnectHost())){
 						
 						Properties t_header = new Properties();
 					
@@ -406,6 +409,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
 		
 		try{
+						
 			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(),_signinName);
 			try{
 				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);				
@@ -489,27 +493,27 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 										
 					t_body.append("_input_charset=utf-8&")
 							.append("out_trade_no=" + t_out_trade_no + "&")
-							.append("partner=" + t_alipay.m_partner +"&")
+							.append("partner=" + t_alipay.GetPartnerID() +"&")
 							.append("payment_type=1&")
 							.append("paymethod=directPay&")
-							.append("return_url=http://127.0.0.1:8888/pay&")
+							.append("return_url=http://yuchberrysign.yuchberry.info/pay&")
 							.append("seller_email=yuchting@gmail.com&")
 							.append("service=create_direct_pay_by_user&")
 							.append("subject="+ t_subject +"&")
-							.append("total_fee=" + (0.01f));
+							.append("total_fee=" + _fee);
 					
-					String t_md5 = Md5Encrypt.md5(t_body.toString() + t_alipay.m_key);
+					String t_md5 = Md5Encrypt.md5(t_body.toString() + t_alipay.GetKey());
 					
 					t_payURL.append("https://www.alipay.com/cooperate/gateway.do?sign=")
 							.append(t_md5).append("&").append(t_body).append("&sign_type=MD5");
 					
 					yuchOrder t_order = new yuchOrder();
 					
-					t_order.m_out_trade_no	= t_out_trade_no;
-					t_order.m_total_fee			= _fee;
-					t_order.m_subject			= t_subject;
-					t_order.m_buyer_email		= _signinName;
-					t_order.m_payType			= _payType;
+					t_order.SetOutTradeNO(t_out_trade_no);
+					t_order.SetTotalFee(_fee);
+					t_order.SetSubject(t_subject);
+					t_order.SetBuyerEmail(_signinName);
+					t_order.SetPayType(_payType);
 					
 					t_pm.makePersistent(t_order);
 					
@@ -532,7 +536,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	public static String RequestYuchHostURL(yuchHost _host,Properties header, Properties parms)throws Exception{
 		
 		StringBuffer t_final = new StringBuffer();
-		t_final.append("http://").append(_host.m_hostName).append(":").append(_host.m_httpPort);
+		t_final.append("http://").append(_host.GetHostName()).append(":").append(_host.GetHTTPPort());
 					
 		if(parms != null){
 			t_final.append("?");
@@ -562,11 +566,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			}
 			
 			if(header.getProperty("pass") == null){
-				header.put("pass",_host.m_httpPassword);
+				con.setRequestProperty("pass",URLEncoder.encode(_host.GetHTTPPass(),"UTF-8"));
 			}
 			
 		}else{
-			con.setRequestProperty("pass",URLEncoder.encode(_host.m_httpPassword,"UTF-8"));
+			con.setRequestProperty("pass",URLEncoder.encode(_host.GetHTTPPass(),"UTF-8"));
 		}
 		
 		con.connect();
@@ -601,8 +605,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		
 		for(yuchHost host : _hostList){
 			
-			if(host.m_recommendHost.length() != 0){
-				String[] t_string = host.m_recommendHost.split(" ");
+			if(host.GetRecommendHost().length() != 0){
+				String[] t_string = host.GetRecommendHost().split(" ");
 				
 				boolean t_add = false;
 				
@@ -657,7 +661,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						
 			if(t_alipayList != null){
 				for(yuchAlipay partner :t_alipayList){
-					return partner.m_partner + ":" + partner.m_key;
+					return partner.GetPartnerID() + ":" + partner.GetKey();
 				}
 				
 				return "";
@@ -690,8 +694,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			}
 			
 			yuchAlipay t_pay = new yuchAlipay();
-			t_pay.m_partner = _partnerID;
-			t_pay.m_key = _key;
+			t_pay.SetPartnerID(_partnerID);
+			t_pay.SetKey(_key);
 			
 			try{
 				t_pm.makePersistent(t_pay);
@@ -757,12 +761,12 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			
 			t_newHost.InputXMLData(t_doc.getDocumentElement());
 			
-			Key k = KeyFactory.createKey(yuchHost.class.getSimpleName(), t_newHost.m_hostName);
+			Key k = KeyFactory.createKey(yuchHost.class.getSimpleName(), t_newHost.GetHostName());
 			try{
 				yuchHost t_host = t_pm.getObjectById(yuchHost.class, k);				
 
 				if(t_host != null){
-					return "<Error>主机 "+t_newHost.m_hostName+" 已经存在!</Error>";
+					return "<Error>主机 "+t_newHost.GetHostName()+" 已经存在!</Error>";
 				}				
 				
 			}catch(javax.jdo.JDOObjectNotFoundException e){
@@ -831,7 +835,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				t_host.InputXMLData(t_doc.getDocumentElement());
 				
 			}catch(javax.jdo.JDOObjectNotFoundException e){					
-				return "<Error>主机 "+_hostName+" 不存在!</Error>";
+				return "<Error>主机 " + _hostName + " 不存在!</Error>";
 			}
 			
 			return "<OK />";

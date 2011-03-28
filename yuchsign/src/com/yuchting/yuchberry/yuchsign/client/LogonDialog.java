@@ -73,8 +73,9 @@ public final class LogonDialog extends DialogBox{
 			@Override
 			public void onClick(ClickEvent event) {
 				try{
-					if(!IsValidEmail(m_logonName.getText())){
+					if(!IsValidEmail(m_logonName.getText()) ){
 						Yuchsign.PopupPrompt("请输入正确的邮件地址作为用户名", m_logonName);
+						return;
 					}
 					
 					Yuchsign.PopupWaiting("正在提交申请", t_logonPane);

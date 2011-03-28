@@ -45,7 +45,7 @@ public class YuchPanel extends TabPanel{
 	
 	final ProvidesKey<yuchHost> m_privdesKey = new ProvidesKey<yuchHost>() {
 	     public Object getKey(yuchHost item) {
-	    	 return item == null ? null : item.m_hostName;
+	    	 return item == null ? null : item.GetHostName();
 	     }
     };
 	
@@ -137,24 +137,24 @@ public class YuchPanel extends TabPanel{
 	    //
 	    addColumn(new TextCell(),"主机地址",new GetValue<String>(){
 	    	public String getValue(yuchHost host){
-	    		return host.m_hostName;
+	    		return host.GetHostName();
 	    	}
 	    },null);
 	    
 	    // 连接地址
 	    addColumn(new EditTextCell(),"同步地址",new GetValue<String>(){
 	    	public String getValue(yuchHost host){
-	    		return host.m_connectHost;
+	    		return host.GetConnectHost();
 	    	}
 	    },new FieldUpdater<yuchHost,String>(){
 	    	public void update(int index, yuchHost object, String value){
-	    		object.m_connectHost = value;
+	    		object.SetConnectHost(value);
 	    		
 	    		final StringBuffer t_data = new StringBuffer();	    		
 	    		
 	    		try{
 	    			object.OutputXMLData(t_data);
-	    			m_mainServer.greetingService.modifyHost(object.m_hostName,t_data.toString(),m_changeCallback);
+	    			m_mainServer.greetingService.modifyHost(object.GetHostName(),t_data.toString(),m_changeCallback);
 	    		}catch(Exception e){
 	    			Yuchsign.PopupPrompt("change host'port exception:" + e.getMessage(),m_table);
 	    		}
@@ -165,17 +165,17 @@ public class YuchPanel extends TabPanel{
 	    // 主机端口
 	    addColumn(new EditTextCell(),"主机端口",new GetValue<String>(){
 	    	public String getValue(yuchHost host){
-	    		return Integer.toString(host.m_httpPort);
+	    		return Integer.toString(host.GetHTTPPort());
 	    	}
 	    },new FieldUpdater<yuchHost,String>(){
 	    	public void update(int index, yuchHost object, String value){
-	    		object.m_httpPort = Integer.valueOf(value).intValue();
+	    		object.SetHTTPPort(Integer.valueOf(value).intValue());
 	    		
 	    		final StringBuffer t_data = new StringBuffer();	    		
 	    		
 	    		try{
 	    			object.OutputXMLData(t_data);
-	    			m_mainServer.greetingService.modifyHost(object.m_hostName,t_data.toString(),m_changeCallback);
+	    			m_mainServer.greetingService.modifyHost(object.GetHostName(),t_data.toString(),m_changeCallback);
 	    		}catch(Exception e){
 	    			Yuchsign.PopupPrompt("change host'port exception:" + e.getMessage(),m_table);
 	    		}
@@ -186,19 +186,19 @@ public class YuchPanel extends TabPanel{
 	    // password
 	    addColumn(new EditTextCell(),"访问密码",new GetValue<String>(){
 	    	public String getValue(yuchHost host){
-	    		return host.m_httpPassword;
+	    		return host.GetHTTPPass();
 	    	}
 	    },new FieldUpdater<yuchHost,String>(){
 	    	
 	    	public void update(int index, yuchHost object, String value){
 	    		
-	    		object.m_httpPassword = value;
+	    		object.SetHTTPPass(value);
 	    		
 	    		final StringBuffer t_data = new StringBuffer();	    		
 	    			    		
 	    		try{
 	    			object.OutputXMLData(t_data);
-	    			m_mainServer.greetingService.modifyHost(object.m_hostName,t_data.toString(),m_changeCallback);
+	    			m_mainServer.greetingService.modifyHost(object.GetHostName(),t_data.toString(),m_changeCallback);
 	    		}catch(Exception e){
 	    			Yuchsign.PopupPrompt("change host'password exception:" + e.getMessage(),m_table);
 	    		}
@@ -209,18 +209,18 @@ public class YuchPanel extends TabPanel{
 	    // recommend host sub
 	    addColumn(new EditTextCell(),"建议主机",new GetValue<String>(){
 	    	public String getValue(yuchHost host){
-	    		return host.m_recommendHost;
+	    		return host.GetRecommendHost();
 	    	}
 	    },new FieldUpdater<yuchHost,String>(){
 	    	public void update(int index, yuchHost object, String value){
 	    		
-	    		object.m_recommendHost = value;
+	    		object.SetRecommendHost(value);
 	    		
 	    		final StringBuffer t_data = new StringBuffer();	    		
 	    		
 	    		try{
 	    			object.OutputXMLData(t_data);
-	    			m_mainServer.greetingService.modifyHost(object.m_hostName,t_data.toString(),m_changeCallback);
+	    			m_mainServer.greetingService.modifyHost(object.GetHostName(),t_data.toString(),m_changeCallback);
 	    		}catch(Exception e){
 	    			Yuchsign.PopupPrompt("change host'recommendHost exception:" + e.getMessage(),m_table);
 	    		}
@@ -240,11 +240,11 @@ public class YuchPanel extends TabPanel{
 
 	    		final yuchHost t_finalObject = object;
 	    		
-	    		Yuchsign.PopupYesNoDlg("你真的要删除这个" + object.m_hostName + "主机么？",
+	    		Yuchsign.PopupYesNoDlg("你真的要删除这个" + object.GetHostName() + "主机么？",
 	    				new YesNoHandler(){
 	    					public void Process(){
 	    						try{
-	    			    			m_mainServer.greetingService.delHost(t_finalObject.m_hostName,m_changeCallback);
+	    			    			m_mainServer.greetingService.delHost(t_finalObject.GetHostName(),m_changeCallback);
 	    			    		}catch(Exception e){
 	    			    			Yuchsign.PopupPrompt("delete host exception:" + e.getMessage(),m_table);
 	    			    		}
@@ -296,7 +296,7 @@ public class YuchPanel extends TabPanel{
 				}
 				
 				for(yuchHost host : m_hostList.getList()){
-					if(host.m_hostName.equalsIgnoreCase(t_hostAddr.getText())){
+					if(host.GetHostName().equalsIgnoreCase(t_hostAddr.getText())){
 						Yuchsign.PopupPrompt("主机地址重复", t_hostAddr);
 						return;
 					}
@@ -313,11 +313,11 @@ public class YuchPanel extends TabPanel{
 				}
 				
 				yuchHost t_host = new yuchHost();
-				t_host.m_hostName = t_hostAddr.getText();
-				t_host.m_connectHost = t_connetHost.getText();
-				t_host.m_httpPort = t_port;
-				t_host.m_httpPassword = t_hostPass.getText();
-				t_host.m_recommendHost = t_hostRecommend.getText();
+				t_host.SetHostName(t_hostAddr.getText());
+				t_host.SetConnectHost(t_connetHost.getText());
+				t_host.SetHTTPPort(t_port);
+				t_host.SetHTTPPass(t_hostPass.getText());
+				t_host.SetRecommendHost(t_hostRecommend.getText());
 				
 				StringBuffer t_data = new StringBuffer();
 				t_host.OutputXMLData(t_data);

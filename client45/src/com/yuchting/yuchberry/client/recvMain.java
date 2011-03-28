@@ -475,53 +475,53 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	
 	
-	static public synchronized void Copyfile(String _from,String _to)throws Exception{
-		
-		byte[] t_buffer = null;
-		
-		FileConnection t_fromFile = (FileConnection) Connector.open(_from,Connector.READ_WRITE);
-		try{
-			if(t_fromFile.exists()){
-
-				t_buffer = new byte[(int)t_fromFile.fileSize()];
-				InputStream t_readFile = t_fromFile.openInputStream();
-				try{
-					t_readFile.read(t_buffer);
-				}finally{
-					
-					t_readFile.close();
-					t_readFile = null;
-				}
-								
-			}else{
-				return ;
-			}
-			
-		}finally{		
-			
-			t_fromFile.close();
-			t_fromFile = null;
-		}	
-		
-		
-		FileConnection t_toFile  = (FileConnection) Connector.open(_to,Connector.READ_WRITE);
-		try{
-			if(!t_toFile.exists()){
-				t_toFile.create();
-			}
-			
-			OutputStream t_writeFile = t_toFile.openOutputStream();
-			try{
-				t_writeFile.write(t_buffer);
-			}finally{
-				t_writeFile.close();
-				t_writeFile = null;							
-			}
-		}finally{
-			t_toFile.close();
-			t_toFile = null;
-		}		
-	}
+//	static public synchronized void Copyfile(String _from,String _to)throws Exception{
+//		
+//		byte[] t_buffer = null;
+//		
+//		FileConnection t_fromFile = (FileConnection) Connector.open(_from,Connector.READ_WRITE);
+//		try{
+//			if(t_fromFile.exists()){
+//
+//				t_buffer = new byte[(int)t_fromFile.fileSize()];
+//				InputStream t_readFile = t_fromFile.openInputStream();
+//				try{
+//					t_readFile.read(t_buffer);
+//				}finally{
+//					
+//					t_readFile.close();
+//					t_readFile = null;
+//				}
+//								
+//			}else{
+//				return ;
+//			}
+//			
+//		}finally{		
+//			
+//			t_fromFile.close();
+//			t_fromFile = null;
+//		}	
+//		
+//		
+//		FileConnection t_toFile  = (FileConnection) Connector.open(_to,Connector.READ_WRITE);
+//		try{
+//			if(!t_toFile.exists()){
+//				t_toFile.create();
+//			}
+//			
+//			OutputStream t_writeFile = t_toFile.openOutputStream();
+//			try{
+//				t_writeFile.write(t_buffer);
+//			}finally{
+//				t_writeFile.close();
+//				t_writeFile = null;							
+//			}
+//		}finally{
+//			t_toFile.close();
+//			t_toFile = null;
+//		}		
+//	}
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";

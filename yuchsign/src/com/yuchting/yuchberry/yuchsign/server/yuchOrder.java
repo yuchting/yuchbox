@@ -1,7 +1,5 @@
 package com.yuchting.yuchberry.yuchsign.server;
 
-import java.util.Date;
-
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
@@ -13,24 +11,47 @@ public class yuchOrder {
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-	public String	m_out_trade_no	= "";
+	private String		m_out_trade_no	= "";
 	
 	@Persistent
-	public String 	m_subject		= "";
+	private String 	m_subject		= "";
 	
 	@Persistent
-	public int		m_payType		= 0;	
+	private int		m_payType		= 0;	
 		
 	@Persistent
-	public int 	m_total_fee		= 0;
+	private int 		m_total_fee		= 0;
 	
 	@Persistent
-	public int		m_trade_status	= 0;
+	private int		m_trade_status	= 0;
 	
 	@Persistent
-	public String	m_alipay_trade_no = "";
+	private String		m_alipay_trade_no = "";
 	
 	@Persistent
-	public String	m_buyer_email	= "";
+	private String		m_buyer_email	= "";
+	
+	public String GetOutTradeNO(){return m_out_trade_no;}
+	public void SetOutTradeNO(String _NO){m_out_trade_no = _NO;}
+	
+	public int GetState(){return m_trade_status;}
+	public void SetState(int _state){m_trade_status = _state;}
+	
+	public String GetSubject(){return m_subject;}
+	public void SetSubject(String _sub){m_subject = _sub;}
+	
+	public int GetPayType(){return m_payType;}
+	public void SetPayType(int _payType){m_payType = _payType;}
+	
+	public int GetTotalFee(){return m_total_fee;}
+	public void SetTotalFee(int _fee){m_total_fee = _fee;}
+	
+	public void SetAlipayTradeNO(String _alipay){m_alipay_trade_no = _alipay;}
+	public String GetAlipayTradeNO(){return m_alipay_trade_no;}
+	
+	public void SetBuyerEmail(String _email){m_buyer_email = _email;}
+	public String GetBuyerEmail(){return m_buyer_email;}
+	
+	
 		
 }

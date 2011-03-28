@@ -48,22 +48,22 @@ public class PayServiceImpl extends HttpServlet {
 					    return;
 					}
 					
-					if(t_order.m_trade_status != 0){
+					if(t_order.GetState() != 0){
 						out.println( "订单已经处理过了，请重新操作。");
-						return ;
-					}
-					
-					t_order.m_trade_status = 1;
-					
-					final int t_total_fee_value = Integer.valueOf(t_total_fee).intValue();
-					
-					if(t_order.m_total_fee != t_total_fee_value){
-						out.println( "内部对账金额错误，请重新操作。");
 						return;
 					}
 					
-					Key t_yuchbber_key = KeyFactory.createKey(yuchbber.class.getSimpleName(),t_order.m_buyer_email);
-					try{
+					t_order.SetState(1);					
+					
+					final int t_total_fee_value = Integer.valueOf(t_total_fee).intValue();
+					
+					if(t_order.GetTotalFee() != t_total_fee_value){
+						out.println( "内部对账金额错误，请重新操作。");
+						return;
+					}
+
+					try{				
+						Key t_yuchbber_key = KeyFactory.createKey(yuchbber.class.getSimpleName(),t_order.GetBuyerEmail());
 						yuchbber t_bber = t_pm.getObjectById(yuchbber.class, t_yuchbber_key);
 						if(t_bber == null){
 						    out.println( "内部错误，请重新操作。");
@@ -73,14 +73,14 @@ public class PayServiceImpl extends HttpServlet {
 						long t_payHours = 0;
 						int t_nextLev = t_bber.GetLevel();
 						
-						if(t_order.m_payType == 0){
+						if(t_order.GetPayType() == 0){
 							// pay time
 							//
 							final int t_weekMoney = yuchbber.fsm_weekMoney[t_bber.GetLevel()];
 							
 							t_payHours =  (t_total_fee_value / t_weekMoney) * 7 * 24;						
 							
-						}else if(t_order.m_payType == 1){
+						}else if(t_order.GetPayType() == 1){
 							// pay level
 							//
 							t_nextLev = t_nextLev + 1;
@@ -132,7 +132,7 @@ public class PayServiceImpl extends HttpServlet {
 							}else{
 
 								for(yuchHost host : t_hostList){
-									if(host.m_hostName.equals(t_bber.GetConnectHost())){
+									if(host.GetHostName().equals(t_bber.GetConnectHost())){
 										try{
 
 											Properties t_header = new Properties();
@@ -167,7 +167,7 @@ public class PayServiceImpl extends HttpServlet {
 					}				
 
 				}catch(javax.jdo.JDOObjectNotFoundException e){
-					 out.println("<body>找不到订单</body>");
+					 out.println("找不到订单");
 				}
 							
 			}finally{
