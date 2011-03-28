@@ -25,17 +25,7 @@
     <servlet-name>payServlet</servlet-name>
     <url-pattern>/pay/*</url-pattern>
   </servlet-mapping>
-  
-  <servlet>
-    <servlet-name>payLevServlet</servlet-name>
-    <servlet-class>com.yuchting.yuchberry.yuchsign.server.PayLevServiceImpl</servlet-class>
-  </servlet>
-  
-  <servlet-mapping>
-    <servlet-name>payLevServlet</servlet-name>
-    <url-pattern>/paylev/*</url-pattern>
-  </servlet-mapping>
-  
+    
   <!-- Default page to serve -->
   <welcome-file-list>
     <welcome-file>Yuchsign.html</welcome-file>

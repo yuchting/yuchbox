@@ -142,6 +142,9 @@ class sendReceive extends Thread{
 		InputStream in = m_socketInputStream;
 
 		int t_len = ReadInt(in);
+		if(t_len == -1){
+			throw new Exception("socket disconnect.");
+		}
 		
 		final int t_ziplen = t_len & 0x0000ffff;
 		final int t_orglen = t_len >>> 16;

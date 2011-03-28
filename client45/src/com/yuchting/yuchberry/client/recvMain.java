@@ -475,7 +475,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	
 	
-	static synchronized void Copyfile(String _from,String _to,boolean _deleteFrom)throws Exception{
+	static public synchronized void Copyfile(String _from,String _to)throws Exception{
 		
 		byte[] t_buffer = null;
 		
@@ -492,11 +492,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					t_readFile.close();
 					t_readFile = null;
 				}
-				
-				if(_deleteFrom){
-					t_fromFile.delete();
-				}
-				
+								
 			}else{
 				return ;
 			}
@@ -527,24 +523,53 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}		
 	}
 	
-	static final String fsm_initFilename = uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + "Init.data";
-	static final String fsm_backInitFilename = uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + "~Init.data";
+	static final String fsm_initFilename_init_data = "Init.data";
+	static final String fsm_initFilename_back_init_data = "~Init.data";
+	
+	static final String fsm_initFilename = uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + fsm_initFilename_init_data;
+	static final String fsm_backInitFilename = uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + fsm_initFilename_back_init_data;
 	
 	private synchronized void PreWriteReadIni(boolean _read){
 		
 		try{
-			
-			FileConnection t_back = (FileConnection) Connector.open(fsm_backInitFilename,Connector.READ_WRITE);
-			
+
 			if(_read){
-				if(t_back.exists()){
+							
+				FileConnection t_back = (FileConnection) Connector.open(fsm_backInitFilename,Connector.READ_WRITE);
+				try{
+					if(t_back.exists()){
+						FileConnection t_ini	= (FileConnection) Connector.open(fsm_initFilename,Connector.READ_WRITE);
+						try{
+							if(t_ini.exists()){
+								t_ini.delete();
+							}	
+						}finally{
+							t_ini.close();
+							t_ini = null;
+						}
+						
+						t_back.rename(fsm_initFilename_init_data);
+					}
+				}finally{
 					t_back.close();
 					t_back = null;
-					
-					Copyfile(fsm_backInitFilename,fsm_initFilename,true);			
-				}
+				}				
+				
 			}else{
-				Copyfile(fsm_initFilename,fsm_backInitFilename,false);
+				
+				FileConnection t_ini	= (FileConnection) Connector.open(fsm_initFilename,Connector.READ_WRITE);
+				try{
+					if(t_ini.exists()){
+						t_ini.rename(fsm_initFilename_back_init_data);
+					}
+				}finally{
+					t_ini.close();
+					t_ini = null;
+				}
+				
+				// needn't copy ,the normal WriteReadIni method will re-create the init.data file
+				//
+				//Copyfile(fsm_backInitFilename,fsm_initFilename);
 			}
 			
 		}catch(Exception e){

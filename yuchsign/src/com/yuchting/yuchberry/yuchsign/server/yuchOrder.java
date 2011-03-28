@@ -32,5 +32,5 @@ public class yuchOrder {
 	
 	@Persistent
 	public String	m_buyer_email	= "";
-	
+		
 }

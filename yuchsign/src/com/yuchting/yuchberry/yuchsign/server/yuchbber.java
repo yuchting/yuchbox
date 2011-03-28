@@ -20,6 +20,10 @@ import org.xml.sax.InputSource;
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public final class yuchbber {
 	
+	public static final int[] fsm_weekMoney = {2,3,4,5};
+	public static final int[] fsm_levelMoney = {5,5,5,5};
+	public static final int[] fsm_intervalMoney = {5,5,5,5};
+	
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private String m_signinName = "";
@@ -159,6 +163,16 @@ public final class yuchbber {
 		
 		m_signature = ReadStringAttr(t_elem,"signature");
 		m_bberLev	= ReadIntegerAttr(t_elem, "lev");
+		
+		// validate the bber level
+		//
+		if(m_bberLev < 0){
+			m_bberLev = 0;
+		}
+		if(m_bberLev >= fsm_weekMoney.length){
+			m_bberLev = fsm_weekMoney.length - 1;
+		}
+		
 		m_latestSyncTime = ReadLongAttr(t_elem,"sync");
 		
 		m_signature = m_signature.replaceAll("&lt;", "<");

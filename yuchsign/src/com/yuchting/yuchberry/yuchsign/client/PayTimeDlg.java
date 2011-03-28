@@ -25,12 +25,7 @@ public class PayTimeDlg extends DialogBox{
 		m_mainSign = _mainSign;
 		m_bber = _bber;
 		
-		int t_weekMoney = 2;
-		switch(_bber.GetLevel()){
-		case 1: t_weekMoney = 3;
-		case 2: t_weekMoney = 4;
-		case 3: t_weekMoney = 5;
-		}		
+		final int t_weekMoney = yuchbber.fsm_weekMoney[_bber.GetLevel()];				
 
 		final RadioButton		t_weekPay	= new RadioButton("pay","￥" + t_weekMoney + "/一个星期");
 		final RadioButton		t_monthPay	= new RadioButton("pay","￥" + (t_weekMoney*4) + "/一个月");
@@ -121,7 +116,7 @@ public class PayTimeDlg extends DialogBox{
 		});
 		
 		final HorizontalPanel t_buttonPane = new HorizontalPanel();
-		t_buttonPane.setSpacing(10);
+		t_buttonPane.setSpacing(20);
 		
 		t_buttonPane.add(t_confirm);
 		t_buttonPane.add(t_cancel);

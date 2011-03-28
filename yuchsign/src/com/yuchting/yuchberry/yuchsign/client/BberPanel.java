@@ -709,9 +709,10 @@ public class BberPanel extends TabPanel{
 	
 	private void PopupProblemAndSearchHelp(String _help,final Widget _panel){
 		
-		if(_help != null){
+		if(_help == null){
 			_help = "null";
 		}
+		
 		StringBuffer t_search = new StringBuffer();
 		t_search.append("错误：").append(_help).append("\n");
 

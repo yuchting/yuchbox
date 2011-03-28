@@ -297,7 +297,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		m_loadDialog.setVisible(true);		
 	}
 	
-	public void StoreAccountInfo(){
+	public synchronized void StoreAccountInfo(){
 		try{
 			FileOutputStream t_file = new FileOutputStream(fsm_accountDataFilename);
 			
@@ -1065,6 +1065,10 @@ public class mainFrame extends JFrame implements ActionListener{
 				return ProcessLogQuery(t_bberParam);
 			}
 			
+			if((header.getProperty("create") != null)){
+				return ProcessCreateTimeQuery(header);
+			}
+			
 			boolean t_checkState = (header.getProperty("check") != null);		
 					
 			String t_signinName = null;
@@ -1118,6 +1122,31 @@ public class mainFrame extends JFrame implements ActionListener{
 			
 			return "<Error>" + e.getMessage() + "</Error>";
 		}
+	}
+	
+	private String ProcessCreateTimeQuery(Properties header){
+		
+		final String t_bber 		= header.getProperty("bber");
+		final String t_createTime	= header.getProperty("create");
+		final String t_usingHours	= header.getProperty("time");
+		
+		if(t_bber == null || t_createTime == null || t_usingHours == null){
+			return "参数错误";
+		}
+		
+		for(fetchThread thread:m_accountList){
+			if(thread.m_fetchMgr.GetAccountName().equalsIgnoreCase(t_bber)){
+				
+				thread.m_usingHours = Long.valueOf(t_usingHours).longValue();
+				thread.m_formerTimer = Long.valueOf(t_createTime).longValue();
+				
+				StoreAccountInfo();
+				
+				return "<OK />";
+			}
+		}
+		
+		return "原有账户已经因为长时间没有链接而删除，需要重新同步";
 	}
 	
 	static final int fsm_maxReadLogLen = 4096;
