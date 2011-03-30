@@ -480,7 +480,7 @@ public class createDialog extends JDialog implements DocumentListener,
 				
 				String t_prefix = t_account.GetAccountName() + "/";
 				WriteXmlFile(m_createConfigDoc,t_prefix + fetchMgr.fsm_configFilename);
-				WriteSignature(t_prefix,m_signature.getText());
+				WriteSignatureAndGooglePos(t_prefix,m_signature.getText());
 				
 				m_mainFrame.AddAccountThread(new fetchThread(m_fetchMgrCreate,t_prefix,
 															Long.valueOf(m_expiredTime.getText()).longValue(),
@@ -721,14 +721,21 @@ public class createDialog extends JDialog implements DocumentListener,
 
 	}
 	
-	static public  void WriteSignature(String _prefix,String _signature)throws Exception{
+	static public  void WriteSignatureAndGooglePos(String _prefix,String _signature)throws Exception{
 		
 		if(_signature.length() != 0){
 			FileOutputStream t_out = new FileOutputStream(_prefix + fetchEmail.fsm_signatureFilename);
-			t_out.write(_signature.getBytes("UTF-8"));
-			t_out.flush();
-			t_out.close();
+			try{
+				t_out.write(_signature.getBytes("UTF-8"));
+				t_out.flush();
+			}finally{
+				t_out.close();
+			}
 		}
+		
+		try{
+			CopyFile( fetchEmail.fsm_signatureFilename,_prefix +  fetchEmail.fsm_signatureFilename);
+		}catch(Exception e){}
 	}
 	
 	static public void WriteXmlFile(Document _doc,String _iniFile)throws Exception{

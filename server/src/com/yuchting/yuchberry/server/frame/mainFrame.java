@@ -22,6 +22,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
@@ -912,7 +913,7 @@ public class mainFrame extends JFrame implements ActionListener{
 											
 				if(m_orgThread != null){
 					
-					createDialog.WriteSignature(m_orgThread.m_fetchMgr.GetPrefixString(), m_currbber.GetSignature());
+					createDialog.WriteSignatureAndGooglePos(m_orgThread.m_fetchMgr.GetPrefixString(), m_currbber.GetSignature());
 					
 					m_orgThread.m_fetchMgr.InitConnect(m_orgThread.m_fetchMgr.GetPrefixString(),m_orgThread.m_logger);
 					m_orgThread.m_fetchMgr.ResetAllAccountSession(true);
@@ -942,7 +943,7 @@ public class mainFrame extends JFrame implements ActionListener{
 						createDialog.CopyFile(m_prefix + fetchMgr.fsm_configFilename,
 								t_copyPrefix + fetchMgr.fsm_configFilename);
 						
-						createDialog.WriteSignature(t_copyPrefix, m_currbber.GetSignature());
+						createDialog.WriteSignatureAndGooglePos(t_copyPrefix, m_currbber.GetSignature());
 						
 						// copy the account signature
 						//
@@ -1032,6 +1033,28 @@ public class mainFrame extends JFrame implements ActionListener{
 				m_httpd = new NanoHTTPD(Integer.valueOf(t_port).intValue()){
 					public Response serve( String uri, String method, Properties header, Properties parms, Properties files ){
 						
+						Enumeration e = header.propertyNames();
+						while ( e.hasMoreElements())
+						{
+							String value = (String)e.nextElement();
+							m_logger.LogOut( "  HDR: '" + value + "' = '" +
+												header.getProperty( value ) + "'" );
+						}
+						e = parms.propertyNames();
+						while ( e.hasMoreElements())
+						{
+							String value = (String)e.nextElement();
+							m_logger.LogOut( "  PRM: '" + value + "' = '" +
+												parms.getProperty( value ) + "'" );
+						}
+						e = files.propertyNames();
+						while ( e.hasMoreElements())
+						{
+							String value = (String)e.nextElement();
+							m_logger.LogOut( "  UPLOADED: '" + value + "' = '" +
+												files.getProperty( value ) + "'" );
+						}
+						
 						String pass = header.getProperty("pass");
 						
 						if(pass == null || !pass.equals(t_framePass)){
@@ -1052,7 +1075,7 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	private synchronized String ProcessHTTPD(String method, Properties header, Properties parms,int _maxBber){
 		
-		String t_string = header.getProperty("bber");
+		String t_string = parms.getProperty("bber");
 		if( t_string == null){
 			return "<Error>没有bber参数的URL</Error>";
 		}
@@ -1061,15 +1084,15 @@ public class mainFrame extends JFrame implements ActionListener{
 			
 			String t_bberParam = URLDecoder.decode(t_string, "UTF-8");
 			
-			if((header.getProperty("log") != null)){
+			if((parms.getProperty("log") != null)){
 				return ProcessLogQuery(t_bberParam);
 			}
 			
-			if((header.getProperty("create") != null)){
-				return ProcessCreateTimeQuery(header);
+			if((parms.getProperty("create") != null)){
+				return ProcessCreateTimeQuery(parms);
 			}
 			
-			boolean t_checkState = (header.getProperty("check") != null);		
+			boolean t_checkState = (parms.getProperty("check") != null);		
 					
 			String t_signinName = null;
 			yuchbber t_bber = null;
@@ -1126,27 +1149,37 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	private String ProcessCreateTimeQuery(Properties header){
 		
-		final String t_bber 		= header.getProperty("bber");
-		final String t_createTime	= header.getProperty("create");
-		final String t_usingHours	= header.getProperty("time");
-		
-		if(t_bber == null || t_createTime == null || t_usingHours == null){
-			return "参数错误";
-		}
-		
-		for(fetchThread thread:m_accountList){
-			if(thread.m_fetchMgr.GetAccountName().equalsIgnoreCase(t_bber)){
-				
-				thread.m_usingHours = Long.valueOf(t_usingHours).longValue();
-				thread.m_formerTimer = Long.valueOf(t_createTime).longValue();
-				
-				StoreAccountInfo();
-				
-				return "<OK />";
+		try{
+			
+			final String t_bber 		= URLDecoder.decode(header.getProperty("bber"),"UTF-8");
+			final String t_createTime	= header.getProperty("create");
+			final String t_usingHours	= header.getProperty("time");
+			
+			if(t_bber == null || t_createTime == null || t_usingHours == null){
+				return "参数错误";
 			}
+			
+			for(fetchThread thread:m_accountList){
+				if(thread.m_fetchMgr.GetAccountName().equalsIgnoreCase(t_bber)){
+					
+					thread.m_usingHours = Long.valueOf(t_usingHours).longValue();
+					thread.m_formerTimer = Long.valueOf(t_createTime).longValue();
+					
+					StoreAccountInfo();
+					
+					if(thread.m_pauseState){
+						thread.Reuse();
+					}			
+					
+					return "<OK />";
+				}
+			}
+			
+			return "原有账户已经因为长时间没有链接而删除，需要重新同步";
+			
+		}catch(Exception e){
+			return "服务器重新启用账户出现异常，需要手动同步";
 		}
-		
-		return "原有账户已经因为长时间没有链接而删除，需要重新同步";
 	}
 	
 	static final int fsm_maxReadLogLen = 4096;

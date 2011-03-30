@@ -604,7 +604,7 @@ public class BberPanel extends TabPanel{
 				
 				@Override
 				public void onSuccess(String result) {
-					SyncOnSuccess(result,t_bberPanel);			
+					SyncOnSuccess(result,t_bberPanel);
 				}
 				
 				@Override
@@ -647,7 +647,7 @@ public class BberPanel extends TabPanel{
 				CheckSyncOnSuccess(result,_panel);				
 			}	
 		}catch(Exception ex){
-			PopupProblemAndSearchHelp(ex.getMessage(),_panel);
+			PopupProblemAndSearchHelp(ex.getMessage() + result,_panel);
 			Yuchsign.HideWaiting();
 		}			
 	}

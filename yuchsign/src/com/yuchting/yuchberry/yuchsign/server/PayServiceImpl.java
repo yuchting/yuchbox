@@ -3,7 +3,6 @@ package com.yuchting.yuchberry.yuchsign.server;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
@@ -135,15 +134,15 @@ public class PayServiceImpl extends HttpServlet {
 									if(host.GetHostName().equals(t_bber.GetConnectHost())){
 										try{
 
-											Properties t_header = new Properties();
-											t_header.put("bber",t_bber.GetSigninName());
-											t_header.put("create",t_bber.GetCreateTime());
-											t_header.put("time",t_bber.GetUsingHours());
+											Properties t_param = new Properties();
+											t_param.put("bber",t_bber.GetSigninName());
+											t_param.put("create",Long.toString(t_bber.GetCreateTime()));
+											t_param.put("time",Long.toString(t_bber.GetUsingHours()));
 											
-											String t_request = GreetingServiceImpl.RequestYuchHostURL(host, t_header, null);
+											String t_request = GreetingServiceImpl.RequestYuchHostURL(host, null, t_param);
 											
-											if(t_request.equals("<OK />")){
-												out.println("充值成功，需要重新登录查看。");
+											if(t_request.startsWith("<OK />")){
+												out.println("充值成功。");
 											}else{
 												out.println("充值成功，需要手动同步一下账户才能继续连接。<br />出现问题：" + t_request);
 											}

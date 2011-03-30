@@ -15,6 +15,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jdo.JDOHelper;
@@ -224,10 +225,10 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 							
 							// query the account
 							//
-							Properties t_header = new Properties();
-							t_header.put("bber",t_syncbber.OuputXMLData());
+							Properties t_param = new Properties();
+							t_param.put("bber",t_syncbber.OuputXMLData());
 							
-							String t_result =  RequestYuchHostURL(m_currSyncHost, t_header, null);
+							String t_result =  RequestYuchHostURL(m_currSyncHost, null, t_param);
 							
 							if(t_result.indexOf("<Max />") != -1){
 								// find the other host if the host is full
@@ -285,11 +286,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 								
 				// query the account
 				//
-				Properties t_header = new Properties();
-				t_header.put("check",_signinName);
-				t_header.put("bber",_signinName);
+				Properties t_param = new Properties();
+				t_param.put("check",_signinName);
+				t_param.put("bber",_signinName);
 				
-				String t_result = RequestYuchHostURL(m_currSyncHost, t_header, null);
+				String t_result = RequestYuchHostURL(m_currSyncHost,null,t_param);
 				
 				// read the information
 				//
@@ -373,12 +374,12 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				for(yuchHost host : t_hostList){
 					if(host.GetHostName().equalsIgnoreCase(t_bber.GetConnectHost())){
 						
-						Properties t_header = new Properties();
+						Properties t_param = new Properties();
 					
-						t_header.put("bber",_signinName);
-						t_header.put("log",_signinName);
+						t_param.put("bber",_signinName);
+						t_param.put("log",_signinName);
 						
-						String t_result = RequestYuchHostURL(host,t_header, null);
+						String t_result = RequestYuchHostURL(host,null, t_param);
 						
 						if(!t_result.startsWith("<Error>")){
 							m_checkLogTime = (new Date()).getTime();
@@ -543,15 +544,21 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			
 			Enumeration e = parms.propertyNames();
 			while(true){
-				String value = (String)e.nextElement();
-				t_final.append(value).append("=").append(URLEncoder.encode(parms.getProperty(value),"UTF-8"));
-				if(e.hasMoreElements()){
-					t_final.append("&");
-				}else{
-					break;
+				String name = (String)e.nextElement();
+				String value = (String)parms.getProperty(name);
+				if(value != null){
+					t_final.append(name).append("=").append(URLEncoder.encode(value,"UTF-8"));
+					if(e.hasMoreElements()){
+						t_final.append("&");
+					}else{
+						break;
+					}	
 				}
+				
 			}
 		}
+		
+		fsm_logger.log(Level.INFO, "Request URL:"+t_final.toString());
 		
 		URL url = new URL(t_final.toString());
 		URLConnection con = url.openConnection();
@@ -562,7 +569,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			while ( e.hasMoreElements()){
 				String name = (String)e.nextElement();
 				String value = header.getProperty(name);
-				con.setRequestProperty(name,URLEncoder.encode(value,"UTF-8"));
+				if(value != null){
+					con.setRequestProperty(name,URLEncoder.encode(value,"UTF-8"));
+				}				
 			}
 			
 			if(header.getProperty("pass") == null){
