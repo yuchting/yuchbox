@@ -15,7 +15,6 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.Vector;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jdo.JDOHelper;
@@ -54,15 +53,12 @@ final class PMF {
  */
 @SuppressWarnings("serial")
 public class GreetingServiceImpl extends RemoteServiceServlet implements GreetingService {
-
-	public final static Logger fsm_logger = Logger.getLogger("ServerLogger");
 	
 	yuchHost	m_currSyncHost = null;
 	
 	boolean 	m_isAdministrator = false;
 	
 	long		m_createTime = 0;
-	
 	long		m_checkLogTime = 0;
 	
 	boolean	m_foundPassword = false;
@@ -228,6 +224,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 							Properties t_param = new Properties();
 							t_param.put("bber",t_syncbber.OuputXMLData());
 							
+							System.out.println("bber "+t_syncbber.GetSigninName() +"Requested");
+							
 							String t_result =  RequestYuchHostURL(m_currSyncHost, null, t_param);
 							
 							if(t_result.indexOf("<Max />") != -1){
@@ -271,7 +269,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	public String syncAccount_check(String _signinName,String _pass)throws Exception{
 		
 		if(m_currSyncHost == null){
-			return "<Error>请先同步！</Error>";
+			return "<Error>网络不通畅，请再次同步！</Error>";
 		}
 		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
@@ -422,12 +420,12 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		        t_body.append("您好！\n\n您收到这封邮件，是因为您在登录 Yuchberry 账户时忘记了密码，您使用这个邮箱地址注册时的密码为：\n    ")
 		        	.append(t_bber.GetPassword()).append("\n\n   请您务必保管好，以防下次遗失。\n\n致\n  敬！\nhttp://code.google.com/p/yuchberry/");
 		        		        	
-	            Message msg = new MimeMessage(session);
+		        MimeMessage msg = new MimeMessage(session);
 	            
 	            msg.setFrom(new InternetAddress("yuchting@yuchberry.info"));
 	            msg.addRecipient(Message.RecipientType.TO,new InternetAddress(_signinName,""));
-	            msg.setSubject("YuchBerry 找回密码");
-	            msg.setText(t_body.toString());
+	            msg.setSubject("YuchBerry 找回密码","UTF-8");
+	            msg.setText(t_body.toString(),"UTF-8");
 	            
 	            Transport.send(msg);
 	            
@@ -537,10 +535,10 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	public static String RequestYuchHostURL(yuchHost _host,Properties header, Properties parms)throws Exception{
 		
 		StringBuffer t_final = new StringBuffer();
-		t_final.append("http://").append(_host.GetHostName()).append(":").append(_host.GetHTTPPort());
+		t_final.append("http://").append(_host.GetHostName());
 					
 		if(parms != null){
-			t_final.append("?");
+			t_final.append("/?");
 			
 			Enumeration e = parms.propertyNames();
 			while(true){
@@ -558,7 +556,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			}
 		}
 		
-		fsm_logger.log(Level.INFO, "Request URL:"+t_final.toString());
+		System.out.println("bber Request URL:" + t_final.toString());
 		
 		URL url = new URL(t_final.toString());
 		URLConnection con = url.openConnection();
