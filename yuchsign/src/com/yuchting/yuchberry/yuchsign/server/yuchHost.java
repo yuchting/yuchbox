@@ -1,5 +1,7 @@
 package com.yuchting.yuchberry.yuchsign.server;
 
+import java.io.Serializable;
+
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
@@ -10,7 +12,7 @@ import org.w3c.dom.Element;
 
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class yuchHost {
+public class yuchHost implements Serializable{
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

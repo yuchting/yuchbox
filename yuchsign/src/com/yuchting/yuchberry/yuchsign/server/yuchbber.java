@@ -186,6 +186,10 @@ public final class yuchbber {
 		
 		NodeList t_nodeElem = t_elem.getChildNodes();
 		
+		if(t_nodeElem.getLength() > GetMaxPushNum()){
+			throw new Exception("illeagel bber push list");
+		}
+		
 		for(int i = 0;i < t_nodeElem.getLength();i++){
 			Node t_node = t_nodeElem.item(i);
 			

@@ -4,10 +4,12 @@ package com.yuchting.yuchberry.yuchsign.server;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.lang.reflect.ParameterizedType;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -56,9 +58,12 @@ final class PMF {
 /**
  * The server side implementation of the RPC service.
  */
-@SuppressWarnings("serial")
 public class GreetingServiceImpl extends RemoteServiceServlet implements GreetingService {
 	
+	// get yuch host list first from cache 
+	//
+	private final static String		fsm_yuchHostListKey = yuchHost.class.getName();
+	private final static String		fsm_yuchAlipayKey =  yuchAlipay.class.getName();
 	
 	yuchHost	m_currSyncHost = null;
 	
@@ -68,6 +73,58 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	long		m_checkLogTime = 0;
 	
 	boolean	m_foundPassword = false;
+	
+	private static Cache			sm_cacheInstance = null;	
+	
+	static public Object getObjectList(String _cacheKey){
+		
+		List<Object> t_list = null;
+		
+		try {		    
+		    t_list = (List<Object>)queryCache().get(_cacheKey);
+		}catch (CacheException e) {
+			System.err.println("fetch the Cache failed:"+e.getMessage());
+		}
+		
+		if(t_list == null){
+			
+			PersistenceManager t_pm = PMF.get().getPersistenceManager();
+			try{
+				
+				String query = "select from " + _cacheKey;
+				t_list = (List<Object>)t_pm.newQuery(query).execute();
+				
+//				try {
+//				    queryCache().put(_cacheKey, t_list.clone());
+//				}catch (CacheException e) {
+//					System.err.println("fetch the Cache failed:"+e.getMessage());
+//				}
+				
+			}finally{
+				t_pm.close();
+			}
+		}
+		
+		return t_list;
+	}
+	
+	static synchronized Cache queryCache()throws CacheException{
+		if(sm_cacheInstance == null){
+		  CacheFactory cacheFactory = CacheManager.getInstance().getCacheFactory();
+		  sm_cacheInstance = cacheFactory.createCache(Collections.emptyMap());
+		}
+		
+		return sm_cacheInstance;
+	}
+		
+	static public void invalidCache(String _key){
+		
+		try{
+		    queryCache().remove(_key);		    
+		}catch (CacheException e) {
+			System.err.println("invalid the Cache failed:"+e.getMessage());
+		}
+	}
 		
 	public String logonServer(String name,String password) throws Exception {
 		
@@ -193,8 +250,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					
 					// search the proper host to synchronize
 					//
-					String query = "select from " + yuchHost.class.getName();
-					List<yuchHost> t_hostList = (List<yuchHost>)t_pm.newQuery(query).execute();
+					List<yuchHost> t_hostList = (List<yuchHost>)getObjectList(fsm_yuchHostListKey);
 					
 					Vector<yuchHost> t_exceptList = new Vector<yuchHost>();
 					
@@ -370,8 +426,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				
 				// search the proper host to synchronize
 				//
-				String query = "select from " + yuchHost.class.getName();
-				List<yuchHost> t_hostList = (List<yuchHost>)t_pm.newQuery(query).execute();
+				List<yuchHost> t_hostList = (List<yuchHost>)getObjectList(fsm_yuchHostListKey);
 				
 				for(yuchHost host : t_hostList){
 					if(host.GetHostName().equalsIgnoreCase(t_bber.GetConnectHost())){
@@ -461,8 +516,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				
 				StringBuffer t_payURL = new StringBuffer();
 				
-				String query = "select from " + yuchAlipay.class.getName();
-				List<yuchAlipay> t_alipayList = (List<yuchAlipay>)t_pm.newQuery(query).execute();
+				
+				List<yuchAlipay> t_alipayList = (List<yuchAlipay>)getObjectList(fsm_yuchAlipayKey);
 								
 				if(t_alipayList != null && !t_alipayList.isEmpty()){
 					
@@ -655,6 +710,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 
 		return t_resultHost;
 	}
+		
+	
 	
 	public String queryAlipay()throws Exception{
 		
@@ -662,28 +719,17 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			return "<Error>you're not administrator</Error>";
 		}
 		
-		PersistenceManager t_pm = PMF.get().getPersistenceManager();
-				
-		try{
-			
-			String query = "select from " + yuchAlipay.class.getName();
-			List<yuchAlipay> t_alipayList = (List<yuchAlipay>)t_pm.newQuery(query).execute();
-						
-			if(t_alipayList != null){
-				for(yuchAlipay partner :t_alipayList){
-					return partner.GetPartnerID() + ":" + partner.GetKey();
-				}
-				
-				return "";
-			}else{
-				return "";
+		List<yuchAlipay> t_alipayList = (List<yuchAlipay>)getObjectList(fsm_yuchAlipayKey);
+					
+		if(t_alipayList != null){
+			for(yuchAlipay partner :t_alipayList){
+				return partner.GetPartnerID() + ":" + partner.GetKey();
 			}
-						
-		}finally{
-			
-			t_pm.close();
 		}
+		
+		return "";
 	}
+	
 	public String modifyAlipay(String _partnerID,String _key)throws Exception{
 		
 		if(!m_isAdministrator){
@@ -711,7 +757,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				t_pm.makePersistent(t_pay);
 			}catch(Exception ex){
 				return "<Error>"+ex.getMessage()+"</Error>";
-			}	
+			}
+			
+			invalidCache(fsm_yuchAlipayKey);
 			
 			return "<OK />";
 			
@@ -721,56 +769,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}	
 	}
 	
-	// get yuch host list first from cache 
-	//
-	private final static String		fsm_yuchHostListKey = "yuchHostList";
 	
-	static public List<yuchHost> getYuchHostList(){
-		
-		List<yuchHost> t_list = null;
-		Cache cache = null;
-		
-		try {
-		    CacheFactory cacheFactory = CacheManager.getInstance().getCacheFactory();
-		    cache = cacheFactory.createCache(Collections.emptyMap());
-		    
-		    t_list = (List<yuchHost>)cache.get(fsm_yuchHostListKey);
-		}catch (CacheException e) {
-			System.out.println("fetch the Cache failed:"+e.getMessage());
-		}
-		
-		if(t_list == null){
-			
-			PersistenceManager t_pm = PMF.get().getPersistenceManager();
-			try{
-				
-				String query = "select from " + yuchHost.class.getName();
-				t_list = (List<yuchHost>)t_pm.newQuery(query).execute();
-				
-				if(t_list != null){
-					cache.put(fsm_yuchHostListKey,t_list);
-				}
-				
-			}finally{
-				t_pm.close();
-			}
-		}
-		
-		return t_list;
-	}
-	
-	static public void invalidCache(String _key){
-		
-		try {
-		    CacheFactory cacheFactory = CacheManager.getInstance().getCacheFactory();
-		    Cache cache = cacheFactory.createCache(Collections.emptyMap());
-		    
-		    cache.remove(_key);
-		    
-		}catch (CacheException e) {
-			System.out.println("invalid the Cache failed:"+e.getMessage());
-		}
-	}
 	
 	public String getHostList()throws Exception{
 		
@@ -778,7 +777,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			return "<Error>you're not administrator</Error>";
 		}
 
-		List<yuchHost> t_hostList = getYuchHostList();
+		List<yuchHost> t_hostList = (List<yuchHost>)getObjectList(fsm_yuchHostListKey);
 		
 		StringBuffer t_xmlData = new StringBuffer();
 		t_xmlData.append("<HostList>");
@@ -861,6 +860,10 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				return "<Error>主机 "+_hostName+" 不存在!</Error>";
 			}
 			
+			// invalid cache
+			//
+			invalidCache(fsm_yuchHostListKey);			
+			
 			return "<OK />";
 			
 		}finally{
@@ -890,6 +893,10 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				
 				t_host.InputXMLData(t_doc.getDocumentElement());
 				
+				// invalid cache
+				//
+				invalidCache(fsm_yuchHostListKey);
+								
 			}catch(javax.jdo.JDOObjectNotFoundException e){					
 				return "<Error>主机 " + _hostName + " 不存在!</Error>";
 			}
