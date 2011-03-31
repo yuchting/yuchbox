@@ -690,7 +690,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			}
 			
 			if(t_thread.m_clientDisconnectTime != 0){
-				if(Math.abs(t_currTime - t_thread.m_clientDisconnectTime) >= 14 * 24 * 3600 * 1000  ){
+				if(Math.abs(t_currTime - t_thread.m_clientDisconnectTime) >= 3 * 24 * 3600 * 1000  ){
 					t_deadPool.add(t_thread);
 				}
 			}

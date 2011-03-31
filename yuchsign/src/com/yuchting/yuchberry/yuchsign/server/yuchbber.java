@@ -30,7 +30,7 @@ public final class yuchbber {
 	
 	@Persistent
 	private String m_connectHost = "";
-	
+		
 	@Persistent
 	private String m_password = "";
 	

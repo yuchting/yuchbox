@@ -22,7 +22,7 @@ package com.yuchting.yuchberry.yuchsign.shared;
  * </p>
  */
 public class FieldVerifier {
-
-		
+	
+	public final static String		fsm_admin = "yuchting@gmail.com";	
 		
 }

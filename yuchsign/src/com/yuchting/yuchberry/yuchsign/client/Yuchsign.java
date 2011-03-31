@@ -18,6 +18,9 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment.AutoHorizontalAlignmentConstant;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
+import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
 interface YesNoHandler{
 	public void Process();
@@ -181,7 +184,8 @@ public class Yuchsign implements EntryPoint {
 		
 		m_logonDlg = new LogonDialog(this);
 		m_logonDlg.setModal(false);
-		m_logonDlg.show();	
+		m_logonDlg.show();
+		
 	}
 	
 	public void ShowYuchbberPanel(String _bberXMLData)throws Exception{
@@ -196,7 +200,7 @@ public class Yuchsign implements EntryPoint {
 		m_bberPane.ShowBberPanle();		
 		m_bberPane.ShowYuchbberData(t_bber);
 		
-		if(t_bber.GetSigninName().equalsIgnoreCase("yuchting@gmail.com")){
+		if(t_bber.GetSigninName().equalsIgnoreCase(FieldVerifier.fsm_admin)){
 			if(m_yuchPanel == null){
 				m_yuchPanel = new YuchPanel(this);
 			}
@@ -220,7 +224,11 @@ public class Yuchsign implements EntryPoint {
 	public static void PopupPrompt(String _prompt,Widget _attachWidget){
 
 		_prompt = _prompt.replaceAll("\n", "<br />");
-		fsm_simplePopup.setWidget(new HTML(_prompt));
+		
+		HTML label = new HTML(_prompt);
+		label.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		
+		fsm_simplePopup.setWidget(label);
 		
 		int t_maxLine = 0;
 		String[] t_lines =_prompt.split("<br />");

@@ -1,7 +1,11 @@
 package com.yuchting.yuchberry.yuchsign.server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -21,6 +25,11 @@ public class PayServiceImpl extends HttpServlet {
 				
 		final String t_out_trade_no	= (String)request.getParameter("out_trade_no");
 		final String t_total_fee	= (String)request.getParameter("total_fee");
+		final String t_notify_id	= (String)request.getParameter("notify_id");
+		
+		if(!VerifyURL(t_notify_id)){
+			return ;
+		}
 		
 		response.setCharacterEncoding("utf-8");
 		response.setContentType("text/html");
@@ -178,5 +187,50 @@ public class PayServiceImpl extends HttpServlet {
 			out.flush();
 		}
 		
+	}
+	
+	private boolean VerifyURL(String _notify_id){
+		
+		boolean t_result = false;
+		try{
+			String t_partnerID = null;
+			PersistenceManager t_pm = PMF.get().getPersistenceManager();
+			try{
+				
+				String query = "select from " + yuchAlipay.class.getName();
+				List<yuchAlipay> t_alipayList = (List<yuchAlipay>)t_pm.newQuery(query).execute();
+				
+				if(t_alipayList == null || t_alipayList.isEmpty()){
+					throw new Exception("AlipayList is null"); 
+				}
+				
+				t_partnerID = t_alipayList.get(0).GetPartnerID();
+				
+			}finally{
+				t_pm.close();
+			}
+			
+			String veryfy_url = "http://notify.alipay.com/trade/notify_query.do?partner=" + t_partnerID + "&notify_id=" + _notify_id; 
+			
+			URL url = new URL(veryfy_url);
+			URLConnection con = url.openConnection();
+			con.setAllowUserInteraction(false);
+			con.connect();
+			
+			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));		
+			
+			veryfy_url = in.readLine();
+			
+			System.out.println("Verify alipay notify_id=" + _notify_id + " result=" + veryfy_url);
+			
+			if(veryfy_url.indexOf("true") != -1){
+				t_result = true;
+			}
+			
+		}catch(Exception e){
+			System.err.println("Verify Alipay Exception:" + e.getMessage());
+		}
+		
+		return t_result;
 	}
 }

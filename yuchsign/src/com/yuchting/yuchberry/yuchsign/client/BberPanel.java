@@ -522,6 +522,7 @@ public class BberPanel extends TabPanel{
 		t_buttonPane.add(t_checkBut);
 		t_buttonPane.add(t_seekHelp);
 		
+		
 		final VerticalPanel t_mainPane = new VerticalPanel();
 		t_mainPane.add(t_buttonPane);
 		t_mainPane.add(m_logText);
@@ -689,7 +690,7 @@ public class BberPanel extends TabPanel{
 			
 		}else if(t_elem.getTagName().equals("yuchbber")){	
 			
-			Yuchsign.PopupPrompt("同步成功！可以使用手机连接服务器了。\n注意：如果手机没有连接服务器超过14天，\n就需要再次同步。", _panel);
+			Yuchsign.PopupPrompt("同步成功！可以使用手机连接服务器了。\n注意：如果手机没有连接服务器的时间超过3天，\n就需要再次同步。", _panel);
 			Yuchsign.HideWaiting();
 			
 			try{
@@ -764,8 +765,8 @@ public class BberPanel extends TabPanel{
 		
 	private String GetBberLevelString(int _bberLev){
 		switch(_bberLev){
-		case 0: return "一般用户";
-		case 1: return "VIP";
+		case 0: return "VIP0";
+		case 1: return "VIP1";
 		case 2: return "VIP2";
 		default: return "VIP3";
 		}

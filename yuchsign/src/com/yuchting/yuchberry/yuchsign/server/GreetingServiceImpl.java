@@ -8,6 +8,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
@@ -15,8 +16,11 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.Vector;
-import java.util.logging.Logger;
 
+import javax.cache.Cache;
+import javax.cache.CacheException;
+import javax.cache.CacheFactory;
+import javax.cache.CacheManager;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
@@ -35,6 +39,7 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.yuchting.yuchberry.yuchsign.client.GreetingService;
+import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
 
 
@@ -53,6 +58,7 @@ final class PMF {
  */
 @SuppressWarnings("serial")
 public class GreetingServiceImpl extends RemoteServiceServlet implements GreetingService {
+	
 	
 	yuchHost	m_currSyncHost = null;
 	
@@ -78,7 +84,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					return "<Error>密码错误！</Error>";
 				}
 				
-				m_isAdministrator = t_bber.GetSigninName().equalsIgnoreCase("yuchting@gmail.com");
+				m_isAdministrator = t_bber.GetSigninName().equalsIgnoreCase(FieldVerifier.fsm_admin);
 				
 			}catch(javax.jdo.JDOObjectNotFoundException e){
 				return "<Error>找不到用户!</Error>";
@@ -106,7 +112,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					return "<Error>用户名已经存在!</Error>";
 				}
 				
-				m_isAdministrator = t_bber.GetSigninName().equalsIgnoreCase("yuchting@gmail.com");
+				m_isAdministrator = t_bber.GetSigninName().equalsIgnoreCase(FieldVerifier.fsm_admin);
 				
 			}catch(javax.jdo.JDOObjectNotFoundException e){
 								
@@ -223,9 +229,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 							//
 							Properties t_param = new Properties();
 							t_param.put("bber",t_syncbber.OuputXMLData());
-							
-							System.out.println("bber "+t_syncbber.GetSigninName() +"Requested");
-							
+														
 							String t_result =  RequestYuchHostURL(m_currSyncHost, null, t_param);
 							
 							if(t_result.indexOf("<Max />") != -1){
@@ -417,7 +421,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		        Session session = Session.getDefaultInstance(props, null);
 
 		        StringBuffer t_body = new StringBuffer();
-		        t_body.append("您好！\n\n您收到这封邮件，是因为您在登录 Yuchberry 账户时忘记了密码，您使用这个邮箱地址注册时的密码为：\n    ")
+		        t_body.append("您好！\n\n您收到这封邮件，是因为您在登录 Yuchberry 账户时忘记了密码，您使用这个邮箱地址注册时的密码为：\n\n    ")
 		        	.append(t_bber.GetPassword()).append("\n\n   请您务必保管好，以防下次遗失。\n\n致\n  敬！\nhttp://code.google.com/p/yuchberry/");
 		        		        	
 		        MimeMessage msg = new MimeMessage(session);
@@ -495,8 +499,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 							.append("partner=" + t_alipay.GetPartnerID() +"&")
 							.append("payment_type=1&")
 							.append("paymethod=directPay&")
-							.append("return_url=http://yuchberrysign.yuchberry.info/pay&")
-							.append("seller_email=yuchting@gmail.com&")
+							.append("notify_url=http://yuchberrysign.yuchberry.info/pay&")
+							.append("seller_email="+ FieldVerifier.fsm_admin + "&")
 							.append("service=create_direct_pay_by_user&")
 							.append("subject="+ t_subject +"&")
 							.append("total_fee=" + _fee);
@@ -556,7 +560,6 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			}
 		}
 		
-		System.out.println("bber Request URL:" + t_final.toString());
 		
 		URL url = new URL(t_final.toString());
 		URLConnection con = url.openConnection();
@@ -718,36 +721,77 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}	
 	}
 	
+	// get yuch host list first from cache 
+	//
+	private final static String		fsm_yuchHostListKey = "yuchHostList";
+	
+	static public List<yuchHost> getYuchHostList(){
+		
+		List<yuchHost> t_list = null;
+		Cache cache = null;
+		
+		try {
+		    CacheFactory cacheFactory = CacheManager.getInstance().getCacheFactory();
+		    cache = cacheFactory.createCache(Collections.emptyMap());
+		    
+		    t_list = (List<yuchHost>)cache.get(fsm_yuchHostListKey);
+		}catch (CacheException e) {
+			System.out.println("fetch the Cache failed:"+e.getMessage());
+		}
+		
+		if(t_list == null){
+			
+			PersistenceManager t_pm = PMF.get().getPersistenceManager();
+			try{
+				
+				String query = "select from " + yuchHost.class.getName();
+				t_list = (List<yuchHost>)t_pm.newQuery(query).execute();
+				
+				if(t_list != null){
+					cache.put(fsm_yuchHostListKey,t_list);
+				}
+				
+			}finally{
+				t_pm.close();
+			}
+		}
+		
+		return t_list;
+	}
+	
+	static public void invalidCache(String _key){
+		
+		try {
+		    CacheFactory cacheFactory = CacheManager.getInstance().getCacheFactory();
+		    Cache cache = cacheFactory.createCache(Collections.emptyMap());
+		    
+		    cache.remove(_key);
+		    
+		}catch (CacheException e) {
+			System.out.println("invalid the Cache failed:"+e.getMessage());
+		}
+	}
+	
 	public String getHostList()throws Exception{
 		
 		if(!m_isAdministrator){
 			return "<Error>you're not administrator</Error>";
 		}
+
+		List<yuchHost> t_hostList = getYuchHostList();
 		
-		PersistenceManager t_pm = PMF.get().getPersistenceManager();
-				
-		try{
-			
-			String query = "select from " + yuchHost.class.getName();
-			List<yuchHost> t_hostList = (List<yuchHost>)t_pm.newQuery(query).execute();
-			
-			StringBuffer t_xmlData = new StringBuffer();
-			t_xmlData.append("<HostList>");
-			
-			if(t_hostList != null){
-				for(yuchHost host :t_hostList){
-					host.OutputXMLData(t_xmlData);
-				}	
-			}
-			
-			t_xmlData.append("</HostList>");
-			
-			return t_xmlData.toString();
-			
-		}finally{
-			
-			t_pm.close();
-		}	
+		StringBuffer t_xmlData = new StringBuffer();
+		t_xmlData.append("<HostList>");
+		
+		if(t_hostList != null){
+			for(yuchHost host :t_hostList){
+				host.OutputXMLData(t_xmlData);
+			}	
+		}
+		
+		t_xmlData.append("</HostList>");
+		
+		return t_xmlData.toString();		
 	}
 	
 	public String addHost(String _hostXMLData)throws Exception{
@@ -787,6 +831,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			
 			StringBuffer t_output = new StringBuffer();
 			t_newHost.OutputXMLData(t_output);
+			
+			// invalid cache
+			//
+			invalidCache(fsm_yuchHostListKey);
+			
 			return t_output.toString();
 			
 		}finally{

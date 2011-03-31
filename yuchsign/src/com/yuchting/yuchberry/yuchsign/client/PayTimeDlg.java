@@ -1,46 +1,45 @@
 package com.yuchting.yuchberry.yuchsign.client;
 
+import java.util.Date;
+
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.URL;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class PayTimeDlg extends DialogBox{
 
-	Yuchsign			m_mainSign	= null;
-	yuchbber			m_bber 		= null;
-	
 	String				m_buyURL	= null;
+		
 	public PayTimeDlg(final Yuchsign _mainSign,final yuchbber _bber){
 		super(false,true);
-		
-		m_mainSign = _mainSign;
-		m_bber = _bber;
-		
+			
 		final int t_weekMoney = yuchbber.fsm_weekMoney[_bber.GetLevel()];				
 
+		final Label 			t_expiredTime = new Label();
+		
 		final RadioButton		t_weekPay	= new RadioButton("pay","￥" + t_weekMoney + "/一个星期");
 		final RadioButton		t_monthPay	= new RadioButton("pay","￥" + (t_weekMoney*4) + "/一个月");
 		
 		final VerticalPanel t_pane = new VerticalPanel();
+		
 		t_pane.add(new HTML("提示：请确认您在一个星期内的免费使用阶段里面，" +
 				"能正常使用。因为某些原因，不是所有的移动设备都能" +
 				"正常使用YuchBerry的服务。YuchBerry不会因为提升用户级别而改变服务质量。" +
-				"<br /><br />普通用户(推送一个账户)：￥2/星期" +
+				"<br />" +
+				"<br />VIP0  (推送一个账户)：￥2/星期" +
 				"<br />VIP1  (推送两个账户)：￥3/星期" +
 				"<br />VIP2  (推送三个账户)：￥4/星期" +
-				"<br />VIP3  (推送四个账户)：￥5/星期"));
-
-		
-		t_weekPay.setValue(true);
+				"<br />VIP3  (推送四个账户)：￥5/星期<br />"));
 		
 		t_pane.add(new HTML("<br />"));
 		t_pane.add(t_weekPay);
@@ -48,7 +47,34 @@ public class PayTimeDlg extends DialogBox{
 		t_pane.add(new HTML("<br />"));
 		t_pane.add(t_monthPay);
 		
+		t_pane.add(new HTML("<br />"));
+		
+		t_pane.add(t_expiredTime);
+		
 		t_weekPay.setValue(true);
+		
+		ClickHandler t_radioClicked = new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				long t_payTime 				= (7 * 24 * 3600000);
+				if(t_monthPay.getValue()){
+					t_payTime *= 4;
+				}
+				
+				long t_currTime 			= (new Date()).getTime();
+				long t_formerExpiredTime	= _bber.GetCreateTime() + _bber.GetUsingHours() * 3600000;
+				
+				Date t_expireDate = new Date(Math.max(t_currTime,t_formerExpiredTime) + t_payTime);;
+				
+				t_expiredTime.setText("充值后到期时间："+ DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(t_expireDate));
+			}
+		};
+		
+		t_weekPay.addClickHandler(t_radioClicked);
+		t_monthPay.addClickHandler(t_radioClicked);
+		
+		t_weekPay.fireEvent(new ClickEvent(){});
 		
 		final Button t_confirm = new Button("确认充值");
 		final Button t_cancel = new Button("取消");
@@ -59,6 +85,7 @@ public class PayTimeDlg extends DialogBox{
 			
 			@Override
 			public void onClick(ClickEvent event) {
+				
 				if(m_buyURL != null){
 					
 					hide();
@@ -72,7 +99,7 @@ public class PayTimeDlg extends DialogBox{
 					Yuchsign.PopupWaiting("正在提交订单...", t_pane);
 					
 					try{
-						m_mainSign.greetingService.payTime(_bber.GetSigninName(),t_type,
+						_mainSign.greetingService.payTime(_bber.GetSigninName(),t_type,
 														(t_type== 0)?ft_payWeekFee:ft_payWeekFee*4,
 						new AsyncCallback<String>() {
 							
@@ -129,6 +156,5 @@ public class PayTimeDlg extends DialogBox{
 		setAnimationEnabled(true);
 		setGlassEnabled(true);		
 		setPopupPosition(30,100);
-		setSize("400px","300px");
 	}	
 }
