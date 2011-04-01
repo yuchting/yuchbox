@@ -223,6 +223,18 @@ class recvMain {
 		
 	}
 }
+
+class testClone implements Cloneable{
+	public int aa = 0;
+	public String str = "";
+	
+	public testClone clone()throws CloneNotSupportedException{
+		
+		testClone t_clone = (testClone)super.clone();
+				
+		return t_clone;
+	}
+}
 /*!
  *  @brief note
  *  @author tzz
@@ -271,31 +283,7 @@ public class HelloWorld {
 		//String t_test = "sfdafdafsd $mail_content$ fasdfsdfsda";	
 		//System.out.print(t_test.replace("$mail_content$", "I'm here"));
 		///System.out.print("aaaa " + (12 % 100));
-		
-		Vector<Integer> t_listHost = new Vector<Integer>();
-		Vector<Integer> _exceptList = new Vector<Integer>();
-		
-		t_listHost.add(new Integer(1));
-		t_listHost.add(new Integer(2));
-		t_listHost.add(new Integer(3));
-		t_listHost.add(new Integer(4));
-		t_listHost.add(new Integer(5));
-		
-		_exceptList.add(new Integer(1));
-		_exceptList.add(new Integer(2));
-		
-		search_tag:
-		for(Integer host : t_listHost){
-			for(Integer except : _exceptList){
-				if(host.intValue() == except.intValue()){
-					break search_tag;
-				}
-			}
-			
-			System.out.println(host.intValue());
-
-		}
-		
+				
 	}
 	static private void ProcessSponsorList(ByteArrayInputStream _in){
 		try{

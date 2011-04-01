@@ -9,10 +9,13 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class yuchAlipay implements Serializable{
+public class yuchAlipay implements Serializable,Cloneable{
 	
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+	public String	m_alipaySign = yuchAlipay.class.getName();
+	
+	@Persistent
 	private String m_partner = "";
 	
 	@Persistent
@@ -24,5 +27,15 @@ public class yuchAlipay implements Serializable{
 	
 	public String GetKey(){return m_key;}
 	public void SetKey(String _key){m_key = _key;}
+	
+	public Object clone()throws CloneNotSupportedException{
+		yuchAlipay t_pay = (yuchAlipay)super.clone();
+		
+//		t_pay.m_alipaySign 	= new String(m_alipaySign);
+//		t_pay.m_partner		= new String(m_partner);
+//		t_pay.m_key			= new String(m_key);
+		
+		return t_pay;
+	}
 	
 }

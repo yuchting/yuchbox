@@ -701,7 +701,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		//
 		for(fetchThread thread : t_deadPool){
 			DelAccoutThread(thread.m_fetchMgr.GetAccountName(), false);
-			m_logger.LogOut("未连接时间超过14天，删除帐户 " + thread.m_fetchMgr.GetAccountName());
+			m_logger.LogOut("未连接时间超过3天，删除帐户 " + thread.m_fetchMgr.GetAccountName());
 		}
 		
 		if(!t_deadPool.isEmpty()){

@@ -52,9 +52,7 @@ public class connectDeamon extends Thread implements SendListener,
 	final static int	fsm_clientVer = 3;
 	 
 	sendReceive		m_connect = null;
-	
-	String				m_hostip = null;
-	
+		
 	 
 	FileConnection		m_keyfile;
 	 
@@ -749,9 +747,9 @@ public class connectDeamon extends Thread implements SendListener,
 		 final int		t_hostport = m_mainApp.GetHostPort();
 		 
 		 if(_ssl){
-			 URL =  "ssl://" + ((m_hostip != null)?m_hostip:t_hostname) + ":" + t_hostport + ";deviceside=true;EndToEndDesired";
+			 URL =  "ssl://" + (t_hostname) + ":" + t_hostport + ";deviceside=true;EndToEndDesired";
 		 }else{
-			 URL =  "socket://" +((m_hostip != null)?m_hostip:t_hostname) + ":" + t_hostport + ";deviceside=true";
+			 URL =  "socket://" +(t_hostname) + ":" + t_hostport + ";deviceside=true";
 		 }
 		 
 		 String t_append = m_mainApp.GetURLAppendString();
@@ -777,14 +775,9 @@ public class connectDeamon extends Thread implements SendListener,
 				 
 				 throw _e;
 			 }
-			 
-			 if(m_hostip != null){
-				 
-				 m_hostip = null;
-				 socket = GetConnection(_ssl);
-				 
-			 }else if(_e.getMessage().indexOf("Tunnel") != -1 
-					 || _e.getMessage().indexOf("tunnel") != -1){
+
+			 if(_e.getMessage().indexOf("Tunnel") != -1 
+			 || _e.getMessage().indexOf("tunnel") != -1){
 				 
 				 socket = GetConnection(_ssl);
 				 
@@ -804,9 +797,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 // TCP connect flowing bytes statistics 
 		 //
 		 m_mainApp.StoreUpDownloadByte(72,40,false);
-		 
-		 m_hostip = socket.getAddress();
-		 
+		 		 
 		 return socket;
 	 }
 	 

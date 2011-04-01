@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
 
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class yuchHost implements Serializable{
+public class yuchHost implements Serializable,Cloneable{
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -65,5 +65,16 @@ public class yuchHost implements Serializable{
 		m_httpPort		= yuchbber.ReadIntegerAttr(_elem,"port");
 		m_httpPassword	= yuchbber.ReadStringAttr(_elem,"pass");
 		m_recommendHost	= yuchbber.ReadStringAttr(_elem,"recom");
+	}
+	
+	public Object clone()throws CloneNotSupportedException{
+		yuchHost t_host = (yuchHost)super.clone();
+		
+//		t_host.m_hostName 		= new String(m_hostName);
+//		t_host.m_connectHost 	= new String(m_connectHost);
+//		t_host.m_httpPassword 	= new String(m_httpPassword);
+//		t_host.m_recommendHost	= new String(m_recommendHost);
+		
+		return t_host;
 	}
 }

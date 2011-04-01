@@ -186,9 +186,7 @@ public final class yuchbber {
 		
 		NodeList t_nodeElem = t_elem.getChildNodes();
 		
-		if(t_nodeElem.getLength() > GetMaxPushNum()){
-			throw new Exception("illeagel bber push list");
-		}
+		int t_pushNum = 0;
 		
 		for(int i = 0;i < t_nodeElem.getLength();i++){
 			Node t_node = t_nodeElem.item(i);
@@ -203,8 +201,14 @@ public final class yuchbber {
 					
 					m_emailList.add(t_email);
 				}
+				
+				t_pushNum++;
+				
+				if(t_pushNum > GetMaxPushNum()){
+					throw new Exception("illeagel bber push list");
+				}				
 			}
-		}
+		}		
 	}
 		
 	public int GetMaxPushNum(){

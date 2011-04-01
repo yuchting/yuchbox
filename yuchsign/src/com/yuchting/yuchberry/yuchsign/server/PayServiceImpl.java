@@ -132,8 +132,11 @@ public class PayServiceImpl extends HttpServlet {
 							// sync to yuchberry server
 							// search the proper host to synchronize
 							//
-							String query = "select from " + yuchHost.class.getName();
-							List<yuchHost> t_hostList = (List<yuchHost>)t_pm.newQuery(query).execute();
+							List<yuchHost> t_hostList = (List<yuchHost>)GreetingServiceImpl.getCacheYuchhostList();
+							if(t_hostList == null){
+								t_hostList = (List<yuchHost>)t_pm.newQuery("select from " + yuchHost.class.getName()).execute();
+								GreetingServiceImpl.makeCacheYuchhostList(t_hostList);
+							}
 							
 							if(t_hostList == null || t_hostList.isEmpty()){
 								out.println("充值成功，但是找不到之前同步的主机，需要手动同步一下。");
@@ -194,21 +197,28 @@ public class PayServiceImpl extends HttpServlet {
 		boolean t_result = false;
 		try{
 			String t_partnerID = null;
-			PersistenceManager t_pm = PMF.get().getPersistenceManager();
-			try{
-				
-				String query = "select from " + yuchAlipay.class.getName();
-				List<yuchAlipay> t_alipayList = (List<yuchAlipay>)t_pm.newQuery(query).execute();
-				
-				if(t_alipayList == null || t_alipayList.isEmpty()){
-					throw new Exception("AlipayList is null"); 
-				}
-				
-				t_partnerID = t_alipayList.get(0).GetPartnerID();
-				
-			}finally{
-				t_pm.close();
-			}
+			
+			yuchAlipay t_alipay = GreetingServiceImpl.getCacheAlipay();
+			
+			if(t_alipay == null){
+				PersistenceManager t_pm = PMF.get().getPersistenceManager();
+				try{
+					
+					Key  k = KeyFactory.createKey(yuchAlipay.class.getSimpleName(),yuchAlipay.class.getName());
+					try{
+						t_alipay = t_pm.getObjectById(yuchAlipay.class, k);
+					}catch(Exception e){
+						return false;
+					}
+					
+					GreetingServiceImpl.makeCacheYuchAlipay(t_alipay);
+					
+					t_partnerID = t_alipay.GetPartnerID();
+					
+				}finally{
+					t_pm.close();
+				}				
+			}			
 			
 			String veryfy_url = "http://notify.alipay.com/trade/notify_query.do?partner=" + t_partnerID + "&notify_id=" + _notify_id; 
 			
