@@ -18,29 +18,32 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class PayTimeDlg extends DialogBox{
 
+	public final static String	fsm_payPrompt = "提示：请确认您在一个星期内的免费使用阶段里面，" +
+													"能正常使用。因为某些原因，不是所有的移动设备都能" +
+													"正常使用YuchBerry的服务。" +
+													"<br />YuchBerry不会因为提升用户级别而改变服务质量。" +
+													"<br />" +
+													"<br />VIP0  (推送一个账户)：￥" + yuchbber.fsm_weekMoney[0] +"/星期" +
+													"<br />VIP1  (推送两个账户)：￥" + yuchbber.fsm_weekMoney[1] +"/星期" +
+													"<br />VIP2  (推送三个账户)：￥" + yuchbber.fsm_weekMoney[2] +"/星期" +
+													"<br />VIP3  (推送四个账户)：￥" + yuchbber.fsm_weekMoney[3] +"/星期<br />";
+													
 	String				m_buyURL	= null;
+	
 		
-	public PayTimeDlg(final Yuchsign _mainSign,final yuchbber _bber){
+	public PayTimeDlg(final Yuchsign _mainSign,final yuchbber _bber,int _type){
 		super(false,true);
 			
 		final int t_weekMoney = yuchbber.fsm_weekMoney[_bber.GetLevel()];				
 
+		final VerticalPanel t_pane = new VerticalPanel();
+		t_pane.add(new HTML(fsm_payPrompt));
+		
 		final Label 			t_expiredTime = new Label();
 		
 		final RadioButton		t_weekPay	= new RadioButton("pay","￥" + t_weekMoney + "/一个星期");
 		final RadioButton		t_monthPay	= new RadioButton("pay","￥" + (t_weekMoney*4) + "/一个月");
-		
-		final VerticalPanel t_pane = new VerticalPanel();
-		
-		t_pane.add(new HTML("提示：请确认您在一个星期内的免费使用阶段里面，" +
-				"能正常使用。因为某些原因，不是所有的移动设备都能" +
-				"正常使用YuchBerry的服务。YuchBerry不会因为提升用户级别而改变服务质量。" +
-				"<br />" +
-				"<br />VIP0  (推送一个账户)：￥2/星期" +
-				"<br />VIP1  (推送两个账户)：￥3/星期" +
-				"<br />VIP2  (推送三个账户)：￥4/星期" +
-				"<br />VIP3  (推送四个账户)：￥5/星期<br />"));
-		
+				
 		t_pane.add(new HTML("<br />"));
 		t_pane.add(t_weekPay);
 		
@@ -60,6 +63,10 @@ public class PayTimeDlg extends DialogBox{
 				long t_payTime 				= (7 * 24 * 3600000);
 				if(t_monthPay.getValue()){
 					t_payTime *= 4;
+					
+					// give two days
+					//
+					t_payTime += (2 * 24 * 3600000);
 				}
 				
 				long t_currTime 			= (new Date()).getTime();
@@ -76,7 +83,7 @@ public class PayTimeDlg extends DialogBox{
 		
 		t_weekPay.fireEvent(new ClickEvent(){});
 		
-		final Button t_confirm = new Button("确认充值");
+		final Button t_confirm = new Button("提交订单");
 		final Button t_cancel = new Button("取消");
 		
 		final int ft_payWeekFee = t_weekMoney;
@@ -94,20 +101,18 @@ public class PayTimeDlg extends DialogBox{
 					
 				}else{
 					
-					int t_type = t_weekPay.getValue()?0:1;
-					
 					Yuchsign.PopupWaiting("正在提交订单...", t_pane);
 					
 					try{
-						_mainSign.greetingService.payTime(_bber.GetSigninName(),t_type,
-														(t_type== 0)?ft_payWeekFee:ft_payWeekFee*4,
+						_mainSign.greetingService.payTime(_bber.GetSigninName(),0,
+														(t_weekPay.getValue())?ft_payWeekFee:ft_payWeekFee*4,
 						new AsyncCallback<String>() {
 							
 							@Override
 							public void onSuccess(String result) {
 								if(result.startsWith("http")){
 									m_buyURL = result;
-									t_confirm.setText("去付费");
+									t_confirm.setText("去支付宝付费");
 									Yuchsign.PopupPrompt("提交订单成功！\n点击 去付费 按钮使用支付宝充值。", t_pane);
 									Yuchsign.HideWaiting();
 									

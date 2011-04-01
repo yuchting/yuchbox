@@ -13,7 +13,7 @@ import com.google.gwt.xml.client.XMLParser;
 public final class yuchbber {
 	
 	public static final int[] fsm_weekMoney = {2,3,4,5};
-	public static final int[] fsm_levelMoney = {5,5,5,5};
+	public static final int[] fsm_levelMoney = {0,5,5,5};
 	public static final int[] fsm_intervalMoney = {5,5,5,5};
 	
 	private String m_signinName = "";

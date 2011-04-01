@@ -85,8 +85,12 @@ public class PayServiceImpl extends HttpServlet {
 							// pay time
 							//
 							final int t_weekMoney = yuchbber.fsm_weekMoney[t_bber.GetLevel()];
+
+							t_payHours =  (t_total_fee_value / t_weekMoney) * 7 * 24;
 							
-							t_payHours =  (t_total_fee_value / t_weekMoney) * 7 * 24;						
+							if(t_total_fee_value == t_weekMoney * 4){
+								t_payHours += 2 * 24;
+							}							
 							
 						}else if(t_order.GetPayType() == 1){
 							// pay level

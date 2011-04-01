@@ -580,11 +580,12 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					StringBuffer t_body = new StringBuffer();
 										
 					t_body.append("_input_charset=utf-8&")
+							.append("notify_url=http://yuchberrysign.yuchberry.info/pay&")
 							.append("out_trade_no=" + t_out_trade_no + "&")
 							.append("partner=" + t_alipay.GetPartnerID() +"&")
 							.append("payment_type=1&")
 							.append("paymethod=directPay&")
-							.append("notify_url=http://yuchberrysign.yuchberry.info/pay&")
+							.append("return_url=http://yuchberrysign.yuchberry.info/payOk&")
 							.append("seller_email="+ FieldVerifier.fsm_admin + "&")
 							.append("service=create_direct_pay_by_user&")
 							.append("subject="+ t_subject +"&")
