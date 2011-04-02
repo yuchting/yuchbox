@@ -360,7 +360,9 @@ public class BberPanel extends TabPanel{
 	}
 		
 	private void AddAccountAttr(){
-			
+		
+		final VerticalPanel t_attrPane = new VerticalPanel();
+		
 		Button t_syncBut = new Button("同步账户");
 		t_syncBut.addClickHandler(new ClickHandler() {
 			
@@ -375,7 +377,12 @@ public class BberPanel extends TabPanel{
 			
 			@Override
 			public void onClick(ClickEvent event) {
-				// TODO level up the bber
+				if(m_currentBber.GetLevel() >= yuchbber.fsm_levelMoney.length){
+					Yuchsign.PopupPrompt("你已经是最高等级的用户了，无法再升级了。", t_attrPane);
+					return;
+				}
+				PayLevDlg t_dlg = new PayLevDlg(m_mainServer, m_currentBber);
+				t_dlg.show();	
 				
 			}
 		});
@@ -402,7 +409,7 @@ public class BberPanel extends TabPanel{
 		
 		m_signature.setPixelSize(420,100);
 				
-		final VerticalPanel t_attrPane = new VerticalPanel();
+		
 		final FlexTable  t_layout = new FlexTable();	
 		
 		int t_line = 0;

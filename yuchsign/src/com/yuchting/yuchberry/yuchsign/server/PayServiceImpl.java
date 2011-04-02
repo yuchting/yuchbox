@@ -21,13 +21,18 @@ import com.google.appengine.api.datastore.KeyFactory;
 
 public class PayServiceImpl extends HttpServlet {
 	
-	public void doGet(HttpServletRequest request,HttpServletResponse   response)throws ServletException,IOException{
+	public void doPost(HttpServletRequest request,HttpServletResponse response)throws ServletException,IOException{
+		doGet(request,response);
+	}
+	
+	public void doGet(HttpServletRequest request,HttpServletResponse response)throws ServletException,IOException{
 				
 		final String t_out_trade_no	= (String)request.getParameter("out_trade_no");
 		final String t_total_fee	= (String)request.getParameter("total_fee");
 		final String t_notify_id	= (String)request.getParameter("notify_id");
 		
 		if(!VerifyURL(t_notify_id)){
+			System.err.println("notify failed notify id:"+ t_notify_id);
 			return ;
 		}
 		
@@ -35,12 +40,11 @@ public class PayServiceImpl extends HttpServlet {
 		response.setContentType("text/html");
         
 		PrintWriter out = response.getWriter();
-		out.println("<html>");
 		
 		try{
 			
-			if(t_out_trade_no == null){
-				out.println("<body>你是怎么找到这个地方的呢？</body>");
+			if(t_out_trade_no == null || t_total_fee == null){
+				System.err.println("notify failed notify id:'"+ t_notify_id +"' out trade no:'"+ t_out_trade_no +"' total fee:'" + t_total_fee + "' ");
 				return ;
 			}
 			
@@ -52,12 +56,12 @@ public class PayServiceImpl extends HttpServlet {
 					
 					yuchOrder t_order = t_pm.getObjectById(yuchOrder.class, t_order_key);
 					if(t_order == null){
-					    out.println( "内部订单错误，请重新操作。");
+						System.err.println("notify failed notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ");
 					    return;
 					}
 					
 					if(t_order.GetState() != 0){
-						out.println( "订单已经处理过了，请重新操作。");
+						System.err.println("repeat notify,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ");				
 						return;
 					}
 					
@@ -66,7 +70,7 @@ public class PayServiceImpl extends HttpServlet {
 					final int t_total_fee_value = Integer.valueOf(t_total_fee).intValue();
 					
 					if(t_order.GetTotalFee() != t_total_fee_value){
-						out.println( "内部对账金额错误，请重新操作。");
+						System.err.println("interval fee error ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ");
 						return;
 					}
 
@@ -74,7 +78,7 @@ public class PayServiceImpl extends HttpServlet {
 						Key t_yuchbber_key = KeyFactory.createKey(yuchbber.class.getSimpleName(),t_order.GetBuyerEmail());
 						yuchbber t_bber = t_pm.getObjectById(yuchbber.class, t_yuchbber_key);
 						if(t_bber == null){
-						    out.println( "内部错误，请重新操作。");
+							System.err.println(" bber null error ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ");
 						    return;
 						}
 		
@@ -95,10 +99,18 @@ public class PayServiceImpl extends HttpServlet {
 						}else if(t_order.GetPayType() == 1){
 							// pay level
 							//
-							t_nextLev = t_nextLev + 1;
+							int t_fee = t_total_fee_value;
+							
+							
+							while(t_fee > 0){
+								
+								t_fee -= yuchbber.fsm_levelMoney[t_nextLev + 1];
+						
+								t_nextLev++;
+							}
 							
 							if(t_nextLev >= yuchbber.fsm_levelMoney.length){
-								out.println("你的用户等级已经到了最高等级，这个订单出现了内部问题");
+								System.err.println(" reach ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ");
 								return ;
 							}						
 						}
@@ -142,10 +154,8 @@ public class PayServiceImpl extends HttpServlet {
 								GreetingServiceImpl.makeCacheYuchhostList(t_hostList);
 							}
 							
-							if(t_hostList == null || t_hostList.isEmpty()){
-								out.println("充值成功，但是找不到之前同步的主机，需要手动同步一下。");
-							}else{
-
+							if(t_hostList != null && !t_hostList.isEmpty()){
+								
 								for(yuchHost host : t_hostList){
 									if(host.GetHostName().equals(t_bber.GetConnectHost())){
 										try{
@@ -155,16 +165,10 @@ public class PayServiceImpl extends HttpServlet {
 											t_param.put("create",Long.toString(t_bber.GetCreateTime()));
 											t_param.put("time",Long.toString(t_bber.GetUsingHours()));
 											
-											String t_request = GreetingServiceImpl.RequestYuchHostURL(host, null, t_param);
-											
-											if(t_request.startsWith("<OK />")){
-												out.println("充值成功。");
-											}else{
-												out.println("充值成功，需要手动同步一下账户才能继续连接。<br />出现问题：" + t_request);
-											}
-											
+											GreetingServiceImpl.RequestYuchHostURL(host, null, t_param);
+																						
 										}catch(Exception e){
-											out.println("充值成功，需要手动同步一下账户才能继续连接。");
+											System.err.println(" reach ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ex:" + e.getMessage());
 										}
 
 										break;
@@ -172,25 +176,22 @@ public class PayServiceImpl extends HttpServlet {
 								}	
 							}
 												
-						}else{
-							out.println("<body>充值成功，需要手动同步一下账户。</body>");
 						}
 						
 						
 					}catch(javax.jdo.JDOObjectNotFoundException e){
-						 out.println("找不到下订单的注册账户");
+						System.err.println(" JDOObjectNotFoundException ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ");
 					}				
 
 				}catch(javax.jdo.JDOObjectNotFoundException e){
-					 out.println("找不到订单");
+					System.err.println(" JDOObjectNotFoundException out_trade_id,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ");
 				}
 							
 			}finally{
 				t_pm.close();
 			}	
 		}finally{
-
-			out.println("<br /> <br /> 有任何问题，请联系 yuchberry@gmail.com </html>");
+			out.println("success");
 			out.flush();
 		}
 		

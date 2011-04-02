@@ -429,11 +429,13 @@ public class YuchPanel extends TabPanel{
 				}
 	
 				public void onSuccess(String result){
-					if(!result.isEmpty()){
+					if(!result.isEmpty() && result.indexOf(":") != -1){
 						String[] t_str = result.split(":");
 						
 						t_partner.setText(t_str[0]);
 						t_key.setText(t_str[1]);
+					}else{
+						Yuchsign.PopupPrompt(result, t_pane);
 					}
 				}
 			});

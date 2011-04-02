@@ -25,6 +25,16 @@
     <servlet-name>payServlet</servlet-name>
     <url-pattern>/pay/*</url-pattern>
   </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>payOKServlet</servlet-name>
+    <servlet-class>com.yuchting.yuchberry.yuchsign.server.PayOKServiceImpl</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>payOKServlet</servlet-name>
+    <url-pattern>/payOK/*</url-pattern>
+  </servlet-mapping>
     
   <!-- Default page to serve -->
   <welcome-file-list>

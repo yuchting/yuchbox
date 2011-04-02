@@ -21,17 +21,17 @@ public class PayTimeDlg extends DialogBox{
 	public final static String	fsm_payPrompt = "提示：请确认您在一个星期内的免费使用阶段里面，" +
 													"能正常使用。因为某些原因，不是所有的移动设备都能" +
 													"正常使用YuchBerry的服务。" +
-													"<br />YuchBerry不会因为提升用户级别而改变服务质量。" +
+													"<br /><br /><b>YuchBerry不会因为提升用户级别而改变服务质量。</b>" +
 													"<br />" +
 													"<br />VIP0  (推送一个账户)：￥" + yuchbber.fsm_weekMoney[0] +"/星期" +
 													"<br />VIP1  (推送两个账户)：￥" + yuchbber.fsm_weekMoney[1] +"/星期" +
 													"<br />VIP2  (推送三个账户)：￥" + yuchbber.fsm_weekMoney[2] +"/星期" +
-													"<br />VIP3  (推送四个账户)：￥" + yuchbber.fsm_weekMoney[3] +"/星期<br />";
+													"<br />VIP3  (推送四个账户)：￥" + yuchbber.fsm_weekMoney[3] +"/星期<br /><br />";
 													
 	String				m_buyURL	= null;
 	
 		
-	public PayTimeDlg(final Yuchsign _mainSign,final yuchbber _bber,int _type){
+	public PayTimeDlg(final Yuchsign _mainSign,final yuchbber _bber){
 		super(false,true);
 			
 		final int t_weekMoney = yuchbber.fsm_weekMoney[_bber.GetLevel()];				
@@ -43,11 +43,8 @@ public class PayTimeDlg extends DialogBox{
 		
 		final RadioButton		t_weekPay	= new RadioButton("pay","￥" + t_weekMoney + "/一个星期");
 		final RadioButton		t_monthPay	= new RadioButton("pay","￥" + (t_weekMoney*4) + "/一个月");
-				
-		t_pane.add(new HTML("<br />"));
-		t_pane.add(t_weekPay);
 		
-		t_pane.add(new HTML("<br />"));
+		t_pane.add(t_weekPay);
 		t_pane.add(t_monthPay);
 		
 		t_pane.add(new HTML("<br />"));

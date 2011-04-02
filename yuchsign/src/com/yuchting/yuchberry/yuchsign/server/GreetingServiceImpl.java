@@ -625,7 +625,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	public static String RequestYuchHostURL(yuchHost _host,Properties header, Properties parms)throws Exception{
 		
 		StringBuffer t_final = new StringBuffer();
-		t_final.append("http://").append(_host.GetHostName());
+		t_final.append("http://").append(_host.GetHostName()).append(":").append(_host.GetHTTPPort());
 					
 		if(parms != null){
 			t_final.append("/?");
