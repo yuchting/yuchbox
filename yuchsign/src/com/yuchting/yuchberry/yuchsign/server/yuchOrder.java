@@ -23,9 +23,6 @@ public class yuchOrder {
 	private int 		m_total_fee		= 0;
 	
 	@Persistent
-	private int		m_trade_status	= 0;
-	
-	@Persistent
 	private String		m_alipay_trade_no = "";
 	
 	@Persistent
@@ -33,10 +30,7 @@ public class yuchOrder {
 	
 	public String GetOutTradeNO(){return m_out_trade_no;}
 	public void SetOutTradeNO(String _NO){m_out_trade_no = _NO;}
-	
-	public int GetState(){return m_trade_status;}
-	public void SetState(int _state){m_trade_status = _state;}
-	
+		
 	public String GetSubject(){return m_subject;}
 	public void SetSubject(String _sub){m_subject = _sub;}
 	

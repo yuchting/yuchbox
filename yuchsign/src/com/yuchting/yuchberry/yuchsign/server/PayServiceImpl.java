@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -22,23 +23,43 @@ import com.google.appengine.api.datastore.KeyFactory;
 public class PayServiceImpl extends HttpServlet {
 	
 	public void doPost(HttpServletRequest request,HttpServletResponse response)throws ServletException,IOException{
-		doGet(request,response);
+		this.doGet(request,response);
 	}
 	
 	public void doGet(HttpServletRequest request,HttpServletResponse response)throws ServletException,IOException{
-				
-		final String t_out_trade_no	= (String)request.getParameter("out_trade_no");
-		final String t_total_fee	= (String)request.getParameter("total_fee");
-		final String t_notify_id	= (String)request.getParameter("notify_id");
 		
-		if(!VerifyURL(t_notify_id)){
-			System.err.println("notify failed notify id:"+ t_notify_id);
-			return ;
+		System.err.println("someone call pay url.");
+		
+		final String t_out_trade_no		= (String)request.getParameter("out_trade_no");
+		String t_alipay_trade_no	= (String)request.getParameter("trade_no");
+		final String t_total_fee		= (String)request.getParameter("total_fee");
+		
+		String t_notify_id	= (String)request.getParameter("notify_id");
+				
+		if(t_notify_id == null || t_out_trade_no == null){
+			System.err.println("notify_id=null or out_trade_no=null calling");
+			return;
 		}
 		
-		response.setCharacterEncoding("utf-8");
-		response.setContentType("text/html");
-        
+		if(t_alipay_trade_no == null){
+			t_alipay_trade_no = t_out_trade_no;
+			System.err.println("t_alipay_trade_no=null ,set out_trade_no");
+		}
+		
+		try{
+			
+			if(!VerifyURL(t_notify_id)){
+				System.err.println("notify verify failed notify id:"+ t_notify_id);
+				return ;
+			}
+			
+			t_notify_id = URLDecoder.decode(t_notify_id,"UTF-8");
+			
+		}catch(Exception e){
+			System.err.println("notify verify failed notify id:"+ t_notify_id + " Exception:"+ e.getMessage());
+			return ;
+		}
+		        
 		PrintWriter out = response.getWriter();
 		
 		try{
@@ -60,14 +81,14 @@ public class PayServiceImpl extends HttpServlet {
 					    return;
 					}
 					
-					if(t_order.GetState() != 0){
+					if(!t_order.GetAlipayTradeNO().isEmpty()){
 						System.err.println("repeat notify,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ");				
 						return;
 					}
 					
-					t_order.SetState(1);					
+					t_order.SetAlipayTradeNO(t_alipay_trade_no);
 					
-					final int t_total_fee_value = Integer.valueOf(t_total_fee).intValue();
+					final int t_total_fee_value = Float.valueOf(t_total_fee).intValue();
 					
 					if(t_order.GetTotalFee() != t_total_fee_value){
 						System.err.println("interval fee error ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ");
@@ -110,7 +131,7 @@ public class PayServiceImpl extends HttpServlet {
 							}
 							
 							if(t_nextLev >= yuchbber.fsm_levelMoney.length){
-								System.err.println(" reach ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ");
+								System.err.println(" reach max level ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ");
 								return ;
 							}						
 						}
@@ -167,8 +188,9 @@ public class PayServiceImpl extends HttpServlet {
 											
 											GreetingServiceImpl.RequestYuchHostURL(host, null, t_param);
 																						
+											System.err.println("Pay OK ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "'");
 										}catch(Exception e){
-											System.err.println(" reach ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ex:" + e.getMessage());
+											System.err.println(" request HostURL failed ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ex:" + e.getMessage());
 										}
 
 										break;
@@ -223,9 +245,11 @@ public class PayServiceImpl extends HttpServlet {
 				}finally{
 					t_pm.close();
 				}				
-			}			
+			}else{
+				t_partnerID =  t_alipay.GetPartnerID();
+			}
 			
-			String veryfy_url = "http://notify.alipay.com/trade/notify_query.do?partner=" + t_partnerID + "&notify_id=" + _notify_id; 
+			String veryfy_url = "https://www.alipay.com/cooperate/gateway.do?service=notify_verify&partner=" + t_partnerID + "&notify_id=" + _notify_id; 
 			
 			URL url = new URL(veryfy_url);
 			URLConnection con = url.openConnection();

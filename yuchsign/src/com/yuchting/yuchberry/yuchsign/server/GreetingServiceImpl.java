@@ -578,14 +578,14 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					}
 					
 					StringBuffer t_body = new StringBuffer();
-										
+
 					t_body.append("_input_charset=utf-8&")
-							.append("notify_url=http://yuchberrysign.yuchberry.info/pay&")
+							.append("notify_url=http://yuchberrysign.yuchberry.info/pay/&")
 							.append("out_trade_no=" + t_out_trade_no + "&")
 							.append("partner=" + t_alipay.GetPartnerID() +"&")
 							.append("payment_type=1&")
 							.append("paymethod=directPay&")
-							.append("return_url=http://yuchberrysign.yuchberry.info/payOk&")
+							.append("return_url=http://yuchberrysign.yuchberry.info/payok/&")
 							.append("seller_email="+ FieldVerifier.fsm_admin + "&")
 							.append("service=create_direct_pay_by_user&")
 							.append("subject="+ t_subject +"&")
@@ -766,15 +766,17 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						makeCacheYuchAlipay(t_pay);
 						
 						t_pay = getCacheAlipay();
+						
+						t_result = t_pay.GetPartnerID() + ":" + t_pay.GetKey();
 					}
 					
 				}catch(Exception ex){}
 			}finally{
 				t_pm.close();
 			}
-		}
-		
-		t_result = t_pay.GetPartnerID() + ":" + t_pay.GetKey();					
+		}else{
+			t_result = t_pay.GetPartnerID() + ":" + t_pay.GetKey();
+		}		
 		
 		return t_result;
 	}

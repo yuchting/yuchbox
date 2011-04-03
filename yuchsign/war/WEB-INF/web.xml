@@ -33,7 +33,7 @@
   
   <servlet-mapping>
     <servlet-name>payOKServlet</servlet-name>
-    <url-pattern>/payOK/*</url-pattern>
+    <url-pattern>/payok/*</url-pattern>
   </servlet-mapping>
     
   <!-- Default page to serve -->

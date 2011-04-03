@@ -1012,6 +1012,9 @@ public class mainFrame extends JFrame implements ActionListener{
 	 */
 	Vector<BberRequestThread> m_bberRequestList = new Vector<BberRequestThread>();
 	
+	String 		m_yuchsignFramePass = null;
+	int 	  	m_yuchsignMaxBber = 0;
+	
 	private static final String	fsm_yuchsign_tmpDir = "tmpCreate_yuchsign/";
 	private void LoadYuchsign(){
 		
@@ -1026,9 +1029,13 @@ public class mainFrame extends JFrame implements ActionListener{
 			}
 			
 			try{
-				final String t_framePass = in.readLine();
-				final String t_port = in.readLine();
-				final int 	  t_maxBber = Integer.valueOf(in.readLine()).intValue();
+				m_yuchsignFramePass 	= in.readLine();
+				String	t_port 			= in.readLine();
+				m_yuchsignMaxBber 		= Integer.valueOf(in.readLine()).intValue();
+				
+				if(m_yuchsignFramePass == null || m_yuchsignFramePass.isEmpty()){
+					return ;
+				}
 				
 				m_httpd = new NanoHTTPD(Integer.valueOf(t_port).intValue()){
 					public Response serve( String uri, String method, Properties header, Properties parms, Properties files ){
@@ -1057,11 +1064,11 @@ public class mainFrame extends JFrame implements ActionListener{
 						
 						String pass = header.getProperty("pass");
 						
-						if(pass == null || !pass.equals(t_framePass)){
+						if(pass == null || !pass.equals(m_yuchsignFramePass)){
 							return new NanoHTTPD.Response( HTTP_FORBIDDEN, MIME_PLAINTEXT, "");
 						}
 						
-						return new NanoHTTPD.Response( HTTP_OK, MIME_PLAINTEXT, ProcessHTTPD(method,header,parms,t_maxBber));
+						return new NanoHTTPD.Response( HTTP_OK, MIME_PLAINTEXT, ProcessHTTPD(method,header,parms));
 					}
 				};
 				
@@ -1073,7 +1080,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		}
 	}
 	
-	private synchronized String ProcessHTTPD(String method, Properties header, Properties parms,int _maxBber){
+	private synchronized String ProcessHTTPD(String method, Properties header, Properties parms){
 		
 		String t_string = parms.getProperty("bber");
 		if( t_string == null){
@@ -1127,7 +1134,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			//
 			fetchThread t_thread = SearchAccountThread(t_bber.GetSigninName(),0);
 			
-			if(t_thread == null && m_accountList.size() >= _maxBber){
+			if(t_thread == null && m_accountList.size() >= m_yuchsignMaxBber){
 				// if reach the max bber
 				//
 				return "<Max />";
