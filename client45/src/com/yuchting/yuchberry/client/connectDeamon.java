@@ -257,7 +257,7 @@ public class connectDeamon extends Thread implements SendListener,
 				}
 				
 			}catch(Exception ex){
-				m_mainApp.SetErrorString("D:"+ex.getMessage());
+				m_mainApp.SetErrorString("D:"+ex.getMessage() + " " + ex.getClass().getName());
 			}
 			
 		}

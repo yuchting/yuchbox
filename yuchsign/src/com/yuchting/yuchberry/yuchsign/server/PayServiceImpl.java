@@ -169,10 +169,10 @@ public class PayServiceImpl extends HttpServlet {
 							// sync to yuchberry server
 							// search the proper host to synchronize
 							//
-							List<yuchHost> t_hostList = (List<yuchHost>)GreetingServiceImpl.getCacheYuchhostList();
+							List<yuchHost> t_hostList = (List<yuchHost>)YuchsignCache.getCacheYuchhostList();
 							if(t_hostList == null){
 								t_hostList = (List<yuchHost>)t_pm.newQuery("select from " + yuchHost.class.getName()).execute();
-								GreetingServiceImpl.makeCacheYuchhostList(t_hostList);
+								YuchsignCache.makeCacheYuchhostList(t_hostList);
 							}
 							
 							if(t_hostList != null && !t_hostList.isEmpty()){
@@ -225,7 +225,7 @@ public class PayServiceImpl extends HttpServlet {
 		try{
 			String t_partnerID = null;
 			
-			yuchAlipay t_alipay = GreetingServiceImpl.getCacheAlipay();
+			yuchAlipay t_alipay = YuchsignCache.getCacheAlipay();
 			
 			if(t_alipay == null){
 				PersistenceManager t_pm = PMF.get().getPersistenceManager();
@@ -238,7 +238,7 @@ public class PayServiceImpl extends HttpServlet {
 						return false;
 					}
 					
-					GreetingServiceImpl.makeCacheYuchAlipay(t_alipay);
+					YuchsignCache.makeCacheYuchAlipay(t_alipay);
 					
 					t_partnerID = t_alipay.GetPartnerID();
 					
