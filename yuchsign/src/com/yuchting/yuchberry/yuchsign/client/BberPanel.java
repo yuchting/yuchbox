@@ -590,6 +590,7 @@ public class BberPanel extends TabPanel{
 		add(t_mainPane,"查询日志");
 	}
 	
+	String		m_verfiyCode = "";
 	private void StartSync(){
 		
 		if(m_signature.getText().length() > 200){
@@ -608,11 +609,23 @@ public class BberPanel extends TabPanel{
 		
 		final Widget t_bberPanel = this;
 		try{
-			m_mainServer.greetingService.syncAccount(m_currentBber.OuputXMLData(), new AsyncCallback<String>() {
+			m_mainServer.greetingService.syncAccount(m_currentBber.OuputXMLData(),m_verfiyCode,new AsyncCallback<String>() {
 				
 				@Override
 				public void onSuccess(String result) {
-					SyncOnSuccess(result,t_bberPanel);
+					if(result.startsWith("data:image/png;base64")){
+							new YuchVerifyCodeDlg(result, new InputVerfiyCode() {
+							
+							@Override
+							public void InputCode(String code) {
+								m_verfiyCode = code;
+								StartSync();
+							}
+						});
+					}else{
+						SyncOnSuccess(result,t_bberPanel);
+					}
+					
 				}
 				
 				@Override

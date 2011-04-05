@@ -276,7 +276,7 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				final ByteArrayOutputStream output = new ByteArrayOutputStream();
 	            final Base64OutputStream boutput = new Base64OutputStream( output );
-	            output.write( "data:text/html;base64,".getBytes() );
+	            output.write( "data:text/html;base64,".getBytes("UTF-8") );
 	            boutput.write( (byte[])p.getContent() );
 	            boutput.flush();
 	            boutput.close();

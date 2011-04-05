@@ -4,13 +4,10 @@ package com.yuchting.yuchberry.yuchsign.server;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.lang.reflect.ParameterizedType;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
@@ -19,10 +16,6 @@ import java.util.Random;
 import java.util.TimeZone;
 import java.util.Vector;
 
-import javax.cache.Cache;
-import javax.cache.CacheException;
-import javax.cache.CacheFactory;
-import javax.cache.CacheManager;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
@@ -31,11 +24,9 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.http.HttpRequest;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
@@ -75,7 +66,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	
 	String		m_currVerfiyCode = null;
 	
-	
+	GenVerifyCode	m_currVerifyCode = new GenVerifyCode();
 		
 	public String logonServer(String name,String password) throws Exception {
 		
@@ -105,7 +96,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}		
 	}
 	
-	public String signinAccount(String _name,String _password)throws Exception{
+	public String signinAccount(String _name,String _password,String _verifyCode)throws Exception{
+		
+		if(!m_currVerifyCode.compareCode(_verifyCode)){
+			return m_currVerifyCode.generate(getThreadLocalRequest());
+		}
 		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
 		
@@ -138,12 +133,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}				
 	}
 	
-	public byte[] genVerifyCode(){
-		HttpServletRequest t_request = getThreadLocalRequest();
-		t_request.getSession().getServletContext().getRealPath("")
-	}
+	public String syncAccount(String _xmlData,String verifyCode)throws Exception{
 		
-	public String syncAccount(String _xmlData)throws Exception{
+		if(!m_currVerifyCode.compareCode(verifyCode)){
+			return m_currVerifyCode.generate(getThreadLocalRequest());
+		}
 		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
 				

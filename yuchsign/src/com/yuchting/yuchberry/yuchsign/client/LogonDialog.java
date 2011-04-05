@@ -36,19 +36,8 @@ public final class LogonDialog extends DialogBox{
 	
 	final CheckBox m_agreeCheckbox			= new CheckBox("我同意");
 	
+	String m_verfiyCode						= "";
 	
-	
-	final AsyncCallback<String>	m_callback			= new AsyncCallback<String>(){
-		public void onFailure(Throwable caught) {
-			Yuchsign.PopupPrompt(caught.getMessage(),null);
-			Yuchsign.HideWaiting();
-		}
-
-		public void onSuccess(String result) {
-			CallOnSuccess(result);
-		}
-	};
-
 	public LogonDialog(Yuchsign _clientSign){
 		m_clientSign = _clientSign;
 		
@@ -167,7 +156,6 @@ public final class LogonDialog extends DialogBox{
 		setPopupPosition(0, 50);
 		setAnimationEnabled(true);
 		setWidget(t_horzPane);
-					
 	}
 	
 	private void CallOnSuccess(String _result){
@@ -215,7 +203,16 @@ public final class LogonDialog extends DialogBox{
 		try{
 			
 			Yuchsign.PopupWaiting("正在登录...",this);				
-			m_clientSign.greetingService.logonServer(t_name,t_pass,m_callback);
+			m_clientSign.greetingService.logonServer(t_name,t_pass,new AsyncCallback<String>(){
+				public void onFailure(Throwable caught) {
+					Yuchsign.PopupPrompt(caught.getMessage(),null);
+					Yuchsign.HideWaiting();
+				}
+
+				public void onSuccess(String result) {
+					CallOnSuccess(result);
+				}
+			});
 
 		}catch(Exception e){
 			Yuchsign.PopupPrompt(e.getMessage(),this);
@@ -253,7 +250,30 @@ public final class LogonDialog extends DialogBox{
 		
 		try{					
 			Yuchsign.PopupWaiting("正在提交注册...",this);
-			m_clientSign.greetingService.signinAccount(t_name,t_pass,m_callback);
+			m_clientSign.greetingService.signinAccount(t_name,t_pass,m_verfiyCode,new AsyncCallback<String>(){
+				public void onFailure(Throwable caught) {
+					Yuchsign.PopupPrompt(caught.getMessage(),null);
+					Yuchsign.HideWaiting();
+				}
+
+				public void onSuccess(String result) {
+					if(result.startsWith("data:image/png;base64")){
+						
+						Yuchsign.HideWaiting();
+						
+						new YuchVerifyCodeDlg(result, new InputVerfiyCode() {
+							
+							@Override
+							public void InputCode(String code) {
+								m_verfiyCode = code;
+								SigninEvent();
+							}
+						});
+					}else{
+						CallOnSuccess(result);
+					}					
+				}
+			});
 
 		}catch(Exception e){
 			Yuchsign.PopupPrompt(e.getMessage(),this);

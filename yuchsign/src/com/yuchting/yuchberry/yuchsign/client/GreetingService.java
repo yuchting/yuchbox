@@ -11,17 +11,18 @@ public interface GreetingService extends RemoteService {
 	
 	String logonServer(String name,String password) throws Exception;
 	
-	String signinAccount(String name,String password)throws Exception;
+	String signinAccount(String name,String password,String verifyCode)throws Exception;
 	
 	String findPassword(String _signinName)throws Exception;
 	
-	String syncAccount(String _xmlData)throws Exception;
+	String syncAccount(String _xmlData,String verifyCode)throws Exception;
 	
 	String syncAccount_check(String _signinName,String _pass)throws Exception;
 	
 	String checkAccountLog(String _signinName,String _pass)throws Exception;
 	
 	String payTime(String _signinName,int _payType,int _fee)throws Exception;
+	
 	
 	// administrator function
 	//
