@@ -863,7 +863,7 @@ public class mainFrame extends JFrame implements ActionListener{
 				m_orgThread.Pause();
 				
 			}else{
-				m_prefix = _bber.GetSigninName() + "_tmpCreate";
+				m_prefix = _bber.GetSigninName() + "_tmpCreate/";
 				
 				File t_tmpFolder = new File(m_prefix);
 				if(!t_tmpFolder.exists()){
@@ -933,34 +933,36 @@ public class mainFrame extends JFrame implements ActionListener{
 				}else{
 					
 					m_mainMgr = new fetchMgr();
-					Logger t_logger = new Logger(m_prefix);
+					Logger t_logger = new Logger();
 					try{
 						m_mainMgr.InitConnect(m_prefix,t_logger);
 						
 						m_mainMgr.ResetAllAccountSession(true);	
-						
+												
 						// copy the account information 
 						//
 						String t_copyPrefix = m_currbber.GetSigninName() + "/";
 						
-						File t_accountFolder = new File(m_prefix);
-						if(t_accountFolder.exists()){
+						File t_tmpFolder = new File(m_prefix);
+						if(t_tmpFolder.exists()){
 							File t_copyDir = new File(t_copyPrefix);
 							if(t_copyDir.exists()){
 								t_copyDir.delete();
 							}
-							t_accountFolder.renameTo(t_copyDir);
+							
+							t_tmpFolder.renameTo(t_copyDir);
 							
 						}else{
-							t_accountFolder = new File(t_copyPrefix);
+							
+							File t_accountFolder = new File(t_copyPrefix);
 							if(!t_accountFolder.exists()){
 								t_accountFolder.mkdir();
 							}
 							
 							createDialog.CopyFile(m_prefix + fetchMgr.fsm_configFilename,
 									t_copyPrefix + fetchMgr.fsm_configFilename);
-						}
-						
+						}					
+												
 						createDialog.WriteSignatureAndGooglePos(t_copyPrefix, m_currbber.GetSignature());
 												
 					}catch(Exception e){

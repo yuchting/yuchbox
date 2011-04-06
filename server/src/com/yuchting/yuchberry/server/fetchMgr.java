@@ -150,10 +150,11 @@ public class fetchMgr{
 		
 		DestroyAllAcount();
 		
+		FileInputStream t_xmlFile = new FileInputStream(m_prefix + fsm_configFilename);
 		try{
 			
 			SAXReader t_xmlReader = new SAXReader();
-			Document t_doc = t_xmlReader.read(new FileInputStream(m_prefix + fsm_configFilename)); 
+			Document t_doc = t_xmlReader.read(t_xmlFile); 
 			Element t_root = t_doc.getRootElement();
 			
 			m_userPassword					= fetchAccount.ReadStringAttr(t_root,"userPassword");
@@ -179,8 +180,12 @@ public class fetchMgr{
 	        }
 	    	
 		}catch(Exception ex){
+			
 			m_logger.PrinterException(ex);
 			throw ex;
+			
+		}finally{
+			t_xmlFile.close();
 		}
 			
 	}

@@ -1099,8 +1099,8 @@ public class fetchEmail extends fetchAccount{
 			
 			}else{
 				
-				m_mainMgr.m_logger.LogOut(GetAccountName() + " mail<" + t_confirmMail.GetMailIndex() + "> has not reach re-pushTime. currentTime<" 
-														+ t_currTime + "> sendConfirmTime<" + t_confirmMail.m_sendConfirmTime + ">");
+				//m_mainMgr.m_logger.LogOut(GetAccountName() + " mail<" + t_confirmMail.GetMailIndex() + "> has not reach re-pushTime. currentTime<" 
+				//										+ t_currTime + "> sendConfirmTime<" + t_confirmMail.m_sendConfirmTime + ">");
 			}
 		}
 		
@@ -1124,7 +1124,7 @@ public class fetchEmail extends fetchAccount{
 			t_mail.m_sendConfirmNum++;
 			
 			m_mainMgr.m_logger.LogOut(GetAccountName() + " send mail<" + t_mail.GetMailIndex() + " : "
-					 				+ "simpleHash<"+ t_mail.GetSimpleHashCode() +t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime() + ">,wait confirm...");
+					 				+ "simpleHash<"+ t_mail.GetSimpleHashCode() + " " + t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime() + ">,wait confirm...");
 		}
 	}
 	

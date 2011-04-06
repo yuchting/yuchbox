@@ -770,6 +770,10 @@ public class connectDeamon extends Thread implements SendListener,
 
 			 m_mainApp.SetErrorString("CM: " +_e.getMessage() + t_append + " " + _e.getClass().getName());
 			 
+			 if(_e.getMessage() == null){
+				 throw _e;
+			 }
+			 
 			 if(_e.getMessage().indexOf("Peer") != -1){
 				 m_connectCounter = 1000;
 				 
@@ -782,6 +786,7 @@ public class connectDeamon extends Thread implements SendListener,
 				 socket = GetConnection(_ssl);
 				 
 			 }else{
+				 
 				 throw new Exception(_e.getMessage() + " " + t_append + " " + _e.getClass().getName());
 			 }
 		 }
