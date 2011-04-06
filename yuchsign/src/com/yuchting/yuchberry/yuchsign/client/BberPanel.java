@@ -613,7 +613,7 @@ public class BberPanel extends TabPanel{
 				
 				@Override
 				public void onSuccess(String result) {
-					if(result.startsWith("data:image/png;base64")){
+					if(result.startsWith("/verifycode")){
 							new YuchVerifyCodeDlg(result, new InputVerfiyCode() {
 							
 							@Override

@@ -257,7 +257,7 @@ public final class LogonDialog extends DialogBox{
 				}
 
 				public void onSuccess(String result) {
-					if(result.startsWith("data:image/png;base64")){
+					if(result.startsWith("/verifycode")){
 						
 						Yuchsign.HideWaiting();
 						

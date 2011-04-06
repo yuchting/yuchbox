@@ -98,8 +98,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	
 	public String signinAccount(String _name,String _password,String _verifyCode)throws Exception{
 		
-		if(!m_currVerifyCode.compareCode(_verifyCode)){
-			return m_currVerifyCode.generate(getThreadLocalRequest());
+		if(!GenVerifyCode.compareCode(_name,_verifyCode)){
+			return GenVerifyCode.generate(_name,getThreadLocalRequest());
 		}
 		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
@@ -135,16 +135,16 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	
 	public String syncAccount(String _xmlData,String verifyCode)throws Exception{
 		
-		if(!m_currVerifyCode.compareCode(verifyCode)){
-			return m_currVerifyCode.generate(getThreadLocalRequest());
+		yuchbber t_syncbber = new yuchbber();
+		t_syncbber.InputXMLData(_xmlData);
+				
+		if(!m_currVerifyCode.compareCode(t_syncbber.GetSigninName(),verifyCode)){
+			return m_currVerifyCode.generate(t_syncbber.GetSigninName(),getThreadLocalRequest());
 		}
 		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
 				
-		try{
-			
-			yuchbber t_syncbber = new yuchbber();
-			t_syncbber.InputXMLData(_xmlData);
+		try{			
 			
 			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(), t_syncbber.GetSigninName());
 			try{

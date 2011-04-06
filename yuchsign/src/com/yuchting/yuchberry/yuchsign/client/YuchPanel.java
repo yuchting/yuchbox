@@ -487,25 +487,31 @@ public class YuchPanel extends TabPanel{
 		
 		m_hostList.getList().clear();
 		
-		Document t_doc = XMLParser.parse(_listXMLData);
-		Element t_elem = t_doc.getDocumentElement();
-		
-		t_elem = (Element)t_elem.getFirstChild();
-
-		while(t_elem != null){
+		int t_errorIndex = _listXMLData.indexOf("<Error>");
+		if(t_errorIndex == -1){
 			
-			yuchHost t_host = new yuchHost();
-			try{
-				t_host.InputXMLData(t_elem);
-				t_elem = (Element)t_elem.getNextSibling();
+			Document t_doc = XMLParser.parse(_listXMLData);
+			Element t_elem = t_doc.getDocumentElement();
+			
+			t_elem = (Element)t_elem.getFirstChild();
+
+			while(t_elem != null){
 				
-				m_hostList.getList().add(t_host);
-			}catch(Exception e){
-				
-			}			
+				yuchHost t_host = new yuchHost();
+				try{
+					t_host.InputXMLData(t_elem);
+					t_elem = (Element)t_elem.getNextSibling();
+					
+					m_hostList.getList().add(t_host);
+				}catch(Exception e){
+					
+				}			
+			}
+			
+			
 		}
 		
-		m_hostList.refresh();
+		m_hostList.refresh();	
 	}
 	
 	public void CallOnSuccess_add(String _hostXMLData){

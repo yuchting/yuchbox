@@ -35,6 +35,16 @@
     <servlet-name>payOKServlet</servlet-name>
     <url-pattern>/payok/*</url-pattern>
   </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>VerifyCodeServlet</servlet-name>
+    <servlet-class>com.yuchting.yuchberry.yuchsign.server.VerifyCodeServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>VerifyCodeServlet</servlet-name>
+    <url-pattern>/verifycode/*</url-pattern>
+  </servlet-mapping>
     
   <!-- Default page to serve -->
   <welcome-file-list>
