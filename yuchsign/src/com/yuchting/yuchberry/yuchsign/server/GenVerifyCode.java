@@ -172,7 +172,9 @@ public class GenVerifyCode implements Serializable{
 		Image t_oldImage = ImagesServiceFactory.makeImage(_imageData);
 		
 		Random t_rand = new Random();
-		Transform t_resize = ImagesServiceFactory.makeResize(t_rand.nextInt(10) + fsm_imageSize - 5, t_rand.nextInt(10) + fsm_imageSize - 5);
+		final int ft_size = 16;
+		Transform t_resize = ImagesServiceFactory.makeResize(t_rand.nextInt(ft_size) + fsm_imageSize - ft_size/2,
+															t_rand.nextInt(ft_size) + fsm_imageSize - ft_size/2);
 		
 		return t_imagesService.applyTransform(t_resize, t_oldImage,OutputEncoding.PNG);	
 	}

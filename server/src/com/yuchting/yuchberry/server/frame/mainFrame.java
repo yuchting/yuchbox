@@ -838,7 +838,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		long		m_requestTime	= (new Date()).getTime();
 		int			m_serverPort	= 0;
 		
-		String		m_prefix		= fsm_yuchsign_tmpDir;
+		String		m_prefix		= null;
 		
 		fetchMgr	m_mainMgr		= null;
 		
@@ -863,6 +863,13 @@ public class mainFrame extends JFrame implements ActionListener{
 				m_orgThread.Pause();
 				
 			}else{
+				m_prefix = _bber.GetSigninName() + "_tmpCreate";
+				
+				File t_tmpFolder = new File(m_prefix);
+				if(!t_tmpFolder.exists()){
+					t_tmpFolder.mkdir();
+				}
+				
 				m_serverPort = GetAvailableServerPort();
 			}
 						
@@ -935,26 +942,27 @@ public class mainFrame extends JFrame implements ActionListener{
 						// copy the account information 
 						//
 						String t_copyPrefix = m_currbber.GetSigninName() + "/";
-						File t_accountFolder = new File(t_copyPrefix);
-						if(!t_accountFolder.exists()){
-							t_accountFolder.mkdir();
-						}
 						
-						createDialog.CopyFile(m_prefix + fetchMgr.fsm_configFilename,
-								t_copyPrefix + fetchMgr.fsm_configFilename);
+						File t_accountFolder = new File(m_prefix);
+						if(t_accountFolder.exists()){
+							File t_copyDir = new File(t_copyPrefix);
+							if(t_copyDir.exists()){
+								t_copyDir.delete();
+							}
+							t_accountFolder.renameTo(t_copyDir);
+							
+						}else{
+							t_accountFolder = new File(t_copyPrefix);
+							if(!t_accountFolder.exists()){
+								t_accountFolder.mkdir();
+							}
+							
+							createDialog.CopyFile(m_prefix + fetchMgr.fsm_configFilename,
+									t_copyPrefix + fetchMgr.fsm_configFilename);
+						}
 						
 						createDialog.WriteSignatureAndGooglePos(t_copyPrefix, m_currbber.GetSignature());
-						
-						// copy the account signature
-						//
-						FileOutputStream t_signature_file = new FileOutputStream(t_copyPrefix + fetchEmail.fsm_signatureFilename);
-						try{
-							t_signature_file.write(m_currbber.GetSignature().getBytes("UTF-8"));
-						}finally{
-							t_signature_file.flush();
-							t_signature_file.close();
-						}
-						
+												
 					}catch(Exception e){
 						
 						m_mainMgr.EndListening();
@@ -1015,19 +1023,13 @@ public class mainFrame extends JFrame implements ActionListener{
 	String 		m_yuchsignFramePass = null;
 	int 	  	m_yuchsignMaxBber = 0;
 	
-	private static final String	fsm_yuchsign_tmpDir = "tmpCreate_yuchsign/";
 	private void LoadYuchsign(){
 		
 		try{
 			BufferedReader in = new BufferedReader(
 									new InputStreamReader(
 										new FileInputStream("yuchsign"),"UTF-8"));
-			
-			File t_file = new File(fsm_yuchsign_tmpDir);
-			if(!t_file.exists()){
-				t_file.mkdir();
-			}
-			
+						
 			try{
 				m_yuchsignFramePass 	= in.readLine();
 				String	t_port 			= in.readLine();
@@ -1039,32 +1041,11 @@ public class mainFrame extends JFrame implements ActionListener{
 				
 				m_httpd = new NanoHTTPD(Integer.valueOf(t_port).intValue()){
 					public Response serve( String uri, String method, Properties header, Properties parms, Properties files ){
-						
-						Enumeration e = header.propertyNames();
-						while ( e.hasMoreElements())
-						{
-							String value = (String)e.nextElement();
-							m_logger.LogOut( "  HDR: '" + value + "' = '" +
-												header.getProperty( value ) + "'" );
-						}
-						e = parms.propertyNames();
-						while ( e.hasMoreElements())
-						{
-							String value = (String)e.nextElement();
-							m_logger.LogOut( "  PRM: '" + value + "' = '" +
-												parms.getProperty( value ) + "'" );
-						}
-						e = files.propertyNames();
-						while ( e.hasMoreElements())
-						{
-							String value = (String)e.nextElement();
-							m_logger.LogOut( "  UPLOADED: '" + value + "' = '" +
-												files.getProperty( value ) + "'" );
-						}
-						
+												
 						String pass = header.getProperty("pass");
 						
 						if(pass == null || !pass.equals(m_yuchsignFramePass)){
+							
 							return new NanoHTTPD.Response( HTTP_FORBIDDEN, MIME_PLAINTEXT, "");
 						}
 						

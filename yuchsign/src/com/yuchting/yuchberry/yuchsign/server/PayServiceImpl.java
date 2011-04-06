@@ -28,10 +28,8 @@ public class PayServiceImpl extends HttpServlet {
 	
 	public void doGet(HttpServletRequest request,HttpServletResponse response)throws ServletException,IOException{
 		
-		System.err.println("someone call pay url.");
-		
 		final String t_out_trade_no		= (String)request.getParameter("out_trade_no");
-		String t_alipay_trade_no	= (String)request.getParameter("trade_no");
+		String t_alipay_trade_no		= (String)request.getParameter("trade_no");
 		final String t_total_fee		= (String)request.getParameter("total_fee");
 		
 		String t_notify_id	= (String)request.getParameter("notify_id");

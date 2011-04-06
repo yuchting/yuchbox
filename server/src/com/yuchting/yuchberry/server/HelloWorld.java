@@ -284,6 +284,22 @@ public class HelloWorld {
 		//System.out.print(t_test.replace("$mail_content$", "I'm here"));
 		///System.out.print("aaaa " + (12 % 100));
 				
+		File t_file = new File("orig_dir");
+		if(!t_file.exists()){
+			t_file.mkdir();
+		}
+		
+		File t_subfile = new File("orig_dir/subdir");
+		if(!t_subfile.exists()){
+			t_subfile.mkdir();
+		}
+		
+		File t_refile = new File("rename_dir");
+		if(t_refile.exists()){
+			t_refile.delete();
+		}
+		
+		t_file.renameTo(t_refile);
 	}
 	static private void ProcessSponsorList(ByteArrayInputStream _in){
 		try{

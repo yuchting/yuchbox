@@ -734,7 +734,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		}
 		
 		try{
-			CopyFile( fetchEmail.fsm_signatureFilename,_prefix +  fetchEmail.fsm_signatureFilename);
+			CopyFile( fetchEmail.fsm_googleMapInfoFilename,_prefix +  fetchEmail.fsm_googleMapInfoFilename);
 		}catch(Exception e){}
 	}
 	
