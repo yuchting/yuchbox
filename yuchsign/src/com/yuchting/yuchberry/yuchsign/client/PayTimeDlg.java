@@ -57,6 +57,7 @@ public class PayTimeDlg extends DialogBox{
 			
 			@Override
 			public void onClick(ClickEvent event) {
+				
 				long t_payTime 				= (7 * 24 * 3600000);
 				if(t_monthPay.getValue()){
 					t_payTime *= 4;
@@ -69,9 +70,8 @@ public class PayTimeDlg extends DialogBox{
 				long t_currTime 			= (new Date()).getTime();
 				long t_formerExpiredTime	= _bber.GetCreateTime() + _bber.GetUsingHours() * 3600000;
 				
-				Date t_expireDate = new Date(Math.max(t_currTime,t_formerExpiredTime) + t_payTime);;
-				
-				t_expiredTime.setText("充值后到期时间："+ DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(t_expireDate));
+				Date t_expireDate = new Date(Math.max(t_currTime,t_formerExpiredTime) + t_payTime);
+				t_expiredTime.setText("充值后到期时间："+ DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(t_expireDate));				
 			}
 		};
 		

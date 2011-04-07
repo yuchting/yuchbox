@@ -9,7 +9,6 @@ import java.util.Random;
 import javax.servlet.http.HttpServletRequest;
 
 import com.google.appengine.api.images.Composite;
-import com.google.appengine.api.images.CompositeTransform;
 import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
@@ -32,13 +31,15 @@ public class GenVerifyCode implements Serializable{
 	static public boolean compareCode(String _accountName,String _code){
 		
 		try{
-			GenVerifyCode t_code = (GenVerifyCode)YuchsignCache.queryCache().get(fsm_numberCacheKeyPrefix + _accountName);
+			String t_cachePrefix = fsm_numberCacheKeyPrefix + _accountName;
+			GenVerifyCode t_code = (GenVerifyCode)YuchsignCache.queryCache().get(t_cachePrefix);
 			
 			if(t_code == null || _code == null || _code.isEmpty()){
 				return false;
 			}
-			
+									
 			return t_code.m_currVerifyCode.equals(_code);
+			
 		}catch(Exception ex){
 			return false;
 		}

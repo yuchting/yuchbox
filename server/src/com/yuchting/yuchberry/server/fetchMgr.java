@@ -225,17 +225,17 @@ public class fetchMgr{
 			}
 			
 			if(m_svr != null){
-				try{
-					m_svr.close();
-				}finally{
-					m_svr = null;
-				}
+				m_svr.close();				
 			}
+			
 		}catch(Exception e){
 			if(m_logger != null){
 				m_logger.PrinterException(e);
 			}
-		}		
+		}
+		
+		m_svr = null;
+		SetClientConnected(null);
 	}
 	
 	public void DestroyAllAcount()throws Exception{

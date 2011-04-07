@@ -761,7 +761,7 @@ public class connectDeamon extends Thread implements SendListener,
 			 socket = (SocketConnection)Connector.open(URL,Connector.READ_WRITE,false);
 			 
 			 socket.setSocketOption(SocketConnection.DELAY, 0);
-			 socket.setSocketOption(SocketConnection.KEEPALIVE, 2);
+			 socket.setSocketOption(SocketConnection.KEEPALIVE,m_mainApp.GetPulseIntervalMinutes());
 			 socket.setSocketOption(SocketConnection.LINGER, 0);
 			 socket.setSocketOption(SocketConnection.RCVBUF, 512);
 			 socket.setSocketOption(SocketConnection.SNDBUF, 128);

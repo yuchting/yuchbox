@@ -70,7 +70,8 @@ public class PayLevDlg extends DialogBox{
 								
 								t_remainTime = _bber.GetCreateTime() + t_remainTime;
 								
-								t_expiredTime.setText("升级后到期时间："+ DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(new Date(t_remainTime)));
+								t_expiredTime.setText("升级后到期时间："+ DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(new Date(t_remainTime)));	
+						
 								break;
 							}						
 						}

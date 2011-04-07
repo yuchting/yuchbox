@@ -377,10 +377,11 @@ public class BberPanel extends TabPanel{
 			
 			@Override
 			public void onClick(ClickEvent event) {
-				if(m_currentBber.GetLevel() >= yuchbber.fsm_levelMoney.length){
+				if((m_currentBber.GetLevel() + 1) >= yuchbber.fsm_levelMoney.length){
 					Yuchsign.PopupPrompt("你已经是最高等级的用户了，无法再升级了。", t_attrPane);
 					return;
 				}
+				
 				PayLevDlg t_dlg = new PayLevDlg(m_mainServer, m_currentBber);
 				t_dlg.show();	
 				

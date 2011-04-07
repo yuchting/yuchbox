@@ -122,6 +122,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				// create account
 				//
 				t_newbber = new yuchbber(_name,_password);
+				t_newbber.SetSigninTime((new Date()).getTime());
 				
 				t_pm.makePersistent(t_newbber);
 			}
@@ -181,16 +182,23 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					t_bber.SetLatestSyncTime(t_latesSyncTime);
 					t_bber.SetPusnInterval(t_interval);
 					
+					long t_currTime = (new Date()).getTime(); 
 					//set the sync bber
 					//
 					if(m_createTime == 0){
 						// first sync
 						//
-						m_createTime = (new Date()).getTime();
+						m_createTime = t_currTime; 
 						t_syncbber.SetCreateTime(m_createTime);
 					}else{
 						t_syncbber.SetCreateTime(m_createTime);
-					}
+						
+						System.err.println("m_createTime + t_hours * 3600000 == "+(m_createTime + t_hours * 3600000) + " current Time:"+t_currTime);
+						
+						if(m_createTime + t_hours * 3600000 < t_currTime){
+							return "<Error>你的推送时间已经到期，请充值时间</Error>";
+						}
+					}					
 					
 					t_syncbber.SetUsingHours(t_hours);
 					
@@ -349,6 +357,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		_result = _bber.OuputXMLData();
 		
 		m_currSyncHost = null;
+		m_checkLogTime = 0;
 		
 		return _result;		
 	}
@@ -557,7 +566,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	public static String RequestYuchHostURL(yuchHost _host,Properties header, Properties parms)throws Exception{
 		
 		StringBuffer t_final = new StringBuffer();
-		t_final.append("http://").append(_host.GetHostName()).append(":").append(_host.GetHTTPPort());
+		t_final.append("http://").append(_host.GetConnectHost()).append(":").append(_host.GetHTTPPort());
 					
 		if(parms != null){
 			t_final.append("/?");

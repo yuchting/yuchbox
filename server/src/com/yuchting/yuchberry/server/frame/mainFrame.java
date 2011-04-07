@@ -22,7 +22,6 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
@@ -47,7 +46,6 @@ import javax.swing.event.MouseInputListener;
 
 import com.yuchting.yuchberry.server.Logger;
 import com.yuchting.yuchberry.server.fakeMDSSvr;
-import com.yuchting.yuchberry.server.fetchEmail;
 import com.yuchting.yuchberry.server.fetchMgr;
 
 class checkStateThread extends Thread{
@@ -1002,8 +1000,6 @@ public class mainFrame extends JFrame implements ActionListener{
 					// to tell the web server port
 					//
 					m_result = "<Port>" + m_serverPort +"</Port>";
-					
-				}else{
 					
 				}
 				

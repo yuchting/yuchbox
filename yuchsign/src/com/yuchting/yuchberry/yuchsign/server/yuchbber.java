@@ -29,6 +29,9 @@ public final class yuchbber {
 	private String m_signinName = "";
 	
 	@Persistent
+	private long m_signinTime = 0;
+	
+	@Persistent
 	private String m_connectHost = "";
 		
 	@Persistent
@@ -59,7 +62,7 @@ public final class yuchbber {
 	private int m_bberLev = 0;
 	
 	@Persistent
-	private long m_latestSyncTime = 0;
+	private long m_latestSyncTime = 0;	
 	
 	@Persistent(mappedBy = "m_yuchbber")
 	@javax.jdo.annotations.Element(dependent = "true")
@@ -71,6 +74,9 @@ public final class yuchbber {
 	}
 	
 	public yuchbber(){}
+	
+	public long GetSigninTime(){return m_signinTime;}
+	public void SetSigninTime(long _time){m_signinTime = _time;}
 	
 	public int GetLevel(){return m_bberLev;}
 	public void SetLevel(int _level){ m_bberLev = _level;}

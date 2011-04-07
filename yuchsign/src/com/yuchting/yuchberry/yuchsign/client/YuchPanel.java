@@ -445,6 +445,7 @@ public class YuchPanel extends TabPanel{
 		}
 	}
 	
+	
 	/**
 	* copy from GWT Showcase
 	* 

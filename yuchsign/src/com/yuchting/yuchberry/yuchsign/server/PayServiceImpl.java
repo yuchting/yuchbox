@@ -159,7 +159,11 @@ public class PayServiceImpl extends HttpServlet {
 						t_bber.SetCreateTime(t_createTime);
 						t_bber.SetUsingHours(t_payHours + t_remainHours);
 						t_bber.SetLevel(t_nextLev);					
-											
+						
+						// reset the latest sync time to let the bber sync
+						//
+						t_bber.SetLatestSyncTime(0);
+						
 						if(!t_bber.GetConnectHost().isEmpty()){
 							// haven't sync successfully 
 							//
@@ -257,9 +261,7 @@ public class PayServiceImpl extends HttpServlet {
 			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));		
 			
 			veryfy_url = in.readLine();
-			
-			System.out.println("Verify alipay notify_id=" + _notify_id + " result=" + veryfy_url);
-			
+						
 			if(veryfy_url.indexOf("true") != -1){
 				t_result = true;
 			}
