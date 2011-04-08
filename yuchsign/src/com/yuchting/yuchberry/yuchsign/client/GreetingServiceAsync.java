@@ -11,7 +11,9 @@ public interface GreetingServiceAsync {
 	
 	void signinAccount(String name,String password,String verifyCode,AsyncCallback<String> callback)throws Exception;
 	
-	void findPassword(String _signinName,AsyncCallback<String> callback)throws Exception;
+	void findPassword(String _signinName,String _verifyCode,AsyncCallback<String> callback)throws Exception;
+	
+	void changePassword(String _signinName,String _verifyCode,String _origPass,String _pass,AsyncCallback<String> callback)throws Exception;
 	
 	void syncAccount(String _xmlData,String verifyCode,AsyncCallback<String> callback)throws Exception;
 	
@@ -20,6 +22,8 @@ public interface GreetingServiceAsync {
 	void checkAccountLog(String _signinName,String _pass,AsyncCallback<String> callback)throws Exception;
 	
 	void payTime(String _signinName,int _payType,int _fee,AsyncCallback<String> callback)throws Exception;
+	
+	void getdownLev(String _signinName,AsyncCallback<String> callback)throws Exception;
 	
 	
 	// administrator function

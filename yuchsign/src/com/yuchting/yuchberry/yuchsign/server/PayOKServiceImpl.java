@@ -68,7 +68,7 @@ public class PayOKServiceImpl extends HttpServlet{
 			}	
 		}finally{
 
-			out.println("<br /> <br /> 有任何问题，请及时联系 yuchberry@gmail.com </html>");
+			out.println("<br /> <br /> 有任何问题，请及时联系 <a href=\"mailto:yuchberry@gmail.com\">yuchberry@gmail.com</a>  </html>");
 			out.flush();
 		}
 		

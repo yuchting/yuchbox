@@ -118,13 +118,31 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				m_isAdministrator = t_bber.GetSigninName().equalsIgnoreCase(FieldVerifier.fsm_admin);
 				
 			}catch(javax.jdo.JDOObjectNotFoundException e){
-								
-				// create account
-				//
-				t_newbber = new yuchbber(_name,_password);
-				t_newbber.SetSigninTime((new Date()).getTime());
 				
-				t_pm.makePersistent(t_newbber);
+				try{
+				
+					long t_activateRand = -Math.abs((new Random()).nextLong());
+					
+					StringBuffer t_body = new StringBuffer();
+					t_body.append("欢迎注册YuchSign！\n\n您在YuchBerry的网站上的YuchSign邮件中转账户已经注册完成，需要您通过下面的链接完成激活：\n\nhttp://yuchberrysign.yuchberry.info/act/?acc=")
+							.append(URLEncoder.encode(_name,"UTF-8")).append("&rand=").append(URLEncoder.encode(Long.toString(t_activateRand),"UTF-8"))
+							.append("\n\n如果无法点击这个链接，请复制到网络浏览器的地址栏上进行访问\n\n致\n  敬!\nhttp://code.google.com/p/yuchberry/");
+					
+					// send the activate email
+					//
+					sendEmail(_name,"YuchSign 激活邮件",t_body.toString());
+					
+					// create account
+					//
+					t_newbber = new yuchbber(_name,_password);
+					
+					t_newbber.SetSigninTime(t_activateRand);					
+					
+					t_pm.makePersistent(t_newbber);	
+				}catch(Exception ex){
+					return "<Error>发送激活账户邮件出错：" + ex.getMessage() + "</Error>";
+				}
+				
 			}
 			
 			return t_newbber.OuputXMLData();
@@ -149,7 +167,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			
 			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(), t_syncbber.GetSigninName());
 			try{
-				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);		
+				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);
+				
+				if(t_bber.GetSigninTime() <= 0){
+					return "<Error>账户尚未激活，请到注册账户的对应邮箱里面查询YuchBerry注册邮件，激活此账户。</Error>";
+				}
 
 				m_createTime			= t_bber.GetCreateTime();
 				long t_hours			= t_bber.GetUsingHours();
@@ -193,7 +215,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					}else{
 						t_syncbber.SetCreateTime(m_createTime);
 						
-						System.err.println("m_createTime + t_hours * 3600000 == "+(m_createTime + t_hours * 3600000) + " current Time:"+t_currTime);
+						//System.err.println("m_createTime + t_hours * 3600000 == "+(m_createTime + t_hours * 3600000) + " current Time:"+t_currTime);
 						
 						if(m_createTime + t_hours * 3600000 < t_currTime){
 							return "<Error>你的推送时间已经到期，请充值时间</Error>";
@@ -425,10 +447,14 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}	
 	}
 	
-	public String findPassword(String _signinName)throws Exception{
+	public String findPassword(String _signinName,String _verifyCode)throws Exception{
 		
 		if(m_foundPassword){
-			return "你已经提交过找回密码的信息";
+			throw new Exception("你已经提交过找回密码的信息");
+		}
+		
+		if(!GenVerifyCode.compareCode(_signinName,_verifyCode)){
+			return GenVerifyCode.generate(_signinName,getThreadLocalRequest());
 		}
 		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
@@ -437,37 +463,79 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						
 			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(),_signinName);
 			try{
-				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);				
+				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);
+				if(t_bber == null){
+					throw new Exception("内部错误");
+				}
 				
-				Properties props = new Properties();
-		        Session session = Session.getDefaultInstance(props, null);
-
 		        StringBuffer t_body = new StringBuffer();
-		        t_body.append("您好！\n\n您收到这封邮件，是因为您在登录 Yuchberry 账户时忘记了密码，您使用这个邮箱地址注册时的密码为：\n\n    ")
-		        	.append(t_bber.GetPassword()).append("\n\n   请您务必保管好，以防下次遗失。\n\n致\n  敬！\nhttp://code.google.com/p/yuchberry/");
+		        t_body.append("您好！\n\n您收到这封邮件，是因为您在登录 YuchSign 账户时忘记了密码，您使用这个邮箱地址注册时的密码为(去除两边单引号)：\n\n    '")
+		        	.append(t_bber.GetPassword()).append("'\n\n   请您务必保管好，以防下次遗失。\n\n致\n  敬！\nhttp://code.google.com/p/yuchberry/");
 		        		        	
-		        MimeMessage msg = new MimeMessage(session);
-	            
-	            msg.setFrom(new InternetAddress("yuchting@yuchberry.info"));
-	            msg.addRecipient(Message.RecipientType.TO,new InternetAddress(_signinName,""));
-	            msg.setSubject("YuchBerry 找回密码","UTF-8");
-	            msg.setText(t_body.toString(),"UTF-8");
-	            
-	            Transport.send(msg);
+		        sendEmail(_signinName,"YuchSign 找回密码",t_body.toString());
 	            
 	            m_foundPassword = true;		    
 				
-		        return "已经将邮件发送到<" + t_bber.GetSigninName() +"> 请及时查收\n如果没有请在垃圾邮件箱内查找一下。";
+		        return "已经将邮件发送到 " + t_bber.GetSigninName() +" 请及时查收\n如果没有，请在垃圾邮件箱内查找一下。";
 		        
 			}catch(javax.jdo.JDOObjectNotFoundException e){
-				return "找不到用户!";
-			}
-			
+				throw new Exception("找不到用户!");
+			}			
 			
 		}finally{
 			
 			t_pm.close();
 		}	
+	}
+	
+	public String changePassword(String _signinName,String _verifyCode,String _origPass,String _pass)throws Exception{
+		
+//		if(!GenVerifyCode.compareCode(_signinName,_verifyCode)){
+//			return GenVerifyCode.generate(_signinName,getThreadLocalRequest());
+//		}
+		
+		PersistenceManager t_pm = PMF.get().getPersistenceManager();
+		
+		try{
+						
+			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(),_signinName);
+			try{
+				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);				
+				if(t_bber == null){
+					throw new Exception( "内部错误。");
+				}
+				
+				if(!_origPass.equals(t_bber.GetPassword())){
+					throw new Exception("原始密码错误，请仔细检查一下。");
+				}
+				
+				t_bber.SetPassword(_pass);				
+				
+		        return "密码修改成功！";
+		        
+			}catch(javax.jdo.JDOObjectNotFoundException e){
+				throw new Exception("找不到用户!");
+			}			
+			
+		}finally{
+			
+			t_pm.close();
+		}	
+	}
+	
+	private void sendEmail(String _addr,String _subject,String _text)throws Exception{
+		
+		Properties props = new Properties();
+        Session session = Session.getDefaultInstance(props, null);
+        		        	
+        MimeMessage msg = new MimeMessage(session);
+        
+        msg.setFrom(new InternetAddress("yuchting@yuchberry.info"));
+        msg.addRecipient(Message.RecipientType.TO,new InternetAddress(_addr,""));
+        msg.setSubject(_subject,"UTF-8");
+        msg.setText(_text,"UTF-8");
+        
+        Transport.send(msg);        
 	}
 	
 	
@@ -557,6 +625,41 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				return "找不到用户!";
 			}
 						
+		}finally{
+			
+			t_pm.close();
+		}	
+	}
+	
+	public String getdownLev(String _signinName)throws Exception{
+		
+		PersistenceManager t_pm = PMF.get().getPersistenceManager();
+		
+		try{
+						
+			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(),_signinName);
+			try{
+				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);
+				if(t_bber == null){
+					throw new Exception("内部错误");
+				}
+				
+				if(t_bber.GetLevel() <= 0){
+					throw new Exception("无法再降级了，已经是最低等级!");
+				}
+				
+				int t_nextLev = t_bber.GetLevel() - 1;
+				
+				PayServiceImpl.RecalculateTime(t_pm,t_bber,0,t_nextLev);
+				
+				t_bber.GetEmailList().removeAllElements();
+				
+		        return t_bber.OuputXMLData();
+		        
+			}catch(javax.jdo.JDOObjectNotFoundException e){
+				throw new Exception("找不到用户!");
+			}		
+			
 		}finally{
 			
 			t_pm.close();

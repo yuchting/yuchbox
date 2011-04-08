@@ -134,78 +134,15 @@ public class PayServiceImpl extends HttpServlet {
 							}						
 						}
 						
-						// re-calculate the time
-						//
-						long t_createTime = 0;
-						long t_remainHours = 0;
+						RecalculateTime(t_pm,t_bber,t_payHours,t_nextLev);
 						
-						if(t_bber.GetCreateTime() == 0){
-							t_remainHours = t_bber.GetUsingHours();
-						}else{
-							t_createTime = (new Date()).getTime();
-							
-							long t_expireTime = t_bber.GetCreateTime() + t_bber.GetUsingHours() * 3600000;
-							if(t_createTime < t_expireTime){
-								t_remainHours = (t_expireTime - t_createTime) / 3600000;
-							}
-						}
-						
-						if(t_remainHours != 0){
-							// change the remain hours to current hours
-							//
-							t_remainHours = yuchbber.fsm_weekMoney[t_bber.GetLevel()] * t_remainHours / yuchbber.fsm_weekMoney[t_nextLev]; 
-						}
-						
-						t_bber.SetCreateTime(t_createTime);
-						t_bber.SetUsingHours(t_payHours + t_remainHours);
-						t_bber.SetLevel(t_nextLev);					
-						
-						// reset the latest sync time to let the bber sync
-						//
-						t_bber.SetLatestSyncTime(0);
-						
-						if(!t_bber.GetConnectHost().isEmpty()){
-							// haven't sync successfully 
-							//
-							
-							// sync to yuchberry server
-							// search the proper host to synchronize
-							//
-							List<yuchHost> t_hostList = (List<yuchHost>)YuchsignCache.getCacheYuchhostList();
-							if(t_hostList == null){
-								t_hostList = (List<yuchHost>)t_pm.newQuery("select from " + yuchHost.class.getName()).execute();
-								YuchsignCache.makeCacheYuchhostList(t_hostList);
-							}
-							
-							if(t_hostList != null && !t_hostList.isEmpty()){
-								
-								for(yuchHost host : t_hostList){
-									if(host.GetHostName().equals(t_bber.GetConnectHost())){
-										try{
-
-											Properties t_param = new Properties();
-											t_param.put("bber",t_bber.GetSigninName());
-											t_param.put("create",Long.toString(t_bber.GetCreateTime()));
-											t_param.put("time",Long.toString(t_bber.GetUsingHours()));
-											
-											GreetingServiceImpl.RequestYuchHostURL(host, null, t_param);
-																						
-											System.err.println("Pay OK ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "'");
-										}catch(Exception e){
-											System.err.println(" request HostURL failed ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ex:" + e.getMessage());
-										}
-
-										break;
-									}
-								}	
-							}
-												
-						}
-						
+						System.err.println("Pay OK ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "'");
 						
 					}catch(javax.jdo.JDOObjectNotFoundException e){
 						System.err.println(" JDOObjectNotFoundException ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ");
-					}				
+					}catch(Exception ex){
+						System.err.println("Exception:" + ex.getMessage() + " ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ");
+					}
 
 				}catch(javax.jdo.JDOObjectNotFoundException e){
 					System.err.println(" JDOObjectNotFoundException out_trade_id,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "' ");
@@ -219,6 +156,79 @@ public class PayServiceImpl extends HttpServlet {
 			out.flush();
 		}
 		
+	}
+	
+	static public void RecalculateTime(PersistenceManager _pm,yuchbber _bber ,long _payHours,int _nextLev)throws Exception{
+		
+		// re-calculate the time
+		//
+		long t_createTime = 0;
+		long t_remainHours = 0;
+		
+		if(_bber.GetCreateTime() == 0){
+			t_remainHours = _bber.GetUsingHours();
+		}else{
+			t_createTime = (new Date()).getTime();
+			
+			long t_expireTime = _bber.GetCreateTime() + _bber.GetUsingHours() * 3600000;
+			if(t_createTime < t_expireTime){
+				t_remainHours = (t_expireTime - t_createTime) / 3600000;
+			}
+		}
+		
+		if(t_remainHours != 0){
+			// change the remain hours to current hours
+			//
+			t_remainHours = yuchbber.fsm_weekMoney[_bber.GetLevel()] * t_remainHours / yuchbber.fsm_weekMoney[_nextLev]; 
+		}
+		
+		_bber.SetCreateTime(t_createTime);
+		_bber.SetUsingHours(_payHours + t_remainHours);
+		_bber.SetLevel(_nextLev);					
+		
+		// reset the latest sync time to let the bber sync
+		//
+		_bber.SetLatestSyncTime(0);
+		
+		if(!_bber.GetConnectHost().isEmpty()){
+			// haven't sync successfully
+			//
+			
+			// sync to yuchberry server
+			// search the proper host to synchronize
+			//
+			List<yuchHost> t_hostList = (List<yuchHost>)YuchsignCache.getCacheYuchhostList();
+			if(t_hostList == null){
+				
+				assert _pm != null;
+							
+				t_hostList = (List<yuchHost>)_pm.newQuery("select from " + yuchHost.class.getName()).execute();
+				YuchsignCache.makeCacheYuchhostList(t_hostList);
+				
+			}
+			
+			if(t_hostList != null && !t_hostList.isEmpty()){
+				
+				for(yuchHost host : t_hostList){
+					if(host.GetHostName().equalsIgnoreCase(_bber.GetConnectHost())){
+					
+						try{
+							Properties t_param = new Properties();
+							t_param.put("bber",_bber.GetSigninName());
+							t_param.put("create",Long.toString(_bber.GetCreateTime()));
+							t_param.put("time",Long.toString(_bber.GetUsingHours()));
+							
+							GreetingServiceImpl.RequestYuchHostURL(host, null, t_param);
+						}catch(Exception e){
+							System.err.println("RequestYuchHostURL error ："+ e.getMessage()); 
+						}				
+																		
+						break;
+					}
+				}	
+			}
+								
+		}
 	}
 	
 	private boolean VerifyURL(String _notify_id){

@@ -104,7 +104,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	static final String[]	fsm_pulseIntervalString = {"1","3","5","10","30"};
 	static final int[]	fsm_pulseInterval		= {1,3,5,10,30};
-	int						m_pulseIntervalIndex = 1;
+	int						m_pulseIntervalIndex = 2;
 	
 	boolean			m_fulldayPrompt		= true;
 	int					m_startPromptHour	= 8;
@@ -248,7 +248,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	}        	
         	
         }catch(Exception _e){
-        	DialogAlertAndExit("can't use the SDCard to store attachment!");
+        	DialogAlertAndExit("can't use the '"+ m_attachmentDir +"' to store attachment!");
         	return;
         }
         

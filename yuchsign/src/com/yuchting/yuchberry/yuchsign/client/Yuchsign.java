@@ -18,8 +18,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment.AutoHorizontalAlignmentConstant;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
 interface YesNoHandler{
@@ -188,7 +186,7 @@ public class Yuchsign implements EntryPoint {
 		
 	}
 	
-	public void ShowYuchbberPanel(String _bberXMLData)throws Exception{
+	public void ShowYuchbberPanel(String _bberXMLData,boolean _signinState)throws Exception{
 		
 		yuchbber t_bber = new yuchbber();
 		t_bber.InputXMLData(_bberXMLData);
@@ -206,6 +204,10 @@ public class Yuchsign implements EntryPoint {
 			}
 			
 			m_yuchPanel.ShowYuchPanel();		
+		}
+		
+		if(_signinState){
+			Yuchsign.PopupPrompt("激活邮件已经发送到了 " + t_bber.GetSigninName() + " ，请及时激活。", m_bberPane);
 		}
 	}
 	

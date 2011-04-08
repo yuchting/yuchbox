@@ -38,7 +38,7 @@ public final class yuchbber {
 	private String m_password = "";
 	
 	@Persistent
-	private long m_usingHours = 168;
+	private long m_usingHours = 120;
 	
 	@Persistent
 	private long m_createTime = 0;
@@ -210,8 +210,8 @@ public final class yuchbber {
 				
 				t_pushNum++;
 				
-				if(t_pushNum > GetMaxPushNum()){
-					throw new Exception("illeagel bber push list");
+				if(t_pushNum >= GetMaxPushNum()){
+					break;
 				}				
 			}
 		}		

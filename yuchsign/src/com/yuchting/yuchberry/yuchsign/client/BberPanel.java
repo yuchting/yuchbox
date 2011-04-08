@@ -18,10 +18,12 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -295,6 +297,149 @@ class ContentTab extends TabPanel{
 	}
 }
 
+class ChangePassDlg extends DialogBox{
+	
+	PasswordTextBox		m_origPass	= null;
+	PasswordTextBox		m_newPass	= null;
+	PasswordTextBox		m_newPass1	= null;
+	
+	BberPanel		m_mainPane = null;
+	
+	public ChangePassDlg(final BberPanel _bberPane){
+		super(false,false);
+		
+		m_mainPane = _bberPane;
+		
+		final VerticalPanel t_mainPane = new VerticalPanel();
+		
+		final FlexTable t_table 	= new FlexTable();
+		int t_index = 0;
+		
+		m_origPass	= new PasswordTextBox();
+		m_newPass	= new PasswordTextBox();
+		m_newPass1	= new PasswordTextBox();
+		
+		BberPanel.AddLabelWidget(t_table, "旧密码：", m_origPass, t_index++);
+		BberPanel.AddLabelWidget(t_table, "新密码：", m_newPass, t_index++);
+		BberPanel.AddLabelWidget(t_table, "新密码确认：",m_newPass1, t_index++);
+		
+		t_mainPane.add(t_table);
+		
+		final HorizontalPanel t_butPane = new HorizontalPanel();
+		t_butPane.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		t_butPane.setSpacing(20);
+		final Button t_confirmBut = new Button("确定");
+		final Button t_cancel = new Button("取消");
+		
+		t_butPane.add(t_confirmBut);
+		t_butPane.add(t_cancel);
+		
+		t_confirmBut.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				commitChange();
+			}
+		});
+		
+		t_cancel.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				hide();
+			}
+		});
+		
+		t_mainPane.add(t_butPane);
+		
+		setWidget(t_mainPane);
+		
+		setText("更改密码");
+		setAnimationEnabled(true);
+				
+		setPopupPosition(50,100);
+	}
+	
+	public void show(){
+		super.show();
+		
+		m_origPass.setText("");
+		m_newPass.setText("");
+		m_newPass1.setText("");
+	}
+	
+	private void commitChange(){
+		
+		String t_origPassString = m_origPass.getText();
+		String t_newPassString	= m_newPass.getText();
+		String t_newPass1String = m_newPass1.getText();
+		
+		if(!LogonDialog.IsValidPassword(t_origPassString)){
+			Yuchsign.PopupPrompt("旧密码不符合规定，需要不小于6位的数字和字母组成。", m_origPass);
+			return;
+		}
+		
+		if(!LogonDialog.IsValidPassword(t_newPassString)){
+			Yuchsign.PopupPrompt("新密码不符合规定，需要不小于6位的数字和字母组成。", m_newPass);
+			return;
+		}
+		
+		if(!t_newPassString.equals(t_newPass1String)){
+			Yuchsign.PopupPrompt("新密码两次不一致。", m_newPass1);
+			return;
+		}
+		
+		if(m_mainPane.m_currentBber == null){
+			Yuchsign.PopupPrompt("内不错误：_bberPane.m_currentBber == null 请重新登录。", this);
+			return;
+		}
+		
+		Yuchsign.PopupWaiting("正在提交更改...", this);
+		
+		final ChangePassDlg t_changeDlg = this;
+		
+		try{
+			
+			m_mainPane.m_mainServer.greetingService.changePassword(m_mainPane.m_currentBber.GetSigninName(), 
+					m_mainPane.m_verfiyCode,t_origPassString, t_newPassString, 
+			new AsyncCallback<String>() {
+				@Override
+				public void onSuccess(String result) {
+					Yuchsign.HideWaiting();
+					
+					if(result.startsWith("/verifycode")){
+							new YuchVerifyCodeDlg(result, new InputVerfiyCode() {
+							
+							@Override
+							public void InputCode(String code) {
+								m_mainPane.m_verfiyCode = code;
+								commitChange();
+							}
+						});
+					}else{
+						hide();
+						
+						Yuchsign.PopupPrompt(result, m_mainPane);
+					}
+				}
+				
+				@Override
+				public void onFailure(Throwable caught) {
+					Yuchsign.PopupPrompt(caught.getMessage(), t_changeDlg);
+					Yuchsign.HideWaiting();
+				}											
+			});
+			
+		}catch(Exception e){
+			
+			Yuchsign.PopupPrompt(e.getMessage(), this);
+			Yuchsign.HideWaiting();
+		}
+		
+	}
+	
+}
+
 public class BberPanel extends TabPanel{
 
 	final Label m_signinName 		= new Label();
@@ -318,14 +463,16 @@ public class BberPanel extends TabPanel{
 	
 	final TextArea	m_logText		= new TextArea();
 	
-	Yuchsign	m_mainServer	= null;
+	Yuchsign	m_mainServer		= null;
 			
-	yuchbber m_currentBber = null;
+	yuchbber 	m_currentBber 		= null;
+	
+	ChangePassDlg m_changePassDlg	= null;
 	
 	public static final KeyPressHandler 	fsm_socketPortHandler = new KeyPressHandler() {
 		
 		@Override
-		public void onKeyPress(KeyPressEvent event){
+		public void onKeyPress(KeyPressEvent event) {
 			TextBox t_box = (TextBox) event.getSource();
 			if(!Character.isDigit(event.getCharCode())) {
 				t_box.cancelKey();
@@ -372,7 +519,7 @@ public class BberPanel extends TabPanel{
 			}
 		});
 		
-		final Button t_levelUpBut		= new Button("升级");
+		final Button t_levelUpBut		= new Button("提升等级");
 		t_levelUpBut.addClickHandler(new ClickHandler() {
 			
 			@Override
@@ -407,6 +554,42 @@ public class BberPanel extends TabPanel{
 			}
 		});
 		
+		final BberPanel t_currPane = this;
+		final Button t_changePass = new Button("更改密码");
+		t_changePass.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				if(m_changePassDlg == null){
+					m_changePassDlg = new ChangePassDlg(t_currPane);
+				}
+				
+				m_changePassDlg.show();				
+			}
+		});
+		
+		final Button t_getdownLev = new Button("降低等级");
+		t_getdownLev.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				if(m_currentBber != null && m_currentBber.GetLevel() > 0){
+					Yuchsign.PopupYesNoDlg("你真的要降低用户等级么?", new YesNoHandler() {
+						
+						@Override
+						public void Process() {
+							getdownLevProcess();							
+						}
+					},null);
+					
+				}else{
+					Yuchsign.PopupPrompt("你是最低等级的用户无法再降低等级。", t_currPane);
+				}
+				
+			}
+		});
+		
+		
 		
 		m_signature.setPixelSize(420,100);
 				
@@ -418,6 +601,7 @@ public class BberPanel extends TabPanel{
 		AddLabelWidget(t_layout,"用户名:",m_signinName,t_line++);
 		
 		t_layout.setWidget(t_line, 2, t_levelUpBut);
+		t_layout.setWidget(t_line, 3, t_getdownLev);
 		AddLabelWidget(t_layout,"用户等级:",m_bberLev,t_line++);
 		
 		t_layout.setWidget(t_line, 2, t_payTime);
@@ -425,7 +609,10 @@ public class BberPanel extends TabPanel{
 		
 		AddLabelWidget(t_layout,"主机地址:",m_connectHost,t_line++);
 		AddLabelWidget(t_layout,"端口:",m_serverPort,t_line++);
-		AddLabelWidget(t_layout,"用户密码:",new HTML("<登录密码>"),t_line++);
+		
+		t_layout.setWidget(t_line,2,t_changePass);
+		AddLabelWidget(t_layout,"用户密码:",new HTML("<登录密码>"),t_line++);		
+		
 		AddLabelWidget(t_layout,"推送间隔(秒):",m_pushInterval,t_line++);
 		
 		t_attrPane.add(t_layout);
@@ -437,6 +624,44 @@ public class BberPanel extends TabPanel{
 		t_attrPane.add(t_syncBut);
 		
 		add(t_attrPane,"账户属性");
+		
+	}
+	
+	private void getdownLevProcess(){
+		
+		final BberPanel t_mainPane = this;
+		try{
+			Yuchsign.PopupWaiting("正在提交申请", this);
+			
+			m_mainServer.greetingService.getdownLev(m_currentBber.GetSigninName(),
+			new AsyncCallback<String>() {
+				
+				@Override
+				public void onSuccess(String result) {
+					try{
+						m_currentBber.InputXMLData(result);
+						
+						ShowYuchbberData(m_currentBber);
+						
+						Yuchsign.PopupPrompt("已经降级成功，同时删除了所有推送账户", t_mainPane);
+					}catch(Exception e){
+						Yuchsign.PopupPrompt("错误:" + e.getMessage(), t_mainPane);
+					}
+					
+					Yuchsign.HideWaiting();										
+				}
+				
+				@Override
+				public void onFailure(Throwable caught) {
+					Yuchsign.PopupPrompt(caught.getMessage(), t_mainPane);
+					Yuchsign.HideWaiting();
+				}
+			});
+			
+		}catch(Exception e){
+			Yuchsign.PopupPrompt("出现错误:"+e.getMessage(), t_mainPane);
+			Yuchsign.HideWaiting();
+		}	
 		
 	}
 	

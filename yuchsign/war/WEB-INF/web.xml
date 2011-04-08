@@ -45,6 +45,16 @@
     <servlet-name>VerifyCodeServlet</servlet-name>
     <url-pattern>/verifycode/*</url-pattern>
   </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>ActivateAccountServlet</servlet-name>
+    <servlet-class>com.yuchting.yuchberry.yuchsign.server.ActivateAccountServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>ActivateAccountServlet</servlet-name>
+    <url-pattern>/act/*</url-pattern>
+  </servlet-mapping>
     
   <!-- Default page to serve -->
   <welcome-file-list>

@@ -21,7 +21,7 @@ public final class yuchbber {
 	
 	private String m_password = "";
 	
-	private long m_usingHours = 168;
+	private long m_usingHours = 120;
 
 	private long m_createTime = 0;
 	

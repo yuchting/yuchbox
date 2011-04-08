@@ -730,7 +730,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 }
 	 }
 	 
-	 private SocketConnection GetConnection(boolean _ssl)throws Exception{
+	 private SocketConnection GetConnection(boolean _ssl,boolean _withParam)throws Exception{
 		 
 		 final int t_sleep = GetConnectInterval();
 		 if(t_sleep != 0){
@@ -749,9 +749,18 @@ public class connectDeamon extends Thread implements SendListener,
 		 final int		t_hostport = m_mainApp.GetHostPort();
 		 
 		 if(_ssl){
-			 URL =  "ssl://" + (t_hostname) + ":" + t_hostport + ";deviceside=true;EndToEndDesired";
+			 if(_withParam){
+				 URL =  "ssl://" + (t_hostname) + ":" + t_hostport + ";deviceside=true;EndToEndDesired";
+			 }else{
+				 URL =  "ssl://" + (t_hostname) + ":" + t_hostport + ";EndToEndDesired";
+			 }
+			 
 		 }else{
-			 URL =  "socket://" +(t_hostname) + ":" + t_hostport + ";deviceside=true";
+			 if(_withParam){
+				 URL =  "socket://" +(t_hostname) + ":" + t_hostport + ";deviceside=true";
+			 }else{
+				 URL =  "socket://" +(t_hostname) + ":" + t_hostport;
+			 }			 
 		 }
 		 
 		 String t_append = m_mainApp.GetURLAppendString();
@@ -761,12 +770,41 @@ public class connectDeamon extends Thread implements SendListener,
 		 
 		 try{
 			 socket = (SocketConnection)Connector.open(URL,Connector.READ_WRITE,false);
+			
+			 if(socket == null){
+				 throw new Exception("socket null");
+			 }
 			 
-			 socket.setSocketOption(SocketConnection.DELAY, 0);
-			 socket.setSocketOption(SocketConnection.KEEPALIVE,m_mainApp.GetPulseIntervalMinutes());
-			 socket.setSocketOption(SocketConnection.LINGER, 0);
-			 socket.setSocketOption(SocketConnection.RCVBUF, 512);
-			 socket.setSocketOption(SocketConnection.SNDBUF, 128);
+			 try{
+				 socket.setSocketOption(SocketConnection.DELAY, 0);	 
+			 }catch(Exception _e){
+				 m_mainApp.SetErrorString("CM0: " +_e.getMessage() + t_append + " " + _e.getClass().getName());
+			 }
+			 
+			 try{
+				 socket.setSocketOption(SocketConnection.KEEPALIVE,m_mainApp.GetPulseIntervalMinutes());
+			 }catch(Exception _e){
+				 m_mainApp.SetErrorString("CM1: " +_e.getMessage() + t_append + " " + _e.getClass().getName());
+			 }
+			 
+			 try{
+				 socket.setSocketOption(SocketConnection.LINGER, 0);
+			 }catch(Exception _e){
+				 m_mainApp.SetErrorString("CM2: " +_e.getMessage() + t_append + " " + _e.getClass().getName());
+			 }
+			 
+			 try{
+				 socket.setSocketOption(SocketConnection.RCVBUF, 512);
+			 }catch(Exception _e){
+				 m_mainApp.SetErrorString("CM3: " +_e.getMessage() + t_append + " " + _e.getClass().getName());
+			 }
+			 
+			 try{
+				 socket.setSocketOption(SocketConnection.SNDBUF, 128);
+			 }catch(Exception _e){
+				 m_mainApp.SetErrorString("CM4: " +_e.getMessage() + t_append + " " + _e.getClass().getName()); 
+			 }
+			 
 			 
 		 }catch(Exception _e){
 
@@ -783,9 +821,10 @@ public class connectDeamon extends Thread implements SendListener,
 			 }
 
 			 if(_e.getMessage().indexOf("Tunnel") != -1 
-			 || _e.getMessage().indexOf("tunnel") != -1){
+			 || _e.getMessage().indexOf("tunnel") != -1
+			 || _e.getMessage().indexOf("param") != -1){ // bad parameter
 				 
-				 socket = GetConnection(_ssl);
+				 socket = GetConnection(_ssl,false);
 				 
 			 }else{
 				 

@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.XMLParser;
@@ -38,6 +39,8 @@ public final class LogonDialog extends DialogBox{
 	
 	String m_verfiyCode						= "";
 	
+	boolean m_isSigninAccount				= false;
+	
 	public LogonDialog(Yuchsign _clientSign){
 		m_clientSign = _clientSign;
 		
@@ -60,31 +63,7 @@ public final class LogonDialog extends DialogBox{
 			
 			@Override
 			public void onClick(ClickEvent event) {
-				try{
-					if(!IsValidEmail(m_logonName.getText()) ){
-						Yuchsign.PopupPrompt("请输入正确的邮件地址作为用户名", m_logonName);
-						return;
-					}
-					
-					Yuchsign.PopupWaiting("正在提交申请", t_logonPane);
-					
-					m_clientSign.greetingService.findPassword(m_logonName.getText(),new AsyncCallback<String>() {
-						
-						public void onSuccess(String result) {
-							Yuchsign.HideWaiting();
-							Yuchsign.PopupPrompt(result,t_logonPane);	
-						}
-						
-						public void onFailure(Throwable caught) {
-							Yuchsign.HideWaiting();
-							Yuchsign.PopupPrompt("失败：" + caught.getMessage(),t_logonPane);							
-						}
-					});
-					
-				}catch(Exception e){
-					Yuchsign.HideWaiting();
-					Yuchsign.PopupPrompt("错误："+ e.getMessage(), t_logonPane);
-				}
+				findPassword(t_logonPane);
 			}
 		});
 			
@@ -158,6 +137,48 @@ public final class LogonDialog extends DialogBox{
 		setWidget(t_horzPane);
 	}
 	
+	private void findPassword(final Widget _pane){
+		try{
+			if(!IsValidEmail(m_logonName.getText()) ){
+				Yuchsign.PopupPrompt("请输入正确的邮件地址作为用户名", m_logonName);
+				return;
+			}
+			
+			Yuchsign.PopupWaiting("正在提交申请", _pane);
+			
+			m_clientSign.greetingService.findPassword(m_logonName.getText(),m_verfiyCode,new AsyncCallback<String>() {
+				
+				public void onSuccess(String result) {
+					if(result.startsWith("/verifycode")){
+						
+						Yuchsign.HideWaiting();
+						
+						new YuchVerifyCodeDlg(result, new InputVerfiyCode() {
+							
+							@Override
+							public void InputCode(String code) {
+								m_verfiyCode = code;
+								findPassword(_pane);
+							}
+						});
+					}else{
+						Yuchsign.HideWaiting();
+						Yuchsign.PopupPrompt(result,_pane);	
+					}								
+				}
+				
+				public void onFailure(Throwable caught) {
+					Yuchsign.HideWaiting();
+					Yuchsign.PopupPrompt("失败：" + caught.getMessage(),_pane);							
+				}
+			});
+			
+		}catch(Exception e){
+			Yuchsign.HideWaiting();
+			Yuchsign.PopupPrompt("错误："+ e.getMessage(), _pane);
+		}
+	}
+	
 	private void CallOnSuccess(String _result){
 		
 		try{
@@ -173,8 +194,11 @@ public final class LogonDialog extends DialogBox{
 				
 				m_logonName.setText("");
 				m_logonPassword.setText("");
+				m_agreeCheckbox.setValue(false);
 				
-				m_clientSign.ShowYuchbberPanel(_result);
+				m_clientSign.ShowYuchbberPanel(_result,m_isSigninAccount);
+				
+				m_isSigninAccount = false;
 				
 				hide();
 			}			
@@ -202,7 +226,10 @@ public final class LogonDialog extends DialogBox{
 		
 		try{
 			
-			Yuchsign.PopupWaiting("正在登录...",this);				
+			Yuchsign.PopupWaiting("正在登录...",this);
+			
+			m_isSigninAccount = false;
+			
 			m_clientSign.greetingService.logonServer(t_name,t_pass,new AsyncCallback<String>(){
 				public void onFailure(Throwable caught) {
 					Yuchsign.PopupPrompt(caught.getMessage(),null);
@@ -250,6 +277,9 @@ public final class LogonDialog extends DialogBox{
 		
 		try{					
 			Yuchsign.PopupWaiting("正在提交注册...",this);
+			
+			m_isSigninAccount = true;
+			
 			m_clientSign.greetingService.signinAccount(t_name,t_pass,m_verfiyCode,new AsyncCallback<String>(){
 				public void onFailure(Throwable caught) {
 					Yuchsign.PopupPrompt(caught.getMessage(),null);

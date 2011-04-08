@@ -51,6 +51,8 @@ public class YuchVerifyCodeDlg extends DialogBox{
 			}
 		});
 		
+		
+		
 		setWidget(t_mainPane);
 		
 		setText("验证码确认");

@@ -1,5 +1,6 @@
 package com.yuchting.yuchberry.yuchsign.client;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
@@ -13,7 +14,9 @@ public interface GreetingService extends RemoteService {
 	
 	String signinAccount(String name,String password,String verifyCode)throws Exception;
 	
-	String findPassword(String _signinName)throws Exception;
+	String findPassword(String _signinName,String _verifyCode)throws Exception;
+	
+	String changePassword(String _signinName,String _verifyCode,String _origPass,String _pass)throws Exception;
 	
 	String syncAccount(String _xmlData,String verifyCode)throws Exception;
 	
@@ -22,6 +25,8 @@ public interface GreetingService extends RemoteService {
 	String checkAccountLog(String _signinName,String _pass)throws Exception;
 	
 	String payTime(String _signinName,int _payType,int _fee)throws Exception;
+	
+	String getdownLev(String _signinName)throws Exception;
 	
 	
 	// administrator function
