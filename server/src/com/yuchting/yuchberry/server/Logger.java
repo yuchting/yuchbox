@@ -14,16 +14,18 @@ public class Logger{
 	
 	private String				m_logFilename = "";
 	
-	public Logger(){}
-	
-	public void SetPrefix(String _prefix){
-		m_prefix = _prefix;
+	public Logger(){
+		// empty logger
 	}
 	
 	public Logger(String _prefix){
 		m_prefix = _prefix;
 		
 		RestartLogging();
+	}
+	
+	public void SetPrefix(String _prefix){
+		m_prefix = _prefix;
 	}
 	
 	public String GetLogFileName(){
@@ -86,7 +88,7 @@ public class Logger{
 	
 	public void RestartLogging(){
 		
-		if(!m_prefix.isEmpty()){
+		if(m_prefix != null){
 			File t_logFile = new File(m_prefix);
 			
 			if(!t_logFile.exists() || !t_logFile.isDirectory()){

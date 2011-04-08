@@ -95,6 +95,8 @@ public class  fetchMail{
 			t_addressList += ",";
 		}
 		
+		t_addressList = t_addressList.replaceAll("＠", "@");
+		
 		return t_addressList;
 	}
 	

@@ -185,7 +185,25 @@ public class connectDeamon extends Thread implements SendListener,
 			 public void run(){
 				 
 				 try{
+					
+					for(int i = 0;i < m_sendingMailAttachment.size();i++){
+						sendMailAttachmentDeamon t_mail = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
 						
+						if(t_mail.m_sendMail.GetSendDate().equals(t_msg.getSentDate())){
+							
+							if(t_mail.isAlive()){
+								// found the re-send message
+								//
+								return ;								
+							}else{
+								t_mail.m_closeState = true;
+								m_sendingMailAttachment.removeElement(t_mail);
+							}
+							
+							break;
+						}
+					}		
+					
 					m_mainApp.SetErrorString("sendMsg:" + t_msg.getSubject());
 					
 					fetchMail t_mail = new fetchMail();
@@ -235,31 +253,15 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	public void messagesRemoved(FolderEvent e){
 		if(e.getType() == FolderEvent.MESSAGE_REMOVED){
-			if(AddMarkReadMail(e.getMessage())){
+			Message t_msg = e.getMessage();
+			if(AddMarkReadMail(t_msg)){
 				m_mainApp.StopNotification();
 			}
 			
-			try{
-				
-				for(int i = 0;i < m_sendingMailAttachment.size();i++){
-					sendMailAttachmentDeamon t_mail = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
-					if(t_mail.m_sendMail.GetSendDate().equals(e.getMessage().getSentDate())
-					&& ((String)t_mail.m_sendMail.GetFromVect().elementAt(0)).indexOf(e.getMessage().getFrom().getAddr()) != -1){
-						
-						t_mail.m_closeState = true;
-						if(t_mail.isAlive()){
-							t_mail.interrupt();
-						}
-						
-						
-						break;
-					}
-				}
-				
-			}catch(Exception ex){
-				m_mainApp.SetErrorString("D:"+ex.getMessage() + " " + ex.getClass().getName());
-			}
-			
+			// if the user select re-send menu the RIM OS will
+			// call sendMessage function first and call this messagesRemoved function later
+			// this order can make deleting send message...
+			//			
 		}
 	}
 	//@}

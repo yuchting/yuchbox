@@ -541,6 +541,11 @@ public class BberPanel extends TabPanel{
 			public void onClick(ClickEvent event) {
 				try{
 					
+					if(m_currentBber.GetConnectHost().isEmpty()){
+						Yuchsign.PopupPrompt("没有同步主机，无法获取日志，请先同步。", t_mainPane);
+						return;
+					}
+					
 					Yuchsign.PopupWaiting("正在查询日志", t_mainPane);
 					
 					m_mainServer.greetingService.checkAccountLog(m_currentBber.GetSigninName(),m_currentBber.GetPassword(),
