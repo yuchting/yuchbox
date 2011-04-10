@@ -74,10 +74,7 @@ public class berrySvrDeamon extends Thread{
 		m_fetchMgr 	= _mgr;
 		
 		sendReceive t_connect = ValidateClient(_s); 
-		if(t_connect == null){
-			return;
-		}
-		
+				
 		_s.setSoTimeout(0);
 		_s.setKeepAlive(true);
 		
@@ -121,9 +118,10 @@ public class berrySvrDeamon extends Thread{
 		m_fetchMgr.m_logger.LogOut("some client connect IP<" + m_socket.getInetAddress().getHostAddress() + ">");
 	}
 	
-	public sendReceive ValidateClient(Socket _s){
+	public sendReceive ValidateClient(Socket _s)throws Exception{
 		
 		sendReceive t_tmp = null;
+		
 		try{
 			
 			t_tmp = new sendReceive(_s.getOutputStream(),_s.getInputStream());
@@ -176,6 +174,8 @@ public class berrySvrDeamon extends Thread{
 				}
 			}
 			
+			return t_tmp;
+			
 		}catch(Exception _e){
 			// time out or other problem
 			//
@@ -186,10 +186,8 @@ public class berrySvrDeamon extends Thread{
 			m_fetchMgr.m_logger.PrinterException(_e);
 			t_tmp.CloseSendReceive();
 			
-			return null;
-		}
-		
-		return t_tmp;
+			throw _e;
+		}	
 	}
 		
 	public void run(){

@@ -519,7 +519,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 		for(int i = 0;i < m_accountList.size();i++){
 			fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
-			if(t_fetch.m_fetchMgr.GetAccountName().equals(_accountName) 
+			if(t_fetch.m_fetchMgr.GetAccountName().equalsIgnoreCase(_accountName) 
 			|| t_fetch.m_fetchMgr.GetServerPort() == _port){
 				
 				return t_fetch;
@@ -533,7 +533,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 		for(int i = 0;i < m_accountList.size();i++){
 			fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
-			if(t_fetch.m_fetchMgr.GetAccountName().equals(_thread.m_fetchMgr.GetAccountName())){
+			if(t_fetch.m_fetchMgr.GetAccountName().equalsIgnoreCase(_thread.m_fetchMgr.GetAccountName())){
 				return false;
 			}
 		}
@@ -564,7 +564,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		for(int i = 0;i < m_accountList.size();i++){
 			
 			fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
-			if(_accountName.equals(t_fetch.m_fetchMgr.GetAccountName())){
+			if(_accountName.equalsIgnoreCase(t_fetch.m_fetchMgr.GetAccountName())){
 				
 				t_fetch.Destroy();
 				
@@ -701,11 +701,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			DelAccoutThread(thread.m_fetchMgr.GetAccountName(), false);
 			m_logger.LogOut("未连接时间超过3天，删除帐户 " + thread.m_fetchMgr.GetAccountName());
 		}
-		
-		if(!t_deadPool.isEmpty()){
-			StoreAccountInfo();
-		}
-		
+			
 		m_stateLabel.setText("连接账户/使用帐户/总帐户：" + t_connectNum + "/" + t_usingNum + "/" + m_accountList.size());
 		m_accountTable.RefreshState();
 		
@@ -715,15 +711,25 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 		// close the timeup Bber Request
 		//
+		boolean t_deleteThread = false;
+		
 		for(int i = 0;i < m_bberRequestList.size();i++){
 			BberRequestThread bber = m_bberRequestList.get(i);
 			
 			if(Math.abs(t_currTime - bber.m_requestTime) > 10 * 60 * 1000){
 				
 				if(bber.m_orgThread != null){
+					
 					bber.m_orgThread.Destroy();
+					DelAccoutThread(bber.m_orgThread.m_fetchMgr.GetAccountName(), false);
+					
+					m_logger.LogOut("同步没有相应，删除帐户 " + bber.m_orgThread.m_fetchMgr.GetAccountName());
+					
+					t_deleteThread = true;
 				}else{
 					bber.m_mainMgr.EndListening();
+					
+					m_logger.LogOut("同步没有相应，停止帐户 " + bber.m_mainMgr.GetAccountName());
 				}
 				
 				bber.interrupt();
@@ -731,6 +737,10 @@ public class mainFrame extends JFrame implements ActionListener{
 				
 				i--;
 			}
+		}
+		
+		if(!t_deadPool.isEmpty() || t_deleteThread){
+			StoreAccountInfo();
 		}
 	}
 	
@@ -994,7 +1004,10 @@ public class mainFrame extends JFrame implements ActionListener{
 																	m_currbber.GetUsingHours(),
 																	m_currbber.GetCreateTime(),false);
 
-						AddAccountThread(t_newThread, true);	
+						AddAccountThread(t_newThread, true);
+						
+					}else{
+						m_orgThread.Reuse();
 					}
 					
 					// to tell the web server port

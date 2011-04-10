@@ -109,7 +109,7 @@ public class accountTable extends JTable{
 		
 		for(int i = 0;i < t_rowNum;i++){
 			String name = (String)m_defaultModel.getValueAt(i, 0);
-			if(_thread.m_fetchMgr.GetAccountName().equals(name)){
+			if(_thread.m_fetchMgr.GetAccountName().equalsIgnoreCase(name)){
 								
 				m_fetchMgrListRef.remove(i);
 				m_defaultModel.removeRow(i);

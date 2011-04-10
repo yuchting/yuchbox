@@ -462,7 +462,7 @@ public class createDialog extends JDialog implements DocumentListener,
 				Iterator elementIterator = m_createConfigDoc_root.elementIterator();
 				while(elementIterator.hasNext()){
 					Element element = (Element)elementIterator.next();
-					if(element.attributeValue("account").equals(t_account.GetAccountName())){
+					if(element.attributeValue("account").equalsIgnoreCase(t_account.GetAccountName())){
 						
 						m_createConfigDoc_root.remove(element);
 						break;
@@ -590,7 +590,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		}else{
 			for(int i = 0;i < m_createAccountList.size();i++){
 				fetchAccount account = (fetchAccount)m_createAccountList.elementAt(i);
-				if(account.GetAccountName().equals(_email.m_accountName)){
+				if(account.GetAccountName().equalsIgnoreCase(_email.m_accountName)){
 					throw new Exception(_email.m_accountName + " 账户已经添加");
 				}				
 			}

@@ -48,7 +48,7 @@ public class fetchMgr{
 
     boolean m_userSSL					= false;
     
-    Vector			m_fetchAccount 		= new Vector();
+    Vector<fetchAccount> m_fetchAccount 		= new Vector<fetchAccount>();
         
     //! is connected?
     berrySvrDeamon	m_currConnect		= null;
@@ -57,8 +57,7 @@ public class fetchMgr{
     
     String			m_latestVersion		= null;
     
-    boolean		m_hasPrompt			= false;
-    
+    boolean		m_hasPrompt			= false;    
     
     public void SetLatestVersion(String _version){
     	
@@ -70,6 +69,7 @@ public class fetchMgr{
         		try{
         			m_hasPrompt = true;
         			SendNewVersionPrompt(GetClientConnected().m_sendReceive);
+        			
         		}catch(Exception e){}
         	}else{
         		m_hasPrompt = true;
@@ -195,8 +195,8 @@ public class fetchMgr{
 		try{
 			
 			ResetAllAccountSession(false);
-						
-	    	m_svr = GetSocketServer(m_userPassword,m_userSSL);	    	
+			
+			m_svr = GetSocketServer(m_userPassword,m_userSSL);			
 	    	
 			while(true){
 				try{
@@ -208,7 +208,7 @@ public class fetchMgr{
 					m_logger.PrinterException(_e);
 		    	}
 	    	}
-			
+
 		}catch(Exception ex){
 			m_logger.PrinterException(ex);
 		}
@@ -219,8 +219,7 @@ public class fetchMgr{
 		
 		try{
 			
-			for(int i = 0;i < m_fetchAccount.size();i++){
-				fetchAccount accout =(fetchAccount)m_fetchAccount.elementAt(i);
+			for(fetchAccount accout :m_fetchAccount){
 				accout.DestroySession();
 			}
 			
@@ -239,8 +238,7 @@ public class fetchMgr{
 	}
 	
 	public void DestroyAllAcount()throws Exception{
-		for(int i = 0;i < m_fetchAccount.size();i++){
-			fetchAccount accout =(fetchAccount)m_fetchAccount.elementAt(i);
+		for(fetchAccount accout :m_fetchAccount){
 			accout.DestroySession();
 		}
 		
@@ -248,8 +246,7 @@ public class fetchMgr{
 	}
 	public void ResetAllAccountSession(boolean _testAll)throws Exception{
 		
-		for(int i = 0;i < m_fetchAccount.size();i++){
-			fetchAccount accout =(fetchAccount)m_fetchAccount.elementAt(i);
+		for(fetchAccount accout :m_fetchAccount){
 			accout.ResetSession(_testAll);
 		}
 	}
@@ -276,8 +273,7 @@ public class fetchMgr{
 				break;
 			default:
 			{
-				for(int i = 0 ;i < m_fetchAccount.size();i++){
-					fetchAccount account = (fetchAccount)m_fetchAccount.elementAt(i);
+				for(fetchAccount account :m_fetchAccount){
 					if(account.ProcessNetworkPackage(_package)){
 						break;
 					}
@@ -287,8 +283,7 @@ public class fetchMgr{
 	}
 	
 	public void SendImmMail(final String _subject ,final String _contain,final String _from){
-		for(int i = 0;i < m_fetchAccount.size();i++){
-			fetchAccount account = (fetchAccount)m_fetchAccount.elementAt(i);
+		for(fetchAccount account :m_fetchAccount){
 			
 			if(account instanceof fetchEmail){
 				((fetchEmail)account).SendImmMail(_subject, _contain, _from);
@@ -298,9 +293,7 @@ public class fetchMgr{
 	}
 	public void CheckAccountFolders(){
 				
-		for(int i = 0;i < m_fetchAccount.size();i++){
-			fetchAccount account = (fetchAccount)m_fetchAccount.elementAt(i);
-			
+		for(fetchAccount account :m_fetchAccount){			
 			try{
 				
 				account.CheckFolder();
@@ -325,9 +318,7 @@ public class fetchMgr{
 		
 	public void Push(sendReceive _send){
 						
-		for(int i = 0;i < m_fetchAccount.size();i++){
-			fetchAccount account = (fetchAccount)m_fetchAccount.elementAt(i);
-					
+		for(fetchAccount account :m_fetchAccount){					
 			try{				
 				account.PushMsg(_send);
 			}catch(Exception e){
