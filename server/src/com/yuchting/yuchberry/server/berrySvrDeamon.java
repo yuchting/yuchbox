@@ -65,130 +65,40 @@ public class berrySvrDeamon extends Thread{
 	public Socket		m_socket		= null;
 		
 	sendReceive  		m_sendReceive	= null;
-	
-	int					m_clientVer		= 0;
 		
 	private berrySvrPush m_pushDeamon	= null;
 	
-	public berrySvrDeamon(fetchMgr _mgr,Socket _s)throws Exception{
+	boolean			m_quit			= false;
+	boolean			m_isCloseByMgr	= false;
+	
+	public berrySvrDeamon(fetchMgr _mgr,Socket _s,sendReceive _sendReceive)throws Exception{
 		m_fetchMgr 	= _mgr;
 		
-		sendReceive t_connect = ValidateClient(_s); 
-				
-		_s.setSoTimeout(0);
-		_s.setKeepAlive(true);
-		
-		if(m_fetchMgr.GetClientConnected() != null 
-		&& m_fetchMgr.GetClientConnected().m_socket != null){
-			
-			// kick the former client
-			//
-			m_fetchMgr.GetClientConnected().m_socket.close();
-			
-			while(m_fetchMgr.GetClientConnected() != null){
-				sleep(50);
-			}
-		}		
-	
-		m_fetchMgr.SetClientConnected(this);
+		m_sendReceive = _sendReceive; 
 		
 		// prepare receive and push deamon
 		//
 		m_socket	= _s;
-
+		
 		try{
 			
-			m_sendReceive = t_connect;
 			m_pushDeamon = new berrySvrPush(this);
 			
 		}catch(Exception _e){
-			m_fetchMgr.m_logger.PrinterException(_e);
 			
-			if(m_sendReceive != null){
-				m_sendReceive.CloseSendReceive();
-			}
-			
-			m_fetchMgr.SetClientConnected(null);
-						
+			m_sendReceive.CloseSendReceive();						
 			throw _e;
-		}
-				
-		start();
+		}		
+		
+		m_fetchMgr.SetClientConnected(this);
 		
 		m_fetchMgr.m_logger.LogOut("some client connect IP<" + m_socket.getInetAddress().getHostAddress() + ">");
+				
+		start();
+				
 	}
 	
-	public sendReceive ValidateClient(Socket _s)throws Exception{
-		
-		sendReceive t_tmp = null;
-		
-		try{
-			
-			t_tmp = new sendReceive(_s.getOutputStream(),_s.getInputStream());
-			
-			m_fetchMgr.m_logger.LogOut("some client<"+ _s.getInetAddress().getHostAddress() +"> connecting ,waiting for auth");
-			
-			// first handshake with the client via CA instead of 
-			// InputStream.read function to get the information within 1sec time out
-			//
-			if(_s instanceof SSLSocket){
-				//((SSLSocket)_s).startHandshake();
-			}
-			
-			// wait for signIn first
-			//
-			_s.setSoTimeout(60000);			
-			
-			ByteArrayInputStream in = new ByteArrayInputStream(t_tmp.RecvBufferFromSvr());
-									
-			final int t_msg_head = in.read();
-		
-			if(msg_head.msgConfirm != t_msg_head 
-			|| !sendReceive.ReadString(in).equals(m_fetchMgr.m_userPassword)
-			|| (m_clientVer = sendReceive.ReadInt(in)) < 2){
-				
-				/* useless
-				 * 
-				ByteArrayOutputStream os = new ByteArrayOutputStream();
-				os.write(msg_head.msgNote);
-				sendReceive.WriteString(os, msg_head.noteErrorUserPassword,m_fetchMgr.m_convertToSimpleChar);
-				
-				_s.getOutputStream().write(os.toByteArray());
-				*/
-				throw new Exception("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> connected.");			
-			}
-			
-			
-			// read the language state
-			//
-			m_fetchMgr.m_clientLanguage = in.read();
-			
-			if(m_clientVer >= 3){
-				String t_clientVersion = sendReceive.ReadString(in);
-				
-				if(m_fetchMgr.GetLatestVersion() != null
-				&& !m_fetchMgr.GetLatestVersion().equals(t_clientVersion)){
-					// send the latest version information
-					//
-					m_fetchMgr.SendNewVersionPrompt(t_tmp);
-				}
-			}
-			
-			return t_tmp;
-			
-		}catch(Exception _e){
-			// time out or other problem
-			//
-			try{
-				_s.close();
-			}catch(Exception e){}			
-			
-			m_fetchMgr.m_logger.PrinterException(_e);
-			t_tmp.CloseSendReceive();
-			
-			throw _e;
-		}	
-	}
+	
 		
 	public void run(){
 		
@@ -199,9 +109,7 @@ public class berrySvrDeamon extends Thread{
 			// process....
 			//
 			try{
-				
-				m_fetchMgr.SetClientConnected(this);
-								
+												
 				byte[] t_package = m_sendReceive.RecvBufferFromSvr();
 				m_fetchMgr.m_logger.LogOut("receive package head<" + t_package[0] + "> length<" + t_package.length + ">");
 				
@@ -210,21 +118,29 @@ public class berrySvrDeamon extends Thread{
 			}catch(Exception _e){
 				
 				try{
-					if(m_socket != null){
-						m_socket.close();
+					synchronized (this) {
+						if(m_socket != null && !m_socket.isClosed()){
+							m_socket.close();
+						}
+						
+						m_socket = null;
 					}
 				}catch(Exception e){
 					m_fetchMgr.m_logger.PrinterException(_e);
-				}				
+				}			
 				
-				m_socket = null;
 				m_sendReceive.CloseSendReceive();
-				m_fetchMgr.SetClientConnected(null);
 				
 				m_pushDeamon.m_closed = true;
 				m_pushDeamon.interrupt();				
 				
 				m_fetchMgr.m_logger.PrinterException(_e);
+							
+				m_quit = true;
+				
+				if(!m_isCloseByMgr){
+					m_fetchMgr.SetClientConnected(null);
+				}				
 								
 				break;
 			}

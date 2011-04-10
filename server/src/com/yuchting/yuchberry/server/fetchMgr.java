@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyStore;
@@ -48,10 +49,14 @@ public class fetchMgr{
 
     boolean m_userSSL					= false;
     
+	int					m_clientVer		= 0;
+    
     Vector<fetchAccount> m_fetchAccount 		= new Vector<fetchAccount>();
         
     //! is connected?
     berrySvrDeamon	m_currConnect		= null;
+    
+    boolean		m_endListenState	= false;
         
     int				m_clientLanguage	= 0;
     
@@ -142,7 +147,7 @@ public class fetchMgr{
 		
 		m_currConnect.m_sendReceive.SendBufferToSvr(_os.toByteArray(), _sendImm);		
 	}
-        
+	       
 	public void InitConnect(String _prefix,Logger _logger)throws Exception{
 		
 		m_prefix	= _prefix;
@@ -190,51 +195,169 @@ public class fetchMgr{
 			
 	}
 	
+	public sendReceive ValidateClient(Socket _s)throws Exception{
+		
+		sendReceive t_tmp = null;
+		
+		try{
+			
+			t_tmp = new sendReceive(_s.getOutputStream(),_s.getInputStream());
+			
+			m_logger.LogOut("some client<"+ _s.getInetAddress().getHostAddress() +"> connecting ,waiting for auth");
+			
+			// first handshake with the client via CA instead of 
+			// InputStream.read function to get the information within 1sec time out
+			//
+			//if(_s instanceof SSLSocket){
+				//((SSLSocket)_s).startHandshake();
+			//}
+			
+			// wait for signIn first
+			//
+			_s.setSoTimeout(60000);			
+			
+			ByteArrayInputStream in = new ByteArrayInputStream(t_tmp.RecvBufferFromSvr());
+									
+			final int t_msg_head = in.read();
+		
+			if(msg_head.msgConfirm != t_msg_head 
+			|| !sendReceive.ReadString(in).equals(m_userPassword)){
+				throw new Exception("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> connected.");			
+			}
+			
+			if((m_clientVer = sendReceive.ReadInt(in)) < 2){
+				throw new Exception("error version client<"+ _s.getInetAddress().getHostAddress() +"> connected.");
+			}
+			
+			
+			// read the language state
+			//
+			m_clientLanguage = in.read();
+			
+			if(m_clientVer >= 3){
+				String t_clientVersion = sendReceive.ReadString(in);
+				
+				if(GetLatestVersion() != null
+				&& !GetLatestVersion().equals(t_clientVersion)){
+					// send the latest version information
+					//
+					SendNewVersionPrompt(t_tmp);
+				}
+			}
+			
+			_s.setSoTimeout(0);
+			_s.setKeepAlive(true);
+						
+			return t_tmp;
+			
+		}catch(Exception _e){
+			
+			// time out or other problem
+			//
+			try{
+				_s.close();
+			}catch(Exception e){}
+			
+			m_logger.PrinterException(_e);
+			t_tmp.CloseSendReceive();
+			
+			throw _e;
+		}	
+	}
+
 	public void StartListening(){
 		
 		try{
+			synchronized (this) {
+				m_endListenState = false;
+			}
 			
 			ResetAllAccountSession(false);
 			
 			m_svr = GetSocketServer(m_userPassword,m_userSSL);			
 	    	
-			while(true){
+			while(!m_endListenState){
 				try{
-					if(m_svr == null){
-						break;
-					}
-					m_currConnect = new berrySvrDeamon(this, m_svr.accept());
+										
+					Socket t_sock = m_svr.accept();
+					
+					synchronized (this) {
+						
+						try{
+							
+							sendReceive t_sendReceive = ValidateClient(t_sock);
+							
+							if(m_currConnect != null){
+								
+								m_currConnect.m_isCloseByMgr = true;
+								
+								// kick the former client
+								//
+								synchronized (m_currConnect) {
+									if(m_currConnect.m_socket != null && !m_currConnect.m_socket.isClosed()){
+										m_currConnect.m_socket.close();
+									}
+									m_currConnect.m_socket = null;
+								}		
+								
+								// wait	quit
+								while(!m_currConnect.m_quit){
+									Thread.sleep(50);
+								}
+							}
+													
+							m_currConnect = new berrySvrDeamon(this,t_sock,t_sendReceive);
+							
+						}catch(Exception e){
+							t_sock.close();
+							throw e;
+						}
+					}			
+					
 				}catch(Exception _e){
 					m_logger.PrinterException(_e);
 		    	}
-	    	}
-
+	    	}			
+			
+			if(m_currConnect != null && m_currConnect.m_socket != null){
+				m_currConnect.m_socket.close();
+			}
+			
+			synchronized (this) {
+				if(m_svr != null){
+					m_svr.close();
+					m_svr= null;
+				}	
+			}
+			
+			
 		}catch(Exception ex){
 			m_logger.PrinterException(ex);
 		}
 		
+		SetClientConnected(null);		
 	}
 	
 	public synchronized void EndListening(){
+		
+		m_endListenState = true;
 		
 		try{
 			
 			for(fetchAccount accout :m_fetchAccount){
 				accout.DestroySession();
-			}
+			}			
 			
 			if(m_svr != null){
-				m_svr.close();				
+				m_svr.close();
+				m_svr = null;
 			}
 			
 		}catch(Exception e){
 			if(m_logger != null){
 				m_logger.PrinterException(e);
 			}
-		}
-		
-		m_svr = null;
-		SetClientConnected(null);
+		}		
 	}
 	
 	public void DestroyAllAcount()throws Exception{
