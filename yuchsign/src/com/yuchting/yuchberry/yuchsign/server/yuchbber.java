@@ -64,6 +64,9 @@ public final class yuchbber {
 	@Persistent
 	private long m_latestSyncTime = 0;	
 	
+	@Persistent
+	private int m_total_pay		= 0;
+	
 	@Persistent(mappedBy = "m_yuchbber")
 	@javax.jdo.annotations.Element(dependent = "true")
 	private Vector<yuchEmail>	m_emailList = new Vector<yuchEmail>();
@@ -83,6 +86,9 @@ public final class yuchbber {
 	
 	public long GetLatestSyncTime(){return m_latestSyncTime;}
 	public void SetLatestSyncTime(long _time){m_latestSyncTime = _time;}
+	
+	public int GetTotalPayFee(){return m_total_pay;}
+	public void SetTotalPayFee(int _fee){m_total_pay = _fee;}
 	
 	public void SetSigninName(final String _name){m_signinName = _name;}
 	public String GetSigninName(){return m_signinName;}

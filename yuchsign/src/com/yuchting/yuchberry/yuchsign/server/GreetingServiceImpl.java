@@ -194,6 +194,25 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				
 				if(!t_syncbber.GetEmailList().isEmpty()){
 					
+					// delete original email if not in current sync bber
+					//
+					for(yuchEmail orig:t_bber.GetEmailList()){
+						boolean t_delete = true;
+						for(yuchEmail curr:t_syncbber.GetEmailList()){
+							if(curr.m_emailAddr.equalsIgnoreCase(orig.m_emailAddr)){
+								t_delete = false;
+								
+								break;
+							}
+						}
+
+						if(t_delete){
+							t_pm.deletePersistent(orig);
+						}
+					}
+					
+					// load the new sync data
+					//
 					t_bber.InputXMLData(_xmlData);					
 
 					// restore backup the time and using hours

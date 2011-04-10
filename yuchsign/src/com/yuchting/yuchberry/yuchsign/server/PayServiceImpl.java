@@ -173,13 +173,17 @@ public class PayServiceImpl extends HttpServlet {
 			long t_expireTime = _bber.GetCreateTime() + _bber.GetUsingHours() * 3600000;
 			if(t_createTime < t_expireTime){
 				t_remainHours = (t_expireTime - t_createTime) / 3600000;
+				
+				// give a hours ...
+				//
+				t_remainHours += 1;
 			}
 		}
 		
-		if(t_remainHours != 0){
+		if(t_remainHours != 0 && _nextLev != _bber.GetLevel()){
 			// change the remain hours to current hours
 			//
-			t_remainHours = yuchbber.fsm_weekMoney[_bber.GetLevel()] * t_remainHours / yuchbber.fsm_weekMoney[_nextLev]; 
+			t_remainHours = yuchbber.fsm_weekMoney[_bber.GetLevel()] * t_remainHours / yuchbber.fsm_weekMoney[_nextLev];
 		}
 		
 		_bber.SetCreateTime(t_createTime);

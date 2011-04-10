@@ -20,7 +20,7 @@ public class yuchOrder {
 	private int		m_payType		= 0;	
 		
 	@Persistent
-	private int 		m_total_fee		= 0;
+	private float 		m_total_fee		= 0;
 	
 	@Persistent
 	private String		m_alipay_trade_no = "";
@@ -37,8 +37,8 @@ public class yuchOrder {
 	public int GetPayType(){return m_payType;}
 	public void SetPayType(int _payType){m_payType = _payType;}
 	
-	public int GetTotalFee(){return m_total_fee;}
-	public void SetTotalFee(int _fee){m_total_fee = _fee;}
+	public float GetTotalFee(){return m_total_fee;}
+	public void SetTotalFee(float _fee){m_total_fee = _fee;}
 	
 	public void SetAlipayTradeNO(String _alipay){m_alipay_trade_no = _alipay;}
 	public String GetAlipayTradeNO(){return m_alipay_trade_no;}
