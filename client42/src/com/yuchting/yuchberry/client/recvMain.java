@@ -13,6 +13,8 @@ import javax.microedition.location.LocationListener;
 import javax.microedition.location.LocationProvider;
 
 import local.localResource;
+import net.rim.blackberry.api.browser.Browser;
+import net.rim.blackberry.api.browser.BrowserSession;
 import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
@@ -35,7 +37,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	final static int 		fsm_display_width		= Display.getWidth();
 	final static int 		fsm_display_height		= Display.getHeight();
 	
-	final static int		fsm_clientVersion = 9;
+	final static int		fsm_clientVersion = 10;
 	
 	final static long		fsm_notifyID_email = 767918509114947L;
 	
@@ -45,7 +47,6 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	    }
 	};
 	
-	String 				m_attachmentDir 	= null;
 	String 				m_weiboHeadImageDir = null;
 	
     aboutScreen			m_aboutScreen		= null;
@@ -82,6 +83,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	String				m_userPassword 		= new String();
 	boolean			m_useSSL			= false;
 	boolean			m_useWifi			= false;
+	boolean			m_useMDS			= false;
 		
 	boolean			m_autoRun			= false;
 	
@@ -98,9 +100,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	long				m_uploadByte		= 0;
 	long				m_downloadByte		= 0;
 	
-	static final String[]	fsm_pulseIntervalString = {"1","5","10","30"};
-	static final int[]	fsm_pulseInterval		= {1,5,10,30};
-	int						m_pulseIntervalIndex = 1;
+	static final String[]	fsm_pulseIntervalString = {"1","3","5","10","30"};
+	static final int[]	fsm_pulseInterval		= {1,3,5,10,30};
+	int						m_pulseIntervalIndex = 2;
 	
 	boolean			m_fulldayPrompt		= true;
 	int					m_startPromptHour	= 8;
@@ -161,6 +163,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	static ResourceBundle sm_local = ResourceBundle.getBundle(
 								localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
 	
+	String m_latestVersion			= null;
+	
 	//@{ location information
 	LocationProvider m_locationProvider = null;
 	boolean		 m_useLocationInfo = false;
@@ -178,56 +182,47 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		t_theApp.enterEventDispatcher();
 	}
 	
-   
+	
 	public recvMain(boolean _systemRun) {	
-		
+				
 		boolean t_SDCardUse = false;
 		
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/",Connector.READ_WRITE);
-			if(!fc.exists()){
-				fc.mkdir();
-			}
-			fc.close();
+			try{
+				if(!fc.exists()){
+					fc.mkdir();
+				}
+			}finally{
+				fc.close();
+				fc = null;
+			}			
 		}catch (Exception _e) {
-			System.exit(0);
+			DialogAlertAndExit("can't use the dev ROM to store config file!");
+        	return;
 		}
-		
-		try{
-			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/",Connector.READ_WRITE);
-			if(!fc.exists()){
-				fc.mkdir();
-			}
-			fc.close();
-			t_SDCardUse = true;
-		}catch(Exception e){
-			
-		}
-				
-		m_attachmentDir = (t_SDCardUse?uploadFileScreen.fsm_rootPath_default:uploadFileScreen.fsm_rootPath_back) + "YuchBerry/AttDir/";
+						
+		String t_attachmentDir = GetAttachmentDir();
 		
 		m_weiboHeadImageDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/WeiboImage/";
 		
 		// create the sdcard path 
 		//
         try{
-        	
-        	FileConnection fc = (FileConnection) Connector.open(m_attachmentDir,Connector.READ_WRITE);
-        	if(!fc.exists()){
-        		fc.mkdir();
-        	}
-        	fc.close();
-        	        	
-        	fc = (FileConnection) Connector.open(m_weiboHeadImageDir,Connector.READ_WRITE);
-        	if(!fc.exists()){
-        		fc.mkdir();
-        	}
-        	fc.close();
+        	       	
+        	FileConnection fc = (FileConnection) Connector.open(m_weiboHeadImageDir,Connector.READ_WRITE);
+        	try{
+        		if(!fc.exists()){
+            		fc.mkdir();
+            	}	
+        	}finally{
+        		fc.close();
+        		fc = null;
+        	}        	
         	
         }catch(Exception _e){
-        	
-        	Dialog.alert("can't use the SDCard to store attachment!");
-        	System.exit(0);
+        	DialogAlertAndExit("can't use the '"+ t_attachmentDir +"' to store attachment!");
+        	return;
         }
         
         Criteria t_criteria = new Criteria();
@@ -242,11 +237,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			}
 		}catch(Exception e){
 			SetErrorString("location:"+e.getMessage()+" " + e.getClass().getName());
-		}
-		
-		
-        WriteReadIni(true);
+		}     
         
+		// must read the configure first
+		//
+		WriteReadIni(true);
+		
         if(_systemRun){
         	
         	// register the notification
@@ -261,10 +257,105 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         			Start();
         		}catch(Exception e){
         			System.exit(0);
-        		}   		
-        		
+        		}
         	}      	
-        }        
+        }      
+	}
+	
+	public String GetAttachmentDir(){
+		
+		boolean t_SDCardUse = false;
+		
+		String t_attDir = null;
+		try{
+			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/",Connector.READ_WRITE);
+			try{
+				if(!fc.exists()){
+					fc.mkdir();
+				}	
+			}finally{
+				fc.close();
+				fc = null;
+			}			
+			t_SDCardUse = true;
+		}catch(Exception e){
+			SetErrorString("SDCard can't be used :(");
+		}
+		
+		t_attDir = (t_SDCardUse?uploadFileScreen.fsm_rootPath_default:uploadFileScreen.fsm_rootPath_back) + "YuchBerry/AttDir/";
+		
+		try{
+			FileConnection fc = (FileConnection) Connector.open(t_attDir,Connector.READ_WRITE);
+	    	try{
+	        	if(!fc.exists()){
+	        		fc.mkdir();
+	        	}	
+	    	}finally{
+	    		fc.close();
+	    		fc = null;
+	    	}
+		}catch(Exception e){
+			DialogAlertAndExit("create AttDir failed: " + t_attDir);
+			t_attDir = "";
+		}
+				
+		return t_attDir;
+	}
+	
+	private void DialogAlertAndExit(final String _msg) {
+
+		invokeLater(new Runnable() {
+			public void run() {
+				synchronized(getEventLock()) {
+					Dialog.alert(_msg);
+					System.exit(0);
+				}
+			}
+		});
+	
+	}
+	
+	public void SetReportLatestVersion(String _latestVersion){
+		m_latestVersion = _latestVersion;
+		
+		if(m_latestVersion != null){
+			
+			if(m_stateScreen != null){
+				PopupLatestVersionDlg();
+			}			
+		}
+	}
+	
+	private void PopupLatestVersionDlg(){
+		
+		if(m_latestVersion != null){
+						
+			Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,sm_local.getString(localResource.LATEST_VER_REPORT) + m_latestVersion,
+					Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL);
+			
+			t_dlg.setDialogClosedListener(new DialogClosedListener(){
+			
+				public void dialogClosed(Dialog dialog, int choice) {
+					
+					switch (choice) {
+						case Dialog.OK:
+							openURL("http://code.google.com/p/yuchberry/downloads/list");
+							
+							break;
+						
+						default:
+							break;
+					}
+				}
+			});
+			
+			t_dlg.setEscapeEnabled(true);
+			synchronized (getEventLock()) {
+				pushGlobalScreen(t_dlg,1, UiEngine.GLOBAL_QUEUE);
+			}
+			
+			m_latestVersion = null;
+		}
 	}
 	
 	public String GetWeiboHeadImageDir(){
@@ -340,7 +431,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public String GetURLAppendString(){
 
-		String t_result = new String();
+		String t_result = "";
 		
 		String t_APN = GetAPNName();
 				
@@ -393,126 +484,263 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return m_useSSL;
 	}
 	
+	public boolean UseMDS(){
+		return m_useMDS;
+	}
+	
 	public int GetPulseIntervalMinutes(){
 		return fsm_pulseInterval[m_pulseIntervalIndex];
 	}
 	
+	
+//	static public synchronized void Copyfile(String _from,String _to)throws Exception{
+//		
+//		byte[] t_buffer = null;
+//		
+//		FileConnection t_fromFile = (FileConnection) Connector.open(_from,Connector.READ_WRITE);
+//		try{
+//			if(t_fromFile.exists()){
+//
+//				t_buffer = new byte[(int)t_fromFile.fileSize()];
+//				InputStream t_readFile = t_fromFile.openInputStream();
+//				try{
+//					t_readFile.read(t_buffer);
+//				}finally{
+//					
+//					t_readFile.close();
+//					t_readFile = null;
+//				}
+//								
+//			}else{
+//				return ;
+//			}
+//			
+//		}finally{		
+//			
+//			t_fromFile.close();
+//			t_fromFile = null;
+//		}	
+//		
+//		
+//		FileConnection t_toFile  = (FileConnection) Connector.open(_to,Connector.READ_WRITE);
+//		try{
+//			if(!t_toFile.exists()){
+//				t_toFile.create();
+//			}
+//			
+//			OutputStream t_writeFile = t_toFile.openOutputStream();
+//			try{
+//				t_writeFile.write(t_buffer);
+//			}finally{
+//				t_writeFile.close();
+//				t_writeFile = null;							
+//			}
+//		}finally{
+//			t_toFile.close();
+//			t_toFile = null;
+//		}		
+//	}
+	
+	static final String fsm_initFilename_init_data = "Init.data";
+	static final String fsm_initFilename_back_init_data = "~Init.data";
+	
+	static final String fsm_initFilename = uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + fsm_initFilename_init_data;
+	static final String fsm_backInitFilename = uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + fsm_initFilename_back_init_data;
+	
+	private synchronized void PreWriteReadIni(boolean _read){
+		
+		try{
+
+			if(_read){
+							
+				FileConnection t_back = (FileConnection) Connector.open(fsm_backInitFilename,Connector.READ_WRITE);
+				try{
+					if(t_back.exists()){
+						FileConnection t_ini	= (FileConnection) Connector.open(fsm_initFilename,Connector.READ_WRITE);
+						try{
+							if(t_ini.exists()){
+								t_ini.delete();
+							}	
+						}finally{
+							t_ini.close();
+							t_ini = null;
+						}
+						
+						t_back.rename(fsm_initFilename_init_data);
+					}
+				}finally{
+					t_back.close();
+					t_back = null;
+				}				
+				
+			}else{
+				
+				FileConnection t_ini	= (FileConnection) Connector.open(fsm_initFilename,Connector.READ_WRITE);
+				try{
+					if(t_ini.exists()){
+						t_ini.rename(fsm_initFilename_back_init_data);
+					}
+				}finally{
+					t_ini.close();
+					t_ini = null;
+				}
+				
+				// needn't copy ,the normal WriteReadIni method will re-create the init.data file
+				//
+				//Copyfile(fsm_backInitFilename,fsm_initFilename);
+			}
+			
+		}catch(Exception e){
+			SetErrorString("write/read PreWriteReadIni file from SDCard error :" + e.getMessage() + e.getClass().getName());
+		}
+		
+	}
 	public synchronized void WriteReadIni(boolean _read){
+		
+		// process the ~Init.data file to restore the destroy original file
+		// that writing when device is down  
+		//
+		// check the issue 85 
+		// http://code.google.com/p/yuchberry/issues/detail?id=85&colspec=ID%20Type%20Status%20Priority%20Stars%20Summary
+		//
+		PreWriteReadIni(_read);
 		
 		try{
 			
-			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + "Init.data",
-																Connector.READ_WRITE);
-			if(_read){
-
-		    	if(fc.exists()){
-		    		InputStream t_readFile = fc.openInputStream();
-		    		
-		    		final int t_currVer = sendReceive.ReadInt(t_readFile);
-		    		
-		    		m_hostname		= sendReceive.ReadString(t_readFile);
-		    		m_port			= sendReceive.ReadInt(t_readFile);
-		    		m_userPassword	= sendReceive.ReadString(t_readFile);
-		    		
-		    		// read the APN validate 
-		    		//
-		    		final int t_apnNum = sendReceive.ReadInt(t_readFile);
-		    		for(int i = 0 ;i < t_apnNum;i++){
-		    			APNSelector t_sel = new APNSelector();
-		    			t_sel.m_name 		= sendReceive.ReadString(t_readFile);
-		    			t_sel.m_validateNum	= sendReceive.ReadInt(t_readFile);
-		    			m_APNList.addElement(t_sel);
-		    		}
-		    		
-		    		if(t_currVer >= 2){
-		    			m_useSSL = (t_readFile.read() == 0)?false:true;
-		    		}
-		    		
-		    		
-		    		if(t_currVer >= 4){
-		    			m_useWifi = (t_readFile.read() == 0)?false:true;
-		    			m_appendString = sendReceive.ReadString(t_readFile);		    			
-		    		}
-		    		
-		    		if(t_currVer >= 5){
-		    			m_autoRun = (t_readFile.read() == 0)?false:true;		    			
-		    		}
-		    		
-		    		if(t_currVer >= 6){
-		    			m_uploadByte = sendReceive.ReadLong(t_readFile);
-		    			m_downloadByte = sendReceive.ReadLong(t_readFile);
-		    		}
-		    		
-		    		if(t_currVer >= 7){
-		    			m_pulseIntervalIndex = sendReceive.ReadInt(t_readFile);
-		    		}
-		    		
-		    		if(t_currVer >= 8){
-		    			m_fulldayPrompt = t_readFile.read() == 1?true:false;
-		    			m_startPromptHour = sendReceive.ReadInt(t_readFile);
-	    				m_endPromptHour = sendReceive.ReadInt(t_readFile);		    			
-		    		}	
-		    		
-		    		if(t_currVer >= 8){
-		    			m_useLocationInfo = t_readFile.read() == 1?true:false;
-		    		}
-		    		
-		    		t_readFile.close();
-		    		
-		    	}
-			}else{
-				if(!fc.exists()){
-					fc.create();
-				}				
-				
-				OutputStream t_writeFile = fc.openOutputStream();
-				
-				sendReceive.WriteInt(t_writeFile,fsm_clientVersion);
-				
-				sendReceive.WriteString(t_writeFile, m_hostname);
-				sendReceive.WriteInt(t_writeFile,m_port);
-				sendReceive.WriteString(t_writeFile, m_userPassword);
-				
-				// write the APN name and validate number
-				//
-				sendReceive.WriteInt(t_writeFile,m_APNList.size());
-				for(int i = 0 ;i < m_APNList.size();i++){
-					APNSelector t_sel = (APNSelector)m_APNList.elementAt(i);
-					sendReceive.WriteString(t_writeFile,t_sel.m_name);
-					sendReceive.WriteInt(t_writeFile,t_sel.m_validateNum);
+			FileConnection fc = (FileConnection) Connector.open(fsm_initFilename,Connector.READ_WRITE);
+			try{
+				if(_read){
+					
+			    	if(fc.exists()){
+			    		InputStream t_readFile = fc.openInputStream();
+			    		try{
+			    			final int t_currVer = sendReceive.ReadInt(t_readFile);
+				    		
+				    		m_hostname		= sendReceive.ReadString(t_readFile);
+				    		m_port			= sendReceive.ReadInt(t_readFile);
+				    		m_userPassword	= sendReceive.ReadString(t_readFile);
+				    		
+				    		// read the APN validate 
+				    		//
+				    		final int t_apnNum = sendReceive.ReadInt(t_readFile);
+				    		for(int i = 0 ;i < t_apnNum;i++){
+				    			APNSelector t_sel = new APNSelector();
+				    			t_sel.m_name 		= sendReceive.ReadString(t_readFile);
+				    			t_sel.m_validateNum	= sendReceive.ReadInt(t_readFile);
+				    			m_APNList.addElement(t_sel);
+				    		}
+				    		
+				    		if(t_currVer >= 2){
+				    			m_useSSL = (t_readFile.read() == 0)?false:true;
+				    		}
+				    		
+				    		
+				    		if(t_currVer >= 4){
+				    			m_useWifi = (t_readFile.read() == 0)?false:true;
+				    			m_appendString = sendReceive.ReadString(t_readFile);		    			
+				    		}
+				    		
+				    		if(t_currVer >= 5){
+				    			m_autoRun = (t_readFile.read() == 0)?false:true;		    			
+				    		}
+				    		
+				    		if(t_currVer >= 6){
+				    			m_uploadByte = sendReceive.ReadLong(t_readFile);
+				    			m_downloadByte = sendReceive.ReadLong(t_readFile);
+				    		}
+				    		
+				    		if(t_currVer >= 7){
+				    			m_pulseIntervalIndex = sendReceive.ReadInt(t_readFile);
+				    		}
+				    		
+				    		if(t_currVer >= 8){
+				    			m_fulldayPrompt = t_readFile.read() == 1?true:false;
+				    			m_startPromptHour = sendReceive.ReadInt(t_readFile);
+			    				m_endPromptHour = sendReceive.ReadInt(t_readFile);		    			
+				    		}	
+				    		
+				    		if(t_currVer >= 8){
+				    			m_useLocationInfo = t_readFile.read() == 1?true:false;
+				    		}
+				    		
+				    		if(t_currVer >= 10){
+				    			m_useMDS = t_readFile.read() == 1?true:false;
+				    		}
+			    		}finally{
+			    			t_readFile.close();
+			    			t_readFile = null;
+			    		}
+			    	}
+				}else{
+					if(!fc.exists()){
+						fc.create();
+					}				
+					
+					OutputStream t_writeFile = fc.openOutputStream();
+					try{
+						sendReceive.WriteInt(t_writeFile,fsm_clientVersion);
+						
+						sendReceive.WriteString(t_writeFile, m_hostname);
+						sendReceive.WriteInt(t_writeFile,m_port);
+						sendReceive.WriteString(t_writeFile, m_userPassword);
+						
+						// write the APN name and validate number
+						//
+						sendReceive.WriteInt(t_writeFile,m_APNList.size());
+						for(int i = 0 ;i < m_APNList.size();i++){
+							APNSelector t_sel = (APNSelector)m_APNList.elementAt(i);
+							sendReceive.WriteString(t_writeFile,t_sel.m_name);
+							sendReceive.WriteInt(t_writeFile,t_sel.m_validateNum);
+						}
+						
+						t_writeFile.write(m_useSSL?1:0);
+						t_writeFile.write(m_useWifi?1:0);
+						sendReceive.WriteString(t_writeFile,m_appendString);
+						
+						t_writeFile.write(m_autoRun?1:0);
+						
+						sendReceive.WriteLong(t_writeFile,m_uploadByte);
+						sendReceive.WriteLong(t_writeFile, m_downloadByte);
+						
+						sendReceive.WriteInt(t_writeFile,m_pulseIntervalIndex);
+						
+						
+						t_writeFile.write(m_fulldayPrompt?1:0);
+						sendReceive.WriteInt(t_writeFile,m_startPromptHour);
+						sendReceive.WriteInt(t_writeFile,m_endPromptHour);
+						
+						t_writeFile.write(m_useLocationInfo?1:0);
+						t_writeFile.write(m_useMDS?1:0);
+						
+						if(m_connectDeamon.m_connect != null){
+							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
+						}
+						
+					}finally{
+						t_writeFile.close();
+						t_writeFile = null;
+					}
+					
+					// delete the back file ~Init.data
+					//
+					FileConnection t_backFile = (FileConnection) Connector.open(fsm_backInitFilename,Connector.READ_WRITE);
+					try{
+						if(t_backFile.exists()){
+							t_backFile.delete();
+						}
+					}finally{
+						t_backFile.close();
+						t_backFile = null;
+					}
 				}
-				
-				t_writeFile.write(m_useSSL?1:0);
-				t_writeFile.write(m_useWifi?1:0);
-				sendReceive.WriteString(t_writeFile,m_appendString);
-				
-				t_writeFile.write(m_autoRun?1:0);
-				
-				sendReceive.WriteLong(t_writeFile,m_uploadByte);
-				sendReceive.WriteLong(t_writeFile, m_downloadByte);
-				
-				sendReceive.WriteInt(t_writeFile,m_pulseIntervalIndex);
-				
-				
-				t_writeFile.write(m_fulldayPrompt?1:0);
-				sendReceive.WriteInt(t_writeFile,m_startPromptHour);
-				sendReceive.WriteInt(t_writeFile,m_endPromptHour);
-				
-				t_writeFile.write(m_useLocationInfo?1:0);
-								
-				t_writeFile.close();
-				
-				if(m_connectDeamon.m_connect != null){
-					m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
-				}
-				
+			}finally{
+				fc.close();
+				fc = null;
 			}
-			
-			fc.close();
-			
+						
 		}catch(Exception _e){
 			SetErrorString("write/read config file from SDCard error :" + _e.getMessage() + _e.getClass().getName());
-		}
+		}	
 		
 		if(m_locationProvider != null){
 			if(m_useLocationInfo){
@@ -621,6 +849,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		if(m_stateScreen == null){
 			m_stateScreen = new stateScreen(this);
 			pushScreen(m_stateScreen);
+			
+			PopupLatestVersionDlg();
 		}		
 	}
 	
@@ -699,9 +929,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 		    public void run(){
 		    	
-//		    	if(CheckMediaNativeApps(_filename)){
-//		    		return;
-//		    	}
+		    	if(CheckMediaNativeApps(_filename)){
+		    		return;
+		    	}
 		    	
 		    	recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
 		    	try{
@@ -724,8 +954,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		});
 	}
 	
-//	public boolean CheckMediaNativeApps(String _filename){
-//		
+	public boolean CheckMediaNativeApps(String _filename){
+		
 //		try{
 //			Invocation request = new Invocation(_filename);
 //			Registry registry = Registry.getRegistry("net.rim.device.api.content.BlackBerryContentHandler");
@@ -735,9 +965,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 //		}catch(Exception e){
 //			SetErrorString("Invoke native apps failed:"+ e.getMessage());
 //		}
-//		
-//		return false;		
-//	}
+		
+		return false;		
+	}
 	
 	public void UpdateMessageStatus(final Message m,final int _status){
 		
@@ -788,7 +1018,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				switch (choice) {
 					case Dialog.OK:
 						recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
-						t_mainApp.PushViewFileScreen(t_mainApp.m_attachmentDir + _att.m_realName);
+						t_mainApp.PushViewFileScreen(t_mainApp.GetAttachmentDir() + _att.m_realName);
 						break;
 					
 					default:
@@ -896,8 +1126,20 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}			
 	}
 	
+	public void clearDebugMenu(){
+		m_errorString.removeAllElements();
+		
+		if(m_debugInfoScreen != null){
+			m_debugInfoScreen.RefreshText();
+		}
+	}
 	public final Vector GetErrorString(){
 		return m_errorString;
+	}
+	
+	static public void openURL(String _url){
+		BrowserSession browserSession = Browser.getDefaultSession();
+		browserSession.displayPage(_url);
 	}
 	
 	static public String GetByteStr(long _byte){

@@ -285,9 +285,8 @@ public class connectDeamon extends Thread implements SendListener,
 	            output.flush();
 	            output.close();
 	            
-	            BrowserSession browserSession = Browser.getDefaultSession();
-				browserSession.displayPage(output.toString());	
-				
+	            recvMain.openURL(output.toString());
+	            
 			}catch(Exception e){
 				m_mainApp.DialogAlert("open the attachment file failed:\n" + e.getMessage());
 			}
@@ -308,7 +307,7 @@ public class connectDeamon extends Thread implements SendListener,
 				final int t_attachSize		= sendReceive.ReadInt(in);
 				final String t_realName		= sendReceive.ReadString(in);
 				
-				final String t_filename = m_mainApp.m_attachmentDir + t_realName;
+				final String t_filename = m_mainApp.GetAttachmentDir() + t_realName;
 				FileConnection t_file = (FileConnection)Connector.open(t_filename,Connector.READ_WRITE);
 				
 				if(t_file.exists()){
@@ -449,44 +448,47 @@ public class connectDeamon extends Thread implements SendListener,
 			}
 				
 			Folder[] t_folders = store.list();
+			
+			find_lab:
 			for(int i = 0 ;i < t_folders.length;i++){
 				Message[] t_messages = t_folders[i].getMessages();
 				
 				// backword search the message
-				for(int j = t_messages.length - 1;j >= 0 ;j++){
+				for(int j = t_messages.length - 1;j >= 0 ;j--){
 					
 					final String t_sub = t_messages[j].getSubject();
 					if(t_messageSub.equals(t_sub)){
 						
 						if(_style == fetchMail.REPLY_STYLE){
-							String t_from = t_messages[j].getFrom().getAddr();
+							// the original reply to
+							//
+							Address[] t_replyTo = t_messages[j].getReplyTo();
 							
-							Address[] t_replyTo = _message.getRecipients(Message.RecipientType.TO);
+							// the message to reply to
+							//
+							Address[] t_replyTo1 = _message.getRecipients(Message.RecipientType.TO);
+														
 							for(int index = 0;index < t_replyTo.length;index++){
-								if(t_replyTo[index].getAddr().equals(t_from)){
-									t_org = t_messages[j];
-									break;
+								
+								for(int index1 = 0;index1 < t_replyTo1.length;index1++){
+									if(t_replyTo[index].getAddr().equalsIgnoreCase(t_replyTo1[index1].getAddr())){
+										t_org = t_messages[j];
+										break find_lab;
+									}
 								}
-							}
-							
-							if(t_org != null){
-								break;
-							}
+								
+							}																				
 						}else{
 							t_org = t_messages[j];
-							break;
+							break find_lab;
 						}
 						
 					}
 				}
-				
-				if(t_org != null){
-					break;
-				}
 			}
 			
 		}catch(Exception e){
-			
+			m_mainApp.SetErrorString("F:" + e.getMessage() + " " + e.getClass().getName());
 		}
 		
 		return t_org;
@@ -590,28 +592,12 @@ public class connectDeamon extends Thread implements SendListener,
 					sleep(100);
 				}catch(Exception _e){}
 			}			
-			
-			
-			// if it is calling
-			//
-//			try{
-//				while(true){
-//					final PhoneCall t_calling = Phone.getActiveCall();
-//					if(t_calling != null){
-//						m_mainApp.SetErrorString("sleep 10sec when is calling.");
-//						sleep(30000);
-//					}else{
-//						break;
-//					}
-//				}
-//				
-//			}catch(Exception _e){}
-			
+						
 			m_ipConnectCounter = 10;
 			
 			try{
 
-				m_conn = GetConnection(m_mainApp.IsUseSSL());
+				m_conn = GetConnection(m_mainApp.IsUseSSL(),m_mainApp.UseMDS());
 				m_connect = new sendReceive(m_conn.openOutputStream(),m_conn.openInputStream());
 				m_connect.SetKeepliveInterval(m_mainApp.GetPulseIntervalMinutes());
 				
@@ -730,7 +716,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 }
 	 }
 	 
-	 private SocketConnection GetConnection(boolean _ssl,boolean _withParam)throws Exception{
+	 private SocketConnection GetConnection(boolean _ssl,boolean _useMDS)throws Exception{
 		 
 		 final int t_sleep = GetConnectInterval();
 		 if(t_sleep != 0){
@@ -749,22 +735,26 @@ public class connectDeamon extends Thread implements SendListener,
 		 final int		t_hostport = m_mainApp.GetHostPort();
 		 
 		 if(_ssl){
-			 if(_withParam){
-				 URL =  "ssl://" + (t_hostname) + ":" + t_hostport + ";deviceside=true;EndToEndDesired";
+			 if(_useMDS){
+				 URL =  "ssl://" + (t_hostname) + ":" + t_hostport;
 			 }else{
-				 URL =  "ssl://" + (t_hostname) + ":" + t_hostport + ";EndToEndDesired";
+				 URL =  "ssl://" + (t_hostname) + ":" + t_hostport + ";deviceside=true;EndToEndDesired";
 			 }
 			 
 		 }else{
-			 if(_withParam){
-				 URL =  "socket://" +(t_hostname) + ":" + t_hostport + ";deviceside=true";
-			 }else{
+			 if(_useMDS){
 				 URL =  "socket://" +(t_hostname) + ":" + t_hostport;
+			 }else{
+				 URL =  "socket://" +(t_hostname) + ":" + t_hostport + ";deviceside=true";
 			 }			 
 		 }
 		 
-		 String t_append = m_mainApp.GetURLAppendString();
-		 URL = URL + t_append;
+		 String t_append = "";
+		 
+		 if(!_useMDS){
+			 t_append = m_mainApp.GetURLAppendString();
+			 URL = URL + t_append;
+		 }
 		 
 		 SocketConnection socket = null;
 		 
@@ -778,37 +768,37 @@ public class connectDeamon extends Thread implements SendListener,
 			 try{
 				 socket.setSocketOption(SocketConnection.DELAY, 0);	 
 			 }catch(Exception _e){
-				 m_mainApp.SetErrorString("CM0: " +_e.getMessage() + t_append + " " + _e.getClass().getName());
+				 m_mainApp.SetErrorString("CM0: " +_e.getMessage() + _e.getClass().getName());
 			 }
 			 
 			 try{
 				 socket.setSocketOption(SocketConnection.KEEPALIVE,m_mainApp.GetPulseIntervalMinutes());
 			 }catch(Exception _e){
-				 m_mainApp.SetErrorString("CM1: " +_e.getMessage() + t_append + " " + _e.getClass().getName());
+				 m_mainApp.SetErrorString("CM1: " +_e.getMessage()  + _e.getClass().getName());
 			 }
 			 
 			 try{
 				 socket.setSocketOption(SocketConnection.LINGER, 0);
 			 }catch(Exception _e){
-				 m_mainApp.SetErrorString("CM2: " +_e.getMessage() + t_append + " " + _e.getClass().getName());
+				 m_mainApp.SetErrorString("CM2: " +_e.getMessage() + _e.getClass().getName());
 			 }
 			 
 			 try{
-				 socket.setSocketOption(SocketConnection.RCVBUF, 512);
+				 socket.setSocketOption(SocketConnection.RCVBUF, 256);
 			 }catch(Exception _e){
-				 m_mainApp.SetErrorString("CM3: " +_e.getMessage() + t_append + " " + _e.getClass().getName());
+				 m_mainApp.SetErrorString("CM3: " +_e.getMessage()+ _e.getClass().getName());
 			 }
 			 
 			 try{
 				 socket.setSocketOption(SocketConnection.SNDBUF, 128);
 			 }catch(Exception _e){
-				 m_mainApp.SetErrorString("CM4: " +_e.getMessage() + t_append + " " + _e.getClass().getName()); 
+				 m_mainApp.SetErrorString("CM4: " +_e.getMessage() + _e.getClass().getName()); 
 			 }
 			 
 			 
 		 }catch(Exception _e){
 
-			 m_mainApp.SetErrorString("CM: " +_e.getMessage() + t_append + " " + _e.getClass().getName());
+			 m_mainApp.SetErrorString("CM: " + t_append + " " +_e.getMessage() + " " + _e.getClass().getName());
 			 
 			 if(_e.getMessage() == null){
 				 throw _e;
@@ -821,14 +811,13 @@ public class connectDeamon extends Thread implements SendListener,
 			 }
 
 			 if(_e.getMessage().indexOf("Tunnel") != -1 
-			 || _e.getMessage().indexOf("tunnel") != -1
-			 || _e.getMessage().indexOf("param") != -1){ // bad parameter
+			 || _e.getMessage().indexOf("tunnel") != -1){ // bad parameter
 				 
-				 socket = GetConnection(_ssl,false);
+				 socket = GetConnection(_ssl,_useMDS);
 				 
 			 }else{
 				 
-				 throw new Exception(_e.getMessage() + " " + t_append + " " + _e.getClass().getName());
+				 throw new Exception(_e.getMessage() + " " + _e.getClass().getName());
 			 }
 		 }
 		 
@@ -1109,7 +1098,7 @@ public class connectDeamon extends Thread implements SendListener,
 					
 					// fetching attachment is over...
 					//
-					FileConnection t_file = (FileConnection)Connector.open(m_mainApp.m_attachmentDir + t_att.m_realName,Connector.READ_WRITE);
+					FileConnection t_file = (FileConnection)Connector.open(m_mainApp.GetAttachmentDir() + t_att.m_realName,Connector.READ_WRITE);
 					if(t_file.exists()){
 						t_file.delete();
 					}

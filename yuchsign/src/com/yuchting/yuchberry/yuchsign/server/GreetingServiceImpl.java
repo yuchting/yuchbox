@@ -32,6 +32,8 @@ import org.xml.sax.InputSource;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.mail.MailService;
+import com.google.appengine.api.mail.MailServiceFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.yuchting.yuchberry.yuchsign.client.GreetingService;
 import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
@@ -495,7 +497,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	            
 	            m_foundPassword = true;		    
 				
-		        return "已经将邮件发送到 " + t_bber.GetSigninName() +" 请及时查收\n如果没有，请在垃圾邮件箱内查找一下。";
+		        return "已经将邮件发送到 " + t_bber.GetSigninName() +" 请及时查收\n如果没有，请在 【垃圾邮件箱】 内查找一下。";
 		        
 			}catch(javax.jdo.JDOObjectNotFoundException e){
 				throw new Exception("找不到用户!");
@@ -549,12 +551,14 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
         		        	
         MimeMessage msg = new MimeMessage(session);
         
-        msg.setFrom(new InternetAddress("yuchting@yuchberry.info"));
-        msg.addRecipient(Message.RecipientType.TO,new InternetAddress(_addr,""));
+        msg.setFrom(new InternetAddress("yuchting@yuchberry.info","YuchBerry Sign"));
+        msg.addRecipient(Message.RecipientType.TO,new InternetAddress(_addr));
         msg.setSubject(_subject,"UTF-8");
         msg.setText(_text,"UTF-8");
         
-        Transport.send(msg);        
+        Transport.send(msg);
+        
+        System.err.println("send message<" + _subject + ">to user:" + _addr);
 	}
 	
 	

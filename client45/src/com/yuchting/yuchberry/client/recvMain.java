@@ -39,7 +39,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	final static int 		fsm_display_width		= Display.getWidth();
 	final static int 		fsm_display_height		= Display.getHeight();
 	
-	final static int		fsm_clientVersion = 9;
+	final static int		fsm_clientVersion = 10;
 	
 	final static long		fsm_notifyID_email = 767918509114947L;
 	
@@ -49,7 +49,6 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	    }
 	};
 	
-	String 				m_attachmentDir 	= null;
 	String 				m_weiboHeadImageDir = null;
 	
     aboutScreen			m_aboutScreen		= null;
@@ -86,6 +85,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	String				m_userPassword 		= new String();
 	boolean			m_useSSL			= false;
 	boolean			m_useWifi			= false;
+	boolean			m_useMDS			= false;
 		
 	boolean			m_autoRun			= false;
 	
@@ -203,41 +203,16 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			DialogAlertAndExit("can't use the dev ROM to store config file!");
         	return;
 		}
-		
-		try{
-			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/",Connector.READ_WRITE);
-			try{
-				if(!fc.exists()){
-					fc.mkdir();
-				}	
-			}finally{
-				fc.close();
-				fc = null;
-			}			
-			t_SDCardUse = true;
-		}catch(Exception e){
-			SetErrorString("SDCard can't be used :(");
-		}
-				
-		m_attachmentDir = (t_SDCardUse?uploadFileScreen.fsm_rootPath_default:uploadFileScreen.fsm_rootPath_back) + "YuchBerry/AttDir/";
+						
+		String t_attachmentDir = GetAttachmentDir();
 		
 		m_weiboHeadImageDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/WeiboImage/";
 		
 		// create the sdcard path 
 		//
         try{
-        	
-        	FileConnection fc = (FileConnection) Connector.open(m_attachmentDir,Connector.READ_WRITE);
-        	try{
-            	if(!fc.exists()){
-            		fc.mkdir();
-            	}	
-        	}finally{
-        		fc.close();
-        		fc = null;
-        	}
-        	
-        	fc = (FileConnection) Connector.open(m_weiboHeadImageDir,Connector.READ_WRITE);
+        	       	
+        	FileConnection fc = (FileConnection) Connector.open(m_weiboHeadImageDir,Connector.READ_WRITE);
         	try{
         		if(!fc.exists()){
             		fc.mkdir();
@@ -248,7 +223,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	}        	
         	
         }catch(Exception _e){
-        	DialogAlertAndExit("can't use the '"+ m_attachmentDir +"' to store attachment!");
+        	DialogAlertAndExit("can't use the '"+ t_attachmentDir +"' to store attachment!");
         	return;
         }
         
@@ -266,6 +241,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			SetErrorString("location:"+e.getMessage()+" " + e.getClass().getName());
 		}     
         
+		// must read the configure first
+		//
+		WriteReadIni(true);
+		
         if(_systemRun){
         	
         	// register the notification
@@ -280,12 +259,49 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         			Start();
         		}catch(Exception e){
         			System.exit(0);
-        		}   		
-        		
+        		}
         	}      	
-        }
-        
-        WriteReadIni(true);
+        }      
+	}
+	
+	public String GetAttachmentDir(){
+		
+		boolean t_SDCardUse = false;
+		
+		String t_attDir = null;
+		try{
+			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/",Connector.READ_WRITE);
+			try{
+				if(!fc.exists()){
+					fc.mkdir();
+				}	
+			}finally{
+				fc.close();
+				fc = null;
+			}			
+			t_SDCardUse = true;
+		}catch(Exception e){
+			SetErrorString("SDCard can't be used :(");
+		}
+		
+		t_attDir = (t_SDCardUse?uploadFileScreen.fsm_rootPath_default:uploadFileScreen.fsm_rootPath_back) + "YuchBerry/AttDir/";
+		
+		try{
+			FileConnection fc = (FileConnection) Connector.open(t_attDir,Connector.READ_WRITE);
+	    	try{
+	        	if(!fc.exists()){
+	        		fc.mkdir();
+	        	}	
+	    	}finally{
+	    		fc.close();
+	    		fc = null;
+	    	}
+		}catch(Exception e){
+			DialogAlertAndExit("create AttDir failed: " + t_attDir);
+			t_attDir = "";
+		}
+				
+		return t_attDir;
 	}
 	
 	private void DialogAlertAndExit(final String _msg) {
@@ -325,8 +341,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					
 					switch (choice) {
 						case Dialog.OK:
-							BrowserSession browserSession = Browser.getDefaultSession();
-							browserSession.displayPage("http://code.google.com/p/yuchberry/downloads/list");
+							openURL("http://code.google.com/p/yuchberry/downloads/list");
+							
 							break;
 						
 						default:
@@ -417,7 +433,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public String GetURLAppendString(){
 
-		String t_result = new String();
+		String t_result = "";
 		
 		String t_APN = GetAPNName();
 				
@@ -468,6 +484,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public boolean IsUseSSL(){
 		return m_useSSL;
+	}
+	
+	public boolean UseMDS(){
+		return m_useMDS;
 	}
 	
 	public int GetPulseIntervalMinutes(){
@@ -644,6 +664,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    		if(t_currVer >= 8){
 				    			m_useLocationInfo = t_readFile.read() == 1?true:false;
 				    		}
+				    		
+				    		if(t_currVer >= 10){
+				    			m_useMDS = t_readFile.read() == 1?true:false;
+				    		}
 			    		}finally{
 			    			t_readFile.close();
 			    			t_readFile = null;
@@ -688,7 +712,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						sendReceive.WriteInt(t_writeFile,m_endPromptHour);
 						
 						t_writeFile.write(m_useLocationInfo?1:0);
-																
+						t_writeFile.write(m_useMDS?1:0);
+						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
 						}
@@ -995,7 +1020,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				switch (choice) {
 					case Dialog.OK:
 						recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
-						t_mainApp.PushViewFileScreen(t_mainApp.m_attachmentDir + _att.m_realName);
+						t_mainApp.PushViewFileScreen(t_mainApp.GetAttachmentDir() + _att.m_realName);
 						break;
 					
 					default:
@@ -1103,8 +1128,20 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}			
 	}
 	
+	public void clearDebugMenu(){
+		m_errorString.removeAllElements();
+		
+		if(m_debugInfoScreen != null){
+			m_debugInfoScreen.RefreshText();
+		}
+	}
 	public final Vector GetErrorString(){
 		return m_errorString;
+	}
+	
+	static public void openURL(String _url){
+		BrowserSession browserSession = Browser.getDefaultSession();
+		browserSession.displayPage(_url);
 	}
 	
 	static public String GetByteStr(long _byte){

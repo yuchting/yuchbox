@@ -207,7 +207,7 @@ public class Yuchsign implements EntryPoint {
 		}
 		
 		if(_signinState){
-			Yuchsign.PopupPrompt("激活邮件已经发送到了 " + t_bber.GetSigninName() + " ，请及时激活。", m_bberPane);
+			Yuchsign.PopupPrompt("激活邮件已经发送到了 " + t_bber.GetSigninName() + " ，请及时激活。\n如果发现没有收到，请在 【垃圾邮件箱】里面查看一下。", m_bberPane);
 		}
 	}
 	

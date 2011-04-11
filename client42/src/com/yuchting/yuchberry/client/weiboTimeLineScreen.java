@@ -31,6 +31,8 @@ class WeiboItemField extends Manager{
 	static HyperlinkButtonField	sm_atBut				= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.AT_WEIBO_BUTTON_LABLE));
 	static HyperlinkButtonField	sm_forwardBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.FORWARD_WEIBO_BUTTTON_LABLE));
 	static HyperlinkButtonField	sm_favoriteBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.FAVORITE_WEIBO_BUTTON_LABLE));
+	
+	// BasicEditField for 4.2os
 	static BasicEditField 			sm_textArea				= new BasicEditField(Field.READONLY);
 	
 	static BasicEditField 			sm_editTextArea			= new BasicEditField(EditField.FILTER_DEFAULT){

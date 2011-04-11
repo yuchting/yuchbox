@@ -19,6 +19,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 	 EditField			m_APN			= null;
 	 EditField			m_appendString	= null;
 	 CheckboxField		m_useSSLCheckbox= null;
+	 CheckboxField		m_uesMDS		= null;
 	 CheckboxField		m_useWifi		= null;
 	 CheckboxField		m_autoRun		= null;
 	 ObjectChoiceField	m_pulseInterval	= null;
@@ -61,6 +62,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 
 		 m_useSSLCheckbox	= new CheckboxField(recvMain.sm_local.getString(localResource.USE_SSL_LABEL),m_mainApp.m_useSSL);
 		 add(m_useSSLCheckbox);
+		 
+		 m_uesMDS			= new CheckboxField(recvMain.sm_local.getString(localResource.USE_MDS),m_mainApp.UseMDS());
+		 add(m_uesMDS);
 		 
 		 m_useWifi			= new CheckboxField(recvMain.sm_local.getString(localResource.USE_WIFI_LABEL), m_mainApp.m_useWifi);
 		 add(m_useWifi);
@@ -162,6 +166,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		m_mainApp.m_pulseIntervalIndex = m_pulseInterval.getSelectedIndex();
 		m_mainApp.m_useLocationInfo = m_useLocationInfo.getChecked();
 		
+		m_mainApp.m_useMDS = m_uesMDS.getChecked();
 		m_mainApp.m_fulldayPrompt	= m_fulldayPrompt.getChecked();				
 		
 		m_mainApp.WriteReadIni(false);

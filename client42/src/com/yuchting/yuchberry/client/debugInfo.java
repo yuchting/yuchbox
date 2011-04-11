@@ -2,6 +2,8 @@ package com.yuchting.yuchberry.client;
 
 import java.util.Vector;
 
+import local.localResource;
+
 import net.rim.device.api.i18n.SimpleDateFormat;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Field;
@@ -9,7 +11,10 @@ import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.FontFamily;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
+import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Ui;
+import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.MainScreen;
 
@@ -165,14 +170,45 @@ public class debugInfo extends MainScreen{
 	
 	ErrorLabelText  m_errorText = null;
 	
+	MenuItem 	m_helpMenu = new MenuItem(recvMain.sm_local.getString(localResource.DEBUG_INFO_HELP_MENU), 100, 10) {
+		public void run() {
+			recvMain.openURL("http://code.google.com/p/yuchberry/wiki/Connect_Error_info");	
+		}
+	};
+
+	MenuItem 	m_clearMenu = new MenuItem(recvMain.sm_local.getString(localResource.DEBUG_INFO_CLEAR_MENU), 101, 10) {
+		public void run() {
+			recvMain t_app = (recvMain)UiApplication.getUiApplication();
+			t_app.clearDebugMenu();											
+		}
+	};
+	
 	public debugInfo(recvMain _mainApp){
 		m_mainApp = _mainApp;
 		
 		m_errorText = new ErrorLabelText(m_mainApp.GetErrorString());
         add(m_errorText);
-        
-        
 	}
+	
+	protected void makeMenu(Menu _menu,int instance){
+    	_menu.add(m_helpMenu);
+    	_menu.add(m_clearMenu);
+    }
+	
+	protected boolean keyDown(int keycode,int time){
+    	
+		final int key = Keypad.key(keycode);
+    	switch(key){
+    	case 'H':
+    		m_helpMenu.run();
+    		return true;
+    	case 'C':
+    		m_clearMenu.run();
+    		return true;
+    	}
+    	
+    	return false;    	
+    }    
 	
 	public boolean onClose(){
 		close();
