@@ -574,7 +574,14 @@ public class fetchMgr{
 			
 			ks.load(new FileInputStream(key),keyStorePass);
 			
-			KeyManagerFactory kmf	= KeyManagerFactory.getInstance("SunX509");
+			KeyManagerFactory kmf = null;
+			
+			try{
+				kmf = KeyManagerFactory.getInstance("SunX509");
+			}catch(Exception e){
+				kmf = KeyManagerFactory.getInstance("IbmX509");
+			}
+			
 			kmf.init(ks,keyPassword);
 			
 			SSLContext sslContext = SSLContext.getInstance("SSLv3");

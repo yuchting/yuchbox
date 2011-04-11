@@ -1392,6 +1392,8 @@ public class fetchEmail extends fetchAccount{
 			
 			// attachment 
 			//
+			m_mainMgr.m_logger.LogOut("start download attachFile:" + _mail.GetMailIndex() + "_" + _mail.GetAttachment().size() + ".att");
+			
 			InputStream is = (InputStream)p.getContent();
 			int c;
 			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
@@ -1432,8 +1434,17 @@ public class fetchEmail extends fetchAccount{
 				 */
 				Object o = p.getContent();
 				
-				if (o instanceof InputStream) {
-
+				Vector t_vect = _mail.GetAttachment();
+				if (filename == null){	
+				    filename = "Attachment_" + t_vect.size();
+				}else{
+					filename = DecodeName(filename,true);
+				}
+				
+				m_mainMgr.m_logger.LogOut("start download attachFile:" + _mail.GetMailIndex() + "_" + _mail.GetAttachment().size() + ".att");
+				
+				if (o instanceof InputStream) {				
+					
 				    InputStream is = (InputStream)o;
 				    int c;
 				    ByteArrayOutputStream t_os = new ByteArrayOutputStream();
@@ -1442,21 +1453,16 @@ public class fetchEmail extends fetchAccount{
 				    }
 				    
 				    byte[] t_bytes = t_os.toByteArray();
-				    
-				    StoreAttachment(_mail.GetMailIndex(),_mail.GetAttachment().size(),t_bytes);
-				    				 
-				    Vector t_vect = _mail.GetAttachment();
-					
-					if (filename == null){	
-					    filename = "Attachment_" + t_vect.size();
-					}else{
-						filename = DecodeName(filename,true);
-					}
+				    StoreAttachment(_mail.GetMailIndex(),_mail.GetAttachment().size(),t_bytes);				   
 
-				    _mail.AddAttachment(filename, 
-				    					p.getContentType(),
-				    					StoreAttachment(((MimeBodyPart)p),_mail.GetMailIndex(), t_vect.size()));
-				} 
+				    _mail.AddAttachment(filename,p.getContentType(),t_bytes.length);
+				    
+				}else{
+					
+					 _mail.AddAttachment(filename,
+							 			p.getContentType(),
+							 			StoreAttachment((MimeBodyPart)p, _mail.GetMailIndex(), t_vect.size()));
+				}
 			    
 		    }
 		    
@@ -1473,6 +1479,8 @@ public class fetchEmail extends fetchAccount{
 			    
 			} else if (o instanceof InputStream) {
 
+				m_mainMgr.m_logger.LogOut("start download attachFile:" + _mail.GetMailIndex() + "_" + _mail.GetAttachment().size() + ".att");
+				
 			    InputStream is = (InputStream)o;
 			    int c;
 			    ByteArrayOutputStream t_os = new ByteArrayOutputStream();
@@ -1719,7 +1727,7 @@ public class fetchEmail extends fetchAccount{
 	
 	private  void StoreAttachment(int _mailIndex,int _attachmentIndex,byte[] _contain){
 		String t_filename = GetAccountPrefix() + _mailIndex + "_" + _attachmentIndex + ".att";
-		
+				
 		File t_file = new File(t_filename);
 		if(t_file.exists() && t_file.length() == (long) _contain.length){
 			return;
@@ -1728,9 +1736,12 @@ public class fetchEmail extends fetchAccount{
 		try{
 
 			FileOutputStream fos = new FileOutputStream(t_filename);
-			fos.write(_contain);
-			
-			fos.close();	
+			try{
+				fos.write(_contain);
+			}finally{
+				fos.close();
+			}
+				
 		}catch(Exception _e){
 			m_mainMgr.m_logger.PrinterException(_e);
 		}		
