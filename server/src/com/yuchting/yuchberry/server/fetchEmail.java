@@ -156,9 +156,13 @@ class RecvMailAttach{
 	}
 	
 	public void PrepareForwardReplyContain(String _signature){
-				
+		
+		assert m_sendMail != null;
+		
 		StringBuffer t_string = new StringBuffer();
 		t_string.append(m_sendMail.GetContain());
+		
+		_signature = _signature.replace("$time$", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(m_sendMail.GetSendDate()));
 		t_string.append("\n\n\n" + _signature);
 		
 		String t_originalMsgLine;

@@ -655,12 +655,12 @@ public class fetchMgr{
 		
 		String t_result = t_shorterText.toString();
 		
-		t_result = t_result.replaceAll("&lt;", "<");
-		t_result = t_result.replaceAll("&gt;", ">");
-		t_result = t_result.replaceAll("&amp;", "&");
-		t_result = t_result.replaceAll("&apos;", "'");
-		t_result = t_result.replaceAll("&quot;", "\"");
-		t_result = t_result.replaceAll("&nbsp;", " ");	
+		t_result = t_result.replace("&lt;", "<");
+		t_result = t_result.replace("&gt;", ">");
+		t_result = t_result.replace("&amp;", "&");
+		t_result = t_result.replace("&apos;", "'");
+		t_result = t_result.replace("&quot;", "\"");
+		t_result = t_result.replace("&nbsp;", " ");	
 		
 		if(t_shorted){
 			return "[yuchberry prompt:some URL would be shorted]\n" + t_result;

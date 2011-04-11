@@ -88,12 +88,12 @@ public final class yuchbber {
 	
 	public String OuputXMLData(){
 		
-		String t_signature = m_signature.replaceAll("<","&lt;");
-		t_signature = t_signature.replaceAll(">","&gt;");
-		t_signature = t_signature.replaceAll("&","&amp;");
-		t_signature = t_signature.replaceAll("\"","&quot;");
-		t_signature = t_signature.replaceAll("'","&apos;");
-		t_signature = t_signature.replaceAll("\n","#r");
+		String t_signature = m_signature.replace("<","&lt;");
+		t_signature = t_signature.replace(">","&gt;");
+		t_signature = t_signature.replace("&","&amp;");
+		t_signature = t_signature.replace("\"","&quot;");
+		t_signature = t_signature.replace("'","&apos;");
+		t_signature = t_signature.replace("\n","#r");
 		
 		StringBuffer t_output = new StringBuffer();
 		t_output.append("<yuchbber ").append("name=\"").append(m_signinName).
@@ -147,12 +147,12 @@ public final class yuchbber {
 		
 		m_latestSyncTime = ReadLongAttr(t_elem,"sync");
 		
-		m_signature = m_signature.replaceAll("&lt;", "<");
-		m_signature = m_signature.replaceAll("&gt;", ">");
-		m_signature = m_signature.replaceAll("&amp;", "&");
-		m_signature = m_signature.replaceAll("&apos;", "'");
-		m_signature = m_signature.replaceAll("&quot;", "\"");
-		m_signature = m_signature.replaceAll("#r", "\n");
+		m_signature = m_signature.replace("&lt;", "<");
+		m_signature = m_signature.replace("&gt;", ">");
+		m_signature = m_signature.replace("&amp;", "&");
+		m_signature = m_signature.replace("&apos;", "'");
+		m_signature = m_signature.replace("&quot;", "\"");
+		m_signature = m_signature.replace("#r", "\n");
 		
 		m_emailList.removeAllElements();
 		

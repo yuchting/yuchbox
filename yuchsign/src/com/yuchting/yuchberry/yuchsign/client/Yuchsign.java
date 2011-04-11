@@ -225,7 +225,7 @@ public class Yuchsign implements EntryPoint {
 	
 	public static void PopupPrompt(String _prompt,Widget _attachWidget){
 
-		_prompt = _prompt.replaceAll("\n", "<br />");
+		_prompt = _prompt.replaceAll("[\r\n]", "<br />");
 		
 		HTML label = new HTML(_prompt);
 		label.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);

@@ -247,7 +247,11 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[])throws Exception{
 
-		(new HelloWorld()).berryRecvTest();
+		//(new HelloWorld()).berryRecvTest();
+		String _signature = fetchMgr.ReadSimpleIniFile(fetchEmail.fsm_signatureFilename,"UTF-8",null);
+		_signature = _signature.replace("$time$", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()));
+		
+		System.out.println(_signature);
 	}
 		
 	static public void TestUDP(){

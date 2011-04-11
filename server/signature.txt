@@ -1,4 +1,11 @@
 # 这个文件是签名
 #
---send from my yuchberry
-http://code.google.com/p/yuchberry
+# $time$ 是一个变量，可以被替换成如下模样
+# 2011-04-05 12：20
+# 可以去掉
+# 
+# 详细请见 
+# http://code.google.com/p/yuchberry/issues/detail?id=104&colspec=ID%20Type%20Status%20Priority%20Stars%20Summary#makechanges
+#
+--send from my yuchberry @$time$ 
+http://code.google.com/p/yuchberry 
