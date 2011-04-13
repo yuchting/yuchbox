@@ -149,15 +149,20 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	static public void main(String _arg[]){
 		new fakeMDSSvr();
-		new mainFrame();
+		new mainFrame(_arg);
 	}	
 	
-	public mainFrame(){
+	public mainFrame(String _arg[]){
+		
+		boolean t_hideWindow = _arg.length >= 1 && _arg[0].equalsIgnoreCase("hide");
+		
 		setTitle("yuchberry 集成配置工具 beta");
 		setSize(fsm_width,fsm_height);
 		
-		Image image = getToolkit().createImage(ClassLoader.getSystemResource("com/yuchting/yuchberry/server/frame/logo.png"));
-		setIconImage(image);		
+		if(!t_hideWindow){
+			Image image = getToolkit().createImage(ClassLoader.getSystemResource("com/yuchting/yuchberry/server/frame/logo.png"));
+			setIconImage(image);	
+		}				
 		
 		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		
@@ -219,16 +224,20 @@ public class mainFrame extends JFrame implements ActionListener{
 		ConstructMoveSeparator();
 		ConstructContextMenu();
 				
-		LoadStoreAccountInfo();
+		LoadStoreAccountInfo(t_hideWindow);
 				
 		new checkStateThread(this);
 		
-		setVisible(true);
+		if(!t_hideWindow){
+			// don't set visible
+			//
+			setVisible(true);
+		}	
 		
 		LoadYuchsign();
 	}
 			
-	public void LoadStoreAccountInfo(){
+	public void LoadStoreAccountInfo(final boolean _hideLoad){
 		
 		Thread t_load = new Thread(){
 			public void run(){
@@ -280,8 +289,9 @@ public class mainFrame extends JFrame implements ActionListener{
 						}
 					}					
 					
+
 					t_mainFrame.m_loadDialog.setVisible(false);
-					t_mainFrame.m_loadDialog.dispose();
+					t_mainFrame.m_loadDialog.dispose();					
 					
 				}catch(Exception e){
 					PromptAndLog(e);
@@ -293,7 +303,9 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 		t_load.start();
 		
-		m_loadDialog.setVisible(true);		
+		if(!_hideLoad){
+			m_loadDialog.setVisible(true);
+		}
 	}
 	
 	public synchronized void StoreAccountInfo(){

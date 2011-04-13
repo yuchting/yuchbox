@@ -26,7 +26,7 @@ public class YuchVerifyCodeDlg extends DialogBox{
 		Image t_img = new Image(_imageData);
 		t_mainPane.add(t_img);
 		
-		t_mainPane.add(new HTML("请输入对应的数字："));
+		t_mainPane.add(new HTML("请输入对应的数字：(例如12345)"));
 		
 		final TextBox t_code = new TextBox();
 		t_mainPane.add(t_code);

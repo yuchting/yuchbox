@@ -14,6 +14,8 @@ public class Logger{
 	
 	private String				m_logFilename = "";
 	
+	private boolean			m_systemOut = false;
+	
 	public Logger(){
 		// empty logger
 	}
@@ -22,6 +24,10 @@ public class Logger{
 		m_prefix = _prefix;
 		
 		RestartLogging();
+	}
+	
+	public void EnabelSystemOut(boolean _enabled){
+		m_systemOut = _enabled;
 	}
 	
 	public void SetPrefix(String _prefix){
@@ -38,7 +44,10 @@ public class Logger{
 			SimpleDateFormat format = new SimpleDateFormat("MM-dd HH:mm:ss");
 			
 			String t_out = format.format(new Date()) + ": " + _log + "\n";
-			System.out.print(t_out);
+			
+			if(m_systemOut){
+				System.out.print(t_out);
+			}			
 			
 			try{
 				
@@ -57,7 +66,11 @@ public class Logger{
 			SimpleDateFormat format = new SimpleDateFormat("MM-dd HH:mm:ss :");
 			
 			String t_out = format.format(new Date());
-			System.out.print(t_out);
+			
+			if(m_systemOut){
+				System.out.print(t_out);
+			}
+			
 			try{
 				m_printStack.write(t_out.getBytes());
 				m_logFileStream.flush();
@@ -66,7 +79,9 @@ public class Logger{
 			_e.printStackTrace(m_printStack);
 		}
 		
-		_e.printStackTrace();
+		if(m_systemOut){
+			_e.printStackTrace();
+		}
 	}
 	
 	public void StopLogging(){

@@ -74,6 +74,8 @@ class ContentTab extends TabPanel{
 		String	m_host_send;
 		String	m_port_send;
 		
+		boolean m_useFullnameSignin = false;
+		
 		public commonConfig(String _parserLine){
 			String[] t_data = _parserLine.split(",");
 						
@@ -82,7 +84,8 @@ class ContentTab extends TabPanel{
 			m_host 			= t_data[2];
 			m_port 			= t_data[3];
 			m_host_send		= t_data[4];
-			m_port_send		= t_data[5];			
+			m_port_send		= t_data[5];
+			m_useFullnameSignin = t_data[6].equals("1");
 		}
 		
 		public void SetConfig(ContentTab _dlg){
@@ -102,22 +105,24 @@ class ContentTab extends TabPanel{
 			
 			_dlg.m_host_send.setText(m_host_send);
 			_dlg.m_port_send.setText(m_port_send);
+			
+			_dlg.m_usingFullname.setValue(m_useFullnameSignin);
 		}
 	}
 	
 	final commonConfig[]		m_commonConfigList = 
 	{
-		new commonConfig("Gmail IMAP SSL,imaps,imap.gmail.com,993,smtp.gmail.com,587"),
-		new commonConfig("163邮箱IMAP,imap,imap.163.com,143,smtp.163.com,25"),
-		new commonConfig("126邮箱IMAP,imap,imap.126.com,143,smtp.126.com,25"),
-		new commonConfig("QQ 邮箱 POP3,pop3,pop.qq.com,110,smtp.qq.com,25"),
-		new commonConfig("雅虎邮箱 POP3,pop3,pop.alibaba.com.cn,110,smtp.alibaba.com.cn,25"),
-		new commonConfig("Hotmail POP3 SSL,pop3s,pop3.live.com,995,smtp.live.com,587"),
-		new commonConfig("新浪邮箱 POP3,pop3,pop.sina.com,110,smtp.sina.com,25"),
-		new commonConfig("139 邮箱 POP3,pop3,pop.139.com,110,smtp.139.com,25"),
-		new commonConfig("TOM 邮箱 POP3,pop3,pop.tom.com,110,smtp.tom.com,25"),
-		new commonConfig("21CN 邮箱 POP3,pop3,pop.21cn.com,110,smtp.21cn.com,25"),
-		new commonConfig("Foxmail POP3,pop3,pop.foxmail.com,110,smtp.foxmail.com,25")
+		new commonConfig("Gmail IMAP SSL,imaps,imap.gmail.com,993,smtp.gmail.com,587,0"),
+		new commonConfig("163邮箱IMAP,imap,imap.163.com,143,smtp.163.com,25,0"),
+		new commonConfig("126邮箱IMAP,imap,imap.126.com,143,smtp.126.com,25,0"),
+		new commonConfig("QQ 邮箱 POP3,pop3,pop.qq.com,110,smtp.qq.com,25,0"),
+		new commonConfig("雅虎邮箱 POP3,pop3,pop.alibaba.com.cn,110,smtp.alibaba.com.cn,25,0"),
+		new commonConfig("Hotmail POP3 SSL,pop3s,pop3.live.com,995,smtp.live.com,587,1"),
+		new commonConfig("新浪邮箱 POP3,pop3,pop.sina.com,110,smtp.sina.com,25,0"),
+		new commonConfig("139 邮箱 POP3,pop3,pop.139.com,110,smtp.139.com,25,0"),
+		new commonConfig("TOM 邮箱 POP3,pop3,pop.tom.com,110,smtp.tom.com,25,0"),
+		new commonConfig("21CN 邮箱 POP3,pop3,pop.21cn.com,110,smtp.21cn.com,25,0"),
+		new commonConfig("Foxmail POP3,pop3,pop.qq.com,110,smtp.qq.com,25,1")
 	};
 	
 	public ContentTab(){
@@ -966,10 +971,10 @@ public class BberPanel extends TabPanel{
 		}
 		
 		StringBuffer t_search = new StringBuffer();
-		t_search.append("错误：").append(_help).append("\n");
+		t_search.append("配置推送账户出现错误：").append(_help).append("\n");
 
 		t_search.append("<a href=\"http://www.google.com.hk/search?hl=zh-CN&source=hp&q=").append(URL.encode(_help)).
-				append("\" target=_blank>搜索获得帮助</a>");		
+				append("\" target=_blank>搜索获得帮助</a>，有任何疑问请联系:<a href=\"mailto:yuchberry@gmail.com\">yuchberry@gmail.com</a>");		
 		
 		Yuchsign.PopupPrompt(t_search.toString(),_panel);
 	}

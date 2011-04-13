@@ -42,6 +42,8 @@ public class fetchMain{
 		fetchMgr t_manger = new fetchMgr();
 		Logger t_logger = new Logger("");
 		
+		t_logger.EnabelSystemOut(true);
+		
 		CheckVersion t_check = new CheckVersion();
 		t_check.m_fetchMain = t_manger;
 		t_check.start();
