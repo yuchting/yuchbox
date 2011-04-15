@@ -210,7 +210,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 						m_mainApp.m_port 			= Integer.valueOf(m_hostport.getText()).intValue();
 						m_mainApp.m_userPassword 	= m_userPassword.getText();
 
-						m_mainApp.m_connectDeamon.Connect(false);
+						m_mainApp.m_connectDeamon.Connect();
 						
 						m_connectBut.setLabel(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
 						

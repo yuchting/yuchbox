@@ -27,7 +27,10 @@ import net.rim.device.api.notification.NotificationsConstants;
 import net.rim.device.api.notification.NotificationsManager;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.CoverageInfo;
 import net.rim.device.api.system.Display;
+import net.rim.device.api.system.RadioInfo;
+import net.rim.device.api.system.WLANInfo;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
@@ -255,7 +258,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         		System.exit(0);
         	}else{
         		try{
-        			m_connectDeamon.Connect(true);
+        			m_connectDeamon.Connect();
         			Start();
         		}catch(Exception e){
         			System.exit(0);
@@ -397,6 +400,17 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return "";
 	}
 	
+	public boolean UseWifiConnection(){
+		// 4.2
+		// return false;
+		int stat = WLANInfo.getWLANState();
+		boolean t_connect = WLANInfo.getWLANState() == WLANInfo.WLAN_STATE_CONNECTED;
+		t_connect = WLANInfo.getAPInfo() != null;
+		t_connect = WLANInfo.getWLANState() != WLANInfo.WLAN_STATE_DISCONNECTED; 
+		t_connect = CoverageInfo.isCoverageSufficient(CoverageInfo.COVERAGE_DIRECT,RadioInfo.WAF_WLAN, false);
+		return m_useWifi && t_connect;
+	}
+	
 	public void SetAPNName(String _APNList){
 		
 		m_APNList.removeAllElements();
@@ -435,11 +449,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 
 		String t_result = "";
 		
-		String t_APN = GetAPNName();
-				
-		if(m_useWifi){
+		if(UseWifiConnection()){
+			
 			t_result = ";interface=wifi";
+			
 		}else{
+			
+			String t_APN = GetAPNName();
+			
 			if(t_APN.length() != 0){
 				t_result = ";apn=" + t_APN;			
 			}

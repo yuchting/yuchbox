@@ -598,6 +598,11 @@ public class connectDeamon extends Thread implements SendListener,
 			try{
 
 				m_conn = GetConnection(m_mainApp.IsUseSSL(),m_mainApp.UseMDS());
+				
+				// TCP connect flowing bytes statistics 
+				//
+				m_mainApp.StoreUpDownloadByte(72,40,false);
+				
 				m_connect = new sendReceive(m_conn.openOutputStream(),m_conn.openInputStream());
 				m_connect.SetKeepliveInterval(m_mainApp.GetPulseIntervalMinutes());
 				
@@ -820,10 +825,6 @@ public class connectDeamon extends Thread implements SendListener,
 				 throw new Exception(_e.getMessage() + " " + _e.getClass().getName());
 			 }
 		 }
-		 
-		 // TCP connect flowing bytes statistics 
-		 //
-		 m_mainApp.StoreUpDownloadByte(72,40,false);
 		 		 
 		 return socket;
 	 }

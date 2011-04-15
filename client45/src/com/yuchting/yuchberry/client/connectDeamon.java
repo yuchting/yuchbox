@@ -40,6 +40,7 @@ import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.io.Base64OutputStream;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.ui.UiApplication;
 
 public class connectDeamon extends Thread implements SendListener,
@@ -60,7 +61,6 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	Vector				m_sendingMailAttachment = new Vector();
 	
-	boolean			m_systemStart			= false;
 	boolean			m_disconnect 			= true;
 	
 	public Vector 		m_markReadVector 		= new Vector();
@@ -578,26 +578,23 @@ public class connectDeamon extends Thread implements SendListener,
 
 			m_sendAuthMsg = false;
 			
-			if(m_systemStart){
-				// wait 25.sec for geting GPRS if it's system start connect 
-				//
-				m_systemStart = false;
+			while((RadioInfo.getSignalLevel() == RadioInfo.LEVEL_NO_COVERAGE && !m_mainApp.UseWifiConnection())
+					|| m_disconnect == true){
 				try{
-					sleep(25000);
-				}catch(Exception _e){}
+					sleep(15000);
+				}catch(Exception _e){}	
 			}
-			
-			while(m_disconnect == true){
-				try{
-					sleep(100);
-				}catch(Exception _e){}
-			}			
-						
+												
 			m_ipConnectCounter = 10;
 			
 			try{
 
 				m_conn = GetConnection(m_mainApp.IsUseSSL(),m_mainApp.UseMDS());
+				
+				// TCP connect flowing bytes statistics 
+				//
+				m_mainApp.StoreUpDownloadByte(72,40,false);
+				
 				m_connect = new sendReceive(m_conn.openOutputStream(),m_conn.openInputStream());
 				m_connect.SetKeepliveInterval(m_mainApp.GetPulseIntervalMinutes());
 				
@@ -663,12 +660,11 @@ public class connectDeamon extends Thread implements SendListener,
 		
 	 }
 	 
-	 public synchronized void Connect(boolean _systemStart)throws Exception{
+	 public synchronized void Connect()throws Exception{
 		 
 		 Disconnect();
 		
 		 m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTING_LABEL));
-		 m_systemStart = _systemStart;
 		 m_disconnect = false;
 		
 		 BeginListener();
@@ -820,11 +816,7 @@ public class connectDeamon extends Thread implements SendListener,
 				 throw new Exception(_e.getMessage() + " " + _e.getClass().getName());
 			 }
 		 }
-		 
-		 // TCP connect flowing bytes statistics 
-		 //
-		 m_mainApp.StoreUpDownloadByte(72,40,false);
-		 		 
+		 		 		 
 		 return socket;
 	 }
 	 
