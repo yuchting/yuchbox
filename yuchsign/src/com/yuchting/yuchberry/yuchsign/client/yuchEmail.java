@@ -19,20 +19,15 @@ public class yuchEmail {
 
 	public String m_protocol = "imaps";
 	
-
 	public String m_host = "";
 	
-
 	public int m_port = 993;
 		
-
 	public String m_host_send = "";
 	
-
 	public int m_port_send = 587;
 	
 	public boolean m_appendHTML = false;
-	
 	
 	public void OuputXMLData(final StringBuffer _output){
 		
@@ -61,7 +56,7 @@ public class yuchEmail {
 		m_host_send		= yuchbber.ReadStringAttr(_elem, "hosts");
 		m_port_send		= yuchbber.ReadIntegerAttr(_elem, "ports");
 		
-		m_appendHTML	= yuchbber.ReadBooleanAttr(_elem, "appHTML");		
+		m_appendHTML	= yuchbber.ReadBooleanAttr(_elem, "appHTML");
 	}
 	
 	public String toString(){

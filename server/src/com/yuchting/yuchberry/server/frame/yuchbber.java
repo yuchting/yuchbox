@@ -175,7 +175,7 @@ public final class yuchbber {
 	static public String ReadStringAttr(Element _elem,String _attrName)throws Exception{
 		String attr = _elem.attributeValue(_attrName);
 		if(attr == null){
-			throw new Exception("Element without attribute:" + _attrName);
+			attr = "0";
 		}
 		
 		return attr;

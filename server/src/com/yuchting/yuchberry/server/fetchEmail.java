@@ -287,6 +287,8 @@ public class fetchEmail extends fetchAccount{
 	boolean m_useFullNameSignIn		= false;
 	String 	m_password 					= null;
 	
+    boolean m_pushHistoryMsg			= false;
+	
 	Vector<Long> m_vectHasBeenSent		= new Vector<Long>();
 	
 	
@@ -305,7 +307,7 @@ public class fetchEmail extends fetchAccount{
     Vector m_vectPushedMailIndex 		= new Vector();
     
     int		m_beginFetchIndex 			= 0;
-    int		m_totalMailCount			= 0;
+    int		m_totalMailCount			= -1;
     
     int		m_unreadFetchIndex			= 0;
     
@@ -394,6 +396,10 @@ public class fetchEmail extends fetchAccount{
 		return "Email <" + GetAccountName() + ">"; 
 	}
 	
+	public boolean IsPushHistoryMsg(){
+		return m_pushHistoryMsg;
+	}
+	
 	public void InitAccount(Element _elem)throws Exception{
 		
 		m_strUserNameFull					= ReadStringAttr(_elem,"account");
@@ -415,6 +421,16 @@ public class fetchEmail extends fetchAccount{
 		m_port_send							= ReadIntegerAttr(_elem,"port_send");
 		
 		m_useAppendHTML						= ReadBooleanAttr(_elem,"appendHTML");
+
+		if(_elem.attributeValue("pushHistoryMsg") != null){
+			m_pushHistoryMsg					= ReadBooleanAttr(_elem,"pushHistoryMsg");
+		}else{
+			if(m_host.equalsIgnoreCase("pop.qq.com")){
+				m_pushHistoryMsg = false;
+			}else{
+				m_pushHistoryMsg = true;
+			}
+		}		
 		
 		File t_file = new File(GetAccountPrefix());
 		if(!t_file.exists() || !t_file.isDirectory()){
@@ -440,6 +456,11 @@ public class fetchEmail extends fetchAccount{
 	    folder.open(Folder.READ_ONLY);
 	    try{
 	    	final int t_totalMailCount = folder.getMessageCount();
+	    	
+	    	if(m_totalMailCount < 0 && !IsPushHistoryMsg()){
+	    		m_totalMailCount = t_totalMailCount;
+	    		m_beginFetchIndex = t_totalMailCount + 1;
+	    	}
 	    	
 	    	if(m_totalMailCount > t_totalMailCount){
 	    		m_totalMailCount = t_totalMailCount;

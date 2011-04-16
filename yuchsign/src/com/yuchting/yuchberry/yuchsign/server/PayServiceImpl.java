@@ -134,6 +134,8 @@ public class PayServiceImpl extends HttpServlet {
 							}						
 						}
 						
+						t_bber.SetTotalPayFee(t_bber.GetTotalPayFee() + t_total_fee_value);
+						
 						RecalculateTime(t_pm,t_bber,t_payHours,t_nextLev);
 						
 						System.err.println("Pay OK ,notify id:'"+ t_notify_id +"' out trade no:'"+t_out_trade_no +"' total fee:'" + t_total_fee + "'");

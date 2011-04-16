@@ -61,7 +61,7 @@ public class yuchEmail {
 		m_host_send		= yuchbber.ReadStringAttr(_elem, "hosts");
 		m_port_send		= yuchbber.ReadIntegerAttr(_elem, "ports");
 		
-		m_appendHTML	= yuchbber.ReadBooleanAttr(_elem, "appHTML");		
+		m_appendHTML	= yuchbber.ReadBooleanAttr(_elem, "appHTML");
 	}
 	
 	public String toString(){

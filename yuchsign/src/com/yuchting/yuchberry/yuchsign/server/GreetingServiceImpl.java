@@ -171,7 +171,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			try{
 				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);
 				
-				if(t_bber.GetSigninTime() <= 0){
+				if(t_bber.GetSigninTime() <= 0 && !m_isAdministrator){
 					return "<Error>账户尚未激活，请到注册账户的对应邮箱里面查询YuchBerry注册邮件，激活此账户。</Error>";
 				}
 

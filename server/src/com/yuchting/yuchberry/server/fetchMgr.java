@@ -48,7 +48,7 @@ public class fetchMgr{
 	boolean m_convertToSimpleChar 		= false;
 
     boolean m_userSSL					= false;
-    
+        
 	int					m_clientVer		= 0;
     
     Vector<fetchAccount> m_fetchAccount 		= new Vector<fetchAccount>();
@@ -119,6 +119,8 @@ public class fetchMgr{
 		return m_fetchInterval;
 	}
 	
+	
+	
 	public berrySvrDeamon GetClientConnected(){
 		return	m_currConnect;
 	}
@@ -166,7 +168,9 @@ public class fetchMgr{
 			m_listenPort					= fetchAccount.ReadIntegerAttr(t_root,"serverPort");
 			m_fetchInterval					= fetchAccount.ReadIntegerAttr(t_root,"pushInterval");
 			m_userSSL						= fetchAccount.ReadBooleanAttr(t_root,"userSSL");
-			m_convertToSimpleChar			= fetchAccount.ReadBooleanAttr(t_root,"convertoSimpleChar");			
+			m_convertToSimpleChar			= fetchAccount.ReadBooleanAttr(t_root,"convertoSimpleChar");
+			
+			
 			
 			for( Iterator i = t_root.elementIterator("EmailAccount"); i.hasNext();){
 	            Element element = (Element) i.next();

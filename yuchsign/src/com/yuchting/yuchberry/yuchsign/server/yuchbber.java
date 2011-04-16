@@ -20,8 +20,8 @@ import org.xml.sax.InputSource;
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public final class yuchbber {
 	
-	public static final int[] fsm_weekMoney = {2,3,4,5};
-	public static final int[] fsm_levelMoney = {5,5,5,5};
+	public static final int[] fsm_weekMoney = {2,2,3,3};
+	public static final int[] fsm_levelMoney = {2,3,4,5};
 	public static final int[] fsm_intervalMoney = {5,5,5,5};
 	
 	@PrimaryKey
@@ -239,7 +239,7 @@ public final class yuchbber {
 	static public String ReadStringAttr(Element _elem,String _attrName)throws Exception{
 		String attr = _elem.getAttribute(_attrName);
 		if(attr == null){
-			throw new Exception("Element without attribute:" + _attrName);
+			attr = "0";
 		}
 		
 		return attr;
