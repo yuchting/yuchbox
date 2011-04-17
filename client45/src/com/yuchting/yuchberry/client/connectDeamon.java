@@ -409,7 +409,7 @@ public class connectDeamon extends Thread implements SendListener,
 		m_sendStyle = fetchMail.REPLY_STYLE;
 	}
 	//@}
-		
+			
 	public Message FindOrgMessage(Message _message,int _style){
 		
 		Message t_org = null;
@@ -418,6 +418,7 @@ public class connectDeamon extends Thread implements SendListener,
 			String t_messageSub = _message.getSubject();			
 			String t_trimString = null;
 			if(_style == fetchMail.REPLY_STYLE){
+				
 				final int t_code = Locale.getDefaultForSystem().getCode();
 				
 				switch(t_code){
@@ -435,9 +436,8 @@ public class connectDeamon extends Thread implements SendListener,
 				if(t_prefixIndex != -1){
 					t_messageSub = t_messageSub.substring(t_prefixIndex + t_trimString.length());
 				}
-				
+							
 			}else{
-				
 				t_trimString = _message.forward().getSubject();
 				
 				final int t_start = t_trimString.indexOf(t_messageSub);
@@ -445,8 +445,8 @@ public class connectDeamon extends Thread implements SendListener,
 					t_trimString = t_trimString.substring(0,t_start);
 					t_messageSub = t_messageSub.substring(t_trimString.length());
 				}
-			}
-				
+			}			
+			
 			Folder[] t_folders = store.list();
 			
 			find_lab:
@@ -938,9 +938,12 @@ public class connectDeamon extends Thread implements SendListener,
 			// add the message listener to send message to server
 			// to remark the message is read
 			//
-			
 			m.addMessageListener(this);
 			m_markReadVector.addElement(t_mail);
+			
+			// increase the receive mail quantity
+			//
+			m_mainApp.SetRecvMailNum(m_mainApp.GetRecvMailNum() + 1);			
 			
 			// send the msgMailConfirm to server to confirm receive this mail
 			//
@@ -974,6 +977,11 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				if(t_succ){
 					m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_DELIVERED);
+					
+					// increase the send mail quantity
+					//
+					m_mainApp.SetSendMailNum(m_mainApp.GetSendMailNum() + 1);
+					
 				}else{
 					m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_ERROR);
 				}
@@ -1172,8 +1180,23 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		return false;
 	}
-
 	
+	final static String fsm_findPrefix[] = 
+	{
+		"答复： ",
+		"Re: ",
+		"转发： ",
+		"Forward: "
+	};
+	
+	final static String fsm_replacePrefix[] =
+	{
+		"答复 ",
+		"Re ",
+		"转发 ",
+		"Forward ",
+	};
+		
 	public void ImportMail(Message m,fetchMail _mail)throws Exception{
 		
 		_mail.SetAttchMessage(m);
@@ -1204,10 +1227,21 @@ public class connectDeamon extends Thread implements SendListener,
 		    }
 		}		
 		
+		
 		String t_sub = m.getSubject();
 		if(t_sub == null){
 			_mail.SetSubject(fetchMail.fsm_noSubjectTile);
 		}else{
+			
+			// replace the blackberry auto-prefix
+			//
+			for(int i = 0;i < fsm_findPrefix.length;i++){
+				if(t_sub.startsWith(fsm_findPrefix[i])){
+					t_sub = fsm_replacePrefix[i] + t_sub.substring(fsm_findPrefix[i].length());
+					break;
+				}
+			}
+			
 			_mail.SetSubject(t_sub);	
 		}
 		
@@ -1366,6 +1400,7 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	static public void ComposeMessage(Message msg,fetchMail _mail)throws Exception{
 		
+		
 		_mail.SetAttchMessage(msg);
 		
 		if(!_mail.GetFromVect().isEmpty()){
@@ -1394,7 +1429,17 @@ public class connectDeamon extends Thread implements SendListener,
 	    
 	    msg.setFlag(Message.Flag.REPLY_ALLOWED, true);
 	    
-	    msg.setSubject(_mail.GetSubject());
+	    // replace the blackberry auto-prefix
+		//
+	    String t_sub = _mail.GetSubject();
+		for(int i = 0;i < fsm_findPrefix.length;i++){
+			if(t_sub.startsWith(fsm_findPrefix[i])){
+				t_sub = fsm_replacePrefix[i] + t_sub.substring(fsm_findPrefix[i].length());
+				break;
+			}
+		}
+		
+	    msg.setSubject(t_sub);
 	    msg.setHeader("X-Mailer",_mail.GetXMailer());
 	    msg.setSentDate(_mail.GetSendDate());	      
 

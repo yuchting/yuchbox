@@ -460,7 +460,7 @@ public class fetchMgr{
 			// read the google code host page
 			//
 			final String ft_URL = new String("http://code.google.com/p/yuchberry/wiki/Thanks_sheet");
-			String charSet = null;
+			String charSet = "utf-8";
 			StringBuffer t_stringBuffer = new StringBuffer();
 			
 			URL url = new URL(ft_URL);
@@ -626,7 +626,11 @@ public class fetchMgr{
                 if (nextNode instanceof TextNode){
                     TextNode textnode = (TextNode) nextNode;
                     t_text.append(textnode.getText());
-                    t_text.append("\n");
+                    
+                    if(textnode.isWhiteSpace()){
+                    	t_text.append("\n");
+                    }                    
+                    
                 }else{
                 	
                 	LinkTag link = (LinkTag)nextNode;
@@ -665,6 +669,8 @@ public class fetchMgr{
 		t_result = t_result.replace("&apos;", "'");
 		t_result = t_result.replace("&quot;", "\"");
 		t_result = t_result.replace("&nbsp;", " ");	
+		
+		t_result = t_result.replaceAll("<!--(?s).*?-->","");
 		
 		if(t_shorted){
 			return "[yuchberry prompt:some URL would be shorted]\n" + t_result;

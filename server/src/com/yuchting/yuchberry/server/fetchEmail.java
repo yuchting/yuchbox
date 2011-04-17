@@ -284,6 +284,9 @@ public class fetchEmail extends fetchAccount{
     
 	String 	m_userName 					= null;
 	String 	m_strUserNameFull			= null;
+	
+	String	m_sendName					= "";
+	
 	boolean m_useFullNameSignIn		= false;
 	String 	m_password 					= null;
 	
@@ -430,7 +433,11 @@ public class fetchEmail extends fetchAccount{
 			}else{
 				m_pushHistoryMsg = true;
 			}
-		}		
+		}
+		
+		if(_elem.attributeValue("sendName") !=null){
+			m_sendName	= ReadStringAttr(_elem,"sendName");
+		}
 		
 		File t_file = new File(GetAccountPrefix());
 		if(!t_file.exists() || !t_file.isDirectory()){
@@ -803,7 +810,7 @@ public class fetchEmail extends fetchAccount{
 		_mail.PrepareForwardReplyContain(t_signature);
 		
 		ComposeMessage(msg,_mail.m_sendMail,
-					(_mail.m_style == fetchMail.FORWORD_STYLE)?_mail.m_forwardReplyMail:null);
+					(_mail.m_style == fetchMail.FORWORD_STYLE)?_mail.m_forwardReplyMail:null,m_sendName);
 		
 		AddMailIndexAttach(_mail.m_sendMail,true);
 	    		
@@ -1206,7 +1213,7 @@ public class fetchEmail extends fetchAccount{
 		
 		try{
 			
-			ComposeMessage(msg,t_mail,null);
+			ComposeMessage(msg,t_mail,null,"");
 			
 			int t_tryTime = 0;
 			while(t_tryTime++ < 5){
@@ -1596,9 +1603,9 @@ public class fetchEmail extends fetchAccount{
 		return _name;
 	}
 	
-	public void ComposeMessage(MimeMessage msg,fetchMail _mail,fetchMail _forwardMail)throws Exception{
+	public void ComposeMessage(MimeMessage msg,fetchMail _mail,fetchMail _forwardMail,String _sendName)throws Exception{
 		
-		msg.setFrom(new InternetAddress(m_strUserNameFull));
+		msg.setFrom(new InternetAddress(m_strUserNameFull,_sendName));
 	
 		String t_sendTo = fetchMail.parseAddressList(_mail.GetSendToVect());
 		

@@ -2,6 +2,7 @@ package com.yuchting.yuchberry.yuchsign.server;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -9,6 +10,7 @@ import javax.jdo.annotations.PrimaryKey;
 import org.w3c.dom.Element;
 
 import com.google.appengine.api.datastore.Key;
+
 
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
@@ -20,6 +22,9 @@ public class yuchEmail {
 	
 	@Persistent
 	public String m_emailAddr = "";
+	
+	@Persistent
+	public String m_username = "";
 	
 	@Persistent
 	public String m_password = "";
@@ -51,7 +56,11 @@ public class yuchEmail {
 	
 	public void OuputXMLData(final StringBuffer _output){
 		
+		if(m_username == null){
+			m_username = "";
+		}
 		_output.append("\t<email ").append("account=\"").append(m_emailAddr).
+									append("\" name=\"").append(m_username).
 									append("\" pass=\"").append(m_password).
 									append("\" full=\"").append(m_fullnameSignIn?1:0).
 									append("\" protocal=\"").append(m_protocol).
@@ -66,6 +75,7 @@ public class yuchEmail {
 	public void InputXMLData(final Element _elem)throws Exception{
 				
 		m_emailAddr		= yuchbber.ReadStringAttr(_elem, "account");
+		m_username		= yuchbber.ReadStringAttr(_elem, "name");
 		m_password		= yuchbber.ReadStringAttr(_elem, "pass");
 		m_fullnameSignIn= yuchbber.ReadBooleanAttr(_elem, "full");
 		m_protocol		= yuchbber.ReadStringAttr(_elem, "protocal");

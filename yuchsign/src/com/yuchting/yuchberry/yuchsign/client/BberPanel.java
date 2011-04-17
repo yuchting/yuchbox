@@ -45,6 +45,7 @@ class ContentTab extends TabPanel{
 	
 	final TextBox			m_account	= new TextBox();
 	final PasswordTextBox	m_password	= new PasswordTextBox();
+	final TextBox			m_username	= new TextBox();
 	
 	final TextBox			m_host		= new TextBox();
 	final TextBox			m_port		= new TextBox();
@@ -157,6 +158,7 @@ class ContentTab extends TabPanel{
 		
 		BberPanel.AddLabelWidget(t_subPane, "邮件地址:", m_account);
 		BberPanel.AddLabelWidget(t_subPane, "邮件密码:", m_password);
+		BberPanel.AddLabelWidget(t_subPane,"名字:",m_username);
 
 		final FlowPanel t_subPane1 = new FlowPanel();
 		
@@ -266,9 +268,10 @@ class ContentTab extends TabPanel{
 		yuchEmail t_email = new yuchEmail();
 		t_email.m_appendHTML 		= m_appendHTML.getValue();
 		t_email.m_fullnameSignIn	= m_usingFullname.getValue();
-		
+				
 		t_email.m_emailAddr			= m_account.getText();
 		t_email.m_password			= m_password.getText();
+		t_email.m_username			= m_username.getText();
 		
 		t_email.m_host				= m_host.getText();
 		t_email.m_port				= Integer.valueOf(m_port.getText()).intValue();
@@ -293,6 +296,7 @@ class ContentTab extends TabPanel{
 			
 			m_account.setText(_email.m_emailAddr);
 			m_password.setText(_email.m_password);
+			m_username.setText(_email.m_username);
 			
 			m_host.setText(_email.m_host);
 			m_port.setText(Integer.toString(_email.m_port));
@@ -313,6 +317,7 @@ class ContentTab extends TabPanel{
 			
 			m_account.setText("");
 			m_password.setText("");
+			m_username.setText("");
 			
 			m_host.setText("");
 			m_port.setText("");
@@ -857,6 +862,8 @@ public class BberPanel extends TabPanel{
 			return;
 		}
 		
+		m_currentBber.SetConvertSimpleChar(m_convertToSimple.getValue());
+		m_currentBber.SetUsingSSL(m_usingSSL.getValue());
 		m_currentBber.SetSignature(m_signature.getText());
 		
 		if(m_currentBber.GetEmailList().isEmpty()){
