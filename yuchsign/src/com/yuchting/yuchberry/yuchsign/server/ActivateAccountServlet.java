@@ -16,6 +16,28 @@ import com.google.appengine.api.datastore.KeyFactory;
 
 public class ActivateAccountServlet extends HttpServlet {
 	
+	public final String fsm_googleAdsCode = "<!-- Google Code for &#27880;&#20876; Conversion Page -->" +
+											"	<script type=\"text/javascript\">" +
+											"	/* <![CDATA[ */" +
+											"	var google_conversion_id = 977072348;" +
+											"	var google_conversion_language = \"zh_CN\";" +
+											"	var google_conversion_format = \"1\";" +
+											"	var google_conversion_color = \"ffffff\";" +
+											"	var google_conversion_label = \"A8-4COzWsAIQ3OHz0QM\";" +
+											"	var google_conversion_value = 0;" +
+											"	if (2) {" +
+											"	  google_conversion_value = 2;" +
+											"	}" +
+											"	/* ]]> */" +
+											"	</script>" +
+											"	<script type=\"text/javascript\" src=\"http://www.googleadservices.com/pagead/conversion.js\">" +
+											"				</script>" +
+											"	<noscript>" +
+											"	<div style=\"display:inline;\">" +
+											"	<img height=\"1\" width=\"\1\" style=\"border-style:none;\" alt=\"\" src=\"http://www.googleadservices.com/pagead/conversion/977072348/?value=2&amp;label=A8-4COzWsAIQ3OHz0QM&amp;guid=ON&amp;script=0\"/>" +
+											"	</div>" +
+											"	</noscript>";			
+	
 	public void doPost(HttpServletRequest request,HttpServletResponse response)throws ServletException,IOException{
 		this.doGet(request,response);
 	}
@@ -28,7 +50,10 @@ public class ActivateAccountServlet extends HttpServlet {
 		response.setContentType("text/html");
         
 		PrintWriter out = response.getWriter();
-		out.println("<html>");
+		out.println("<html><body>");
+		
+		String t_insertCode = "";
+		
 		try{
 
 			if(t_account == null || t_rand == null){
@@ -60,6 +85,8 @@ public class ActivateAccountServlet extends HttpServlet {
 							t_bber.SetSigninTime((new Date()).getTime());
 							
 							out.println("注册用户：" + t_account + " 激活成功，现在可以使用同步功能进行同步了。");
+							
+							t_insertCode = fsm_googleAdsCode;
 						}else{
 							out.println("激活参数错误");
 						}
@@ -77,7 +104,8 @@ public class ActivateAccountServlet extends HttpServlet {
 			}
 			
 		}finally{
-			out.println("<br /> <br /> 有任何问题，请及时联系 <a href=\"mailto:yuchberry@gmail.com\">yuchberry@gmail.com</a>  </html>");
+			
+			out.println("<br /> <br /> 有任何问题，请及时联系 <a href=\"mailto:yuchberry@gmail.com\">yuchberry@gmail.com</a> " + t_insertCode + " </body></html>");
 			out.flush();
 		}
 		
