@@ -682,6 +682,8 @@ public class mainFrame extends JFrame implements ActionListener{
 					
 					t_thread.m_sendTimeupMail = true;
 					
+					m_logger.LogOut("到期帐户，发送邮件： " + t_thread.m_fetchMgr.GetAccountName());
+					
 					SendTimeupMail(t_thread);
 				}
 				
