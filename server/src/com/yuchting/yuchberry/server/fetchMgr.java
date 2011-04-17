@@ -269,14 +269,14 @@ public class fetchMgr{
 		}	
 	}
 
-	public void StartListening(){
+	public void StartListening(boolean _fulltest){
 		
 		try{
 			synchronized (this) {
 				m_endListenState = false;
 			}
 			
-			ResetAllAccountSession(false);
+			ResetAllAccountSession(_fulltest);
 			
 			m_svr = GetSocketServer(m_userPassword,m_userSSL);			
 	    	

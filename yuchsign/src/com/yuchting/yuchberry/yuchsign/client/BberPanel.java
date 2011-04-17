@@ -76,6 +76,8 @@ class ContentTab extends TabPanel{
 		
 		boolean m_useFullnameSignin = false;
 		
+		String  m_prompt;
+		
 		public commonConfig(String _parserLine){
 			String[] t_data = _parserLine.split(",");
 						
@@ -86,6 +88,10 @@ class ContentTab extends TabPanel{
 			m_host_send		= t_data[4];
 			m_port_send		= t_data[5];
 			m_useFullnameSignin = t_data[6].equals("1");
+			
+			if(t_data.length >= 8){
+				m_prompt = t_data[7];
+			}
 		}
 		
 		public void SetConfig(ContentTab _dlg){
@@ -112,17 +118,20 @@ class ContentTab extends TabPanel{
 	
 	final commonConfig[]		m_commonConfigList = 
 	{
-		new commonConfig("Gmail IMAP SSL,imaps,imap.gmail.com,993,smtp.gmail.com,587,0"),
-		new commonConfig("163邮箱IMAP,imap,imap.163.com,143,smtp.163.com,25,0"),
-		new commonConfig("126邮箱IMAP,imap,imap.126.com,143,smtp.126.com,25,0"),
-		new commonConfig("QQ 邮箱 POP3,pop3,pop.qq.com,110,smtp.qq.com,25,0"),
-		new commonConfig("雅虎邮箱 POP3,pop3,pop.alibaba.com.cn,110,smtp.alibaba.com.cn,25,0"),
-		new commonConfig("Hotmail POP3 SSL,pop3s,pop3.live.com,995,smtp.live.com,587,1"),
-		new commonConfig("新浪邮箱 POP3,pop3,pop.sina.com,110,smtp.sina.com,25,0"),
-		new commonConfig("139 邮箱 POP3,pop3,pop.139.com,110,smtp.139.com,25,0"),
-		new commonConfig("TOM 邮箱 POP3,pop3,pop.tom.com,110,smtp.tom.com,25,0"),
-		new commonConfig("21CN 邮箱 POP3,pop3,pop.21cn.com,110,smtp.21cn.com,25,0"),
-		new commonConfig("Foxmail POP3,pop3,pop.qq.com,110,smtp.qq.com,25,1")
+		new commonConfig("@gmail.com,imaps,imap.gmail.com,993,smtp.gmail.com,587,0"),
+		new commonConfig("@163.com,imap,imap.163.com,143,smtp.163.com,25,0"),
+		new commonConfig("@126.com,imap,imap.126.com,143,smtp.126.com,25,0"),
+		new commonConfig("@qq.com,pop3,pop.qq.com,110,smtp.qq.com,25,0,请使用浏览器访问qq邮箱，确保其pop3选项已经打开\n<a href=\"http://service.mail.qq.com/cgi-bin/help?subtype=1&id=26&no=308\" target=_blank>查看帮助</a>"),
+		new commonConfig("@vip.qq.com,pop3,pop.qq.com,110,smtp.qq.com,25,1,请使用浏览器访问qq邮箱，确保其pop3选项已经打开\n<a href=\"http://service.mail.qq.com/cgi-bin/help?subtype=1&id=26&no=308\" target=_blank>查看帮助</a>"),
+		new commonConfig("@yahoo.com.cn,pop3s,pop.mail.yahoo.com.cn,995,smtp.mail.yahoo.com.cn,456,0,雅虎邮箱免费版貌似不支持pop的链接\n请确认可以在web界面配置pop选项 <a href=\"http://help.cn.yahoo.com/answerpage_3631.html target=_blank\">查看帮助</a>"),
+		new commonConfig("@yahoo.cn,pop3s,pop.mail.yahoo.cn,995,smtp.mail.yahoo.cn,456,0,雅虎邮箱免费版貌似不支持pop的链接\n请确认可以在web界面配置pop选项 <a href=\"http://help.cn.yahoo.com/answerpage_3631.html target=_blank\">查看帮助</a>"),
+		new commonConfig("@hotmail.com,pop3s,pop3.live.com,995,smtp.live.com,587,1"),
+		new commonConfig("@sina.com,pop3,pop.sina.com,110,smtp.sina.com,25,0,请使用浏览器访问sina邮箱，确保其pop3选项已经打开\n<a href=\"http://mail.sina.com.cn/help2/client01.html\" target=_blank>查看帮助</a>"),
+		new commonConfig("@139.com,pop3,pop.139.com,110,smtp.139.com,25,0"),
+		new commonConfig("@tom.com,pop3,pop.tom.com,110,smtp.tom.com,25,0"),
+		new commonConfig("@21cn.com,pop3,pop.21cn.com,110,smtp.21cn.com,25,0"),
+		new commonConfig("@foxmail.com,pop3,pop.qq.com,110,smtp.qq.com,25,1,请使用浏览器访问foxmail邮箱，确保其pop3选项已经打开\n<a href=\"http://service.mail.qq.com/cgi-bin/help?subtype=1&id=26&no=308\" target=_blank>查看帮助</a>"),
+		new commonConfig("@sohu.com,imap,mail.sohu.com,143,mail.sohu.com,25,0")
 	};
 	
 	public ContentTab(){
@@ -182,19 +191,24 @@ class ContentTab extends TabPanel{
 		selectTab(0);		
 	}
 	
+	String m_addHostPrompt = null;
+	
 	public void AutoSelHost(){
 		String t_account = m_account.getText().toLowerCase();
 		final int t_atIndex = t_account.indexOf('@');
+		
+		m_addHostPrompt = null;
+		
 		if(t_atIndex != -1){
 			
-			String t_addr = t_account.substring(t_atIndex + 1);
+			String t_addr = t_account.substring(t_atIndex);
 			if(t_addr.indexOf('.') != -1){
 				
 				for(commonConfig t_config: m_commonConfigList){
 
-					if(t_config.m_host.indexOf(t_addr) != -1){
+					if(t_addr.equalsIgnoreCase(t_config.m_name)){
 						t_config.SetConfig(this);
-						
+						m_addHostPrompt = t_config.m_prompt;
 						break;
 					}
 				}
@@ -238,6 +252,10 @@ class ContentTab extends TabPanel{
 			m_advancedDisclosure.setOpen(true);
 			Yuchsign.PopupPrompt("邮件发送服务器端口非法", m_port_send);
 			return null;
+		}
+		
+		if(m_addHostPrompt != null){
+			Yuchsign.PopupPrompt(m_addHostPrompt, getParent());
 		}
 		
 		yuchEmail t_email = new yuchEmail();

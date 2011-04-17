@@ -54,7 +54,9 @@ public class fetchMain{
 
 			try{
 				t_manger.InitConnect("",t_logger);
-				t_manger.StartListening();	
+				
+				t_manger.StartListening(true);
+				
 			}catch(Exception e){
 				t_logger.PrinterException(e);
 			}			

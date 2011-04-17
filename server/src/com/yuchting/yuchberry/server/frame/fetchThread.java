@@ -49,7 +49,7 @@ public class fetchThread extends Thread{
 				}catch(Exception e){}
 							
 				
-				m_fetchMgr.StartListening();
+				m_fetchMgr.StartListening(false);
 				
 			}catch(Exception e){
 				m_logger.PrinterException(e);
