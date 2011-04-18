@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
+import java.net.ServerSocket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
@@ -840,13 +841,38 @@ public class mainFrame extends JFrame implements ActionListener{
 		Collections.sort(t_portList);
 		
 		for(int i = 0 ;i < t_portList.size() - 1;i++){
+			
 			int port = t_portList.get(i).intValue() + 1;
+			
 			if(port < t_portList.get(i + 1).intValue()){
-				return port;
+				try{
+					ServerSocket t_sock = new ServerSocket(port);
+					t_sock.close();
+					
+					return port;
+					
+				}catch(Exception e){
+					
+				}
+			
 			}
 		}
 		
-		return t_portList.get(t_portList.size() - 1).intValue() + 1;		
+		int t_port = t_portList.get(t_portList.size() - 1).intValue() + 1;
+		
+		while(t_port < 12000){
+			try{
+				ServerSocket t_sock = new ServerSocket(t_port);
+				t_sock.close();
+				
+				break;
+				
+			}catch(Exception e){
+				t_port++;
+			}			
+		}
+		
+		return t_port;
 	}
 	/*
 	 * the process thread to create/response the GAE URL requeset
