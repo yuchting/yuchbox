@@ -18,11 +18,11 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class PayTimeDlg extends DialogBox{
 
-	public final static String	fsm_payPrompt = "提示：请确认您在免费使用阶段里面，能正常使用。因为某些原因，不是所有的移动设备都能" +
-													"正常使用YuchBerry的服务。<br />" +
-													"<br /><b>YuchBerry不会因为提升用户级别而改变服务质量。</b>" +
+	public final static String	fsm_payPrompt = "温馨提示：<br />" +
+													"请确认您在免费使用阶段里面，能正常使用。因为某些原因，不是所有的移动设备都能正常使用YuchBerry的服务。<br />" +
+													"<br /><b>YuchBerry不会因为推送帐户增加，而改变服务质量。</b><br />" +
 													"<br />如有疑问请访问<a href=\"http://code.google.com/p/yuchberry/wiki/Yuchsign_Using_Intro#账户充值时间、等级\" target=_blank>这里</a>，" +
-													"或者发送邮件到 <a href=\"mailto:yuchberry@gmail.com\">yuchberry@gmail.com</a><br />" +
+													"或者发送邮件到<a href=\"mailto:yuchberry@gmail.com\">yuchberry@gmail.com</a>，或者联系<a href=\"http://t.sina.com.cn/1894359415\" target=_blank>YuchBerry新浪WeiBo</a><br />" +
 													"<br />VIP0  (推送一个账户)：￥" + yuchbber.fsm_weekMoney[0] +"/星期" +
 													"<br />VIP1  (推送两个账户)：￥" + yuchbber.fsm_weekMoney[1] +"/星期" +
 													"<br />VIP2  (推送三个账户)：￥" + yuchbber.fsm_weekMoney[2] +"/星期" +

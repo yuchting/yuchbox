@@ -143,7 +143,7 @@ class sendReceive extends Thread{
 
 		int t_len = ReadInt(in);
 		if(t_len == -1){
-			throw new Exception("socket disconnect.");
+			throw new Exception("socket readInt failed.");
 		}
 		
 		final int t_ziplen = t_len & 0x0000ffff;
@@ -250,7 +250,29 @@ class sendReceive extends Thread{
 	}
 	
 	static public int ReadInt(InputStream _stream)throws Exception{
-		return _stream.read() | (_stream.read() << 8) | (_stream.read() << 16) | (_stream.read() << 24);
+		
+		int[] t_byte = {0,0,0,0};
+	
+		for(int i = 0;i < t_byte.length;i++){
+			
+			int t_counter = 0;
+			while(t_counter++ < 20){
+				
+				t_byte[i] = _stream.read();
+				
+				
+				if(t_byte[i] == -1){
+					continue;
+				}
+			}
+			
+			if(t_counter >= 20){
+				return -1;
+			}			
+		}
+		
+		return t_byte[0] | (t_byte[1] << 8) | (t_byte[2]  << 16) | (t_byte[3] << 24);
+			
 	}
 	
 	static public long ReadLong(InputStream _stream)throws Exception{
@@ -318,13 +340,14 @@ class sendReceive extends Thread{
 		int t_counter = 0;
 		
 		while(_readLen > t_readIndex){
+			
 			final int t_c = _stream.read(_buffer,t_readIndex,_readLen - t_readIndex);
+			
 			if(t_c > 0){
 				t_readIndex += t_c;
 			}else{
-				t_counter++;
-				
-				if(t_counter > 10){
+								
+				if(++t_counter > 20){
 					throw new Exception("FroceReadByte failed to read " + _readLen );
 				}
 			}
