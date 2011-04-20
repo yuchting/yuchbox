@@ -263,6 +263,8 @@ class sendReceive extends Thread{
 				
 				if(t_byte[i] == -1){
 					continue;
+				}else{
+					break;
 				}
 			}
 			

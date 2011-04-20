@@ -474,7 +474,7 @@ public class fetchEmail extends fetchAccount{
 	    		return;
 	    	}
 	 	    
-	 	    if(m_totalMailCount != t_totalMailCount){	    	
+	 	    if(m_totalMailCount != t_totalMailCount){
 	 	    	
 	 		    final int t_startIndex = Math.max(t_totalMailCount - Math.min(CHECK_NUM,t_totalMailCount) + 1,
 	 		    									Math.min(t_totalMailCount,m_beginFetchIndex));
@@ -530,9 +530,7 @@ public class fetchEmail extends fetchAccount{
 	 		    		}
 	 		    		
 	 		    		m_unreadMailVector.addElement(t_mail);
-	 		    		
-	 		    		SetBeginFetchIndex(t_mail.GetMailIndex());
-	 		    		
+	 		    			 		    		
 	 		    		synchronized (m_unreadMailVector_marking) {
 	 		    			
 	 		    			// prepare the marking reading vector
@@ -542,10 +540,14 @@ public class fetchEmail extends fetchAccount{
 	 			    		}
 	 						m_unreadMailVector_marking.addElement(t_mail);
 	 					}
+	 		    		
 	 		    	}
-	 		    }		    
-	 		   
+
+	 		    	m_beginFetchIndex = i + t_startIndex + 1;	 		    	
+	 		    }
+	 		    
 	 		    m_totalMailCount = t_totalMailCount;
+	 		    
 	 	    }
 	 	    
 	    }finally{
@@ -1071,40 +1073,7 @@ public class fetchEmail extends fetchAccount{
 			}
 		}catch(Exception e){}	
 	}
-	
-	public synchronized void SetBeginFetchIndex(int _index){
-		m_beginFetchIndex = _index + 1;
-//		
-//		try{
-//			String t_iniFile = m_mainMgr + fetchMgr.fsm_configFilename;
-//			
-//			BufferedReader in = new BufferedReader(
-//									new InputStreamReader(
-//										new FileInputStream(t_iniFile),"UTF-8"));
-//				
-//			StringBuffer t_contain = new StringBuffer();
-//			
-//			String line = new String();
-//			while((line = in.readLine())!= null){
-//				if(line.indexOf("userFetchIndex=") != -1){
-//					line = line.replaceAll("userFetchIndex=[^\n]*", "userFetchIndex=" + m_beginFetchIndex);
-//				}
-//				
-//				t_contain.append(line + "\r\n");
-//			}
-//			
-//			in.close();
-//			
-//			FileOutputStream os = new FileOutputStream(t_iniFile);
-//			os.write(t_contain.toString().getBytes("UTF-8"));
-//			os.flush();
-//			os.close();
-//			
-//		}catch(Exception _e){
-//			m_logger.PrinterException(_e);
-//		}
-	}
-		
+			
 	public synchronized void PushMsg(sendReceive _sendReceive)throws Exception{ 
 		
 		final long t_currTime = (new Date()).getTime();
