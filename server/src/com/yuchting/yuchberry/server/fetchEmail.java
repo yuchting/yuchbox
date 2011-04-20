@@ -208,28 +208,40 @@ class RecvMailAttach{
 		}
 		
 		if(m_forwardReplyMail != null && m_style != fetchMail.NOTHING_STYLE){
+			
 			if(m_style == fetchMail.REPLY_STYLE){				
 				
-				t_string.append(t_originalMsgLine);
-
-				try{
-					BufferedReader in = null;
-					if(m_forwardReplyMail.GetContain_html().isEmpty()){
-						in = new BufferedReader(new StringReader(m_forwardReplyMail.GetContain()));
-					}else{
-						in = new BufferedReader(new StringReader(m_forwardReplyMail.GetContain() + "\n\n-- HTML --\n\n" +
-									fetchMgr.ParseHTMLText(m_forwardReplyMail.GetContain_html(),true)));
-					}						
-	 
-					String line = new String();
-					while((line = in.readLine())!= null){
-						t_string.append("> " + line + "\n");
-					}
+				if(!m_forwardReplyMail.GetContain().isEmpty() 
+				|| !m_forwardReplyMail.GetContain_html().isEmpty()){
 					
-				}catch(Exception e){
-					t_string.append(t_forwordErrorMsg);
+					t_string.append(t_originalMsgLine);
+					
+					try{
+						if(!m_forwardReplyMail.GetFromVect().isEmpty()){
+							t_string.append(m_forwardReplyMail.GetFromVect().elementAt(0)).
+									append(" @").
+									append(new SimpleDateFormat(t_dateFormat).format(m_forwardReplyMail.GetSendDate())).
+									append("\n");
+						}
+						
+						BufferedReader in = null;
+						if(m_forwardReplyMail.GetContain_html().isEmpty()){
+							in = new BufferedReader(new StringReader(m_forwardReplyMail.GetContain()));
+						}else{
+							in = new BufferedReader(new StringReader(m_forwardReplyMail.GetContain() + "\n\n-- HTML --\n\n" +
+										fetchMgr.ParseHTMLText(m_forwardReplyMail.GetContain_html(),true)));
+						}			
+		 
+						String line = new String();
+						while((line = in.readLine())!= null){
+							t_string.append("> " + line + "\n");
+						}
+						
+					}catch(Exception e){
+						t_string.append(t_forwordErrorMsg);
+					}
 				}
-				
+								
 				
 			}else if(m_style == fetchMail.FORWORD_STYLE){
 				
@@ -304,7 +316,18 @@ public class fetchEmail extends fetchAccount{
         	
     Vector m_unreadMailVector 			= new Vector();
     Vector m_unreadMailVector_confirm 	= new Vector();
-    Vector m_unreadMailVector_marking	= new Vector();
+    
+    final class UnreadMailMarkingData{
+    	int m_simpleHashCode;
+    	int m_mailIndex;
+    	
+    	public UnreadMailMarkingData(fetchMail _mail){
+    		m_simpleHashCode	= _mail.GetSimpleHashCode();
+    		m_mailIndex			= _mail.GetMailIndex();
+    	}
+    }
+    
+    Vector<UnreadMailMarkingData> m_unreadMailVector_marking	= new Vector<UnreadMailMarkingData>();
 
     // pushed mail index vector 
     Vector m_vectPushedMailIndex 		= new Vector();
@@ -328,10 +351,10 @@ public class fetchEmail extends fetchAccount{
     	boolean	m_send;
     	long		m_mailIndexOrTime;
     	
-    	Vector		m_attachmentName = null;
+    	Vector<MailAttachment>		m_attachmentName = null;
     	
     	public MailIndexAttachment(){
-    		m_attachmentName = new Vector();
+    		m_attachmentName = new Vector<MailAttachment>();
     	}
     	
     	public MailIndexAttachment(fetchMail _mail,boolean _send){
@@ -349,7 +372,7 @@ public class fetchEmail extends fetchAccount{
     	}
     }
     
-    Vector	m_mailIndexAttachName = new Vector();
+    Vector<MailIndexAttachment>	m_mailIndexAttachName = new Vector<MailIndexAttachment>();
         
     public fetchEmail(fetchMgr _mainMgr){
     	super(_mainMgr);
@@ -415,7 +438,7 @@ public class fetchEmail extends fetchAccount{
 
     	m_useFullNameSignIn					= ReadBooleanAttr(_elem,"useFullNameSignIn");
     	
-		m_protocol							= ReadStringAttr(_elem,"protocol");
+		m_protocol							= ReadStringAttr(_elem,"protocol").toLowerCase();
 		m_host								= ReadStringAttr(_elem,"host");
 		m_port								= ReadIntegerAttr(_elem,"port");
 		
@@ -428,7 +451,7 @@ public class fetchEmail extends fetchAccount{
 		if(_elem.attributeValue("pushHistoryMsg") != null){
 			m_pushHistoryMsg					= ReadBooleanAttr(_elem,"pushHistoryMsg");
 		}else{
-			if(m_host.equalsIgnoreCase("pop.qq.com")){
+			if(m_protocol.indexOf("pop3") != -1){
 				m_pushHistoryMsg = false;
 			}else{
 				m_pushHistoryMsg = true;
@@ -535,10 +558,10 @@ public class fetchEmail extends fetchAccount{
 	 		    			
 	 		    			// prepare the marking reading vector
 	 		    			//
-	 			    		if(m_unreadMailVector_marking.size() > 50){
+	 			    		if(m_unreadMailVector_marking.size() > 100){
 	 			    			m_unreadMailVector_marking.removeElementAt(0);
 	 			    		}
-	 						m_unreadMailVector_marking.addElement(t_mail);
+	 						m_unreadMailVector_marking.addElement(new UnreadMailMarkingData(t_mail));
 	 					}
 	 		    		
 	 		    	}
@@ -572,7 +595,7 @@ public class fetchEmail extends fetchAccount{
 				t_processed = ProcessMail(in);
 				break;
 			case msg_head.msgBeenRead:
-				t_processed = ProcessBeenReadMail(in);
+				t_processed = ProcessBeenReadOrDelMail(in,false);
 				break;
 			case msg_head.msgMailAttach:
 				t_processed = ProcessMailAttach(in);
@@ -583,13 +606,16 @@ public class fetchEmail extends fetchAccount{
 			case msg_head.msgMailConfirm:
 				t_processed = ProcessMailConfirm(in);
 				break;
+			case msg_head.msgMailDel:
+				t_processed = ProcessBeenReadOrDelMail(in,true);
+				break;
 			default:
 				t_processed = false;
 		}
 		
 		return t_processed;
 	}
-	
+		
 	private boolean ProcessMail(ByteArrayInputStream in)throws Exception{
 		
 		fetchMail t_mail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
@@ -637,6 +663,36 @@ public class fetchEmail extends fetchAccount{
 						return false;
 					}
 				}
+			}
+			
+		}else{
+			
+			if(t_mail.GetSubject().equals("设置签名")){
+				
+				if(!t_mail.GetSendToVect().isEmpty() 
+				&& ((String)t_mail.GetSendToVect().elementAt(0)).toLowerCase().indexOf(GetAccountName()) != -1 ){
+					
+					FileOutputStream t_out = new FileOutputStream(m_mainMgr.GetPrefixString() + fetchEmail.fsm_signatureFilename);
+					try{
+						t_out.write(t_mail.GetContain().getBytes("UTF-8"));
+						t_out.flush();
+					}finally{
+						t_out.close();
+					}
+					
+					// receive send message to berry
+					ByteArrayOutputStream os = new ByteArrayOutputStream();
+					os.write(msg_head.msgSendMail);
+					os.write(1);
+					
+					sendReceive.WriteLong(os,t_mail.GetSendDate().getTime());
+					
+					m_mainMgr.SendData(os,false);
+					m_mainMgr.m_logger.LogOut("Set signature OK!");					
+					
+					return true;
+				}
+				
 			}
 		}
 		
@@ -765,18 +821,23 @@ public class fetchEmail extends fetchAccount{
 		}
 	}
 	
-	private  boolean ProcessBeenReadMail(ByteArrayInputStream in)throws Exception{
+	private  boolean ProcessBeenReadOrDelMail(ByteArrayInputStream in,boolean _del)throws Exception{
 		
 		final int t_mailHashCode	= sendReceive.ReadInt(in);
 
 		boolean t_found = false;
-		fetchMail t_mail = null;
+		
+		int t_mailIndex = 0;
 		
 		synchronized (m_unreadMailVector_marking) {
-			for(int i = 0 ;i < m_unreadMailVector_marking.size();i++){
-				t_mail = (fetchMail)m_unreadMailVector_marking.elementAt(i);
-				if(t_mail.GetSimpleHashCode() == t_mailHashCode){
-					m_unreadMailVector_marking.removeElementAt(i);
+			for(UnreadMailMarkingData t_mail :m_unreadMailVector_marking){
+				
+				if(t_mail.m_simpleHashCode == t_mailHashCode){
+					t_mailIndex =  t_mail.m_mailIndex;
+					
+					if(_del){
+						m_unreadMailVector_marking.remove(t_mail);
+					}
 					
 					t_found = true;
 					
@@ -787,11 +848,11 @@ public class fetchEmail extends fetchAccount{
 		
 		if(t_found){
 			try{
-				MarkReadMail(t_mail.GetMailIndex());
+				MarkReadOrDelMail(t_mailIndex,_del);
 			}catch(Exception _e){
 				m_mainMgr.m_logger.PrinterException(_e);
 			}
-		}	
+		}
 		
 		return t_found;
 	}
@@ -845,7 +906,7 @@ public class fetchEmail extends fetchAccount{
 
 	private MailIndexAttachment FindMailIndexAttach(int _hashCode){
 		for(int i = 0;i < m_mailIndexAttachName.size();i++){
-			MailIndexAttachment t_att = (MailIndexAttachment)m_mailIndexAttachName.elementAt(i);
+			MailIndexAttachment t_att = m_mailIndexAttachName.elementAt(i);
 			if(t_att.m_mailHashCode == _hashCode){
 				return t_att;
 			}
@@ -941,7 +1002,7 @@ public class fetchEmail extends fetchAccount{
 	}
 		
 		
-	public void MarkReadMail(int _index)throws Exception{
+	public void MarkReadOrDelMail(int _index,boolean _del)throws Exception{
 		
 		Folder folder = m_store.getDefaultFolder();
 	    if(folder == null) {
@@ -952,18 +1013,46 @@ public class fetchEmail extends fetchAccount{
 	    if (folder == null) {
 	    	throw new Exception("Invalid INBOX folder");
 	    }
+	    
 	    try{
-			folder.open(Folder.READ_WRITE);  
-			
-			Message[] t_msg = folder.getMessages(_index, _index);
-			
-			if(t_msg.length != 0){
-				m_mainMgr.m_logger.LogOut(GetAccountName() + " Set index " + _index + " read ");
-				t_msg[0].setFlag(Flags.Flag.SEEN, true);
-			}
+	    	
+	    	folder.open(Folder.READ_WRITE);
+	    	
+			if(_index <= folder.getMessageCount()){
+				
+				
+				if(_del){
+					folder.setFlags(_index, _index, new Flags(Flags.Flag.DELETED), true);
+				}else{					
+					folder.setFlags(_index, _index, new Flags(Flags.Flag.SEEN), true);
+					
+//					Message[] t_msg = folder.getMessages(_index, _index);
+//					
+//					if(t_msg.length != 0){
+//						m_mainMgr.m_logger.LogOut(GetAccountName() + " Set index " + _index + " read ");
+//						t_msg[0].setFlag(Flags.Flag.SEEN, true);
+//					}						
+				}
+			}			
 	 	    
-	    }finally{	    	
-	    	folder.close(false);
+	    }finally{
+	    	
+	    	if(m_protocol.indexOf("pop3") != -1 && _del){
+	    		
+	    		// check the 
+	    		// http://www.oracle.com/technetwork/java/faq-135477.html#delpop3
+	    		// for detail to delete the pop3 mail
+	    		//
+	    		folder.close(true);
+	    		
+	    	}else{
+	    		folder.close(false);
+	    	}
+	    	
+	    	if(_del){
+	    		m_mainMgr.m_logger.LogOut(GetAccountName() + " delete mail Index:"+_index);
+	    	}
+	    	
 	    }	        
 	}
 			

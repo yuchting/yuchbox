@@ -42,7 +42,6 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	final static int 		fsm_display_width		= Display.getWidth();
 	final static int 		fsm_display_height		= Display.getHeight();
 	
-	final static int		fsm_clientVersion = 11;
 	
 	final static long		fsm_notifyID_email = 767918509114947L;
 	
@@ -92,6 +91,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	boolean			m_useMDS			= false;
 		
 	boolean			m_autoRun			= false;
+	
+	boolean			m_discardOrgText	= false;
+	boolean			m_delRemoteMail		= false;
 	
 	final class APNSelector{
 		String		m_name			= null;
@@ -643,6 +645,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}
 		
 	}
+	
+	final static int		fsm_clientVersion = 13;
+	
 	public synchronized void WriteReadIni(boolean _read){
 		
 		// process the ~Init.data file to restore the destroy original file
@@ -719,6 +724,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_sendMailNum = sendReceive.ReadInt(t_readFile);
 				    			m_recvMailNum = sendReceive.ReadInt(t_readFile);
 				    		}
+				    		
+				    		if(t_currVer >= 12){
+				    			m_discardOrgText = (t_readFile.read() == 1)?true:false;
+				    		}
+				    		
+				    		if(t_currVer >= 13){
+				    			m_delRemoteMail = (t_readFile.read() == 1)?true:false;
+				    		}
+				    		
 			    		}finally{
 			    			t_readFile.close();
 			    			t_readFile = null;
@@ -767,6 +781,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						
 						sendReceive.WriteInt(t_writeFile,m_sendMailNum);
 						sendReceive.WriteInt(t_writeFile,m_recvMailNum);
+						
+						t_writeFile.write(m_discardOrgText?1:0);
+						t_writeFile.write(m_delRemoteMail?1:0);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());

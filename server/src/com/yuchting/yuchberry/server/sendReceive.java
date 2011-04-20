@@ -141,9 +141,9 @@ class sendReceive extends Thread{
 		
 		InputStream in = m_socketInputStream;
 
-		int t_len = ReadInt(in);
+		final int t_len = ReadInt(in);
 		if(t_len == -1){
-			throw new Exception("socket readInt failed.");
+			throw new Exception("socket ReadInt failed.");
 		}
 		
 		final int t_ziplen = t_len & 0x0000ffff;
@@ -253,24 +253,27 @@ class sendReceive extends Thread{
 		
 		int[] t_byte = {0,0,0,0};
 	
+		int t_counter = 0;
+		
 		for(int i = 0;i < t_byte.length;i++){
 			
-			int t_counter = 0;
-			while(t_counter++ < 20){
+			while(true){
 				
-				t_byte[i] = _stream.read();
-				
+				t_byte[i] = _stream.read();				
 				
 				if(t_byte[i] == -1){
+					
+					if(t_counter++ >= 20){
+						return -1;
+					}
+					
 					continue;
+					
 				}else{
 					break;
 				}
-			}
-			
-			if(t_counter >= 20){
-				return -1;
 			}			
+						
 		}
 		
 		return t_byte[0] | (t_byte[1] << 8) | (t_byte[2]  << 16) | (t_byte[3] << 24);

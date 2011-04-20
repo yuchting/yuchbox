@@ -2,8 +2,11 @@ package com.yuchting.yuchberry.server.frame;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Frame;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -139,6 +142,7 @@ public class mainFrame extends JFrame implements ActionListener{
 	JMenuItem	m_delAccountItem		= new JMenuItem("删除帐户");
 	JMenuItem	m_pauseAccountItem		= new JMenuItem("暂停");
 	JMenuItem	m_continueAccountItem	= new JMenuItem("继续");
+	JMenuItem	m_addAccountTime		= new JMenuItem("设置到期时间");
 		
 	loadDialog	m_loadDialog			= null;
 	
@@ -401,7 +405,7 @@ public class mainFrame extends JFrame implements ActionListener{
 				
 				final int t_selectIndex = m_accountTable.getSelectedRow();
 				if(t_selectIndex != -1){
-					fetchThread t_thread = (fetchThread)m_accountList.elementAt(t_selectIndex);
+					final fetchThread t_thread = (fetchThread)m_accountList.elementAt(t_selectIndex);
 					
 					if(e.getSource() == m_continueAccountItem){
 						try{
@@ -428,6 +432,44 @@ public class mainFrame extends JFrame implements ActionListener{
 						}else{
 							return;
 						}
+					}else if(e.getSource() == m_addAccountTime){
+						
+						final int ct_width = 300;
+						final int ct_height = 60;
+						
+						Frame t_frame = JFrame.getFrames()[0];
+						final JDialog t_dlg = new JDialog(t_frame,"设置账户 <"+t_thread.m_fetchMgr.GetAccountName()+"> 时间",true);
+
+						t_dlg.setResizable(false);
+						t_dlg.getContentPane().setLayout(new FlowLayout());
+						
+						final JTextField 	t_time = new JTextField();
+						t_time.setDocument(new NumberMaxMinLimitedDmt(99999999,t_time));
+						t_time.setPreferredSize(new Dimension(200, 25));
+						t_dlg.getContentPane().add(t_time);
+						
+						final JButton		t_confirmBut = new JButton("确定");
+						t_dlg.getContentPane().add(t_confirmBut);
+						
+						t_confirmBut.addActionListener(new ActionListener() {
+							
+							public void actionPerformed(ActionEvent arg0) {
+								if(!t_time.getText().isEmpty()){
+									t_thread.m_usingHours = Integer.valueOf(t_time.getText()).longValue();
+									t_thread.m_formerTimer = (new Date()).getTime();
+									
+									t_dlg.setVisible(false);
+									t_dlg.dispose();
+								}						
+							}
+						});
+						
+						t_dlg.setLocation(t_frame.getLocation().x + (t_frame.getWidth()- ct_width) / 2,
+								t_frame.getLocation().y + (t_frame.getHeight() -  ct_height) / 2);
+						
+						t_dlg.setSize(ct_width,ct_height);
+						t_dlg.setVisible(true);
+						
 					}
 					
 					RefreshState();
@@ -449,6 +491,9 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 		m_contextMenu.add(m_continueAccountItem);
 		m_continueAccountItem.addActionListener(t_menuListener);
+		
+		m_contextMenu.add(m_addAccountTime);
+		m_addAccountTime.addActionListener(t_menuListener);
 		
 		m_accountTable.addMouseListener(new MouseListener() {
 			
@@ -703,7 +748,10 @@ public class mainFrame extends JFrame implements ActionListener{
 			}
 			
 			if(t_thread.m_clientDisconnectTime != 0){
-				if(Math.abs(t_currTime - t_thread.m_clientDisconnectTime) >= 3 * 24 * 3600 * 1000  ){
+				
+				final long t_delTime = t_thread.m_pauseState?(12 * 3600 * 1000):(3 * 24 * 3600 * 1000);
+				
+				if(Math.abs(t_currTime - t_thread.m_clientDisconnectTime) >= t_delTime  ){
 					t_deadPool.add(t_thread);
 				}
 			}
@@ -940,7 +988,12 @@ public class mainFrame extends JFrame implements ActionListener{
 					t_configBuffer.append("<Yuchberry userPassword=\"").append(m_currbber.GetPassword())
 											.append("\" serverPort=\"").append(m_serverPort)
 											.append("\" pushInterval=\"").append(m_currbber.GetPushInterval())
-											.append("\" userSSL=\"").append(m_currbber.IsUsingSSL()?1:0)
+											
+											// caution!!
+											//
+											//	can't use the SSL
+											//
+											.append("\" userSSL=\"").append(0/*m_currbber.IsUsingSSL()?1:0*/)
 											.append("\" convertoSimpleChar=\"").append(m_currbber.IsConvertSimpleChar()?1:0)
 								.append("\" >");					
 					
@@ -968,8 +1021,6 @@ public class mainFrame extends JFrame implements ActionListener{
 											
 				if(m_orgThread != null){
 					
-					createDialog.WriteSignatureAndGooglePos(m_orgThread.m_fetchMgr.GetPrefixString(), m_currbber.GetSignature());
-					
 					m_orgThread.m_fetchMgr.InitConnect(m_orgThread.m_fetchMgr.GetPrefixString(),m_orgThread.m_logger);
 					m_orgThread.m_fetchMgr.ResetAllAccountSession(true);
 					
@@ -977,6 +1028,8 @@ public class mainFrame extends JFrame implements ActionListener{
 					
 					m_orgThread.m_usingHours = m_currbber.GetUsingHours();
 					m_orgThread.m_formerTimer = m_currbber.GetCreateTime();
+					
+					createDialog.WriteSignatureAndGooglePos(m_orgThread.m_fetchMgr.GetPrefixString(), m_currbber.GetSignature());
 					
 				}else{
 					

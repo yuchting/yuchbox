@@ -39,6 +39,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 	 LabelField			m_longitude		= new LabelField();
 	 LabelField			m_latitude		= new LabelField();
 	 
+	 CheckboxField		m_discardOrgText = null;
+	 CheckboxField		m_delRemoteMail	= null;
+	 
 	 recvMain			m_mainApp		= null;
 	 
 	 public settingScreen(recvMain _app){
@@ -73,7 +76,21 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 
 		 m_autoRun			= new CheckboxField(recvMain.sm_local.getString(localResource.AUTO_RUN_CHECK_BOX), m_mainApp.m_autoRun);
 		 add(m_autoRun);
-		
+		 
+		 //@}
+		 
+		 add(new SeparatorField());
+		 
+		 //@{
+		 t_title = new LabelField(recvMain.sm_local.getString(localResource.SETTING_MAIL_OP));
+		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
+		 add(t_title);
+		 
+		 m_discardOrgText	= new CheckboxField(recvMain.sm_local.getString(localResource.DISCARD_ORG_TEXT), m_mainApp.m_discardOrgText);
+		 add(m_discardOrgText);
+		 
+		 m_delRemoteMail	= new CheckboxField(recvMain.sm_local.getString(localResource.DELETE_REMOTE_MAIL),m_mainApp.m_delRemoteMail);
+		 add(m_delRemoteMail);
 		 //@}
 		 
 		 add(new SeparatorField());
@@ -117,6 +134,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 //@}
 		 
 		 add(new SeparatorField());
+		 
 		 //@{ other option
 		 t_title = new LabelField(recvMain.sm_local.getString(localResource.LOCATION_OPTIION_LABEL));
 		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
@@ -129,6 +147,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 add(m_latitude);
 		 
 		 RefreshLocation();
+		 
 		 //@}		 
 		 
 		 setTitle(new LabelField(recvMain.sm_local.getString(localResource.ADVANCE_SETTING_TITEL_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
@@ -176,6 +195,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		
 		m_mainApp.m_useMDS = m_uesMDS.getChecked();
 		m_mainApp.m_fulldayPrompt	= m_fulldayPrompt.getChecked();				
+		
+		m_mainApp.m_discardOrgText = m_discardOrgText.getChecked();
+		m_mainApp.m_delRemoteMail	= m_delRemoteMail.getChecked();
 		
 		m_mainApp.WriteReadIni(false);
 		

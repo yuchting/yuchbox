@@ -63,6 +63,24 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	boolean			m_disconnect 			= true;
 	
+	// mark read mail data
+	//
+	final class MarkReadMailData{
+		long	m_date;
+		String	m_fromAddr = "";
+		int		m_simpleHashCode;
+		
+		public MarkReadMailData(fetchMail _mail){
+			m_date 				= _mail.GetSendDate().getTime();
+			m_simpleHashCode	= _mail.GetSimpleHashCode();
+			
+			if(!_mail.GetFromVect().isEmpty()){
+				m_fromAddr	= (String)_mail.GetFromVect().elementAt(0);
+			}
+			
+		}
+	}
+	
 	public Vector 		m_markReadVector 		= new Vector();
 	 
 		 
@@ -213,6 +231,12 @@ public class connectDeamon extends Thread implements SendListener,
 					if(m_sendStyle != fetchMail.NOTHING_STYLE && m_forwordReplyMail != null){
 						t_forwardReplyMail = new fetchMail();
 						ImportMail(m_forwordReplyMail,t_forwardReplyMail);
+						
+						if(m_sendStyle == fetchMail.REPLY_STYLE && m_mainApp.m_discardOrgText){
+							// discard the org text when reply
+							//
+							t_forwardReplyMail.SetContain("");
+						}
 					}
 																
 					AddSendingMail(t_mail,m_composingAttachment,t_forwardReplyMail,m_sendStyle);
@@ -238,8 +262,8 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				m_mainApp.StopNotification();
 				
-				AddMarkReadMail(e.getMessage());
-				e.getMessage().removeMessageListener(this);
+				AddMarkReadOrDelMail(e.getMessage(),false);
+
 				
 			}catch(Exception _e){}
 			
@@ -252,11 +276,14 @@ public class connectDeamon extends Thread implements SendListener,
 	public void messagesAdded(FolderEvent e){}
 	
 	public void messagesRemoved(FolderEvent e){
+		
 		if(e.getType() == FolderEvent.MESSAGE_REMOVED){
 			Message t_msg = e.getMessage();
-			if(AddMarkReadMail(t_msg)){
+			
+			if(AddMarkReadOrDelMail(t_msg,true)){
 				m_mainApp.StopNotification();
 			}
+			t_msg.removeMessageListener(this);
 			
 			// if the user select re-send menu the RIM OS will
 			// call sendMessage function first and call this messagesRemoved function later
@@ -501,7 +528,7 @@ public class connectDeamon extends Thread implements SendListener,
 		sendReceive.WriteInt(t_os, _att.m_mailIndex);
 		sendReceive.WriteInt(t_os, _att.m_attachmentIdx);
 		
-		m_connect.SendBufferToSvr(t_os.toByteArray(), true);
+		m_connect.SendBufferToSvr(t_os.toByteArray(), true,false);
 			
 	}
 	
@@ -562,7 +589,7 @@ public class connectDeamon extends Thread implements SendListener,
 						
 						ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 						t_os.write(msg_head.msgSponsorList);
-						m_connect.SendBufferToSvr(t_os.toByteArray(), false);
+						m_connect.SendBufferToSvr(t_os.toByteArray(), false,false);
 						
 					}
 					
@@ -578,8 +605,9 @@ public class connectDeamon extends Thread implements SendListener,
 
 			m_sendAuthMsg = false;
 			
-			while((RadioInfo.getSignalLevel() == RadioInfo.LEVEL_NO_COVERAGE && !m_mainApp.UseWifiConnection())
-					|| m_disconnect == true){
+			while(m_disconnect == true 
+				||(RadioInfo.getSignalLevel() == RadioInfo.LEVEL_NO_COVERAGE && !m_mainApp.UseWifiConnection())){
+
 				try{
 					sleep(15000);
 				}catch(Exception _e){}	
@@ -613,7 +641,7 @@ public class connectDeamon extends Thread implements SendListener,
 				t_os.write(recvMain.GetClientLanguage());
 				sendReceive.WriteString(t_os,m_currentVersion);	
 				
-				m_connect.SendBufferToSvr(t_os.toByteArray(), true);			
+				m_connect.SendBufferToSvr(t_os.toByteArray(), true,false);			
 				
 				m_sendAuthMsg = true;				
 				
@@ -939,7 +967,7 @@ public class connectDeamon extends Thread implements SendListener,
 			// to remark the message is read
 			//
 			m.addMessageListener(this);
-			m_markReadVector.addElement(t_mail);
+			m_markReadVector.addElement(new MarkReadMailData(t_mail));
 			
 			// increase the receive mail quantity
 			//
@@ -953,7 +981,7 @@ public class connectDeamon extends Thread implements SendListener,
 			sendReceive.WriteInt(t_os,t_hashcode);
 			m_mainApp.SetErrorString("" + t_hashcode + ":" + t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime());
 			
-			m_connect.SendBufferToSvr(t_os.toByteArray(), false);
+			m_connect.SendBufferToSvr(t_os.toByteArray(), false,true);
 									
 			m_mainApp.TriggerNotification();
 							
@@ -1122,22 +1150,22 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 	}
 		
-	public synchronized boolean AddMarkReadMail(Message m){
+	public synchronized boolean AddMarkReadOrDelMail(Message m,final boolean _del){
 		
 		for(int i = 0;i < m_markReadVector.size();i++){
 		
 			try{
 				
-				final fetchMail t_mail = (fetchMail)m_markReadVector.elementAt(i);
+				final MarkReadMailData t_mail = (MarkReadMailData)m_markReadVector.elementAt(i);
 				
-				if(t_mail.GetSendDate().equals(m.getSentDate())
-					&& ((String)t_mail.GetFromVect().elementAt(0)).indexOf(m.getFrom().getAddr()) != -1){
+				if(t_mail.m_date == m.getSentDate().getTime() 
+				&& t_mail.m_fromAddr.indexOf(m.getFrom().getAddr()) != -1){
 					
 					// start 
 					//
 					Thread t_sendMark = new Thread(){
 						public void run(){
-							fetchMail t_markMail = t_mail;
+							MarkReadMailData t_markMail = t_mail;
 							int t_time = 0;
 							try{
 								
@@ -1154,10 +1182,10 @@ public class connectDeamon extends Thread implements SendListener,
 								}
 								
 								ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-								t_os.write(msg_head.msgBeenRead);
-								sendReceive.WriteInt(t_os, t_markMail.GetSimpleHashCode());
+								t_os.write((_del && m_mainApp.m_delRemoteMail)?msg_head.msgMailDel:msg_head.msgBeenRead);
+								sendReceive.WriteInt(t_os, t_markMail.m_simpleHashCode);
 								
-								m_connect.SendBufferToSvr(t_os.toByteArray(), false);
+								m_connect.SendBufferToSvr(t_os.toByteArray(), false,false);
 								
 							}catch(Exception e){
 								m_mainApp.SetErrorString("Mark:"+ e.getMessage() + e.getClass().getName());
@@ -1168,7 +1196,9 @@ public class connectDeamon extends Thread implements SendListener,
 					
 					t_sendMark.start();
 					
-					m_markReadVector.removeElementAt(i);
+					if(_del){
+						m_markReadVector.removeElementAt(i);
+					}					
 					
 					return true;
 				}
