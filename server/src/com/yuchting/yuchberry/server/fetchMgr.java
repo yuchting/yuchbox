@@ -149,7 +149,7 @@ public class fetchMgr{
 		
 		m_currConnect.m_sendReceive.SendBufferToSvr(_os.toByteArray(), _sendImm);		
 	}
-	       
+		       
 	public void InitConnect(String _prefix,Logger _logger)throws Exception{
 		
 		m_prefix	= _prefix;

@@ -337,8 +337,8 @@ public class fetchEmail extends fetchAccount{
     
     int		m_unreadFetchIndex			= 0;
     
-    boolean m_useAppendHTML			= false;
-    
+    boolean m_useAppendHTML			= false;    
+   
     private Vector	m_recvMailAttach 	= new Vector();
     
 	// Get a Properties object
@@ -643,22 +643,29 @@ public class fetchEmail extends fetchAccount{
 		final int t_style = in.read();
 		
 		if(t_style != fetchMail.NOTHING_STYLE){
+			
+			// find the reply mail
+			//
 			t_forwardReplyMail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
 			t_forwardReplyMail.InputMail(in);
 			
 			if(t_style == fetchMail.REPLY_STYLE){
+				
 				Vector t_replyAddr = t_forwardReplyMail.GetSendToVect();
+				
 				if(!t_replyAddr.isEmpty()){
 
 					boolean t_found = false;
 					
 					for(int i= 0 ;i < t_replyAddr.size();i++){
 						String t_addr = (String)t_replyAddr.elementAt(i);
+																		
 						if(t_addr.toLowerCase().indexOf(GetAccountName().toLowerCase()) != -1){
 							t_found = true;
 							break;
 						}
 					}
+					
 					if(!t_found){
 						return false;
 					}
@@ -1333,9 +1340,16 @@ public class fetchEmail extends fetchAccount{
 			Vector t_vectGroup = _mail.GetGroupVect();
 			t_vectGroup.removeAllElements();
 			
+			boolean t_addCurrEmail = true;
+			
 		    for (int j = 0; j < a.length; j++) {
 		    	
-		    	t_vect.addElement(DecodeName(a[j].toString(),false));
+		    	String t_addr = DecodeName(a[j].toString(),false);
+		    	t_vect.addElement(t_addr);
+		    	
+		    	if(t_addr.toLowerCase().indexOf(GetAccountName()) != -1){
+		    		t_addCurrEmail = false;
+		    	}
 			    
 				InternetAddress ia = (InternetAddress)a[j];
 				
@@ -1345,6 +1359,10 @@ public class fetchEmail extends fetchAccount{
 				    	t_vectGroup.addElement(DecodeName(aa[k].toString(),false));
 				    }
 				}
+		    }
+		    
+		    if(t_addCurrEmail){
+		    	t_vect.addElement(GetAccountName());
 		    }
 		}
 		

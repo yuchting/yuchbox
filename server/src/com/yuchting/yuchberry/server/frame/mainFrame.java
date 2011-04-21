@@ -1048,7 +1048,7 @@ public class mainFrame extends JFrame implements ActionListener{
 						if(t_tmpFolder.exists()){
 							File t_copyDir = new File(t_copyPrefix);
 							if(t_copyDir.exists()){
-								t_copyDir.delete();
+								DelDirectory(t_copyPrefix);
 							}
 							
 							t_tmpFolder.renameTo(t_copyDir);
