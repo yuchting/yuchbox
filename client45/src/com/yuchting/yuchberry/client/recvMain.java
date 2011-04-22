@@ -1031,12 +1031,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		try{
 			Invocation request = new Invocation(_filename);
-			Registry registry = Registry.getRegistry("net.rim.device.api.content.BlackBerryContentHandler");
+			Registry registry = Registry.getRegistry("com.yuchting.yuchberry.client.recvMain");
 			registry.invoke(request);
 			
 			return true;
 		}catch(Exception e){
-			SetErrorString("Invoke native apps failed:"+ e.getMessage());
+			SetErrorString("Invoke native apps failed: "+ e.getMessage());
 		}
 		
 		return false;		
