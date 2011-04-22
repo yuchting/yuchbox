@@ -20,6 +20,7 @@ CONNECTING_LABEL#0="connecting...";
 CONNECTING_RETRY_LABEL#0="disconnected retry later...";
 CONNECT_BUTTON_LABEL#0="connect";
 CONNECT_OPTION_LABEL#0="connection option:";
+COPY_MAIL_TO_SENT_FOLDER#0="Copy mail to sent folder";
 COPY_TO_CLIPBOARD#0="Copy to clipboard(A\u0332)";
 COPY_TO_CLIPBOARD_SUCC#0="Copy OK!";
 CURRENT_LATITUDE_LABEL#0="current latitude:";

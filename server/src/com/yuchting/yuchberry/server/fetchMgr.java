@@ -86,6 +86,10 @@ public class fetchMgr{
     	return m_latestVersion;
     }
     
+    public int GetConnectClientVersion(){
+    	return m_clientVer;
+    }
+    
     public void SendNewVersionPrompt(sendReceive _sendRecv)throws Exception{
     	if(m_hasPrompt){
     		

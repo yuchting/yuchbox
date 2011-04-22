@@ -119,6 +119,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	int					m_startPromptHour	= 8;
 	int					m_endPromptHour		= 22;
 	
+	boolean			m_copyMailToSentFolder = false;
+	
 	final class UploadingDesc{
 		
 		fetchMail		m_mail = null;

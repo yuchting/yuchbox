@@ -146,13 +146,15 @@ class RecvMailAttach{
 	fetchMgr	m_fetchMgr			= null;
 	
 	int			m_style;
+	boolean	m_copyToSentFolder	= false;
 	
-	public RecvMailAttach(fetchMgr _mainMgr,fetchMail _sendMail,fetchMail _forwardReplyMail,int _style){
+	public RecvMailAttach(fetchMgr _mainMgr,fetchMail _sendMail,fetchMail _forwardReplyMail,int _style,boolean _copyToSentFolder){
 		m_fetchMgr	= _mainMgr;
 		m_sendMail = _sendMail;
 		m_forwardReplyMail = _forwardReplyMail;
 		
 		m_style = _style;
+		m_copyToSentFolder = _copyToSentFolder;
 	}
 	
 	public void PrepareForwardReplyContain(String _signature){
@@ -703,11 +705,18 @@ public class fetchEmail extends fetchAccount{
 			}
 		}
 		
+		boolean t_copyToSentFolder = false;
+		
+		if(m_mainMgr.GetConnectClientVersion() >= 4){
+			t_copyToSentFolder = (in.read() == 1);
+		}
+		
+		
 		if(t_mail.GetAttachment().isEmpty()){
-			SendMailToSvr(new RecvMailAttach(m_mainMgr,t_mail,t_forwardReplyMail,t_style));
+			SendMailToSvr(new RecvMailAttach(m_mainMgr,t_mail,t_forwardReplyMail,t_style,t_copyToSentFolder));
 		}else{
 			m_mainMgr.m_logger.LogOut("Create Tmp Send Maill Attach file");
-			CreateTmpSendMailAttachFile(new RecvMailAttach(m_mainMgr,t_mail,t_forwardReplyMail,t_style));
+			CreateTmpSendMailAttachFile(new RecvMailAttach(m_mainMgr,t_mail,t_forwardReplyMail,t_style,t_copyToSentFolder));
 		}
 		
 		return true;
@@ -895,6 +904,33 @@ public class fetchEmail extends fetchAccount{
 				
 				m_sendTransport.sendMessage(msg, msg.getAllRecipients());
 				m_sendTransport.close();
+				
+				if(_mail.m_copyToSentFolder 
+				&& m_host_send.toLowerCase().indexOf("googlemail.com") == -1
+				&& m_host_send.toLowerCase().indexOf("gmail.com") == -1){
+					
+					// open the Sent folder and copy mail to this
+					//
+					Folder folder = m_store.getFolder("Sent");
+					try{
+
+					    if (folder == null) {
+					    	throw new Exception("Invalid INBOX folder");
+					    }				    	    
+					    
+						// create "Sent" folder if it does not exist
+						if (!folder.exists()) {
+							folder.create(Folder.HOLDS_MESSAGES);						
+						}
+						
+						// add message to "Sent" folder
+						folder.appendMessages(new Message[] {msg});
+						
+					}finally{
+						folder.close(false);
+					}					
+				}
+				
 				break;
 			}catch(Exception e){
 				m_mainMgr.m_logger.PrinterException(e);
