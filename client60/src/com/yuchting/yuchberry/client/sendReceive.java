@@ -33,6 +33,8 @@ public class sendReceive extends Thread{
 	
 	int					m_storeByteTimer		= 0;
 	
+	boolean			m_waitMoment			= false; 
+	
 	IStoreUpDownloadByte	m_storeInterface	= null;
 		
 	public sendReceive(OutputStream _socketOut,InputStream _socketIn){
@@ -53,7 +55,7 @@ public class sendReceive extends Thread{
 	}
 	
 	//! send buffer
-	public synchronized void SendBufferToSvr(byte[] _write,boolean _sendImm)throws Exception{	
+	public synchronized void SendBufferToSvr(byte[] _write,boolean _sendImm,boolean _wait)throws Exception{	
 		m_unsendedPackage.addElement(_write);
 		
 		if(_sendImm){
@@ -63,6 +65,12 @@ public class sendReceive extends Thread{
 				m_keepliveCounter = 0;
 			}
 			
+		}
+		
+		if(_wait){
+			synchronized (this) {
+				m_waitMoment = true;
+			}
 		}
 	}
 	
@@ -170,9 +178,21 @@ public class sendReceive extends Thread{
 			boolean t_keeplive = false;
 			
 			while(!m_closed){
+				
 				SendBufferToSvr_imple(PrepareOutputData());
+				
 				sleep(1000);
 				
+				// wait moment
+				//
+				while(m_waitMoment){
+					
+					synchronized (this) {
+						m_waitMoment = false;
+					}
+					
+					sleep(2000);
+				}				
 				
 				synchronized (this){
 					if(m_keepliveInterval != 0 && ++m_keepliveCounter > m_keepliveInterval){

@@ -251,18 +251,23 @@ class RecvMailAttach{
 
 				Vector t_form = m_forwardReplyMail.GetFromVect();
 				
-				t_string.append(t_sender+ (String)t_form.elementAt(0) + "\n");
-				for(int i = 1;i < t_form.size();i++){
-					t_string.append((String)t_form.elementAt(i) + "\n");
+				if(!t_form.isEmpty()){
+					t_string.append(t_sender+ (String)t_form.elementAt(0) + "\n");
+					for(int i = 1;i < t_form.size();i++){
+						t_string.append((String)t_form.elementAt(i) + "\n");
+					}
 				}
+				
 				t_string.append(t_dateTile+ new SimpleDateFormat(t_dateFormat).format(m_forwardReplyMail.GetSendDate()) + "\n");
 				t_string.append(t_subject+ m_forwardReplyMail.GetSubject() + "\n");
 				
 				Vector t_sendto = m_forwardReplyMail.GetSendToVect();
-				t_string.append(t_receiver+ (String)t_sendto.elementAt(0) + "\n");
-				for(int i = 1;i < t_sendto.size();i++){
-					t_string.append((String)t_sendto.elementAt(i) + "\n");
-				}
+				if(!t_sendto.isEmpty()){
+					t_string.append(t_receiver+ (String)t_sendto.elementAt(0) + "\n");
+					for(int i = 1;i < t_sendto.size();i++){
+						t_string.append((String)t_sendto.elementAt(i) + "\n");
+					}
+				}			
 				
 				t_string.append(m_forwardReplyMail.GetContain());
 				
@@ -531,7 +536,20 @@ public class fetchEmail extends fetchAccount{
 	 		    		try{
 	 		    			ImportMail(t_msg,t_mail);
 	 		    		}catch(Exception e){
-	 		    			t_mail.SetContain(t_mail.GetContain() + "\n\n\n" + e.getMessage() + "\nThe yuchberry ImportMail Error! Please read the Mail via another way!\n\n\n");
+	 		    			String t_prompt = null;
+	 		    			switch (m_mainMgr.GetClientLanguage()) {
+			 		   		case 0:
+			 		   			t_prompt = "\nYuchBerry服务器提示：读取这封邮件的时候出现了错误，需要通过其它方式查看。\n\n\n"; 
+			 		   			break;
+			 		   		case 1:
+			 		   			t_prompt = "\nYuchBerry服务器提示：讀取這封郵件的時候出現了錯誤，需要通過其他方式查看。\n\n\n";
+			 		   			break;
+			 		   		default:
+			 		   			t_prompt = "\nThe yuchberry ImportMail Error! Please read the Mail via another way!\n\n\n";
+			 		   				
+			 		   		}
+	 		    			
+	 		    			t_mail.SetContain(t_mail.GetContain() + "\n\n\n" + e.getMessage() + t_prompt);
 	 		    		}
 	 		    		 
 	 		    		AddMailIndexAttach(t_mail,false);
@@ -676,10 +694,20 @@ public class fetchEmail extends fetchAccount{
 			
 		}else{
 			
-			if(t_mail.GetSubject().equals("设置签名")){
+			if(t_mail.GetSubject().equals("设置签名") 
+			|| t_mail.GetSubject().toLowerCase().equals("set signature")
+			|| t_mail.GetSubject().equals("設置簽名") ){
 				
 				if(!t_mail.GetSendToVect().isEmpty() 
 				&& ((String)t_mail.GetSendToVect().elementAt(0)).toLowerCase().indexOf(GetAccountName()) != -1 ){
+					
+					final int t_maxSignatureLength = 256;
+					
+					final boolean t_overMaxlength = (t_mail.GetContain().length() > t_maxSignatureLength);
+					
+					if(t_overMaxlength){						
+						t_mail.SetContain(t_mail.GetContain().substring(0,t_maxSignatureLength));
+					}
 					
 					FileOutputStream t_out = new FileOutputStream(m_mainMgr.GetPrefixString() + fetchEmail.fsm_signatureFilename);
 					try{
@@ -689,17 +717,20 @@ public class fetchEmail extends fetchAccount{
 						t_out.close();
 					}
 					
-					// receive send message to berry
-					ByteArrayOutputStream os = new ByteArrayOutputStream();
-					os.write(msg_head.msgSendMail);
-					os.write(1);
+					m_mainMgr.m_logger.LogOut("Set signature OK!");
 					
-					sendReceive.WriteLong(os,t_mail.GetSendDate().getTime());
+					switch(m_mainMgr.GetClientLanguage()){
+					case 0:
+						t_mail.SetContain("YuchBerry 提示：完成设置签名！"+(t_overMaxlength?("超过最大长度:" + t_maxSignatureLength):"")+"\n\n" + t_mail.GetContain());
+						break;
+					case 1:
+						t_mail.SetContain("YuchBerry 提示: 完成設置簽名！"+(t_overMaxlength?("超過最大長度:" + t_maxSignatureLength):"")+"\n\n" + t_mail.GetContain());
+						break;
+					default:
+						t_mail.SetContain("YuchBerry Prompt: Set signature OK!"+(t_overMaxlength?("Over Max Length:" + t_maxSignatureLength):"")+"\n\n" + t_mail.GetContain());
+						break;
+					}
 					
-					m_mainMgr.SendData(os,false);
-					m_mainMgr.m_logger.LogOut("Set signature OK!");					
-					
-					return true;
 				}
 				
 			}
@@ -927,7 +958,9 @@ public class fetchEmail extends fetchAccount{
 						folder.appendMessages(new Message[] {msg});
 						
 					}finally{
-						folder.close(false);
+						if(folder.isOpen()){
+							folder.close(false);
+						}						
 					}					
 				}
 				
@@ -1063,18 +1096,16 @@ public class fetchEmail extends fetchAccount{
 	    	
 			if(_index <= folder.getMessageCount()){
 				
-				
 				if(_del){
 					folder.setFlags(_index, _index, new Flags(Flags.Flag.DELETED), true);
-				}else{					
-					folder.setFlags(_index, _index, new Flags(Flags.Flag.SEEN), true);
 					
-//					Message[] t_msg = folder.getMessages(_index, _index);
-//					
-//					if(t_msg.length != 0){
-//						m_mainMgr.m_logger.LogOut(GetAccountName() + " Set index " + _index + " read ");
-//						t_msg[0].setFlag(Flags.Flag.SEEN, true);
-//					}						
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " delete mail Index:"+_index);
+					
+				}else{
+					
+					folder.setFlags(_index, _index, new Flags(Flags.Flag.SEEN), true);	
+					
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " Set index " + _index + " read ");
 				}
 			}			
 	 	    
@@ -1090,10 +1121,6 @@ public class fetchEmail extends fetchAccount{
 	    		
 	    	}else{
 	    		folder.close(false);
-	    	}
-	    	
-	    	if(_del){
-	    		m_mainMgr.m_logger.LogOut(GetAccountName() + " delete mail Index:"+_index);
 	    	}
 	    	
 	    }	        

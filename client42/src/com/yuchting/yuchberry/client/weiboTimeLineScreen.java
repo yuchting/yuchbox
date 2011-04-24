@@ -3,16 +3,18 @@ package com.yuchting.yuchberry.client;
 import java.util.Vector;
 
 import local.localResource;
+import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
-import net.rim.device.api.ui.component.BasicEditField;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.Menu;
+import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
@@ -33,16 +35,16 @@ class WeiboItemField extends Manager{
 	static HyperlinkButtonField	sm_favoriteBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.FAVORITE_WEIBO_BUTTON_LABLE));
 	
 	// BasicEditField for 4.2os
-	static BasicEditField 			sm_textArea				= new BasicEditField(Field.READONLY);
+	static TextField 			sm_textArea				= new TextField(Field.READONLY);
 	
-	static BasicEditField 			sm_editTextArea			= new BasicEditField(EditField.FILTER_DEFAULT){
+	static TextField 			sm_editTextArea			= new TextField(EditField.FILTER_DEFAULT){
 		public void setText(String _text){
 			super.setText(_text);
 			layout(recvMain.fsm_display_width,1000);
 		}
 	};
 	
-	static BasicEditField 			sm_testTextArea			= new BasicEditField(Field.READONLY){
+	static TextField 			sm_testTextArea			= new TextField(Field.READONLY){
 		public void setText(String _text){
 			super.setText(_text);
 			layout(fsm_textWidth,1000);

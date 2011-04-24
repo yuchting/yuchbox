@@ -724,7 +724,7 @@ public class mainFrame extends JFrame implements ActionListener{
 				
 				final long t_lastTime = t_thread.GetLastTime(t_currTime);
 				
-				if(!t_thread.m_sendTimeupMail && t_lastTime > 0 && t_lastTime < 2 * 3600 * 1000){
+				if(!t_thread.m_sendTimeupMail && t_lastTime > 0 && t_lastTime < 5 * 3600 * 1000){
 					
 					t_thread.m_sendTimeupMail = true;
 					
@@ -1000,6 +1000,7 @@ public class mainFrame extends JFrame implements ActionListener{
 					for(yuchEmail email:m_currbber.GetEmailList()){
 						t_configBuffer.append("<EmailAccount account=\"").append(email.m_emailAddr)
 														.append("\" password=\"").append(email.m_password)
+														.append("\" sendName=\"").append(email.m_username)
 														.append("\" useFullNameSignIn=\"").append(email.m_fullnameSignIn?1:0)
 														.append("\" protocol=\"").append(email.m_protocol)
 														.append("\" host=\"").append(email.m_host)

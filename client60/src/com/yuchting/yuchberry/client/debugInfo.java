@@ -3,8 +3,8 @@ package com.yuchting.yuchberry.client;
 import java.util.Vector;
 
 import local.localResource;
-
 import net.rim.device.api.i18n.SimpleDateFormat;
+import net.rim.device.api.system.Clipboard;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
@@ -13,7 +13,6 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Ui;
-import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.MainScreen;
@@ -178,8 +177,14 @@ public class debugInfo extends MainScreen{
 
 	MenuItem 	m_clearMenu = new MenuItem(recvMain.sm_local.getString(localResource.DEBUG_INFO_CLEAR_MENU), 101, 10) {
 		public void run() {
-			recvMain t_app = (recvMain)UiApplication.getUiApplication();
-			t_app.clearDebugMenu();											
+			m_mainApp.clearDebugMenu();											
+		}
+	};
+	
+	MenuItem 	m_copyMenu = new MenuItem(recvMain.sm_local.getString(localResource.COPY_TO_CLIPBOARD), 101, 10) {
+		public void run() {		
+			Clipboard.getClipboard().put(m_mainApp.GetAllErrorString());
+			m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.COPY_TO_CLIPBOARD_SUCC));
 		}
 	};
 	
@@ -193,6 +198,7 @@ public class debugInfo extends MainScreen{
 	protected void makeMenu(Menu _menu,int instance){
     	_menu.add(m_helpMenu);
     	_menu.add(m_clearMenu);
+    	_menu.add(m_copyMenu);
     }
 	
 	protected boolean keyDown(int keycode,int time){
@@ -204,6 +210,9 @@ public class debugInfo extends MainScreen{
     		return true;
     	case 'C':
     		m_clearMenu.run();
+    		return true;
+    	case 'A':
+    		m_copyMenu.run();
     		return true;
     	}
     	

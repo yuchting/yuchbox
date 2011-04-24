@@ -2,11 +2,14 @@ package com.yuchting.yuchberry.server.frame;
 
 import org.dom4j.Element;
 
+import com.yuchting.yuchberry.yuchsign.client.yuchbber;
+
 public class yuchEmail {
 	
 
 	public String m_emailAddr = "";
 	
+	public String m_username = "";
 
 	public String m_password = "";
 	
@@ -36,7 +39,12 @@ public class yuchEmail {
 	
 	public void OuputXMLData(final StringBuffer _output){
 		
+		if(m_username == null){
+			m_username = "";
+		}
+		
 		_output.append("\t<email ").append("account=\"").append(m_emailAddr).
+									append("\" name=\"").append(m_username).
 									append("\" pass=\"").append(m_password).
 									append("\" full=\"").append(m_fullnameSignIn?1:0).
 									append("\" protocal=\"").append(m_protocol).
@@ -51,6 +59,7 @@ public class yuchEmail {
 	public void InputXMLData(final Element _elem)throws Exception{
 				
 		m_emailAddr		= yuchbber.ReadStringAttr(_elem, "account");
+		m_username		= yuchbber.ReadStringAttr(_elem,"name");
 		m_password		= yuchbber.ReadStringAttr(_elem, "pass");
 		m_fullnameSignIn= yuchbber.ReadBooleanAttr(_elem, "full");
 		m_protocol		= yuchbber.ReadStringAttr(_elem, "protocal");

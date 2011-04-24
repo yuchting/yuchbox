@@ -438,7 +438,7 @@ class sendMailAttachmentDeamon extends Thread{
 		sendReceive.WriteInt(t_os, t_size);
 		t_os.write(m_bufferBytes,0,t_size);
 		
-		m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), _send);
+		m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), _send,false);
 		
 		//System.out.println("send msgMailAttach time:"+ m_sendMail.GetSendDate().getTime() + " beginIndex:" + m_beginIndex + " size:" + t_size);
 		
@@ -535,7 +535,7 @@ class sendMailAttachmentDeamon extends Thread{
 						t_os.write(fetchMail.NOTHING_STYLE);
 					}
 					
-					m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), false);
+					m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), false,false);
 					
 					t_sendContain = true;
 					

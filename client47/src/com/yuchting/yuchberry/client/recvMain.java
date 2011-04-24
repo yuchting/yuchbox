@@ -27,7 +27,10 @@ import net.rim.device.api.notification.NotificationsConstants;
 import net.rim.device.api.notification.NotificationsManager;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.CoverageInfo;
 import net.rim.device.api.system.Display;
+import net.rim.device.api.system.RadioInfo;
+import net.rim.device.api.system.WLANInfo;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
@@ -39,7 +42,6 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	final static int 		fsm_display_width		= Display.getWidth();
 	final static int 		fsm_display_height		= Display.getHeight();
 	
-	final static int		fsm_clientVersion = 10;
 	
 	final static long		fsm_notifyID_email = 767918509114947L;
 	
@@ -75,6 +77,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			m_info	= _info;
 			m_time	= new Date();
 		}
+		
 	}
 	
 	Vector				m_errorString		= new Vector();	
@@ -89,6 +92,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	boolean			m_autoRun			= false;
 	
+	boolean			m_discardOrgText	= false;
+	
 	final class APNSelector{
 		String		m_name			= null;
 		int			m_validateNum	= 0;
@@ -101,6 +106,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	long				m_uploadByte		= 0;
 	long				m_downloadByte		= 0;
+	
+	int					m_sendMailNum		= 0;
+	int					m_recvMailNum		= 0;
 	
 	static final String[]	fsm_pulseIntervalString = {"1","3","5","10","30"};
 	static final int[]	fsm_pulseInterval		= {1,3,5,10,30};
@@ -255,7 +263,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         		System.exit(0);
         	}else{
         		try{
-        			m_connectDeamon.Connect(true);
+        			m_connectDeamon.Connect();
         			Start();
         		}catch(Exception e){
         			System.exit(0);
@@ -397,6 +405,25 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return "";
 	}
 	
+	public boolean UseWifiConnection(){
+		
+		// 4.2
+		// return false;
+		
+//		int stat = WLANInfo.getWLANState();
+//		boolean t_connect = WLANInfo.getWLANState() == WLANInfo.WLAN_STATE_CONNECTED;
+//		t_connect = WLANInfo.getAPInfo() != null;
+//		t_connect = WLANInfo.getWLANState() != WLANInfo.WLAN_STATE_DISCONNECTED; 
+//		t_connect = CoverageInfo.isCoverageSufficient(CoverageInfo.COVERAGE_DIRECT,RadioInfo.WAF_WLAN, false);
+//		
+		if(m_useWifi && WLANInfo.getAPInfo() != null){
+			SetErrorString("Using wifi to connect");
+			return true;
+		}
+		
+		return false;
+	}
+	
 	public void SetAPNName(String _APNList){
 		
 		m_APNList.removeAllElements();
@@ -435,11 +462,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 
 		String t_result = "";
 		
-		String t_APN = GetAPNName();
-				
-		if(m_useWifi){
+		if(UseWifiConnection()){
+			
 			t_result = ";interface=wifi";
+			
 		}else{
+			
+			String t_APN = GetAPNName();
+			
 			if(t_APN.length() != 0){
 				t_result = ";apn=" + t_APN;			
 			}
@@ -460,6 +490,23 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return t_result;
 	}
 	
+	public int GetSendMailNum(){return m_sendMailNum;}
+	public void SetSendMailNum(int _num){
+		m_sendMailNum = _num;
+		
+		if(m_settingScreen != null){
+			m_settingScreen.RefreshUpDownloadByte();
+		}
+	}
+	
+	public int GetRecvMailNum(){return m_recvMailNum;}
+	public void SetRecvMailNum(int _num){
+		m_recvMailNum = _num;
+		
+		if(m_settingScreen != null){
+			m_settingScreen.RefreshUpDownloadByte();
+		}
+	}	
 	
 	public boolean IsPromptTime(){
 		
@@ -597,6 +644,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}
 		
 	}
+	
+	final static int		fsm_clientVersion = 12;
+	
 	public synchronized void WriteReadIni(boolean _read){
 		
 		// process the ~Init.data file to restore the destroy original file
@@ -668,6 +718,16 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    		if(t_currVer >= 10){
 				    			m_useMDS = t_readFile.read() == 1?true:false;
 				    		}
+				    		
+				    		if(t_currVer >= 11){
+				    			m_sendMailNum = sendReceive.ReadInt(t_readFile);
+				    			m_recvMailNum = sendReceive.ReadInt(t_readFile);
+				    		}
+				    		
+				    		if(t_currVer >= 12){
+				    			m_discardOrgText = t_readFile.read() == 1?true:false;
+				    		}
+				    		
 			    		}finally{
 			    			t_readFile.close();
 			    			t_readFile = null;
@@ -713,6 +773,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						
 						t_writeFile.write(m_useLocationInfo?1:0);
 						t_writeFile.write(m_useMDS?1:0);
+						
+						sendReceive.WriteInt(t_writeFile,m_sendMailNum);
+						sendReceive.WriteInt(t_writeFile,m_recvMailNum);
+						
+						t_writeFile.write(m_discardOrgText?1:0);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1127,7 +1192,25 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			m_debugInfoScreen.RefreshText();
 		}			
 	}
-	
+	public String GetAllErrorString(){
+		if(!m_errorString.isEmpty()){
+
+			SimpleDateFormat t_format = new SimpleDateFormat("HH:mm:ss");
+			
+			ErrorInfo t_info = (ErrorInfo)m_errorString.elementAt(0);
+			
+			String t_text = (t_format.format(t_info.m_time) + ":" + t_info.m_info).concat("\n");
+			
+			for(int i = 1;i< m_errorString.size();i++){				
+				t_info = (ErrorInfo)m_errorString.elementAt(i);
+				t_text = t_text.concat((t_format.format(t_info.m_time) + ":" + t_info.m_info).concat("\n"));
+			}
+			
+			return t_text;
+		}
+		
+		return "";
+	}
 	public void clearDebugMenu(){
 		m_errorString.removeAllElements();
 		

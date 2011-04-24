@@ -27,6 +27,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 	 LabelField			m_uploadByte	= new LabelField();
 	 LabelField			m_downloadByte	= new LabelField();
 	 LabelField			m_totalByte		= new LabelField();
+	 LabelField			m_sendMailNum	= new LabelField();
+	 LabelField			m_recvMailNum	= new LabelField();
 	 ButtonField		m_clearByteBut	= new ButtonField(recvMain.sm_local.getString(localResource.CLEAR_STATISTICS),Field.FIELD_RIGHT);
 	 
 	 CheckboxField		m_fulldayPrompt = null;
@@ -36,6 +38,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 	 CheckboxField		m_useLocationInfo = null;
 	 LabelField			m_longitude		= new LabelField();
 	 LabelField			m_latitude		= new LabelField();
+	 
+	 CheckboxField		m_discardOrgText = null;
 	 
 	 recvMain			m_mainApp		= null;
 	 
@@ -71,7 +75,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 
 		 m_autoRun			= new CheckboxField(recvMain.sm_local.getString(localResource.AUTO_RUN_CHECK_BOX), m_mainApp.m_autoRun);
 		 add(m_autoRun);
-		
+		 
+		 m_discardOrgText	= new CheckboxField(recvMain.sm_local.getString(localResource.DISCARD_ORG_TEXT), m_mainApp.m_discardOrgText);
+		 add(m_discardOrgText);
 		 //@}
 		 
 		 add(new SeparatorField());
@@ -84,6 +90,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 add(m_uploadByte);
 		 add(m_downloadByte);
 		 add(m_totalByte);
+		 add(m_sendMailNum);
+		 add(m_recvMailNum);
 		 add(m_clearByteBut);
 		 m_clearByteBut.setChangeListener(this);
 		 
@@ -113,6 +121,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 //@}
 		 
 		 add(new SeparatorField());
+		 
 		 //@{ other option
 		 t_title = new LabelField(recvMain.sm_local.getString(localResource.LOCATION_OPTIION_LABEL));
 		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
@@ -125,6 +134,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 add(m_latitude);
 		 
 		 RefreshLocation();
+		 
 		 //@}		 
 		 
 		 setTitle(new LabelField(recvMain.sm_local.getString(localResource.ADVANCE_SETTING_TITEL_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
@@ -138,6 +148,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 			if(field == m_clearByteBut){
 				if(Dialog.ask(Dialog.D_YES_NO,recvMain.sm_local.getString(localResource.CLEAR_STATISTICS_PROMPT),Dialog.NO) == Dialog.YES){
 					m_mainApp.ClearUpDownloadByte();
+					
+					m_mainApp.SetSendMailNum(0);
+					m_mainApp.SetRecvMailNum(0);
+					
 					RefreshUpDownloadByte();
 				}
 			}
@@ -169,6 +183,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		m_mainApp.m_useMDS = m_uesMDS.getChecked();
 		m_mainApp.m_fulldayPrompt	= m_fulldayPrompt.getChecked();				
 		
+		m_mainApp.m_discardOrgText = m_discardOrgText.getChecked();
+		
 		m_mainApp.WriteReadIni(false);
 		
 		m_mainApp.m_settingScreen = null;
@@ -183,6 +199,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 				m_uploadByte.setText(recvMain.sm_local.getString(localResource.UPLOAD_STATISTICS) + recvMain.GetByteStr(m_mainApp.m_uploadByte));
 				m_downloadByte.setText(recvMain.sm_local.getString(localResource.DOWNLOAD_STATISTICS) + recvMain.GetByteStr(m_mainApp.m_downloadByte));
 				m_totalByte.setText(recvMain.sm_local.getString(localResource.TOTAL_STATISTICS) + recvMain.GetByteStr(m_mainApp.m_downloadByte + m_mainApp.m_uploadByte));
+				
+				m_sendMailNum.setText(recvMain.sm_local.getString(localResource.SEND_MAIL_NUM) + m_mainApp.GetSendMailNum());
+				m_recvMailNum.setText(recvMain.sm_local.getString(localResource.RECV_MAIL_NUM) + m_mainApp.GetRecvMailNum());
 			}
 		});
 	 }
