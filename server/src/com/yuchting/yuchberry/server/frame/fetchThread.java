@@ -1,5 +1,6 @@
 package com.yuchting.yuchberry.server.frame;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.yuchting.yuchberry.server.Logger;
@@ -35,6 +36,30 @@ public class fetchThread extends Thread{
 		m_formerTimer = _formerTimer;
 		
 		start();
+	}
+	
+	static final SimpleDateFormat fsm_disconnectTimeFormat = new SimpleDateFormat("(上次链接时间 yyyy年MM月dd日 HH:mm)");
+	static final Date				fsm_dateTime = new Date();
+	
+	public String GetStateString(){
+		
+		if(m_pauseState){
+			return "暂停";
+		}else if(m_close){
+			return "关闭";
+		}else if(m_fetchMgr.GetClientConnected() != null){
+			return "客户端连接中";
+		}else{
+			
+			String t_clientDate = "(未连接过)";
+			
+			if(m_clientDisconnectTime != 0){	
+				fsm_dateTime.setTime(m_clientDisconnectTime);
+				t_clientDate = fsm_disconnectTimeFormat.format(fsm_dateTime);
+			}
+			
+			return "监听中" + t_clientDate;
+		}
 	}
 	
 	public void run(){

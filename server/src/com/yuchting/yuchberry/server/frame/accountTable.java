@@ -72,6 +72,7 @@ public class accountTable extends JTable{
 		m_fetchMgrListRef.addElement(_thread);
 	}
 	
+	
 	public synchronized void RefreshState(){
 		
 		final int t_rowNum = m_defaultModel.getRowCount();
@@ -79,27 +80,13 @@ public class accountTable extends JTable{
 		Date t_date = new Date();
 		
 		long t_currTime = t_date.getTime();
-				
+		
+		
 		for(int i = 0;i < t_rowNum;i++){
 			fetchThread t_thread = (fetchThread)m_fetchMgrListRef.elementAt(i);
 			
 			m_defaultModel.setValueAt(new Long(t_thread.GetLastTime(t_currTime) / 3600000),i,3);			
-			
-			if(t_thread.m_pauseState){
-				m_defaultModel.setValueAt("暂停",i, 5);
-			}else if(t_thread.m_close){
-				m_defaultModel.setValueAt("关闭",i, 5);
-			}else if(t_thread.m_fetchMgr.GetClientConnected() != null){
-				m_defaultModel.setValueAt("客户端连接中",i, 5);
-			}else{
-				String t_clientDate = "(未连接过)";
-				if(t_thread.m_clientDisconnectTime != 0){	
-					t_date.setTime(t_thread.m_clientDisconnectTime);
-					t_clientDate = (new SimpleDateFormat("(上次链接时间 yyyy年MM月dd日 HH:mm)")).format(t_date);
-				}
-				
-				m_defaultModel.setValueAt("监听中" + t_clientDate,i, 5);
-			}
+			m_defaultModel.setValueAt(t_thread.GetStateString(),i,5);			
 		}
 	}
 	

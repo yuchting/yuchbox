@@ -50,6 +50,7 @@ import javax.swing.event.MouseInputListener;
 
 import com.yuchting.yuchberry.server.Logger;
 import com.yuchting.yuchberry.server.fakeMDSSvr;
+import com.yuchting.yuchberry.server.fetchAccount;
 import com.yuchting.yuchberry.server.fetchMgr;
 
 class checkStateThread extends Thread{
@@ -151,6 +152,10 @@ public class mainFrame extends JFrame implements ActionListener{
 	NanoHTTPD	m_httpd					= null;
 	
 	Logger		m_logger				= new Logger("");
+	
+	int			m_currUsingAccount		= 0;
+	int			m_currConnectAccount	= 0;
+	
 	
 	static public void main(String _arg[]){
 		new fakeMDSSvr();
@@ -704,9 +709,12 @@ public class mainFrame extends JFrame implements ActionListener{
 	}
 	
 	public synchronized void RefreshState(){
-		int t_connectNum = 0;
-		int t_usingNum = 0;
+
+		m_logger.LogOut("Start RefreshState");
 		
+		m_currUsingAccount		= 0;
+		m_currConnectAccount	= 0;
+				
 		final long t_currTime = (new Date()).getTime();
 		
 		Vector<fetchThread> t_deadPool = new Vector<fetchThread>();
@@ -720,7 +728,7 @@ public class mainFrame extends JFrame implements ActionListener{
 					t_thread.Pause();
 				}
 				
-				t_usingNum++;
+				m_currUsingAccount++;
 				
 				final long t_lastTime = t_thread.GetLastTime(t_currTime);
 				
@@ -734,7 +742,7 @@ public class mainFrame extends JFrame implements ActionListener{
 				}
 				
 				if(t_thread.m_fetchMgr.GetClientConnected() != null){
-					t_connectNum++;
+					m_currConnectAccount++;
 					t_thread.m_clientDisconnectTime = 0;
 				}else{
 					if(t_thread.m_clientDisconnectTime == 0){
@@ -758,6 +766,8 @@ public class mainFrame extends JFrame implements ActionListener{
 			
 		}
 		
+		m_logger.LogOut("Start DeleteAccountThread.");
+		
 		// delete the disconnect time-up thread
 		//
 		for(fetchThread thread : t_deadPool){
@@ -765,12 +775,14 @@ public class mainFrame extends JFrame implements ActionListener{
 			m_logger.LogOut("未连接时间超过3天，删除帐户 " + thread.m_fetchMgr.GetAccountName());
 		}
 			
-		m_stateLabel.setText("连接账户/使用帐户/总帐户：" + t_connectNum + "/" + t_usingNum + "/" + m_accountList.size());
+		m_stateLabel.setText("连接账户/使用帐户/总帐户：" + m_currConnectAccount + "/" + m_currUsingAccount + "/" + m_accountList.size());
 		m_accountTable.RefreshState();
 		
 		if(m_currentSelectThread != null){
 			FillLogInfo(m_currentSelectThread);
 		}
+		
+		m_logger.LogOut("Close bber request.");
 		
 		// close the timeup Bber Request
 		//
@@ -803,6 +815,9 @@ public class mainFrame extends JFrame implements ActionListener{
 		}
 		
 		if(!t_deadPool.isEmpty() || t_deleteThread){
+			
+			m_logger.LogOut("Store account info");
+			
 			StoreAccountInfo();
 		}
 	}
@@ -1022,6 +1037,8 @@ public class mainFrame extends JFrame implements ActionListener{
 											
 				if(m_orgThread != null){
 					
+					m_logger.LogOut(m_orgThread.m_fetchMgr.GetAccountName() + " start sync current fetchThread.");
+					
 					m_orgThread.m_fetchMgr.InitConnect(m_orgThread.m_fetchMgr.GetPrefixString(),m_orgThread.m_logger);
 					m_orgThread.m_fetchMgr.ResetAllAccountSession(true);
 					
@@ -1033,6 +1050,8 @@ public class mainFrame extends JFrame implements ActionListener{
 					createDialog.WriteSignatureAndGooglePos(m_orgThread.m_fetchMgr.GetPrefixString(), m_currbber.GetSignature());
 					
 				}else{
+					
+					m_logger.LogOut(m_currbber.GetSigninName() + " start sync new bber.");
 					
 					m_mainMgr = new fetchMgr();
 					Logger t_logger = new Logger();
@@ -1082,6 +1101,8 @@ public class mainFrame extends JFrame implements ActionListener{
 			}catch(Exception e){
 				m_result = "<Error>" + e.getMessage() + "</Error>";
 			}
+			
+			m_logger.LogOut(m_prefix + " end sync result:" + m_result);
 		}
 		
 		public void CheckStartRequest(){
@@ -1151,7 +1172,20 @@ public class mainFrame extends JFrame implements ActionListener{
 						
 						if(pass == null || !pass.equals(m_yuchsignFramePass)){
 							
-							return new NanoHTTPD.Response( HTTP_FORBIDDEN, MIME_PLAINTEXT, "");
+							pass = parms.getProperty("pass");
+							
+							if(pass == null || !pass.equals(m_yuchsignFramePass)){
+								return new NanoHTTPD.Response( HTTP_FORBIDDEN, MIME_PLAINTEXT, "");
+							}else{
+								String t_type = parms.getProperty("type");
+								String t_bber = parms.getProperty("bber");
+								
+								if(t_type != null){
+									return new NanoHTTPD.Response( HTTP_OK, MIME_PLAINTEXT, ProcessAdminCheck(t_type,t_bber));
+								}else{
+									return new NanoHTTPD.Response( HTTP_FORBIDDEN, MIME_PLAINTEXT, "");
+								}
+							}
 						}
 						
 						return new NanoHTTPD.Response( HTTP_OK, MIME_PLAINTEXT, ProcessHTTPD(method,header,parms));
@@ -1164,6 +1198,44 @@ public class mainFrame extends JFrame implements ActionListener{
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+	}
+	
+	private synchronized String ProcessAdminCheck(String _type,String _bber){
+		
+		m_logger.LogOut("start fill admin data type: " + _type + " _bber:" + _bber);
+		
+		if(_type.equals("0")){
+				
+			StringBuffer t_result = new StringBuffer();
+			
+			t_result.append("state:").append(m_currConnectAccount).append("/").append(m_currUsingAccount)
+					.append("/").append(m_accountList.size()).append("\n");
+			
+			long t_currTime = (new Date()).getTime();
+			
+			if(!m_accountList.isEmpty()){
+				for(int i = m_accountList.size() - 1; i >= 0;i--){
+					fetchThread t_acc = m_accountList.elementAt(i);
+					t_result.append(t_acc.m_fetchMgr.GetAccountName()).append("\t\t");
+					
+					if(!t_acc.m_pauseState){
+
+						long t_remainTime = t_acc.GetLastTime(t_currTime);
+						t_result.append(t_remainTime / 3600000).append("h");
+						
+					}else{
+						t_result.append("--");
+					}
+					
+					t_result.append("\t\t").append(t_acc.GetStateString()).append("\n");
+					
+				}
+			}
+						
+			return t_result.toString();
+		}
+		
+		return "";
 	}
 	
 	private synchronized String ProcessHTTPD(String method, Properties header, Properties parms){

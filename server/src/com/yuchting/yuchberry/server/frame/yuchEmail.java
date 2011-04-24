@@ -2,7 +2,6 @@ package com.yuchting.yuchberry.server.frame;
 
 import org.dom4j.Element;
 
-import com.yuchting.yuchberry.yuchsign.client.yuchbber;
 
 public class yuchEmail {
 	
