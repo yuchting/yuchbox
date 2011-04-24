@@ -111,6 +111,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	int					m_sendMailNum		= 0;
 	int					m_recvMailNum		= 0;
 	
+	
+	static final String[]	fsm_recvMaxTextLenghtString = {"∞","1KB","5KB","10KB","50KB"};
+	static final int[]	fsm_recvMaxTextLenght		= {0,1024,1024*5,1024*10,1024*50};
+	int						m_recvMsgTextLengthIndex = 0;
+	
+	
 	static final String[]	fsm_pulseIntervalString = {"1","3","5","10","30"};
 	static final int[]	fsm_pulseInterval		= {1,3,5,10,30};
 	int						m_pulseIntervalIndex = 2;
@@ -427,6 +433,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return false;
 	}
 	
+	public int GetRecvMsgMaxLength(){
+		return fsm_recvMaxTextLenght[m_recvMsgTextLengthIndex];
+	}
+	
 	public void SetAPNName(String _APNList){
 		
 		m_APNList.removeAllElements();
@@ -648,7 +658,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 13;
+	final static int		fsm_clientVersion = 15;
 	
 	public synchronized void WriteReadIni(boolean _read){
 		
@@ -735,6 +745,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_delRemoteMail = (t_readFile.read() == 1)?true:false;
 				    		}
 				    		
+				    		if(t_currVer >= 14){
+				    			m_recvMsgTextLengthIndex = sendReceive.ReadInt(t_readFile);
+				    		}
+				    		
+				    		if(t_currVer >= 15){
+				    			m_copyMailToSentFolder = (t_readFile.read() == 1)?true:false;
+				    		}
+				    		
 			    		}finally{
 			    			t_readFile.close();
 			    			t_readFile = null;
@@ -786,6 +804,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						
 						t_writeFile.write(m_discardOrgText?1:0);
 						t_writeFile.write(m_delRemoteMail?1:0);
+						
+						sendReceive.WriteInt(t_writeFile, m_recvMsgTextLengthIndex);
+						
+						t_writeFile.write(m_copyMailToSentFolder?1:0);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());

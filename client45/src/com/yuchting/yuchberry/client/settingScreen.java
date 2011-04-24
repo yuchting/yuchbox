@@ -41,6 +41,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 	 
 	 CheckboxField		m_discardOrgText = null;
 	 CheckboxField		m_delRemoteMail	= null;
+	 CheckboxField		m_copyToSentFolder = null;
+	 ObjectChoiceField	m_recvMsgTextLength	= null;
+	 ButtonField		m_changeSignature = new ButtonField(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_BUTTON_TEXT),Field.FIELD_RIGHT);
 	 
 	 recvMain			m_mainApp		= null;
 	 
@@ -64,6 +67,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 m_pulseInterval	= new ObjectChoiceField(recvMain.sm_local.getString(localResource.PULSE_INTERVAL_LABEL),
 				 							recvMain.fsm_pulseIntervalString,m_mainApp.m_pulseIntervalIndex);
 		 add(m_pulseInterval);
+		 m_pulseInterval.setChangeListener(this);
 
 		 m_useSSLCheckbox	= new CheckboxField(recvMain.sm_local.getString(localResource.USE_SSL_LABEL),m_mainApp.m_useSSL);
 		 add(m_useSSLCheckbox);
@@ -91,6 +95,17 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 
 		 m_delRemoteMail	= new CheckboxField(recvMain.sm_local.getString(localResource.DELETE_REMOTE_MAIL),m_mainApp.m_delRemoteMail);
 		 add(m_delRemoteMail);
+		 
+		 m_copyToSentFolder	= new CheckboxField(recvMain.sm_local.getString(localResource.COPY_MAIL_TO_SENT_FOLDER),m_mainApp.m_copyMailToSentFolder);
+		 add(m_copyToSentFolder);
+		 
+		 m_recvMsgTextLength = new ObjectChoiceField(recvMain.sm_local.getString(localResource.MESSAGE_CONTAIN_MAX_LENGTH),
+				 					recvMain.fsm_recvMaxTextLenghtString,m_mainApp.m_recvMsgTextLengthIndex);
+		 add(m_recvMsgTextLength);
+		 
+		 add(m_changeSignature);
+		 m_changeSignature.setChangeListener(this);
+		 
 		 //@}
 		 
 		 add(new SeparatorField());
@@ -167,6 +182,12 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 					
 					RefreshUpDownloadByte();
 				}
+			}else if(field == m_pulseInterval){
+				if(m_pulseInterval.getSelectedIndex() == 0){
+					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.PULSE_INTERVAL_TOO_SHORT_PROMPT));
+				}
+			}else if(field == m_changeSignature){
+				m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_PROMPT_TEXT));
 			}
 		}else{
 			// Perform action if application changed field.
@@ -198,6 +219,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		
 		m_mainApp.m_discardOrgText = m_discardOrgText.getChecked();
 		m_mainApp.m_delRemoteMail	= m_delRemoteMail.getChecked();
+		m_mainApp.m_recvMsgTextLengthIndex = m_recvMsgTextLength.getSelectedIndex();
+		m_mainApp.m_copyMailToSentFolder = m_copyToSentFolder.getChecked();
 		
 		m_mainApp.WriteReadIni(false);
 		

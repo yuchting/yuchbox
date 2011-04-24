@@ -535,6 +535,10 @@ class sendMailAttachmentDeamon extends Thread{
 						t_os.write(fetchMail.NOTHING_STYLE);
 					}
 					
+					// does want to copy tu sent folder?
+					//
+					t_os.write(m_connect.m_mainApp.m_copyMailToSentFolder?1:0);
+					
 					m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), false,false);
 					
 					t_sendContain = true;

@@ -953,6 +953,13 @@ public class connectDeamon extends Thread implements SendListener,
  		
  		fetchMail t_mail = new fetchMail();
  		t_mail.InputMail(in);
+ 		
+ 		if(m_mainApp.GetRecvMsgMaxLength() != 0){
+ 			if(t_mail.GetContain().length() > m_mainApp.GetRecvMsgMaxLength()){
+ 				t_mail.SetContain(t_mail.GetContain().substring(0,m_mainApp.GetRecvMsgMaxLength() - 1) + 
+ 									"\n.....\n\n" + recvMain.sm_local.getString(localResource.REACH_MAX_MESSAGE_LENGTH_PROMPT));
+ 			}
+ 		}
 		
 		try{
 			
