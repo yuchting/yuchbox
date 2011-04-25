@@ -813,7 +813,7 @@ public class fetchEmail extends fetchAccount{
 			throw new Exception("error attach" + t_filename + " idx and size");
 		}
 		
-		m_mainMgr.m_logger.LogOut("recv msgMailAttach time:"+ t_mail.m_sendMail.GetSendDate().getTime() + " beginIndex:" + t_segIdx + " size:" + t_segSize);
+		m_mainMgr.m_logger.LogOut("recv msgMailAttach time<"+ t_mail.m_sendMail.GetSendDate().getTime() + "> attIndex<" + t_attachmentIdx + "> beginIndex<" + t_segIdx + "> size:" + t_segSize);
 		
 		byte[] t_bytes = new byte[t_segSize];
 		sendReceive.ForceReadByte(in, t_bytes, t_segSize);
@@ -825,10 +825,11 @@ public class fetchEmail extends fetchAccount{
 		t_fwrite.close();
 		
 		if(t_segIdx + t_segSize == t_file.length()){
-			
-			m_recvMailAttach.removeElement(t_mail);
-			
+					
 			if((t_attachmentIdx + 1) >= t_mail.m_sendMail.GetAttachment().size()){
+				
+				m_recvMailAttach.removeElement(t_mail);
+				
 				SendMailToSvr(t_mail);
 			}		
 			
@@ -1457,8 +1458,8 @@ public class fetchEmail extends fetchAccount{
 		// convert to UTF-8 byte to compute the SimpleHashCode
 		//
 		mailTitle = new String(mailTitle.getBytes("UTF-8"),"UTF-8");
-		
-		_mail.SetSubject(mailTitle);		
+
+		_mail.SetSubject(mailTitle);	
 		
 		Date t_date = m.getSentDate();
 		if(t_date != null){

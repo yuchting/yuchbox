@@ -57,7 +57,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 	 
 	 protected void makeMenu(Menu _menu,int instance){
 		_menu.add(m_helpMenu);
-		//_menu.add(m_weiboMenu);
+		
+		super.makeMenu(_menu, instance);
 	}
 	 
 	 public settingScreen(recvMain _app){

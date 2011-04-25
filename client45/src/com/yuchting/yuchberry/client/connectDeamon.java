@@ -82,6 +82,9 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 	
 	public Vector 		m_markReadVector 		= new Vector();
+	
+	
+	Vector				m_recvMailSimpleHashCodeSet = new Vector();
 	 
 		 
 	boolean			m_sendAboutText			= false;
@@ -949,10 +952,22 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	private void ProcessRecvMail(InputStream in)throws Exception{
 		
-		final Message m = new Message();
- 		
  		fetchMail t_mail = new fetchMail();
- 		t_mail.InputMail(in);
+ 		t_mail.InputMail(in); 		
+ 	
+ 		for(int i = 0;i < m_recvMailSimpleHashCodeSet.size();i++){
+ 			Integer t_simpleHash = (Integer)m_recvMailSimpleHashCodeSet.elementAt(i);
+ 			if(t_simpleHash.intValue() == t_mail.GetSimpleHashCode()){
+ 				m_mainApp.SetErrorString("" + t_simpleHash.intValue() + " Mail has beed add!");
+ 				return;
+ 			}
+ 		}
+ 		
+ 		if(m_recvMailSimpleHashCodeSet.size() > 256){
+ 			m_recvMailSimpleHashCodeSet.removeElementAt(0);
+ 		}
+ 		
+ 		m_recvMailSimpleHashCodeSet.addElement(new Integer(t_mail.GetSimpleHashCode()));
  		
  		if(m_mainApp.GetRecvMsgMaxLength() != 0){
  			if(t_mail.GetContain().length() > m_mainApp.GetRecvMsgMaxLength()){
@@ -962,6 +977,8 @@ public class connectDeamon extends Thread implements SendListener,
  		}
 		
 		try{
+			
+			final Message m = new Message();
 			
 			ComposeMessage(m,t_mail);
 			
@@ -1009,16 +1026,19 @@ public class connectDeamon extends Thread implements SendListener,
 			sendMailAttachmentDeamon t_deamon = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
 			
 			if(t_deamon.m_sendMail.GetSendDate().getTime() == t_time){
-				
-				if(t_succ){
-					m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_DELIVERED);
+			
+				if(t_deamon.m_sendMail.GetAttachMessage() != null){
 					
-					// increase the send mail quantity
-					//
-					m_mainApp.SetSendMailNum(m_mainApp.GetSendMailNum() + 1);
-					
-				}else{
-					m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_ERROR);
+					if(t_succ){
+						m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_DELIVERED);
+						
+						// increase the send mail quantity
+						//
+						m_mainApp.SetSendMailNum(m_mainApp.GetSendMailNum() + 1);
+						
+					}else{
+						m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_ERROR);
+					}
 				}
 				
 				t_deamon.m_closeState = true;
@@ -1051,7 +1071,7 @@ public class connectDeamon extends Thread implements SendListener,
 		//
 		Vector t_vfileReader = new Vector();
 		
-		if(!_files.isEmpty()){
+		if(_files != null && !_files.isEmpty()){
 			
 			
 			for(int i = 0;i< _files.size();i++){

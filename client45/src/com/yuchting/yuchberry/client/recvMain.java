@@ -59,6 +59,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	debugInfo			m_debugInfoScreen	= null;
 	downloadDlg			m_downloadDlg		= null;
 	settingScreen		m_settingScreen		= null;
+	shareYBScreen		m_shareScreen		= null;
+	
 	weiboTimeLineScreen	m_weiboTimeLineScreen = new weiboTimeLineScreen(this);
 	UiApplication		m_downloadDlgParent = null;
 	
@@ -970,6 +972,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public void PopupAboutScreen(){
 		m_aboutScreen = new aboutScreen(this);
 		pushScreen(m_aboutScreen);
+	}
+	
+	public void PopupShareScreen(){
+		try{
+			m_shareScreen = new shareYBScreen(this);
+			pushScreen(m_shareScreen);
+		}catch(Exception e){
+			DialogAlert("Read Address Error:" + e.getMessage());
+		}
 	}
 	
 	public void PopupSettingScreen(){

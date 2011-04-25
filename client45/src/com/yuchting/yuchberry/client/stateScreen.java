@@ -39,35 +39,44 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 	
     
     MenuItem 	m_aboutMenu = new MenuItem(recvMain.sm_local.getString(localResource.ABOUT_MENU_TEXT), 100, 10) {
-												public void run() {
-													recvMain t_app = (recvMain)UiApplication.getUiApplication();
-													t_app.PopupAboutScreen();
-												}
-											};
+		public void run() {
+			recvMain t_app = (recvMain)UiApplication.getUiApplication();
+			t_app.PopupAboutScreen();
+		}
+	};
 	
-	MenuItem 	m_setingMenu = new MenuItem(recvMain.sm_local.getString(localResource.SETTING_MENU_TEXT), 101, 10) {
-												public void run() {
-													recvMain t_app = (recvMain)UiApplication.getUiApplication();
-													t_app.PopupSettingScreen();													
-												}
-											};
+	MenuItem	m_shareMenu = new MenuItem(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_MENU), 101, 10) {
+		public void run() {
+			recvMain t_app = (recvMain)UiApplication.getUiApplication();
+			t_app.PopupShareScreen();			
+		}
+	};
+	
+	MenuItem 	m_setingMenu = new MenuItem(recvMain.sm_local.getString(localResource.SETTING_MENU_TEXT), 103, 10) {
+		public void run() {
+			recvMain t_app = (recvMain)UiApplication.getUiApplication();
+			t_app.PopupSettingScreen();													
+		}
+	};
 											
-	MenuItem	m_debugInfoMenu = new MenuItem(recvMain.sm_local.getString(localResource.DEBUG_MENU_TEXT), 102, 10) {
-												public void run() {
-													recvMain t_app = (recvMain)UiApplication.getUiApplication();
-													t_app.m_debugInfoScreen = new debugInfo(t_app);
-													t_app.pushScreen(t_app.m_debugInfoScreen);
-													
-												}
-											};
+	MenuItem	m_debugInfoMenu = new MenuItem(recvMain.sm_local.getString(localResource.DEBUG_MENU_TEXT), 104, 10) {
+		public void run() {
+			recvMain t_app = (recvMain)UiApplication.getUiApplication();
+			t_app.m_debugInfoScreen = new debugInfo(t_app);
+			t_app.pushScreen(t_app.m_debugInfoScreen);
+			
+		}
+	};
 											
-	MenuItem	m_weiboMenu = new MenuItem(recvMain.sm_local.getString(localResource.YB_WEIBO_MENU_LABEL), 102, 10) {
-											public void run() {
-												recvMain t_app = (recvMain)UiApplication.getUiApplication();
-												t_app.PopupWeiboScreen();
-												
-											}
-										};
+	MenuItem	m_weiboMenu = new MenuItem(recvMain.sm_local.getString(localResource.YB_WEIBO_MENU_LABEL), 105, 10) {
+		public void run() {
+			recvMain t_app = (recvMain)UiApplication.getUiApplication();
+			t_app.PopupWeiboScreen();
+			
+		}
+	};
+										
+
 	
 
     public stateScreen(final recvMain _app) {
@@ -126,9 +135,13 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     protected void makeMenu(Menu _menu,int instance){
     	_menu.add(m_helpMenu);
     	_menu.add(m_aboutMenu);
+    	_menu.add(m_shareMenu);
+    	_menu.add(MenuItem.separator(102));
     	_menu.add(m_setingMenu);
     	_menu.add(m_debugInfoMenu);
     	//_menu.add(m_weiboMenu);
+    	
+    	super.makeMenu(_menu, instance);
     }
     
     public final boolean onClose(){
@@ -157,6 +170,9 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
         		return true;
         	case 'H':
         		m_helpMenu.run();
+        		return true;
+        	case 'F':
+        		m_shareMenu.run();
         		return true;
         	}
     	}

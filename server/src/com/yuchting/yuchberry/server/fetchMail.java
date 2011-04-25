@@ -192,7 +192,14 @@ public class  fetchMail{
 	//set and gets function
 	//
 	public String GetSubject(){	return m_subject;}
-	public void SetSubject(String _subject){m_subject = _subject;}
+	public void SetSubject(String _subject){
+		if(m_convertoSimpleChar){
+			m_subject = sendReceive.complTosimple(_subject);
+		}else{
+			m_subject = _subject;
+		}
+		
+	}
 	
 	public String GetContain(){return m_contain;}
 	public void SetContain(String _contain){m_contain = _contain;}

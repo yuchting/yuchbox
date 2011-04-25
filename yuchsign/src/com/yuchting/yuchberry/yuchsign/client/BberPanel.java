@@ -644,7 +644,7 @@ public class BberPanel extends TabPanel{
 		AddLabelWidget(t_layout,"端口:",m_serverPort,t_line++);
 		
 		t_layout.setWidget(t_line,2,t_changePass);
-		AddLabelWidget(t_layout,"用户密码:",new HTML("<登录密码>"),t_line++);		
+		AddLabelWidget(t_layout,"用户密码:",new HTML("<YuchSign登录密码>"),t_line++);		
 		
 		AddLabelWidget(t_layout,"推送间隔(秒):",m_pushInterval,t_line++);
 		
