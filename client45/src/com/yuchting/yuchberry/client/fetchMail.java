@@ -440,7 +440,7 @@ class sendMailAttachmentDeamon extends Thread{
 		
 		m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), _send,false);
 		
-		//System.out.println("send msgMailAttach time:"+ m_sendMail.GetSendDate().getTime() + " beginIndex:" + m_beginIndex + " size:" + t_size);
+		//System.out.println("send msgMailAttach time:"+ m_sendMail.GetSendDate().getTime() + " attIdx<" +m_attachmentIndex + "> beginIndex<" + m_beginIndex + "> size:" + t_size);
 		
 		m_connect.m_mainApp.SetUploadingDesc(m_sendMail,m_attachmentIndex,
 											m_uploadedSize,m_totalSize);

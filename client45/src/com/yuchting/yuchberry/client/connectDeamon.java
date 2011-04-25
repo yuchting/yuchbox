@@ -539,7 +539,7 @@ public class connectDeamon extends Thread implements SendListener,
 	public void AddAttachmentFile(String _filename,int _fileSize){
 		for(int i = 0;i < m_composingAttachment.size();i++){
 			ComposingAttachment t_att = (ComposingAttachment)m_composingAttachment.elementAt(i);
-			if(t_att.equals(_filename)){
+			if(t_att.m_filename.equals(_filename)){
 				return;
 			}
 		}

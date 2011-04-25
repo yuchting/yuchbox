@@ -85,9 +85,7 @@ final class sendingSMSDlg extends Dialog{
 	}
 	
 	public boolean onClose(){
-		close();
-		m_parentScreen.m_sendingSMSDlg = null;
-		return true;
+		return false;
 	}
 
 }
@@ -103,20 +101,22 @@ final class sendSMSThread extends Thread{
 	private Vector m_sendConcatData 	= null;
 	private String m_sendContent		= null;
 	
+	private shareYBScreen m_parentScreen = null;
 	private recvMain m_mainApp			= null;
 	
 	public boolean 	m_cancel		= false;
 	
-	public sendSMSThread(recvMain _mainApp,Vector _sendConcatData,String _content){
+	public sendSMSThread(recvMain _mainApp,shareYBScreen _parent,Vector _sendConcatData,String _content){
 		m_sendConcatData 	= _sendConcatData;
 		m_sendContent		= _content;
 		
+		m_parentScreen		= _parent;		
 		m_mainApp			= _mainApp;
 		
 	}
 	public void run(){
 		
-		for(int i = 0;i<m_sendConcatData.size();i++){
+		for(int i = 0;i < m_sendConcatData.size();i++){
 			
 			shareConcatData t_data = (shareConcatData)m_sendConcatData.elementAt(i);
 			
@@ -125,6 +125,8 @@ final class sendSMSThread extends Thread{
 				if(m_cancel){
 					break;
 				}
+				
+				m_parentScreen.m_sendingSMSDlg.RefreshProgress(i,m_sendConcatData.size());
 				
 				MessageConnection msgConn = (MessageConnection)Connector.open("sms://" + t_data.m_phoneNumber);
 				Message msg = msgConn.newMessage(MessageConnection.TEXT_MESSAGE);
@@ -137,6 +139,17 @@ final class sendSMSThread extends Thread{
 			}
 		}
 	
+		m_mainApp.invokeLater(new Runnable() {
+			
+			public void run() {
+				m_mainApp.popScreen(m_parentScreen.m_sendingSMSDlg);
+				m_parentScreen.m_sendingSMSDlg = null;
+				
+				m_mainApp.popScreen(m_parentScreen);
+				m_mainApp.m_shareScreen = null;
+			}
+		});
+		
 		m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_THANKS));
 	}
 };
@@ -336,11 +349,10 @@ public class shareYBScreen extends MainScreen implements FieldChangeListener{
 			return;
 		}
 		
-		final EditField t_text = new EditField(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_CONTENT_LABEL),
-										m_useEmail.isSelected()?recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_CONTENT_EMAIL).replace('#','\n')
+		final EditField t_text = new EditField("",m_useEmail.isSelected()?recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_CONTENT_EMAIL).replace('#','\n')
 																:recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_CONTENT_SMS).replace('#','\n'),
-										m_useEmail.isSelected()?256:70,
-										EditField.FILTER_DEFAULT);
+												m_useEmail.isSelected()?256:70,
+												EditField.FILTER_DEFAULT);
 		
 		m_checkContentScreen = new MainScreen(){
 			
@@ -365,6 +377,7 @@ public class shareYBScreen extends MainScreen implements FieldChangeListener{
 	
 		
 		m_checkContentScreen.add(t_text);
+		m_checkContentScreen.setTitle(new LabelField(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_CONTENT_TITLE)));
 		m_mainApp.pushScreen(m_checkContentScreen);
 	}
 	
@@ -383,11 +396,15 @@ public class shareYBScreen extends MainScreen implements FieldChangeListener{
 					
 					t_email.GetSendToVect().addElement(t_data.m_email);
 				}
+				
 				try{
 					m_mainApp.m_connectDeamon.AddSendingMail(t_email,null,null,fetchMail.NOTHING_STYLE);
 
 					m_mainApp.popScreen(m_checkContentScreen);
 					m_checkContentScreen = null;
+					
+					m_mainApp.popScreen(this);
+					m_mainApp.m_shareScreen = null;
 					
 					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_THANKS));
 					
@@ -400,11 +417,13 @@ public class shareYBScreen extends MainScreen implements FieldChangeListener{
 				m_mainApp.popScreen(m_checkContentScreen);
 				m_checkContentScreen = null;
 				
-				m_sendingSMSDlg = new sendingSMSDlg(m_mainApp, this);
-				m_mainApp.pushModalScreen(m_sendingSMSDlg);
+				m_sendThread = new sendSMSThread(m_mainApp,this,m_sendConcatData, _content);
+				m_sendThread.start();	
 				
-				m_sendThread = new sendSMSThread(m_mainApp, m_sendConcatData, _content);
-				m_sendThread.start();				
+				m_sendingSMSDlg = new sendingSMSDlg(m_mainApp, this);
+				m_mainApp.pushScreen(m_sendingSMSDlg);
+				
+							
 			}
 			
 		}

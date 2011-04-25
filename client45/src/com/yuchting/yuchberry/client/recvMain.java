@@ -1079,6 +1079,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public void UpdateMessageStatus(final Message m,final int _status){
 		
+		if(m == null){
+			return;
+		}
+		
 		if(m_messageApplication != null && m_messageApplication.isAlive()){
 			
 			m_messageApplication.invokeAndWait(new Runnable() {
