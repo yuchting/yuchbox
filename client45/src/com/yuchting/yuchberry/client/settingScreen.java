@@ -4,11 +4,13 @@ import local.localResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
+import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.CheckboxField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
+import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.NumericChoiceField;
 import net.rim.device.api.ui.component.ObjectChoiceField;
 import net.rim.device.api.ui.component.SeparatorField;
@@ -46,6 +48,17 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 	 ButtonField		m_changeSignature = new ButtonField(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_BUTTON_TEXT),Field.FIELD_RIGHT);
 	 
 	 recvMain			m_mainApp		= null;
+	 
+	 MenuItem	m_helpMenu = new MenuItem(recvMain.sm_local.getString(localResource.STATE_SCREEN_HELP_MENU), 99, 10) {	
+		 public void run() {
+			 recvMain.openURL("http://code.google.com/p/yuchberry/wiki/Use_introduction#高级设置");
+		 }
+	 };
+	 
+	 protected void makeMenu(Menu _menu,int instance){
+		_menu.add(m_helpMenu);
+		//_menu.add(m_weiboMenu);
+	}
 	 
 	 public settingScreen(recvMain _app){
 		 m_mainApp = _app;

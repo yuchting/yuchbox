@@ -867,7 +867,8 @@ public class BberPanel extends TabPanel{
 		m_currentBber.SetSignature(m_signature.getText());
 		
 		if(m_currentBber.GetEmailList().isEmpty()){
-			Yuchsign.PopupPrompt("没有推送账户，无法同步", this);
+			Yuchsign.PopupPrompt("没有推送账户，无法同步，请先添加推送账户。", this);
+			selectTab(1);
 			return;
 		}
 		
