@@ -2,7 +2,6 @@ package com.yuchting.yuchberry.server.frame;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -50,7 +49,6 @@ import javax.swing.event.MouseInputListener;
 
 import com.yuchting.yuchberry.server.Logger;
 import com.yuchting.yuchberry.server.fakeMDSSvr;
-import com.yuchting.yuchberry.server.fetchAccount;
 import com.yuchting.yuchberry.server.fetchMgr;
 
 class checkStateThread extends Thread{
@@ -71,7 +69,7 @@ class checkStateThread extends Thread{
 			try{
 				
 				try{
-					sleep(30000);
+					sleep(120000);
 				}catch(Exception e){}
 				
 				m_mainFrame.RefreshState();
@@ -1351,10 +1349,14 @@ public class mainFrame extends JFrame implements ActionListener{
 	static final byte[] fsm_readLogBuffer = new byte[4096]; 
 	
 	private String ProcessLogQuery(String _bberName){
+		
+		m_logger.LogOut(_bberName + " query log.");
+		
 		// search the former thread
 		//
 		fetchThread t_thread = SearchAccountThread(_bberName,0);
 		if(t_thread == null){
+			m_logger.LogOut(_bberName + " query log error.");
 			return "<Error>在主机上查询不到账户，请先同步，获得有效主机。</Error>";
 		}
 		
@@ -1363,6 +1365,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			try{
 				int t_fileLen = t_stream.available();
 				if(t_fileLen == 0){
+					m_logger.LogOut(_bberName + " query log null.");
 					return "null";
 				}
 				
@@ -1372,6 +1375,7 @@ public class mainFrame extends JFrame implements ActionListener{
 				final int t_bufferLen = Math.min(t_fileLen - 1, fsm_maxReadLogLen);
 				t_stream.read(fsm_readLogBuffer,0,t_bufferLen);
 				
+				m_logger.LogOut(_bberName + " query log done.");
 				return (new String(fsm_readLogBuffer,0,t_bufferLen,"UTF-8"));
 				
 			}finally{

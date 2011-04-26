@@ -668,29 +668,26 @@ public class fetchEmail extends fetchAccount{
 			//
 			t_forwardReplyMail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
 			t_forwardReplyMail.InputMail(in);
+							
+			Vector t_replyAddr = t_forwardReplyMail.GetSendToVect();
 			
-			if(t_style == fetchMail.REPLY_STYLE){
-				
-				Vector t_replyAddr = t_forwardReplyMail.GetSendToVect();
-				
-				if(!t_replyAddr.isEmpty()){
+			if(!t_replyAddr.isEmpty()){
 
-					boolean t_found = false;
-					
-					for(int i= 0 ;i < t_replyAddr.size();i++){
-						String t_addr = (String)t_replyAddr.elementAt(i);
-																		
-						if(t_addr.toLowerCase().indexOf(GetAccountName().toLowerCase()) != -1){
-							t_found = true;
-							break;
-						}
-					}
-					
-					if(!t_found){
-						return false;
+				boolean t_found = false;
+				
+				for(int i= 0 ;i < t_replyAddr.size();i++){
+					String t_addr = (String)t_replyAddr.elementAt(i);
+																	
+					if(t_addr.toLowerCase().indexOf(GetAccountName().toLowerCase()) != -1){
+						t_found = true;
+						break;
 					}
 				}
-			}
+				
+				if(!t_found){
+					return false;
+				}
+			}			
 			
 		}else{
 			
