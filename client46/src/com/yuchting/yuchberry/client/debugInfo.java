@@ -199,6 +199,8 @@ public class debugInfo extends MainScreen{
     	_menu.add(m_helpMenu);
     	_menu.add(m_clearMenu);
     	_menu.add(m_copyMenu);
+    	
+    	super.makeMenu(_menu, instance);
     }
 	
 	protected boolean keyDown(int keycode,int time){

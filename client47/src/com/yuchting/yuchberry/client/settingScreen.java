@@ -4,11 +4,13 @@ import local.localResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
+import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.CheckboxField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
+import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.NumericChoiceField;
 import net.rim.device.api.ui.component.ObjectChoiceField;
 import net.rim.device.api.ui.component.SeparatorField;
@@ -40,8 +42,24 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 	 LabelField			m_latitude		= new LabelField();
 	 
 	 CheckboxField		m_discardOrgText = null;
+	 CheckboxField		m_delRemoteMail	= null;
+	 CheckboxField		m_copyToSentFolder = null;
+	 ObjectChoiceField	m_recvMsgTextLength	= null;
+	 ButtonField		m_changeSignature = new ButtonField(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_BUTTON_TEXT),Field.FIELD_RIGHT);
 	 
 	 recvMain			m_mainApp		= null;
+	 
+	 MenuItem	m_helpMenu = new MenuItem(recvMain.sm_local.getString(localResource.STATE_SCREEN_HELP_MENU), 99, 10) {	
+		 public void run() {
+			 recvMain.openURL("http://code.google.com/p/yuchberry/wiki/Use_introduction#高级设置");
+		 }
+	 };
+	 
+	 protected void makeMenu(Menu _menu,int instance){
+		_menu.add(m_helpMenu);
+		
+		super.makeMenu(_menu, instance);
+	}
 	 
 	 public settingScreen(recvMain _app){
 		 m_mainApp = _app;
@@ -63,6 +81,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 m_pulseInterval	= new ObjectChoiceField(recvMain.sm_local.getString(localResource.PULSE_INTERVAL_LABEL),
 				 							recvMain.fsm_pulseIntervalString,m_mainApp.m_pulseIntervalIndex);
 		 add(m_pulseInterval);
+		 m_pulseInterval.setChangeListener(this);
 
 		 m_useSSLCheckbox	= new CheckboxField(recvMain.sm_local.getString(localResource.USE_SSL_LABEL),m_mainApp.m_useSSL);
 		 add(m_useSSLCheckbox);
@@ -76,8 +95,31 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 m_autoRun			= new CheckboxField(recvMain.sm_local.getString(localResource.AUTO_RUN_CHECK_BOX), m_mainApp.m_autoRun);
 		 add(m_autoRun);
 		 
+		 //@}
+		 
+		 add(new SeparatorField());
+		 
+		 //@{
+		 t_title = new LabelField(recvMain.sm_local.getString(localResource.SETTING_MAIL_OP));
+		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
+		 add(t_title);
+		 
 		 m_discardOrgText	= new CheckboxField(recvMain.sm_local.getString(localResource.DISCARD_ORG_TEXT), m_mainApp.m_discardOrgText);
 		 add(m_discardOrgText);
+		 
+		 m_delRemoteMail	= new CheckboxField(recvMain.sm_local.getString(localResource.DELETE_REMOTE_MAIL),m_mainApp.m_delRemoteMail);
+		 add(m_delRemoteMail);
+		 
+		 m_copyToSentFolder	= new CheckboxField(recvMain.sm_local.getString(localResource.COPY_MAIL_TO_SENT_FOLDER),m_mainApp.m_copyMailToSentFolder);
+		 add(m_copyToSentFolder);
+		 
+		 m_recvMsgTextLength = new ObjectChoiceField(recvMain.sm_local.getString(localResource.MESSAGE_CONTAIN_MAX_LENGTH),
+				 					recvMain.fsm_recvMaxTextLenghtString,m_mainApp.m_recvMsgTextLengthIndex);
+		 add(m_recvMsgTextLength);
+		 
+		 add(m_changeSignature);
+		 m_changeSignature.setChangeListener(this);
+		 
 		 //@}
 		 
 		 add(new SeparatorField());
@@ -154,6 +196,12 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 					
 					RefreshUpDownloadByte();
 				}
+			}else if(field == m_pulseInterval){
+				if(m_pulseInterval.getSelectedIndex() == 0){
+					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.PULSE_INTERVAL_TOO_SHORT_PROMPT));
+				}
+			}else if(field == m_changeSignature){
+				m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_PROMPT_TEXT));
 			}
 		}else{
 			// Perform action if application changed field.
@@ -184,6 +232,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		m_mainApp.m_fulldayPrompt	= m_fulldayPrompt.getChecked();				
 		
 		m_mainApp.m_discardOrgText = m_discardOrgText.getChecked();
+		m_mainApp.m_delRemoteMail	= m_delRemoteMail.getChecked();
+		m_mainApp.m_recvMsgTextLengthIndex = m_recvMsgTextLength.getSelectedIndex();
+		m_mainApp.m_copyMailToSentFolder = m_copyToSentFolder.getChecked();
 		
 		m_mainApp.WriteReadIni(false);
 		

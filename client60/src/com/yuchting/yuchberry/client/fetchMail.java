@@ -440,7 +440,7 @@ class sendMailAttachmentDeamon extends Thread{
 		
 		m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), _send,false);
 		
-		//System.out.println("send msgMailAttach time:"+ m_sendMail.GetSendDate().getTime() + " beginIndex:" + m_beginIndex + " size:" + t_size);
+		//System.out.println("send msgMailAttach time:"+ m_sendMail.GetSendDate().getTime() + " attIdx<" +m_attachmentIndex + "> beginIndex<" + m_beginIndex + "> size:" + t_size);
 		
 		m_connect.m_mainApp.SetUploadingDesc(m_sendMail,m_attachmentIndex,
 											m_uploadedSize,m_totalSize);
@@ -534,6 +534,10 @@ class sendMailAttachmentDeamon extends Thread{
 					}else{
 						t_os.write(fetchMail.NOTHING_STYLE);
 					}
+					
+					// does want to copy tu sent folder?
+					//
+					t_os.write(m_connect.m_mainApp.m_copyMailToSentFolder?1:0);
 					
 					m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), false,false);
 					

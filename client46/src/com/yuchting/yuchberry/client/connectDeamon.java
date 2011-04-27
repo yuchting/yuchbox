@@ -50,7 +50,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListener,
 												ViewListenerExtended{
 		
-	final static int	fsm_clientVer = 3;
+	final static int	fsm_clientVer = 4;
 	 
 	sendReceive		m_connect = null;
 		
@@ -63,7 +63,28 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	boolean			m_disconnect 			= true;
 	
+	// mark read mail data
+	//
+	final class MarkReadMailData{
+		long	m_date;
+		String	m_fromAddr = "";
+		int		m_simpleHashCode;
+		
+		public MarkReadMailData(fetchMail _mail){
+			m_date 				= _mail.GetSendDate().getTime();
+			m_simpleHashCode	= _mail.GetSimpleHashCode();
+			
+			if(!_mail.GetFromVect().isEmpty()){
+				m_fromAddr	= (String)_mail.GetFromVect().elementAt(0);
+			}
+			
+		}
+	}
+	
 	public Vector 		m_markReadVector 		= new Vector();
+	
+	
+	Vector				m_recvMailSimpleHashCodeSet = new Vector();
 	 
 		 
 	boolean			m_sendAboutText			= false;
@@ -244,8 +265,8 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				m_mainApp.StopNotification();
 				
-				AddMarkReadMail(e.getMessage());
-				e.getMessage().removeMessageListener(this);
+				AddMarkReadOrDelMail(e.getMessage(),false);
+
 				
 			}catch(Exception _e){}
 			
@@ -258,11 +279,14 @@ public class connectDeamon extends Thread implements SendListener,
 	public void messagesAdded(FolderEvent e){}
 	
 	public void messagesRemoved(FolderEvent e){
+		
 		if(e.getType() == FolderEvent.MESSAGE_REMOVED){
 			Message t_msg = e.getMessage();
-			if(AddMarkReadMail(t_msg)){
+			
+			if(AddMarkReadOrDelMail(t_msg,true)){
 				m_mainApp.StopNotification();
 			}
+			t_msg.removeMessageListener(this);
 			
 			// if the user select re-send menu the RIM OS will
 			// call sendMessage function first and call this messagesRemoved function later
@@ -515,7 +539,7 @@ public class connectDeamon extends Thread implements SendListener,
 	public void AddAttachmentFile(String _filename,int _fileSize){
 		for(int i = 0;i < m_composingAttachment.size();i++){
 			ComposingAttachment t_att = (ComposingAttachment)m_composingAttachment.elementAt(i);
-			if(t_att.equals(_filename)){
+			if(t_att.m_filename.equals(_filename)){
 				return;
 			}
 		}
@@ -928,12 +952,33 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	private void ProcessRecvMail(InputStream in)throws Exception{
 		
-		final Message m = new Message();
- 		
  		fetchMail t_mail = new fetchMail();
- 		t_mail.InputMail(in);
+ 		t_mail.InputMail(in); 		
+ 	
+ 		for(int i = 0;i < m_recvMailSimpleHashCodeSet.size();i++){
+ 			Integer t_simpleHash = (Integer)m_recvMailSimpleHashCodeSet.elementAt(i);
+ 			if(t_simpleHash.intValue() == t_mail.GetSimpleHashCode()){
+ 				m_mainApp.SetErrorString("" + t_simpleHash.intValue() + " Mail has beed add!");
+ 				return;
+ 			}
+ 		}
+ 		
+ 		if(m_recvMailSimpleHashCodeSet.size() > 256){
+ 			m_recvMailSimpleHashCodeSet.removeElementAt(0);
+ 		}
+ 		
+ 		m_recvMailSimpleHashCodeSet.addElement(new Integer(t_mail.GetSimpleHashCode()));
+ 		
+ 		if(m_mainApp.GetRecvMsgMaxLength() != 0){
+ 			if(t_mail.GetContain().length() > m_mainApp.GetRecvMsgMaxLength()){
+ 				t_mail.SetContain(t_mail.GetContain().substring(0,m_mainApp.GetRecvMsgMaxLength() - 1) + 
+ 									"\n.....\n\n" + recvMain.sm_local.getString(localResource.REACH_MAX_MESSAGE_LENGTH_PROMPT));
+ 			}
+ 		}
 		
 		try{
+			
+			final Message m = new Message();
 			
 			ComposeMessage(m,t_mail);
 			
@@ -946,7 +991,7 @@ public class connectDeamon extends Thread implements SendListener,
 			// to remark the message is read
 			//
 			m.addMessageListener(this);
-			m_markReadVector.addElement(t_mail);
+			m_markReadVector.addElement(new MarkReadMailData(t_mail));
 			
 			// increase the receive mail quantity
 			//
@@ -981,16 +1026,19 @@ public class connectDeamon extends Thread implements SendListener,
 			sendMailAttachmentDeamon t_deamon = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
 			
 			if(t_deamon.m_sendMail.GetSendDate().getTime() == t_time){
-				
-				if(t_succ){
-					m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_DELIVERED);
+			
+				if(t_deamon.m_sendMail.GetAttachMessage() != null){
 					
-					// increase the send mail quantity
-					//
-					m_mainApp.SetSendMailNum(m_mainApp.GetSendMailNum() + 1);
-					
-				}else{
-					m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_ERROR);
+					if(t_succ){
+						m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_DELIVERED);
+						
+						// increase the send mail quantity
+						//
+						m_mainApp.SetSendMailNum(m_mainApp.GetSendMailNum() + 1);
+						
+					}else{
+						m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_ERROR);
+					}
 				}
 				
 				t_deamon.m_closeState = true;
@@ -1023,7 +1071,7 @@ public class connectDeamon extends Thread implements SendListener,
 		//
 		Vector t_vfileReader = new Vector();
 		
-		if(!_files.isEmpty()){
+		if(_files != null && !_files.isEmpty()){
 			
 			
 			for(int i = 0;i< _files.size();i++){
@@ -1129,22 +1177,22 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 	}
 		
-	public synchronized boolean AddMarkReadMail(Message m){
+	public synchronized boolean AddMarkReadOrDelMail(Message m,final boolean _del){
 		
 		for(int i = 0;i < m_markReadVector.size();i++){
 		
 			try{
 				
-				final fetchMail t_mail = (fetchMail)m_markReadVector.elementAt(i);
+				final MarkReadMailData t_mail = (MarkReadMailData)m_markReadVector.elementAt(i);
 				
-				if(t_mail.GetSendDate().equals(m.getSentDate())
-					&& ((String)t_mail.GetFromVect().elementAt(0)).indexOf(m.getFrom().getAddr()) != -1){
+				if(t_mail.m_date == m.getSentDate().getTime() 
+				&& t_mail.m_fromAddr.indexOf(m.getFrom().getAddr()) != -1){
 					
 					// start 
 					//
 					Thread t_sendMark = new Thread(){
 						public void run(){
-							fetchMail t_markMail = t_mail;
+							MarkReadMailData t_markMail = t_mail;
 							int t_time = 0;
 							try{
 								
@@ -1161,8 +1209,8 @@ public class connectDeamon extends Thread implements SendListener,
 								}
 								
 								ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-								t_os.write(msg_head.msgBeenRead);
-								sendReceive.WriteInt(t_os, t_markMail.GetSimpleHashCode());
+								t_os.write((_del && m_mainApp.m_delRemoteMail)?msg_head.msgMailDel:msg_head.msgBeenRead);
+								sendReceive.WriteInt(t_os, t_markMail.m_simpleHashCode);
 								
 								m_connect.SendBufferToSvr(t_os.toByteArray(), false,false);
 								
@@ -1175,7 +1223,9 @@ public class connectDeamon extends Thread implements SendListener,
 					
 					t_sendMark.start();
 					
-					m_markReadVector.removeElementAt(i);
+					if(_del){
+						m_markReadVector.removeElementAt(i);
+					}					
 					
 					return true;
 				}

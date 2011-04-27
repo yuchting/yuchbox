@@ -22,7 +22,7 @@
 		port_send="25"
 		
 		appendHTML="0"
-		pushHistoryMsg="1"
+		pushHistoryMsg="0"
 	/>
 	<!-- SinaWeiboAccount
 		account="yuchberry"

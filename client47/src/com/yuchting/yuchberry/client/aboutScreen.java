@@ -45,6 +45,7 @@ public class aboutScreen extends MainScreen{
 	
 	protected void makeMenu(Menu _menu,int instance){
 		_menu.add(m_refreshMenu);
+		super.makeMenu(_menu, instance);
     }
 }
 

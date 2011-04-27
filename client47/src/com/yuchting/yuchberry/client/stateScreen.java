@@ -14,6 +14,7 @@ import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.PasswordEditField;
+import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.MainScreen;
 
 public class stateScreen extends MainScreen implements FieldChangeListener{
@@ -26,41 +27,56 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     ButtonField         m_connectBut    = null;
     LabelField          m_stateText     = null;
    
-    LabelField			m_uploadingText = null;
+    RichTextField		m_uploadingText = null;
             
     recvMain			m_mainApp		= null;
     
+	MenuItem	m_helpMenu = new MenuItem(recvMain.sm_local.getString(localResource.STATE_SCREEN_HELP_MENU), 99, 10) {
+		public void run() {
+			recvMain.openURL("http://code.google.com/p/yuchberry/wiki/YuchBerry_Client_Help");
+		}
+	};
+	
     
     MenuItem 	m_aboutMenu = new MenuItem(recvMain.sm_local.getString(localResource.ABOUT_MENU_TEXT), 100, 10) {
-												public void run() {
-													recvMain t_app = (recvMain)UiApplication.getUiApplication();
-													t_app.PopupAboutScreen();
-												}
-											};
+		public void run() {
+			recvMain t_app = (recvMain)UiApplication.getUiApplication();
+			t_app.PopupAboutScreen();
+		}
+	};
 	
-	MenuItem 	m_setingMenu = new MenuItem(recvMain.sm_local.getString(localResource.SETTING_MENU_TEXT), 101, 10) {
-												public void run() {
-													recvMain t_app = (recvMain)UiApplication.getUiApplication();
-													t_app.PopupSettingScreen();													
-												}
-											};
+	MenuItem	m_shareMenu = new MenuItem(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_MENU), 101, 10) {
+		public void run() {
+			recvMain t_app = (recvMain)UiApplication.getUiApplication();
+			t_app.PopupShareScreen();			
+		}
+	};
+	
+	MenuItem 	m_setingMenu = new MenuItem(recvMain.sm_local.getString(localResource.SETTING_MENU_TEXT), 103, 10) {
+		public void run() {
+			recvMain t_app = (recvMain)UiApplication.getUiApplication();
+			t_app.PopupSettingScreen();													
+		}
+	};
 											
-	MenuItem	m_debugInfoMenu = new MenuItem(recvMain.sm_local.getString(localResource.DEBUG_MENU_TEXT), 102, 10) {
-												public void run() {
-													recvMain t_app = (recvMain)UiApplication.getUiApplication();
-													t_app.m_debugInfoScreen = new debugInfo(t_app);
-													t_app.pushScreen(t_app.m_debugInfoScreen);
-													
-												}
-											};
+	MenuItem	m_debugInfoMenu = new MenuItem(recvMain.sm_local.getString(localResource.DEBUG_MENU_TEXT), 104, 10) {
+		public void run() {
+			recvMain t_app = (recvMain)UiApplication.getUiApplication();
+			t_app.m_debugInfoScreen = new debugInfo(t_app);
+			t_app.pushScreen(t_app.m_debugInfoScreen);
+			
+		}
+	};
 											
-	MenuItem	m_weiboMenu = new MenuItem(recvMain.sm_local.getString(localResource.YB_WEIBO_MENU_LABEL), 102, 10) {
-											public void run() {
-												recvMain t_app = (recvMain)UiApplication.getUiApplication();
-												t_app.PopupWeiboScreen();
-												
-											}
-										};
+	MenuItem	m_weiboMenu = new MenuItem(recvMain.sm_local.getString(localResource.YB_WEIBO_MENU_LABEL), 105, 10) {
+		public void run() {
+			recvMain t_app = (recvMain)UiApplication.getUiApplication();
+			t_app.PopupWeiboScreen();
+			
+		}
+	};
+										
+
 	
 
     public stateScreen(final recvMain _app) {
@@ -99,7 +115,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
         m_stateText = new LabelField(m_mainApp.GetStateString(), LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
         add(m_stateText);
         
-        m_uploadingText = new LabelField("", LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
+        m_uploadingText = new RichTextField("", LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
         add(m_uploadingText);
             
         RefreshUploadState(_app.m_uploadingDesc);
@@ -117,10 +133,15 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     }
     
     protected void makeMenu(Menu _menu,int instance){
+    	_menu.add(m_helpMenu);
     	_menu.add(m_aboutMenu);
+    	_menu.add(m_shareMenu);
+    	_menu.add(MenuItem.separator(102));
     	_menu.add(m_setingMenu);
     	_menu.add(m_debugInfoMenu);
     	//_menu.add(m_weiboMenu);
+    	
+    	super.makeMenu(_menu, instance);
     }
     
     public final boolean onClose(){
@@ -147,6 +168,12 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
         	case 'D':
         		m_debugInfoMenu.run();
         		return true;
+        	case 'H':
+        		m_helpMenu.run();
+        		return true;
+        	case 'F':
+        		m_shareMenu.run();
+        		return true;
         	}
     	}
     	
@@ -163,15 +190,14 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     		
     		if(t_desc.m_attachmentIdx == -1){
     			
-    			t_total = t_total + "Subject: " + t_desc.m_mail.GetSubject() + "(Failed) retry again\n";
+    			t_total = t_total + "(Failed) retry again " + t_desc.m_mail.GetSubject();
     			
     		}else{
     			
     			final int t_tmp = (int)((float)t_desc.m_uploadedSize / (float)t_desc.m_totalSize * 1000);
     			final float t_percent = (float)t_tmp / 10;
         		
-        		t_total = t_total + t_desc.m_mail.GetSubject() + "(" +
-        				t_desc.m_attachmentIdx + "/" + t_desc.m_mail.GetAttachment().size() + " " + t_percent + "%) \n";
+        		t_total = t_total +"(" + t_desc.m_attachmentIdx + "/" + t_desc.m_mail.GetAttachment().size() + " " + t_percent + "%)" + t_desc.m_mail.GetSubject() ;
     		}   		
     	}
     	

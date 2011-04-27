@@ -100,6 +100,7 @@ final class createEmailData{
 	// account attribute
 	String m_accountName	;
 	String m_password		;
+	String m_sendName		;
 	String m_protocal		;
 	
 	String m_host			;
@@ -216,6 +217,7 @@ public class createDialog extends JDialog implements DocumentListener,
 	
 	JTextField 	m_account		= new JTextField();
 	JTextField 	m_password		= new JTextField();
+	JTextField 	m_sendName		= new JTextField();
 	JTextField 	m_host			= new JTextField();
 	JTextField 	m_port			= new JTextField();
 	
@@ -361,6 +363,8 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 		AddTextLabel(t_accountPanel,"帐号名称:",m_account,220,"");
 		AddTextLabel(t_accountPanel,"帐号密码:",m_password,220,"");
+		AddTextLabel(t_accountPanel,"邮件名字:",m_sendName,220,"");
+		
 		AddTextLabel(t_accountPanel,"主机地址:",m_host,120,_formerHost);
 		AddTextLabel(t_accountPanel,"端口:",m_port,60,_formerPort);
 		
@@ -424,6 +428,7 @@ public class createDialog extends JDialog implements DocumentListener,
 			createEmailData t_email = new createEmailData();
 			
 			t_email.m_accountName	= m_account.getText();
+			t_email.m_sendName		= m_sendName.getText();
 			t_email.m_password		= m_password.getText();
 			t_email.m_host			= m_host.getText();
 			t_email.m_port			= m_port.getText();
@@ -615,6 +620,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		Element t_elem = DocumentFactory.getInstance().createDocument().addElement("EmailAccount");
 		t_elem.addAttribute("account", _email.m_accountName);
 		t_elem.addAttribute("password", _email.m_password);
+		t_elem.addAttribute("sendName",_email.m_sendName);
 		
 		t_elem.addAttribute("useFullNameSignIn", _email.m_useFullNameSignIn?"1":"0");
 		t_elem.addAttribute("protocol", _email.m_protocal);

@@ -685,7 +685,12 @@ public class fetchEmail extends fetchAccount{
 				}
 				
 				if(!t_found){
-					return false;
+					// if forward it's own sent email
+					// will using the default account to send
+					//
+					if(t_style != fetchMail.FORWORD_STYLE){
+						return false;
+					}					
 				}
 			}			
 			
@@ -1561,7 +1566,7 @@ public class fetchEmail extends fetchAccount{
 			
 			// attachment 
 			//
-			m_mainMgr.m_logger.LogOut("start download attachFile:" + _mail.GetMailIndex() + "_" + _mail.GetAttachment().size() + ".att");
+			m_mainMgr.m_logger.LogOut(GetAccountName() + " start download attachFile:" + _mail.GetMailIndex() + "_" + _mail.GetAttachment().size() + ".att");
 			
 			InputStream is = (InputStream)p.getContent();
 			int c;
@@ -1582,6 +1587,8 @@ public class fetchEmail extends fetchAccount{
 			}
 			
 			_mail.AddAttachment(filename,p.getContentType(),t_bytes.length);
+			
+			m_mainMgr.m_logger.LogOut(GetAccountName() + " download Done!");
 			
 		}else if (p instanceof MimeBodyPart){
 		
@@ -1610,7 +1617,7 @@ public class fetchEmail extends fetchAccount{
 					filename = DecodeName(filename,true);
 				}
 				
-				m_mainMgr.m_logger.LogOut("start download attachFile:" + _mail.GetMailIndex() + "_" + _mail.GetAttachment().size() + ".att");
+				m_mainMgr.m_logger.LogOut(GetAccountName() + " start download attachFile:" + _mail.GetMailIndex() + "_" + _mail.GetAttachment().size() + ".att");
 				
 				if (o instanceof InputStream) {				
 					
@@ -1632,6 +1639,8 @@ public class fetchEmail extends fetchAccount{
 							 			p.getContentType(),
 							 			StoreAttachment((MimeBodyPart)p, _mail.GetMailIndex(), t_vect.size()));
 				}
+				
+				m_mainMgr.m_logger.LogOut(GetAccountName() + " download Done!");
 			    
 		    }
 		    
@@ -1648,7 +1657,7 @@ public class fetchEmail extends fetchAccount{
 			    
 			} else if (o instanceof InputStream) {
 
-				m_mainMgr.m_logger.LogOut("start download attachFile:" + _mail.GetMailIndex() + "_" + _mail.GetAttachment().size() + ".att");
+				m_mainMgr.m_logger.LogOut(GetAccountName() + " start download attachFile:" + _mail.GetMailIndex() + "_" + _mail.GetAttachment().size() + ".att");
 				
 			    InputStream is = (InputStream)o;
 			    int c;
@@ -1662,6 +1671,8 @@ public class fetchEmail extends fetchAccount{
 			    StoreAttachment(_mail.GetMailIndex(),_mail.GetAttachment().size(),t_bytes);
 			    
 			    _mail.AddAttachment("unknownFromat", "application/*",t_bytes.length);
+			    
+			    m_mainMgr.m_logger.LogOut(GetAccountName() + " download Done!");
 			    
 			} else {
 				

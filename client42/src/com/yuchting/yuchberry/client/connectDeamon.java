@@ -12,8 +12,6 @@ import javax.microedition.io.SocketConnection;
 import javax.microedition.io.file.FileConnection;
 
 import local.localResource;
-import net.rim.blackberry.api.browser.Browser;
-import net.rim.blackberry.api.browser.BrowserSession;
 import net.rim.blackberry.api.homescreen.HomeScreen;
 import net.rim.blackberry.api.mail.Address;
 import net.rim.blackberry.api.mail.AttachmentHandler;
@@ -21,7 +19,6 @@ import net.rim.blackberry.api.mail.AttachmentHandlerManager;
 import net.rim.blackberry.api.mail.BodyPart;
 import net.rim.blackberry.api.mail.Folder;
 import net.rim.blackberry.api.mail.Message;
-import net.rim.blackberry.api.mail.MimeBodyPart;
 import net.rim.blackberry.api.mail.Multipart;
 import net.rim.blackberry.api.mail.SendListener;
 import net.rim.blackberry.api.mail.Session;
@@ -29,7 +26,6 @@ import net.rim.blackberry.api.mail.Store;
 import net.rim.blackberry.api.mail.SupportedAttachmentPart;
 import net.rim.blackberry.api.mail.TextBodyPart;
 import net.rim.blackberry.api.mail.Transport;
-import net.rim.blackberry.api.mail.BodyPart.ContentType;
 import net.rim.blackberry.api.mail.event.FolderEvent;
 import net.rim.blackberry.api.mail.event.FolderListener;
 import net.rim.blackberry.api.mail.event.MessageEvent;
@@ -50,7 +46,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListener,
 												ViewListenerExtended{
 		
-	final static int	fsm_clientVer = 3;
+	final static int	fsm_clientVer = 4;
 	 
 	sendReceive		m_connect = null;
 		
@@ -63,7 +59,28 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	boolean			m_disconnect 			= true;
 	
+	// mark read mail data
+	//
+	final class MarkReadMailData{
+		long	m_date;
+		String	m_fromAddr = "";
+		int		m_simpleHashCode;
+		
+		public MarkReadMailData(fetchMail _mail){
+			m_date 				= _mail.GetSendDate().getTime();
+			m_simpleHashCode	= _mail.GetSimpleHashCode();
+			
+			if(!_mail.GetFromVect().isEmpty()){
+				m_fromAddr	= (String)_mail.GetFromVect().elementAt(0);
+			}
+			
+		}
+	}
+	
 	public Vector 		m_markReadVector 		= new Vector();
+	
+	
+	Vector				m_recvMailSimpleHashCodeSet = new Vector();
 	 
 		 
 	boolean			m_sendAboutText			= false;
@@ -244,8 +261,8 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				m_mainApp.StopNotification();
 				
-				AddMarkReadMail(e.getMessage());
-				e.getMessage().removeMessageListener(this);
+				AddMarkReadOrDelMail(e.getMessage(),false);
+
 				
 			}catch(Exception _e){}
 			
@@ -258,11 +275,14 @@ public class connectDeamon extends Thread implements SendListener,
 	public void messagesAdded(FolderEvent e){}
 	
 	public void messagesRemoved(FolderEvent e){
+		
 		if(e.getType() == FolderEvent.MESSAGE_REMOVED){
 			Message t_msg = e.getMessage();
-			if(AddMarkReadMail(t_msg)){
+			
+			if(AddMarkReadOrDelMail(t_msg,true)){
 				m_mainApp.StopNotification();
 			}
+			t_msg.removeMessageListener(this);
 			
 			// if the user select re-send menu the RIM OS will
 			// call sendMessage function first and call this messagesRemoved function later
@@ -515,7 +535,7 @@ public class connectDeamon extends Thread implements SendListener,
 	public void AddAttachmentFile(String _filename,int _fileSize){
 		for(int i = 0;i < m_composingAttachment.size();i++){
 			ComposingAttachment t_att = (ComposingAttachment)m_composingAttachment.elementAt(i);
-			if(t_att.equals(_filename)){
+			if(t_att.m_filename.equals(_filename)){
 				return;
 			}
 		}
@@ -928,12 +948,33 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	private void ProcessRecvMail(InputStream in)throws Exception{
 		
-		final Message m = new Message();
- 		
  		fetchMail t_mail = new fetchMail();
- 		t_mail.InputMail(in);
+ 		t_mail.InputMail(in); 		
+ 	
+ 		for(int i = 0;i < m_recvMailSimpleHashCodeSet.size();i++){
+ 			Integer t_simpleHash = (Integer)m_recvMailSimpleHashCodeSet.elementAt(i);
+ 			if(t_simpleHash.intValue() == t_mail.GetSimpleHashCode()){
+ 				m_mainApp.SetErrorString("" + t_simpleHash.intValue() + " Mail has beed add!");
+ 				return;
+ 			}
+ 		}
+ 		
+ 		if(m_recvMailSimpleHashCodeSet.size() > 256){
+ 			m_recvMailSimpleHashCodeSet.removeElementAt(0);
+ 		}
+ 		
+ 		m_recvMailSimpleHashCodeSet.addElement(new Integer(t_mail.GetSimpleHashCode()));
+ 		
+ 		if(m_mainApp.GetRecvMsgMaxLength() != 0){
+ 			if(t_mail.GetContain().length() > m_mainApp.GetRecvMsgMaxLength()){
+ 				t_mail.SetContain(t_mail.GetContain().substring(0,m_mainApp.GetRecvMsgMaxLength() - 1) + 
+ 									"\n.....\n\n" + recvMain.sm_local.getString(localResource.REACH_MAX_MESSAGE_LENGTH_PROMPT));
+ 			}
+ 		}
 		
 		try{
+			
+			final Message m = new Message();
 			
 			ComposeMessage(m,t_mail);
 			
@@ -946,7 +987,7 @@ public class connectDeamon extends Thread implements SendListener,
 			// to remark the message is read
 			//
 			m.addMessageListener(this);
-			m_markReadVector.addElement(t_mail);
+			m_markReadVector.addElement(new MarkReadMailData(t_mail));
 			
 			// increase the receive mail quantity
 			//
@@ -981,16 +1022,19 @@ public class connectDeamon extends Thread implements SendListener,
 			sendMailAttachmentDeamon t_deamon = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
 			
 			if(t_deamon.m_sendMail.GetSendDate().getTime() == t_time){
-				
-				if(t_succ){
-					m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_DELIVERED);
+			
+				if(t_deamon.m_sendMail.GetAttachMessage() != null){
 					
-					// increase the send mail quantity
-					//
-					m_mainApp.SetSendMailNum(m_mainApp.GetSendMailNum() + 1);
-					
-				}else{
-					m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_ERROR);
+					if(t_succ){
+						m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_DELIVERED);
+						
+						// increase the send mail quantity
+						//
+						m_mainApp.SetSendMailNum(m_mainApp.GetSendMailNum() + 1);
+						
+					}else{
+						m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_ERROR);
+					}
 				}
 				
 				t_deamon.m_closeState = true;
@@ -1023,7 +1067,7 @@ public class connectDeamon extends Thread implements SendListener,
 		//
 		Vector t_vfileReader = new Vector();
 		
-		if(!_files.isEmpty()){
+		if(_files != null && !_files.isEmpty()){
 			
 			
 			for(int i = 0;i< _files.size();i++){
@@ -1129,22 +1173,22 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 	}
 		
-	public synchronized boolean AddMarkReadMail(Message m){
+	public synchronized boolean AddMarkReadOrDelMail(Message m,final boolean _del){
 		
 		for(int i = 0;i < m_markReadVector.size();i++){
 		
 			try{
 				
-				final fetchMail t_mail = (fetchMail)m_markReadVector.elementAt(i);
+				final MarkReadMailData t_mail = (MarkReadMailData)m_markReadVector.elementAt(i);
 				
-				if(t_mail.GetSendDate().equals(m.getSentDate())
-					&& ((String)t_mail.GetFromVect().elementAt(0)).indexOf(m.getFrom().getAddr()) != -1){
+				if(t_mail.m_date == m.getSentDate().getTime() 
+				&& t_mail.m_fromAddr.indexOf(m.getFrom().getAddr()) != -1){
 					
 					// start 
 					//
 					Thread t_sendMark = new Thread(){
 						public void run(){
-							fetchMail t_markMail = t_mail;
+							MarkReadMailData t_markMail = t_mail;
 							int t_time = 0;
 							try{
 								
@@ -1161,8 +1205,8 @@ public class connectDeamon extends Thread implements SendListener,
 								}
 								
 								ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-								t_os.write(msg_head.msgBeenRead);
-								sendReceive.WriteInt(t_os, t_markMail.GetSimpleHashCode());
+								t_os.write((_del && m_mainApp.m_delRemoteMail)?msg_head.msgMailDel:msg_head.msgBeenRead);
+								sendReceive.WriteInt(t_os, t_markMail.m_simpleHashCode);
 								
 								m_connect.SendBufferToSvr(t_os.toByteArray(), false,false);
 								
@@ -1175,7 +1219,9 @@ public class connectDeamon extends Thread implements SendListener,
 					
 					t_sendMark.start();
 					
-					m_markReadVector.removeElementAt(i);
+					if(_del){
+						m_markReadVector.removeElementAt(i);
+					}					
 					
 					return true;
 				}
@@ -1312,81 +1358,81 @@ public class connectDeamon extends Thread implements SendListener,
 	      TextBodyPart tbp = (TextBodyPart) obj;
 	      readEmailBody(tbp,_mail);
 	   }
-	   else if (obj instanceof MimeBodyPart)
-	   {
-		   MimeBodyPart mbp = (MimeBodyPart)obj;
-		   
-	      if (mbp.getContentType().indexOf(ContentType.TYPE_TEXT_HTML_STRING) != -1)
-	      {
-	        readEmailBody(mbp,_mail);
-	      }
-	      else if (mbp.getContentType().equals(ContentType.TYPE_MULTIPART_MIXED_STRING) ||
-				   mbp.getContentType().equals(ContentType.TYPE_MULTIPART_ALTERNATIVE_STRING))
-		   {    
-		      //The message has attachments or we are at the top level of the message.
-			   //Extract all of the parts within the MimeBodyPart message.
-		      findEmailBody((MimeBodyPart)(mbp.getContent()),_mail);
-		   }
-	   }
+//	   else if (obj instanceof MimeBodyPart)
+//	   {
+//		   MimeBodyPart mbp = (MimeBodyPart)obj;
+//		   
+//	      if (mbp.getContentType().indexOf(ContentType.TYPE_TEXT_HTML_STRING) != -1)
+//	      {
+//	        readEmailBody(mbp,_mail);
+//	      }
+//	      else if (mbp.getContentType().equals(ContentType.TYPE_MULTIPART_MIXED_STRING) ||
+//				   mbp.getContentType().equals(ContentType.TYPE_MULTIPART_ALTERNATIVE_STRING))
+//		   {    
+//		      //The message has attachments or we are at the top level of the message.
+//			   //Extract all of the parts within the MimeBodyPart message.
+//		      findEmailBody((MimeBodyPart)(mbp.getContent()),_mail);
+//		   }
+//	   }
 		
 	}
 	
-	private void readEmailBody(MimeBodyPart mbp,fetchMail _mail)throws Exception
-	{
-	   //Extract the content of the message.
-	   Object obj = mbp.getContent();
-	   String mimeType = mbp.getContentType();
-	   String body = null;
-   
-	   if (obj instanceof String)
-	   {
-	      body = (String)obj;
-	   }
-	   else if (obj instanceof byte[])
-	   {
-	      body = new String((byte[])obj);
-	   }else{
-		   
-		   throw new Exception("error MimeBodyPart Contain type");
-	   }
-
-	   if (mimeType.indexOf(ContentType.TYPE_TEXT_PLAIN_STRING) != -1)
-	   {
-		   
-		  m_plainTextContain = m_plainTextContain.concat(body);
-
-	      //Determine if all of the text body part is present.
-	      if (mbp.hasMore() && !mbp.moreRequestSent())
-	      {
-	         try
-	         {
-	            Transport.more((BodyPart)mbp, true);
-	         }
-	         catch (Exception ex)
-	         {
-	        	 m_mainApp.SetErrorString("Ex: " + ex.toString() + " " + ex.getClass().getName());
-	         }
-	      }
-	   }
-	  
-	   else if (mimeType.indexOf(ContentType.TYPE_TEXT_HTML_STRING) != -1)
-	   {
-		   m_plainTextContain = m_htmlTextContain.concat(body);
-
-	      //Determine if all of the HTML body part is present.
-	      if (mbp.hasMore() && !mbp.moreRequestSent())
-	      {
-	         try
-	         {
-	            Transport.more((BodyPart)mbp, true);
-	         }
-	         catch (Exception ex)
-	         { 
-	        	 m_mainApp.SetErrorString("Ex: " + ex.toString() + " " + ex.getClass().getName());
-	         }
-	      }
-	   }
-	}
+//	private void readEmailBody(MimeBodyPart mbp,fetchMail _mail)throws Exception
+//	{
+//	   //Extract the content of the message.
+//	   Object obj = mbp.getContent();
+//	   String mimeType = mbp.getContentType();
+//	   String body = null;
+//   
+//	   if (obj instanceof String)
+//	   {
+//	      body = (String)obj;
+//	   }
+//	   else if (obj instanceof byte[])
+//	   {
+//	      body = new String((byte[])obj);
+//	   }else{
+//		   
+//		   throw new Exception("error MimeBodyPart Contain type");
+//	   }
+//
+//	   if (mimeType.indexOf(ContentType.TYPE_TEXT_PLAIN_STRING) != -1)
+//	   {
+//		   
+//		  m_plainTextContain = m_plainTextContain.concat(body);
+//
+//	      //Determine if all of the text body part is present.
+//	      if (mbp.hasMore() && !mbp.moreRequestSent())
+//	      {
+//	         try
+//	         {
+//	            Transport.more((BodyPart)mbp, true);
+//	         }
+//	         catch (Exception ex)
+//	         {
+//	        	 m_mainApp.SetErrorString("Ex: " + ex.toString() + " " + ex.getClass().getName());
+//	         }
+//	      }
+//	   }
+//	  
+//	   else if (mimeType.indexOf(ContentType.TYPE_TEXT_HTML_STRING) != -1)
+//	   {
+//		   m_plainTextContain = m_htmlTextContain.concat(body);
+//
+//	      //Determine if all of the HTML body part is present.
+//	      if (mbp.hasMore() && !mbp.moreRequestSent())
+//	      {
+//	         try
+//	         {
+//	            Transport.more((BodyPart)mbp, true);
+//	         }
+//	         catch (Exception ex)
+//	         { 
+//	        	 m_mainApp.SetErrorString("Ex: " + ex.toString() + " " + ex.getClass().getName());
+//	         }
+//	      }
+//	   }
+//	}
 	
 	private void readEmailBody(TextBodyPart tbp,fetchMail _mail)
 	{
@@ -1463,23 +1509,23 @@ public class connectDeamon extends Thread implements SendListener,
 	    	TextBodyPart t_text = new TextBodyPart(multipart,_mail.GetContain());
 	    	multipart.addBodyPart(t_text);
 	    	
-	    	if(_mail.GetContain_html().length() != 0){
-	    		SupportedAttachmentPart sap;
-	    		String t_filename = recvMain.sm_local.getString(localResource.HTML_PART_FILENAME);
-		    	try{
-		    		// if the UTF-8 decode sytem is NOT present in current system
-					// will throw the exception
-					//
-		    		
-		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
-		    					t_filename,_mail.GetContain_html().getBytes("UTF-8"));
-		    	}catch(Exception e){
-		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
-		    				t_filename,_mail.GetContain_html().getBytes());
-		    	}	    		    			
-	    		
-		    	multipart.addBodyPart(sap);
-	    	}
+//	    	if(_mail.GetContain_html().length() != 0){
+//	    		SupportedAttachmentPart sap;
+//	    		String t_filename = recvMain.sm_local.getString(localResource.HTML_PART_FILENAME);
+//		    	try{
+//		    		// if the UTF-8 decode sytem is NOT present in current system
+//					// will throw the exception
+//					//
+//		    		
+//		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
+//		    					t_filename,_mail.GetContain_html().getBytes("UTF-8"));
+//		    	}catch(Exception e){
+//		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
+//		    				t_filename,_mail.GetContain_html().getBytes());
+//		    	}	    		    			
+//	    		
+//		    	multipart.addBodyPart(sap);
+//	    	}
     	
 	    	if(!_mail.GetAttachment().isEmpty()){
 	    		

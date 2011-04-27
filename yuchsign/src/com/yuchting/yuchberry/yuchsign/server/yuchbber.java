@@ -20,8 +20,8 @@ import org.xml.sax.InputSource;
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public final class yuchbber {
 	
-	public static final int[] fsm_weekMoney = {2,3,4,5};
-	public static final int[] fsm_levelMoney = {5,5,5,5};
+	public static final int[] fsm_weekMoney = {2,2,3,3};
+	public static final int[] fsm_levelMoney = {2,3,4,5};
 	public static final int[] fsm_intervalMoney = {5,5,5,5};
 	
 	@PrimaryKey

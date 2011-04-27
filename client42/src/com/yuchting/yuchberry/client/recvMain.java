@@ -5,8 +5,6 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.Vector;
 
-import javax.microedition.content.Invocation;
-import javax.microedition.content.Registry;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 import javax.microedition.location.Criteria;
@@ -27,10 +25,7 @@ import net.rim.device.api.notification.NotificationsConstants;
 import net.rim.device.api.notification.NotificationsManager;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.CoverageInfo;
 import net.rim.device.api.system.Display;
-import net.rim.device.api.system.RadioInfo;
-import net.rim.device.api.system.WLANInfo;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
@@ -59,6 +54,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	debugInfo			m_debugInfoScreen	= null;
 	downloadDlg			m_downloadDlg		= null;
 	settingScreen		m_settingScreen		= null;
+	shareYBScreen		m_shareScreen		= null;
+	
 	weiboTimeLineScreen	m_weiboTimeLineScreen = new weiboTimeLineScreen(this);
 	UiApplication		m_downloadDlgParent = null;
 	
@@ -93,6 +90,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	boolean			m_autoRun			= false;
 	
 	boolean			m_discardOrgText	= false;
+	boolean			m_delRemoteMail		= false;
 	
 	final class APNSelector{
 		String		m_name			= null;
@@ -110,6 +108,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	int					m_sendMailNum		= 0;
 	int					m_recvMailNum		= 0;
 	
+	
+	static final String[]	fsm_recvMaxTextLenghtString = {"∞","1KB","5KB","10KB","50KB"};
+	static final int[]	fsm_recvMaxTextLenght		= {0,1024,1024*5,1024*10,1024*50};
+	int						m_recvMsgTextLengthIndex = 0;
+	
+	
 	static final String[]	fsm_pulseIntervalString = {"1","3","5","10","30"};
 	static final int[]	fsm_pulseInterval		= {1,3,5,10,30};
 	int						m_pulseIntervalIndex = 2;
@@ -117,6 +121,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	boolean			m_fulldayPrompt		= true;
 	int					m_startPromptHour	= 8;
 	int					m_endPromptHour		= 22;
+	
+	boolean			m_copyMailToSentFolder = false;
 	
 	final class UploadingDesc{
 		
@@ -416,12 +422,16 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 //		t_connect = WLANInfo.getWLANState() != WLANInfo.WLAN_STATE_DISCONNECTED; 
 //		t_connect = CoverageInfo.isCoverageSufficient(CoverageInfo.COVERAGE_DIRECT,RadioInfo.WAF_WLAN, false);
 //		
-		if(m_useWifi && WLANInfo.getAPInfo() != null){
-			SetErrorString("Using wifi to connect");
-			return true;
-		}
+//		if(m_useWifi && WLANInfo.getAPInfo() != null){
+//			SetErrorString("Using wifi to connect");
+//			return true;
+//		}
 		
 		return false;
+	}
+	
+	public int GetRecvMsgMaxLength(){
+		return fsm_recvMaxTextLenght[m_recvMsgTextLengthIndex];
 	}
 	
 	public void SetAPNName(String _APNList){
@@ -645,7 +655,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 12;
+	final static int		fsm_clientVersion = 15;
 	
 	public synchronized void WriteReadIni(boolean _read){
 		
@@ -725,7 +735,19 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    		}
 				    		
 				    		if(t_currVer >= 12){
-				    			m_discardOrgText = t_readFile.read() == 1?true:false;
+				    			m_discardOrgText = (t_readFile.read() == 1)?true:false;
+				    		}
+				    		
+				    		if(t_currVer >= 13){
+				    			m_delRemoteMail = (t_readFile.read() == 1)?true:false;
+				    		}
+				    		
+				    		if(t_currVer >= 14){
+				    			m_recvMsgTextLengthIndex = sendReceive.ReadInt(t_readFile);
+				    		}
+				    		
+				    		if(t_currVer >= 15){
+				    			m_copyMailToSentFolder = (t_readFile.read() == 1)?true:false;
 				    		}
 				    		
 			    		}finally{
@@ -778,6 +800,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						sendReceive.WriteInt(t_writeFile,m_recvMailNum);
 						
 						t_writeFile.write(m_discardOrgText?1:0);
+						t_writeFile.write(m_delRemoteMail?1:0);
+						
+						sendReceive.WriteInt(t_writeFile, m_recvMsgTextLengthIndex);
+						
+						t_writeFile.write(m_copyMailToSentFolder?1:0);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -942,6 +969,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		pushScreen(m_aboutScreen);
 	}
 	
+	public void PopupShareScreen(){
+		try{
+			m_shareScreen = new shareYBScreen(this);
+			pushScreen(m_shareScreen);
+		}catch(Exception e){
+			DialogAlert("Read Address Error:" + e.getMessage());
+		}
+	}
+	
 	public void PopupSettingScreen(){
 		m_settingScreen = new settingScreen(this);
 		pushScreen(m_settingScreen);
@@ -1023,20 +1059,24 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public boolean CheckMediaNativeApps(String _filename){
 		
-		try{
-			Invocation request = new Invocation(_filename);
-			Registry registry = Registry.getRegistry("net.rim.device.api.content.BlackBerryContentHandler");
-			registry.invoke(request);
-			
-			return true;
-		}catch(Exception e){
-			SetErrorString("Invoke native apps failed:"+ e.getMessage());
-		}
+//		try{
+//			Invocation request = new Invocation(_filename);
+//			Registry registry = Registry.getRegistry("com.yuchting.yuchberry.client.recvMain");
+//			registry.invoke(request);
+//			
+//			return true;
+//		}catch(Exception e){
+//			SetErrorString("Invoke native apps failed: "+ e.getMessage());
+//		}
 		
 		return false;		
 	}
 	
 	public void UpdateMessageStatus(final Message m,final int _status){
+		
+		if(m == null){
+			return;
+		}
 		
 		if(m_messageApplication != null && m_messageApplication.isAlive()){
 			
