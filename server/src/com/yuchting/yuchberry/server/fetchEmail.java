@@ -1196,7 +1196,11 @@ public class fetchEmail extends fetchAccount{
     	// test connected
     	//
     	if(_fullTest){
-    		m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
+    		if(m_useFullNameSignIn){
+				m_sendTransport.connect(m_host_send,m_port_send,m_strUserNameFull,m_password);
+			}else{
+				m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
+			}
         	m_sendTransport.close();        		
     	}
     	

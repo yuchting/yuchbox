@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Vector;
 
 import javax.swing.AbstractButton;
@@ -74,10 +75,10 @@ class checkStateThread extends Thread{
 				
 				m_mainFrame.RefreshState();
 				
-				if(t_counter++ > 24 * 120){
+				if(t_counter++ > 120 * 2){
 					t_counter = 0;
 					
-					URL is_gd = new URL("http://yuchberry.googlecode.com/files/latest_version");
+					URL is_gd = new URL("http://yuchberry.googlecode.com/files/latest_version?a="+(new Random()).nextInt());
 					
 			        URLConnection yc = is_gd.openConnection();
 			        BufferedReader in = new BufferedReader(

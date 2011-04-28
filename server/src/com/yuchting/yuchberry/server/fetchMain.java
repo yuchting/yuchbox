@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Random;
 
 class CheckVersion extends Thread{
 	
@@ -13,7 +14,7 @@ class CheckVersion extends Thread{
 		while(true){
 			
 			try{
-				URL is_gd = new URL("http://yuchberry.googlecode.com/files/latest_version");
+				URL is_gd = new URL("http://yuchberry.googlecode.com/files/latest_version?a="+(new Random()).nextInt());
 				
 		        URLConnection yc = is_gd.openConnection();
 		        BufferedReader in = new BufferedReader(
