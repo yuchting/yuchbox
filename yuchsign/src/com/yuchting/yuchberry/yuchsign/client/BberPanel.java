@@ -218,7 +218,7 @@ class ContentTab extends TabPanel{
 		}
 	}
 	
-	public yuchEmail AddAccount(){
+	public yuchEmail AddAccount(final yuchEmail _email){
 		
 		if(!LogonDialog.IsValidEmail(m_account.getText())){
 			Yuchsign.PopupPrompt("不是合法的邮件地址", m_account);
@@ -265,7 +265,9 @@ class ContentTab extends TabPanel{
 			Yuchsign.PopupPrompt(m_addHostPrompt, getParent());
 		}
 		
-		yuchEmail t_email = new yuchEmail();
+		
+		yuchEmail t_email = _email == null?(new yuchEmail()):_email;
+		
 		t_email.m_appendHTML 		= m_appendHTML.getValue();
 		t_email.m_fullnameSignIn	= m_usingFullname.getValue();
 				
@@ -310,7 +312,7 @@ class ContentTab extends TabPanel{
 					break;
 				}
 			}
-			
+					
 		}else{
 			m_appendHTML.setValue(false);
 			m_usingFullname.setValue(false);
@@ -326,8 +328,9 @@ class ContentTab extends TabPanel{
 			m_port_send.setText("");
 			
 			m_protocal[0].setValue(true);
-		}
+		}	
 	}
+	
 }
 
 class ChangePassDlg extends DialogBox{
@@ -491,6 +494,7 @@ public class BberPanel extends TabPanel{
 	
 	final Button	m_addPushAccountBut = new Button("添加");
 	final Button	m_delPushAccountBut = new Button("删除");
+	final Button	m_refreshAccountBut	= new Button("更新");
 	
 	final ContentTab m_pushContent	= new ContentTab();
 	
@@ -703,13 +707,15 @@ public class BberPanel extends TabPanel{
 	private void AddPushAttr(){
 		
 		m_pushList.setPixelSize(200, 200);
-							
+		
+		
 		final HorizontalPanel t_horzPane = new HorizontalPanel(); 
 		t_horzPane.add(m_pushList);
 		
 		final VerticalPanel	 t_vertPane = new VerticalPanel();
 		t_vertPane.setPixelSize(40, 80);
 		t_vertPane.add(m_addPushAccountBut);
+		t_vertPane.add(m_refreshAccountBut);
 		t_vertPane.add(m_delPushAccountBut);
 		
 		t_horzPane.add(t_vertPane);
@@ -735,7 +741,7 @@ public class BberPanel extends TabPanel{
 			
 			@Override
 			public void onClick(ClickEvent event) {
-				yuchEmail t_email = m_pushContent.AddAccount();
+				yuchEmail t_email = m_pushContent.AddAccount(null);
 				if(t_email != null){
 					
 					if(m_currentBber.GetEmailList().size() >= m_currentBber.GetMaxPushNum()){
@@ -754,6 +760,22 @@ public class BberPanel extends TabPanel{
 					RefreshPushList(m_currentBber);
 					m_pushContent.RefreshEmail(null);
 				}
+			}
+		});
+		
+		m_refreshAccountBut.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				final int t_index = m_pushList.getSelectedIndex();
+				if(t_index != -1 && t_index < m_currentBber.GetEmailList().size()){
+					
+					yuchEmail t_email = m_currentBber.GetEmailList().elementAt(t_index);
+					if(m_pushContent.AddAccount(t_email) != null){
+						Yuchsign.PopupPrompt("更新数据成功",t_horzPane);
+					}
+				}
+				
 			}
 		});
 		

@@ -70,7 +70,7 @@ class checkStateThread extends Thread{
 			try{
 				
 				try{
-					sleep(120000);
+					sleep(240000);
 				}catch(Exception e){}
 				
 				m_mainFrame.RefreshState();

@@ -1606,7 +1606,7 @@ public class fetchEmail extends fetchAccount{
 		    String disp = p.getDisposition();
 		    
 		    // many mailers don't include a Content-Disposition
-		    if (disp != null && disp.equalsIgnoreCase("ATTACHMENT")) {
+		    if (disp != null && (disp.equalsIgnoreCase("ATTACHMENT") || disp.equalsIgnoreCase("INLINE")) ) {
 
 			    /*
 				 * If we actually want to see the data, and it's not a
