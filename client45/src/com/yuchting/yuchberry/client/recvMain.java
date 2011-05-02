@@ -27,9 +27,7 @@ import net.rim.device.api.notification.NotificationsConstants;
 import net.rim.device.api.notification.NotificationsManager;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.CoverageInfo;
 import net.rim.device.api.system.Display;
-import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.system.WLANInfo;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
@@ -199,6 +197,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	//@}
 	
 	public static void main(String[] args) {
+		//String t_md5 = md5("111");
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());		
 		t_theApp.enterEventDispatcher();
 	}
@@ -1301,5 +1300,40 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return t_code;
 	}
 	
+//	public static String md5(String _org){
+//		
+//		byte[] bytes = null;
+//		try{
+//			bytes = _org.getBytes("UTF-8");
+//		}catch(Exception e){
+//			bytes = _org.getBytes();
+//		}
+//		
+//		MD5Digest digest = new MD5Digest();
+//		
+//		digest.update(bytes, 0, bytes.length);
+//
+//		byte[] md5 = new byte[digest.getDigestLength()];
+//		digest.getDigest(md5, 0, true);
+//		
+//		return convertToHex(md5);
+//		
+//	}
+//	
+//	public static String convertToHex(byte[] data) {
+//        StringBuffer buf = new StringBuffer();
+//        for (int i = 0; i < data.length; i++) {
+//            int halfbyte = (data[i] >>> 4) & 0x0F;
+//            int two_halfs = 0;
+//            do {
+//                if ((0 <= halfbyte) && (halfbyte <= 9))
+//                    buf.append((char) ('0' + halfbyte));
+//                else
+//                    buf.append((char) ('a' + (halfbyte - 10)));
+//                halfbyte = data[i] & 0x0F;
+//            } while(two_halfs++ < 1);
+//        }
+//        return buf.toString();
+//    }	
 }
 

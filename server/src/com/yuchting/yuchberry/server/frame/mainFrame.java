@@ -293,7 +293,7 @@ public class mainFrame extends JFrame implements ActionListener{
 								
 																
 							}catch(Exception e){
-								PromptAndLog(e);
+								m_logger.PrinterException(e);
 							}
 						}
 					}					
@@ -303,7 +303,7 @@ public class mainFrame extends JFrame implements ActionListener{
 					t_mainFrame.m_loadDialog.dispose();					
 					
 				}catch(Exception e){
-					PromptAndLog(e);
+					m_logger.PrinterException(e);
 				}
 			}
 		};
@@ -318,32 +318,37 @@ public class mainFrame extends JFrame implements ActionListener{
 	}
 	
 	public synchronized void StoreAccountInfo(){
+		
+		m_logger.LogOut("StoreAccountInfo start");
+		
 		try{
 			FileOutputStream t_file = new FileOutputStream(fsm_accountDataFilename);
 			
-			StringBuffer t_buffer = new StringBuffer();
-			for(int i = 0;i < m_accountList.size();i++){
-				fetchThread t_thread = (fetchThread)m_accountList.elementAt(i);
-				t_buffer.append(t_thread.m_fetchMgr.GetAccountName()).append(",")
-						.append((t_thread.m_usingHours)).append(",")
-						.append(t_thread.m_formerTimer).append(",")
-						.append(t_thread.m_clientDisconnectTime).append(",")
-						.append("\r\n");
-			}
-			
-			t_file.write(t_buffer.toString().getBytes("UTF-8"));
-			t_file.flush();
-			t_file.close();
+			try{
+				StringBuffer t_buffer = new StringBuffer();
+				for(int i = 0;i < m_accountList.size();i++){
+					fetchThread t_thread = (fetchThread)m_accountList.elementAt(i);
+					t_buffer.append(t_thread.m_fetchMgr.GetAccountName()).append(",")
+							.append((t_thread.m_usingHours)).append(",")
+							.append(t_thread.m_formerTimer).append(",")
+							.append(t_thread.m_clientDisconnectTime).append(",")
+							.append("\r\n");
+				}
+				
+				t_file.write(t_buffer.toString().getBytes("UTF-8"));
+				t_file.flush();
+				
+			}finally{
+				t_file.close();
+			}			
 			
 		}catch(Exception e){
-			PromptAndLog(e);
-		}	
+			m_logger.PrinterException(e);
+		}
+		
+		m_logger.LogOut("StoreAccountInfo end");
 	}
 	
-	public void PromptAndLog(Exception _e){
-		m_logger.PrinterException(_e);
-		JOptionPane.showMessageDialog(this,"请查看Log:" + _e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
-	}
 	
 	public void ConstructMoveSeparator(){
 		
@@ -424,7 +429,7 @@ public class mainFrame extends JFrame implements ActionListener{
 						try{
 							OpenFileEdit(t_configFile);
 						}catch(Exception ex){
-							PromptAndLog(ex);
+							m_logger.PrinterException(ex);
 						}
 						
 					}else if(e.getSource() == m_delAccountItem){
@@ -579,23 +584,34 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 	public synchronized fetchThread SearchAccountThread(String _accountName,int _port){
 		
+		m_logger.LogOut("SearchAccountThread start");
+		
 		for(int i = 0;i < m_accountList.size();i++){
 			fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
 			if(t_fetch.m_fetchMgr.GetAccountName().equalsIgnoreCase(_accountName) 
 			|| t_fetch.m_fetchMgr.GetServerPort() == _port){
 				
+				m_logger.LogOut("SearchAccountThread end");
+				
 				return t_fetch;
 			}
 		}
 		
+		m_logger.LogOut("SearchAccountThread end");
+		
 		return null;
+		
 	}
 	
 	public synchronized boolean AddAccountThread(fetchThread _thread,boolean _storeAccountInfo){
 		
+		m_logger.LogOut("AddAccountThread start");
+		
 		for(int i = 0;i < m_accountList.size();i++){
 			fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
 			if(t_fetch.m_fetchMgr.GetAccountName().equalsIgnoreCase(_thread.m_fetchMgr.GetAccountName())){
+				
+				m_logger.LogOut("AddAccountThread end");
 				return false;
 			}
 		}
@@ -618,10 +634,14 @@ public class mainFrame extends JFrame implements ActionListener{
 			m_accountTable.setRowSelectionInterval(m_accountList.size() - 1, m_accountList.size() - 1);
 		}
 		
+		
+		m_logger.LogOut("AddAccountThread end");
 		return true;
 	}
 	
 	public synchronized void DelAccoutThread(String _accountName,boolean _storeAccountInfo){
+		
+		m_logger.LogOut("DelAccoutThread start");
 		
 		for(int i = 0;i < m_accountList.size();i++){
 			
@@ -642,6 +662,8 @@ public class mainFrame extends JFrame implements ActionListener{
 				break;
 			}
 		}
+		
+		m_logger.LogOut("DelAccoutThread end");
 	}
 	
 	public void actionPerformed(ActionEvent e) {
@@ -659,7 +681,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			try{
 				OpenURL(t_sponsorURL);
 			}catch(Exception ex){
-				PromptAndLog(ex);
+				m_logger.PrinterException(ex);
 			}
 			
 		}else if(e.getSource() == m_searchButton){
@@ -814,11 +836,11 @@ public class mainFrame extends JFrame implements ActionListener{
 		}
 		
 		if(!t_deadPool.isEmpty() || t_deleteThread){
-			
-			m_logger.LogOut("Store account info");
-			
+						
 			StoreAccountInfo();
 		}
+		
+		m_logger.LogOut("RefreshState end");
 	}
 	
 	public void SendTimeupMail(fetchThread _thread){
@@ -885,56 +907,63 @@ public class mainFrame extends JFrame implements ActionListener{
 	 * the HTTP process... 
 	 */
 	public synchronized int GetAvailableServerPort(){
+		
+		m_logger.LogOut("GetAvailableServerPort start");
+		
+		try{
+			
+			if(m_accountList.isEmpty() && m_bberRequestList.isEmpty()){
+				return 9717;
+			}
+			
+			List<Integer> t_portList = new ArrayList<Integer>();
+							
+			for(fetchThread acc : m_accountList){
+				t_portList.add(new Integer(acc.m_fetchMgr.GetServerPort()));
+			}
+			
+			for(BberRequestThread req : m_bberRequestList){
+				t_portList.add(new Integer(req.m_serverPort));
+			}
+			
+			Collections.sort(t_portList);
+			
+			for(int i = 0 ;i < t_portList.size() - 1;i++){
 				
-		if(m_accountList.isEmpty() && m_bberRequestList.isEmpty()){
-			return 9717;
-		}
-		
-		List<Integer> t_portList = new ArrayList<Integer>();
+				int port = t_portList.get(i).intValue() + 1;
+				
+				if(port < t_portList.get(i + 1).intValue()){
+					try{
+						ServerSocket t_sock = new ServerSocket(port);
+						t_sock.close();
 						
-		for(fetchThread acc : m_accountList){
-			t_portList.add(new Integer(acc.m_fetchMgr.GetServerPort()));
-		}
-		
-		for(BberRequestThread req : m_bberRequestList){
-			t_portList.add(new Integer(req.m_serverPort));
-		}
-		
-		Collections.sort(t_portList);
-		
-		for(int i = 0 ;i < t_portList.size() - 1;i++){
+						return port;
+						
+					}catch(Exception e){
+						
+					}
+				
+				}
+			}
 			
-			int port = t_portList.get(i).intValue() + 1;
+			int t_port = t_portList.get(t_portList.size() - 1).intValue() + 1;
 			
-			if(port < t_portList.get(i + 1).intValue()){
+			while(t_port < 12000){
 				try{
-					ServerSocket t_sock = new ServerSocket(port);
+					ServerSocket t_sock = new ServerSocket(t_port);
 					t_sock.close();
 					
-					return port;
+					break;
 					
 				}catch(Exception e){
-					
-				}
-			
+					t_port++;
+				}			
 			}
-		}
-		
-		int t_port = t_portList.get(t_portList.size() - 1).intValue() + 1;
-		
-		while(t_port < 12000){
-			try{
-				ServerSocket t_sock = new ServerSocket(t_port);
-				t_sock.close();
-				
-				break;
-				
-			}catch(Exception e){
-				t_port++;
-			}			
-		}
-		
-		return t_port;
+			
+			return t_port;
+		}finally{
+			m_logger.LogOut("GetAvailableServerPort end");
+		}		
 	}
 	/*
 	 * the process thread to create/response the GAE URL requeset
@@ -1166,28 +1195,34 @@ public class mainFrame extends JFrame implements ActionListener{
 				
 				m_httpd = new NanoHTTPD(Integer.valueOf(t_port).intValue()){
 					public Response serve( String uri, String method, Properties header, Properties parms, Properties files ){
-												
-						String pass = header.getProperty("pass");
-						
-						if(pass == null || !pass.equals(m_yuchsignFramePass)){
-							
-							pass = parms.getProperty("pass");
-							
-							if(pass == null || !pass.equals(m_yuchsignFramePass)){
-								return new NanoHTTPD.Response( HTTP_FORBIDDEN, MIME_PLAINTEXT, "");
-							}else{
-								String t_type = parms.getProperty("type");
-								String t_bber = parms.getProperty("bber");
 								
-								if(t_type != null){
-									return new NanoHTTPD.Response( HTTP_OK, MIME_PLAINTEXT, ProcessAdminCheck(t_type,t_bber));
-								}else{
+						m_logger.LogOut("start serve");
+						try{
+							String pass = header.getProperty("pass");
+						
+							if(pass == null || !pass.equals(m_yuchsignFramePass)){
+							
+								pass = parms.getProperty("pass");
+							
+								if(pass == null || !pass.equals(m_yuchsignFramePass)){
 									return new NanoHTTPD.Response( HTTP_FORBIDDEN, MIME_PLAINTEXT, "");
+								}else{
+									String t_type = parms.getProperty("type");
+									String t_bber = parms.getProperty("bber");
+								
+									if(t_type != null){
+										return new NanoHTTPD.Response( HTTP_OK, MIME_PLAINTEXT, ProcessAdminCheck(t_type,t_bber));
+									}else{
+										return new NanoHTTPD.Response( HTTP_FORBIDDEN, MIME_PLAINTEXT, "");
+									}
 								}
 							}
+						
+							return new NanoHTTPD.Response( HTTP_OK, MIME_PLAINTEXT, ProcessHTTPD(method,header,parms));
+						}finally{
+							m_logger.LogOut("end serve");
 						}
 						
-						return new NanoHTTPD.Response( HTTP_OK, MIME_PLAINTEXT, ProcessHTTPD(method,header,parms));
 					}
 				};
 				
@@ -1202,42 +1237,49 @@ public class mainFrame extends JFrame implements ActionListener{
 	private synchronized String ProcessAdminCheck(String _type,String _bber){
 		
 		m_logger.LogOut("start fill admin data type: " + _type + " _bber:" + _bber);
-		
-		if(_type.equals("0")){
 				
-			StringBuffer t_result = new StringBuffer();
-			
-			t_result.append("state:").append(m_currConnectAccount).append("/").append(m_currUsingAccount)
-					.append("/").append(m_accountList.size()).append("\n");
-			
-			long t_currTime = (new Date()).getTime();
-			
-			if(!m_accountList.isEmpty()){
-				for(int i = m_accountList.size() - 1; i >= 0;i--){
-					fetchThread t_acc = m_accountList.elementAt(i);
-					t_result.append(t_acc.m_fetchMgr.GetAccountName()).append("\t\t");
-					
-					if(!t_acc.m_pauseState){
+		try{
+			if(_type.equals("0")){
+				
+				StringBuffer t_result = new StringBuffer();
+				
+				t_result.append("state:").append(m_currConnectAccount).append("/").append(m_currUsingAccount)
+						.append("/").append(m_accountList.size()).append("\n");
+				
+				long t_currTime = (new Date()).getTime();
+				
+				if(!m_accountList.isEmpty()){
+					for(int i = m_accountList.size() - 1; i >= 0;i--){
+						fetchThread t_acc = m_accountList.elementAt(i);
+						t_result.append(t_acc.m_fetchMgr.GetAccountName()).append("\t\t");
+						
+						if(!t_acc.m_pauseState){
 
-						long t_remainTime = t_acc.GetLastTime(t_currTime);
-						t_result.append(t_remainTime / 3600000).append("h");
+							long t_remainTime = t_acc.GetLastTime(t_currTime);
+							t_result.append(t_remainTime / 3600000).append("h");
+							
+						}else{
+							t_result.append("--");
+						}
 						
-					}else{
-						t_result.append("--");
+						t_result.append("\t\t").append(t_acc.GetStateString()).append("\n");
+						
 					}
-					
-					t_result.append("\t\t").append(t_acc.GetStateString()).append("\n");
-					
 				}
+							
+				return t_result.toString();
 			}
-						
-			return t_result.toString();
+			
+			return "";
+		}finally{
+			m_logger.LogOut("ProcessAdminCheck end");
 		}
 		
-		return "";
 	}
 	
 	private synchronized String ProcessHTTPD(String method, Properties header, Properties parms){
+		
+		m_logger.LogOut("start ProcessHTTPD 0");
 		
 		String t_string = parms.getProperty("bber");
 		if( t_string == null){
@@ -1255,6 +1297,8 @@ public class mainFrame extends JFrame implements ActionListener{
 			if((parms.getProperty("create") != null)){
 				return ProcessCreateTimeQuery(parms);
 			}
+			
+			m_logger.LogOut("start ProcessHTTPD 1");
 			
 			boolean t_checkState = (parms.getProperty("check") != null);		
 					
@@ -1309,41 +1353,51 @@ public class mainFrame extends JFrame implements ActionListener{
 			
 			return "<Error>" + e.getMessage() + "</Error>";
 		}
+		
+		
 	}
 	
 	private String ProcessCreateTimeQuery(Properties header){
 		
+		m_logger.LogOut("ProcessCreateTimeQuery start");
 		try{
-			
-			final String t_bber 		= URLDecoder.decode(header.getProperty("bber"),"UTF-8");
-			final String t_createTime	= header.getProperty("create");
-			final String t_usingHours	= header.getProperty("time");
-			
-			if(t_bber == null || t_createTime == null || t_usingHours == null){
-				return "参数错误";
-			}
-			
-			for(fetchThread thread:m_accountList){
-				if(thread.m_fetchMgr.GetAccountName().equalsIgnoreCase(t_bber)){
-					
-					thread.m_usingHours = Long.valueOf(t_usingHours).longValue();
-					thread.m_formerTimer = Long.valueOf(t_createTime).longValue();
-					
-					StoreAccountInfo();
-					
-					if(thread.m_pauseState){
-						thread.Reuse();
-					}			
-					
-					return "<OK />";
+			try{
+				
+				final String t_bber 		= URLDecoder.decode(header.getProperty("bber"),"UTF-8");
+				final String t_createTime	= header.getProperty("create");
+				final String t_usingHours	= header.getProperty("time");
+				
+				if(t_bber == null || t_createTime == null || t_usingHours == null){
+					return "参数错误";
 				}
+				
+				for(fetchThread thread:m_accountList){
+					if(thread.m_fetchMgr.GetAccountName().equalsIgnoreCase(t_bber)){
+						
+						thread.m_usingHours = Long.valueOf(t_usingHours).longValue();
+						thread.m_formerTimer = Long.valueOf(t_createTime).longValue();
+										
+						StoreAccountInfo();
+						
+						if(thread.m_pauseState){
+							thread.Reuse();
+						}
+						
+						m_logger.LogOut("ProcessLogQuery end");					
+						
+						return "<OK />";
+					}
+				}
+				
+				return "原有账户已经因为长时间没有链接而删除，需要重新同步";
+				
+			}catch(Exception e){
+				return "服务器重新启用账户出现异常，需要手动同步";
 			}
-			
-			return "原有账户已经因为长时间没有链接而删除，需要重新同步";
-			
-		}catch(Exception e){
-			return "服务器重新启用账户出现异常，需要手动同步";
+		}finally{
+			m_logger.LogOut("ProcessCreateTimeQuery end");
 		}
+		
 	}
 	
 	static final int fsm_maxReadLogLen = 4096;
@@ -1376,11 +1430,12 @@ public class mainFrame extends JFrame implements ActionListener{
 				final int t_bufferLen = Math.min(t_fileLen - 1, fsm_maxReadLogLen);
 				t_stream.read(fsm_readLogBuffer,0,t_bufferLen);
 				
-				m_logger.LogOut(_bberName + " query log done.");
 				return (new String(fsm_readLogBuffer,0,t_bufferLen,"UTF-8"));
 				
 			}finally{
+				
 				t_stream.close();
+				m_logger.LogOut(_bberName + " query log done.");
 			}
 		}catch(Exception e){
 			return "<Error>读取文件失败:"+e.getMessage()+"</Error>";

@@ -601,6 +601,10 @@ public class connectDeamon extends Thread implements SendListener,
 			}catch(Exception e){}			
 		}		
 	}
+	
+	public boolean CanNotSendMsg(){
+		return (RadioInfo.getSignalLevel() == RadioInfo.LEVEL_NO_COVERAGE && !m_mainApp.UseWifiConnection());
+	}
 	 
 	 public void run(){
 		
@@ -608,8 +612,7 @@ public class connectDeamon extends Thread implements SendListener,
 
 			m_sendAuthMsg = false;
 			
-			while(m_disconnect == true 
-				||(RadioInfo.getSignalLevel() == RadioInfo.LEVEL_NO_COVERAGE && !m_mainApp.UseWifiConnection())){
+			while(CanNotSendMsg() || m_disconnect == true ){
 
 				try{
 					sleep(15000);
@@ -980,7 +983,7 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			final Message m = new Message();
 			
-			ComposeMessage(m,t_mail);
+			ComposeMessage(m,t_mail,m_mainApp.m_discardOrgText);
 			
 			m.setInbound(true);
 			m.setStatus(Message.Status.RX_RECEIVED,1);
@@ -1196,7 +1199,7 @@ public class connectDeamon extends Thread implements SendListener,
 							int t_time = 0;
 							try{
 								
-								while(m_connect == null){
+								while(m_connect == null || CanNotSendMsg()){
 									if(m_disconnect){
 										return;
 									}
@@ -1205,7 +1208,7 @@ public class connectDeamon extends Thread implements SendListener,
 										return;
 									}
 									
-									sleep(60000);
+									sleep(30000);
 								}
 								
 								ByteArrayOutputStream t_os = new ByteArrayOutputStream();
@@ -1290,14 +1293,16 @@ public class connectDeamon extends Thread implements SendListener,
 			_mail.SetSubject(fetchMail.fsm_noSubjectTile);
 		}else{
 			
-			// replace the blackberry auto-prefix
-			//
-			for(int i = 0;i < fsm_findPrefix.length;i++){
-				if(t_sub.startsWith(fsm_findPrefix[i])){
-					t_sub = fsm_replacePrefix[i] + t_sub.substring(fsm_findPrefix[i].length());
-					break;
+			if(!m_mainApp.m_discardOrgText){
+				// replace the blackberry auto-prefix
+				//
+				for(int i = 0;i < fsm_findPrefix.length;i++){
+					if(t_sub.startsWith(fsm_findPrefix[i])){
+						t_sub = fsm_replacePrefix[i] + t_sub.substring(fsm_findPrefix[i].length());
+						break;
+					}
 				}
-			}
+			}			
 			
 			_mail.SetSubject(t_sub);	
 		}
@@ -1455,7 +1460,7 @@ public class connectDeamon extends Thread implements SendListener,
 	   }
 	}
 	
-	static public void ComposeMessage(Message msg,fetchMail _mail)throws Exception{
+	static public void ComposeMessage(Message msg,fetchMail _mail,boolean _discardOrgText)throws Exception{
 		
 		
 		_mail.SetAttchMessage(msg);
@@ -1489,12 +1494,16 @@ public class connectDeamon extends Thread implements SendListener,
 	    // replace the blackberry auto-prefix
 		//
 	    String t_sub = _mail.GetSubject();
-		for(int i = 0;i < fsm_findPrefix.length;i++){
-			if(t_sub.startsWith(fsm_findPrefix[i])){
-				t_sub = fsm_replacePrefix[i] + t_sub.substring(fsm_findPrefix[i].length());
-				break;
-			}
-		}
+	    
+	    if(!_discardOrgText){
+	    	for(int i = 0;i < fsm_findPrefix.length;i++){
+				if(t_sub.startsWith(fsm_findPrefix[i])){
+					t_sub = fsm_replacePrefix[i] + t_sub.substring(fsm_findPrefix[i].length());
+					break;
+				}
+			}	
+	    }
+		
 		
 	    msg.setSubject(t_sub);
 	    msg.setHeader("X-Mailer",_mail.GetXMailer());

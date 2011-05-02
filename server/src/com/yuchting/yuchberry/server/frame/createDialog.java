@@ -496,10 +496,15 @@ public class createDialog extends JDialog implements DocumentListener,
 				dispose();
 				
 			}catch(Exception ex){
-				m_mainFrame.PromptAndLog(ex);
+				PromptAndLog(ex);
 			}
 						
 		}
+	}
+	
+	public void PromptAndLog(Exception _e){
+		m_mainFrame.m_logger.PrinterException(_e);
+		JOptionPane.showMessageDialog(this,"请查看 frame Log:" + _e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
 	}
 	
 	private void CheckMainAttr()throws Exception{
@@ -715,14 +720,14 @@ public class createDialog extends JDialog implements DocumentListener,
 						m_commonConfigListModel.addElement(t_config.m_name);
 						
 					}catch(Exception e){
-						m_mainFrame.PromptAndLog(e);
+						PromptAndLog(e);
 					}
 				}
 			}
 			
 			
 		}catch(Exception e){
-			m_mainFrame.PromptAndLog(e);
+			PromptAndLog(e);
 		}	
 
 	}

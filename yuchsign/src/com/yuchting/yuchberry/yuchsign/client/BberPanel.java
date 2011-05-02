@@ -256,8 +256,8 @@ class ContentTab extends TabPanel{
 			return null;
 		}
 		
-		if(m_password.getText().indexOf("+") != -1){
-			Yuchsign.PopupPrompt("是在抱歉，因为在数据传输过程中无法支持符号\"+\"\n无法添加成功。", m_password);
+		if(m_password.getText().indexOf("+") != -1 || m_password.getText().indexOf("&") != -1){
+			Yuchsign.PopupPrompt("实在抱歉，因为在数据传输过程中无法支持符号\"+&\"\n无法添加成功。", m_password);
 			return null;
 		}
 		
