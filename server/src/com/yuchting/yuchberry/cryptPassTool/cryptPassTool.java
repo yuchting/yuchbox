@@ -11,7 +11,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-import com.yuchting.yuchberry.server.cryptPassword;
+//import com.yuchting.yuchberry.server.cryptPassword;
 import com.yuchting.yuchberry.server.frame.createDialog;
 import com.yuchting.yuchberry.server.frame.mainFrame;
 
@@ -60,13 +60,13 @@ public class cryptPassTool extends JFrame implements ActionListener{
 				return ;
 			}
 			
-			try{
-				cryptPassword t_crypt = new cryptPassword(cryptPassword.md5(m_cryptKey.getText()));
-				m_cryptPass.setText(t_crypt.encrypt(m_orgPass.getText()));
-				
-			}catch(Exception _e){
-				JOptionPane.showMessageDialog(this,_e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
-			}
+//			try{
+//				cryptPassword t_crypt = new cryptPassword(cryptPassword.md5(m_cryptKey.getText()));
+//				m_cryptPass.setText(t_crypt.encrypt(m_orgPass.getText()));
+//				
+//			}catch(Exception _e){
+//				JOptionPane.showMessageDialog(this,_e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+//			}
 			
 
 		}else if(e.getSource() == m_help){
