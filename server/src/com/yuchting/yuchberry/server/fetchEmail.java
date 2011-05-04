@@ -1135,12 +1135,16 @@ public class fetchEmail extends fetchAccount{
 		
 	public synchronized void ResetSession(boolean _fullTest)throws Exception{
 		
+		m_mainMgr.m_logger.LogOut("start ResetSession");
+		
 		DestroySession();
     	
 		if(m_session != null){
 			throw new Exception("has been initialize the session");
 		}
-				
+		
+		m_mainMgr.m_logger.LogOut("ResetSession 0 ");
+		
 		if(m_protocol == null){
     		m_protocol = "pop3";
     	}else{
@@ -1171,6 +1175,8 @@ public class fetchEmail extends fetchAccount{
     	
     	m_store = m_session.getStore(m_protocol);
     	
+    	m_mainMgr.m_logger.LogOut("ResetSession 1 ");
+    	
 		if(m_useFullNameSignIn){
 			m_store.connect(m_host,m_port,m_strUserNameFull,m_password);
 		}else{
@@ -1193,6 +1199,8 @@ public class fetchEmail extends fetchAccount{
     	
     	m_sendTransport = (SMTPTransport)m_session_send.getTransport(m_protocol_send);
     	
+    	m_mainMgr.m_logger.LogOut("ResetSession 2 ");
+    	
     	// test connected
     	//
     	if(_fullTest){
@@ -1204,12 +1212,14 @@ public class fetchEmail extends fetchAccount{
         	m_sendTransport.close();        		
     	}
     	
+    	m_mainMgr.m_logger.LogOut("end ResetSession");
+    	
     	m_mainMgr.m_logger.LogOut("prepare Email account <" + m_strUserNameFull + "> OK" );
     	
 	}
 	
 	public synchronized void DestroySession(){
-		
+		m_mainMgr.m_logger.LogOut("start DestroySession");
 		try{
 			m_session = null;
 			m_session_send = null;
@@ -1237,11 +1247,15 @@ public class fetchEmail extends fetchAccount{
 				
 				m_sendTransport = null;
 			}
-		}catch(Exception e){}	
+		}catch(Exception e){
+			m_mainMgr.m_logger.PrinterException(e);
+		}finally{
+			m_mainMgr.m_logger.LogOut("end DestroySession");
+		}	
 	}
 			
-	public synchronized void PushMsg(sendReceive _sendReceive)throws Exception{ 
-		
+	public synchronized void PushMsg(sendReceive _sendReceive)throws Exception{
+			
 		final long t_currTime = (new Date()).getTime();
 		
 		for(int i = m_unreadMailVector_confirm.size() - 1;i >= 0;i--){

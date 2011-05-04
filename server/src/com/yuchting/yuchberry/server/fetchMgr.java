@@ -432,15 +432,24 @@ public class fetchMgr{
 			}catch(Exception e){
 				
 				m_logger.PrinterException(e);
+							
+				int t_reconnectNum = 0;
+				while(t_reconnectNum++ < 5){
+									
+					try{
+						
+						Thread.sleep(t_reconnectNum * 5000);
+						account.ResetSession(false);
 				
-				try{
-					
-					Thread.sleep(5000);
-					account.ResetSession(false);
-					
-				}catch(Exception _e){
-					m_logger.PrinterException(e);
-					break;
+						break;
+						
+					}catch(Exception _e){
+						m_logger.PrinterException(e);
+					}					
+				}
+				
+				if(t_reconnectNum > 5){
+					m_logger.LogOut(account.GetAccountName() + " failed to ResetSession!");
 				}
 				
 			}

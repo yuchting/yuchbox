@@ -584,7 +584,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 	public synchronized fetchThread SearchAccountThread(String _accountName,int _port){
 		
-		m_logger.LogOut("SearchAccountThread start");
+		m_logger.LogOut("SearchAccountThread start name="+_accountName);
 		
 		for(int i = 0;i < m_accountList.size();i++){
 			fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
@@ -597,7 +597,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			}
 		}
 		
-		m_logger.LogOut("SearchAccountThread end");
+		m_logger.LogOut("SearchAccountThread end name="+_accountName);
 		
 		return null;
 		
@@ -641,7 +641,7 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	public synchronized void DelAccoutThread(String _accountName,boolean _storeAccountInfo){
 		
-		m_logger.LogOut("DelAccoutThread start");
+		m_logger.LogOut("DelAccoutThread start name="+_accountName);
 		
 		for(int i = 0;i < m_accountList.size();i++){
 			
@@ -663,7 +663,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			}
 		}
 		
-		m_logger.LogOut("DelAccoutThread end");
+		m_logger.LogOut("DelAccoutThread end name="+_accountName);
 	}
 	
 	public void actionPerformed(ActionEvent e) {
@@ -746,6 +746,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			if(!t_thread.m_pauseState){
 				
 				if(t_thread.GetLastTime(t_currTime) < 0){
+					m_logger.LogOut("帐户暂停： " + t_thread.m_fetchMgr.GetAccountName());
 					t_thread.Pause();
 				}
 				
@@ -819,13 +820,13 @@ public class mainFrame extends JFrame implements ActionListener{
 					bber.m_orgThread.Destroy();
 					DelAccoutThread(bber.m_orgThread.m_fetchMgr.GetAccountName(), false);
 					
-					m_logger.LogOut("同步没有相应，删除帐户 " + bber.m_orgThread.m_fetchMgr.GetAccountName());
+					m_logger.LogOut("同步没有响应，删除帐户 " + bber.m_orgThread.m_fetchMgr.GetAccountName());
 					
 					t_deleteThread = true;
 				}else{
 					bber.m_mainMgr.EndListening();
 					
-					m_logger.LogOut("同步没有相应，停止帐户 " + bber.m_mainMgr.GetAccountName());
+					m_logger.LogOut("同步没有响应，停止帐户 " + bber.m_mainMgr.GetAccountName());
 				}
 				
 				bber.interrupt();
@@ -997,7 +998,7 @@ public class mainFrame extends JFrame implements ActionListener{
 				m_prefix		= _orgThread.m_fetchMgr.GetPrefixString();
 				
 				
-				// start listening
+				// end listening
 				//
 				m_orgThread.Pause();
 				
@@ -1371,6 +1372,8 @@ public class mainFrame extends JFrame implements ActionListener{
 					return "参数错误";
 				}
 				
+				m_logger.LogOut("t_bber="+ t_bber+ " ProcessCreateTimeQuery");
+				
 				for(fetchThread thread:m_accountList){
 					if(thread.m_fetchMgr.GetAccountName().equalsIgnoreCase(t_bber)){
 						
@@ -1382,9 +1385,7 @@ public class mainFrame extends JFrame implements ActionListener{
 						if(thread.m_pauseState){
 							thread.Reuse();
 						}
-						
-						m_logger.LogOut("ProcessLogQuery end");					
-						
+												
 						return "<OK />";
 					}
 				}
