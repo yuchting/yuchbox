@@ -31,6 +31,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
+import javax.net.ssl.SSLSocket;
 
 import org.dom4j.Element;
 
@@ -959,12 +960,16 @@ public class fetchEmail extends fetchAccount{
 						
 						// add message to "Sent" folder
 						folder.appendMessages(new Message[] {msg});
+
 						
-					}finally{
-						if(folder.isOpen()){
-							folder.close(false);
-						}						
-					}					
+					}catch(Exception e){
+						m_mainMgr.m_logger.PrinterException(e);
+					}
+				
+					if(folder.isOpen()){
+						folder.close(false);
+					}						
+									
 				}
 				
 				break;
@@ -1162,20 +1167,21 @@ public class fetchEmail extends fetchAccount{
     		m_sysProps.put("mail.pop3.disabletop", "true");
     	}
     	
-    	if(m_protocol.indexOf("imap") != -1 && m_host.indexOf("imap.qq.com") != -1){
+    	if(m_host.indexOf("imap.qq.com") != -1){
     		m_sysProps.put("mail.imap.auth.login.disable","true");
     	}
     	    	
     	m_sysProps.put("mail.imap.timeout","10000");
     	m_sysProps.put("mail.smtp.timeout","20000");
     	m_sysProps.put("mail.pop3.timeout","10000");
-    	
+    	    	
     	m_session = Session.getInstance(m_sysProps, null);
     	m_session.setDebug(false);
     	
     	m_store = m_session.getStore(m_protocol);
     	
     	m_mainMgr.m_logger.LogOut("ResetSession 1 ");
+    	
     	
 		if(m_useFullNameSignIn){
 			m_store.connect(m_host,m_port,m_strUserNameFull,m_password);

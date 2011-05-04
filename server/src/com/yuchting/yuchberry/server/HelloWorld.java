@@ -247,8 +247,8 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[])throws Exception{
 
-		(new HelloWorld()).berryRecvTest();
-		
+		//(new HelloWorld()).berryRecvTest();
+		(new HelloWorld()).berrySendTest();
 		
 	}
 		
@@ -702,13 +702,15 @@ public class HelloWorld {
 		
 		try{
 			
-			Socket t_socket = GetSocketServer("Ga855e6a","localhost",9716,false);
+			Socket t_socket = GetSocketServer("111111","localhost",9716,false);
 			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
 			
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			os.write(msg_head.msgConfirm);
-			sendReceive.WriteString(os, "Ga855e6a",false);
-			sendReceive.WriteInt(os,1);
+			sendReceive.WriteString(os, "111111",false);
+			sendReceive.WriteInt(os,4);
+			os.write(0);
+			sendReceive.WriteString(os,"1.1.715",false);
 			t_receive.SendBufferToSvr(os.toByteArray(), false);
 			
 			fetchMail t_mail = new fetchMail(false);
@@ -728,6 +730,8 @@ public class HelloWorld {
 			
 			t_mail.OutputMail(os);
 			os.write(fetchMail.NOTHING_STYLE);
+			
+			os.write(1);
 			
 			t_receive.SendBufferToSvr(os.toByteArray(), true);
 			
