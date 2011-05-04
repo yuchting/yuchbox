@@ -60,6 +60,7 @@ REFRESH_ABOUT_MENU_TEXT#0="refresh";
 SEND_MAIL_NUM#0="Send mail: ";
 SETTING_MAIL_OP#0="Mail operation";
 SETTING_MENU_TEXT#0="Advance S\u0332etting";
+SETTTING_PASSWORD_KEY#0="Password Key(Caution!):";
 SHARE_TO_FRIEND_CHECK_MENU#0="OK,check the share contain";
 SHARE_TO_FRIEND_CONTENT_EMAIL#0="Hi,#I'm using YuchBerry, a PushMail software running in BlackBerry, it's looks GOOD, don't you want to try it?##See you later!";
 SHARE_TO_FRIEND_CONTENT_EMAIL_SUBJECT#0="Share YuchBerry";

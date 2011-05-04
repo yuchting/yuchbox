@@ -20,6 +20,7 @@ import net.rim.blackberry.api.browser.BrowserSession;
 import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
+import net.rim.device.api.crypto.MD5Digest;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.i18n.SimpleDateFormat;
@@ -110,6 +111,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	int					m_sendMailNum		= 0;
 	int					m_recvMailNum		= 0;
+	String				m_passwordKey		= "";
 	
 	
 	static final String[]	fsm_recvMaxTextLenghtString = {"∞","1KB","5KB","10KB","50KB"};
@@ -197,7 +199,6 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	//@}
 	
 	public static void main(String[] args) {
-		//String t_md5 = md5("111");
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());		
 		t_theApp.enterEventDispatcher();
 	}
@@ -754,6 +755,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_copyMailToSentFolder = (t_readFile.read() == 1)?true:false;
 				    		}
 				    		
+				    		if(t_currVer >= 16){
+				    			m_passwordKey = sendReceive.ReadString(t_readFile); 
+				    		}
+				    		
 			    		}finally{
 			    			t_readFile.close();
 			    			t_readFile = null;
@@ -809,6 +814,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						sendReceive.WriteInt(t_writeFile, m_recvMsgTextLengthIndex);
 						
 						t_writeFile.write(m_copyMailToSentFolder?1:0);
+						
+						sendReceive.WriteString(t_writeFile,m_passwordKey);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1300,40 +1307,40 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return t_code;
 	}
 	
-//	public static String md5(String _org){
-//		
-//		byte[] bytes = null;
-//		try{
-//			bytes = _org.getBytes("UTF-8");
-//		}catch(Exception e){
-//			bytes = _org.getBytes();
-//		}
-//		
-//		MD5Digest digest = new MD5Digest();
-//		
-//		digest.update(bytes, 0, bytes.length);
-//
-//		byte[] md5 = new byte[digest.getDigestLength()];
-//		digest.getDigest(md5, 0, true);
-//		
-//		return convertToHex(md5);
-//		
-//	}
-//	
-//	public static String convertToHex(byte[] data) {
-//        StringBuffer buf = new StringBuffer();
-//        for (int i = 0; i < data.length; i++) {
-//            int halfbyte = (data[i] >>> 4) & 0x0F;
-//            int two_halfs = 0;
-//            do {
-//                if ((0 <= halfbyte) && (halfbyte <= 9))
-//                    buf.append((char) ('0' + halfbyte));
-//                else
-//                    buf.append((char) ('a' + (halfbyte - 10)));
-//                halfbyte = data[i] & 0x0F;
-//            } while(two_halfs++ < 1);
-//        }
-//        return buf.toString();
-//    }	
+	public static String md5(String _org){
+		
+		byte[] bytes = null;
+		try{
+			bytes = _org.getBytes("UTF-8");
+		}catch(Exception e){
+			bytes = _org.getBytes();
+		}
+		
+		MD5Digest digest = new MD5Digest();
+		
+		digest.update(bytes, 0, bytes.length);
+
+		byte[] md5 = new byte[digest.getDigestLength()];
+		digest.getDigest(md5, 0, true);
+		
+		return convertToHex(md5);
+		
+	}
+	
+	public static String convertToHex(byte[] data) {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < data.length; i++) {
+            int halfbyte = (data[i] >>> 4) & 0x0F;
+            int two_halfs = 0;
+            do {
+                if ((0 <= halfbyte) && (halfbyte <= 9))
+                    buf.append((char) ('0' + halfbyte));
+                else
+                    buf.append((char) ('a' + (halfbyte - 10)));
+                halfbyte = data[i] & 0x0F;
+            } while(two_halfs++ < 1);
+        }
+        return buf.toString();
+    }	
 }
 

@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.client;
 import local.localResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.FocusChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.component.ButtonField;
@@ -16,10 +17,13 @@ import net.rim.device.api.ui.component.ObjectChoiceField;
 import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
 
-public class settingScreen extends MainScreen implements FieldChangeListener{
+public class settingScreen extends MainScreen implements FieldChangeListener,FocusChangeListener{
 	
 	 EditField			m_APN			= null;
 	 EditField			m_appendString	= null;
+	 EditField			m_passwordKey	= null;
+	 boolean			m_hasChangePasswordKey	= false;
+	 
 	 CheckboxField		m_useSSLCheckbox= null;
 	 CheckboxField		m_uesMDS		= null;
 	 CheckboxField		m_useWifi		= null;
@@ -77,6 +81,12 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 		 m_appendString	= new EditField(recvMain.sm_local.getString(localResource.APPEND_STRING_LABEL),
 											m_mainApp.m_appendString,128,EditField.FILTER_DEFAULT);
 		 add(m_appendString);
+		 
+		 m_passwordKey	= new EditField(recvMain.sm_local.getString(localResource.SETTTING_PASSWORD_KEY),
+				 							(m_mainApp.m_passwordKey.length() != 0)?"***":"",128,EditField.FILTER_DEFAULT);
+		 add(m_passwordKey);
+		 m_passwordKey.setChangeListener(this);
+		 m_passwordKey.setFocusListener(this);
 		 
 		 m_pulseInterval	= new ObjectChoiceField(recvMain.sm_local.getString(localResource.PULSE_INTERVAL_LABEL),
 				 							recvMain.fsm_pulseIntervalString,m_mainApp.m_pulseIntervalIndex);
@@ -202,10 +212,18 @@ public class settingScreen extends MainScreen implements FieldChangeListener{
 				}
 			}else if(field == m_changeSignature){
 				m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_PROMPT_TEXT));
+			}else if(field == m_passwordKey){
+				if(m_passwordKey.getText().length() != 0){
+					
+				}
 			}
 		}else{
 			// Perform action if application changed field.
 		}
+	 }
+	 
+	 public void focusChanged(Field field, int eventType){
+		 
 	 }
 	 
 	 public boolean onClose(){

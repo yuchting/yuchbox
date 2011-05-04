@@ -1,2 +1,2 @@
 @echo off
-java -jar frame.jar
+start javaw -jar frame.jar
