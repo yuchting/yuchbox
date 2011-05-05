@@ -198,6 +198,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	float			 m_locationHeading = 0;
 	//@}
 	
+	FileConnection m_logfc				= null;
+	OutputStream	m_logfcOutput		= null;
+	
 	public static void main(String[] args) {
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());		
 		t_theApp.enterEventDispatcher();
@@ -1233,6 +1236,28 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return recvMain.sm_local.getString(localResource.STATE_PROMPT) + m_stateString;
 	}
 	
+	public void LogOut(String _log){
+		try{
+			if(m_logfc == null){
+				m_logfc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/log.txt",Connector.READ_WRITE);
+				if(m_logfc.exists()){
+					m_logfc.delete();
+				}
+				
+				m_logfc.create();
+				m_logfcOutput = m_logfc.openOutputStream();
+			}
+			
+			m_logfcOutput.write(_log.getBytes());
+			m_logfcOutput.write(("\n").getBytes());
+			m_logfcOutput.flush();
+			
+		}catch(Exception e){
+			SetErrorString("LogOut Error:"+e.getMessage() + e.getClass().getName());
+		}
+		
+	}
+	
 	public void SetErrorString(final String _error){
 		m_errorString.addElement(new ErrorInfo(_error));
 		if(m_errorString.size() > 100){
@@ -1243,6 +1268,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			m_debugInfoScreen.RefreshText();
 		}			
 	}
+	
 	public String GetAllErrorString(){
 		if(!m_errorString.isEmpty()){
 

@@ -883,7 +883,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 		break;
 		 	case msg_head.msgNote:
 		 		String t_string = sendReceive.ReadString(in);
-		 		m_mainApp.SetErrorString("Svr:" + t_string);
+		 		m_mainApp.DialogAlert("SvrNote:" + t_string);
 		 		break;
 		 	case msg_head.msgMailAttach:
 		 		ProcessMailAttach(in);
