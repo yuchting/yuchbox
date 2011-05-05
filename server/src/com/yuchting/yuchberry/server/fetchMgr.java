@@ -161,7 +161,8 @@ public class fetchMgr{
 		m_prefix	= _prefix;
 		m_logger	= _logger;
 		
-		DestroyAllAcount();
+		DestroyAllSession();
+		m_fetchAccount.removeAllElements();
 		
 		FileInputStream t_xmlFile = new FileInputStream(m_prefix + fsm_configFilename);
 		try{
@@ -207,6 +208,17 @@ public class fetchMgr{
 		return m_passwordKey;
 	}
 	
+	static byte[] fsm_userPasswordErrorData = null;
+	
+	static{
+		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+		t_os.write(msg_head.msgNote);
+		try{
+			sendReceive.WriteString(t_os,"User Password Error!",false);
+			fsm_userPasswordErrorData = t_os.toByteArray();
+		}catch(Exception e){}
+	}
+	
 	public sendReceive ValidateClient(Socket _s)throws Exception{
 		
 		sendReceive t_tmp = null;
@@ -234,6 +246,7 @@ public class fetchMgr{
 		
 			if(msg_head.msgConfirm != t_msg_head 
 			|| !sendReceive.ReadString(in).equals(m_userPassword)){
+				t_tmp.SendBufferToSvr(fsm_userPasswordErrorData, true);
 				throw new Exception("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> connected.");			
 			}
 			
@@ -360,9 +373,7 @@ public class fetchMgr{
 		
 		try{
 			
-			for(fetchAccount accout :m_fetchAccount){
-				accout.DestroySession();
-			}			
+			DestroyAllSession();
 			
 			if(m_svr != null){
 				m_svr.close();
@@ -375,16 +386,14 @@ public class fetchMgr{
 			}
 		}		
 	}
-	
-	public void DestroyAllAcount()throws Exception{
+			
+	public void DestroyAllSession()throws Exception{
 		for(fetchAccount accout :m_fetchAccount){
 			accout.DestroySession();
 		}
-		
-		m_fetchAccount.removeAllElements();
 	}
+	
 	public void ResetAllAccountSession(boolean _testAll)throws Exception{
-		
 		for(fetchAccount accout :m_fetchAccount){
 			accout.ResetSession(_testAll);
 		}
@@ -443,15 +452,20 @@ public class fetchMgr{
 							
 				int t_reconnectNum = 0;
 				while(t_reconnectNum++ < 5){
-									
+								
+					try{
+						Thread.sleep(t_reconnectNum * 20000);
+					}catch(Exception ex){
+						m_logger.LogOut(account.GetAccountName() + " checkfolder interpret.");
+						break;
+					}
+					
 					try{
 						
-						Thread.sleep(t_reconnectNum * 5000);
 						account.ResetSession(false);
-				
 						break;
 						
-					}catch(Exception _e){
+					}catch(Exception ex){
 						m_logger.PrinterException(e);
 					}					
 				}

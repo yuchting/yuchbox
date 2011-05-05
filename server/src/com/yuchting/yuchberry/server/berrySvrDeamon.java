@@ -132,8 +132,8 @@ public class berrySvrDeamon extends Thread{
 				m_sendReceive.CloseSendReceive();
 				
 				m_pushDeamon.m_closed = true;
-				m_pushDeamon.interrupt();				
-				
+				m_pushDeamon.interrupt();
+							
 				m_fetchMgr.m_logger.PrinterException(_e);
 							
 				m_quit = true;

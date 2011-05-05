@@ -62,9 +62,7 @@ abstract public class fetchAccount {
 	 * push the message to client
 	 */
 	abstract public void PushMsg(sendReceive _sendReceive)throws Exception;
-	
-	
-	
+		
 		
 	/**
 	 * read String attribute from xml

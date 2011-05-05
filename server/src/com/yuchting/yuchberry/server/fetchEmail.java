@@ -1210,6 +1210,9 @@ public class fetchEmail extends fetchAccount{
     	m_sysProps.put("mail.imap.timeout","10000");
     	m_sysProps.put("mail.smtp.timeout","20000");
     	m_sysProps.put("mail.pop3.timeout","10000");
+    	
+    	m_sysProps.put("mail.imap.connectiontimeout","10000");
+    	m_sysProps.put("mail.pop3.connectiontimeout","10000");
     	    	
     	m_session = Session.getInstance(m_sysProps, null);
     	m_session.setDebug(false);
@@ -1218,12 +1221,13 @@ public class fetchEmail extends fetchAccount{
     	
     	m_mainMgr.m_logger.LogOut("ResetSession 1 ");
     	
-    	
 		if(m_useFullNameSignIn){
 			m_store.connect(m_host,m_port,m_strUserNameFull,m_password);
 		}else{
 			m_store.connect(m_host,m_port,m_userName,m_password);
-		}    	
+		}  	
+		
+		m_mainMgr.m_logger.LogOut("ResetSession 2 ");
     	
     	// initialize the smtp transfer
     	//
@@ -1236,12 +1240,14 @@ public class fetchEmail extends fetchAccount{
     		m_sysProps_send.put("mail.smtp.starttls.enable","false");
     	}
     	
+    	m_mainMgr.m_logger.LogOut("ResetSession 3 ");
+    	
     	m_session_send = Session.getInstance(m_sysProps_send, null);
     	m_session_send.setDebug(false);
     	
     	m_sendTransport = (SMTPTransport)m_session_send.getTransport(m_protocol_send);
     	
-    	m_mainMgr.m_logger.LogOut("ResetSession 2 ");
+    	m_mainMgr.m_logger.LogOut("ResetSession 4 ");
     	
     	// test connected
     	//
@@ -1253,16 +1259,17 @@ public class fetchEmail extends fetchAccount{
 			}
         	m_sendTransport.close();        		
     	}
-    	
+
     	m_mainMgr.m_logger.LogOut("end ResetSession");
     	
     	m_mainMgr.m_logger.LogOut("prepare Email account <" + m_strUserNameFull + "> OK" );
-    	
 	}
 	
 	public synchronized void DestroySession(){
-		m_mainMgr.m_logger.LogOut("start DestroySession");
+		m_mainMgr.m_logger.LogOut(GetAccountName() + " start DestroySession");
+
 		try{
+			
 			m_session = null;
 			m_session_send = null;
 			
@@ -1280,7 +1287,9 @@ public class fetchEmail extends fetchAccount{
 			    // pushed mail index vector 
 			    m_vectPushedMailIndex.clear();
 			    
-				m_store.close();
+			    try{
+			    	m_store.close();
+			    }catch(Exception e){}
 				m_store = null;
 				
 				try{
@@ -1288,11 +1297,12 @@ public class fetchEmail extends fetchAccount{
 				}catch(Exception e){}
 				
 				m_sendTransport = null;
-			}
+			}			
+			
 		}catch(Exception e){
 			m_mainMgr.m_logger.PrinterException(e);
 		}finally{
-			m_mainMgr.m_logger.LogOut("end DestroySession");
+			m_mainMgr.m_logger.LogOut(GetAccountName() + " end DestroySession");
 		}	
 	}
 			
