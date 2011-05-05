@@ -11,7 +11,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-//import com.yuchting.yuchberry.server.cryptPassword;
+import com.yuchting.yuchberry.server.cryptPassword;
 import com.yuchting.yuchberry.server.frame.createDialog;
 import com.yuchting.yuchberry.server.frame.mainFrame;
 
@@ -28,7 +28,7 @@ public class cryptPassTool extends JFrame implements ActionListener{
 
 		setTitle("加密密码");
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		setSize(300,170);
+		setSize(400,170);
 		
 		Container t_con = getContentPane();
 		
@@ -36,9 +36,9 @@ public class cryptPassTool extends JFrame implements ActionListener{
 		
 		m_cryptPass.setEditable(false);
 		
-		createDialog.AddTextLabel(t_con,"加密算子:",m_cryptKey,200,"");
-		createDialog.AddTextLabel(t_con,"明文密码:",m_orgPass,200,"");
-		createDialog.AddTextLabel(t_con,"加密密码:",m_cryptPass,200,"");
+		createDialog.AddTextLabel(t_con,"加密算子:",m_cryptKey,300,"");
+		createDialog.AddTextLabel(t_con,"明文密码:",m_orgPass,300,"");
+		createDialog.AddTextLabel(t_con,"加密密码:",m_cryptPass,300,"");
 		
 		t_con.add(m_convert);
 		t_con.add(m_help);
@@ -60,13 +60,13 @@ public class cryptPassTool extends JFrame implements ActionListener{
 				return ;
 			}
 			
-//			try{
-//				cryptPassword t_crypt = new cryptPassword(cryptPassword.md5(m_cryptKey.getText()));
-//				m_cryptPass.setText(t_crypt.encrypt(m_orgPass.getText()));
-//				
-//			}catch(Exception _e){
-//				JOptionPane.showMessageDialog(this,_e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
-//			}
+			try{
+				cryptPassword t_crypt = new cryptPassword(cryptPassword.md5(m_cryptKey.getText()));
+				m_cryptPass.setText(t_crypt.encrypt(m_orgPass.getText()));
+				
+			}catch(Exception _e){
+				JOptionPane.showMessageDialog(this,_e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+			}
 			
 
 		}else if(e.getSource() == m_help){

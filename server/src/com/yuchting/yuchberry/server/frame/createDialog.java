@@ -52,6 +52,7 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
 import com.yuchting.yuchberry.server.Logger;
+import com.yuchting.yuchberry.server.cryptPassword;
 import com.yuchting.yuchberry.server.fetchAccount;
 import com.yuchting.yuchberry.server.fetchEmail;
 import com.yuchting.yuchberry.server.fetchMgr;
@@ -100,6 +101,7 @@ final class createEmailData{
 	// account attribute
 	String m_accountName	;
 	String m_password		;
+	String m_passwordKey	;
 	String m_sendName		;
 	String m_protocal		;
 	
@@ -132,7 +134,7 @@ public class createDialog extends JDialog implements DocumentListener,
 															ItemListener{
 	
 	final static int		fsm_width = 520;
-	final static int		fsm_height = 620;
+	final static int		fsm_height = 680;
 	
 	JTextField	m_userPassword		= new JTextField();
 	JTextField	m_serverPort		= new JTextField();
@@ -218,6 +220,7 @@ public class createDialog extends JDialog implements DocumentListener,
 	JTextField 	m_account		= new JTextField();
 	JTextField 	m_password		= new JTextField();
 	JTextField 	m_sendName		= new JTextField();
+	JTextField 	m_passwordKey	= new JTextField();
 	JTextField 	m_host			= new JTextField();
 	JTextField 	m_port			= new JTextField();
 	
@@ -259,8 +262,18 @@ public class createDialog extends JDialog implements DocumentListener,
 		getContentPane().setLayout(new FlowLayout());
 				
 		setSize(fsm_width,fsm_height);
-		setLocation(_main.getLocation().x + (_main.getWidth()- fsm_width) / 2,
-					_main.getLocation().y + (_main.getHeight() -  fsm_height) / 2);
+		int t_x = _main.getLocation().x + (_main.getWidth()- fsm_width) / 2;
+		int t_y = _main.getLocation().y + (_main.getHeight() -  fsm_height) / 2;
+		
+		if(t_x < 0){
+			t_x = 0;
+		}
+		
+		if(t_y < 0 ){
+			t_y = 0;
+		}
+		
+		setLocation(t_x,t_y);
 		
 		m_commonConfigList.setModel(m_commonConfigListModel);
 		m_commonConfigList.addItemListener(this);
@@ -318,9 +331,9 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 		JPanel t_accountMainPanel = new JPanel();
 		t_accountMainPanel.setLayout(new FlowLayout());
-		t_accountMainPanel.setPreferredSize(new Dimension(fsm_width, 280));
+		t_accountMainPanel.setPreferredSize(new Dimension(fsm_width, 340));
 		
-		m_accountListScroll.setPreferredSize(new Dimension(140,270));
+		m_accountListScroll.setPreferredSize(new Dimension(140,330));
 		t_accountMainPanel.add(m_accountListScroll);
 		
 		t_accountMainPanel.add(PrepareAccountBut());
@@ -365,6 +378,8 @@ public class createDialog extends JDialog implements DocumentListener,
 		AddTextLabel(t_accountPanel,"帐号密码:",m_password,220,"");
 		AddTextLabel(t_accountPanel,"邮件名字:",m_sendName,220,"");
 		
+		AddTextLabel(t_accountPanel,"密码算子:",m_passwordKey,220,"");
+		
 		AddTextLabel(t_accountPanel,"主机地址:",m_host,120,_formerHost);
 		AddTextLabel(t_accountPanel,"端口:",m_port,60,_formerPort);
 		
@@ -385,7 +400,7 @@ public class createDialog extends JDialog implements DocumentListener,
 
 		
 		m_tabbedPane.addTab("邮件",null,t_accountPanel,"添加邮件账户");
-		m_tabbedPane.setPreferredSize(new Dimension(300, 270));
+		m_tabbedPane.setPreferredSize(new Dimension(300, 330));
 		
 		return m_tabbedPane;
 	}
@@ -430,6 +445,7 @@ public class createDialog extends JDialog implements DocumentListener,
 			t_email.m_accountName	= m_account.getText();
 			t_email.m_sendName		= m_sendName.getText();
 			t_email.m_password		= m_password.getText();
+			t_email.m_passwordKey	= m_passwordKey.getText();
 			t_email.m_host			= m_host.getText();
 			t_email.m_port			= m_port.getText();
 			t_email.m_send_host		= m_send_host.getText();
@@ -626,7 +642,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		t_elem.addAttribute("account", _email.m_accountName);
 		t_elem.addAttribute("password", _email.m_password);
 		t_elem.addAttribute("sendName",_email.m_sendName);
-		
+				
 		t_elem.addAttribute("useFullNameSignIn", _email.m_useFullNameSignIn?"1":"0");
 		t_elem.addAttribute("protocol", _email.m_protocal);
 		t_elem.addAttribute("host", _email.m_host);
@@ -642,6 +658,12 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 		t_emailAccount.ResetSession(true);
 		t_emailAccount.DestroySession();
+		
+		if(!_email.m_passwordKey.isEmpty()){
+			cryptPassword t_crypt = new cryptPassword(cryptPassword.md5(_email.m_passwordKey));
+			t_elem.addAttribute("password","");
+			t_elem.addAttribute("cryptPassword",t_crypt.encrypt(_email.m_password));
+		}
 		
 		m_createConfigDoc_root.add((Element)t_elem.clone());
 		

@@ -660,7 +660,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 15;
+	final static int		fsm_clientVersion = 16;
 	
 	public synchronized void WriteReadIni(boolean _read){
 		

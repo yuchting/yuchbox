@@ -247,8 +247,8 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[])throws Exception{
 
-		//(new HelloWorld()).berryRecvTest();
-		(new HelloWorld()).berrySendTest();
+		(new HelloWorld()).berryRecvTest();
+		//(new HelloWorld()).berrySendTest();
 		
 	}
 		
@@ -767,7 +767,10 @@ public class HelloWorld {
 			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
 			t_stream.write(msg_head.msgConfirm);
 			sendReceive.WriteString(t_stream, "111111",false);
-			sendReceive.WriteInt(t_stream,2);
+			sendReceive.WriteInt(t_stream,5);
+			t_stream.write(0);
+			sendReceive.WriteString(t_stream,"1.1.715",false);
+			sendReceive.WriteString(t_stream,cryptPassword.md5("111"),false);
 			
 			t_receive.SendBufferToSvr(t_stream.toByteArray(), false);
 			
@@ -799,7 +802,10 @@ public class HelloWorld {
 			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
 			t_stream.write(msg_head.msgConfirm);
 			sendReceive.WriteString(t_stream, "111111",false);
-			sendReceive.WriteInt(t_stream,2);
+			sendReceive.WriteInt(t_stream,5);
+			t_stream.write(0);
+			sendReceive.WriteString(t_stream,"1.1.715",false);
+			sendReceive.WriteString(t_stream,cryptPassword.md5("111"),false);
 			
 			t_receive.SendBufferToSvr(t_stream.toByteArray(), false);
 			

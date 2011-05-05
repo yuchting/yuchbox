@@ -62,7 +62,9 @@ public class fetchMgr{
     
     String			m_latestVersion		= null;
     
-    boolean		m_hasPrompt			= false;    
+    boolean		m_hasPrompt			= false; 
+    
+    String			m_passwordKey		= "";
     
     public void SetLatestVersion(String _version){
     	
@@ -174,8 +176,6 @@ public class fetchMgr{
 			m_userSSL						= fetchAccount.ReadBooleanAttr(t_root,"userSSL");
 			m_convertToSimpleChar			= fetchAccount.ReadBooleanAttr(t_root,"convertoSimpleChar");
 			
-			
-			
 			for( Iterator i = t_root.elementIterator("EmailAccount"); i.hasNext();){
 	            Element element = (Element) i.next();
 	            fetchEmail t_email = new fetchEmail(this);
@@ -201,6 +201,10 @@ public class fetchMgr{
 			t_xmlFile.close();
 		}
 			
+	}
+	
+	public String GetPasswordKey(){
+		return m_passwordKey;
 	}
 	
 	public sendReceive ValidateClient(Socket _s)throws Exception{
@@ -251,6 +255,10 @@ public class fetchMgr{
 					//
 					SendNewVersionPrompt(t_tmp);
 				}
+			}
+			
+			if(m_clientVer >= 5){
+				m_passwordKey = sendReceive.ReadString(in);
 			}
 			
 			_s.setSoTimeout(0);

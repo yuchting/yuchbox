@@ -212,10 +212,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				}
 			}else if(field == m_changeSignature){
 				m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_PROMPT_TEXT));
-			}else if(field == m_passwordKey){
-				if(m_passwordKey.getText().length() != 0){
-					
-				}
+			}else if(field == m_passwordKey){			
+				m_hasChangePasswordKey = true;
 			}
 		}else{
 			// Perform action if application changed field.
@@ -223,7 +221,17 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 }
 	 
 	 public void focusChanged(Field field, int eventType){
-		 
+		 if(field == m_passwordKey){
+			 if(FocusChangeListener.FOCUS_GAINED == eventType){
+				 if(!m_hasChangePasswordKey && m_mainApp.m_passwordKey.length() != 0){
+					 m_passwordKey.setText("");
+				 }
+			 }else if(FocusChangeListener.FOCUS_LOST == eventType){
+				 if(!m_hasChangePasswordKey && m_mainApp.m_passwordKey.length() != 0){
+					 m_passwordKey.setText("***");
+				 }
+			 }
+		 }
 	 }
 	 
 	 public boolean onClose(){
@@ -257,6 +265,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		m_mainApp.WriteReadIni(false);
 		
 		m_mainApp.m_settingScreen = null;
+		
+		if(m_passwordKey.getText().length() != 0 && m_hasChangePasswordKey){
+			m_mainApp.m_passwordKey = recvMain.md5(m_passwordKey.getText());
+		}
 		
 		close();
 		return true;

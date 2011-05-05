@@ -309,6 +309,7 @@ public class fetchEmail extends fetchAccount{
 	
 	boolean m_useFullNameSignIn		= false;
 	String 	m_password 					= null;
+	String 	m_cryptPassword 			= "";
 	
     boolean m_pushHistoryMsg			= false;
 	
@@ -470,6 +471,10 @@ public class fetchEmail extends fetchAccount{
 			m_sendName	= ReadStringAttr(_elem,"sendName");
 		}
 		
+		if(_elem.attributeValue("cryptPassword") != null){
+			m_cryptPassword = ReadStringAttr(_elem,"cryptPassword");
+		}
+		
 		File t_file = new File(GetAccountPrefix());
 		if(!t_file.exists() || !t_file.isDirectory()){
 			t_file.mkdir();
@@ -479,6 +484,14 @@ public class fetchEmail extends fetchAccount{
 	}
 		
 	public void CheckFolder()throws Exception{
+		
+		if(m_store == null){
+			
+			m_mainMgr.m_logger.LogOut("m_store == null, ResetSession first");
+			
+			ResetSession(true);
+			return;
+		}		
 		
 		Folder folder = m_store.getDefaultFolder();
 		
@@ -1143,9 +1156,32 @@ public class fetchEmail extends fetchAccount{
 		m_mainMgr.m_logger.LogOut("start ResetSession");
 		
 		DestroySession();
-    	
+		    	
 		if(m_session != null){
 			throw new Exception("has been initialize the session");
+		}
+		
+		if(!m_cryptPassword.isEmpty() && m_password.isEmpty()){		
+			
+			if(m_mainMgr.GetPasswordKey().isEmpty()){
+				m_mainMgr.m_logger.LogOut("PasswordKey is Empty, wait for client send PasswordKey.");
+				
+				return ;
+				
+			}else{
+				
+				m_mainMgr.m_logger.LogOut("using crptyPassword to decode.");
+				
+				try{
+					cryptPassword t_crypt = new cryptPassword(m_mainMgr.GetPasswordKey());
+					m_password = t_crypt.decrypt(m_cryptPassword);
+				}catch(Exception e){
+					m_mainMgr.m_logger.LogOut("crypt password error,please check the PasswordKey of client.");
+					
+					return;
+				}
+				
+			}
 		}
 		
 		m_mainMgr.m_logger.LogOut("ResetSession 0 ");

@@ -50,7 +50,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListener,
 												ViewListenerExtended{
 		
-	final static int	fsm_clientVer = 4;
+	final static int	fsm_clientVer = 5;
 	 
 	sendReceive		m_connect = null;
 		
@@ -645,7 +645,8 @@ public class connectDeamon extends Thread implements SendListener,
 				sendReceive.WriteString(t_os, m_mainApp.GetUserPassword());
 				sendReceive.WriteInt(t_os,fsm_clientVer);
 				t_os.write(recvMain.GetClientLanguage());
-				sendReceive.WriteString(t_os,m_currentVersion);	
+				sendReceive.WriteString(t_os,m_currentVersion);
+				sendReceive.WriteString(t_os,m_mainApp.m_passwordKey);
 				
 				m_connect.SendBufferToSvr(t_os.toByteArray(), true,false);			
 				
