@@ -454,20 +454,20 @@ public class fetchMgr{
 				while(t_reconnectNum++ < 5){
 								
 					try{
-						Thread.sleep(t_reconnectNum * 20000);
-					}catch(Exception ex){
-						m_logger.LogOut(account.GetAccountName() + " checkfolder interpret.");
-						break;
-					}
-					
-					try{
 						
 						account.ResetSession(false);
 						break;
 						
 					}catch(Exception ex){
 						m_logger.PrinterException(e);
-					}					
+					}
+					
+					try{
+						Thread.sleep(t_reconnectNum * 20000);
+					}catch(Exception ex){
+						m_logger.LogOut(account.GetAccountName() + " checkfolder interpret.");
+						break;
+					}
 				}
 				
 				if(t_reconnectNum > 5){
