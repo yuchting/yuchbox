@@ -1,2 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Yuchberry userPassword="zx1987723" serverPort="9728" pushInterval="30" userSSL="0" convertoSimpleChar="0" ><EmailAccount account="zhxu@neusoft.com" password="ZHANGxu1987~~~" sendName="Neusoft" useFullNameSignIn="0" protocol="pop3s" host="mail.neusoft.com" port="995" protocol_send="smtp" host_send="smtp.neusoft.com" port_send="465" appendHTML="0" /></Yuchberry>
+<Yuchberry userPassword="111111" serverPort="9716" pushInterval="30" userSSL="0" convertoSimpleChar="0" >
+	<EmailAccount 
+		account="tzt-123@163.com" 
+		password="" 
+		cryptPassword="8dbf031d4b9b5e96ef8857158d44258d"
+		
+		sendName="tzz" 
+		
+		useFullNameSignIn="0" 
+		
+		protocol="imap" 
+		host="imap.163.com" 
+		port="143" 
+		protocol_send="smtp" 
+		host_send="smtp.163.com" 
+		port_send="25" 
+		appendHTML="0" />
+		
+</Yuchberry>

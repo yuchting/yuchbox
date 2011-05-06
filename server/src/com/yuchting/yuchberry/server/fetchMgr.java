@@ -140,6 +140,10 @@ public class fetchMgr{
 	}
 	
 	public void SendData(ByteArrayOutputStream _os,boolean _sendImm)throws Exception{
+		SendData(_os.toByteArray(),_sendImm);		
+	}
+	
+	public void SendData(byte[] _data,boolean _sendImm)throws Exception{
 		
 		if(m_currConnect == null){
 			throw new Exception("Client has been closed <m_currConnect == null>");
@@ -153,8 +157,9 @@ public class fetchMgr{
 			throw new Exception("Client has been closed <!m_currConnect.m_sendReceive.isAlive()>");
 		}
 		
-		m_currConnect.m_sendReceive.SendBufferToSvr(_os.toByteArray(), _sendImm);		
+		m_currConnect.m_sendReceive.SendBufferToSvr(_data, _sendImm);		
 	}
+
 		       
 	public void InitConnect(String _prefix,Logger _logger)throws Exception{
 		
@@ -215,8 +220,9 @@ public class fetchMgr{
 		t_os.write(msg_head.msgNote);
 		try{
 			sendReceive.WriteString(t_os,"User Password Error!",false);
-			fsm_userPasswordErrorData = t_os.toByteArray();
 		}catch(Exception e){}
+		
+		fsm_userPasswordErrorData = t_os.toByteArray();
 	}
 	
 	public sendReceive ValidateClient(Socket _s)throws Exception{
@@ -246,7 +252,9 @@ public class fetchMgr{
 		
 			if(msg_head.msgConfirm != t_msg_head 
 			|| !sendReceive.ReadString(in).equals(m_userPassword)){
-				t_tmp.SendBufferToSvr(fsm_userPasswordErrorData, true);
+				
+				t_tmp.SendBufferToSvr(fsm_userPasswordErrorData,true);
+				
 				throw new Exception("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> connected.");			
 			}
 			

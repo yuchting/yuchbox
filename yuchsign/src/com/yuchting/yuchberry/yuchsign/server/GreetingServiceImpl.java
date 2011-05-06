@@ -180,7 +180,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				int t_lev				= t_bber.GetLevel();
 				long t_latesSyncTime	= t_bber.GetLatestSyncTime();
 				int t_interval			= t_bber.GetPushInterval();
-				
+								
 				if(!t_bber.GetPassword().equals(t_syncbber.GetPassword())){
 					return "<Error>密码错误！</Error>";
 				}
@@ -192,6 +192,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						return "<Error>一个账户同步时间的最小间隔是10分钟，请不要过于频繁。</Error>";
 					}
 				}
+				
+				
 								
 				
 				if(!t_syncbber.GetEmailList().isEmpty()){
@@ -201,6 +203,14 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					for(yuchEmail orig:t_bber.GetEmailList()){
 						boolean t_delete = true;
 						for(yuchEmail curr:t_syncbber.GetEmailList()){
+							
+							if(curr.m_host.indexOf(".live.com") != -1){
+								//
+								// hotmail's pop3 is dangerous
+								//
+								t_interval = 90;
+							}
+							
 							if(curr.m_emailAddr.equalsIgnoreCase(orig.m_emailAddr)){
 								t_delete = false;
 								

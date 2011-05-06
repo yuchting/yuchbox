@@ -1150,7 +1150,18 @@ public class fetchEmail extends fetchAccount{
 	public boolean IsConnectState(){
 		return m_session != null;
 	}
+	
+	static byte[] sm_cryptPasswordKeyError = null;
+	static{
+		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+		t_os.write(msg_head.msgNote);
+		try{
+			sendReceive.WriteString(t_os,"crypt password key error!",false);
+		}catch(Exception e){}
 		
+		sm_cryptPasswordKeyError = t_os.toByteArray();
+	}
+	
 	public synchronized void ResetSession(boolean _fullTest)throws Exception{
 		
 		m_mainMgr.m_logger.LogOut("start ResetSession");
@@ -1169,18 +1180,20 @@ public class fetchEmail extends fetchAccount{
 				return ;
 				
 			}else{
-				
-				m_mainMgr.m_logger.LogOut("using crptyPassword to decode.");
-				
+							
 				try{
 					cryptPassword t_crypt = new cryptPassword(m_mainMgr.GetPasswordKey());
 					m_password = t_crypt.decrypt(m_cryptPassword);
 				}catch(Exception e){
+
+					m_mainMgr.SendData(sm_cryptPasswordKeyError, false);
+					
 					m_mainMgr.m_logger.LogOut("crypt password error,please check the PasswordKey of client.");
 					
 					return;
 				}
 				
+				m_mainMgr.m_logger.LogOut("used crpty Password key to decode.");				
 			}
 		}
 		

@@ -127,7 +127,7 @@ class ContentTab extends TabPanel{
 		new commonConfig("@yahoo.com,imaps,apple.imap.mail.yahoo.com,993,smtp.mail.yahoo.com,587,0"),
 		new commonConfig("@yahoo.com.cn,pop3s,pop.mail.yahoo.com.cn,995,smtp.mail.yahoo.com.cn,465,0,雅虎邮箱免费版貌似不支持pop的链接\n请确认可以在web界面配置pop选项 <a href=\"http://help.cn.yahoo.com/answerpage_3631.html target=_blank\">查看帮助</a>"),		
 		new commonConfig("@yahoo.cn,pop3s,pop.mail.yahoo.cn,995,smtp.mail.yahoo.cn,465,0,雅虎邮箱免费版貌似不支持pop的链接\n请确认可以在web界面配置pop选项 <a href=\"http://help.cn.yahoo.com/answerpage_3631.html target=_blank\">查看帮助</a>"),
-		new commonConfig("@hotmail.com,pop3s,pop3.live.com,995,smtp.live.com,587,1"),
+		new commonConfig("@hotmail.com,pop3s,pop3.live.com,995,smtp.live.com,587,1,hotmail不支持imap，同时pop3连接时也会有许多问题，会导致推送不正常，不建议使用。"),
 		new commonConfig("@sina.com,pop3,pop.sina.com,110,smtp.sina.com,25,0,请使用浏览器访问sina邮箱，确保其pop3选项已经打开\n<a href=\"http://mail.sina.com.cn/help2/client01.html\" target=_blank>查看帮助</a>"),
 		new commonConfig("@139.com,pop3,pop.139.com,110,smtp.139.com,25,0"),
 		new commonConfig("@tom.com,pop3,pop.tom.com,110,smtp.tom.com,25,0"),
