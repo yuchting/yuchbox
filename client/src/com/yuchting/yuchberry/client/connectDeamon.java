@@ -154,21 +154,32 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 
 	public void BeginListener()throws Exception{
+		
+		m_mainApp.LogOut("BeginListener");
+		 
 		// add the send listener
 		//
 		Store store = Session.getDefaultInstance().getStore();
 		store.addSendListener(this);
 		
+		m_mainApp.LogOut("BeginListener 0");
+		
 		Session t_session  = Session.getDefaultInstance();
 		t_session.addViewListener(this);
+		
+		m_mainApp.LogOut("BeginListener 1");
 						 
 		AttachmentHandlerManager.getInstance().addAttachmentHandler(this);
 		
 		m_listeningMessageFolder = GetDefaultFolder();
 		m_listeningMessageFolder.addFolderListener(this);
 		
+		m_mainApp.LogOut("BeginListener 2");
+		
 		m_listeningMessageFolder_out = GetDefaultOutFolder();
 		m_listeningMessageFolder_out.addFolderListener(this	);
+		
+		m_mainApp.LogOut("BeginListener 3");
 	}
 	 
 	 
@@ -693,12 +704,18 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 public synchronized void Connect()throws Exception{
 		 
+		 m_mainApp.LogOut("Connect");
+		 
 		 Disconnect();
 		
+		 m_mainApp.LogOut("Connect 1");
+		 
 		 m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTING_LABEL));
 		 m_disconnect = false;
 		
 		 BeginListener();
+		 
+		 m_mainApp.LogOut("Connect 2");
 	 }
 	 
 	 public boolean IsConnectState(){
@@ -707,20 +724,30 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 public void Disconnect()throws Exception{
 		 
+		 m_mainApp.LogOut("Disconnect");
+		 
 		 m_disconnect = true;
 		 
-		 interrupt();	 
+		 interrupt();
+		 
+		 m_mainApp.LogOut("Disconnect 0");
 		 
 		 m_connectCounter = -1;
+		 
+		 m_mainApp.LogOut("Disconnect 1");
 		 	
 		 synchronized (this) {
 			 
-			 EndListener();	
+			 EndListener();
+			 
+			 m_mainApp.LogOut("Disconnect 2");
 
 			 if(m_connect != null){
 				 m_connect.CloseSendReceive();
 				 m_connect = null;
 			 }
+			 
+			 m_mainApp.LogOut("Disconnect 3");
 			 
 			 if(m_conn != null){			 
 				 m_conn.close();
@@ -738,6 +765,8 @@ public class connectDeamon extends Thread implements SendListener,
 					 
 				 }				 
 			 }
+			 
+			 m_mainApp.LogOut("Disconnect 4");
 			 
 			 m_sendingMailAttachment.removeAllElements();
 		 }
@@ -879,7 +908,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 		break;
 		 	case msg_head.msgNote:
 		 		String t_string = sendReceive.ReadString(in);
-		 		m_mainApp.SetErrorString("Svr:" + t_string);
+		 		m_mainApp.DialogAlert("SvrNote:" + t_string);
 		 		break;
 		 	case msg_head.msgMailAttach:
 		 		ProcessMailAttach(in);

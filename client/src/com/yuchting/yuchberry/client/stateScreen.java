@@ -230,15 +230,20 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 					
 				}else{
 										
+					m_mainApp.LogOut("start connect");
 					
 					try{
 						m_mainApp.m_hostname 		= m_hostName.getText();
 						m_mainApp.m_port 			= Integer.valueOf(m_hostport.getText()).intValue();
 						m_mainApp.m_userPassword 	= m_userPassword.getText();
 
+						m_mainApp.LogOut("start connect 0");
+						
 						m_mainApp.m_connectDeamon.Connect();
 						
 						m_connectBut.setLabel(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
+						
+						m_mainApp.LogOut("start connect 1");
 						
 						m_mainApp.Start();
 						

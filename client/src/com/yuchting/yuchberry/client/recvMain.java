@@ -198,6 +198,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	float			 m_locationHeading = 0;
 	//@}
 	
+	FileConnection m_logfc				= null;
+	OutputStream	m_logfcOutput		= null;
+	
 	public static void main(String[] args) {
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());		
 		t_theApp.enterEventDispatcher();
@@ -613,41 +616,60 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	private synchronized void PreWriteReadIni(boolean _read){
 		
+		LogOut("PreWriteReadIni "+_read);
+		
 		try{
 
+			LogOut("PreWriteReadIni 0");
+			
 			if(_read){
 							
 				FileConnection t_back = (FileConnection) Connector.open(fsm_backInitFilename,Connector.READ_WRITE);
 				try{
+					LogOut("PreWriteReadIni 1");
+					
 					if(t_back.exists()){
+						LogOut("PreWriteReadIni 2");
 						FileConnection t_ini	= (FileConnection) Connector.open(fsm_initFilename,Connector.READ_WRITE);
 						try{
+							LogOut("PreWriteReadIni 3");
 							if(t_ini.exists()){
 								t_ini.delete();
 							}	
+							LogOut("PreWriteReadIni 4");
 						}finally{
 							t_ini.close();
 							t_ini = null;
 						}
 						
+						LogOut("PreWriteReadIni 5");
+						
 						t_back.rename(fsm_initFilename_init_data);
 					}
+					
+					LogOut("PreWriteReadIni 6");
 				}finally{
 					t_back.close();
 					t_back = null;
-				}				
+				}			
+				
+				LogOut("PreWriteReadIni 8");
 				
 			}else{
 				
+				LogOut("PreWriteReadIni 9");
 				FileConnection t_ini	= (FileConnection) Connector.open(fsm_initFilename,Connector.READ_WRITE);
 				try{
+					LogOut("PreWriteReadIni 10");
 					if(t_ini.exists()){
 						t_ini.rename(fsm_initFilename_back_init_data);
 					}
+					LogOut("PreWriteReadIni 11");
 				}finally{
 					t_ini.close();
 					t_ini = null;
 				}
+				LogOut("PreWriteReadIni 12");
 				
 				// needn't copy ,the normal WriteReadIni method will re-create the init.data file
 				//
@@ -664,6 +686,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public synchronized void WriteReadIni(boolean _read){
 		
+		LogOut("WriteReadIni "+_read);
+		
 		// process the ~Init.data file to restore the destroy original file
 		// that writing when device is down  
 		//
@@ -673,6 +697,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		PreWriteReadIni(_read);
 		
 		try{
+			
+			LogOut("WriteReadIni 0");
 			
 			FileConnection fc = (FileConnection) Connector.open(fsm_initFilename,Connector.READ_WRITE);
 			try{
@@ -761,17 +787,24 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			    		}
 			    	}
 				}else{
+					LogOut("WriteReadIni 1");
+					
 					if(!fc.exists()){
 						fc.create();
 					}				
+					LogOut("WriteReadIni 2");
 					
 					OutputStream t_writeFile = fc.openOutputStream();
 					try{
+						
+						LogOut("WriteReadIni 4");
 						sendReceive.WriteInt(t_writeFile,fsm_clientVersion);
 						
 						sendReceive.WriteString(t_writeFile, m_hostname);
 						sendReceive.WriteInt(t_writeFile,m_port);
 						sendReceive.WriteString(t_writeFile, m_userPassword);
+						
+						LogOut("WriteReadIni 5");
 						
 						// write the APN name and validate number
 						//
@@ -782,17 +815,22 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 							sendReceive.WriteInt(t_writeFile,t_sel.m_validateNum);
 						}
 						
+						LogOut("WriteReadIni 6");
+						
 						t_writeFile.write(m_useSSL?1:0);
 						t_writeFile.write(m_useWifi?1:0);
 						sendReceive.WriteString(t_writeFile,m_appendString);
 						
 						t_writeFile.write(m_autoRun?1:0);
 						
+						LogOut("WriteReadIni 7");
+						
 						sendReceive.WriteLong(t_writeFile,m_uploadByte);
 						sendReceive.WriteLong(t_writeFile, m_downloadByte);
 						
 						sendReceive.WriteInt(t_writeFile,m_pulseIntervalIndex);
 						
+						LogOut("WriteReadIni 8");
 						
 						t_writeFile.write(m_fulldayPrompt?1:0);
 						sendReceive.WriteInt(t_writeFile,m_startPromptHour);
@@ -800,6 +838,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						
 						t_writeFile.write(m_useLocationInfo?1:0);
 						t_writeFile.write(m_useMDS?1:0);
+						
+						LogOut("WriteReadIni 9");
 						
 						sendReceive.WriteInt(t_writeFile,m_sendMailNum);
 						sendReceive.WriteInt(t_writeFile,m_recvMailNum);
@@ -809,16 +849,21 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						
 						sendReceive.WriteInt(t_writeFile, m_recvMsgTextLengthIndex);
 						
+						LogOut("WriteReadIni 10");
+						
 						t_writeFile.write(m_copyMailToSentFolder?1:0);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
 						}
 						
+						LogOut("WriteReadIni 11");
 					}finally{
 						t_writeFile.close();
 						t_writeFile = null;
 					}
+					
+					LogOut("WriteReadIni 12");
 					
 					// delete the back file ~Init.data
 					//
@@ -827,6 +872,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						if(t_backFile.exists()){
 							t_backFile.delete();
 						}
+						LogOut("WriteReadIni 13");
 					}finally{
 						t_backFile.close();
 						t_backFile = null;
@@ -836,11 +882,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				fc.close();
 				fc = null;
 			}
+			
+			LogOut("WriteReadIni 14");
 						
 		}catch(Exception _e){
 			SetErrorString("write/read config file from SDCard error :" + _e.getMessage() + _e.getClass().getName());
 		}	
 		
+		LogOut("WriteReadIni 15");
 		if(m_locationProvider != null){
 			if(m_useLocationInfo){
 				
@@ -860,6 +909,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				}				
 			}
 		}
+		
+		LogOut("WriteReadIni 16");
 	
 	}
 	
@@ -1235,8 +1286,32 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		if(m_debugInfoScreen != null){
 			m_debugInfoScreen.RefreshText();
-		}			
+		}
+		
 	}
+	
+	public void LogOut(String _log){
+		try{
+			if(m_logfc == null){
+				m_logfc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/log.txt",Connector.READ_WRITE);
+				if(m_logfc.exists()){
+					m_logfc.delete();
+				}
+				
+				m_logfc.create();
+				m_logfcOutput = m_logfc.openOutputStream();
+			}
+			
+			m_logfcOutput.write(_log.getBytes());
+			m_logfcOutput.write(("\n").getBytes());
+			m_logfcOutput.flush();
+			
+		}catch(Exception e){
+			SetErrorString("LogOut Error:"+e.getMessage() + e.getClass().getName());
+		}
+		
+	}
+	
 	public String GetAllErrorString(){
 		if(!m_errorString.isEmpty()){
 
