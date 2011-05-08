@@ -38,6 +38,10 @@ public class Logger{
 		return m_logFilename;
 	}
 	
+	public PrintStream GetPrintStream(){
+		return m_printStack;
+	}
+	
 	public synchronized void LogOut(String _log){
 		
 		if(m_logFileStream != null){

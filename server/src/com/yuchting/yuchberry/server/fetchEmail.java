@@ -480,7 +480,59 @@ public class fetchEmail extends fetchAccount{
 			t_file.mkdir();
 		}
 		
-		ReadWriteMailIndexAttach(true);	
+		ReadWriteMailIndexAttach(true);
+		
+		if(m_protocol == null){
+    		m_protocol = "pop3";
+    	}else{
+    		
+    		if(!m_protocol.equals("imap") 
+    		&& !m_protocol.equals("pop3") 
+    		&& !m_protocol.equals("pop3s") 
+    		&& !m_protocol.equals("imaps")){
+    			
+    			m_protocol = "pop3";
+    		}   		
+	    }	
+    	
+		// initialize the session by the configure
+		// IMAP/POP3
+		//
+    	if(m_protocol.indexOf("pop3") != -1){
+    		m_sysProps.put("mail.pop3.disabletop", "true");
+    	}
+    	
+    	if(m_host.indexOf("imap.qq.com") != -1){
+    		m_sysProps.put("mail.imap.auth.login.disable","true");
+    	}
+    	    	
+    	m_sysProps.put("mail.imap.timeout","10000");
+    	m_sysProps.put("mail.smtp.timeout","20000");
+    	m_sysProps.put("mail.pop3.timeout","10000");
+    	
+    	m_sysProps.put("mail.imap.connectiontimeout","10000");
+    	m_sysProps.put("mail.pop3.connectiontimeout","10000");
+    	    	
+    	m_session = Session.getInstance(m_sysProps, null);
+    	m_session.setDebug(false);
+    	
+    	m_store = m_session.getStore(m_protocol);
+    	
+    	// initialize the SMTP transfer
+    	//
+    	m_sysProps_send.put("mail.smtp.auth", "true");
+    	m_sysProps_send.put("mail.smtp.port", Integer.toString(m_port_send));
+    	
+    	if(m_protocol.indexOf("s") != -1){
+    		m_sysProps_send.put("mail.smtp.starttls.enable","true");
+    	}else{
+    		m_sysProps_send.put("mail.smtp.starttls.enable","false");
+    	}
+    	
+    	m_session_send = Session.getInstance(m_sysProps_send, null);
+    	m_session_send.setDebug(false);
+    	
+    	m_sendTransport = (SMTPTransport)m_session_send.getTransport(m_protocol_send);    	
 	}
 		
 	public void CheckFolder()throws Exception{
@@ -609,11 +661,7 @@ public class fetchEmail extends fetchAccount{
 	 	    
 	    }finally{
 	    	 folder.close(false);
-	    }
-	   
-	          
-	    
-	   
+	    }	   
 	}
 	
 	public boolean ProcessNetworkPackage(byte[] _package)throws Exception{
@@ -1156,7 +1204,7 @@ public class fetchEmail extends fetchAccount{
 		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 		t_os.write(msg_head.msgNote);
 		try{
-			sendReceive.WriteString(t_os,"crypt password key error!",false);
+			sendReceive.WriteString(t_os,"crypt password key error!(加密算子错误)",false);
 		}catch(Exception e){}
 		
 		sm_cryptPasswordKeyError = t_os.toByteArray();
@@ -1167,10 +1215,6 @@ public class fetchEmail extends fetchAccount{
 		m_mainMgr.m_logger.LogOut("start ResetSession");
 		
 		DestroySession();
-		    	
-		if(m_session != null){
-			throw new Exception("has been initialize the session");
-		}
 		
 		if(!m_cryptPassword.isEmpty() && m_password.isEmpty()){		
 			
@@ -1184,10 +1228,10 @@ public class fetchEmail extends fetchAccount{
 				try{
 					cryptPassword t_crypt = new cryptPassword(m_mainMgr.GetPasswordKey());
 					m_password = t_crypt.decrypt(m_cryptPassword);
+					
 				}catch(Exception e){
 
 					m_mainMgr.SendData(sm_cryptPasswordKeyError, false);
-					
 					m_mainMgr.m_logger.LogOut("crypt password error,please check the PasswordKey of client.");
 					
 					return;
@@ -1197,41 +1241,7 @@ public class fetchEmail extends fetchAccount{
 			}
 		}
 		
-		m_mainMgr.m_logger.LogOut("ResetSession 0 ");
-		
-		if(m_protocol == null){
-    		m_protocol = "pop3";
-    	}else{
-    		
-    		if(!m_protocol.equals("imap") 
-    		&& !m_protocol.equals("pop3") 
-    		&& !m_protocol.equals("pop3s") 
-    		&& !m_protocol.equals("imaps")){
-    			
-    			m_protocol = "pop3";
-    		}   		
-	    }	
-    	
-    	if(m_protocol.indexOf("pop3") != -1){
-    		m_sysProps.put("mail.pop3.disabletop", "true");
-    	}
-    	
-    	if(m_host.indexOf("imap.qq.com") != -1){
-    		m_sysProps.put("mail.imap.auth.login.disable","true");
-    	}
-    	    	
-    	m_sysProps.put("mail.imap.timeout","10000");
-    	m_sysProps.put("mail.smtp.timeout","20000");
-    	m_sysProps.put("mail.pop3.timeout","10000");
-    	
-    	m_sysProps.put("mail.imap.connectiontimeout","10000");
-    	m_sysProps.put("mail.pop3.connectiontimeout","10000");
-    	    	
-    	m_session = Session.getInstance(m_sysProps, null);
-    	m_session.setDebug(false);
-    	
-    	m_store = m_session.getStore(m_protocol);
-    	
+  	
     	m_mainMgr.m_logger.LogOut("ResetSession 1 ");
     	
 		if(m_useFullNameSignIn){
@@ -1241,26 +1251,6 @@ public class fetchEmail extends fetchAccount{
 		}  	
 		
 		m_mainMgr.m_logger.LogOut("ResetSession 2 ");
-    	
-    	// initialize the smtp transfer
-    	//
-    	m_sysProps_send.put("mail.smtp.auth", "true");
-    	m_sysProps_send.put("mail.smtp.port", Integer.toString(m_port_send));
-    	
-    	if(m_protocol.indexOf("s") != -1){
-    		m_sysProps_send.put("mail.smtp.starttls.enable","true");
-    	}else{
-    		m_sysProps_send.put("mail.smtp.starttls.enable","false");
-    	}
-    	
-    	m_mainMgr.m_logger.LogOut("ResetSession 3 ");
-    	
-    	m_session_send = Session.getInstance(m_sysProps_send, null);
-    	m_session_send.setDebug(false);
-    	
-    	m_sendTransport = (SMTPTransport)m_session_send.getTransport(m_protocol_send);
-    	
-    	m_mainMgr.m_logger.LogOut("ResetSession 4 ");
     	
     	// test connected
     	//
@@ -1279,43 +1269,39 @@ public class fetchEmail extends fetchAccount{
 	}
 	
 	public synchronized void DestroySession(){
-		m_mainMgr.m_logger.LogOut(GetAccountName() + " start DestroySession");
+		
+		m_mainMgr.m_logger.LogOut("start DestroySession");
 
 		try{
 			
-			m_session = null;
-			m_session_send = null;
+			m_unreadMailVector.clear();
+			    
+			// wouldn't clear confirm 
+			// the DestroyConnect function will called when the CheckFolder throw 
+			// javaMail exception 
+			// and re-send when client re-connected
+			//
+			//m_unreadMailVector_confirm.clear();
 			
-			if(m_store != null){
-				
-			    m_unreadMailVector.clear();
-			    
-			    // wouldn't clear confirm 
-			    // the DestroyConnect function will called when the CheckFolder throw 
-			    // javaMail exception 
-			    // and re-send when client re-connected
-			    //
-			    //m_unreadMailVector_confirm.clear();
-			    
-			    // pushed mail index vector 
-			    m_vectPushedMailIndex.clear();
-			    
+			// pushed mail index vector 
+			m_vectPushedMailIndex.clear();
+			
+			if(m_store != null){ 
 			    try{
 			    	m_store.close();
 			    }catch(Exception e){}
-				m_store = null;
-				
+			}
+			
+			if(m_sendTransport != null){
 				try{
 					m_sendTransport.close();
 				}catch(Exception e){}
-				
-				m_sendTransport = null;
-			}			
+			}
 			
 		}catch(Exception e){
 			m_mainMgr.m_logger.PrinterException(e);
 		}finally{
-			m_mainMgr.m_logger.LogOut(GetAccountName() + " end DestroySession");
+			m_mainMgr.m_logger.LogOut("end DestroySession");
 		}	
 	}
 			

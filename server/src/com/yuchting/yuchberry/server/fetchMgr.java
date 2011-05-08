@@ -219,7 +219,7 @@ public class fetchMgr{
 		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 		t_os.write(msg_head.msgNote);
 		try{
-			sendReceive.WriteString(t_os,"User Password Error!",false);
+			sendReceive.WriteString(t_os,"User Password Error!(用户密码错误)",false);
 		}catch(Exception e){}
 		
 		fsm_userPasswordErrorData = t_os.toByteArray();
@@ -462,20 +462,21 @@ public class fetchMgr{
 				while(t_reconnectNum++ < 5){
 								
 					try{
-						
-						account.ResetSession(false);
-						break;
-						
-					}catch(Exception ex){
-						m_logger.PrinterException(e);
-					}
-					
-					try{
 						Thread.sleep(t_reconnectNum * 20000);
 					}catch(Exception ex){
 						m_logger.LogOut(account.GetAccountName() + " checkfolder interpret.");
-						break;
+						return;
 					}
+					
+					try{
+						
+						account.ResetSession(false);
+						
+						return ;
+						
+					}catch(Exception ex){
+						m_logger.PrinterException(ex);
+					}					
 				}
 				
 				if(t_reconnectNum > 5){

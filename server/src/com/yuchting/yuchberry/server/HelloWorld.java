@@ -796,7 +796,7 @@ public class HelloWorld {
 	public void berryRecvTest(){
 		try{
 			
-			Socket t_socket = GetSocketServer("111111","192.168.10.20",9716,false);
+			Socket t_socket = GetSocketServer("111111","127.0.0.1",9716,false);
 			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
 			
 			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
