@@ -247,8 +247,8 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[])throws Exception{
 
-		(new HelloWorld()).berryRecvTest();
-		//(new HelloWorld()).berrySendTest();
+		//(new HelloWorld()).berryRecvTest();
+		(new HelloWorld()).berrySendTest();
 		
 	}
 		

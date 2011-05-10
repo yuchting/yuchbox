@@ -1003,7 +1003,11 @@ public class fetchEmail extends fetchAccount{
 				
 				if(_mail.m_copyToSentFolder 
 				&& m_host_send.toLowerCase().indexOf("googlemail.com") == -1
-				&& m_host_send.toLowerCase().indexOf("gmail.com") == -1){
+				&& m_host_send.toLowerCase().indexOf("gmail.com") == -1
+				
+				// pop3 is NOT support this operating
+				//
+				&& m_protocol.indexOf("pop3") == -1){
 					
 					// open the Sent folder and copy mail to this
 					//
@@ -1313,7 +1317,7 @@ public class fetchEmail extends fetchAccount{
 			
 			fetchMail t_confirmMail = (fetchMail)m_unreadMailVector_confirm.elementAt(i);
 							
-			if(Math.abs(t_currTime - t_confirmMail.m_sendConfirmTime) >= (2 * 60 * 1000) ){
+			if(Math.abs(t_currTime - t_confirmMail.m_sendConfirmTime) >= (5 * 60 * 1000) ){
 				
 				final int t_maxConfirmNum = 5;
 				

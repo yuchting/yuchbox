@@ -649,7 +649,7 @@ public class BberPanel extends TabPanel{
 		AddLabelWidget(t_layout,"端口:",m_serverPort,t_line++);
 		
 		t_layout.setWidget(t_line,2,t_changePass);
-		AddLabelWidget(t_layout,"用户密码:",new HTML("<YuchSign登录密码>"),t_line++);		
+		AddLabelWidget(t_layout,"用户密码:",new HTML("[YuchSign登录密码]"),t_line++);		
 		
 		AddLabelWidget(t_layout,"推送间隔(秒):",m_pushInterval,t_line++);
 		
@@ -773,7 +773,7 @@ public class BberPanel extends TabPanel{
 					
 					yuchEmail t_email = m_currentBber.GetEmailList().elementAt(t_index);
 					if(m_pushContent.AddAccount(t_email) != null){
-						Yuchsign.PopupPrompt("更新数据成功",t_horzPane);
+						Yuchsign.PopupPrompt("更新数据成功，需要同步才能保存生效。",t_horzPane);
 					}
 				}
 				
