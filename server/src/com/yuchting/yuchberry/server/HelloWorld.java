@@ -247,10 +247,47 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[])throws Exception{
 
-		//(new HelloWorld()).berryRecvTest();
-		(new HelloWorld()).berrySendTest();
-		
+		(new HelloWorld()).berryRecvTest();
+		//(new HelloWorld()).berrySendTest();
+		//int[] A = {-7, 1, 5, 2, -4, 3, 0};
+		//System.out.print((new HelloWorld()).equi(A));
 	}
+	
+	int equi ( int[] A ) {
+
+		if(A.length == 1 || A[0] == 0){
+			return 0;
+		}
+		
+		if(A.length == 2 || A[1] == 0){
+			return 1;
+		}
+		
+		long sum = 0;
+		for(int i = 1;i < A.length;i++){
+			
+
+			sum += A[i - 1];
+			
+			
+			long sum1 = 0;
+			
+			for(int j = i + 1;j < A.length;j++){
+				
+				sum1 += A[j];
+					
+			}
+			
+			if(sum == sum1){
+				return i;
+			}
+						
+			
+		}
+		
+		
+		return -1;
+    }
 		
 	static public void TestUDP(){
 		try{
@@ -796,12 +833,12 @@ public class HelloWorld {
 	public void berryRecvTest(){
 		try{
 			
-			Socket t_socket = GetSocketServer("111111","127.0.0.1",9716,false);
+			Socket t_socket = GetSocketServer("520530","127.0.0.1",9717,false);
 			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
 			
 			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
 			t_stream.write(msg_head.msgConfirm);
-			sendReceive.WriteString(t_stream, "111111",false);
+			sendReceive.WriteString(t_stream, "520530",false);
 			sendReceive.WriteInt(t_stream,5);
 			t_stream.write(0);
 			sendReceive.WriteString(t_stream,"1.1.715",false);

@@ -155,6 +155,8 @@ public class mainFrame extends JFrame implements ActionListener{
 	int			m_currUsingAccount		= 0;
 	int			m_currConnectAccount	= 0;
 	
+	Vector<fetchThread>	m_checkFolderStateThread = new Vector<fetchThread>();
+	
 	
 	static public void main(String _arg[]){
 		new fakeMDSSvr();
@@ -730,11 +732,11 @@ public class mainFrame extends JFrame implements ActionListener{
 	}
 	
 	public synchronized void RefreshState(){
-
-		m_logger.LogOut("Start RefreshState");
 		
 		m_currUsingAccount		= 0;
 		m_currConnectAccount	= 0;
+		
+		m_checkFolderStateThread.removeAllElements();
 				
 		final long t_currTime = (new Date()).getTime();
 		
@@ -744,6 +746,10 @@ public class mainFrame extends JFrame implements ActionListener{
 			fetchThread t_thread = (fetchThread)m_accountList.elementAt(i);
 						
 			if(!t_thread.m_pauseState){
+				
+				if(t_thread.m_fetchMgr.IsCheckFolderState()){
+					m_checkFolderStateThread.add(t_thread);
+				}
 				
 				if(t_thread.GetLastTime(t_currTime) < 0){
 					m_logger.LogOut("帐户暂停： " + t_thread.m_fetchMgr.GetAccountName());
@@ -771,6 +777,7 @@ public class mainFrame extends JFrame implements ActionListener{
 						t_thread.m_clientDisconnectTime = t_currTime;
 					}
 				}
+				
 			}else{
 				if(t_thread.m_clientDisconnectTime == 0){
 					t_thread.m_clientDisconnectTime = t_currTime;
@@ -787,25 +794,22 @@ public class mainFrame extends JFrame implements ActionListener{
 			}
 			
 		}
-		
-		m_logger.LogOut("Start DeleteAccountThread.");
-		
+			
 		// delete the disconnect time-up thread
 		//
 		for(fetchThread thread : t_deadPool){
-			DelAccoutThread(thread.m_fetchMgr.GetAccountName(), false);
-			m_logger.LogOut("未连接时间超过3天，删除帐户 " + thread.m_fetchMgr.GetAccountName());
+			m_logger.LogOut("未连接时间超过3天，删除帐户 " + thread.m_fetchMgr.GetAccountName() + " 账户暂停状态：" + thread.m_pauseState);
+			
+			DelAccoutThread(thread.m_fetchMgr.GetAccountName(), false);			
 		}
 			
-		m_stateLabel.setText("连接账户/使用帐户/总帐户：" + m_currConnectAccount + "/" + m_currUsingAccount + "/" + m_accountList.size());
+		m_stateLabel.setText("check/连接账户/使用帐户/总帐户：" + m_checkFolderStateThread.size() + "/" + m_currConnectAccount + "/" + m_currUsingAccount + "/" + m_accountList.size());
 		m_accountTable.RefreshState();
 		
 		if(m_currentSelectThread != null){
 			FillLogInfo(m_currentSelectThread);
 		}
-		
-		m_logger.LogOut("Close bber request.");
-		
+				
 		// close the timeup Bber Request
 		//
 		boolean t_deleteThread = false;
@@ -840,8 +844,6 @@ public class mainFrame extends JFrame implements ActionListener{
 						
 			StoreAccountInfo();
 		}
-		
-		m_logger.LogOut("RefreshState end");
 	}
 	
 	public void SendTimeupMail(fetchThread _thread){
@@ -1237,15 +1239,16 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	private synchronized String ProcessAdminCheck(String _type,String _bber){
 		
-		m_logger.LogOut("start fill admin data type: " + _type + " _bber:" + _bber);
+		m_logger.LogOut("ProcessAdminCheck start fill admin data type: " + _type + " _bber:" + _bber);
 				
 		try{
 			if(_type.equals("0")){
 				
 				StringBuffer t_result = new StringBuffer();
 				
-				t_result.append("state:").append(m_currConnectAccount).append("/").append(m_currUsingAccount)
-						.append("/").append(m_accountList.size()).append("\n");
+				t_result.append("state:").append(m_checkFolderStateThread.size()).append("/")
+										.append(m_currConnectAccount).append("/").append(m_currUsingAccount)
+										.append("/").append(m_accountList.size()).append("\n");
 				
 				long t_currTime = (new Date()).getTime();
 				
@@ -1269,6 +1272,38 @@ public class mainFrame extends JFrame implements ActionListener{
 				}
 							
 				return t_result.toString();
+				
+			}else if(_type.equals("1")){
+				
+				StringBuffer t_result = new StringBuffer();
+				
+				t_result.append("state:").append(m_checkFolderStateThread.size()).append("/")
+										.append(m_currConnectAccount).append("/").append(m_currUsingAccount)
+										.append("/").append(m_accountList.size()).append("\n");
+				
+				long t_currTime = (new Date()).getTime();
+				
+				for(int i = m_checkFolderStateThread.size() - 1; i >= 0;i--){
+					
+					fetchThread t_acc = m_checkFolderStateThread.elementAt(i);
+					t_result.append(t_acc.m_fetchMgr.GetAccountName()).append("\t\t");
+					
+					if(!t_acc.m_pauseState){
+
+						long t_remainTime = t_acc.GetLastTime(t_currTime);
+						t_result.append(t_remainTime / 3600000).append("h");
+						
+					}else{
+						t_result.append("--");
+					}
+					
+					t_result.append("\t\t").append(t_acc.GetStateString()).append("\n");
+				}
+				
+				return t_result.toString();
+				
+			}else if(_type.equals("2") && _bber != null){
+				return ProcessLogQuery(_bber);
 			}
 			
 			return "";

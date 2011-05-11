@@ -191,9 +191,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					if(!m_isAdministrator && Math.abs((new Date()).getTime() - t_latesSyncTime) < 10 * 60 * 1000){
 						return "<Error>一个账户同步时间的最小间隔是10分钟，请不要过于频繁。</Error>";
 					}
-				}
-				
-				
+				}			
 								
 				
 				if(!t_syncbber.GetEmailList().isEmpty()){

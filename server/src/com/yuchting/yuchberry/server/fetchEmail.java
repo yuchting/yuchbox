@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.io.StringReader;
+import java.security.Security;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
@@ -31,7 +32,6 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
-import javax.net.ssl.SSLSocket;
 
 import org.dom4j.Element;
 
@@ -349,11 +349,7 @@ public class fetchEmail extends fetchAccount{
     boolean m_useAppendHTML			= false;    
    
     private Vector	m_recvMailAttach 	= new Vector();
-    
-	// Get a Properties object
-    Properties m_sysProps = System.getProperties();
-    Properties m_sysProps_send = System.getProperties();
-    
+        
     class MailIndexAttachment{
     	int			m_mailHashCode;
     	
@@ -495,51 +491,55 @@ public class fetchEmail extends fetchAccount{
     		}   		
 	    }	
     	
+		// Get a Properties object
+	    Properties t_sysProps 		= System.getProperties();
+	    Properties t_sysProps_send	= System.getProperties();
+	    
 		// initialize the session by the configure
 		// IMAP/POP3
 		//
     	if(m_protocol.indexOf("pop3") != -1){
-    		m_sysProps.put("mail.pop3.disabletop", "true");
+    		t_sysProps.put("mail.pop3.disabletop", "true");
     	}
     	
     	if(m_host.indexOf("imap.qq.com") != -1){
-    		m_sysProps.put("mail.imap.auth.login.disable","true");
+    		t_sysProps.put("mail.imap.auth.login.disable","true");
     	}
     	    	
-    	m_sysProps.put("mail.imap.timeout","10000");
-    	m_sysProps.put("mail.smtp.timeout","20000");
-    	m_sysProps.put("mail.pop3.timeout","10000");
+    	t_sysProps.put("mail.imap.timeout","10000");
+    	t_sysProps.put("mail.smtp.timeout","20000");
+    	t_sysProps.put("mail.pop3.timeout","10000");
     	
-    	m_sysProps.put("mail.imap.connectiontimeout","10000");
-    	m_sysProps.put("mail.pop3.connectiontimeout","10000");
-    	    	
-    	m_session = Session.getInstance(m_sysProps, null);
+    	t_sysProps.put("mail.imap.connectiontimeout","10000");
+    	t_sysProps.put("mail.pop3.connectiontimeout","10000");
+    	    			
+    	m_session = Session.getInstance(t_sysProps, null);
     	m_session.setDebug(false);
     	
     	m_store = m_session.getStore(m_protocol);
     	
     	// initialize the SMTP transfer
     	//
-    	m_sysProps_send.put("mail.smtp.auth", "true");
-    	m_sysProps_send.put("mail.smtp.port", Integer.toString(m_port_send));
+    	t_sysProps_send.put("mail.smtp.auth", "true");
+    	t_sysProps_send.put("mail.smtp.port", Integer.toString(m_port_send));
     	
     	if(m_protocol.indexOf("s") != -1){
-    		m_sysProps_send.put("mail.smtp.starttls.enable","true");
+    		t_sysProps_send.put("mail.smtp.starttls.enable","true");
     	}else{
-    		m_sysProps_send.put("mail.smtp.starttls.enable","false");
+    		t_sysProps_send.put("mail.smtp.starttls.enable","false");
     	}
     	
-    	m_session_send = Session.getInstance(m_sysProps_send, null);
+    	m_session_send = Session.getInstance(t_sysProps_send, null);
     	m_session_send.setDebug(false);
     	
-    	m_sendTransport = (SMTPTransport)m_session_send.getTransport(m_protocol_send);    	
+    	m_sendTransport = (SMTPTransport)m_session_send.getTransport(m_protocol_send);
 	}
 		
 	public void CheckFolder()throws Exception{
 		
-		if(m_store == null){
+		if(!m_store.isConnected()){
 			
-			m_mainMgr.m_logger.LogOut("m_store == null, ResetSession first");
+			m_mainMgr.m_logger.LogOut("m_store is not connected, ResetSession first");
 			
 			ResetSession(true);
 			return;
@@ -1290,13 +1290,13 @@ public class fetchEmail extends fetchAccount{
 			// pushed mail index vector 
 			m_vectPushedMailIndex.clear();
 			
-			if(m_store != null){ 
+			if(m_store != null && m_store.isConnected()){ 
 			    try{
 			    	m_store.close();
 			    }catch(Exception e){}
 			}
 			
-			if(m_sendTransport != null){
+			if(m_sendTransport != null && m_sendTransport.isConnected()){
 				try{
 					m_sendTransport.close();
 				}catch(Exception e){}

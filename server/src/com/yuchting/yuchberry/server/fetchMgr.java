@@ -66,6 +66,8 @@ public class fetchMgr{
     
     String			m_passwordKey		= "";
     
+    boolean		m_isCheckFolderState	= false;
+    
     public void SetLatestVersion(String _version){
     	
     	if(m_latestVersion == null || !m_latestVersion.equals(_version)){
@@ -82,6 +84,14 @@ public class fetchMgr{
         		m_hasPrompt = true;
         	}
     	}
+    }
+    
+    public boolean IsCheckFolderState(){
+    	return m_isCheckFolderState;
+    }
+    
+    public synchronized void SetCheckFolderState(boolean _state){
+    	m_isCheckFolderState = _state;
     }
     
     public String GetLatestVersion(){

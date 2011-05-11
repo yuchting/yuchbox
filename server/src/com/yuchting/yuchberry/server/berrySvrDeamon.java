@@ -37,13 +37,19 @@ class berrySvrPush extends Thread{
 						
 			try{
 				
-				m_serverDeamon.m_fetchMgr.CheckAccountFolders();
+				m_serverDeamon.m_fetchMgr.SetCheckFolderState(true);
+				{
+					m_serverDeamon.m_fetchMgr.CheckAccountFolders();
+				}				
+				m_serverDeamon.m_fetchMgr.SetCheckFolderState(false);
 				
 				if(m_closed){
 					break;
 				}
 				
 				m_serverDeamon.m_fetchMgr.Push(m_sendReceive);
+				
+				
 				
 				sleep(m_serverDeamon.m_fetchMgr.GetPushInterval() * 1000);				
 							
@@ -53,6 +59,7 @@ class berrySvrPush extends Thread{
 			
 		}
 		
+		m_serverDeamon.m_fetchMgr.SetCheckFolderState(false);
 		m_sendReceive.CloseSendReceive();
 	}
 	
