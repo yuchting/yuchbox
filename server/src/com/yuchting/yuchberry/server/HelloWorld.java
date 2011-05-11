@@ -10,22 +10,22 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.io.StringReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLDecoder;
 import java.security.KeyStore;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
-import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.Map.Entry;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -247,12 +247,62 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[])throws Exception{
 
-		(new HelloWorld()).berryRecvTest();
-		//(new HelloWorld()).berrySendTest();
+		//(new HelloWorld()).berryRecvTest();
 		//int[] A = {-7, 1, 5, 2, -4, 3, 0};
 		//System.out.print((new HelloWorld()).equi(A));
+		//int[] A = {20, 10, 30, 30, 40, 10,100,1,232,40,40};
+		
+		//System.out.println((new HelloWorld()).mostOften(A));
+		
+		
+		//System.out.println(new HelloWorld().heavy_decimal_count(8675,8689));
+		
+		
+		//int[] A = {1, 2, 4, 7, 6, 6, 6, 2, 0};
+		
+		//System.out.println(new HelloWorld().monotonic_segment_count(A));
+		
+		Vector t_list = new Vector();
+		t_list.add("田智之 <yuchberry@gmail.com>");
+		
+		
+		System.out.println(parseAddressList1(t_list));
 	}
 	
+	public static String parseAddressList1(Vector _list)throws Exception{
+		
+		StringBuffer t_addressList = new StringBuffer();
+		
+		for(int i = 0;i < _list.size();i++){
+			String t_addr = (String)_list.get(i);
+			
+			final int t_start_quotation = t_addr.indexOf('\"');
+			final int t_end_quotation = t_addr.lastIndexOf('\"');
+			
+			if(t_start_quotation != t_end_quotation){
+				String t_subName = t_addr.substring(t_start_quotation + 1,t_end_quotation);
+				
+				try{
+					t_addr = t_addr.replace("\"" + t_subName + "\"",MimeUtility.encodeText(t_subName));
+				}catch(Exception ex){}			
+			}else{
+				final int t_start_tag = t_addr.lastIndexOf('<');
+				
+				if(t_start_tag != -1 && t_start_tag != 0){
+					String t_subName = t_addr.substring(0,t_start_tag);
+					
+					try{
+						t_addr = t_addr.replace(t_subName,MimeUtility.encodeText(t_subName));
+					}catch(Exception ex){}	
+				}
+			}
+			
+			t_addressList.append(t_addr).append(",");
+		}
+				
+		return t_addressList.toString().replace("＠", "@");
+	}
+
 	int equi ( int[] A ) {
 
 		if(A.length == 1 || A[0] == 0){
@@ -289,6 +339,143 @@ public class HelloWorld {
 		return -1;
     }
 		
+	int mostOften ( int[] A ) {
+		
+		if(A.length == 0){
+			return -1;
+		}
+		
+		Map map = new HashMap();
+				
+		for(int i = 0;i < A.length;i++){
+			
+			Integer t_key = new Integer(A[i]);
+			Object t_value = map.get(t_key);
+			
+			if(t_value != null){
+				int value = ((Integer)t_value).intValue();
+				value++;
+				
+				map.put(t_key,new Integer(value));
+			}else{
+				map.put(t_key,new Integer(1));
+			}
+			
+		}
+		
+		int t_max = 0;
+		int t_maxKey = 0;
+		
+		Iterator iter = map.entrySet().iterator();           
+		while (iter.hasNext()) {
+			Entry entry = (Entry) iter.next();
+			
+			int value = ((Integer)entry.getValue()).intValue();
+			int key = ((Integer)entry.getKey()).intValue();
+			
+			if(value > t_max){
+				t_max = value;
+				t_maxKey = key;
+			}
+			
+		}
+		
+		return t_maxKey;
+	}
+	
+	int heavy_decimal_count ( int a,int b ) {
+		if(a < 0 || b < 0){
+			return -1;
+		}
+		
+		if(a > b){
+			int tmp = b;
+			b = a;
+			a = tmp;
+		}
+		
+		int counter = 0;
+		for(int i = a;i <= b;i++){
+			String t_string = Integer.toString(i);
+			
+			int sum = 0;
+			for(int j = 0; j < t_string.length();j++){
+				sum += (int)((int)t_string.charAt(j) - (int)'0');
+			}
+			
+			if((float)sum / (float)t_string.length() > 7.0f){
+				counter++;
+			}
+		}
+		
+		
+		return counter;
+	}
+	
+	int monotonic_segment_count ( int[] A ) {
+
+		int counter = 0 ;
+		
+		for(int i = 0;i < A.length;i++){
+			
+			// style:
+			// 0 less
+			// 1 equal
+			// 2 greater
+			// -1 non-initialize
+			//
+			int style = -1;
+			int cmp = A[i];
+			
+			monotonic_segment_count_break:
+			for(int j = i + 1; j < A.length;j++){
+			
+				switch(style){
+				
+					case 0:
+						if(A[j] >= cmp){
+							break monotonic_segment_count_break;
+						}
+						counter++;
+						break;
+					case 1:
+						
+						if(A[j] != cmp){
+							break monotonic_segment_count_break;
+						}
+						counter++;
+						break;
+					case 2:
+						
+						if(A[j] <= cmp){
+							break monotonic_segment_count_break;
+						}
+						
+						counter++;
+						break;
+					case -1:
+						counter++;
+						if(A[j] < cmp){
+							style = 0;
+						}else if(A[j] == cmp){
+							style = 1;
+						}else{
+							style = 2;
+						}
+						break;
+					default:
+						assert false;						
+				}
+				
+				cmp = A[j];
+			}
+		}
+		
+		return counter;		
+		
+	}
+	
+
 	static public void TestUDP(){
 		try{
 			DatagramSocket cli = new DatagramSocket(10002);

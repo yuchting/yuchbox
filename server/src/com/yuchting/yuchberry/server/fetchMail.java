@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.Vector;
 
 import javax.mail.Message;
+import javax.mail.internet.MimeUtility;
 
 final class MailAttachment{
 	int 		m_size;
@@ -88,16 +89,37 @@ public class  fetchMail{
 	public Message GetAttachMessage(){return m_attachMessage;}
 		
 	public static String parseAddressList(Vector _list)throws Exception{
-		String 	t_addressList = new String();
+		
+		StringBuffer t_addressList = new StringBuffer();
 		
 		for(int i = 0;i < _list.size();i++){
-			t_addressList += _list.get(i);
-			t_addressList += ",";
+			String t_addr = (String)_list.get(i);
+			
+			final int t_start_quotation = t_addr.indexOf('\"');
+			final int t_end_quotation = t_addr.lastIndexOf('\"');
+			
+			if(t_start_quotation != t_end_quotation){
+				String t_subName = t_addr.substring(t_start_quotation + 1,t_end_quotation);
+				
+				try{
+					t_addr = t_addr.replace("\"" + t_subName + "\"",MimeUtility.encodeText(t_subName));
+				}catch(Exception ex){}			
+			}else{
+				final int t_start_tag = t_addr.lastIndexOf('<');
+				
+				if(t_start_tag != -1 && t_start_tag != 0){
+					String t_subName = t_addr.substring(0,t_start_tag);
+					
+					try{
+						t_addr = t_addr.replace(t_subName,MimeUtility.encodeText(t_subName));
+					}catch(Exception ex){}	
+				}
+			}
+			
+			t_addressList.append(t_addr).append(",");
 		}
-		
-		t_addressList = t_addressList.replace("＠", "@");
-		
-		return t_addressList;
+				
+		return t_addressList.toString().replace("＠", "@");
 	}
 	
 	
@@ -268,6 +290,13 @@ public class  fetchMail{
 	public void AddAttachment(String _name,String _type,int _size)throws Exception{
 		if(_name == null || _name.length() <= 0){
 			throw new Exception("Error Attachment format!");
+		}
+			
+		for(int i = 0;i < m_vectAttachment.size();i++){
+			MailAttachment att = (MailAttachment)m_vectAttachment.elementAt(i);
+			if(att.m_name.equals(_name)){
+				_name = _name.concat("_");				
+			}
 		}
 		
 		MailAttachment t_attach = new MailAttachment();
