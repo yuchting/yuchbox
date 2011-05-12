@@ -159,8 +159,14 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	
 	static public void main(String _arg[]){
-		new fakeMDSSvr();
-		new mainFrame(_arg);
+		if(_arg.length == 1 && _arg[0].equalsIgnoreCase("cryptTool")){
+			new cryptPassTool();
+		}else if(_arg.length == 1 && _arg[0].equalsIgnoreCase("weiboReq")){
+			new weiboRequestTool();
+		}else{
+			new fakeMDSSvr();
+			new mainFrame(_arg);	
+		}		
 	}	
 	
 	public mainFrame(String _arg[]){
@@ -905,7 +911,7 @@ public class mainFrame extends JFrame implements ActionListener{
 
 	    desktop.open(new File(_filename));    
 	}
-	
+		
 	/*
 	 * the HTTP process... 
 	 */

@@ -23,8 +23,7 @@ class CheckVersion extends Thread{
 				m_fetchMain.SetLatestVersion(in.readLine());
 				
 				in.close();
-				
-				
+								
 			}catch(Exception e){
 				
 			}

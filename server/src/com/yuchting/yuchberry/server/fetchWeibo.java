@@ -16,8 +16,6 @@ public class fetchWeibo {
 	
 	final public static int	fsm_headImageSize		= 32;
 	
-	int		m_sendConfirmCount = 0;
-	
 	int		m_WeiboStyle;
 	int		m_WeiboClass;
 	
@@ -38,6 +36,10 @@ public class fetchWeibo {
 	fetchWeibo	m_replyWeibo = null;
 	
 	private boolean m_convertoSimpleChar = false;
+	
+	
+	public	int				m_sendConfirmCount = 0;
+	public long			m_sendConfirmTime = 0;
 	
 	public fetchWeibo(boolean _convertToSimple){
 		m_convertoSimpleChar = _convertToSimple;

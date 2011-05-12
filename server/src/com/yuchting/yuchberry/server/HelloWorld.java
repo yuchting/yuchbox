@@ -263,10 +263,10 @@ public class HelloWorld {
 		//System.out.println(new HelloWorld().monotonic_segment_count(A));
 		
 		Vector t_list = new Vector();
-		t_list.add("田智之 <yuchberry@gmail.com>");
+		t_list.add("\"田智之\" <yuchting@gmail.com>");
 		
+		System.out.println((new HelloWorld()).parseAddressList1(t_list));
 		
-		System.out.println(parseAddressList1(t_list));
 	}
 	
 	public static String parseAddressList1(Vector _list)throws Exception{
@@ -283,7 +283,7 @@ public class HelloWorld {
 				String t_subName = t_addr.substring(t_start_quotation + 1,t_end_quotation);
 				
 				try{
-					t_addr = t_addr.replace("\"" + t_subName + "\"",MimeUtility.encodeText(t_subName));
+					t_addr = t_addr.replace("\"" + t_subName + "\"",MimeUtility.encodeText(t_subName,"UTF-8","B"));
 				}catch(Exception ex){}			
 			}else{
 				final int t_start_tag = t_addr.lastIndexOf('<');
@@ -1020,12 +1020,12 @@ public class HelloWorld {
 	public void berryRecvTest(){
 		try{
 			
-			Socket t_socket = GetSocketServer("520530","127.0.0.1",9717,false);
+			Socket t_socket = GetSocketServer("111111","127.0.0.1",9716,false);
 			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
 			
 			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
 			t_stream.write(msg_head.msgConfirm);
-			sendReceive.WriteString(t_stream, "520530",false);
+			sendReceive.WriteString(t_stream, "111111",false);
 			sendReceive.WriteInt(t_stream,5);
 			t_stream.write(0);
 			sendReceive.WriteString(t_stream,"1.1.715",false);

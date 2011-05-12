@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.cryptPassTool;
+package com.yuchting.yuchberry.server.frame;
 
 import java.awt.Container;
 import java.awt.FlowLayout;
@@ -11,9 +11,8 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
+import com.yuchting.yuchberry.server.fetchMgr;
 import com.yuchting.yuchberry.server.cryptPassword;
-import com.yuchting.yuchberry.server.frame.createDialog;
-import com.yuchting.yuchberry.server.frame.mainFrame;
 
 public class cryptPassTool extends JFrame implements ActionListener{
 
@@ -29,6 +28,8 @@ public class cryptPassTool extends JFrame implements ActionListener{
 		setTitle("加密密码工具");
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setSize(400,170);
+		setResizable(false);
+		
 		
 		Container t_con = getContentPane();
 		
@@ -79,7 +80,8 @@ public class cryptPassTool extends JFrame implements ActionListener{
 		}
 	}
 	
-	public static void main(String[] _arg){
-		new cryptPassTool();		
+	static public void main(String _arg[]){
+		new cryptPassTool();
 	}
+	
 }

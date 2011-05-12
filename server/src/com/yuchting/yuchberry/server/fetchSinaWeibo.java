@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
@@ -24,6 +25,7 @@ import weibo4j.Paging;
 import weibo4j.Status;
 import weibo4j.User;
 import weibo4j.Weibo;
+import weibo4j.http.RequestToken;
 
 public class fetchSinaWeibo extends fetchAccount{
 	
@@ -303,21 +305,11 @@ public class fetchSinaWeibo extends fetchAccount{
 		return t_processed;
 	}
 	
-	/**
-	 * prepare the re-push unconfirm msg
-	 */
-	public synchronized void PrepareRepushUnconfirmMsg(long _currTime){
-				
-		PrepareRepushUnconfirmMsg_impl(m_timeline);
-		PrepareRepushUnconfirmMsg_impl(m_directMessage);
-		PrepareRepushUnconfirmMsg_impl(m_atMeMessage);
-		PrepareRepushUnconfirmMsg_impl(m_commentMessage);
-		
-	}
-	
 	private void PrepareRepushUnconfirmMsg_impl(fetchWeiboData _weiboList){
 		
 		boolean t_repush = true;
+		
+		long t_currTime = (new Date()).getTime();
 		
 		for(fetchWeibo confirmOne : _weiboList.m_WeiboComfirm){
 			t_repush = true;
@@ -331,14 +323,24 @@ public class fetchSinaWeibo extends fetchAccount{
 			if(t_repush){
 				final int t_maxTimes = 5;
 				
-				if(confirmOne.m_sendConfirmCount++ < t_maxTimes){
-					_weiboList.m_weiboList.add(confirmOne);
-					m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + 
-							"> prepare Weibo<" + confirmOne.GetId() + "> send again...");
-				}else{
-					m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + 
-							"> prepare Weibo<" + confirmOne.GetId() + "> sent " + t_maxTimes + " Times , give up.");
-				}	
+				if(Math.abs(t_currTime - confirmOne.m_sendConfirmTime) >= (5 * 60 * 1000) ){
+					
+					if(confirmOne.m_sendConfirmCount++ < t_maxTimes){
+						
+						confirmOne.m_sendConfirmTime = t_currTime;
+						
+						_weiboList.m_weiboList.add(confirmOne);
+						
+						m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + 
+								"> prepare Weibo<" + confirmOne.GetId() + "> send again...");
+						
+					}else{
+						m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + 
+								"> prepare Weibo<" + confirmOne.GetId() + "> sent " + t_maxTimes + " Times , give up.");
+					}	
+					
+				}
+				
 				
 			}
 		}
@@ -349,6 +351,7 @@ public class fetchSinaWeibo extends fetchAccount{
 	private boolean ProcessWeiboHeadImage(ByteArrayInputStream in)throws Exception{
 		
 		if(in.read() == fetchWeibo.SINA_WEIBO_STYLE){
+			
 			final long t_id = sendReceive.ReadLong(in);
 			
 			File t_file = new File(GetHeadImageFilename(t_id));
@@ -379,6 +382,11 @@ public class fetchSinaWeibo extends fetchAccount{
 	 */
 	public synchronized void PushMsg(sendReceive _sendReceive)throws Exception{
 		
+		PrepareRepushUnconfirmMsg_impl(m_timeline);
+		PrepareRepushUnconfirmMsg_impl(m_directMessage);
+		PrepareRepushUnconfirmMsg_impl(m_atMeMessage);
+		PrepareRepushUnconfirmMsg_impl(m_commentMessage);
+		
 		PushMsg_impl(m_timeline,_sendReceive);
 		PushMsg_impl(m_directMessage,_sendReceive);
 		PushMsg_impl(m_atMeMessage,_sendReceive);
@@ -388,6 +396,8 @@ public class fetchSinaWeibo extends fetchAccount{
 	private void PushMsg_impl(fetchWeiboData _weiboList,sendReceive _sendReceive)throws Exception{
 		
 		ByteArrayOutputStream t_output = new ByteArrayOutputStream();
+		
+		long t_currTime = (new Date()).getTime();
 		
 		if(_weiboList.m_weiboList.size() + _weiboList.m_counter >= _weiboList.m_sum){
 			
@@ -401,6 +411,9 @@ public class fetchSinaWeibo extends fetchAccount{
 				m_mainMgr.SendData(t_output,false);
 							
 				_weiboList.m_weiboList.remove(t_weibo);
+				
+				t_weibo.m_sendConfirmTime = t_currTime;
+				
 				_weiboList.m_WeiboComfirm.add(t_weibo);		
 							
 				m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + " send Weibo<" + t_weibo.GetId() + " : " + t_weibo.GetText() + ">,wait confirm...");
@@ -617,5 +630,9 @@ public class fetchSinaWeibo extends fetchAccount{
 		
 		return t_hashCode;
 	}
-
+	
+	public RequestToken getRequestToken()throws Exception{		
+		return m_weibo.getOAuthRequestToken();
+	}
+	
 }

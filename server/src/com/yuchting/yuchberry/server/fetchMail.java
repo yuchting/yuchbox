@@ -102,7 +102,7 @@ public class  fetchMail{
 				String t_subName = t_addr.substring(t_start_quotation + 1,t_end_quotation);
 				
 				try{
-					t_addr = t_addr.replace("\"" + t_subName + "\"",MimeUtility.encodeText(t_subName));
+					t_addr = t_addr.replace("\"" + t_subName + "\"",MimeUtility.encodeText(t_subName,"UTF-8","B"));
 				}catch(Exception ex){}			
 			}else{
 				final int t_start_tag = t_addr.lastIndexOf('<');

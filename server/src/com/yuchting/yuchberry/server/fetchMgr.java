@@ -768,6 +768,4 @@ public class fetchMgr{
 		
         
 	}
-	
-	
 }

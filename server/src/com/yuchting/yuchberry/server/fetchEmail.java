@@ -500,18 +500,27 @@ public class fetchEmail extends fetchAccount{
 		//
     	if(m_protocol.indexOf("pop3") != -1){
     		t_sysProps.put("mail.pop3.disabletop", "true");
+    		t_sysProps.put("mail.pop3s.disabletop", "true");
     	}
     	
-    	if(m_host.indexOf("imap.qq.com") != -1){
+    	if(m_host.indexOf(".qq.com") != -1){
     		t_sysProps.put("mail.imap.auth.login.disable","true");
     	}
-    	    	
+    	
+    	t_sysProps.put("mail.pop3s.ssl.protocols","SSLv3");
+    	t_sysProps.put("mail.imaps.ssl.protocols","SSLv3");
+    	
     	t_sysProps.put("mail.imap.timeout","10000");
-    	t_sysProps.put("mail.smtp.timeout","20000");
+    	t_sysProps.put("mail.imaps.timeout","10000");
+    	
     	t_sysProps.put("mail.pop3.timeout","10000");
+    	t_sysProps.put("mail.pop3s.timeout","10000");
     	
     	t_sysProps.put("mail.imap.connectiontimeout","10000");
+    	t_sysProps.put("mail.imaps.connectiontimeout","10000");
+    	
     	t_sysProps.put("mail.pop3.connectiontimeout","10000");
+    	t_sysProps.put("mail.pop3s.connectiontimeout","10000");
     	    			
     	m_session = Session.getInstance(t_sysProps, null);
     	m_session.setDebug(false);
@@ -522,6 +531,8 @@ public class fetchEmail extends fetchAccount{
     	//
     	t_sysProps_send.put("mail.smtp.auth", "true");
     	t_sysProps_send.put("mail.smtp.port", Integer.toString(m_port_send));
+    	t_sysProps_send.put("mail.smtp.timeout","10000");
+    	t_sysProps_send.put("mail.smtp.connectiontimeout","10000");
     	
     	if(m_protocol.indexOf("s") != -1){
     		t_sysProps_send.put("mail.smtp.starttls.enable","true");
@@ -542,7 +553,6 @@ public class fetchEmail extends fetchAccount{
 			m_mainMgr.m_logger.LogOut("m_store is not connected, ResetSession first");
 			
 			ResetSession(true);
-			return;
 		}		
 		
 		Folder folder = m_store.getDefaultFolder();
@@ -660,7 +670,14 @@ public class fetchEmail extends fetchAccount{
 	 	    }
 	 	    
 	    }finally{
-	    	 folder.close(false);
+	    	try{
+	    		if(folder.isOpen()){
+	    			folder.close(false);
+	    		}
+	    	}catch(Exception e){
+	    		//m_mainMgr.m_logger.LogOut("folder close exception:" + e.getMessage());
+	    	}
+	    	 
 	    }	   
 	}
 	
@@ -1031,10 +1048,11 @@ public class fetchEmail extends fetchAccount{
 						m_mainMgr.m_logger.PrinterException(e);
 					}
 				
-					if(folder.isOpen()){
-						folder.close(false);
-					}						
-									
+					try{
+						folder.close(false);	
+					}catch(Exception e){
+						m_mainMgr.m_logger.LogOut("SendMail folder.close exception:" + e.getMessage());
+					}				
 				}
 				
 				break;
@@ -1184,17 +1202,24 @@ public class fetchEmail extends fetchAccount{
 	 	    
 	    }finally{
 	    	
-	    	if(m_protocol.indexOf("pop3") != -1 && _del){
+	    	try{   		
+	    			
+    			if(m_protocol.indexOf("pop3") != -1 && _del){
+		    		
+		    		// check the 
+		    		// http://www.oracle.com/technetwork/java/faq-135477.html#delpop3
+		    		// for detail to delete the pop3 mail
+		    		//
+		    		folder.close(true);
+		    		
+		    	}else{
+		    		folder.close(false);
+		    	}    		
 	    		
-	    		// check the 
-	    		// http://www.oracle.com/technetwork/java/faq-135477.html#delpop3
-	    		// for detail to delete the pop3 mail
-	    		//
-	    		folder.close(true);
-	    		
-	    	}else{
-	    		folder.close(false);
+	    	}catch(Exception e){
+	    		m_mainMgr.m_logger.LogOut("MarkReadOrDelMail folder.close exception:" + e.getMessage());
 	    	}
+	    	
 	    	
 	    }	        
 	}

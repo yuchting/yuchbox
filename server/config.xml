@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Yuchberry userPassword="111111" serverPort="9716" pushInterval="30" userSSL="0" convertoSimpleChar="0" >
-	<EmailAccount 
+	<!-- EmailAccount 
 		account="tzt-123@163.com" 
 		password="" 
 		cryptPassword="8dbf031d4b9b5e96ef8857158d44258d"
@@ -15,6 +15,18 @@
 		protocol_send="smtp" 
 		host_send="smtp.163.com" 
 		port_send="25" 
-		appendHTML="0" />
+		appendHTML="0" 
+	/-->
+	
+	<SinaWeiboAccount
+		account="yuchberry"
+		accessToken="b4c85da2f35040dbc55e15febfd3d0c3"
+		secretToken="f1338d08eb944a15170d0a986e1e139e"
+		
+		timelineSum="5"
+		directMessageSum="1"
+		atMeSum="2"
+		commentSum="2"
+	/>
 		
 </Yuchberry>
