@@ -43,13 +43,13 @@ public class  fetchMail{
 	private Vector		m_vectTo		= new Vector();
 	private Vector		m_vectGroup		= new Vector();
 	
-	private String			m_subject 		= new String();
+	private String			m_subject 		= "";
 	private Date			m_sendDate 		= new Date();
 	private int			m_flags 		= 0;
-	private String			m_XMailName 	= new String();
+	private String			m_XMailName 	= "";
 	
-	private String			m_contain		= new String();
-	private String			m_contain_html	= new String();
+	private String			m_contain		= "";
+	private String			m_contain_html	= "";
 			
 	private Vector	m_vectAttachment	 	= new Vector();
 	

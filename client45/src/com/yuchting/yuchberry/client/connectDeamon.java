@@ -145,6 +145,67 @@ public class connectDeamon extends Thread implements SendListener,
 	Folder				m_listeningMessageFolder_out = null;
 	
 	String m_currentVersion = null;
+	
+	final static String fsm_findPrefix[] = 
+	{
+		"答复： ",
+		"Re: ",
+		"转发： ",
+		"Forward: ",
+		"Fw: ",
+	};
+	
+	final static String fsm_replacePrefix[] =
+	{
+		"答复 ",
+		"Re ",
+		"转发 ",
+		"Forward ",
+		"Fw ",
+	};
+	
+	final class SendingQueue extends Thread{
+		final class SendingQueueData{
+			public byte msgType;
+			public byte[] msgData;
+			
+			public SendingQueueData(byte _type,byte[] _data){
+				msgType = _type;
+				msgData = _data;
+			}
+		}
+		
+		Vector	m_sendingData = new Vector();
+		
+		private boolean isDisconnectState(){
+			return m_connect == null || CanNotSendMsg();
+		}
+		
+		public void addSendingData(byte _msgType ,byte[] _data)throws Exception{
+			if(!isDisconnectState()){
+				m_connect.SendBufferToSvr(_data, true, false);
+				
+			}else{
+				synchronized (this) {
+					m_sendingData.addElement(new SendingQueueData(_msgType,_data));
+				}
+				
+				this.notify();
+			}	
+			
+		}
+		
+		public void run(){
+			while(true){
+				while(m_disconnect){
+					
+				}
+				
+							
+				this.wait();
+			}
+		}
+	}
 	 
 	public connectDeamon(recvMain _app){
 		m_mainApp = _app;
@@ -469,12 +530,30 @@ public class connectDeamon extends Thread implements SendListener,
 							
 			}else{
 				t_trimString = _message.forward().getSubject();
-				
-				final int t_start = t_trimString.indexOf(t_messageSub);
-				if(t_start != -1 && t_start != 0){
-					t_trimString = t_trimString.substring(0,t_start);
-					t_messageSub = t_messageSub.substring(t_trimString.length());
+								
+				if(t_trimString.equals(t_messageSub)){
+					
+					// it will equal in OS6
+					// find the prefix
+					//
+					for(int i = 0;i < fsm_findPrefix.length;i++){
+						if(t_messageSub.startsWith(fsm_findPrefix[i])){
+							t_messageSub = t_messageSub.substring(fsm_findPrefix[i].length());
+							break;
+						}
+					}
+					
+					
+				}else{
+					
+					final int t_start = t_trimString.indexOf(t_messageSub);
+					
+					if(t_start != -1){
+						t_trimString = t_trimString.substring(0,t_start);
+						t_messageSub = t_messageSub.substring(t_trimString.length());
+					}	
 				}
+				
 			}			
 			
 			Folder[] t_folders = store.list();
@@ -1243,21 +1322,7 @@ public class connectDeamon extends Thread implements SendListener,
 		return false;
 	}
 	
-	final static String fsm_findPrefix[] = 
-	{
-		"答复： ",
-		"Re: ",
-		"转发： ",
-		"Forward: "
-	};
 	
-	final static String fsm_replacePrefix[] =
-	{
-		"答复 ",
-		"Re ",
-		"转发 ",
-		"Forward ",
-	};
 		
 	public void ImportMail(Message m,fetchMail _mail)throws Exception{
 		
@@ -1310,7 +1375,7 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 		
 		Date t_date = m.getSentDate();
-		if(t_date != null){	
+		if(t_date != null &&  t_date.getTime() == 0){	
 			_mail.SetSendDate(t_date);
 		}
 		

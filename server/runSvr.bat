@@ -1,3 +1,3 @@
 @echo off
-java -jar svr.jar
+java -jar frame.jar console
 pause

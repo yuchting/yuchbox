@@ -50,6 +50,7 @@ import javax.swing.event.MouseInputListener;
 
 import com.yuchting.yuchberry.server.Logger;
 import com.yuchting.yuchberry.server.fakeMDSSvr;
+import com.yuchting.yuchberry.server.fetchMain;
 import com.yuchting.yuchberry.server.fetchMgr;
 
 class checkStateThread extends Thread{
@@ -156,17 +157,18 @@ public class mainFrame extends JFrame implements ActionListener{
 	int			m_currConnectAccount	= 0;
 	
 	Vector<fetchThread>	m_checkFolderStateThread = new Vector<fetchThread>();
-	
-	
+		
 	static public void main(String _arg[]){
 		if(_arg.length == 1 && _arg[0].equalsIgnoreCase("cryptTool")){
 			new cryptPassTool();
 		}else if(_arg.length == 1 && _arg[0].equalsIgnoreCase("weiboReq")){
 			new weiboRequestTool();
+		}else if(_arg.length == 1 && _arg[0].equalsIgnoreCase("console")){
+			new fetchMain();
 		}else{
 			new fakeMDSSvr();
 			new mainFrame(_arg);	
-		}		
+		}
 	}	
 	
 	public mainFrame(String _arg[]){

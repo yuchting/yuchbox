@@ -35,10 +35,8 @@ class CheckVersion extends Thread{
 	}
 }
 public class fetchMain{
-		
-	public static void main(String[] _arg){
-
-		
+	
+	public fetchMain(){
 		fetchMgr t_manger = new fetchMgr();
 		Logger t_logger = new Logger("");
 		
@@ -73,5 +71,9 @@ public class fetchMain{
 				System.exit(0);
 			}
 		}
+	}
+		
+	public static void main(String[] _arg){
+		new fetchMain();
 	}
 }
