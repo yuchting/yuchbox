@@ -1258,7 +1258,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	public void SetErrorString(final String _error){
+	public synchronized void SetErrorString(final String _error){
 		m_errorString.addElement(new ErrorInfo(_error));
 		if(m_errorString.size() > 100){
 			m_errorString.removeElementAt(0);
@@ -1269,7 +1269,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}			
 	}
 	
-	public String GetAllErrorString(){
+	public synchronized String GetAllErrorString(){
 		if(!m_errorString.isEmpty()){
 
 			SimpleDateFormat t_format = new SimpleDateFormat("HH:mm:ss");

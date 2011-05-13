@@ -12,8 +12,6 @@ import javax.microedition.io.SocketConnection;
 import javax.microedition.io.file.FileConnection;
 
 import local.localResource;
-import net.rim.blackberry.api.browser.Browser;
-import net.rim.blackberry.api.browser.BrowserSession;
 import net.rim.blackberry.api.homescreen.HomeScreen;
 import net.rim.blackberry.api.mail.Address;
 import net.rim.blackberry.api.mail.AttachmentHandler;
@@ -165,6 +163,7 @@ public class connectDeamon extends Thread implements SendListener,
 	};
 	
 	final class SendingQueue extends Thread{
+		
 		final class SendingQueueData{
 			public byte msgType;
 			public byte[] msgData;
@@ -182,34 +181,50 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 		
 		public void addSendingData(byte _msgType ,byte[] _data)throws Exception{
+			
 			if(!isDisconnectState()){
-				m_connect.SendBufferToSvr(_data, true, false);
-				
+				m_connect.SendBufferToSvr(_data, false, false);
 			}else{
 				synchronized (this) {
 					m_sendingData.addElement(new SendingQueueData(_msgType,_data));
-				}
-				
-				this.notify();
-			}	
-			
+				}				
+			}			
 		}
-		
+				
 		public void run(){
 			while(true){
-				while(m_disconnect){
-					
-				}
 				
-							
-				this.wait();
+				try{
+
+					while(m_disconnect || isDisconnectState() || m_sendingData.isEmpty()){
+						try{
+							sleep(5000);
+						}catch(Exception e){}
+					}
+					
+					synchronized (this) {
+						for(int i = 0 ;i < m_sendingData.size();i++){
+							SendingQueueData t_data = (SendingQueueData)m_sendingData.elementAt(i);
+							m_connect.SendBufferToSvr(t_data.msgData, false, false);
+						}
+						
+						m_sendingData.removeAllElements();
+					}
+					
+				}catch(Exception e){
+					m_mainApp.SetErrorString("SQ:"+ e.getMessage() + " " + e.getClass().getName());
+				}
 			}
 		}
 	}
+	
+	public SendingQueue	 m_sendingQueue = new SendingQueue();
 	 
 	public connectDeamon(recvMain _app){
 		m_mainApp = _app;
 		m_currentVersion = ApplicationDescriptor.currentApplicationDescriptor().getVersion();
+		
+		m_sendingQueue.start();
 		start();
 	}
 	 
@@ -682,17 +697,17 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 	
 	public boolean CanNotSendMsg(){
-		return (RadioInfo.getSignalLevel() == RadioInfo.LEVEL_NO_COVERAGE && !m_mainApp.UseWifiConnection());
+		return (RadioInfo.getSignalLevel() <= -110 && !m_mainApp.UseWifiConnection());
 	}
 	 
 	 public void run(){
 		
 		while(true){
-
+	
 			m_sendAuthMsg = false;
 			
 			while(CanNotSendMsg() || m_disconnect == true ){
-
+	
 				try{
 					sleep(15000);
 				}catch(Exception _e){}	
@@ -701,7 +716,7 @@ public class connectDeamon extends Thread implements SendListener,
 			m_ipConnectCounter = 10;
 			
 			try{
-
+	
 				m_conn = GetConnection(m_mainApp.IsUseSSL(),m_mainApp.UseMDS());
 				
 				// TCP connect flowing bytes statistics 
@@ -799,7 +814,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 synchronized (this) {
 			 
 			 EndListener();	
-
+	
 			 if(m_connect != null){
 				 m_connect.CloseSendReceive();
 				 m_connect = null;
@@ -813,7 +828,7 @@ public class connectDeamon extends Thread implements SendListener,
 			 for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
 				 sendMailAttachmentDeamon send = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
 				 if(send.isAlive()){
-
+	
 					 send.m_closeState = true;
 					 if(send.isAlive()){
 						 send.interrupt();
@@ -838,7 +853,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 }
 		 
 		 String URL ;
-
+	
 		 // first use IP address to decrease the DNS message  
 		 //
 		 final String t_hostname = m_mainApp.GetHostName();
@@ -907,7 +922,7 @@ public class connectDeamon extends Thread implements SendListener,
 			 
 			 
 		 }catch(Exception _e){
-
+	
 			 m_mainApp.SetErrorString("CM: " + t_append + " " +_e.getMessage() + " " + _e.getClass().getName());
 			 
 			 if(_e.getMessage() == null){
@@ -919,7 +934,7 @@ public class connectDeamon extends Thread implements SendListener,
 				 
 				 throw _e;
 			 }
-
+	
 			 if(_e.getMessage().indexOf("Tunnel") != -1 
 			 || _e.getMessage().indexOf("tunnel") != -1){ // bad parameter
 				 
@@ -989,7 +1004,7 @@ public class connectDeamon extends Thread implements SendListener,
 		Folder[] t_folders = store.list();
 		for(int i = 0;i < t_folders.length;i++){
 			String t_name = t_folders[i].toString();
-			if((t_name.indexOf("Inbox") != -1 || t_name.indexOf("收件箱") != -1 ) 
+			if((t_name.indexOf("Inbox") != -1 || t_name.indexOf("收件箱") != -1) 
 			&& (t_name.indexOf("no service book") == -1)){
 				
 				folder = t_folders[i];
@@ -1034,31 +1049,50 @@ public class connectDeamon extends Thread implements SendListener,
 		return folder;
 	}
 	
+	private void SendMailConfirmMsg(int _hashCode)throws Exception{
+		
+		// send the msgMailConfirm to server to confirm receive this mail
+		//
+		
+		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+		t_os.write(msg_head.msgMailConfirm);
+		sendReceive.WriteInt(t_os,_hashCode);
+		
+		
+		m_sendingQueue.addSendingData(msg_head.msgMailConfirm, t_os.toByteArray());
+	}
+	
 	private void ProcessRecvMail(InputStream in)throws Exception{
 		
- 		fetchMail t_mail = new fetchMail();
- 		t_mail.InputMail(in); 		
- 	
- 		for(int i = 0;i < m_recvMailSimpleHashCodeSet.size();i++){
- 			Integer t_simpleHash = (Integer)m_recvMailSimpleHashCodeSet.elementAt(i);
- 			if(t_simpleHash.intValue() == t_mail.GetSimpleHashCode()){
- 				m_mainApp.SetErrorString("" + t_simpleHash.intValue() + " Mail has beed add!");
- 				return;
- 			}
- 		}
- 		
- 		if(m_recvMailSimpleHashCodeSet.size() > 256){
- 			m_recvMailSimpleHashCodeSet.removeElementAt(0);
- 		}
- 		
- 		m_recvMailSimpleHashCodeSet.addElement(new Integer(t_mail.GetSimpleHashCode()));
- 		
- 		if(m_mainApp.GetRecvMsgMaxLength() != 0){
- 			if(t_mail.GetContain().length() > m_mainApp.GetRecvMsgMaxLength()){
- 				t_mail.SetContain(t_mail.GetContain().substring(0,m_mainApp.GetRecvMsgMaxLength() - 1) + 
- 									"\n.....\n\n" + recvMain.sm_local.getString(localResource.REACH_MAX_MESSAGE_LENGTH_PROMPT));
- 			}
- 		}
+		fetchMail t_mail = new fetchMail();
+		t_mail.InputMail(in); 		
+	
+		int t_hashcode = t_mail.GetSimpleHashCode();
+		
+		for(int i = 0;i < m_recvMailSimpleHashCodeSet.size();i++){
+			Integer t_simpleHash = (Integer)m_recvMailSimpleHashCodeSet.elementAt(i);
+			if(t_simpleHash.intValue() == t_hashcode ){
+				
+				SendMailConfirmMsg(t_hashcode);
+				
+				m_mainApp.SetErrorString("" + t_hashcode + " Mail has been added!");
+				
+				return;
+			}
+		}
+		
+		if(m_recvMailSimpleHashCodeSet.size() > 256){
+			m_recvMailSimpleHashCodeSet.removeElementAt(0);
+		}
+		
+		m_recvMailSimpleHashCodeSet.addElement(new Integer(t_mail.GetSimpleHashCode()));
+		
+		if(m_mainApp.GetRecvMsgMaxLength() != 0){
+			if(t_mail.GetContain().length() > m_mainApp.GetRecvMsgMaxLength()){
+				t_mail.SetContain(t_mail.GetContain().substring(0,m_mainApp.GetRecvMsgMaxLength() - 1) + 
+									"\n.....\n\n" + recvMain.sm_local.getString(localResource.REACH_MAX_MESSAGE_LENGTH_PROMPT));
+			}
+		}
 		
 		try{
 			
@@ -1081,15 +1115,9 @@ public class connectDeamon extends Thread implements SendListener,
 			//
 			m_mainApp.SetRecvMailNum(m_mainApp.GetRecvMailNum() + 1);			
 			
-			// send the msgMailConfirm to server to confirm receive this mail
-			//
-			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-			t_os.write(msg_head.msgMailConfirm);
-			int t_hashcode = t_mail.GetSimpleHashCode();
-			sendReceive.WriteInt(t_os,t_hashcode);
-			m_mainApp.SetErrorString("" + t_hashcode + ":" + t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime());
+			SendMailConfirmMsg(t_hashcode);
 			
-			m_connect.SendBufferToSvr(t_os.toByteArray(), false,true);
+			m_mainApp.SetErrorString("" + t_hashcode + ":" + t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime());
 									
 			m_mainApp.TriggerNotification();
 							
@@ -1202,7 +1230,7 @@ public class connectDeamon extends Thread implements SendListener,
 			_mail.SetLocationInfo(m_mainApp.m_longitude, m_mainApp.m_latitude, 
 								m_mainApp.m_altitude, m_mainApp.m_movingSpeed, m_mainApp.m_locationHeading);
 		}
-
+	
 		sendMailAttachmentDeamon t_mailDeamon = new sendMailAttachmentDeamon(this, _mail, t_vfileReader,_forwardReply,_sendStyle);
 		m_sendingMailAttachment.addElement(t_mailDeamon);	
 	}
@@ -1250,7 +1278,7 @@ public class connectDeamon extends Thread implements SendListener,
 					os.flush();
 					os.close();
 					t_file.close();
-
+	
 					m_vectReceiveAttach.removeElementAt(i);
 					
 					m_mainApp.PopupDlgToOpenAttach(t_att);
@@ -1272,41 +1300,14 @@ public class connectDeamon extends Thread implements SendListener,
 				if(t_mail.m_date == m.getSentDate().getTime() 
 				&& t_mail.m_fromAddr.indexOf(m.getFrom().getAddr()) != -1){
 					
-					// start 
-					//
-					Thread t_sendMark = new Thread(){
-						public void run(){
-							MarkReadMailData t_markMail = t_mail;
-							int t_time = 0;
-							try{
-								
-								while(m_connect == null || CanNotSendMsg()){
-									if(m_disconnect){
-										return;
-									}
-									
-									if(t_time++ > 3){
-										return;
-									}
-									
-									sleep(30000);
-								}
-								
-								ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-								t_os.write((_del && m_mainApp.m_delRemoteMail)?msg_head.msgMailDel:msg_head.msgBeenRead);
-								sendReceive.WriteInt(t_os, t_markMail.m_simpleHashCode);
-								
-								m_connect.SendBufferToSvr(t_os.toByteArray(), false,false);
-								
-							}catch(Exception e){
-								m_mainApp.SetErrorString("Mark:"+ e.getMessage() + e.getClass().getName());
-							}
-							
-						}
-					};
+					byte t_msgType = (_del && m_mainApp.m_delRemoteMail)?msg_head.msgMailDel:msg_head.msgBeenRead;
 					
-					t_sendMark.start();
+					ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+					t_os.write(t_msgType);
+					sendReceive.WriteInt(t_os, t_mail.m_simpleHashCode);
 					
+					m_sendingQueue.addSendingData(t_msgType, t_os.toByteArray());
+										
 					if(_del){
 						m_markReadVector.removeElementAt(i);
 					}					
@@ -1335,7 +1336,7 @@ public class connectDeamon extends Thread implements SendListener,
 			_mail.GetFromVect().removeAllElements();
 			_mail.GetFromVect().addElement(composeAddress(m.getFrom()));			
 		}
-
+	
 		// REPLY TO
 		if ((a = m.getReplyTo()) != null) {
 			_mail.GetFromVect().removeAllElements();
@@ -1343,7 +1344,7 @@ public class connectDeamon extends Thread implements SendListener,
 		    	_mail.GetFromVect().addElement(composeAddress(a[j]));
 		    }
 		}
-
+	
 		// TO
 		if ((a = m.getRecipients(Message.RecipientType.TO)) != null) {
 			_mail.GetSendToVect().removeAllElements();
@@ -1380,7 +1381,7 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 		
 		final int t_flags = m.getFlags(); // get the system flags
-
+	
 		int t_setFlags = 0;
 		if((t_flags & Message.Flag.DELETED) != 0){
 			t_setFlags |= fetchMail.DELETED;
@@ -1410,10 +1411,10 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	private String composeAddress(Address a){
 		if(a.getName() != null){
-    		return "\"" + a.getName() +"\" <" + a.getAddr() + ">";
-    	}else{
-    		return a.getAddr();
-    	}
+			return "\"" + a.getName() +"\" <" + a.getAddr() + ">";
+		}else{
+			return a.getAddr();
+		}
 	}
 	
 	
@@ -1456,27 +1457,27 @@ public class connectDeamon extends Thread implements SendListener,
 	private void readEmailBody(MimeBodyPart mbp,fetchMail _mail)throws Exception
 	{
 	   //Extract the content of the message.
-	   Object obj = mbp.getContent();
-	   String mimeType = mbp.getContentType();
-	   String body = null;
-   
-	   if (obj instanceof String)
-	   {
-	      body = (String)obj;
+		   Object obj = mbp.getContent();
+		   String mimeType = mbp.getContentType();
+		   String body = null;
+	   
+		   if (obj instanceof String)
+		   {
+		      body = (String)obj;
+		   }
+		   else if (obj instanceof byte[])
+		   {
+		      body = new String((byte[])obj);
+		   }else{
+			   
+			   throw new Exception("error MimeBodyPart Contain type");
 	   }
-	   else if (obj instanceof byte[])
-	   {
-	      body = new String((byte[])obj);
-	   }else{
-		   
-		   throw new Exception("error MimeBodyPart Contain type");
-	   }
-
+	
 	   if (mimeType.indexOf(ContentType.TYPE_TEXT_PLAIN_STRING) != -1)
 	   {
 		   
 		  m_plainTextContain = m_plainTextContain.concat(body);
-
+	
 	      //Determine if all of the text body part is present.
 	      if (mbp.hasMore() && !mbp.moreRequestSent())
 	      {
@@ -1494,7 +1495,7 @@ public class connectDeamon extends Thread implements SendListener,
 	   else if (mimeType.indexOf(ContentType.TYPE_TEXT_HTML_STRING) != -1)
 	   {
 		   m_plainTextContain = m_htmlTextContain.concat(body);
-
+	
 	      //Determine if all of the HTML body part is present.
 	      if (mbp.hasMore() && !mbp.moreRequestSent())
 	      {
@@ -1513,7 +1514,7 @@ public class connectDeamon extends Thread implements SendListener,
 	private void readEmailBody(TextBodyPart tbp,fetchMail _mail)
 	{
 		m_plainTextContain = m_plainTextContain.concat((String)tbp.getContent());
-
+	
 	   if (tbp.hasMore() && !tbp.moreRequestSent())
 	   {
 	      try
@@ -1575,7 +1576,7 @@ public class connectDeamon extends Thread implements SendListener,
 	    msg.setSubject(t_sub);
 	    msg.setHeader("X-Mailer",_mail.GetXMailer());
 	    msg.setSentDate(_mail.GetSendDate());	      
-
+	
 	    ComposeMessageContent(msg,_mail);
 	}
 	
@@ -1606,7 +1607,7 @@ public class connectDeamon extends Thread implements SendListener,
 	    		
 		    	multipart.addBodyPart(sap);
 	    	}
-    	
+		
 	    	if(!_mail.GetAttachment().isEmpty()){
 	    		
 				Vector t_contain	= _mail.GetAttachment();
@@ -1628,7 +1629,7 @@ public class connectDeamon extends Thread implements SendListener,
 		    		sendReceive.WriteString(t_tmpContent, t_attachment.m_name);		    		
 		    		
 		    		String t_sizeString = "(" + recvMain.GetByteStr(t_attachment.m_size) + ")";		    		
-
+	
 		    		SupportedAttachmentPart attach = new SupportedAttachmentPart( multipart,
 		    																	(String)t_attachment.m_type,
 		    																	t_sizeString + t_attachment.m_name,
@@ -1638,7 +1639,7 @@ public class connectDeamon extends Thread implements SendListener,
 			}
 			
 			msg.setContent(multipart);
-
+	
 		} else {
 			
 			msg.setContent(_mail.GetContain());

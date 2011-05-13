@@ -139,7 +139,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     	_menu.add(MenuItem.separator(102));
     	_menu.add(m_setingMenu);
     	_menu.add(m_debugInfoMenu);
-    	//_menu.add(m_weiboMenu);
+    	_menu.add(m_weiboMenu);
     	
     	super.makeMenu(_menu, instance);
     }
