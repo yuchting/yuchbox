@@ -1,7 +1,6 @@
 package com.yuchting.yuchberry.client;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.util.Random;
 import java.util.Vector;
 
 import local.localResource;
@@ -10,354 +9,12 @@ import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
-import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
-import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.Menu;
-import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
-
-
-class WeiboItemField extends Manager{
-	
-	final static int		fsm_maxWeiboTextLength		= 140;
-	final static int		fsm_headImageWidth 			= fetchWeibo.fsm_headImageSize;
-	final static int		fsm_headImageTextInterval	= 4;
-	
-	final static int		fsm_weiboSignImageWidth		= 16;
-	
-	final static int		fsm_textWidth				= recvMain.fsm_display_width - fsm_headImageWidth - fsm_headImageTextInterval;
-	final static int		fsm_editTextWidth			= recvMain.fsm_display_width;	
-
-	static HyperlinkButtonField	sm_atBut				= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.AT_WEIBO_BUTTON_LABLE));
-	static HyperlinkButtonField	sm_forwardBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.FORWARD_WEIBO_BUTTTON_LABLE));
-	static HyperlinkButtonField	sm_favoriteBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.FAVORITE_WEIBO_BUTTON_LABLE));
-	
-	// BasicEditField for 4.2os
-	static TextField 			sm_textArea				= new TextField(Field.READONLY);
-	
-	static TextField 			sm_editTextArea			= new TextField(EditField.FILTER_DEFAULT){
-		public void setText(String _text){
-			super.setText(_text);
-			layout(recvMain.fsm_display_width,1000);
-		}
-	};
-	
-	static TextField 			sm_testTextArea			= new TextField(Field.READONLY){
-		public void setText(String _text){
-			super.setText(_text);
-			layout(fsm_textWidth,1000);
-		}
-	};
-			
-	static {
-		sm_editTextArea.setMaxSize(fsm_maxWeiboTextLength);
-	}
-	
-	
-	
-	static Font		sm_defaultFont						= sm_atBut.getFont();
-	static int		sm_fontHeight						= sm_defaultFont.getHeight() + 2;
-	
-	static int		sm_editTextAreaHeight				= 0;
-		
-	static int		sm_forwardBut_x						= sm_defaultFont.getAdvance(sm_atBut.getText()) + fsm_headImageTextInterval;
-	static int		sm_forvoriteBut_x					= sm_forwardBut_x + sm_defaultFont.getAdvance(sm_forwardBut.getText()) + fsm_headImageTextInterval;
-	
-	static int		sm_imageAreaMinHeight				= fsm_weiboSignImageWidth + fsm_headImageWidth + fsm_headImageTextInterval;
-
-	static WeiboItemField			sm_extendWeiboItem	= null;
-	static WeiboItemField			sm_selectWeiboItem	= null;
-	static WeiboItemField			sm_editWeiboItem	= null;
-	
-	
-	
-	boolean[]				m_hasControlField = {false,false,false,false,false};
-	
-	fetchWeibo				m_weibo			= null;
-		
-	int						m_extendHeight 	= sm_fontHeight;
-	
-	static int				sm_height		= sm_fontHeight * 2 + 1;
-	
-	int						m_functionButton_y	= sm_fontHeight;
-	
-	int						m_textHeight	= sm_fontHeight;
-	
-	Bitmap					m_weiboSignImage = null;
-	Bitmap					m_headImage 	= null;	
-	
-	public WeiboItemField(){
-		super(NO_SCROLL_RESET);
-	}
-	
-	public WeiboItemField(fetchWeibo _weibo,Bitmap _headImage,Bitmap _weiboSignImage){
-		super(NO_SCROLL_RESET);
-				
-		m_weibo 			= _weibo;
-						
-		m_weiboSignImage	= _weiboSignImage;
-		m_headImage 		= _headImage;
-				
-		sm_testTextArea.setText(m_weibo.GetUserName());
-		
-		m_textHeight			= sm_testTextArea.getHeight() + 5;
-		
-		m_functionButton_y		= Math.max(m_textHeight,sm_imageAreaMinHeight) + fsm_headImageTextInterval;
-		m_extendHeight 			= m_functionButton_y + sm_fontHeight;
-	}
-	
-	public void AddDelControlField(boolean _add){
-		if(_add){
-			
-			if(!m_hasControlField[0]){
-				m_hasControlField[0] = true;
-				sm_textArea.setText(m_weibo.GetText());
-				add(sm_textArea);
-			}
-			
-			if(!m_hasControlField[1]){
-				m_hasControlField[1] = true;
-				add(sm_atBut);
-			}
-			if(!m_hasControlField[2]){
-				m_hasControlField[2] = true;
-				add(sm_forwardBut);
-			}
-			if(!m_hasControlField[3]){
-				m_hasControlField[3] = true;
-				add(sm_favoriteBut);
-			}			
-			
-		}else{
-			
-			if(m_hasControlField[0]){
-				m_hasControlField[0] = false;
-				delete(sm_textArea);
-			}
-			
-			if(m_hasControlField[1]){
-				m_hasControlField[1] = false;
-				delete(sm_atBut);
-			}
-			if(m_hasControlField[2]){
-				m_hasControlField[2] = false;
-				delete(sm_forwardBut);
-			}
-			if(m_hasControlField[3]){
-				m_hasControlField[3] = false;
-				delete(sm_favoriteBut);
-			}			
-		}							
-	}
-	
-	public void AddDelEditTextArea(boolean _add,String _text){
-		if(_add){
-			
-			WeiboItemField.sm_editTextArea.setText(_text);
-			WeiboItemField.RefreshEditTextAreHeight();
-			
-			WeiboItemField.sm_editWeiboItem = this;
-			
-			if(!m_hasControlField[4]){
-				m_hasControlField[4] = true;
-				add(sm_editTextArea);				
-			}
-			
-			WeiboItemField.sm_editTextArea.setFocus();
-			
-			
-		}else{
-			
-			WeiboItemField.sm_editWeiboItem = null;
-			WeiboItemField.sm_editTextAreaHeight = 0;
-			
-			if(m_hasControlField[4]){
-				m_hasControlField[4] = false;
-				delete(sm_editTextArea);
-			}
-		}
-	}
-	
-	static public void RefreshEditTextAreHeight(){
-		sm_editTextAreaHeight = sm_editTextArea.getHeight() + fsm_headImageTextInterval;
-	}
-	
-	
-	public int getPreferredWidth() {
-		return recvMain.fsm_display_width;
-	}
-	
-	public int getPreferredHeight() {
-		if(sm_extendWeiboItem == this){
-			
-			if(sm_editWeiboItem == this){
-				return m_extendHeight + sm_editTextAreaHeight;
-			}
-			
-			return m_extendHeight;
-		}else{
-			return sm_height;
-		}
-	}
-	
-	public void sublayout(int width, int height){
-		
-		if(sm_extendWeiboItem == this){
-						
-			setPositionChild(sm_atBut,0,m_functionButton_y);
-			layoutChild(sm_atBut,sm_atBut.getPreferredWidth(),sm_atBut.getPreferredHeight());
-			
-			setPositionChild(sm_forwardBut,sm_forwardBut_x,m_functionButton_y);
-			layoutChild(sm_forwardBut,sm_forwardBut.getPreferredWidth(),sm_forwardBut.getPreferredHeight());
-			
-			setPositionChild(sm_favoriteBut,sm_forvoriteBut_x,m_functionButton_y);
-			layoutChild(sm_favoriteBut,sm_favoriteBut.getPreferredWidth(),sm_favoriteBut.getPreferredHeight());
-			
-			setPositionChild(sm_textArea,fsm_headImageWidth + fsm_headImageTextInterval,0);
-			layoutChild(sm_textArea,fsm_textWidth,m_textHeight);
-			
-			if(sm_editWeiboItem == this){
-				
-				setPositionChild(sm_editTextArea,0,m_functionButton_y + fsm_headImageTextInterval + sm_fontHeight);
-				layoutChild(sm_editTextArea,recvMain.fsm_display_width,sm_editTextAreaHeight);
-				
-				height = m_extendHeight + sm_editTextAreaHeight;
-				
-			}else{
-				height = m_extendHeight;
-			}
-						
-		}else{		
-			height = sm_height;
-		}
-		
-		setExtent(recvMain.fsm_display_width,height);
-	}
-	
-	static Calendar sm_calendar = Calendar.getInstance();
-	static Date		sm_timeDate = new Date();
-	
-	
-	protected synchronized String getTimeString(){
-		
-		sm_timeDate.setTime(m_weibo.GetDateTime());
-		sm_calendar.setTime(sm_timeDate);		
-		
-		return sm_calendar.get(Calendar.DAY_OF_MONTH) + "Day " 
-				+ sm_calendar.get(Calendar.HOUR_OF_DAY) + ":" 
-				+ sm_calendar.get(Calendar.MINUTE);
-	}
-		
-	protected void subpaint(Graphics _g){
-		
-		if(sm_extendWeiboItem == this){
-			
-			_g.drawBitmap(0, 0, fsm_weiboSignImageWidth, fsm_weiboSignImageWidth, m_weiboSignImage, 0, 0);
-			_g.drawBitmap(0, fsm_weiboSignImageWidth + fsm_headImageTextInterval, fsm_headImageWidth, fsm_headImageWidth, m_headImage, 0, 0);
-			
-			paintChild(_g,sm_atBut);
-			paintChild(_g,sm_forwardBut);
-			paintChild(_g,sm_favoriteBut);
-			
-			paintChild(_g,sm_textArea);
-			
-			if(sm_editWeiboItem == this){
-				paintChild(_g,sm_editTextArea);
-			}
-			
-		}else{
-			
-			final int t_firstLineHeight = 2;
-			final int t_leadingSpace = 2;
-			
-			_g.drawBitmap(t_leadingSpace, t_firstLineHeight, fsm_weiboSignImageWidth, fsm_weiboSignImageWidth, m_weiboSignImage, 0, 0);
-			
-			_g.drawText(m_weibo.GetUserName().substring(0,Math.min(m_weibo.GetUserName().length(),16)),fsm_weiboSignImageWidth + 5,t_firstLineHeight,Graphics.ELLIPSIS);
-			
-			int oldColour = _g.getColor();
-	        try{
-	        	_g.setColor(0x8f8f8f);            
-	        	_g.drawText(getTimeString(),recvMain.fsm_display_width - 100,t_firstLineHeight,Graphics.ELLIPSIS);
-	        }finally{
-	        	_g.setColor( oldColour );
-	        }
-	        
-	        _g.drawText(m_weibo.GetText(),t_leadingSpace,sm_fontHeight ,Graphics.ELLIPSIS);
-						
-			if(sm_selectWeiboItem == this){
-				_g.drawRoundRect(1,1,recvMain.fsm_display_width - 1,sm_height - 2,1,1);
-			}else{
-				_g.drawLine(0,sm_height - 1,recvMain.fsm_display_width,sm_height - 1);
-			}
-		}		
-	}
-	
-}
-
-class WeiboUpdateField extends WeiboItemField{
-	
-	String m_sendUpdateText = "";
-	
-	public void AddDelControlField(boolean _add){
-		AddDelEditTextArea(_add,m_sendUpdateText);
-	}
-	
-	public int getPreferredHeight() {
-		if(sm_extendWeiboItem == this){
-			
-			if(sm_editWeiboItem == this){
-				return m_extendHeight + sm_editTextAreaHeight;
-			}
-			
-			return m_extendHeight;
-		}else{
-			return sm_fontHeight;
-		}
-	}
-	
-	public void sublayout(int width, int height){
-		
-		if(sm_extendWeiboItem == this){
-					
-			setPositionChild(sm_editTextArea,0,0);
-			layoutChild(sm_editTextArea,recvMain.fsm_display_width,sm_editTextAreaHeight);
-			
-			height = sm_editTextAreaHeight;			
-						
-		}else{		
-			height = sm_fontHeight;
-		}
-		
-		setExtent(recvMain.fsm_display_width,height);
-	}
-	
-	protected void subpaint(Graphics g){
-		
-		if(sm_extendWeiboItem == this){
-			
-			paintChild(g,sm_editTextArea);
-			
-		}else{
-			int oldColour = g.getColor();
-	        try{
-	            g.setColor(0x8f8f8f);            
-	            g.drawText(recvMain.sm_local.getString(localResource.UPDATE_WEIBO_LABEL), fsm_weiboSignImageWidth,0,Graphics.ELLIPSIS);
-	        }finally{
-	            g.setColor( oldColour );
-	        }		
-			
-			if(sm_selectWeiboItem == this){
-				g.drawRoundRect(1,1,recvMain.fsm_display_width - 1,sm_fontHeight - 1,1,1);
-			}else{
-				g.drawLine(0,sm_fontHeight - 1,recvMain.fsm_display_width,sm_fontHeight - 1);
-			}
-		}		
-	}
-}
 
 class MainManager extends VerticalFieldManager implements FieldChangeListener{
 	
@@ -481,17 +138,17 @@ class MainManager extends VerticalFieldManager implements FieldChangeListener{
 			int t_delta = 0;
 			
 			if(m_selectWeiboItemIndex > 1){
-				t_currentHeight = m_selectWeiboItemIndex * WeiboItemField.sm_height - WeiboItemField.sm_fontHeight;
+				t_currentHeight = m_selectWeiboItemIndex * WeiboItemField.sm_closeHeight;
 				
 				if(t_verticalScroll == 0){
-					t_delta = WeiboItemField.sm_fontHeight;
+					t_delta = WeiboItemField.sm_closeHeight;
 				}else{
-					t_delta = WeiboItemField.sm_height;
+					t_delta = WeiboItemField.sm_closeHeight;
 				}
 				
 			}else{
 				t_currentHeight = WeiboItemField.sm_fontHeight;
-				t_delta = WeiboItemField.sm_height;
+				t_delta = WeiboItemField.sm_closeHeight;
 			}
 			
 			if(_dy > 0){
@@ -518,13 +175,13 @@ class MainManager extends VerticalFieldManager implements FieldChangeListener{
 	}
 	
 	public boolean Clicked(int status, int time){
-		
+				
 		final WeiboItemField t_formerExtendItem 	= WeiboItemField.sm_extendWeiboItem; 
 		final WeiboItemField t_currentExtendItem	= WeiboItemField.sm_selectWeiboItem;
 
-		if(t_formerExtendItem != t_currentExtendItem){
+		if(t_formerExtendItem == null && t_currentExtendItem != null){
 			
-			int t_formerPos = m_formerVerticalPos = getVerticalScroll();
+			m_formerVerticalPos = getVerticalScroll();
 		
 			WeiboItemField.sm_extendWeiboItem = null;
 			
@@ -534,16 +191,14 @@ class MainManager extends VerticalFieldManager implements FieldChangeListener{
 			
 			t_currentExtendItem.AddDelControlField(true);
 			WeiboItemField.sm_extendWeiboItem = t_currentExtendItem;
-												
-			final int t_extendItemHeight = m_selectWeiboItemIndex * WeiboItemField.sm_fontHeight + 
-												WeiboItemField.sm_extendWeiboItem.getPreferredHeight();
 			
-			if(t_extendItemHeight > m_formerVerticalPos + recvMain.fsm_display_height){
-				final int t_delta = (t_extendItemHeight - (m_formerVerticalPos + recvMain.fsm_display_height));
-				t_formerPos += t_delta;
+			if(t_currentExtendItem != m_updateWeiboField){
+				WeiboItemField.sm_forwardBut.setFocus();
+			}			
+			
+			if(m_formerVerticalPos != 0 ){
+				setVerticalScroll(t_currentExtendItem.getPreferredHeight());
 			}
-			
-			setVerticalScroll(t_formerPos);	
 			
 			sublayout(0, 0);
 			invalidate();
@@ -552,28 +207,33 @@ class MainManager extends VerticalFieldManager implements FieldChangeListener{
 		}
 		
 		return false;
+		
+		
 	}
 	
 	public boolean EscapeKey(){
 		if(WeiboItemField.sm_extendWeiboItem != null){
 			
 			final WeiboItemField t_extendItem = WeiboItemField.sm_extendWeiboItem;
-			
-			invalidate();
-			
+						
 			if(WeiboItemField.sm_editWeiboItem != null 
 			&& WeiboItemField.sm_editWeiboItem != m_updateWeiboField){
 				
 				// the add/delete field operation will cause the sublayout being called
 				//
-				WeiboItemField.sm_editWeiboItem.AddDelEditTextArea(false,null);	
-								
+				WeiboItemField.sm_editWeiboItem.AddDelEditTextArea(false,null);
+				
+				WeiboItemField.sm_textArea.setFocus();
+				WeiboItemField.sm_textArea.setCursorPosition(0);
+				
 			}else{
 				WeiboItemField.sm_extendWeiboItem = null;
 				t_extendItem.AddDelControlField(false);
 				
 				setVerticalScroll(m_formerVerticalPos);
 			}
+			
+			invalidate();
 			
 			return true;
 		}
@@ -592,7 +252,7 @@ class MainManager extends VerticalFieldManager implements FieldChangeListener{
 			WeiboItemField.RefreshEditTextAreHeight();
 			
 			sublayout(0,0);
-			invalidate();			
+			invalidate();
 			
 			WeiboItemField.sm_editTextArea.setCursorPosition(t_text.length());
 		}
@@ -619,9 +279,9 @@ class MainManager extends VerticalFieldManager implements FieldChangeListener{
 
 public class weiboTimeLineScreen extends MainScreen{
 	
-	recvMain			m_mainApp;
+	static recvMain		sm_mainApp;
 	
-	MainManager			m_mainMgr;
+	MainManager			m_mainMgr;	 
 	
 	Vector				m_timelineWeibo 	= new Vector();
 	Vector				m_directMessage 	= new Vector();
@@ -629,45 +289,99 @@ public class weiboTimeLineScreen extends MainScreen{
 	Vector				m_commentMeMessage 	= new Vector();
 	
 	static Bitmap		sm_sinaWeiboSign = null;
+	static Bitmap		sm_sinaVIPSign = null;
+	static Bitmap		sm_isBBerSign = null;
 	
-	public Bitmap GetWeiboSign(fetchWeibo _weibo)throws Exception{
-		
-		switch(_weibo.GetWeiboStyle()){
-			case fetchWeibo.SINA_WEIBO_STYLE:
-				if(sm_sinaWeiboSign == null){
-					byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass().getResourceAsStream("/sinaWeibo.png"));		
-					sm_sinaWeiboSign =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();					
-				}
-				
-				return sm_sinaWeiboSign;
-				
-		}
-		
-		return null;
-	}
+	WeiboHeader 		m_weiboHeader		= new WeiboHeader();
 	
 	public weiboTimeLineScreen(recvMain _mainApp){
-		m_mainApp = _mainApp;
+		sm_mainApp = _mainApp;
 		
 		m_mainMgr = new MainManager(_mainApp);
 		add(m_mainMgr);
+		
+		setTitle(m_weiboHeader);
 				
 		//@{ test code
 		try{
-			byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass().getResourceAsStream("/Unknown_resize.jpg"));		
+			byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/Unknown_resize.jpg"));		
 			Bitmap t_headImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
 			
-			for(int i = 0 ;i < 20;i++){
-				fetchWeibo t_weibo = new fetchWeibo(false);
+			Random t_rand = new Random();
+			for(int i = 0 ;i < 200;i++){
+				fetchWeibo t_weibo = new fetchWeibo();
 				t_weibo.SetId(0);
 				t_weibo.SetUserName("这是" + i);
+				
+				if(t_rand.nextInt() % 3 == 0){
+					t_weibo.SetBBer(true);
+				}
+				
+				if(t_rand.nextInt() % 3 == 0){
+					t_weibo.SetSinaVIP(true);
+				}
+				
+				if(i % 2 == 0){
+					fetchWeibo t_commentWeibo = new fetchWeibo();
+					t_commentWeibo.SetUserName("评论者");
+					t_commentWeibo.SetText("这是一个评论这是一个评论这是一个评论这是一个评论这是一个评论这是一个评论这是一个评论");
+					
+					t_weibo.SetCommectWeibo(t_commentWeibo);
+				}				
+				
 				t_weibo.SetText("这是一个测试这个这是一个测试这个这是一个测试这个这是一个测试这个");
 				
-				m_mainMgr.AddWeibo(new WeiboItemField(t_weibo,t_headImage,GetWeiboSign(t_weibo)));
+				m_mainMgr.AddWeibo(new WeiboItemField(t_weibo,t_headImage));
 			}
 			
 		}catch(Exception e){}
 		//@}
+	}
+	
+	static public Bitmap GetWeiboSign(fetchWeibo _weibo){
+		
+		try{
+			switch(_weibo.GetWeiboStyle()){
+			case fetchWeibo.SINA_WEIBO_STYLE:
+				if(sm_sinaWeiboSign == null){
+					byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/sinaWeibo.png"));		
+					sm_sinaWeiboSign =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();					
+				}
+				
+				return sm_sinaWeiboSign;
+			}			
+		}catch(Exception e){
+			sm_mainApp.SetErrorString("GWS:" + e.getMessage() + e.getClass().getName());
+		}		
+		
+		return null;
+	}
+	
+	static public Bitmap GetSinaVIPSignBitmap(){
+		if(sm_sinaVIPSign == null){
+			try{
+				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/sinaVIP.png"));		
+				sm_sinaVIPSign =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();	
+			}catch(Exception e){
+				sm_mainApp.SetErrorString("GSVSB:" + e.getMessage() + e.getClass().getName());
+			}
+					
+		}
+		
+		return sm_sinaVIPSign;
+	}
+	
+	static public Bitmap GetBBerSignBitmap(){
+		if(sm_isBBerSign == null){
+			try{
+				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/BBSign.png"));		
+				sm_isBBerSign =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();	
+			}catch(Exception e){
+				sm_mainApp.SetErrorString("GBSB:" + e.getMessage() + e.getClass().getName());
+			}
+		}
+		
+		return sm_isBBerSign;
 	}
 	
 	public void SendMenuItemClick(){
@@ -693,14 +407,29 @@ public class weiboTimeLineScreen extends MainScreen{
 	}
 	
 	protected boolean navigationMovement(int dx,int dy,int status,int time){
-		boolean t_processed = m_mainMgr.IncreaseRenderSize(dx,dy);
+		
+		boolean t_processed = false;
+		
+		if(dx != 0){
+			if(WeiboItemField.sm_extendWeiboItem == null && WeiboItemField.sm_editWeiboItem == null){
+				m_weiboHeader.setCurrState(m_weiboHeader.getCurrState() + dx);
+				m_weiboHeader.layout(0, 0);
+				m_weiboHeader.invalidate();
+				
+				t_processed = true;
+			}
+		}else{
+			t_processed = m_mainMgr.IncreaseRenderSize(dx,dy);			
+		}
+		
 		if(!t_processed && WeiboItemField.sm_editTextArea.isFocus()){
 			t_processed = super.navigationMovement(dx, dy, status, time);
 		}
 		return 	t_processed;
+		
 	}
 	protected boolean navigationClick(int status, int time){
-		return m_mainMgr.Clicked(status,time);
+		return m_mainMgr.Clicked(status,time);		
 	}
 	
 

@@ -15,17 +15,16 @@ public class fetchWeibo {
 	
 	final public static int	fsm_headImageSize		= 32;
 	
-	int		m_sendConfirmCount = 0;
-	
 	int		m_WeiboStyle;
 	int		m_WeiboClass;
 	
 	long	m_id;
 	long	m_userId;
 	
-	int		m_userHeadImageHashCode = 0;
+	boolean m_isSinaVIP;
+	boolean m_isBBer;
 	
-	boolean m_isRead	= false;
+	int		m_userHeadImageHashCode = 0;
 	
 	String	m_userName	= new String();
 	String	m_text		= new String();
@@ -37,15 +36,11 @@ public class fetchWeibo {
 	
 	long 	m_replyWeiboId = -1;
 	fetchWeibo	m_replyWeibo = null;
-	
-	private boolean m_convertoSimpleChar = false;
-	
-	public fetchWeibo(boolean _convertToSimple){
-		m_convertoSimpleChar = _convertToSimple;
+		
+	public fetchWeibo(){
+		
 	}
 	
-	public boolean IsRead(){return m_isRead;}
-	public void SetRead(boolean _read){m_isRead = _read;}
 	
 	public int GetWeiboStyle(){return m_WeiboStyle;}
 	public void SetWeiboStyle(int _style){m_WeiboStyle = _style;}
@@ -64,6 +59,12 @@ public class fetchWeibo {
 	
 	public String GetUserName(){return m_userName;}
 	public void SetUserName(final String _name){m_userName = _name;}
+	
+	public boolean IsSinaVIP(){return m_isSinaVIP;}
+	public void SetSinaVIP(boolean _isVIP){m_isSinaVIP = _isVIP;}
+	
+	public boolean IsBBer(){return m_isBBer;}
+	public void SetBBer(boolean _bber){m_isBBer = _bber;}
 	
 	public String GetText(){return m_text;}
 	public void SetText(final String _text){m_text = _text;}
@@ -89,11 +90,14 @@ public class fetchWeibo {
 		_stream.write(VERSION);
 		
 		_stream.write(m_WeiboStyle);
-		_stream.write(m_isRead?1:0);
 		sendReceive.WriteInt(_stream,m_WeiboClass);
+		
+		_stream.write(m_isSinaVIP?1:0);
+		_stream.write(m_isBBer?1:0);
 		
 		sendReceive.WriteLong(_stream,m_id);
 		sendReceive.WriteLong(_stream,m_userId);
+		
 		sendReceive.WriteString(_stream,m_userName);
 		sendReceive.WriteString(_stream,m_text);
 		
@@ -122,8 +126,9 @@ public class fetchWeibo {
 		final int t_version = _stream.read();
 		
 		m_WeiboStyle= _stream.read();
-		m_isRead	= _stream.read() == 1?true:false;
 		m_WeiboClass= sendReceive.ReadInt(_stream);
+		m_isSinaVIP = _stream.read() == 1?true:false;
+		m_isBBer	= _stream.read() == 1?true:false;
 		
 		m_id		= sendReceive.ReadLong(_stream);
 		m_userId	= sendReceive.ReadLong(_stream);
@@ -137,7 +142,7 @@ public class fetchWeibo {
 		m_commentWeiboId	= sendReceive.ReadLong(_stream);
 		if(m_commentWeiboId != -1){
 			if(_stream.read() == 1){
-				m_commentWeibo = new fetchWeibo(m_convertoSimpleChar);
+				m_commentWeibo = new fetchWeibo();
 				m_commentWeibo.InputWeibo(_stream);
 			}			
 		}
@@ -145,7 +150,7 @@ public class fetchWeibo {
 		m_replyWeiboId	= sendReceive.ReadLong(_stream);
 		if(m_replyWeiboId != -1){
 			if(_stream.read() == 1){
-				m_replyWeibo = new fetchWeibo(m_convertoSimpleChar);
+				m_replyWeibo = new fetchWeibo();
 				m_replyWeibo.InputWeibo(_stream);
 			}			
 		}

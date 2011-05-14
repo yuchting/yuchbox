@@ -77,7 +77,7 @@ class IconListCallback implements ListFieldCallback {
 	}
 		 
 	public int getPreferredWidth(ListField listField){
-		return Graphics.getScreenWidth();
+		return recvMain.fsm_display_width;
 	}
 		 
 	public int indexOfList(ListField listField, String prefix, int start){
