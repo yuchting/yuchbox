@@ -3,6 +3,8 @@ package com.yuchting.yuchberry.client;
 import java.util.Vector;
 
 import local.localResource;
+import net.rim.device.api.servicebook.ServiceBook;
+import net.rim.device.api.servicebook.ServiceRecord;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Keypad;
@@ -229,7 +231,13 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 					m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
 					
 				}else{
-										
+					
+					ServiceBook t_sb = ServiceBook.getSB();
+					ServiceRecord[] t_record = t_sb.findRecordsByCid("CMIME");
+					if(t_record == null || t_record.length == 0){
+						m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.NEED_CMIME_PROMPT));
+						return;
+					}
 					
 					try{
 						m_mainApp.m_hostname 		= m_hostName.getText();

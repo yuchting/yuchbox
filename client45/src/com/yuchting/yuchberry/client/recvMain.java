@@ -61,6 +61,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	shareYBScreen		m_shareScreen		= null;
 	
 	weiboTimeLineScreen	m_weiboTimeLineScreen = new weiboTimeLineScreen(this);
+		
 	UiApplication		m_downloadDlgParent = null;
 	
 	UiApplication		m_messageApplication = null;
@@ -1298,7 +1299,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public final Vector GetErrorString(){
 		return m_errorString;
 	}
-	
+		
 	static public void openURL(String _url){
 		BrowserSession browserSession = Browser.getDefaultSession();
 		browserSession.displayPage(_url);

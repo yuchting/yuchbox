@@ -303,39 +303,43 @@ public class weiboTimeLineScreen extends MainScreen{
 		setTitle(m_weiboHeader);
 				
 		//@{ test code
-		try{
-			byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/Unknown_resize.jpg"));		
-			Bitmap t_headImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
-			
-			Random t_rand = new Random();
-			for(int i = 0 ;i < 200;i++){
-				fetchWeibo t_weibo = new fetchWeibo();
-				t_weibo.SetId(0);
-				t_weibo.SetUserName("这是" + i);
-				
-				if(t_rand.nextInt() % 3 == 0){
-					t_weibo.SetBBer(true);
-				}
-				
-				if(t_rand.nextInt() % 3 == 0){
-					t_weibo.SetSinaVIP(true);
-				}
-				
-				if(i % 2 == 0){
-					fetchWeibo t_commentWeibo = new fetchWeibo();
-					t_commentWeibo.SetUserName("评论者");
-					t_commentWeibo.SetText("这是一个评论这是一个评论这是一个评论这是一个评论这是一个评论这是一个评论这是一个评论");
-					
-					t_weibo.SetCommectWeibo(t_commentWeibo);
-				}				
-				
-				t_weibo.SetText("这是一个测试这个这是一个测试这个这是一个测试这个这是一个测试这个");
-				
-				m_mainMgr.AddWeibo(new WeiboItemField(t_weibo,t_headImage));
-			}
-			
-		}catch(Exception e){}
+//		try{
+//			byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/Unknown_resize.jpg"));		
+//			Bitmap t_headImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
+//			
+//			Random t_rand = new Random();
+//			for(int i = 0 ;i < 200;i++){
+//				fetchWeibo t_weibo = new fetchWeibo();
+//				t_weibo.SetId(0);
+//				t_weibo.SetUserName("这是" + i);
+//				
+//				if(t_rand.nextInt() % 3 == 0){
+//					t_weibo.SetBBer(true);
+//				}
+//				
+//				if(t_rand.nextInt() % 3 == 0){
+//					t_weibo.SetSinaVIP(true);
+//				}
+//				
+//				if(i % 2 == 0){
+//					fetchWeibo t_commentWeibo = new fetchWeibo();
+//					t_commentWeibo.SetUserName("评论者");
+//					t_commentWeibo.SetText("这是一个评论这是一个评论这是一个评论这是一个评论这是一个评论这是一个评论这是一个评论");
+//					
+//					t_weibo.SetCommectWeibo(t_commentWeibo);
+//				}				
+//				
+//				t_weibo.SetText("这是一个测试这个这是一个测试这个这是一个测试这个这是一个测试这个");
+//				
+//				m_mainMgr.AddWeibo(new WeiboItemField(t_weibo,t_headImage));
+//			}
+//			
+//		}catch(Exception e){}
 		//@}
+	}
+	
+	public void AddWeibo(fetchWeibo _weibo){
+		
 	}
 	
 	static public Bitmap GetWeiboSign(fetchWeibo _weibo){

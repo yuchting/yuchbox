@@ -7,17 +7,17 @@ import java.io.OutputStream;
 public class fetchWeibo {
 	
 	final static int	VERSION = 1;
-	final public static int	SINA_WEIBO_STYLE 		= 0;
+	final public static byte	SINA_WEIBO_STYLE 		= 0;
 	
-	final public static int	TIMELINE_CLASS 			= 0;
-	final public static int	DIRECT_MESSAGE_CLASS 	= 1;
-	final public static int	AT_ME_CLASS 			= 2;
-	final public static int	COMMENT_ME_CLASS 		= 3;
+	final public static byte	TIMELINE_CLASS 			= 0;
+	final public static byte	DIRECT_MESSAGE_CLASS 	= 1;
+	final public static byte	AT_ME_CLASS 			= 2;
+	final public static byte	COMMENT_ME_CLASS 		= 3;
 	
 	final public static int	fsm_headImageSize		= 32;
 	
-	int		m_WeiboStyle;
-	int		m_WeiboClass;
+	byte		m_WeiboStyle;
+	byte		m_WeiboClass;
 	
 	long	m_id;
 	long	m_userId;
@@ -49,11 +49,11 @@ public class fetchWeibo {
 	}
 	
 	
-	public int GetWeiboStyle(){return m_WeiboStyle;}
-	public void SetWeiboStyle(int _style){m_WeiboStyle = _style;}
+	public byte GetWeiboStyle(){return m_WeiboStyle;}
+	public void SetWeiboStyle( byte _style){m_WeiboStyle = _style;}
 	
-	public int GetWeiboClass(){return m_WeiboClass;}
-	public void SetWeiboClass(int _style){m_WeiboClass = _style;}
+	public byte GetWeiboClass(){return m_WeiboClass;}
+	public void SetWeiboClass(byte _style){m_WeiboClass = _style;}
 	
 	public long GetId(){return m_id;}
 	public void SetId(final long _id){m_id = _id;}
@@ -97,7 +97,7 @@ public class fetchWeibo {
 		_stream.write(VERSION);
 		
 		_stream.write(m_WeiboStyle);
-		sendReceive.WriteInt(_stream,m_WeiboClass);
+		_stream.write(m_WeiboClass);
 		
 		_stream.write(m_isSinaVIP?1:0);
 		_stream.write(m_isBBer?1:0);
@@ -132,8 +132,9 @@ public class fetchWeibo {
 		
 		final int t_version = _stream.read();
 		
-		m_WeiboStyle= _stream.read();
-		m_WeiboClass= sendReceive.ReadInt(_stream);
+		m_WeiboStyle= (byte)_stream.read();
+		m_WeiboClass= (byte)_stream.read();
+		
 		m_isSinaVIP = _stream.read() == 1?true:false;
 		m_isBBer	= _stream.read() == 1?true:false;
 		

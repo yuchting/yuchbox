@@ -36,6 +36,8 @@ import net.rim.blackberry.api.mail.event.ViewListener;
 import net.rim.blackberry.api.mail.event.ViewListenerExtended;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.io.Base64OutputStream;
+import net.rim.device.api.servicebook.ServiceBook;
+import net.rim.device.api.servicebook.ServiceRecord;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.RadioInfo;
@@ -81,10 +83,8 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	public Vector 		m_markReadVector 		= new Vector();
 	
-	
 	Vector				m_recvMailSimpleHashCodeSet = new Vector();
-	 
-		 
+			 
 	boolean			m_sendAboutText			= false;
 	boolean			m_recvAboutText			= false;
 	 
@@ -230,6 +230,13 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 
 	public void BeginListener()throws Exception{
+		
+		m_listeningMessageFolder = GetDefaultFolder();
+		m_listeningMessageFolder.addFolderListener(this);
+		
+		m_listeningMessageFolder_out = GetDefaultOutFolder();
+		m_listeningMessageFolder_out.addFolderListener(this	);
+		
 		// add the send listener
 		//
 		Store store = Session.getDefaultInstance().getStore();
@@ -240,17 +247,19 @@ public class connectDeamon extends Thread implements SendListener,
 						 
 		AttachmentHandlerManager.getInstance().addAttachmentHandler(this);
 		
-		m_listeningMessageFolder = GetDefaultFolder();
-		m_listeningMessageFolder.addFolderListener(this);
 		
-		m_listeningMessageFolder_out = GetDefaultOutFolder();
-		m_listeningMessageFolder_out.addFolderListener(this	);
 	}
 	 
 	 
 	public void EndListener()throws Exception{
 		
 		if(m_listeningMessageFolder != null){
+			
+			m_listeningMessageFolder.removeFolderListener(this);       			
+			m_listeningMessageFolder = null;
+			
+			m_listeningMessageFolder_out.removeFolderListener(this);
+			m_listeningMessageFolder_out = null;
 			
 			// add the send listener
 			//
@@ -261,11 +270,7 @@ public class connectDeamon extends Thread implements SendListener,
 					         
 	        AttachmentHandlerManager.getInstance().removeAttachmentHandler(this);
         
-	        m_listeningMessageFolder.removeFolderListener(this);       			
-			m_listeningMessageFolder = null;
-			
-			m_listeningMessageFolder_out.removeFolderListener(this);
-			m_listeningMessageFolder_out = null;
+	       
         }        
 	}
 	 
@@ -794,9 +799,9 @@ public class connectDeamon extends Thread implements SendListener,
 		 Disconnect();
 		
 		 m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTING_LABEL));
-		 m_disconnect = false;
-		
-		 BeginListener();
+		 m_disconnect = false;	
+		 
+		 BeginListener();	
 	 }
 	 
 	 public boolean IsConnectState(){
@@ -994,6 +999,9 @@ public class connectDeamon extends Thread implements SendListener,
 		 			m_mainApp.SetReportLatestVersion(t_latestVersion);
 		 		}		 		 			
 		 		break;
+		 	case msg_head.msgWeibo:
+		 		ProcessWeibo(in);
+		 		break;
 		 }
 	 }
 	
@@ -1004,7 +1012,7 @@ public class connectDeamon extends Thread implements SendListener,
 		Folder[] t_folders = store.list();
 		for(int i = 0;i < t_folders.length;i++){
 			String t_name = t_folders[i].toString();
-			if((t_name.indexOf("Inbox") != -1 || t_name.indexOf("收件箱") != -1) 
+			if((t_name.indexOf("Inbox") != -1 || t_name.indexOf("收件") != -1) //收件匣 收件箱
 			&& (t_name.indexOf("no service book") == -1)){
 				
 				folder = t_folders[i];
@@ -1013,12 +1021,18 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 		
 		if(folder == null ){
-			folder = store.getFolder(Folder.INBOX);
+			t_folders = store.list();
+			for(int i = 0;i < t_folders.length;i++){
+				m_mainApp.SetErrorString( t_folders[i].toString());
+			}
+			
+			folder = store.getFolder(Folder.OUTBOX);
 		}
 		
 		if(folder == null){
-			throw new Exception("Can't be retrieve the Folder!");
+			throw new Exception("Can't be retrieve the Folder! check Service Book with CMIME");
 		}
+			
 		
 		return folder;
 	}
@@ -1030,7 +1044,7 @@ public class connectDeamon extends Thread implements SendListener,
 		Folder[] t_folders = store.list();
 		for(int i = 0;i < t_folders.length;i++){
 			String t_name = t_folders[i].toString();
-			if((t_name.indexOf("Outbox") != -1 || t_name.indexOf("发件箱") != -1 || t_name.indexOf("發件箱") != -1) 
+			if((t_name.indexOf("Outbox") != -1 || t_name.indexOf("发件箱") != -1 || t_name.indexOf("寄件匣") != -1) 
 			&& (t_name.indexOf("no service book") == -1)){
 				
 				folder = t_folders[i];
@@ -1039,11 +1053,15 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 		
 		if(folder == null ){
+			t_folders = store.list();
+			for(int i = 0;i < t_folders.length;i++){
+				m_mainApp.SetErrorString( t_folders[i].toString());
+			}
 			folder = store.getFolder(Folder.OUTBOX);
 		}
 		
 		if(folder == null){
-			throw new Exception("Can't be retrieve the Folder!");
+			throw new Exception("Can't be retrieve the Folder! check Service Book with CMIME");
 		}
 		
 		return folder;
@@ -1234,6 +1252,8 @@ public class connectDeamon extends Thread implements SendListener,
 		sendMailAttachmentDeamon t_mailDeamon = new sendMailAttachmentDeamon(this, _mail, t_vfileReader,_forwardReply,_sendStyle);
 		m_sendingMailAttachment.addElement(t_mailDeamon);	
 	}
+	
+	
 	
 	public void ProcessMailAttach(InputStream in)throws Exception{
 		
@@ -1646,6 +1666,55 @@ public class connectDeamon extends Thread implements SendListener,
 			
 		}
 	  
+	}
+	
+	///////////////////////////////////////////////////////////////////////////////////////////
+	///// weibo module
+	///////////////////////////////////////////////////////////////////////////////////////////
+	
+	Vector				m_receivedWeiboList	= new Vector();
+	
+	private void SendWeiboConfirmMsg(fetchWeibo _weibo) throws Exception{
+		
+		// send the msgWeiboConfirm to server to confirm receive this weibo
+		//
+		
+		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+		t_os.write(msg_head.msgWeiboConfirm);
+		t_os.write(_weibo.GetWeiboStyle());
+		
+		sendReceive.WriteLong(t_os,_weibo.GetId());		
+		
+		m_sendingQueue.addSendingData(msg_head.msgWeiboConfirm, t_os.toByteArray());
+	}
+	
+	private void ProcessWeibo(InputStream in){
+		fetchWeibo t_weibo = new fetchWeibo();
+		
+		try{
+			t_weibo.InputWeibo(in);
+			
+			SendWeiboConfirmMsg(t_weibo);
+			
+			for(int i = 0 ;i < m_receivedWeiboList.size();i++){
+				fetchWeibo weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
+				if(weibo.equals(t_weibo)){
+					m_mainApp.SetErrorString("" + t_weibo.GetId() + " weibo has been added");
+					return;
+				}
+			}
+			
+			if(m_receivedWeiboList.size() > 512){
+				m_receivedWeiboList.removeElementAt(0);
+			}
+			m_receivedWeiboList.addElement(t_weibo);
+			
+			m_mainApp.m_weiboTimeLineScreen.add
+			
+			
+		}catch(Exception e){
+			m_mainApp.SetErrorString("PW:"+ e.getMessage() + e.getClass().getName());
+		}	
 	}
 	
 	 
