@@ -141,7 +141,10 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     	_menu.add(MenuItem.separator(102));
     	_menu.add(m_setingMenu);
     	_menu.add(m_debugInfoMenu);
-    	_menu.add(m_weiboMenu);
+    	
+    	if(m_mainApp.m_enableWeiboModule){
+    		_menu.add(m_weiboMenu);
+    	}    	
     	
     	super.makeMenu(_menu, instance);
     }
@@ -176,6 +179,12 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
         	case 'F':
         		m_shareMenu.run();
         		return true;
+        	case 'W':
+        		if(m_mainApp.m_enableWeiboModule){
+        			m_weiboMenu.run();
+        			return true;
+        		}
+        		break;
         	}
     	}
     	

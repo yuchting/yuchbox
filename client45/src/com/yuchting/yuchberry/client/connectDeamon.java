@@ -1682,14 +1682,11 @@ public class connectDeamon extends Thread implements SendListener,
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///// weibo module
 	///////////////////////////////////////////////////////////////////////////////////////////
-	
-	Vector				m_receivedWeiboList	= new Vector();
-	
+		
 	private void SendWeiboConfirmMsg(fetchWeibo _weibo) throws Exception{
 		
 		// send the msgWeiboConfirm to server to confirm receive this weibo
 		//
-		
 		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 		t_os.write(msg_head.msgWeiboConfirm);
 		t_os.write(_weibo.GetWeiboStyle());
@@ -1699,6 +1696,8 @@ public class connectDeamon extends Thread implements SendListener,
 		m_sendingQueue.addSendingData(msg_head.msgWeiboConfirm, t_os.toByteArray(),true);
 	}
 	
+	
+	
 	private void ProcessWeibo(InputStream in){
 		fetchWeibo t_weibo = new fetchWeibo();
 		
@@ -1707,22 +1706,13 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			SendWeiboConfirmMsg(t_weibo);
 			
-			for(int i = 0 ;i < m_receivedWeiboList.size();i++){
-				fetchWeibo weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
-				if(weibo.equals(t_weibo)){
-					m_mainApp.SetErrorString("" + t_weibo.GetId() + " weibo has been added");
-					return;
-				}
+			if(m_mainApp.PrepareWeiboItem(t_weibo)){
+
+				if(m_mainApp.m_weiboTimeLineScreen.AddWeibo(t_weibo)){
+					m_mainApp.TriggerWeiboNotification();
+				}	
 			}
 			
-			if(m_receivedWeiboList.size() > 512){
-				m_receivedWeiboList.removeElementAt(0);
-			}
-			m_receivedWeiboList.addElement(t_weibo);
-			
-			if(m_mainApp.m_weiboTimeLineScreen.AddWeibo(t_weibo)){
-				m_mainApp.TriggerWeiboNotification();
-			}
 			
 			
 		}catch(Exception e){

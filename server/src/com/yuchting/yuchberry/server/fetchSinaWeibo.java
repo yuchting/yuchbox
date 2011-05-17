@@ -275,6 +275,7 @@ public class fetchSinaWeibo extends fetchAccount{
 	 */
 	public void ResetSession(boolean _fullTest)throws Exception{
 		m_weibo.setToken(m_accessToken, m_secretToken);
+		m_weibo.verifyCredentials();
 		m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + "> Prepare OK!");
 	}
 	
@@ -461,7 +462,11 @@ public class fetchSinaWeibo extends fetchAccount{
 				if(t_style == fetchWeibo.SINA_WEIBO_STYLE){
 					
 					long t_commentWeiboId = sendReceive.ReadLong(in);
-					m_weibo.updateComment(t_text,Long.toString(t_commentWeiboId),null);
+					
+					String t_id = Long.toString(t_commentWeiboId);
+					m_weibo.updateComment(t_text,t_id,null);
+					 
+					m_weibo.updateStatus(t_text,t_commentWeiboId);
 					
 					m_mainMgr.m_logger.LogOut(GetAccountName() + "[SinaWeiBo] comment weibo " + t_commentWeiboId);
 					
@@ -472,8 +477,10 @@ public class fetchSinaWeibo extends fetchAccount{
 			case 2:
 				if(t_style == fetchWeibo.SINA_WEIBO_STYLE){
 					long t_replyWeiboId = sendReceive.ReadLong(in);
-					m_weibo.updateComment(t_text,Long.toString(t_replyWeiboId),null);
+					m_weibo.updateComment(t_text,String.valueOf(t_replyWeiboId),null);
 					
+					m_weibo.updateStatus(t_text,t_replyWeiboId);
+										
 					m_mainMgr.m_logger.LogOut(GetAccountName() + "[SinaWeiBo] reply weibo " + t_replyWeiboId);
 					
 					return true;

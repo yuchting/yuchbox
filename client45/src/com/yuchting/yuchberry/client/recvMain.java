@@ -58,8 +58,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	    }
 	};
 	
-	String 				m_weiboHeadImageDir = null;
-	String 				m_weiboHeadImageDir_sina = null;
+
 	
     aboutScreen			m_aboutScreen		= null;
 	stateScreen 		m_stateScreen 		= null;
@@ -69,7 +68,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	settingScreen		m_settingScreen		= null;
 	shareYBScreen		m_shareScreen		= null;
 	
-	weiboTimeLineScreen	m_weiboTimeLineScreen = new weiboTimeLineScreen(this);
+	
 		
 	UiApplication		m_downloadDlgParent = null;
 	
@@ -211,6 +210,17 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	FileConnection m_logfc				= null;
 	OutputStream	m_logfcOutput		= null;
 	
+	
+	// weibo module
+	boolean			m_enableWeiboModule			= false;
+	boolean			m_updateOwnListWhenFw		= true;
+	boolean			m_updateOwnListWhenRe	= false;
+	
+	String 				m_weiboHeadImageDir = null;
+	String 				m_weiboHeadImageDir_sina = null;
+	weiboTimeLineScreen	m_weiboTimeLineScreen = null;
+	Vector				m_receivedWeiboList	= new Vector();
+	
 	public static void main(String[] args) {
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());		
 		t_theApp.enterEventDispatcher();
@@ -288,6 +298,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		//
 		WriteReadIni(true);
 		
+		InitWeiboModule();
+		
         if(_systemRun){
         	
         	// register the notification
@@ -305,7 +317,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         			System.exit(0);
         		}
         	}      	
-        }      
+        }     
 	}
 	
 	public String GetAttachmentDir(){
@@ -685,7 +697,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 16;
+	final static int		fsm_clientVersion = 17;
 	
 	public synchronized void WriteReadIni(boolean _read){
 		
@@ -784,6 +796,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_passwordKey = sendReceive.ReadString(t_readFile); 
 				    		}
 				    		
+				    		if(t_currVer >= 17){
+				    			m_enableWeiboModule = (t_readFile.read() == 1)?true:false;
+				    			m_updateOwnListWhenFw = (t_readFile.read() == 1)?true:false;
+				    			m_updateOwnListWhenRe = (t_readFile.read() == 1)?true:false;
+				    		}
+				    						    		
 			    		}finally{
 			    			t_readFile.close();
 			    			t_readFile = null;
@@ -841,6 +859,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						t_writeFile.write(m_copyMailToSentFolder?1:0);
 						
 						sendReceive.WriteString(t_writeFile,m_passwordKey);
+						
+						t_writeFile.write(m_enableWeiboModule?1:0);
+						t_writeFile.write(m_updateOwnListWhenFw?1:0);
+						t_writeFile.write(m_updateOwnListWhenRe?1:0);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -972,16 +994,34 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			}
 		}	
 		
+		// store the weibo item list
+		ReadWriteWeiboFile(false);
+		
 		System.exit(0);
 	}
 	
 	public void activate(){
+		
+		if(m_enableWeiboModule && m_connectDeamon.IsConnectState()){
+			
+			if(m_weiboTimeLineScreen == null){
+				InitWeiboModule();
+			}
+			
+			pushScreen(m_weiboTimeLineScreen);
+			
+		}else{
+			popupStateScreen();
+		}	
+		
+		PopupLatestVersionDlg();
+	}
+	
+	public void popupStateScreen(){
 		if(m_stateScreen == null){
 			m_stateScreen = new stateScreen(this);
 			pushScreen(m_stateScreen);
-			
-			PopupLatestVersionDlg();
-		}		
+		}
 	}
 	
 	public void TriggerNotification(){
@@ -1395,6 +1435,113 @@ public class recvMain extends UiApplication implements localResource,LocationLis
             } while(two_halfs++ < 1);
         }
         return buf.toString();
-    }	
+    }
+	
+	
+	///////////////////////////////////////////////////////////////////////////////////////////
+	///// weibo module
+	///////////////////////////////////////////////////////////////////////////////////////////
+	
+	public void InitWeiboModule(){
+		
+		if(m_enableWeiboModule){
+			if(m_weiboTimeLineScreen == null){
+				m_weiboTimeLineScreen = new weiboTimeLineScreen(this);
+			}
+			
+			ReadWriteWeiboFile(true);
+			
+			m_weiboTimeLineScreen.ClearWeibo();
+			
+			for(int i = 0 ;i < m_receivedWeiboList.size();i++){
+				fetchWeibo t_weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
+				
+				try{
+					m_weiboTimeLineScreen.AddWeibo(t_weibo);
+				}catch(Exception e){
+					SetErrorString("IWM:"+ e.getMessage() + e.getClass().getName());
+				}
+				
+			}
+		}
+		
+		
+	}
+	
+	public boolean PrepareWeiboItem(fetchWeibo _weibo){
+		for(int i = 0 ;i < m_receivedWeiboList.size();i++){
+			fetchWeibo weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
+			if(weibo.equals(_weibo)){
+				SetErrorString(Long.toString(_weibo.GetId()) + " weibo has been added");
+				return false;
+			}
+		}
+		
+		if(m_receivedWeiboList.size() > 512){
+			m_receivedWeiboList.removeElementAt(0);
+		}
+		m_receivedWeiboList.addElement(_weibo);
+		
+		return true;
+	}
+	
+	private void ReadWriteWeiboFile(boolean _read){
+		
+		try{
+			FileConnection t_fc = (FileConnection)Connector.open(m_weiboHeadImageDir + "weibo.data");
+			try{
+
+				if(_read){
+					m_receivedWeiboList.removeAllElements();
+					
+					if(t_fc.exists()){
+						
+						InputStream t_in = t_fc.openInputStream();
+						try{
+							int t_num = sendReceive.ReadInt(t_in);
+							for(int i = 0 ;i < t_num;i++){
+								fetchWeibo t_weibo = new fetchWeibo();
+								t_weibo.InputWeibo(t_in);
+								
+								m_receivedWeiboList.addElement(t_weibo);
+							}
+							
+						}finally{
+							t_in.close();
+							t_in = null;
+						}
+					}
+					
+				}else{
+					
+					if(!t_fc.exists()){
+						t_fc.create();
+					}
+					
+					OutputStream t_os = t_fc.openOutputStream();
+					try{
+						sendReceive.WriteInt(t_os,m_receivedWeiboList.size());
+						
+						for(int i = 0 ;i < m_receivedWeiboList.size();i++){
+							fetchWeibo t_weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
+							t_weibo.OutputWeibo(t_os);
+						}
+						
+					}finally{
+						t_os.flush();
+						t_os.close();
+						t_os = null;
+					}
+					
+				}
+				
+			}finally{
+				t_fc.close();
+				t_fc = null;
+			}
+		}catch(Exception e){
+			SetErrorString("RWWF:"+e.getMessage()+e.getClass().getName());
+		}
+	}
 }
 

@@ -51,6 +51,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 ObjectChoiceField	m_recvMsgTextLength	= null;
 	 ButtonField		m_changeSignature = new ButtonField(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_BUTTON_TEXT),Field.FIELD_RIGHT);
 	 
+	 CheckboxField		m_weiboModule	= null;
+	 CheckboxField		m_updateOwnWhenFw = null;
+	 CheckboxField		m_updateOwnWhenRe = null;	 
+	 
 	 recvMain			m_mainApp		= null;
 	 
 	 MenuItem	m_helpMenu = new MenuItem(recvMain.sm_local.getString(localResource.STATE_SCREEN_HELP_MENU), 99, 10) {	
@@ -129,6 +133,24 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 
 		 add(m_changeSignature);
 		 m_changeSignature.setChangeListener(this);
+		 
+		 //@}
+		 
+		 add(new SeparatorField());
+		 
+		 //@{ weibo op
+		 t_title = new LabelField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP));
+		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
+		 add(t_title);
+		 
+		 m_weiboModule = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_ENABLE),m_mainApp.m_enableWeiboModule);
+		 add(m_weiboModule);
+		 
+		 m_updateOwnWhenFw = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_UPDATE_FW),m_mainApp.m_updateOwnListWhenFw);
+		 add(m_updateOwnWhenFw);
+		 
+		 m_updateOwnWhenRe = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_UPDATE_RE),m_mainApp.m_updateOwnListWhenRe);
+		 add(m_updateOwnWhenRe);
 		 
 		 //@}
 		 
@@ -261,6 +283,19 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		m_mainApp.m_delRemoteMail	= m_delRemoteMail.getChecked();
 		m_mainApp.m_recvMsgTextLengthIndex = m_recvMsgTextLength.getSelectedIndex();
 		m_mainApp.m_copyMailToSentFolder = m_copyToSentFolder.getChecked();
+		
+		if(m_mainApp.m_enableWeiboModule != m_weiboModule.getChecked()){
+			
+			m_mainApp.m_enableWeiboModule = m_weiboModule.getChecked();
+			
+			if(m_mainApp.m_enableWeiboModule){
+				m_mainApp.InitWeiboModule();
+			}
+		}
+		
+		m_mainApp.m_updateOwnListWhenFw = m_updateOwnWhenFw.getChecked();
+		m_mainApp.m_updateOwnListWhenRe = m_updateOwnWhenRe.getChecked();
+		
 		
 		m_mainApp.WriteReadIni(false);
 		
