@@ -180,12 +180,20 @@ public class connectDeamon extends Thread implements SendListener,
 			return m_connect == null || CanNotSendMsg();
 		}
 		
-		public void addSendingData(byte _msgType ,byte[] _data)throws Exception{
+		public void addSendingData(byte _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
 			
 			if(!isDisconnectState()){
 				m_connect.SendBufferToSvr(_data, false, false);
 			}else{
 				synchronized (this) {
+					if(_exceptSame){
+						for(int i = 0 ;i < m_sendingData.size();i++){
+							SendingQueueData t_data = (SendingQueueData)m_sendingData.elementAt(i);
+							if(t_data.msgType == _msgType && t_data.msgData.equals(_data)){
+								return;
+							}
+						}
+					}
 					m_sendingData.addElement(new SendingQueueData(_msgType,_data));
 				}				
 			}			
@@ -1002,6 +1010,9 @@ public class connectDeamon extends Thread implements SendListener,
 		 	case msg_head.msgWeibo:
 		 		ProcessWeibo(in);
 		 		break;
+		 	case msg_head.msgWeiboHeadImage:
+		 		ProcessWeiboHeadImage(in);
+		 		break;
 		 }
 	 }
 	
@@ -1077,7 +1088,7 @@ public class connectDeamon extends Thread implements SendListener,
 		sendReceive.WriteInt(t_os,_hashCode);
 		
 		
-		m_sendingQueue.addSendingData(msg_head.msgMailConfirm, t_os.toByteArray());
+		m_sendingQueue.addSendingData(msg_head.msgMailConfirm, t_os.toByteArray(),true);
 	}
 	
 	private void ProcessRecvMail(InputStream in)throws Exception{
@@ -1326,7 +1337,7 @@ public class connectDeamon extends Thread implements SendListener,
 					t_os.write(t_msgType);
 					sendReceive.WriteInt(t_os, t_mail.m_simpleHashCode);
 					
-					m_sendingQueue.addSendingData(t_msgType, t_os.toByteArray());
+					m_sendingQueue.addSendingData(t_msgType, t_os.toByteArray(),true);
 										
 					if(_del){
 						m_markReadVector.removeElementAt(i);
@@ -1685,7 +1696,7 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		sendReceive.WriteLong(t_os,_weibo.GetId());		
 		
-		m_sendingQueue.addSendingData(msg_head.msgWeiboConfirm, t_os.toByteArray());
+		m_sendingQueue.addSendingData(msg_head.msgWeiboConfirm, t_os.toByteArray(),true);
 	}
 	
 	private void ProcessWeibo(InputStream in){
@@ -1709,12 +1720,62 @@ public class connectDeamon extends Thread implements SendListener,
 			}
 			m_receivedWeiboList.addElement(t_weibo);
 			
-			m_mainApp.m_weiboTimeLineScreen.add
+			if(m_mainApp.m_weiboTimeLineScreen.AddWeibo(t_weibo)){
+				m_mainApp.TriggerWeiboNotification();
+			}
 			
 			
 		}catch(Exception e){
 			m_mainApp.SetErrorString("PW:"+ e.getMessage() + e.getClass().getName());
 		}	
+	}
+	
+	private void ProcessWeiboHeadImage(InputStream in){
+		try{
+			
+			int t_style = in.read();
+			long t_id = sendReceive.ReadLong(in);
+			
+			if(t_style == fetchWeibo.SINA_WEIBO_STYLE){
+				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+				try{
+					int t_data = -1;
+					while((t_data = in.read()) != -1){
+						t_os.write(t_data);
+					}
+					
+					byte[] t_dataArray = t_os.toByteArray();
+					
+					m_mainApp.m_weiboTimeLineScreen.AddWeiboHeadImage(t_style,t_id,t_dataArray);
+					
+					FileConnection t_fc = (FileConnection)Connector.open(m_mainApp.m_weiboHeadImageDir_sina + t_id + ".png",Connector.READ_WRITE);
+					try{
+						OutputStream t_fileOS = t_fc.openOutputStream();
+						try{
+							t_fileOS.write(t_dataArray);
+						}finally{
+							t_fileOS.flush();
+							t_fileOS.close();
+							t_fileOS = null;
+						}
+					}finally{
+						t_fc.close();
+						t_fc = null;
+					}
+					
+					
+				}finally{
+					t_os.close();
+					t_os = null;
+				}
+			}
+			
+			
+			
+		}catch(Exception e){
+			
+		}
+		
 	}
 	
 	 

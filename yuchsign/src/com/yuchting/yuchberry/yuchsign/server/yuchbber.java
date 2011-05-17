@@ -1,6 +1,5 @@
 package com.yuchting.yuchberry.yuchsign.server;
 
-import java.io.StringReader;
 import java.util.Vector;
 
 import javax.jdo.annotations.IdGeneratorStrategy;

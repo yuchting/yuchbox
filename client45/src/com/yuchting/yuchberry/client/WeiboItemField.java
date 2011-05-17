@@ -32,9 +32,9 @@ public class WeiboItemField extends Manager{
 	final static int		fsm_selectedColor			= 0x2020ff;
 	final static int		fsm_spaceLineColor			= 0x8f8f8f;
 	
-	static HyperlinkButtonField	sm_atBut				= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.AT_WEIBO_BUTTON_LABLE));
-	static HyperlinkButtonField	sm_forwardBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.FORWARD_WEIBO_BUTTTON_LABLE));
-	static HyperlinkButtonField	sm_favoriteBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.FAVORITE_WEIBO_BUTTON_LABLE));
+	static HyperlinkButtonField	 sm_atBut				= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.AT_WEIBO_BUTTON_LABLE));
+	static HyperlinkButtonField	 sm_forwardBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.FORWARD_WEIBO_BUTTTON_LABLE));
+	static HyperlinkButtonField	 sm_favoriteBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.FAVORITE_WEIBO_BUTTON_LABLE));
 	
 	// BasicEditField for 4.2os
 	static TextField 			sm_textArea				= new TextField(Field.READONLY);
@@ -73,7 +73,7 @@ public class WeiboItemField extends Manager{
 	static int		sm_editTextAreaHeight				= 0;
 		
 	static int		sm_atBut_x							= sm_defaultFont.getAdvance(sm_forwardBut.getText()) + fsm_headImageTextInterval;
-	static int		sm_forvoriteBut_x					= sm_atBut_x + sm_defaultFont.getAdvance(sm_forwardBut.getText()) + fsm_headImageTextInterval;
+	static int		sm_forvoriteBut_x					= sm_atBut_x + sm_defaultFont.getAdvance(sm_atBut.getText()) + fsm_headImageTextInterval;
 	
 	static int		sm_imageAreaMinHeight				= fsm_weiboSignImageSize + fsm_headImageWidth + fsm_headImageTextInterval;
 
@@ -81,9 +81,9 @@ public class WeiboItemField extends Manager{
 	static WeiboItemField			sm_selectWeiboItem	= null;
 	static WeiboItemField			sm_editWeiboItem	= null;
 	
+	static int						sm_currentSendType	= 0;
+	
 	static int	sm_closeHeight		= sm_fontHeight * 2 + 1;
-	
-	
 	
 	boolean[]				m_hasControlField = {false,false,false,false,false,false};
 	
@@ -95,15 +95,15 @@ public class WeiboItemField extends Manager{
 	
 	int						m_functionButton_y	= sm_fontHeight;
 	int						m_commentText_y		= sm_fontHeight;
-	int						m_textHeight	= sm_fontHeight;
+	int						m_textHeight		= sm_fontHeight;
 	
-	Bitmap					m_headImage = null;
+	HeadImage				m_headImage = null;
 	
 	public WeiboItemField(){
 		super(Manager.NO_VERTICAL_SCROLL );
 	}
 	
-	public WeiboItemField(fetchWeibo _weibo,Bitmap _headImage){
+	public WeiboItemField(fetchWeibo _weibo,HeadImage _headImage){
 		super(Manager.NO_VERTICAL_SCROLL);
 		
 		m_weibo 			= _weibo;
@@ -141,12 +141,14 @@ public class WeiboItemField extends Manager{
 			
 			if(!m_hasControlField[1]){
 				m_hasControlField[1] = true;
-				add(sm_atBut);
-			}
-			if(!m_hasControlField[2]){
-				m_hasControlField[2] = true;
 				add(sm_forwardBut);
 			}
+			
+			if(!m_hasControlField[2]){
+				m_hasControlField[2] = true;
+				add(sm_atBut);
+			}
+			
 			if(!m_hasControlField[3]){
 				m_hasControlField[3] = true;
 				add(sm_favoriteBut);
@@ -168,14 +170,17 @@ public class WeiboItemField extends Manager{
 				delete(sm_textArea);
 			}
 			
+			
 			if(m_hasControlField[1]){
 				m_hasControlField[1] = false;
-				delete(sm_atBut);
-			}
-			if(m_hasControlField[2]){
-				m_hasControlField[2] = false;
 				delete(sm_forwardBut);
 			}
+			
+			if(m_hasControlField[2]){
+				m_hasControlField[2] = false;
+				delete(sm_atBut);
+			}
+			
 			if(m_hasControlField[3]){
 				m_hasControlField[3] = false;
 				delete(sm_favoriteBut);
@@ -309,7 +314,7 @@ public class WeiboItemField extends Manager{
 						weiboTimeLineScreen.GetWeiboSign(m_weibo), 0, 0);
 			
 			_g.drawBitmap(0, fsm_weiboSignImageSize + fsm_headImageTextInterval, 
-						fsm_headImageWidth, fsm_headImageWidth, m_headImage, 0, 0);
+						fsm_headImageWidth, fsm_headImageWidth, m_headImage.m_headImage, 0, 0);
 			
 			int t_startSign_x = fsm_weiboSignImageSize;
 			
@@ -437,7 +442,9 @@ public class WeiboItemField extends Manager{
 		        // time string
 		        //
 		        _g.setColor(0xafafaf);
-		        _g.drawText(getTimeString(),recvMain.fsm_display_width - 100,t_firstLineHeight,Graphics.ELLIPSIS);
+		        String t_dateString = getTimeString();		        
+		        _g.drawText(t_dateString,recvMain.fsm_display_width - _g.getFont().getAdvance(t_dateString)
+		        				,t_firstLineHeight,Graphics.ELLIPSIS);
 		       
 
 			}finally{

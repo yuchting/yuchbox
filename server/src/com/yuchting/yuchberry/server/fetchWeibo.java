@@ -19,24 +19,26 @@ public class fetchWeibo {
 	byte		m_WeiboStyle;
 	byte		m_WeiboClass;
 	
-	long	m_id;
-	long	m_userId;
+	long		m_id;
+	long		m_userId;
 	
-	boolean m_isSinaVIP;
-	boolean m_isBBer;
+	boolean 	m_isSinaVIP;
+	boolean 	m_isBBer;
 	
-	int		m_userHeadImageHashCode = 0;
+	int			m_userHeadImageHashCode = 0;
 	
-	String	m_userName	= new String();
-	String	m_text		= new String();
+	String		m_userName	= "";
+	String		m_text		= "";
 	
-	long	m_dateTime 	= 0;
+	long		m_dateTime 	= 0;
 	
-	long 	m_commentWeiboId = -1;
+	long 		m_commentWeiboId = -1;
 	fetchWeibo	m_commentWeibo = null;
 	
-	long 	m_replyWeiboId = -1;
+	long 		m_replyWeiboId = -1;
 	fetchWeibo	m_replyWeibo = null;
+	
+	String		m_source	= "";
 	
 	private boolean m_convertoSimpleChar = false;
 	
@@ -61,7 +63,7 @@ public class fetchWeibo {
 	public long GetUserId(){return m_userId;}
 	public void SetUserId(final long _id){m_userId = _id;}
 	
-	public long GetUserHeadImageHashCode(){return m_userHeadImageHashCode;}
+	public int GetUserHeadImageHashCode(){return m_userHeadImageHashCode;}
 	public void SetUserHeadImageHashCode(final int _hashCode){m_userHeadImageHashCode = _hashCode;}	
 	
 	public String GetUserName(){return m_userName;}
@@ -91,6 +93,8 @@ public class fetchWeibo {
 	public fetchWeibo GetReplyWeibo(){return m_replyWeibo;}
 	public void SetReplyWeibo(fetchWeibo _weibo){m_replyWeibo = _weibo;}
 	
+	public String GetSource(){return m_source;}
+	public void SetSource(String _source){m_source = _source;}	
 	
 	public void OutputWeibo(OutputStream _stream)throws Exception{
 		
@@ -112,6 +116,9 @@ public class fetchWeibo {
 		
 		sendReceive.WriteLong(_stream,m_dateTime);
 		sendReceive.WriteLong(_stream,m_commentWeiboId);
+		
+		sendReceive.WriteString(_stream,m_source,m_convertoSimpleChar);
+		
 		if(m_commentWeiboId != -1){
 			_stream.write(m_commentWeibo != null?1:0);
 			if(m_commentWeibo != null){				
@@ -148,6 +155,9 @@ public class fetchWeibo {
 		m_dateTime	= sendReceive.ReadLong(_stream);
 		
 		m_commentWeiboId	= sendReceive.ReadLong(_stream);
+		
+		m_source			= sendReceive.ReadString(_stream);
+				
 		if(m_commentWeiboId != -1){
 			if(_stream.read() == 1){
 				m_commentWeibo = new fetchWeibo(m_convertoSimpleChar);

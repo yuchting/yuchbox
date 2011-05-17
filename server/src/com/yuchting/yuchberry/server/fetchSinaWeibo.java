@@ -101,6 +101,12 @@ public class fetchSinaWeibo extends fetchAccount{
 		if(!t_file.exists()){
 			t_file.mkdir();
 		}
+		
+		m_headImageDir			= m_headImageDir + "Sina/";
+		t_file = new File(m_headImageDir);
+		if(!t_file.exists()){
+			t_file.mkdir();
+		}
 	}
 	
 	/**
@@ -221,7 +227,7 @@ public class fetchSinaWeibo extends fetchAccount{
 		}
 	}
 	
-	private void AddWeibo(List<Status> _from,fetchWeiboData _to,int _class){
+	private void AddWeibo(List<Status> _from,fetchWeiboData _to,byte _class){
 		
 		boolean t_insert;
 		for(Status fetchOne : _from){
@@ -369,6 +375,8 @@ public class fetchSinaWeibo extends fetchAccount{
 		        t_read.close();
 		        
 		        m_mainMgr.SendData(t_os, false);
+		        
+		        m_mainMgr.m_logger.LogOut("send sina weibo head image " + t_id);
 			}
 			
 			return true;
@@ -403,6 +411,7 @@ public class fetchSinaWeibo extends fetchAccount{
 			
 			while(!_weiboList.m_weiboList.isEmpty()){
 				
+				
 				fetchWeibo t_weibo = (fetchWeibo)_weiboList.m_weiboList.get(_weiboList.m_weiboList.size() - 1); 
 				
 				t_output.write(msg_head.msgWeibo);
@@ -414,9 +423,11 @@ public class fetchSinaWeibo extends fetchAccount{
 				
 				t_weibo.m_sendConfirmTime = t_currTime;
 				
-				_weiboList.m_WeiboComfirm.add(t_weibo);		
-							
-				m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + " send Weibo<" + t_weibo.GetId() + " : " + t_weibo.GetText() + ">,wait confirm...");
+				_weiboList.m_WeiboComfirm.add(t_weibo);
+											
+				m_mainMgr.m_logger.LogOut(GetAccountName() + "[SinaWeiBo] send Weibo<" + t_weibo.GetId() + " : " + t_weibo.GetText() + ">,wait confirm...");
+				
+				t_output.reset();
 			}
 			
 			_weiboList.m_counter = 0;
@@ -431,17 +442,44 @@ public class fetchSinaWeibo extends fetchAccount{
 	
 	public boolean ProcessWeiboUpdate(ByteArrayInputStream in)throws Exception{
 		
-		fetchWeibo t_weibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
-		t_weibo.InputWeibo(in);
-
+		int t_style = in.read();
+		int t_type = in.read();	
+		
+		String t_text = sendReceive.ReadString(in);
+				
 		try{
 			
-			if(t_weibo.GetCommentWeiboId() == -1 && t_weibo.GetReplyWeiboId() == -1){
-				m_weibo.updateStatus(t_weibo.GetText());
-			}else if(t_weibo.GetCommentWeiboId() != -1){
-				m_weibo.updateComment(t_weibo.GetText(),Long.toString(t_weibo.GetCommentWeiboId()),null);
-			}else if(t_weibo.GetReplyWeiboId() != -1){
-				m_weibo.updateStatus(t_weibo.GetText(),t_weibo.GetReplyWeiboId());
+			switch(t_type){
+			case 0:
+				
+				m_weibo.updateStatus(t_text);
+				
+				m_mainMgr.m_logger.LogOut(GetAccountName() + "[SinaWeiBo] update new weibo");
+				
+				break;
+			case 1:
+				if(t_style == fetchWeibo.SINA_WEIBO_STYLE){
+					
+					long t_commentWeiboId = sendReceive.ReadLong(in);
+					m_weibo.updateComment(t_text,Long.toString(t_commentWeiboId),null);
+					
+					m_mainMgr.m_logger.LogOut(GetAccountName() + "[SinaWeiBo] comment weibo " + t_commentWeiboId);
+					
+					return true;
+				}
+				
+				break;
+			case 2:
+				if(t_style == fetchWeibo.SINA_WEIBO_STYLE){
+					long t_replyWeiboId = sendReceive.ReadLong(in);
+					m_weibo.updateComment(t_text,Long.toString(t_replyWeiboId),null);
+					
+					m_mainMgr.m_logger.LogOut(GetAccountName() + "[SinaWeiBo] reply weibo " + t_replyWeiboId);
+					
+					return true;
+				}
+				
+				break;
 			}
 			
 		}catch(Exception e){
@@ -491,7 +529,7 @@ public class fetchSinaWeibo extends fetchAccount{
 		return t_found;
 	}
 	
-	public void ImportWeibo(fetchWeibo _weibo,Status _stat,int _weiboClass){
+	public void ImportWeibo(fetchWeibo _weibo,Status _stat,byte _weiboClass){
 		_weibo.SetId(_stat.getId());
 		_weibo.SetDateLong(_stat.getCreatedAt().getTime());
 		_weibo.SetText(_stat.getText());
@@ -571,7 +609,7 @@ public class fetchSinaWeibo extends fetchAccount{
 	}
 	
 	public String GetHeadImageFilename(final long _id){
-		return GetHeadImageDir() + _id + ".jpg";
+		return GetHeadImageDir() + _id + ".png";
 	}
 	
 	private int StoreHeadImage(final User _user){
@@ -611,7 +649,7 @@ public class fetchSinaWeibo extends fetchAccount{
 		        AffineTransform at = AffineTransform.getScaleInstance((double)fetchWeibo.fsm_headImageSize/bsrc.getWidth(),
 		        														(double)fetchWeibo.fsm_headImageSize/bsrc.getHeight());
 		        g.drawRenderedImage(bsrc,at);
-		        ImageIO.write(bdest,"JPG",t_file);
+		        ImageIO.write(bdest,"PNG",t_file);
 			}
 			
 			BufferedInputStream t_read = new BufferedInputStream(new FileInputStream(t_file));

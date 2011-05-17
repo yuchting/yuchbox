@@ -50,7 +50,16 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	    }
 	};
 	
+	final static long		fsm_notifyID_weibo = 767918509114948L;
+	
+	final static Object 	fsm_notifyEvent_weibo = new Object() {
+	    public String toString() {
+	       return recvMain.sm_local.getString(localResource.NOTIFY_WEIBO_LABEL);
+	    }
+	};
+	
 	String 				m_weiboHeadImageDir = null;
+	String 				m_weiboHeadImageDir_sina = null;
 	
     aboutScreen			m_aboutScreen		= null;
 	stateScreen 		m_stateScreen 		= null;
@@ -243,7 +252,18 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	}finally{
         		fc.close();
         		fc = null;
-        	}        	
+        	}
+        	
+        	m_weiboHeadImageDir_sina = m_weiboHeadImageDir + "Sina/";
+        	fc = (FileConnection) Connector.open(m_weiboHeadImageDir_sina,Connector.READ_WRITE);
+        	try{
+        		if(!fc.exists()){
+            		fc.mkdir();
+            	}	
+        	}finally{
+        		fc.close();
+        		fc = null;
+        	}
         	
         }catch(Exception _e){
         	DialogAlertAndExit("can't use the '"+ t_attachmentDir +"' to store attachment!");
@@ -273,6 +293,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	// register the notification
         	//
         	NotificationsManager.registerSource(fsm_notifyID_email, fsm_notifyEvent_email,NotificationsConstants.CASUAL);
+        	NotificationsManager.registerSource(fsm_notifyID_weibo, fsm_notifyEvent_weibo,NotificationsConstants.CASUAL);
         	
         	if(!m_autoRun || m_hostname.length() == 0 || m_port == 0 || m_userPassword.length() == 0){
         		System.exit(0);
@@ -970,6 +991,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	public void StopNotification(){
 		NotificationsManager.cancelImmediateEvent(fsm_notifyID_email, 0, this, null);
+	}
+	
+	public void TriggerWeiboNotification(){
+		if(IsPromptTime()){
+			NotificationsManager.triggerImmediateEvent(fsm_notifyID_weibo, 0, this, null);
+		}		
 	}
 	
 	public void deactivate(){

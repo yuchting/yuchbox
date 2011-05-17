@@ -50,6 +50,7 @@ LOCATION_OPTIION_LABEL#0="Send Mail Location:";
 MESSAGE_CONTAIN_MAX_LENGTH#0="Max Message Text Length:";
 NEED_CMIME_PROMPT#0="Can't find CMIME in Service Book.";
 NOTIFY_EMAIL_LABEL#0="YuchBerry Email";
+NOTIFY_WEIBO_LABEL#0="YuchBerry Weibo";
 OPEN_ATTACHMENT#0="Download/Open Attachment (YB)";
 PORT#0="port:";
 PROMPT_OPTION_LABEL#0="prompt option(in notification profile):";

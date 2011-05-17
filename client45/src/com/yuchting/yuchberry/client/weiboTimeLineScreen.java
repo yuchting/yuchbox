@@ -1,5 +1,6 @@
 package com.yuchting.yuchberry.client;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Random;
 import java.util.Vector;
 
@@ -15,6 +16,17 @@ import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
+
+final class HeadImage{
+	
+	// the user id
+	long 	m_userID;
+	
+	byte	m_weiboStyle;
+	
+	Bitmap	m_headImage;
+	int		m_dataHash;
+}
 
 class MainManager extends VerticalFieldManager implements FieldChangeListener{
 	
@@ -193,7 +205,8 @@ class MainManager extends VerticalFieldManager implements FieldChangeListener{
 			WeiboItemField.sm_extendWeiboItem = t_currentExtendItem;
 			
 			if(t_currentExtendItem != m_updateWeiboField){
-				WeiboItemField.sm_forwardBut.setFocus();
+				WeiboItemField.sm_textArea.setFocus();
+				WeiboItemField.sm_textArea.setCursorPosition(0);
 			}			
 			
 			if(m_formerVerticalPos != 0 ){
@@ -251,6 +264,8 @@ class MainManager extends VerticalFieldManager implements FieldChangeListener{
 			WeiboItemField.sm_editTextArea.setText(t_text);			
 			WeiboItemField.RefreshEditTextAreHeight();
 			
+			WeiboItemField.sm_currentSendType = 2;
+			
 			sublayout(0,0);
 			invalidate();
 			
@@ -269,6 +284,8 @@ class MainManager extends VerticalFieldManager implements FieldChangeListener{
 			WeiboItemField.sm_editTextArea.setText(t_text);			
 			WeiboItemField.RefreshEditTextAreHeight();
 			
+			WeiboItemField.sm_currentSendType = 1;
+			
 			sublayout(0,0);
 			invalidate();
 			
@@ -281,17 +298,19 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	static recvMain		sm_mainApp;
 	
-	MainManager			m_mainMgr;	 
+	MainManager			m_mainMgr;
 	
-	Vector				m_timelineWeibo 	= new Vector();
-	Vector				m_directMessage 	= new Vector();
-	Vector				m_atMeMessage 		= new Vector();
-	Vector				m_commentMeMessage 	= new Vector();
+	MainManager			m_mainAtMeMgr;
+	MainManager			m_mainCommitMeMgr;
 	
 	static Bitmap		sm_sinaWeiboSign = null;
 	static Bitmap		sm_sinaVIPSign = null;
 	static Bitmap		sm_isBBerSign = null;
 	
+	Vector				m_headImageList = new Vector();
+	
+	static Bitmap		sm_defaultHeadImage = null;
+		
 	WeiboHeader 		m_weiboHeader		= new WeiboHeader();
 	
 	public weiboTimeLineScreen(recvMain _mainApp){
@@ -338,9 +357,84 @@ public class weiboTimeLineScreen extends MainScreen{
 		//@}
 	}
 	
-	public void AddWeibo(fetchWeibo _weibo){
+	public boolean AddWeibo(fetchWeibo _weibo)throws Exception{
+		
+		HeadImage t_headImage = SearchHeadImage(_weibo);
+		
+		if(_weibo.GetWeiboClass() == fetchWeibo.TIMELINE_CLASS){
+			m_mainMgr.AddWeibo(new WeiboItemField(_weibo,t_headImage));
+		}
+		
+		return false;
+	}
+	
+	public void AddWeiboHeadImage(int _style,long _id,byte[] _dataArray){
+		
+		for(int i = 0 ;i < m_headImageList.size();i++){
+			HeadImage t_image = (HeadImage)m_headImageList.elementAt(i);
+			
+			if(t_image.m_userID == _id && _style == t_image.m_weiboStyle){
+				try{
+					t_image.m_headImage = EncodedImage.createEncodedImage(_dataArray, 0, _dataArray.length).getBitmap();
+					
+					sm_mainApp.SetErrorString("recv weibo head image " + _id);
+					
+					t_image.m_dataHash = _dataArray.hashCode();
+							
+				}catch(Exception ex){
+					sm_mainApp.SetErrorString("AWHI:"+ _id + " " + ex.getMessage() + ex.getClass().getName() );
+				}
+				
+				break;				
+			}
+		}
 		
 	}
+	
+	private void SendHeadImageQueryMsg(fetchWeibo _weibo)throws Exception{
+		
+		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+		t_os.write(msg_head.msgWeiboHeadImage);
+		t_os.write(_weibo.GetWeiboStyle());
+		sendReceive.WriteLong(t_os,_weibo.GetUserId());
+		
+		sm_mainApp.m_connectDeamon.m_sendingQueue.addSendingData(msg_head.msgWeiboHeadImage, t_os.toByteArray(),true);
+	
+	}
+	
+	private HeadImage SearchHeadImage(fetchWeibo _weibo)throws Exception{
+		for(int i = 0 ;i < m_headImageList.size();i++){
+			HeadImage t_image = (HeadImage)m_headImageList.elementAt(i);
+			
+			if(t_image.m_userID == _weibo.GetUserId()){
+				if(t_image.m_dataHash != _weibo.GetUserHeadImageHashCode()){
+					SendHeadImageQueryMsg(_weibo);
+				}
+				
+				return t_image;
+			}
+		}
+		
+		SendHeadImageQueryMsg(_weibo);
+		
+		if(sm_defaultHeadImage == null){
+			byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/defaultHeadImage.png"));		
+			sm_defaultHeadImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
+		}
+		
+		HeadImage t_image = new HeadImage();
+		
+		t_image.m_userID = _weibo.GetUserId();
+		t_image.m_headImage = sm_defaultHeadImage;
+		t_image.m_dataHash = _weibo.GetUserHeadImageHashCode();
+		t_image.m_weiboStyle = _weibo.GetWeiboStyle();
+		
+		m_headImageList.addElement(t_image);
+		
+		return t_image;
+	}
+	
+	
 	
 	static public Bitmap GetWeiboSign(fetchWeibo _weibo){
 		
@@ -389,7 +483,49 @@ public class weiboTimeLineScreen extends MainScreen{
 	}
 	
 	public void SendMenuItemClick(){
-		
+		if(WeiboItemField.sm_extendWeiboItem == m_mainMgr.m_updateWeiboField){
+			
+			try{
+				// update a single weibo
+				//
+				String t_text = m_mainMgr.m_updateWeiboField.m_sendUpdateText;
+				
+				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+				t_os.write(msg_head.msgWeibo);
+				
+				t_os.write(fetchWeibo.SINA_WEIBO_STYLE);
+				t_os.write(0);
+				
+				sendReceive.WriteString(t_os,t_text);
+				
+				sm_mainApp.m_connectDeamon.m_sendingQueue.addSendingData(msg_head.msgWeibo,t_os.toByteArray(),true);	
+			}catch(Exception e){
+				sm_mainApp.SetErrorString("SMIC:" + e.getMessage() + e.getClass().getName());
+			}
+			
+		}else{
+			
+			try{
+				
+				String t_text = WeiboItemField.sm_editTextArea.getText();
+				
+				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+				t_os.write(msg_head.msgWeibo);
+				
+				t_os.write(WeiboItemField.sm_editWeiboItem.m_weibo.GetWeiboStyle());
+				t_os.write(WeiboItemField.sm_currentSendType);
+				
+				sendReceive.WriteString(t_os,t_text);
+				
+				sendReceive.WriteLong(t_os,WeiboItemField.sm_editWeiboItem.m_weibo.GetId());				
+					
+				sm_mainApp.m_connectDeamon.m_sendingQueue.addSendingData(msg_head.msgWeibo,t_os.toByteArray(),true);
+				
+			}catch(Exception e){
+				sm_mainApp.SetErrorString("SMIC:" + e.getMessage() + e.getClass().getName());
+			}
+			
+		}
 	}
 	
 	protected void makeMenu(Menu _menu,int instance){

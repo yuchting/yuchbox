@@ -247,7 +247,7 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[])throws Exception{
 
-		//(new HelloWorld()).berryRecvTest();
+		(new HelloWorld()).berryRecvTest();
 		//int[] A = {-7, 1, 5, 2, -4, 3, 0};
 		//System.out.print((new HelloWorld()).equi(A));
 		//int[] A = {20, 10, 30, 30, 40, 10,100,1,232,40,40};
@@ -262,10 +262,7 @@ public class HelloWorld {
 		
 		//System.out.println(new HelloWorld().monotonic_segment_count(A));
 		
-		Vector t_list = new Vector();
-		t_list.add("\"田智之\" <yuchting@gmail.com>");
 		
-		System.out.println((new HelloWorld()).parseAddressList1(t_list));
 		
 	}
 	
