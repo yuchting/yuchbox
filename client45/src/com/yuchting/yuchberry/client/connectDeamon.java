@@ -36,8 +36,6 @@ import net.rim.blackberry.api.mail.event.ViewListener;
 import net.rim.blackberry.api.mail.event.ViewListenerExtended;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.io.Base64OutputStream;
-import net.rim.device.api.servicebook.ServiceBook;
-import net.rim.device.api.servicebook.ServiceRecord;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.RadioInfo;
@@ -1682,7 +1680,7 @@ public class connectDeamon extends Thread implements SendListener,
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///// weibo module
 	///////////////////////////////////////////////////////////////////////////////////////////
-		
+
 	private void SendWeiboConfirmMsg(fetchWeibo _weibo) throws Exception{
 		
 		// send the msgWeiboConfirm to server to confirm receive this weibo
@@ -1696,7 +1694,23 @@ public class connectDeamon extends Thread implements SendListener,
 		m_sendingQueue.addSendingData(msg_head.msgWeiboConfirm, t_os.toByteArray(),true);
 	}
 	
-	
+
+	public void SendCreateFavoriteWeibo(fetchWeibo _weibo){
+		try{
+			
+			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+			t_os.write(msg_head.msgWeiboFavorite);
+			t_os.write(_weibo.GetWeiboStyle());
+			
+			sendReceive.WriteLong(t_os,_weibo.GetId());		
+			
+			m_sendingQueue.addSendingData(msg_head.msgWeiboFavorite, t_os.toByteArray(),true);
+			
+		}catch(Exception e){
+			
+			m_mainApp.SetErrorString("SCFW:" + e.getMessage() + e.getClass().getName());
+		}
+	}
 	
 	private void ProcessWeibo(InputStream in){
 		fetchWeibo t_weibo = new fetchWeibo();
@@ -1708,7 +1722,7 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			if(m_mainApp.PrepareWeiboItem(t_weibo)){
 
-				if(m_mainApp.m_weiboTimeLineScreen.AddWeibo(t_weibo)){
+				if(m_mainApp.m_weiboTimeLineScreen.AddWeibo(t_weibo,true)){
 					m_mainApp.TriggerWeiboNotification();
 				}	
 			}
@@ -1740,6 +1754,12 @@ public class connectDeamon extends Thread implements SendListener,
 					
 					FileConnection t_fc = (FileConnection)Connector.open(m_mainApp.m_weiboHeadImageDir_sina + t_id + ".png",Connector.READ_WRITE);
 					try{
+						if(t_fc.exists()){
+							t_fc.delete();
+						}
+						
+						t_fc.create();
+						
 						OutputStream t_fileOS = t_fc.openOutputStream();
 						try{
 							t_fileOS.write(t_dataArray);
@@ -1760,10 +1780,8 @@ public class connectDeamon extends Thread implements SendListener,
 				}
 			}
 			
-			
-			
 		}catch(Exception e){
-			
+			m_mainApp.SetErrorString("PWHI:" + e.getMessage() + e.getClass().getName());
 		}
 		
 	}

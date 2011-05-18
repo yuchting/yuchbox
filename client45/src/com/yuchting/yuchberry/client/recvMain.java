@@ -1011,17 +1011,46 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			pushScreen(m_weiboTimeLineScreen);
 			
 		}else{
-			popupStateScreen();
+			pushStateScreen();
 		}	
 		
 		PopupLatestVersionDlg();
 	}
 	
-	public void popupStateScreen(){
+	public void deactivate(){
+		
+		if(m_enableWeiboModule && m_connectDeamon.IsConnectState()){
+			
+			if(m_stateScreen != null){
+				popScreen(m_stateScreen);
+				m_stateScreen = null;
+			}
+			
+			if(m_weiboTimeLineScreen != null){
+				popScreen(m_weiboTimeLineScreen);
+			}
+			
+		}else{
+			
+			if(m_stateScreen != null){
+				popScreen(m_stateScreen);
+				m_stateScreen = null;
+			}
+		}			
+	}
+	
+	public void pushStateScreen(){
 		if(m_stateScreen == null){
 			m_stateScreen = new stateScreen(this);
 			pushScreen(m_stateScreen);
-		}
+		}	
+	}
+	
+	public void popStateScreen(){
+		if(m_stateScreen != null){
+			popScreen(m_stateScreen);
+			m_stateScreen = null;
+		}	
 	}
 	
 	public void TriggerNotification(){
@@ -1039,12 +1068,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}		
 	}
 	
-	public void deactivate(){
-		if(m_stateScreen != null){
-			popScreen(m_stateScreen);
-			m_stateScreen = null;
-		}		
+	public void StopWeiboNotification(){
+		NotificationsManager.cancelImmediateEvent(fsm_notifyID_weibo, 0, this, null);
 	}
+	
+	
 	
 	public void PopupAboutScreen(){
 		m_aboutScreen = new aboutScreen(this);
@@ -1457,7 +1485,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				fetchWeibo t_weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
 				
 				try{
-					m_weiboTimeLineScreen.AddWeibo(t_weibo);
+					m_weiboTimeLineScreen.AddWeibo(t_weibo,false);
 				}catch(Exception e){
 					SetErrorString("IWM:"+ e.getMessage() + e.getClass().getName());
 				}

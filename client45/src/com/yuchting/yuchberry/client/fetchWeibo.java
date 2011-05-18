@@ -29,6 +29,8 @@ public class fetchWeibo {
 	String		m_userName	= "";
 	String		m_text		= "";
 	
+	String		m_original_pic = "";
+	
 	long		m_dateTime 	= 0;
 	
 	long 		m_commentWeiboId = -1;
@@ -106,6 +108,8 @@ public class fetchWeibo {
 	public String GetSource(){return m_source;}
 	public void SetSource(String _source){m_source = _source;}
 	
+	public String GetOriginalPic(){return m_original_pic;}
+	public void SetOriginalPic(String _pic){m_original_pic = _pic;}
 	
 	public void OutputWeibo(OutputStream _stream)throws Exception{
 		
@@ -113,13 +117,11 @@ public class fetchWeibo {
 		
 		_stream.write(m_WeiboStyle);
 		_stream.write(m_WeiboClass);
-		
 		_stream.write(m_isSinaVIP?1:0);
 		_stream.write(m_isBBer?1:0);
 		
 		sendReceive.WriteLong(_stream,m_id);
 		sendReceive.WriteLong(_stream,m_userId);
-		
 		sendReceive.WriteString(_stream,m_userName);
 		sendReceive.WriteString(_stream,m_text);
 		
@@ -127,6 +129,10 @@ public class fetchWeibo {
 		
 		sendReceive.WriteLong(_stream,m_dateTime);
 		sendReceive.WriteLong(_stream,m_commentWeiboId);
+		
+		sendReceive.WriteString(_stream,m_source);
+		sendReceive.WriteString(_stream,m_original_pic);
+		
 		if(m_commentWeiboId != -1){
 			_stream.write(m_commentWeibo != null?1:0);
 			if(m_commentWeibo != null){				
@@ -158,10 +164,12 @@ public class fetchWeibo {
 		m_text		= sendReceive.ReadString(_stream);
 		
 		m_userHeadImageHashCode = sendReceive.ReadInt(_stream);
-	
-		m_dateTime	= sendReceive.ReadLong(_stream);
+		m_dateTime				= sendReceive.ReadLong(_stream);
+		m_commentWeiboId		= sendReceive.ReadLong(_stream);
 		
-		m_commentWeiboId	= sendReceive.ReadLong(_stream);
+		m_source				= sendReceive.ReadString(_stream);
+		m_original_pic			= sendReceive.ReadString(_stream);		
+		
 		if(m_commentWeiboId != -1){
 			if(_stream.read() == 1){
 				m_commentWeibo = new fetchWeibo();

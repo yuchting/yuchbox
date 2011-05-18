@@ -60,26 +60,25 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 			t_app.PopupSettingScreen();													
 		}
 	};
+	
 											
 	MenuItem	m_debugInfoMenu = new MenuItem(recvMain.sm_local.getString(localResource.DEBUG_MENU_TEXT), 104, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
 			t_app.m_debugInfoScreen = new debugInfo(t_app);
 			t_app.pushScreen(t_app.m_debugInfoScreen);
-			
 		}
 	};
+	
 											
 	MenuItem	m_weiboMenu = new MenuItem(recvMain.sm_local.getString(localResource.YB_WEIBO_MENU_LABEL), 105, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
-			t_app.PopupWeiboScreen();
-			
+			if(t_app.getScreenCount() == 2){
+				t_app.popStateScreen();
+			}
 		}
 	};
-										
-
-	
 
     public stateScreen(final recvMain _app) {
     	        
@@ -150,6 +149,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     }
     
     public final boolean onClose(){
+    	
     	if(m_mainApp.m_connectDeamon.IsConnectState()){
     		m_mainApp.requestBackground();
     		return false;

@@ -119,7 +119,7 @@ public class WeiboItemField extends Manager{
 		if(m_weibo.GetCommentWeibo() != null){
 			fetchWeibo t_comment = m_weibo.GetCommentWeibo();
 			
-			m_commentText = t_comment.GetUserName() + ":" + t_comment.GetText();
+			m_commentText = "@" + t_comment.GetUserName() + ":" + t_comment.GetText();
 			sm_testCommentTextArea.setText(m_commentText);
 			
 			m_commentText_y = m_functionButton_y + fsm_headImageTextInterval;
@@ -139,28 +139,31 @@ public class WeiboItemField extends Manager{
 				add(sm_textArea);
 			}
 			
-			if(!m_hasControlField[1]){
-				m_hasControlField[1] = true;
-				add(sm_forwardBut);
-			}
-			
-			if(!m_hasControlField[2]){
-				m_hasControlField[2] = true;
-				add(sm_atBut);
-			}
-			
-			if(!m_hasControlField[3]){
-				m_hasControlField[3] = true;
-				add(sm_favoriteBut);
-			}
-			
 			if(m_commentText != null){
-				if(!m_hasControlField[5]){
-					m_hasControlField[5] = true;
+				if(!m_hasControlField[1]){
+					m_hasControlField[1] = true;
 					sm_commentTextArea.setText(m_commentText);
 					add(sm_commentTextArea);
 				}
 			}
+			
+			
+			if(!m_hasControlField[2]){
+				m_hasControlField[2] = true;
+				add(sm_forwardBut);
+			}
+			
+			if(!m_hasControlField[3]){
+				m_hasControlField[3] = true;
+				add(sm_atBut);
+			}
+			
+			if(!m_hasControlField[4]){
+				m_hasControlField[4] = true;
+				add(sm_favoriteBut);
+			}
+			
+			
 			
 			
 		}else{
@@ -170,26 +173,27 @@ public class WeiboItemField extends Manager{
 				delete(sm_textArea);
 			}
 			
-			
 			if(m_hasControlField[1]){
 				m_hasControlField[1] = false;
-				delete(sm_forwardBut);
-			}
+				delete(sm_commentTextArea);
+			}			
 			
 			if(m_hasControlField[2]){
 				m_hasControlField[2] = false;
-				delete(sm_atBut);
+				delete(sm_forwardBut);
 			}
 			
 			if(m_hasControlField[3]){
 				m_hasControlField[3] = false;
+				delete(sm_atBut);
+			}
+			
+			if(m_hasControlField[4]){
+				m_hasControlField[4] = false;
 				delete(sm_favoriteBut);
 			}
 			
-			if(m_hasControlField[5]){
-				m_hasControlField[5] = false;
-				delete(sm_commentTextArea);
-			}
+			
 		}							
 	}
 	
@@ -201,8 +205,8 @@ public class WeiboItemField extends Manager{
 			
 			WeiboItemField.sm_editWeiboItem = this;
 			
-			if(!m_hasControlField[4]){
-				m_hasControlField[4] = true;
+			if(!m_hasControlField[5]){
+				m_hasControlField[5] = true;
 				add(sm_editTextArea);				
 			}
 			
@@ -214,8 +218,8 @@ public class WeiboItemField extends Manager{
 			WeiboItemField.sm_editWeiboItem = null;
 			WeiboItemField.sm_editTextAreaHeight = 0;
 			
-			if(m_hasControlField[4]){
-				m_hasControlField[4] = false;
+			if(m_hasControlField[5]){
+				m_hasControlField[5] = false;
 				delete(sm_editTextArea);
 			}
 		}
@@ -252,6 +256,13 @@ public class WeiboItemField extends Manager{
 			setPositionChild(sm_forwardBut,0,m_functionButton_y);
 			layoutChild(sm_atBut,sm_atBut.getPreferredWidth(),sm_atBut.getPreferredHeight());
 			
+			if(m_commentText != null){
+				// comment area
+				//
+				setPositionChild(sm_commentTextArea,fsm_headImageTextInterval,m_commentText_y);
+				layoutChild(sm_commentTextArea,fsm_commentTextWidth,m_functionButton_y - m_commentText_y);
+			}
+			
 			// at button
 			//
 			setPositionChild(sm_atBut,sm_atBut_x,m_functionButton_y);
@@ -266,14 +277,7 @@ public class WeiboItemField extends Manager{
 			//
 			setPositionChild(sm_textArea,fsm_headImageWidth + fsm_headImageTextInterval,2);
 			layoutChild(sm_textArea,fsm_textWidth,m_textHeight);
-			
-			if(m_commentText != null){
-				// comment area
-				//
-				setPositionChild(sm_commentTextArea,fsm_headImageTextInterval,m_commentText_y);
-				layoutChild(sm_commentTextArea,fsm_commentTextWidth,m_functionButton_y - m_commentText_y);
-			}
-			
+						
 			if(sm_editWeiboItem == this){
 				
 				setPositionChild(sm_editTextArea,0,m_functionButton_y + fsm_headImageTextInterval + sm_fontHeight);

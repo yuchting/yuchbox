@@ -26,11 +26,13 @@ public class WeiboHeader extends Field{
 	final static int	fsm_headHeight = 30;
 	
 	int	m_currState = STATE_TIMELINE;
+	
+	weiboTimeLineScreen m_parentScreen;
 		
-	public WeiboHeader(){
-		
-		
+	public WeiboHeader(weiboTimeLineScreen _screen){
+		m_parentScreen = _screen;
 	}
+	
 	private void calculateStringWidth(Graphics g){
 		
 		// calculate the width of the string
@@ -68,13 +70,42 @@ public class WeiboHeader extends Field{
 		try{
 			int t_x = 1;
 			for(int i = 0 ;i <= STATE_DIRECT_MESSAGE;i++){
+				
+				boolean t_drawNewMsgSign = false;
+				
+				switch(i){
+				case STATE_TIMELINE:
+					t_drawNewMsgSign = m_parentScreen.m_mainMgr.hasNewWeibo();
+					break;
+				case STATE_AT_ME:
+					t_drawNewMsgSign = m_parentScreen.m_mainAtMeMgr.hasNewWeibo();
+					break;
+				case STATE_COMMENT_ME:
+					t_drawNewMsgSign = m_parentScreen.m_mainCommitMeMgr.hasNewWeibo();
+					break;
+				case STATE_DIRECT_MESSAGE:
+					
+					break;
+				}
+				
 				if(m_currState == i){
+					
 					g.setColor(0x666666);
 					g.fillRoundRect(t_x,1,fsm_stateStringWidth[i], fsm_headHeight - 2,5,5);
+					g.setColor(0xefefef);
+					
+				}else{
 					g.setColor(0);
 				}
 				
 				g.drawText(fsm_stateString[i],t_x,2,Graphics.ELLIPSIS);
+				
+				if(t_drawNewMsgSign){
+					// draw a new message sign
+					//
+					g.drawBitmap(t_x,1,WeiboItemField.fsm_weiboBBerImageSize,WeiboItemField.fsm_weiboBBerImageSize,
+							weiboTimeLineScreen.GetBBerSignBitmap(),0,0);
+				}
 				
 				t_x += fsm_stateStringWidth[i];
 			}
