@@ -67,7 +67,10 @@ public class fetchSinaWeibo extends fetchAccount{
 	fetchWeiboData				m_timeline 		= new fetchWeiboData();
 	fetchWeiboData				m_directMessage	= new fetchWeiboData();
 	fetchWeiboData				m_atMeMessage	= new fetchWeiboData();
-	fetchWeiboData				m_commentMessage= new fetchWeiboData();	
+	fetchWeiboData				m_commentMessage= new fetchWeiboData();
+	
+	//! the time of weibo check folder call
+	int							m_weiboDelayTimer = 0;
 		
 	public fetchSinaWeibo(fetchMgr _mainMgr){
 		super(_mainMgr);
@@ -123,10 +126,18 @@ public class fetchSinaWeibo extends fetchAccount{
 	public synchronized void CheckFolder()throws Exception{
 		try{
 			
-			CheckTimeline();
-			CheckDirectMessage();
-			CheckAtMeMessage();
-			CheckCommentMeMessage();
+			if(m_weiboDelayTimer++ > 3){
+
+				m_weiboDelayTimer = 0;
+				
+				CheckTimeline();
+				CheckAtMeMessage();
+				CheckCommentMeMessage();
+				
+				// this message called number is limited
+				//
+				CheckDirectMessage();
+			}
 			
 		}catch(Exception e){
 			m_mainMgr.m_logger.LogOut(GetAccountName() + " CheckFolder Error:" + e.getMessage());

@@ -11,6 +11,14 @@ public class WeiboUpdateField extends WeiboItemField{
 	
 	public void AddDelControlField(boolean _add){
 		AddDelEditTextArea(_add,m_sendUpdateText);
+		if(_add){
+			WeiboItemField.sm_editTextArea.setSelection(0,true,m_sendUpdateText.length());
+			
+			if(m_sendUpdateText.length() != 0){
+				WeiboItemField.sm_editTextArea.select(true);
+			}			
+		}
+		
 	}
 	
 	public int getPreferredHeight() {
@@ -52,7 +60,7 @@ public class WeiboUpdateField extends WeiboItemField{
 			
 			if(sm_extendWeiboItem != null){
 				_g.setColor(fsm_darkColor);
-				_g.fillRect(0,0, recvMain.fsm_display_width,sm_closeHeight);
+				_g.fillRect(0,0, recvMain.fsm_display_width,fsm_closeHeight);
 				_g.setColor(0);
 			}
 			

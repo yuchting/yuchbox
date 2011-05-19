@@ -14,7 +14,7 @@ final class MailAttachment{
 	String		m_type;
 }
 
-class GPSInfo{
+final class GPSInfo{
 	public double m_longitude 				= 0;
 	public double m_latitude				= 0;
 	public float	 m_altitude				= 0;

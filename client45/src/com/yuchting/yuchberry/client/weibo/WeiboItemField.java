@@ -88,7 +88,7 @@ public class WeiboItemField extends Manager{
 	
 	static int						sm_currentSendType	= 0;
 	
-	static int	sm_closeHeight		= sm_fontHeight * 2 + 1;
+	final static int	fsm_closeHeight		= sm_fontHeight * 2 + 1;
 	
 	boolean[]				m_hasControlField = {false,false,false,false,false,false};
 	
@@ -270,7 +270,7 @@ public class WeiboItemField extends Manager{
 			
 			return m_extendHeight;
 		}else{
-			return sm_closeHeight;
+			return fsm_closeHeight;
 		}
 	}
 	
@@ -292,7 +292,7 @@ public class WeiboItemField extends Manager{
 			
 			// at button
 			//
-			setPositionChild(sm_atBut,sm_atBut_x,m_functionButton_y - 1);
+			setPositionChild(sm_atBut,sm_atBut_x,m_functionButton_y);
 			layoutChild(sm_forwardBut,sm_forwardBut.getPreferredWidth(),sm_forwardBut.getPreferredHeight());
 			
 			// favorite button
@@ -317,7 +317,7 @@ public class WeiboItemField extends Manager{
 			}
 						
 		}else{		
-			height = sm_closeHeight;
+			height = fsm_closeHeight;
 		}
 		
 		setExtent(recvMain.fsm_display_width,height);
@@ -420,17 +420,17 @@ public class WeiboItemField extends Manager{
 					// 
 					//
 					_g.setColor(fsm_darkColor);
-					_g.fillRect(0,0, recvMain.fsm_display_width,sm_closeHeight);
+					_g.fillRect(0,0, recvMain.fsm_display_width,fsm_closeHeight);
 					_g.setColor(0);
 				}
 				
 				if(sm_selectWeiboItem == this){
 					_g.setColor(fsm_selectedColor);
-					_g.fillRect(0, 0, recvMain.fsm_display_width,sm_closeHeight);
+					_g.fillRect(0, 0, recvMain.fsm_display_width,fsm_closeHeight);
 					_g.setColor(0xFFFFFF);
 				}else{
 					_g.setColor(fsm_spaceLineColor);
-					_g.drawLine(0,sm_closeHeight - 1,recvMain.fsm_display_width,sm_closeHeight - 1);
+					_g.drawLine(0,fsm_closeHeight - 1,recvMain.fsm_display_width,fsm_closeHeight - 1);
 					_g.setColor(0);
 				}			
 				

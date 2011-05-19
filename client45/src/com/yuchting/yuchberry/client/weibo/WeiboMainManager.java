@@ -64,10 +64,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				}	
 			}			
 		}else if(WeiboItemField.sm_favoriteBut == field){
-						
-			if(WeiboItemField.sm_extendWeiboItem != null){
-				m_mainApp.m_connectDeamon.SendCreateFavoriteWeibo(WeiboItemField.sm_extendWeiboItem.m_weibo);
-			}			
+			FavoriteWeibo(WeiboItemField.sm_extendWeiboItem);			
 		}
 	}
 	
@@ -130,7 +127,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				
 				if(WeiboItemField.sm_extendWeiboItem == null && _resetSelectIdx){
 					
-					m_selectWeiboItemIndex++;
+					m_selectWeiboItemIndex++;		
+					m_formerVerticalPos += WeiboItemField.fsm_closeHeight;
 					
 					sublayout(0,0);
 					
@@ -170,23 +168,23 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			if(m_timelineManager){
 
 				if(m_selectWeiboItemIndex > 1){
-					t_currentHeight = m_selectWeiboItemIndex * WeiboItemField.sm_closeHeight;
+					t_currentHeight = m_selectWeiboItemIndex * WeiboItemField.fsm_closeHeight;
 					
 					if(t_verticalScroll == 0){
-						t_delta = WeiboItemField.sm_closeHeight;
+						t_delta = WeiboItemField.fsm_closeHeight;
 					}else{
-						t_delta = WeiboItemField.sm_closeHeight;
+						t_delta = WeiboItemField.fsm_closeHeight;
 					}
 					
 				}else{
 					t_currentHeight = WeiboItemField.sm_fontHeight;
-					t_delta = WeiboItemField.sm_closeHeight;
+					t_delta = WeiboItemField.fsm_closeHeight;
 				}
 				
 			}else{
 				
-				t_currentHeight = WeiboItemField.sm_closeHeight;
-				t_delta = WeiboItemField.sm_closeHeight;
+				t_currentHeight = m_selectWeiboItemIndex * WeiboItemField.fsm_closeHeight;
+				t_delta = WeiboItemField.fsm_closeHeight;
 			}
 			
 			if(_dy > 0){
@@ -290,6 +288,18 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		}
 	}
 	
+	public void ScrollToTop(){
+		setVerticalScroll(0);
+		m_selectWeiboItemIndex = 0;
+		
+		if(getFieldCount() != 0){
+			WeiboItemField.sm_selectWeiboItem = (WeiboItemField)getField(m_selectWeiboItemIndex);
+		}
+		
+		sublayout(0, 0);
+		invalidate();
+	}
+	
 	public boolean EscapeKey(){
 		if(WeiboItemField.sm_extendWeiboItem != null){
 			
@@ -359,6 +369,12 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			invalidate();
 			
 			WeiboItemField.sm_editTextArea.setCursorPosition(0);
+		}
+	}
+	
+	public void FavoriteWeibo(WeiboItemField _item){
+		if(_item != null){
+			m_mainApp.m_connectDeamon.SendCreateFavoriteWeibo(_item.m_weibo);
 		}
 	}
 }

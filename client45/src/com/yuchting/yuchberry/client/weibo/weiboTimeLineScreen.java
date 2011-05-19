@@ -188,8 +188,6 @@ public class weiboTimeLineScreen extends MainScreen{
 		if(WeiboItemField.sm_extendWeiboItem == m_mainMgr.m_updateWeiboField){
 			
 			UpdateNewWeibo(m_mainMgr.m_updateWeiboField.m_sendUpdateText);
-					
-			m_mainMgr.m_updateWeiboField.m_sendUpdateText = "";
 			
 		}else{
 			
@@ -246,7 +244,7 @@ public class weiboTimeLineScreen extends MainScreen{
         }
     };
     
-    MenuItem m_stateItem = new MenuItem(recvMain.sm_local.getString(localResource.STATE_SCREEN_MENU_LABEL),1,0){
+    MenuItem m_stateItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_STATE_SCREEN_MENU_LABEL),1,0){
         public void run() {
         	recvMain t_recv = (recvMain)UiApplication.getUiApplication();
         	t_recv.pushStateScreen();
@@ -267,20 +265,46 @@ public class weiboTimeLineScreen extends MainScreen{
 	protected boolean keyDown(int keycode,int time){
 		
 		final int key = Keypad.key(keycode);
-					
-    	switch(key){
-    	case 'S':
-    		if(WeiboItemField.sm_extendWeiboItem == null){
-	    		m_stateItem.run();
+		
+		if(WeiboItemField.sm_extendWeiboItem != null && WeiboItemField.sm_editWeiboItem == null){
+			switch(key){
+	    	case ' ':
+	    		m_currMgr.OpenNextWeiboItem(true);
 	    		return true;
-    		}
-    		break;
-    	case ' ':
-    		if(WeiboItemField.sm_extendWeiboItem != null && WeiboItemField.sm_editWeiboItem == null){
-    			m_currMgr.OpenNextWeiboItem(true);
-    		}
-    		return true;
-    	}
+	    	case 'F':
+	    		m_currMgr.ForwardWeibo(WeiboItemField.sm_extendWeiboItem);
+	    		return true;
+	    	case 'R':
+	    		m_currMgr.FavoriteWeibo(WeiboItemField.sm_extendWeiboItem);
+	    		return true;
+	    	case 'E':
+	    		m_currMgr.AtWeibo(WeiboItemField.sm_extendWeiboItem);
+	    		return true;
+			}
+		}else{
+			switch(key){
+	    	case 'S':
+	    		if(WeiboItemField.sm_extendWeiboItem == null){
+		    		m_stateItem.run();
+		    		return true;
+	    		}
+	    		break;
+	    	case ' ':
+	    		if(WeiboItemField.sm_extendWeiboItem != null && WeiboItemField.sm_editWeiboItem == null){
+	    			m_currMgr.OpenNextWeiboItem(true);
+	    			return true;
+	    		}
+	    		break;
+	    	case 'T':
+	    		if(WeiboItemField.sm_extendWeiboItem == null && WeiboItemField.sm_editWeiboItem == null){
+	    			m_currMgr.ScrollToTop();
+	    			return true;
+	    		}
+	    		break;	    		
+	    	}
+		}
+		
+    	
 		
 		
 		return false;    	
