@@ -14,6 +14,8 @@ import javax.microedition.location.Location;
 import javax.microedition.location.LocationListener;
 import javax.microedition.location.LocationProvider;
 
+import com.yuchting.yuchberry.client.weibo.weiboTimeLineScreen;
+
 import local.localResource;
 import net.rim.blackberry.api.browser.Browser;
 import net.rim.blackberry.api.browser.BrowserSession;
@@ -38,9 +40,10 @@ import net.rim.device.api.ui.component.DialogClosedListener;
 
 public class recvMain extends UiApplication implements localResource,LocationListener {
 	
-	final static int 		fsm_display_width		= Display.getWidth();
-	final static int 		fsm_display_height		= Display.getHeight();
+	public final static int 		fsm_display_width		= Display.getWidth();
+	public final static int 		fsm_display_height		= Display.getHeight();
 	
+	public static ResourceBundle sm_local = ResourceBundle.getBundle(localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
 	
 	final static long		fsm_notifyID_email = 767918509114947L;
 	
@@ -58,7 +61,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	    }
 	};
 	
-
+	public connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
     aboutScreen			m_aboutScreen		= null;
 	stateScreen 		m_stateScreen 		= null;
@@ -67,14 +70,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	downloadDlg			m_downloadDlg		= null;
 	settingScreen		m_settingScreen		= null;
 	shareYBScreen		m_shareScreen		= null;
-	
-	
 		
 	UiApplication		m_downloadDlgParent = null;
 	
 	UiApplication		m_messageApplication = null;
 	
-	connectDeamon 		m_connectDeamon		= new connectDeamon(this);
+	
 	
 	String				m_stateString		= recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL);
 	String				m_aboutString		= recvMain.sm_local.getString(localResource.ABOUT_DESC);
@@ -190,8 +191,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	AddAattachmentItem 	m_addItem	= new AddAattachmentItem();
 	DelAattachmentItem	m_delItem	= new DelAattachmentItem();
 	
-	static ResourceBundle sm_local = ResourceBundle.getBundle(
-								localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
+	
 	
 	String m_latestVersion			= null;
 	
@@ -208,9 +208,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	
 	// weibo module
-	boolean			m_enableWeiboModule			= false;
-	boolean			m_updateOwnListWhenFw		= true;
-	boolean			m_updateOwnListWhenRe	= false;
+	public boolean			m_enableWeiboModule			= false;
+	public boolean			m_updateOwnListWhenFw		= true;
+	public boolean			m_updateOwnListWhenRe	= false;
 	
 	String 				m_weiboHeadImageDir = null;
 	String 				m_weiboHeadImageDir_sina = null;
@@ -220,6 +220,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public static void main(String[] args) {
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());		
 		t_theApp.enterEventDispatcher();
+	}
+	
+	public boolean		canUseLocation(){
+		return m_useLocationInfo;
+	}
+	
+	public GPSInfo getGPSInfo(){
+		return m_gpsInfo;
 	}
 	
 	
@@ -1023,7 +1031,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			}
 			
 			if(m_weiboTimeLineScreen != null){
-				popScreen(m_weiboTimeLineScreen);
+				if(getScreenCount() == 1){
+					popScreen(m_weiboTimeLineScreen);
+				}				
 			}
 			
 		}else{

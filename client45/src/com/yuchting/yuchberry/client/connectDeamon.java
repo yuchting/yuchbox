@@ -224,7 +224,11 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 	}
 	
-	public SendingQueue	 m_sendingQueue = new SendingQueue();
+	SendingQueue	 m_sendingQueue = new SendingQueue();
+	
+	public void addSendingData(byte _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
+		m_sendingQueue.addSendingData(_msgType, _data, _exceptSame);
+	}
 	 
 	public connectDeamon(recvMain _app){
 		m_mainApp = _app;

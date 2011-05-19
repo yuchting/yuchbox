@@ -121,11 +121,20 @@ public class fetchSinaWeibo extends fetchAccount{
 	 * check the folder to find the news to push
 	 */
 	public synchronized void CheckFolder()throws Exception{
-		
-		CheckTimeline();
-		CheckDirectMessage();
-		CheckAtMeMessage();
-		CheckCommentMeMessage();
+		try{
+			
+			CheckTimeline();
+			CheckDirectMessage();
+			CheckAtMeMessage();
+			CheckCommentMeMessage();
+			
+		}catch(Exception e){
+			m_mainMgr.m_logger.LogOut(GetAccountName() + " CheckFolder Error:" + e.getMessage());
+			
+			// sleep for a while
+			//
+			Thread.sleep(5000);
+		}		
 	}
 	
 	public String GetHeadImageDir(){
@@ -484,7 +493,9 @@ public class fetchSinaWeibo extends fetchAccount{
 			
 			switch(t_type){
 			case 0:
-							
+				
+				m_mainMgr.m_logger.LogOut(GetAccountName() + " update new weibo");
+				
 				if(in.read() != 0){
 					
 					t_gpsInfo = new GPSInfo();
@@ -497,10 +508,8 @@ public class fetchSinaWeibo extends fetchAccount{
 					}					
 					
 				}else{
-					
 					m_weibo.updateStatus(t_text);
-				}			
-				m_mainMgr.m_logger.LogOut(GetAccountName() + " update new weibo");
+				}				
 				
 				break;
 			case 1:
@@ -509,8 +518,9 @@ public class fetchSinaWeibo extends fetchAccount{
 					
 					long t_commentWeiboId = sendReceive.ReadLong(in);
 					
-					String t_id = Long.toString(t_commentWeiboId);
-					m_weibo.updateComment(t_text,t_id,null);
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " comment/reply weibo " + t_commentWeiboId);
+
+					m_weibo.updateComment(t_text,Long.toString(t_commentWeiboId),null);
 					
 					if(in.read() != 0){
 						t_gpsInfo = new GPSInfo();
@@ -526,8 +536,6 @@ public class fetchSinaWeibo extends fetchAccount{
 							m_weibo.updateStatus(t_text, t_commentWeiboId);
 						}						
 					}					
-					
-					m_mainMgr.m_logger.LogOut(GetAccountName() + " comment/reply weibo " + t_commentWeiboId);
 					
 					return true;
 				}
@@ -598,6 +606,7 @@ public class fetchSinaWeibo extends fetchAccount{
 		_weibo.SetId(_stat.getId());
 		_weibo.SetDateLong(_stat.getCreatedAt().getTime());
 		_weibo.SetText(_stat.getText());
+		_weibo.SetSource(_stat.getSource());
 		
 		_weibo.SetWeiboStyle(fetchWeibo.SINA_WEIBO_STYLE);
 		_weibo.SetWeiboClass(_weiboClass);
@@ -662,6 +671,7 @@ public class fetchSinaWeibo extends fetchAccount{
 		_weibo.SetDateLong(_dm.getCreatedAt().getTime());
 		_weibo.SetText(_dm.getText());
 		
+		
 		_weibo.SetWeiboStyle(fetchWeibo.SINA_WEIBO_STYLE);
 		_weibo.SetWeiboClass(fetchWeibo.DIRECT_MESSAGE_CLASS);
 		
@@ -679,6 +689,7 @@ public class fetchSinaWeibo extends fetchAccount{
 		_weibo.SetId(_comment.getId());
 		_weibo.SetDateLong(_comment.getCreatedAt().getTime());
 		_weibo.SetText(_comment.getText());
+		_weibo.SetSource(_comment.getSource());
 		
 		_weibo.SetWeiboStyle(fetchWeibo.SINA_WEIBO_STYLE);
 		_weibo.SetWeiboClass(fetchWeibo.COMMENT_ME_CLASS);

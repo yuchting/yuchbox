@@ -413,7 +413,15 @@ public class fetchMgr{
 	
 	public void ResetAllAccountSession(boolean _testAll)throws Exception{
 		for(fetchAccount accout :m_fetchAccount){
-			accout.ResetSession(_testAll);
+			try{
+				accout.ResetSession(_testAll);
+			}catch(Exception e){
+				Exception t_newExp = new Exception(accout.GetAccountName() + " error:" + e.getMessage());
+				t_newExp.setStackTrace(e.getStackTrace());
+				
+				throw t_newExp;
+			}
+			
 		}
 	}
 	
