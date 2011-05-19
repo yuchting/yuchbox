@@ -325,8 +325,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 public void RefreshLocation(){
 		 m_mainApp.invokeLater(new Runnable() {
 			public void run() {
-				m_longitude.setText(recvMain.sm_local.getString(localResource.CURRENT_LONGITUDE_LABEL) + m_mainApp.m_longitude);
-				m_latitude.setText(recvMain.sm_local.getString(localResource.CURRENT_LATITUDE_LABEL) + m_mainApp.m_latitude);
+				m_longitude.setText(recvMain.sm_local.getString(localResource.CURRENT_LONGITUDE_LABEL) + m_mainApp.m_gpsInfo.m_longitude);
+				m_latitude.setText(recvMain.sm_local.getString(localResource.CURRENT_LATITUDE_LABEL) + m_mainApp.m_gpsInfo.m_latitude);
 			}
 		});
 	 }

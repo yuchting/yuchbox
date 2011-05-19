@@ -200,11 +200,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	boolean		 m_useLocationInfo = false;
 	boolean		 m_setLocationListener = false;
 	
-	double			 m_longitude		= 0;
-	double			 m_latitude			= 0;
-	float			 m_altitude			= 0;
-	float			 m_movingSpeed		= 0;
-	float			 m_locationHeading = 0;
+	GPSInfo			m_gpsInfo = new GPSInfo();
 	//@}
 	
 	FileConnection m_logfc				= null;
@@ -922,11 +918,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	    // If the application registered the location listener with an interval of
 	    // 0, the location provider does not provide location updates.
 		if(location.isValid()){
-			m_locationHeading 	= location.getCourse();
-			m_longitude 		= location.getQualifiedCoordinates().getLongitude();
-			m_latitude 			= location.getQualifiedCoordinates().getLatitude();
-			m_altitude 			= location.getQualifiedCoordinates().getAltitude();
-			m_movingSpeed 		= location.getSpeed();
+			m_gpsInfo.m_heading 	= location.getCourse();
+			m_gpsInfo.m_longitude 	= location.getQualifiedCoordinates().getLongitude();
+			m_gpsInfo.m_latitude 	= location.getQualifiedCoordinates().getLatitude();
+			m_gpsInfo.m_altitude 	= location.getQualifiedCoordinates().getAltitude();
+			m_gpsInfo.m_speed 		= location.getSpeed();
 			
 			if(m_settingScreen != null){
 				m_settingScreen.RefreshLocation();

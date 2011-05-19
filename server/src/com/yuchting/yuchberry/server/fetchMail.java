@@ -14,6 +14,32 @@ final class MailAttachment{
 	String		m_type;
 }
 
+class GPSInfo{
+	public double m_longitude 				= 0;
+	public double m_latitude				= 0;
+	public float	 m_altitude				= 0;
+	public float	 m_speed				= 0;
+	public float	 m_heading				= 0;
+	
+	public void InputData(InputStream in)throws Exception{
+		m_longitude = sendReceive.ReadDouble(in);
+		m_latitude 	= sendReceive.ReadDouble(in);
+		
+		m_altitude	= sendReceive.ReadFloat(in);
+		m_speed		= sendReceive.ReadFloat(in);
+		m_heading	= sendReceive.ReadFloat(in);		
+	}
+	
+	public void OutputData(OutputStream os)throws Exception{
+		sendReceive.WriteDouble(os,m_longitude);
+		sendReceive.WriteDouble(os,m_latitude);
+		
+		sendReceive.WriteFloat(os,m_altitude);
+		sendReceive.WriteFloat(os,m_speed);
+		sendReceive.WriteFloat(os,m_heading);
+	}
+}
+
 public class  fetchMail{
 	
 	final static int	VERSION = 1;
@@ -50,11 +76,7 @@ public class  fetchMail{
 	
 	// location information
 	boolean m_hasLocationInfo		= false;
-	double m_longitude 			= 0;
-    double m_latitude				= 0;
-    float	 m_altitude				= 0;
-	float	 m_speed				= 0;
-	float	 m_heading				= 0;
+	GPSInfo	m_gpsInfo 				= new GPSInfo();
 		
 	public	int				m_sendConfirmNum = 0;
 	public long			m_sendConfirmTime = 0;
@@ -157,11 +179,7 @@ public class  fetchMail{
 		
 		_stream.write(m_hasLocationInfo?1:0);
 		if(m_hasLocationInfo){
-			sendReceive.WriteDouble(_stream,m_longitude);
-			sendReceive.WriteDouble(_stream,m_latitude);
-			sendReceive.WriteFloat(_stream,m_altitude);
-			sendReceive.WriteFloat(_stream,m_speed);
-			sendReceive.WriteFloat(_stream,m_heading);
+			m_gpsInfo.OutputData(_stream);
 		}
 		
 	}
@@ -202,11 +220,7 @@ public class  fetchMail{
 		
 		m_hasLocationInfo = _stream.read() == 1?true:false;
 		if(m_hasLocationInfo){
-			m_longitude	= sendReceive.ReadDouble(_stream);
-			m_latitude	= sendReceive.ReadDouble(_stream);
-			m_altitude	= sendReceive.ReadFloat(_stream);
-			m_speed		= sendReceive.ReadFloat(_stream);
-			m_heading	= sendReceive.ReadFloat(_stream);
+			m_gpsInfo.InputData(_stream);
 		}
 		
 	}
@@ -320,11 +334,11 @@ public class  fetchMail{
 		if(_longitude != 0 || _latitude != 0){
 			m_hasLocationInfo = true;
 			
-			m_longitude = _longitude;
-			m_latitude	= _latitude;
-			m_altitude	= _altitude;
-			m_speed		= _speed;
-			m_heading	= _heading;
+			m_gpsInfo.m_longitude 	= _longitude;
+			m_gpsInfo.m_latitude	= _latitude;
+			m_gpsInfo.m_altitude	= _altitude;
+			m_gpsInfo.m_speed		= _speed;
+			m_gpsInfo.m_heading		= _heading;
 		}else{
 			m_hasLocationInfo = false;
 		}

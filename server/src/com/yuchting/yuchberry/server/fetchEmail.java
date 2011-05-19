@@ -1974,8 +1974,8 @@ public class fetchEmail extends fetchAccount{
 			
 			while((t_line = in.readLine()) != null){
 				
-				t_line = t_line.replace("$map_y$",Double.toString(_mail.m_longitude));
-				t_line = t_line.replace("$map_x$",Double.toString(_mail.m_latitude));
+				t_line = t_line.replace("$map_y$",Double.toString(_mail.m_gpsInfo.m_longitude));
+				t_line = t_line.replace("$map_x$",Double.toString(_mail.m_gpsInfo.m_latitude));
 				
 				t_line = t_line.replace("$mail_content$",_mail.GetContain());
 				t_line = t_line.replace("$mail_sign$","YBBer:I'm Here!");

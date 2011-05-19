@@ -286,8 +286,18 @@ class MainManager extends VerticalFieldManager implements FieldChangeListener{
 		}
 		
 		return false;
-		
-		
+	}
+	
+	public void OpenNextWeiboItem(boolean _pre){
+		if(_pre){
+			EscapeKey();
+			IncreaseRenderSize(0, 1);
+			Clicked(0, 0);
+		}else{
+			EscapeKey();
+			IncreaseRenderSize(0, -1);
+			Clicked(0, 0);
+		}
 	}
 	
 	public boolean EscapeKey(){
@@ -518,6 +528,13 @@ public class weiboTimeLineScreen extends MainScreen{
 				
 				sendReceive.WriteString(t_os,t_text);
 				
+				if(sm_mainApp.m_useLocationInfo){
+					t_os.write(1);
+					sm_mainApp.m_gpsInfo.OutputData(t_os);
+				}else{
+					t_os.write(0);
+				}
+				
 				m_currMgr.EscapeKey();
 				
 				sm_mainApp.m_connectDeamon.m_sendingQueue.addSendingData(msg_head.msgWeibo,t_os.toByteArray(),true);	
@@ -538,8 +555,20 @@ public class weiboTimeLineScreen extends MainScreen{
 				t_os.write(WeiboItemField.sm_currentSendType);
 				
 				sendReceive.WriteString(t_os,t_text);
-				
 				sendReceive.WriteLong(t_os,WeiboItemField.sm_editWeiboItem.m_weibo.GetId());
+				
+				if(sm_mainApp.m_useLocationInfo){
+					t_os.write(1);
+					sm_mainApp.m_gpsInfo.OutputData(t_os);
+				}else{
+					t_os.write(0);
+				}
+				
+				if(WeiboItemField.sm_currentSendType == 1){
+					t_os.write(sm_mainApp.m_updateOwnListWhenFw?1:0);
+				}else{
+					t_os.write(sm_mainApp.m_updateOwnListWhenRe?1:0);
+				}
 				
 				m_currMgr.EscapeKey();
 					
@@ -578,15 +607,22 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	protected boolean keyDown(int keycode,int time){
 		
-		if(WeiboItemField.sm_extendWeiboItem == null){
-			
-			final int key = Keypad.key(keycode);
-	    	switch(key){
-	    	case 'S':
+		final int key = Keypad.key(keycode);
+					
+    	switch(key){
+    	case 'S':
+    		if(WeiboItemField.sm_extendWeiboItem == null){
 	    		m_stateItem.run();
 	    		return true;
-	    	}
-		}
+    		}
+    		break;
+    	case ' ':
+    		if(WeiboItemField.sm_extendWeiboItem != null && WeiboItemField.sm_editWeiboItem == null){
+    			m_currMgr.OpenNextWeiboItem(true);
+    		}
+    		return true;
+    	}
+		
 		
 		return false;    	
 	}       
@@ -640,7 +676,6 @@ public class weiboTimeLineScreen extends MainScreen{
 				}
 				
 				m_currMgr.RestoreScroll();
-				
 											
 				m_weiboHeader.layout(0, 0);
 				m_weiboHeader.invalidate();

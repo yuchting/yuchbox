@@ -1254,8 +1254,7 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 		
 		if(m_mainApp.m_useLocationInfo){
-			_mail.SetLocationInfo(m_mainApp.m_longitude, m_mainApp.m_latitude, 
-								m_mainApp.m_altitude, m_mainApp.m_movingSpeed, m_mainApp.m_locationHeading);
+			_mail.SetLocationInfo(m_mainApp.m_gpsInfo);
 		}
 	
 		sendMailAttachmentDeamon t_mailDeamon = new sendMailAttachmentDeamon(this, _mail, t_vfileReader,_forwardReply,_sendStyle);

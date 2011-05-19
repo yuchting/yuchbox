@@ -426,7 +426,7 @@ public class fetchSinaWeibo extends fetchAccount{
 		
 		if(_weiboList.m_weiboList.size() + _weiboList.m_counter >= _weiboList.m_sum){
 			
-			StringBuffer t_debugString = new StringBuffer();
+			StringBuffer t_debugString = _weiboList.m_weiboList.isEmpty()?null:(new StringBuffer());
 			
 			while(!_weiboList.m_weiboList.isEmpty()){				
 				
@@ -449,12 +449,18 @@ public class fetchSinaWeibo extends fetchAccount{
 				// debug.out...
 				t_debugString.append(GetAccountName()).append(" send Weibo<").append(t_weibo.GetId())
 							.append("+").append(t_weibo.GetWeiboClass()).append(":").append(t_weibo.GetText())
-							.append(">,wait confirm...").append("\n");
+							.append(">,wait confirm...");
+				
+				if(!_weiboList.m_weiboList.isEmpty()){
+					t_debugString.append("\n\t\t");
+				}
 							
 				t_output.reset();
 			}
 			
-			m_mainMgr.m_logger.LogOut(t_debugString.toString());
+			if(t_debugString != null){
+				m_mainMgr.m_logger.LogOut(t_debugString.toString());
+			}			
 			
 			_weiboList.m_counter = 0;
 			
@@ -472,41 +478,56 @@ public class fetchSinaWeibo extends fetchAccount{
 		int t_type = in.read();	
 		
 		String t_text = sendReceive.ReadString(in);
-				
+		GPSInfo t_gpsInfo = null;
+		
 		try{
 			
 			switch(t_type){
 			case 0:
-				
-				m_weibo.updateStatus(t_text);
-				
+							
+				if(in.read() != 0){
+					
+					t_gpsInfo = new GPSInfo();
+					t_gpsInfo.InputData(in);
+					
+					if(t_gpsInfo.m_latitude != 0 && t_gpsInfo.m_longitude != 0){
+						m_weibo.updateStatus(t_text,t_gpsInfo.m_latitude,t_gpsInfo.m_longitude);
+					}else{
+						m_weibo.updateStatus(t_text);
+					}					
+					
+				}else{
+					
+					m_weibo.updateStatus(t_text);
+				}			
 				m_mainMgr.m_logger.LogOut(GetAccountName() + " update new weibo");
 				
 				break;
 			case 1:
+			case 2:
 				if(t_style == fetchWeibo.SINA_WEIBO_STYLE){
 					
 					long t_commentWeiboId = sendReceive.ReadLong(in);
 					
 					String t_id = Long.toString(t_commentWeiboId);
 					m_weibo.updateComment(t_text,t_id,null);
+					
+					if(in.read() != 0){
+						t_gpsInfo = new GPSInfo();
+						t_gpsInfo.InputData(in);
+					}
+					
+					boolean t_updateTimeline = (in.read() == 1);
 					 
-					m_weibo.updateStatus(t_text,t_commentWeiboId);
+					if(t_updateTimeline){
+						if(t_gpsInfo != null && t_gpsInfo.m_longitude != 0 && t_gpsInfo.m_latitude != 0){
+							m_weibo.updateStatus(t_text, t_commentWeiboId, t_gpsInfo.m_latitude, t_gpsInfo.m_longitude);
+						}else{
+							m_weibo.updateStatus(t_text, t_commentWeiboId);
+						}						
+					}					
 					
-					m_mainMgr.m_logger.LogOut(GetAccountName() + " comment weibo " + t_commentWeiboId);
-					
-					return true;
-				}
-				
-				break;
-			case 2:
-				if(t_style == fetchWeibo.SINA_WEIBO_STYLE){
-					long t_replyWeiboId = sendReceive.ReadLong(in);
-					m_weibo.updateComment(t_text,String.valueOf(t_replyWeiboId),null);
-					
-					m_weibo.updateStatus(t_text,t_replyWeiboId);
-										
-					m_mainMgr.m_logger.LogOut(GetAccountName() + " reply weibo " + t_replyWeiboId);
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " comment/reply weibo " + t_commentWeiboId);
 					
 					return true;
 				}

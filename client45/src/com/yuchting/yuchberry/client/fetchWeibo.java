@@ -40,6 +40,9 @@ public class fetchWeibo {
 	fetchWeibo	m_replyWeibo = null;
 	
 	String		m_source	= "";
+	
+	boolean 	m_hasLocationInfo		= false;
+	GPSInfo		m_gpsInfo = new GPSInfo();
 		
 	public fetchWeibo(){
 		
@@ -111,6 +114,10 @@ public class fetchWeibo {
 	public String GetOriginalPic(){return m_original_pic;}
 	public void SetOriginalPic(String _pic){m_original_pic = _pic;}
 	
+	public GPSInfo GetGPSInfo(){return m_gpsInfo;}
+	
+	public void EnableGPSInfo(boolean _enable){m_hasLocationInfo = _enable;}
+		
 	public void OutputWeibo(OutputStream _stream)throws Exception{
 		
 		_stream.write(VERSION);
@@ -133,6 +140,10 @@ public class fetchWeibo {
 		sendReceive.WriteString(_stream,m_source);
 		sendReceive.WriteString(_stream,m_original_pic);
 		
+		if(m_hasLocationInfo){
+			m_gpsInfo.OutputData(_stream);
+		}
+		
 		if(m_commentWeiboId != -1){
 			_stream.write(m_commentWeibo != null?1:0);
 			if(m_commentWeibo != null){				
@@ -146,7 +157,7 @@ public class fetchWeibo {
 			if(m_replyWeibo != null){
 				m_replyWeibo.OutputWeibo(_stream);
 			}			
-		}		
+		}	
 	}
 	
 	public void InputWeibo(InputStream _stream)throws Exception{
@@ -168,7 +179,11 @@ public class fetchWeibo {
 		m_commentWeiboId		= sendReceive.ReadLong(_stream);
 		
 		m_source				= sendReceive.ReadString(_stream);
-		m_original_pic			= sendReceive.ReadString(_stream);		
+		m_original_pic			= sendReceive.ReadString(_stream);
+		
+		if(m_hasLocationInfo){
+			m_gpsInfo.InputData(_stream);
+		}
 		
 		if(m_commentWeiboId != -1){
 			if(_stream.read() == 1){

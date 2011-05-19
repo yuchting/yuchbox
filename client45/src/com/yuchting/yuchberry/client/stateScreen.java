@@ -76,6 +76,8 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
 			if(t_app.getScreenCount() == 2){
 				t_app.popStateScreen();
+			}else{
+				t_app.PopupWeiboScreen();
 			}
 		}
 	};
@@ -151,8 +153,13 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     public final boolean onClose(){
     	
     	if(m_mainApp.m_connectDeamon.IsConnectState()){
-    		m_mainApp.requestBackground();
-    		return false;
+    		if(m_mainApp.getScreenCount() == 1){
+    			m_mainApp.requestBackground();
+        		return false;	
+    		}else{
+    			m_mainApp.popStateScreen();
+    			return true;
+    		}    		
     	}
     	
     	m_mainApp.Exit();
