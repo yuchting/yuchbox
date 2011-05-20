@@ -128,7 +128,7 @@ public class WeiboItemField extends Manager{
 		sm_testTextArea.setText(m_weiboText);
 		
 		m_simpleAbstract		= m_weibo.GetText().length() > fsm_maxWeiboAbstractLength ? 
-									m_weibo.GetText().substring(0,fsm_maxWeiboAbstractLength) :  m_weibo.GetText();
+									(m_weibo.GetText().substring(0,fsm_maxWeiboAbstractLength) + "...") :  m_weibo.GetText();
 									
 		m_textHeight			= sm_testTextArea.getHeight();
 		

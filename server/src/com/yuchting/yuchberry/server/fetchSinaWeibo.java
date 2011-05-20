@@ -22,6 +22,7 @@ import org.dom4j.Element;
 import weibo4j.Comment;
 import weibo4j.DirectMessage;
 import weibo4j.Paging;
+import weibo4j.RateLimitStatus;
 import weibo4j.Status;
 import weibo4j.User;
 import weibo4j.Weibo;
@@ -38,10 +39,6 @@ public class fetchSinaWeibo extends fetchAccount{
     	System.setProperty("weibo4j.oauth.consumerSecret", Weibo.CONSUMER_SECRET);
 	};
 	
-	
-	
-	final static int			fsm_checkNum = 200;
-	
 	byte[] m_headImageBuffer	= new byte[1024 * 10];
 	
 	String	m_headImageDir		= null;
@@ -53,7 +50,7 @@ public class fetchSinaWeibo extends fetchAccount{
 	String	m_accountName 		= null;
 	
 	String	m_accessToken		= null;
-	String	m_secretToken		= null;
+	String	m_secretToken		= null;	
 	
 	final class fetchWeiboData{
 		long					m_fromIndex = -1;
@@ -71,6 +68,10 @@ public class fetchSinaWeibo extends fetchAccount{
 	
 	//! the time of weibo check folder call
 	int							m_weiboDelayTimer = 0;
+	
+	//! check number 
+	int		m_maxCheckFolderNum = 0;
+	int		m_currRemainCheckFolderNum = 0;
 		
 	public fetchSinaWeibo(fetchMgr _mainMgr){
 		super(_mainMgr);
@@ -124,19 +125,29 @@ public class fetchSinaWeibo extends fetchAccount{
 	 * check the folder to find the news to push
 	 */
 	public synchronized void CheckFolder()throws Exception{
+		
 		try{
 			
-			if(m_weiboDelayTimer++ > 3){
+			if(m_weiboDelayTimer++ >= 3){
 
 				m_weiboDelayTimer = 0;
 				
-				CheckTimeline();
-				CheckAtMeMessage();
-				CheckCommentMeMessage();
-				
-				// this message called number is limited
-				//
-				CheckDirectMessage();
+				m_currRemainCheckFolderNum -= 4;
+				if(m_currRemainCheckFolderNum > 0){
+
+					CheckTimeline();
+					CheckAtMeMessage();
+					CheckCommentMeMessage();
+					
+					// this message called number is limited
+					//
+					// un-authorith
+					//CheckDirectMessage();
+					
+				}else{
+					
+					ResetCheckFolderLimit();
+				}
 			}
 			
 		}catch(Exception e){
@@ -145,7 +156,7 @@ public class fetchSinaWeibo extends fetchAccount{
 			// sleep for a while
 			//
 			Thread.sleep(5000);
-		}		
+		}
 	}
 	
 	public String GetHeadImageDir(){
@@ -300,9 +311,19 @@ public class fetchSinaWeibo extends fetchAccount{
 	 * @param _fullTest		: whether test the full configure( SMTP for email)
 	 */
 	public void ResetSession(boolean _fullTest)throws Exception{
+		
 		m_weibo.setToken(m_accessToken, m_secretToken);
 		m_weibo.verifyCredentials();
+		
+		ResetCheckFolderLimit();
+		
 		m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + "> Prepare OK!");
+	}
+	
+	public void ResetCheckFolderLimit()throws Exception{
+		RateLimitStatus limitStatus = m_weibo.rateLimitStatus();
+		m_currRemainCheckFolderNum = limitStatus.getRemainingHits();
+		m_maxCheckFolderNum			= limitStatus.getHourlyLimit();
 	}
 	
 	/**
@@ -491,6 +512,16 @@ public class fetchSinaWeibo extends fetchAccount{
 		
 	}
 	
+	static byte[] sm_operateWeiboFailed = null;
+	static{
+		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+		t_os.write(msg_head.msgNote);
+		try{
+			sendReceive.WriteString(t_os,"Weibo operating failed, please check server log for detail.",false);
+		}catch(Exception e){}
+		
+		sm_operateWeiboFailed = t_os.toByteArray();
+	}
 	
 	public boolean ProcessWeiboUpdate(ByteArrayInputStream in)throws Exception{
 		
@@ -557,6 +588,8 @@ public class fetchSinaWeibo extends fetchAccount{
 		}catch(Exception e){
 			m_mainMgr.m_logger.LogOut(GetAccountName() + " Exception:" + e.getMessage());
 			m_mainMgr.m_logger.PrinterException(e);
+			
+			m_mainMgr.SendData(sm_operateWeiboFailed, false);
 		}
 		
 		return false;
@@ -754,16 +787,22 @@ public class fetchSinaWeibo extends fetchAccount{
 				
 		        URLConnection t_connect = t_url.openConnection();
 		        BufferedInputStream t_read = new   BufferedInputStream(t_connect.getInputStream()); 
-		   		        
-		        FileOutputStream fos = new FileOutputStream(t_file);
-		        while((size = t_read.read(m_headImageBuffer))!= -1){
-		        	fos.write(m_headImageBuffer,0,size);
-		        }
-		        fos.flush();
-		        fos.close();
-		        
-		        t_read.close();
-		        
+		   		try{
+		   		  FileOutputStream fos = new FileOutputStream(t_file);
+			        try{
+				        while((size = t_read.read(m_headImageBuffer))!= -1){
+				        	fos.write(m_headImageBuffer,0,size);
+				        }
+			        }finally{
+			        	fos.flush();
+				        fos.close();
+				        fos = null;
+			        }
+		   		}finally{
+		   			t_read.close();
+		   			t_read = null;
+		   		}
+		   		
 		        // scale the image...
 		        //
 		        BufferedImage bsrc = ImageIO.read(t_file);
@@ -775,15 +814,19 @@ public class fetchSinaWeibo extends fetchAccount{
 		        ImageIO.write(bdest,"PNG",t_file);
 			}
 			
-			BufferedInputStream t_read = new BufferedInputStream(new FileInputStream(t_file));
-	        
-	        ByteArrayOutputStream t_os = new ByteArrayOutputStream(); 
-	        while((size = t_read.read(m_headImageBuffer))!= -1){
-	        	t_os.write(m_headImageBuffer,0,size);
-	        }	        
-	        t_read.close();
-	        
-	        t_hashCode = t_os.toByteArray().hashCode();
+			byte[] t_byte = new byte[(int)t_file.length()];
+			
+			FileInputStream t_fileIn = new FileInputStream(t_file);
+			try{
+				sendReceive.ForceReadByte(t_fileIn, t_byte, t_byte.length);	        
+		        
+		        t_hashCode = t_byte.length;
+
+			}finally{
+				t_fileIn.close();
+				t_fileIn = null;
+			}
+			
 	        
 		}catch(Exception e){
 			m_mainMgr.m_logger.PrinterException(e);
@@ -803,17 +846,15 @@ public class fetchSinaWeibo extends fetchAccount{
 		t_logger.EnabelSystemOut(true);
 		t_manger.InitConnect("",t_logger);
 		
-		fetchSinaWeibo t_weibo = new fetchSinaWeibo(t_manger);
-		
+		fetchSinaWeibo t_weibo = new fetchSinaWeibo(t_manger);		
 		
 		t_weibo.m_accessToken = "8a2bf4e5a97194a1eb73740b448f034e";
 		t_weibo.m_secretToken = "7529265879f3c97af609c694064bbc59";
 		
 		t_weibo.ResetSession(true);
-		
-		Status t_status = t_weibo.m_weibo.showStatus(10805511526L);
-		
-		System.out.print(t_status.getText());
+		User t_user = t_weibo.m_weibo.showUser("1894359415");
+				
+		System.out.print( t_weibo.StoreHeadImage(t_user));
 	}
 	
 }

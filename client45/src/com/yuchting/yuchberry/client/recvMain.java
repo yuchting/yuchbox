@@ -212,10 +212,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public boolean			m_updateOwnListWhenFw		= true;
 	public boolean			m_updateOwnListWhenRe	= false;
 	
-	String 				m_weiboHeadImageDir = null;
-	String 				m_weiboHeadImageDir_sina = null;
-	weiboTimeLineScreen	m_weiboTimeLineScreen = null;
-	Vector				m_receivedWeiboList	= new Vector();
+	public String 				m_weiboHeadImageDir = null;
+	public String 				m_weiboHeadImageDir_sina = null;
+	public weiboTimeLineScreen	m_weiboTimeLineScreen = null;
+	public Vector				m_receivedWeiboList	= new Vector();
 	
 	public static void main(String[] args) {
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());		
@@ -420,10 +420,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}
 	}
 	
-	public String GetWeiboHeadImageDir(){
-		return m_weiboHeadImageDir;
+	public String GetWeiboHeadImageDir(int _style)throws Exception{
+		
+		if(_style == fetchWeibo.SINA_WEIBO_STYLE){
+			return m_weiboHeadImageDir_sina;
+		}else{
+			throw new Exception("recv error weibo style!");
+		}
 	}
-	
+
 	public String GetAPNName(){
 		
 		if(++m_changeAPNCounter > 3){
@@ -1503,6 +1508,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	
 	public boolean PrepareWeiboItem(fetchWeibo _weibo){
+		
 		for(int i = 0 ;i < m_receivedWeiboList.size();i++){
 			fetchWeibo weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
 			if(weibo.equals(_weibo)){
@@ -1511,12 +1517,29 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			}
 		}
 		
-		if(m_receivedWeiboList.size() > 512){
+		if(m_receivedWeiboList.size() > 128){
+			
+			fetchWeibo t_delWeibo = (fetchWeibo)m_receivedWeiboList.elementAt(0);
+			m_weiboTimeLineScreen.DelWeibo(t_delWeibo);
+			
+			SetErrorString("Over Weibo max! Delete former!");
+			
 			m_receivedWeiboList.removeElementAt(0);
 		}
 		m_receivedWeiboList.addElement(_weibo);
 		
 		return true;
+	}
+	
+	public void ChangeWeiboHeadImageHash(long _userId,int _weiboStyle,int _headImageHash){
+		
+		for(int i = 0 ;i < m_receivedWeiboList.size();i++){
+			fetchWeibo weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
+			
+			if(weibo.GetUserId() == _userId && weibo.GetWeiboStyle() == _weiboStyle){
+				weibo.SetUserHeadImageHashCode(_headImageHash);
+			}
+		}
 	}
 	
 	private void ReadWriteWeiboFile(boolean _read){

@@ -1,7 +1,11 @@
 package com.yuchting.yuchberry.client.weibo;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.Vector;
+
+import javax.microedition.io.Connector;
+import javax.microedition.io.file.FileConnection;
 
 import local.localResource;
 import net.rim.device.api.io.IOUtilities;
@@ -90,6 +94,20 @@ public class weiboTimeLineScreen extends MainScreen{
 		return t_alert;
 	}
 	
+	public void DelWeibo(fetchWeibo _weibo){
+		if(m_mainMgr.DelWeibo(_weibo)){
+			return;
+		}
+		
+		if(m_mainCommitMeMgr.DelWeibo(_weibo)){
+			return ;
+		}
+		
+		if(m_mainAtMeMgr.DelWeibo(_weibo)){
+			return ;
+		}
+	}
+	
 	public void AddWeiboHeadImage(int _style,long _id,byte[] _dataArray){
 		
 		for(int i = 0 ;i < m_headImageList.size();i++){
@@ -98,10 +116,9 @@ public class weiboTimeLineScreen extends MainScreen{
 			if(t_image.m_userID == _id && _style == t_image.m_weiboStyle){
 				try{
 					t_image.m_headImage = EncodedImage.createEncodedImage(_dataArray, 0, _dataArray.length).getBitmap();
+					t_image.m_dataHash 	= _dataArray.length;
 					
-					sm_mainApp.SetErrorString("recv weibo head image " + _id);
-					
-					t_image.m_dataHash = _dataArray.hashCode();
+					sm_mainApp.SetErrorString("recv weibo head image " + _id + " dataHash " + t_image.m_dataHash);					
 							
 				}catch(Exception ex){
 					sm_mainApp.SetErrorString("AWHI:"+ _id + " " + ex.getMessage() + ex.getClass().getName() );
@@ -128,7 +145,8 @@ public class weiboTimeLineScreen extends MainScreen{
 		for(int i = 0 ;i < m_headImageList.size();i++){
 			WeiboHeadImage t_image = (WeiboHeadImage)m_headImageList.elementAt(i);
 			
-			if(t_image.m_userID == _weibo.GetUserId()){
+			if(t_image.m_userID == _weibo.GetUserId() && _weibo.GetWeiboStyle() == t_image.m_weiboStyle){
+				
 				if(t_image.m_dataHash != _weibo.GetUserHeadImageHashCode()){
 					SendHeadImageQueryMsg(_weibo);
 				}
@@ -137,6 +155,20 @@ public class weiboTimeLineScreen extends MainScreen{
 			}
 		}
 		
+		// find/load from the local ROM
+		//
+		WeiboHeadImage t_image = LoadWeiboImage(_weibo);
+		if(t_image != null){
+			if(t_image.m_dataHash != _weibo.GetUserHeadImageHashCode()){
+				SendHeadImageQueryMsg(_weibo);
+			}
+			
+			m_headImageList.addElement(t_image);
+			return t_image;
+		}
+		
+		// load the default image and send head image query message
+		//
 		SendHeadImageQueryMsg(_weibo);
 		
 		if(sm_defaultHeadImage == null){
@@ -144,7 +176,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			sm_defaultHeadImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
 		}
 		
-		WeiboHeadImage t_image = new WeiboHeadImage();
+		t_image = new WeiboHeadImage();
 		
 		t_image.m_userID = _weibo.GetUserId();
 		t_image.m_headImage = sm_defaultHeadImage;
@@ -154,6 +186,48 @@ public class weiboTimeLineScreen extends MainScreen{
 		m_headImageList.addElement(t_image);
 		
 		return t_image;
+	}
+	
+	private WeiboHeadImage LoadWeiboImage(fetchWeibo _weibo){
+		try{
+
+			FileConnection t_fc = (FileConnection)Connector.open(sm_mainApp.GetWeiboHeadImageDir(_weibo.GetWeiboStyle()) + _weibo.GetUserId() + ".png",
+																Connector.READ_WRITE);
+			try{
+				if(t_fc.exists()){
+					
+					InputStream t_fileIn = t_fc.openInputStream();
+					try{
+																	
+						byte[] t_data = new byte[(int)t_fc.fileSize()];
+						
+						sendReceive.ForceReadByte(t_fileIn, t_data, t_data.length);
+						
+						WeiboHeadImage t_image = new WeiboHeadImage();
+						t_image.m_headImage =  EncodedImage.createEncodedImage(t_data, 0, t_data.length).getBitmap();
+						
+						t_image.m_dataHash = t_data.length;
+						t_image.m_userID = _weibo.GetUserId();
+						t_image.m_weiboStyle = _weibo.GetWeiboStyle();
+																		
+						return t_image;
+						
+					}finally{
+						
+						t_fileIn.close();
+						t_fileIn = null;
+					}
+				}
+				
+			}finally{
+				t_fc.close();
+				t_fc = null;
+			}	
+		}catch(Exception e){
+			sm_mainApp.SetErrorString("LWI:"+ e.getMessage() + e.getClass().getName());
+		}
+		
+		return null;
 	}
 	
 	private void UpdateNewWeibo(String _weiboText){
@@ -303,10 +377,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	    		break;	    		
 	    	}
 		}
-		
-    	
-		
-		
+
 		return false;    	
 	}       
 	

@@ -1737,58 +1737,59 @@ public class connectDeamon extends Thread implements SendListener,
 		}	
 	}
 	
+	
+	
 	private void ProcessWeiboHeadImage(InputStream in){
 		try{
 			
 			int t_style = in.read();
 			long t_id = sendReceive.ReadLong(in);
 			
-			if(t_style == fetchWeibo.SINA_WEIBO_STYLE){
-				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-				try{
-					int t_data = -1;
-					while((t_data = in.read()) != -1){
-						t_os.write(t_data);
-					}
-					
-					byte[] t_dataArray = t_os.toByteArray();
-					
-					m_mainApp.m_weiboTimeLineScreen.AddWeiboHeadImage(t_style,t_id,t_dataArray);
-					
-					FileConnection t_fc = (FileConnection)Connector.open(m_mainApp.m_weiboHeadImageDir_sina + t_id + ".png",Connector.READ_WRITE);
-					try{
-						if(t_fc.exists()){
-							t_fc.delete();
-						}
+			String t_imageDir = m_mainApp.GetWeiboHeadImageDir(t_style);
 						
-						t_fc.create();
-						
-						OutputStream t_fileOS = t_fc.openOutputStream();
-						try{
-							t_fileOS.write(t_dataArray);
-						}finally{
-							t_fileOS.flush();
-							t_fileOS.close();
-							t_fileOS = null;
-						}
-					}finally{
-						t_fc.close();
-						t_fc = null;
-					}
-					
-					
-				}finally{
-					t_os.close();
-					t_os = null;
+			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+			try{
+				int t_data = -1;
+				while((t_data = in.read()) != -1){
+					t_os.write(t_data);
 				}
+				
+				byte[] t_dataArray = t_os.toByteArray();
+				
+				m_mainApp.m_weiboTimeLineScreen.AddWeiboHeadImage(t_style,t_id,t_dataArray);
+				m_mainApp.ChangeWeiboHeadImageHash(t_id, t_style, t_dataArray.length);
+				
+				FileConnection t_fc = (FileConnection)Connector.open(t_imageDir + t_id + ".png",Connector.READ_WRITE);
+				try{
+					if(t_fc.exists()){
+						t_fc.delete();
+					}
+					
+					t_fc.create();
+					
+					OutputStream t_fileOS = t_fc.openOutputStream();
+					try{
+						t_fileOS.write(t_dataArray);
+					}finally{
+						t_fileOS.flush();
+						t_fileOS.close();
+						t_fileOS = null;
+					}
+				}finally{
+					t_fc.close();
+					t_fc = null;
+				}
+				
+				
+			}finally{
+				t_os.close();
+				t_os = null;
 			}
 			
 		}catch(Exception e){
 			m_mainApp.SetErrorString("PWHI:" + e.getMessage() + e.getClass().getName());
 		}
-		
 	}
-	
 	 
 }
  

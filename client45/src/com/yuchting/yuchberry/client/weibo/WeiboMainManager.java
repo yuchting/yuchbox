@@ -6,6 +6,7 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
+import com.yuchting.yuchberry.client.fetchWeibo;
 import com.yuchting.yuchberry.client.recvMain;
 
 public class WeiboMainManager extends VerticalFieldManager implements FieldChangeListener{
@@ -127,17 +128,48 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				
 				if(WeiboItemField.sm_extendWeiboItem == null && _resetSelectIdx){
 					
-					m_selectWeiboItemIndex++;		
+					m_selectWeiboItemIndex++;
 					m_formerVerticalPos += WeiboItemField.fsm_closeHeight;
-					
-					sublayout(0,0);
-					
+									
 					RestoreScroll();
 					
 					m_hasNewWeibo = true;
 				}
 			}
 		});					
+	}
+	
+	public boolean DelWeibo(final fetchWeibo _weibo){
+		m_mainApp.invokeLater(new Runnable() {
+			
+			public void run() {
+				
+				int t_num = getFieldCount();
+				
+				for(int i = 0 ;i < t_num;i++){
+					WeiboItemField t_field = (WeiboItemField)getField(i);
+					if(t_field.m_weibo == _weibo){
+						delete(t_field);
+						
+						break;
+					}
+				}
+				
+				if(WeiboItemField.sm_extendWeiboItem == null){			
+					RestoreScroll();					
+				}
+			}
+		});
+		
+		int t_num = getFieldCount();
+		for(int i = 0 ;i < t_num;i++){
+			WeiboItemField t_field = (WeiboItemField)getField(i);
+			if(t_field.m_weibo == _weibo){
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	public boolean IncreaseRenderSize(int _dx,int _dy){
@@ -226,6 +258,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 		m_hasNewWeibo = false;
 		
+		sublayout(0,0);
 		invalidate();
 	}
 	
