@@ -128,7 +128,7 @@ public class fetchSinaWeibo extends fetchAccount{
 		
 		try{
 			
-			if(m_weiboDelayTimer++ >= 3){
+			if(m_weiboDelayTimer++ >= 2){
 
 				m_weiboDelayTimer = 0;
 				
