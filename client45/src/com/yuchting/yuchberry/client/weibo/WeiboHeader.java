@@ -1,5 +1,8 @@
 package com.yuchting.yuchberry.client.weibo;
 
+import net.rim.device.api.io.IOUtilities;
+import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
 
@@ -25,14 +28,28 @@ public class WeiboHeader extends Field{
 		0,0,0,0
 	};
 	
-	final static int	fsm_headHeight = 25;
+	final static int	fsm_headHeight = 27;
 	
 	int	m_currState = STATE_TIMELINE;
 	
 	weiboTimeLineScreen m_parentScreen;
-		
+	
+	Bitmap				m_backgroundBMP	= null;
+	Bitmap				m_backgroundBMP_offline	= null;
+	
 	public WeiboHeader(weiboTimeLineScreen _screen){
 		m_parentScreen = _screen;
+		
+		try{
+			byte[] bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream("/headBg.png"));		
+			m_backgroundBMP = EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();	
+			
+			bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream("/headBg_offline.png"));
+			m_backgroundBMP_offline = EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
+			
+		}catch(Exception e){
+			weiboTimeLineScreen.sm_mainApp.SetErrorString("GBSB:" + e.getMessage() + e.getClass().getName());
+		}		
 	}
 	
 	private void calculateStringWidth(Graphics g){
@@ -70,6 +87,13 @@ public class WeiboHeader extends Field{
 		
 		int color = g.getColor();
 		try{
+			
+			if(m_parentScreen.GetOnlineState()){
+				g.drawBitmap(0,0,recvMain.fsm_display_width,fsm_headHeight,m_backgroundBMP,0,0);
+			}else{
+				g.drawBitmap(0,0,recvMain.fsm_display_width,fsm_headHeight,m_backgroundBMP_offline,0,0);
+			}		
+			
 			int t_x = 1;
 			for(int i = 0 ;i <= STATE_DIRECT_MESSAGE;i++){
 				

@@ -292,7 +292,7 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		m_mainApp.m_messageApplication = UiApplication.getUiApplication();
 			
-		m_mainApp.invokeAndWait(new Runnable(){
+		m_mainApp.invokeLater(new Runnable(){
 			
 			 public void run(){
 				 
@@ -764,7 +764,7 @@ public class connectDeamon extends Thread implements SendListener,
 				// set the text connect
 				//
 				m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTED_LABEL));
-				
+				m_mainApp.m_weiboTimeLineScreen.SetOnlineState(true);
 				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main.png"));
 				
 				while(true){
@@ -781,6 +781,7 @@ public class connectDeamon extends Thread implements SendListener,
 				}							
 			}		
 			
+			m_mainApp.m_weiboTimeLineScreen.SetOnlineState(false);
 			HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline.png"));
 			
 			synchronized (this) {

@@ -24,7 +24,7 @@ import com.yuchting.yuchberry.client.sendReceive;
 
 public class weiboTimeLineScreen extends MainScreen{
 	
-	static recvMain		sm_mainApp;
+	static recvMain				sm_mainApp = (recvMain)UiApplication.getUiApplication();
 	
 	WeiboMainManager			m_mainMgr;
 	WeiboMainManager			m_mainAtMeMgr;
@@ -42,6 +42,8 @@ public class weiboTimeLineScreen extends MainScreen{
 	static Bitmap		sm_defaultHeadImage = null;
 		
 	WeiboHeader 		m_weiboHeader		= new WeiboHeader(this);
+	
+	boolean			m_onlineState = false;
 	
 	public weiboTimeLineScreen(recvMain _mainApp){
 		sm_mainApp = _mainApp;
@@ -65,6 +67,15 @@ public class weiboTimeLineScreen extends MainScreen{
 		m_mainCommitMeMgr.deleteAll();
 		
 		invalidate();
+	}
+	
+	public void SetOnlineState(boolean _online){
+		m_onlineState = _online;
+		m_weiboHeader.invalidate();
+	}
+	
+	public boolean GetOnlineState(){
+		return m_onlineState;
 	}
 	
 	public boolean AddWeibo(fetchWeibo _weibo,boolean _resetSelectIdx)throws Exception{
@@ -431,7 +442,6 @@ public class weiboTimeLineScreen extends MainScreen{
 				
 				m_currMgr.RestoreScroll();
 											
-				m_weiboHeader.layout(0, 0);
 				m_weiboHeader.invalidate();
 				
 				sm_mainApp.StopWeiboNotification();

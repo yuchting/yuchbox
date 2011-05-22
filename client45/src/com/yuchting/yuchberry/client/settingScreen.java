@@ -1,5 +1,7 @@
 package com.yuchting.yuchberry.client;
 
+import com.yuchting.yuchberry.client.weibo.WeiboItemField;
+
 import local.localResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -53,7 +55,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 
 	 CheckboxField		m_weiboModule	= null;
 	 CheckboxField		m_updateOwnWhenFw = null;
-	 CheckboxField		m_updateOwnWhenRe = null;	 
+	 CheckboxField		m_updateOwnWhenRe = null;
+	 CheckboxField		m_commentFirst	= null;
 	 
 	 recvMain			m_mainApp		= null;
 	 
@@ -151,6 +154,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 
 		 m_updateOwnWhenRe = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_UPDATE_RE),m_mainApp.m_updateOwnListWhenRe);
 		 add(m_updateOwnWhenRe);
+		 
+		 m_commentFirst		= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DISPLAY_COMMENT_FIRST),WeiboItemField.sm_commentFirst);
+		 add(m_commentFirst);
 		 
 		 //@}
 		 
@@ -295,6 +301,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		
 		m_mainApp.m_updateOwnListWhenFw = m_updateOwnWhenFw.getChecked();
 		m_mainApp.m_updateOwnListWhenRe = m_updateOwnWhenRe.getChecked();
+		WeiboItemField.sm_commentFirst	= m_commentFirst.getChecked();
 		
 		
 		m_mainApp.WriteReadIni(false);

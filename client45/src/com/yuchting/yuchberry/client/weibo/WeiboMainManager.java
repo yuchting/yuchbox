@@ -56,8 +56,10 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		}else if(WeiboItemField.sm_editTextArea == field){
 			
 			WeiboItemField.RefreshEditTextAreHeight();
-			invalidate();
+			
 			sublayout(0, 0);
+			invalidate();
+			
 			
 			if(m_timelineManager){
 				if(WeiboItemField.sm_editWeiboItem == m_updateWeiboField){
@@ -140,36 +142,38 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	}
 	
 	public boolean DelWeibo(final fetchWeibo _weibo){
-		m_mainApp.invokeLater(new Runnable() {
-			
-			public void run() {
-				
-				int t_num = getFieldCount();
-				
-				for(int i = 0 ;i < t_num;i++){
-					WeiboItemField t_field = (WeiboItemField)getField(i);
-					if(t_field.m_weibo == _weibo){
-						delete(t_field);
-						
-						break;
-					}
-				}
-				
-				if(WeiboItemField.sm_extendWeiboItem == null){			
-					RestoreScroll();					
-				}
-			}
-		});
 		
 		int t_num = getFieldCount();
 		for(int i = 0 ;i < t_num;i++){
 			WeiboItemField t_field = (WeiboItemField)getField(i);
 			if(t_field.m_weibo == _weibo){
+				
+				m_mainApp.invokeLater(new Runnable() {
+					
+					public void run() {
+						
+						int t_num = getFieldCount();
+						
+						for(int i = 0 ;i < t_num;i++){
+							WeiboItemField t_field = (WeiboItemField)getField(i);
+							if(t_field.m_weibo == _weibo){
+								delete(t_field);
+								
+								break;
+							}
+						}
+						
+						if(WeiboItemField.sm_extendWeiboItem == null){			
+							RestoreScroll();					
+						}
+					}
+				});
+				
 				return true;
 			}
 		}
 		
-		return false;
+		return false;		
 	}
 	
 	public boolean IncreaseRenderSize(int _dx,int _dy){
@@ -256,10 +260,11 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			WeiboItemField.sm_selectWeiboItem = null;
 		}
 		
-		m_hasNewWeibo = false;
+		m_hasNewWeibo = false;		
 		
 		sublayout(0,0);
 		invalidate();
+		
 	}
 	
 	public boolean Clicked(int status, int time){
@@ -280,13 +285,10 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			t_currentExtendItem.AddDelControlField(true);
 			WeiboItemField.sm_extendWeiboItem = t_currentExtendItem;
 			
-			if(t_currentExtendItem != m_updateWeiboField){
-				WeiboItemField.sm_textArea.setFocus();
-				WeiboItemField.sm_textArea.setCursorPosition(0);
-			}			
+			t_currentExtendItem.setFocus();	
 			
 			if(m_formerVerticalPos != 0 ){
-					
+
 				// scroll the extend item field to right position
 				//
 				int t_extendItemHeight = t_currentExtendItem.getPreferredHeight();
@@ -297,7 +299,26 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				}else{
 					setVerticalScroll(t_extendItemHeight);
 				}
-				
+							
+			}else{
+				 int t_spaceHeight = m_selectWeiboItemIndex * WeiboItemField.fsm_closeHeight;
+				 if(m_timelineManager && t_spaceHeight != 0){
+					 // decrease the height of update 
+					 //
+					 t_spaceHeight -= WeiboItemField.sm_fontHeight;
+				 }
+				 int t_maxScrollHeight = getVisibleHeight() - WeiboHeader.fsm_headHeight;
+				 
+				 int t_scrollHeight = t_spaceHeight + t_currentExtendItem.getPreferredHeight();
+				 
+				 if(t_scrollHeight > t_maxScrollHeight){
+					 
+					 if(t_scrollHeight - t_maxScrollHeight > t_spaceHeight){
+						 setVerticalScroll(t_spaceHeight);
+					 }else{
+						 setVerticalScroll(t_scrollHeight - t_maxScrollHeight);
+					 }
+				 }				 
 			}
 			
 			sublayout(0, 0);
