@@ -40,7 +40,9 @@ public class WeiboItemField extends Manager{
 	public static HyperlinkButtonField	 sm_atBut				= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL));
 	public static HyperlinkButtonField	 sm_forwardBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL));
 	public static HyperlinkButtonField	 sm_favoriteBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL));
+	public static HyperlinkButtonField	 sm_picBut				= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL));
 	public static HyperlinkButtonField	 sm_followCommentUser	= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FOLLOW_USER_BUTTON_LABEL));
+	
 	
 	// BasicEditField for 4.2os
 	public static TextField 			sm_textArea				= new TextField(Field.READONLY);
@@ -77,7 +79,8 @@ public class WeiboItemField extends Manager{
 	static int		sm_editTextAreaHeight				= 0;
 		
 	static int		sm_atBut_x							= sm_defaultFont.getAdvance(sm_forwardBut.getText()) + fsm_headImageTextInterval;
-	static int		sm_forvoriteBut_x					= sm_atBut_x + sm_defaultFont.getAdvance(sm_atBut.getText()) + fsm_headImageTextInterval;
+	static int		sm_favoriteBut_x					= sm_atBut_x + sm_defaultFont.getAdvance(sm_atBut.getText()) + fsm_headImageTextInterval;
+	static int		sm_picBut_x							= sm_favoriteBut_x + sm_defaultFont.getAdvance(sm_favoriteBut.getText()) + fsm_headImageTextInterval;
 	
 	static int		sm_imageAreaMinHeight				= fsm_weiboSignImageSize + fsm_headImageWidth + fsm_headImageTextInterval;
 
@@ -96,16 +99,19 @@ public class WeiboItemField extends Manager{
 	static public final int fsm_controlField_forwardBtn 	= 2;
 	static public final int fsm_controlField_atBtn 		= 3;
 	static public final int fsm_controlField_favorBtn		= 4;
-	static public final int fsm_controlField_followBtn	= 5;
-	static public final int fsm_controlField_editText		= 6;
+	static public final int fsm_controlField_picBtn		= 5;
+	static public final int fsm_controlField_followBtn	= 6;
+	static public final int fsm_controlField_editText		= 7;
 	
-	boolean[]				m_hasControlField = {false,false,false,false,false,false,false};
+	boolean[]				m_hasControlField = {false,false,false,false,false,false,false,false};
 	
 	fetchWeibo				m_weibo			= null;
 		
 	String					m_simpleAbstract = null;
 	String					m_weiboText		= null;
 	String					m_commentText	= null;
+	
+	String					m_weiboPic		= null;
 	
 	int						m_extendHeight 	= sm_fontHeight;
 	
@@ -157,15 +163,22 @@ public class WeiboItemField extends Manager{
 			
 			sm_testCommentTextArea.setText(m_commentText);
 			
-			m_commentText_height = sm_testCommentTextArea.getHeight();
+			m_commentText_height = sm_testCommentTextArea.getHeight() + fsm_headImageTextInterval;
 			
 			m_commentText_y = m_functionButton_y + fsm_headImageTextInterval;
 			
 			m_functionButton_y = m_commentText_y + m_commentText_height + fsm_headImageTextInterval;
 			
+			if(m_weibo.GetCommentWeibo().GetOriginalPic().length() != 0 ){
+				m_weiboPic = m_weibo.GetCommentWeibo().GetOriginalPic();
+			}
+			
 		}else{
 			
 			m_commentText_height = 0;
+			if(m_weibo.GetOriginalPic().length() != 0){
+				m_weiboPic = m_weibo.GetOriginalPic(); 
+			}
 		}
 		
 		m_extendHeight 			= m_functionButton_y + sm_fontHeight + fsm_headImageTextInterval;
@@ -241,7 +254,12 @@ public class WeiboItemField extends Manager{
 			if(!m_hasControlField[fsm_controlField_favorBtn]){
 				m_hasControlField[fsm_controlField_favorBtn] = true;
 				add(sm_favoriteBut);
-			}			
+			}
+			
+			if(!m_hasControlField[fsm_controlField_picBtn]){
+				m_hasControlField[fsm_controlField_picBtn] = true;
+				add(sm_picBut);
+			}
 			
 		}else{
 			
@@ -275,7 +293,12 @@ public class WeiboItemField extends Manager{
 			if(m_hasControlField[fsm_controlField_favorBtn]){
 				m_hasControlField[fsm_controlField_favorBtn] = false;
 				delete(sm_favoriteBut);
-			}		
+			}	
+			
+			if(m_hasControlField[fsm_controlField_picBtn]){
+				m_hasControlField[fsm_controlField_picBtn] = false;
+				delete(sm_picBut);
+			}
 		}							
 	}
 	
@@ -362,8 +385,15 @@ public class WeiboItemField extends Manager{
 			
 			// favorite button
 			//
-			setPositionChild(sm_favoriteBut,sm_forvoriteBut_x,m_functionButton_y);
+			setPositionChild(sm_favoriteBut,sm_favoriteBut_x,m_functionButton_y);
 			layoutChild(sm_favoriteBut,sm_favoriteBut.getPreferredWidth(),sm_favoriteBut.getPreferredHeight());
+			
+			if(m_weiboPic != null){
+				// open the browser to check the picture button 
+				//
+				setPositionChild(sm_picBut,sm_picBut_x,m_functionButton_y);
+				layoutChild(sm_picBut,sm_picBut.getPreferredWidth(),sm_picBut.getPreferredHeight());
+			}
 			
 			// text area
 			//
@@ -437,6 +467,10 @@ public class WeiboItemField extends Manager{
 			paintChild(_g,sm_atBut);
 			paintChild(_g,sm_forwardBut);
 			paintChild(_g,sm_favoriteBut);
+			
+			if(m_weiboPic != null){
+				paintChild(_g,sm_picBut);
+			}
 			
 			paintChild(_g,sm_textArea);
 			

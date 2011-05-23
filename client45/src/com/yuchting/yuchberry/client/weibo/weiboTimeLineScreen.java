@@ -22,7 +22,7 @@ import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
 
-public class weiboTimeLineScreen extends MainScreen{
+public class weiboTimeLineScreen extends MainScreen {
 	
 	static recvMain				sm_mainApp = (recvMain)UiApplication.getUiApplication();
 	

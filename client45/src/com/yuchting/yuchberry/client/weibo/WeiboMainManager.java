@@ -1,5 +1,7 @@
 package com.yuchting.yuchberry.client.weibo;
 
+import java.io.ByteArrayOutputStream;
+
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
@@ -7,7 +9,9 @@ import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
 import com.yuchting.yuchberry.client.fetchWeibo;
+import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.sendReceive;
 
 public class WeiboMainManager extends VerticalFieldManager implements FieldChangeListener{
 	
@@ -37,7 +41,10 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			WeiboItemField.sm_atBut.setChangeListener(this);
 			WeiboItemField.sm_forwardBut.setChangeListener(this);
 			WeiboItemField.sm_favoriteBut.setChangeListener(this);
-			WeiboItemField.sm_editTextArea.setChangeListener(this);		
+			WeiboItemField.sm_picBut.setChangeListener(this);
+			
+			WeiboItemField.sm_editTextArea.setChangeListener(this);
+			WeiboItemField.sm_followCommentUser.setChangeListener(this);
 			
 			add(m_updateWeiboField);
 			WeiboItemField.sm_selectWeiboItem = m_updateWeiboField;
@@ -68,6 +75,31 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			}			
 		}else if(WeiboItemField.sm_favoriteBut == field){
 			FavoriteWeibo(WeiboItemField.sm_extendWeiboItem);			
+		}else if(WeiboItemField.sm_followCommentUser == field){
+			FollowCommentUser(WeiboItemField.sm_extendWeiboItem);
+		}else if(WeiboItemField.sm_picBut == field){
+			if(WeiboItemField.sm_extendWeiboItem != null 
+			&& WeiboItemField.sm_extendWeiboItem.m_weiboPic != null){
+				recvMain.openURL(WeiboItemField.sm_extendWeiboItem.m_weiboPic);
+			}
+		}
+	}
+	
+	public void FollowCommentUser(WeiboItemField _field){
+		if(_field != null && _field.m_weibo.GetCommentWeibo() != null){
+			
+			try{
+				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+				t_os.write(msg_head.msgWeiboFollowUser);
+				t_os.write(_field.m_weibo.GetCommentWeibo().GetWeiboStyle());
+				sendReceive.WriteLong(t_os,_field.m_weibo.GetCommentWeibo().GetUserId());
+				
+				weiboTimeLineScreen.sm_mainApp.m_connectDeamon.addSendingData(
+						msg_head.msgWeiboFollowUser, t_os.toByteArray(),true);
+				
+			}catch(Exception e){
+				weiboTimeLineScreen.sm_mainApp.SetErrorString("FCU:" + e.getMessage() + e.getClass().getName());
+			}
 		}
 	}
 	
