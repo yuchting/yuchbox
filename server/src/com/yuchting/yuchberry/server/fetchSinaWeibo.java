@@ -357,6 +357,9 @@ public class fetchSinaWeibo extends fetchAccount{
 			case msg_head.msgWeiboFavorite:
 				t_processed = ProcessWeiboFavorite(in);
 				break;
+			case msg_head.msgWeiboFollowUser:
+				t_processed =  ProcessWeiboFollowUser(in);
+				break;
 		}
 		
 		return t_processed;
@@ -644,6 +647,36 @@ public class fetchSinaWeibo extends fetchAccount{
 		}
 		
 		return t_found;
+	}
+	
+	static byte[] sm_followOkPrompt = null;
+	static {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgNote);
+		try{
+			sendReceive.WriteString(os,"follow user OK!",false);
+			sm_followOkPrompt = os.toByteArray();
+		}catch(Exception e){}
+		
+	}
+	private boolean ProcessWeiboFollowUser(ByteArrayInputStream in)throws Exception{
+		
+		int t_style = in.read();
+		if(t_style == fetchWeibo.SINA_WEIBO_STYLE){
+			long t_id = sendReceive.ReadLong(in);
+			
+			m_mainMgr.m_logger.LogOut(GetAccountName() + " Follow User " + t_id);
+			
+			User t_user = m_weibo.createFriendship(Long.toString(t_id));
+			
+			if(t_user != null){
+				m_mainMgr.SendData(sm_followOkPrompt, false);
+			}			
+			
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public void ImportWeibo(fetchWeibo _weibo,Status _stat,byte _weiboClass){
