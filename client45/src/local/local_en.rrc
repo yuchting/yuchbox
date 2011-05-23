@@ -57,6 +57,7 @@ REACH_MAX_MESSAGE_LENGTH_PROMPT#0="YuchBerry prompt: reach message max contain l
 RECV_MAIL_NUM#0="Receive mail: ";
 REFRESH_ABOUT_MENU_TEXT#0="refresh";
 SEND_MAIL_NUM#0="Send mail: ";
+SETTING_ENABLE_SSL_ENABLE#0="You enable the SSL, please confirm the server generate SSL certificate too.";
 SETTING_MAIL_OP#0="Mail operation:";
 SETTING_MENU_TEXT#0="Advance S\u0332etting";
 SETTING_WEIBO_DISPLAY_COMMENT_FIRST#0="Display comment firstly";

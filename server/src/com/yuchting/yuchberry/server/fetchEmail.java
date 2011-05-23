@@ -1017,42 +1017,41 @@ public class fetchEmail extends fetchAccount{
 				m_sendTransport.sendMessage(msg, msg.getAllRecipients());
 				m_sendTransport.close();
 				
-				if(_mail.m_copyToSentFolder 
-				&& m_host_send.toLowerCase().indexOf("googlemail.com") == -1
-				&& m_host_send.toLowerCase().indexOf("gmail.com") == -1
-				
-				// pop3 is NOT support this operating
-				//
-				&& m_protocol.indexOf("pop3") == -1){
+				try{
 					
-					// open the Sent folder and copy mail to this
+					if(_mail.m_copyToSentFolder 
+					&& m_host_send.toLowerCase().indexOf("googlemail.com") == -1
+					&& m_host_send.toLowerCase().indexOf("gmail.com") == -1
+					
+					// pop3 is NOT support this operating
 					//
-					Folder folder = m_store.getFolder("Sent");
-					try{
-
-					    if (folder == null) {
-					    	throw new Exception("Invalid INBOX folder");
-					    }				    	    
-					    
-						// create "Sent" folder if it does not exist
-						if (!folder.exists()) {
-							folder.create(Folder.HOLDS_MESSAGES);						
-						}
+					&& m_protocol.indexOf("pop3") == -1){
 						
-						// add message to "Sent" folder
-						folder.appendMessages(new Message[] {msg});
+						// open the Sent folder and copy mail to this
+						//
+						Folder folder = m_store.getFolder("Sent");
+						try{
+							if (folder == null) {
+						    	throw new Exception("Invalid INBOX folder");
+						    }				    	    
+						    
+							// create "Sent" folder if it does not exist
+							if (!folder.exists()) {
+								folder.create(Folder.HOLDS_MESSAGES);						
+							}
+							
+							// add message to "Sent" folder
+							folder.appendMessages(new Message[] {msg});
 
-						
-					}catch(Exception e){
-						m_mainMgr.m_logger.PrinterException(e);
+							m_mainMgr.m_logger.LogOut("Copy the sent message to SENT folder.");
+						}finally{
+							folder.close(false);	
+						}	
 					}
 				
-					try{
-						folder.close(false);	
-					}catch(Exception e){
-						m_mainMgr.m_logger.LogOut("SendMail folder.close exception:" + e.getMessage());
-					}				
-				}
+				}catch(Exception e){
+					m_mainMgr.m_logger.PrinterException(e);
+				}				
 				
 				break;
 			}catch(Exception e){

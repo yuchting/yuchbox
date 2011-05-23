@@ -273,6 +273,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		}
 	 
 		m_mainApp.m_useSSL	= m_useSSLCheckbox.getChecked();
+		if(m_mainApp.m_useSSL){
+			m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.SETTING_ENABLE_SSL_ENABLE));
+		}
+		
 		m_mainApp.SetAPNName(m_APN.getText());
 		m_mainApp.m_autoRun = m_autoRun.getChecked();
 		
@@ -292,9 +296,11 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		
 		if(m_mainApp.m_enableWeiboModule != m_weiboModule.getChecked()){
 			
+			boolean t_hasEnabled = m_mainApp.m_enableWeiboModule;
+			
 			m_mainApp.m_enableWeiboModule = m_weiboModule.getChecked();
 			
-			if(m_mainApp.m_enableWeiboModule){
+			if(m_mainApp.m_enableWeiboModule && !t_hasEnabled){
 				m_mainApp.InitWeiboModule();
 			}
 		}
