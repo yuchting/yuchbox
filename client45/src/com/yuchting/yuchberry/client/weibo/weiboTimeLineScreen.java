@@ -34,6 +34,9 @@ public class weiboTimeLineScreen extends MainScreen {
 	
 	static Bitmap		sm_sinaWeiboSign = null;
 	static Bitmap		sm_sinaVIPSign = null;
+	
+	static Bitmap		sm_tWeiboSign = null;
+	
 	static Bitmap		sm_isBBerSign = null;
 	
 	
@@ -473,6 +476,13 @@ public class weiboTimeLineScreen extends MainScreen {
 				}
 				
 				return sm_sinaWeiboSign;
+			case fetchWeibo.TWITTER_WEIBO_STYLE:
+				if(sm_tWeiboSign == null){
+					byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/tWeibo.png"));		
+					sm_tWeiboSign =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();					
+				}
+				
+				return sm_tWeiboSign;
 			}			
 		}catch(Exception e){
 			sm_mainApp.SetErrorString("GWS:" + e.getMessage() + e.getClass().getName());

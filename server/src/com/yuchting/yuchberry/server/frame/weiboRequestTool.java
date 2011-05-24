@@ -13,9 +13,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import weibo4j.http.AccessToken;
-import weibo4j.http.RequestToken;
 
 import com.yuchting.yuchberry.server.fetchSinaWeibo;
+import com.yuchting.yuchberry.server.fetchTWeibo;
+import com.yuchting.yuchberry.server.fetchWeibo;
 
 public class weiboRequestTool extends JFrame implements ActionListener{
 
@@ -27,10 +28,14 @@ public class weiboRequestTool extends JFrame implements ActionListener{
 	JTextField	m_accessToken		= new JTextField();
 	JTextField	m_secretToken		= new JTextField();
 
-	RequestToken	m_requestToken	= null;
+	Object		m_requestToken	= null;
 	
-	public weiboRequestTool(){
+	int			m_style				= 0;
+	
+	public weiboRequestTool(int _style){
 
+		m_style = _style;
+		
 		setTitle("请求weibo访问");
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setSize(400,170);
@@ -64,9 +69,22 @@ public class weiboRequestTool extends JFrame implements ActionListener{
 			
 			try{
 				if(m_requestToken == null){
-					m_requestToken = (new fetchSinaWeibo(null)).getRequestToken();
-				}				
-				mainFrame.OpenURL(m_requestToken.getAuthorizationURL());
+					if(m_style == fetchWeibo.SINA_WEIBO_STYLE){
+						m_requestToken = (new fetchSinaWeibo(null)).getRequestToken();
+					}else if(m_style == fetchWeibo.TWITTER_WEIBO_STYLE){
+						m_requestToken = (new fetchTWeibo(null)).getRequestToken();
+					}
+					
+				}
+				
+				if(m_style == fetchWeibo.SINA_WEIBO_STYLE){
+					mainFrame.OpenURL(((weibo4j.http.RequestToken)m_requestToken).getAuthorizationURL());
+				}else if(m_style == fetchWeibo.TWITTER_WEIBO_STYLE){
+					mainFrame.OpenURL(((twitter4j.auth.RequestToken)m_requestToken).getAuthorizationURL());
+				}else{
+					assert false;
+				}
+				
 				
 				JOptionPane.showMessageDialog(this,"请登录weibo，然后把【应用授权码】复制过来，再点击【生成令牌】按钮", "提示", JOptionPane.PLAIN_MESSAGE);
 				
@@ -82,10 +100,24 @@ public class weiboRequestTool extends JFrame implements ActionListener{
 					return;
 				}
 				
-				AccessToken accessToken = m_requestToken.getAccessToken(m_pin.getText());
+				if(m_style == fetchWeibo.SINA_WEIBO_STYLE){
+
+					weibo4j.http.AccessToken accessToken = ((weibo4j.http.RequestToken)m_requestToken).getAccessToken(m_pin.getText());
+					
+					m_accessToken.setText(accessToken.getToken());
+					m_secretToken.setText(accessToken.getTokenSecret());
+					
+				}else if(m_style == fetchWeibo.TWITTER_WEIBO_STYLE){
+
+					twitter4j.auth.AccessToken accessToken = (new fetchTWeibo(null)).getTwitter()
+									.getOAuthAccessToken((twitter4j.auth.RequestToken)m_requestToken,m_pin.getText());
+					
+					m_accessToken.setText(accessToken.getToken());
+					m_secretToken.setText(accessToken.getTokenSecret());
+				}else{
+					assert false;
+				}
 				
-				m_accessToken.setText(accessToken.getToken());
-				m_secretToken.setText(accessToken.getTokenSecret());
 				
 				
 			}catch(Exception ex){
@@ -95,6 +127,6 @@ public class weiboRequestTool extends JFrame implements ActionListener{
 	}
 	
 	static public void main(String _arg[]){
-		new weiboRequestTool();
+		new weiboRequestTool(fetchWeibo.TWITTER_WEIBO_STYLE);
 	}
 }

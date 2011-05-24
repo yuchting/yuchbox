@@ -11,7 +11,6 @@ import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyStore;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -194,7 +193,7 @@ public class fetchMgr{
 			
 			for( Iterator i = t_root.elementIterator("EmailAccount"); i.hasNext();){
 	            Element element = (Element) i.next();
-	            fetchEmail t_email = new fetchEmail(this);
+	            fetchAccount t_email = new fetchEmail(this);
 	            t_email.InitAccount(element);
 	            
 	            m_fetchAccount.addElement(t_email);
@@ -202,7 +201,16 @@ public class fetchMgr{
 			
 			for( Iterator i = t_root.elementIterator("SinaWeiboAccount"); i.hasNext();){
 	            Element element = (Element) i.next();
-	            fetchSinaWeibo t_email = new fetchSinaWeibo(this);
+	            fetchAccount t_email = new fetchSinaWeibo(this);
+	            t_email.InitAccount(element);
+	            
+	            m_fetchAccount.addElement(t_email);
+	        }
+			
+
+			for( Iterator i = t_root.elementIterator("TWeiboAccount"); i.hasNext();){
+	            Element element = (Element) i.next();
+	            fetchAccount t_email = new fetchTWeibo(this);
 	            t_email.InitAccount(element);
 	            
 	            m_fetchAccount.addElement(t_email);

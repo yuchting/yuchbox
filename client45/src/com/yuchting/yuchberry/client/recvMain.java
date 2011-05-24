@@ -213,6 +213,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public String 				m_weiboHeadImageDir = null;
 	public String 				m_weiboHeadImageDir_sina = null;
+	public String 				m_weiboHeadImageDir_t = null;
 	public weiboTimeLineScreen	m_weiboTimeLineScreen = null;
 	public Vector				m_receivedWeiboList	= new Vector();
 	
@@ -268,6 +269,17 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	}
         	
         	m_weiboHeadImageDir_sina = m_weiboHeadImageDir + "Sina/";
+        	fc = (FileConnection) Connector.open(m_weiboHeadImageDir_sina,Connector.READ_WRITE);
+        	try{
+        		if(!fc.exists()){
+            		fc.mkdir();
+            	}	
+        	}finally{
+        		fc.close();
+        		fc = null;
+        	}
+        	
+        	m_weiboHeadImageDir_t = m_weiboHeadImageDir + "Tw/";
         	fc = (FileConnection) Connector.open(m_weiboHeadImageDir_sina,Connector.READ_WRITE);
         	try{
         		if(!fc.exists()){
@@ -423,6 +435,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		if(_style == fetchWeibo.SINA_WEIBO_STYLE){
 			return m_weiboHeadImageDir_sina;
+		}else if(_style == fetchWeibo.TWITTER_WEIBO_STYLE){
+			return m_weiboHeadImageDir_t;
 		}else{
 			throw new Exception("recv error weibo style!");
 		}

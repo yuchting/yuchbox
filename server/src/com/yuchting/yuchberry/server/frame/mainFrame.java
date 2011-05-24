@@ -52,6 +52,7 @@ import com.yuchting.yuchberry.server.Logger;
 import com.yuchting.yuchberry.server.fakeMDSSvr;
 import com.yuchting.yuchberry.server.fetchMain;
 import com.yuchting.yuchberry.server.fetchMgr;
+import com.yuchting.yuchberry.server.fetchWeibo;
 
 class checkStateThread extends Thread{
 	mainFrame	m_mainFrame	= null;
@@ -161,8 +162,19 @@ public class mainFrame extends JFrame implements ActionListener{
 	static public void main(String _arg[]){
 		if(_arg.length == 1 && _arg[0].equalsIgnoreCase("cryptTool")){
 			new cryptPassTool();
-		}else if(_arg.length == 1 && _arg[0].equalsIgnoreCase("weiboReq")){
-			new weiboRequestTool();
+		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("weiboReq")){
+			if(_arg.length >= 2){
+				if(_arg[1].equalsIgnoreCase("sina")){
+					new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
+				}else if(_arg[1].equalsIgnoreCase("tw")){
+					new weiboRequestTool(fetchWeibo.TWITTER_WEIBO_STYLE);
+				}else{
+					
+				}
+			}else{
+				new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
+			}
+			
 		}else if(_arg.length == 1 && _arg[0].equalsIgnoreCase("console")){
 			new fetchMain();
 		}else{
