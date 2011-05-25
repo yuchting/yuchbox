@@ -19,6 +19,8 @@ public class fetchWeibo {
 	byte		m_WeiboStyle;
 	byte		m_WeiboClass;
 	
+	boolean	m_isOwnWeibo = false;
+	
 	long		m_id;
 	long		m_userId;
 	
@@ -73,6 +75,9 @@ public class fetchWeibo {
 	public byte GetWeiboClass(){return m_WeiboClass;}
 	public void SetWeiboClass(byte _style){m_WeiboClass = _style;}
 	
+	public boolean IsOwnWeibo(){return m_isOwnWeibo;}
+	public void SetOwnWeibo(boolean _own){m_isOwnWeibo = _own;}
+	
 	public long GetId(){return m_id;}
 	public void SetId(final long _id){m_id = _id;}
 	
@@ -125,6 +130,7 @@ public class fetchWeibo {
 		
 		_stream.write(m_WeiboStyle);
 		_stream.write(m_WeiboClass);
+		_stream.write(m_isOwnWeibo?1:0);
 		_stream.write(m_isSinaVIP?1:0);
 		_stream.write(m_isBBer?1:0);
 		
@@ -167,6 +173,8 @@ public class fetchWeibo {
 		
 		m_WeiboStyle= (byte)_stream.read();
 		m_WeiboClass= (byte)_stream.read();
+		
+		m_isOwnWeibo= _stream.read() == 1?true:false;
 		m_isSinaVIP = _stream.read() == 1?true:false;
 		m_isBBer	= _stream.read() == 1?true:false;
 		

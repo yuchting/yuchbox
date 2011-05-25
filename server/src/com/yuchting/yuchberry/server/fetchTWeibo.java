@@ -25,6 +25,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	static String sm_consumerSecret = "nihtObnPRottjwJaQf6Y1iXlOKdojhvve6A1jh3aV6w";
 	
 	Twitter	m_twitter	= new TwitterFactory().getInstance();
+	User	m_userself	= null;
 	
 	public fetchTWeibo(fetchMgr _main){
 		super(_main);
@@ -57,7 +58,8 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	public void ResetSession(boolean _fullTest)throws Exception{
 		
 		m_twitter.setOAuthAccessToken(new AccessToken(m_accessToken, m_secretToken));
-		m_twitter.verifyCredentials();
+
+		m_userself = m_twitter.verifyCredentials();
 		
 		ResetCheckFolderLimit();
 		
@@ -171,7 +173,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 			t_fetch = m_twitter.getMentions();
 		}		 
 		
-		AddWeibo(t_fetch,m_timeline,fetchWeibo.TIMELINE_CLASS);
+		AddWeibo(t_fetch,m_timeline,fetchWeibo.AT_ME_CLASS);
 	}
 	
 	protected void CheckCommentMeMessage()throws Exception{
@@ -227,6 +229,8 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		
 		User t_user = _stat.getUser();
 
+		_weibo.SetOwnWeibo(t_user.getId() == m_userself.getId());
+		
 		_weibo.SetUserId(t_user.getId());
 		_weibo.SetUserName(t_user.getName());
 		_weibo.SetSinaVIP(t_user.isVerified());
@@ -271,7 +275,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		_weibo.SetDateLong(_dm.getCreatedAt().getTime());
 		_weibo.SetText(_dm.getText());
 		
-		
+		_weibo.SetOwnWeibo(_dm.getSenderId() == m_userself.getId());
 		_weibo.SetWeiboStyle(fetchWeibo.TWITTER_WEIBO_STYLE);
 		_weibo.SetWeiboClass(fetchWeibo.DIRECT_MESSAGE_CLASS);
 		
@@ -305,13 +309,14 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		
 		fetchTWeibo t_weibo = new fetchTWeibo(t_manger);		
 		
-		t_weibo.m_accessToken = "8a2bf4e5a97194a1eb73740b448f034e";
-		t_weibo.m_secretToken = "7529265879f3c97af609c694064bbc59";
+		t_weibo.m_twitter.setOAuthConsumer(sm_consumerKey, sm_consumerSecret);
+		
+		t_weibo.m_accessToken = "123158821-96vShVD9oXGZmj6usNAz4vVyLzL1fJVGxKZABa1C";
+		t_weibo.m_secretToken = "s9zpyuKVpOTksVr0tBC1md6Rge3SXvnQDzNkm8vg";
 		
 		t_weibo.ResetSession(true);
-		User t_user = t_weibo.m_twitter.showUser("1894359415");
-				
-		System.out.print( t_weibo.StoreHeadImage(t_user.getProfileImageURL(),t_user.getId()));
+		
+		t_weibo.CheckAtMeMessage();
 	}
 	
 	

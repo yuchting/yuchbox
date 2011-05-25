@@ -1077,7 +1077,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		if(m_stateScreen == null){
 			m_stateScreen = new stateScreen(this);
 			pushScreen(m_stateScreen);
-		}	
+		}
 	}
 	
 	public void popStateScreen(){

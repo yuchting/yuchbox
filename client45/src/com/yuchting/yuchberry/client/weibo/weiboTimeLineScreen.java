@@ -332,12 +332,18 @@ public class weiboTimeLineScreen extends MainScreen {
         }
     };
     
-    MenuItem m_stateItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_STATE_SCREEN_MENU_LABEL),1,0){
+    MenuItem m_refreshItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_REFRESH_MENU_LABEL),1,0){
+        public void run() {
+        	SendRefreshMsg();
+        }
+    };
+    
+    MenuItem m_stateItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_STATE_SCREEN_MENU_LABEL),2,0){
         public void run() {
         	recvMain t_recv = (recvMain)UiApplication.getUiApplication();
         	t_recv.pushStateScreen();
         }
-    };
+    };    
     
 	protected void makeMenu(Menu _menu,int instance){
 		
@@ -345,11 +351,22 @@ public class weiboTimeLineScreen extends MainScreen {
 			_menu.add(m_sendItem);
 		}
 		
+		_menu.add(m_refreshItem);
 		_menu.add(m_stateItem);
 		
 		super.makeMenu(_menu,instance);
     }
 	
+	private void SendRefreshMsg(){
+		try{
+			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+			t_os.write(msg_head.msgWeiboRefresh);
+			sm_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeiboRefresh, t_os.toByteArray(),true);
+		}catch(Exception e){
+			sm_mainApp.SetErrorString("SRM:"+e.getMessage() + e.getClass().getName());
+		}
+		
+	}
 	protected boolean keyDown(int keycode,int time){
 		
 		final int key = Keypad.key(keycode);
@@ -362,7 +379,7 @@ public class weiboTimeLineScreen extends MainScreen {
 	    	case 'F':
 	    		m_currMgr.ForwardWeibo(WeiboItemField.sm_extendWeiboItem);
 	    		return true;
-	    	case 'R':
+	    	case 'V':
 	    		m_currMgr.FavoriteWeibo(WeiboItemField.sm_extendWeiboItem);
 	    		return true;
 	    	case 'E':
@@ -380,18 +397,18 @@ public class weiboTimeLineScreen extends MainScreen {
 		    		return true;
 	    		}
 	    		break;
-	    	case ' ':
-	    		if(WeiboItemField.sm_extendWeiboItem != null && WeiboItemField.sm_editWeiboItem == null){
-	    			m_currMgr.OpenNextWeiboItem(true);
-	    			return true;
-	    		}
-	    		break;
 	    	case 'T':
 	    		if(WeiboItemField.sm_extendWeiboItem == null && WeiboItemField.sm_editWeiboItem == null){
 	    			m_currMgr.ScrollToTop();
 	    			return true;
 	    		}
-	    		break;	    		
+	    		break;
+	    	case 'R':
+	    		SendRefreshMsg();
+	    		break;
+	    	case 10: // enter key
+	    		m_currMgr.Clicked(0, 0);
+	    		break;
 	    	}
 		}
 

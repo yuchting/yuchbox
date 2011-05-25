@@ -28,5 +28,6 @@ final public class msg_head {
 	
 	final public static byte msgWeiboFavorite	= 15;
 	final public static byte msgWeiboFollowUser	= 16;
+	final public static byte msgWeiboRefresh		= 17;
 			
 }

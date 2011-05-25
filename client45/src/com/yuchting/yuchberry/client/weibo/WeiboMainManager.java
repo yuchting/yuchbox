@@ -294,6 +294,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			}
 			
 			WeiboItemField.sm_selectWeiboItem = (WeiboItemField)getField(m_selectWeiboItemIndex);
+			
+			sublayout(0,0);
 			invalidate();
 			
 			if(_dy != 0){

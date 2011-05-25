@@ -30,13 +30,13 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	
 	String	m_accessToken		= null;
 	String	m_secretToken		= null;
-	
+
 	final class fetchWeiboData{
 		long					m_fromIndex = -1;
 		Vector<fetchWeibo>		m_historyList = null;
 		Vector<fetchWeibo>		m_weiboList = new Vector<fetchWeibo>();
 		int						m_sum		= 1;
-		int						m_counter	= 0;
+		int						m_counter	= -1;
 		Vector<fetchWeibo>		m_WeiboComfirm	= new Vector<fetchWeibo>();
 	}
 	
@@ -46,7 +46,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	fetchWeiboData				m_commentMessage= new fetchWeiboData();
 	
 	//! the time of weibo check folder call
-	int							m_weiboDelayTimer = 0;
+	int							m_weiboDelayTimer = -1;
 	
 	//! check number 
 	int		m_maxCheckFolderNum = 0;
@@ -112,7 +112,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		
 		try{
 			
-			if(m_weiboDelayTimer++ >= 2){
+			if(m_weiboDelayTimer == -1 || m_weiboDelayTimer >= 2){
 
 				m_weiboDelayTimer = 0;
 				
@@ -132,6 +132,9 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					
 					ResetCheckFolderLimit();
 				}
+			}else{
+				
+				m_weiboDelayTimer++;
 			}
 			
 		}catch(Exception e){
@@ -185,12 +188,10 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					
 					i--;
 				}
-				
-				
+
 			}
 		}
 		
-		_weiboList.m_WeiboComfirm.removeAllElements();
 	}
 	
 	/**
@@ -215,7 +216,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		
 		long t_currTime = (new Date()).getTime();
 		
-		if(_weiboList.m_weiboList.size() + _weiboList.m_counter >= _weiboList.m_sum){
+		if(_weiboList.m_counter == -1 // client send the refresh cmd to refresh or the first call
+		|| _weiboList.m_weiboList.size() + _weiboList.m_counter >= _weiboList.m_sum){
 			
 			StringBuffer t_debugString = _weiboList.m_weiboList.isEmpty()?null:(new StringBuffer());
 			
@@ -311,9 +313,21 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			case msg_head.msgWeiboFollowUser:
 				t_processed =  ProcessWeiboFollowUser(in);
 				break;
+			case msg_head.msgWeiboRefresh:
+				ProcessWeiboRefresh(in);
+				break;
 		}
 		
 		return t_processed;
+	}
+	
+	protected void ProcessWeiboRefresh(ByteArrayInputStream in){
+		m_timeline.m_counter 		= -1;
+		m_directMessage.m_counter 	= -1;
+		m_atMeMessage.m_counter 	= -1;
+		m_commentMessage.m_counter	= -1;
+		
+		m_weiboDelayTimer			= -1;
 	}
 	
 	static byte[] sm_followOkPrompt = null;

@@ -36,6 +36,7 @@ public class WeiboItemField extends Manager{
 	public final static int		fsm_darkColor				= 0xdfdfdf;
 	public final static int		fsm_selectedColor			= 0x2020ff;
 	public final static int		fsm_spaceLineColor			= 0x8f8f8f;
+	public final static int		fsm_ownWeiboColor			= 0xffff8b;
 	
 	public static HyperlinkButtonField	 sm_atBut				= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL));
 	public static HyperlinkButtonField	 sm_forwardBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL));
@@ -526,21 +527,20 @@ public class WeiboItemField extends Manager{
 			try{
 				
 				if(sm_extendWeiboItem != null){
-					// 
-					//
 					_g.setColor(fsm_darkColor);
 					_g.fillRect(0,0, recvMain.fsm_display_width,fsm_closeHeight);
-					_g.setColor(0);
 				}
 				
 				if(sm_selectWeiboItem == this){
 					_g.setColor(fsm_selectedColor);
 					_g.fillRect(0, 0, recvMain.fsm_display_width,fsm_closeHeight);
-					_g.setColor(0xFFFFFF);
 				}else{
+					if(m_weibo.IsOwnWeibo()){
+						_g.setColor(fsm_ownWeiboColor);
+						_g.fillRect(0, 0, recvMain.fsm_display_width,fsm_closeHeight);
+					}
 					_g.setColor(fsm_spaceLineColor);
 					_g.drawLine(0,fsm_closeHeight - 1,recvMain.fsm_display_width,fsm_closeHeight - 1);
-					_g.setColor(0);
 				}			
 				
 				// weibo sign 
@@ -550,6 +550,11 @@ public class WeiboItemField extends Manager{
 
 				// name 
 				//
+				if(sm_selectWeiboItem == this){
+					_g.setColor(0xffffff);
+				}else{
+					_g.setColor(0);
+				}
 				int t_nameLength = _g.drawText(m_weibo.GetUserName().substring(0,Math.min(m_weibo.GetUserName().length(),16)),
 										fsm_weiboSignImageSize + 5,t_firstLineHeight,Graphics.ELLIPSIS);
 				
@@ -577,9 +582,11 @@ public class WeiboItemField extends Manager{
 				
 				// contain abstract
 				//
-				if(sm_selectWeiboItem != this){
-					_g.setColor(0x8f8f8f);
-				}				
+				if(sm_selectWeiboItem == this){
+					_g.setColor(0xffffff);
+				}else{
+					_g.setColor(0x8f8f8f);					
+				}
 		        _g.drawText(m_simpleAbstract,t_leadingSpace + fsm_weiboSignImageSize,sm_fontHeight + fsm_headImageTextInterval ,Graphics.ELLIPSIS);
 		        
 		        // time string

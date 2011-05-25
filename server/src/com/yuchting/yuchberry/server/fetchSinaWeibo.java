@@ -27,6 +27,8 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	};
 	
 	Weibo	m_weibo				= new Weibo();
+	
+	User 	m_userself = 		null;
 
 	public fetchSinaWeibo(fetchMgr _mainMgr){
 		super(_mainMgr);
@@ -191,8 +193,8 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	 */
 	public void ResetSession(boolean _fullTest)throws Exception{
 		
-		m_weibo.setToken(m_accessToken, m_secretToken);
-		m_weibo.verifyCredentials();
+		m_weibo.setToken(m_accessToken, m_secretToken);		
+		m_userself = m_weibo.verifyCredentials();
 		
 		ResetCheckFolderLimit();
 		
@@ -259,6 +261,8 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		
 		User t_user = _stat.getUser();
 
+		_weibo.SetOwnWeibo(t_user.getId() == m_userself.getId());
+		
 		_weibo.SetUserId(t_user.getId());
 		_weibo.SetUserName(t_user.getName());
 		_weibo.SetSinaVIP(t_user.isVerified());
@@ -321,6 +325,8 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		_weibo.SetWeiboStyle(fetchWeibo.SINA_WEIBO_STYLE);
 		_weibo.SetWeiboClass(fetchWeibo.DIRECT_MESSAGE_CLASS);
 		
+		_weibo.SetOwnWeibo(_dm.getSenderId() == m_userself.getId());
+		
 		User t_user = _dm.getSender();
 		if(t_user != null){
 			_weibo.SetUserId(t_user.getId());
@@ -339,9 +345,12 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		
 		_weibo.SetWeiboStyle(fetchWeibo.SINA_WEIBO_STYLE);
 		_weibo.SetWeiboClass(fetchWeibo.COMMENT_ME_CLASS);
-		
+				
 		User t_user = _comment.getUser();
+		
 		if(t_user != null){
+			
+			_weibo.SetOwnWeibo(t_user.getId() == m_userself.getId());
 			_weibo.SetUserId(t_user.getId());
 			_weibo.SetUserName(t_user.getName());
 			_weibo.SetSinaVIP(t_user.isVerified());	

@@ -323,6 +323,7 @@ public class connectDeamon extends Thread implements SendListener,
 										
 					fetchMail t_forwardReplyMail = null;
 					if(m_sendStyle != fetchMail.NOTHING_STYLE && m_forwordReplyMail != null){
+											
 						t_forwardReplyMail = new fetchMail();
 						ImportMail(m_forwordReplyMail,t_forwardReplyMail);
 						
@@ -527,6 +528,8 @@ public class connectDeamon extends Thread implements SendListener,
 	
 		m_forwordReplyMail = FindOrgMessage(e.getMessage(),fetchMail.REPLY_STYLE);
 		
+		System.out.println(m_forwordReplyMail.hashCode());
+		
 		m_sendStyle = fetchMail.REPLY_STYLE;
 	}
 	//@}
@@ -542,14 +545,24 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				final int t_code = Locale.getDefaultForSystem().getCode();
 				
+				
 				switch(t_code){
 				case Locale.LOCALE_zh_CN:
 				case Locale.LOCALE_zh:
 				case Locale.LOCALE_zh_HK:
-					t_trimString = "答复： ";
+					if(t_messageSub.indexOf("：") != -1){
+						t_trimString = "答复： ";
+					}else{
+						t_trimString = "答复 ";
+					}
+					
 					break;
 				default:
-					t_trimString = "Re: ";
+					if(t_messageSub.indexOf(":") != -1){
+						t_trimString = "Re: ";
+					}else{
+						t_trimString = "Re ";
+					}					
 					break;
 				}
 				
@@ -596,7 +609,7 @@ public class connectDeamon extends Thread implements SendListener,
 				for(int j = t_messages.length - 1;j >= 0 ;j--){
 					
 					final String t_sub = t_messages[j].getSubject();
-					if(t_messageSub.equals(t_sub)){
+					if(t_sub.startsWith(t_messageSub)){
 						
 						if(_style == fetchMail.REPLY_STYLE){
 							// the original reply to
@@ -1409,7 +1422,7 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 		
 		Date t_date = m.getSentDate();
-		if(t_date != null &&  t_date.getTime() == 0){	
+		if(t_date != null && t_date.getTime() != 0){
 			_mail.SetSendDate(t_date);
 		}
 		
