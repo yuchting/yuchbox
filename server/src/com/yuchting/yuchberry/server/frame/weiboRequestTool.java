@@ -12,8 +12,6 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-import weibo4j.http.AccessToken;
-
 import com.yuchting.yuchberry.server.fetchSinaWeibo;
 import com.yuchting.yuchberry.server.fetchTWeibo;
 import com.yuchting.yuchberry.server.fetchWeibo;
@@ -36,7 +34,18 @@ public class weiboRequestTool extends JFrame implements ActionListener{
 
 		m_style = _style;
 		
-		setTitle("请求weibo访问");
+		String t_subfix = "";
+		
+		switch(_style){
+		case fetchWeibo.SINA_WEIBO_STYLE:
+			t_subfix = "Sina";
+			break;
+		case fetchWeibo.TWITTER_WEIBO_STYLE:
+			t_subfix = "Twitter";
+			break;
+		}
+		
+		setTitle("请求weibo访问    -" + t_subfix);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setSize(400,170);
 		setResizable(false);

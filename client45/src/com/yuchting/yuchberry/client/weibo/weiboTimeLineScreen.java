@@ -368,6 +368,9 @@ public class weiboTimeLineScreen extends MainScreen {
 	    	case 'E':
 	    		m_currMgr.AtWeibo(WeiboItemField.sm_extendWeiboItem);
 	    		return true;
+	    	case 'P':
+	    		m_currMgr.OpenOriginalPic(WeiboItemField.sm_extendWeiboItem);
+	    		return true;
 			}
 		}else{
 			switch(key){

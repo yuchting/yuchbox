@@ -780,7 +780,7 @@ public class mainFrame extends JFrame implements ActionListener{
 				
 				final long t_lastTime = t_thread.GetLastTime(t_currTime);
 				
-				if(!t_thread.m_sendTimeupMail && t_lastTime > 0 && t_lastTime < 5 * 3600 * 1000){
+				if(!t_thread.m_sendTimeupMail && t_lastTime > 0 && t_lastTime < 24 * 3600 * 1000){
 					
 					t_thread.m_sendTimeupMail = true;
 					

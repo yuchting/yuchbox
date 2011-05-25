@@ -68,6 +68,8 @@ public class WeiboItemField extends Manager{
 			layout(fsm_commentTextWidth,1000);
 		}
 	};
+	
+	
 			
 	static {
 		sm_editTextArea.setMaxSize(fsm_maxWeiboTextLength);
@@ -91,8 +93,9 @@ public class WeiboItemField extends Manager{
 	static int						sm_currentSendType	= 0;
 	public static	boolean		sm_commentFirst		= false;
 	
-	final static int	fsm_closeHeight		= sm_fontHeight * 2 + 1;
+	final static int			fsm_closeHeight		= sm_fontHeight * 2 + 1;
 	
+	final static int			fsm_maxDisplayRows = (recvMain.fsm_display_height - WeiboHeader.fsm_headHeight) / fsm_closeHeight + 1; 
 	
 	static public final int fsm_controlField_text 		= 0;
 	static public final int fsm_controlField_comment 		= 1;
@@ -373,7 +376,7 @@ public class WeiboItemField extends Manager{
 				
 				// follow button
 				//
-				setPositionChild(sm_followCommentUser,3,t_commentText_y + m_commentText_height - sm_fontHeight);
+				setPositionChild(sm_followCommentUser,3,t_commentText_y + m_commentText_height - sm_fontHeight - 5);
 				layoutChild(sm_followCommentUser,sm_followCommentUser.getPreferredWidth(),
 												sm_followCommentUser.getPreferredHeight());
 			}
@@ -581,7 +584,11 @@ public class WeiboItemField extends Manager{
 		        
 		        // time string
 		        //
-		        _g.setColor(fsm_darkColor);
+		        if(sm_selectWeiboItem == this){
+		        	_g.setColor(0xffffff);
+		        }else{
+		        	_g.setColor(0);
+		        }		        
 		        String t_dateString = getTimeString();		        
 		        _g.drawText(t_dateString,recvMain.fsm_display_width - _g.getFont().getAdvance(t_dateString)
 		        				,t_firstLineHeight,Graphics.ELLIPSIS);
