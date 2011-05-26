@@ -8,6 +8,7 @@ public class fetchWeibo {
 	final static int	VERSION = 1;
 	final public static byte	SINA_WEIBO_STYLE 		= 0;
 	final public static byte	TWITTER_WEIBO_STYLE 	= 1;
+	final public static byte	QQ_WEIBO_STYLE 			= 2;
 	
 	final public static byte	TIMELINE_CLASS 			= 0;
 	final public static byte	DIRECT_MESSAGE_CLASS 	= 1;

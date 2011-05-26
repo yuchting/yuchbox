@@ -48,6 +48,7 @@ public class weiboTimeLineScreen extends MainScreen {
 	
 	boolean			m_onlineState = false;
 	
+	
 	public weiboTimeLineScreen(recvMain _mainApp){
 		sm_mainApp = _mainApp;
 		
@@ -301,7 +302,9 @@ public class weiboTimeLineScreen extends MainScreen {
 				t_os.write(WeiboItemField.sm_currentSendType);
 				
 				sendReceive.WriteString(t_os,t_text);
-				sendReceive.WriteLong(t_os,t_referenceWeibo.GetId());				
+				
+				t_os.write(sm_mainApp.m_publicForward?1:0);
+				sendReceive.WriteLong(t_os,t_referenceWeibo.GetId());
 				
 				if(sm_mainApp.canUseLocation()){
 					t_os.write(1);

@@ -114,8 +114,10 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			
 			if(m_weiboDelayTimer == -1 || m_weiboDelayTimer >= 2){
 
-				m_weiboDelayTimer = 0;
-				
+				synchronized(this){
+					m_weiboDelayTimer = 0;
+				}
+								
 				m_currRemainCheckFolderNum -= 4;
 				if(m_currRemainCheckFolderNum > 0){
 
@@ -134,7 +136,9 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				}
 			}else{
 				
-				m_weiboDelayTimer++;
+				synchronized(this){
+					m_weiboDelayTimer++;
+				}
 			}
 			
 		}catch(Exception e){
@@ -253,13 +257,16 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			
 			if(t_debugString != null){
 				m_mainMgr.m_logger.LogOut(t_debugString.toString());
-			}			
+			}	
 			
-			_weiboList.m_counter = 0;
+			synchronized(this){
+				_weiboList.m_counter = 0;
+			}
 			
 		}else{
-			
-			_weiboList.m_counter++;
+			synchronized(this){
+				_weiboList.m_counter++;
+			}
 		}
 		
 	}
@@ -321,7 +328,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		return t_processed;
 	}
 	
-	protected void ProcessWeiboRefresh(ByteArrayInputStream in){
+	protected synchronized void ProcessWeiboRefresh(ByteArrayInputStream in){
+		
 		m_timeline.m_counter 		= -1;
 		m_directMessage.m_counter 	= -1;
 		m_atMeMessage.m_counter 	= -1;
@@ -347,6 +355,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		int t_type = in.read();	
 		
 		String t_text = sendReceive.ReadString(in);
+		t_text = t_text.replace("＠", "@");
+		
 		GPSInfo t_gpsInfo = null;
 		
 		try{
@@ -367,7 +377,9 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			case 1:
 			case 2:
 				
-				if(t_style == GetCurrWeiboStyle()){
+				int t_public_fw = in.read();
+				
+				if(t_style == GetCurrWeiboStyle() || t_public_fw == 1){
 					
 					long t_commentWeiboId = sendReceive.ReadLong(in);
 					
@@ -380,9 +392,11 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					
 					m_mainMgr.m_logger.LogOut(GetAccountName() + " comment/reply weibo " + t_commentWeiboId);
 					
-					UpdataComment(t_text,t_commentWeiboId,t_gpsInfo,t_updateTimeline);
+					UpdataComment(t_style,t_text,t_commentWeiboId,t_gpsInfo,t_updateTimeline);
 					
-					return true;
+					// public the forward commect/forward
+					//
+					return t_public_fw != 1;
 				}
 				
 				break;
@@ -401,7 +415,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 
 	protected abstract int GetCurrWeiboStyle(); 
 	protected abstract void UpdataStatus(String _text,GPSInfo _info)throws Exception;
-	protected abstract void UpdataComment(String _text,long _commentWeiboId,
+	protected abstract void UpdataComment(int _style,String _text,long _commentWeiboId,
 											GPSInfo _info,boolean _updateTimeline)throws Exception;
 	
 	protected abstract void FavoriteWeibo(long _id)throws Exception;

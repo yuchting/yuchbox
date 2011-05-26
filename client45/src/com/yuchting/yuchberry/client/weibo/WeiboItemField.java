@@ -36,7 +36,7 @@ public class WeiboItemField extends Manager{
 	public final static int		fsm_darkColor				= 0xdfdfdf;
 	public final static int		fsm_selectedColor			= 0x2020ff;
 	public final static int		fsm_spaceLineColor			= 0x8f8f8f;
-	public final static int		fsm_ownWeiboColor			= 0xffff8b;
+	public final static int		fsm_ownWeiboColor			= 0xffffee;
 	
 	public static HyperlinkButtonField	 sm_atBut				= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL));
 	public static HyperlinkButtonField	 sm_forwardBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL));
@@ -139,7 +139,7 @@ public class WeiboItemField extends Manager{
 		
 		StringBuffer t_weiboTextBuffer = new StringBuffer();
 		
-		t_weiboTextBuffer.append("@").append(m_weibo.GetUserName()).append(":").append(m_weibo.GetText())
+		t_weiboTextBuffer.append("@").append(m_weibo.GetUserName()).append(" :").append(m_weibo.GetText())
 						.append("\n         --").append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
 						.append(parseSource(m_weibo.GetSource()));
 		
@@ -535,7 +535,7 @@ public class WeiboItemField extends Manager{
 					_g.setColor(fsm_selectedColor);
 					_g.fillRect(0, 0, recvMain.fsm_display_width,fsm_closeHeight);
 				}else{
-					if(m_weibo.IsOwnWeibo()){
+					if(m_weibo.IsOwnWeibo() && sm_extendWeiboItem == null){
 						_g.setColor(fsm_ownWeiboColor);
 						_g.fillRect(0, 0, recvMain.fsm_display_width,fsm_closeHeight);
 					}

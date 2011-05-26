@@ -465,7 +465,14 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 		if(WeiboItemField.sm_editWeiboItem != _item){
 			
-			String t_text = " //@" + _item.m_weibo.GetUserName() + " :" + _item.m_weibo.GetText();
+			StringBuffer t_forwardText = new StringBuffer();
+			t_forwardText.append(" //@").append(_item.m_weibo.GetUserName()).append(" :").append(_item.m_weibo.GetText());
+			
+			if(weiboTimeLineScreen.sm_mainApp.m_publicForward && _item.m_commentText != null){
+				t_forwardText.append(" //").append(_item.m_commentText);
+			}
+			
+			String t_text = t_forwardText.toString();
 			if(t_text.length() > WeiboItemField.fsm_maxWeiboTextLength){
 				t_text = t_text.substring(0,WeiboItemField.fsm_maxWeiboTextLength);
 			}

@@ -40,6 +40,7 @@ import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.util.Arrays;
 
 public class connectDeamon extends Thread implements SendListener,
 												MessageListener,
@@ -175,7 +176,7 @@ public class connectDeamon extends Thread implements SendListener,
 		Vector	m_sendingData = new Vector();
 		
 		private boolean isDisconnectState(){
-			return m_connect == null || CanNotSendMsg();
+			return m_connect == null || !m_sendAuthMsg;
 		}
 		
 		public void addSendingData(byte _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
@@ -187,7 +188,7 @@ public class connectDeamon extends Thread implements SendListener,
 					if(_exceptSame){
 						for(int i = 0 ;i < m_sendingData.size();i++){
 							SendingQueueData t_data = (SendingQueueData)m_sendingData.elementAt(i);
-							if(t_data.msgType == _msgType && t_data.msgData.equals(_data)){
+							if(t_data.msgType == _msgType && Arrays.equals(t_data.msgData,_data)){
 								return;
 							}
 						}
@@ -724,7 +725,7 @@ public class connectDeamon extends Thread implements SendListener,
 		}		
 	}
 	
-	public boolean CanNotSendMsg(){
+	public boolean CanNotConnectSvr(){
 		return (RadioInfo.getSignalLevel() <= -110 && !m_mainApp.UseWifiConnection());
 	}
 	 
@@ -734,7 +735,7 @@ public class connectDeamon extends Thread implements SendListener,
 	
 			m_sendAuthMsg = false;
 			
-			while(CanNotSendMsg() || m_disconnect == true ){
+			while(CanNotConnectSvr() || m_disconnect == true ){
 	
 				try{
 					sleep(15000);

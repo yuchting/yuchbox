@@ -194,12 +194,15 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		}	
 	}
 	
-	protected void UpdataComment(String _text,long _commentWeiboId,
+	protected void UpdataComment(int _style,String _text,long _commentWeiboId,
 									GPSInfo _info,boolean _updateTimeline)throws Exception{
 					
 		
 		StatusUpdate t_status = new StatusUpdate(_text);
-		t_status.setInReplyToStatusId(_commentWeiboId);
+		
+		if(_style == GetCurrWeiboStyle()){
+			t_status.setInReplyToStatusId(_commentWeiboId);
+		}		
 		
 		if(_info != null && _info.m_longitude != 0 && _info.m_latitude != 0){
 			GeoLocation t_geo = new GeoLocation(_info.m_latitude,_info.m_longitude);

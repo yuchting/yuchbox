@@ -57,6 +57,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 CheckboxField		m_updateOwnWhenFw = null;
 	 CheckboxField		m_updateOwnWhenRe = null;
 	 CheckboxField		m_commentFirst	= null;
+	 CheckboxField		m_publicForward	= null;
 	 
 	 recvMain			m_mainApp		= null;
 	 
@@ -158,6 +159,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 m_commentFirst		= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DISPLAY_COMMENT_FIRST),WeiboItemField.sm_commentFirst);
 		 add(m_commentFirst);
 		 
+		 m_publicForward	= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_PUBLIC_FW),m_mainApp.m_publicForward);
+		 m_publicForward.setChangeListener(this);
+		 add(m_publicForward);
+		 
 		 //@}
 		 
 		 add(new SeparatorField());
@@ -242,6 +247,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_PROMPT_TEXT));
 			}else if(field == m_passwordKey){			
 				m_hasChangePasswordKey = true;
+			}else if(field == m_publicForward){
+				if(m_publicForward.getChecked()){
+					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_PUBLIC_FW_PROMPT));
+				}
 			}
 		}else{
 			// Perform action if application changed field.
@@ -308,7 +317,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		m_mainApp.m_updateOwnListWhenFw = m_updateOwnWhenFw.getChecked();
 		m_mainApp.m_updateOwnListWhenRe = m_updateOwnWhenRe.getChecked();
 		WeiboItemField.sm_commentFirst	= m_commentFirst.getChecked();
-		
+		m_mainApp.m_publicForward		= m_publicForward.getChecked();		
 		
 		m_mainApp.WriteReadIni(false);
 		

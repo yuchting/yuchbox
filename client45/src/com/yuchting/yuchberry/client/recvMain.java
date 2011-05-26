@@ -215,6 +215,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public String 				m_weiboHeadImageDir_sina = null;
 	public String 				m_weiboHeadImageDir_t = null;
 	public weiboTimeLineScreen	m_weiboTimeLineScreen = null;
+	public boolean				m_publicForward		= false;
 	public Vector				m_receivedWeiboList	= new Vector();
 	
 	public static void main(String[] args) {
@@ -716,7 +717,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 18;
+	final static int		fsm_clientVersion = 19;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -831,6 +832,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    		if(t_currVer >= 18){
 				    			WeiboItemField.sm_commentFirst = (t_readFile.read() == 1)?true:false;
 				    		}
+				    		
+				    		if(t_currVer >= 19){
+				    			m_publicForward		= (t_readFile.read() == 1)?true:false;
+				    			
+				    		}
 				    						    		
 			    		}finally{
 			    			t_readFile.close();
@@ -894,6 +900,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						t_writeFile.write(m_updateOwnListWhenFw?1:0);
 						t_writeFile.write(m_updateOwnListWhenRe?1:0);
 						t_writeFile.write(WeiboItemField.sm_commentFirst?1:0);
+						t_writeFile.write(m_publicForward?1:0);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
