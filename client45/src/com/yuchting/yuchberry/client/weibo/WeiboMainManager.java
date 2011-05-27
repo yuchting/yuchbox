@@ -117,7 +117,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	}
 	
 	private int getLayoutStartIdx(){
-		int t_start = m_selectWeiboItemIndex - WeiboItemField.fsm_maxDisplayRows;
+		int t_scrollPos = getVerticalScroll();
+		int t_start = t_scrollPos / WeiboItemField.fsm_closeHeight - WeiboItemField.fsm_maxDisplayRows;
 		if(t_start < 0){
 			t_start = 0;
 		}
@@ -126,7 +127,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	}
 	
 	private int getLayoutEndNum(){
-		int t_end = m_selectWeiboItemIndex + WeiboItemField.fsm_maxDisplayRows;
+		int t_scrollPos = getVerticalScroll();
+		int t_end = t_scrollPos / WeiboItemField.fsm_closeHeight + WeiboItemField.fsm_maxDisplayRows;
 		if(t_end > getFieldCount()){
 			t_end = getFieldCount();
 		}
@@ -135,23 +137,18 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	
 	protected void sublayout(int width, int height){
 		int t_totalHeight = 0;
-		
-		int t_start_idx = getLayoutStartIdx();
-		int t_endNum = getLayoutEndNum();
-		
+				
 		final int t_num = getFieldCount();
 		for(int i =  0;i < t_num;i++){
 			
 			WeiboItemField t_item = (WeiboItemField)getField(i);
 			
 			final int t_height = t_item.getPreferredHeight();
+
+			setPositionChild(t_item,0,t_totalHeight);		
+			layoutChild(t_item,recvMain.fsm_display_width,t_height);		
 			
-			if(i >= t_start_idx && i < t_endNum){
-				setPositionChild(t_item,0,t_totalHeight);		
-				layoutChild(t_item,recvMain.fsm_display_width,t_height);
-			}			
-			
-			t_totalHeight += t_height;
+			t_totalHeight += t_height; 
 		}
 		
 		setExtent(recvMain.fsm_display_width,t_totalHeight);
@@ -182,16 +179,13 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				if(_resetSelectIdx){
 					
 					m_selectWeiboItemIndex++;
+					m_formerVerticalPos += WeiboItemField.fsm_closeHeight;
 					
-					if(WeiboItemField.sm_extendWeiboItem == null ){
-						
-						m_formerVerticalPos += WeiboItemField.fsm_closeHeight;
-						
-						RestoreScroll();
-						
-						m_hasNewWeibo = true;	
+					if(WeiboItemField.sm_extendWeiboItem == null ){	
+						RestoreScroll();							
 					}
 					
+					m_hasNewWeibo = true;
 				}
 			}
 		});					
@@ -295,7 +289,6 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			
 			WeiboItemField.sm_selectWeiboItem = (WeiboItemField)getField(m_selectWeiboItemIndex);
 			
-			sublayout(0,0);
 			invalidate();
 			
 			if(_dy != 0){
@@ -344,6 +337,13 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			WeiboItemField.sm_extendWeiboItem = t_currentExtendItem;
 			
 			t_currentExtendItem.setFocus();	
+			
+			if(m_hasNewWeibo){
+				// hide the new Weibo sign 
+				//
+				m_hasNewWeibo = false;
+				m_parentScreen.m_weiboHeader.invalidate();
+			}
 			
 			if(m_formerVerticalPos != 0 ){
 

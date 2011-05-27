@@ -142,11 +142,21 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			}
 			
 		}catch(Exception e){
-			m_mainMgr.m_logger.LogOut(GetAccountName() + " CheckFolder Error:" + e.getMessage());
+			
+			try{
+				ResetCheckFolderLimit();
+			}catch(Exception ex){
+				m_mainMgr.m_logger.LogOut(GetAccountName() + " ResetCheckFolderLimit Error:" + e.getMessage());
+			}
+			
+			
+			m_mainMgr.m_logger.LogOut(GetAccountName() + " current limit:" + 
+							m_currRemainCheckFolderNum + "/" + m_maxCheckFolderNum + 
+							" Error:" + e.getMessage());
 			
 			// sleep for a while
 			//
-			Thread.sleep(5000);
+			Thread.sleep(2000);
 		}
 	}
 	

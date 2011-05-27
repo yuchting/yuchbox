@@ -431,9 +431,17 @@ public class WeiboItemField extends Manager{
 		sm_timeDate.setTime(m_weibo.GetDateTime());
 		sm_calendar.setTime(sm_timeDate);		
 		
-		return sm_calendar.get(Calendar.DAY_OF_MONTH) + "Day " 
-				+ sm_calendar.get(Calendar.HOUR_OF_DAY) + ":" 
-				+ sm_calendar.get(Calendar.MINUTE);
+		int t_minutes = sm_calendar.get(Calendar.MINUTE);
+		
+		if(t_minutes > 9){
+			return sm_calendar.get(Calendar.DAY_OF_MONTH) + "d " 
+					+ sm_calendar.get(Calendar.HOUR_OF_DAY) + ":" 
+					+ t_minutes;
+		}else{
+			return sm_calendar.get(Calendar.DAY_OF_MONTH) + "d " 
+					+ sm_calendar.get(Calendar.HOUR_OF_DAY) + ":" 
+					+ "0" + t_minutes;
+		}		
 	}
 		
 	public void subpaint(Graphics _g){

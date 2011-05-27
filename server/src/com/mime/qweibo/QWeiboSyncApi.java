@@ -9,6 +9,9 @@ import weibo4j.org.json.JSONObject;
 import com.mime.qweibo.QWeiboType.PageFlag;
 import com.mime.qweibo.QWeiboType.ResultType;
 
+//yuchberry modified
+//
+
 public class QWeiboSyncApi {
 
 	final static String fsm_requestTokenURL 			= "https://open.t.qq.com/cgi-bin/request_token";
@@ -16,6 +19,7 @@ public class QWeiboSyncApi {
 	final static String fsm_accessTokenURL				= "https://open.t.qq.com/cgi-bin/access_token";
 	
 	final static String fsm_verifyURL					= "http://open.t.qq.com/api/user/info";
+	final static String fsm_homeTimelineURL			= "http://open.t.qq.com/api/statuses/home_timeline";
 	
 	OauthKey 			m_oauthKey = new OauthKey();
 	QWeiboRequest 		m_request = new QWeiboRequest();
@@ -43,7 +47,7 @@ public class QWeiboSyncApi {
 	}
 	
 	// return user id if verify ok
-	public long verifyCredentials()throws Exception{
+	public String verifyCredentials()throws Exception{
 		checkAllKeys();
 		
 		m_parameters.clear();
@@ -54,7 +58,7 @@ public class QWeiboSyncApi {
 			throw new Exception("verify Credentials failed." + t_json.toString());
 		}
 		
-		return t_json.getLong("Uid");
+		return t_json.getString("Name");
 	}
 	
 	public String getRequestToken()throws Exception{
@@ -73,7 +77,7 @@ public class QWeiboSyncApi {
 
 		return m_request.syncRequest(fsm_requestTokenURL, "GET", m_oauthKey, m_parameters, null);
 	}
-
+	
 	public String getAccessToken(String verify)throws Exception{
 
 		checkAllKeys();
@@ -103,39 +107,20 @@ public class QWeiboSyncApi {
 	 *            Number of messages you want.
 	 * @return Response messages based on the specified format.
 	 */
-	public String getHomeMsg(String customKey, String customSecret,
-			String requestToken, String requestTokenSecrect, ResultType format,
-			PageFlag pageFlag, int nReqNum) {
-
-		String url = "http://open.t.qq.com/api/statuses/home_timeline";
-		List<QParameter> parameters = new ArrayList<QParameter>();
-		OauthKey oauthKey = new OauthKey();
-		oauthKey.customKey = customKey;
-		oauthKey.customSecrect = customSecret;
-		oauthKey.tokenKey = requestToken;
-		oauthKey.tokenSecrect = requestTokenSecrect;
-
-		String strFormat = null;
-		if (format == ResultType.ResultType_Xml) {
-			strFormat = "xml";
-		} else if (format == ResultType.ResultType_Json) {
-			strFormat = "json";
-		} else {
-			return "";
-		}
-
-		parameters.add(new QParameter("format", strFormat));
-		parameters.add(new QParameter("pageflag", String.valueOf(pageFlag
+	public List<> getHomeMsg(PageFlag pageFlag, int nReqNum) {
+		
+		m_parameters.clear();
+		m_parameters.add(new QParameter("format", "json"));
+		m_parameters.add(new QParameter("pageflag", String.valueOf(pageFlag
 				.ordinal())));
-		parameters.add(new QParameter("reqnum", String.valueOf(nReqNum)));
-
-		QWeiboRequest request = new QWeiboRequest();
-		String res = null;
-		try {
-			res = request.syncRequest(url, "GET", oauthKey, parameters, null);
-		} catch (Exception e) {
-			e.printStackTrace();
+		m_parameters.add(new QParameter("reqnum", String.valueOf(nReqNum)));
+		
+		JSONObject t_json = new JSONObject(m_request.syncRequest(fsm_homeTimelineURL, "GET", m_oauthKey, m_parameters, null));
+		if(t_json.getInt("ret") != 0){
+			throw new Exception("verify Credentials failed." + t_json.toString());
 		}
+
+		
 		return res;
 	}
 
