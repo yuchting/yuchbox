@@ -1445,9 +1445,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		if(_byte < 1000){
 			return "" + _byte + "B";
 		}else if(_byte >= 1000 && _byte < 1000000){
-			return "" + (_byte / 1000) + "." + (_byte % 1000)+ "KB";
+			return "" + (_byte / 1000) + "." + (_byte % 1000 / 100)+ "KB";
 		}else{
-			return "" + (_byte / (1000000)) + "." + ((_byte / 1000) % 1000) + "MB";
+			return "" + (_byte / (1000000)) + "." + ((_byte / 1000) % 1000 / 100) + "MB";
 		}
 	}
 	

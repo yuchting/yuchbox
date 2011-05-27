@@ -8,12 +8,13 @@ public class OauthKey {
 	public String verify;
 	public String callbackUrl;
 
-	public OauthKey() {
-		customKey = null;
-		customSecrect = null;
+	
+	public void reset() {		
 		tokenKey = null;
 		tokenSecrect = null;
 		verify = null;
 		callbackUrl = null;
 	}
+	
+	
 }

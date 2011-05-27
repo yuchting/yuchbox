@@ -4,75 +4,84 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import weibo4j.org.json.JSONObject;
+
 import com.mime.qweibo.QWeiboType.PageFlag;
 import com.mime.qweibo.QWeiboType.ResultType;
 
 public class QWeiboSyncApi {
 
-	/**
-	 * Get request token.
-	 * 
-	 * @param customKey
-	 *            Your AppKey.
-	 * @param customSecret
-	 *            Your AppSecret.
-	 * @return The request token.
-	 */
-	public String getRequestToken(String customKey, String customSecret) {
-		String url = "https://open.t.qq.com/cgi-bin/request_token";
-		List<QParameter> parameters = new ArrayList<QParameter>();
-		OauthKey oauthKey = new OauthKey();
-		oauthKey.customKey = customKey;
-		oauthKey.customSecrect = customSecret;
+	final static String fsm_requestTokenURL 			= "https://open.t.qq.com/cgi-bin/request_token";
+	final static String fsm_requestTokenURL_callback	= "";
+	final static String fsm_accessTokenURL				= "https://open.t.qq.com/cgi-bin/access_token";
+	
+	final static String fsm_verifyURL					= "http://open.t.qq.com/api/user/info";
+	
+	OauthKey 			m_oauthKey = new OauthKey();
+	QWeiboRequest 		m_request = new QWeiboRequest();
+	
+	List<QParameter> 	m_parameters = new ArrayList<QParameter>();	
+	
+	public void setCostomerKey(String customKey, String customSecret){
+		m_oauthKey.customKey = customKey;
+		m_oauthKey.customSecrect = customSecret;
+	}
+	
+	public void setAccessToken(String tokenKey, String tokenSecret){
+		m_oauthKey.tokenKey = tokenKey;
+		m_oauthKey.tokenSecrect = tokenSecret;
+	}
+	
+	private void checkAllKeys()throws Exception{
+		if(m_oauthKey.customKey == null || m_oauthKey.customSecrect == null){
+			throw new Exception("customKey or customSecrect is null");
+		}
+		
+		if(m_oauthKey.tokenKey == null || m_oauthKey.tokenSecrect == null){
+			throw new Exception("access tokenKey or access tokenSecrect is null");
+		}
+	}
+	
+	// return user id if verify ok
+	public long verifyCredentials()throws Exception{
+		checkAllKeys();
+		
+		m_parameters.clear();
+		m_parameters.add(new QParameter("format", "json"));
+		
+		JSONObject t_json = new JSONObject(m_request.syncRequest(fsm_verifyURL, "GET", m_oauthKey, m_parameters, null));
+		if(t_json.getInt("ret") != 0){
+			throw new Exception("verify Credentials failed." + t_json.toString());
+		}
+		
+		return t_json.getLong("Uid");
+	}
+	
+	public String getRequestToken()throws Exception{
+		
+		if(m_oauthKey.customKey == null || m_oauthKey.customSecrect == null){
+			throw new Exception("customKey or customSecrect is null");
+		}
+		
+		m_parameters.clear();
+		m_oauthKey.reset();
+				
 		//The OAuth Call back URL(You should encode this url if it
 		//contains some unreserved characters).
-		oauthKey.callbackUrl = "http://www.qq.com";
+		//
+		m_oauthKey.callbackUrl = fsm_requestTokenURL_callback;
 
-		QWeiboRequest request = new QWeiboRequest();
-		String res = null;
-		try {
-			res = request.syncRequest(url, "GET", oauthKey, parameters, null);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return res;
+		return m_request.syncRequest(fsm_requestTokenURL, "GET", m_oauthKey, m_parameters, null);
 	}
 
-	/**
-	 * Get access token.
-	 * 
-	 * @param customKey
-	 *            Your AppKey.
-	 * @param customSecret
-	 *            Your AppSecret
-	 * @param requestToken
-	 *            The request token.
-	 * @param requestTokenSecret
-	 *            The request token Secret
-	 * @param verify
-	 *            The verification code.
-	 * @return
-	 */
-	public String getAccessToken(String customKey, String customSecret,
-			String requestToken, String requestTokenSecrect, String verify) {
+	public String getAccessToken(String verify)throws Exception{
 
-		String url = "https://open.t.qq.com/cgi-bin/access_token";
-		List<QParameter> parameters = new ArrayList<QParameter>();
-		OauthKey oauthKey = new OauthKey();
-		oauthKey.customKey = customKey;
-		oauthKey.customSecrect = customSecret;
-		oauthKey.tokenKey = requestToken;
-		oauthKey.tokenSecrect = requestTokenSecrect;
-		oauthKey.verify = verify;
+		checkAllKeys();
+				
+		m_parameters.clear();
+		m_oauthKey.verify = verify;
 
-		QWeiboRequest request = new QWeiboRequest();
-		String res = null;
-		try {
-			res = request.syncRequest(url, "GET", oauthKey, parameters, null);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return res;
+		return m_request.syncRequest(fsm_accessTokenURL, "GET", m_oauthKey, m_parameters, null);		
 	}
 
 	/**
