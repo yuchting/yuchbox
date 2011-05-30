@@ -364,11 +364,10 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	
 	protected boolean ProcessWeiboDelete(ByteArrayInputStream in)throws Exception{
 		int t_style = in.read();
-		long t_long = sendReceive.ReadLong(in);
-		
+				
 		if(t_style == GetCurrWeiboStyle()){
-			
-			
+			long t_long = sendReceive.ReadLong(in);
+			DeleteWeibo(t_long);
 			
 			return true;
 		}

@@ -47,6 +47,9 @@ public class fetchWeibo {
 	long 		m_replyWeiboId = -1;
 	fetchWeibo	m_replyWeibo = null;
 	
+	int			m_forwardWeiboNum = 0;
+	int			m_commentWeiboNum = 0;
+	
 	String		m_source	= "";
 	
 	boolean 	m_hasLocationInfo		= false;
@@ -74,6 +77,7 @@ public class fetchWeibo {
 					&& m_dateTime == _weibo.m_dateTime;
 		}
 	}
+	
 	public byte GetWeiboStyle(){return m_WeiboStyle;}
 	public void SetWeiboStyle(byte _style){m_WeiboStyle = _style;}
 	
@@ -125,6 +129,12 @@ public class fetchWeibo {
 	public String GetSource(){return m_source;}
 	public void SetSource(String _source){m_source = _source;}
 	
+	public int GetForwardWeiboNum(){return m_forwardWeiboNum;}
+	public void SetForwardWeiboNum(int _num){m_forwardWeiboNum = _num;}
+	
+	public int GetCommentWeiboNum(){return m_commentWeiboNum;}
+	public void SetCommentWeiboNum(int _num){m_commentWeiboNum = _num;}
+	
 	public String GetOriginalPic(){return m_original_pic;}
 	public void SetOriginalPic(String _pic){m_original_pic = _pic;}
 	
@@ -155,6 +165,9 @@ public class fetchWeibo {
 		
 		sendReceive.WriteString(_stream,m_source);
 		sendReceive.WriteString(_stream,m_original_pic);
+		
+		sendReceive.WriteInt(_stream,m_forwardWeiboNum);
+		sendReceive.WriteInt(_stream,m_commentWeiboNum);
 		
 		if(m_hasLocationInfo){
 			m_gpsInfo.OutputData(_stream);
@@ -199,6 +212,9 @@ public class fetchWeibo {
 		
 		m_source				= sendReceive.ReadString(_stream);
 		m_original_pic			= sendReceive.ReadString(_stream);
+		
+		m_forwardWeiboNum		= sendReceive.ReadInt(_stream);
+		m_commentWeiboNum		= sendReceive.ReadInt(_stream);
 		
 		if(m_hasLocationInfo){
 			m_gpsInfo.InputData(_stream);

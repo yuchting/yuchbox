@@ -178,7 +178,7 @@ public class connectDeamon extends Thread implements SendListener,
 		Vector	m_sendingData = new Vector();
 		
 		private boolean isDisconnectState(){
-			return m_connect == null || !m_sendAuthMsg;
+			return m_disconnect || m_connect == null || !m_sendAuthMsg;
 		}
 		
 		public void addSendingData(byte _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
@@ -205,7 +205,7 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				try{
 
-					while(m_disconnect || isDisconnectState() || m_sendingData.isEmpty()){
+					while(isDisconnectState() || m_sendingData.isEmpty()){
 						try{
 							sleep(5000);
 						}catch(Exception e){}
@@ -531,8 +531,6 @@ public class connectDeamon extends Thread implements SendListener,
 	
 		m_forwordReplyMail = FindOrgMessage(e.getMessage(),fetchMail.REPLY_STYLE);
 		
-		System.out.println(m_forwordReplyMail.hashCode());
-		
 		m_sendStyle = fetchMail.REPLY_STYLE;
 	}
 	//@}
@@ -780,8 +778,12 @@ public class connectDeamon extends Thread implements SendListener,
 				// set the text connect
 				//
 				m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTED_LABEL));
-				m_mainApp.m_weiboTimeLineScreen.SetOnlineState(true);
+				
 				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main.png"));
+				
+				if(m_mainApp.m_weiboTimeLineScreen != null){
+					m_mainApp.m_weiboTimeLineScreen.SetOnlineState(true);
+				}				
 				
 				while(true){
 					ProcessMsg(m_connect.RecvBufferFromSvr());
@@ -1012,7 +1014,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 		break;
 		 	case msg_head.msgNote:
 		 		String t_string = sendReceive.ReadString(in);
-		 		m_mainApp.DialogAlert("YuchBerry: " + t_string);
+		 		m_mainApp.DialogAlert("YuchBerry svr: " + t_string);
 		 		m_mainApp.SetErrorString(t_string);
 		 		break;
 		 	case msg_head.msgMailAttach:

@@ -8,7 +8,7 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
-import net.rim.device.api.ui.component.EditField;
+import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.component.TextField;
 
 import com.yuchting.yuchberry.client.HyperlinkButtonField;
@@ -48,7 +48,7 @@ public class WeiboItemField extends Manager{
 	public static TextField 			sm_textArea				= new TextField(Field.READONLY);
 	public static TextField 			sm_commentTextArea		= new TextField(Field.READONLY);
 	
-	public static TextField 			sm_editTextArea			= new TextField(EditField.FILTER_DEFAULT){
+	public static AutoTextEditField 	sm_editTextArea			= new AutoTextEditField(){
 		public void setText(String _text){
 			super.setText(_text);
 			layout(recvMain.fsm_display_width,1000);

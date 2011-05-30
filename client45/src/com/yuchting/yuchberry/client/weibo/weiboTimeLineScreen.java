@@ -335,66 +335,73 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 	}
 	
-	MenuItem m_sendItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_SEND_LABEL),0,0){
+	int m_menuIndex = 0;
+	
+	MenuItem m_sendItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_SEND_LABEL),m_menuIndex++,0){
         public void run() {
         	SendMenuItemClick();
         }
     };
     
-    MenuItem m_refreshItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_REFRESH_MENU_LABEL),1,0){
+    MenuItem m_refreshItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_REFRESH_MENU_LABEL),m_menuIndex++,0){
         public void run() {
         	SendRefreshMsg();
         }
     }; 
     
-    MenuItem m_topItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_RETURN_TOP_MENU_LABEL),2,0){
+    MenuItem m_topItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_RETURN_TOP_MENU_LABEL),m_menuIndex++,0){
         public void run() {
         	m_currMgr.ScrollToTop();
         }
     };
-    MenuItem m_preWeiboItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_PRE_ITEM_MENU_LABEL),3,0){
+    MenuItem m_preWeiboItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_PRE_ITEM_MENU_LABEL),m_menuIndex++,0){
         public void run() {
         	m_currMgr.OpenNextWeiboItem(false);
         }
     };
-    MenuItem m_nextWeiboItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_NEXT_WEIBO_MENU_LABEL),4,0){
+    MenuItem m_nextWeiboItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_NEXT_WEIBO_MENU_LABEL),m_menuIndex++,0){
         public void run() {
         	m_currMgr.OpenNextWeiboItem(true);
         }
     };
     
-    MenuItem m_helpItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_HELP_MENU_LABEL),5,0){
-        public void run() {
-        	recvMain.openURL("http://code.google.com/p/yuchberry/wiki/YuchBerry_Weibo");
-        }
-    }; 
-    
-    MenuItem m_stateItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_STATE_SCREEN_MENU_LABEL),7,0){
-        public void run() {
-        	recvMain t_recv = (recvMain)UiApplication.getUiApplication();
-        	t_recv.pushStateScreen();
-        }
-    }; 
-    
-    MenuItem m_deleteItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_DELETE_MENU_LABEL),7,0){
+    MenuItem m_deleteItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_DELETE_MENU_LABEL),m_menuIndex++,0){
         public void run() {
         	deleteWeiboItem();
         }
     }; 
     
+    MenuItem m_helpItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_HELP_MENU_LABEL),m_menuIndex++,0){
+        public void run() {
+        	recvMain.openURL("http://code.google.com/p/yuchberry/wiki/YuchBerry_Weibo");
+        }
+    }; 
+    
+    MenuItem m_stateItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_STATE_SCREEN_MENU_LABEL),100,0){
+        public void run() {
+        	recvMain t_recv = (recvMain)UiApplication.getUiApplication();
+        	t_recv.pushStateScreen();
+        }
+    }; 
+      
+    
     public void deleteWeiboItem(){
     	
-    	if(WeiboItemField.sm_extendWeiboItem != null && WeiboItemField.sm_extendWeiboItem.m_weibo.IsOwnWeibo()){
+    	if(WeiboItemField.sm_selectWeiboItem != null 
+    	&& WeiboItemField.sm_selectWeiboItem.m_weibo != null
+    	&& WeiboItemField.sm_selectWeiboItem.m_weibo.IsOwnWeibo()){
     		if(Dialog.ask(Dialog.D_YES_NO,recvMain.sm_local.getString(localResource.WEIBO_DELETE_ASK_PROMPT),Dialog.NO) == Dialog.YES){
     			try{
     				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
         			t_os.write(msg_head.msgWeiboDelete);
-        			t_os.write(WeiboItemField.sm_extendWeiboItem.m_weibo.GetWeiboStyle());
-        			sendReceive.WriteLong(t_os,WeiboItemField.sm_extendWeiboItem.m_weibo.GetId());
+        			t_os.write(WeiboItemField.sm_selectWeiboItem.m_weibo.GetWeiboStyle());
+        			sendReceive.WriteLong(t_os,WeiboItemField.sm_selectWeiboItem.m_weibo.GetId());
         			
-        			sm_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeiboDelete,t_os.toByteArray(),true);	
+        			sm_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeiboDelete,t_os.toByteArray(),true);
+        			
+        			m_currMgr.DelWeibo(WeiboItemField.sm_selectWeiboItem.m_weibo);
     			}catch(Exception e){
-    				
+    				sm_mainApp.SetErrorString("DWI:" + e.getMessage() + e.getClass().getName());
     			}
     		}
     	}
@@ -416,15 +423,15 @@ public class weiboTimeLineScreen extends MainScreen{
 				_menu.add(m_preWeiboItem);
 				_menu.add(m_nextWeiboItem);
 			}
-			
-			if(WeiboItemField.sm_extendWeiboItem.m_weibo.IsOwnWeibo()){
-				_menu.add(m_deleteItem);
-			}
-			
+		}
+		
+		if(WeiboItemField.sm_selectWeiboItem.m_weibo != null
+		&& WeiboItemField.sm_selectWeiboItem.m_weibo.IsOwnWeibo()){
+			_menu.add(m_deleteItem);
 		}
 		
 		_menu.add(m_helpItem);
-		_menu.add(MenuItem.separator(7));
+		_menu.add(MenuItem.separator(99));
 		_menu.add(m_stateItem);
 		
 		

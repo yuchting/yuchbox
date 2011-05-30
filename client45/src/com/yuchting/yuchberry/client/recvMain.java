@@ -300,7 +300,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	}
         	
         	m_weiboHeadImageDir_t = m_weiboHeadImageDir + "Tw/";
-        	fc = (FileConnection) Connector.open(m_weiboHeadImageDir_sina,Connector.READ_WRITE);
+        	fc = (FileConnection) Connector.open(m_weiboHeadImageDir_t,Connector.READ_WRITE);
         	try{
         		if(!fc.exists()){
             		fc.mkdir();
