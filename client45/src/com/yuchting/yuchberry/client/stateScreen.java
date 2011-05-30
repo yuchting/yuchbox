@@ -255,6 +255,11 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 						return;
 					}
 					
+					if(m_hostName.getText().indexOf(" ") != -1){
+						m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.STATE_HOST_STRING_ILLEGAL_PROMPT));
+						return;
+					}
+					
 					try{
 						m_mainApp.m_hostname 		= m_hostName.getText();
 						m_mainApp.m_port 			= Integer.valueOf(m_hostport.getText()).intValue();

@@ -23,12 +23,7 @@ public class WeiboUpdateField extends WeiboItemField{
 	
 	public int getPreferredHeight() {
 		if(sm_extendWeiboItem == this){
-			
-			if(sm_editWeiboItem == this){
-				return m_extendHeight + sm_editTextAreaHeight;
-			}
-			
-			return m_extendHeight;
+			return sm_fontHeight + sm_editTextAreaHeight;
 		}else{
 			return sm_fontHeight;
 		}
@@ -41,8 +36,8 @@ public class WeiboUpdateField extends WeiboItemField{
 			setPositionChild(sm_editTextArea,0,0);
 			layoutChild(sm_editTextArea,recvMain.fsm_display_width,sm_editTextAreaHeight);
 			
-			height = sm_editTextAreaHeight;			
-						
+			height = sm_fontHeight + sm_editTextAreaHeight;
+			
 		}else{		
 			height = sm_fontHeight;
 		}
@@ -56,28 +51,33 @@ public class WeiboUpdateField extends WeiboItemField{
 			
 			paintChild(_g,sm_editTextArea);
 			
+			int t_y = getPreferredHeight() - 1;
+			_g.drawLine(0,t_y, recvMain.fsm_display_width,t_y);
+			
 		}else{
-			
-			if(sm_extendWeiboItem != null){
-				_g.setColor(fsm_darkColor);
-				_g.fillRect(0,0, recvMain.fsm_display_width,fsm_closeHeight);
-				_g.setColor(0);
-			}
-			
 			
 			int oldColour = _g.getColor();
 	        try{
+	        	
+				if(sm_extendWeiboItem != null){
+					_g.setColor(fsm_darkColor);
+					_g.fillRect(0,0, recvMain.fsm_display_width,fsm_closeHeight);
+					_g.setColor(0);
+				}
+					
+				if(sm_selectWeiboItem == this){
+					_g.drawRoundRect(1,1,recvMain.fsm_display_width - 1,sm_fontHeight - 1,1,1);
+				}else{
+					_g.drawLine(0,sm_fontHeight - 1,recvMain.fsm_display_width,sm_fontHeight - 1);
+				}
+				
 	        	_g.setColor(0x8f8f8f);            
 	        	_g.drawText(recvMain.sm_local.getString(localResource.UPDATE_WEIBO_LABEL),2,2,Graphics.ELLIPSIS);
 	        }finally{
 	        	_g.setColor( oldColour );
 	        }		
 			
-			if(sm_selectWeiboItem == this){
-				_g.drawRoundRect(1,1,recvMain.fsm_display_width - 1,sm_fontHeight - 1,1,1);
-			}else{
-				_g.drawLine(0,sm_fontHeight - 1,recvMain.fsm_display_width,sm_fontHeight - 1);
-			}
+			
 		}
 	}
 }

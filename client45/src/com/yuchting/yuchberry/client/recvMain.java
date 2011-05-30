@@ -1,5 +1,7 @@
 package com.yuchting.yuchberry.client;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
@@ -15,6 +17,7 @@ import javax.microedition.location.LocationListener;
 import javax.microedition.location.LocationProvider;
 
 import com.yuchting.yuchberry.client.weibo.WeiboItemField;
+import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 import com.yuchting.yuchberry.client.weibo.weiboTimeLineScreen;
 
 import local.localResource;
@@ -23,6 +26,8 @@ import net.rim.blackberry.api.browser.BrowserSession;
 import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
+import net.rim.device.api.compress.GZIPInputStream;
+import net.rim.device.api.compress.GZIPOutputStream;
 import net.rim.device.api.crypto.MD5Digest;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.i18n.ResourceBundle;
@@ -218,6 +223,13 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public boolean				m_publicForward		= false;
 	public Vector				m_receivedWeiboList	= new Vector();
 	
+	static final String[]	fsm_maxWeiboNumList = {"128","256","512","1024"};
+	static final int[]	fsm_maxWeiboNum		= {128,256,512,1024};
+	int						m_maxWeiboNumIndex = 0;
+	
+	public int					m_receivedWeiboNum = 0;
+	public int					m_sentWeiboNum = 0;
+	
 	public static void main(String[] args) {
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());		
 		t_theApp.enterEventDispatcher();
@@ -231,6 +243,13 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return m_gpsInfo;
 	}
 	
+	public int getMaxWeiboNum(){
+		if(m_maxWeiboNumIndex >= 0 && m_maxWeiboNumIndex < fsm_maxWeiboNum.length){
+			return fsm_maxWeiboNum[m_maxWeiboNumIndex];
+		}
+		
+		return fsm_maxWeiboNum[0];
+	}
 	
 	public recvMain(boolean _systemRun) {	
 				
@@ -717,7 +736,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 19;
+	final static int		fsm_clientVersion = 21;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -837,6 +856,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_publicForward		= (t_readFile.read() == 1)?true:false;
 				    			
 				    		}
+				    		
+				    		if(t_currVer >= 20){
+				    			m_maxWeiboNumIndex	= sendReceive.ReadInt(t_readFile);
+				    		}
+				    		
+				    		if(t_currVer >= 21){
+				    			m_receivedWeiboNum	= sendReceive.ReadInt(t_readFile);
+				    			m_sentWeiboNum		= sendReceive.ReadInt(t_readFile);
+				    		}
 				    						    		
 			    		}finally{
 			    			t_readFile.close();
@@ -901,6 +929,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						t_writeFile.write(m_updateOwnListWhenRe?1:0);
 						t_writeFile.write(WeiboItemField.sm_commentFirst?1:0);
 						t_writeFile.write(m_publicForward?1:0);
+						
+						sendReceive.WriteInt(t_writeFile,m_maxWeiboNumIndex);
+						sendReceive.WriteInt(t_writeFile,m_receivedWeiboNum);
+						sendReceive.WriteInt(t_writeFile,m_sentWeiboNum);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1571,22 +1603,21 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		synchronized (m_receivedWeiboList) {
 			
-			for(int i = 0 ;i < m_receivedWeiboList.size();i++){
+			for(int i = m_receivedWeiboList.size() - 1 ;i >= 0 ;i--){
 				fetchWeibo weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
 				if(weibo.equals(_weibo)){
-					SetErrorString(Long.toString(_weibo.GetId()) + " weibo has been added");
 					return false;
 				}
 			}
 			
-			if(m_receivedWeiboList.size() > 256){
+			m_receivedWeiboNum++;
+						
+			if(m_receivedWeiboList.size() > getMaxWeiboNum()){
 				
 				fetchWeibo t_delWeibo = (fetchWeibo)m_receivedWeiboList.elementAt(0);
 				m_receivedWeiboList.removeElementAt(0);
 				
 				m_weiboTimeLineScreen.DelWeibo(t_delWeibo);
-				
-				SetErrorString("Over Weibo max! Delete former!");		
 			}
 			m_receivedWeiboList.addElement(_weibo);
 		}		
@@ -1635,19 +1666,20 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						
 						if(t_fc.exists()){
 							
-							InputStream t_in = t_fc.openInputStream();
+							InputStream t_readIn = t_fc.openInputStream();
 							try{
-								int t_num = sendReceive.ReadInt(t_in);
+								
+								int t_num = sendReceive.ReadInt(t_readIn);
 								for(int i = 0 ;i < t_num;i++){
 									fetchWeibo t_weibo = new fetchWeibo();
-									t_weibo.InputWeibo(t_in);
+									t_weibo.InputWeibo(t_readIn);
 									
 									m_receivedWeiboList.addElement(t_weibo);
 								}
 								
 							}finally{
-								t_in.close();
-								t_in = null;
+								t_readIn.close();
+								t_readIn = null;
 							}
 						}
 					}
@@ -1659,22 +1691,26 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						t_fc.create();
 					}
 					
-					OutputStream t_os = t_fc.openOutputStream();
+					OutputStream t_fileos = t_fc.openOutputStream();
 					try{
 
+						ByteArrayOutputStream tmpos = new ByteArrayOutputStream();
+												
 						synchronized (m_receivedWeiboList) {
-							sendReceive.WriteInt(t_os,m_receivedWeiboList.size());
+							sendReceive.WriteInt(tmpos,m_receivedWeiboList.size());
 							
 							for(int i = 0 ;i < m_receivedWeiboList.size();i++){
 								fetchWeibo t_weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
-								t_weibo.OutputWeibo(t_os);
+								t_weibo.OutputWeibo(tmpos);
 							}
-						}						
+						}
 						
+						t_fileos.write(tmpos.toByteArray());
+												
 					}finally{
-						t_os.flush();
-						t_os.close();
-						t_os = null;
+						t_fileos.flush();
+						t_fileos.close();
+						t_fileos = null;
 					}
 					
 					// delete the back file ~weibo.data

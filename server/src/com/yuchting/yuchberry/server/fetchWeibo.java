@@ -31,6 +31,7 @@ public class fetchWeibo {
 	int			m_userHeadImageHashCode = 0;
 	
 	String		m_userName	= "";
+	String		m_screenName = "";
 	String		m_text		= "";
 	
 	String		m_original_pic = "";
@@ -79,6 +80,9 @@ public class fetchWeibo {
 	
 	public String GetUserName(){return m_userName;}
 	public void SetUserName(final String _name){m_userName = _name;}
+	
+	public String GetUserScreenName(){return m_screenName;}
+	public void SetUserScreenName(final String _name){m_screenName = _name;}
 	
 	public boolean IsSinaVIP(){return m_isSinaVIP;}
 	public void SetSinaVIP(boolean _isVIP){m_isSinaVIP = _isVIP;}
@@ -129,6 +133,7 @@ public class fetchWeibo {
 		sendReceive.WriteLong(_stream,m_id);
 		sendReceive.WriteLong(_stream,m_userId);
 		sendReceive.WriteString(_stream,m_userName,m_convertoSimpleChar);
+		sendReceive.WriteString(_stream,m_screenName,m_convertoSimpleChar);
 		sendReceive.WriteString(_stream,m_text,m_convertoSimpleChar);
 		
 		sendReceive.WriteInt(_stream,m_userHeadImageHashCode);
@@ -174,6 +179,8 @@ public class fetchWeibo {
 		m_id		= sendReceive.ReadLong(_stream);
 		m_userId	= sendReceive.ReadLong(_stream);
 		m_userName	= sendReceive.ReadString(_stream);
+		m_screenName= sendReceive.ReadString(_stream);
+		
 		m_text		= sendReceive.ReadString(_stream);
 		
 		m_userHeadImageHashCode = sendReceive.ReadInt(_stream);

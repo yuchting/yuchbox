@@ -12,7 +12,6 @@ import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.TextField;
 
 import com.yuchting.yuchberry.client.HyperlinkButtonField;
-import com.yuchting.yuchberry.client.fetchWeibo;
 import com.yuchting.yuchberry.client.recvMain;
 
 public class WeiboItemField extends Manager{
@@ -94,9 +93,9 @@ public class WeiboItemField extends Manager{
 	static int						sm_currentSendType	= 0;
 	public static	boolean		sm_commentFirst		= false;
 	
-	final static int			fsm_closeHeight		= sm_fontHeight * 2 + 1;
+	public final static int			fsm_closeHeight		= sm_fontHeight * 2 + 1;
 	
-	final static int			fsm_maxDisplayRows = (recvMain.fsm_display_height - WeiboHeader.fsm_headHeight) / fsm_closeHeight + 1; 
+	public final static int			fsm_maxDisplayRows = (recvMain.fsm_display_height - WeiboHeader.fsm_headHeight) / fsm_closeHeight + 2; 
 	
 	static public final int fsm_controlField_text 		= 0;
 	static public final int fsm_controlField_comment 		= 1;

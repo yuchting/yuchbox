@@ -107,21 +107,22 @@ public class QWeiboSyncApi {
 	 *            Number of messages you want.
 	 * @return Response messages based on the specified format.
 	 */
-	public List<> getHomeMsg(PageFlag pageFlag, int nReqNum) {
+	public List<QWeibo> getHomeMsg(PageFlag pageFlag, int nReqNum) {
 		
-		m_parameters.clear();
-		m_parameters.add(new QParameter("format", "json"));
-		m_parameters.add(new QParameter("pageflag", String.valueOf(pageFlag
-				.ordinal())));
-		m_parameters.add(new QParameter("reqnum", String.valueOf(nReqNum)));
-		
-		JSONObject t_json = new JSONObject(m_request.syncRequest(fsm_homeTimelineURL, "GET", m_oauthKey, m_parameters, null));
-		if(t_json.getInt("ret") != 0){
-			throw new Exception("verify Credentials failed." + t_json.toString());
-		}
+//		m_parameters.clear();
+//		m_parameters.add(new QParameter("format", "json"));
+//		m_parameters.add(new QParameter("pageflag", String.valueOf(pageFlag
+//				.ordinal())));
+//		m_parameters.add(new QParameter("reqnum", String.valueOf(nReqNum)));
+//		
+//		JSONObject t_json = new JSONObject(m_request.syncRequest(fsm_homeTimelineURL, "GET", 
+//																	m_oauthKey, m_parameters, null));
+//		if(t_json.getInt("ret") != 0){
+//			throw new Exception("verify Credentials failed." + t_json.toString());
+//		}
 
 		
-		return res;
+		return null;
 	}
 
 	/**

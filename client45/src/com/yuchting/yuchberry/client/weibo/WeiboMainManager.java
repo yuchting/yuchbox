@@ -8,7 +8,6 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
-import com.yuchting.yuchberry.client.fetchWeibo;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
@@ -117,8 +116,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	}
 	
 	private int getLayoutStartIdx(){
-		int t_scrollPos = getVerticalScroll();
-		int t_start = t_scrollPos / WeiboItemField.fsm_closeHeight - WeiboItemField.fsm_maxDisplayRows;
+		int t_start = m_formerVerticalPos / WeiboItemField.fsm_closeHeight - 1;
 		if(t_start < 0){
 			t_start = 0;
 		}
@@ -127,8 +125,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	}
 	
 	private int getLayoutEndNum(){
-		int t_scrollPos = getVerticalScroll();
-		int t_end = t_scrollPos / WeiboItemField.fsm_closeHeight + WeiboItemField.fsm_maxDisplayRows;
+		int t_end = m_formerVerticalPos / WeiboItemField.fsm_closeHeight + WeiboItemField.fsm_maxDisplayRows;
 		if(t_end > getFieldCount()){
 			t_end = getFieldCount();
 		}
@@ -248,42 +245,27 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			
 			final int t_verticalScroll = getVerticalScroll();
 		
-			int t_currentHeight = 0;
-			int t_delta = 0;
-			
+			int t_currentHeight = m_selectWeiboItemIndex * WeiboItemField.fsm_closeHeight;
+			if(_dy > 0){
+				t_currentHeight += WeiboItemField.fsm_closeHeight;
+			}
+						
 			if(m_timelineManager){
-
-				if(m_selectWeiboItemIndex > 1){
-					t_currentHeight = m_selectWeiboItemIndex * WeiboItemField.fsm_closeHeight;
-					
-					if(t_verticalScroll == 0){
-						t_delta = WeiboItemField.fsm_closeHeight;
-					}else{
-						t_delta = WeiboItemField.fsm_closeHeight;
-					}
-					
-				}else{
-					t_currentHeight = WeiboItemField.sm_fontHeight;
-					t_delta = WeiboItemField.fsm_closeHeight;
+				if(t_currentHeight > WeiboItemField.sm_fontHeight){
+					t_currentHeight -= WeiboItemField.sm_fontHeight;
 				}
-				
-			}else{
-				
-				t_currentHeight = m_selectWeiboItemIndex * WeiboItemField.fsm_closeHeight;
-				t_delta = WeiboItemField.fsm_closeHeight;
 			}
 			
 			if(_dy > 0){
 		
-				if(t_currentHeight >= t_verticalScroll + getVisibleHeight()){
+				if(t_currentHeight > t_verticalScroll + getVisibleHeight()){
+					int t_delta = t_currentHeight - (t_verticalScroll + getVisibleHeight());
 					setVerticalScroll(t_verticalScroll + t_delta);
 				}
 				
 			}else{
-				if(m_selectWeiboItemIndex == 0){
-					setVerticalScroll(0);
-				}else if(t_currentHeight < t_verticalScroll){
-					setVerticalScroll(t_verticalScroll - t_delta);
+				if(t_currentHeight < t_verticalScroll){
+					setVerticalScroll(t_currentHeight);
 				}
 			}
 			
@@ -388,8 +370,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		return false;
 	}
 	
-	public void OpenNextWeiboItem(boolean _pre){
-		if(_pre){
+	public void OpenNextWeiboItem(boolean _next){
+		if(_next){
 			EscapeKey();
 			IncreaseRenderSize(0, 1);
 			Clicked(0, 0);
@@ -402,6 +384,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	
 	public void ScrollToTop(){
 		setVerticalScroll(0);
+		m_formerVerticalPos = 0;
 		m_selectWeiboItemIndex = 0;
 		
 		if(getFieldCount() != 0){

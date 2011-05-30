@@ -11,18 +11,18 @@ import local.localResource;
 import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
+import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.MainScreen;
 
-import com.yuchting.yuchberry.client.fetchWeibo;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
 
-public class weiboTimeLineScreen extends MainScreen {
+public class weiboTimeLineScreen extends MainScreen{
 	
 	static recvMain				sm_mainApp = (recvMain)UiApplication.getUiApplication();
 	
@@ -267,7 +267,8 @@ public class weiboTimeLineScreen extends MainScreen {
 			
 			m_currMgr.EscapeKey();
 					
-			sm_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeibo,t_os.toByteArray(),true);	
+			sm_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeibo,t_os.toByteArray(),true);
+			sm_mainApp.m_sentWeiboNum++;
 			
 		}catch(Exception e){
 			sm_mainApp.SetErrorString("UNW:" + e.getMessage() + e.getClass().getName());
@@ -277,6 +278,8 @@ public class weiboTimeLineScreen extends MainScreen {
 		if(WeiboItemField.sm_extendWeiboItem == m_mainMgr.m_updateWeiboField){
 			
 			UpdateNewWeibo(m_mainMgr.m_updateWeiboField.m_sendUpdateText);
+			
+			
 			
 		}else{
 			
@@ -322,6 +325,8 @@ public class weiboTimeLineScreen extends MainScreen {
 				m_currMgr.EscapeKey();
 				sm_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeibo,t_os.toByteArray(),true);
 				
+				sm_mainApp.m_sentWeiboNum++;
+				
 			}catch(Exception e){
 				sm_mainApp.SetErrorString("SMIC:" + e.getMessage() + e.getClass().getName());
 			}
@@ -339,14 +344,36 @@ public class weiboTimeLineScreen extends MainScreen {
         public void run() {
         	SendRefreshMsg();
         }
+    }; 
+    
+    MenuItem m_topItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_RETURN_TOP_MENU_LABEL),2,0){
+        public void run() {
+        	m_currMgr.ScrollToTop();
+        }
+    };
+    MenuItem m_preWeiboItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_PRE_ITEM_MENU_LABEL),3,0){
+        public void run() {
+        	m_currMgr.OpenNextWeiboItem(false);
+        }
+    };
+    MenuItem m_nextWeiboItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_NEXT_WEIBO_MENU_LABEL),4,0){
+        public void run() {
+        	m_currMgr.OpenNextWeiboItem(true);
+        }
     };
     
-    MenuItem m_stateItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_STATE_SCREEN_MENU_LABEL),2,0){
+    MenuItem m_helpItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_HELP_MENU_LABEL),5,0){
+        public void run() {
+        	recvMain.openURL("http://code.google.com/p/yuchberry/wiki/YuchBerry_Weibo");
+        }
+    }; 
+    
+    MenuItem m_stateItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_STATE_SCREEN_MENU_LABEL),7,0){
         public void run() {
         	recvMain t_recv = (recvMain)UiApplication.getUiApplication();
         	t_recv.pushStateScreen();
         }
-    };    
+    }; 
     
 	protected void makeMenu(Menu _menu,int instance){
 		
@@ -355,7 +382,20 @@ public class weiboTimeLineScreen extends MainScreen {
 		}
 		
 		_menu.add(m_refreshItem);
+		
+		if(WeiboItemField.sm_extendWeiboItem == null){
+			_menu.add(m_topItem);
+		}else{
+			if(WeiboItemField.sm_editWeiboItem == null){
+				_menu.add(m_preWeiboItem);
+				_menu.add(m_nextWeiboItem);
+			}
+		}
+		
+		_menu.add(m_helpItem);
+		_menu.add(MenuItem.separator(7));
 		_menu.add(m_stateItem);
+		
 		
 		super.makeMenu(_menu,instance);
     }
@@ -370,14 +410,18 @@ public class weiboTimeLineScreen extends MainScreen {
 		}
 		
 	}
+	
+	boolean m_shiftKeyIsDown = false;
+	
 	protected boolean keyDown(int keycode,int time){
 		
 		final int key = Keypad.key(keycode);
-		
+				
 		if(WeiboItemField.sm_extendWeiboItem != null && WeiboItemField.sm_editWeiboItem == null){
 			switch(key){
 	    	case ' ':
-	    		m_currMgr.OpenNextWeiboItem(true);
+	    		boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
+	    		m_currMgr.OpenNextWeiboItem(!t_shiftDown);
 	    		return true;
 	    	case 'F':
 	    		m_currMgr.ForwardWeibo(WeiboItemField.sm_extendWeiboItem);
@@ -415,9 +459,8 @@ public class weiboTimeLineScreen extends MainScreen {
 	    	}
 		}
 
-		return false;    	
-	}       
-	
+		return super.keyDown(keycode,time);    	
+	}
 	 
 	public boolean onClose(){
 		

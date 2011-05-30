@@ -240,6 +240,8 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 			
 			if(_info != null && _info.m_longitude != 0 && _info.m_latitude != 0){
 				m_weibo.updateStatus(_text, _info.m_latitude, _info.m_longitude);
+			}else{
+				m_weibo.updateStatus(_text);
 			}
 		}
 			
@@ -269,6 +271,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		
 		_weibo.SetUserId(t_user.getId());
 		_weibo.SetUserName(t_user.getName());
+		_weibo.SetUserScreenName(t_user.getScreenName());
 		_weibo.SetSinaVIP(t_user.isVerified());
 		
 		if(_stat.getOriginal_pic() != null){
@@ -302,17 +305,6 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 				}
 			}
 			
-			if(_stat.getInReplyToUserId() != -1){
-
-				Status t_replyStatus = m_weibo.showStatus(_weibo.GetReplyWeiboId());
-				fetchWeibo t_replayWeibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
-				
-				ImportWeibo(t_replayWeibo,t_replyStatus,fetchWeibo.TIMELINE_CLASS);
-				
-				_weibo.SetReplyWeiboId(_stat.getInReplyToStatusId());
-				_weibo.SetReplyWeibo(t_replayWeibo);
-					
-			}
 		
 		}catch(Exception e){
 			m_mainMgr.m_logger.LogOut(GetAccountName() + " Exception:" + e.getMessage());
@@ -335,6 +327,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		if(t_user != null){
 			_weibo.SetUserId(t_user.getId());
 			_weibo.SetUserName(t_user.getName());
+			_weibo.SetUserScreenName(t_user.getScreenName());
 			_weibo.SetSinaVIP(t_user.isVerified());	
 		}
 				
@@ -357,6 +350,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 			_weibo.SetOwnWeibo(t_user.getId() == m_userself.getId());
 			_weibo.SetUserId(t_user.getId());
 			_weibo.SetUserName(t_user.getName());
+			_weibo.SetUserScreenName(t_user.getScreenName());
 			_weibo.SetSinaVIP(t_user.isVerified());	
 		}
 		

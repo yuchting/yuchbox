@@ -167,13 +167,13 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	}
 	protected void CheckAtMeMessage()throws Exception{
 		List<Status> t_fetch = null;
-		if(m_timeline.m_fromIndex > 1){
-			t_fetch = m_twitter.getMentions(new Paging(m_timeline.m_fromIndex));
+		if(m_atMeMessage.m_fromIndex > 1){
+			t_fetch = m_twitter.getMentions(new Paging(m_atMeMessage.m_fromIndex));
 		}else{
 			t_fetch = m_twitter.getMentions();
 		}		 
 		
-		AddWeibo(t_fetch,m_timeline,fetchWeibo.AT_ME_CLASS);
+		AddWeibo(t_fetch,m_atMeMessage,fetchWeibo.AT_ME_CLASS);
 	}
 	
 	protected void CheckCommentMeMessage()throws Exception{
@@ -236,37 +236,24 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		
 		_weibo.SetUserId(t_user.getId());
 		_weibo.SetUserName(t_user.getName());
+		_weibo.SetUserScreenName(t_user.getScreenName());
 		_weibo.SetSinaVIP(t_user.isVerified());
-				
-		
+
 		_weibo.SetUserHeadImageHashCode(StoreHeadImage(t_user.getProfileImageURL(),t_user.getId()));		
 
 		try{
 			
 			if(_stat.getInReplyToStatusId() != -1){
 				
-				Status t_commentStatus = m_twitter.showStatus(_weibo.GetReplyWeiboId());
+				Status t_commentStatus = m_twitter.showStatus(_stat.getInReplyToStatusId());
 				fetchWeibo t_replayWeibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
 				
 				ImportWeibo(t_replayWeibo,t_commentStatus,fetchWeibo.TIMELINE_CLASS);
 				
 				_weibo.SetCommectWeiboId(_stat.getInReplyToStatusId());
-				_weibo.SetCommectWeibo(t_replayWeibo);
-								
+				_weibo.SetCommectWeibo(t_replayWeibo);			
 			}
-			
-			if(_stat.getInReplyToUserId() != -1){
-
-				Status t_replyStatus = m_twitter.showStatus(_weibo.GetReplyWeiboId());
-				fetchWeibo t_replayWeibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
-				
-				ImportWeibo(t_replayWeibo,t_replyStatus,fetchWeibo.TIMELINE_CLASS);
-				
-				_weibo.SetReplyWeiboId(_stat.getInReplyToStatusId());
-				_weibo.SetReplyWeibo(t_replayWeibo);
 					
-			}
-		
 		}catch(Exception e){
 			m_mainMgr.m_logger.LogOut(GetAccountName() + " Exception:" + e.getMessage());
 			m_mainMgr.m_logger.PrinterException(e);
@@ -286,6 +273,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		if(t_user != null){
 			_weibo.SetUserId(t_user.getId());
 			_weibo.SetUserName(t_user.getName());
+			_weibo.SetUserScreenName(t_user.getScreenName());
 			_weibo.SetSinaVIP(t_user.isVerified());	
 		}
 				

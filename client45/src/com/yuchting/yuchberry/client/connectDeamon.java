@@ -11,6 +11,8 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.SocketConnection;
 import javax.microedition.io.file.FileConnection;
 
+import com.yuchting.yuchberry.client.weibo.fetchWeibo;
+
 import local.localResource;
 import net.rim.blackberry.api.homescreen.HomeScreen;
 import net.rim.blackberry.api.mail.Address;
@@ -1269,7 +1271,7 @@ public class connectDeamon extends Thread implements SendListener,
 			// reset the content of mail...
 			//
 			Message msg = _mail.GetAttachMessage();
-			ComposeMessageContent(msg, _mail);
+			ComposeMessageContent(msg, _mail,true);
 		}
 		
 		if(m_mainApp.m_useLocationInfo){
@@ -1624,17 +1626,17 @@ public class connectDeamon extends Thread implements SendListener,
 	    msg.setHeader("X-Mailer",_mail.GetXMailer());
 	    msg.setSentDate(_mail.GetSendDate());	      
 	
-	    ComposeMessageContent(msg,_mail);
+	    ComposeMessageContent(msg,_mail,false);
 	}
 	
-	static private void ComposeMessageContent(Message msg,fetchMail _mail)throws Exception{
+	static private void ComposeMessageContent(Message msg,fetchMail _mail,boolean _sendCompose)throws Exception{
 		
 		 if(_mail.GetContain_html().length() != 0
 			|| !_mail.GetAttachment().isEmpty()) {
 		
 			Multipart multipart = new Multipart();
 		    	
-	    	TextBodyPart t_text = new TextBodyPart(multipart,_mail.GetContain());
+	    	TextBodyPart t_text = new TextBodyPart(multipart,_sendCompose?"":_mail.GetContain());
 	    	multipart.addBodyPart(t_text);
 	    	
 	    	if(_mail.GetContain_html().length() != 0){

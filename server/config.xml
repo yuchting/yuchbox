@@ -50,7 +50,7 @@
 		secretToken="5f248ea06daf600f17edd57c303cc9ce"
 		-->
 		
-	<QWeiboAccount
+	<!--QWeiboAccount
 		account="yuchting"
 		accessToken="2189ff2946d3498a82e6bbb8b2b57d61"
 		secretToken="8c160ee7358a5dc07e539429c3cbb487"
@@ -60,6 +60,6 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/>
+	/-->
 		
 </Yuchberry>
