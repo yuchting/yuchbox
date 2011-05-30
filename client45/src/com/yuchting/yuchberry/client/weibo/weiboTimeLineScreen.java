@@ -15,6 +15,7 @@ import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.MainScreen;
 
@@ -375,6 +376,31 @@ public class weiboTimeLineScreen extends MainScreen{
         }
     }; 
     
+    MenuItem m_deleteItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_DELETE_MENU_LABEL),7,0){
+        public void run() {
+        	deleteWeiboItem();
+        }
+    }; 
+    
+    public void deleteWeiboItem(){
+    	
+    	if(WeiboItemField.sm_extendWeiboItem != null && WeiboItemField.sm_extendWeiboItem.m_weibo.IsOwnWeibo()){
+    		if(Dialog.ask(Dialog.D_YES_NO,recvMain.sm_local.getString(localResource.WEIBO_DELETE_ASK_PROMPT),Dialog.NO) == Dialog.YES){
+    			try{
+    				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+        			t_os.write(msg_head.msgWeiboDelete);
+        			t_os.write(WeiboItemField.sm_extendWeiboItem.m_weibo.GetWeiboStyle());
+        			sendReceive.WriteLong(t_os,WeiboItemField.sm_extendWeiboItem.m_weibo.GetId());
+        			
+        			sm_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeiboDelete,t_os.toByteArray(),true);	
+    			}catch(Exception e){
+    				
+    			}
+    		}
+    	}
+    	
+    }
+    
 	protected void makeMenu(Menu _menu,int instance){
 		
 		if(WeiboItemField.sm_editWeiboItem != null && WeiboItemField.sm_extendWeiboItem != null){
@@ -390,6 +416,11 @@ public class weiboTimeLineScreen extends MainScreen{
 				_menu.add(m_preWeiboItem);
 				_menu.add(m_nextWeiboItem);
 			}
+			
+			if(WeiboItemField.sm_extendWeiboItem.m_weibo.IsOwnWeibo()){
+				_menu.add(m_deleteItem);
+			}
+			
 		}
 		
 		_menu.add(m_helpItem);
@@ -434,6 +465,9 @@ public class weiboTimeLineScreen extends MainScreen{
 	    		return true;
 	    	case 'P':
 	    		m_currMgr.OpenOriginalPic(WeiboItemField.sm_extendWeiboItem);
+	    		return true;
+	    	case 'D':
+	    		deleteWeiboItem();
 	    		return true;
 			}
 		}else{

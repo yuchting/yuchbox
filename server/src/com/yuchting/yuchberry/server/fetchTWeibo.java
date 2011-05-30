@@ -221,6 +221,10 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		m_twitter.createFriendship(Long.toString(_id));
 	}
 	
+	protected void DeleteWeibo(long _id)throws Exception{
+		m_twitter.destroyStatus(_id);
+	}
+	
 	public void ImportWeibo(fetchWeibo _weibo,Status _stat,byte _weiboClass){
 		_weibo.SetId(_stat.getId());
 		_weibo.SetDateLong(_stat.getCreatedAt().getTime());

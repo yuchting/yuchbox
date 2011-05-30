@@ -797,7 +797,10 @@ public class connectDeamon extends Thread implements SendListener,
 				}							
 			}		
 			
-			m_mainApp.m_weiboTimeLineScreen.SetOnlineState(false);
+			if(m_mainApp.m_weiboTimeLineScreen != null){
+				m_mainApp.m_weiboTimeLineScreen.SetOnlineState(false);
+			}
+			
 			HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline.png"));
 			
 			synchronized (this) {
@@ -1733,8 +1736,14 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 	
 	private void ProcessWeibo(InputStream in){
-		fetchWeibo t_weibo = new fetchWeibo();
+	
+		if(m_mainApp.m_weiboTimeLineScreen == null){
+			m_mainApp.SetErrorString("recevive weibo message,but haven't enable Weibo module");
+			return;
+		}
 		
+		fetchWeibo t_weibo = new fetchWeibo();
+	
 		try{
 			t_weibo.InputWeibo(in);
 			
@@ -1757,6 +1766,12 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	
 	private void ProcessWeiboHeadImage(InputStream in){
+		
+		if(m_mainApp.m_weiboTimeLineScreen == null){
+			m_mainApp.SetErrorString("recevive weibo message,but haven't enable Weibo module");
+			return;
+		}
+		
 		try{
 			
 			int t_style = in.read();

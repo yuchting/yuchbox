@@ -1167,7 +1167,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	
 	public void PopupWeiboScreen(){
-		pushScreen(m_weiboTimeLineScreen);
+		if(m_weiboTimeLineScreen != null){
+			pushScreen(m_weiboTimeLineScreen);
+		}		
 	}
 	
 	public void PopupDownloadFileDlg(final String _filename){

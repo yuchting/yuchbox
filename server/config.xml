@@ -1,23 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Yuchberry userPassword="111111" serverPort="9716" pushInterval="10" userSSL="0" convertoSimpleChar="0" >
-	<!--EmailAccount 
-		account="tzt-123@163.com" 
-		password="" 
-		cryptPassword="8dbf031d4b9b5e96ef8857158d44258d"
-		
-		sendName="tzz" 
-		
-		useFullNameSignIn="0" 
-		
-		protocol="imap" 
-		host="imap.163.com" 
-		port="143" 
-		protocol_send="smtp" 
-		host_send="smtp.163.com" 
-		port_send="25" 
-		appendHTML="0" 
-	/-->
-	
 	<SinaWeiboAccount
 		account="yuchberry_test"
 		accessToken="8a2bf4e5a97194a1eb73740b448f034e"
@@ -28,38 +10,5 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/>
-	
-	
-	
-	<!--TWeiboAccount
-		account="yuchting"
-		accessToken="123158821-96vShVD9oXGZmj6usNAz4vVyLzL1fJVGxKZABa1C"
-		secretToken="s9zpyuKVpOTksVr0tBC1md6Rge3SXvnQDzNkm8vg"
-		
-		
-		timelineSum="10"
-		directMessageSum="5"
-		atMeSum="5"
-		commentSum="5"
-	/-->
-	
-	<!--
-		account="yuchberry"
-		accessToken="1eef9899c847f1cd0735c6775fdcc576"
-		secretToken="5f248ea06daf600f17edd57c303cc9ce"
-		-->
-		
-	<!--QWeiboAccount
-		account="yuchting"
-		accessToken="2189ff2946d3498a82e6bbb8b2b57d61"
-		secretToken="8c160ee7358a5dc07e539429c3cbb487"
-		
-		
-		timelineSum="20"
-		directMessageSum="5"
-		atMeSum="5"
-		commentSum="5"
-	/-->
-		
+	/>		
 </Yuchberry>

@@ -255,6 +255,10 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		m_weibo.createFriendship(Long.toString(_id));
 	}
 	
+	protected void DeleteWeibo(long _id)throws Exception{
+		m_weibo.destroyStatus(_id);
+	}
+	
 	public void ImportWeibo(fetchWeibo _weibo,Status _stat,byte _weiboClass){
 		
 		_weibo.SetId(_stat.getId());

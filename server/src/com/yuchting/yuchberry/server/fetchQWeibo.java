@@ -58,7 +58,9 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		
 	}
 
-	
+	protected void DeleteWeibo(long _id)throws Exception{
+		
+	}
 	
 	
 	

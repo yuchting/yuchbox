@@ -47,7 +47,7 @@ public class QWeiboSyncApi {
 	}
 	
 	// return user id if verify ok
-	public String verifyCredentials()throws Exception{
+	public QUser verifyCredentials()throws Exception{
 		checkAllKeys();
 		
 		m_parameters.clear();
@@ -58,7 +58,7 @@ public class QWeiboSyncApi {
 			throw new Exception("verify Credentials failed." + t_json.toString());
 		}
 		
-		return t_json.getString("Name");
+		return new QUser(t_json); 
 	}
 	
 	public String getRequestToken()throws Exception{
