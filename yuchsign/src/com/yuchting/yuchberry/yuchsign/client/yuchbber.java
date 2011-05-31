@@ -9,7 +9,6 @@ import com.google.gwt.xml.client.Node;
 import com.google.gwt.xml.client.NodeList;
 import com.google.gwt.xml.client.XMLParser;
 
-
 public final class yuchbber {
 	
 	public static final int[] fsm_weekMoney = {2,2,3,3};
@@ -39,6 +38,8 @@ public final class yuchbber {
 	private long m_latestSyncTime = 0;
 
 	private Vector<yuchEmail>	m_emailList = new Vector<yuchEmail>();
+	
+	private Vector<yuchWeibo>	m_weiboList = new Vector<yuchWeibo>();
 	
 	public yuchbber(final String _name,final String _pass){
 		m_signinName	= _name;
@@ -86,7 +87,17 @@ public final class yuchbber {
 	public String GetSignature(){return m_signature;}
 	public void SetSignature(final String _signature){m_signature = _signature;}
 	
+	public Vector<yuchWeibo> GetWeiboList(){return m_weiboList;}
+	
+	public void NewWeiboList(){
+		if(m_weiboList == null){
+			m_weiboList = new Vector<yuchWeibo>();
+		}
+	}
+	
 	public String OuputXMLData(){
+		
+		NewWeiboList();
 		
 		String t_signature = m_signature.replace("<","&lt;");
 		t_signature = t_signature.replace(">","&gt;");
@@ -112,7 +123,12 @@ public final class yuchbber {
 				
 		for(yuchEmail email : m_emailList){
 			email.OuputXMLData(t_output);										
-		}	
+		}
+		
+
+		for(yuchWeibo weibo:m_weiboList){
+			weibo.OuputXMLData(t_output);
+		}
 		
 		t_output.append("</yuchbber>");
 		
@@ -120,6 +136,9 @@ public final class yuchbber {
 	}
 	
 	public void InputXMLData(final String _data)throws Exception{
+		
+		NewWeiboList();
+		
 		Document t_doc = XMLParser.parse(_data);
 		com.google.gwt.xml.client.Element t_elem = t_doc.getDocumentElement();
 		
@@ -170,6 +189,12 @@ public final class yuchbber {
 					t_email.InputXMLData(t_element);
 					
 					m_emailList.add(t_email);
+				}else if(t_element.getTagName().equalsIgnoreCase("WeiboAccount")){
+					yuchWeibo t_weibo = new yuchWeibo();
+									
+					t_weibo.InputXMLData(t_element);
+					
+					m_weiboList.add(t_weibo);
 				}
 			}
 		}		
@@ -185,6 +210,30 @@ public final class yuchbber {
 		}
 	}
 	
+	
+	//! find the push account by the toString name
+	public Object findAccount(String _toStringName){
+		
+		for(yuchEmail email : m_emailList){
+			if(email.toString().equals(_toStringName)){
+				return email;
+			}
+		}
+		
+
+		for(yuchWeibo weibo:m_weiboList){
+			if(weibo.toString().equals(_toStringName)){
+				return weibo;
+			}
+		}
+		
+		return null;
+	}
+	
+	//! get the account total number
+	public int getAccountTotalNum(){
+		return m_emailList.size() + m_weiboList.size();
+	}
 		
 	/**
 	 * read String attribute from xml

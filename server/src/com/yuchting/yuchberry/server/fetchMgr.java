@@ -199,22 +199,28 @@ public class fetchMgr{
 	            m_fetchAccount.addElement(t_email);
 	        }
 			
-			for( Iterator i = t_root.elementIterator("SinaWeiboAccount"); i.hasNext();){
+			for( Iterator i = t_root.elementIterator("WeiboAccount"); i.hasNext();){
 	            Element element = (Element) i.next();
-	            fetchAccount t_email = new fetchSinaWeibo(this);
-	            t_email.InitAccount(element);
 	            
-	            m_fetchAccount.addElement(t_email);
+	            String t_type = fetchAccount.ReadStringAttr(element,"type");
+	            
+	            fetchAccount t_weibo = null;
+	            
+	            if(t_type.equalsIgnoreCase("sina")){
+	            	t_weibo = new fetchSinaWeibo(this);
+	            }else if(t_type.equalsIgnoreCase("twitter")){
+	            	t_weibo = new fetchTWeibo(this);
+	            }else{
+	            	continue;
+	            }
+	            
+	            t_weibo.InitAccount(element);
+	            
+	            m_fetchAccount.addElement(t_weibo);
 	        }
 			
 
-			for( Iterator i = t_root.elementIterator("TWeiboAccount"); i.hasNext();){
-	            Element element = (Element) i.next();
-	            fetchAccount t_email = new fetchTWeibo(this);
-	            t_email.InitAccount(element);
-	            
-	            m_fetchAccount.addElement(t_email);
-	        }
+			
 	    	
 		}catch(Exception ex){
 			

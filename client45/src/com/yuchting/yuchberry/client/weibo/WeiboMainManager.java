@@ -2,6 +2,8 @@ package com.yuchting.yuchberry.client.weibo;
 
 import java.io.ByteArrayOutputStream;
 
+import local.localResource;
+
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
@@ -112,6 +114,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			t_totalHeight += t_item.getPreferredHeight();
 		}
 		
+		t_totalHeight += WeiboItemField.sm_fontHeight;
+		
 		return t_totalHeight;
 	}
 	
@@ -126,6 +130,11 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	
 	private int getLayoutEndNum(){
 		int t_end = m_formerVerticalPos / WeiboItemField.fsm_closeHeight + WeiboItemField.fsm_maxDisplayRows;
+		
+		if(WeiboItemField.sm_extendWeiboItem != null){
+			t_end++;
+		}
+		
 		if(t_end > getFieldCount()){
 			t_end = getFieldCount();
 		}
@@ -148,6 +157,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			t_totalHeight += t_height; 
 		}
 		
+		t_totalHeight += WeiboItemField.sm_fontHeight;
+		
 		setExtent(recvMain.fsm_display_width,t_totalHeight);
 	}
 	
@@ -159,6 +170,16 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			WeiboItemField t_item = (WeiboItemField)getField(i);
 			paintChild(graphics, t_item);
 		}
+		
+		int oldColour = graphics.getColor();
+		try{
+			graphics.setColor(WeiboItemField.fsm_spaceLineColor);
+			graphics.drawText(recvMain.sm_local.getString(localResource.WEIBO_REACH_MAX_WEIBO_NUM_PROMPT),
+								0,getPreferredHeight() - WeiboItemField.sm_fontHeight);
+		}finally{
+			graphics.setColor(oldColour);
+		}
+		
 	}
 	
 	public void AddWeibo(final WeiboItemField _item,final boolean _resetSelectIdx){
@@ -254,12 +275,19 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				if(t_currentHeight > WeiboItemField.sm_fontHeight){
 					t_currentHeight -= WeiboItemField.sm_fontHeight;
 				}
-			}
+			}			
 			
 			if(_dy > 0){
 		
 				if(t_currentHeight > t_verticalScroll + getVisibleHeight()){
 					int t_delta = t_currentHeight - (t_verticalScroll + getVisibleHeight());
+					
+					if(m_selectWeiboItemIndex == t_num - 1){
+						// add the rear prompt text height
+						//
+						t_delta += WeiboItemField.sm_fontHeight;
+					}
+					
 					setVerticalScroll(t_verticalScroll + t_delta);
 				}
 				
@@ -391,7 +419,27 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			WeiboItemField.sm_selectWeiboItem = (WeiboItemField)getField(m_selectWeiboItemIndex);
 		}
 		
-		sublayout(0, 0);
+		invalidate();
+	}
+	
+	public void ScrollToBottom(){
+		int t_height = getPreferredHeight();
+		int t_maxScrollHeight = getVisibleHeight();
+		
+		if(t_height > t_maxScrollHeight){
+			m_formerVerticalPos = t_height - t_maxScrollHeight;
+			setVerticalScroll(m_formerVerticalPos);
+		}	
+		
+		m_selectWeiboItemIndex = getFieldCount() - 1;
+		if(m_selectWeiboItemIndex < 0){
+			m_selectWeiboItemIndex = 0;
+		}
+		
+		if(getFieldCount() != 0){
+			WeiboItemField.sm_selectWeiboItem = (WeiboItemField)getField(m_selectWeiboItemIndex);
+		}
+		
 		invalidate();
 	}
 	
@@ -452,7 +500,9 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			t_forwardText.append(" //@").append(_item.m_weibo.GetUserName()).append(" :").append(_item.m_weibo.GetText());
 			
 			if(weiboTimeLineScreen.sm_mainApp.m_publicForward && _item.m_commentText != null){
-				t_forwardText.append(" //").append(_item.m_commentText);
+				t_forwardText.append(" //").append(_item.m_commentText)
+							.append(" --").append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
+							.append(WeiboItemField.parseSource(_item.m_weibo.GetSource()));
 			}
 			
 			String t_text = t_forwardText.toString();

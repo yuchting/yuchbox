@@ -9,8 +9,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Timer;
@@ -18,18 +18,12 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.PasswordTextBox;
-import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextArea;
@@ -41,442 +35,29 @@ import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.XMLParser;
 
 
-class ContentTab extends TabPanel{
+class ContentTab extends TabPanel implements SelectionHandler<Integer>{
 	
-	final TextBox			m_account	= new TextBox();
-	final PasswordTextBox	m_password	= new PasswordTextBox();
-	final TextBox			m_username	= new TextBox();
+	BberEmailPanel m_emailPanel = new BberEmailPanel();
+	BberWeiboPanel m_weiboPanel = new BberWeiboPanel();
 	
-	final TextBox			m_host		= new TextBox();
-	final TextBox			m_port		= new TextBox();
-	
-	final RadioButton[]		m_protocal	= {
-											new RadioButton("protocal","imap"),
-											new RadioButton("protocal","imaps"),
-											new RadioButton("protocal","pop3"),
-											new RadioButton("protocal","pop3s"),
-										  };
-	
-	final TextBox			m_host_send	= new TextBox();
-	final TextBox			m_port_send = new TextBox();
-	
-	final CheckBox			m_usingFullname = new CheckBox("使用全地址作为用户名登录");
-	final CheckBox			m_appendHTML	= new CheckBox("追加HTML到正文");
-	
-	final DisclosurePanel	m_advancedDisclosure = new DisclosurePanel("高级设置：");
-	
-	final private class commonConfig{
-		
-		String	m_name;
-		String	m_protocalName;
-		String	m_host;
-		String	m_port;
-		
-		String	m_host_send;
-		String	m_port_send;
-		
-		boolean m_useFullnameSignin = false;
-		
-		String  m_prompt;
-		
-		public commonConfig(String _parserLine){
-			String[] t_data = _parserLine.split(",");
-						
-			m_name 			= t_data[0];
-			m_protocalName 	= t_data[1];
-			m_host 			= t_data[2];
-			m_port 			= t_data[3];
-			m_host_send		= t_data[4];
-			m_port_send		= t_data[5];
-			m_useFullnameSignin = t_data[6].equals("1");
-			
-			if(t_data.length >= 8){
-				m_prompt = t_data[7];
-			}
-		}
-		
-		public void SetConfig(ContentTab _dlg){
-			if(m_host.equals("0")){
-				return;
-			}
-			
-			_dlg.m_host.setText(m_host);
-			_dlg.m_port.setText(m_port);
-			
-			for(int i = 0;i < _dlg.m_protocal.length;i++){
-				if(m_protocal[i].getText().equals(m_protocalName)){
-					m_protocal[i].setValue(true);
-					break;
-				}
-			}
-			
-			_dlg.m_host_send.setText(m_host_send);
-			_dlg.m_port_send.setText(m_port_send);
-			
-			_dlg.m_usingFullname.setValue(m_useFullnameSignin);
-		}
-	}
-	
-	final commonConfig[]		m_commonConfigList = 
-	{
-		new commonConfig("@gmail.com,imaps,imap.gmail.com,993,smtp.gmail.com,587,0"),
-		new commonConfig("@163.com,imap,imap.163.com,143,smtp.163.com,25,0"),
-		new commonConfig("@126.com,imap,imap.126.com,143,smtp.126.com,25,0"),
-		new commonConfig("@qq.com,imap,imap.qq.com,143,smtp.qq.com,25,0,请使用浏览器访问qq邮箱，确保其pop3/imap选项已经打开\n<a href=\"http://service.mail.qq.com/cgi-bin/help?subtype=1&id=26&no=308\" target=_blank>查看帮助</a>"),
-		new commonConfig("@vip.qq.com,imap,imap.qq.com,143,smtp.qq.com,25,1,请使用浏览器访问qq邮箱，确保其pop3/imap选项已经打开\n<a href=\"http://service.mail.qq.com/cgi-bin/help?subtype=1&id=26&no=308\" target=_blank>查看帮助</a>"),
-		new commonConfig("@yahoo.com,imaps,apple.imap.mail.yahoo.com,993,smtp.mail.yahoo.com,587,0"),
-		new commonConfig("@yahoo.com.cn,pop3s,pop.mail.yahoo.com.cn,995,smtp.mail.yahoo.com.cn,465,0,雅虎邮箱免费版貌似不支持pop的链接\n请确认可以在web界面配置pop选项 <a href=\"http://help.cn.yahoo.com/answerpage_3631.html target=_blank\">查看帮助</a>"),		
-		new commonConfig("@yahoo.cn,pop3s,pop.mail.yahoo.cn,995,smtp.mail.yahoo.cn,465,0,雅虎邮箱免费版貌似不支持pop的链接\n请确认可以在web界面配置pop选项 <a href=\"http://help.cn.yahoo.com/answerpage_3631.html target=_blank\">查看帮助</a>"),
-		new commonConfig("@hotmail.com,pop3s,pop3.live.com,995,smtp.live.com,587,1,hotmail不支持imap，同时pop3连接时也会有许多问题，会导致推送不正常，不建议使用。"),
-		new commonConfig("@live.com,pop3s,pop3.live.com,995,smtp.live.com,587,0,hotmail不支持imap，同时pop3连接时也会有许多问题，会导致推送不正常，不建议使用。"),
-		new commonConfig("@sina.com,pop3,pop.sina.com,110,smtp.sina.com,25,0,请使用浏览器访问sina邮箱，确保其pop3选项已经打开\n<a href=\"http://mail.sina.com.cn/help2/client01.html\" target=_blank>查看帮助</a>"),
-		new commonConfig("@139.com,imap,imap.139.com,143,smtp.139.com,25,0"),
-		new commonConfig("@tom.com,pop3,pop.tom.com,110,smtp.tom.com,25,0"),
-		new commonConfig("@21cn.com,pop3,pop.21cn.com,110,smtp.21cn.com,25,0"),
-		new commonConfig("@foxmail.com,imap,imap.qq.com,143,smtp.qq.com,25,1,请使用浏览器访问foxmail邮箱，确保其pop3/imap选项已经打开\n<a href=\"http://service.mail.qq.com/cgi-bin/help?subtype=1&id=26&no=308\" target=_blank>查看帮助</a>"),
-		new commonConfig("@sohu.com,imap,mail.sohu.com,143,mail.sohu.com,25,0")
-	};
+	int m_currSelectionIndex = 0;
 	
 	public ContentTab(){
 		setAnimationEnabled(true);
 		setPixelSize(250, 200);
 		
-		m_account.addKeyUpHandler(new KeyUpHandler() {
-			@Override
-			public void onKeyUp(KeyUpEvent event) {
-				AutoSelHost();				
-			}
-		});
-		
-		m_port.addKeyPressHandler(BberPanel.fsm_socketPortHandler);
-		m_port_send.addKeyPressHandler(BberPanel.fsm_socketPortHandler);
-		
-		// the IE and firefox is Compatible but Chrome
-		m_port.setStyleName("gwt-TextBox-SocketPort");
-		m_port_send.setStyleName("gwt-TextBox-SocketPort");
-		
-		
-		final FlowPanel t_subPane =new FlowPanel();
-		
-		BberPanel.AddLabelWidget(t_subPane, "邮件地址:", m_account);
-		BberPanel.AddLabelWidget(t_subPane, "邮件密码:", m_password);
-		BberPanel.AddLabelWidget(t_subPane,"名字:",m_username);
-
-		final FlowPanel t_subPane1 = new FlowPanel();
-		
-		for(RadioButton but : m_protocal){
-			t_subPane1.add(but);
-		}
-		
-		final FlexTable t_hostPane = new FlexTable();
-		m_host.setWidth("10em");
-		m_port.setWidth("10em");
-		BberPanel.AddLabelWidget(t_hostPane, "主机地址:", m_host,0);
-		BberPanel.AddLabelWidget(t_hostPane, "端口:", m_port,1);
-		t_subPane1.add(t_hostPane);
-		
-		final FlexTable t_hostPane_send = new FlexTable();
-		m_host_send.setWidth("10em");
-		m_port_send.setWidth("10em");
-		BberPanel.AddLabelWidget(t_hostPane_send, "发送主机:", m_host_send,0);
-		BberPanel.AddLabelWidget(t_hostPane_send, "发送端口:", m_port_send,1);
-		t_subPane1.add(t_hostPane_send);
-		
-		t_subPane1.add(new HTML("<br />"));
-		t_subPane1.add(m_usingFullname);
-		t_subPane1.add(new HTML("<br />"));
-		t_subPane1.add(m_appendHTML);
-		
-		m_advancedDisclosure.add(t_subPane1);
-		
-		t_subPane.add(m_advancedDisclosure);
-		
-		add(t_subPane,"邮件");
-		selectTab(0);		
+		add(m_emailPanel,"邮件");
+		add(m_weiboPanel,"Weibo");
+		selectTab(0);
 	}
 	
-	String m_addHostPrompt = null;
+	public int getSelectedIndex(){return m_currSelectionIndex;}
 	
-	public void AutoSelHost(){
-		String t_account = m_account.getText().toLowerCase();
-		final int t_atIndex = t_account.indexOf('@');
-		
-		m_addHostPrompt = null;
-		
-		if(t_atIndex != -1){
-			
-			String t_addr = t_account.substring(t_atIndex);
-			if(t_addr.indexOf('.') != -1){
-				
-				for(commonConfig t_config: m_commonConfigList){
-
-					if(t_addr.equalsIgnoreCase(t_config.m_name)){
-						t_config.SetConfig(this);
-						m_addHostPrompt = t_config.m_prompt;
-						break;
-					}
-				}
-			}
-		}
+	public void onSelection(SelectionEvent<Integer> event){
+		m_currSelectionIndex = event.getSelectedItem().intValue();
 	}
-	
-	public yuchEmail AddAccount(final yuchEmail _email){
-		
-		if(!LogonDialog.IsValidEmail(m_account.getText())){
-			Yuchsign.PopupPrompt("不是合法的邮件地址", m_account);
-			return null;
-		}
-		
-		if(m_password.getText().length() == 0){
-			Yuchsign.PopupPrompt("不是合法的邮件地址", m_password);
-			return null;
-		}
-		
-		if(m_host.getText().length() == 0){
-			m_advancedDisclosure.setOpen(true);
-			Yuchsign.PopupPrompt("邮件接受服务器地址不能为空", m_port);
-			return null;
-		}
-		
-		final int t_port = Integer.valueOf(m_port.getText()).intValue(); 
-		if(t_port <= 0 || t_port >= 65535){
-			m_advancedDisclosure.setOpen(true);
-			Yuchsign.PopupPrompt("邮件接受服务器端口非法", m_port);
-			return null;
-		}
-		
-		if(m_host_send.getText().length() == 0){ 
-			m_advancedDisclosure.setOpen(true);
-			Yuchsign.PopupPrompt("邮件发送服务器地址不能为空", m_host_send);
-			return null;
-		}
-		
-		final int t_port_send = Integer.valueOf(m_port_send.getText()).intValue(); 
-		if(t_port_send <= 0 || t_port_send >= 65535){
-			m_advancedDisclosure.setOpen(true);
-			Yuchsign.PopupPrompt("邮件发送服务器端口非法", m_port_send);
-			return null;
-		}
-		
-		if(m_password.getText().indexOf("+") != -1 || m_password.getText().indexOf("&") != -1){
-			Yuchsign.PopupPrompt("实在抱歉，因为在数据传输过程中无法支持符号\"+&\"\n无法添加成功。", m_password);
-			return null;
-		}
-		
-		if(m_addHostPrompt != null){
-			Yuchsign.PopupPrompt(m_addHostPrompt, getParent());
-		}
-		
-		
-		yuchEmail t_email = _email == null?(new yuchEmail()):_email;
-		
-		t_email.m_appendHTML 		= m_appendHTML.getValue();
-		t_email.m_fullnameSignIn	= m_usingFullname.getValue();
-				
-		t_email.m_emailAddr			= m_account.getText();
-		t_email.m_password			= m_password.getText();
-		t_email.m_username			= m_username.getText();
-		
-		t_email.m_host				= m_host.getText();
-		t_email.m_port				= Integer.valueOf(m_port.getText()).intValue();
-		
-		t_email.m_host_send			= m_host_send.getText();
-		t_email.m_port_send			= Integer.valueOf(m_port_send.getText()).intValue();
-		
-		for(RadioButton but : m_protocal){
-			if(but.getValue()){
-				t_email.m_protocol = but.getText();
-				break;
-			}
-		}		
-		
-		return t_email;
-	}
-	
-	public void RefreshEmail(final yuchEmail _email){
-		if(_email != null){
-			m_appendHTML.setValue(_email.m_appendHTML);
-			m_usingFullname.setValue(_email.m_fullnameSignIn);
-			
-			m_account.setText(_email.m_emailAddr);
-			m_password.setText(_email.m_password);
-			m_username.setText(_email.m_username);
-			
-			m_host.setText(_email.m_host);
-			m_port.setText(Integer.toString(_email.m_port));
-			
-			m_host_send.setText(_email.m_host_send);
-			m_port_send.setText(Integer.toString(_email.m_port_send));
-			
-			for(RadioButton but : m_protocal){
-				if(but.getText().equals(_email.m_protocol)){
-					but.setValue(true);
-					break;
-				}
-			}
-					
-		}else{
-			m_appendHTML.setValue(false);
-			m_usingFullname.setValue(false);
-			
-			m_account.setText("");
-			m_password.setText("");
-			m_username.setText("");
-			
-			m_host.setText("");
-			m_port.setText("");
-			
-			m_host_send.setText("");
-			m_port_send.setText("");
-			
-			m_protocal[0].setValue(true);
-		}	
-	}
-	
 }
 
-class ChangePassDlg extends DialogBox{
-	
-	PasswordTextBox		m_origPass	= null;
-	PasswordTextBox		m_newPass	= null;
-	PasswordTextBox		m_newPass1	= null;
-	
-	BberPanel		m_mainPane = null;
-	
-	public ChangePassDlg(final BberPanel _bberPane){
-		super(false,false);
-		
-		m_mainPane = _bberPane;
-		
-		final VerticalPanel t_mainPane = new VerticalPanel();
-		
-		final FlexTable t_table 	= new FlexTable();
-		int t_index = 0;
-		
-		m_origPass	= new PasswordTextBox();
-		m_newPass	= new PasswordTextBox();
-		m_newPass1	= new PasswordTextBox();
-		
-		BberPanel.AddLabelWidget(t_table, "旧密码：", m_origPass, t_index++);
-		BberPanel.AddLabelWidget(t_table, "新密码：", m_newPass, t_index++);
-		BberPanel.AddLabelWidget(t_table, "新密码确认：",m_newPass1, t_index++);
-		
-		t_mainPane.add(t_table);
-		
-		final HorizontalPanel t_butPane = new HorizontalPanel();
-		t_butPane.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		t_butPane.setSpacing(20);
-		final Button t_confirmBut = new Button("确定");
-		final Button t_cancel = new Button("取消");
-		
-		t_butPane.add(t_confirmBut);
-		t_butPane.add(t_cancel);
-		
-		t_confirmBut.addClickHandler(new ClickHandler() {
-			
-			@Override
-			public void onClick(ClickEvent event) {
-				commitChange();
-			}
-		});
-		
-		t_cancel.addClickHandler(new ClickHandler() {
-			
-			@Override
-			public void onClick(ClickEvent event) {
-				hide();
-			}
-		});
-		
-		t_mainPane.add(t_butPane);
-		
-		setWidget(t_mainPane);
-		
-		setText("更改密码");
-		setAnimationEnabled(true);
-				
-		setPopupPosition(50,100);
-	}
-	
-	public void show(){
-		super.show();
-		
-		m_origPass.setText("");
-		m_newPass.setText("");
-		m_newPass1.setText("");
-	}
-	
-	private void commitChange(){
-		
-		String t_origPassString = m_origPass.getText();
-		String t_newPassString	= m_newPass.getText();
-		String t_newPass1String = m_newPass1.getText();
-		
-		if(!LogonDialog.IsValidPassword(t_origPassString)){
-			Yuchsign.PopupPrompt("旧密码不符合规定，需要不小于6位的数字和字母组成。", m_origPass);
-			return;
-		}
-		
-		if(!LogonDialog.IsValidPassword(t_newPassString)){
-			Yuchsign.PopupPrompt("新密码不符合规定，需要不小于6位的数字和字母组成。", m_newPass);
-			return;
-		}
-		
-		if(!t_newPassString.equals(t_newPass1String)){
-			Yuchsign.PopupPrompt("新密码两次不一致。", m_newPass1);
-			return;
-		}
-		
-		if(m_mainPane.m_currentBber == null){
-			Yuchsign.PopupPrompt("内不错误：_bberPane.m_currentBber == null 请重新登录。", this);
-			return;
-		}
-		
-		Yuchsign.PopupWaiting("正在提交更改...", this);
-		
-		final ChangePassDlg t_changeDlg = this;
-		
-		try{
-			
-			m_mainPane.m_mainServer.greetingService.changePassword(m_mainPane.m_currentBber.GetSigninName(), 
-					m_mainPane.m_verfiyCode,t_origPassString, t_newPassString, 
-			new AsyncCallback<String>() {
-				@Override
-				public void onSuccess(String result) {
-					Yuchsign.HideWaiting();
-					
-					if(result.startsWith("/verifycode")){
-							new YuchVerifyCodeDlg(result, new InputVerfiyCode() {
-							
-							@Override
-							public void InputCode(String code) {
-								m_mainPane.m_verfiyCode = code;
-								commitChange();
-							}
-						});
-					}else{
-						hide();
-						
-						Yuchsign.PopupPrompt(result, m_mainPane);
-					}
-				}
-				
-				@Override
-				public void onFailure(Throwable caught) {
-					Yuchsign.PopupPrompt(caught.getMessage(), t_changeDlg);
-					Yuchsign.HideWaiting();
-				}											
-			});
-			
-		}catch(Exception e){
-			
-			Yuchsign.PopupPrompt(e.getMessage(), this);
-			Yuchsign.HideWaiting();
-		}
-		
-	}
-	
-}
 
 public class BberPanel extends TabPanel{
 
@@ -510,7 +91,6 @@ public class BberPanel extends TabPanel{
 	
 	public static final KeyPressHandler 	fsm_socketPortHandler = new KeyPressHandler() {
 		
-		@Override
 		public void onKeyPress(KeyPressEvent event) {
 			TextBox t_box = (TextBox) event.getSource();
 			if(!Character.isDigit(event.getCharCode())) {
@@ -527,14 +107,13 @@ public class BberPanel extends TabPanel{
 	
 	public BberPanel(final Yuchsign _sign){
 		m_mainServer = _sign;
+		setAnimationEnabled(true);
 		
 		AddAccountAttr();
 		AddPushAttr();
 		AddCheckLog();
 		
-		selectTab(0);
-		
-		
+		selectTab(0);		
 	}
 	
 	public void ShowBberPanle(){
@@ -731,9 +310,22 @@ public class BberPanel extends TabPanel{
 			@Override
 			public void onChange(ChangeEvent event) {
 				final int t_index = m_pushList.getSelectedIndex();
-				if(t_index != -1 && t_index < m_currentBber.GetEmailList().size()){
+				if(t_index != -1){
 					
-					m_pushContent.RefreshEmail(m_currentBber.GetEmailList().get(t_index));
+					String t_itemText = m_pushList.getItemText(t_index);
+					
+					Object t_account = m_currentBber.findAccount(t_itemText);
+					
+					if(t_account != null){
+						
+						if(t_account instanceof yuchEmail){
+							m_pushContent.m_emailPanel.RefreshEmail((yuchEmail)t_account);
+						}else if(t_account instanceof yuchWeibo){
+							m_pushContent.m_weiboPanel.RefreshWeibo((yuchWeibo)t_account);
+						}
+					}
+					
+					
 				}
 				
 			}
@@ -743,24 +335,45 @@ public class BberPanel extends TabPanel{
 			
 			@Override
 			public void onClick(ClickEvent event) {
-				yuchEmail t_email = m_pushContent.AddAccount(null);
-				if(t_email != null){
+
+				if(m_currentBber.getAccountTotalNum() >= m_currentBber.GetMaxPushNum()){
+					Yuchsign.PopupPrompt("已经达到当前推送的最大数量:"+ m_currentBber.GetMaxPushNum() + "(需要升级)", m_pushList);
+					return;
+				}
+				
+				if(m_pushContent.getSelectedIndex() == 0){
 					
-					if(m_currentBber.GetEmailList().size() >= m_currentBber.GetMaxPushNum()){
-						Yuchsign.PopupPrompt("已经达到当前推送的最大数量:"+ m_currentBber.GetMaxPushNum() + "(需要升级)", m_pushList);
-						return;
-					}
-					
-					for(yuchEmail mail : m_currentBber.GetEmailList()){
-						if(t_email.m_emailAddr.equalsIgnoreCase(mail.m_emailAddr)){
-							Yuchsign.PopupPrompt(mail.toString() + "账户重复!", m_pushList);
-							return;
+					yuchEmail t_email = m_pushContent.m_emailPanel.AddAccount(null);
+					if(t_email != null){
+												
+						for(yuchEmail mail : m_currentBber.GetEmailList()){
+							if(t_email.m_emailAddr.equalsIgnoreCase(mail.m_emailAddr)){
+								Yuchsign.PopupPrompt(mail.toString() + "账户重复!", m_pushList);
+								return;
+							}
 						}
+						
+						m_currentBber.GetEmailList().add(t_email);
+						RefreshPushList(m_currentBber);
+						m_pushContent.m_emailPanel.RefreshEmail(null);
 					}
 					
-					m_currentBber.GetEmailList().add(t_email);
-					RefreshPushList(m_currentBber);
-					m_pushContent.RefreshEmail(null);
+				}else if(m_pushContent.getSelectedIndex() == 1){
+					
+					yuchWeibo t_weibo = m_pushContent.m_weiboPanel.AddAccount(null);
+					if(t_weibo != null){
+												
+						for(yuchWeibo weibo : m_currentBber.GetWeiboList()){
+							if(t_weibo.m_typeName.equalsIgnoreCase(weibo.m_typeName)){
+								Yuchsign.PopupPrompt(weibo.toString() + "Weibo重复!", m_pushList);
+								return;
+							}
+						}
+						
+						m_currentBber.GetWeiboList().add(t_weibo);
+						RefreshPushList(m_currentBber);
+						m_pushContent.m_weiboPanel.RefreshWeibo(null);
+					}
 				}
 			}
 		});
@@ -770,10 +383,20 @@ public class BberPanel extends TabPanel{
 			@Override
 			public void onClick(ClickEvent event) {
 				final int t_index = m_pushList.getSelectedIndex();
-				if(t_index != -1 && t_index < m_currentBber.GetEmailList().size()){
+								
+				if(t_index != -1){
 					
-					yuchEmail t_email = m_currentBber.GetEmailList().elementAt(t_index);
-					if(m_pushContent.AddAccount(t_email) != null){
+					String t_itemText = m_pushList.getItemText(t_index);
+					Object t_account = m_currentBber.findAccount(t_itemText);
+					
+					boolean t_ok = false;
+					if(t_account instanceof yuchEmail){
+						t_ok = m_pushContent.m_emailPanel.AddAccount((yuchEmail)t_account) != null;
+					}else if(t_account instanceof yuchWeibo){
+						t_ok = m_pushContent.m_weiboPanel.AddAccount((yuchWeibo)t_account) != null;
+					}
+					
+					if(t_ok){
 						Yuchsign.PopupPrompt("更新数据成功，需要同步才能保存生效。",t_horzPane);
 					}
 				}
@@ -787,15 +410,35 @@ public class BberPanel extends TabPanel{
 			public void onClick(ClickEvent event){
 
 				final int t_index = m_pushList.getSelectedIndex();
-				if(t_index != -1 && t_index < m_currentBber.GetEmailList().size()){
+				if(t_index != -1){
 					
-					Yuchsign.PopupYesNoDlg("你确定要删除这个 "+ m_currentBber.GetEmailList().elementAt(t_index).toString() +" 账户么?",new YesNoHandler(){
-						public void Process(){
-							m_currentBber.GetEmailList().remove(t_index);
-							RefreshPushList(m_currentBber);
-							m_pushContent.RefreshEmail(null);
-						}
-					},null);
+
+					String t_itemText = m_pushList.getItemText(t_index);
+					final Object t_account = m_currentBber.findAccount(t_itemText);
+					if(t_account != null){
+						
+						Yuchsign.PopupYesNoDlg("你确定要删除这个 "+ t_itemText +" 账户么?",new YesNoHandler(){
+							
+							public void Process(){
+																
+								if(t_account instanceof yuchEmail){
+									
+									m_currentBber.GetEmailList().remove(t_account);
+									RefreshPushList(m_currentBber);
+									m_pushContent.m_emailPanel.RefreshEmail(null);
+									
+								}else if(t_account instanceof yuchWeibo){
+									m_currentBber.GetWeiboList().remove(t_account);
+									RefreshPushList(m_currentBber);
+									m_pushContent.m_weiboPanel.RefreshWeibo(null);
+								}				
+								
+							}
+							
+						},null);
+					}
+					
+					
 				}
 			}
 		});
@@ -1093,6 +736,14 @@ public class BberPanel extends TabPanel{
 
 			for(yuchEmail email : t_emailList){
 				m_pushList.addItem(email.toString());
+			}
+		}
+		
+		Vector<yuchWeibo> t_weiboList = _bber.GetWeiboList();
+		if(t_weiboList != null){
+
+			for(yuchWeibo weibo : t_weiboList){
+				m_pushList.addItem(weibo.toString());
 			}
 		}
 	}

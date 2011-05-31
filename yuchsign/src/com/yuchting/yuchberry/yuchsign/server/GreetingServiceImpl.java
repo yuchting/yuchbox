@@ -191,10 +191,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					if(!m_isAdministrator && Math.abs((new Date()).getTime() - t_latesSyncTime) < 10 * 60 * 1000){
 						return "<Error>一个账户同步时间的最小间隔是10分钟，请不要过于频繁。</Error>";
 					}
-				}			
-								
+				}
 				
-				if(!t_syncbber.GetEmailList().isEmpty()){
+				t_bber.NewWeiboList();
+								
+				if(!t_syncbber.GetEmailList().isEmpty() || !t_syncbber.GetWeiboList().isEmpty()){
 					
 					// delete original email if not in current sync bber
 					//
@@ -221,9 +222,26 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						}
 					}
 					
+					// delete the yuchWeibo duplication 
+					//
+					for(yuchWeibo orig:t_bber.GetWeiboList()){
+						boolean t_delete = true;
+						for(yuchWeibo curr:t_syncbber.GetWeiboList()){
+														
+							if(curr.m_typeName.equalsIgnoreCase(orig.m_typeName)){
+								t_delete = false;
+								break;
+							}
+						}
+
+						if(t_delete){
+							t_pm.deletePersistent(orig);
+						}
+					}
+					
 					// load the new sync data
 					//
-					t_bber.InputXMLData(_xmlData);					
+					t_bber.InputXMLData(_xmlData);
 
 					// restore backup the time and using hours
 					//
@@ -679,11 +697,14 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					throw new Exception("无法再降级了，已经是最低等级!");
 				}
 				
+				t_bber.NewWeiboList();				
+				
 				int t_nextLev = t_bber.GetLevel() - 1;
 				
 				PayServiceImpl.RecalculateTime(t_pm,t_bber,0,t_nextLev);
 				
 				t_bber.GetEmailList().removeAllElements();
+				t_bber.GetWeiboList().removeAllElements();
 				
 		        return t_bber.OuputXMLData();
 		        

@@ -187,7 +187,7 @@ public class WeiboItemField extends Manager{
 		m_extendHeight 			= m_functionButton_y + sm_fontHeight + fsm_headImageTextInterval;
 	}
 	
-	private String parseSource(String _source){
+	public static  String parseSource(String _source){
 		int t_start = _source.indexOf('>');
 		int t_end = _source.lastIndexOf('<');
 		if(t_start != -1 && t_end != -1){

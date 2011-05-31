@@ -71,8 +71,8 @@ public class WeiboUpdateField extends WeiboItemField{
 					_g.drawLine(0,sm_fontHeight - 1,recvMain.fsm_display_width,sm_fontHeight - 1);
 				}
 				
-	        	_g.setColor(0x8f8f8f);            
-	        	_g.drawText(recvMain.sm_local.getString(localResource.UPDATE_WEIBO_LABEL),2,2,Graphics.ELLIPSIS);
+	        	_g.setColor(fsm_spaceLineColor);
+	        	_g.drawText(recvMain.sm_local.getString(localResource.WEIBO_UPDATE_WEIBO_LABEL),2,2,Graphics.ELLIPSIS);
 	        }finally{
 	        	_g.setColor( oldColour );
 	        }		

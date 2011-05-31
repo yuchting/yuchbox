@@ -10,20 +10,20 @@ import com.yuchting.yuchberry.client.recvMain;
 
 public class WeiboHeader extends Field{
 	
-	final static int STATE_TIMELINE = 0;
-	final static int STATE_AT_ME = 1;
-	final static int STATE_COMMENT_ME = 2;
-	final static int STATE_DIRECT_MESSAGE = 3;
+	public final static int STATE_TIMELINE = 0;
+	public final static int STATE_AT_ME = 1;
+	public final static int STATE_COMMENT_ME = 2;
+	public final static int STATE_DIRECT_MESSAGE = 3;
 	
-	final static String[] fsm_stateString = 
+	public final static String[] fsm_stateString = 
 	{
-		" Home ",
-		" @Me ",
-		" Comment ",
-		" DM ",
+		" H\u0332ome ",
+		" @M\u0332e ",
+		" C\u0332omment ",
+		" D\u0332M ",
 	};
 	
-	final static int[] fsm_stateStringWidth = 
+	public final static int[] fsm_stateStringWidth = 
 	{
 		0,0,0,0
 	};

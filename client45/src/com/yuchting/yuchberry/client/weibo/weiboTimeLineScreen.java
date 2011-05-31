@@ -337,41 +337,79 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	int m_menuIndex = 0;
 	
-	MenuItem m_sendItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_SEND_LABEL),m_menuIndex++,0){
+	MenuItem m_homeManagerItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_HOME_MANAGER_MENU_LABEL),m_menuIndex++,0){
+        public void run() {
+        	m_weiboHeader.setCurrState(WeiboHeader.STATE_TIMELINE);
+    		refreshWeiboHeader();
+        }
+    }; 
+    
+    MenuItem m_atMeManagerItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_AT_ME_MANAGER_MENU_LABEL),m_menuIndex++,0){
+        public void run() {
+        	m_weiboHeader.setCurrState(WeiboHeader.STATE_AT_ME);
+    		refreshWeiboHeader();
+        }
+    }; 
+    
+    MenuItem m_commentMeItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_COMMENT_ME_MANAGER_MENU_LABEL),m_menuIndex++,0){
+        public void run() {
+        	m_weiboHeader.setCurrState(WeiboHeader.STATE_COMMENT_ME);
+    		refreshWeiboHeader();
+        }
+    }; 
+    
+    MenuItem m_directMsgItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_DM_MANAGER_MENU_LABEL),m_menuIndex++,0){
+        public void run() {
+        	m_weiboHeader.setCurrState(WeiboHeader.STATE_DIRECT_MESSAGE);
+    		refreshWeiboHeader();
+        }
+    };    
+   
+    int m_menuIndex_op = 20;    
+    
+	MenuItem m_sendItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_SEND_LABEL),m_menuIndex_op++,0){
         public void run() {
         	SendMenuItemClick();
         }
     };
     
-    MenuItem m_refreshItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_REFRESH_MENU_LABEL),m_menuIndex++,0){
+    MenuItem m_refreshItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_REFRESH_MENU_LABEL),m_menuIndex_op++,0){
         public void run() {
         	SendRefreshMsg();
         }
-    }; 
+    };    
+     
     
-    MenuItem m_topItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_RETURN_TOP_MENU_LABEL),m_menuIndex++,0){
+    MenuItem m_topItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_RETURN_TOP_MENU_LABEL),m_menuIndex_op++,0){
         public void run() {
         	m_currMgr.ScrollToTop();
         }
     };
-    MenuItem m_preWeiboItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_PRE_ITEM_MENU_LABEL),m_menuIndex++,0){
+    
+    MenuItem m_bottomItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_BACK_BOTTOM_MENU_LABEL),m_menuIndex_op++,0){
+        public void run() {
+        	m_currMgr.ScrollToBottom();
+        }
+    };
+    
+    MenuItem m_preWeiboItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_PRE_ITEM_MENU_LABEL),m_menuIndex_op++,0){
         public void run() {
         	m_currMgr.OpenNextWeiboItem(false);
         }
     };
-    MenuItem m_nextWeiboItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_NEXT_WEIBO_MENU_LABEL),m_menuIndex++,0){
+    MenuItem m_nextWeiboItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_NEXT_WEIBO_MENU_LABEL),m_menuIndex_op++,0){
         public void run() {
         	m_currMgr.OpenNextWeiboItem(true);
         }
     };
     
-    MenuItem m_deleteItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_DELETE_MENU_LABEL),m_menuIndex++,0){
+    MenuItem m_deleteItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_DELETE_MENU_LABEL),m_menuIndex_op++,0){
         public void run() {
         	deleteWeiboItem();
         }
     }; 
     
-    MenuItem m_helpItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_HELP_MENU_LABEL),m_menuIndex++,0){
+    MenuItem m_helpItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_HELP_MENU_LABEL),99,0){
         public void run() {
         	recvMain.openURL("http://code.google.com/p/yuchberry/wiki/YuchBerry_Weibo");
         }
@@ -382,8 +420,7 @@ public class weiboTimeLineScreen extends MainScreen{
         	recvMain t_recv = (recvMain)UiApplication.getUiApplication();
         	t_recv.pushStateScreen();
         }
-    }; 
-      
+    };       
     
     public void deleteWeiboItem(){
     	
@@ -410,14 +447,26 @@ public class weiboTimeLineScreen extends MainScreen{
     
 	protected void makeMenu(Menu _menu,int instance){
 		
+		if(WeiboItemField.sm_extendWeiboItem == null){
+			_menu.add(m_homeManagerItem);
+			_menu.add(m_atMeManagerItem);
+			_menu.add(m_commentMeItem);
+			_menu.add(m_directMsgItem);
+			
+			_menu.add(MenuItem.separator(m_menuIndex));
+		}
+		
 		if(WeiboItemField.sm_editWeiboItem != null && WeiboItemField.sm_extendWeiboItem != null){
 			_menu.add(m_sendItem);
-		}
+		}		
 		
 		_menu.add(m_refreshItem);
 		
 		if(WeiboItemField.sm_extendWeiboItem == null){
+			
 			_menu.add(m_topItem);
+			_menu.add(m_bottomItem);	
+			
 		}else{
 			if(WeiboItemField.sm_editWeiboItem == null){
 				_menu.add(m_preWeiboItem);
@@ -430,10 +479,9 @@ public class weiboTimeLineScreen extends MainScreen{
 			_menu.add(m_deleteItem);
 		}
 		
+		_menu.add(MenuItem.separator(50));
 		_menu.add(m_helpItem);
-		_menu.add(MenuItem.separator(99));
-		_menu.add(m_stateItem);
-		
+		_menu.add(m_stateItem);		
 		
 		super.makeMenu(_menu,instance);
     }
@@ -478,26 +526,38 @@ public class weiboTimeLineScreen extends MainScreen{
 	    		return true;
 			}
 		}else{
-			switch(key){
-	    	case 'S':
-	    		if(WeiboItemField.sm_extendWeiboItem == null){
+			
+			if(WeiboItemField.sm_extendWeiboItem == null){
+				switch(key){
+		    	case 'S':
 		    		m_stateItem.run();
 		    		return true;
-	    		}
-	    		break;
-	    	case 'T':
-	    		if(WeiboItemField.sm_extendWeiboItem == null && WeiboItemField.sm_editWeiboItem == null){
+		    	case 'T':		    		
 	    			m_currMgr.ScrollToTop();
 	    			return true;
-	    		}
-	    		break;
-	    	case 'R':
-	    		SendRefreshMsg();
-	    		break;
-	    	case 10: // enter key
-	    		m_currMgr.Clicked(0, 0);
-	    		break;
-	    	}
+		    	case 'B':
+	    			m_currMgr.ScrollToBottom();
+	    			return true;
+		    	case 'R':
+		    		SendRefreshMsg();
+		    		break;
+		    	case 10: // enter key
+		    		m_currMgr.Clicked(0, 0);
+		    		break;
+		    	case 'H':
+		    		m_homeManagerItem.run();
+		    		return true;
+		    	case 'M':
+		    		m_atMeManagerItem.run();
+		    		return true;
+		    	case 'C':
+		    		m_commentMeItem.run();
+		    		return true;
+		    	case 'D':
+		    		m_directMsgItem.run();
+		    		return true;
+		    	}
+			}
 		}
 
 		return super.keyDown(keycode,time);    	
@@ -528,33 +588,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			if(WeiboItemField.sm_extendWeiboItem == null && WeiboItemField.sm_editWeiboItem == null){
 				
 				m_weiboHeader.setCurrState(m_weiboHeader.getCurrState() + dx);
-				
-				switch(m_weiboHeader.getCurrState()){
-				case WeiboHeader.STATE_TIMELINE:
-					if(m_currMgr != m_mainMgr){
-						replace(m_currMgr,m_mainMgr);
-						m_currMgr = m_mainMgr;
-					}
-					break;
-				case WeiboHeader.STATE_COMMENT_ME:
-					if(m_currMgr != m_mainCommitMeMgr){
-						replace(m_currMgr,m_mainCommitMeMgr);
-						m_currMgr = m_mainCommitMeMgr;
-					}
-					break;
-					
-				case WeiboHeader.STATE_AT_ME:
-					if(m_currMgr != m_mainAtMeMgr){
-						replace(m_currMgr,m_mainAtMeMgr);
-						m_currMgr = m_mainAtMeMgr;
-					}
-				}
-				
-				m_currMgr.RestoreScroll();
-											
-				m_weiboHeader.invalidate();
-				
-				sm_mainApp.StopWeiboNotification();
+				refreshWeiboHeader();
 				
 				t_processed = true;
 			}
@@ -568,6 +602,36 @@ public class weiboTimeLineScreen extends MainScreen{
 		return 	t_processed;
 		
 	}
+	
+	private void refreshWeiboHeader(){
+		
+		switch(m_weiboHeader.getCurrState()){
+		case WeiboHeader.STATE_TIMELINE:
+			if(m_currMgr != m_mainMgr){
+				replace(m_currMgr,m_mainMgr);
+				m_currMgr = m_mainMgr;
+			}
+			break;
+		case WeiboHeader.STATE_COMMENT_ME:
+			if(m_currMgr != m_mainCommitMeMgr){
+				replace(m_currMgr,m_mainCommitMeMgr);
+				m_currMgr = m_mainCommitMeMgr;
+			}
+			break;
+			
+		case WeiboHeader.STATE_AT_ME:
+			if(m_currMgr != m_mainAtMeMgr){
+				replace(m_currMgr,m_mainAtMeMgr);
+				m_currMgr = m_mainAtMeMgr;
+			}
+		}
+		
+		m_currMgr.RestoreScroll();
+		m_weiboHeader.invalidate();
+		sm_mainApp.StopWeiboNotification();
+		
+	}
+	
 	protected boolean navigationClick(int status, int time){
 		return m_currMgr.Clicked(status,time);		
 	}

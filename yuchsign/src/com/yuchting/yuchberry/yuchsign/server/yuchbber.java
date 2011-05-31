@@ -1,5 +1,6 @@
 package com.yuchting.yuchberry.yuchsign.server;
 
+import java.io.StringReader;
 import java.util.Vector;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
@@ -69,6 +70,11 @@ public final class yuchbber {
 	@Persistent(mappedBy = "m_yuchbber")
 	@javax.jdo.annotations.Element(dependent = "true")
 	private Vector<yuchEmail>	m_emailList = new Vector<yuchEmail>();
+	
+	@Persistent(mappedBy = "m_yuchbber")
+	@javax.jdo.annotations.Element(dependent = "true")
+	private Vector<yuchWeibo>	m_weiboList = new Vector<yuchWeibo>();
+	
 		
 	public yuchbber(final String _name,final String _pass){
 		m_signinName	= _name;
@@ -121,8 +127,18 @@ public final class yuchbber {
 	
 	public Vector<yuchEmail> GetEmailList(){return m_emailList;}
 	
+	public Vector<yuchWeibo> GetWeiboList(){return m_weiboList;}
+	
+	public void NewWeiboList(){
+		if(m_weiboList == null){
+			m_weiboList = new Vector<yuchWeibo>();
+		}
+	}
+	
 	public String OuputXMLData(){
-				
+		
+		NewWeiboList();
+		
 		String t_signature = m_signature.replace("<","&lt;");
 		t_signature = t_signature.replace(">","&gt;");
 		t_signature = t_signature.replace("&","&amp;");
@@ -147,7 +163,11 @@ public final class yuchbber {
 				
 		for(yuchEmail email : m_emailList){
 			email.OuputXMLData(t_output);										
-		}	
+		}		
+		
+		for(yuchWeibo weibo:m_weiboList){
+			weibo.OuputXMLData(t_output);
+		}
 		
 		t_output.append("</yuchbber>");
 		
@@ -155,6 +175,8 @@ public final class yuchbber {
 	}
 	
 	public void InputXMLData(final String _data)throws Exception{
+		
+		NewWeiboList();
 
 		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance(); 
 		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder(); 
@@ -207,10 +229,15 @@ public final class yuchbber {
 				Element t_element = (Element)t_node;
 				if(t_element.getTagName().equals("email")){
 					yuchEmail t_email = new yuchEmail();
-					
 					t_email.InputXMLData(t_element);
 					
 					m_emailList.add(t_email);
+				}else if(t_element.getTagName().equalsIgnoreCase("WeiboAccount")){
+					
+					yuchWeibo t_weibo = new yuchWeibo();
+					t_weibo.InputXMLData(t_element);
+					
+					m_weiboList.add(t_weibo);
 				}
 				
 				t_pushNum++;

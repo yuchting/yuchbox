@@ -1061,7 +1061,7 @@ public class mainFrame extends JFrame implements ActionListener{
 											//
 											.append("\" userSSL=\"").append(0/*m_currbber.IsUsingSSL()?1:0*/)
 											.append("\" convertoSimpleChar=\"").append(m_currbber.IsConvertSimpleChar()?1:0)
-								.append("\" >");					
+								.append("\" >\n");					
 					
 					for(yuchEmail email:m_currbber.GetEmailList()){
 						t_configBuffer.append("<EmailAccount account=\"").append(email.m_emailAddr)
@@ -1075,7 +1075,20 @@ public class mainFrame extends JFrame implements ActionListener{
 														.append("\" host_send=\"").append(email.m_host_send)
 														.append("\" port_send=\"").append(email.m_port_send)
 														.append("\" appendHTML=\"").append(email.m_appendHTML?1:0)
-										.append("\" />");
+										.append("\" />\n");
+					}
+					
+					for(yuchWeibo weibo:m_currbber.GetWeiboList()){
+						t_configBuffer.append("<WeiboAccount type=\"").append(weibo.m_typeName)
+														.append("\" account=\"").append(weibo.m_accoutName)
+														.append("\" accessToken=\"").append(weibo.m_accessToken)
+														.append("\" secretToken=\"").append(weibo.m_secretToken)
+														.append("\" timelineSum=\"").append(weibo.m_timelineSum)
+														.append("\" directMessageSum=\"").append(weibo.m_directMsgSum)
+														.append("\" atMeSum=\"").append(weibo.m_atMeSum)
+														.append("\" commentSum=\"").append(weibo.m_commentMeSum)
+														
+										.append("\" />\n");
 					}
 					
 					t_configBuffer.append("</Yuchberry>");

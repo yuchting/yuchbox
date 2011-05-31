@@ -40,6 +40,8 @@ public final class yuchbber {
 	
 	private Vector<yuchEmail>	m_emailList = new Vector<yuchEmail>();
 	
+	private Vector<yuchWeibo>	m_weiboList = new Vector<yuchWeibo>();
+	
 	public yuchbber(final String _name,final String _pass){
 		m_signinName	= _name;
 		m_password		= _pass;
@@ -82,6 +84,7 @@ public final class yuchbber {
 	public void SetCreateTime(long _time){m_createTime = _time;}
 	
 	public Vector<yuchEmail> GetEmailList(){return m_emailList;}
+	public Vector<yuchWeibo> GetWeiboList(){return m_weiboList;}
 	
 	public String GetSignature(){return m_signature;}
 	public void SetSignature(final String _signature){m_signature = _signature;}
@@ -112,7 +115,11 @@ public final class yuchbber {
 				
 		for(yuchEmail email : m_emailList){
 			email.OuputXMLData(t_output);										
-		}	
+		}
+		
+		for(yuchWeibo weibo : m_weiboList){
+			weibo.OuputXMLData(t_output);
+		}
 		
 		t_output.append("</yuchbber>");
 		
@@ -165,6 +172,15 @@ public final class yuchbber {
 			t_email.InputXMLData(element);
 			
 			m_emailList.add(t_email);
+        }
+		
+		for( Iterator i = t_elem.elementIterator("WeiboAccount"); i.hasNext();){
+            Element element = (Element) i.next();
+            yuchWeibo t_weibo = new yuchWeibo();
+			
+            t_weibo.InputXMLData(element);
+			
+			m_weiboList.add(t_weibo);
         }
 			
 	}
