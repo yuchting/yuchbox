@@ -138,7 +138,7 @@ public class WeiboItemField extends Manager{
 		
 		StringBuffer t_weiboTextBuffer = new StringBuffer();
 		
-		t_weiboTextBuffer.append("@").append(m_weibo.GetUserName()).append(" :").append(m_weibo.GetText())
+		t_weiboTextBuffer.append("@").append(m_weibo.GetUserScreenName()).append(" :").append(m_weibo.GetText())
 						.append("\n         --").append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
 						.append(parseSource(m_weibo.GetSource()));
 		
@@ -158,7 +158,7 @@ public class WeiboItemField extends Manager{
 			fetchWeibo t_comment = m_weibo.GetCommentWeibo();
 			
 			StringBuffer t_commentText = new StringBuffer();
-			t_commentText.append("@").append(t_comment.GetUserName()).append(":").append(t_comment.GetText())
+			t_commentText.append("@").append(t_comment.GetUserScreenName()).append(":").append(t_comment.GetText())
 						.append("\n         --").append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
 						.append(parseSource(t_comment.GetSource()));
 			
@@ -562,7 +562,7 @@ public class WeiboItemField extends Manager{
 				}else{
 					_g.setColor(0);
 				}
-				int t_nameLength = _g.drawText(m_weibo.GetUserName().substring(0,Math.min(m_weibo.GetUserName().length(),16)),
+				int t_nameLength = _g.drawText(m_weibo.GetUserScreenName().substring(0,Math.min(m_weibo.GetUserScreenName().length(),16)),
 										fsm_weiboSignImageSize + 5,t_firstLineHeight,Graphics.ELLIPSIS);
 				
 				// add the weibo sign size

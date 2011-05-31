@@ -477,7 +477,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 		if(WeiboItemField.sm_editWeiboItem != _item){	
 			
-			final String t_text = "@" + _item.m_weibo.GetUserName() + " ";
+			final String t_text = "@" + _item.m_weibo.GetUserScreenName() + " ";
 			_item.AddDelEditTextArea(true,t_text);
 			
 			WeiboItemField.sm_editTextArea.setText(t_text);			
@@ -497,7 +497,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		if(WeiboItemField.sm_editWeiboItem != _item){
 			
 			StringBuffer t_forwardText = new StringBuffer();
-			t_forwardText.append(" //@").append(_item.m_weibo.GetUserName()).append(" :").append(_item.m_weibo.GetText());
+			t_forwardText.append(" //@").append(_item.m_weibo.GetUserScreenName()).append(" :").append(_item.m_weibo.GetText());
 			
 			if(weiboTimeLineScreen.sm_mainApp.m_publicForward && _item.m_commentText != null){
 				t_forwardText.append(" //").append(_item.m_commentText)

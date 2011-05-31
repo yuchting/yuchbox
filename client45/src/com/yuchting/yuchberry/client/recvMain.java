@@ -1048,6 +1048,13 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public void Exit(){
 		
+		try{
+			if(m_connectDeamon.IsConnectState()){
+				m_connectDeamon.Disconnect();
+			}	
+		}catch(Exception e){}
+		
+		
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);	
 		

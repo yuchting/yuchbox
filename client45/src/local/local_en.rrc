@@ -88,6 +88,7 @@ START_BIGGER_THAN_END_PROMPT#0="start hour must less than end hour";
 START_HOUR_PROMPT_LABEL#0="start prompt hour";
 STATE_HOST_STRING_ILLEGAL_PROMPT#0="There is space char in Host text.";
 STATE_PROMPT#0="connect state:";
+STATE_QUIT_MENU_LABEL#0="Save data and quit YB";
 STATE_SCREEN_HELP_MENU#0="I need H\u0332elp for host";
 STATE_TITLE_LABEL#0="Yuchberry Account State";
 TOTAL_STATISTICS#0="Total:   ";
