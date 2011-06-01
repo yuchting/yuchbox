@@ -270,6 +270,8 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		_weibo.SetText(_dm.getText());
 		
 		_weibo.SetOwnWeibo(_dm.getSenderId() == m_userself.getId());
+		_weibo.SetReplyWeiboId(_dm.getRecipientId());
+		
 		_weibo.SetWeiboStyle(fetchWeibo.TWITTER_WEIBO_STYLE);
 		_weibo.SetWeiboClass(fetchWeibo.DIRECT_MESSAGE_CLASS);
 		

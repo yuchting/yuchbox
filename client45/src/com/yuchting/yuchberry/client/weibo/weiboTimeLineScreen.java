@@ -91,14 +91,14 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		switch(_weibo.GetWeiboClass()){
 		case fetchWeibo.TIMELINE_CLASS:
-			m_mainMgr.AddWeibo(new WeiboItemField(_weibo,t_headImage),_resetSelectIdx);
+			m_mainMgr.AddWeibo(_weibo,t_headImage,_resetSelectIdx);
 			break;
 		case fetchWeibo.COMMENT_ME_CLASS:
-			m_mainCommitMeMgr.AddWeibo(new WeiboItemField(_weibo,t_headImage),_resetSelectIdx);
+			m_mainCommitMeMgr.AddWeibo(_weibo,t_headImage,_resetSelectIdx);
 			t_alert = true;
 			break;
 		case fetchWeibo.AT_ME_CLASS:
-			m_mainAtMeMgr.AddWeibo(new WeiboItemField(_weibo,t_headImage),_resetSelectIdx);
+			m_mainAtMeMgr.AddWeibo(_weibo,t_headImage,_resetSelectIdx);
 			t_alert = true;
 			break;
 		}

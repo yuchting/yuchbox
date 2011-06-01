@@ -326,6 +326,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		_weibo.SetWeiboClass(fetchWeibo.DIRECT_MESSAGE_CLASS);
 		
 		_weibo.SetOwnWeibo(_dm.getSenderId() == m_userself.getId());
+		_weibo.SetReplyWeiboId(_dm.getRecipientId());
 		
 		User t_user = _dm.getSender();
 		if(t_user != null){

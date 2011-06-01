@@ -112,7 +112,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		
 		try{
 			
-			if(m_weiboDelayTimer == -1 || m_weiboDelayTimer >= 2){
+			if(m_weiboDelayTimer == -1 
+			|| m_weiboDelayTimer >= (3600 / 100) / m_mainMgr.GetPushInterval() + 1){
 
 				synchronized(this){
 					m_weiboDelayTimer = 0;
@@ -128,7 +129,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					// this message called number is limited
 					//
 					// un-authorith
-					//CheckDirectMessage();
+					CheckDirectMessage();
 					
 				}else{
 					

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Yuchberry userPassword="111111" serverPort="9716" pushInterval="10" userSSL="0" convertoSimpleChar="0" >
-	<!--WeiboAccount
+	<WeiboAccount
 		type="sina"
 		account="yuchberry_test"
 		accessToken="8a2bf4e5a97194a1eb73740b448f034e"
@@ -11,8 +11,8 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/-->
-	<WeiboAccount
+	/>
+	<!--WeiboAccount
 		type="twitter"
 		account="yuchting"
 		accessToken="123158821-96vShVD9oXGZmj6usNAz4vVyLzL1fJVGxKZABa1C"
@@ -23,7 +23,7 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/>
+	/-->
 		
 	<!--
 		account="yuchberry"

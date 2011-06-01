@@ -143,6 +143,7 @@ public class WeiboItemField extends Manager{
 						.append(parseSource(m_weibo.GetSource()));
 		
 		m_weiboText 		= t_weiboTextBuffer.toString();
+		t_weiboTextBuffer = null;
 		
 		sm_testTextArea.setText(m_weiboText);
 		
@@ -161,8 +162,10 @@ public class WeiboItemField extends Manager{
 			t_commentText.append("@").append(t_comment.GetUserScreenName()).append(":").append(t_comment.GetText())
 						.append("\n         --").append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
 						.append(parseSource(t_comment.GetSource()));
-			
+					
 			m_commentText = t_commentText.toString();
+			
+			t_commentText = null;
 			
 			sm_testCommentTextArea.setText(m_commentText);
 			
@@ -425,9 +428,9 @@ public class WeiboItemField extends Manager{
 	static Date		sm_timeDate = new Date();
 	
 	
-	protected synchronized String getTimeString(){
+	static protected synchronized String getTimeString(fetchWeibo _weibo){
 		
-		sm_timeDate.setTime(m_weibo.GetDateTime());
+		sm_timeDate.setTime(_weibo.GetDateTime());
 		sm_calendar.setTime(sm_timeDate);		
 		
 		int t_minutes = sm_calendar.get(Calendar.MINUTE);
@@ -603,7 +606,7 @@ public class WeiboItemField extends Manager{
 		        }else{
 		        	_g.setColor(0);
 		        }		        
-		        String t_dateString = getTimeString();		        
+		        String t_dateString = getTimeString(m_weibo);		        
 		        _g.drawText(t_dateString,recvMain.fsm_display_width - _g.getFont().getAdvance(t_dateString)
 		        				,t_firstLineHeight,Graphics.ELLIPSIS);
 		       

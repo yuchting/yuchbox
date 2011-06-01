@@ -182,16 +182,19 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 	}
 	
-	public void AddWeibo(final WeiboItemField _item,final boolean _resetSelectIdx){
-				
+	public void AddWeibo(final fetchWeibo _weibo,final WeiboHeadImage _image,
+							final boolean _resetSelectIdx){
+		
+		final WeiboItemField t_field = new WeiboItemField(_weibo,_image);
+		
 		m_mainApp.invokeLater(new Runnable() {
 			
 			public void run() {
 				
 				if(m_timelineManager){
-					insert(_item,1);
+					insert(t_field,1);
 				}else{
-					insert(_item,0);
+					insert(t_field,0);
 				}
 				
 				if(_resetSelectIdx){
