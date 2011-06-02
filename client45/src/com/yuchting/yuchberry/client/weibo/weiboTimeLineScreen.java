@@ -30,6 +30,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	WeiboMainManager			m_mainMgr;
 	WeiboMainManager			m_mainAtMeMgr;
 	WeiboMainManager			m_mainCommitMeMgr;
+	WeiboDMManager				m_mainDMMgr;
 	
 	WeiboMainManager			m_currMgr = null;
 	
@@ -58,6 +59,8 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		m_mainAtMeMgr = new WeiboMainManager(_mainApp,this,false);
 		m_mainCommitMeMgr = new WeiboMainManager(_mainApp,this,false);
+		
+		m_mainDMMgr = new WeiboDMManager(_mainApp, this, false);
 		
 		m_currMgr = m_mainMgr;
 		
@@ -101,6 +104,10 @@ public class weiboTimeLineScreen extends MainScreen{
 			m_mainAtMeMgr.AddWeibo(_weibo,t_headImage,_resetSelectIdx);
 			t_alert = true;
 			break;
+		case fetchWeibo.DIRECT_MESSAGE_CLASS:
+			m_mainDMMgr.AddWeibo(_weibo,t_headImage,_resetSelectIdx);
+			t_alert = true;
+			break;
 		}
 		
 		if(_resetSelectIdx && t_alert){
@@ -120,6 +127,10 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 		
 		if(m_mainAtMeMgr.DelWeibo(_weibo)){
+			return ;
+		}
+		
+		if(m_mainDMMgr.DelWeibo(_weibo)){
 			return ;
 		}
 	}
@@ -623,6 +634,12 @@ public class weiboTimeLineScreen extends MainScreen{
 			if(m_currMgr != m_mainAtMeMgr){
 				replace(m_currMgr,m_mainAtMeMgr);
 				m_currMgr = m_mainAtMeMgr;
+			}
+			break;
+		case WeiboHeader.STATE_DIRECT_MESSAGE:
+			if(m_currMgr != m_mainDMMgr){
+				replace(m_currMgr, m_mainDMMgr);
+				m_currMgr = m_mainDMMgr;
 			}
 		}
 		

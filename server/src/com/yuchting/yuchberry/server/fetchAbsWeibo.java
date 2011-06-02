@@ -129,7 +129,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					// this message called number is limited
 					//
 					// un-authorith
-					CheckDirectMessage();
+					//CheckDirectMessage();
 					
 				}else{
 					
@@ -234,7 +234,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		if(_weiboList.m_counter == -1 // client send the refresh cmd to refresh or the first call
 		|| _weiboList.m_weiboList.size() + _weiboList.m_counter >= _weiboList.m_sum){
 			
-			StringBuffer t_debugString = _weiboList.m_weiboList.isEmpty()?null:(new StringBuffer());
+			
+			int t_weiboNum = _weiboList.m_weiboList.size();
 			
 			while(!_weiboList.m_weiboList.isEmpty()){				
 				
@@ -253,22 +254,13 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				_weiboList.m_WeiboComfirm.add(t_weibo);
 				
 				t_weibo.m_sendConfirmTime = t_currTime;
-				
-				// debug.out...
-				t_debugString.append(GetAccountName()).append(" send Weibo<").append(t_weibo.GetId())
-							.append("+").append(t_weibo.GetWeiboClass()).append(":").append(t_weibo.GetText())
-							.append(">,wait confirm...");
-				
-				if(!_weiboList.m_weiboList.isEmpty()){
-					t_debugString.append("\n\t\t");
-				}
-							
+											
 				t_output.reset();
-			}
-			
-			if(t_debugString != null){
-				m_mainMgr.m_logger.LogOut(t_debugString.toString());
-			}	
+			}			
+	
+			if(t_weiboNum != 0){
+				m_mainMgr.m_logger.LogOut(GetAccountName() + " Pushed <" + t_weiboNum + ">Weibo");
+			}							
 			
 			synchronized(this){
 				_weiboList.m_counter = 0;

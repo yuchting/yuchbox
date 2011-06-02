@@ -18,7 +18,7 @@ public class WeiboDMManager extends WeiboMainManager{
 				int t_num = getFieldCount();
 				for(int i = 0 ;i < t_num;i++){
 					WeiboDMItemField field = (WeiboDMItemField)getField(i);
-					if(field.AddSameSender(_weibo)){
+					if(field.AddSameSender(_weibo,_image)){
 						return;
 					}
 				}

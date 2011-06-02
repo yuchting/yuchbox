@@ -112,7 +112,8 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 			t_fetch = m_weibo.getMentions();
 		}
 		
-		AddWeibo(t_fetch,m_atMeMessage,fetchWeibo.AT_ME_CLASS);
+		//AddWeibo(t_fetch,m_atMeMessage,fetchWeibo.AT_ME_CLASS);
+		AddWeibo(t_fetch,m_atMeMessage,fetchWeibo.DIRECT_MESSAGE_CLASS);
 	}
 	
 	protected void CheckCommentMeMessage()throws Exception{

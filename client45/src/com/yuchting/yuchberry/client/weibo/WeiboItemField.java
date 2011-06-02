@@ -336,8 +336,9 @@ public class WeiboItemField extends Manager{
 		}
 	}
 	
-	static public void RefreshEditTextAreHeight(){
+	static public int RefreshEditTextAreHeight(){
 		sm_editTextAreaHeight = sm_editTextArea.getHeight() + fsm_headImageTextInterval;
+		return sm_editTextAreaHeight;
 	}
 	
 	
