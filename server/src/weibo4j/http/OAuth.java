@@ -58,7 +58,7 @@ public class OAuth implements java.io.Serializable {
         setConsumerSecret(consumerSecret);
     }
 
-    /*package*/ String generateAuthorizationHeader(String method, String url, PostParameter[] params, String nonce, String timestamp, OAuthToken otoken) {
+    public /*package*/ String generateAuthorizationHeader(String method, String url, PostParameter[] params, String nonce, String timestamp, OAuthToken otoken) {
         if (null == params) {
             params = new PostParameter[0];
         }
@@ -121,7 +121,7 @@ public class OAuth implements java.io.Serializable {
      * @return
      * @see <a href="http://oauth.net/core/1.0#rfc.section.5.4.1">OAuth Core - 5.4.1.  Authorization Header</a>
      */
-    /*package*/ String generateAuthorizationHeader(String method, String url, PostParameter[] params, OAuthToken token) {
+    public /*package*/ String generateAuthorizationHeader(String method, String url, PostParameter[] params, OAuthToken token) {
         long timestamp = System.currentTimeMillis() / 1000;
         long nonce = timestamp + RAND.nextInt();
         return generateAuthorizationHeader(method, url, params, String.valueOf(nonce), String.valueOf(timestamp), token);

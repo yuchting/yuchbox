@@ -1169,6 +1169,10 @@ public class fetchEmail extends fetchAccount{
 		
 	public void MarkReadOrDelMail(int _index,boolean _del)throws Exception{
 		
+		if(!m_store.isConnected()){
+			ResetSession(false);
+		}
+		
 		Folder folder = m_store.getDefaultFolder();
 	    if(folder == null) {
 	    	throw new Exception("Cant find default namespace");
@@ -1300,18 +1304,6 @@ public class fetchEmail extends fetchAccount{
 		m_mainMgr.m_logger.LogOut("start DestroySession");
 
 		try{
-			
-			m_unreadMailVector.clear();
-			    
-			// wouldn't clear confirm 
-			// the DestroyConnect function will called when the CheckFolder throw 
-			// javaMail exception 
-			// and re-send when client re-connected
-			//
-			//m_unreadMailVector_confirm.clear();
-			
-			// pushed mail index vector 
-			m_vectPushedMailIndex.clear();
 			
 			if(m_store != null && m_store.isConnected()){ 
 			    try{

@@ -558,7 +558,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				
 				t_bber.SetPassword(_pass);				
 				
-		        return "密码修改成功！";
+		        return "密码修改成功！\n注意：新的密码作为客户端用户密码使用的话，需要再次同步一下。";
 		        
 			}catch(javax.jdo.JDOObjectNotFoundException e){
 				throw new Exception("找不到用户!");

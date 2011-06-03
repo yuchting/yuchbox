@@ -243,7 +243,7 @@ public class fetchMgr{
 		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 		t_os.write(msg_head.msgNote);
 		try{
-			sendReceive.WriteString(t_os,"User Password Error!(用户密码错误)",false);
+			sendReceive.WriteString(t_os,"User Password or Port Error!(用户密码或端口错误)",false);
 		}catch(Exception e){}
 		
 		fsm_userPasswordErrorData = t_os.toByteArray();
@@ -272,14 +272,15 @@ public class fetchMgr{
 			
 			ByteArrayInputStream in = new ByteArrayInputStream(t_tmp.RecvBufferFromSvr());
 									
-			final int t_msg_head = in.read();
+			int t_msg_head = in.read();
+			String t_sendPass = sendReceive.ReadString(in); 
 		
 			if(msg_head.msgConfirm != t_msg_head 
-			|| !sendReceive.ReadString(in).equals(m_userPassword)){
+			|| !t_sendPass.equals(m_userPassword)){
 				
 				t_tmp.SendBufferToSvr(fsm_userPasswordErrorData,true);
 				
-				throw new Exception("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> connected.");			
+				throw new Exception("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> sent Pass<"+t_sendPass+"> connected.");			
 			}
 			
 			if((m_clientVer = sendReceive.ReadInt(in)) < 2){

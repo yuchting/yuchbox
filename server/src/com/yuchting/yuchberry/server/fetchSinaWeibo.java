@@ -17,10 +17,13 @@ import weibo4j.http.RequestToken;
 
 public class fetchSinaWeibo extends fetchAbsWeibo{
 	
+	public static final String	fsm_consumer_key = "1290385296";
+	public static final String	fsm_consumer_serect = "508aa0bfd4b1d039bdf48374f5703d2b";
+	
 	static
 	{
-		Weibo.CONSUMER_KEY = "1290385296";
-    	Weibo.CONSUMER_SECRET = "508aa0bfd4b1d039bdf48374f5703d2b";
+		Weibo.CONSUMER_KEY = fsm_consumer_key;
+    	Weibo.CONSUMER_SECRET = fsm_consumer_serect;
     	
     	System.setProperty("weibo4j.oauth.consumerKey", Weibo.CONSUMER_KEY);
     	System.setProperty("weibo4j.oauth.consumerSecret", Weibo.CONSUMER_SECRET);
@@ -63,45 +66,45 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	}
 	
 	protected void CheckDirectMessage()throws Exception{
-		
-		List<DirectMessage> t_fetch = null;
-		if(m_directMessage.m_fromIndex > 1){
-			t_fetch = m_weibo.getDirectMessages(new Paging(m_directMessage.m_fromIndex));
-		}else{
-			t_fetch = m_weibo.getDirectMessages();
-		}	
-		
-		boolean t_insert;
-		for(DirectMessage fetchOne : t_fetch){
-			t_insert = true;
-			for(fetchWeibo weibo : m_directMessage.m_weiboList){
-				if(weibo.GetId() == fetchOne.getId()){
-					t_insert = false;
-					break;
-				}
-			}
-			
-			if(t_insert){
-				for(fetchWeibo weibo : m_directMessage.m_WeiboComfirm){
-					if(weibo.GetId() == fetchOne.getId()){
-						t_insert = false;
-						break;
-					}
-				}
-			}
-			
-			if(t_insert){
-				fetchWeibo t_weibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
-				ImportWeibo(t_weibo, fetchOne);
-				
-				m_directMessage.m_weiboList.add(t_weibo);
-			}
-		}
-		
-		if(!t_fetch.isEmpty()){
-			DirectMessage t_lashOne = t_fetch.get(0);
-			m_directMessage.m_fromIndex = t_lashOne.getId() + 1;
-		}
+//				
+//		List<DirectMessage> t_fetch = null;
+//		if(m_directMessage.m_fromIndex > 1){
+//			t_fetch = m_weibo.getDirectMessages(new Paging(m_directMessage.m_fromIndex));
+//		}else{
+//			t_fetch = m_weibo.getDirectMessages();
+//		}	
+//		
+//		boolean t_insert;
+//		for(DirectMessage fetchOne : t_fetch){
+//			t_insert = true;
+//			for(fetchWeibo weibo : m_directMessage.m_weiboList){
+//				if(weibo.GetId() == fetchOne.getId()){
+//					t_insert = false;
+//					break;
+//				}
+//			}
+//			
+//			if(t_insert){
+//				for(fetchWeibo weibo : m_directMessage.m_WeiboComfirm){
+//					if(weibo.GetId() == fetchOne.getId()){
+//						t_insert = false;
+//						break;
+//					}
+//				}
+//			}
+//			
+//			if(t_insert){
+//				fetchWeibo t_weibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
+//				ImportWeibo(t_weibo, fetchOne);
+//				
+//				m_directMessage.m_weiboList.add(t_weibo);
+//			}
+//		}
+//		
+//		if(!t_fetch.isEmpty()){
+//			DirectMessage t_lashOne = t_fetch.get(0);
+//			m_directMessage.m_fromIndex = t_lashOne.getId() + 1;
+//		}
 	}
 	
 	protected void CheckAtMeMessage()throws Exception{
@@ -112,8 +115,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 			t_fetch = m_weibo.getMentions();
 		}
 		
-		//AddWeibo(t_fetch,m_atMeMessage,fetchWeibo.AT_ME_CLASS);
-		AddWeibo(t_fetch,m_atMeMessage,fetchWeibo.DIRECT_MESSAGE_CLASS);
+		AddWeibo(t_fetch,m_atMeMessage,fetchWeibo.AT_ME_CLASS);
 	}
 	
 	protected void CheckCommentMeMessage()throws Exception{
@@ -153,6 +155,11 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		
 		boolean t_insert;
 		for(Status fetchOne : _from){
+			
+			if(_to.m_weiboList.size() >= _to.m_sum){
+				break;
+			}
+			
 			t_insert = true;
 			for(fetchWeibo weibo : _to.m_weiboList){
 				if(weibo.GetId() == fetchOne.getId()){

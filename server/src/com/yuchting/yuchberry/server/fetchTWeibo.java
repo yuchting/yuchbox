@@ -85,8 +85,8 @@ public class fetchTWeibo extends fetchAbsWeibo{
 			t_fetch = m_twitter.getHomeTimeline(new Paging(m_timeline.m_fromIndex));
 		}else{
 			t_fetch = m_twitter.getHomeTimeline();
-		}		 
-		
+		}
+				
 		AddWeibo(t_fetch,m_timeline,fetchWeibo.TIMELINE_CLASS);
 	}
 	
@@ -94,6 +94,11 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		
 		boolean t_insert;
 		for(Status fetchOne : _from){
+			
+			if(_to.m_weiboList.size() >= _to.m_sum){
+				break;
+			}
+			
 			t_insert = true;
 			for(fetchWeibo weibo : _to.m_weiboList){
 				if(weibo.GetId() == fetchOne.getId()){

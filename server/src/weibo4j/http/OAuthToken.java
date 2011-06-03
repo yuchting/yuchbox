@@ -31,7 +31,7 @@ import weibo4j.WeiboException;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.Serializable;
 
-abstract class OAuthToken implements Serializable {
+abstract public class OAuthToken implements Serializable {
 
 	/**
 	 *

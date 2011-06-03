@@ -129,7 +129,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					// this message called number is limited
 					//
 					// un-authorith
-					//CheckDirectMessage();
+					CheckDirectMessage();
 					
 				}else{
 					
