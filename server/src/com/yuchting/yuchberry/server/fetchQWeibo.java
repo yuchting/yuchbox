@@ -6,6 +6,7 @@ import java.util.Scanner;
 import org.dom4j.Element;
 
 import com.mime.qweibo.QWeiboSyncApi;
+import com.mime.qweibo.QWeiboType.PageFlag;
 
 public class fetchQWeibo extends fetchAbsWeibo{
 	
@@ -168,7 +169,8 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		t_weibo.m_api.setCostomerKey(fsm_consumerKey, fsm_consumerSecret);
 		t_weibo.m_api.setAccessToken("2189ff2946d3498a82e6bbb8b2b57d61", "8c160ee7358a5dc07e539429c3cbb487");
 		
-		System.out.println(t_weibo.m_api.verifyCredentials());
+		t_weibo.m_api.getHomeMsg(PageFlag.PageFlag_First,20);
+	
 	}
 	
 	
