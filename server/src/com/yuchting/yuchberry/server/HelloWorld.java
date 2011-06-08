@@ -21,6 +21,8 @@ import javax.net.ssl.SSLSocketFactory;
 import weibo4j.http.OAuth;
 import weibo4j.http.OAuthToken;
 import weibo4j.http.PostParameter;
+import weibo4j.org.json.JSONArray;
+import weibo4j.org.json.JSONObject;
 
 
 /**
@@ -61,7 +63,17 @@ public class HelloWorld {
 
 		//berryRecvTest();
 		
-		getOAuthRequest();
+		//getOAuthRequest();
+		
+		String json = "{aa:null,bb:\"haha\"}";
+		
+		JSONObject t_json = new JSONObject(json);
+		
+		String  t_arr = t_json.getString("aa");
+		
+		if(t_arr == null){
+			System.out.print("aa");
+		}
 	}
 	
 	static public void getOAuthRequest(){

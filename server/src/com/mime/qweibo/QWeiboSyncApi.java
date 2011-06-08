@@ -6,20 +6,22 @@ import java.util.List;
 
 import weibo4j.org.json.JSONObject;
 
-import com.mime.qweibo.QWeiboType.PageFlag;
 import com.mime.qweibo.QWeiboType.ResultType;
 
 //yuchberry modified
 //
 
 public class QWeiboSyncApi {
+	
+	public static boolean sm_debug = false;
 
 	final static String fsm_requestTokenURL 			= "https://open.t.qq.com/cgi-bin/request_token";
-	final static String fsm_requestTokenURL_callback	= "";
+	final static String fsm_requestTokenURL_callback	= "http://www.qq.com";
 	final static String fsm_accessTokenURL				= "https://open.t.qq.com/cgi-bin/access_token";
 	
 	final static String fsm_verifyURL					= "http://open.t.qq.com/api/user/info";
 	final static String fsm_homeTimelineURL			= "http://open.t.qq.com/api/statuses/home_timeline";
+	final static String fsm_mentionMeURL				= "http://open.t.qq.com/api/statuses/mentions_timeline";
 	
 	OauthKey 			m_oauthKey = new OauthKey();
 	QWeiboRequest 		m_request = new QWeiboRequest();
@@ -88,44 +90,75 @@ public class QWeiboSyncApi {
 		return m_request.syncRequest(fsm_accessTokenURL, "GET", m_oauthKey, m_parameters, null);		
 	}
 
+
 	/**
-	 * Get home page messages.
-	 * 
-	 * @param customKey
-	 *            Your AppKey
-	 * @param customSecret
-	 *            Your AppSecret
-	 * @param requestToken
-	 *            The access token
-	 * @param requestTokenSecret
-	 *            The access token secret
-	 * @param format
-	 *            Response format, xml or json
-	 * @param pageFlag
-	 *            Page number.
-	 * @param nReqNum
-	 *            Number of messages you want.
-	 * @return Response messages based on the specified format.
+	 *  get the home weibo list (time line)
+	 * @param _startTime	start geting time
+	 * @param _num			getting number (0,70]
+	 * @return				the list of QWeibo
+	 * @throws Exception	
 	 */
-	public List<QWeibo> getHomeMsg(int _startTime,int _num)throws Exception{
+	public List<QWeibo> getHomeList(long _startTime,int _num)throws Exception{
 		
 		if(_num > 70){
 			_num = 70;
 		}
-				
+		
+		return getWeiboList(fsm_homeTimelineURL,_startTime,_num);
+	}
+	
+	/**
+	 * get the 20 default weibo timelime
+	 * @return
+	 * @throws Exception
+	 */
+	public List<QWeibo> getHomeList()throws Exception{
+		return getHomeList(0,20);
+	}
+	
+	/**
+	 *  get the mention list of current user
+	 * @param _startTime	start time of getting
+	 * @param _num			getting number
+	 * @return				weibo list 
+	 * @throws Exception
+	 */
+	public List<QWeibo> getMentionList(int _startTime,int _num)throws Exception{
+		
+		if(_num > 100){
+			_num = 100;
+		}
+		
+		return getWeiboList(fsm_mentionMeURL,_startTime,_num);		
+	}
+	
+	/**
+	 *  get weibo list max 20 items
+	 * @return
+	 * @throws Exception
+	 */
+	public List<QWeibo> getMentionList()throws Exception{
+		return getMentionList(0,20);
+	}
+	
+	/**
+	 *  private sub-function to get the weibo list information by url 
+	 * @param _url		
+	 * @param _time			starttime
+	 * @param _num			request number
+	 * @return
+	 * @throws Exception
+	 */
+	private List<QWeibo> getWeiboList(String _url,long _time,int _num)throws Exception{
+						
 		m_parameters.clear();
 		m_parameters.add(new QParameter("format", "json"));
 		m_parameters.add(new QParameter("pageflag", String.valueOf(0)));
 		m_parameters.add(new QParameter("reqnum", Integer.toString(_num)));
-		m_parameters.add(new QParameter("PageTime", Integer.toString(_startTime)));
+		m_parameters.add(new QParameter("PageTime", Long.toString(_time)));
 		
-		return QWeibo.getWeiboList(new JSONObject(m_request.syncRequest(fsm_homeTimelineURL, "GET", 
+		return QWeibo.getWeiboList(new JSONObject(m_request.syncRequest(_url, "GET", 
 																	m_oauthKey, m_parameters, null)));
-	}
-	
-	public List<QWeibo> getHomeMsg()throws Exception{
-			
-		return getHomeMsg(0,20);
 	}
 
 	/**

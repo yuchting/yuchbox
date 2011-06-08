@@ -1,12 +1,12 @@
 package com.yuchting.yuchberry.server;
 
 import java.io.File;
-import java.util.Scanner;
+import java.util.List;
 
 import org.dom4j.Element;
 
+import com.mime.qweibo.QWeibo;
 import com.mime.qweibo.QWeiboSyncApi;
-import com.mime.qweibo.QWeiboType.PageFlag;
 
 public class fetchQWeibo extends fetchAbsWeibo{
 	
@@ -106,8 +106,8 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	}
 	
 	
-	static String				sm_requestTokenKey		= null;
-	static String				sm_requestTokenSecret	= null;
+	public static String				sm_requestTokenKey		= null;
+	public static String				sm_requestTokenSecret	= null;
 	
 	public String getVerifyPinURL()throws Exception{
 		
@@ -117,7 +117,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 			throw new Exception("error server request PIN URL response :" + t_response); 
 		}
 		
-		return "http://open.t.qq.com/cgi-bin/authorize?oauth_token=" + sm_requestTokenKey;		 
+		return "http://open.t.qq.com/cgi-bin/authorize?" + t_response;
 	}
 	
 	public void RequestTokenByVerfiyPIN(String _verifyPIN)throws Exception{
@@ -134,6 +134,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		}
 	}
 	
+
 	
 	static boolean parseToken(String response) {
 		if (response == null || response.equals("")) {
@@ -169,7 +170,13 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		t_weibo.m_api.setCostomerKey(fsm_consumerKey, fsm_consumerSecret);
 		t_weibo.m_api.setAccessToken("2189ff2946d3498a82e6bbb8b2b57d61", "8c160ee7358a5dc07e539429c3cbb487");
 		
-		t_weibo.m_api.getHomeMsg(PageFlag.PageFlag_First,20);
+		List<QWeibo> t_list = t_weibo.m_api.getMentionList();
+		
+		for(QWeibo weibo : t_list){
+			
+			System.out.println("@" + weibo.getName() + " :"+ weibo.getText());
+			
+		}
 	
 	}
 	

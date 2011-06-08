@@ -12,6 +12,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
+import com.yuchting.yuchberry.server.fetchQWeibo;
 import com.yuchting.yuchberry.server.fetchSinaWeibo;
 import com.yuchting.yuchberry.server.fetchTWeibo;
 import com.yuchting.yuchberry.server.fetchWeibo;
@@ -42,6 +43,9 @@ public class weiboRequestTool extends JFrame implements ActionListener{
 			break;
 		case fetchWeibo.TWITTER_WEIBO_STYLE:
 			t_subfix = "Twitter";
+			break;
+		case fetchWeibo.QQ_WEIBO_STYLE:
+			t_subfix = "QQ";
 			break;
 		}
 		
@@ -82,6 +86,8 @@ public class weiboRequestTool extends JFrame implements ActionListener{
 						m_requestToken = (new fetchSinaWeibo(null)).getRequestToken();
 					}else if(m_style == fetchWeibo.TWITTER_WEIBO_STYLE){
 						m_requestToken = (new fetchTWeibo(null)).getRequestToken();
+					}else if(m_style == fetchWeibo.QQ_WEIBO_STYLE){
+						m_requestToken = new fetchQWeibo(null);
 					}
 					
 				}
@@ -90,6 +96,8 @@ public class weiboRequestTool extends JFrame implements ActionListener{
 					mainFrame.OpenURL(((weibo4j.http.RequestToken)m_requestToken).getAuthorizationURL());
 				}else if(m_style == fetchWeibo.TWITTER_WEIBO_STYLE){
 					mainFrame.OpenURL(((twitter4j.auth.RequestToken)m_requestToken).getAuthorizationURL());
+				}else if(m_style == fetchWeibo.QQ_WEIBO_STYLE){
+					mainFrame.OpenURL(((fetchQWeibo)m_requestToken).getVerifyPinURL());
 				}else{
 					assert false;
 				}
@@ -123,6 +131,16 @@ public class weiboRequestTool extends JFrame implements ActionListener{
 					
 					m_accessToken.setText(accessToken.getToken());
 					m_secretToken.setText(accessToken.getTokenSecret());
+					
+				}else if(m_style == fetchWeibo.QQ_WEIBO_STYLE){
+					
+					fetchQWeibo t_qweibo = ((fetchQWeibo)m_requestToken);
+					t_qweibo.RequestTokenByVerfiyPIN(m_pin.getText());
+					
+					
+					m_accessToken.setText(t_qweibo.sm_requestTokenKey);
+					m_secretToken.setText(t_qweibo.sm_requestTokenSecret);				
+					
 				}else{
 					assert false;
 				}
@@ -136,6 +154,6 @@ public class weiboRequestTool extends JFrame implements ActionListener{
 	}
 	
 	static public void main(String _arg[]){
-		new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
+		new weiboRequestTool(fetchWeibo.QQ_WEIBO_STYLE);
 	}
 }
