@@ -199,8 +199,14 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				
 				if(_resetSelectIdx){
 					
-					m_selectWeiboItemIndex++;
-					m_formerVerticalPos += WeiboItemField.fsm_closeHeight;
+					if(!m_timelineManager || m_selectWeiboItemIndex != 0){
+						
+						// if NOT timeline manager
+						// if NOT selected the update WeiboItem
+						
+						m_selectWeiboItemIndex++;
+						m_formerVerticalPos += WeiboItemField.fsm_closeHeight;
+					}				
 					
 					if(WeiboItemField.sm_extendWeiboItem == null ){	
 						RestoreScroll();							

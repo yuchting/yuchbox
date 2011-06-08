@@ -112,8 +112,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		
 		try{
 			
-			if(m_weiboDelayTimer == -1 
-			|| m_weiboDelayTimer >= (3600 / 100) / m_mainMgr.GetPushInterval() + 1){
+			int t_maxTime = (3600 / 100) / m_mainMgr.GetPushInterval() + 1;
+			if(m_weiboDelayTimer == -1 || m_weiboDelayTimer >= t_maxTime){
 
 				synchronized(this){
 					m_weiboDelayTimer = 0;

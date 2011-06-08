@@ -39,9 +39,7 @@ public class BberWeiboPanel extends FlowPanel{
 		BberPanel.AddLabelWidget(t_subPane,"访问令牌:",m_accessToken);
 		BberPanel.AddLabelWidget(t_subPane,"密码令牌:",m_secretToken);
 		
-		add(m_requestButton);
-		
-		
+		add(m_requestButton);		
 	}
 	
 	public void RefreshWeibo(yuchWeibo _weibo){
