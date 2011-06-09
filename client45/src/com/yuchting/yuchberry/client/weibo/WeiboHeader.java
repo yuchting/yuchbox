@@ -17,10 +17,10 @@ public class WeiboHeader extends Field{
 	
 	public final static String[] fsm_stateString = 
 	{
-		" H\u0332ome ",
-		" @M\u0332e ",
-		" C\u0332omment ",
-		" D\u0332M ",
+		" Home ",
+		" @Me ",
+		" Comment ",
+		" DM ",
 	};
 	
 	public final static int[] fsm_stateStringWidth = 

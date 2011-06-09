@@ -11,7 +11,6 @@ import local.localResource;
 import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
-import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
@@ -36,6 +35,8 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	static Bitmap		sm_sinaWeiboSign = null;
 	static Bitmap		sm_sinaVIPSign = null;
+	
+	static Bitmap		sm_headImageMask = null;
 	
 	static Bitmap		sm_tWeiboSign = null;
 	
@@ -517,8 +518,8 @@ public class weiboTimeLineScreen extends MainScreen{
 		if(WeiboItemField.sm_extendWeiboItem != null && WeiboItemField.sm_editWeiboItem == null){
 			switch(key){
 	    	case ' ':
-	    		boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
-	    		m_currMgr.OpenNextWeiboItem(!t_shiftDown);
+	    		//boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
+	    		m_currMgr.OpenNextWeiboItem(true);
 	    		return true;
 	    	case 'F':
 	    		m_currMgr.ForwardWeibo(WeiboItemField.sm_extendWeiboItem);
@@ -529,12 +530,16 @@ public class weiboTimeLineScreen extends MainScreen{
 	    	case 'E':
 	    		m_currMgr.AtWeibo(WeiboItemField.sm_extendWeiboItem);
 	    		return true;
-	    	case 'P':
+	    	case 'G':
 	    		m_currMgr.OpenOriginalPic(WeiboItemField.sm_extendWeiboItem);
 	    		return true;
 	    	case 'D':
 	    		deleteWeiboItem();
 	    		return true;
+	    	case '0':
+	    		m_currMgr.OpenNextWeiboItem(false);
+	    		return true;
+	    	
 			}
 		}else{
 			
@@ -547,24 +552,24 @@ public class weiboTimeLineScreen extends MainScreen{
 	    			m_currMgr.ScrollToTop();
 	    			return true;
 		    	case 'B':
-	    			m_currMgr.ScrollToBottom();
+	    			m_currMgr.ScrollToBottom();	
 	    			return true;
 		    	case 'R':
 		    		SendRefreshMsg();
 		    		break;
 		    	case 10: // enter key
 		    		m_currMgr.Clicked(0, 0);
-		    		break;
-		    	case 'H':
+		    		break;		    		
+		    	case 'U':
 		    		m_homeManagerItem.run();
 		    		return true;
-		    	case 'M':
+		    	case 'I':
 		    		m_atMeManagerItem.run();
 		    		return true;
-		    	case 'C':
+		    	case 'O':
 		    		m_commentMeItem.run();
 		    		return true;
-		    	case 'D':
+		    	case 'P':
 		    		m_directMsgItem.run();
 		    		return true;
 		    	}
@@ -691,6 +696,20 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 		
 		return sm_sinaVIPSign;
+	}
+	
+	static public Bitmap GetHeadImageMaskBitmap(){
+		if(sm_headImageMask == null){
+			try{
+				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/headImageMask.png"));		
+				sm_headImageMask =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();	
+			}catch(Exception e){
+				sm_mainApp.SetErrorString("GHIMB" + e.getMessage() + e.getClass().getName());
+			}
+					
+		}
+		
+		return sm_headImageMask;
 	}
 	
 	static public Bitmap GetBBerSignBitmap(){
