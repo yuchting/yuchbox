@@ -1,6 +1,5 @@
 package com.yuchting.yuchberry.client;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,18 +15,12 @@ import javax.microedition.location.Location;
 import javax.microedition.location.LocationListener;
 import javax.microedition.location.LocationProvider;
 
-import com.yuchting.yuchberry.client.weibo.WeiboItemField;
-import com.yuchting.yuchberry.client.weibo.fetchWeibo;
-import com.yuchting.yuchberry.client.weibo.weiboTimeLineScreen;
-
 import local.localResource;
 import net.rim.blackberry.api.browser.Browser;
 import net.rim.blackberry.api.browser.BrowserSession;
 import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
-import net.rim.device.api.compress.GZIPInputStream;
-import net.rim.device.api.compress.GZIPOutputStream;
 import net.rim.device.api.crypto.MD5Digest;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.i18n.ResourceBundle;
@@ -43,6 +36,10 @@ import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
+
+import com.yuchting.yuchberry.client.weibo.WeiboItemField;
+import com.yuchting.yuchberry.client.weibo.fetchWeibo;
+import com.yuchting.yuchberry.client.weibo.weiboTimeLineScreen;
 
 public class recvMain extends UiApplication implements localResource,LocationListener {
 	
@@ -1454,14 +1451,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 			ErrorInfo t_info = (ErrorInfo)m_errorString.elementAt(0);
 			
-			String t_text = (t_format.format(t_info.m_time) + ":" + t_info.m_info).concat("\n");
+			StringBuffer t_text = new StringBuffer();
 			
-			for(int i = 1;i< m_errorString.size();i++){				
+			for(int i = m_errorString.size() - 1;i >= 0;i--){				
 				t_info = (ErrorInfo)m_errorString.elementAt(i);
-				t_text = t_text.concat((t_format.format(t_info.m_time) + ":" + t_info.m_info).concat("\n"));
+				t_text.append(t_format.format(t_info.m_time)).append(":").append(t_info.m_info).append("\n");
 			}
 			
-			return t_text;
+			return t_text.toString();
 		}
 		
 		return "";

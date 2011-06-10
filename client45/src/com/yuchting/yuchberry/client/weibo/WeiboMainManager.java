@@ -204,7 +204,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 						// if NOT timeline manager
 						// if NOT selected the update WeiboItem
 						
-						m_selectWeiboItemIndex++;
+						m_selectWeiboItemIndex++;						
 						m_formerVerticalPos += WeiboItemField.fsm_closeHeight;
 					}				
 					

@@ -255,8 +255,7 @@ public class connectDeamon extends Thread implements SendListener,
 		Store store = Session.getDefaultInstance().getStore();
 		store.addSendListener(this);
 		
-		Session t_session  = Session.getDefaultInstance();
-		t_session.addViewListener(this);
+		Session.addViewListener(this);
 						 
 		AttachmentHandlerManager.getInstance().addAttachmentHandler(this);
 		
@@ -279,7 +278,7 @@ public class connectDeamon extends Thread implements SendListener,
 			Store store = Session.getDefaultInstance().getStore();
 			store.removeSendListener(this);
 			 
-			Session.getDefaultInstance().removeViewListener(this);
+			Session.removeViewListener(this);
 					         
 	        AttachmentHandlerManager.getInstance().removeAttachmentHandler(this);
         
@@ -299,7 +298,7 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			 public void run(){
 				 
-				 try{
+				try{
 					
 					for(int i = 0;i < m_sendingMailAttachment.size();i++){
 						sendMailAttachmentDeamon t_mail = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
