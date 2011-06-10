@@ -23,6 +23,18 @@ public class QWeiboSyncApi {
 	final static String fsm_homeTimelineURL			= "http://open.t.qq.com/api/statuses/home_timeline";
 	final static String fsm_mentionMeURL				= "http://open.t.qq.com/api/statuses/mentions_timeline";
 	
+	final static String fsm_publishURL					= "http://open.t.qq.com/api/t/add";
+	final static String fsm_publishReplyURL					= "http://open.t.qq.com/api/t/reply";
+	final static String fsm_publishForwardURL					= "http://open.t.qq.com/api/t/re_add";
+	final static String fsm_publishCommentURL					= "http://open.t.qq.com/api/t/comment";
+	
+	final static String fsm_followUserURL					= "http://open.t.qq.com/api/friends/add";
+	
+	final static String fsm_directMessageInboxURL			= "http://open.t.qq.com/api/private/recv";
+	final static String fsm_directMessageOutboxURL			= "http://open.t.qq.com/api/private/send";
+	
+	final static String fsm_deleteMessageURL				= "http://open.t.qq.com/api/t/del";
+	
 	OauthKey 			m_oauthKey = new OauthKey();
 	QWeiboRequest 		m_request = new QWeiboRequest();
 	
@@ -86,6 +98,7 @@ public class QWeiboSyncApi {
 				
 		m_parameters.clear();
 		m_oauthKey.verify = verify;
+		m_oauthKey.callbackUrl = null;
 
 		return m_request.syncRequest(fsm_accessTokenURL, "GET", m_oauthKey, m_parameters, null);		
 	}
@@ -123,7 +136,7 @@ public class QWeiboSyncApi {
 	 * @return				weibo list 
 	 * @throws Exception
 	 */
-	public List<QWeibo> getMentionList(int _startTime,int _num)throws Exception{
+	public List<QWeibo> getMentionList(long _startTime,int _num)throws Exception{
 		
 		if(_num > 100){
 			_num = 100;
@@ -160,76 +173,237 @@ public class QWeiboSyncApi {
 		return QWeibo.getWeiboList(new JSONObject(m_request.syncRequest(_url, "GET", 
 																	m_oauthKey, m_parameters, null)));
 	}
-
+	
 	/**
-	 * Publish a Weibo message.
-	 * 
-	 * @param customKey
-	 *            Your AppKey
-	 * @param customSecret
-	 *            Your AppSecret
-	 * @param requestToken
-	 *            The access token
-	 * @param requestTokenSecrect
-	 *            The access token secret
-	 * @param content
-	 *            The content of your message
-	 * @param pic
-	 *            The files of your images.
-	 * @param format
-	 *            Response format, xml or json(Default).
-	 * @return Result info based on the specified format.
+	 *  publish a message 
+	 * @param _text		message
+	 * @return				return published message id if successfully
+	 * @throws Exception
 	 */
-	public String publishMsg(String customKey, String customSecret,
-			String requestToken, String requestTokenSecrect, String content,
-			String pic, ResultType format) {
-
-		List<QParameter> files = new ArrayList<QParameter>();
-		String url = null;
-		String httpMethod = "POST";
-
-		if (pic == null || pic.trim().equals("")) {
-			url = "http://open.t.qq.com/api/t/add";
-		} else {
-			url = "http://open.t.qq.com/api/t/add_pic";
-			files.add(new QParameter("pic", pic));
+	public long publishMsg(String _text)throws Exception{
+		return publishMsg_impl(_text,-1,-1,-1,-1,-1);
+	}
+	
+	/**
+	 *  publish a message with geo information
+	 * @param _text				message
+	 * @param _longitude
+	 * @param _latitude
+	 * @return				return published message id if successfully
+	 * @throws Exception
+	 */
+	public long publishMsg(String _text,double _longitude,double _latitude)throws Exception{
+		return publishMsg_impl(_text,-1,-1,-1,_longitude,_longitude);
+	}
+	
+	/**
+	 * forward a message by messsage's id
+	 * @param _text
+	 * @param _forwardId
+	 * @return				return published message id if successfully
+	 * @throws Exception
+	 */
+	public long forwardMsg(String _text,long _forwardId)throws Exception{
+		return publishMsg_impl(_text,_forwardId,-1,-1,-1,-1);
+	}
+	
+	/**
+	 * forward a message by it's id and with geo information
+	 * @param _text
+	 * @param _forwardId
+	 * @param _longitude
+	 * @param _latitude
+	 * @return				return published message id if successfully
+	 * @throws Exception
+	 */
+	public long forwardMsg(String _text,long _forwardId,double _longitude,double _latitude)throws Exception{
+		return publishMsg_impl(_text,_forwardId,-1,-1,_longitude,_latitude);
+	}
+	
+	/**
+	 * reply a message by it's id 
+	 * @param _text
+	 * @param _reply
+	 * @return				return published message id if successfully
+	 * @throws Exception
+	 */
+	public long replyMsg(String _text,long _reply)throws Exception{
+		return publishMsg_impl(_text,-1,_reply,-1,-1,-1);
+	}
+	
+	/**
+	 * replay a message by it's id with geo information
+	 * @param _text
+	 * @param _reply
+	 * @param _longitude
+	 * @param _latitude
+	 * @return					return published message id if successfully
+	 * @throws Exception
+	 */
+	public long replyMsg(String _text,long _reply,double _longitude,double _latitude)throws Exception{
+		return publishMsg_impl(_text,-1,_reply,-1,_longitude,_latitude);
+	}
+	
+	/**
+	 * comment a message 
+	 * @param _text
+	 * @param _commentId
+	 * @return				return published message id if successfully
+	 */
+	public long commentMsg(String _text,long _commentId)throws Exception{
+		return publishMsg_impl(_text,-1,-1,_commentId,-1,-1);
+	}
+	
+	/**
+	 *  comment a message with a geo information
+	 * @param _text
+	 * @param _commentId
+	 * @param _longitude
+	 * @param _latitude
+	 * @return			return published message id if successfully
+	 */
+	public long commentMsg(String _text,long _commentId,double _longitude,double _latitude)throws Exception{
+		return publishMsg_impl(_text,-1,-1,_commentId,_longitude,_latitude);
+	}
+	
+	private long publishMsg_impl(String _text,long _forwardId,long _replyId,long _commentId,double _longitude,double _latitude)throws Exception{
+		
+		String t_url = fsm_publishURL;
+		
+		m_parameters.clear();
+		m_parameters.add(new QParameter("format", "json"));
+		m_parameters.add(new QParameter("content",_text));
+		m_parameters.add(new QParameter("clientip", "127.0.0.1"));
+		
+		if(_forwardId != -1){
+			
+			t_url = fsm_publishForwardURL;
+			m_parameters.add(new QParameter("reid", Long.toString(_forwardId)));
+			
+		}else if(_replyId != -1){
+			
+			t_url = fsm_publishReplyURL;
+			m_parameters.add(new QParameter("reid", Long.toString(_replyId)));
+			
+		}else if(_commentId != -1){
+			
+			t_url = fsm_publishCommentURL;
+			m_parameters.add(new QParameter("reid", Long.toString(_commentId)));
 		}
-
-		OauthKey oauthKey = new OauthKey();
-		oauthKey.customKey = customKey;
-		oauthKey.customSecrect = customSecret;
-		oauthKey.tokenKey = requestToken;
-		oauthKey.tokenSecrect = requestTokenSecrect;
-
-		List<QParameter> parameters = new ArrayList<QParameter>();
-
-		String strFormat = null;
-		if (format == ResultType.ResultType_Xml) {
-			strFormat = "xml";
-		} else if (format == ResultType.ResultType_Json) {
-			strFormat = "json";
-		} else {
-			return "";
+		
+		if(_longitude != -1 && _latitude != -1 ){
+			m_parameters.add(new QParameter("jing", Double.toString(_longitude)));
+			m_parameters.add(new QParameter("wei", Double.toString(_latitude)));
 		}
-
-		parameters.add(new QParameter("format", strFormat));
-		try {
-			parameters.add(new QParameter("content", new String(content
-					.getBytes("UTF-8"))));
-		} catch (UnsupportedEncodingException e1) {
-			e1.printStackTrace();
-			return "";
+		
+		JSONObject t_ret = new JSONObject(m_request.syncRequest(t_url, "POST", m_oauthKey, m_parameters, null));
+		
+		if(t_ret.getInt("ret") != 0){
+			throw new Exception("publish message failed:" + t_ret.getString("msg"));
 		}
-		parameters.add(new QParameter("clientip", "127.0.0.1"));
-
-		QWeiboRequest request = new QWeiboRequest();
-		String res = null;
-		try {
-			res = request.syncRequest(url, httpMethod, oauthKey, parameters,
-					files);
-		} catch (Exception e) {
-			e.printStackTrace();
+		
+		JSONObject t_data = t_ret.getJSONObject("data");
+		if(t_data == null || t_data.get("id") == null){
+			throw new Exception("publish message failed<data is null>:" + t_ret.toString());
 		}
-		return res;
+		
+		return t_data.getLong("id");
+	}
+	
+	/**
+	 * follow a user
+	 * @param _name
+	 * @throws Exception
+	 */
+	public void followUser(String _name)throws Exception{
+		
+		m_parameters.clear();
+		m_parameters.add(new QParameter("format", "json"));
+		m_parameters.add(new QParameter("name",_name));
+		
+		JSONObject t_ret = new JSONObject(m_request.syncRequest(fsm_followUserURL, "POST", m_oauthKey, m_parameters, null));
+		
+		if(t_ret.getInt("ret") != 0){
+			throw new Exception("followUser failed:" + t_ret.getString("msg"));
+		}
+	}
+	
+	/**
+	 *  get the max 20 item direct message of inbox
+	 * @return	list of direct message
+	 * @throws Exception
+	 */
+	public List<QDirectMessage> getInboxDirectMessage()throws Exception{
+		return getInboxDirectMessage(0,20,0);
+	}
+	
+	/**
+	 * get the direct message of inbox by time,number and last direct message id
+	 * @param _time
+	 * @param _num 		20 is max
+	 * @param _lastId
+	 * @return
+	 * @throws Exception
+	 */
+	public List<QDirectMessage> getInboxDirectMessage(long _time,int _num,long _lastId)throws Exception{
+		return getDirectMsgList_impl(_time,_num,_lastId,QDirectMessage.fsm_inboxType);		
+	}
+	
+	/**
+	 * get the max 20 items of direct message of outbox
+	 * @return
+	 * @throws Exception
+	 */
+	public List<QDirectMessage> getOutboxDirectMessage()throws Exception{
+		return getDirectMsgList_impl(0,20,0,QDirectMessage.fsm_outboxType);
+	}
+	
+	/**
+	 * get the direct message of outbox by time,number and last direct message id
+	 * @param _time
+	 * @param _num 20 is max
+	 * @param _lastId
+	 * @return
+	 * @throws Exception
+	 */
+	public List<QDirectMessage> getOutboxDirectMessage(long _time,int _num,long _lastId)throws Exception{
+		return getDirectMsgList_impl(_time,_num,_lastId,QDirectMessage.fsm_outboxType);
+	}
+	
+	private List<QDirectMessage> getDirectMsgList_impl(long _time,int _num,long _lastId,int _type)throws Exception{
+		
+		if(_num > 20){
+			_num = 20;
+		}
+		
+		String t_url;
+		if(_type == QDirectMessage.fsm_inboxType){
+			t_url = fsm_directMessageInboxURL;
+		}else{
+			t_url = fsm_directMessageOutboxURL;
+		}
+		
+		m_parameters.clear();
+		
+		m_parameters.add(new QParameter("format", "json"));
+		m_parameters.add(new QParameter("pagetime",Long.toString(_time)));
+		m_parameters.add(new QParameter("pageflag","0"));
+		m_parameters.add(new QParameter("reqnum",Integer.toString(_num)));
+		m_parameters.add(new QParameter("lastid",Long.toString(_lastId)));
+		
+		return QDirectMessage.getDMList(new JSONObject(m_request.syncRequest(t_url, "GET", m_oauthKey, m_parameters, null)),_type);
+	}
+	
+	public void deleteMessage(long _id)throws Exception{
+		m_parameters.clear();
+		
+		m_parameters.add(new QParameter("format", "json"));
+		m_parameters.add(new QParameter("id", Long.toString(_id)));
+		
+		JSONObject t_ret = new JSONObject(m_request.syncRequest(fsm_deleteMessageURL, "POST", m_oauthKey, m_parameters, null));
+		
+		if(t_ret.getInt("ret") != 0){
+			throw new Exception("delete message failed:" + t_ret.getString("msg"));
+		}
 	}
 }

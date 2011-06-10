@@ -94,7 +94,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		}
 	}
 	
-	public String GetHeadImageFilename(final long _id){
+	public String GetHeadImageFilename(final String _id){
 		return GetHeadImageDir() + _id + ".png";
 	}
 	
@@ -486,7 +486,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			
 			final long t_id = sendReceive.ReadLong(in);
 			
-			File t_file = new File(GetHeadImageFilename(t_id));
+			File t_file = new File(GetHeadImageFilename(Long.toString(t_id)));
 			if(t_file.exists()){
 				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 				t_os.write(msg_head.msgWeiboHeadImage);
@@ -538,7 +538,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		return false;
 	}
 	
-	protected int StoreHeadImage(URL _url,long _id){
+	protected int StoreHeadImage(URL _url,String _id){
 		
 		final String t_filename 		= GetHeadImageFilename(_id);
 		

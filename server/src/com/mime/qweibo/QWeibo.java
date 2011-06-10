@@ -32,6 +32,9 @@ public class QWeibo {
 	//微博状态 0-正常，1-系统删除 2-审核中 3-用户删除 4-根删除
 	private int	m_status;
 	
+	private QWeibo m_sourceWeibo = null;
+		
+	
 	public QWeibo(JSONObject _json)throws Exception{
 		m_text 			= _json.getString("text");
 		m_orgText		= _json.getString("orgtext");
@@ -41,17 +44,10 @@ public class QWeibo {
 		
 		m_id			= _json.getLong("id");
 		
-		try{
-			JSONArray t_array = _json.getJSONArray("image");
-			if(t_array != null && t_array.length() > 0){
-				m_imageURL	= t_array.getString(0);
-			}	
-		}catch(Exception e){
-			if(QWeiboSyncApi.sm_debug){
-				e.printStackTrace();
-			}
-		}
-		
+		String t_image = _json.getString("image");
+		if(t_image != null && !t_image.equals("null") && t_image.length() != 0){
+			m_imageURL	= _json.getJSONArray("image").getString(0);
+		}		
 		
 		m_name			= _json.getString("name");
 		m_nickName		= _json.getString("nick");
@@ -61,8 +57,14 @@ public class QWeibo {
 		m_isOwnWeibo	= _json.getInt("self") == 1;
 		m_isVIP			= _json.getInt("isvip") == 1;
 		
-		m_timestamp		= _json.getLong("timestamp");
-		m_status		= _json.getInt("status");		 
+		m_timestamp		= _json.getLong("timestamp") * 1000; // to convert to java Date time
+		m_type			= _json.getInt("type");
+		m_status		= _json.getInt("status");
+		
+		String t_source = _json.getString("source");
+		if(t_source != null && !t_source.equals("null") && t_source.length() != 0 ){
+			m_sourceWeibo = new QWeibo(new JSONObject(t_source));			
+		}
 		
 	}
 	
@@ -89,13 +91,15 @@ public class QWeibo {
 	//微博状态 0-正常，1-系统删除 2-审核中 3-用户删除 4-根删除
 	public int getWeiboStatus(){return m_status;}
 	
+	public QWeibo getSourceWeibo(){return m_sourceWeibo;}
+	
 	
 	static public List<QWeibo> getWeiboList(JSONObject _json)throws Exception{
 		
 		List<QWeibo> t_list = new ArrayList<QWeibo>();
 		
 		if(_json.getInt("ret") != 0){
-			throw new Exception("getHomeList error :" + _json.getString("Msg"));
+			throw new Exception("getHomeList error :" + _json.getString("msg"));
 		}
 		
 		try{

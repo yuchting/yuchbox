@@ -168,8 +168,8 @@ public class mainFrame extends JFrame implements ActionListener{
 					new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
 				}else if(_arg[1].equalsIgnoreCase("tw")){
 					new weiboRequestTool(fetchWeibo.TWITTER_WEIBO_STYLE);
-				}else{
-					
+				}else if(_arg[1].equalsIgnoreCase("qq")){
+					new weiboRequestTool(fetchWeibo.QQ_WEIBO_STYLE);
 				}
 			}else{
 				new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);

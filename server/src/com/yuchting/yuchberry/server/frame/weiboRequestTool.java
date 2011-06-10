@@ -51,15 +51,15 @@ public class weiboRequestTool extends JFrame implements ActionListener{
 		
 		setTitle("请求weibo访问    -" + t_subfix);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		setSize(400,170);
+		setSize(500,170);
 		setResizable(false);
 		
 		
 		Container t_con = getContentPane();
 		t_con.setLayout(new FlowLayout(FlowLayout.CENTER));
 		
-		m_openRequestURL.setPreferredSize(new Dimension(160,40));
-		m_genToken.setPreferredSize(new Dimension(160,40));
+		m_openRequestURL.setPreferredSize(new Dimension(210,40));
+		m_genToken.setPreferredSize(new Dimension(210,40));
 		
 		t_con.add(m_openRequestURL);
 		t_con.add(m_genToken);
@@ -70,9 +70,9 @@ public class weiboRequestTool extends JFrame implements ActionListener{
 		m_accessToken.setEditable(false);
 		m_secretToken.setEditable(false);
 		
-		createDialog.AddTextLabel(t_con,"应用授权码:",m_pin,300,"");
-		createDialog.AddTextLabel(t_con,"访问令牌(accessToken):",m_accessToken,230,"");
-		createDialog.AddTextLabel(t_con,"密码令牌(secretToken):",m_secretToken,233,"");
+		createDialog.AddTextLabel(t_con,"应用授权码:",m_pin,400,"");
+		createDialog.AddTextLabel(t_con,"访问令牌(accessToken):",m_accessToken,330,"");
+		createDialog.AddTextLabel(t_con,"密码令牌(secretToken):",m_secretToken,333,"");
 				
 		setVisible(true);
 	}

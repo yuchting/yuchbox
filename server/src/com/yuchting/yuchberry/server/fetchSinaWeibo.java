@@ -62,7 +62,6 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		}		 
 		
 		AddWeibo(t_fetch,m_timeline,fetchWeibo.TIMELINE_CLASS);
-		
 	}
 	
 	protected void CheckDirectMessage()throws Exception{
@@ -285,12 +284,12 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		_weibo.SetUserName(t_user.getName());
 		_weibo.SetUserScreenName(t_user.getScreenName());
 		_weibo.SetSinaVIP(t_user.isVerified());
-		
+				
 		if(_stat.getOriginal_pic() != null){
 			_weibo.SetOriginalPic(_stat.getOriginal_pic());
 		}		
 		
-		_weibo.SetUserHeadImageHashCode(StoreHeadImage(t_user.getProfileImageURL(),t_user.getId()));		
+		_weibo.SetUserHeadImageHashCode(StoreHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));		
 
 		try{
 			
@@ -299,7 +298,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 				Status t_commentStatus = m_weibo.showStatus(_weibo.GetReplyWeiboId());
 				fetchWeibo t_replayWeibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
 				
-				ImportWeibo(t_replayWeibo,t_commentStatus,fetchWeibo.TIMELINE_CLASS);
+				ImportWeibo(t_replayWeibo,t_commentStatus,_weiboClass);
 				
 				_weibo.SetCommectWeiboId(_stat.getInReplyToStatusId());
 				_weibo.SetCommectWeibo(t_replayWeibo);
@@ -310,7 +309,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	
 					fetchWeibo t_replayWeibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
 					
-					ImportWeibo(t_replayWeibo,_stat.getCommentStatus(),fetchWeibo.TIMELINE_CLASS);
+					ImportWeibo(t_replayWeibo,_stat.getCommentStatus(),_weiboClass);
 					
 					_weibo.SetCommectWeiboId(t_replayWeibo.GetId());
 					_weibo.SetCommectWeibo(t_replayWeibo);
@@ -344,7 +343,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 			_weibo.SetSinaVIP(t_user.isVerified());	
 		}
 				
-		_weibo.SetUserHeadImageHashCode(StoreHeadImage(t_user.getProfileImageURL(),t_user.getId()));
+		_weibo.SetUserHeadImageHashCode(StoreHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));
 	}
 	
 	public void ImportWeibo(fetchWeibo _weibo,Comment _comment){
@@ -383,7 +382,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 			m_mainMgr.m_logger.PrinterException(e);
 		}
 		
-		_weibo.SetUserHeadImageHashCode(StoreHeadImage(t_user.getProfileImageURL(),t_user.getId()));
+		_weibo.SetUserHeadImageHashCode(StoreHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));
 	}
 		
 	public RequestToken getRequestToken()throws Exception{		
@@ -405,7 +404,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		t_weibo.ResetSession(true);
 		User t_user = t_weibo.m_weibo.showUser("1894359415");
 				
-		System.out.print( t_weibo.StoreHeadImage(t_user.getProfileImageURL(),t_user.getId()));
+		System.out.print( t_weibo.StoreHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));
 	}
 	
 }
