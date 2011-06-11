@@ -6,9 +6,13 @@ import java.io.OutputStream;
 public class fetchWeibo {
 	
 	final static int	VERSION = 1;
+
 	final public static byte	SINA_WEIBO_STYLE 		= 0;
 	final public static byte	TWITTER_WEIBO_STYLE 	= 1;
 	final public static byte	QQ_WEIBO_STYLE 			= 2;
+	final public static byte	N163_WEIBO_STYLE 		= 3;
+	final public static byte	SOHU_WEIBO_STYLE 		= 4;
+	final public static byte	FANFOU_WEIBO_STYLE 		= 5;
 	
 	final public static byte	TIMELINE_CLASS 			= 0;
 	final public static byte	DIRECT_MESSAGE_CLASS 	= 1;

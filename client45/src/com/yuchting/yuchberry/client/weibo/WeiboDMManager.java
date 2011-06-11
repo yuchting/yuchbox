@@ -27,14 +27,6 @@ public class WeiboDMManager extends WeiboMainManager{
 				insert(t_field,0);
 								
 				if(_resetSelectIdx){
-					
-					m_selectWeiboItemIndex++;
-					m_formerVerticalPos += WeiboItemField.fsm_closeHeight;
-					
-					if(WeiboItemField.sm_extendWeiboItem == null ){	
-						RestoreScroll();							
-					}
-					
 					m_hasNewWeibo = true;
 				}
 			}
@@ -45,8 +37,10 @@ public class WeiboDMManager extends WeiboMainManager{
 		
 		int t_num = getFieldCount();
 		for(int i = 0 ;i < t_num;i++){
-			WeiboItemField t_field = (WeiboItemField)getField(i);
-			if(t_field.m_weibo == _weibo){
+			
+			WeiboItemFocusField t_field = (WeiboItemFocusField)getField(i);
+			
+			if(t_field.m_itemField.m_weibo == _weibo){
 				
 				m_mainApp.invokeLater(new Runnable() {
 					
@@ -55,17 +49,14 @@ public class WeiboDMManager extends WeiboMainManager{
 						int t_num = getFieldCount();
 						
 						for(int i = 0 ;i < t_num;i++){
-							WeiboItemField t_field = (WeiboItemField)getField(i);
-							if(t_field.m_weibo == _weibo){
+							WeiboItemFocusField t_field = (WeiboItemFocusField)getField(i);
+							if(t_field.m_itemField.m_weibo == _weibo){
 								delete(t_field);
 								
 								break;
 							}
 						}
 						
-						if(WeiboItemField.sm_extendWeiboItem == null){			
-							RestoreScroll();					
-						}
 					}
 				});
 				

@@ -34,6 +34,7 @@ public class QWeiboSyncApi {
 	final static String fsm_directMessageOutboxURL			= "http://open.t.qq.com/api/private/send";
 	
 	final static String fsm_deleteMessageURL				= "http://open.t.qq.com/api/t/del";
+	final static String fsm_favoriteMessageURL				= "http://open.t.qq.com/api/fav/addt";
 	
 	OauthKey 			m_oauthKey = new OauthKey();
 	QWeiboRequest 		m_request = new QWeiboRequest();
@@ -168,7 +169,7 @@ public class QWeiboSyncApi {
 		m_parameters.add(new QParameter("format", "json"));
 		m_parameters.add(new QParameter("pageflag", String.valueOf(0)));
 		m_parameters.add(new QParameter("reqnum", Integer.toString(_num)));
-		m_parameters.add(new QParameter("PageTime", Long.toString(_time)));
+		m_parameters.add(new QParameter("PageTime", Long.toString(_time / 1000))); //to convert GMT time
 		
 		return QWeibo.getWeiboList(new JSONObject(m_request.syncRequest(_url, "GET", 
 																	m_oauthKey, m_parameters, null)));
@@ -404,6 +405,19 @@ public class QWeiboSyncApi {
 		
 		if(t_ret.getInt("ret") != 0){
 			throw new Exception("delete message failed:" + t_ret.getString("msg"));
+		}
+	}
+	
+	public void favoriteMessage(long _id)throws Exception{
+		m_parameters.clear();
+		
+		m_parameters.add(new QParameter("format", "json"));
+		m_parameters.add(new QParameter("id", Long.toString(_id)));
+		
+		JSONObject t_ret = new JSONObject(m_request.syncRequest(fsm_favoriteMessageURL, "POST", m_oauthKey, m_parameters, null));
+		
+		if(t_ret.getInt("ret") != 0){
+			throw new Exception("favorite message failed:" + t_ret.getString("msg"));
 		}
 	}
 }

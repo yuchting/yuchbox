@@ -6,6 +6,9 @@ import java.util.List;
 
 import org.dom4j.Element;
 
+import twitter4j.GeoLocation;
+import twitter4j.StatusUpdate;
+
 import com.mime.qweibo.QUser;
 import com.mime.qweibo.QWeibo;
 import com.mime.qweibo.QWeiboSyncApi;
@@ -130,15 +133,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	}
 	
 	protected void CheckCommentMeMessage()throws Exception{
-		
-		List<QWeibo> t_fetch = null;
-		if(m_atMeMessage.m_fromIndex > 1){
-			t_fetch = m_api.getMentionList(m_atMeMessage.m_fromIndex, 20);
-		}else{
-			t_fetch = m_api.getMentionList();
-		}		 
-		
-		AddWeibo(t_fetch,m_atMeMessage,fetchWeibo.AT_ME_CLASS);
+		// nothing about this list
 	}
 
 	protected void DeleteWeibo(long _id)throws Exception{
@@ -176,28 +171,53 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	}	
 	
 	protected void UpdataStatus(String _text,GPSInfo _info)throws Exception{
-			
+		if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
+			m_api.publishMsg(_text, _info.m_longitude, _info.m_latitude);
+		}else{
+			m_api.publishMsg(_text);
+		}
 	}
 	
 	protected void UpdataComment(int _style,String _text,long _commentWeiboId,
 									GPSInfo _info,boolean _updateTimeline)throws Exception{
-
+		
+		if(_style == GetCurrWeiboStyle()){
+			if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
+				m_api.commentMsg(_text, _commentWeiboId, _info.m_longitude, _info.m_latitude);
+			}else{
+				m_api.commentMsg(_text, _commentWeiboId);
+			}
+		}else{
+					
+			if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
+				m_api.publishMsg(_text, _info.m_longitude, _info.m_latitude);
+			}else{
+				m_api.publishMsg(_text);
+			}
+			
+		}
 	
 			
 	}
 	
 	protected void FavoriteWeibo(long _id)throws Exception{
-				
+		m_api.favoriteMessage(_id);
 	}
 
-	protected void FollowUser(long _id)throws Exception{
-		
+	protected void FollowUser(String _id)throws Exception{
+		m_api.followUser(_id);
 	}
 	
 	private void AddWeibo(List<QWeibo> _from,fetchWeiboData _to,byte _class){
 		
 		boolean t_insert;
 		for(QWeibo fetchOne : _from){
+			
+			if(_to.m_fromIndex >= fetchOne.getTime()){
+				// directly return because of qq time fetching bug!
+				//
+				return;
+			}
 			
 			if(_to.m_weiboList.size() >= _to.m_sum){
 				break;
@@ -255,26 +275,28 @@ public class fetchQWeibo extends fetchAbsWeibo{
 			_weibo.SetOriginalPic(_qweibo.getImage());
 		}		
 		
-		try{
-			_weibo.SetUserHeadImageHashCode(StoreHeadImage(new URL(_qweibo.getHeadImageURL()),_qweibo.getName()));
-		}catch(Exception e){
-			m_mainMgr.m_logger.LogOut(GetAccountName() + " Exception:" + e.getMessage());
-			m_mainMgr.m_logger.PrinterException(e);
-		}				
-			
+		if(_qweibo.getHeadImageURL().length() != 0){
+			try{
+				_weibo.SetUserHeadImageHashCode(StoreHeadImage(new URL(_qweibo.getHeadImageURL()),_qweibo.getName()));
+			}catch(Exception e){
+				m_mainMgr.m_logger.LogOut(GetAccountName() + " Exception:" + e.getMessage());
+				m_mainMgr.m_logger.PrinterException(e);
+			}				
+		}
+		
 		if(_qweibo.getSourceWeibo() != null){
 			
 			fetchWeibo t_sourceWeibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
 			ImportWeibo(t_sourceWeibo,_qweibo.getSourceWeibo(),_weiboClass);
 			
-			if(_qweibo.getType() == 7){
-				_weibo.SetCommectWeiboId(t_sourceWeibo.GetId());
-				_weibo.SetCommectWeibo(t_sourceWeibo);
-			}else{
+			if(_qweibo.getType() == 4){
 				_weibo.SetReplyWeiboId(t_sourceWeibo.GetId());
-				_weibo.SetReplyWeibo(t_sourceWeibo);				
+				_weibo.SetReplyWeibo(t_sourceWeibo);
+			}else{
+				_weibo.SetCommectWeiboId(t_sourceWeibo.GetId());
+				_weibo.SetCommectWeibo(t_sourceWeibo);				
 			}						
-		}			
+		}		
 		
 	}
 	
@@ -286,11 +308,11 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		t_weibo.m_api.setCostomerKey(fsm_consumerKey, fsm_consumerSecret);
 		t_weibo.m_api.setAccessToken("2189ff2946d3498a82e6bbb8b2b57d61", "8c160ee7358a5dc07e539429c3cbb487");
 		
-		List<QWeibo> t_list = t_weibo.m_api.getHomeList();
+		List<QWeibo> t_list = t_weibo.m_api.getHomeList(1307720032001L,20);
 		
 		for(QWeibo weibo : t_list){
 			
-			System.out.println(Long.toString(weibo.getId()) + " @" + weibo.getName() + "("+weibo.getNickName()+") :"+ weibo.getText());
+			System.out.println(Long.toString(weibo.getId()) + " @" + weibo.getName() + "("+weibo.getNickName()+") " + weibo.getTime() +":"+ weibo.getText());
 			
 			if(weibo.getSourceWeibo() != null){
 				weibo = weibo.getSourceWeibo();

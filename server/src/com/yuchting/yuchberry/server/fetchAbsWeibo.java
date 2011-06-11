@@ -161,6 +161,13 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		}
 	}
 	
+	/**
+	 * destroy the session connection
+	 */
+	public void DestroySession(){
+		
+	}	
+	
 	protected void PrepareRepushUnconfirmMsg_impl(fetchWeiboData _weiboList){
 		
 		boolean t_repush = true;
@@ -438,7 +445,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 											GPSInfo _info,boolean _updateTimeline)throws Exception;
 	
 	protected abstract void FavoriteWeibo(long _id)throws Exception;
-	protected abstract void FollowUser(long _id)throws Exception;
+	protected abstract void FollowUser(String _id)throws Exception;
 	protected abstract void DeleteWeibo(long _id)throws Exception;
 	
 	protected boolean ProcessWeiboConfirmed(ByteArrayInputStream in)throws Exception{
@@ -482,16 +489,28 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	
 	protected boolean ProcessWeiboHeadImage(ByteArrayInputStream in)throws Exception{
 		
-		if(in.read() == GetCurrWeiboStyle()){
+		int t_WeiboStyle = in.read();
+		
+		if(t_WeiboStyle == GetCurrWeiboStyle()){
 			
-			final long t_id = sendReceive.ReadLong(in);
+			String t_id = null;
+			if(t_WeiboStyle == fetchWeibo.QQ_WEIBO_STYLE){
+				t_id = sendReceive.ReadString(in);
+			}else{
+				t_id = Long.toString(sendReceive.ReadLong(in));
+			}			
 			
-			File t_file = new File(GetHeadImageFilename(Long.toString(t_id)));
+			File t_file = new File(GetHeadImageFilename(t_id));
 			if(t_file.exists()){
 				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 				t_os.write(msg_head.msgWeiboHeadImage);
 				t_os.write(GetCurrWeiboStyle());
-				sendReceive.WriteLong(t_os,t_id);
+				
+				if(t_WeiboStyle == fetchWeibo.QQ_WEIBO_STYLE){
+					sendReceive.WriteString(t_os,t_id,false);
+				}else{
+					sendReceive.WriteLong(t_os,Long.valueOf(t_id).longValue());
+				}				
 				
 				BufferedInputStream t_read = new BufferedInputStream(new FileInputStream(t_file));
 				int size = 0;
@@ -524,8 +543,14 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		
 		int t_style = in.read();
 		if(t_style == GetCurrWeiboStyle()){
-			long t_id = sendReceive.ReadLong(in);
 			
+			String t_id = null;
+			if(t_style == fetchWeibo.QQ_WEIBO_STYLE){
+				t_id = sendReceive.ReadString(in);
+			}else{
+				t_id = Long.toString(sendReceive.ReadLong(in));
+			}
+
 			m_mainMgr.m_logger.LogOut(GetAccountName() + " Follow User " + t_id);
 			
 			FollowUser(t_id);

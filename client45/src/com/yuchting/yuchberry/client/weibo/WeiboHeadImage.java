@@ -4,7 +4,7 @@ import net.rim.device.api.system.Bitmap;
 
 public final class WeiboHeadImage {
 
-	public long 	m_userID;
+	public String 	m_userID;
 	public byte	m_weiboStyle;
 	
 	public Bitmap	m_headImage;

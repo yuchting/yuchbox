@@ -774,9 +774,9 @@ public class fetchEmail extends fetchAccount{
 			
 		}else{
 			
-			if(t_mail.GetSubject().equals("设置签名") 
-			|| t_mail.GetSubject().toLowerCase().equals("set signature")
-			|| t_mail.GetSubject().equals("設置簽名") ){
+			if(t_mail.GetSubject().startsWith("设置签名") 
+			|| t_mail.GetSubject().toLowerCase().startsWith("set signature")
+			|| t_mail.GetSubject().startsWith("設置簽名") ){
 				
 				if(!t_mail.GetSendToVect().isEmpty() 
 				&& ((String)t_mail.GetSendToVect().elementAt(0)).toLowerCase().indexOf(GetAccountName()) != -1 ){

@@ -210,6 +210,8 @@ public class fetchMgr{
 	            	t_weibo = new fetchSinaWeibo(this);
 	            }else if(t_type.equalsIgnoreCase("twitter")){
 	            	t_weibo = new fetchTWeibo(this);
+	            }else if(t_type.equalsIgnoreCase("qq")){
+	            	t_weibo = new fetchQWeibo(this);
 	            }else{
 	            	continue;
 	            }

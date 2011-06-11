@@ -29,6 +29,7 @@ import net.rim.device.api.notification.NotificationsConstants;
 import net.rim.device.api.notification.NotificationsManager;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.system.WLANInfo;
 import net.rim.device.api.ui.Manager;
@@ -45,6 +46,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public final static int 		fsm_display_width		= Display.getWidth();
 	public final static int 		fsm_display_height		= Display.getHeight();
+	public final static String	fsm_OS_version			= CodeModuleManager.getModuleVersion((CodeModuleManager.getModuleHandleForObject("")));;
 	
 	public static ResourceBundle sm_local = ResourceBundle.getBundle(localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
 	
@@ -214,8 +216,19 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public boolean			m_updateOwnListWhenRe	= false;
 	
 	public String 				m_weiboHeadImageDir = null;
-	public String 				m_weiboHeadImageDir_sina = null;
-	public String 				m_weiboHeadImageDir_t = null;
+	
+	public String[]				m_weiboHeadImageDir_sub = 
+	{
+		"Sina/",
+		"TW/",
+		"QQ/",
+		
+		"163/",
+		"SOHU/",
+		"FAN/",
+	};
+	
+
 	public weiboTimeLineScreen	m_weiboTimeLineScreen = null;
 	public boolean				m_publicForward		= false;
 	public Vector				m_receivedWeiboList	= new Vector();
@@ -249,9 +262,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	
 	public recvMain(boolean _systemRun) {	
-				
-		boolean t_SDCardUse = false;
-		
+	
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/",Connector.READ_WRITE);
 			try{
@@ -285,30 +296,21 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         		fc = null;
         	}
         	
-        	m_weiboHeadImageDir_sina = m_weiboHeadImageDir + "Sina/";
-        	fc = (FileConnection) Connector.open(m_weiboHeadImageDir_sina,Connector.READ_WRITE);
-        	try{
-        		if(!fc.exists()){
-            		fc.mkdir();
-            	}	
-        	}finally{
-        		fc.close();
-        		fc = null;
-        	}
-        	
-        	m_weiboHeadImageDir_t = m_weiboHeadImageDir + "Tw/";
-        	fc = (FileConnection) Connector.open(m_weiboHeadImageDir_t,Connector.READ_WRITE);
-        	try{
-        		if(!fc.exists()){
-            		fc.mkdir();
-            	}	
-        	}finally{
-        		fc.close();
-        		fc = null;
+        	for(int i = 0;i < m_weiboHeadImageDir_sub.length;i++){
+        		m_weiboHeadImageDir_sub[i] = m_weiboHeadImageDir + m_weiboHeadImageDir_sub[i];
+            	fc = (FileConnection) Connector.open(m_weiboHeadImageDir_sub[i],Connector.READ_WRITE);
+            	try{
+            		if(!fc.exists()){
+                		fc.mkdir();
+                	}	
+            	}finally{
+            		fc.close();
+            		fc = null;
+            	}
         	}
         	
         }catch(Exception _e){
-        	DialogAlertAndExit("can't use the '"+ t_attachmentDir +"' to store attachment!");
+        	DialogAlertAndExit("can't use the '"+ m_weiboHeadImageDir +"' to store attachment!");
         	return;
         }
         
@@ -449,14 +451,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	
 	public String GetWeiboHeadImageDir(int _style)throws Exception{
-		
-		if(_style == fetchWeibo.SINA_WEIBO_STYLE){
-			return m_weiboHeadImageDir_sina;
-		}else if(_style == fetchWeibo.TWITTER_WEIBO_STYLE){
-			return m_weiboHeadImageDir_t;
-		}else{
-			throw new Exception("recv error weibo style!");
-		}
+		return m_weiboHeadImageDir_sub[_style];
 	}
 
 	public String GetAPNName(){
@@ -1631,14 +1626,16 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return true;
 	}
 	
-	public void ChangeWeiboHeadImageHash(long _userId,int _weiboStyle,int _headImageHash){
+	public void ChangeWeiboHeadImageHash(String _userId,int _weiboStyle,int _headImageHash){
 		
 		synchronized(m_receivedWeiboList) {
 
 			for(int i = 0 ;i < m_receivedWeiboList.size();i++){
 				fetchWeibo weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
 				
-				if(weibo.GetUserId() == _userId && weibo.GetWeiboStyle() == _weiboStyle){
+				if(weibo.GetWeiboStyle() == _weiboStyle 
+				&& weibo.GetHeadImageId().equals(_userId) ){
+					
 					weibo.SetUserHeadImageHashCode(_headImageHash);
 				}
 			}

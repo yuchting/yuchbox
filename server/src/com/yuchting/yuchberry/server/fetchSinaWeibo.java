@@ -214,12 +214,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		m_maxCheckFolderNum			= limitStatus.getHourlyLimit();
 	}
 	
-	/**
-	 * destroy the session connection
-	 */
-	public void DestroySession(){
-		
-	}	
+	
 	
 	protected void UpdataStatus(String _text,GPSInfo _info)throws Exception{
 		if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
@@ -258,8 +253,8 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		m_weibo.createFavorite(_id);			
 	}
 
-	protected void FollowUser(long _id)throws Exception{
-		m_weibo.createFriendship(Long.toString(_id));
+	protected void FollowUser(String _id)throws Exception{
+		m_weibo.createFriendship(_id);
 	}
 	
 	protected void DeleteWeibo(long _id)throws Exception{

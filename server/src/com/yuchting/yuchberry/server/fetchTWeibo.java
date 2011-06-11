@@ -71,14 +71,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		m_currRemainCheckFolderNum = limitStatus.getRemainingHits();
 		m_maxCheckFolderNum			= limitStatus.getHourlyLimit();
 	}
-	
-	/**
-	 * destroy the session connection
-	 */
-	public void DestroySession(){
 		
-	}
-	
 	protected void CheckTimeline()throws Exception{
 		List<Status> t_fetch = null;
 		if(m_timeline.m_fromIndex > 1){
@@ -222,8 +215,8 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		m_twitter.createFavorite(_id);			
 	}
 
-	protected void FollowUser(long _id)throws Exception{
-		m_twitter.createFriendship(Long.toString(_id));
+	protected void FollowUser(String _id)throws Exception{
+		m_twitter.createFriendship(_id);
 	}
 	
 	protected void DeleteWeibo(long _id)throws Exception{

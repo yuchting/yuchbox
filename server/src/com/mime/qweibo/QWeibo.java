@@ -52,7 +52,10 @@ public class QWeibo {
 		m_name			= _json.getString("name");
 		m_nickName		= _json.getString("nick");
 		
-		m_headImageURL	= _json.getString("head");
+		m_headImageURL	= _json.getString("head"); // append the size
+		if(m_headImageURL.length() != 0){
+			m_headImageURL += "/50";
+		}
 		
 		m_isOwnWeibo	= _json.getInt("self") == 1;
 		m_isVIP			= _json.getInt("isvip") == 1;

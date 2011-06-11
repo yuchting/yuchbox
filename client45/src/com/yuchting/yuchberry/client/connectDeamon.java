@@ -1776,8 +1776,14 @@ public class connectDeamon extends Thread implements SendListener,
 		try{
 			
 			int t_style = in.read();
-			long t_id = sendReceive.ReadLong(in);
 			
+			String t_id = null;
+			if(t_style == fetchWeibo.QQ_WEIBO_STYLE){
+				t_id = sendReceive.ReadString(in);
+			}else{
+				t_id = Long.toString(sendReceive.ReadLong(in));
+			}
+						
 			String t_imageDir = m_mainApp.GetWeiboHeadImageDir(t_style);
 						
 			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
