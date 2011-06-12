@@ -23,7 +23,7 @@ public class WeiboDMManager extends WeiboMainManager{
 					}
 				}
 				
-				WeiboDMItemField t_field = new WeiboDMItemField(_weibo,_image);
+				WeiboDMItemField t_field = new WeiboDMItemField(_weibo,_image,WeiboDMManager.this);
 				insert(t_field,0);
 								
 				if(_resetSelectIdx){

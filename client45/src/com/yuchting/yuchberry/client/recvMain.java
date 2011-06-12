@@ -213,7 +213,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	// weibo module
 	public boolean			m_enableWeiboModule			= false;
 	public boolean			m_updateOwnListWhenFw		= true;
-	public boolean			m_updateOwnListWhenRe	= false;
+	public boolean			m_updateOwnListWhenRe		= false;
+	public boolean			m_dontDownloadWeiboHeadImage= false;
 	
 	public String 				m_weiboHeadImageDir = null;
 	
@@ -728,7 +729,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 21;
+	final static int		fsm_clientVersion = 22;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -857,7 +858,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_receivedWeiboNum	= sendReceive.ReadInt(t_readFile);
 				    			m_sentWeiboNum		= sendReceive.ReadInt(t_readFile);
 				    		}
-				    						    		
+				    		
+				    		if(t_currVer >= 22){
+				    			WeiboItemField.sm_displayHeadImage = (t_readFile.read() == 1)?true:false;
+				    			WeiboItemField.sm_simpleMode = (t_readFile.read() == 1)?true:false;
+				    			m_dontDownloadWeiboHeadImage = (t_readFile.read() == 1)?true:false;
+				    		}
 			    		}finally{
 			    			t_readFile.close();
 			    			t_readFile = null;
@@ -925,6 +931,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						sendReceive.WriteInt(t_writeFile,m_maxWeiboNumIndex);
 						sendReceive.WriteInt(t_writeFile,m_receivedWeiboNum);
 						sendReceive.WriteInt(t_writeFile,m_sentWeiboNum);
+						
+						t_writeFile.write(WeiboItemField.sm_displayHeadImage?1:0);
+						t_writeFile.write(WeiboItemField.sm_simpleMode?1:0);
+						t_writeFile.write(m_dontDownloadWeiboHeadImage?1:0);
+						
+		    			
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1077,8 +1089,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			if(m_weiboTimeLineScreen == null){
 				InitWeiboModule();
 			}
-			
-			pushScreen(m_weiboTimeLineScreen);
+			if(getScreenCount() == 0){
+				pushScreen(m_weiboTimeLineScreen);
+			}			
 			
 		}else{
 			pushStateScreen();

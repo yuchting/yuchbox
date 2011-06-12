@@ -195,9 +195,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 				m_api.publishMsg(_text);
 			}
 			
-		}
-	
-			
+		}			
 	}
 	
 	protected void FavoriteWeibo(long _id)throws Exception{
@@ -211,12 +209,13 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	private void AddWeibo(List<QWeibo> _from,fetchWeiboData _to,byte _class){
 		
 		boolean t_insert;
+		
 		for(QWeibo fetchOne : _from){
 			
 			if(_to.m_fromIndex >= fetchOne.getTime()){
 				// directly return because of qq time fetching bug!
 				//
-				return;
+				break;
 			}
 			
 			if(_to.m_weiboList.size() >= _to.m_sum){

@@ -182,6 +182,10 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	private void SendHeadImageQueryMsg(fetchWeibo _weibo)throws Exception{
 		
+		if(sm_mainApp.m_dontDownloadWeiboHeadImage){
+			return ;
+		}
+		
 		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 		t_os.write(msg_head.msgWeiboHeadImage);
 		t_os.write(_weibo.GetWeiboStyle());
@@ -200,7 +204,8 @@ public class weiboTimeLineScreen extends MainScreen{
 		for(int i = 0 ;i < m_headImageList.size();i++){
 			WeiboHeadImage t_image = (WeiboHeadImage)m_headImageList.elementAt(i);
 							
-			if(_weibo.GetWeiboStyle() == t_image.m_weiboStyle && t_image.m_userID.equals(_weibo.GetHeadImageId()) ){
+			if(_weibo.GetWeiboStyle() == t_image.m_weiboStyle 
+				&& t_image.m_userID.equals(_weibo.GetHeadImageId()) ){
 				
 				if(t_image.m_dataHash != _weibo.GetUserHeadImageHashCode()){
 					SendHeadImageQueryMsg(_weibo);
@@ -315,19 +320,17 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 	}
 	public void SendMenuItemClick(){
-		if(WeiboItemField.sm_extendWeiboItem == m_mainMgr.m_updateWeiboField){
+		if(m_currMgr.getCurrExtendedItem() == m_mainMgr.m_updateWeiboField){
 			
-			UpdateNewWeibo(m_mainMgr.m_updateWeiboField.m_sendUpdateText);
-			
-			
+			UpdateNewWeibo(m_mainMgr.m_updateWeiboField.m_sendUpdateText);			
 			
 		}else{
 			
 			try{
 				
-				String t_text = WeiboItemField.sm_editTextArea.getText();
+				String t_text = m_currMgr.m_editTextArea.getText();
 				
-				fetchWeibo t_referenceWeibo = WeiboItemField.sm_editWeiboItem.m_weibo;
+				fetchWeibo t_referenceWeibo = m_currMgr.getCurrEditItem().m_weibo;
 				
 				if(t_referenceWeibo.GetWeiboClass() == fetchWeibo.COMMENT_ME_CLASS){
 					if(t_referenceWeibo.GetCommentWeibo() != null){
@@ -342,7 +345,7 @@ public class weiboTimeLineScreen extends MainScreen{
 				t_os.write(msg_head.msgWeibo);
 			
 				t_os.write(t_referenceWeibo.GetWeiboStyle());
-				t_os.write(WeiboItemField.sm_currentSendType);
+				t_os.write(m_currMgr.m_currentSendType);
 				
 				sendReceive.WriteString(t_os,t_text);
 				
@@ -356,7 +359,7 @@ public class weiboTimeLineScreen extends MainScreen{
 					t_os.write(0);
 				}
 				
-				if(WeiboItemField.sm_currentSendType == 1){
+				if(m_currMgr.m_currentSendType == 1){
 					t_os.write(sm_mainApp.m_updateOwnListWhenFw?1:0);
 				}else{
 					t_os.write(sm_mainApp.m_updateOwnListWhenRe?1:0);
@@ -463,19 +466,19 @@ public class weiboTimeLineScreen extends MainScreen{
     
     public void deleteWeiboItem(){
     	
-    	if(WeiboItemField.sm_selectWeiboItem != null 
-    	&& WeiboItemField.sm_selectWeiboItem.m_weibo != null
-    	&& WeiboItemField.sm_selectWeiboItem.m_weibo.IsOwnWeibo()){
+    	if(m_currMgr.getCurrSelectedItem() != null 
+    	&& m_currMgr.getCurrSelectedItem().m_weibo != null
+    	&& m_currMgr.getCurrSelectedItem().m_weibo.IsOwnWeibo()){
     		if(Dialog.ask(Dialog.D_YES_NO,recvMain.sm_local.getString(localResource.WEIBO_DELETE_ASK_PROMPT),Dialog.NO) == Dialog.YES){
     			try{
     				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
         			t_os.write(msg_head.msgWeiboDelete);
-        			t_os.write(WeiboItemField.sm_selectWeiboItem.m_weibo.GetWeiboStyle());
-        			sendReceive.WriteLong(t_os,WeiboItemField.sm_selectWeiboItem.m_weibo.GetId());
+        			t_os.write(m_currMgr.getCurrSelectedItem().m_weibo.GetWeiboStyle());
+        			sendReceive.WriteLong(t_os,m_currMgr.getCurrSelectedItem().m_weibo.GetId());
         			
         			sm_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeiboDelete,t_os.toByteArray(),true);
         			
-        			m_currMgr.DelWeibo(WeiboItemField.sm_selectWeiboItem.m_weibo);
+        			m_currMgr.DelWeibo(m_currMgr.getCurrSelectedItem().m_weibo);
     			}catch(Exception e){
     				sm_mainApp.SetErrorString("DWI:" + e.getMessage() + e.getClass().getName());
     			}
@@ -486,7 +489,7 @@ public class weiboTimeLineScreen extends MainScreen{
     
 	protected void makeMenu(Menu _menu,int instance){
 		
-		if(WeiboItemField.sm_extendWeiboItem == null){
+		if(m_currMgr.getCurrEditItem() == null){
 			_menu.add(m_homeManagerItem);
 			_menu.add(m_atMeManagerItem);
 			_menu.add(m_commentMeItem);
@@ -495,26 +498,26 @@ public class weiboTimeLineScreen extends MainScreen{
 			_menu.add(MenuItem.separator(m_menuIndex));
 		}
 		
-		if(WeiboItemField.sm_editWeiboItem != null && WeiboItemField.sm_extendWeiboItem != null){
+		if(m_currMgr.getCurrEditItem() != null && m_currMgr.getCurrExtendedItem() != null){
 			_menu.add(m_sendItem);
 		}		
 		
 		_menu.add(m_refreshItem);
 		
-		if(WeiboItemField.sm_extendWeiboItem == null){
+		if(m_currMgr.getCurrExtendedItem() == null){
 			
 			_menu.add(m_topItem);
 			_menu.add(m_bottomItem);	
 			
 		}else{
-			if(WeiboItemField.sm_editWeiboItem == null){
+			if(m_currMgr.getCurrEditItem() == null){
 				_menu.add(m_preWeiboItem);
 				_menu.add(m_nextWeiboItem);
 			}
 		}
 		
-		if(WeiboItemField.sm_selectWeiboItem.m_weibo != null
-		&& WeiboItemField.sm_selectWeiboItem.m_weibo.IsOwnWeibo()){
+		if(m_currMgr.getCurrSelectedItem().m_weibo != null
+		&& m_currMgr.getCurrSelectedItem().m_weibo.IsOwnWeibo()){
 			_menu.add(m_deleteItem);
 		}
 		
@@ -541,69 +544,78 @@ public class weiboTimeLineScreen extends MainScreen{
 	protected boolean keyDown(int keycode,int time){
 		
 		final int key = Keypad.key(keycode);
-				
-		if(WeiboItemField.sm_extendWeiboItem != null && WeiboItemField.sm_editWeiboItem == null){
-			switch(key){
-	    	case ' ':
-	    		//boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
-	    		m_currMgr.OpenNextWeiboItem(true);
-	    		return true;
-	    	case 'F':
-	    		m_currMgr.ForwardWeibo(WeiboItemField.sm_extendWeiboItem);
-	    		return true;
-	    	case 'V':
-	    		m_currMgr.FavoriteWeibo(WeiboItemField.sm_extendWeiboItem);
-	    		return true;
-	    	case 'E':
-	    		m_currMgr.AtWeibo(WeiboItemField.sm_extendWeiboItem);
-	    		return true;
-	    	case 'G':
-	    		m_currMgr.OpenOriginalPic(WeiboItemField.sm_extendWeiboItem);
-	    		return true;
-	    	case 'D':
-	    		deleteWeiboItem();
-	    		return true;
-	    	case '0':
-	    		m_currMgr.OpenNextWeiboItem(false);
-	    		return true;
-	    	
-			}
-		}else{
-			
-			if(WeiboItemField.sm_extendWeiboItem == null){
-				switch(key){
-		    	case 'S':
-		    		m_stateItem.run();
-		    		return true;
-		    	case 'T':		    		
-	    			m_currMgr.ScrollToTop();
-	    			return true;
-		    	case 'B':
-	    			m_currMgr.ScrollToBottom();	
-	    			return true;
-		    	case 'R':
-		    		SendRefreshMsg();
-		    		break;
-		    	case 10: // enter key
-		    		m_currMgr.Clicked(0, 0);
-		    		break;		    		
-		    	case 'U':
-		    		m_homeManagerItem.run();
-		    		return true;
-		    	case 'I':
-		    		m_atMeManagerItem.run();
-		    		return true;
-		    	case 'O':
-		    		m_commentMeItem.run();
-		    		return true;
-		    	case 'P':
-		    		m_directMsgItem.run();
-		    		return true;
-		    	}
-			}
-		}
+		
+		if(m_currMgr.getCurrEditItem() == null){
 
-		return super.keyDown(keycode,time);    	
+			switch(key){
+			case 'U':
+	    		m_homeManagerItem.run();
+	    		return true;
+	    	case 'I':
+	    		m_atMeManagerItem.run();
+	    		return true;
+	    	case 'O':
+	    		m_commentMeItem.run();
+	    		return true;
+	    	case 'P':
+	    		m_directMsgItem.run();
+	    		return true;
+			}
+			
+			if(m_currMgr.getCurrExtendedItem() != null ){
+				switch(key){
+		    	case ' ':
+		    		//boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
+		    		m_currMgr.OpenNextWeiboItem(true);
+		    		return true;
+		    	case 'F':
+		    		m_currMgr.ForwardWeibo(m_currMgr.getCurrExtendedItem());
+		    		return true;
+		    	case 'V':
+		    		m_currMgr.FavoriteWeibo(m_currMgr.getCurrExtendedItem());
+		    		return true;
+		    	case 'E':
+		    		m_currMgr.AtWeibo(m_currMgr.getCurrExtendedItem());
+		    		return true;
+		    	case 'G':
+		    		m_currMgr.OpenOriginalPic(m_currMgr.getCurrExtendedItem());
+		    		return true;
+		    	case 'D':
+		    		deleteWeiboItem();
+		    		return true;
+		    	case '0':
+		    		m_currMgr.OpenNextWeiboItem(false);
+		    		return true;
+		    	case 'L':
+		    		m_currMgr.FollowCommentUser(m_currMgr.getCurrExtendedItem());
+		    		return true;
+				}
+			}else{
+				
+				if(m_currMgr.getCurrExtendedItem() == null){
+					switch(key){
+			    	case 'S':
+			    		m_stateItem.run();
+			    		return true;
+			    	case 'T':		    		
+		    			m_currMgr.ScrollToTop();
+		    			return true;
+			    	case 'B':
+		    			m_currMgr.ScrollToBottom();	
+		    			return true;
+			    	case 'R':
+			    		SendRefreshMsg();
+			    		break;
+			    	case 10: // enter key
+			    		m_currMgr.Clicked(0, 0);
+			    		break;		    		
+			    	
+			    	}
+				}
+			}	
+		}
+		
+		return super.keyDown(keycode,time);   	
 	}
 	 
 	public boolean onClose(){
@@ -625,7 +637,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	protected boolean navigationMovement(int dx,int dy,int status,int time){
 		if(dx != 0){
-			if(WeiboItemField.sm_extendWeiboItem == null && WeiboItemField.sm_editWeiboItem == null){
+			if(m_currMgr.getCurrExtendedItem() == null && m_currMgr.getCurrEditItem() == null){
 				
 				m_weiboHeader.setCurrState(m_weiboHeader.getCurrState() + dx);
 				refreshWeiboHeader();
@@ -643,31 +655,45 @@ public class weiboTimeLineScreen extends MainScreen{
 		switch(m_weiboHeader.getCurrState()){
 		case WeiboHeader.STATE_TIMELINE:
 			if(m_currMgr != m_mainMgr){
+				m_currMgr.backupFocusField();
 				replace(m_currMgr,m_mainMgr);
 				m_currMgr = m_mainMgr;
+			}else{
+				return;
 			}
 			break;
 		case WeiboHeader.STATE_COMMENT_ME:
 			if(m_currMgr != m_mainCommitMeMgr){
+				m_currMgr.backupFocusField();
 				replace(m_currMgr,m_mainCommitMeMgr);
 				m_currMgr = m_mainCommitMeMgr;
+			}else{
+				return;
 			}
 			break;
 			
 		case WeiboHeader.STATE_AT_ME:
 			if(m_currMgr != m_mainAtMeMgr){
+				m_currMgr.backupFocusField();
 				replace(m_currMgr,m_mainAtMeMgr);
 				m_currMgr = m_mainAtMeMgr;
+			}else{
+				return;
 			}
 			break;
 		case WeiboHeader.STATE_DIRECT_MESSAGE:
 			if(m_currMgr != m_mainDMMgr){
+				m_currMgr.backupFocusField();
 				replace(m_currMgr, m_mainDMMgr);
 				m_currMgr = m_mainDMMgr;
+			}else{
+				return;
 			}
+			break;
 		}
 		
-		m_currMgr.setFocus();
+		m_currMgr.restoreFocusField();
+		
 		m_weiboHeader.invalidate();
 		sm_mainApp.StopWeiboNotification();
 		

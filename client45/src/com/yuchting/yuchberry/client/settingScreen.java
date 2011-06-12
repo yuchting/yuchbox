@@ -1,7 +1,5 @@
 package com.yuchting.yuchberry.client;
 
-import com.yuchting.yuchberry.client.weibo.WeiboItemField;
-
 import local.localResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -14,10 +12,14 @@ import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.Menu;
+import net.rim.device.api.ui.component.NullField;
 import net.rim.device.api.ui.component.NumericChoiceField;
 import net.rim.device.api.ui.component.ObjectChoiceField;
 import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
+import net.rim.device.api.ui.container.VerticalFieldManager;
+
+import com.yuchting.yuchberry.client.weibo.WeiboItemField;
 
 public class settingScreen extends MainScreen implements FieldChangeListener,FocusChangeListener{
 	
@@ -56,10 +58,16 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 ButtonField		m_changeSignature = new ButtonField(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_BUTTON_TEXT),Field.FIELD_RIGHT);
 	 
 	 CheckboxField		m_weiboModule	= null;
+	 NullField			m_weiboNullField = new NullField();
+	 VerticalFieldManager	m_weiboSetManager = null;
+	 
 	 CheckboxField		m_updateOwnWhenFw = null;
 	 CheckboxField		m_updateOwnWhenRe = null;
 	 CheckboxField		m_commentFirst	= null;
 	 CheckboxField		m_publicForward	= null;
+	 CheckboxField		m_displayHeadImage = null;
+	 CheckboxField		m_simpleMode 	= null;
+	 CheckboxField		m_dontDownloadHeadImage = null;
 	 ObjectChoiceField	m_maxWeiboNum	= null;
 	 
 	 recvMain			m_mainApp		= null;
@@ -151,25 +159,17 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
 		 add(t_title);
 		 
-		 m_weiboModule = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_ENABLE),m_mainApp.m_enableWeiboModule);
+		 m_weiboModule = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_ENABLE),
+				 								m_mainApp.m_enableWeiboModule);
 		 add(m_weiboModule);
+		 m_weiboModule.setChangeListener(this);
 		 
-		 m_updateOwnWhenFw = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_UPDATE_FW),m_mainApp.m_updateOwnListWhenFw);
-		 add(m_updateOwnWhenFw);
+		 add(m_weiboNullField);
 		 
-		 m_updateOwnWhenRe = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_UPDATE_RE),m_mainApp.m_updateOwnListWhenRe);
-		 add(m_updateOwnWhenRe);
-		 
-		 m_commentFirst		= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DISPLAY_COMMENT_FIRST),WeiboItemField.sm_commentFirst);
-		 add(m_commentFirst);
-		 
-		 m_publicForward	= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_PUBLIC_FW),m_mainApp.m_publicForward);
-		 m_publicForward.setChangeListener(this);
-		 add(m_publicForward);
-		 
-		 m_maxWeiboNum		= new ObjectChoiceField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_MAX_WEIBO_NUM),
-								recvMain.fsm_maxWeiboNumList,m_mainApp.m_maxWeiboNumIndex);
-		 add(m_maxWeiboNum);
+		 if(m_mainApp.m_enableWeiboModule){
+			 enableWeiboSet(true);
+		 }		 
+		
 		 //@}
 		 		 
 		 add(new SeparatorField());		 
@@ -234,6 +234,48 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 
 	 }
 	 
+	 private void initWeiboModuleSet(){
+		 if(m_weiboSetManager == null){
+			 m_weiboSetManager = new VerticalFieldManager();
+			 
+			 m_updateOwnWhenFw = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_UPDATE_FW),m_mainApp.m_updateOwnListWhenFw);
+			 m_weiboSetManager.add(m_updateOwnWhenFw);
+			 
+			 m_updateOwnWhenRe = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_UPDATE_RE),m_mainApp.m_updateOwnListWhenRe);
+			 m_weiboSetManager.add(m_updateOwnWhenRe);
+			 
+			 m_commentFirst		= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DISPLAY_COMMENT_FIRST),WeiboItemField.sm_commentFirst);
+			 m_weiboSetManager.add(m_commentFirst);
+			 
+			 m_publicForward	= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_PUBLIC_FW),m_mainApp.m_publicForward);
+			 m_publicForward.setChangeListener(this);
+			 m_weiboSetManager.add(m_publicForward);
+			 
+			 m_displayHeadImage = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DISPLAY_HEAD_IMAGE),WeiboItemField.sm_displayHeadImage);
+			 m_weiboSetManager.add(m_displayHeadImage);
+			 
+			 m_simpleMode 	=  new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SIMPLE_MODE),WeiboItemField.sm_simpleMode);
+			 m_weiboSetManager.add(m_simpleMode);
+			 
+			 m_dontDownloadHeadImage = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DONT_DOWNLOAD_HEAD_IMAGE),m_mainApp.m_dontDownloadWeiboHeadImage);
+			 m_weiboSetManager.add(m_dontDownloadHeadImage);
+			 
+			 m_maxWeiboNum		= new ObjectChoiceField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_MAX_WEIBO_NUM),
+									recvMain.fsm_maxWeiboNumList,m_mainApp.m_maxWeiboNumIndex);
+			 
+			 m_weiboSetManager.add(m_maxWeiboNum);
+		 }		
+	 }
+	 
+	 private void enableWeiboSet(boolean _enable){
+		 if(_enable){
+			 initWeiboModuleSet();
+			 replace(m_weiboNullField,m_weiboSetManager);
+		 }else{
+			 replace(m_weiboSetManager,m_weiboNullField);
+		 }
+	 }
+	 
 	 public void fieldChanged(Field field, int context) {
 		if(context != FieldChangeListener.PROGRAMMATIC){
 			// Perform action if user changed field. 
@@ -266,6 +308,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				if(m_useWifi.getChecked()){
 					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.SETTING_ENABLE_SSL_ENABLE));
 				}
+			}else if(field == m_weiboModule){
+				enableWeiboSet(m_weiboModule.getChecked());
 			}
 		}else{
 			// Perform action if application changed field.
@@ -323,14 +367,20 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 			
 			if(m_mainApp.m_enableWeiboModule && !t_hasEnabled){
 				m_mainApp.InitWeiboModule();
-			}
+			}	
 		}
 		
-		m_mainApp.m_updateOwnListWhenFw = m_updateOwnWhenFw.getChecked();
-		m_mainApp.m_updateOwnListWhenRe = m_updateOwnWhenRe.getChecked();
-		WeiboItemField.sm_commentFirst	= m_commentFirst.getChecked();
-		m_mainApp.m_publicForward		= m_publicForward.getChecked();		
-		m_mainApp.m_maxWeiboNumIndex	= m_maxWeiboNum.getSelectedIndex();
+		if(m_weiboSetManager != null){
+			m_mainApp.m_updateOwnListWhenFw = m_updateOwnWhenFw.getChecked();
+			m_mainApp.m_updateOwnListWhenRe = m_updateOwnWhenRe.getChecked();
+			WeiboItemField.sm_commentFirst	= m_commentFirst.getChecked();
+			m_mainApp.m_publicForward		= m_publicForward.getChecked();		
+			m_mainApp.m_maxWeiboNumIndex	= m_maxWeiboNum.getSelectedIndex();
+			
+			WeiboItemField.sm_displayHeadImage	= m_displayHeadImage.getChecked();
+			WeiboItemField.sm_simpleMode		= m_simpleMode.getChecked();
+			m_mainApp.m_dontDownloadWeiboHeadImage	= m_dontDownloadHeadImage.getChecked();
+		}
 		
 		m_mainApp.WriteReadIni(false);
 		

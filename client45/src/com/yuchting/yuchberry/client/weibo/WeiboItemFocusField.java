@@ -7,7 +7,7 @@ import net.rim.device.api.ui.XYRect;
 public class WeiboItemFocusField extends Field{
 	
 	public WeiboItemField m_itemField;
-	
+		
 	public WeiboItemFocusField(WeiboItemField _dataField){
 		super(Field.FOCUSABLE);
 		
@@ -41,7 +41,7 @@ public class WeiboItemFocusField extends Field{
 	protected void drawFocus(Graphics _g,boolean _on){
 		m_itemField.paintFocus(_g, _on);
 		if(_on){
-			WeiboItemField.sm_selectWeiboItem = m_itemField;
+			m_itemField.getParentManager().setCurrSelectedItem(m_itemField);
 		}
 	}
 }

@@ -73,8 +73,8 @@ public class WeiboDMItemField extends WeiboItemField{
 	
 	
 	
-	public WeiboDMItemField(fetchWeibo _weibo,WeiboHeadImage _headImage){
-		super(_weibo,_headImage);
+	public WeiboDMItemField(fetchWeibo _weibo,WeiboHeadImage _headImage,WeiboMainManager _manager){
+		super(_weibo,_headImage,_manager);
 		m_DMList.addElement(new WeiboDMData(_weibo,_headImage));
 	}
 	
@@ -83,7 +83,7 @@ public class WeiboDMItemField extends WeiboItemField{
 			
 			if(!m_hasControlField[fsm_controlField_edit_return]){
 				m_hasControlField[fsm_controlField_edit_return] = true;
-				add(sm_editTextArea);
+				add(m_parentManager.m_editTextArea);
 			}
 			
 			recalculateHeight(true, _add, false,null);
@@ -102,7 +102,7 @@ public class WeiboDMItemField extends WeiboItemField{
 			
 			if(m_hasControlField[fsm_controlField_edit_return]){
 				m_hasControlField[fsm_controlField_edit_return] = false;
-				delete(sm_editTextArea);
+				delete(m_parentManager.m_editTextArea);
 			}
 			
 			recalculateHeight(true, _add, false,null);
@@ -120,7 +120,7 @@ public class WeiboDMItemField extends WeiboItemField{
 	}
 	
 	public int getPreferredHeight() {
-		if(sm_extendWeiboItem == this){		
+		if(m_parentManager.getCurrExtendedItem() == this){		
 			return recalculateHeight(false, false, false, null);
 		}else{
 			return fsm_closeHeight;
@@ -129,8 +129,8 @@ public class WeiboDMItemField extends WeiboItemField{
 		
 	public void subpaint(Graphics _g){
 		
-		if(sm_extendWeiboItem == this){
-			paintChild(_g,sm_editTextArea);
+		if(m_parentManager.getCurrExtendedItem() == this){
+			paintChild(_g,m_parentManager.m_editTextArea);
 			_g.drawLine(0, sm_editTextAreaHeight, recvMain.fsm_display_width, sm_editTextAreaHeight);
 						
 			recalculateHeight(false, false, false,_g);
@@ -141,12 +141,12 @@ public class WeiboDMItemField extends WeiboItemField{
 	
 	public void sublayout(int width, int height){
 		
-		if(sm_extendWeiboItem == this){
+		if(m_parentManager.getCurrExtendedItem() == this){
 			
 			// edit text
 			//
-			setPositionChild(sm_editTextArea,0,0);
-			layoutChild(sm_editTextArea,sm_editTextArea.getPreferredWidth(),sm_editTextAreaHeight);
+			setPositionChild(m_parentManager.m_editTextArea,0,0);
+			layoutChild(m_parentManager.m_editTextArea,m_parentManager.m_editTextArea.getPreferredWidth(),sm_editTextAreaHeight);
 			
 			height =  recalculateHeight(false,false,true,null);						
 			
@@ -203,7 +203,7 @@ public class WeiboDMItemField extends WeiboItemField{
 		
 		int t_messageFieldIndex = 0;
 		
-		WeiboItemField.RefreshEditTextAreHeight();
+		m_parentManager.RefreshEditTextAreHeight();
 		
 		m_textHeight = sm_editTextAreaHeight + fsm_headImageTextInterval;
 		

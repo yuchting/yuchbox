@@ -8,10 +8,8 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
-import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.component.TextField;
 
-import com.yuchting.yuchberry.client.HyperlinkButtonField;
 import com.yuchting.yuchberry.client.recvMain;
 
 public class WeiboItemField extends Manager{
@@ -37,66 +35,58 @@ public class WeiboItemField extends Manager{
 	public final static int		fsm_spaceLineColor			= 0x8f8f8f;
 	public final static int		fsm_ownWeiboColor			= 0xffffee;
 	
-	public static HyperlinkButtonField	 sm_atBut				= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL));
-	public static HyperlinkButtonField	 sm_forwardBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL));
-	public static HyperlinkButtonField	 sm_favoriteBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL));
-	public static HyperlinkButtonField	 sm_picBut				= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL));
-	public static HyperlinkButtonField	 sm_followCommentUser	= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FOLLOW_USER_BUTTON_LABEL));
+	public static TextField 	sm_testTextArea			= new TextField(Field.READONLY){
+		public void setText(String _text){
+			super.setText(_text);
+			layout(WeiboItemField.fsm_textWidth,1000);
+		}
+	};
+	
+	public static TextField 	sm_testCommentTextArea	= new TextField(Field.READONLY){
+		public void setText(String _text){
+			super.setText(_text);
+			layout(WeiboItemField.fsm_commentTextWidth,1000);
+		}
+	};	
+	
+	public static Font		sm_defaultFont				= sm_testTextArea.getFont();
+	public static int		sm_fontHeight				= sm_defaultFont.getHeight() + 2;
+	
+	public static int		sm_editTextAreaHeight		= 0;
+	
 
+	public static int		sm_atBut_x					= sm_defaultFont.getAdvance(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL)) 
+															+ WeiboItemField.fsm_headImageTextInterval;
 	
-	// BasicEditField for 4.2os
-	public static TextField 			sm_textArea				= new TextField(Field.READONLY);
-	public static TextField 			sm_commentTextArea		= new TextField(Field.READONLY);
+	public static int		sm_favoriteBut_x			= sm_atBut_x + sm_defaultFont.getAdvance(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL)) 
+															+ WeiboItemField.fsm_headImageTextInterval;
 	
-	public static AutoTextEditField 	sm_editTextArea			= new AutoTextEditField(){
-		public void setText(String _text){
-			super.setText(_text);
-			layout(recvMain.fsm_display_width,1000);
-		}
-	};
+	public static int		sm_picBut_x					= sm_favoriteBut_x + sm_defaultFont.getAdvance(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL)) 
+															+ WeiboItemField.fsm_headImageTextInterval;
+		
+	public static int		sm_imageAreaMinHeight		= WeiboItemField.fsm_weiboSignImageSize + WeiboItemField.fsm_headImageWidth + WeiboItemField.fsm_headImageTextInterval;
 	
-	public static TextField 			sm_testTextArea			= new TextField(Field.READONLY){
-		public void setText(String _text){
-			super.setText(_text);
-			layout(fsm_textWidth,1000);
-		}
-	};
-	
-	public static TextField 			sm_testCommentTextArea	= new TextField(Field.READONLY){
-		public void setText(String _text){
-			super.setText(_text);
-			layout(fsm_commentTextWidth,1000);
-		}
-	};
-	
-	
-			
+	public final static int		fsm_closeHeight		= sm_fontHeight * 2 + 1;
+	public final static int		fsm_maxDisplayRows	= (recvMain.fsm_display_height - WeiboHeader.fsm_headHeight) / fsm_closeHeight + 2; 
+
+	static String	sm_followTextEmptySpace				= "   --";
 	static {
-		sm_editTextArea.setMaxSize(fsm_maxWeiboTextLength);
+		int t_followTextAdvance = sm_defaultFont.getAdvance(recvMain.sm_local.getString(localResource.WEIBO_FOLLOW_USER_BUTTON_LABEL));
+		while(true){
+			if(sm_defaultFont.getAdvance(sm_followTextEmptySpace) >= t_followTextAdvance){
+				break;
+			}else{
+				sm_followTextEmptySpace = " " + sm_followTextEmptySpace ;
+			}
+		}
+		
+		sm_followTextEmptySpace = "   " + sm_followTextEmptySpace;
 	}
 	
-	static Font		sm_defaultFont						= sm_atBut.getFont();
-	static int		sm_fontHeight						= sm_defaultFont.getHeight() + 2;
-	
-	static int		sm_editTextAreaHeight				= 0;
-		
-	static int		sm_atBut_x							= sm_defaultFont.getAdvance(sm_forwardBut.getText()) + fsm_headImageTextInterval;
-	static int		sm_favoriteBut_x					= sm_atBut_x + sm_defaultFont.getAdvance(sm_atBut.getText()) + fsm_headImageTextInterval;
-	static int		sm_picBut_x							= sm_favoriteBut_x + sm_defaultFont.getAdvance(sm_favoriteBut.getText()) + fsm_headImageTextInterval;
-	
-	static int		sm_imageAreaMinHeight				= fsm_weiboSignImageSize + fsm_headImageWidth + fsm_headImageTextInterval;
 
-	static WeiboItemField			sm_extendWeiboItem	= null;
-	static WeiboItemField			sm_selectWeiboItem	= null;
-	static WeiboItemField			sm_editWeiboItem	= null;
-		
-	static int						sm_currentSendType	= 0;
 	public static	boolean		sm_commentFirst		= false;
 	public static	boolean		sm_displayHeadImage	= false;
-	
-	public final static int			fsm_closeHeight		= sm_fontHeight * 2 + 1;
-	
-	public final static int			fsm_maxDisplayRows = (recvMain.fsm_display_height - WeiboHeader.fsm_headHeight) / fsm_closeHeight + 2; 
+	public static boolean			sm_simpleMode		= false;
 	
 	static public final int fsm_controlField_text 		= 0;
 	static public final int fsm_controlField_comment 		= 1;
@@ -124,6 +114,8 @@ public class WeiboItemField extends Manager{
 	int						m_commentText_height= sm_fontHeight;
 	int						m_textHeight		= sm_fontHeight;
 	
+	WeiboMainManager		m_parentManager		= null;
+	
 	WeiboHeadImage			m_headImage = null;
 	
 	WeiboItemFocusField		m_focusField = new WeiboItemFocusField(this);
@@ -132,22 +124,27 @@ public class WeiboItemField extends Manager{
 		return m_focusField;
 	}
 	
-	public WeiboItemField(){
+	public WeiboItemField(WeiboMainManager _manager){
 		super(Manager.NO_VERTICAL_SCROLL );
+		
+		m_parentManager = _manager;
 	}
 
-	public WeiboItemField(fetchWeibo _weibo,WeiboHeadImage _headImage){
+	public WeiboItemField(fetchWeibo _weibo,WeiboHeadImage _headImage,WeiboMainManager _manager){
 		super(Manager.NO_VERTICAL_SCROLL);
 		
-		m_weibo 			= _weibo;
-						
-		m_headImage 		= _headImage;
+		m_weibo 		= _weibo;
+		m_headImage 	= _headImage;
+		m_parentManager = _manager;
 		
 		StringBuffer t_weiboTextBuffer = new StringBuffer();
 		
-		t_weiboTextBuffer.append("@").append(m_weibo.GetUserScreenName()).append(" :").append(m_weibo.GetText())
-						.append("\n         --").append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
-						.append(parseSource(m_weibo.GetSource()));
+		t_weiboTextBuffer.append("@").append(m_weibo.GetUserScreenName()).append(" :").append(m_weibo.GetText());
+		
+		if(!sm_simpleMode){
+			t_weiboTextBuffer.append("\n").append(sm_followTextEmptySpace).append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
+			.append(parseSource(m_weibo.GetSource()));
+		}						
 		
 		m_weiboText 		= t_weiboTextBuffer.toString();
 		t_weiboTextBuffer = null;
@@ -166,9 +163,12 @@ public class WeiboItemField extends Manager{
 			fetchWeibo t_comment = m_weibo.GetCommentWeibo();
 			
 			StringBuffer t_commentText = new StringBuffer();
-			t_commentText.append("@").append(t_comment.GetUserScreenName()).append(":").append(t_comment.GetText())
-						.append("\n         --").append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
-						.append(parseSource(t_comment.GetSource()));
+			t_commentText.append("@").append(t_comment.GetUserScreenName()).append(":").append(t_comment.GetText());
+			if(!sm_simpleMode){
+				t_commentText.append("\n").append(sm_followTextEmptySpace).append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
+				.append(parseSource(t_comment.GetSource()));
+			}
+						
 					
 			m_commentText = t_commentText.toString();
 			
@@ -194,7 +194,16 @@ public class WeiboItemField extends Manager{
 			}
 		}
 		
-		m_extendHeight 			= m_functionButton_y + sm_fontHeight + fsm_headImageTextInterval;
+		if(!sm_simpleMode){
+			m_extendHeight 			= m_functionButton_y + sm_fontHeight + fsm_headImageTextInterval;
+		}else{
+			m_extendHeight 			= m_functionButton_y + fsm_headImageTextInterval;
+		}
+		
+	}
+	
+	public WeiboMainManager getParentManager(){
+		return m_parentManager;
 	}
 	
 	public static  String parseSource(String _source){
@@ -215,20 +224,20 @@ public class WeiboItemField extends Manager{
 				if(m_commentText != null){
 					if(!m_hasControlField[fsm_controlField_comment]){
 						m_hasControlField[fsm_controlField_comment] = true;
-						sm_commentTextArea.setText(m_commentText);
-						add(sm_commentTextArea);
+						m_parentManager.m_commentTextArea.setText(m_commentText);
+						add(m_parentManager.m_commentTextArea);
 					}
 					
 					if(!m_hasControlField[fsm_controlField_followBtn]){
 						m_hasControlField[fsm_controlField_followBtn] = true;
-						add(sm_followCommentUser);
+						add(m_parentManager.m_followCommentUser);
 					}
 				}
 				
 				if(!m_hasControlField[fsm_controlField_text]){
 					m_hasControlField[fsm_controlField_text] = true;
-					sm_textArea.setText(m_weiboText);
-					add(sm_textArea);
+					m_parentManager.m_textArea.setText(m_weiboText);
+					add(m_parentManager.m_textArea);
 				}
 				
 				
@@ -236,81 +245,84 @@ public class WeiboItemField extends Manager{
 				
 				if(!m_hasControlField[fsm_controlField_text]){
 					m_hasControlField[fsm_controlField_text] = true;
-					sm_textArea.setText(m_weiboText);
-					add(sm_textArea);
+					m_parentManager.m_textArea.setText(m_weiboText);
+					add(m_parentManager.m_textArea);
 				}
 				
 				if(m_commentText != null){
 					if(!m_hasControlField[fsm_controlField_comment]){
 						m_hasControlField[fsm_controlField_comment] = true;
-						sm_commentTextArea.setText(m_commentText);
-						add(sm_commentTextArea);
+						m_parentManager.m_commentTextArea.setText(m_commentText);
+						add(m_parentManager.m_commentTextArea);
 					}
 					
 					if(!m_hasControlField[fsm_controlField_followBtn]){
 						m_hasControlField[fsm_controlField_followBtn] = true;
-						add(sm_followCommentUser);
+						add(m_parentManager.m_followCommentUser);
 					}
 				}
 			}		
 			
-			if(!m_hasControlField[fsm_controlField_forwardBtn]){
-				m_hasControlField[fsm_controlField_forwardBtn] = true;
-				add(sm_forwardBut);
+			if(!sm_simpleMode){
+				if(!m_hasControlField[fsm_controlField_forwardBtn]){
+					m_hasControlField[fsm_controlField_forwardBtn] = true;
+					add(m_parentManager.m_forwardBut);
+				}
+				
+				if(!m_hasControlField[fsm_controlField_atBtn]){
+					m_hasControlField[fsm_controlField_atBtn] = true;
+					add(m_parentManager.m_atBut);
+				}
+				
+				if(!m_hasControlField[fsm_controlField_favorBtn]){
+					m_hasControlField[fsm_controlField_favorBtn] = true;
+					add(m_parentManager.m_favoriteBut);
+				}
+				
+				if(!m_hasControlField[fsm_controlField_picBtn]){
+					m_hasControlField[fsm_controlField_picBtn] = true;
+					add(m_parentManager.m_picBut);
+				}
 			}
 			
-			if(!m_hasControlField[fsm_controlField_atBtn]){
-				m_hasControlField[fsm_controlField_atBtn] = true;
-				add(sm_atBut);
-			}
-			
-			if(!m_hasControlField[fsm_controlField_favorBtn]){
-				m_hasControlField[fsm_controlField_favorBtn] = true;
-				add(sm_favoriteBut);
-			}
-			
-			if(!m_hasControlField[fsm_controlField_picBtn]){
-				m_hasControlField[fsm_controlField_picBtn] = true;
-				add(sm_picBut);
-			}
 			
 		}else{
 			
 			
 			if(m_hasControlField[fsm_controlField_comment]){
 				m_hasControlField[fsm_controlField_comment] = false;
-				delete(sm_commentTextArea);
+				delete(m_parentManager.m_commentTextArea);
 			}
 			
 			if(m_hasControlField[fsm_controlField_followBtn]){
 				m_hasControlField[fsm_controlField_followBtn] = false;
-				delete(sm_followCommentUser);
+				delete(m_parentManager.m_followCommentUser);
 			}
 			
 			if(m_hasControlField[fsm_controlField_text]){
 				m_hasControlField[fsm_controlField_text] = false;
-				delete(sm_textArea);
+				delete(m_parentManager.m_textArea);
 			}
 								
 			
 			if(m_hasControlField[fsm_controlField_forwardBtn]){
 				m_hasControlField[fsm_controlField_forwardBtn] = false;
-				delete(sm_forwardBut);
+				delete(m_parentManager.m_forwardBut);
 			}
 			
 			if(m_hasControlField[fsm_controlField_atBtn]){
 				m_hasControlField[fsm_controlField_atBtn] = false;
-				delete(sm_atBut);
+				delete(m_parentManager.m_atBut);
 			}
 			
 			if(m_hasControlField[fsm_controlField_favorBtn]){
 				m_hasControlField[fsm_controlField_favorBtn] = false;
-				delete(sm_favoriteBut);
+				delete(m_parentManager.m_favoriteBut);
 			}	
 			
 			if(m_hasControlField[fsm_controlField_picBtn]){
 				m_hasControlField[fsm_controlField_picBtn] = false;
-				delete(sm_picBut);
+				delete(m_parentManager.m_picBut);
 			}
 		}							
 	}
@@ -318,32 +330,29 @@ public class WeiboItemField extends Manager{
 	public void AddDelEditTextArea(boolean _add,String _text){
 		if(_add){
 			
-			WeiboItemField.sm_editTextArea.setText(_text);
-			WeiboItemField.RefreshEditTextAreHeight();
+			m_parentManager.m_editTextArea.setText(_text);
+			m_parentManager.RefreshEditTextAreHeight();
 			
-			WeiboItemField.sm_editWeiboItem = this;
+			m_parentManager.setCurrEditItem(this);
 			
 			if(!m_hasControlField[fsm_controlField_editText]){
 				m_hasControlField[fsm_controlField_editText] = true;
-				add(sm_editTextArea);
+				add(m_parentManager.m_editTextArea);
 			}
 						
 		}else{
 			
-			WeiboItemField.sm_editWeiboItem = null;
+			m_parentManager.setCurrEditItem(null);
 			WeiboItemField.sm_editTextAreaHeight = 0;
 			
 			if(m_hasControlField[fsm_controlField_editText]){
 				m_hasControlField[fsm_controlField_editText] = false;
-				delete(sm_editTextArea);
+				delete(m_parentManager.m_editTextArea);
 			}
 		}
 	}
 	
-	static public int RefreshEditTextAreHeight(){
-		sm_editTextAreaHeight = sm_editTextArea.getHeight() + fsm_headImageTextInterval;
-		return sm_editTextAreaHeight;
-	}
+	
 	
 	
 	public int getPreferredWidth() {
@@ -351,9 +360,9 @@ public class WeiboItemField extends Manager{
 	}
 	
 	public int getPreferredHeight() {
-		if(sm_extendWeiboItem == this){
+		if(m_parentManager.getCurrExtendedItem() == this){
 			
-			if(sm_editWeiboItem == this){
+			if(m_parentManager.getCurrEditItem() == this){
 				return m_extendHeight + sm_editTextAreaHeight;
 			}
 			
@@ -365,56 +374,61 @@ public class WeiboItemField extends Manager{
 	
 	public void sublayout(int width, int height){
 		
-		if(sm_extendWeiboItem == this){
+		if(m_parentManager.getCurrExtendedItem() == this){
 			
 			int t_commentText_y = WeiboItemField.sm_commentFirst?0:m_commentText_y;
 			
 			int t_text_y = WeiboItemField.sm_commentFirst?m_commentText_height:0;
-			
-			// forward button
-			//
-			setPositionChild(sm_forwardBut,0,m_functionButton_y);
-			layoutChild(sm_atBut,sm_atBut.getPreferredWidth(),sm_atBut.getPreferredHeight());
-			
+		
 			if(m_commentText != null){
 				// comment area
 				//
-				setPositionChild(sm_commentTextArea,fsm_headImageTextInterval,t_commentText_y);
-				layoutChild(sm_commentTextArea,fsm_commentTextWidth,m_functionButton_y - m_commentText_y);
+				setPositionChild(m_parentManager.m_commentTextArea,fsm_headImageTextInterval,t_commentText_y);
+				layoutChild(m_parentManager.m_commentTextArea,fsm_commentTextWidth,m_functionButton_y - m_commentText_y);
 				
-				// follow button
-				//
-				setPositionChild(sm_followCommentUser,3,t_commentText_y + m_commentText_height - sm_fontHeight - 5);
-				layoutChild(sm_followCommentUser,sm_followCommentUser.getPreferredWidth(),
-												sm_followCommentUser.getPreferredHeight());
+				if(!sm_simpleMode){
+					// follow button
+					//
+					setPositionChild(m_parentManager.m_followCommentUser,3,t_commentText_y + m_commentText_height - sm_fontHeight - 5);
+					layoutChild(m_parentManager.m_followCommentUser,m_parentManager.m_followCommentUser.getPreferredWidth(),
+													m_parentManager.m_followCommentUser.getPreferredHeight());
+				}
 			}
 			
-			// at button
-			//
-			setPositionChild(sm_atBut,sm_atBut_x,m_functionButton_y);
-			layoutChild(sm_forwardBut,sm_forwardBut.getPreferredWidth(),sm_forwardBut.getPreferredHeight());
-			
-			// favorite button
-			//
-			setPositionChild(sm_favoriteBut,sm_favoriteBut_x,m_functionButton_y);
-			layoutChild(sm_favoriteBut,sm_favoriteBut.getPreferredWidth(),sm_favoriteBut.getPreferredHeight());
-			
-			if(m_weiboPic != null){
-				// open the browser to check the picture button 
+			if(!sm_simpleMode){
+				// forward button
 				//
-				setPositionChild(sm_picBut,sm_picBut_x,m_functionButton_y);
-				layoutChild(sm_picBut,sm_picBut.getPreferredWidth(),sm_picBut.getPreferredHeight());
+				setPositionChild(m_parentManager.m_forwardBut,0,m_functionButton_y);
+				layoutChild(m_parentManager.m_atBut,m_parentManager.m_atBut.getPreferredWidth(),m_parentManager.m_atBut.getPreferredHeight());
+				
+				
+				// at button
+				//
+				setPositionChild(m_parentManager.m_atBut,sm_atBut_x,m_functionButton_y);
+				layoutChild(m_parentManager.m_forwardBut,m_parentManager.m_forwardBut.getPreferredWidth(),m_parentManager.m_forwardBut.getPreferredHeight());
+				
+				// favorite button
+				//
+				setPositionChild(m_parentManager.m_favoriteBut,sm_favoriteBut_x,m_functionButton_y);
+				layoutChild(m_parentManager.m_favoriteBut,m_parentManager.m_favoriteBut.getPreferredWidth(),m_parentManager.m_favoriteBut.getPreferredHeight());
+				
+				if(m_weiboPic != null){
+					// open the browser to check the picture button 
+					//
+					setPositionChild(m_parentManager.m_picBut,sm_picBut_x,m_functionButton_y);
+					layoutChild(m_parentManager.m_picBut,m_parentManager.m_picBut.getPreferredWidth(),m_parentManager.m_picBut.getPreferredHeight());
+				}
 			}
 			
 			// text area
 			//
-			setPositionChild(sm_textArea,fsm_headImageWidth + fsm_headImageTextInterval,t_text_y + 2);
-			layoutChild(sm_textArea,fsm_textWidth,m_textHeight);
+			setPositionChild(m_parentManager.m_textArea,fsm_headImageWidth + fsm_headImageTextInterval,t_text_y + 2);
+			layoutChild(m_parentManager.m_textArea,fsm_textWidth,m_textHeight);
 						
-			if(sm_editWeiboItem == this){
+			if(m_parentManager.getCurrEditItem() == this){
 				
-				setPositionChild(sm_editTextArea,0,m_functionButton_y + fsm_headImageTextInterval + sm_fontHeight);
-				layoutChild(sm_editTextArea,recvMain.fsm_display_width,sm_editTextAreaHeight);
+				setPositionChild(m_parentManager.m_editTextArea,0,m_extendHeight);				
+				layoutChild(m_parentManager.m_editTextArea,recvMain.fsm_display_width,sm_editTextAreaHeight);
 				
 				height = m_extendHeight + sm_editTextAreaHeight;
 				
@@ -453,14 +467,14 @@ public class WeiboItemField extends Manager{
 		
 	public void subpaint(Graphics _g){
 		
-		if(sm_extendWeiboItem == this){
+		if(m_parentManager.getCurrExtendedItem() == this){
 			
 			int t_textStart_y = WeiboItemField.sm_commentFirst?m_commentText_height : 0;
 			
 			_g.drawBitmap(0, t_textStart_y, fsm_weiboSignImageSize, fsm_weiboSignImageSize, 
 						weiboTimeLineScreen.GetWeiboSign(m_weibo), 0, 0);
 			
-			displayHeadImage(_g,0, t_textStart_y + fsm_weiboSignImageSize + fsm_headImageTextInterval);
+			displayHeadImage(_g,0, t_textStart_y + fsm_weiboSignImageSize + fsm_headImageTextInterval,true);
 						
 			int t_startSign_x = fsm_weiboSignImageSize;
 			
@@ -481,16 +495,17 @@ public class WeiboItemField extends Manager{
 								weiboTimeLineScreen.GetBBerSignBitmap(), 0, 0);
 			}
 			
-			
-			paintChild(_g,sm_atBut);
-			paintChild(_g,sm_forwardBut);
-			paintChild(_g,sm_favoriteBut);
-			
-			if(m_weiboPic != null){
-				paintChild(_g,sm_picBut);
+			if(!sm_simpleMode){
+				paintChild(_g,m_parentManager.m_atBut);
+				paintChild(_g,m_parentManager.m_forwardBut);
+				paintChild(_g,m_parentManager.m_favoriteBut);
+				
+				if(m_weiboPic != null){
+					paintChild(_g,m_parentManager.m_picBut);
+				}
 			}
 			
-			paintChild(_g,sm_textArea);
+			paintChild(_g,m_parentManager.m_textArea);
 			
 			if(m_commentText != null){
 				
@@ -507,13 +522,15 @@ public class WeiboItemField extends Manager{
 				}finally{
 					_g.setColor(color);
 				}
-				paintChild(_g,sm_commentTextArea);
+				paintChild(_g,m_parentManager.m_commentTextArea);
 				
-				paintChild(_g,sm_followCommentUser);
+				if(!sm_simpleMode){
+					paintChild(_g,m_parentManager.m_followCommentUser);
+				}
 			}
 			
-			if(sm_editWeiboItem == this){
-				paintChild(_g,sm_editTextArea);
+			if(m_parentManager.getCurrEditItem() == this){
+				paintChild(_g,m_parentManager.m_editTextArea);
 			}
 			
 			// draw the finally line
@@ -545,7 +562,7 @@ public class WeiboItemField extends Manager{
 		int color		= _g.getColor();
 		try{
 			
-			if(sm_extendWeiboItem != null){
+			if(m_parentManager.getCurrExtendedItem() != null){
 				_g.setColor(fsm_darkColor);
 				_g.fillRect(0,0, recvMain.fsm_display_width,fsm_closeHeight);
 			}
@@ -554,7 +571,7 @@ public class WeiboItemField extends Manager{
 				_g.setColor(fsm_selectedColor);
 				_g.fillRect(0, 0, recvMain.fsm_display_width,fsm_closeHeight);
 			}else{
-				if(m_weibo.IsOwnWeibo() && sm_extendWeiboItem == null){
+				if(m_weibo.IsOwnWeibo() && m_parentManager.getCurrExtendedItem() == null){
 					_g.setColor(fsm_ownWeiboColor);
 					_g.fillRect(0, 0, recvMain.fsm_display_width,fsm_closeHeight);
 				}
@@ -572,7 +589,8 @@ public class WeiboItemField extends Manager{
 			if(sm_displayHeadImage){
 				// display head image when closed
 				//
-				displayHeadImage(_g,t_leadingSpace + fsm_weiboSignImageSize + fsm_headImageTextInterval,t_firstLineHeight);
+				displayHeadImage(_g,t_leadingSpace + fsm_weiboSignImageSize + fsm_headImageTextInterval,
+								t_firstLineHeight,_on);
 				t_nameLeadingSpace += fsm_headImageWidth + fsm_headImageTextInterval;
 			}
 
@@ -594,8 +612,9 @@ public class WeiboItemField extends Manager{
 				t_displayName = m_weibo.GetUserScreenName();
 			}
 			
-			int t_nameLength = _g.drawText(t_displayName.substring(0,Math.min(t_displayName.length(),16)),
-									fsm_weiboSignImageSize + t_nameLeadingSpace,t_firstLineHeight,Graphics.ELLIPSIS);
+			int t_nameLength = _g.drawText(t_displayName,
+										fsm_weiboSignImageSize + t_nameLeadingSpace,
+										t_firstLineHeight,Graphics.ELLIPSIS);
 			
 			// add the weibo sign size
 			t_nameLength += fsm_weiboSignImageSize + t_nameLeadingSpace;
@@ -644,14 +663,16 @@ public class WeiboItemField extends Manager{
 		}
 	}
 	
-	private void displayHeadImage(Graphics _g,int _x,int _y){
+	private void displayHeadImage(Graphics _g,int _x,int _y,boolean _focus){
 		
-		if((sm_extendWeiboItem == null && sm_selectWeiboItem != this)
-		|| sm_extendWeiboItem == this){
-			
-			_g.drawBitmap(_x,_y,fsm_headImageWidth,fsm_headImageWidth,m_headImage.m_headImage,0,0);
+		_g.drawBitmap(_x,_y,fsm_headImageWidth,fsm_headImageWidth,m_headImage.m_headImage,0,0);
+		
+		if(m_parentManager.getCurrExtendedItem() == null){
+			if(!_focus){
+				_g.drawBitmap(_x,_y,fsm_headImageWidth,fsm_headImageWidth,weiboTimeLineScreen.GetHeadImageMaskBitmap(),0,0);
+			}
+		}else if(m_parentManager.getCurrExtendedItem() == this){
+			_g.drawBitmap(_x,_y,fsm_headImageWidth,fsm_headImageWidth,weiboTimeLineScreen.GetHeadImageMaskBitmap(),0,0);
 		}
-		
-		_g.drawBitmap(_x,_y,fsm_headImageWidth,fsm_headImageWidth,weiboTimeLineScreen.GetHeadImageMaskBitmap(),0,0);
 	}	
 }

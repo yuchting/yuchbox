@@ -9,20 +9,24 @@ public class WeiboUpdateField extends WeiboItemField{
 	
 	String m_sendUpdateText = "";
 	
+	public WeiboUpdateField(WeiboMainManager _mainManager){
+		super(_mainManager);
+	}
+	
 	public void AddDelControlField(boolean _add){
 		AddDelEditTextArea(_add,m_sendUpdateText);
 		if(_add){
-			WeiboItemField.sm_editTextArea.setSelection(0,true,m_sendUpdateText.length());
+			m_parentManager.m_editTextArea.setSelection(0,true,m_sendUpdateText.length());
 			
 			if(m_sendUpdateText.length() != 0){
-				WeiboItemField.sm_editTextArea.select(true);
+				m_parentManager.m_editTextArea.select(true);
 			}
 		}
 		
 	}
 	
 	public int getPreferredHeight() {
-		if(sm_extendWeiboItem == this){
+		if(m_parentManager.getCurrExtendedItem() == this){
 			return sm_fontHeight + sm_editTextAreaHeight;
 		}else{
 			return sm_fontHeight;
@@ -31,10 +35,10 @@ public class WeiboUpdateField extends WeiboItemField{
 	
 	public void sublayout(int width, int height){
 		
-		if(sm_extendWeiboItem == this){
+		if(m_parentManager.getCurrExtendedItem() == this){
 					
-			setPositionChild(sm_editTextArea,0,0);
-			layoutChild(sm_editTextArea,recvMain.fsm_display_width,sm_editTextAreaHeight);
+			setPositionChild(m_parentManager.m_editTextArea,0,0);
+			layoutChild(m_parentManager.m_editTextArea,recvMain.fsm_display_width,sm_editTextAreaHeight);
 			
 			height = sm_fontHeight + sm_editTextAreaHeight;
 			
@@ -47,9 +51,9 @@ public class WeiboUpdateField extends WeiboItemField{
 	
 	public void subpaint(Graphics _g){
 		
-		if(sm_extendWeiboItem == this){
+		if(m_parentManager.getCurrExtendedItem() == this){
 			
-			paintChild(_g,sm_editTextArea);
+			paintChild(_g,m_parentManager.m_editTextArea);
 			
 			int t_y = getPreferredHeight() - 1;
 			_g.drawLine(0,t_y, recvMain.fsm_display_width,t_y);
@@ -63,7 +67,7 @@ public class WeiboUpdateField extends WeiboItemField{
 		int oldColour = _g.getColor();
         try{
         	
-			if(sm_extendWeiboItem != null){
+			if(m_parentManager.getCurrExtendedItem() != null){
 				_g.setColor(fsm_darkColor);
 				_g.fillRect(0,0, recvMain.fsm_display_width,fsm_closeHeight);
 				_g.setColor(0);
