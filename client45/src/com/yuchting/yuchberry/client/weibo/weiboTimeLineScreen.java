@@ -62,13 +62,16 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	static Bitmap		sm_isBBerSign = null;	
 	
-	Vector				m_headImageList = new Vector();
+	private Vector		m_headImageList = new Vector();
 	
 	static Bitmap		sm_defaultHeadImage = null;
 		
 	WeiboHeader 		m_weiboHeader		= new WeiboHeader(this);
 	
 	boolean			m_onlineState = false;
+	
+	private Vector		m_delayWeiboAddList = new Vector();
+	private int		m_delayWeiboRunnableID = -1;
 	
 	
 	public weiboTimeLineScreen(recvMain _mainApp){
@@ -109,35 +112,74 @@ public class weiboTimeLineScreen extends MainScreen{
 		return m_onlineState;
 	}
 	
-	public boolean AddWeibo(fetchWeibo _weibo,boolean _resetSelectIdx)throws Exception{
+	private void AddWeibo_imple(fetchWeibo _weibo,boolean _resetSelectIdx){
 		
-		WeiboHeadImage t_headImage = SearchHeadImage(_weibo);
-		
-		boolean t_alert = false;
-		
-		switch(_weibo.GetWeiboClass()){
-		case fetchWeibo.TIMELINE_CLASS:
-			m_mainMgr.AddWeibo(_weibo,t_headImage,_resetSelectIdx);
-			break;
-		case fetchWeibo.COMMENT_ME_CLASS:
-			m_mainCommitMeMgr.AddWeibo(_weibo,t_headImage,_resetSelectIdx);
-			t_alert = true;
-			break;
-		case fetchWeibo.AT_ME_CLASS:
-			m_mainAtMeMgr.AddWeibo(_weibo,t_headImage,_resetSelectIdx);
-			t_alert = true;
-			break;
-		case fetchWeibo.DIRECT_MESSAGE_CLASS:
-			m_mainDMMgr.AddWeibo(_weibo,t_headImage,_resetSelectIdx);
-			t_alert = true;
-			break;
+		try{
+			WeiboHeadImage t_headImage = SearchHeadImage(_weibo);
+			
+			boolean t_alert = false;
+			
+			switch(_weibo.GetWeiboClass()){
+			case fetchWeibo.TIMELINE_CLASS:
+				m_mainMgr.AddWeibo(_weibo,t_headImage,_resetSelectIdx);
+				break;
+			case fetchWeibo.COMMENT_ME_CLASS:
+				m_mainCommitMeMgr.AddWeibo(_weibo,t_headImage,_resetSelectIdx);
+				t_alert = true;
+				break;
+			case fetchWeibo.AT_ME_CLASS:
+				m_mainAtMeMgr.AddWeibo(_weibo,t_headImage,_resetSelectIdx);
+				t_alert = true;
+				break;
+			case fetchWeibo.DIRECT_MESSAGE_CLASS:
+				m_mainDMMgr.AddWeibo(_weibo,t_headImage,_resetSelectIdx);
+				t_alert = true;
+				break;
+			}
+			
+			if(_resetSelectIdx && t_alert){
+				m_weiboHeader.invalidate();
+			}	
+		}catch(Exception e){
+			sm_mainApp.SetErrorString("AW_i:"+e.getMessage());
 		}
+	}
+	
+	public boolean AddWeibo(fetchWeibo _weibo,boolean _resetSelectIdx){
 		
-		if(_resetSelectIdx && t_alert){
-			m_weiboHeader.invalidate();
-		}
+		if(_resetSelectIdx){
+			
+			synchronized (m_delayWeiboAddList) {
+				m_delayWeiboAddList.addElement(_weibo);
+				
+				if(m_delayWeiboRunnableID == -1){
+					
+					m_delayWeiboRunnableID = sm_mainApp.invokeLater(new Runnable() {
+						public void run() {
+							
+							synchronized (m_delayWeiboAddList) {
+								AddWeibo_imple((fetchWeibo)m_delayWeiboAddList.elementAt(0),true);
+								m_delayWeiboAddList.removeElementAt(0);
+								
+								if(m_delayWeiboAddList.isEmpty()){
+									sm_mainApp.cancelInvokeLater(m_delayWeiboRunnableID);
+									m_delayWeiboRunnableID = -1;
+								}	
+							}
+							
+						}
+						
+					},200, true);
+				}
+			}
+			
+		}else{
+			AddWeibo_imple(_weibo,false);
+		}	
 		
-		return t_alert;
+		return _weibo.GetWeiboClass() == fetchWeibo.COMMENT_ME_CLASS
+				|| _weibo.GetWeiboClass() == fetchWeibo.AT_ME_CLASS
+				|| _weibo.GetWeiboClass() == fetchWeibo.DIRECT_MESSAGE_CLASS;		
 	}
 	
 	public void DelWeibo(fetchWeibo _weibo){
@@ -160,24 +202,42 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	public void AddWeiboHeadImage(int _style,String _id,byte[] _dataArray){
 		
-		for(int i = 0 ;i < m_headImageList.size();i++){
-			WeiboHeadImage t_image = (WeiboHeadImage)m_headImageList.elementAt(i);
-			
-			if(t_image.m_userID.equals(_id) && _style == t_image.m_weiboStyle){
-				try{
-					t_image.m_headImage = EncodedImage.createEncodedImage(_dataArray, 0, _dataArray.length).getBitmap();
-					t_image.m_dataHash 	= _dataArray.length;
-					
-					sm_mainApp.SetErrorString("recv weibo head image " + _id + " dataHash " + t_image.m_dataHash);					
-							
-				}catch(Exception ex){
-					sm_mainApp.SetErrorString("AWHI:"+ _id + " " + ex.getMessage() + ex.getClass().getName() );
-				}
+		synchronized (m_headImageList) {
+
+			for(int i = 0 ;i < m_headImageList.size();i++){
+				WeiboHeadImage t_image = (WeiboHeadImage)m_headImageList.elementAt(i);
 				
-				break;				
+				if(t_image.m_userID.equals(_id) && _style == t_image.m_weiboStyle){
+					try{
+						t_image.m_headImage = EncodedImage.createEncodedImage(_dataArray, 0, _dataArray.length).getBitmap();
+						t_image.m_dataHash 	= _dataArray.length;
+						
+						sm_mainApp.SetErrorString("recv weibo head image " + _id + " dataHash " + t_image.m_dataHash);					
+								
+					}catch(Exception ex){
+						sm_mainApp.SetErrorString("AWHI:"+ _id + " " + ex.getMessage() + ex.getClass().getName() );
+					}
+					
+					break;				
+				}
 			}
 		}
+	}
+	
+	public void DelWeiboHeadImage(int _style,String _id){
 		
+		synchronized (m_headImageList) {
+
+			for(int i = 0 ;i < m_headImageList.size();i++){
+				WeiboHeadImage t_image = (WeiboHeadImage)m_headImageList.elementAt(i);
+				
+				if(t_image.m_userID.equals(_id) && _style == t_image.m_weiboStyle){
+					m_headImageList.removeElementAt(i);
+					
+					break;				
+				}
+			}
+		}
 	}
 	
 	private void SendHeadImageQueryMsg(fetchWeibo _weibo)throws Exception{
@@ -201,51 +261,55 @@ public class weiboTimeLineScreen extends MainScreen{
 	}
 	
 	private WeiboHeadImage SearchHeadImage(fetchWeibo _weibo)throws Exception{
-		for(int i = 0 ;i < m_headImageList.size();i++){
-			WeiboHeadImage t_image = (WeiboHeadImage)m_headImageList.elementAt(i);
-							
-			if(_weibo.GetWeiboStyle() == t_image.m_weiboStyle 
-				&& t_image.m_userID.equals(_weibo.GetHeadImageId()) ){
-				
+		
+		synchronized (m_headImageList) {
+			
+			for(int i = 0 ;i < m_headImageList.size();i++){
+				WeiboHeadImage t_image = (WeiboHeadImage)m_headImageList.elementAt(i);
+								
+				if(_weibo.GetWeiboStyle() == t_image.m_weiboStyle 
+					&& t_image.m_userID.equals(_weibo.GetHeadImageId()) ){
+					
+					if(t_image.m_dataHash != _weibo.GetUserHeadImageHashCode()){
+						SendHeadImageQueryMsg(_weibo);
+					}
+					
+					return t_image;
+				}
+			}
+			
+			// find/load from the local ROM
+			//
+			WeiboHeadImage t_image = LoadWeiboImage(_weibo);
+			if(t_image != null){
 				if(t_image.m_dataHash != _weibo.GetUserHeadImageHashCode()){
 					SendHeadImageQueryMsg(_weibo);
 				}
 				
+				m_headImageList.addElement(t_image);
 				return t_image;
 			}
-		}
-		
-		// find/load from the local ROM
-		//
-		WeiboHeadImage t_image = LoadWeiboImage(_weibo);
-		if(t_image != null){
-			if(t_image.m_dataHash != _weibo.GetUserHeadImageHashCode()){
-				SendHeadImageQueryMsg(_weibo);
+			
+			// load the default image and send head image query message
+			//
+			SendHeadImageQueryMsg(_weibo);
+			
+			if(sm_defaultHeadImage == null){
+				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/defaultHeadImage.png"));		
+				sm_defaultHeadImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
 			}
 			
+			t_image = new WeiboHeadImage();
+			
+			t_image.m_userID = _weibo.GetHeadImageId();
+			t_image.m_headImage = sm_defaultHeadImage;
+			t_image.m_dataHash = _weibo.GetUserHeadImageHashCode();
+			t_image.m_weiboStyle = _weibo.GetWeiboStyle();
+			
 			m_headImageList.addElement(t_image);
+			
 			return t_image;
-		}
-		
-		// load the default image and send head image query message
-		//
-		SendHeadImageQueryMsg(_weibo);
-		
-		if(sm_defaultHeadImage == null){
-			byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/defaultHeadImage.png"));		
-			sm_defaultHeadImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
-		}
-		
-		t_image = new WeiboHeadImage();
-		
-		t_image.m_userID = _weibo.GetHeadImageId();
-		t_image.m_headImage = sm_defaultHeadImage;
-		t_image.m_dataHash = _weibo.GetUserHeadImageHashCode();
-		t_image.m_weiboStyle = _weibo.GetWeiboStyle();
-		
-		m_headImageList.addElement(t_image);
-		
-		return t_image;
+		}		
 	}
 	
 	private WeiboHeadImage LoadWeiboImage(fetchWeibo _weibo){

@@ -13,54 +13,64 @@ public class WeiboHeader extends Field{
 	public final static int STATE_TIMELINE = 0;
 	public final static int STATE_AT_ME = 1;
 	public final static int STATE_COMMENT_ME = 2;
-	public final static int STATE_DIRECT_MESSAGE = 3;
+	public final static int STATE_DIRECT_MESSAGE = 3;	
 	
-	public final static String[] fsm_stateString = 
+	public final static int fsm_headHeight = 30;
+	
+	
+	private final static int fsm_linkedStateSize = 20;
+	
+	private static Bitmap	sm_linkedStateBitmap =  null;
+	private static Bitmap	sm_unlinkedStateBitmap =  null;
+	static {
+		try{
+			byte[] bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream("/linked_state.png"));		
+			sm_linkedStateBitmap = EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();	
+			
+			bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream("/unlink_state.png"));
+			sm_unlinkedStateBitmap = EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
+			
+		}catch(Exception e){
+			weiboTimeLineScreen.sm_mainApp.DialogAlertAndExit("inner load error:" + e.getMessage());
+		}	
+	}
+	
+	private final static int fsm_stateBitmapInterval = 12;
+	private final static int fsm_stateBitmapSize = 32;
+	private final static int fsm_stateBitmapUnselectedLow = 8;
+	
+	private final static Bitmap[] fsm_stateBitmap = 
 	{
-		" Home ",
-		" @Me ",
-		" Comment ",
-		" DM ",
+		null,null,null,null
 	};
 	
-	public final static int[] fsm_stateStringWidth = 
+	private final static String[] fsm_stateBitmapString = 
 	{
-		0,0,0,0
+		"/home.png",
+		"/atMe.png",
+		"/commentMe.png",
+		"/directMsg.png",
 	};
 	
-	final static int	fsm_headHeight = 27;
-	
+	static{
+		try{
+			for(int i = 0;i < fsm_stateBitmap.length;i++){
+				byte[] bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream(fsm_stateBitmapString[i]));		
+				fsm_stateBitmap[i] =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
+			}
+		}catch(Exception e){
+			weiboTimeLineScreen.sm_mainApp.DialogAlertAndExit("inner load error:" + e.getMessage());
+		}	
+	}
+		
 	int	m_currState = STATE_TIMELINE;
 	
-	weiboTimeLineScreen m_parentScreen;
-	
-	Bitmap				m_backgroundBMP	= null;
-	Bitmap				m_backgroundBMP_offline	= null;
+	weiboTimeLineScreen m_parentScreen;	
 	
 	public WeiboHeader(weiboTimeLineScreen _screen){
 		m_parentScreen = _screen;
-		
-		try{
-			byte[] bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream("/headBg.png"));		
-			m_backgroundBMP = EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();	
-			
-			bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream("/headBg_offline.png"));
-			m_backgroundBMP_offline = EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
-			
-		}catch(Exception e){
-			weiboTimeLineScreen.sm_mainApp.SetErrorString("GBSB:" + e.getMessage() + e.getClass().getName());
-		}		
 	}
-	
-	private void calculateStringWidth(Graphics g){
-		
-		// calculate the width of the string
-		//
-		for(int i = 0 ;i < fsm_stateString.length;i++){
-			fsm_stateStringWidth[i] = g.drawText(fsm_stateString[i],0,recvMain.fsm_display_width);
-		}
-	}
-	
+
 	public void invalidate(){
 		super.invalidate();
 	}
@@ -80,21 +90,18 @@ public class WeiboHeader extends Field{
     }
 	
 	protected void paint( Graphics g ){
-		
-		if(fsm_stateStringWidth[0] == 0){
-			calculateStringWidth(g);
-		}
-		
+				
 		int color = g.getColor();
 		try{
 			
 			if(m_parentScreen.GetOnlineState()){
-				g.drawBitmap(0,0,recvMain.fsm_display_width,fsm_headHeight,m_backgroundBMP,0,0);
+				g.drawBitmap(0,0,recvMain.fsm_display_width,fsm_headHeight,sm_linkedStateBitmap,0,0);
 			}else{
-				g.drawBitmap(0,0,recvMain.fsm_display_width,fsm_headHeight,m_backgroundBMP_offline,0,0);
+				g.drawBitmap(0,0,recvMain.fsm_display_width,fsm_headHeight,sm_unlinkedStateBitmap,0,0);
 			}		
 			
-			int t_x = 1;
+			int t_x = fsm_linkedStateSize + fsm_stateBitmapInterval;
+			
 			for(int i = 0 ;i <= STATE_DIRECT_MESSAGE;i++){
 				
 				boolean t_drawNewMsgSign = false;
@@ -110,30 +117,21 @@ public class WeiboHeader extends Field{
 					t_drawNewMsgSign = m_parentScreen.m_mainCommitMeMgr.hasNewWeibo();
 					break;
 				case STATE_DIRECT_MESSAGE:
-					
+					t_drawNewMsgSign = m_parentScreen.m_mainDMMgr.hasNewWeibo();
 					break;
 				}
+				int t_y = m_currState == i?0:fsm_stateBitmapUnselectedLow;
 				
-				if(m_currState == i){
-					
-					g.setColor(0x666666);
-					g.fillRoundRect(t_x,1,fsm_stateStringWidth[i], fsm_headHeight - 2,5,5);
-					g.setColor(0xefefef);
-					
-				}else{
-					g.setColor(0);
-				}
-				
-				g.drawText(fsm_stateString[i],t_x,2,Graphics.ELLIPSIS);
+				g.drawBitmap(t_x,t_y,fsm_stateBitmapSize,fsm_stateBitmapSize,fsm_stateBitmap[i],0,0);
 				
 				if(t_drawNewMsgSign){
 					// draw a new message sign
 					//
-					g.drawBitmap(t_x,1,WeiboItemField.fsm_weiboBBerImageSize,WeiboItemField.fsm_weiboBBerImageSize,
+					g.drawBitmap(t_x,t_y,WeiboItemField.fsm_weiboBBerImageSize,WeiboItemField.fsm_weiboBBerImageSize,
 							weiboTimeLineScreen.GetBBerSignBitmap(),0,0);
 				}
 				
-				t_x += fsm_stateStringWidth[i];
+				t_x += fsm_stateBitmapInterval + fsm_stateBitmapSize;
 			}
 			
 		}finally{

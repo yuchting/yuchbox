@@ -101,7 +101,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 											m_mainApp.m_appendString,128,EditField.FILTER_DEFAULT);
 		 add(m_appendString);
 		 
-		 m_passwordKey	= new EditField(recvMain.sm_local.getString(localResource.SETTTING_PASSWORD_KEY),
+		 m_passwordKey	= new EditField(recvMain.sm_local.getString(localResource.SETTING_PASSWORD_KEY),
 				 							(m_mainApp.m_passwordKey.length() != 0)?"***":"",128,EditField.FILTER_DEFAULT);
 		 add(m_passwordKey);
 		 m_passwordKey.setChangeListener(this);
@@ -134,13 +134,13 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
 		 add(t_title);
 		 
-		 m_discardOrgText	= new CheckboxField(recvMain.sm_local.getString(localResource.DISCARD_ORG_TEXT), m_mainApp.m_discardOrgText);
+		 m_discardOrgText	= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_DISCARD_ORG_TEXT), m_mainApp.m_discardOrgText);
 		 add(m_discardOrgText);
 		 
-		 m_delRemoteMail	= new CheckboxField(recvMain.sm_local.getString(localResource.DELETE_REMOTE_MAIL),m_mainApp.m_delRemoteMail);
+		 m_delRemoteMail	= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_DELETE_REMOTE_MAIL),m_mainApp.m_delRemoteMail);
 		 add(m_delRemoteMail);
 		 
-		 m_copyToSentFolder	= new CheckboxField(recvMain.sm_local.getString(localResource.COPY_MAIL_TO_SENT_FOLDER),m_mainApp.m_copyMailToSentFolder);
+		 m_copyToSentFolder	= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_COPY_MAIL_TO_SENT_FOLDER),m_mainApp.m_copyMailToSentFolder);
 		 add(m_copyToSentFolder);
 		 
 		 m_recvMsgTextLength = new ObjectChoiceField(recvMain.sm_local.getString(localResource.MESSAGE_CONTAIN_MAX_LENGTH),

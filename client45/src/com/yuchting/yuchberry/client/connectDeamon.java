@@ -1747,24 +1747,14 @@ public class connectDeamon extends Thread implements SendListener,
 	
 		try{
 			t_weibo.InputWeibo(in);
-			
 			SendWeiboConfirmMsg(t_weibo);
 			
-			if(m_mainApp.PrepareWeiboItem(t_weibo)){
-
-				if(m_mainApp.m_weiboTimeLineScreen.AddWeibo(t_weibo,true)){
-					m_mainApp.TriggerWeiboNotification();
-				}	
-			}
-			
-			
+			m_mainApp.PrepareWeiboItem(t_weibo);
 			
 		}catch(Exception e){
 			m_mainApp.SetErrorString("PW:"+ e.getMessage() + e.getClass().getName());
-		}	
+		}
 	}
-	
-	
 	
 	private void ProcessWeiboHeadImage(InputStream in){
 		
@@ -1782,9 +1772,7 @@ public class connectDeamon extends Thread implements SendListener,
 				t_id = sendReceive.ReadString(in);
 			}else{
 				t_id = Long.toString(sendReceive.ReadLong(in));
-			}
-						
-			String t_imageDir = m_mainApp.GetWeiboHeadImageDir(t_style);
+			}			
 						
 			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 			try{
@@ -1798,7 +1786,8 @@ public class connectDeamon extends Thread implements SendListener,
 				m_mainApp.m_weiboTimeLineScreen.AddWeiboHeadImage(t_style,t_id,t_dataArray);
 				m_mainApp.ChangeWeiboHeadImageHash(t_id, t_style, t_dataArray.length);
 				
-				FileConnection t_fc = (FileConnection)Connector.open(t_imageDir + t_id + ".png",Connector.READ_WRITE);
+				FileConnection t_fc = (FileConnection)Connector.open(m_mainApp.GetWeiboHeadImageDir(t_style) + t_id + ".png",
+																			Connector.READ_WRITE);
 				try{
 					if(t_fc.exists()){
 						t_fc.delete();

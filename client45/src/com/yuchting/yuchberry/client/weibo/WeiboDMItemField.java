@@ -157,6 +157,29 @@ public class WeiboDMItemField extends WeiboItemField{
 		setExtent(recvMain.fsm_display_width,height);
 	}
 	
+	public boolean delWeibo(fetchWeibo _weibo){
+		
+		for(int i = 0;i < m_DMList.size();i++){
+			if(((WeiboDMData)m_DMList.elementAt(i)).m_weibo == _weibo){
+				m_DMList.removeElement(_weibo);
+				
+				m_pageNum = m_DMList.size() / fsm_numberOfPage;
+				if(m_pageNum % fsm_numberOfPage != 0){
+					m_pageNum++;
+				}
+				
+				recalculateHeight(false,false,false,null);
+				
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean isEmptyPost(){
+		return m_DMList.size() == 0;
+	}
+	
 	public boolean AddSameSender(fetchWeibo _weibo	,WeiboHeadImage _headImage){
 		
 		for(int i = 0;i < m_DMList.size();i++){
@@ -189,6 +212,7 @@ public class WeiboDMItemField extends WeiboItemField{
 		
 		return false;
 	}
+	
 	
 	private int recalculateHeight(boolean _addControl,boolean _add,boolean _sublayout,Graphics _g){
 		
@@ -251,9 +275,7 @@ public class WeiboDMItemField extends WeiboItemField{
 					_g.fillRoundRect(t_text_x + 1,m_textHeight ,fsm_textWidth,data.m_dataItemHeight,10,10);
 				}finally{
 					_g.setColor(color);
-				}
-				
-				
+				}				
 				
 				paintChild(_g,sm_renderTextArray[t_messageFieldIndex]);
 				
@@ -288,7 +310,7 @@ public class WeiboDMItemField extends WeiboItemField{
 		if(_g != null){
 			_g.drawLine(0,m_textHeight - 1,recvMain.fsm_display_width,m_textHeight - 1);
 		}
-		
+				
 		return m_textHeight;
 	}
 }

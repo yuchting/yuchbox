@@ -147,8 +147,8 @@ public class uploadFileScreen extends MainScreen implements
 	
 	recvMain			m_mainApp		= null;
 	
-	final static String fsm_rootPath_back		= new String("file:///store/home/user/");
-	final static String fsm_rootPath_default	= new String("file:///SDCard/");
+	final static String fsm_rootPath_back		= "file:///store/home/user/";
+	final static String fsm_rootPath_default	= "file:///SDCard/";
 	
 	String				m_rootPath = null;
 	

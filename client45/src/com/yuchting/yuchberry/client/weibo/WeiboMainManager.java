@@ -264,23 +264,26 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 		int t_num = getFieldCount();
 		for(int i = 0 ;i < t_num;i++){
-			WeiboItemFocusField t_field = (WeiboItemFocusField)getField(i);
+			
+			final WeiboItemFocusField t_field = (WeiboItemFocusField)getField(i);
+			
 			if(t_field.m_itemField.m_weibo == _weibo){
 				
 				m_mainApp.invokeLater(new Runnable() {
 					
 					public void run() {
-						
-						int t_num = getFieldCount();
-						
-						for(int i = 0 ;i < t_num;i++){
-							WeiboItemFocusField t_field = (WeiboItemFocusField)getField(i);
-							if(t_field.m_itemField.m_weibo == _weibo){
-								delete(t_field);
-								
-								break;
-							}
+
+						if(WeiboMainManager.this.getCurrExtendedItem() == t_field.m_itemField){
+							
+							WeiboMainManager.this.setCurrExtendedItem(null);
+							WeiboMainManager.this.setCurrEditItem(null);
+							
+							delete(t_field.m_itemField);
+							
+						}else{
+							delete(t_field);
 						}
+						
 						
 					}
 				});

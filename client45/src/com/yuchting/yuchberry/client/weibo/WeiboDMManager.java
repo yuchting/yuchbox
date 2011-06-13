@@ -24,7 +24,8 @@ public class WeiboDMManager extends WeiboMainManager{
 				}
 				
 				WeiboDMItemField t_field = new WeiboDMItemField(_weibo,_image,WeiboDMManager.this);
-				insert(t_field,0);
+	
+				insert(t_field.m_focusField,0);
 								
 				if(_resetSelectIdx){
 					m_hasNewWeibo = true;
@@ -38,25 +39,28 @@ public class WeiboDMManager extends WeiboMainManager{
 		int t_num = getFieldCount();
 		for(int i = 0 ;i < t_num;i++){
 			
-			WeiboItemFocusField t_field = (WeiboItemFocusField)getField(i);
+			final WeiboItemFocusField t_field = (WeiboItemFocusField)getField(i);
+			final WeiboDMItemField t_managerField = (WeiboDMItemField)t_field.m_itemField;
 			
-			if(t_field.m_itemField.m_weibo == _weibo){
+			if(t_managerField.delWeibo(_weibo)){
 				
 				m_mainApp.invokeLater(new Runnable() {
 					
 					public void run() {
-						
-						int t_num = getFieldCount();
-						
-						for(int i = 0 ;i < t_num;i++){
-							WeiboItemFocusField t_field = (WeiboItemFocusField)getField(i);
-							if(t_field.m_itemField.m_weibo == _weibo){
-								delete(t_field);
+							
+						if(t_managerField.isEmptyPost()){
+							// delete the field/manager item form the whole dm list
+							//
+							if(WeiboDMManager.this.getCurrExtendedItem() == t_managerField){
 								
-								break;
+								WeiboDMManager.this.setCurrExtendedItem(null);
+								WeiboDMManager.this.setCurrEditItem(null);
+								
+								delete(t_managerField);
+							}else{
+								delete(t_field);
 							}
-						}
-						
+						}						
 					}
 				});
 				
