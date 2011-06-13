@@ -6,9 +6,6 @@ import java.util.List;
 
 import org.dom4j.Element;
 
-import twitter4j.GeoLocation;
-import twitter4j.StatusUpdate;
-
 import com.mime.qweibo.QUser;
 import com.mime.qweibo.QWeibo;
 import com.mime.qweibo.QWeiboSyncApi;
@@ -148,7 +145,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	 * @param _fullTest		: whether test the full configure( SMTP for email)
 	 */
 	public void ResetSession(boolean _fullTest)throws Exception{
-		
+				
 		m_api.setAccessToken(m_accessToken, m_secretToken);		
 		m_userself = m_api.verifyCredentials();
 		

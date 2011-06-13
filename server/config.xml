@@ -25,7 +25,7 @@
 		commentSum="5"
 	/-->
 		
-	<!--WeiboAccount
+	<WeiboAccount
 		type="sina"
 		account="yuchberry"
 		accessToken="1eef9899c847f1cd0735c6775fdcc576"
@@ -36,7 +36,7 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/-->
+	/>
 		
 	<WeiboAccount
 		type="qq"
