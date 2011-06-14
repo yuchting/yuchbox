@@ -19,6 +19,8 @@ import javax.imageio.ImageIO;
 import org.dom4j.Element;
 
 public abstract class fetchAbsWeibo extends fetchAccount{
+	
+	static public boolean		sm_debug = false;
 
 	byte[] m_headImageBuffer	= new byte[1024 * 10];
 	
@@ -198,12 +200,19 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 						
 						_weiboList.m_weiboList.add(confirmOne);
 						
-						m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + 
-								"> prepare Weibo<" + confirmOne.GetId() + "> send again...");
+						if(sm_debug){
+							m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + 
+									"> prepare Weibo<" + confirmOne.GetId() + "> send again...");	
+						}
+						
 						
 					}else{
-						m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + 
-								"> prepare Weibo<" + confirmOne.GetId() + "> sent " + t_maxTimes + " Times , give up.");
+						
+						if(sm_debug){
+							m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + 
+									"> prepare Weibo<" + confirmOne.GetId() + "> sent " + t_maxTimes + " Times , give up.");	
+						}
+						
 					}
 					
 					_weiboList.m_WeiboComfirm.remove(confirmOne);
@@ -265,9 +274,12 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				t_output.reset();
 			}			
 	
-			if(t_weiboNum != 0){
-				m_mainMgr.m_logger.LogOut(GetAccountName() + " Pushed <" + t_weiboNum + ">Weibo");
-			}							
+			if(sm_debug){
+				if(t_weiboNum != 0){
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " Pushed <" + t_weiboNum + ">Weibo");
+				}	
+			}
+										
 			
 			synchronized(this){
 				_weiboList.m_counter = 0;
@@ -479,7 +491,10 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				t_found = true;
 				_weiboList.m_WeiboComfirm.remove(confirmOne);
 				
-				m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + "> confirm Weibo<" + _id + ">");
+				if(sm_debug){
+					m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + "> confirm Weibo<" + _id + ">");
+				}
+				
 				break;
 			}
 		}
@@ -521,10 +536,12 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		        
 		        m_mainMgr.SendData(t_os, false);
 		        
-		        m_mainMgr.m_logger.LogOut(GetAccountName() + " send weibo head image " + t_id);
-			}
-			
-			return true;
+		        if(sm_debug){
+		        	m_mainMgr.m_logger.LogOut(GetAccountName() + " send weibo head image " + t_id);
+		        }
+		        
+		        return true;
+			}			
 		}
 		
 		return false;
