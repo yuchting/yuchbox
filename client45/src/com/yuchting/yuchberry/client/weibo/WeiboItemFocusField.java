@@ -39,9 +39,14 @@ public class WeiboItemFocusField extends Field{
 	}
 	
 	protected void drawFocus(Graphics _g,boolean _on){
-		m_itemField.paintFocus(_g, _on);
-		if(_on){
+		
+		if(_on && m_itemField.getParentManager().getCurrExtendedItem() == null){
+			
+			m_itemField.paintFocus(_g, true);
 			m_itemField.getParentManager().setCurrSelectedItem(m_itemField);
+			
+		}else{
+			m_itemField.paintFocus(_g, false);	
 		}
 	}
 }

@@ -100,7 +100,7 @@ public class WeiboHeader extends Field{
 				g.drawBitmap(0,0,recvMain.fsm_display_width,fsm_headHeight,sm_unlinkedStateBitmap,0,0);
 			}		
 			
-			int t_x = fsm_linkedStateSize + fsm_stateBitmapInterval;
+			int t_x = fsm_linkedStateSize;
 			
 			for(int i = 0 ;i <= STATE_DIRECT_MESSAGE;i++){
 				

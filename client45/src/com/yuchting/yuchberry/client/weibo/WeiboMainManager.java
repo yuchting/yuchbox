@@ -239,7 +239,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	}
 	
 	public void AddWeibo(final fetchWeibo _weibo,final WeiboHeadImage _image,
-							final boolean _resetSelectIdx){
+							final boolean _initAdd){
 		
 		final WeiboItemField t_field = new WeiboItemField(_weibo,_image,this);
 		
@@ -253,7 +253,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 					insert(t_field.getFocusField(),0);
 				}
 				
-				if(_resetSelectIdx){				
+				if(!_initAdd){				
 					m_hasNewWeibo = true;
 				}
 			}
@@ -263,33 +263,46 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	public boolean DelWeibo(final fetchWeibo _weibo){
 		
 		int t_num = getFieldCount();
-		for(int i = 0 ;i < t_num;i++){
+		for(int i = t_num - 1;i >= 0;i--){
 			
-			final WeiboItemFocusField t_field = (WeiboItemFocusField)getField(i);
-			
-			if(t_field.m_itemField.m_weibo == _weibo){
+			Field t_field = getField(i);
+						
+			if(t_field instanceof WeiboItemFocusField){
 				
-				m_mainApp.invokeLater(new Runnable() {
+				final WeiboItemFocusField t_focusField = (WeiboItemFocusField)t_field;
+				
+				if(t_focusField.m_itemField.m_weibo == _weibo){
 					
-					public void run() {
-
-						if(WeiboMainManager.this.getCurrExtendedItem() == t_field.m_itemField){
-							
-							WeiboMainManager.this.setCurrExtendedItem(null);
-							WeiboMainManager.this.setCurrEditItem(null);
-							
-							delete(t_field.m_itemField);
-							
-						}else{
-							delete(t_field);
+					m_mainApp.invokeLater(new Runnable() {
+						
+						public void run() {
+							delete(t_focusField);
 						}
-						
-						
-					}
-				});
+					});
+					
+					return true;
+				}
 				
-				return true;
-			}
+			}else if(t_field instanceof WeiboItemField){
+				
+				final WeiboItemField t_weiboField = (WeiboItemField)t_field;
+				
+				if(t_weiboField.m_weibo == _weibo){
+					
+					m_mainApp.invokeLater(new Runnable() {
+						
+						public void run() {
+							
+							WeiboMainManager.this.EscapeKey(); //escape edit field 
+							WeiboMainManager.this.EscapeKey(); //escape control field					
+							
+							delete(t_weiboField.getFocusField());
+						}
+					});
+					
+					return true;
+				}
+			}			
 		}
 		
 		return false;		
@@ -371,6 +384,22 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		return false;
 	}
 	
+	public int getFieldWithFocusIndex(){
+		
+		if(getCurrExtendedItem() != null){
+			
+			int t_num = getFieldCount();
+			
+			for(int i = 0;i < t_num;i++){
+				Field t_field = getField(i);
+				if(t_field == getCurrExtendedItem()){
+					return i;
+				}
+			}
+		}
+		
+		return super.getFieldWithFocusIndex();
+	}
 	
 	public void OpenNextWeiboItem(boolean _next){
 
@@ -458,9 +487,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			t_forwardText.append(" //@").append(_item.m_weibo.GetUserScreenName()).append(" :").append(_item.m_weibo.GetText());
 			
 			if(weiboTimeLineScreen.sm_mainApp.m_publicForward && _item.m_commentText != null){
-				t_forwardText.append(" //").append(_item.m_commentText)
-							.append(" --").append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
-							.append(WeiboItemField.parseSource(_item.m_weibo.GetSource()));
+				t_forwardText.append(" //").append(_item.m_commentText.replace('\n', ' '));
 			}
 			
 			String t_text = t_forwardText.toString();

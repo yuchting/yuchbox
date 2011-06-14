@@ -1,5 +1,7 @@
 package com.yuchting.yuchberry.client.weibo;
 
+import net.rim.device.api.ui.Field;
+
 import com.yuchting.yuchberry.client.recvMain;
 
 public class WeiboDMManager extends WeiboMainManager{
@@ -37,35 +39,47 @@ public class WeiboDMManager extends WeiboMainManager{
 	public boolean DelWeibo(final fetchWeibo _weibo){
 		
 		int t_num = getFieldCount();
-		for(int i = 0 ;i < t_num;i++){
+		for(int i = t_num - 1;i >= 0;i--){
 			
-			final WeiboItemFocusField t_field = (WeiboItemFocusField)getField(i);
-			final WeiboDMItemField t_managerField = (WeiboDMItemField)t_field.m_itemField;
+			Field t_field = getField(i);
 			
-			if(t_managerField.delWeibo(_weibo)){
+			if(t_field instanceof WeiboItemFocusField){
 				
-				m_mainApp.invokeLater(new Runnable() {
+				final WeiboItemFocusField t_focusField = (WeiboItemFocusField)t_field;
+				final WeiboDMItemField t_managerField = (WeiboDMItemField)t_focusField.m_itemField;
+				
+				if(t_managerField.delWeibo(_weibo) && t_managerField.isEmptyPost()){
 					
-					public void run() {
-							
-						if(t_managerField.isEmptyPost()){
-							// delete the field/manager item form the whole dm list
-							//
-							if(WeiboDMManager.this.getCurrExtendedItem() == t_managerField){
-								
-								WeiboDMManager.this.setCurrExtendedItem(null);
-								WeiboDMManager.this.setCurrEditItem(null);
-								
-								delete(t_managerField);
-							}else{
-								delete(t_field);
-							}
-						}						
-					}
-				});
+					m_mainApp.invokeLater(new Runnable() {
+						
+						public void run() {
+							delete(t_focusField);
+						}
+					});
+					
+					return true;
+				}
 				
-				return true;
-			}
+			}else if(t_field instanceof WeiboDMItemField){
+				
+				final WeiboDMItemField t_managerField = (WeiboDMItemField)t_field;
+				
+				if(t_managerField.delWeibo(_weibo) && t_managerField.isEmptyPost()){
+					
+					m_mainApp.invokeLater(new Runnable() {
+						
+						public void run() {
+				
+							WeiboDMManager.this.EscapeKey(); //escape edit field 
+							WeiboDMManager.this.EscapeKey(); //escape control field
+							
+							delete(t_managerField.getFocusField());
+						}
+					});
+					
+					return true;
+				}
+			}		
 		}
 		
 		return false;		

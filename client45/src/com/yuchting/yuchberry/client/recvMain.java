@@ -226,19 +226,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		"SOHU/",
 		"FAN/",
 	};
-	
-
-	public weiboTimeLineScreen	m_weiboTimeLineScreen = null;
-	public boolean				m_publicForward		= false;
-	public Vector				m_receivedWeiboList	= new Vector();
-	
-	static final String[]	fsm_maxWeiboNumList = {"128","256","512","1024"};
-	static final int[]	fsm_maxWeiboNum		= {128,256,512,1024};
-	int						m_maxWeiboNumIndex = 0;
-	
-	public int					m_receivedWeiboNum = 0;
-	public int					m_sentWeiboNum = 0;
-	
+		
 	public static void main(String[] args) {
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());		
 		t_theApp.enterEventDispatcher();
@@ -1557,9 +1545,26 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///// weibo module
 	///////////////////////////////////////////////////////////////////////////////////////////
+	public weiboTimeLineScreen	m_weiboTimeLineScreen = null;
+	public boolean				m_publicForward		= false;
+	private Vector				m_receivedWeiboList	= new Vector();
+	
+	private int				m_receivedHomeWeiboNum = 0;
+	private int				m_receivedAtMeWeiboNum = 0;
+	private int				m_receivedCommentWeiboNum = 0;
+	private int				m_receivedDirectMsgWeiboNum = 0;
+	
+	static final String[]	fsm_maxWeiboNumList = {"128","256","512","1024"};
+	static final int[]	fsm_maxWeiboNum		= {128,256,512,1024};
+	int						m_maxWeiboNumIndex = 0;
+	
+	public int					m_receivedWeiboNum = 0;
+	public int					m_sentWeiboNum = 0;
 	
 	int 	m_initWeiboRunnableID = -1;
 	boolean m_receiveWeiboListChanged = false;
+	
+	
 	
 	public void InitWeiboModule(){
 		
@@ -1570,9 +1575,36 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 			ReadWriteWeiboFile(true);
 			
-			m_weiboTimeLineScreen.ClearWeibo();			
+			m_weiboTimeLineScreen.ClearWeibo();
+			
+			m_receivedHomeWeiboNum = 0;
+			m_receivedAtMeWeiboNum = 0;
+			m_receivedCommentWeiboNum = 0;
+			m_receivedDirectMsgWeiboNum = 0;
 					
 			if(!m_receivedWeiboList.isEmpty()){
+				
+				synchronized (m_receivedWeiboList) {
+					for(int i = 0 ;i < m_receivedWeiboList.size();i++){
+						fetchWeibo weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
+						switch(weibo.GetWeiboClass()){
+						case fetchWeibo.TIMELINE_CLASS:
+							m_receivedHomeWeiboNum++;
+							break;
+						case fetchWeibo.AT_ME_CLASS:
+							m_receivedAtMeWeiboNum++;
+							break;
+						case fetchWeibo.COMMENT_ME_CLASS:
+							m_receivedCommentWeiboNum++;
+							break;
+						case fetchWeibo.DIRECT_MESSAGE_CLASS:
+							m_receivedDirectMsgWeiboNum++;
+							break;
+						}
+					}
+				}
+				
+				
 				m_initWeiboRunnableID = invokeLater(new Runnable(){
 					
 					int m_addIndex = 0;
@@ -1584,7 +1616,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 								fetchWeibo t_weibo = (fetchWeibo)m_receivedWeiboList.elementAt(m_addIndex);
 								
 								try{
-									m_weiboTimeLineScreen.AddWeibo(t_weibo,false);
+									m_weiboTimeLineScreen.AddWeibo(t_weibo,true);
 								}catch(Exception e){
 									SetErrorString("IWM:"+ e.getMessage() + e.getClass().getName());
 								}
@@ -1612,7 +1644,26 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		synchronized (this) {
 			m_receiveWeiboListChanged = true;
-		}		
+		}
+		
+		m_receivedWeiboNum++;
+		
+		int t_checkWeiboClassNum = 0;
+		
+		switch(_weibo.GetWeiboClass()){
+		case fetchWeibo.TIMELINE_CLASS:
+			t_checkWeiboClassNum = ++m_receivedHomeWeiboNum;
+			break;
+		case fetchWeibo.AT_ME_CLASS:
+			t_checkWeiboClassNum = ++m_receivedAtMeWeiboNum;
+			break;
+		case fetchWeibo.COMMENT_ME_CLASS:
+			t_checkWeiboClassNum = ++m_receivedCommentWeiboNum;
+			break;
+		case fetchWeibo.DIRECT_MESSAGE_CLASS:
+			t_checkWeiboClassNum = ++m_receivedDirectMsgWeiboNum;
+			break;
+		}
 		
 		synchronized (m_receivedWeiboList) {
 			
@@ -1621,11 +1672,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				if(weibo.equals(_weibo)){
 					return;
 				}
-			}
-			
-			m_receivedWeiboNum++;
+			}			
 						
-			if(m_receivedWeiboList.size() > /*getMaxWeiboNum()*/ 20){
+			if(t_checkWeiboClassNum >= getMaxWeiboNum()){
 				
 				for(int i = 0; i < m_receivedWeiboList.size();i++){
 					
@@ -1636,19 +1685,33 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						m_receivedWeiboList.removeElementAt(i);
 						
 						m_weiboTimeLineScreen.DelWeibo(t_delWeibo);
-						
 						m_weiboTimeLineScreen.DelWeiboHeadImage(t_delWeibo.GetWeiboStyle(),Long.toString(t_delWeibo.GetId()));
 						
 						break;
 					}
-				}				
+				}
+				
+				switch(_weibo.GetWeiboClass()){
+				case fetchWeibo.TIMELINE_CLASS:
+					--m_receivedHomeWeiboNum;
+					break;
+				case fetchWeibo.AT_ME_CLASS:
+					--m_receivedAtMeWeiboNum;
+					break;
+				case fetchWeibo.COMMENT_ME_CLASS:
+					--m_receivedCommentWeiboNum;
+					break;
+				case fetchWeibo.DIRECT_MESSAGE_CLASS:
+					--m_receivedDirectMsgWeiboNum;
+					break;
+				}
 			}
 			
 			m_receivedWeiboList.addElement(_weibo);
 			
 		}		
 		
-		if(m_weiboTimeLineScreen.AddWeibo(_weibo,true)){
+		if(m_weiboTimeLineScreen.AddWeibo(_weibo,false)){
 			TriggerWeiboNotification();
 		}
 		

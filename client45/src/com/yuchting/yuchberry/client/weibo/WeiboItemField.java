@@ -228,10 +228,13 @@ public class WeiboItemField extends Manager{
 						add(m_parentManager.m_commentTextArea);
 					}
 					
-					if(!m_hasControlField[fsm_controlField_followBtn]){
-						m_hasControlField[fsm_controlField_followBtn] = true;
-						add(m_parentManager.m_followCommentUser);
+					if(!sm_simpleMode){
+						if(!m_hasControlField[fsm_controlField_followBtn]){
+							m_hasControlField[fsm_controlField_followBtn] = true;
+							add(m_parentManager.m_followCommentUser);
+						}	
 					}
+					
 				}
 				
 				if(!m_hasControlField[fsm_controlField_text]){
@@ -256,9 +259,11 @@ public class WeiboItemField extends Manager{
 						add(m_parentManager.m_commentTextArea);
 					}
 					
-					if(!m_hasControlField[fsm_controlField_followBtn]){
-						m_hasControlField[fsm_controlField_followBtn] = true;
-						add(m_parentManager.m_followCommentUser);
+					if(!sm_simpleMode){
+						if(!m_hasControlField[fsm_controlField_followBtn]){
+							m_hasControlField[fsm_controlField_followBtn] = true;
+							add(m_parentManager.m_followCommentUser);
+						}
 					}
 				}
 			}		
@@ -607,7 +612,7 @@ public class WeiboItemField extends Manager{
 			String t_displayName = null;
 			if(m_weibo.GetWeiboStyle() == fetchWeibo.TWITTER_WEIBO_STYLE
 			|| m_weibo.GetWeiboStyle() == fetchWeibo.QQ_WEIBO_STYLE ){
-				t_displayName = (m_weibo.GetUserScreenName() + "(" + m_weibo.GetUserName() + ")");
+				t_displayName = m_weibo.GetUserName();
 			}else{
 				t_displayName = m_weibo.GetUserScreenName();
 			}
