@@ -594,8 +594,9 @@ public class weiboTimeLineScreen extends MainScreen{
 			}
 		}
 		
-		if(m_currMgr.getCurrSelectedItem().m_weibo != null
-		&& m_currMgr.getCurrSelectedItem().m_weibo.IsOwnWeibo()){
+		if(m_currMgr.getCurrSelectedItem() != null				// has selected
+		&& m_currMgr.getCurrSelectedItem().m_weibo != null		// is not update weibo
+		&& m_currMgr.getCurrSelectedItem().m_weibo.IsOwnWeibo()){ // is own weibo
 			_menu.add(m_deleteItem);
 		}
 		
