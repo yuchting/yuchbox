@@ -111,19 +111,36 @@ public class HelloWorld {
 			String t_token_url = "http://api.t.sina.com.cn/oauth/access_token"; 
 			url = new URL(t_token_url);
 			HttpURLConnection tcon = (HttpURLConnection)url.openConnection();
+			
+			tcon.setDoInput(true);
+			tcon.setRequestMethod("POST");
 			tcon.setDoOutput(true);
 			
-			tcon.setRequestProperty("Authorization",
-					t_auth.generateAuthorizationHeader("POST", t_token_url, 
-								new PostParameter[]{new PostParameter("oauth_verifier", PIN),
-								new PostParameter("source",fetchSinaWeibo.fsm_consumer_key)},
-						t_requestToken));
+			String authString = t_auth.generateAuthorizationHeader("POST", t_token_url, 
+										new PostParameter[]
+										{
+											new PostParameter("oauth_verifier", PIN),
+											new PostParameter("source",fetchSinaWeibo.fsm_consumer_key)
+										},
+										t_requestToken);
 			
-			OutputStream t_os = tcon.getOutputStream();		
+			tcon.setRequestProperty("Authorization",authString);
+			System.out.println("AuthString: " + authString);
 			
 			String t_params = "oauth_verifier=" + PIN + "&source=" + fetchSinaWeibo.fsm_consumer_key;
+			byte[] bytes = t_params.getBytes("UTF-8");
 			
-			t_os.write(t_params.getBytes("UTF-8"));
+			tcon.setRequestProperty("Content-Type",
+            "application/x-www-form-urlencoded");
+			
+			tcon.setRequestProperty("Content-Length",
+                    Integer.toString(bytes.length));
+			
+			System.out.println("param: " + t_params);
+			
+			OutputStream t_os = tcon.getOutputStream();		
+					
+			t_os.write(bytes);
 			t_os.flush();
 			t_os.close();
 			
