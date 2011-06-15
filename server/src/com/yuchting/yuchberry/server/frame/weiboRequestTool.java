@@ -154,6 +154,6 @@ public class weiboRequestTool extends JFrame implements ActionListener{
 	}
 	
 	static public void main(String _arg[]){
-		new weiboRequestTool(fetchWeibo.QQ_WEIBO_STYLE);
+		new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
 	}
 }

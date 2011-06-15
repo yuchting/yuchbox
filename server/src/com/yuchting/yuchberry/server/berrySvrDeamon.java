@@ -104,9 +104,7 @@ public class berrySvrDeamon extends Thread{
 		start();
 				
 	}
-	
-	
-		
+
 	public void run(){
 		
 		// loop
@@ -118,7 +116,7 @@ public class berrySvrDeamon extends Thread{
 			try{
 												
 				byte[] t_package = m_sendReceive.RecvBufferFromSvr();
-				m_fetchMgr.m_logger.LogOut("receive package head<" + t_package[0] + "> length<" + t_package.length + ">");
+				//m_fetchMgr.m_logger.LogOut("receive package head<" + t_package[0] + "> length<" + t_package.length + ">");
 				
 				m_fetchMgr.ProcessPackage(t_package);
 				

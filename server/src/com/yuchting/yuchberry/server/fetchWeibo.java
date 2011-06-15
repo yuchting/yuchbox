@@ -19,6 +19,10 @@ public class fetchWeibo {
 	final public static byte	AT_ME_CLASS 			= 2;
 	final public static byte	COMMENT_ME_CLASS 		= 3;
 	
+	final public static byte	SEND_NEW_UPDATE_TYPE	= 0;
+	final public static byte	SEND_FORWARD_TYPE		= 1;
+	final public static byte	SEND_REPLY_TYPE			= 2;
+	
 	final public static int	fsm_headImageSize		= 32;
 	
 	byte		m_WeiboStyle;
@@ -138,10 +142,9 @@ public class fetchWeibo {
 		_stream.write(m_WeiboStyle);
 		_stream.write(m_WeiboClass);
 		
-		_stream.write(m_isOwnWeibo?1:0);
-		
-		_stream.write(m_isSinaVIP?1:0);
-		_stream.write(m_isBBer?1:0);
+		sendReceive.WriteBoolean(_stream,m_isOwnWeibo);
+		sendReceive.WriteBoolean(_stream,m_isSinaVIP);
+		sendReceive.WriteBoolean(_stream,m_isBBer);
 		
 		sendReceive.WriteLong(_stream,m_id);
 		sendReceive.WriteLong(_stream,m_userId);

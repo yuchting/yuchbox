@@ -1145,10 +1145,10 @@ public class fetchEmail extends fetchAccount{
 					MailIndexAttachment t_att = (MailIndexAttachment)m_mailIndexAttachName.elementAt(i);
 										
 					sendReceive.WriteInt(t_fileWrite,t_att.m_mailHashCode);
-					t_fileWrite.write(t_att.m_send?1:0);
+					sendReceive.WriteBoolean(t_fileWrite,t_att.m_send);
 					sendReceive.WriteLong(t_fileWrite,t_att.m_mailIndexOrTime);
-					
 					sendReceive.WriteInt(t_fileWrite,t_att.m_attachmentName.size());
+					
 					for(int j = 0 ;j < t_att.m_attachmentName.size();j++){
 						MailAttachment t_attachment = (MailAttachment)t_att.m_attachmentName.elementAt(j);
 						sendReceive.WriteInt(t_fileWrite,t_attachment.m_size);

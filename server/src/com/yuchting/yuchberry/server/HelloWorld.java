@@ -6,6 +6,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
@@ -21,8 +23,6 @@ import javax.net.ssl.SSLSocketFactory;
 import weibo4j.http.OAuth;
 import weibo4j.http.OAuthToken;
 import weibo4j.http.PostParameter;
-import weibo4j.org.json.JSONArray;
-import weibo4j.org.json.JSONObject;
 
 
 /**
@@ -63,17 +63,8 @@ public class HelloWorld {
 
 		//berryRecvTest();
 		
-		//getOAuthRequest();
-		
-		String json = "{aa:null,bb:\"haha\"}";
-		
-		JSONObject t_json = new JSONObject(json);
-		
-		String  t_arr = t_json.getString("aa");
-		
-		if(t_arr == null){
-			System.out.print("aa");
-		}
+		getOAuthRequest();
+	
 	}
 	
 	static public void getOAuthRequest(){
@@ -107,26 +98,36 @@ public class HelloWorld {
 			}
 			
 			String[] t_arr = t_response.split("&");
-			SinaRequestToken t_requestToken = new SinaRequestToken(t_arr[0],t_arr[1]);
+			SinaRequestToken t_requestToken = new SinaRequestToken(t_arr[0].split("=")[1],t_arr[1].split("=")[1]);
 			
 			
-			System.out.println("Open URL:" + "http://api.t.sina.com.cn/oauth/authorize?"+t_requestToken.getToken());
+			System.out.println("Open URL:" + "http://api.t.sina.com.cn/oauth/authorize?oauth_token="+t_requestToken.getToken());
 			
 			System.out.print("input PIN:");
 			BufferedReader bufin = new BufferedReader(new   InputStreamReader(System.in)); 
-			String PIN = bufin.readLine();
-			
+			String PIN = bufin.readLine();			
 						
 			
 			String t_token_url = "http://api.t.sina.com.cn/oauth/access_token"; 
 			url = new URL(t_token_url);
-			con = url.openConnection();
-			con.setAllowUserInteraction(false);
+			HttpURLConnection tcon = (HttpURLConnection)url.openConnection();
+			tcon.setDoOutput(true);
 			
-			con.setRequestProperty("Authorization",t_auth.generateAuthorizationHeader("GET", t_token_url, 
-					new PostParameter[]{new PostParameter("oauth_verifier", PIN)}, t_requestToken));
+			tcon.setRequestProperty("Authorization",
+					t_auth.generateAuthorizationHeader("POST", t_token_url, 
+								new PostParameter[]{new PostParameter("oauth_verifier", PIN),
+								new PostParameter("source",fetchSinaWeibo.fsm_consumer_key)},
+						t_requestToken));
 			
-			in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+			OutputStream t_os = tcon.getOutputStream();		
+			
+			String t_params = "oauth_verifier=" + PIN + "&source=" + fetchSinaWeibo.fsm_consumer_key;
+			
+			t_os.write(t_params.getBytes("UTF-8"));
+			t_os.flush();
+			t_os.close();
+			
+			in = new BufferedReader(new InputStreamReader(tcon.getInputStream(), "UTF-8"));
 			try{
 				StringBuffer t_stringBuffer = new StringBuffer();
 				

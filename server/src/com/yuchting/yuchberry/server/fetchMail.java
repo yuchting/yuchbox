@@ -153,7 +153,7 @@ public class  fetchMail{
 			sendReceive.WriteString(_stream,t_attachment.m_type,m_convertoSimpleChar);
 		}
 		
-		_stream.write(m_hasLocationInfo?1:0);
+		sendReceive.WriteBoolean(_stream,m_hasLocationInfo);
 		if(m_hasLocationInfo){
 			m_gpsInfo.OutputData(_stream);
 		}

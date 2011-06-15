@@ -3,13 +3,7 @@
  */
 package weibo4j.http;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Iterator;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.MemoryCacheImageInputStream;
 
 //import com.sun.imageio.plugins.bmp.BMPImageReader;
 //import com.sun.imageio.plugins.gif.GIFImageReader;

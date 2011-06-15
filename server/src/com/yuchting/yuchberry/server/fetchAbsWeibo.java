@@ -20,7 +20,7 @@ import org.dom4j.Element;
 
 public abstract class fetchAbsWeibo extends fetchAccount{
 	
-	static public boolean		sm_debug = false;
+	static public boolean		sm_debug = true;
 
 	byte[] m_headImageBuffer	= new byte[1024 * 10];
 	
@@ -111,6 +111,10 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	 * check the folder to find the news to push
 	 */
 	public synchronized void CheckFolder()throws Exception{
+		
+		if(!m_mainMgr.isWeiboEnabled()){
+			return;
+		}
 		
 		try{
 			
@@ -400,7 +404,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		try{
 			
 			switch(t_type){
-			case 0:
+			case fetchWeibo.SEND_NEW_UPDATE_TYPE:
 				
 				m_mainMgr.m_logger.LogOut(GetAccountName() + " update new weibo");
 				
@@ -412,12 +416,13 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				UpdataStatus(t_text,t_gpsInfo);
 				
 				break;
-			case 1:
-			case 2:
+			case fetchWeibo.SEND_FORWARD_TYPE:
+			case fetchWeibo.SEND_REPLY_TYPE:
 				
-				int t_public_fw = in.read();
+				boolean t_public_fw = (in.read() == 1) && (t_type == fetchWeibo.SEND_FORWARD_TYPE);
 				
-				if(t_style == GetCurrWeiboStyle() || t_public_fw == 1){
+				if(t_style == GetCurrWeiboStyle()  // same style
+				|| t_public_fw){	// public forward
 					
 					long t_commentWeiboId = sendReceive.ReadLong(in);
 					
@@ -433,8 +438,9 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					UpdataComment(t_style,t_text,t_commentWeiboId,t_gpsInfo,t_updateTimeline);
 					
 					// public the forward commect/forward
+					// return false to give another weibo to process if public forward
 					//
-					return t_public_fw != 1;
+					return !t_public_fw;
 				}
 				
 				break;

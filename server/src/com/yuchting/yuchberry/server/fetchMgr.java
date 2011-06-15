@@ -67,6 +67,8 @@ public class fetchMgr{
     
     boolean		m_isCheckFolderState	= false;
     
+    boolean		m_isWeiboEnabled	= true;
+    
     public void SetLatestVersion(String _version){
     	
     	if(m_latestVersion == null || !m_latestVersion.equals(_version)){
@@ -99,6 +101,10 @@ public class fetchMgr{
     
     public int GetConnectClientVersion(){
     	return m_clientVer;
+    }
+    
+    public boolean isWeiboEnabled(){
+    	return m_isWeiboEnabled;
     }
     
     public void SendNewVersionPrompt(sendReceive _sendRecv)throws Exception{
@@ -309,6 +315,10 @@ public class fetchMgr{
 				m_passwordKey = sendReceive.ReadString(in);
 			}
 			
+			if(m_clientVer >= 6){
+				m_isWeiboEnabled = sendReceive.ReadBoolean(in);
+			}
+			
 			_s.setSoTimeout(0);
 			_s.setKeepAlive(true);
 						
@@ -458,9 +468,14 @@ public class fetchMgr{
 		
 		switch(t_msg_head){			
 			case msg_head.msgKeepLive:
+				m_logger.LogOut("pulse!");				
 				break;
 			case msg_head.msgSponsorList:
 				ProcessSponsorList(in);
+				break;
+			case msg_head.msgWeiboEnable:
+				m_isWeiboEnabled  = sendReceive.ReadBoolean(in);
+				m_logger.LogOut("client " + (m_isWeiboEnabled?"Enable":"Disable") + " Weibo Module");
 				break;
 			default:
 			{

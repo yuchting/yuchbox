@@ -203,8 +203,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		}		
 		
 		if(_info != null && _info.m_longitude != 0 && _info.m_latitude != 0){
-			GeoLocation t_geo = new GeoLocation(_info.m_latitude,_info.m_longitude);
-			t_status.setLocation(t_geo);
+			t_status.setLocation(new GeoLocation(_info.m_latitude,_info.m_longitude));
 		}
 		
 		m_twitter.updateStatus(t_status);
