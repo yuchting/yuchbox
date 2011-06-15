@@ -457,15 +457,18 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 		if(getCurrEditItem() != _item){	
 			
-			final String t_text = "@" + _item.m_weibo.GetUserScreenName() + " ";
-			_item.AddDelEditTextArea(true,t_text);
+			StringBuffer t_text = new StringBuffer();
+			t_text.append("@").append(_item.m_weibo.GetUserScreenName()).append(" ");
+
+			String t_finalText = t_text.toString();
+			_item.AddDelEditTextArea(true,t_finalText);
 			
-			m_editTextArea.setText(t_text);
+			m_editTextArea.setText(t_finalText);
 			m_editTextArea.setFocus();
 			
 			RefreshEditTextAreHeight();
 			
-			m_currentSendType = 2;			
+			m_currentSendType =  fetchWeibo.SEND_REPLY_TYPE;
 			
 			sublayout(0,0);
 			invalidate();
@@ -502,7 +505,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			
 			RefreshEditTextAreHeight();
 			
-			m_currentSendType = 1;
+			m_currentSendType = fetchWeibo.SEND_FORWARD_TYPE;
 			
 			sublayout(0,0);
 			invalidate();

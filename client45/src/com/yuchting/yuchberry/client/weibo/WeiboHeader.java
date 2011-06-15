@@ -15,7 +15,7 @@ public class WeiboHeader extends Field{
 	public final static int STATE_COMMENT_ME = 2;
 	public final static int STATE_DIRECT_MESSAGE = 3;	
 	
-	public final static int fsm_headHeight = 30;
+	public final static int fsm_headHeight = 32;
 	
 	
 	private final static int fsm_linkedStateSize = 20;

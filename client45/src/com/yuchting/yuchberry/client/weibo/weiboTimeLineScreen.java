@@ -11,6 +11,7 @@ import local.localResource;
 import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
+import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
@@ -141,38 +142,48 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 	}
 	
+	final class DelayAddWeiboData{
+		public fetchWeibo	m_weibo;
+		public boolean		m_initAdd;
+		public DelayAddWeiboData(fetchWeibo _weibo,boolean _initAdd){
+			m_weibo = _weibo;
+			m_initAdd = _initAdd;
+		}
+	}
+	
 	public boolean AddWeibo(fetchWeibo _weibo,boolean _initAdd){
 		
-		if(_initAdd){
-			// initialize to add history weibo from file store
-			//
-			AddWeibo_imple(_weibo,true);		
-		}else{
-
-			synchronized (m_delayWeiboAddList) {
-				m_delayWeiboAddList.addElement(_weibo);
+		synchronized (m_delayWeiboAddList) {
+			
+			m_delayWeiboAddList.addElement(new DelayAddWeiboData(_weibo,_initAdd));
+			
+			if(m_delayWeiboRunnableID == -1){
 				
-				if(m_delayWeiboRunnableID == -1){
+				m_delayWeiboRunnableID = sm_mainApp.invokeLater(new Runnable() {
 					
-					m_delayWeiboRunnableID = sm_mainApp.invokeLater(new Runnable() {
-						public void run() {
+					public void run() {
+						
+						synchronized (m_delayWeiboAddList){
 							
-							synchronized (m_delayWeiboAddList) {
-								AddWeibo_imple((fetchWeibo)m_delayWeiboAddList.elementAt(0),true);
-								m_delayWeiboAddList.removeElementAt(0);
+							if(!m_delayWeiboAddList.isEmpty()){
 								
-								if(m_delayWeiboAddList.isEmpty()){
-									sm_mainApp.cancelInvokeLater(m_delayWeiboRunnableID);
-									m_delayWeiboRunnableID = -1;
-								}	
-							}
+								DelayAddWeiboData t_data = (DelayAddWeiboData)m_delayWeiboAddList.elementAt(0);
+								AddWeibo_imple(t_data.m_weibo,t_data.m_initAdd);
+								m_delayWeiboAddList.removeElementAt(0);	
+							}								
 							
+							if(m_delayWeiboAddList.isEmpty()){
+								sm_mainApp.cancelInvokeLater(m_delayWeiboRunnableID);
+								m_delayWeiboRunnableID = -1;
+							}
 						}
 						
-					},200, true);
-				}
+					}
+					
+				},500, true);
 			}
-		}	
+		}
+		
 		
 		return _weibo.GetWeiboClass() == fetchWeibo.COMMENT_ME_CLASS
 				|| _weibo.GetWeiboClass() == fetchWeibo.AT_ME_CLASS
@@ -185,7 +196,8 @@ public class weiboTimeLineScreen extends MainScreen{
 			// first check in the delay add list
 			//
 			for(int i = 0 ;i < m_delayWeiboAddList.size();i++){
-				if(_weibo == m_delayWeiboAddList.elementAt(i)){
+				DelayAddWeiboData t_weiboData = (DelayAddWeiboData)m_delayWeiboAddList.elementAt(i);
+				if(_weibo == t_weiboData.m_weibo){
 					m_delayWeiboAddList.removeElementAt(i);
 					
 					return;
@@ -377,7 +389,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			t_os.write(msg_head.msgWeibo);
 			
 			t_os.write(fetchWeibo.SINA_WEIBO_STYLE);
-			t_os.write(0);
+			t_os.write(fetchWeibo.SEND_NEW_UPDATE_TYPE);
 			
 			sendReceive.WriteString(t_os,_weiboText);
 			
@@ -412,22 +424,25 @@ public class weiboTimeLineScreen extends MainScreen{
 				
 				if(t_referenceWeibo.GetWeiboClass() == fetchWeibo.COMMENT_ME_CLASS){
 					if(t_referenceWeibo.GetCommentWeibo() != null){
-						t_referenceWeibo = t_referenceWeibo.GetCommentWeibo();
+						
+						if(m_currMgr.m_currentSendType == fetchWeibo.SEND_FORWARD_TYPE){
+							t_referenceWeibo = t_referenceWeibo.GetCommentWeibo();
+						}					
+						
 					}else{
 						UpdateNewWeibo(t_text);
 						return ;
 					}
-				}			
+				}
 				
 				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+				
 				t_os.write(msg_head.msgWeibo);
-			
 				t_os.write(t_referenceWeibo.GetWeiboStyle());
 				t_os.write(m_currMgr.m_currentSendType);
 				
 				sendReceive.WriteString(t_os,t_text);
-				
-				t_os.write(sm_mainApp.m_publicForward?1:0);
+				sendReceive.WriteBoolean(t_os,sm_mainApp.m_publicForward);
 				sendReceive.WriteLong(t_os,t_referenceWeibo.GetId());
 				
 				if(sm_mainApp.canUseLocation()){
@@ -437,10 +452,10 @@ public class weiboTimeLineScreen extends MainScreen{
 					t_os.write(0);
 				}
 				
-				if(m_currMgr.m_currentSendType == 1){
-					t_os.write(sm_mainApp.m_updateOwnListWhenFw?1:0);
+				if(m_currMgr.m_currentSendType == fetchWeibo.SEND_FORWARD_TYPE){
+					sendReceive.WriteBoolean(t_os,sm_mainApp.m_updateOwnListWhenFw);
 				}else{
-					t_os.write(sm_mainApp.m_updateOwnListWhenRe?1:0);
+					sendReceive.WriteBoolean(t_os,sm_mainApp.m_updateOwnListWhenRe);
 				}
 				
 				m_currMgr.EscapeKey();
@@ -689,7 +704,14 @@ public class weiboTimeLineScreen extends MainScreen{
 			    		SendRefreshMsg();
 			    		break;
 			    	case 10: // enter key
-			    		m_currMgr.Clicked(0, 0);
+			    		boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
+			    		if(t_shiftDown && m_currMgr.getCurrEditItem() != null && m_currMgr.getCurrEditItem() != null){
+			    			// send the contain
+			    			//
+			    			m_sendItem.run();
+			    		}else{
+			    			m_currMgr.Clicked(0, 0);
+			    		}			    		
 			    		break;		    		
 			    	
 			    	}

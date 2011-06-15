@@ -51,7 +51,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListener,
 												ViewListenerExtended{
 		
-	final static int	fsm_clientVer = 5;
+	final static int	fsm_clientVer = 6;
 	 
 	sendReceive		m_connect = null;
 		
@@ -769,6 +769,7 @@ public class connectDeamon extends Thread implements SendListener,
 				t_os.write(recvMain.GetClientLanguage());
 				sendReceive.WriteString(t_os,m_currentVersion);
 				sendReceive.WriteString(t_os,m_mainApp.m_passwordKey);
+				sendReceive.WriteBoolean(t_os,m_mainApp.m_enableWeiboModule);
 				
 				m_connect.SendBufferToSvr(t_os.toByteArray(), true,false);			
 				
@@ -1180,7 +1181,7 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	public synchronized void ProcessSentMail(ByteArrayInputStream in)throws Exception{
 		
-		boolean t_succ = (in.read() == 1);
+		boolean t_succ = sendReceive.ReadBoolean(in);
 	
 		final long t_time = sendReceive.ReadLong(in);
 		

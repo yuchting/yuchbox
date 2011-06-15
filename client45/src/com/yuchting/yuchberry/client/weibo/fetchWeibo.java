@@ -22,6 +22,10 @@ public class fetchWeibo {
 	final public static byte	AT_ME_CLASS 			= 2;
 	final public static byte	COMMENT_ME_CLASS 		= 3;
 	
+	final public static byte	SEND_NEW_UPDATE_TYPE	= 0;
+	final public static byte	SEND_FORWARD_TYPE		= 1;
+	final public static byte	SEND_REPLY_TYPE			= 2;
+	
 	final public static int	fsm_headImageSize		= 32;
 	
 	byte		m_WeiboStyle;
@@ -157,9 +161,10 @@ public class fetchWeibo {
 		
 		_stream.write(m_WeiboStyle);
 		_stream.write(m_WeiboClass);
-		_stream.write(m_isOwnWeibo?1:0);
-		_stream.write(m_isSinaVIP?1:0);
-		_stream.write(m_isBBer?1:0);
+		
+		sendReceive.WriteBoolean(_stream,m_isOwnWeibo);
+		sendReceive.WriteBoolean(_stream,m_isSinaVIP);
+		sendReceive.WriteBoolean(_stream,m_isBBer);
 		
 		sendReceive.WriteLong(_stream,m_id);
 		sendReceive.WriteLong(_stream,m_userId);
@@ -205,9 +210,9 @@ public class fetchWeibo {
 		m_WeiboStyle= (byte)_stream.read();
 		m_WeiboClass= (byte)_stream.read();
 		
-		m_isOwnWeibo= _stream.read() == 1?true:false;
-		m_isSinaVIP = _stream.read() == 1?true:false;
-		m_isBBer	= _stream.read() == 1?true:false;
+		m_isOwnWeibo= sendReceive.ReadBoolean(_stream);
+		m_isSinaVIP = sendReceive.ReadBoolean(_stream);
+		m_isBBer	= sendReceive.ReadBoolean(_stream);
 		
 		m_id		= sendReceive.ReadLong(_stream);
 		m_userId	= sendReceive.ReadLong(_stream);
@@ -230,7 +235,7 @@ public class fetchWeibo {
 		}
 		
 		if(m_commentWeiboId != -1){
-			if(_stream.read() == 1){
+			if(sendReceive.ReadBoolean(_stream)){
 				m_commentWeibo = new fetchWeibo();
 				m_commentWeibo.InputWeibo(_stream);
 			}			
@@ -238,7 +243,7 @@ public class fetchWeibo {
 		
 		m_replyWeiboId	= sendReceive.ReadLong(_stream);
 		if(m_replyWeiboId != -1){
-			if(_stream.read() == 1){
+			if(sendReceive.ReadBoolean(_stream)){
 				m_replyWeibo = new fetchWeibo();
 				m_replyWeibo.InputWeibo(_stream);
 			}			

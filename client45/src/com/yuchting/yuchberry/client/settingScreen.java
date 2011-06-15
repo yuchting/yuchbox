@@ -1,5 +1,7 @@
 package com.yuchting.yuchberry.client;
 
+import java.io.ByteArrayOutputStream;
+
 import local.localResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -367,7 +369,20 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 			
 			if(m_mainApp.m_enableWeiboModule && !t_hasEnabled){
 				m_mainApp.InitWeiboModule();
-			}	
+			}
+			
+			if(m_mainApp.m_connectDeamon.IsConnectState()){
+				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+				try{
+					t_os.write(msg_head.msgWeiboEnable);
+					sendReceive.WriteBoolean(t_os,m_mainApp.m_enableWeiboModule);
+					m_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeiboEnable, t_os.toByteArray(), true);	
+					
+					t_os.close();
+				}catch(Exception e){}
+						
+				t_os = null;
+			}
 		}
 		
 		if(m_weiboSetManager != null){

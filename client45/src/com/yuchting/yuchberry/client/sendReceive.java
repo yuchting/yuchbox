@@ -368,7 +368,35 @@ public class sendReceive extends Thread{
 		}else{
 			return Float.valueOf(t_valString).floatValue();
 		}
-	}	
+	}
+	
+	static public void WriteBoolean(OutputStream _stream,boolean _val)throws Exception{
+		_stream.write(_val?1:0);
+	}
+	
+	static public boolean ReadBoolean(InputStream _stream)throws Exception{
+		
+		int t_counter = 0;
+		int t_val = 0;
+		while(true){
+			
+			t_val = _stream.read();				
+			
+			if(t_val == -1){
+				
+				if(t_counter++ >= 20){
+					return false;
+				}
+				
+				continue;
+				
+			}else{
+				break;
+			}
+		}			
+
+		return t_val == 1;		
+	}
 		
 	static public void ReadStringVector(InputStream _stream,Vector _vect)throws Exception{
 		

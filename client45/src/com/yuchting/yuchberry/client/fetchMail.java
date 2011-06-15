@@ -147,7 +147,7 @@ public class  fetchMail{
 			sendReceive.WriteString(_stream,t_attachment.m_type);
 		}
 		
-		_stream.write(m_hasLocationInfo?1:0);
+		sendReceive.WriteBoolean(_stream,m_hasLocationInfo);
 		if(m_hasLocationInfo){
 			m_gpsInfo.OutputData(_stream);
 		}
@@ -188,7 +188,7 @@ public class  fetchMail{
 			m_vectAttachment.addElement(t_attachment);
 		}
 		
-		m_hasLocationInfo = _stream.read() == 1?true:false;
+		m_hasLocationInfo = sendReceive.ReadBoolean(_stream);
 		if(m_hasLocationInfo){
 			m_gpsInfo.InputData(_stream);
 		}
@@ -531,7 +531,7 @@ class sendMailAttachmentDeamon extends Thread{
 					
 					// does want to copy tu sent folder?
 					//
-					t_os.write(m_connect.m_mainApp.m_copyMailToSentFolder?1:0);
+					sendReceive.WriteBoolean(t_os,m_connect.m_mainApp.m_copyMailToSentFolder);
 					
 					m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), false,false);
 					
