@@ -7,5 +7,6 @@
 # 详细请见 
 # http://code.google.com/p/yuchberry/issues/detail?id=104&colspec=ID%20Type%20Status%20Priority%20Stars%20Summary#makechanges
 #
---send from my yuchberry @$time$ 
+--
+sent from my yuchberry @$time$ 
 http://code.google.com/p/yuchberry 

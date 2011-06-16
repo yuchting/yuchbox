@@ -175,11 +175,11 @@ public class mainFrame extends JFrame implements ActionListener{
 				new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
 			}
 			
-		}else if(_arg.length == 1 && _arg[0].equalsIgnoreCase("console")){
-			new fetchMain();
-		}else{
+		}else if(_arg.length == 1 && _arg[0].equalsIgnoreCase("frame")){
 			new fakeMDSSvr();
-			new mainFrame(_arg);	
+			new mainFrame(_arg);
+		}else{			
+			new fetchMain();
 		}
 	}	
 	

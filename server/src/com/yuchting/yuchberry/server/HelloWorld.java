@@ -98,7 +98,7 @@ public class HelloWorld {
 			}
 			
 			String[] t_arr = t_response.split("&");
-			SinaRequestToken t_requestToken = new SinaRequestToken(t_arr[0].split("=")[1],t_arr[1].split("=")[1]);
+			SinaRequestToken t_requestToken = new SinaRequestToken(t_arr[0].split("=")[1],t_arr[1].split("=")[1].replace("\n", ""));
 			
 			
 			System.out.println("Open URL:" + "http://api.t.sina.com.cn/oauth/authorize?oauth_token="+t_requestToken.getToken());
@@ -157,6 +157,8 @@ public class HelloWorld {
 			}finally{
 				in.close();	
 			}
+			
+			System.out.println("access response: " + t_response);
 	
 		}catch(Exception e){
 			prt(e.getMessage());

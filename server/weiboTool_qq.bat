@@ -1,2 +1,2 @@
 @echo off
-start javaw -jar frame.jar weiboReq qq
+start java -jar svr.jar weiboReq qq

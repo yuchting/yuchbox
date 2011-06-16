@@ -382,7 +382,11 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		
 	public RequestToken getRequestToken()throws Exception{		
 		return m_weibo.getOAuthRequestToken();
-	}	
+	}
+	
+	public RequestToken getRequestToken(String _callback)throws Exception{		
+		return m_weibo.getOAuthRequestToken(_callback);
+	}
 	
 	static public void main(String[] _arg)throws Exception{
 		fetchMgr t_manger = new fetchMgr();

@@ -1,2 +1,2 @@
 @echo off
-start javaw -jar frame.jar weiboReq sina
+start java -jar svr.jar weiboReq sina

@@ -16,7 +16,6 @@ public class QWeiboSyncApi {
 	public static boolean sm_debug = false;
 
 	final static String fsm_requestTokenURL 			= "https://open.t.qq.com/cgi-bin/request_token";
-	final static String fsm_requestTokenURL_callback	= "http://www.qq.com";
 	final static String fsm_accessTokenURL				= "https://open.t.qq.com/cgi-bin/access_token";
 	
 	final static String fsm_verifyURL					= "http://open.t.qq.com/api/user/info";
@@ -76,7 +75,7 @@ public class QWeiboSyncApi {
 		return new QUser(t_json); 
 	}
 	
-	public String getRequestToken()throws Exception{
+	public String getRequestToken(String _callback)throws Exception{
 		
 		if(m_oauthKey.customKey == null || m_oauthKey.customSecrect == null){
 			throw new Exception("customKey or customSecrect is null");
@@ -88,7 +87,9 @@ public class QWeiboSyncApi {
 		//The OAuth Call back URL(You should encode this url if it
 		//contains some unreserved characters).
 		//
-		m_oauthKey.callbackUrl = fsm_requestTokenURL_callback;
+		if(_callback != null){
+			m_oauthKey.callbackUrl = _callback;
+		}		
 
 		return m_request.syncRequest(fsm_requestTokenURL, "GET", m_oauthKey, m_parameters, null);
 	}

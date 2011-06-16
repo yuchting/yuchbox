@@ -1,80 +1,92 @@
 package com.yuchting.yuchberry.server.frame;
 
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.Properties;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
 
 import com.yuchting.yuchberry.server.fetchQWeibo;
 import com.yuchting.yuchberry.server.fetchSinaWeibo;
 import com.yuchting.yuchberry.server.fetchTWeibo;
 import com.yuchting.yuchberry.server.fetchWeibo;
 
-public class weiboRequestTool extends JFrame implements ActionListener{
+public class weiboRequestTool{
 
 	JButton		m_openRequestURL	= new JButton("请求授权");
-	JButton		m_genToken			= new JButton("生成令牌");
 	
-	JTextField	m_pin				= new JTextField();
-	
-	JTextField	m_accessToken		= new JTextField();
-	JTextField	m_secretToken		= new JTextField();
 
 	Object		m_requestToken	= null;
 	
 	int			m_style				= 0;
 	
+	NanoHTTPD	m_httpd				= null;
+	
+	private String		m_subfix	= null;
+	
+	private final static int			fsm_daemonPort		= 4928;
+	private final static String	fsm_callbackURL =  "http://localhost:" + fsm_daemonPort;
+	
 	public weiboRequestTool(int _style){
 
 		m_style = _style;
-		
-		String t_subfix = "";
-		
+				
 		switch(_style){
 		case fetchWeibo.SINA_WEIBO_STYLE:
-			t_subfix = "Sina";
+			m_subfix = "Sina";
 			break;
 		case fetchWeibo.TWITTER_WEIBO_STYLE:
-			t_subfix = "Twitter";
+			m_subfix = "Twitter";
 			break;
 		case fetchWeibo.QQ_WEIBO_STYLE:
-			t_subfix = "QQ";
+			m_subfix = "qq";
 			break;
 		}
 		
-		setTitle("请求weibo访问    -" + t_subfix);
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		setSize(500,170);
-		setResizable(false);
-		
-		
-		Container t_con = getContentPane();
-		t_con.setLayout(new FlowLayout(FlowLayout.CENTER));
-		
-		m_openRequestURL.setPreferredSize(new Dimension(210,40));
-		m_genToken.setPreferredSize(new Dimension(210,40));
-		
-		t_con.add(m_openRequestURL);
-		t_con.add(m_genToken);
-		
-		m_openRequestURL.addActionListener(this);
-		m_genToken.addActionListener(this);		
-		
-		m_accessToken.setEditable(false);
-		m_secretToken.setEditable(false);
-		
-		createDialog.AddTextLabel(t_con,"应用授权码:",m_pin,400,"");
-		createDialog.AddTextLabel(t_con,"访问令牌(accessToken):",m_accessToken,330,"");
-		createDialog.AddTextLabel(t_con,"密码令牌(secretToken):",m_secretToken,333,"");
 				
-		setVisible(true);
+		try{
+			m_httpd = new NanoHTTPD(fsm_daemonPort){
+				public Response serve( String uri, String method, Properties header, Properties parms, Properties files ){				
+					return new NanoHTTPD.Response( HTTP_OK, MIME_HTML, processHTTPD(method,header,parms));
+				}
+			};
+			
+			try{
+				prt("YuchBerry 正在请求"+m_subfix+" Weibo 授权并打开浏览器，获得授权码之前，请不要关闭这个窗口……");
+				
+				if(m_style == fetchWeibo.SINA_WEIBO_STYLE){
+					m_requestToken = (new fetchSinaWeibo(null)).getRequestToken(fsm_callbackURL);
+				}else if(m_style == fetchWeibo.TWITTER_WEIBO_STYLE){
+					m_requestToken = (new fetchTWeibo(null)).getRequestToken(fsm_callbackURL);
+				}else if(m_style == fetchWeibo.QQ_WEIBO_STYLE){
+					m_requestToken = new fetchQWeibo(null);
+				}			
+				
+				
+				if(m_style == fetchWeibo.SINA_WEIBO_STYLE){
+					mainFrame.OpenURL(((weibo4j.http.RequestToken)m_requestToken).getAuthorizationURL());
+				}else if(m_style == fetchWeibo.TWITTER_WEIBO_STYLE){
+					mainFrame.OpenURL(((twitter4j.auth.RequestToken)m_requestToken).getAuthorizationURL());
+				}else if(m_style == fetchWeibo.QQ_WEIBO_STYLE){
+					mainFrame.OpenURL(((fetchQWeibo)m_requestToken).getVerifyPinURL(fsm_callbackURL));
+				}else{
+					assert false;
+				}
+				
+			}catch(Exception ex){
+				prt("出现错误:" + ex.getMessage());
+			}
+			
+		}catch(Exception e){
+			prt("错误，无法打开系统的"+fsm_daemonPort +"端口，请确认是否有其他程序占有这个端口。");
+		}		
+		
+		try{
+			Thread.sleep(99999999999L);
+		}catch(Exception ex){}		
+	}
+	
+	private void prt(String _log){
+		System.out.println(_log);
 	}
 	
 	public void actionPerformed(ActionEvent e) {
@@ -83,9 +95,9 @@ public class weiboRequestTool extends JFrame implements ActionListener{
 			try{
 				if(m_requestToken == null){
 					if(m_style == fetchWeibo.SINA_WEIBO_STYLE){
-						m_requestToken = (new fetchSinaWeibo(null)).getRequestToken();
+						m_requestToken = (new fetchSinaWeibo(null)).getRequestToken(fsm_callbackURL);
 					}else if(m_style == fetchWeibo.TWITTER_WEIBO_STYLE){
-						m_requestToken = (new fetchTWeibo(null)).getRequestToken();
+						m_requestToken = (new fetchTWeibo(null)).getRequestToken(fsm_callbackURL);
 					}else if(m_style == fetchWeibo.QQ_WEIBO_STYLE){
 						m_requestToken = new fetchQWeibo(null);
 					}
@@ -97,63 +109,85 @@ public class weiboRequestTool extends JFrame implements ActionListener{
 				}else if(m_style == fetchWeibo.TWITTER_WEIBO_STYLE){
 					mainFrame.OpenURL(((twitter4j.auth.RequestToken)m_requestToken).getAuthorizationURL());
 				}else if(m_style == fetchWeibo.QQ_WEIBO_STYLE){
-					mainFrame.OpenURL(((fetchQWeibo)m_requestToken).getVerifyPinURL());
+					mainFrame.OpenURL(((fetchQWeibo)m_requestToken).getVerifyPinURL(fsm_callbackURL));
 				}else{
 					assert false;
 				}
 				
-				
-				JOptionPane.showMessageDialog(this,"请登录weibo，然后把【应用授权码】复制过来，再点击【生成令牌】按钮", "提示", JOptionPane.PLAIN_MESSAGE);
-				
 			}catch(Exception ex){
-				JOptionPane.showMessageDialog(this,"出现错误:" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
-			}
+				prt("出现错误:" + ex.getMessage());
+			}			
+		}
+	}
+	
+	private String processHTTPD(String method,Properties header,Properties parms){
+
+		StringBuffer t_response = new StringBuffer();
+		
+		t_response.append("<html xmlns=\"http://www.w3.org/1999/xhtml\">");
+		t_response.append("<head>");
+		t_response.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />");
+		t_response.append("<title>应用授权</title>");
+		t_response.append("</head>");	
+		t_response.append("<html>");
+		
+		try{
+			String token = parms.getProperty("oauth_token");
+			String verifier = parms.getProperty("oauth_verifier");
 			
-		}else if(e.getSource() == m_genToken){
-			
-			try{
-				if(m_requestToken == null || m_pin.getText().isEmpty()){
-					JOptionPane.showMessageDialog(this,"请先点击【请求授权】按钮，获得授权码", "提示", JOptionPane.PLAIN_MESSAGE);
-					return;
-				}
+			if(token != null && verifier != null){
+				
+				String t_tokenString = null;
+				String t_tokenSecret = null;
 				
 				if(m_style == fetchWeibo.SINA_WEIBO_STYLE){
 
-					weibo4j.http.AccessToken accessToken = ((weibo4j.http.RequestToken)m_requestToken).getAccessToken(m_pin.getText());
+					weibo4j.http.AccessToken accessToken = ((weibo4j.http.RequestToken)m_requestToken).getAccessToken(verifier);
 					
-					m_accessToken.setText(accessToken.getToken());
-					m_secretToken.setText(accessToken.getTokenSecret());
+					t_tokenString = accessToken.getToken();
+					t_tokenSecret = accessToken.getTokenSecret();
 					
 				}else if(m_style == fetchWeibo.TWITTER_WEIBO_STYLE){
 
 					twitter4j.auth.AccessToken accessToken = (new fetchTWeibo(null)).getTwitter()
-									.getOAuthAccessToken((twitter4j.auth.RequestToken)m_requestToken,m_pin.getText());
+									.getOAuthAccessToken((twitter4j.auth.RequestToken)m_requestToken,verifier);
 					
-					m_accessToken.setText(accessToken.getToken());
-					m_secretToken.setText(accessToken.getTokenSecret());
+					t_tokenString = accessToken.getToken();
+					t_tokenSecret = accessToken.getTokenSecret();
 					
 				}else if(m_style == fetchWeibo.QQ_WEIBO_STYLE){
 					
 					fetchQWeibo t_qweibo = ((fetchQWeibo)m_requestToken);
-					t_qweibo.RequestTokenByVerfiyPIN(m_pin.getText());
+					t_qweibo.RequestTokenByVerfiyPIN(verifier);					
 					
-					
-					m_accessToken.setText(t_qweibo.sm_requestTokenKey);
-					m_secretToken.setText(t_qweibo.sm_requestTokenSecret);				
+					t_tokenString = t_qweibo.sm_requestTokenKey;
+					t_tokenSecret = t_qweibo.sm_requestTokenSecret;			
 					
 				}else{
 					assert false;
 				}
 				
+				t_response.append("YuchBerry 申请"+m_subfix+" Weibo 授权成功！获得如下授权码，请按照 <a href=\"http://code.google.com/p/yuchberry/wiki/YuchBerry_Weibo#填写config.xml配置文件\" target=_blank>说明文档</a> 将其填写到config.xml里面。<br /><br />");
+				t_response.append("accessToken=\""+t_tokenString+"\"<br />");
+				t_response.append("secretToken=\""+t_tokenSecret+"\"<br />");
+
 				
-				
-			}catch(Exception ex){
-				JOptionPane.showMessageDialog(this,"出现错误:" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+			}else{
+				t_response.append("你不要这样访问，木有用滴。");
 			}
-		}
-	}
+		}catch(Exception e){
+			t_response.append("授权出现问题：" + e.getMessage());
+		}finally{
+			t_response.append("<br />有任何问题请联系 <a href=\"mailto:yuchberry@gmail.com?subject=工具授权出现问题\">yuchberry@gmail.com</a>");
+			t_response.append("</html>");
+		}		
+		
+		prt("授权完毕，现在可以关闭这个窗口了，请按照浏览器里面的说明填写 config.xml");
+		
+		return t_response.toString();
+	}	
 	
 	static public void main(String _arg[]){
-		new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
+		new weiboRequestTool(fetchWeibo.QQ_WEIBO_STYLE);
 	}
 }

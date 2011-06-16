@@ -44,7 +44,7 @@ public class Configuration {
 
     /*package*/ static void init() {
         defaultProperty = new Properties();
-        defaultProperty.setProperty("weibo4j.debug", "true");
+        defaultProperty.setProperty("weibo4j.debug", "false");
         defaultProperty.setProperty("weibo4j.source", Weibo.CONSUMER_KEY);
         //defaultProperty.setProperty("weibo4j.clientVersion","");
         defaultProperty.setProperty("weibo4j.clientURL", "http://open.t.sina.com.cn/-{weibo4j.clientVersion}.xml");

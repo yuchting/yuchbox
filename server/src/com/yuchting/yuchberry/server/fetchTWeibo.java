@@ -289,6 +289,11 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		return m_twitter.getOAuthRequestToken();
 	}
 	
+	public RequestToken getRequestToken(String _callback)throws Exception{	
+		m_twitter.setOAuthConsumer(sm_consumerKey, sm_consumerSecret);
+		return m_twitter.getOAuthRequestToken(_callback);
+	}
+	
 	public Twitter getTwitter(){
 		m_twitter.setOAuthConsumer(sm_consumerKey, sm_consumerSecret);
 		return m_twitter;

@@ -28,9 +28,9 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	public static String				sm_requestTokenKey		= null;
 	public static String				sm_requestTokenSecret	= null;
 	
-	public String getVerifyPinURL()throws Exception{
+	public String getVerifyPinURL(String _callback)throws Exception{
 		
-		String t_response = m_api.getRequestToken();
+		String t_response = m_api.getRequestToken(_callback);
 		
 		if(!parseToken(t_response)){
 			throw new Exception("error server request PIN URL response :" + t_response); 
