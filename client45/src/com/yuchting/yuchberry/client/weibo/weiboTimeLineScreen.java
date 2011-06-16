@@ -435,6 +435,8 @@ public class weiboTimeLineScreen extends MainScreen{
 					}
 				}
 				
+				m_currMgr.BackupSendWeiboText(m_currMgr.m_currentSendType,t_referenceWeibo,t_text);
+				
 				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 				
 				t_os.write(msg_head.msgWeibo);
@@ -702,26 +704,31 @@ public class weiboTimeLineScreen extends MainScreen{
 		    			return true;
 			    	case 'R':
 			    		SendRefreshMsg();
-			    		break;
+			    		return true;
 			    	case 10: // enter key
-			    		boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
-			    		if(t_shiftDown && m_currMgr.getCurrEditItem() != null && m_currMgr.getCurrEditItem() != null){
-			    			// send the contain
-			    			//
-			    			m_sendItem.run();
-			    		}else{
-			    			m_currMgr.Clicked(0, 0);
-			    		}			    		
-			    		break;		    		
+			    	case ' ':
+			    	case '0':
+			    		m_currMgr.Clicked(0, 0);   		
+			    		return true;   		
 			    	
 			    	}
 				}
 			}	
 		}
 		
+		if(key == 10){
+			boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
+    		if(t_shiftDown && m_currMgr.getCurrEditItem() != null){
+    			// send the contain
+    			//
+    			m_sendItem.run();
+    			return true;
+    		}			
+		}
+		
 		return super.keyDown(keycode,time);   	
 	}
-	 
+		 
 	public boolean onClose(){
 		
 		if(!m_currMgr.EscapeKey()){

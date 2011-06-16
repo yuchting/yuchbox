@@ -52,6 +52,14 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	boolean			m_hasNewWeibo	= false;
 	
 	WeiboItemFocusField	m_focusFieldBeforeReplace;
+	
+	byte				m_forwardStyleBackup = 0;
+	long				m_forwardIdBackup = 0;
+	String				m_forwardText	= "";
+	
+	byte				m_replyStyleBackup = 0;
+	long				m_replyIdBackup	= 0;
+	String				m_replyText		= "";
 		
 	public WeiboMainManager(recvMain _mainApp,weiboTimeLineScreen _parentScreen,boolean _timelineManager){
 		super(Manager.VERTICAL_SCROLL);
@@ -451,16 +459,40 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		invalidate();
 	}
 	
-	
+	public void BackupSendWeiboText(int _sendType,fetchWeibo _refWeibo,String _sentText){
+		
+		if(_sendType == fetchWeibo.SEND_FORWARD_TYPE){
+			
+			m_forwardIdBackup 		= _refWeibo.GetId();
+			m_forwardStyleBackup 	= _refWeibo.GetWeiboStyle();
+			m_forwardText			= _sentText;
+			
+		}else if(_sendType == fetchWeibo.SEND_REPLY_TYPE){
+			
+			m_replyIdBackup 	= _refWeibo.GetId();
+			m_replyStyleBackup 	= _refWeibo.GetWeiboStyle();
+			m_replyText			= _sentText;
+			
+		}
+		
+	}
 	
 	public void AtWeibo(WeiboItemField _item){
 		
 		if(getCurrEditItem() != _item){	
 			
-			StringBuffer t_text = new StringBuffer();
-			t_text.append("@").append(_item.m_weibo.GetUserScreenName()).append(" ");
+			String t_finalText = null;
+			if(m_replyIdBackup != _item.m_weibo.GetId() 
+			|| m_replyStyleBackup != _item.m_weibo.GetWeiboStyle()){
+								
+				StringBuffer t_text = new StringBuffer();
+				t_text.append("@").append(_item.m_weibo.GetUserScreenName()).append(" ");
 
-			String t_finalText = t_text.toString();
+				t_finalText = t_text.toString();			
+			}else{
+				t_finalText = m_replyText;
+			}
+			
 			_item.AddDelEditTextArea(true,t_finalText);
 			
 			m_editTextArea.setText(t_finalText);
@@ -473,7 +505,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			sublayout(0,0);
 			invalidate();
 			
-			m_editTextArea.setCursorPosition(t_text.length());
+			m_editTextArea.setCursorPosition(t_finalText.length());
 		}
 	}
 	
@@ -486,17 +518,29 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 		if(getCurrEditItem() != _item){
 			
-			StringBuffer t_forwardText = new StringBuffer();
-			t_forwardText.append(" //@").append(_item.m_weibo.GetUserScreenName()).append(" :").append(_item.m_weibo.GetText());
-			
-			if(weiboTimeLineScreen.sm_mainApp.m_publicForward && _item.m_commentText != null){
-				t_forwardText.append(" //").append(_item.m_commentText.replace('\n', ' '));
-			}
-			
-			String t_text = t_forwardText.toString();
-			if(t_text.length() > WeiboItemField.fsm_maxWeiboTextLength){
-				t_text = t_text.substring(0,WeiboItemField.fsm_maxWeiboTextLength);
-			}
+			String t_text =null;
+			if(m_forwardIdBackup != _item.m_weibo.GetId()
+			|| m_forwardStyleBackup != _item.m_weibo.GetWeiboStyle()){
+								
+				String t_forwardSign = _item.m_weibo.GetWeiboStyle() == fetchWeibo.TWITTER_WEIBO_STYLE?" RT ":" //";
+				
+				StringBuffer t_forwardText = new StringBuffer();
+				t_forwardText.append(t_forwardSign).append("@").append(_item.m_weibo.GetUserScreenName()).
+								append(" :").append(_item.m_weibo.GetText());
+				
+				if(weiboTimeLineScreen.sm_mainApp.m_publicForward && _item.m_commentText != null){
+					t_forwardText.append(t_forwardSign).append(_item.m_commentText.replace('\n', ' '));
+				}
+				
+				t_text = t_forwardText.toString();
+				if(t_text.length() > WeiboItemField.fsm_maxWeiboTextLength - 15){
+					t_text = t_text.substring(0,WeiboItemField.fsm_maxWeiboTextLength - 15);
+				}
+				
+			}else{
+				
+				t_text = m_forwardText;
+			}			
 			
 			_item.AddDelEditTextArea(true,t_text);
 			

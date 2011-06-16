@@ -74,12 +74,14 @@ public class WeiboUpdateField extends WeiboItemField{
 			}
 				
 			if(_on){
-				_g.drawRoundRect(1,1,recvMain.fsm_display_width - 1,sm_fontHeight - 1,1,1);
+				_g.setColor(fsm_selectedColor);
+				_g.fillRect(1,1,recvMain.fsm_display_width - 2,sm_fontHeight - 3);
+				_g.setColor(0xffffff);
 			}else{
 				_g.drawLine(0,sm_fontHeight - 1,recvMain.fsm_display_width,sm_fontHeight - 1);
-			}
-			
-        	_g.setColor(fsm_spaceLineColor);
+				_g.setColor(fsm_spaceLineColor);
+			}	
+        	
         	_g.drawText(recvMain.sm_local.getString(localResource.WEIBO_UPDATE_WEIBO_LABEL),2,2,Graphics.ELLIPSIS);
         }finally{
         	_g.setColor( oldColour );
