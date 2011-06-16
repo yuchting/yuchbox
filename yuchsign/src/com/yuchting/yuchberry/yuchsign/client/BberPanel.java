@@ -38,13 +38,16 @@ import com.google.gwt.xml.client.XMLParser;
 class ContentTab extends TabPanel implements SelectionHandler<Integer>{
 	
 	BberEmailPanel m_emailPanel = new BberEmailPanel();
-	BberWeiboPanel m_weiboPanel = new BberWeiboPanel();
+	BberWeiboPanel m_weiboPanel = null;
 	
 	int m_currSelectionIndex = 0;
 	
-	public ContentTab(){
-		setAnimationEnabled(true);
+	public ContentTab(Yuchsign	_mainSign){
 		setPixelSize(250, 200);
+		
+		m_weiboPanel = new BberWeiboPanel(_mainSign);
+		
+		addSelectionHandler(this);
 		
 		add(m_emailPanel,"邮件");
 		add(m_weiboPanel,"Weibo");
@@ -79,7 +82,7 @@ public class BberPanel extends TabPanel{
 	final Button	m_delPushAccountBut = new Button("删除");
 	final Button	m_refreshAccountBut	= new Button("更新");
 	
-	final ContentTab m_pushContent	= new ContentTab();
+	ContentTab m_pushContent	= null;
 	
 	final TextArea	m_logText		= new TextArea();
 	
@@ -107,8 +110,8 @@ public class BberPanel extends TabPanel{
 	
 	public BberPanel(final Yuchsign _sign){
 		m_mainServer = _sign;
-		setAnimationEnabled(true);
-		
+		m_pushContent = new ContentTab(_sign);
+				
 		AddAccountAttr();
 		AddPushAttr();
 		AddCheckLog();
@@ -644,16 +647,16 @@ public class BberPanel extends TabPanel{
 			
 		}else if(t_elem.getTagName().equals("yuchbber")){	
 			
-			Yuchsign.PopupPrompt("同步成功！可以使用手机连接服务器了。\n注意：如果手机没有连接服务器的时间超过3天，\n就需要再次同步。", _panel);
-			Yuchsign.HideWaiting();
-			
 			try{
 				m_currentBber.InputXMLData(_result);
+				Yuchsign.PopupPrompt("同步成功！可以使用手机连接服务器了。\n注意：如果手机没有连接服务器的时间超过3天，\n就需要再次同步。\n <font size=\"6\" color=\"red\">同步端口："+m_currentBber.GetServerPort()+"</font>", _panel);
+				
 			}catch(Exception e){
 				PopupProblemAndSearchHelp(e.getMessage(), _panel);
 			}
 			
-			ShowYuchbberData(m_currentBber);			
+			ShowYuchbberData(m_currentBber);
+			Yuchsign.HideWaiting();		
 		}
 		
 		if(m_checkStateTimer != null){

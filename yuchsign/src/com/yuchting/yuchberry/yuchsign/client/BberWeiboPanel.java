@@ -1,5 +1,7 @@
 package com.yuchting.yuchberry.yuchsign.client;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.RadioButton;
@@ -7,9 +9,10 @@ import com.google.gwt.user.client.ui.TextBox;
 
 public class BberWeiboPanel extends FlowPanel{
 	
-	final TextBox			m_pin	= new TextBox();
+
 	final RadioButton[]		m_type	= {
 										new RadioButton("type","sina"),
+										new RadioButton("type","qq"),
 									  };
 	
 	final Button			m_requestButton	= new Button("请求授权");
@@ -28,16 +31,26 @@ public class BberWeiboPanel extends FlowPanel{
 			add(but);
 		}
 		
+		m_type[0].setValue(true);
+		
 		m_weiboAccountName.setEnabled(false);
 		m_accessToken.setEnabled(false);
 		m_secretToken.setEnabled(false);
 		
 		final FlowPanel t_subPane = this;
 		
-		BberPanel.AddLabelWidget(t_subPane, "PIN码:", m_pin);
 		BberPanel.AddLabelWidget(t_subPane, "帐户名:", m_weiboAccountName);
 		BberPanel.AddLabelWidget(t_subPane,"访问令牌:",m_accessToken);
 		BberPanel.AddLabelWidget(t_subPane,"密码令牌:",m_secretToken);
+		
+		m_requestButton.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				Yuchsign.PopupPrompt("正在完善，敬请期待！", t_subPane);				
+			}
+		});
+		
 		
 		add(m_requestButton);		
 	}
@@ -46,7 +59,6 @@ public class BberWeiboPanel extends FlowPanel{
 		
 		if(_weibo != null){
 			
-			m_pin.setEnabled(false);
 			for(RadioButton but : m_type){
 				but.setEnabled(false);
 			}
@@ -74,11 +86,10 @@ public class BberWeiboPanel extends FlowPanel{
 			m_requestButton.setEnabled(true);
 			m_requestButton.setText("请求授权");
 			
-			m_pin.setText("");
+
 			m_weiboAccountName.setText("");
 			m_accessToken.setText("");
 			m_secretToken.setText("");
-			m_pin.setEnabled(true);
 		}
 	}
 	
