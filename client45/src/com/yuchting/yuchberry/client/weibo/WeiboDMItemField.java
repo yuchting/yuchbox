@@ -54,7 +54,7 @@ public class WeiboDMItemField extends WeiboItemField{
 	public static HyperlinkButtonField	 sm_nextPageBut = new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_DM_NEXT_PAGE_BUT_LABEL));
 	public static HyperlinkButtonField	 sm_prePageBut  = new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_DM_PRE_PAGE_BUT_LABEL));
 	
-	final static int			fsm_nextPageBut_x = recvMain.fsm_display_width - sm_defaultFont.getAdvance(sm_nextPageBut.getText());
+	final static int			fsm_nextPageBut_x = fsm_weiboItemFieldWidth - sm_defaultFont.getAdvance(sm_nextPageBut.getText());
 	final static int			fsm_prePageBut_x = fsm_nextPageBut_x -  sm_defaultFont.getAdvance(sm_prePageBut.getText());
 	
 	
@@ -131,7 +131,7 @@ public class WeiboDMItemField extends WeiboItemField{
 		
 		if(m_parentManager.getCurrExtendedItem() == this){
 			paintChild(_g,m_parentManager.m_editTextArea);
-			_g.drawLine(0, sm_editTextAreaHeight, recvMain.fsm_display_width, sm_editTextAreaHeight);
+			_g.drawLine(0, sm_editTextAreaHeight, fsm_weiboItemFieldWidth, sm_editTextAreaHeight);
 						
 			recalculateHeight(false, false, false,_g);
 		}else{
@@ -154,7 +154,7 @@ public class WeiboDMItemField extends WeiboItemField{
 			height = fsm_closeHeight;
 		}
 		
-		setExtent(recvMain.fsm_display_width,height);
+		setExtent(fsm_weiboItemFieldWidth,height);
 	}
 	
 	public boolean delWeibo(fetchWeibo _weibo){
@@ -308,7 +308,7 @@ public class WeiboDMItemField extends WeiboItemField{
 		m_textHeight += sm_fontHeight;
 		
 		if(_g != null){
-			_g.drawLine(0,m_textHeight - 1,recvMain.fsm_display_width,m_textHeight - 1);
+			_g.drawLine(0,m_textHeight - 1,fsm_weiboItemFieldWidth,m_textHeight - 1);
 		}
 				
 		return m_textHeight;

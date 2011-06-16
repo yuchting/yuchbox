@@ -34,9 +34,12 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	public AutoTextEditField 	m_editTextArea			= new AutoTextEditField(){
 		public void setText(String _text){
 			super.setText(_text);
-			layout(recvMain.fsm_display_width,1000);
+			layout(WeiboItemField.fsm_weiboItemFieldWidth,1000);
 		}
 	};
+	
+	public final static int		fsm_scrollbarSize	= 3;	
+	public final static int		fsm_maxItemInOneScreen = recvMain.fsm_display_height / WeiboItemField.fsm_closeHeight ;
 	
 	
 	WeiboItemField		m_selectedItem = null;
@@ -52,6 +55,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	boolean			m_hasNewWeibo	= false;
 	
 	WeiboItemFocusField	m_focusFieldBeforeReplace;
+	
+	int					m_bufferedTotalHeight = 0;
 	
 	byte				m_forwardStyleBackup = 0;
 	long				m_forwardIdBackup = 0;
@@ -194,20 +199,20 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	
 	public int getPreferredHeight(){
 		
-		int t_totalHeight = 0;
+		m_bufferedTotalHeight = 0;
 		
 		final int t_num = getFieldCount();
 		for(int i =  0;i < t_num;i++){			
-			t_totalHeight += getField(i).getPreferredHeight();
+			m_bufferedTotalHeight += getField(i).getPreferredHeight();
 		}
 		
-		t_totalHeight += WeiboItemField.sm_fontHeight;
+		m_bufferedTotalHeight += WeiboItemField.sm_fontHeight;
 		
-		return t_totalHeight;
+		return m_bufferedTotalHeight;
 	}
 	
 	protected void sublayout(int width, int height){
-		int t_totalHeight = 0;
+		m_bufferedTotalHeight = 0;
 				
 		final int t_num = getFieldCount();
 		for(int i =  0;i < t_num;i++){
@@ -216,15 +221,15 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			
 			final int t_height = t_item.getPreferredHeight();
 
-			setPositionChild(t_item,0,t_totalHeight);		
-			layoutChild(t_item,recvMain.fsm_display_width,t_height);		
+			setPositionChild(t_item,0,m_bufferedTotalHeight);		
+			layoutChild(t_item,t_item.getPreferredWidth(),t_height);		
 			
-			t_totalHeight += t_height; 
+			m_bufferedTotalHeight += t_height; 
 		}
 		
-		t_totalHeight += WeiboItemField.sm_fontHeight;
+		m_bufferedTotalHeight += WeiboItemField.sm_fontHeight;
 		
-		setExtent(recvMain.fsm_display_width,t_totalHeight);
+		setExtent(recvMain.fsm_display_width,m_bufferedTotalHeight);
 	}
 	
 	
@@ -237,12 +242,39 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 		int oldColour = graphics.getColor();
 		try{
+			
 			graphics.setColor(WeiboItemField.fsm_spaceLineColor);
 			graphics.drawText(recvMain.sm_local.getString(localResource.WEIBO_REACH_MAX_WEIBO_NUM_PROMPT),
 								0,getPreferredHeight() - WeiboItemField.sm_fontHeight);
+			
+			if(t_num >= fsm_maxItemInOneScreen){
+				// draw the scroll bar
+				//
+				int t_visibleHeight = recvMain.fsm_display_height - WeiboHeader.fsm_headHeight;
+				int t_start_y = getManager().getVerticalScroll();
+				int t_start_x = recvMain.fsm_display_width - fsm_scrollbarSize;
+				
+				if(m_timelineManager){
+					t_visibleHeight -= WeiboItemField.sm_fontHeight;
+					t_start_y += WeiboItemField.sm_fontHeight;
+				}
+				
+				graphics.setColor(WeiboItemField.fsm_spaceLineColor);
+				graphics.fillRect(t_start_x, t_start_y, fsm_scrollbarSize, t_visibleHeight);
+				
+				int t_scroll_height = t_visibleHeight * t_visibleHeight / m_bufferedTotalHeight;
+				int t_scroll_y = t_start_y + t_start_y * t_visibleHeight / m_bufferedTotalHeight;
+				
+				graphics.setColor(0xffffff);
+				graphics.fillRect(t_start_x,t_scroll_y,fsm_scrollbarSize,t_scroll_height);
+			}
+			
 		}finally{
 			graphics.setColor(oldColour);
 		}
+		
+		
+		
 		
 	}
 	

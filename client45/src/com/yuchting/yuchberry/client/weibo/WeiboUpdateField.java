@@ -38,7 +38,7 @@ public class WeiboUpdateField extends WeiboItemField{
 		if(m_parentManager.getCurrExtendedItem() == this){
 					
 			setPositionChild(m_parentManager.m_editTextArea,0,0);
-			layoutChild(m_parentManager.m_editTextArea,recvMain.fsm_display_width,sm_editTextAreaHeight);
+			layoutChild(m_parentManager.m_editTextArea,getPreferredWidth(),sm_editTextAreaHeight);
 			
 			height = sm_fontHeight + sm_editTextAreaHeight;
 			
@@ -46,7 +46,11 @@ public class WeiboUpdateField extends WeiboItemField{
 			height = sm_fontHeight;
 		}
 		
-		setExtent(recvMain.fsm_display_width,height);
+		setExtent(fsm_weiboItemFieldWidth,height);
+	}
+	
+	public int getPreferredWidth(){
+		return recvMain.fsm_display_width;
 	}
 	
 	public void subpaint(Graphics _g){
@@ -56,7 +60,7 @@ public class WeiboUpdateField extends WeiboItemField{
 			paintChild(_g,m_parentManager.m_editTextArea);
 			
 			int t_y = getPreferredHeight() - 1;
-			_g.drawLine(0,t_y, recvMain.fsm_display_width,t_y);
+			_g.drawLine(0,t_y, getPreferredWidth(),t_y);
 			
 		}else{
 			paintFocus(_g,isFocus());
@@ -69,16 +73,16 @@ public class WeiboUpdateField extends WeiboItemField{
         	
 			if(m_parentManager.getCurrExtendedItem() != null){
 				_g.setColor(fsm_darkColor);
-				_g.fillRect(0,0, recvMain.fsm_display_width,fsm_closeHeight);
+				_g.fillRect(0,0, getPreferredWidth(),fsm_closeHeight);
 				_g.setColor(0);
 			}
 				
 			if(_on){
 				_g.setColor(fsm_selectedColor);
-				_g.fillRect(1,1,recvMain.fsm_display_width - 2,sm_fontHeight - 3);
+				_g.fillRect(1,1,getPreferredWidth() - 2,sm_fontHeight - 3);
 				_g.setColor(0xffffff);
 			}else{
-				_g.drawLine(0,sm_fontHeight - 1,recvMain.fsm_display_width,sm_fontHeight - 1);
+				_g.drawLine(0,sm_fontHeight - 1,getPreferredWidth(),sm_fontHeight - 1);
 				_g.setColor(fsm_spaceLineColor);
 			}	
         	

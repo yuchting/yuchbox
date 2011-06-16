@@ -14,6 +14,7 @@ import com.yuchting.yuchberry.client.recvMain;
 
 public class WeiboItemField extends Manager{
 	
+	public final static int		fsm_weiboItemFieldWidth		= recvMain.fsm_display_width - WeiboMainManager.fsm_scrollbarSize;
 	public final static int		fsm_maxWeiboTextLength		= 140;
 	public final static int		fsm_headImageWidth 			= fetchWeibo.fsm_headImageSize;
 	public final static int		fsm_headImageTextInterval	= 3;
@@ -25,10 +26,10 @@ public class WeiboItemField extends Manager{
 	
 	public final static int		fsm_maxWeiboAbstractLength	= 20;
 	
-	public final static int		fsm_textWidth				= recvMain.fsm_display_width - fsm_headImageWidth - fsm_headImageTextInterval;
-	public final static int		fsm_editTextWidth			= recvMain.fsm_display_width;
+	public final static int		fsm_textWidth				= fsm_weiboItemFieldWidth - fsm_headImageWidth - fsm_headImageTextInterval;
+	public final static int		fsm_editTextWidth			= fsm_weiboItemFieldWidth;
 	
-	public final static int		fsm_commentTextWidth		= recvMain.fsm_display_width - fsm_headImageTextInterval;
+	public final static int		fsm_commentTextWidth		= fsm_weiboItemFieldWidth - fsm_headImageTextInterval;
 	
 	public final static int		fsm_darkColor				= 0xdfdfdf;
 	public final static int		fsm_selectedColor			= 0x2020ff;
@@ -361,7 +362,7 @@ public class WeiboItemField extends Manager{
 	
 	
 	public int getPreferredWidth() {
-		return recvMain.fsm_display_width;
+		return fsm_weiboItemFieldWidth;
 	}
 	
 	public int getPreferredHeight() {
@@ -433,7 +434,7 @@ public class WeiboItemField extends Manager{
 			if(m_parentManager.getCurrEditItem() == this){
 				
 				setPositionChild(m_parentManager.m_editTextArea,0,m_extendHeight);				
-				layoutChild(m_parentManager.m_editTextArea,recvMain.fsm_display_width,sm_editTextAreaHeight);
+				layoutChild(m_parentManager.m_editTextArea,fsm_weiboItemFieldWidth,sm_editTextAreaHeight);
 				
 				height = m_extendHeight + sm_editTextAreaHeight;
 				
@@ -445,7 +446,7 @@ public class WeiboItemField extends Manager{
 			height = fsm_closeHeight;
 		}
 		
-		setExtent(recvMain.fsm_display_width,height);
+		setExtent(fsm_weiboItemFieldWidth,height);
 	}
 	
 	static Calendar sm_calendar = Calendar.getInstance();
@@ -541,7 +542,7 @@ public class WeiboItemField extends Manager{
 			// draw the finally line
 			//
 			int t_y = getPreferredHeight() - 1;
-			_g.drawLine(0,t_y, recvMain.fsm_display_width,t_y);
+			_g.drawLine(0,t_y, fsm_weiboItemFieldWidth,t_y);
 			
 			
 			// draw a round rectangle of text area
@@ -569,19 +570,19 @@ public class WeiboItemField extends Manager{
 			
 			if(m_parentManager.getCurrExtendedItem() != null){
 				_g.setColor(fsm_darkColor);
-				_g.fillRect(0,0, recvMain.fsm_display_width,fsm_closeHeight);
+				_g.fillRect(0,0, fsm_weiboItemFieldWidth,fsm_closeHeight);
 			}
 			
 			if(_on){
 				_g.setColor(fsm_selectedColor);
-				_g.fillRect(0, 0, recvMain.fsm_display_width,fsm_closeHeight);
+				_g.fillRect(0, 0, fsm_weiboItemFieldWidth,fsm_closeHeight);
 			}else{
 				if(m_weibo.IsOwnWeibo() && m_parentManager.getCurrExtendedItem() == null){
 					_g.setColor(fsm_ownWeiboColor);
-					_g.fillRect(0, 0, recvMain.fsm_display_width,fsm_closeHeight);
+					_g.fillRect(0, 0, fsm_weiboItemFieldWidth,fsm_closeHeight);
 				}
 				_g.setColor(fsm_spaceLineColor);
-				_g.drawLine(0,fsm_closeHeight - 1,recvMain.fsm_display_width,fsm_closeHeight - 1);
+				_g.drawLine(0,fsm_closeHeight - 1,fsm_weiboItemFieldWidth,fsm_closeHeight - 1);
 			}			
 			
 			// weibo sign 
@@ -659,7 +660,7 @@ public class WeiboItemField extends Manager{
 	        	_g.setColor(0);
 	        }		        
 	        String t_dateString = getTimeString(m_weibo);		        
-	        _g.drawText(t_dateString,recvMain.fsm_display_width - _g.getFont().getAdvance(t_dateString)
+	        _g.drawText(t_dateString,fsm_weiboItemFieldWidth - _g.getFont().getAdvance(t_dateString)
 	        				,t_firstLineHeight,Graphics.ELLIPSIS);
 	       
 
