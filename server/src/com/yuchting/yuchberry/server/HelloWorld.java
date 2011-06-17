@@ -70,17 +70,28 @@ public class HelloWorld {
 	static public void getOAuthRequest(){
 		
 		try{
-		
+//			String t_consumer_key = fetchSinaWeibo.fsm_consumer_key;
+//			String t_consumer_secret = fetchSinaWeibo.fsm_consumer_serect;
+//			
+//			String t_request_token_api = "http://api.t.sina.com.cn/oauth/request_token";
+//			String t_auth_api = "http://api.t.sina.com.cn/oauth/authorize";
+//			String t_access_api = "http://api.t.sina.com.cn/oauth/access_token";
 			
-			OAuth t_auth = new OAuth(fetchSinaWeibo.fsm_consumer_key,fetchSinaWeibo.fsm_consumer_serect);
+			String t_consumer_key = "4f362fc10f797de70f6d78e18246d2ae04dfaae00";
+			String t_consumer_secret = "8ed9d6ede362a23dc38981bd71c333fc";
 			
+			String t_request_token_api = "http://api.imgur.com/oauth/request_token";
+			String t_auth_api = "http://api.imgur.com/oauth/authorize";
+			String t_access_api = "http://api.imgur.com/oauth/access_token";
 			
-			String t_request_url = "http://api.t.sina.com.cn/oauth/request_token"; 
-			URL url = new URL(t_request_url);
-			URLConnection con = url.openConnection();
-			con.setAllowUserInteraction(false);
+			OAuth t_auth = new OAuth(t_consumer_key,t_consumer_secret);
+						
+			URL url = new URL(t_request_token_api);
+			HttpURLConnection con = (HttpURLConnection)url.openConnection();
+			con.setDoInput(true);
 			
-			con.setRequestProperty("Authorization",t_auth.generateAuthorizationHeader("GET", t_request_url, null, null));
+			String t_authHeader = t_auth.generateAuthorizationHeader("GET", t_request_token_api, null, null);
+			con.setRequestProperty("Authorization",t_authHeader);
 			
 			String t_response = null;
 			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
@@ -98,36 +109,36 @@ public class HelloWorld {
 			}
 			
 			String[] t_arr = t_response.split("&");
-			SinaRequestToken t_requestToken = new SinaRequestToken(t_arr[0].split("=")[1],t_arr[1].split("=")[1].replace("\n", ""));
+			//SinaRequestToken t_requestToken = new SinaRequestToken(t_arr[0].split("=")[1],t_arr[1].split("=")[1].replace("\n", ""));
+			SinaRequestToken t_requestToken = new SinaRequestToken(t_arr[1].split("=")[1],t_arr[2].split("=")[1].replace("\n", ""));
 			
 			
-			System.out.println("Open URL:" + "http://api.t.sina.com.cn/oauth/authorize?oauth_token="+t_requestToken.getToken());
+			System.out.println("Open URL:" + t_auth_api+"?oauth_token="+t_requestToken.getToken());
 			
 			System.out.print("input PIN:");
 			BufferedReader bufin = new BufferedReader(new   InputStreamReader(System.in)); 
 			String PIN = bufin.readLine();			
 						
 			
-			String t_token_url = "http://api.t.sina.com.cn/oauth/access_token"; 
-			url = new URL(t_token_url);
+			url = new URL(t_access_api);
 			HttpURLConnection tcon = (HttpURLConnection)url.openConnection();
 			
 			tcon.setDoInput(true);
 			tcon.setRequestMethod("POST");
 			tcon.setDoOutput(true);
 			
-			String authString = t_auth.generateAuthorizationHeader("POST", t_token_url, 
+			String authString = t_auth.generateAuthorizationHeader("POST", t_access_api, 
 										new PostParameter[]
 										{
 											new PostParameter("oauth_verifier", PIN),
-											new PostParameter("source",fetchSinaWeibo.fsm_consumer_key)
+											new PostParameter("source",t_consumer_key)
 										},
 										t_requestToken);
 			
 			tcon.setRequestProperty("Authorization",authString);
 			System.out.println("AuthString: " + authString);
 			
-			String t_params = "oauth_verifier=" + PIN + "&source=" + fetchSinaWeibo.fsm_consumer_key;
+			String t_params = "oauth_verifier=" + PIN + "&source=" + t_consumer_key;
 			byte[] bytes = t_params.getBytes("UTF-8");
 			
 			tcon.setRequestProperty("Content-Type",
