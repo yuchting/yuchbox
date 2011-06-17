@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Yuchberry userPassword="111111" serverPort="9716" pushInterval="10" userSSL="0" convertoSimpleChar="0" >
+
 	<WeiboAccount
 		type="sina"
 		account="yuchberry_test"

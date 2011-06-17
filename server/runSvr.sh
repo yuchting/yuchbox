@@ -1,2 +1,2 @@
 ﻿#!/bin/sh
-java -jar frame.jar console
+java -jar svr.jar console
