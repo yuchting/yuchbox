@@ -21,10 +21,6 @@ public class WeiboItemFocusField extends Field{
 	public int	getPreferredWidth(){
 		return m_itemField.getPreferredWidth();
 	}
-
-//	public boolean isFocusable(){
-//		return WeiboItemField.sm_extendWeiboItem == null;
-//	}
 	
 	protected  void	layout(int width, int height){
 		
@@ -44,9 +40,10 @@ public class WeiboItemFocusField extends Field{
 			
 			m_itemField.paintFocus(_g, true);
 			m_itemField.getParentManager().setCurrSelectedItem(m_itemField);
-			
 		}else{
 			m_itemField.paintFocus(_g, false);	
 		}
+		
+		m_itemField.m_parentManager.invalidateScroll();
 	}
 }

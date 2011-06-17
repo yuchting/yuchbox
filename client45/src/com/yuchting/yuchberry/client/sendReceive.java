@@ -154,7 +154,7 @@ public class sendReceive extends Thread{
 			// if the ZIP data is large than original length
 			// NOT convert
 			//
-			WriteInt(os,_write.length << 16);
+			WriteInt(os,(_write.length << 16) & 0xffff0000);
 			os.write(_write);
 			os.flush();
 			
@@ -162,7 +162,7 @@ public class sendReceive extends Thread{
 			m_uploadByte += _write.length + 4 + 20;
 			
 		}else{
-			WriteInt(os,(_write.length << 16) | t_zipData.length);
+			WriteInt(os,((_write.length << 16) & 0xffff0000) | t_zipData.length);
 			os.write(t_zipData);
 			os.flush();
 			

@@ -92,13 +92,15 @@ public class weiboTimeLineScreen extends MainScreen{
 		setTitle(m_weiboHeader);
 		
 		m_currMgr.setFocus();
+		
+		
 	}
 	
 	public void ClearWeibo(){
 		m_mainMgr.deleteAll();
 		m_mainMgr.add(m_mainMgr.m_updateWeiboField.getFocusField());
 		
-		m_mainAtMeMgr.deleteAll();		
+		m_mainAtMeMgr.deleteAll();
 		m_mainCommitMeMgr.deleteAll();
 		
 		invalidate();

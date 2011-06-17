@@ -7,6 +7,7 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.ScrollChangeListener;
 import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.container.VerticalFieldManager;
@@ -67,7 +68,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	String				m_replyText		= "";
 		
 	public WeiboMainManager(recvMain _mainApp,weiboTimeLineScreen _parentScreen,boolean _timelineManager){
-		super(Manager.VERTICAL_SCROLL);
+		super(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
 		m_editTextArea.setMaxSize(WeiboItemField.fsm_maxWeiboTextLength);
 		
 		m_mainApp  			= _mainApp;
@@ -87,7 +88,18 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 		m_editTextArea.setChangeListener(this);
 		m_followCommentUser.setChangeListener(this);
+		
+		setScrollListener(new ScrollChangeListener() {
+			
+			public void scrollChanged(Manager manager, int newHorizontalScroll,
+					int newVerticalScroll) {
+			
+				invalidate();
+			}
+		});
 	}
+	
+	
 	
 	public void setCurrSelectedItem(WeiboItemField _field){
 		m_selectedItem = _field;
@@ -131,7 +143,11 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	public void restoreFocusField(){
 		if(m_focusFieldBeforeReplace != null){
 			if(getCurrExtendedItem() == null && getCurrSelectedItem() != null){
-				m_focusFieldBeforeReplace.setFocus();
+				
+				if(m_focusFieldBeforeReplace.getManager() != null){
+					m_focusFieldBeforeReplace.setFocus();
+				}
+				
 			}else{
 				if(getCurrExtendedItem() != null){
 					replace(getCurrExtendedItem(),m_focusFieldBeforeReplace);
@@ -232,7 +248,6 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		setExtent(recvMain.fsm_display_width,m_bufferedTotalHeight);
 	}
 	
-	
 	protected void subpaint(Graphics graphics){
 				
 		final int t_num = getFieldCount();
@@ -245,39 +260,40 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			
 			graphics.setColor(WeiboItemField.fsm_spaceLineColor);
 			graphics.drawText(recvMain.sm_local.getString(localResource.WEIBO_REACH_MAX_WEIBO_NUM_PROMPT),
-								0,getPreferredHeight() - WeiboItemField.sm_fontHeight);
+								0,m_bufferedTotalHeight - WeiboItemField.sm_fontHeight);
 			
 			if(t_num >= fsm_maxItemInOneScreen){
 				// draw the scroll bar
+				// must call the invalidateScroll in WeiboItemFocusField.drawFocus 
 				//
 				int t_visibleHeight = recvMain.fsm_display_height - WeiboHeader.fsm_headHeight;
 				int t_start_y = getManager().getVerticalScroll();
 				int t_start_x = recvMain.fsm_display_width - fsm_scrollbarSize;
-				
-				if(m_timelineManager){
-					t_visibleHeight -= WeiboItemField.sm_fontHeight;
-					t_start_y += WeiboItemField.sm_fontHeight;
-				}
-				
-				graphics.setColor(WeiboItemField.fsm_spaceLineColor);
+						
+				graphics.setColor(0xf0f0f0);
 				graphics.fillRect(t_start_x, t_start_y, fsm_scrollbarSize, t_visibleHeight);
 				
 				int t_scroll_height = t_visibleHeight * t_visibleHeight / m_bufferedTotalHeight;
 				int t_scroll_y = t_start_y + t_start_y * t_visibleHeight / m_bufferedTotalHeight;
 				
-				graphics.setColor(0xffffff);
+				graphics.setColor(0x1b8df5);
 				graphics.fillRect(t_start_x,t_scroll_y,fsm_scrollbarSize,t_scroll_height);
+				
 			}
 			
 		}finally{
 			graphics.setColor(oldColour);
 		}
-		
-		
-		
-		
 	}
 	
+	public void invalidateScroll(){
+		int t_visibleHeight = recvMain.fsm_display_height - WeiboHeader.fsm_headHeight;
+		int t_start_y = getManager().getVerticalScroll();
+		int t_start_x = recvMain.fsm_display_width - fsm_scrollbarSize;
+		
+		invalidate(t_start_x,t_start_y,fsm_scrollbarSize, t_visibleHeight);
+	}
+		
 	public void AddWeibo(final fetchWeibo _weibo,final WeiboHeadImage _image,
 							final boolean _initAdd){
 		

@@ -48,11 +48,7 @@ public class WeiboUpdateField extends WeiboItemField{
 		
 		setExtent(fsm_weiboItemFieldWidth,height);
 	}
-	
-	public int getPreferredWidth(){
-		return recvMain.fsm_display_width;
-	}
-	
+		
 	public void subpaint(Graphics _g){
 		
 		if(m_parentManager.getCurrExtendedItem() == this){
