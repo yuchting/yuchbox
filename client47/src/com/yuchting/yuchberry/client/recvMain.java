@@ -1,5 +1,6 @@
 package com.yuchting.yuchberry.client;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
@@ -20,6 +21,7 @@ import net.rim.blackberry.api.browser.BrowserSession;
 import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
+import net.rim.device.api.crypto.MD5Digest;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.i18n.SimpleDateFormat;
@@ -27,9 +29,8 @@ import net.rim.device.api.notification.NotificationsConstants;
 import net.rim.device.api.notification.NotificationsManager;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.CoverageInfo;
+import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.Display;
-import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.system.WLANInfo;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
@@ -37,11 +38,17 @@ import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
 
+import com.yuchting.yuchberry.client.weibo.WeiboItemField;
+import com.yuchting.yuchberry.client.weibo.fetchWeibo;
+import com.yuchting.yuchberry.client.weibo.weiboTimeLineScreen;
+
 public class recvMain extends UiApplication implements localResource,LocationListener {
 	
-	final static int 		fsm_display_width		= Display.getWidth();
-	final static int 		fsm_display_height		= Display.getHeight();
+	public final static int 		fsm_display_width		= Display.getWidth();
+	public final static int 		fsm_display_height		= Display.getHeight();
+	public final static String	fsm_OS_version			= CodeModuleManager.getModuleVersion((CodeModuleManager.getModuleHandleForObject("")));;
 	
+	public static ResourceBundle sm_local = ResourceBundle.getBundle(localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
 	
 	final static long		fsm_notifyID_email = 767918509114947L;
 	
@@ -51,7 +58,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	    }
 	};
 	
-	String 				m_weiboHeadImageDir = null;
+	final static long		fsm_notifyID_weibo = 767918509114948L;
+	
+	final static Object 	fsm_notifyEvent_weibo = new Object() {
+	    public String toString() {
+	       return recvMain.sm_local.getString(localResource.NOTIFY_WEIBO_LABEL);
+	    }
+	};
+	
+	public connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
     aboutScreen			m_aboutScreen		= null;
 	stateScreen 		m_stateScreen 		= null;
@@ -60,13 +75,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	downloadDlg			m_downloadDlg		= null;
 	settingScreen		m_settingScreen		= null;
 	shareYBScreen		m_shareScreen		= null;
-	
-	weiboTimeLineScreen	m_weiboTimeLineScreen = new weiboTimeLineScreen(this);
+		
 	UiApplication		m_downloadDlgParent = null;
 	
 	UiApplication		m_messageApplication = null;
-	
-	connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
 	String				m_stateString		= recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL);
 	String				m_aboutString		= recvMain.sm_local.getString(localResource.ABOUT_DESC);
@@ -112,6 +124,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	int					m_sendMailNum		= 0;
 	int					m_recvMailNum		= 0;
+	String				m_passwordKey		= "";
 	
 	
 	static final String[]	fsm_recvMaxTextLenghtString = {"∞","1KB","5KB","10KB","50KB"};
@@ -181,8 +194,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	AddAattachmentItem 	m_addItem	= new AddAattachmentItem();
 	DelAattachmentItem	m_delItem	= new DelAattachmentItem();
 	
-	static ResourceBundle sm_local = ResourceBundle.getBundle(
-								localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
+	
 	
 	String m_latestVersion			= null;
 	
@@ -191,23 +203,53 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	boolean		 m_useLocationInfo = false;
 	boolean		 m_setLocationListener = false;
 	
-	double			 m_longitude		= 0;
-	double			 m_latitude			= 0;
-	float			 m_altitude			= 0;
-	float			 m_movingSpeed		= 0;
-	float			 m_locationHeading = 0;
+	GPSInfo			m_gpsInfo = new GPSInfo();
 	//@}
 	
+	FileConnection m_logfc				= null;
+	OutputStream	m_logfcOutput		= null;
+	
+	
+	// weibo module
+	public boolean			m_enableWeiboModule			= false;
+	public boolean			m_updateOwnListWhenFw		= true;
+	public boolean			m_updateOwnListWhenRe		= false;
+	public boolean			m_dontDownloadWeiboHeadImage= false;
+		
+	public String[]				m_weiboHeadImageDir_sub = 
+	{
+		"Sina/",
+		"TW/",
+		"QQ/",
+		
+		"163/",
+		"SOHU/",
+		"FAN/",
+	};
+		
 	public static void main(String[] args) {
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());		
 		t_theApp.enterEventDispatcher();
 	}
 	
+	public boolean		canUseLocation(){
+		return m_useLocationInfo;
+	}
+	
+	public GPSInfo getGPSInfo(){
+		return m_gpsInfo;
+	}
+	
+	public int getMaxWeiboNum(){
+		if(m_maxWeiboNumIndex >= 0 && m_maxWeiboNumIndex < fsm_maxWeiboNum.length){
+			return fsm_maxWeiboNum[m_maxWeiboNumIndex];
+		}
+		
+		return fsm_maxWeiboNum[0];
+	}
 	
 	public recvMain(boolean _systemRun) {	
-				
-		boolean t_SDCardUse = false;
-		
+	
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/",Connector.READ_WRITE);
 			try{
@@ -223,29 +265,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	return;
 		}
 						
-		String t_attachmentDir = GetAttachmentDir();
-		
-		m_weiboHeadImageDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/WeiboImage/";
-		
-		// create the sdcard path 
-		//
-        try{
-        	       	
-        	FileConnection fc = (FileConnection) Connector.open(m_weiboHeadImageDir,Connector.READ_WRITE);
-        	try{
-        		if(!fc.exists()){
-            		fc.mkdir();
-            	}	
-        	}finally{
-        		fc.close();
-        		fc = null;
-        	}        	
-        	
-        }catch(Exception _e){
-        	DialogAlertAndExit("can't use the '"+ t_attachmentDir +"' to store attachment!");
-        	return;
-        }
-        
+		GetAttachmentDir();
+		        
         Criteria t_criteria = new Criteria();
 		t_criteria.setCostAllowed(false);
 		t_criteria.setHorizontalAccuracy(50);
@@ -264,11 +285,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		//
 		WriteReadIni(true);
 		
+		InitWeiboModule();
+		
         if(_systemRun){
         	
         	// register the notification
         	//
         	NotificationsManager.registerSource(fsm_notifyID_email, fsm_notifyEvent_email,NotificationsConstants.CASUAL);
+        	NotificationsManager.registerSource(fsm_notifyID_weibo, fsm_notifyEvent_weibo,NotificationsConstants.CASUAL);
         	
         	if(!m_autoRun || m_hostname.length() == 0 || m_port == 0 || m_userPassword.length() == 0){
         		System.exit(0);
@@ -280,14 +304,61 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         			System.exit(0);
         		}
         	}      	
-        }      
+        }     
 	}
 	
-	public String GetAttachmentDir(){
+	private boolean m_initWeiboHeadImageDir = false; 
+	public String GetWeiboHeadImageDir(int _style)throws Exception{
 		
+		if(!isSDCardAvaible()){
+			throw new Exception("Can't use the sd card to store weibo head image.");
+		}
+		
+		String t_weiboHeadImageDir = uploadFileScreen.fsm_rootPath_default + "YuchBerry/WeiboImage/";
+		
+		// connect the string of head image directory
+		//
+		if(!m_initWeiboHeadImageDir){
+    		m_initWeiboHeadImageDir = true;
+        	for(int i = 0;i < m_weiboHeadImageDir_sub.length;i++){
+        		m_weiboHeadImageDir_sub[i] = t_weiboHeadImageDir + m_weiboHeadImageDir_sub[i];
+        	}
+    	}
+		
+		// create the sdcard path 
+		//
+    	FileConnection fc = (FileConnection) Connector.open(t_weiboHeadImageDir,Connector.READ_WRITE);
+    	try{
+    		if(!fc.exists()){
+        		fc.mkdir();
+        		
+        		// attempt create the head image directory
+        		//
+        		for(int i = 0;i < m_weiboHeadImageDir_sub.length;i++){
+        			FileConnection tfc = (FileConnection) Connector.open(m_weiboHeadImageDir_sub[i],Connector.READ_WRITE);
+                	try{
+                		if(!tfc.exists()){
+                			tfc.mkdir();
+                    	}	
+                	}finally{
+                		tfc.close();
+                		tfc = null;
+                	}
+            	}
+        	}
+    	}finally{
+    		fc.close();
+    		fc = null;
+    	}
+    	    	
+    	t_weiboHeadImageDir = null;
+        
+		return m_weiboHeadImageDir_sub[_style];
+	}
+	
+	public boolean isSDCardAvaible(){
 		boolean t_SDCardUse = false;
 		
-		String t_attDir = null;
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/",Connector.READ_WRITE);
 			try{
@@ -303,7 +374,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			SetErrorString("SDCard can't be used :(");
 		}
 		
-		t_attDir = (t_SDCardUse?uploadFileScreen.fsm_rootPath_default:uploadFileScreen.fsm_rootPath_back) + "YuchBerry/AttDir/";
+		return t_SDCardUse;
+	}
+	
+	public String GetAttachmentDir(){
+		
+		String t_attDir = (isSDCardAvaible()?uploadFileScreen.fsm_rootPath_default:uploadFileScreen.fsm_rootPath_back) + "YuchBerry/AttDir/";
 		
 		try{
 			FileConnection fc = (FileConnection) Connector.open(t_attDir,Connector.READ_WRITE);
@@ -323,7 +399,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return t_attDir;
 	}
 	
-	private void DialogAlertAndExit(final String _msg) {
+	public void DialogAlertAndExit(final String _msg) {
 
 		invokeLater(new Runnable() {
 			public void run() {
@@ -377,10 +453,6 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 			m_latestVersion = null;
 		}
-	}
-	
-	public String GetWeiboHeadImageDir(){
-		return m_weiboHeadImageDir;
 	}
 	
 	public String GetAPNName(){
@@ -605,22 +677,19 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 //		}		
 //	}
 	
-	static final String fsm_initFilename_init_data = "Init.data";
-	static final String fsm_initFilename_back_init_data = "~Init.data";
 	
-	static final String fsm_initFilename = uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + fsm_initFilename_init_data;
-	static final String fsm_backInitFilename = uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + fsm_initFilename_back_init_data;
-	
-	private synchronized void PreWriteReadIni(boolean _read){
+	private void PreWriteReadIni(boolean _read,
+			String _backPathFilename,String _orgPathFilename,
+			String _backFilename,String _orgFilename){
 		
 		try{
 
 			if(_read){
 							
-				FileConnection t_back = (FileConnection) Connector.open(fsm_backInitFilename,Connector.READ_WRITE);
+				FileConnection t_back = (FileConnection) Connector.open(_backPathFilename,Connector.READ_WRITE);
 				try{
 					if(t_back.exists()){
-						FileConnection t_ini	= (FileConnection) Connector.open(fsm_initFilename,Connector.READ_WRITE);
+						FileConnection t_ini	= (FileConnection) Connector.open(_orgPathFilename,Connector.READ_WRITE);
 						try{
 							if(t_ini.exists()){
 								t_ini.delete();
@@ -630,7 +699,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 							t_ini = null;
 						}
 						
-						t_back.rename(fsm_initFilename_init_data);
+						t_back.rename(_orgFilename);
 					}
 				}finally{
 					t_back.close();
@@ -639,10 +708,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				
 			}else{
 				
-				FileConnection t_ini	= (FileConnection) Connector.open(fsm_initFilename,Connector.READ_WRITE);
+				FileConnection t_ini	= (FileConnection) Connector.open(_orgPathFilename,Connector.READ_WRITE);
 				try{
 					if(t_ini.exists()){
-						t_ini.rename(fsm_initFilename_back_init_data);
+						t_ini.rename(_backFilename);
 					}
 				}finally{
 					t_ini.close();
@@ -660,7 +729,13 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 15;
+	final static int		fsm_clientVersion = 22;
+	
+	static final String fsm_initFilename_init_data = "Init.data";
+	static final String fsm_initFilename_back_init_data = "~Init.data";
+	
+	static final String fsm_initFilename = uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + fsm_initFilename_init_data;
+	static final String fsm_backInitFilename = uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + fsm_initFilename_back_init_data;
 	
 	public synchronized void WriteReadIni(boolean _read){
 		
@@ -670,7 +745,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		// check the issue 85 
 		// http://code.google.com/p/yuchberry/issues/detail?id=85&colspec=ID%20Type%20Status%20Priority%20Stars%20Summary
 		//
-		PreWriteReadIni(_read);
+		PreWriteReadIni(_read,fsm_backInitFilename,fsm_initFilename,
+				fsm_initFilename_back_init_data,fsm_initFilename_init_data);
 		
 		try{
 			
@@ -721,17 +797,17 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    		}
 				    		
 				    		if(t_currVer >= 8){
-				    			m_fulldayPrompt = t_readFile.read() == 1?true:false;
+				    			m_fulldayPrompt = sendReceive.ReadBoolean(t_readFile);
 				    			m_startPromptHour = sendReceive.ReadInt(t_readFile);
 			    				m_endPromptHour = sendReceive.ReadInt(t_readFile);		    			
 				    		}	
 				    		
 				    		if(t_currVer >= 8){
-				    			m_useLocationInfo = t_readFile.read() == 1?true:false;
+				    			m_useLocationInfo = sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
 				    		if(t_currVer >= 10){
-				    			m_useMDS = t_readFile.read() == 1?true:false;
+				    			m_useMDS = sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
 				    		if(t_currVer >= 11){
@@ -740,11 +816,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    		}
 				    		
 				    		if(t_currVer >= 12){
-				    			m_discardOrgText = (t_readFile.read() == 1)?true:false;
+				    			m_discardOrgText = sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
 				    		if(t_currVer >= 13){
-				    			m_delRemoteMail = (t_readFile.read() == 1)?true:false;
+				    			m_delRemoteMail = sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
 				    		if(t_currVer >= 14){
@@ -752,9 +828,42 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    		}
 				    		
 				    		if(t_currVer >= 15){
-				    			m_copyMailToSentFolder = (t_readFile.read() == 1)?true:false;
+				    			m_copyMailToSentFolder = sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
+				    		if(t_currVer >= 16){
+				    			m_passwordKey = sendReceive.ReadString(t_readFile); 
+				    		}
+				    		
+				    		if(t_currVer >= 17){
+				    			m_enableWeiboModule = sendReceive.ReadBoolean(t_readFile);
+				    			m_updateOwnListWhenFw = sendReceive.ReadBoolean(t_readFile);
+				    			m_updateOwnListWhenRe = sendReceive.ReadBoolean(t_readFile);
+				    		}
+				    		
+				    		if(t_currVer >= 18){
+				    			WeiboItemField.sm_commentFirst = sendReceive.ReadBoolean(t_readFile);
+				    		}
+				    		
+				    		if(t_currVer >= 19){
+				    			m_publicForward		= sendReceive.ReadBoolean(t_readFile);
+				    			
+				    		}
+				    		
+				    		if(t_currVer >= 20){
+				    			m_maxWeiboNumIndex	= sendReceive.ReadInt(t_readFile);
+				    		}
+				    		
+				    		if(t_currVer >= 21){
+				    			m_receivedWeiboNum	= sendReceive.ReadInt(t_readFile);
+				    			m_sentWeiboNum		= sendReceive.ReadInt(t_readFile);
+				    		}
+				    		
+				    		if(t_currVer >= 22){
+				    			WeiboItemField.sm_displayHeadImage = sendReceive.ReadBoolean(t_readFile);
+				    			WeiboItemField.sm_simpleMode = sendReceive.ReadBoolean(t_readFile);
+				    			m_dontDownloadWeiboHeadImage = sendReceive.ReadBoolean(t_readFile);
+				    		}
 			    		}finally{
 			    			t_readFile.close();
 			    			t_readFile = null;
@@ -782,11 +891,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 							sendReceive.WriteInt(t_writeFile,t_sel.m_validateNum);
 						}
 						
-						t_writeFile.write(m_useSSL?1:0);
-						t_writeFile.write(m_useWifi?1:0);
+						sendReceive.WriteBoolean(t_writeFile,m_useSSL);
+						sendReceive.WriteBoolean(t_writeFile,m_useWifi);
 						sendReceive.WriteString(t_writeFile,m_appendString);
 						
-						t_writeFile.write(m_autoRun?1:0);
+						sendReceive.WriteBoolean(t_writeFile,m_autoRun);
 						
 						sendReceive.WriteLong(t_writeFile,m_uploadByte);
 						sendReceive.WriteLong(t_writeFile, m_downloadByte);
@@ -794,22 +903,38 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						sendReceive.WriteInt(t_writeFile,m_pulseIntervalIndex);
 						
 						
-						t_writeFile.write(m_fulldayPrompt?1:0);
+						sendReceive.WriteBoolean(t_writeFile,m_fulldayPrompt);
 						sendReceive.WriteInt(t_writeFile,m_startPromptHour);
 						sendReceive.WriteInt(t_writeFile,m_endPromptHour);
 						
-						t_writeFile.write(m_useLocationInfo?1:0);
-						t_writeFile.write(m_useMDS?1:0);
+						sendReceive.WriteBoolean(t_writeFile,m_useLocationInfo);
+						sendReceive.WriteBoolean(t_writeFile,m_useMDS);
 						
 						sendReceive.WriteInt(t_writeFile,m_sendMailNum);
 						sendReceive.WriteInt(t_writeFile,m_recvMailNum);
 						
-						t_writeFile.write(m_discardOrgText?1:0);
-						t_writeFile.write(m_delRemoteMail?1:0);
+						sendReceive.WriteBoolean(t_writeFile,m_discardOrgText);
+						sendReceive.WriteBoolean(t_writeFile,m_delRemoteMail);
 						
 						sendReceive.WriteInt(t_writeFile, m_recvMsgTextLengthIndex);
 						
-						t_writeFile.write(m_copyMailToSentFolder?1:0);
+						sendReceive.WriteBoolean(t_writeFile,m_copyMailToSentFolder);
+						
+						sendReceive.WriteString(t_writeFile,m_passwordKey);
+						
+						sendReceive.WriteBoolean(t_writeFile,m_enableWeiboModule);
+						sendReceive.WriteBoolean(t_writeFile,m_updateOwnListWhenFw);
+						sendReceive.WriteBoolean(t_writeFile,m_updateOwnListWhenRe);
+						sendReceive.WriteBoolean(t_writeFile,WeiboItemField.sm_commentFirst);
+						sendReceive.WriteBoolean(t_writeFile,m_publicForward);
+						
+						sendReceive.WriteInt(t_writeFile,m_maxWeiboNumIndex);
+						sendReceive.WriteInt(t_writeFile,m_receivedWeiboNum);
+						sendReceive.WriteInt(t_writeFile,m_sentWeiboNum);
+						
+						sendReceive.WriteBoolean(t_writeFile,WeiboItemField.sm_displayHeadImage);
+						sendReceive.WriteBoolean(t_writeFile,WeiboItemField.sm_simpleMode);
+						sendReceive.WriteBoolean(t_writeFile,m_dontDownloadWeiboHeadImage);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -869,11 +994,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	    // If the application registered the location listener with an interval of
 	    // 0, the location provider does not provide location updates.
 		if(location.isValid()){
-			m_locationHeading 	= location.getCourse();
-			m_longitude 		= location.getQualifiedCoordinates().getLongitude();
-			m_latitude 			= location.getQualifiedCoordinates().getLatitude();
-			m_altitude 			= location.getQualifiedCoordinates().getAltitude();
-			m_movingSpeed 		= location.getSpeed();
+			m_gpsInfo.m_heading 	= location.getCourse();
+			m_gpsInfo.m_longitude 	= location.getQualifiedCoordinates().getLongitude();
+			m_gpsInfo.m_latitude 	= location.getQualifiedCoordinates().getLatitude();
+			m_gpsInfo.m_altitude 	= location.getQualifiedCoordinates().getAltitude();
+			m_gpsInfo.m_speed 		= location.getSpeed();
 			
 			if(m_settingScreen != null){
 				m_settingScreen.RefreshLocation();
@@ -925,10 +1050,18 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public void Exit(){
 		
+		try{
+			if(m_connectDeamon.IsConnectState()){
+				m_connectDeamon.Disconnect();
+			}	
+		}catch(Exception e){}
+		
+		
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);	
 		
 		StopNotification();
+		StopWeiboNotification();
 		
 		if(m_connectDeamon.m_connect != null){
 			m_connectDeamon.m_connect.StoreUpDownloadByteImm(true);
@@ -941,16 +1074,66 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			}
 		}	
 		
+		// store the weibo item list
+		ReadWriteWeiboFile(false);
+		
 		System.exit(0);
 	}
 	
 	public void activate(){
+		
+		if(m_enableWeiboModule && m_connectDeamon.IsConnectState()){
+			
+			if(m_weiboTimeLineScreen == null){
+				InitWeiboModule();
+			}
+			if(getScreenCount() == 0){
+				pushScreen(m_weiboTimeLineScreen);
+			}			
+			
+		}else{
+			pushStateScreen();
+		}	
+		
+		PopupLatestVersionDlg();
+	}
+	
+	public void deactivate(){
+		
+		if(m_enableWeiboModule && m_connectDeamon.IsConnectState()){
+			
+			if(m_stateScreen != null){
+				popScreen(m_stateScreen);
+				m_stateScreen = null;
+			}
+			
+			if(m_weiboTimeLineScreen != null){
+				if(getScreenCount() == 1){
+					popScreen(m_weiboTimeLineScreen);
+				}				
+			}
+			
+		}else{
+			
+			if(m_stateScreen != null){
+				popScreen(m_stateScreen);
+				m_stateScreen = null;
+			}
+		}			
+	}
+	
+	public void pushStateScreen(){
 		if(m_stateScreen == null){
 			m_stateScreen = new stateScreen(this);
 			pushScreen(m_stateScreen);
-			
-			PopupLatestVersionDlg();
-		}		
+		}
+	}
+	
+	public void popStateScreen(){
+		if(m_stateScreen != null){
+			popScreen(m_stateScreen);
+			m_stateScreen = null;
+		}	
 	}
 	
 	public void TriggerNotification(){
@@ -962,12 +1145,17 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		NotificationsManager.cancelImmediateEvent(fsm_notifyID_email, 0, this, null);
 	}
 	
-	public void deactivate(){
-		if(m_stateScreen != null){
-			popScreen(m_stateScreen);
-			m_stateScreen = null;
+	public void TriggerWeiboNotification(){
+		if(IsPromptTime()){
+			NotificationsManager.triggerImmediateEvent(fsm_notifyID_weibo, 0, this, null);
 		}		
 	}
+	
+	public void StopWeiboNotification(){
+		NotificationsManager.cancelImmediateEvent(fsm_notifyID_weibo, 0, this, null);
+	}
+	
+	
 	
 	public void PopupAboutScreen(){
 		m_aboutScreen = new aboutScreen(this);
@@ -989,7 +1177,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	
 	public void PopupWeiboScreen(){
-		pushScreen(m_weiboTimeLineScreen);
+		if(m_weiboTimeLineScreen != null){
+			pushScreen(m_weiboTimeLineScreen);
+		}		
 	}
 	
 	public void PopupDownloadFileDlg(final String _filename){
@@ -1227,7 +1417,29 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return recvMain.sm_local.getString(localResource.STATE_PROMPT) + m_stateString;
 	}
 	
-	public void SetErrorString(final String _error){
+	public void LogOut(String _log){
+		try{
+			if(m_logfc == null){
+				m_logfc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/log.txt",Connector.READ_WRITE);
+				if(m_logfc.exists()){
+					m_logfc.delete();
+				}
+				
+				m_logfc.create();
+				m_logfcOutput = m_logfc.openOutputStream();
+			}
+			
+			m_logfcOutput.write(_log.getBytes());
+			m_logfcOutput.write(("\n").getBytes());
+			m_logfcOutput.flush();
+			
+		}catch(Exception e){
+			SetErrorString("LogOut Error:"+e.getMessage() + e.getClass().getName());
+		}
+		
+	}
+	
+	public synchronized void SetErrorString(final String _error){
 		m_errorString.addElement(new ErrorInfo(_error));
 		if(m_errorString.size() > 100){
 			m_errorString.removeElementAt(0);
@@ -1237,21 +1449,22 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			m_debugInfoScreen.RefreshText();
 		}			
 	}
-	public String GetAllErrorString(){
+	
+	public synchronized String GetAllErrorString(){
 		if(!m_errorString.isEmpty()){
 
 			SimpleDateFormat t_format = new SimpleDateFormat("HH:mm:ss");
 			
 			ErrorInfo t_info = (ErrorInfo)m_errorString.elementAt(0);
 			
-			String t_text = (t_format.format(t_info.m_time) + ":" + t_info.m_info).concat("\n");
+			StringBuffer t_text = new StringBuffer();
 			
-			for(int i = 1;i< m_errorString.size();i++){				
+			for(int i = m_errorString.size() - 1;i >= 0;i--){				
 				t_info = (ErrorInfo)m_errorString.elementAt(i);
-				t_text = t_text.concat((t_format.format(t_info.m_time) + ":" + t_info.m_info).concat("\n"));
+				t_text.append(t_format.format(t_info.m_time)).append(":").append(t_info.m_info).append("\n");
 			}
 			
-			return t_text;
+			return t_text.toString();
 		}
 		
 		return "";
@@ -1266,7 +1479,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public final Vector GetErrorString(){
 		return m_errorString;
 	}
-	
+		
 	static public void openURL(String _url){
 		BrowserSession browserSession = Browser.getDefaultSession();
 		browserSession.displayPage(_url);
@@ -1276,9 +1489,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		if(_byte < 1000){
 			return "" + _byte + "B";
 		}else if(_byte >= 1000 && _byte < 1000000){
-			return "" + (_byte / 1000) + "." + (_byte % 1000)+ "KB";
+			return "" + (_byte / 1000) + "." + (_byte % 1000 / 100)+ "KB";
 		}else{
-			return "" + (_byte / (1000000)) + "." + ((_byte / 1000) % 1000) + "MB";
+			return "" + (_byte / (1000000)) + "." + ((_byte / 1000) % 1000 / 100) + "MB";
 		}
 	}
 	
@@ -1301,5 +1514,300 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return t_code;
 	}
 	
+	public static String md5(String _org){
+		
+		byte[] bytes = null;
+		try{
+			bytes = _org.getBytes("UTF-8");
+		}catch(Exception e){
+			bytes = _org.getBytes();
+		}
+		
+		MD5Digest digest = new MD5Digest();
+		
+		digest.update(bytes, 0, bytes.length);
+
+		byte[] md5 = new byte[digest.getDigestLength()];
+		digest.getDigest(md5, 0, true);
+		
+		return convertToHex(md5);
+		
+	}
+	
+	public static String convertToHex(byte[] data) {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < data.length; i++) {
+            int halfbyte = (data[i] >>> 4) & 0x0F;
+            int two_halfs = 0;
+            do {
+                if ((0 <= halfbyte) && (halfbyte <= 9))
+                    buf.append((char) ('0' + halfbyte));
+                else
+                    buf.append((char) ('a' + (halfbyte - 10)));
+                halfbyte = data[i] & 0x0F;
+            } while(two_halfs++ < 1);
+        }
+        return buf.toString();
+    }
+	
+	
+	///////////////////////////////////////////////////////////////////////////////////////////
+	///// weibo module
+	///////////////////////////////////////////////////////////////////////////////////////////
+	public weiboTimeLineScreen	m_weiboTimeLineScreen = null;
+	public boolean				m_publicForward		= false;
+	private Vector				m_receivedWeiboList	= new Vector();
+	
+	private int				m_receivedHomeWeiboNum = 0;
+	private int				m_receivedAtMeWeiboNum = 0;
+	private int				m_receivedCommentWeiboNum = 0;
+	private int				m_receivedDirectMsgWeiboNum = 0;
+	
+	static final String[]	fsm_maxWeiboNumList = {"64","128","256","512","1024"};
+	static final int[]	fsm_maxWeiboNum		= {64,128,256,512,1024};
+	int						m_maxWeiboNumIndex = 0;
+	
+	public int					m_receivedWeiboNum = 0;
+	public int					m_sentWeiboNum = 0;
+	
+	boolean m_receiveWeiboListChanged = false;
+	
+	public void InitWeiboModule(){
+		
+		if(m_enableWeiboModule){
+			if(m_weiboTimeLineScreen == null){
+				m_weiboTimeLineScreen = new weiboTimeLineScreen(this);
+			}
+			
+			ReadWriteWeiboFile(true);
+			
+			m_weiboTimeLineScreen.ClearWeibo();
+			
+			m_receivedHomeWeiboNum = 0;
+			m_receivedAtMeWeiboNum = 0;
+			m_receivedCommentWeiboNum = 0;
+			m_receivedDirectMsgWeiboNum = 0;
+					
+			if(!m_receivedWeiboList.isEmpty()){
+				
+				synchronized (m_receivedWeiboList) {
+					for(int i = 0 ;i < m_receivedWeiboList.size();i++){
+						fetchWeibo weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
+						switch(weibo.GetWeiboClass()){
+						case fetchWeibo.TIMELINE_CLASS:
+							m_receivedHomeWeiboNum++;
+							break;
+						case fetchWeibo.AT_ME_CLASS:
+							m_receivedAtMeWeiboNum++;
+							break;
+						case fetchWeibo.COMMENT_ME_CLASS:
+							m_receivedCommentWeiboNum++;
+							break;
+						case fetchWeibo.DIRECT_MESSAGE_CLASS:
+							m_receivedDirectMsgWeiboNum++;
+							break;
+						}
+					}
+					
+					for(int i = 0;i < m_receivedWeiboList.size();i++){
+						fetchWeibo t_weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
+						m_weiboTimeLineScreen.AddWeibo(t_weibo,true);
+					}
+				}
+			}
+		}
+	}
+		
+	public void PrepareWeiboItem(fetchWeibo _weibo){
+		
+		synchronized (this) {
+			m_receiveWeiboListChanged = true;
+		}
+		
+		m_receivedWeiboNum++;
+		
+		int t_checkWeiboClassNum = 0;
+		
+		switch(_weibo.GetWeiboClass()){
+		case fetchWeibo.TIMELINE_CLASS:
+			t_checkWeiboClassNum = ++m_receivedHomeWeiboNum;
+			break;
+		case fetchWeibo.AT_ME_CLASS:
+			t_checkWeiboClassNum = ++m_receivedAtMeWeiboNum;
+			break;
+		case fetchWeibo.COMMENT_ME_CLASS:
+			t_checkWeiboClassNum = ++m_receivedCommentWeiboNum;
+			break;
+		case fetchWeibo.DIRECT_MESSAGE_CLASS:
+			t_checkWeiboClassNum = ++m_receivedDirectMsgWeiboNum;
+			break;
+		}
+		
+		synchronized (m_receivedWeiboList) {
+			
+			for(int i = m_receivedWeiboList.size() - 1 ;i >= 0 ;i--){
+				fetchWeibo weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
+				if(weibo.equals(_weibo)){
+					return;
+				}
+			}			
+						
+			if(t_checkWeiboClassNum >= getMaxWeiboNum()){
+				
+				for(int i = 0; i < m_receivedWeiboList.size();i++){
+					
+					fetchWeibo t_delWeibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
+					
+					if(t_delWeibo.GetWeiboClass() == _weibo.GetWeiboClass()){
+						
+						m_receivedWeiboList.removeElementAt(i);
+						
+						m_weiboTimeLineScreen.DelWeibo(t_delWeibo);
+						m_weiboTimeLineScreen.DelWeiboHeadImage(t_delWeibo.GetWeiboStyle(),Long.toString(t_delWeibo.GetId()));
+						
+						break;
+					}
+				}
+				
+				switch(_weibo.GetWeiboClass()){
+				case fetchWeibo.TIMELINE_CLASS:
+					--m_receivedHomeWeiboNum;
+					break;
+				case fetchWeibo.AT_ME_CLASS:
+					--m_receivedAtMeWeiboNum;
+					break;
+				case fetchWeibo.COMMENT_ME_CLASS:
+					--m_receivedCommentWeiboNum;
+					break;
+				case fetchWeibo.DIRECT_MESSAGE_CLASS:
+					--m_receivedDirectMsgWeiboNum;
+					break;
+				}
+			}
+			
+			m_receivedWeiboList.addElement(_weibo);
+			
+		}		
+		
+		if(m_weiboTimeLineScreen.AddWeibo(_weibo,false)){
+			TriggerWeiboNotification();
+		}
+		
+	}
+	
+	public void ChangeWeiboHeadImageHash(String _userId,int _weiboStyle,int _headImageHash){
+		
+		synchronized(m_receivedWeiboList) {
+
+			for(int i = 0 ;i < m_receivedWeiboList.size();i++){
+				fetchWeibo weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
+				
+				if(weibo.GetWeiboStyle() == _weiboStyle 
+				&& weibo.GetHeadImageId().equals(_userId) ){
+					
+					weibo.SetUserHeadImageHashCode(_headImageHash);
+				}
+			}
+		}
+	}
+	
+	static final String fsm_weiboDataName = "weibo.data";
+	static final String fsm_weiboDataBackName = "~weibo.data";
+	
+	private synchronized void ReadWriteWeiboFile(boolean _read){
+		
+		if(!m_receiveWeiboListChanged && !_read){
+			return ;
+		}
+		
+		m_receiveWeiboListChanged = false;
+		
+		String t_weiboDataDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
+		
+		String t_weiboDataPathName 		= t_weiboDataDir + fsm_weiboDataName;
+		String t_weiboDataBackPathName	= t_weiboDataDir + fsm_weiboDataBackName;
+		
+		PreWriteReadIni(_read, t_weiboDataBackPathName,t_weiboDataPathName,
+							fsm_weiboDataBackName, fsm_weiboDataName);
+		
+		try{
+			FileConnection t_fc = (FileConnection)Connector.open(t_weiboDataPathName);
+			try{
+
+				if(_read){
+					synchronized (m_receivedWeiboList) {
+						m_receivedWeiboList.removeAllElements();
+						
+						if(t_fc.exists()){
+							
+							InputStream t_readIn = t_fc.openInputStream();
+							try{
+								
+								int t_num = sendReceive.ReadInt(t_readIn);
+								for(int i = 0 ;i < t_num;i++){
+									fetchWeibo t_weibo = new fetchWeibo();
+									t_weibo.InputWeibo(t_readIn);
+									
+									m_receivedWeiboList.addElement(t_weibo);
+								}
+								
+							}finally{
+								t_readIn.close();
+								t_readIn = null;
+							}
+						}
+					}
+					
+					
+				}else{
+					
+					if(!t_fc.exists()){
+						t_fc.create();
+					}
+					
+					OutputStream t_fileos = t_fc.openOutputStream();
+					try{
+
+						ByteArrayOutputStream tmpos = new ByteArrayOutputStream();
+												
+						synchronized (m_receivedWeiboList) {
+							sendReceive.WriteInt(tmpos,m_receivedWeiboList.size());
+							
+							for(int i = 0 ;i < m_receivedWeiboList.size();i++){
+								fetchWeibo t_weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
+								t_weibo.OutputWeibo(tmpos);
+							}
+						}
+						
+						t_fileos.write(tmpos.toByteArray());
+												
+					}finally{
+						t_fileos.flush();
+						t_fileos.close();
+						t_fileos = null;
+					}
+					
+					// delete the back file ~weibo.data
+					//
+					FileConnection t_backFile = (FileConnection) Connector.open(t_weiboDataBackPathName,Connector.READ_WRITE);
+					try{
+						if(t_backFile.exists()){
+							t_backFile.delete();
+						}
+					}finally{
+						t_backFile.close();
+						t_backFile = null;
+					}
+					
+				}
+				
+			}finally{
+				t_fc.close();
+				t_fc = null;
+			}
+		}catch(Exception e){
+			SetErrorString("RWWF:"+e.getMessage()+e.getClass().getName());
+		}
+	}
 }
 

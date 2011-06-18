@@ -20,7 +20,7 @@ import org.dom4j.Element;
 
 public abstract class fetchAbsWeibo extends fetchAccount{
 	
-	static public boolean		sm_debug = true;
+	static public boolean		sm_debug = false;
 
 	byte[] m_headImageBuffer	= new byte[1024 * 10];
 	
@@ -278,12 +278,10 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				t_output.reset();
 			}			
 	
-			if(sm_debug){
-				if(t_weiboNum != 0){
-					m_mainMgr.m_logger.LogOut(GetAccountName() + " Pushed <" + t_weiboNum + ">Weibo");
-				}	
-			}
-										
+			
+			if(t_weiboNum != 0){
+				m_mainMgr.m_logger.LogOut(GetAccountName() + " Pushed <" + t_weiboNum + ">Weibo");
+			}			
 			
 			synchronized(this){
 				_weiboList.m_counter = 0;
@@ -358,6 +356,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	}
 	
 	protected synchronized void ProcessWeiboRefresh(ByteArrayInputStream in){
+		
+		m_mainMgr.m_logger.LogOut(GetAccountName() + " Refresh Weibo All List");
 		
 		m_timeline.m_counter 		= -1;
 		m_directMessage.m_counter 	= -1;

@@ -3,6 +3,8 @@ package com.yuchting.yuchberry.client;
 import java.util.Vector;
 
 import local.localResource;
+import net.rim.device.api.servicebook.ServiceBook;
+import net.rim.device.api.servicebook.ServiceRecord;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Keypad;
@@ -58,26 +60,34 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 			t_app.PopupSettingScreen();													
 		}
 	};
+	
 											
 	MenuItem	m_debugInfoMenu = new MenuItem(recvMain.sm_local.getString(localResource.DEBUG_MENU_TEXT), 104, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
 			t_app.m_debugInfoScreen = new debugInfo(t_app);
 			t_app.pushScreen(t_app.m_debugInfoScreen);
-			
 		}
 	};
+	
 											
 	MenuItem	m_weiboMenu = new MenuItem(recvMain.sm_local.getString(localResource.YB_WEIBO_MENU_LABEL), 105, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
-			t_app.PopupWeiboScreen();
-			
+			if(t_app.getScreenCount() == 2){
+				t_app.popStateScreen();
+			}else{
+				t_app.PopupWeiboScreen();
+			}
 		}
 	};
-										
-
 	
+	MenuItem	m_quitMenu = new MenuItem(recvMain.sm_local.getString(localResource.STATE_QUIT_MENU_LABEL), 200, 10) {
+		public void run() {
+			recvMain t_app = (recvMain)UiApplication.getUiApplication();
+			t_app.Exit();
+		}
+	};
 
     public stateScreen(final recvMain _app) {
     	        
@@ -139,15 +149,27 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     	_menu.add(MenuItem.separator(102));
     	_menu.add(m_setingMenu);
     	_menu.add(m_debugInfoMenu);
-    	//_menu.add(m_weiboMenu);
+    	
+    	if(m_mainApp.m_enableWeiboModule){
+    		_menu.add(m_weiboMenu);
+    	} 
+    	
+    	_menu.add(MenuItem.separator(199));
+    	_menu.add(m_quitMenu);
     	
     	super.makeMenu(_menu, instance);
     }
     
     public final boolean onClose(){
+    	
     	if(m_mainApp.m_connectDeamon.IsConnectState()){
-    		m_mainApp.requestBackground();
-    		return false;
+    		if(m_mainApp.getScreenCount() == 1){
+    			m_mainApp.requestBackground();
+        		return false;	
+    		}else{
+    			m_mainApp.popStateScreen();
+    			return true;
+    		}    		
     	}
     	
     	m_mainApp.Exit();
@@ -174,6 +196,12 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
         	case 'F':
         		m_shareMenu.run();
         		return true;
+        	case 'W':
+        		if(m_mainApp.m_enableWeiboModule){
+        			m_weiboMenu.run();
+        			return true;
+        		}
+        		break;
         	}
     	}
     	
@@ -229,7 +257,18 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 					m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
 					
 				}else{
-										
+					
+					ServiceBook t_sb = ServiceBook.getSB();
+					ServiceRecord[] t_record = t_sb.findRecordsByCid("CMIME");
+					if(t_record == null || t_record.length == 0){
+						m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.NEED_CMIME_PROMPT));
+						return;
+					}
+					
+					if(m_hostName.getText().indexOf(" ") != -1){
+						m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.STATE_HOST_STRING_ILLEGAL_PROMPT));
+						return;
+					}
 					
 					try{
 						m_mainApp.m_hostname 		= m_hostName.getText();

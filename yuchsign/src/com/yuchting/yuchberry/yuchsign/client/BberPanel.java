@@ -649,7 +649,11 @@ public class BberPanel extends TabPanel{
 			
 			try{
 				m_currentBber.InputXMLData(_result);
-				Yuchsign.PopupPrompt("同步成功！可以使用手机连接服务器了。\n注意：如果手机没有连接服务器的时间超过3天，\n就需要再次同步。\n <font size=\"6\" color=\"red\">同步端口："+m_currentBber.GetServerPort()+"</font>", _panel);
+				Yuchsign.PopupPrompt("同步成功！可以使用手机连接服务器了。\n" +
+						"注意：如果手机没有连接服务器的时间超过3天，\n" +
+						"就需要再次同步。\n " +
+						"<font size=\"5\" >同步成功端口："+m_currentBber.GetServerPort()+"</font>\n" +
+						"重新同步账户之后，可能会改变端口，请注意。", _panel);
 				
 			}catch(Exception e){
 				PopupProblemAndSearchHelp(e.getMessage(), _panel);

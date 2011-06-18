@@ -43,13 +43,13 @@ public class  fetchMail{
 	private Vector		m_vectTo		= new Vector();
 	private Vector		m_vectGroup		= new Vector();
 	
-	private String			m_subject 		= new String();
+	private String			m_subject 		= "";
 	private Date			m_sendDate 		= new Date();
 	private int			m_flags 		= 0;
-	private String			m_XMailName 	= new String();
+	private String			m_XMailName 	= "";
 	
-	private String			m_contain		= new String();
-	private String			m_contain_html	= new String();
+	private String			m_contain		= "";
+	private String			m_contain_html	= "";
 			
 	private Vector	m_vectAttachment	 	= new Vector();
 	
@@ -58,13 +58,7 @@ public class  fetchMail{
 	
 	// location information
 	boolean m_hasLocationInfo		= false;
-	double m_longitude 			= 0;
-    double m_latitude				= 0;
-    float	 m_altitude				= 0;
-	float	 m_speed				= 0;
-	float	 m_heading				= 0;
-	
-			
+	GPSInfo	m_gpsInfo 				= new GPSInfo();			
 	
 	public void SetMailIndex(int _index)throws Exception{
 		if(_index <= 0){
@@ -153,13 +147,9 @@ public class  fetchMail{
 			sendReceive.WriteString(_stream,t_attachment.m_type);
 		}
 		
-		_stream.write(m_hasLocationInfo?1:0);
+		sendReceive.WriteBoolean(_stream,m_hasLocationInfo);
 		if(m_hasLocationInfo){
-			sendReceive.WriteDouble(_stream,m_longitude);
-			sendReceive.WriteDouble(_stream,m_latitude);
-			sendReceive.WriteFloat(_stream,m_altitude);
-			sendReceive.WriteFloat(_stream,m_speed);
-			sendReceive.WriteFloat(_stream,m_heading);
+			m_gpsInfo.OutputData(_stream);
 		}
 		
 	}
@@ -198,16 +188,13 @@ public class  fetchMail{
 			m_vectAttachment.addElement(t_attachment);
 		}
 		
-		m_hasLocationInfo = _stream.read() == 1?true:false;
+		m_hasLocationInfo = sendReceive.ReadBoolean(_stream);
 		if(m_hasLocationInfo){
-			m_longitude	= sendReceive.ReadDouble(_stream);
-			m_latitude	= sendReceive.ReadDouble(_stream);
-			m_altitude	= sendReceive.ReadFloat(_stream);
-			m_speed		= sendReceive.ReadFloat(_stream);
-			m_heading	= sendReceive.ReadFloat(_stream);
+			m_gpsInfo.InputData(_stream);
 		}
-		
 	}
+	
+	
 	
 	//set and gets function
 	//
@@ -228,6 +215,8 @@ public class  fetchMail{
 	
 	public int GetFlags(){return m_flags;}
 	public void SetFlags(int _flags){m_flags = _flags;}
+	
+	public GPSInfo GetGPSInfo(){return m_gpsInfo;}
 	
 	public void SetSendToVect(String[] _to){
 		m_vectTo.removeAllElements();
@@ -299,16 +288,18 @@ public class  fetchMail{
 		return m_vectAttachment;
 	}
 	
-	public void SetLocationInfo(final double _longitude,final double _latitude,
-									final float _altitude,final float _speed,final float _heading){
-		if(_longitude != 0 || _latitude != 0){
+	public void SetLocationInfo(GPSInfo _gpsInfo){
+		
+		if(_gpsInfo.m_longitude != 0 || _gpsInfo.m_latitude != 0){
+			
 			m_hasLocationInfo = true;
 			
-			m_longitude = _longitude;
-			m_latitude	= _latitude;
-			m_altitude	= _altitude;
-			m_speed		= _speed;
-			m_heading	= _heading;
+			m_gpsInfo.m_longitude 	= _gpsInfo.m_longitude;
+			m_gpsInfo.m_latitude	= _gpsInfo.m_latitude;
+			m_gpsInfo.m_altitude	= _gpsInfo.m_altitude;
+			m_gpsInfo.m_speed		= _gpsInfo.m_speed;
+			m_gpsInfo.m_heading		= _gpsInfo.m_heading;
+			
 		}else{
 			m_hasLocationInfo = false;
 		}
@@ -494,6 +485,9 @@ class sendMailAttachmentDeamon extends Thread{
 				
 				if(!m_connect.IsConnectState()){
 					ReleaseAttachFile();
+					
+					RefreshMessageStatus(Message.Status.TX_ERROR);
+					
 					return;
 				}else{
 				
@@ -537,7 +531,7 @@ class sendMailAttachmentDeamon extends Thread{
 					
 					// does want to copy tu sent folder?
 					//
-					t_os.write(m_connect.m_mainApp.m_copyMailToSentFolder?1:0);
+					sendReceive.WriteBoolean(t_os,m_connect.m_mainApp.m_copyMailToSentFolder);
 					
 					m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), false,false);
 					

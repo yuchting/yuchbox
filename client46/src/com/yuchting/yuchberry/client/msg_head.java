@@ -26,7 +26,11 @@ final public class msg_head {
 	
 	final public static byte msgMailDel			= 14;
 	
-	final public static String noteErrorUserPassword = "illegal client connect\n meybe a error user password";
-
-		
+	final public static byte msgWeiboFavorite	= 15;
+	final public static byte msgWeiboFollowUser	= 16;
+	final public static byte msgWeiboRefresh		= 17;
+	final public static byte msgWeiboDelete		= 18;
+	
+	final public static byte msgWeiboEnable		= 19;
+			
 }
