@@ -36,7 +36,9 @@ import weibo4j.WeiboException;
 public class AccessToken extends OAuthToken {
     private static final long serialVersionUID = -8344528374458826291L;
     private String screenName;
-    private int userId;
+    
+    //YuchBerry modified ,change int to long
+    private long userId;
     
     AccessToken(Response res) throws WeiboException {
         this(res.asString());
@@ -46,8 +48,8 @@ public class AccessToken extends OAuthToken {
     AccessToken(String str) {
         super(str);
         screenName = getParameter("screen_name");
-	String sUserId = getParameter("user_id");
-	if (sUserId != null) userId = Integer.parseInt(sUserId);
+		String sUserId = getParameter("user_id");
+		if (sUserId != null) userId = Long.parseLong(sUserId);
 
     }
 
@@ -71,7 +73,7 @@ public class AccessToken extends OAuthToken {
      * @since Weibo4J 2.0.4
      */
 
-	public int getUserId() {
+	public long getUserId() {
 		return userId;
 	}
     

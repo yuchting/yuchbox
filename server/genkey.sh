@@ -7,6 +7,6 @@ if   [   -e   "$filename"   ]; then
 fi 
 
 echo ------------生成密钥对------------
-keytool -genkey -alias serverkey -keystore $filename
+keytool -genkey -alias serverkey -keystore $filename -validity 3650
 
 pause

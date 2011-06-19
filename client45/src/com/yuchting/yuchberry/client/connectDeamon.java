@@ -148,6 +148,8 @@ public class connectDeamon extends Thread implements SendListener,
 	final static String fsm_findPrefix[] = 
 	{
 		"答复： ",
+		"回覆： ",
+		"回复： ",
 		"Re: ",
 		"转发： ",
 		"Forward: ",
@@ -157,6 +159,8 @@ public class connectDeamon extends Thread implements SendListener,
 	final static String fsm_replacePrefix[] =
 	{
 		"答复 ",
+		"转寄 ",
+		"轉寄 ",
 		"Re ",
 		"转发 ",
 		"Forward ",
@@ -543,28 +547,24 @@ public class connectDeamon extends Thread implements SendListener,
 			String t_trimString = null;
 			if(_style == fetchMail.REPLY_STYLE){
 				
-				final int t_code = Locale.getDefaultForSystem().getCode();
-				
-				
-				switch(t_code){
-				case Locale.LOCALE_zh_CN:
-				case Locale.LOCALE_zh:
-				case Locale.LOCALE_zh_HK:
-					if(t_messageSub.indexOf("：") != -1){
-						t_trimString = "答复： ";
-					}else{
-						t_trimString = "答复 ";
+				if(t_messageSub.indexOf("：") != -1){
+					
+					for(int i = 0;i< fsm_findPrefix.length;i++){
+						if(t_messageSub.startsWith(fsm_findPrefix[i])){
+							t_trimString = fsm_findPrefix[i];
+							break;
+						}
 					}
 					
-					break;
-				default:
-					if(t_messageSub.indexOf(":") != -1){
-						t_trimString = "Re: ";
-					}else{
-						t_trimString = "Re ";
-					}					
-					break;
-				}
+				}else{
+
+					for(int i = 0;i< fsm_replacePrefix.length;i++){
+						if(t_messageSub.startsWith(fsm_replacePrefix[i])){
+							t_trimString = fsm_replacePrefix[i];
+							break;
+						}
+					}
+				}			
 				
 				final int t_prefixIndex = t_messageSub.indexOf(t_trimString);
 				if(t_prefixIndex != -1){

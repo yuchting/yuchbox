@@ -74,6 +74,7 @@ public class weiboRequestTool{
 				
 			}catch(Exception ex){
 				prt("出现错误:" + ex.getMessage());
+				ex.printStackTrace();
 			}
 			
 		}catch(Exception e){
@@ -116,6 +117,7 @@ public class weiboRequestTool{
 				
 			}catch(Exception ex){
 				prt("出现错误:" + ex.getMessage());
+				ex.printStackTrace();
 			}			
 		}
 	}
@@ -177,6 +179,7 @@ public class weiboRequestTool{
 			}
 		}catch(Exception e){
 			t_response.append("授权出现问题：" + e.getMessage());
+			e.printStackTrace();
 		}finally{
 			t_response.append("<br />有任何问题请联系 <a href=\"mailto:yuchberry@gmail.com?subject=工具授权出现问题\">yuchberry@gmail.com</a>");
 			t_response.append("</html>");

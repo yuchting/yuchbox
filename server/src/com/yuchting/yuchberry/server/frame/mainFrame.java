@@ -175,7 +175,7 @@ public class mainFrame extends JFrame implements ActionListener{
 				new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
 			}
 			
-		}else if(_arg.length == 1 && _arg[0].equalsIgnoreCase("frame")){
+		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("frame")){
 			new fakeMDSSvr();
 			new mainFrame(_arg);
 		}else{			
@@ -185,7 +185,7 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	public mainFrame(String _arg[]){
 		
-		boolean t_hideWindow = _arg.length >= 1 && _arg[0].equalsIgnoreCase("hide");
+		boolean t_hideWindow = _arg.length >= 2 && _arg[1].equalsIgnoreCase("hide");
 		
 		setTitle("yuchberry 集成配置工具 beta");
 		setSize(fsm_width,fsm_height);

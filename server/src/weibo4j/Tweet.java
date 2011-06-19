@@ -37,11 +37,11 @@ import java.util.Date;
  */
 public class Tweet extends WeiboResponse{
     private String text;
-    private int toUserId = -1;
+    private long toUserId = -1;
     private String toUser = null;
     private String fromUser;
     private long id;
-    private int fromUserId;
+    private long fromUserId;
     private String isoLanguageCode = null;
     private String source;
     private String profileImageUrl;
@@ -53,7 +53,7 @@ public class Tweet extends WeiboResponse{
         try {
             text = getString("text", tweet, false);
             try{
-                toUserId = tweet.getInt("to_user_id");
+                toUserId = tweet.getLong("to_user_id");
                 toUser = tweet.getString("to_user");
             }catch(JSONException ignore){
                 // to_user_id can be "null"
@@ -61,7 +61,7 @@ public class Tweet extends WeiboResponse{
             }
             fromUser = tweet.getString("from_user");
             id = tweet.getLong("id");
-            fromUserId = tweet.getInt("from_user_id");
+            fromUserId = tweet.getLong("from_user_id");
             try{
                 isoLanguageCode = tweet.getString("iso_language_code");
             }catch(JSONException ignore){
@@ -90,7 +90,7 @@ public class Tweet extends WeiboResponse{
      * returns the to_user_id
      * @return the to_user_id value or -1 if to_user_id is not specified by the tweet
      */
-    public int getToUserId() {
+    public long getToUserId() {
         return toUserId;
     }
 
@@ -123,7 +123,7 @@ public class Tweet extends WeiboResponse{
      * <font color="orange">Warning:</a> The user ids in the Search API are different from those in the REST API (about the two APIs). This defect is being tracked by Issue 214. This means that the to_user_id and from_user_id field vary from the actualy user id on Weibo.com. Applications will have to perform a screen name-based lookup with the users/show method to get the correct user id if necessary.
      * @return the user id of the tweet's owner
      */
-    public int getFromUserId() {
+    public long getFromUserId() {
         return fromUserId;
     }
 

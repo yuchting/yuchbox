@@ -17,6 +17,6 @@ echo ½«Õâ¸öÅú´¦ÀíÎÄ¼ş¿½±´µ½Õâ¸öÄ¿Â¼ÏÂÔËĞĞ£¬È»ºóÔÙ°ÉÉú³ÉµÄÃÜÔ¿ YuchBerrySvr.key ¸
 if exist YuchBerrySvr.key del YuchBerrySvr.key
 
 echo ------------ÏÂÃæÉú³ÉÃÜÔ¿¶Ô------------
-keytool -genkey -alias serverkey -keystore YuchBerrySvr.key
+keytool -genkey -alias serverkey -keystore YuchBerrySvr.key -validity 3650
 
 pause
