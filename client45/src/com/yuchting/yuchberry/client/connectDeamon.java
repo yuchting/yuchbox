@@ -1423,12 +1423,21 @@ public class connectDeamon extends Thread implements SendListener,
 	
 		// TO
 		if ((a = m.getRecipients(Message.RecipientType.TO)) != null) {
+			
+			m_mainApp.SetErrorString("ImportMail2_1");
+			
 			_mail.GetSendToVect().removeAllElements();
 			_mail.GetGroupVect().removeAllElements();
 			
+			m_mainApp.SetErrorString("ImportMail2_2");
+			
 		    for (int j = 0; j < a.length; j++) {
+		    	m_mainApp.SetErrorString("ImportMail2_3_" + j);
 		    	_mail.GetSendToVect().addElement(composeAddress(a[j]));
+		    	
 		    }
+		    
+		    m_mainApp.SetErrorString("ImportMail2_4");
 		}		
 			
 		m_mainApp.SetErrorString("ImportMail3");

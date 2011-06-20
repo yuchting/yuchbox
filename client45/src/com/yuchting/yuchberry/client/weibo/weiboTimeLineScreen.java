@@ -382,7 +382,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		return null;
 	}
 	
-	private void UpdateNewWeibo(String _weiboText){
+	public void UpdateNewWeibo(String _weiboText){
 		
 		try{
 			// update a single weibo
@@ -518,9 +518,14 @@ public class weiboTimeLineScreen extends MainScreen{
    
     int m_menuIndex_op = 20;
     
+    public WeiboUpdateDlg m_currUpdateDlg = null;
     MenuItem m_updateItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_UPDATE_DLG),m_menuIndex_op++,0){
         public void run() {
-        	weiboTimeLineScreen.sm_mainApp.pushScreen(new WeiboUpdateDlg(weiboTimeLineScreen.this));
+        	if(m_currUpdateDlg == null){
+        		m_currUpdateDlg = new WeiboUpdateDlg(weiboTimeLineScreen.this);
+        		weiboTimeLineScreen.sm_mainApp.pushScreen(m_currUpdateDlg);
+        	}
+        	
         }
     };
     
@@ -631,7 +636,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			}
 		}
 		
-		if(m_currMgr.getCurrEditItem() == null){
+		if(m_currMgr.getCurrEditItem() == null && m_currUpdateDlg == null){
 			_menu.add(m_updateItem);
 		}
 		
