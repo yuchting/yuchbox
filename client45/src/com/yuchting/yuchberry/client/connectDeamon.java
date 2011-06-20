@@ -11,8 +11,6 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.SocketConnection;
 import javax.microedition.io.file.FileConnection;
 
-import com.yuchting.yuchberry.client.weibo.fetchWeibo;
-
 import local.localResource;
 import net.rim.blackberry.api.homescreen.HomeScreen;
 import net.rim.blackberry.api.mail.Address;
@@ -36,13 +34,14 @@ import net.rim.blackberry.api.mail.event.MessageEvent;
 import net.rim.blackberry.api.mail.event.MessageListener;
 import net.rim.blackberry.api.mail.event.ViewListener;
 import net.rim.blackberry.api.mail.event.ViewListenerExtended;
-import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.io.Base64OutputStream;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.util.Arrays;
+
+import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 
 public class connectDeamon extends Thread implements SendListener,
 												MessageListener,
@@ -51,7 +50,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListener,
 												ViewListenerExtended{
 		
-	final static int	fsm_clientVer = 6;
+	final static int	fsm_clientVer = 7;
 	 
 	sendReceive		m_connect = null;
 		
@@ -151,7 +150,9 @@ public class connectDeamon extends Thread implements SendListener,
 		"回覆： ",
 		"回复： ",
 		"Re: ",
+		
 		"转发： ",
+		"轉寄： ",
 		"Forward: ",
 		"Fw: ",
 	};
@@ -159,10 +160,12 @@ public class connectDeamon extends Thread implements SendListener,
 	final static String fsm_replacePrefix[] =
 	{
 		"答复 ",
-		"转寄 ",
-		"轉寄 ",
+		"回覆 ",
+		"回复 ",
 		"Re ",
+		
 		"转发 ",
+		"轉寄 ",
 		"Forward ",
 		"Fw ",
 	};
@@ -324,9 +327,13 @@ public class connectDeamon extends Thread implements SendListener,
 					
 					m_mainApp.SetErrorString("sendMsg:" + t_msg.getSubject());
 					
+					m_mainApp.SetErrorString("sendMsg1");
+					
 					fetchMail t_mail = new fetchMail();
 					ImportMail(t_msg,t_mail);
-										
+					
+					m_mainApp.SetErrorString("sendMsg2");
+					
 					fetchMail t_forwardReplyMail = null;
 					if(m_sendStyle != fetchMail.NOTHING_STYLE && m_forwordReplyMail != null){
 											
@@ -339,6 +346,8 @@ public class connectDeamon extends Thread implements SendListener,
 							t_forwardReplyMail.SetContain("");
 						}
 					}
+					
+					m_mainApp.SetErrorString("sendMsg3");
 																
 					AddSendingMail(t_mail,m_composingAttachment,t_forwardReplyMail,m_sendStyle);
 					m_composingAttachment.removeAllElements();
@@ -880,110 +889,115 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 private SocketConnection GetConnection(boolean _ssl,boolean _useMDS)throws Exception{
 		 
-		 final int t_sleep = GetConnectInterval();
-		 if(t_sleep != 0){
-			 sleep(t_sleep);
-		 }
-		 
-		 if(m_disconnect == true){
-			 throw new Exception("user closed");
-		 }
-		 
-		 String URL ;
-	
-		 // first use IP address to decrease the DNS message  
-		 //
-		 final String t_hostname = m_mainApp.GetHostName();
-		 final int		t_hostport = m_mainApp.GetHostPort();
-		 
-		 if(_ssl){
-			 if(_useMDS){
-				 URL =  "ssl://" + (t_hostname) + ":" + t_hostport;
-			 }else{
-				 URL =  "ssl://" + (t_hostname) + ":" + t_hostport + ";deviceside=true;EndToEndDesired";
+		 while(true){
+			 
+			 final int t_sleep = GetConnectInterval();
+			 if(t_sleep != 0){
+				 sleep(t_sleep);
 			 }
 			 
-		 }else{
-			 if(_useMDS){
-				 URL =  "socket://" +(t_hostname) + ":" + t_hostport;
-			 }else{
-				 URL =  "socket://" +(t_hostname) + ":" + t_hostport + ";deviceside=true";
-			 }			 
-		 }
-		 
-		 String t_append = "";
-		 
-		 if(!_useMDS){
-			 t_append = m_mainApp.GetURLAppendString();
-			 URL = URL + t_append;
-		 }
-		 
-		 SocketConnection socket = null;
-		 
-		 try{
-			 socket = (SocketConnection)Connector.open(URL,Connector.READ_WRITE,false);
-			
-			 if(socket == null){
-				 throw new Exception("socket null");
+			 if(m_disconnect == true){
+				 throw new Exception("user closed");
 			 }
 			 
-			 try{
-				 socket.setSocketOption(SocketConnection.DELAY, 0);	 
-			 }catch(Exception _e){
-				 m_mainApp.SetErrorString("CM0: " +_e.getMessage() + _e.getClass().getName());
-			 }
+			 String URL ;
+		
+			 // first use IP address to decrease the DNS message  
+			 //
+			 final String t_hostname = m_mainApp.GetHostName();
+			 final int		t_hostport = m_mainApp.GetHostPort();
 			 
-			 try{
-				 socket.setSocketOption(SocketConnection.KEEPALIVE,m_mainApp.GetPulseIntervalMinutes());
-			 }catch(Exception _e){
-				 m_mainApp.SetErrorString("CM1: " +_e.getMessage()  + _e.getClass().getName());
-			 }
-			 
-			 try{
-				 socket.setSocketOption(SocketConnection.LINGER, 0);
-			 }catch(Exception _e){
-				 m_mainApp.SetErrorString("CM2: " +_e.getMessage() + _e.getClass().getName());
-			 }
-			 
-			 try{
-				 socket.setSocketOption(SocketConnection.RCVBUF, 256);
-			 }catch(Exception _e){
-				 m_mainApp.SetErrorString("CM3: " +_e.getMessage()+ _e.getClass().getName());
-			 }
-			 
-			 try{
-				 socket.setSocketOption(SocketConnection.SNDBUF, 128);
-			 }catch(Exception _e){
-				 m_mainApp.SetErrorString("CM4: " +_e.getMessage() + _e.getClass().getName()); 
-			 }
-			 
-			 
-		 }catch(Exception _e){
-	
-			 m_mainApp.SetErrorString("CM: " + t_append + " " +_e.getMessage() + " " + _e.getClass().getName());
-			 
-			 if(_e.getMessage() == null){
-				 throw _e;
-			 }
-			 
-			 if(_e.getMessage().indexOf("Peer") != -1){
-				 m_connectCounter = 1000;
-				 
-				 throw _e;
-			 }
-	
-			 if(_e.getMessage().indexOf("Tunnel") != -1 
-			 || _e.getMessage().indexOf("tunnel") != -1){ // bad parameter
-				 
-				 socket = GetConnection(_ssl,_useMDS);
+			 if(_ssl){
+				 if(_useMDS){
+					 URL =  "ssl://" + (t_hostname) + ":" + t_hostport;
+				 }else{
+					 URL =  "ssl://" + (t_hostname) + ":" + t_hostport + ";deviceside=true;EndToEndDesired";
+				 }
 				 
 			 }else{
-				 
-				 throw new Exception(_e.getMessage() + " " + _e.getClass().getName());
+				 if(_useMDS){
+					 URL =  "socket://" +(t_hostname) + ":" + t_hostport;
+				 }else{
+					 URL =  "socket://" +(t_hostname) + ":" + t_hostport + ";deviceside=true";
+				 }			 
 			 }
+			 
+			 String t_append = "";
+			 
+			 if(!_useMDS){
+				 t_append = m_mainApp.GetURLAppendString();
+				 URL = URL + t_append;
+			 }
+			 
+			 SocketConnection socket = null;
+			 
+			 try{
+				 
+				 socket = (SocketConnection)Connector.open(URL,Connector.READ_WRITE,false);
+				
+				 if(socket == null){
+					 throw new Exception("socket null");
+				 }
+				 
+				 try{
+					 socket.setSocketOption(SocketConnection.DELAY, 0);	 
+				 }catch(Exception _e){
+					 m_mainApp.SetErrorString("CM0: " +_e.getMessage() + _e.getClass().getName());
+				 }
+				 
+				 try{
+					 socket.setSocketOption(SocketConnection.KEEPALIVE,m_mainApp.GetPulseIntervalMinutes());
+				 }catch(Exception _e){
+					 m_mainApp.SetErrorString("CM1: " +_e.getMessage()  + _e.getClass().getName());
+				 }
+				 
+				 try{
+					 socket.setSocketOption(SocketConnection.LINGER, 0);
+				 }catch(Exception _e){
+					 m_mainApp.SetErrorString("CM2: " +_e.getMessage() + _e.getClass().getName());
+				 }
+				 
+				 try{
+					 socket.setSocketOption(SocketConnection.RCVBUF, 256);
+				 }catch(Exception _e){
+					 m_mainApp.SetErrorString("CM3: " +_e.getMessage()+ _e.getClass().getName());
+				 }
+				 
+				 try{
+					 socket.setSocketOption(SocketConnection.SNDBUF, 128);
+				 }catch(Exception _e){
+					 m_mainApp.SetErrorString("CM4: " +_e.getMessage() + _e.getClass().getName()); 
+				 }
+				 
+				 return socket;
+				 
+			 }catch(Exception _e){
+		
+				 String message = _e.getMessage();
+				 m_mainApp.SetErrorString("CM: " + t_append + " " + message + " " + _e.getClass().getName());
+				 
+				 if(message != null){
+					 
+					 if(message.indexOf("Peer") != -1){
+						 m_connectCounter = 1000;
+						 
+						 continue;
+						 
+					 }else if(message.toLowerCase().indexOf("tunnel") != -1){
+						 
+						 continue;
+						 
+					 }else{
+						 
+						 throw _e;
+					 }
+					 
+				 }else{
+					 throw _e;
+				 }			 
+			 }			
 		 }
-		 		 		 
-		 return socket;
+		
 	 }
 	 
 	 private int GetConnectInterval(){
@@ -1231,13 +1245,13 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	public synchronized void AddSendingMail(fetchMail _mail,Vector _files,
 												fetchMail _forwardReply,int _sendStyle)throws Exception{
-				
 		// load the attachment if has 
 		//
 		Vector t_vfileReader = new Vector();
 		
 		if(_files != null && !_files.isEmpty()){
 			
+			m_mainApp.SetErrorString("AddSendingMail1");
 			
 			for(int i = 0;i< _files.size();i++){
 				String t_fullname = ((ComposingAttachment)_files.elementAt(i)).m_filename;
@@ -1273,6 +1287,8 @@ public class connectDeamon extends Thread implements SendListener,
 				_mail.AddAttachment(t_name, t_type, t_size);
 			}
 			
+			m_mainApp.SetErrorString("AddSendingMail2");
+			
 			// reset the content of mail...
 			//
 			Message msg = _mail.GetAttachMessage();
@@ -1283,6 +1299,8 @@ public class connectDeamon extends Thread implements SendListener,
 			_mail.SetLocationInfo(m_mainApp.m_gpsInfo);
 		}
 	
+		m_mainApp.SetErrorString("AddSendingMail3");
+		
 		sendMailAttachmentDeamon t_mailDeamon = new sendMailAttachmentDeamon(this, _mail, t_vfileReader,_forwardReply,_sendStyle);
 		m_sendingMailAttachment.addElement(t_mailDeamon);	
 	}
@@ -1390,6 +1408,8 @@ public class connectDeamon extends Thread implements SendListener,
 			_mail.GetFromVect().removeAllElements();
 			_mail.GetFromVect().addElement(composeAddress(m.getFrom()));			
 		}
+		
+		m_mainApp.SetErrorString("ImportMail1");
 	
 		// REPLY TO
 		if ((a = m.getReplyTo()) != null) {
@@ -1398,6 +1418,8 @@ public class connectDeamon extends Thread implements SendListener,
 		    	_mail.GetFromVect().addElement(composeAddress(a[j]));
 		    }
 		}
+		
+		m_mainApp.SetErrorString("ImportMail2");
 	
 		// TO
 		if ((a = m.getRecipients(Message.RecipientType.TO)) != null) {
@@ -1408,7 +1430,8 @@ public class connectDeamon extends Thread implements SendListener,
 		    	_mail.GetSendToVect().addElement(composeAddress(a[j]));
 		    }
 		}		
-		
+			
+		m_mainApp.SetErrorString("ImportMail3");
 		
 		String t_sub = m.getSubject();
 		if(t_sub == null){
@@ -1429,10 +1452,14 @@ public class connectDeamon extends Thread implements SendListener,
 			_mail.SetSubject(t_sub);	
 		}
 		
+		m_mainApp.SetErrorString("ImportMail4");
+		
 		Date t_date = m.getSentDate();
 		if(t_date != null && t_date.getTime() != 0){
 			_mail.SetSendDate(t_date);
 		}
+		
+		m_mainApp.SetErrorString("ImportMail5");
 		
 		final int t_flags = m.getFlags(); // get the system flags
 	
@@ -1451,15 +1478,21 @@ public class connectDeamon extends Thread implements SendListener,
 			_mail.SetXMailer(hdrs[0]);
 	    }
 		
+		m_mainApp.SetErrorString("ImportMail6");
+		
 		_mail.ClearAttachment();
 		
 		m_plainTextContain = "";
 		m_htmlTextContain	= "";
 		
+		m_mainApp.SetErrorString("ImportMail7");
+		
 		findEmailBody(m.getContent(),_mail);
 		
 		_mail.SetContain(m_plainTextContain);
 		_mail.SetContain_html(m_htmlTextContain);
+		
+		m_mainApp.SetErrorString("ImportMail8");
 		
 	}
 	

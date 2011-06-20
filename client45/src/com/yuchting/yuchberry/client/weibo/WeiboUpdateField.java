@@ -15,11 +15,12 @@ public class WeiboUpdateField extends WeiboItemField{
 	
 	public void AddDelControlField(boolean _add){
 		AddDelEditTextArea(_add,m_sendUpdateText);
+		
 		if(_add){
-			m_parentManager.m_editTextArea.setSelection(0,true,m_sendUpdateText.length());
 			
 			if(m_sendUpdateText.length() != 0){
 				m_parentManager.m_editTextArea.select(true);
+				m_parentManager.m_editTextArea.setCursorPosition(m_sendUpdateText.length()-1);
 			}
 		}
 		
