@@ -11,10 +11,10 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
-import java.net.URLConnection;
 import java.security.KeyStore;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Vector;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -63,7 +63,17 @@ public class HelloWorld {
 
 		//berryRecvTest();
 		
-		getOAuthRequest();
+		//getOAuthRequest();
+		
+		Vector aa = new Vector();
+		
+		aa.add("1");
+		aa.add("2");
+		aa.add("3");
+		aa.add("4");
+		aa.add("5");
+		
+		System.out.println(aa.elementAt(5));
 	
 	}
 	

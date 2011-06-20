@@ -413,7 +413,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					t_gpsInfo.InputData(in);
 				}
 				
-				UpdataStatus(t_text,t_gpsInfo);
+				UpdateStatus(t_text,t_gpsInfo);
 				
 				break;
 			case fetchWeibo.SEND_FORWARD_TYPE:
@@ -425,6 +425,11 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				|| t_public_fw){	// public forward
 					
 					long t_commentWeiboId = sendReceive.ReadLong(in);
+					long t_orgWeiboId = 0;
+					
+					if(m_mainMgr.GetConnectClientVersion() >= 7){
+						t_orgWeiboId = sendReceive.ReadLong(in);
+					}
 					
 					if(in.read() != 0){
 						t_gpsInfo = new GPSInfo();
@@ -433,9 +438,18 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					
 					boolean t_updateTimeline = (in.read() == 1);
 					
-					m_mainMgr.m_logger.LogOut(GetAccountName() + " comment/reply weibo " + t_commentWeiboId);
-					
-					UpdataComment(t_style,t_text,t_commentWeiboId,t_gpsInfo,t_updateTimeline);
+					if(t_type == fetchWeibo.SEND_FORWARD_TYPE){
+						
+						m_mainMgr.m_logger.LogOut(GetAccountName() + " comment weibo " + t_commentWeiboId + " orgWeibo " + t_orgWeiboId);
+	
+						UpdateComment(t_style,t_text,t_commentWeiboId,t_gpsInfo,t_updateTimeline);
+						
+					}else{
+						
+						m_mainMgr.m_logger.LogOut(GetAccountName() + " reply weibo " + t_commentWeiboId + " orgWeibo " + t_orgWeiboId);
+						
+						UpdateReply(t_text,t_commentWeiboId,t_orgWeiboId,t_gpsInfo,t_updateTimeline);
+					}					
 					
 					// public the forward commect/forward
 					// return false to give another weibo to process if public forward
@@ -458,8 +472,11 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	}
 
 	protected abstract int GetCurrWeiboStyle(); 
-	protected abstract void UpdataStatus(String _text,GPSInfo _info)throws Exception;
-	protected abstract void UpdataComment(int _style,String _text,long _commentWeiboId,
+	protected abstract void UpdateStatus(String _text,GPSInfo _info)throws Exception;
+	protected abstract void UpdateComment(int _style,String _text,long _commentWeiboId,
+											GPSInfo _info,boolean _updateTimeline)throws Exception;
+	
+	protected abstract void UpdateReply(String _text,long _commentWeiboId,long _orgWeiboId,
 											GPSInfo _info,boolean _updateTimeline)throws Exception;
 	
 	protected abstract void FavoriteWeibo(long _id)throws Exception;

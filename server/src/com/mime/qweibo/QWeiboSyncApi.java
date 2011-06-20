@@ -1,12 +1,9 @@
 package com.mime.qweibo;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
 import weibo4j.org.json.JSONObject;
-
-import com.mime.qweibo.QWeiboType.ResultType;
 
 //yuchberry modified
 //

@@ -1,2 +1,2 @@
 @echo off
-start javaw -jar svr.jar frame hide
+java -jar frame.jar hide

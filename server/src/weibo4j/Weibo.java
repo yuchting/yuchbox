@@ -3568,7 +3568,8 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
     	return new Status(http.post(getBaseURL() + "statuses/reply.json",
                 new PostParameter[]{new PostParameter("id", sid),
     								new PostParameter("cid", cid),
-									new PostParameter("comment", comment)}, true));
+									new PostParameter("comment", comment),
+									new PostParameter("without_mention", "1")}, true));
     }
 
     /**

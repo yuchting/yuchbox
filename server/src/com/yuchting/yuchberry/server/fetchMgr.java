@@ -214,7 +214,7 @@ public class fetchMgr{
 	            
 	            if(t_type.equalsIgnoreCase("sina")){
 	            	t_weibo = new fetchSinaWeibo(this);
-	            }else if(t_type.equalsIgnoreCase("twitter")){
+	            }else if(t_type.equalsIgnoreCase("twitter") || t_type.equalsIgnoreCase("tw")){
 	            	t_weibo = new fetchTWeibo(this);
 	            }else if(t_type.equalsIgnoreCase("qq")){
 	            	t_weibo = new fetchQWeibo(this);
