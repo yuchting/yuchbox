@@ -100,6 +100,10 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		return GetHeadImageDir() + _id + ".png";
 	}
 	
+	public String GetHeadImageFilename_l(final String _id){
+		return GetHeadImageDir() + _id + "_l.png";
+	}
+	
 	/**
 	 * get the account name (Email address)
 	 */
@@ -424,11 +428,11 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				if(t_style == GetCurrWeiboStyle()  // same style
 				|| t_public_fw){	// public forward
 					
-					long t_commentWeiboId = sendReceive.ReadLong(in);
-					long t_orgWeiboId = 0;
+					long t_orgWeiboId = sendReceive.ReadLong(in);
+					long t_commentWeiboId = 0;
 					
 					if(m_mainMgr.GetConnectClientVersion() >= 7){
-						t_orgWeiboId = sendReceive.ReadLong(in);
+						t_commentWeiboId = sendReceive.ReadLong(in);
 					}
 					
 					if(in.read() != 0){
@@ -440,9 +444,9 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					
 					if(t_type == fetchWeibo.SEND_FORWARD_TYPE){
 						
-						m_mainMgr.m_logger.LogOut(GetAccountName() + " comment weibo " + t_commentWeiboId + " orgWeibo " + t_orgWeiboId);
+						m_mainMgr.m_logger.LogOut(GetAccountName() + "comment weibo " + t_orgWeiboId );
 	
-						UpdateComment(t_style,t_text,t_commentWeiboId,t_gpsInfo,t_updateTimeline);
+						UpdateComment(t_style,t_text,t_orgWeiboId,t_gpsInfo,t_updateTimeline);
 						
 					}else{
 						
@@ -536,13 +540,23 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				t_id = sendReceive.ReadString(in);
 			}else{
 				t_id = Long.toString(sendReceive.ReadLong(in));
-			}			
+			}
 			
-			File t_file = new File(GetHeadImageFilename(t_id));
+			boolean t_largeSize = false;
+			if(m_mainMgr.GetConnectClientVersion() >= 7){
+				t_largeSize = sendReceive.ReadBoolean(in);
+			}
+			
+			File t_file = new File(t_largeSize?GetHeadImageFilename_l(t_id):GetHeadImageFilename(t_id));
 			if(t_file.exists()){
+				
 				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 				t_os.write(msg_head.msgWeiboHeadImage);
 				t_os.write(GetCurrWeiboStyle());
+				
+				if(m_mainMgr.GetConnectClientVersion() >= 7){
+					sendReceive.WriteBoolean(t_os,t_largeSize);
+				}
 				
 				if(t_WeiboStyle == fetchWeibo.QQ_WEIBO_STYLE){
 					sendReceive.WriteString(t_os,t_id,false);
@@ -606,13 +620,13 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	protected int StoreHeadImage(URL _url,String _id){
 		
 		final String t_filename 		= GetHeadImageFilename(_id);
+		final String t_filename_l		= GetHeadImageFilename_l(_id);
 		
 		int t_hashCode = -1;
-		int size = 0;
 		
 		try{
 			
-			File t_file = new File(t_filename);
+			File t_file = new File(t_filename_l);
 			
 			if(!t_file.exists()){
 				
@@ -623,7 +637,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		        URLConnection t_connect = t_url.openConnection();
 		        BufferedInputStream t_read = new   BufferedInputStream(t_connect.getInputStream()); 
 		   		try{
-		   		  FileOutputStream fos = new FileOutputStream(t_file);
+		   			FileOutputStream fos = new FileOutputStream(t_file);
+		   			int size = 0;
 			        try{
 				        while((size = t_read.read(m_headImageBuffer))!= -1){
 				        	fos.write(m_headImageBuffer,0,size);
@@ -638,30 +653,35 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		   			t_read = null;
 		   		}
 		   		
-		        // scale the image...
-		        //
+		        // scale the image and store
+		        //		   		
 		        BufferedImage bsrc = ImageIO.read(t_file);
-		        BufferedImage bdest = new BufferedImage(fetchWeibo.fsm_headImageSize,fetchWeibo.fsm_headImageSize, BufferedImage.TYPE_INT_RGB);
-		        Graphics2D g = bdest.createGraphics();
-		        AffineTransform at = AffineTransform.getScaleInstance((double)fetchWeibo.fsm_headImageSize/bsrc.getWidth(),
-		        														(double)fetchWeibo.fsm_headImageSize/bsrc.getHeight());
-		        g.drawRenderedImage(bsrc,at);
-		        ImageIO.write(bdest,"PNG",t_file);
-			}
-			
-			byte[] t_byte = new byte[(int)t_file.length()];
-			
-			FileInputStream t_fileIn = new FileInputStream(t_file);
-			try{
-				sendReceive.ForceReadByte(t_fileIn, t_byte, t_byte.length);	        
+		        if(bsrc.getWidth() != fetchWeibo.fsm_headImageSize_l){
+		        	// store the large file
+		        	//
+		        	BufferedImage bdest = new BufferedImage(fetchWeibo.fsm_headImageSize_l,fetchWeibo.fsm_headImageSize_l, BufferedImage.TYPE_INT_RGB);
+			        Graphics2D g = bdest.createGraphics();
+			        AffineTransform at = AffineTransform.getScaleInstance((double)fetchWeibo.fsm_headImageSize_l/bsrc.getWidth(),
+			        														(double)fetchWeibo.fsm_headImageSize_l/bsrc.getHeight());
+			        g.drawRenderedImage(bsrc,at);
+			        ImageIO.write(bdest,"PNG",t_file);
+		        }
 		        
-		        t_hashCode = t_byte.length;
-
-			}finally{
-				t_fileIn.close();
-				t_fileIn = null;
+		        
+		        t_file = new File(t_filename);
+		        if(!t_file.exists()){
+		        	// store to a small file
+			        //
+			        BufferedImage bdest = new BufferedImage(fetchWeibo.fsm_headImageSize,fetchWeibo.fsm_headImageSize, BufferedImage.TYPE_INT_RGB);
+			        Graphics2D g = bdest.createGraphics();
+			        AffineTransform at = AffineTransform.getScaleInstance((double)fetchWeibo.fsm_headImageSize/bsrc.getWidth(),
+			        														(double)fetchWeibo.fsm_headImageSize/bsrc.getHeight());
+			        g.drawRenderedImage(bsrc,at);		       
+			        ImageIO.write(bdest,"PNG",t_file);
+		        }
 			}
 			
+			t_hashCode = (int)t_file.length();						
 	        
 		}catch(Exception e){
 			m_mainMgr.m_logger.PrinterException(e);

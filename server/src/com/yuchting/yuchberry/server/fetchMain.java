@@ -34,6 +34,7 @@ class CheckVersion extends Thread{
 		}
 	}
 }
+
 public class fetchMain{
 	
 	public fetchMain(){

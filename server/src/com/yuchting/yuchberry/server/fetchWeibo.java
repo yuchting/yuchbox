@@ -24,6 +24,7 @@ public class fetchWeibo {
 	final public static byte	SEND_REPLY_TYPE			= 2;
 	
 	final public static int	fsm_headImageSize		= 32;
+	final public static int	fsm_headImageSize_l		= 50;
 	
 	byte		m_WeiboStyle;
 	byte		m_WeiboClass;

@@ -225,17 +225,17 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	}
 	
  
-	protected void UpdateComment(int _style,String _text,long _commentWeiboId,
+	protected void UpdateComment(int _style,String _text,long _orgWeiboId,
 									GPSInfo _info,boolean _updateTimeline)throws Exception{
 
 		if(_style == GetCurrWeiboStyle()){
-			m_weibo.updateComment(_text,Long.toString(_commentWeiboId),null);
+			m_weibo.updateComment(_text,Long.toString(_orgWeiboId),null);
 						 
 			if(_updateTimeline){
 				if(_info != null && _info.m_longitude != 0 && _info.m_latitude != 0){
-					m_weibo.updateStatus(_text, _commentWeiboId, _info.m_latitude, _info.m_longitude);
+					m_weibo.updateStatus(_text, _orgWeiboId, _info.m_latitude, _info.m_longitude);
 				}else{
-					m_weibo.updateStatus(_text, _commentWeiboId);
+					m_weibo.updateStatus(_text, _orgWeiboId);
 				}						
 			}
 						
@@ -253,9 +253,9 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	protected void UpdateReply(String _text,long _commentWeiboId,long _orgWeiboId,
 			GPSInfo _info,boolean _updateTimeline)throws Exception{
 		
-		if(_orgWeiboId != 0){
+		if(_commentWeiboId != 0){
 			
-			m_weibo.reply(Long.toString(_orgWeiboId), Long.toString(_commentWeiboId), _text);
+			m_weibo.reply(Long.toString(_orgWeiboId),Long.toString(_commentWeiboId), _text);
 			
 			if(_updateTimeline){
 				if(_info != null && _info.m_longitude != 0 && _info.m_latitude != 0){
@@ -264,8 +264,10 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 					m_weibo.updateStatus(_text, _orgWeiboId);
 				}						
 			}
+			
 		}else{
-			UpdateComment(GetCurrWeiboStyle(),_text,_commentWeiboId,_info,_updateTimeline);
+			
+			UpdateComment(GetCurrWeiboStyle(),_text,_orgWeiboId,_info,_updateTimeline);
 		}
 	}
 	

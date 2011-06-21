@@ -192,14 +192,14 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		}	
 	}
 	
-	protected void UpdateComment(int _style,String _text,long _commentWeiboId,
+	protected void UpdateComment(int _style,String _text,long _orgWeiboId,
 									GPSInfo _info,boolean _updateTimeline)throws Exception{
 					
 		
 		StatusUpdate t_status = new StatusUpdate(_text);
 		
 		if(_style == GetCurrWeiboStyle()){
-			t_status.setInReplyToStatusId(_commentWeiboId);
+			t_status.setInReplyToStatusId(_orgWeiboId);
 		}		
 		
 		if(_info != null && _info.m_longitude != 0 && _info.m_latitude != 0){
@@ -212,7 +212,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	
 	protected void UpdateReply(String _text,long _commentWeiboId,long _orgWeiboId,
 			GPSInfo _info,boolean _updateTimeline)throws Exception{
-		UpdateComment(GetCurrWeiboStyle(),_text,_commentWeiboId,_info,_updateTimeline);
+		UpdateComment(GetCurrWeiboStyle(),_text,_orgWeiboId,_info,_updateTimeline);
 	}
 	
 	protected void FavoriteWeibo(long _id)throws Exception{
