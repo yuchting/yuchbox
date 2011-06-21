@@ -1008,11 +1008,13 @@ public class fetchEmail extends fetchAccount{
 		int t_tryTime = 0;
 		while(t_tryTime++ < 5){
 			try{
-				if(m_useFullNameSignIn){
-					m_sendTransport.connect(m_host_send,m_port_send,m_strUserNameFull,m_password);
-				}else{
-					m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
-				}
+				if(!m_sendTransport.isConnected()){
+					if(m_useFullNameSignIn){
+						m_sendTransport.connect(m_host_send,m_port_send,m_strUserNameFull,m_password);
+					}else{
+						m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
+					}
+				}				
 				
 				m_sendTransport.sendMessage(msg, msg.getAllRecipients());
 				m_sendTransport.close();

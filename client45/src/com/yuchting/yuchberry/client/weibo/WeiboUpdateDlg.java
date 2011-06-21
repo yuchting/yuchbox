@@ -19,11 +19,11 @@ import com.yuchting.yuchberry.client.recvMain;
 public class WeiboUpdateDlg extends PopupScreen implements FieldChangeListener{
 
 	private final static int			fsm_width = recvMain.fsm_display_width - 10;
-	private final static int			fsm_height = (recvMain.fsm_display_height - 30 > 240?240:(recvMain.fsm_display_height - 30));
+	private final static int			fsm_height = (recvMain.fsm_display_height - 30 > 300?300:(recvMain.fsm_display_height - 30));
 	
 	public AutoTextEditField 	m_editTextArea			= new AutoTextEditField(){
 		public int getPreferredHeight(){
-			return fsm_height - 60;
+			return fsm_height - 80;
 		}
 		
 		public int getPreferredWidth(){
@@ -41,7 +41,7 @@ public class WeiboUpdateDlg extends PopupScreen implements FieldChangeListener{
 	weiboTimeLineScreen		m_timelineScreen;
 	
 	ButtonField				m_sendButton	= new ButtonField(recvMain.sm_local.getString(localResource.WEIBO_SEND_LABEL),
-																Field.FIELD_RIGHT);
+																Field.FIELD_LEFT);
 	
 	public WeiboUpdateDlg(weiboTimeLineScreen _screen){
 		super(new VerticalFieldManager(Manager.NO_VERTICAL_SCROLL),Field.FOCUSABLE);

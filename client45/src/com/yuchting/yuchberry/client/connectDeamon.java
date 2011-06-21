@@ -303,62 +303,115 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		// invokeLater maybe rise some exception in function ImportMail 
 		//
-		m_mainApp.invokeAndWait(new Runnable(){
+		try{
 			
-			 public void run(){
-				 
-				try{
+			for(int i = 0;i < m_sendingMailAttachment.size();i++){
+				sendMailAttachmentDeamon t_mail = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
+				
+				if(t_mail.m_sendMail.GetSendDate().equals(t_msg.getSentDate())){
 					
-					for(int i = 0;i < m_sendingMailAttachment.size();i++){
-						sendMailAttachmentDeamon t_mail = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
-						
-						if(t_mail.m_sendMail.GetSendDate().equals(t_msg.getSentDate())){
-							
-							if(t_mail.isAlive()){
-								// found the re-send message
-								//
-								return ;								
-							}else{
-								t_mail.m_closeState = true;
-								m_sendingMailAttachment.removeElement(t_mail);
-							}
-							
-							break;
-						}
-					}		
-					
-					m_mainApp.SetErrorString("sendMsg:" + t_msg.getSubject());
-					
-					m_mainApp.SetErrorString("sendMsg1");
-					
-					fetchMail t_mail = new fetchMail();
-					ImportMail(t_msg,t_mail);
-					
-					m_mainApp.SetErrorString("sendMsg2");
-					
-					fetchMail t_forwardReplyMail = null;
-					if(m_sendStyle != fetchMail.NOTHING_STYLE && m_forwordReplyMail != null){
-											
-						t_forwardReplyMail = new fetchMail();
-						ImportMail(m_forwordReplyMail,t_forwardReplyMail);
-						
-						if(m_sendStyle == fetchMail.REPLY_STYLE && m_mainApp.m_discardOrgText){
-							// discard the org text when reply
-							//
-							t_forwardReplyMail.SetContain("");
-						}
+					if(t_mail.isAlive()){
+						// found the re-send message
+						//
+						return true;								
+					}else{
+						t_mail.m_closeState = true;
+						m_sendingMailAttachment.removeElement(t_mail);
 					}
 					
-					m_mainApp.SetErrorString("sendMsg3");
-																
-					AddSendingMail(t_mail,m_composingAttachment,t_forwardReplyMail,m_sendStyle);
-					m_composingAttachment.removeAllElements();
-								
-				}catch(Exception _e){
-					m_mainApp.SetErrorString("sMsg: " + _e.getMessage() + " " + _e.getClass().getName());
+					break;
 				}
-			 }
-		});
+			}		
+			
+			m_mainApp.SetErrorString("sendMsg:" + t_msg.getSubject());
+			
+			m_mainApp.SetErrorString("sendMsg1");
+			
+			fetchMail t_mail = new fetchMail();
+			ImportMail(t_msg,t_mail);
+			
+			m_mainApp.SetErrorString("sendMsg2");
+			
+			fetchMail t_forwardReplyMail = null;
+			if(m_sendStyle != fetchMail.NOTHING_STYLE && m_forwordReplyMail != null){
+									
+				t_forwardReplyMail = new fetchMail();
+				ImportMail(m_forwordReplyMail,t_forwardReplyMail);
+				
+				if(m_sendStyle == fetchMail.REPLY_STYLE && m_mainApp.m_discardOrgText){
+					// discard the org text when reply
+					//
+					t_forwardReplyMail.SetContain("");
+				}
+			}
+			
+			m_mainApp.SetErrorString("sendMsg3");
+														
+			AddSendingMail(t_mail,m_composingAttachment,t_forwardReplyMail,m_sendStyle);
+			m_composingAttachment.removeAllElements();
+						
+		}catch(Exception _e){
+			m_mainApp.SetErrorString("sMsg: " + _e.getMessage() + " " + _e.getClass().getName());
+		}
+		
+		// invokeLater maybe rise some exception in function ImportMail 
+		//
+//		m_mainApp.invokeAndWait(new Runnable(){
+//			
+//			 public void run(){
+//				 
+//				try{
+//					
+//					for(int i = 0;i < m_sendingMailAttachment.size();i++){
+//						sendMailAttachmentDeamon t_mail = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
+//						
+//						if(t_mail.m_sendMail.GetSendDate().equals(t_msg.getSentDate())){
+//							
+//							if(t_mail.isAlive()){
+//								// found the re-send message
+//								//
+//								return ;								
+//							}else{
+//								t_mail.m_closeState = true;
+//								m_sendingMailAttachment.removeElement(t_mail);
+//							}
+//							
+//							break;
+//						}
+//					}		
+//					
+//					m_mainApp.SetErrorString("sendMsg:" + t_msg.getSubject());
+//					
+//					m_mainApp.SetErrorString("sendMsg1");
+//					
+//					fetchMail t_mail = new fetchMail();
+//					ImportMail(t_msg,t_mail);
+//					
+//					m_mainApp.SetErrorString("sendMsg2");
+//					
+//					fetchMail t_forwardReplyMail = null;
+//					if(m_sendStyle != fetchMail.NOTHING_STYLE && m_forwordReplyMail != null){
+//											
+//						t_forwardReplyMail = new fetchMail();
+//						ImportMail(m_forwordReplyMail,t_forwardReplyMail);
+//						
+//						if(m_sendStyle == fetchMail.REPLY_STYLE && m_mainApp.m_discardOrgText){
+//							// discard the org text when reply
+//							//
+//							t_forwardReplyMail.SetContain("");
+//						}
+//					}
+//					
+//					m_mainApp.SetErrorString("sendMsg3");
+//																
+//					AddSendingMail(t_mail,m_composingAttachment,t_forwardReplyMail,m_sendStyle);
+//					m_composingAttachment.removeAllElements();
+//								
+//				}catch(Exception _e){
+//					m_mainApp.SetErrorString("sMsg: " + _e.getMessage() + " " + _e.getClass().getName());
+//				}
+//			 }
+//		});
 		
 		return true;
 	}

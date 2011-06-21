@@ -329,7 +329,8 @@ public class weiboTimeLineScreen extends MainScreen{
 			SendHeadImageQueryMsg(_weibo);
 			
 			if(sm_defaultHeadImage == null){
-				byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass().getResourceAsStream("/defaultHeadImage.png"));		
+				byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass()
+						.getResourceAsStream(WeiboItemField.fsm_largeHeadImage?"/defaultHeadImage_l.png":"/defaultHeadImage.png"));		
 				sm_defaultHeadImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
 			}
 			
@@ -893,7 +894,8 @@ public class weiboTimeLineScreen extends MainScreen{
 	static public Bitmap GetHeadImageMaskBitmap(){
 		if(sm_headImageMask == null){
 			try{
-				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/headImageMask.png"));		
+				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass()
+							.getResourceAsStream(WeiboItemField.fsm_largeHeadImage?"/headImageMask_l.png":"/headImageMask.png"));		
 				sm_headImageMask =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();	
 			}catch(Exception e){
 				sm_mainApp.SetErrorString("GHIMB" + e.getMessage() + e.getClass().getName());
