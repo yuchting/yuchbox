@@ -423,12 +423,30 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				//
 				getCurrEditItem().AddDelEditTextArea(false,null);
 				
+				try{
+					if(m_parentScreen.m_currMgr == this){
+						// make the text area is visible
+						//
+						// some times it will appear follow exception
+						// setFocus called on a field that is not attached to a screen.
+						//
+						m_textArea.setFocus();						
+					}
+				}catch(Exception e){}
+				
 			}else{
 				setCurrExtendedItem(null);
 				t_extendItem.AddDelControlField(false);
 				
 				replace(t_extendItem,t_extendItem.getFocusField());
-				t_extendItem.getFocusField().setFocus();
+				try{
+					if(m_parentScreen.m_currMgr == this){
+						// some times it will appear follow exception
+						// setFocus called on a field that is not attached to a screen.
+						//
+						t_extendItem.getFocusField().setFocus();						
+					}
+				}catch(Exception e){}				
 			}
 			
 			sublayout(0, 0);

@@ -300,8 +300,10 @@ public class connectDeamon extends Thread implements SendListener,
 		final Message t_msg = message;
 		
 		m_mainApp.m_messageApplication = UiApplication.getUiApplication();
-			
-		m_mainApp.invokeLater(new Runnable(){
+		
+		// invokeLater maybe rise some exception in function ImportMail 
+		//
+		m_mainApp.invokeAndWait(new Runnable(){
 			
 			 public void run(){
 				 
@@ -1809,14 +1811,15 @@ public class connectDeamon extends Thread implements SendListener,
 		try{
 			
 			int t_style = in.read();
+			boolean t_largeSize = sendReceive.ReadBoolean(in);
 			
 			String t_id = null;
 			if(t_style == fetchWeibo.QQ_WEIBO_STYLE){
 				t_id = sendReceive.ReadString(in);
 			}else{
 				t_id = Long.toString(sendReceive.ReadLong(in));
-			}			
-						
+			}
+			
 			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 			try{
 				int t_data = -1;
@@ -1828,6 +1831,14 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				m_mainApp.m_weiboTimeLineScreen.AddWeiboHeadImage(t_style,t_id,t_dataArray);
 				m_mainApp.ChangeWeiboHeadImageHash(t_id, t_style, t_dataArray.length);
+				
+				String t_imageFilename = null;
+				
+				if(t_largeSize){
+					t_imageFilename = m_mainApp.GetWeiboHeadImageDir(t_style) + t_id + "_l.png";
+				}else{
+					t_imageFilename = m_mainApp.GetWeiboHeadImageDir(t_style) + t_id + ".png";
+				}
 				
 				FileConnection t_fc = (FileConnection)Connector.open(m_mainApp.GetWeiboHeadImageDir(t_style) + t_id + ".png",
 																			Connector.READ_WRITE);

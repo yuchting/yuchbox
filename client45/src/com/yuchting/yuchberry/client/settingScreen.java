@@ -371,6 +371,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				m_mainApp.InitWeiboModule();
 			}
 			
+			if(m_mainApp.m_enableWeiboModule == false){
+				m_mainApp.DisableWeiboModule();
+			}
+			
 			if(m_mainApp.m_connectDeamon.IsConnectState()){
 				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 				try{

@@ -16,7 +16,8 @@ public class WeiboItemField extends Manager{
 	
 	public final static int		fsm_weiboItemFieldWidth		= recvMain.fsm_display_width - WeiboMainManager.fsm_scrollbarSize;
 	public final static int		fsm_maxWeiboTextLength		= 140;
-	public final static int		fsm_headImageWidth 			= fetchWeibo.fsm_headImageSize;
+	public final static boolean	fsm_largeHeadImage			= recvMain.fsm_display_width > 320;
+	public final static int		fsm_headImageWidth 			= recvMain.fsm_display_width>320?fetchWeibo.fsm_headImageSize_l:fetchWeibo.fsm_headImageSize;
 	public final static int		fsm_headImageTextInterval	= 3;
 	
 	public final static int		fsm_weiboSignImageSize		= 16;
