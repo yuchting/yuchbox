@@ -11,7 +11,6 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-import com.yuchting.yuchberry.server.fetchMgr;
 import com.yuchting.yuchberry.server.cryptPassword;
 
 public class cryptPassTool extends JFrame implements ActionListener{
@@ -24,7 +23,7 @@ public class cryptPassTool extends JFrame implements ActionListener{
 	JButton		m_help			= new JButton("帮助");
 	
 	public cryptPassTool(){
-
+		
 		setTitle("加密密码工具");
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setSize(400,170);

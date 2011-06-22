@@ -1,6 +1,8 @@
 package com.yuchting.yuchberry.server.frame;
 
 import java.awt.event.ActionEvent;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.Properties;
 
 import javax.swing.JButton;
@@ -35,7 +37,7 @@ public class weiboRequestTool{
 			m_subfix = "Sina";
 			break;
 		case fetchWeibo.TWITTER_WEIBO_STYLE:
-			m_subfix = "Twitter";
+			m_subfix = "Tw";
 			break;
 		case fetchWeibo.QQ_WEIBO_STYLE:
 			m_subfix = "qq";
@@ -52,6 +54,22 @@ public class weiboRequestTool{
 			
 			try{
 				prt("YuchBerry 正在请求"+m_subfix+" Weibo 授权并打开浏览器，获得授权码之前，请不要关闭这个窗口……");
+				
+				if(_style == fetchWeibo.TWITTER_WEIBO_STYLE){
+					prt("对了，还有一件事情，你貌似在请求一个不存在的网站，需要打开神马通道进行连接么？（直接回车表示不需要）");
+					pt("神马通道IP: ");
+					BufferedReader bufin = new BufferedReader(new   InputStreamReader(System.in)); 
+					String IP = bufin.readLine();
+					
+					pt("神马通道端口: ");
+					String port = bufin.readLine();
+					
+					if(IP.length() != 0 && port.length() != 0){
+						System.setProperty("proxySet", "true");
+						System.setProperty("proxyHost", IP);
+						System.setProperty("proxyPort", port);
+					}					
+				}
 				
 				if(m_style == fetchWeibo.SINA_WEIBO_STYLE){
 					m_requestToken = (new fetchSinaWeibo(null)).getRequestToken(fsm_callbackURL);
@@ -88,6 +106,9 @@ public class weiboRequestTool{
 	
 	private void prt(String _log){
 		System.out.println(_log);
+	}
+	private void pt(String _log){
+		System.out.print(_log);
 	}
 	
 	public void actionPerformed(ActionEvent e) {
@@ -191,6 +212,6 @@ public class weiboRequestTool{
 	}	
 	
 	static public void main(String _arg[]){
-		new weiboRequestTool(fetchWeibo.QQ_WEIBO_STYLE);
+		new weiboRequestTool(fetchWeibo.TWITTER_WEIBO_STYLE);
 	}
 }

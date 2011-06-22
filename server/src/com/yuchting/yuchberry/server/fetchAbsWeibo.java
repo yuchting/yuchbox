@@ -37,7 +37,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		long					m_fromIndex = -1;
 		Vector<fetchWeibo>		m_historyList = null;
 		Vector<fetchWeibo>		m_weiboList = new Vector<fetchWeibo>();
-		int						m_sum		= 1;
+		int						m_sum		= -1;
 		int						m_counter	= -1;
 		Vector<fetchWeibo>		m_WeiboComfirm	= new Vector<fetchWeibo>();
 	}
@@ -46,6 +46,11 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	fetchWeiboData				m_directMessage	= new fetchWeiboData();
 	fetchWeiboData				m_atMeMessage	= new fetchWeiboData();
 	fetchWeiboData				m_commentMessage= new fetchWeiboData();
+	
+	boolean					m_timelineHandleRefresh = false;
+	boolean					m_directHandleRefresh 	= false;
+	boolean					m_atMeHandleRefresh 	= false;
+	boolean					m_commentHandleRefresh	= false;
 	
 	//! the time of weibo check folder call
 	int							m_weiboDelayTimer = -1;
@@ -76,10 +81,29 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		m_secretToken			= fetchAccount.ReadStringAttr(_elem,"secretToken");
 		
 		m_timeline.m_sum		= fetchAccount.ReadIntegerAttr(_elem,"timelineSum");
-		m_directMessage.m_sum	= fetchAccount.ReadIntegerAttr(_elem,"directMessageSum");
-		m_atMeMessage.m_sum		= fetchAccount.ReadIntegerAttr(_elem,"atMeSum");
-		m_commentMessage.m_sum	= fetchAccount.ReadIntegerAttr(_elem,"commentSum");
+		if(m_timeline.m_sum < 0){
+			m_timeline.m_sum = Math.abs(m_timeline.m_sum);
+			m_timelineHandleRefresh = true;
+		}
 		
+		m_directMessage.m_sum	= fetchAccount.ReadIntegerAttr(_elem,"directMessageSum");
+		if(m_directMessage.m_sum < 0){
+			m_directMessage.m_sum = Math.abs(m_directMessage.m_sum);
+			m_directHandleRefresh = true;
+		}
+		
+		m_atMeMessage.m_sum		= fetchAccount.ReadIntegerAttr(_elem,"atMeSum");
+		if(m_atMeMessage.m_sum < 0){
+			m_atMeMessage.m_sum = Math.abs(m_atMeMessage.m_sum);
+			m_atMeHandleRefresh = true;
+		}
+		
+		m_commentMessage.m_sum	= fetchAccount.ReadIntegerAttr(_elem,"commentSum");
+		if(m_commentMessage.m_sum < 0){
+			m_commentMessage.m_sum = Math.abs(m_commentMessage.m_sum);
+			m_commentHandleRefresh = true;
+		}
+				
 		m_prefix				= m_accountName + "/";
 		
 		// create the account directory
@@ -130,16 +154,39 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				}
 								
 				m_currRemainCheckFolderNum -= 4;
-				if(m_currRemainCheckFolderNum > 0){
-
-					CheckTimeline();
-					CheckAtMeMessage();
-					CheckCommentMeMessage();
-					
-					// this message called number is limited
+				if(m_currRemainCheckFolderNum > 0){				
+					// timeline handle refresh adjudge
 					//
-					// un-authorith
-					CheckDirectMessage();
+					if(!m_timelineHandleRefresh || m_timeline.m_counter == -1){
+						CheckTimeline();			
+					}else{
+						m_currRemainCheckFolderNum--;
+					}
+					
+
+					// at me handle refresh adjudge
+					//
+					if(!m_atMeHandleRefresh || m_atMeMessage.m_counter == -1){
+						CheckAtMeMessage();
+					}else{
+						m_currRemainCheckFolderNum--;
+					}
+					
+					// comment handle refresh adjudge
+					//
+					if(!m_commentHandleRefresh || m_commentMessage.m_counter == -1){
+						CheckCommentMeMessage();
+					}else{
+						m_currRemainCheckFolderNum--;
+					}
+					
+					// direct message handle refresh adjudge
+					//
+					if(!m_directHandleRefresh || m_directMessage.m_counter == -1){
+						CheckDirectMessage();
+					}else{
+						m_currRemainCheckFolderNum--;
+					}
 					
 				}else{
 					
@@ -251,12 +298,16 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	
 	protected void PushMsg_impl(fetchWeiboData _weiboList,sendReceive _sendReceive)throws Exception{
 		
+		if(_weiboList.m_counter == -1 && _weiboList.m_weiboList.isEmpty()){
+			return;
+		}
+		
 		ByteArrayOutputStream t_output = new ByteArrayOutputStream();
 		
 		long t_currTime = (new Date()).getTime();
 		
 		if(_weiboList.m_counter == -1 // client send the refresh cmd to refresh or the first call
-		|| _weiboList.m_weiboList.size() + _weiboList.m_counter >= _weiboList.m_sum){
+		|| (_weiboList.m_weiboList.size() + _weiboList.m_counter >= _weiboList.m_sum) ){
 			
 			
 			int t_weiboNum = _weiboList.m_weiboList.size();

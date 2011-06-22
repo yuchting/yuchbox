@@ -1,2 +1,2 @@
 @echo off
-start javaw -jar frame.jar cryptTool
+start javaw -jar svr.jar cryptTool
