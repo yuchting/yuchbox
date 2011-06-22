@@ -12,7 +12,6 @@ import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
-import com.yuchting.yuchberry.client.HyperlinkButtonField;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;

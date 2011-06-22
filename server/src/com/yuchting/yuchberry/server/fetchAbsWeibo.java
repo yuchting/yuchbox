@@ -425,12 +425,21 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	static byte[] sm_followOkPrompt = null;
 	static {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		os.write(msg_head.msgNote);
+		os.write(msg_head.msgWeiboPrompt);
 		try{
 			sendReceive.WriteString(os,"follow user OK!",false);
 			sm_followOkPrompt = os.toByteArray();
 		}catch(Exception e){}
-		
+	}
+	
+	static byte[] sm_updateOkPrompt = null;
+	static {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgWeiboPrompt);
+		try{
+			sendReceive.WriteString(os,"update Weibo OK!",false);
+			sm_updateOkPrompt = os.toByteArray();
+		}catch(Exception e){}
 	}
 	
 	protected boolean ProcessWeiboDelete(ByteArrayInputStream in)throws Exception{
@@ -470,6 +479,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				
 				UpdateStatus(t_text,t_gpsInfo);
 				
+				m_mainMgr.SendData(sm_updateOkPrompt, false);
+				
 				break;
 			case fetchWeibo.SEND_FORWARD_TYPE:
 			case fetchWeibo.SEND_REPLY_TYPE:
@@ -504,7 +515,9 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 						m_mainMgr.m_logger.LogOut(GetAccountName() + " reply weibo " + t_commentWeiboId + " orgWeibo " + t_orgWeiboId);
 						
 						UpdateReply(t_text,t_commentWeiboId,t_orgWeiboId,t_gpsInfo,t_updateTimeline);
-					}					
+					}
+					
+					m_mainMgr.SendData(sm_updateOkPrompt, false);
 					
 					// public the forward commect/forward
 					// return false to give another weibo to process if public forward

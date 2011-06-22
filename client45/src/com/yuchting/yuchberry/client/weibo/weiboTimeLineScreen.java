@@ -12,6 +12,8 @@ import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.system.KeypadListener;
+import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
@@ -20,6 +22,7 @@ import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.NullField;
+import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.msg_head;
@@ -100,7 +103,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	private Vector		m_delayWeiboDelList = new Vector();
 	private int		m_delayWeiboDelRunnableID = -1;
-	
+
 	private WeiboMainManager[]	m_refMainManager = 
 	{
 		null,
@@ -134,6 +137,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		setTitle(m_weiboHeader);
 		
 		m_currMgr.setFocus();
+		
 	}
 	
 	public void enableHeader(boolean _enable){
@@ -164,6 +168,108 @@ public class weiboTimeLineScreen extends MainScreen{
 			return m_weiboHeaderShow;
 		}
 		return true;
+	}
+		
+	private final static int fsm_promptBubble_x = 30;
+	private final static int fsm_promptBubble_y = 40;
+	private final static int fsm_promptBubbleBorder = 5;
+	private final static int fsm_promptBubbleArc = 8;
+	private final static int	fsm_promptBubbleWidth = recvMain.fsm_display_width - (fsm_promptBubble_x) * 2;
+	
+	private final static int fsm_promptTextPos_x = fsm_promptBubble_x + fsm_promptBubbleBorder;
+	private final static int fsm_promptTextPos_y = fsm_promptBubble_y + fsm_promptBubbleBorder;
+	
+	private final static int	fsm_promptTextWidth = fsm_promptBubbleWidth - fsm_promptBubbleBorder * 2;
+	
+	
+	int					m_runnableTextShowID = -1;
+	int					m_popupPromptTextTimer = 0;
+	
+	
+	final class PromptTextField extends TextField {
+		
+		public PromptTextField(){
+			super(Field.READONLY);
+			
+		}
+		public void setText(String _text){
+			super.setText(_text);
+			layout(fsm_promptTextWidth,1000);
+		}
+		
+		public void paint(Graphics _g){
+			super.paint(_g);
+		}
+
+	}
+	
+	public PromptTextField 	m_promptTextArea	= new PromptTextField();
+	
+	public synchronized void popupPromptText(String _prompt){
+		
+		if(!m_promptTextArea.getText().equals(_prompt)){
+			
+			m_popupPromptTextTimer = 0;
+			
+			m_promptTextArea.setText(_prompt);
+			
+			if(m_runnableTextShowID == -1){
+				
+				m_runnableTextShowID = m_mainApp.invokeLater(new Runnable() {
+					
+					public void run() {
+						
+						synchronized (weiboTimeLineScreen.this) {
+							if(++m_popupPromptTextTimer > 10){
+								m_promptTextArea.setText("");
+								m_mainApp.cancelInvokeLater(m_runnableTextShowID);
+								m_runnableTextShowID = -1;
+								
+								invalidate();
+							}
+						}
+						
+					}
+				}, 200, true);
+			}
+			
+			invalidate();
+		}
+	}
+
+	protected void paint(Graphics g){
+		super.paint(g);
+
+		if(m_promptTextArea.getText().length() != 0){
+			int t_height = m_promptTextArea.getHeight();
+			
+			int t_color = g.getColor();
+			try{
+				g.setColor(0xccccff);
+	        	g.fillRoundRect(fsm_promptBubble_x, fsm_promptBubble_y, 
+	        			fsm_promptBubbleWidth, t_height + fsm_promptBubbleBorder * 2, 
+	        			fsm_promptBubbleArc, fsm_promptBubbleArc);
+	        	
+	        	g.setColor(0x0000cc);
+	        	g.drawRoundRect(fsm_promptBubble_x, fsm_promptBubble_y, 
+	        			fsm_promptBubbleWidth, t_height + fsm_promptBubbleBorder * 2, 
+	        			fsm_promptBubbleArc, fsm_promptBubbleArc);
+				
+			}finally{
+				g.setColor(t_color);
+			}
+			
+	        boolean notEmpty = g.pushContext( fsm_promptTextPos_x, fsm_promptTextPos_y, 
+	        		fsm_promptTextWidth , t_height, fsm_promptTextPos_x, fsm_promptTextPos_y );
+	        try {
+	            if( notEmpty ) {
+	            	m_promptTextArea.paint(g);
+	            }
+	        } finally {
+	            g.popContext();
+	            g.setColor(t_color);
+	        }
+		}
 	}
 	
 	public void ClearWeibo(){
@@ -240,6 +346,12 @@ public class weiboTimeLineScreen extends MainScreen{
 							if(!m_delayWeiboAddList.isEmpty()){
 								
 								DelayAddWeiboData t_data = (DelayAddWeiboData)m_delayWeiboAddList.elementAt(0);
+								if(t_data.m_initAdd && m_mainApp.m_connectDeamon.CanNotConnectSvr()){
+									// initAdd is system starting run, it must wait data service is available
+									//
+									return;
+								}
+								
 								AddWeibo_imple(t_data.m_weibo,t_data.m_initAdd);
 								m_delayWeiboAddList.removeElementAt(0);	
 							}								
@@ -888,7 +1000,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		return false;
 	}
-	
+		
 	protected boolean navigationMovement(int dx,int dy,int status,int time){
 		if(dx != 0){
 			if(m_currMgr.getCurrExtendedItem() == null && m_currMgr.getCurrEditItem() == null){
@@ -899,6 +1011,11 @@ public class weiboTimeLineScreen extends MainScreen{
 				return true;
 			}
 		}
+		
+		if(m_runnableTextShowID != -1){
+			invalidate();
+		}	
+		
 		return 	super.navigationMovement(dx, dy, status, time);
 		
 	}

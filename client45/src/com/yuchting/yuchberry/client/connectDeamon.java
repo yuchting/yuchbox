@@ -327,12 +327,8 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			m_mainApp.SetErrorString("sendMsg:" + t_msg.getSubject());
 			
-			m_mainApp.SetErrorString("sendMsg1");
-			
 			fetchMail t_mail = new fetchMail();
 			ImportMail(t_msg,t_mail);
-			
-			m_mainApp.SetErrorString("sendMsg2");
 			
 			fetchMail t_forwardReplyMail = null;
 			if(m_sendStyle != fetchMail.NOTHING_STYLE && m_forwordReplyMail != null){
@@ -346,8 +342,6 @@ public class connectDeamon extends Thread implements SendListener,
 					t_forwardReplyMail.SetContain("");
 				}
 			}
-			
-			m_mainApp.SetErrorString("sendMsg3");
 														
 			AddSendingMail(t_mail,m_composingAttachment,t_forwardReplyMail,m_sendStyle);
 			m_composingAttachment.removeAllElements();
@@ -791,7 +785,13 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 	
 	public boolean CanNotConnectSvr(){
-		return (RadioInfo.getSignalLevel() <= -110 && !m_mainApp.UseWifiConnection());
+		boolean t_radioNotAvail = (RadioInfo.getSignalLevel() <= -110 || !RadioInfo.isDataServiceOperational());
+		
+//		if(t_radioNotAvail){
+//			m_mainApp.SetErrorString("radio data service is not available");
+//		}
+		
+		return t_radioNotAvail && !m_mainApp.UseWifiConnection();
 	}
 	 
 	 public void run(){
@@ -1116,6 +1116,11 @@ public class connectDeamon extends Thread implements SendListener,
 		 	case msg_head.msgWeiboHeadImage:
 		 		ProcessWeiboHeadImage(in);
 		 		break;
+		 	case msg_head.msgWeiboPrompt:
+		 		if(m_mainApp.m_weiboTimeLineScreen != null){
+		 			m_mainApp.m_weiboTimeLineScreen.popupPromptText(sendReceive.ReadString(in));
+		 		}
+		 		break;
 		 }
 	 }
 	
@@ -1316,8 +1321,6 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		if(_files != null && !_files.isEmpty()){
 			
-			m_mainApp.SetErrorString("AddSendingMail1");
-			
 			for(int i = 0;i< _files.size();i++){
 				String t_fullname = ((ComposingAttachment)_files.elementAt(i)).m_filename;
 				
@@ -1352,8 +1355,6 @@ public class connectDeamon extends Thread implements SendListener,
 				_mail.AddAttachment(t_name, t_type, t_size);
 			}
 			
-			m_mainApp.SetErrorString("AddSendingMail2");
-			
 			// reset the content of mail...
 			//
 			Message msg = _mail.GetAttachMessage();
@@ -1364,8 +1365,6 @@ public class connectDeamon extends Thread implements SendListener,
 			_mail.SetLocationInfo(m_mainApp.m_gpsInfo);
 		}
 	
-		m_mainApp.SetErrorString("AddSendingMail3");
-		
 		sendMailAttachmentDeamon t_mailDeamon = new sendMailAttachmentDeamon(this, _mail, t_vfileReader,_forwardReply,_sendStyle);
 		m_sendingMailAttachment.addElement(t_mailDeamon);	
 	}
@@ -1474,8 +1473,6 @@ public class connectDeamon extends Thread implements SendListener,
 			_mail.GetFromVect().addElement(composeAddress(m.getFrom()));			
 		}
 		
-		m_mainApp.SetErrorString("ImportMail1");
-	
 		// REPLY TO
 		if ((a = m.getReplyTo()) != null) {
 			_mail.GetFromVect().removeAllElements();
@@ -1484,28 +1481,16 @@ public class connectDeamon extends Thread implements SendListener,
 		    }
 		}
 		
-		m_mainApp.SetErrorString("ImportMail2");
-	
 		// TO
 		if ((a = m.getRecipients(Message.RecipientType.TO)) != null) {
-			
-			m_mainApp.SetErrorString("ImportMail2_1");
 			
 			_mail.GetSendToVect().removeAllElements();
 			_mail.GetGroupVect().removeAllElements();
 			
-			m_mainApp.SetErrorString("ImportMail2_2");
-			
 		    for (int j = 0; j < a.length; j++) {
-		    	m_mainApp.SetErrorString("ImportMail2_3_" + j);
 		    	_mail.GetSendToVect().addElement(composeAddress(a[j]));
-		    	
 		    }
-		    
-		    m_mainApp.SetErrorString("ImportMail2_4");
 		}		
-			
-		m_mainApp.SetErrorString("ImportMail3");
 		
 		String t_sub = m.getSubject();
 		if(t_sub == null){
@@ -1526,14 +1511,10 @@ public class connectDeamon extends Thread implements SendListener,
 			_mail.SetSubject(t_sub);	
 		}
 		
-		m_mainApp.SetErrorString("ImportMail4");
-		
 		Date t_date = m.getSentDate();
 		if(t_date != null && t_date.getTime() != 0){
 			_mail.SetSendDate(t_date);
 		}
-		
-		m_mainApp.SetErrorString("ImportMail5");
 		
 		final int t_flags = m.getFlags(); // get the system flags
 	
@@ -1552,21 +1533,15 @@ public class connectDeamon extends Thread implements SendListener,
 			_mail.SetXMailer(hdrs[0]);
 	    }
 		
-		m_mainApp.SetErrorString("ImportMail6");
-		
 		_mail.ClearAttachment();
 		
 		m_plainTextContain = "";
 		m_htmlTextContain	= "";
 		
-		m_mainApp.SetErrorString("ImportMail7");
-		
 		findEmailBody(m.getContent(),_mail);
 		
 		_mail.SetContain(m_plainTextContain);
 		_mail.SetContain_html(m_htmlTextContain);
-		
-		m_mainApp.SetErrorString("ImportMail8");
 		
 	}
 	
