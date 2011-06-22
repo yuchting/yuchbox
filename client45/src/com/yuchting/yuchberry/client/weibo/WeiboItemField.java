@@ -204,6 +204,10 @@ public class WeiboItemField extends Manager{
 		
 	}
 	
+	public boolean hasTheWeibo(fetchWeibo _weibo){
+		return _weibo == m_weibo;
+	}
+	
 	public WeiboMainManager getParentManager(){
 		return m_parentManager;
 	}
@@ -489,7 +493,7 @@ public class WeiboItemField extends Manager{
 			//
 			if(m_weibo.IsSinaVIP()){
 				_g.drawBitmap(t_startSign_x,t_textStart_y,fsm_weiboVIPImageSize, fsm_weiboVIPImageSize, 
-						weiboTimeLineScreen.GetSinaVIPSignBitmap(), 0, 0);
+						weiboTimeLineScreen.GetVIPSignBitmap(m_weibo), 0, 0);
 				
 				t_startSign_x += fsm_weiboVIPImageSize;
 
@@ -630,7 +634,7 @@ public class WeiboItemField extends Manager{
 			//
 			if(m_weibo.IsSinaVIP()){
 				_g.drawBitmap(t_nameLength + t_leadingSpace, t_firstLineHeight, fsm_weiboVIPImageSize, fsm_weiboVIPImageSize, 
-						weiboTimeLineScreen.GetSinaVIPSignBitmap(), 0, 0);
+						weiboTimeLineScreen.GetVIPSignBitmap(m_weibo), 0, 0);
 				
 				t_nameLength += fsm_weiboVIPImageSize;
 

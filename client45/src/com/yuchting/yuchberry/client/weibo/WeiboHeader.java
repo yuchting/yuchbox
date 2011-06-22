@@ -101,10 +101,11 @@ public class WeiboHeader extends Field{
 			}		
 			
 			int t_x = fsm_linkedStateSize;
+			boolean t_drawNewMsgSign = false;
 			
 			for(int i = 0 ;i <= STATE_DIRECT_MESSAGE;i++){
 				
-				boolean t_drawNewMsgSign = false;
+				t_drawNewMsgSign = false;
 				
 				switch(i){
 				case STATE_TIMELINE:

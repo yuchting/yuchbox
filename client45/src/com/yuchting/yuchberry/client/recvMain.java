@@ -18,6 +18,7 @@ import javax.microedition.location.LocationProvider;
 import local.localResource;
 import net.rim.blackberry.api.browser.Browser;
 import net.rim.blackberry.api.browser.BrowserSession;
+import net.rim.blackberry.api.homescreen.HomeScreen;
 import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
@@ -715,7 +716,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 22;
+	final static int		fsm_clientVersion = 23;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -850,6 +851,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			WeiboItemField.sm_simpleMode = sendReceive.ReadBoolean(t_readFile);
 				    			m_dontDownloadWeiboHeadImage = sendReceive.ReadBoolean(t_readFile);
 				    		}
+				    		
+				    		if(t_currVer >= 23){
+				    			m_hideHeader	= sendReceive.ReadBoolean(t_readFile);
+				    		}
+				    		
 			    		}finally{
 			    			t_readFile.close();
 			    			t_readFile = null;
@@ -921,6 +927,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						sendReceive.WriteBoolean(t_writeFile,WeiboItemField.sm_displayHeadImage);
 						sendReceive.WriteBoolean(t_writeFile,WeiboItemField.sm_simpleMode);
 						sendReceive.WriteBoolean(t_writeFile,m_dontDownloadWeiboHeadImage);
+						
+						sendReceive.WriteBoolean(t_writeFile,m_hideHeader);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1046,11 +1054,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);	
 		
-		if(m_updateWeiboItem != null){
-			ApplicationMenuItemRepository.getInstance()
-				.addMenuItem(ApplicationMenuItemRepository.MENUITEM_MESSAGE_LIST,m_updateWeiboItem);
-			m_updateWeiboItem = null;
-		}
+		DisableWeiboModule();
 		
 		StopNotification();
 		StopWeiboNotification();
@@ -1064,7 +1068,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				m_locationProvider.reset();
 				m_locationProvider.setLocationListener(null, -1, -1, -1);
 			}
-		}	
+		}
 		
 		// store the weibo item list
 		ReadWriteWeiboFile(false);
@@ -1088,6 +1092,16 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}	
 		
 		PopupLatestVersionDlg();
+		
+		if(m_hasNewWeibo){
+			m_hasNewWeibo = false;
+			
+			if(m_connectDeamon.isDisconnectState()){
+				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline.png"));
+			}else{
+				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main.png"));
+			}			
+		}
 	}
 	
 	public void deactivate(){
@@ -1566,6 +1580,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public int					m_receivedWeiboNum = 0;
 	public int					m_sentWeiboNum = 0;
+	public boolean				m_hideHeader = false;
+	public boolean				m_hasNewWeibo = false;
 	
 	boolean m_receiveWeiboListChanged = false;
 	
@@ -1638,12 +1654,22 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public void DisableWeiboModule(){
 		if(m_updateWeiboItem != null){
 			ApplicationMenuItemRepository.getInstance()
-				.addMenuItem(ApplicationMenuItemRepository.MENUITEM_MESSAGE_LIST,m_updateWeiboItem);
+				.removeMenuItem(ApplicationMenuItemRepository.MENUITEM_MESSAGE_LIST,m_updateWeiboItem);
 			m_updateWeiboItem = null;
 		}
 	}
 		
 	public void PrepareWeiboItem(fetchWeibo _weibo){
+		
+		if(!isForeground()){
+			m_hasNewWeibo = true;
+			
+			if(m_connectDeamon.isDisconnectState()){
+				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline_new.png"));
+			}else{
+				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_new.png"));
+			}
+		}
 		
 		synchronized (this) {
 			m_receiveWeiboListChanged = true;
@@ -1688,8 +1714,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						m_receivedWeiboList.removeElementAt(i);
 						
 						m_weiboTimeLineScreen.DelWeibo(t_delWeibo);
-						m_weiboTimeLineScreen.DelWeiboHeadImage(t_delWeibo.GetWeiboStyle(),Long.toString(t_delWeibo.GetId()));
-						
+												
 						break;
 					}
 				}

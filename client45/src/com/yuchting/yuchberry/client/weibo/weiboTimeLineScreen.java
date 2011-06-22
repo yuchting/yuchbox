@@ -19,6 +19,7 @@ import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.Menu;
+import net.rim.device.api.ui.component.NullField;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.msg_head;
@@ -36,7 +37,27 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	WeiboMainManager			m_currMgr = null;
 	
-	static Bitmap		sm_sinaVIPSign = null;
+	private static Bitmap[]		sm_VIPSign = 
+	{
+		null,
+		null,
+		null,
+		
+		null,
+		null,
+		null,
+	};
+	
+	private static String[]		sm_VIPSignString = 
+	{
+		"/sinaVIP.png",
+		"/sinaVIP.png",
+		"/qqVIP.png",
+		
+		"/sinaVIP.png",
+		"/sinaVIP.png",
+		"/sinaVIP.png",
+	};
 	
 	static Bitmap		sm_headImageMask = null;
 	
@@ -69,11 +90,24 @@ public class weiboTimeLineScreen extends MainScreen{
 	static Bitmap		sm_defaultHeadImage = null;
 		
 	WeiboHeader 		m_weiboHeader		= new WeiboHeader(this);
+	NullField			m_nullWeiboHeader	= new NullField();
+	boolean			m_weiboHeaderShow	= true;
 	
 	boolean			m_onlineState = false;
 	
 	private Vector		m_delayWeiboAddList = new Vector();
-	private int		m_delayWeiboRunnableID = -1;
+	private int		m_delayWeiboAddRunnableID = -1;
+	
+	private Vector		m_delayWeiboDelList = new Vector();
+	private int		m_delayWeiboDelRunnableID = -1;
+	
+	private WeiboMainManager[]	m_refMainManager = 
+	{
+		null,
+		null,
+		null,
+		null,
+	};
 	
 	recvMain			m_mainApp = null;
 	
@@ -90,13 +124,46 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		m_mainDMMgr = new WeiboDMManager(_mainApp, this, false);
 		
+		m_refMainManager[0] = m_mainMgr;
+		m_refMainManager[1] = m_mainAtMeMgr;
+		m_refMainManager[2] = m_mainCommitMeMgr;
+		m_refMainManager[3] = m_mainDMMgr;		
+		
 		m_currMgr = m_mainMgr;
 		
 		setTitle(m_weiboHeader);
 		
 		m_currMgr.setFocus();
-		
-		
+	}
+	
+	public void enableHeader(boolean _enable){
+		if(m_mainApp.m_hideHeader){
+			if(_enable){
+				if(!m_weiboHeaderShow){
+					m_weiboHeaderShow = true;
+					setTitle(m_weiboHeader);
+				}				
+			}else{
+				if(m_weiboHeaderShow){
+					m_weiboHeaderShow = false;
+					setTitle(m_nullWeiboHeader);
+				}
+			}
+		}else{
+			// show the header always
+			//
+			if(!m_weiboHeaderShow){
+				m_weiboHeaderShow = true;
+				setTitle(m_weiboHeader);
+			}
+		}
+	}
+	
+	public boolean isHeaderShow(){
+		if(m_mainApp.m_hideHeader){
+			return m_weiboHeaderShow;
+		}
+		return true;
 	}
 	
 	public void ClearWeibo(){
@@ -162,9 +229,9 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 			m_delayWeiboAddList.addElement(new DelayAddWeiboData(_weibo,_initAdd));
 			
-			if(m_delayWeiboRunnableID == -1){
+			if(m_delayWeiboAddRunnableID == -1){
 				
-				m_delayWeiboRunnableID = m_mainApp.invokeLater(new Runnable() {
+				m_delayWeiboAddRunnableID = m_mainApp.invokeLater(new Runnable() {
 					
 					public void run() {
 						
@@ -178,11 +245,10 @@ public class weiboTimeLineScreen extends MainScreen{
 							}								
 							
 							if(m_delayWeiboAddList.isEmpty()){
-								m_mainApp.cancelInvokeLater(m_delayWeiboRunnableID);
-								m_delayWeiboRunnableID = -1;
+								m_mainApp.cancelInvokeLater(m_delayWeiboAddRunnableID);
+								m_delayWeiboAddRunnableID = -1;
 							}
 						}
-						
 					}
 					
 				},500, true);
@@ -210,21 +276,51 @@ public class weiboTimeLineScreen extends MainScreen{
 			}
 		}
 		
-		if(m_mainMgr.DelWeibo(_weibo)){
-			return;
+		synchronized(m_delayWeiboDelList){
+			
+			m_delayWeiboDelList.addElement(_weibo);
+			
+			if(m_delayWeiboDelRunnableID == -1){
+				
+				m_delayWeiboDelRunnableID = m_mainApp.invokeLater(new Runnable() {
+					
+					public void run() {
+						synchronized (m_delayWeiboDelList) {
+														
+							if(!m_delayWeiboDelList.isEmpty()){
+								fetchWeibo t_delWeibo = (fetchWeibo)m_delayWeiboDelList.elementAt(0);
+															
+								if(m_currMgr.getCurrExtendedItem() != null 
+								&& m_currMgr.getCurrExtendedItem().hasTheWeibo(t_delWeibo)){
+									// if the user is reading this extend item
+									//
+									return ;
+								}
+								
+								m_delayWeiboDelList.removeElementAt(0);
+								
+								for(int i = 0;i < m_refMainManager.length;i++){
+									if(m_refMainManager[i].DelWeibo(t_delWeibo)){
+										break;
+									}
+								}
+								
+								DelWeiboHeadImage(t_delWeibo.GetWeiboStyle(),Long.toString(t_delWeibo.GetId()));
+							}
+							
+							if(m_delayWeiboDelList.isEmpty()){
+								m_mainApp.cancelInvokeLater(m_delayWeiboDelRunnableID);
+								m_delayWeiboDelRunnableID = -1;
+							}
+							
+						}
+					}
+					
+				}, 200, true);
+			}
 		}
 		
-		if(m_mainCommitMeMgr.DelWeibo(_weibo)){
-			return ;
-		}
 		
-		if(m_mainAtMeMgr.DelWeibo(_weibo)){
-			return ;
-		}
-		
-		if(m_mainDMMgr.DelWeibo(_weibo)){
-			return ;
-		}
 	}
 	
 	public void AddWeiboHeadImage(int _style,String _id,byte[] _dataArray){
@@ -802,7 +898,6 @@ public class weiboTimeLineScreen extends MainScreen{
 				
 				return true;
 			}
-			
 		}
 		return 	super.navigationMovement(dx, dy, status, time);
 		
@@ -852,6 +947,10 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		m_currMgr.restoreFocusField();
 		
+		if(m_currMgr.getFieldCount() <= WeiboMainManager.fsm_maxItemInOneScreen){
+			enableHeader(true);
+		}
+		
 		m_weiboHeader.invalidate();
 		m_mainApp.StopWeiboNotification();
 		
@@ -877,18 +976,19 @@ public class weiboTimeLineScreen extends MainScreen{
 		return null;
 	}
 	
-	static public Bitmap GetSinaVIPSignBitmap(){
-		if(sm_sinaVIPSign == null){
+	static public Bitmap GetVIPSignBitmap(fetchWeibo _weibo){
+		
+		if(sm_VIPSign[_weibo.GetWeiboStyle()] == null){
 			try{
-				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/sinaVIP.png"));		
-				sm_sinaVIPSign =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();	
+				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream(sm_VIPSignString[_weibo.GetWeiboStyle()]));		
+				sm_VIPSign[_weibo.GetWeiboStyle()] =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();	
 			}catch(Exception e){
 				sm_mainApp.SetErrorString("GSVSB:" + e.getMessage() + e.getClass().getName());
 			}
 					
 		}
 		
-		return sm_sinaVIPSign;
+		return sm_VIPSign[_weibo.GetWeiboStyle()];
 	}
 	
 	static public Bitmap GetHeadImageMaskBitmap(){

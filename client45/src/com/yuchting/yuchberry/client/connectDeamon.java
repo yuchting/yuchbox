@@ -184,9 +184,7 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		Vector	m_sendingData = new Vector();
 		
-		private boolean isDisconnectState(){
-			return m_disconnect || m_connect == null || !m_sendAuthMsg;
-		}
+		
 		
 		public void addSendingData(byte _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
 			
@@ -238,6 +236,10 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	public void addSendingData(byte _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
 		m_sendingQueue.addSendingData(_msgType, _data, _exceptSame);
+	}
+	
+	public boolean isDisconnectState(){
+		return m_disconnect || m_connect == null || !m_sendAuthMsg;
 	}
 	 
 	public connectDeamon(recvMain _app){
@@ -843,7 +845,11 @@ public class connectDeamon extends Thread implements SendListener,
 				//
 				m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTED_LABEL));
 				
-				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main.png"));
+				if(m_mainApp.m_hasNewWeibo){
+					HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_new.png"));
+				}else{
+					HomeScreen.updateIcon(Bitmap.getBitmapResource("Main.png"));
+				}
 				
 				if(m_mainApp.m_weiboTimeLineScreen != null){
 					m_mainApp.m_weiboTimeLineScreen.SetOnlineState(true);
@@ -867,7 +873,11 @@ public class connectDeamon extends Thread implements SendListener,
 				m_mainApp.m_weiboTimeLineScreen.SetOnlineState(false);
 			}
 			
-			HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline.png"));
+			if(m_mainApp.m_hasNewWeibo){
+				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline_new.png"));
+			}else{
+				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline.png"));
+			}
 			
 			synchronized (this) {
 				try{

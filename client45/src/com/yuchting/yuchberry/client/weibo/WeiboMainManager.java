@@ -266,7 +266,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				// draw the scroll bar
 				// must call the invalidateScroll in WeiboItemFocusField.drawFocus 
 				//
-				int t_visibleHeight = recvMain.fsm_display_height - WeiboHeader.fsm_headHeight;
+				int t_visibleHeight = getVisibleHeight();
+				
 				int t_start_y = getManager().getVerticalScroll();
 				int t_start_x = recvMain.fsm_display_width - fsm_scrollbarSize;
 						
@@ -278,7 +279,9 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				
 				graphics.setColor(0x1b8df5);
 				graphics.fillRect(t_start_x,t_scroll_y,fsm_scrollbarSize,t_scroll_height);
-				
+								
+				m_parentScreen.enableHeader(t_start_y == 0);
+
 			}
 			
 		}finally{
@@ -286,8 +289,13 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		}
 	}
 	
+	public int getVisibleHeight(){
+		return recvMain.fsm_display_height - 
+				(m_parentScreen.isHeaderShow()?WeiboHeader.fsm_headHeight:0);
+	}
+	
 	public void invalidateScroll(){
-		int t_visibleHeight = recvMain.fsm_display_height - WeiboHeader.fsm_headHeight;
+		int t_visibleHeight = getVisibleHeight();		
 		int t_start_y = getManager().getVerticalScroll();
 		int t_start_x = recvMain.fsm_display_width - fsm_scrollbarSize;
 		
