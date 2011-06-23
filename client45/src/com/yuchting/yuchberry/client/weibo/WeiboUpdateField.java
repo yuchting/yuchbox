@@ -76,9 +76,10 @@ public class WeiboUpdateField extends WeiboItemField{
 				
 			if(_on){
 				_g.setColor(fsm_selectedColor);
-				_g.fillRect(1,1,getPreferredWidth() - 2,sm_fontHeight - 3);
+				_g.fillRoundRect(1,1,getPreferredWidth() - 2,sm_fontHeight - 3,5,5);
 				_g.setColor(0xffffff);
 			}else{
+				
 				_g.drawLine(0,sm_fontHeight - 1,getPreferredWidth(),sm_fontHeight - 1);
 				_g.setColor(fsm_spaceLineColor);
 			}	

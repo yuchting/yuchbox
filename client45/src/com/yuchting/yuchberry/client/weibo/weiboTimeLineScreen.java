@@ -245,12 +245,12 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 			int t_color = g.getColor();
 			try{
-				g.setColor(0xccccff);
+				g.setColor(WeiboItemField.fsm_promptTextBGColor);
 	        	g.fillRoundRect(fsm_promptBubble_x, fsm_promptBubble_y, 
 	        			fsm_promptBubbleWidth, t_height + fsm_promptBubbleBorder * 2, 
 	        			fsm_promptBubbleArc, fsm_promptBubbleArc);
 	        	
-	        	g.setColor(0x0000cc);
+	        	g.setColor(WeiboItemField.fsm_promptTextBorderColor);
 	        	g.drawRoundRect(fsm_promptBubble_x, fsm_promptBubble_y, 
 	        			fsm_promptBubbleWidth, t_height + fsm_promptBubbleBorder * 2, 
 	        			fsm_promptBubbleArc, fsm_promptBubbleArc);

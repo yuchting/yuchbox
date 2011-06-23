@@ -18,11 +18,17 @@ import com.yuchting.yuchberry.client.sendReceive;
 
 public class WeiboMainManager extends VerticalFieldManager implements FieldChangeListener{
 	
-	public HyperlinkButtonField	 m_atBut				= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL));
-	public HyperlinkButtonField	 m_forwardBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL));
-	public HyperlinkButtonField	 m_favoriteBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL));
-	public HyperlinkButtonField	 m_picBut				= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL));
-	public HyperlinkButtonField	 m_followCommentUser	= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FOLLOW_USER_BUTTON_LABEL));
+//	public HyperlinkButtonField	 m_atBut				= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL));
+//	public HyperlinkButtonField	 m_forwardBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL));
+//	public HyperlinkButtonField	 m_favoriteBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL));
+//	public HyperlinkButtonField	 m_picBut				= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL));
+//	public HyperlinkButtonField	 m_followCommentUser	= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FOLLOW_USER_BUTTON_LABEL));
+
+	public WeiboButton	 m_atBut				= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL));
+	public WeiboButton	 m_forwardBut			= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL));
+	public WeiboButton	 m_favoriteBut			= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL));
+	public WeiboButton	 m_picBut				= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL));
+	public WeiboButton	 m_followCommentUser	= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FOLLOW_USER_BUTTON_LABEL));
 
 	
 	// BasicEditField for 4.2os
@@ -248,11 +254,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	}
 	
 	protected void subpaint(Graphics graphics){
-				
-		final int t_num = getFieldCount();
-		for(int i =  0;i < t_num;i++){
-			paintChild(graphics, getField(i));
-		}
+		super.subpaint(graphics);
 		
 		int oldColour = graphics.getColor();
 		try{
@@ -261,7 +263,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			graphics.drawText(recvMain.sm_local.getString(localResource.WEIBO_REACH_MAX_WEIBO_NUM_PROMPT),
 								0,m_bufferedTotalHeight - WeiboItemField.sm_fontHeight);
 			
-			if(t_num >= fsm_maxItemInOneScreen){
+			if(getFieldCount() >= fsm_maxItemInOneScreen){
 				// draw the scroll bar
 				// must call the invalidateScroll in WeiboItemFocusField.drawFocus 
 				//
@@ -270,13 +272,13 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				int t_start_y = getManager().getVerticalScroll();
 				int t_start_x = recvMain.fsm_display_width - fsm_scrollbarSize;
 						
-				graphics.setColor(0xf0f0f0);
+				graphics.setColor(WeiboItemField.fsm_darkColor);
 				graphics.fillRect(t_start_x, t_start_y, fsm_scrollbarSize, t_visibleHeight);
 				
 				int t_scroll_height = t_visibleHeight * t_visibleHeight / m_bufferedTotalHeight;
 				int t_scroll_y = t_start_y + t_start_y * t_visibleHeight / m_bufferedTotalHeight;
 				
-				graphics.setColor(0x1b8df5);
+				graphics.setColor(WeiboItemField.fsm_spaceLineColor);
 				graphics.fillRect(t_start_x,t_scroll_y,fsm_scrollbarSize,t_scroll_height);
 								
 				m_parentScreen.enableHeader(t_start_y == 0);
