@@ -266,7 +266,9 @@ class sendReceive extends Thread{
 					if(t_counter++ >= 20){
 						return -1;
 					}
-					
+					// first sleep 
+					//
+					Thread.sleep(20);	
 					continue;
 					
 				}else{
@@ -356,7 +358,9 @@ class sendReceive extends Thread{
 				if(t_counter++ >= 20){
 					return false;
 				}
-				
+				// first sleep 
+				//
+				Thread.sleep(20);	
 				continue;
 				
 			}else{
@@ -382,6 +386,10 @@ class sendReceive extends Thread{
 				if(++t_counter > 20){
 					throw new Exception("FroceReadByte failed to read " + _readLen );
 				}
+				
+				// first sleep 
+				//
+				Thread.sleep(20);
 			}
 		}
 	}
