@@ -47,7 +47,8 @@ public class BberWeiboPanel extends FlowPanel{
 			
 			@Override
 			public void onClick(ClickEvent event) {
-				Yuchsign.PopupPrompt("正在完善，敬请期待！", t_subPane);				
+				//Yuchsign.PopupPrompt("正在完善，敬请期待！", t_subPane);
+				m_mainSign.
 			}
 		});
 		

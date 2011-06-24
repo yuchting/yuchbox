@@ -38,8 +38,8 @@ import java.util.List;
  * @author Yusuke Yamamoto - yusuke at mac.com
  */
 public class PostParameter implements java.io.Serializable, Comparable {
-    String name;
-    String value;
+    public String name;
+    public String value;
     private File file = null;
     
     private static final long serialVersionUID = -8708108746980739212L;

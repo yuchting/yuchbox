@@ -32,8 +32,6 @@ import org.xml.sax.InputSource;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.mail.MailService;
-import com.google.appengine.api.mail.MailServiceFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.yuchting.yuchberry.yuchsign.client.GreetingService;
 import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
@@ -1067,7 +1065,12 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}finally{
 			t_pm.close();
 		}
-	}	
+	}
+	
+	
+	public String beginWeiboAuth(String _bber,String _type){
+		
+	}
 	
 	
 	
