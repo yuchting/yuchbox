@@ -13,6 +13,7 @@ public class QWeiboSyncApi {
 	public static boolean sm_debug = false;
 
 	final static String fsm_requestTokenURL 			= "https://open.t.qq.com/cgi-bin/request_token";
+	final static String fsm_authorizeTokenURL 			= "http://open.t.qq.com/cgi-bin/authorize";
 	final static String fsm_accessTokenURL				= "https://open.t.qq.com/cgi-bin/access_token";
 	
 	final static String fsm_verifyURL					= "http://open.t.qq.com/api/user/info";
@@ -35,7 +36,11 @@ public class QWeiboSyncApi {
 	OauthKey 			m_oauthKey = new OauthKey();
 	QWeiboRequest 		m_request = new QWeiboRequest();
 	
-	List<QParameter> 	m_parameters = new ArrayList<QParameter>();	
+	List<QParameter> 	m_parameters = new ArrayList<QParameter>();
+	
+	public OauthKey getOauthKey(){
+		return m_oauthKey;
+	}
 	
 	public void setCostomerKey(String customKey, String customSecret){
 		m_oauthKey.customKey = customKey;
@@ -59,6 +64,7 @@ public class QWeiboSyncApi {
 	
 	// return user id if verify ok
 	public QUser verifyCredentials()throws Exception{
+		
 		checkAllKeys();
 		
 		m_parameters.clear();
@@ -72,8 +78,8 @@ public class QWeiboSyncApi {
 		return new QUser(t_json); 
 	}
 	
-	public String getRequestToken(String _callback)throws Exception{
-		
+	public String getVerifyPinURL(String _callback)throws Exception{
+			
 		if(m_oauthKey.customKey == null || m_oauthKey.customSecrect == null){
 			throw new Exception("customKey or customSecrect is null");
 		}
@@ -86,22 +92,69 @@ public class QWeiboSyncApi {
 		//
 		if(_callback != null){
 			m_oauthKey.callbackUrl = _callback;
-		}		
+		}else{
+			// the follow document said "must has oauth_callback parameter or set string 'null' " Orz
+			// http://open.t.qq.com/resource.php?i=1,2
+			//
+			m_oauthKey.callbackUrl = "null";
+		}
 
-		return m_request.syncRequest(fsm_requestTokenURL, "GET", m_oauthKey, m_parameters, null);
+		String t_response = m_request.syncRequest(fsm_requestTokenURL, "GET", m_oauthKey, m_parameters, null);
+		
+		if(!parseToken(t_response)){
+			throw new Exception("error server request PIN URL response :" + t_response); 
+		}
+				
+		return fsm_authorizeTokenURL + "?oauth_token=" + m_oauthKey.tokenKey;
 	}
 	
-	public String getAccessToken(String verify)throws Exception{
-
+	public OauthKey requestTokenByVerfiyPIN(String _verifyPIN)throws Exception{
+		
 		checkAllKeys();
-				
+		
 		m_parameters.clear();
-		m_oauthKey.verify = verify;
+		m_oauthKey.verify = _verifyPIN;
 		m_oauthKey.callbackUrl = null;
 
-		return m_request.syncRequest(fsm_accessTokenURL, "GET", m_oauthKey, m_parameters, null);		
+		String t_response = m_request.syncRequest(fsm_accessTokenURL, "GET", m_oauthKey, m_parameters, null);			
+				
+		if(!parseToken(t_response)){
+			throw new Exception("error server request token response :" + t_response); 
+		}
+		
+		return m_oauthKey;
 	}
+	
+	private boolean parseToken(String response) {
+		if (response == null || response.equals("")) {
+			return false;
+		}
 
+		String[] tokenArray = response.split("&");
+
+		if (tokenArray.length < 2) {
+			return false;
+		}
+
+		String strTokenKey = tokenArray[0];
+		String strTokenSecrect = tokenArray[1];
+
+		String[] token1 = strTokenKey.split("=");
+		if (token1.length < 2) {
+			return false;
+		}
+		
+		m_oauthKey.tokenKey = token1[1];		
+
+		String[] token2 = strTokenSecrect.split("=");
+		if (token2.length < 2) {
+			return false;
+		}
+
+		m_oauthKey.tokenSecrect = token2[1];
+		
+		return true;
+	}
 
 	/**
 	 *  get the home weibo list (time line)

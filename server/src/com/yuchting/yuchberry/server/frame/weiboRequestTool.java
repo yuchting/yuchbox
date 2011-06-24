@@ -1,12 +1,12 @@
 package com.yuchting.yuchberry.server.frame;
 
-import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Properties;
 
 import javax.swing.JButton;
 
+import com.mime.qweibo.OauthKey;
 import com.yuchting.yuchberry.server.fetchQWeibo;
 import com.yuchting.yuchberry.server.fetchSinaWeibo;
 import com.yuchting.yuchberry.server.fetchTWeibo;
@@ -85,7 +85,7 @@ public class weiboRequestTool{
 				}else if(m_style == fetchWeibo.TWITTER_WEIBO_STYLE){
 					mainFrame.OpenURL(((twitter4j.auth.RequestToken)m_requestToken).getAuthorizationURL());
 				}else if(m_style == fetchWeibo.QQ_WEIBO_STYLE){
-					mainFrame.OpenURL(((fetchQWeibo)m_requestToken).getVerifyPinURL(fsm_callbackURL));
+					mainFrame.OpenURL(((fetchQWeibo)m_requestToken).m_api.getVerifyPinURL(fsm_callbackURL));
 				}else{
 					assert false;
 				}
@@ -109,38 +109,6 @@ public class weiboRequestTool{
 	}
 	private void pt(String _log){
 		System.out.print(_log);
-	}
-	
-	public void actionPerformed(ActionEvent e) {
-		if(e.getSource() == m_openRequestURL){
-			
-			try{
-				if(m_requestToken == null){
-					if(m_style == fetchWeibo.SINA_WEIBO_STYLE){
-						m_requestToken = (new fetchSinaWeibo(null)).getRequestToken(fsm_callbackURL);
-					}else if(m_style == fetchWeibo.TWITTER_WEIBO_STYLE){
-						m_requestToken = (new fetchTWeibo(null)).getRequestToken(fsm_callbackURL);
-					}else if(m_style == fetchWeibo.QQ_WEIBO_STYLE){
-						m_requestToken = new fetchQWeibo(null);
-					}
-					
-				}
-				
-				if(m_style == fetchWeibo.SINA_WEIBO_STYLE){
-					mainFrame.OpenURL(((weibo4j.http.RequestToken)m_requestToken).getAuthorizationURL());
-				}else if(m_style == fetchWeibo.TWITTER_WEIBO_STYLE){
-					mainFrame.OpenURL(((twitter4j.auth.RequestToken)m_requestToken).getAuthorizationURL());
-				}else if(m_style == fetchWeibo.QQ_WEIBO_STYLE){
-					mainFrame.OpenURL(((fetchQWeibo)m_requestToken).getVerifyPinURL(fsm_callbackURL));
-				}else{
-					assert false;
-				}
-				
-			}catch(Exception ex){
-				prt("出现错误:" + ex.getMessage());
-				ex.printStackTrace();
-			}			
-		}
 	}
 	
 	private String processHTTPD(String method,Properties header,Properties parms){
@@ -181,10 +149,10 @@ public class weiboRequestTool{
 				}else if(m_style == fetchWeibo.QQ_WEIBO_STYLE){
 					
 					fetchQWeibo t_qweibo = ((fetchQWeibo)m_requestToken);
-					t_qweibo.RequestTokenByVerfiyPIN(verifier);					
+					OauthKey t_key = t_qweibo.m_api.requestTokenByVerfiyPIN(verifier);					
 					
-					t_tokenString = t_qweibo.sm_requestTokenKey;
-					t_tokenSecret = t_qweibo.sm_requestTokenSecret;			
+					t_tokenString = t_key.tokenKey;
+					t_tokenSecret = t_key.tokenSecrect;			
 					
 				}else{
 					assert false;
@@ -212,6 +180,6 @@ public class weiboRequestTool{
 	}	
 	
 	static public void main(String _arg[]){
-		new weiboRequestTool(fetchWeibo.TWITTER_WEIBO_STYLE);
+		new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
 	}
 }

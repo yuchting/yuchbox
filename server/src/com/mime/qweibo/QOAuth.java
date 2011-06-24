@@ -17,7 +17,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import com.mime.qweibo.utils.Base64Encoder;
 
-public class OAuth implements Serializable {
+public class QOAuth implements Serializable {
 	static final long serialVersionUID = -8736851024315996L;
 	private static final String OAuthVersion = "1.0";
 	private static final String OAuthQParameterPrefix = "oauth_";

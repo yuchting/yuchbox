@@ -32,7 +32,7 @@ public class QWeiboRequest {
 		if (url == null || url.equals("")) {
 			return null;
 		}
-		OAuth oauth = new OAuth();
+		QOAuth oauth = new QOAuth();
 
 		StringBuffer sbQueryString = new StringBuffer();
 		String oauthUrl = oauth.getOauthUrl(url, httpMethod, key.customKey,
@@ -75,7 +75,7 @@ public class QWeiboRequest {
 			List<QParameter> listParam, List<QParameter> listFile,
 			QAsyncHandler asyncHandler, Object cookie) {
 		
-		OAuth oauth = new OAuth();
+		QOAuth oauth = new QOAuth();
 
 		StringBuffer sbQueryString = new StringBuffer();
 		String oauthUrl = oauth.getOauthUrl(url, httpMethod, key.customKey,

@@ -16,73 +16,13 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	final static String		fsm_consumerSecret	= "dcc64862deec1a57e98b6985c405e369";
 		
 	
-	QWeiboSyncApi m_api = new QWeiboSyncApi();
+	public QWeiboSyncApi m_api = new QWeiboSyncApi();
 		
 	QUser		m_userself = null;
 	
 	public fetchQWeibo(fetchMgr _mainMgr){
 		super(_mainMgr);
 		m_api.setCostomerKey(fsm_consumerKey, fsm_consumerSecret);
-	}
-	
-	public static String				sm_requestTokenKey		= null;
-	public static String				sm_requestTokenSecret	= null;
-	
-	public String getVerifyPinURL(String _callback)throws Exception{
-		
-		String t_response = m_api.getRequestToken(_callback);
-		
-		if(!parseToken(t_response)){
-			throw new Exception("error server request PIN URL response :" + t_response); 
-		}
-		
-		m_api.setAccessToken(sm_requestTokenKey, sm_requestTokenSecret);
-		
-		return "http://open.t.qq.com/cgi-bin/authorize?oauth_token=" + sm_requestTokenKey;
-	}
-	
-	public void RequestTokenByVerfiyPIN(String _verifyPIN)throws Exception{
-		
-		if(sm_requestTokenKey == null || sm_requestTokenSecret == null){
-			throw new Exception("call the getVerifyPinURL first plz"); 
-		}		
-		
-		String t_response = m_api.getAccessToken(_verifyPIN);
-		
-		if(!parseToken(t_response)){
-			throw new Exception("error server request token response :" + t_response); 
-		}
-	}
-	
-
-	
-	static boolean parseToken(String response) {
-		if (response == null || response.equals("")) {
-			return false;
-		}
-
-		String[] tokenArray = response.split("&");
-
-		if (tokenArray.length < 2) {
-			return false;
-		}
-
-		String strTokenKey = tokenArray[0];
-		String strTokenSecrect = tokenArray[1];
-
-		String[] token1 = strTokenKey.split("=");
-		if (token1.length < 2) {
-			return false;
-		}
-		sm_requestTokenKey = token1[1];
-
-		String[] token2 = strTokenSecrect.split("=");
-		if (token2.length < 2) {
-			return false;
-		}
-		sm_requestTokenSecret = token2[1];
-
-		return true;
 	}
 	
 	public void InitAccount(Element _elem)throws Exception{
