@@ -267,13 +267,6 @@ public class fetchMgr{
 			
 			m_logger.LogOut("some client<"+ _s.getInetAddress().getHostAddress() +"> connecting ,waiting for auth");
 			
-			// first handshake with the client via CA instead of 
-			// InputStream.read function to get the information within 1sec time out
-			//
-			//if(_s instanceof SSLSocket){
-				//((SSLSocket)_s).startHandshake();
-			//}
-			
 			// wait for signIn first
 			//
 			_s.setSoTimeout(10000);			

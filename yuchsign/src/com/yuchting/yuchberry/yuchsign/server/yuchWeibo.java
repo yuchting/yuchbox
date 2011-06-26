@@ -59,6 +59,7 @@ public class yuchWeibo {
 	
 	public void InputXMLData(final Element _elem)throws Exception{
 		m_typeName 		= yuchbber.ReadStringAttr(_elem, "type");
+		m_accoutName	= yuchbber.ReadStringAttr(_elem, "account");
 		m_accessToken	= yuchbber.ReadStringAttr(_elem, "accessToken");
 		m_secretToken	= yuchbber.ReadStringAttr(_elem, "secretToken");
 		

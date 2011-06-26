@@ -409,7 +409,7 @@ public class WeiboItemField extends Manager{
 				if(!sm_simpleMode){
 					// follow button
 					//
-					setPositionChild(m_parentManager.m_followCommentUser,3,t_commentText_y + m_commentText_height - sm_fontHeight - 5);
+					setPositionChild(m_parentManager.m_followCommentUser,3,t_commentText_y + m_commentText_height - sm_fontHeight);
 					layoutChild(m_parentManager.m_followCommentUser,m_parentManager.m_followCommentUser.getPreferredWidth(),
 													m_parentManager.m_followCommentUser.getPreferredHeight());
 				}

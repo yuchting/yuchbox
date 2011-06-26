@@ -283,6 +283,10 @@ public class Yuchsign implements EntryPoint {
 	public static void HideWaiting(){
 		fsm_waitingLable.Hide();
 	}
-		
+	
+	public static native String getURL(String url)/*-{
+		return $wnd.open(url,
+		'target=_blank')
+	}-*/;
 	
 }

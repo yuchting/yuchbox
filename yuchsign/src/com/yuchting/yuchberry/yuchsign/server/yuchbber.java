@@ -216,6 +216,7 @@ public final class yuchbber {
 		m_signature = m_signature.replace("#r", "\n");
 		
 		m_emailList.removeAllElements();
+		m_weiboList.removeAllElements();
 		
 		NodeList t_nodeElem = t_elem.getChildNodes();
 		

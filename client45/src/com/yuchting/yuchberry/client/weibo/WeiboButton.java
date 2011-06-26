@@ -16,7 +16,7 @@ public class WeiboButton extends Field
     
     private static final int fsm_borderArc = 5;
     
-    public  static final int fsm_borderWidth = 1;
+    public  static final int fsm_borderWidth = 2;
       
     private int _menuOrdinal = 0;
     private int _menuPriority = 0;

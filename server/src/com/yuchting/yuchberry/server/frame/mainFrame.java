@@ -183,7 +183,9 @@ public class mainFrame extends JFrame implements ActionListener{
 		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("frame")){
 			new fakeMDSSvr();
 			new mainFrame(_arg);
-		}else{			
+		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("clear")){
+			new ClearAccount();			
+		}else{
 			new fetchMain();
 		}
 	}	
@@ -839,31 +841,33 @@ public class mainFrame extends JFrame implements ActionListener{
 		//
 		boolean t_deleteThread = false;
 		
-		for(int i = 0;i < m_bberRequestList.size();i++){
-			BberRequestThread bber = m_bberRequestList.get(i);
-			
-			if(Math.abs(t_currTime - bber.m_requestTime) > 10 * 60 * 1000){
+		synchronized (m_bberRequestList) {
+			for(int i = 0;i < m_bberRequestList.size();i++){
+				BberRequestThread bber = m_bberRequestList.get(i);
 				
-				if(bber.m_orgThread != null){
+				if(Math.abs(t_currTime - bber.m_requestTime) > 10 * 60 * 1000){
 					
-					bber.m_orgThread.Destroy();
-					DelAccoutThread(bber.m_orgThread.m_fetchMgr.GetAccountName(), false);
+					if(bber.m_orgThread != null){
+						
+						bber.m_orgThread.Destroy();
+						DelAccoutThread(bber.m_orgThread.m_fetchMgr.GetAccountName(), false);
+						
+						m_logger.LogOut("同步没有响应，删除帐户 " + bber.m_orgThread.m_fetchMgr.GetAccountName());
+						
+						t_deleteThread = true;
+					}else{
+						bber.m_mainMgr.EndListening();
+						
+						m_logger.LogOut("同步没有响应，停止帐户 " + bber.m_mainMgr.GetAccountName());
+					}
 					
-					m_logger.LogOut("同步没有响应，删除帐户 " + bber.m_orgThread.m_fetchMgr.GetAccountName());
+					bber.interrupt();
+					m_bberRequestList.remove(i);
 					
-					t_deleteThread = true;
-				}else{
-					bber.m_mainMgr.EndListening();
-					
-					m_logger.LogOut("同步没有响应，停止帐户 " + bber.m_mainMgr.GetAccountName());
+					i--;
 				}
-				
-				bber.interrupt();
-				m_bberRequestList.remove(i);
-				
-				i--;
 			}
-		}
+		}		
 		
 		if(!t_deadPool.isEmpty() || t_deleteThread){
 						
@@ -950,9 +954,12 @@ public class mainFrame extends JFrame implements ActionListener{
 				t_portList.add(new Integer(acc.m_fetchMgr.GetServerPort()));
 			}
 			
-			for(BberRequestThread req : m_bberRequestList){
-				t_portList.add(new Integer(req.m_serverPort));
+			synchronized (m_bberRequestList) {
+				for(BberRequestThread req : m_bberRequestList){
+					t_portList.add(new Integer(req.m_serverPort));
+				}
 			}
+			
 			
 			Collections.sort(t_portList);
 			
@@ -1040,7 +1047,8 @@ public class mainFrame extends JFrame implements ActionListener{
 				m_serverPort = GetAvailableServerPort();
 			}
 						
-			if(m_currbber.GetEmailList().isEmpty()){
+			if(m_currbber.GetEmailList().isEmpty()
+			&& m_currbber.GetWeiboList().isEmpty()){
 				m_result = "<Error>没有账户信息</Error>";
 			}else{
 				start();
@@ -1260,6 +1268,7 @@ public class mainFrame extends JFrame implements ActionListener{
 							}
 						
 							return new NanoHTTPD.Response( HTTP_OK, MIME_PLAINTEXT, ProcessHTTPD(method,header,parms));
+							
 						}finally{
 							m_logger.LogOut("end serve");
 						}
@@ -1351,7 +1360,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 	}
 	
-	private synchronized String ProcessHTTPD(String method, Properties header, Properties parms){
+	private String ProcessHTTPD(String method, Properties header, Properties parms){
 		
 		m_logger.LogOut("start ProcessHTTPD 0");
 		
@@ -1387,24 +1396,26 @@ public class mainFrame extends JFrame implements ActionListener{
 				t_signinName = t_bber.GetSigninName();
 			}
 			
-			// find the requested bber
-			//
-			for(BberRequestThread bber : m_bberRequestList){
-				if(bber.m_currbber.GetSigninName().equals(t_signinName)){
+			synchronized (m_bberRequestList) {
+				// find the requested bber
+				//
+				for(BberRequestThread bber : m_bberRequestList){
+					if(bber.m_currbber.GetSigninName().equals(t_signinName)){
 
-					if(bber.isAlive()){
-						return "<Loading />";
-					}else{
-						
-						bber.CheckStartRequest();
-						
-						m_bberRequestList.remove(bber);
-						
-						return bber.m_result;
-					}									 
+						if(bber.isAlive()){
+							return "<Loading />";
+						}else{
+							
+							bber.CheckStartRequest();
+							
+							m_bberRequestList.remove(bber);
+							
+							return bber.m_result;
+						}									 
+					}
 				}
 			}
-						
+
 			// search the former thread
 			//
 			fetchThread t_thread = SearchAccountThread(t_bber.GetSigninName(),0);
@@ -1415,9 +1426,17 @@ public class mainFrame extends JFrame implements ActionListener{
 				return "<Max />";
 			}
 			
-			// create new request thread
+			// the constructor of BberRequestThread has fetchThread.Pause
+			// that function will be suspended by some wired reason
 			//
-			m_bberRequestList.add(new BberRequestThread(this,t_bber,t_thread));
+			BberRequestThread t_request = new BberRequestThread(this,t_bber,t_thread);
+			
+			synchronized (m_bberRequestList) {
+				// create new request thread
+				//
+				m_bberRequestList.add(t_request);
+			}
+			
 			
 			m_logger.LogOut("bber <" + t_bber.GetSigninName() + "> sync, current syncing Thread:" + m_bberRequestList.size());
 			
@@ -1431,7 +1450,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 	}
 	
-	private String ProcessCreateTimeQuery(Properties header){
+	private synchronized String ProcessCreateTimeQuery(Properties header){
 		
 		m_logger.LogOut("ProcessCreateTimeQuery start");
 		try{

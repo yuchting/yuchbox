@@ -17,9 +17,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	
 	public AutoTextEditField 	m_editTextArea			= new AutoTextEditField(){
 		public int getPreferredHeight(){
-			return WeiboUpdateDlg.fsm_height - 
-					WeiboUpdateManager.this.m_titleHeight - 
-					WeiboUpdateManager.this.m_sendButton.getPreferredHeight();
+			return WeiboUpdateDlg.fsm_height - m_titleHeight - m_sendButton.getHeight() - 6;
 		}
 		
 		public int getPreferredWidth(){
@@ -34,6 +32,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	
 	weiboTimeLineScreen		m_timelineScreen;
 	int						m_titleHeight 	= 0;
+	int						m_separateLine_y = 0;
 	WeiboButton				m_sendButton	= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_SEND_LABEL),
 																Field.FIELD_LEFT);
 	
@@ -48,7 +47,10 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		add(m_editTextArea);
 		add(m_sendButton);
 		
+		m_sendButton.layout(0, 0);
+		
 		m_titleHeight = m_editTextArea.getFont().getHeight() + 5;
+		m_separateLine_y = m_titleHeight + m_editTextArea.getPreferredHeight();
 	}
 	
 	public int getPreferredHeight(){
@@ -71,17 +73,20 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		setPositionChild(m_editTextArea,0,m_titleHeight);
 		layoutChild(m_editTextArea,m_editTextArea.getPreferredWidth(),m_editTextArea.getPreferredHeight());
 		
-		setPositionChild(m_sendButton,0,m_editTextArea.getPreferredHeight() + m_titleHeight);		
-		layoutChild(m_sendButton,m_sendButton.getPreferredWidth(),m_sendButton.getPreferredHeight());
+		int t_buttonWidth = m_sendButton.getWidth();
+		int t_buttonHeight = m_sendButton.getHeight();
+		
+		int t_sendButton_y = (m_editTextArea.getPreferredHeight() + m_titleHeight) + 
+					(WeiboUpdateDlg.fsm_height - (m_editTextArea.getPreferredHeight() + m_titleHeight) - t_buttonHeight) / 2;
+		
+		setPositionChild(m_sendButton,WeiboUpdateDlg.fsm_width - t_buttonWidth - 3,t_sendButton_y);
+			
+		layoutChild(m_sendButton,t_buttonWidth,t_buttonHeight);
 		
 		setExtent(getPreferredWidth(), getPreferredHeight());
 	}
 	
-	public void subpaint(Graphics graphics){
-		super.subpaint(graphics);
-	}
-	
-	
+
 	public void sendUpdate(){
 		if(m_editTextArea.getText().length() != 0){
 			getScreen().close();
@@ -124,13 +129,20 @@ public class WeiboUpdateDlg extends Screen {
 		
 		int color = _g.getColor();
 		try{
-			_g.setColor(WeiboItemField.fsm_selectedColor);
+			_g.setColor(WeiboItemField.fsm_darkColor);
+			_g.drawLine(0,m_updateManager.m_separateLine_y,
+						getPreferredWidth(),m_updateManager.m_separateLine_y);
 			
+			_g.setColor(WeiboItemField.fsm_selectedColor);
 			_g.fillRect(0,0,getPreferredWidth(),m_updateManager.m_titleHeight);
+						
+			_g.setColor(0x02749f);
+			_g.drawLine(0,m_updateManager.m_titleHeight - 1,getPreferredWidth(),m_updateManager.m_titleHeight - 1);
 			_g.drawRect(0,0,getPreferredWidth(),getPreferredHeight());
 			
 			_g.setColor(0xffffff);
-			_g.drawText("YB Weibo Update",0,0);
+			_g.drawText(recvMain.sm_local.getString(localResource.WEIBO_UPDATE_DIALOG_TITLE),
+					20,(m_updateManager.m_titleHeight - WeiboItemField.sm_fontHeight) / 2);
 			
 		}finally{
 			_g.setColor(color);
@@ -144,7 +156,7 @@ public class WeiboUpdateDlg extends Screen {
 	
 	protected boolean keyChar(char c,int status,int time){
 		if(c == Characters.ESCAPE){
-			getScreen().close();
+			close();
 		}else if(c == Characters.ENTER){
 			if(m_updateManager.m_editTextArea.getText().length() != 0 &&((status & KeypadListener.STATUS_SHIFT) != 0)){
 				m_updateManager.sendUpdate();					
@@ -153,6 +165,8 @@ public class WeiboUpdateDlg extends Screen {
 			//
 			return true;
 		}
+		
+		invalidate();
 		
 		return super.keyChar(c,status,time);
 	}

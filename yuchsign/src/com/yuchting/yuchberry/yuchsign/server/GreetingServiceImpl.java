@@ -34,6 +34,7 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.yuchting.yuchberry.yuchsign.client.GreetingService;
+import com.yuchting.yuchberry.yuchsign.server.weibo.WeiboAuth;
 import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
 
@@ -1068,10 +1069,34 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	}
 	
 	
-	public String beginWeiboAuth(String _bber,String _type){
-		
+	public String getWeiboAuthURL(String _bber,String _type){
+		WeiboAuth t_auth = new WeiboAuth(_bber,_type);
+				
+		try{
+			String t_res = t_auth.getRequestURL("http://yuchberrysign.yuchberry.info/auth/?bber=" + URLEncoder.encode(_bber,"UTF-8"));
+			
+			YuchsignCache.makeCacheWeiboAuth(t_auth);
+			
+			return t_res;
+			
+		}catch(Exception e){
+			return "<Error>请求出现错误 " + e.getMessage() +"</Error>";
+		}
 	}
 	
+	public String getWeiboAccessToken(String _bber){
+		WeiboAuth t_auth = YuchsignCache.getWeiboAuth(_bber);
+		if(t_auth == null){
+			return "<Error>请重新授权</Error>";
+		}
+		
+		String result = t_auth.getAccessTokenString();
+		if(result == null){
+			return "<Wait />";
+		}
+		
+		return result;
+	}
 	
 	
 

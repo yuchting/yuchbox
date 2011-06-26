@@ -40,4 +40,9 @@ public interface GreetingServiceAsync {
 	
 	void modifyHost(String _hostName,String _hostXMLData,AsyncCallback<String> callback)throws Exception;
 
+	// weibo auth function
+	//
+	void getWeiboAuthURL(String _bber,String _type,AsyncCallback<String> callback);
+	
+	void getWeiboAccessToken(String _bber,AsyncCallback<String> callback);
 }

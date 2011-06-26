@@ -164,6 +164,7 @@ public final class yuchbber {
 		m_signature = m_signature.replace("#r", "\n");
 		
 		m_emailList.removeAllElements();
+		m_weiboList.removeAllElements();
 		
 		for( Iterator i = t_elem.elementIterator("email"); i.hasNext();){
             Element element = (Element) i.next();

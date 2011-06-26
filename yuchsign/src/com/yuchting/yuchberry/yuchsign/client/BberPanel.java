@@ -42,10 +42,10 @@ class ContentTab extends TabPanel implements SelectionHandler<Integer>{
 	
 	int m_currSelectionIndex = 0;
 	
-	public ContentTab(Yuchsign	_mainSign){
+	public ContentTab(BberPanel	_mainPanel){
 		setPixelSize(250, 200);
 		
-		m_weiboPanel = new BberWeiboPanel(_mainSign);
+		m_weiboPanel = new BberWeiboPanel(_mainPanel);
 		
 		addSelectionHandler(this);
 		
@@ -110,7 +110,7 @@ public class BberPanel extends TabPanel{
 	
 	public BberPanel(final Yuchsign _sign){
 		m_mainServer = _sign;
-		m_pushContent = new ContentTab(_sign);
+		m_pushContent = new ContentTab(this);
 				
 		AddAccountAttr();
 		AddPushAttr();
@@ -323,8 +323,10 @@ public class BberPanel extends TabPanel{
 						
 						if(t_account instanceof yuchEmail){
 							m_pushContent.m_emailPanel.RefreshEmail((yuchEmail)t_account);
+							m_pushContent.selectTab(0);
 						}else if(t_account instanceof yuchWeibo){
 							m_pushContent.m_weiboPanel.RefreshWeibo((yuchWeibo)t_account);
+							m_pushContent.selectTab(1);
 						}
 					}
 					
@@ -536,7 +538,8 @@ public class BberPanel extends TabPanel{
 		m_currentBber.SetUsingSSL(m_usingSSL.getValue());
 		m_currentBber.SetSignature(m_signature.getText());
 		
-		if(m_currentBber.GetEmailList().isEmpty()){
+		if(m_currentBber.GetEmailList().isEmpty()
+			&& m_currentBber.GetWeiboList().isEmpty()){
 			Yuchsign.PopupPrompt("没有推送账户，无法同步，请先添加推送账户。", this);
 			selectTab(1);
 			return;
@@ -624,6 +627,11 @@ public class BberPanel extends TabPanel{
 					public void onFailure(Throwable caught) {
 						PopupProblemAndSearchHelp(caught.getMessage(),_panel);
 						Yuchsign.HideWaiting();
+						
+						if(m_checkStateTimer != null){
+							m_checkStateTimer.cancel();
+							m_checkStateTimer = null;
+						}
 					}
 				});
 			

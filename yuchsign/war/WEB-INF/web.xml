@@ -55,6 +55,16 @@
     <servlet-name>ActivateAccountServlet</servlet-name>
     <url-pattern>/act/*</url-pattern>
   </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>WeiboAuthServlet</servlet-name>
+    <servlet-class>com.yuchting.yuchberry.yuchsign.server.WeiboAuthServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>WeiboAuthServlet</servlet-name>
+    <url-pattern>/auth/*</url-pattern>
+  </servlet-mapping>
     
   <!-- Default page to serve -->
   <welcome-file-list>

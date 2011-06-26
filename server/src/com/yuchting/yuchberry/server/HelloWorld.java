@@ -135,7 +135,7 @@ public class HelloWorld {
 			key.customKey = t_consumer_key;
 			key.customSecrect = t_consumer_secret;
 			key.reset();
-			key.callbackUrl = "null";
+			key.callbackUrl = "http://127.0.0.1:8888/?bber=aaa.@gg.com";
 			String t_response = null;
 			
 			QOAuth oauth = new QOAuth();
@@ -168,7 +168,7 @@ public class HelloWorld {
 
 
 			con.setAllowUserInteraction(false);
-			con.connect();
+			//con.connect();
 			
 			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
 			try{

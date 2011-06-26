@@ -748,7 +748,7 @@ public class weiboTimeLineScreen extends MainScreen{
         	}
         	
         	m_pushUpdateDlg = true;
-        	UiApplication.getUiApplication().pushGlobalScreen(m_currUpdateDlg,1, UiEngine.GLOBAL_QUEUE);
+        	UiApplication.getUiApplication().pushScreen(m_currUpdateDlg);
         }
     };
     

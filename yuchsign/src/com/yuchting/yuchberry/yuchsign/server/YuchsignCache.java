@@ -9,6 +9,8 @@ import javax.cache.CacheException;
 import javax.cache.CacheFactory;
 import javax.cache.CacheManager;
 
+import com.yuchting.yuchberry.yuchsign.server.weibo.WeiboAuth;
+
 public class YuchsignCache {
 	
 	private static Cache			sm_cacheInstance = null;
@@ -54,7 +56,27 @@ public class YuchsignCache {
 		}
 	}
 	
+	static public WeiboAuth getWeiboAuth(String _bber){
+		
+		WeiboAuth t_ret = null;
+		try {		    
+			t_ret = (WeiboAuth)queryCache().get(_bber+"_WeiboAuth");
+		}catch (CacheException e) {
+			System.err.println("fetch the Alipay Cache failed:"+e.getMessage());
+		}
+		
+		return t_ret;
+	}
 	
+	static public void makeCacheWeiboAuth(WeiboAuth _auth){
+		if(_auth != null && !_auth.m_bber.isEmpty()){
+			try{
+				queryCache().put(_auth.m_bber+"_WeiboAuth",_auth.clone());
+			}catch(Exception e){
+				System.err.println("makeCacheWeiboAuth error:"+e.getMessage());
+			}
+		}
+	}
 	
 	static public void makeCacheYuchAlipay(yuchAlipay _pay){
 		if(_pay != null){
