@@ -400,7 +400,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				t_processed =  ProcessWeiboFollowUser(in);
 				break;
 			case msg_head.msgWeiboRefresh:
-				ProcessWeiboRefresh(in);
+				ProcessWeiboRefresh();
 				break;
 			case msg_head.msgWeiboDelete:
 				t_processed =  ProcessWeiboDelete(in);
@@ -410,7 +410,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		return t_processed;
 	}
 	
-	protected synchronized void ProcessWeiboRefresh(ByteArrayInputStream in){
+	protected synchronized void ProcessWeiboRefresh(){
 		
 		m_mainMgr.m_logger.LogOut(GetAccountName() + " Refresh Weibo All List");
 		
@@ -446,8 +446,19 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		int t_style = in.read();
 				
 		if(t_style == GetCurrWeiboStyle()){
+			
 			long t_long = sendReceive.ReadLong(in);
-			DeleteWeibo(t_long);
+			boolean t_isComment = false;
+			
+			if(m_mainMgr.GetConnectClientVersion() >= 8){
+				t_isComment = sendReceive.ReadBoolean(in);
+			}
+			
+			try{
+				DeleteWeibo(t_long,t_isComment);
+			}catch(Exception e){
+				m_mainMgr.m_logger.LogOut("Delete Weibo Error:" + e.getMessage());
+			}			
 			
 			return true;
 		}
@@ -480,6 +491,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				UpdateStatus(t_text,t_gpsInfo);
 				
 				m_mainMgr.SendData(sm_updateOkPrompt, false);
+				
+				ProcessWeiboRefresh();
 				
 				break;
 			case fetchWeibo.SEND_FORWARD_TYPE:
@@ -519,6 +532,10 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					
 					m_mainMgr.SendData(sm_updateOkPrompt, false);
 					
+					if(t_updateTimeline){
+						ProcessWeiboRefresh();
+					}
+					
 					// public the forward commect/forward
 					// return false to give another weibo to process if public forward
 					//
@@ -549,7 +566,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	
 	protected abstract void FavoriteWeibo(long _id)throws Exception;
 	protected abstract void FollowUser(String _id)throws Exception;
-	protected abstract void DeleteWeibo(long _id)throws Exception;
+	protected abstract void DeleteWeibo(long _id,boolean _isComment)throws Exception;
 	
 	protected boolean ProcessWeiboConfirmed(ByteArrayInputStream in)throws Exception{
 		

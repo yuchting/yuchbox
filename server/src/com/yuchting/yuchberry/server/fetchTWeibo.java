@@ -223,7 +223,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		m_twitter.createFriendship(_id);
 	}
 	
-	protected void DeleteWeibo(long _id)throws Exception{
+	protected void DeleteWeibo(long _id,boolean _isComment)throws Exception{
 		m_twitter.destroyStatus(_id);
 	}
 	

@@ -279,7 +279,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		m_weibo.createFriendship(_id);
 	}
 	
-	protected void DeleteWeibo(long _id)throws Exception{
+	protected void DeleteWeibo(long _id,boolean _isComment)throws Exception{
 		m_weibo.destroyStatus(_id);
 	}
 	

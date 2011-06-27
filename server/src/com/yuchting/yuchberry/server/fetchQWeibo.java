@@ -73,7 +73,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		// nothing about this list
 	}
 
-	protected void DeleteWeibo(long _id)throws Exception{
+	protected void DeleteWeibo(long _id,boolean _isComment)throws Exception{
 		m_api.deleteMessage(_id);
 	}
 	
