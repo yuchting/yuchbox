@@ -814,10 +814,13 @@ public class weiboTimeLineScreen extends MainScreen{
     	&& m_currMgr.getCurrSelectedItem().m_weibo.IsOwnWeibo()){
     		if(Dialog.ask(Dialog.D_YES_NO,recvMain.sm_local.getString(localResource.WEIBO_DELETE_ASK_PROMPT),Dialog.NO) == Dialog.YES){
     			try{
+    				fetchWeibo t_weibo = m_currMgr.getCurrSelectedItem().m_weibo;
+    				
     				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
         			t_os.write(msg_head.msgWeiboDelete);
-        			t_os.write(m_currMgr.getCurrSelectedItem().m_weibo.GetWeiboStyle());
-        			sendReceive.WriteLong(t_os,m_currMgr.getCurrSelectedItem().m_weibo.GetId());
+        			t_os.write(t_weibo.GetWeiboStyle());
+        			sendReceive.WriteLong(t_os,t_weibo.GetId());
+        			sendReceive.WriteBoolean(t_os,t_weibo.GetWeiboClass() == fetchWeibo.COMMENT_ME_CLASS);
         			
         			m_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeiboDelete,t_os.toByteArray(),true);
         			

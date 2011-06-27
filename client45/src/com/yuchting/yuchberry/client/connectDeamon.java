@@ -50,7 +50,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListener,
 												ViewListenerExtended{
 		
-	final static int	fsm_clientVer = 7;
+	final static int	fsm_clientVer = 8;
 	 
 	sendReceive		m_connect = null;
 		
