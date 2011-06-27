@@ -16,6 +16,7 @@ import javax.microedition.location.LocationProvider;
 import local.localResource;
 import net.rim.blackberry.api.browser.Browser;
 import net.rim.blackberry.api.browser.BrowserSession;
+import net.rim.blackberry.api.homescreen.HomeScreen;
 import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItem;
 import net.rim.blackberry.api.menuitem.ApplicationMenuItemRepository;
@@ -60,6 +61,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	final static Object 	fsm_notifyEvent_weibo = new Object() {
 	    public String toString() {
 	       return recvMain.sm_local.getString(localResource.NOTIFY_WEIBO_LABEL);
+	    }
+	};
+	
+	final static long		fsm_notifyID_disconnect = 767918509114949L;
+	
+	final static Object 	fsm_notifyEvent_disconnect = new Object() {
+	    public String toString() {
+	       return recvMain.sm_local.getString(localResource.NOTIFY_DISCONNECT_LABEL);
 	    }
 	};
 	
@@ -123,6 +132,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	int					m_recvMailNum		= 0;
 	String				m_passwordKey		= "";
 	
+	boolean			m_connectDisconnectPrompt = false;
+	
 	
 	static final String[]	fsm_recvMaxTextLenghtString = {"∞","1KB","5KB","10KB","50KB"};
 	static final int[]	fsm_recvMaxTextLenght		= {0,1024,1024*5,1024*10,1024*50};
@@ -146,13 +157,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		int				m_uploadedSize;
 		int				m_totalSize;		
 	}
-	
-	public class AddAattachmentItem extends ApplicationMenuItem{
-			
-		AddAattachmentItem(){
-			super(20);
-		}
-				
+		
+	ApplicationMenuItem m_addItem	= new ApplicationMenuItem(20){
+						
 		public String toString(){
 			return recvMain.sm_local.getString(localResource.ADD_ATTACHMENT);
 		}
@@ -165,14 +172,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 			return context;
 		}
-	}
+	};
 	
-	public class DelAattachmentItem extends ApplicationMenuItem{
-		
-		DelAattachmentItem(){
-			super(30);
-		}
-				
+	ApplicationMenuItem	m_delItem	= new ApplicationMenuItem(21){
 		public String toString(){
 			return recvMain.sm_local.getString(localResource.CHECK_DEL_ATTACHMENT);
 		}
@@ -186,13 +188,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 			return context;	
 		}
-	}
-	
-	AddAattachmentItem 	m_addItem	= new AddAattachmentItem();
-	DelAattachmentItem	m_delItem	= new DelAattachmentItem();
-	
-	
-	
+	};
+		
 	String m_latestVersion			= null;
 	
 	//@{ location information
@@ -280,9 +277,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         
 		// must read the configure first
 		//
-		WriteReadIni(true);
-		
-		InitWeiboModule();
+		WriteReadIni(true);		
 		
         if(_systemRun){
         	
@@ -290,6 +285,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	//
         	NotificationsManager.registerSource(fsm_notifyID_email, fsm_notifyEvent_email,NotificationsConstants.CASUAL);
         	NotificationsManager.registerSource(fsm_notifyID_weibo, fsm_notifyEvent_weibo,NotificationsConstants.CASUAL);
+        	NotificationsManager.registerSource(fsm_notifyID_disconnect, fsm_notifyEvent_disconnect,NotificationsConstants.CASUAL);
         	
         	if(!m_autoRun || m_hostname.length() == 0 || m_port == 0 || m_userPassword.length() == 0){
         		System.exit(0);
@@ -301,7 +297,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         			System.exit(0);
         		}
         	}      	
-        }     
+        }
+        
+        InitWeiboModule();
 	}
 	
 	private boolean m_initWeiboHeadImageDir = false; 
@@ -726,7 +724,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 22;
+	final static int		fsm_clientVersion = 24;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -779,11 +777,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_useWifi = (t_readFile.read() == 0)?false:true;
 				    			m_appendString = sendReceive.ReadString(t_readFile);		    			
 				    		}
-				    		
+				    						    		
 				    		if(t_currVer >= 5){
 				    			m_autoRun = (t_readFile.read() == 0)?false:true;		    			
 				    		}
-				    		
+				    						    		
 				    		if(t_currVer >= 6){
 				    			m_uploadByte = sendReceive.ReadLong(t_readFile);
 				    			m_downloadByte = sendReceive.ReadLong(t_readFile);
@@ -861,6 +859,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			WeiboItemField.sm_simpleMode = sendReceive.ReadBoolean(t_readFile);
 				    			m_dontDownloadWeiboHeadImage = sendReceive.ReadBoolean(t_readFile);
 				    		}
+				    		
+				    		if(t_currVer >= 23){
+				    			m_hideHeader	= sendReceive.ReadBoolean(t_readFile);
+				    		}
+				    		
+				    		if(t_currVer >= 24){
+				    			m_connectDisconnectPrompt = sendReceive.ReadBoolean(t_readFile);
+				    		}
+				    		
 			    		}finally{
 			    			t_readFile.close();
 			    			t_readFile = null;
@@ -932,6 +939,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						sendReceive.WriteBoolean(t_writeFile,WeiboItemField.sm_displayHeadImage);
 						sendReceive.WriteBoolean(t_writeFile,WeiboItemField.sm_simpleMode);
 						sendReceive.WriteBoolean(t_writeFile,m_dontDownloadWeiboHeadImage);
+						
+						sendReceive.WriteBoolean(t_writeFile,m_hideHeader);
+						
+						sendReceive.WriteBoolean(t_writeFile,m_connectDisconnectPrompt);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1040,7 +1051,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public void Start(){
         
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_addItem);
-		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);
+		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);
 				
 		WriteReadIni(false);
 	}
@@ -1055,10 +1066,13 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
-		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT ,m_delItem);	
+		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);	
+		
+		DisableWeiboModule();
 		
 		StopNotification();
 		StopWeiboNotification();
+		StopDisconnectNotification();
 		
 		if(m_connectDeamon.m_connect != null){
 			m_connectDeamon.m_connect.StoreUpDownloadByteImm(true);
@@ -1069,7 +1083,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				m_locationProvider.reset();
 				m_locationProvider.setLocationListener(null, -1, -1, -1);
 			}
-		}	
+		}
 		
 		// store the weibo item list
 		ReadWriteWeiboFile(false);
@@ -1093,11 +1107,21 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}	
 		
 		PopupLatestVersionDlg();
+		
+		if(m_hasNewWeibo){
+			m_hasNewWeibo = false;
+			
+			if(m_connectDeamon.isDisconnectState()){
+				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline.png"));
+			}else{
+				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main.png"));
+			}			
+		}
 	}
 	
 	public void deactivate(){
 		
-		if(m_enableWeiboModule && m_connectDeamon.IsConnectState()){
+		if(m_enableWeiboModule ){
 			
 			if(m_stateScreen != null){
 				popScreen(m_stateScreen);
@@ -1105,9 +1129,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			}
 			
 			if(m_weiboTimeLineScreen != null){
+				
+				if(m_weiboTimeLineScreen.m_pushUpdateDlg){
+					m_weiboTimeLineScreen.m_currUpdateDlg.close();
+				}
+				
 				if(getScreenCount() == 1){
 					popScreen(m_weiboTimeLineScreen);
-				}				
+				}
 			}
 			
 		}else{
@@ -1150,6 +1179,16 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public void StopWeiboNotification(){
 		NotificationsManager.cancelImmediateEvent(fsm_notifyID_weibo, 0, this, null);
+	}
+	
+	public void TriggerDisconnectNotification(){
+		if(IsPromptTime() && m_connectDisconnectPrompt){
+			NotificationsManager.triggerImmediateEvent(fsm_notifyID_disconnect, 0, this, null);
+		}		
+	}
+	
+	public void StopDisconnectNotification(){
+		NotificationsManager.cancelImmediateEvent(fsm_notifyID_disconnect, 0, this, null);
 	}
 	
 	
@@ -1566,16 +1605,37 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public int					m_receivedWeiboNum = 0;
 	public int					m_sentWeiboNum = 0;
+	public boolean				m_hideHeader = false;
+	public boolean				m_hasNewWeibo = false;
 	
 	boolean m_receiveWeiboListChanged = false;
+	
+	ApplicationMenuItem m_updateWeiboItem = null;
 	
 	public void InitWeiboModule(){
 		
 		if(m_enableWeiboModule){
+			
 			if(m_weiboTimeLineScreen == null){
 				m_weiboTimeLineScreen = new weiboTimeLineScreen(this);
+				
+				m_updateWeiboItem = new ApplicationMenuItem(30) {
+					
+					public String toString() {
+						return recvMain.sm_local.getString(localResource.WEIBO_UPDATE_DLG);
+					}
+					
+					public Object run(Object context) {
+						m_weiboTimeLineScreen.m_updateItem.run();
+						return m_weiboTimeLineScreen.m_currUpdateDlg;
+					}
+				};
+				
+				ApplicationMenuItemRepository.getInstance()
+					.addMenuItem(ApplicationMenuItemRepository.MENUITEM_MESSAGE_LIST,m_updateWeiboItem);
 			}
 			
+									
 			ReadWriteWeiboFile(true);
 			
 			m_weiboTimeLineScreen.ClearWeibo();
@@ -1612,10 +1672,29 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					}
 				}
 			}
+			
+		}
+	}
+	
+	public void DisableWeiboModule(){
+		if(m_updateWeiboItem != null){
+			ApplicationMenuItemRepository.getInstance()
+				.removeMenuItem(ApplicationMenuItemRepository.MENUITEM_MESSAGE_LIST,m_updateWeiboItem);
+			m_updateWeiboItem = null;
 		}
 	}
 		
 	public void PrepareWeiboItem(fetchWeibo _weibo){
+		
+		if(!isForeground()){
+			m_hasNewWeibo = true;
+			
+			if(m_connectDeamon.isDisconnectState()){
+				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline_new.png"));
+			}else{
+				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_new.png"));
+			}
+		}
 		
 		synchronized (this) {
 			m_receiveWeiboListChanged = true;
@@ -1660,8 +1739,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						m_receivedWeiboList.removeElementAt(i);
 						
 						m_weiboTimeLineScreen.DelWeibo(t_delWeibo);
-						m_weiboTimeLineScreen.DelWeiboHeadImage(t_delWeibo.GetWeiboStyle(),Long.toString(t_delWeibo.GetId()));
-						
+												
 						break;
 					}
 				}

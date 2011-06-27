@@ -17,6 +17,10 @@ public class WeiboDMManager extends WeiboMainManager{
 			
 			public void run() {
 				
+				if(_resetSelectIdx){
+					m_hasNewWeibo = true;
+				}
+				
 				int t_num = getFieldCount();
 				for(int i = 0 ;i < t_num;i++){
 					Field field = getField(i);
@@ -35,11 +39,7 @@ public class WeiboDMManager extends WeiboMainManager{
 				
 				WeiboDMItemField t_field = new WeiboDMItemField(_weibo,_image,WeiboDMManager.this);
 	
-				insert(t_field.m_focusField,0);
-								
-				if(_resetSelectIdx){
-					m_hasNewWeibo = true;
-				}
+				insert(t_field.m_focusField,0);			
 			}
 		});					
 	}

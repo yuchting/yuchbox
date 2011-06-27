@@ -32,5 +32,6 @@ final public class msg_head {
 	final public static byte msgWeiboDelete		= 18;
 	
 	final public static byte msgWeiboEnable		= 19;
+	final public static byte msgWeiboPrompt		= 20;
 			
 }

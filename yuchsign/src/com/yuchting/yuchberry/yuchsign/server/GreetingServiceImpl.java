@@ -1073,8 +1073,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		WeiboAuth t_auth = new WeiboAuth(_bber,_type);
 				
 		try{
-			String t_res = t_auth.getRequestURL("http://yuchberrysign.yuchberry.info/auth/?bber=" + URLEncoder.encode(_bber,"UTF-8"));
 			
+			String t_res = t_auth.getRequestURL("http://yuchberrysign.yuchberry.info/auth/?bber=" + URLEncoder.encode(_bber,"UTF-8"));
+			 	
 			YuchsignCache.makeCacheWeiboAuth(t_auth);
 			
 			return t_res;

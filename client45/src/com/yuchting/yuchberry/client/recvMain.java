@@ -67,6 +67,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	    }
 	};
 	
+	final static long		fsm_notifyID_disconnect = 767918509114949L;
+	
+	final static Object 	fsm_notifyEvent_disconnect = new Object() {
+	    public String toString() {
+	       return recvMain.sm_local.getString(localResource.NOTIFY_DISCONNECT_LABEL);
+	    }
+	};
+	
 	public connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
     aboutScreen			m_aboutScreen		= null;
@@ -126,6 +134,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	int					m_sendMailNum		= 0;
 	int					m_recvMailNum		= 0;
 	String				m_passwordKey		= "";
+	
+	boolean			m_connectDisconnectPrompt = false;
 	
 	
 	static final String[]	fsm_recvMaxTextLenghtString = {"∞","1KB","5KB","10KB","50KB"};
@@ -278,6 +288,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	//
         	NotificationsManager.registerSource(fsm_notifyID_email, fsm_notifyEvent_email,NotificationsConstants.CASUAL);
         	NotificationsManager.registerSource(fsm_notifyID_weibo, fsm_notifyEvent_weibo,NotificationsConstants.CASUAL);
+        	NotificationsManager.registerSource(fsm_notifyID_disconnect, fsm_notifyEvent_disconnect,NotificationsConstants.CASUAL);
         	
         	if(!m_autoRun || m_hostname.length() == 0 || m_port == 0 || m_userPassword.length() == 0){
         		System.exit(0);
@@ -716,7 +727,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 23;
+	final static int		fsm_clientVersion = 24;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -769,11 +780,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_useWifi = (t_readFile.read() == 0)?false:true;
 				    			m_appendString = sendReceive.ReadString(t_readFile);		    			
 				    		}
-				    		
+				    						    		
 				    		if(t_currVer >= 5){
 				    			m_autoRun = (t_readFile.read() == 0)?false:true;		    			
 				    		}
-				    		
+				    						    		
 				    		if(t_currVer >= 6){
 				    			m_uploadByte = sendReceive.ReadLong(t_readFile);
 				    			m_downloadByte = sendReceive.ReadLong(t_readFile);
@@ -856,6 +867,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_hideHeader	= sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
+				    		if(t_currVer >= 24){
+				    			m_connectDisconnectPrompt = sendReceive.ReadBoolean(t_readFile);
+				    		}
+				    		
 			    		}finally{
 			    			t_readFile.close();
 			    			t_readFile = null;
@@ -929,6 +944,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						sendReceive.WriteBoolean(t_writeFile,m_dontDownloadWeiboHeadImage);
 						
 						sendReceive.WriteBoolean(t_writeFile,m_hideHeader);
+						
+						sendReceive.WriteBoolean(t_writeFile,m_connectDisconnectPrompt);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1058,6 +1075,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		StopNotification();
 		StopWeiboNotification();
+		StopDisconnectNotification();
 		
 		if(m_connectDeamon.m_connect != null){
 			m_connectDeamon.m_connect.StoreUpDownloadByteImm(true);
@@ -1164,6 +1182,16 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public void StopWeiboNotification(){
 		NotificationsManager.cancelImmediateEvent(fsm_notifyID_weibo, 0, this, null);
+	}
+	
+	public void TriggerDisconnectNotification(){
+		if(IsPromptTime() && m_connectDisconnectPrompt){
+			NotificationsManager.triggerImmediateEvent(fsm_notifyID_disconnect, 0, this, null);
+		}		
+	}
+	
+	public void StopDisconnectNotification(){
+		NotificationsManager.cancelImmediateEvent(fsm_notifyID_disconnect, 0, this, null);
 	}
 	
 	

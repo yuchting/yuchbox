@@ -845,6 +845,8 @@ public class connectDeamon extends Thread implements SendListener,
 				//
 				m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTED_LABEL));
 				
+				m_mainApp.StopDisconnectNotification();
+				
 				if(m_mainApp.m_hasNewWeibo){
 					HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_new.png"));
 				}else{
@@ -878,6 +880,8 @@ public class connectDeamon extends Thread implements SendListener,
 			}else{
 				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline.png"));
 			}
+			
+			m_mainApp.TriggerDisconnectNotification();
 			
 			synchronized (this) {
 				try{
@@ -944,7 +948,6 @@ public class connectDeamon extends Thread implements SendListener,
 					 if(send.isAlive()){
 						 send.interrupt();
 					 }
-					 
 				 }				 
 			 }
 			 
@@ -1048,7 +1051,7 @@ public class connectDeamon extends Thread implements SendListener,
 						 
 						 continue;
 						 
-					 }else if(message.toLowerCase().indexOf("tunnel") != -1){
+					 }else if(message.toLowerCase().indexOf("tunnel down") != -1){
 						 
 						 continue;
 						 
@@ -1058,6 +1061,7 @@ public class connectDeamon extends Thread implements SendListener,
 					 }
 					 
 				 }else{
+					 
 					 throw _e;
 				 }			 
 			 }			
@@ -1490,7 +1494,27 @@ public class connectDeamon extends Thread implements SendListener,
 		    for (int j = 0; j < a.length; j++) {
 		    	_mail.GetSendToVect().addElement(composeAddress(a[j]));
 		    }
-		}		
+		}
+		
+		// CC
+		if ((a = m.getRecipients(Message.RecipientType.CC)) != null) {
+			
+			_mail.GetCCToVect().removeAllElements();
+			
+		    for (int j = 0; j < a.length; j++) {
+		    	_mail.GetCCToVect().addElement(composeAddress(a[j]));
+		    }
+		}
+		
+		// BCC
+		if((a = m.getRecipients(Message.RecipientType.BCC)) != null){
+			
+			_mail.GetBCCToVect().removeAllElements();
+			
+		    for (int j = 0; j < a.length; j++) {
+		    	_mail.GetBCCToVect().addElement(composeAddress(a[j]));
+		    }
+		}
 		
 		String t_sub = m.getSubject();
 		if(t_sub == null){

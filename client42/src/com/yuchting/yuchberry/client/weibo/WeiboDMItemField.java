@@ -7,7 +7,6 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.component.BasicEditField;
 
-import com.yuchting.yuchberry.client.HyperlinkButtonField;
 import com.yuchting.yuchberry.client.recvMain;
 
 final class WeiboDMData{
@@ -155,6 +154,15 @@ public class WeiboDMItemField extends WeiboItemField{
 		}
 		
 		setExtent(fsm_weiboItemFieldWidth,height);
+	}
+	
+	public boolean hasTheWeibo(fetchWeibo _weibo){
+		for(int i = 0;i < m_DMList.size();i++){
+			if(((WeiboDMData)m_DMList.elementAt(i)).m_weibo == _weibo){				
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public boolean delWeibo(fetchWeibo _weibo){

@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.client;
+package com.yuchting.yuchberry.client.weibo;
 
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;

@@ -388,6 +388,9 @@ public class sendReceive extends Thread{
 					return false;
 				}
 				
+				// first sleep 
+				//
+				Thread.sleep(20);
 				continue;
 				
 			}else{
@@ -451,6 +454,9 @@ public class sendReceive extends Thread{
 						return -1;
 					}
 					
+					// first sleep 
+					//
+					Thread.sleep(20);					
 					continue;
 					
 				}else{
@@ -496,11 +502,14 @@ public class sendReceive extends Thread{
 			if(t_c > 0){
 				t_readIndex += t_c;
 			}else{
-				t_counter++;
 				
-				if(t_counter > 20){
+				if(++t_counter > 20){
 					throw new Exception("FroceReadByte failed " + _readLen );
 				}
+				
+				// first sleep 
+				//
+				Thread.sleep(20);	
 			}		
 		}
 	}

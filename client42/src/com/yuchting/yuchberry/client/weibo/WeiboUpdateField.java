@@ -15,11 +15,12 @@ public class WeiboUpdateField extends WeiboItemField{
 	
 	public void AddDelControlField(boolean _add){
 		AddDelEditTextArea(_add,m_sendUpdateText);
+		
 		if(_add){
-			//m_parentManager.m_editTextArea.setSelection(0,true,m_sendUpdateText.length());
 			
 			if(m_sendUpdateText.length() != 0){
 				m_parentManager.m_editTextArea.select(true);
+				m_parentManager.m_editTextArea.setCursorPosition(m_sendUpdateText.length()-1);
 			}
 		}
 		
@@ -75,9 +76,10 @@ public class WeiboUpdateField extends WeiboItemField{
 				
 			if(_on){
 				_g.setColor(fsm_selectedColor);
-				_g.fillRect(1,1,getPreferredWidth() - 2,sm_fontHeight - 3);
+				_g.fillRoundRect(1,1,getPreferredWidth() - 2,sm_fontHeight - 3,5,5);
 				_g.setColor(0xffffff);
 			}else{
+				
 				_g.drawLine(0,sm_fontHeight - 1,getPreferredWidth(),sm_fontHeight - 1);
 				_g.setColor(fsm_spaceLineColor);
 			}	

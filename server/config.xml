@@ -2,6 +2,41 @@
 <Yuchberry userPassword="111111" serverPort="9716" pushInterval="10" userSSL="0" convertoSimpleChar="0" >
 
 	<EmailAccount
+
+        account="hu.shaoxing@trans-cosmos.com.cn"
+
+        password="*******"
+
+        cryptPassword=""               
+
+        sendName=""
+
+        UseFullNameSignIn="0"
+
+ 
+
+        protocol="pop3"
+
+        host="61.136.1.5"
+
+        port="110"
+
+ 
+
+        protocol_send="smtp"
+
+        host_send="61.136.1.5"
+
+        port_send="25"
+
+ 
+
+        appendHTML="0"
+
+        pushHistoryMsg="0"
+
+        />
+	<EmailAccount
 		account="tzt-123@163.com"
 		password="superman"
 		cryptPassword=""

@@ -1854,14 +1854,21 @@ public class fetchEmail extends fetchAccount{
 	    msg.setRecipients(Message.RecipientType.TO,
 					InternetAddress.parse(t_sendTo, false));
 	    
-	    if (!_mail.GetReplyToVect().isEmpty()){
+	    if (!_mail.GetCCToVect().isEmpty()){
+	    	t_sendTo = fetchMail.parseAddressList(_mail.GetCCToVect());
+	    	m_mainMgr.m_logger.LogOut("ComposeMessage CCTo:'"+t_sendTo+"'");
+	    	
 			msg.setRecipients(Message.RecipientType.CC,
-						InternetAddress.parse(fetchMail.parseAddressList(_mail.GetReplyToVect()), false));
+						InternetAddress.parse(t_sendTo, false));			
 	    }
 	    
-	    if(!_mail.GetGroupVect().isEmpty()){
+	    if(!_mail.GetBCCToVect().isEmpty()){
+	    	
+	    	t_sendTo = fetchMail.parseAddressList(_mail.GetBCCToVect());
+	    	m_mainMgr.m_logger.LogOut("ComposeMessage BCCTo:'"+t_sendTo+"'");
+	    	
 	    	msg.setRecipients(Message.RecipientType.BCC,
-					InternetAddress.parse(fetchMail.parseAddressList(_mail.GetGroupVect()), false));
+					InternetAddress.parse(t_sendTo, false));
 	    }
 		
 

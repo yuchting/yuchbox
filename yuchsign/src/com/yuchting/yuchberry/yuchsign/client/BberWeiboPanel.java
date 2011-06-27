@@ -77,7 +77,7 @@ public class BberWeiboPanel extends FlowPanel{
 			public void onClick(ClickEvent event) {
 				
 				if(m_authURL != null){
-					Yuchsign.PopupWaiting("等待用户完成授权……\n如果授权允许完毕，超过2分钟没有反应，请重新刷新页面。", BberWeiboPanel.this);
+					Yuchsign.PopupWaiting("等待用户完成授权……", BberWeiboPanel.this);
 					Window.open(m_authURL,"_blank","");
 					requestAccessToken();
 					return ;

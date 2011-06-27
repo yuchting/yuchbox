@@ -34,6 +34,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 CheckboxField		m_uesMDS		= null;
 	 CheckboxField		m_useWifi		= null;
 	 CheckboxField		m_autoRun		= null;
+	 CheckboxField		m_conDisPrompt 	= null;
 	 ObjectChoiceField	m_pulseInterval	= null;
 	 
 	 LabelField			m_uploadByte	= new LabelField();
@@ -127,6 +128,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 
 		 m_autoRun			= new CheckboxField(recvMain.sm_local.getString(localResource.AUTO_RUN_CHECK_BOX), m_mainApp.m_autoRun);
 		 add(m_autoRun);
+		 
+		 m_conDisPrompt		= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_CONNECT_DISCONNECT_PROMPT), m_mainApp.m_connectDisconnectPrompt);
+		 add(m_conDisPrompt);
 		 
 		 //@}
 		 
@@ -350,6 +354,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				
 		m_mainApp.SetAPNName(m_APN.getText());
 		m_mainApp.m_autoRun = m_autoRun.getChecked();
+		m_mainApp.m_connectDisconnectPrompt = m_conDisPrompt.getChecked();
 		
 		m_mainApp.m_appendString = m_appendString.getText();
 		m_mainApp.m_useWifi = m_useWifi.getChecked();

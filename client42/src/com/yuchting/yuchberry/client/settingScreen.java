@@ -34,6 +34,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 CheckboxField		m_uesMDS		= null;
 	 CheckboxField		m_useWifi		= null;
 	 CheckboxField		m_autoRun		= null;
+	 CheckboxField		m_conDisPrompt 	= null;
 	 ObjectChoiceField	m_pulseInterval	= null;
 	 
 	 LabelField			m_uploadByte	= new LabelField();
@@ -70,6 +71,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 CheckboxField		m_displayHeadImage = null;
 	 CheckboxField		m_simpleMode 	= null;
 	 CheckboxField		m_dontDownloadHeadImage = null;
+	 CheckboxField		m_hideWeiboHeader = null;	
 	 ObjectChoiceField	m_maxWeiboNum	= null;
 	 
 	 recvMain			m_mainApp		= null;
@@ -126,6 +128,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 
 		 m_autoRun			= new CheckboxField(recvMain.sm_local.getString(localResource.AUTO_RUN_CHECK_BOX), m_mainApp.m_autoRun);
 		 add(m_autoRun);
+		 
+		 m_conDisPrompt		= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_CONNECT_DISCONNECT_PROMPT), m_mainApp.m_connectDisconnectPrompt);
+		 add(m_conDisPrompt);
 		 
 		 //@}
 		 
@@ -262,6 +267,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 			 m_dontDownloadHeadImage = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DONT_DOWNLOAD_HEAD_IMAGE),m_mainApp.m_dontDownloadWeiboHeadImage);
 			 m_weiboSetManager.add(m_dontDownloadHeadImage);
 			 
+			 m_hideWeiboHeader = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_HIDE_HEADER),m_mainApp.m_hideHeader);
+			 m_weiboSetManager.add(m_hideWeiboHeader);
+			 
 			 m_maxWeiboNum		= new ObjectChoiceField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_MAX_WEIBO_NUM),
 									recvMain.fsm_maxWeiboNumList,m_mainApp.m_maxWeiboNumIndex);
 			 
@@ -346,6 +354,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				
 		m_mainApp.SetAPNName(m_APN.getText());
 		m_mainApp.m_autoRun = m_autoRun.getChecked();
+		m_mainApp.m_connectDisconnectPrompt = m_conDisPrompt.getChecked();
 		
 		m_mainApp.m_appendString = m_appendString.getText();
 		m_mainApp.m_useWifi = m_useWifi.getChecked();
@@ -371,6 +380,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				m_mainApp.InitWeiboModule();
 			}
 			
+			if(m_mainApp.m_enableWeiboModule == false){
+				m_mainApp.DisableWeiboModule();
+			}
+			
 			if(m_mainApp.m_connectDeamon.IsConnectState()){
 				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 				try{
@@ -391,6 +404,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 			WeiboItemField.sm_commentFirst	= m_commentFirst.getChecked();
 			m_mainApp.m_publicForward		= m_publicForward.getChecked();		
 			m_mainApp.m_maxWeiboNumIndex	= m_maxWeiboNum.getSelectedIndex();
+			m_mainApp.m_hideHeader			= m_hideWeiboHeader.getChecked();
 			
 			WeiboItemField.sm_displayHeadImage	= m_displayHeadImage.getChecked();
 			WeiboItemField.sm_simpleMode		= m_simpleMode.getChecked();
