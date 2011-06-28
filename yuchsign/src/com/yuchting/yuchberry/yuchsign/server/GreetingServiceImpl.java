@@ -54,6 +54,11 @@ final class PMF {
  */
 public class GreetingServiceImpl extends RemoteServiceServlet implements GreetingService {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6793202866979915815L;
+
 	// get yuch host list first from cache 
 	//
 	yuchHost	m_currSyncHost = null;
@@ -1075,6 +1080,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		try{
 			
 			String t_res = t_auth.getRequestURL("http://yuchberrysign.yuchberry.info/auth/?bber=" + URLEncoder.encode(_bber,"UTF-8"));
+			//String t_res = t_auth.getRequestURL("http://127.0.0.1:8888/auth/?bber=" + URLEncoder.encode(_bber,"UTF-8"));
 			 	
 			YuchsignCache.makeCacheWeiboAuth(t_auth);
 			

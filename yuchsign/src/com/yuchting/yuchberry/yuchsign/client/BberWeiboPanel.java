@@ -7,8 +7,9 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.RadioButton;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class BberWeiboPanel extends FlowPanel{
@@ -23,9 +24,10 @@ public class BberWeiboPanel extends FlowPanel{
 	};
 	
 	final Button			m_requestButton	= new Button(fsm_genWeiboAuth);
+	final Button			m_helpButton	= new Button("帮助");
 	
-	final TextBox			m_accessToken 		= new TextBox();
-	final TextBox			m_secretToken 		= new TextBox();
+	String					m_accessToken 		= null;
+	String					m_secretToken 		= null;
 	
 	final RadioButton[]		m_pushType	= 
 	{
@@ -45,8 +47,8 @@ public class BberWeiboPanel extends FlowPanel{
 			@Override
 			public void onClick(ClickEvent event) {
 				m_authURL = null;
-				m_accessToken.setText("");
-				m_secretToken.setText("");
+				m_accessToken = null;
+				m_secretToken = null;
 				
 				m_requestButton.setText(fsm_genWeiboAuth);
 				m_requestButton.setEnabled(true);
@@ -54,27 +56,26 @@ public class BberWeiboPanel extends FlowPanel{
 			}
 		};
 		
+		add(new HTML("支持Weibo:<br />"));
+		
 		for(RadioButton but : m_type){
 			add(but);
 			but.addClickHandler(t_typeHandler);
 		}
 		
 		m_type[0].setValue(true);
-		
-		m_accessToken.setPixelSize(200,18);
-		m_secretToken.setPixelSize(200,18);
-		
-		m_accessToken.setEnabled(false);
-		m_secretToken.setEnabled(false);
-		
-		final FlowPanel t_subPane = this;
-		BberPanel.AddLabelWidget(t_subPane,"访问令牌:",m_accessToken);
-		BberPanel.AddLabelWidget(t_subPane,"密码令牌:",m_secretToken);
-		
+				
 		m_requestButton.addClickHandler(new ClickHandler() {
 			
 			@Override
 			public void onClick(ClickEvent event) {
+				
+				if(m_mainPanel.m_currentBber.getAccountTotalNum() >= m_mainPanel.m_currentBber.GetMaxPushNum()){
+					Yuchsign.PopupPrompt("已经达到当前推送的最大数量:"+ 
+											m_mainPanel.m_currentBber.GetMaxPushNum() + 
+											"(需要升级)", m_mainPanel.m_pushList);
+					return;
+				}
 				
 				if(m_authURL != null){
 					Yuchsign.PopupWaiting("等待用户完成授权……", BberWeiboPanel.this);
@@ -107,7 +108,7 @@ public class BberWeiboPanel extends FlowPanel{
 							m_authURL = result;
 							m_requestButton.setText(fsm_genAccessToken);
 														
-							Yuchsign.PopupPrompt("生成授权信息成功，\n请点击 ["+fsm_genAccessToken+"] 按钮获得授权码。",m_accessToken);
+							Yuchsign.PopupPrompt("生成授权信息成功，\n请点击 ["+fsm_genAccessToken+"] 按钮获得授权码。",BberWeiboPanel.this);
 							Yuchsign.HideWaiting();
 							
 						}else{
@@ -125,8 +126,18 @@ public class BberWeiboPanel extends FlowPanel{
 			}
 		});
 		
+		m_helpButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				Window.open("http://code.google.com/p/yuchberry/wiki/YuchBerry_Weibo","_blank","");
+			}
+		});
 		
-		add(m_requestButton);
+		HorizontalPanel t_butPanel = new HorizontalPanel();
+		t_butPanel.setSpacing(5);
+		t_butPanel.add(m_requestButton);
+		t_butPanel.add(m_helpButton);
+		add(t_butPanel);
 		
 		VerticalPanel t_pushPanel = new VerticalPanel();
 		
@@ -158,11 +169,14 @@ public class BberWeiboPanel extends FlowPanel{
 						}else if(result.indexOf("&") != -1){
 							Yuchsign.HideWaiting();
 							String[] t_arr = result.split("&");
-							m_accessToken.setText(t_arr[0]);
-							m_secretToken.setText(t_arr[1]);
 							
-							Yuchsign.PopupPrompt("授权成功！可以添加了！", BberWeiboPanel.this);
+							m_accessToken = t_arr[0];
+							m_secretToken = t_arr[1];
+							
 							m_checkStateTimer.cancel();
+							m_mainPanel.m_addPushAccountBut.click();
+							
+							Yuchsign.PopupPrompt("授权，添加账户成功！", BberWeiboPanel.this);
 						}
 					}
 					
@@ -189,8 +203,8 @@ public class BberWeiboPanel extends FlowPanel{
 				if(_weibo.m_typeName.equals(but.getText())){					
 					
 					but.setValue(true);
-					m_accessToken.setText(_weibo.m_accessToken);
-					m_secretToken.setText(_weibo.m_secretToken);
+					m_accessToken = _weibo.m_accessToken;
+					m_secretToken = _weibo.m_secretToken;
 					
 					break;
 				}
@@ -209,13 +223,13 @@ public class BberWeiboPanel extends FlowPanel{
 			m_requestButton.setEnabled(true);
 			m_requestButton.setText(fsm_genWeiboAuth);
 			
-			m_accessToken.setText("");
-			m_secretToken.setText("");
+			m_accessToken = null;
+			m_secretToken = null;
 		}
 	}
 	
 	public yuchWeibo AddAccount(yuchWeibo _weibo){
-		if(m_accessToken.getText().length() == 0){
+		if(m_accessToken == null){
 			Yuchsign.PopupPrompt("请先完成授权", BberWeiboPanel.this);
 			return null;
 		}
@@ -226,8 +240,8 @@ public class BberWeiboPanel extends FlowPanel{
 		}else{
 			t_ret = new yuchWeibo();
 		}
-		t_ret.m_accessToken = m_accessToken.getText();
-		t_ret.m_secretToken = m_secretToken.getText();
+		t_ret.m_accessToken = m_accessToken;
+		t_ret.m_secretToken = m_secretToken;
 		
 		if(m_pushType[0].getValue()){
 			t_ret.m_timelineSum = -30;
