@@ -881,7 +881,9 @@ public class connectDeamon extends Thread implements SendListener,
 				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline.png"));
 			}
 			
-			m_mainApp.TriggerDisconnectNotification();
+			if(!m_mainApp.isForeground()){
+				m_mainApp.TriggerDisconnectNotification();
+			}			
 			
 			synchronized (this) {
 				try{

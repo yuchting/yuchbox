@@ -274,7 +274,15 @@ public class fetchMgr{
 			ByteArrayInputStream in = new ByteArrayInputStream(t_tmp.RecvBufferFromSvr());
 									
 			int t_msg_head = in.read();
-			String t_sendPass = sendReceive.ReadString(in); 
+			int passlen = sendReceive.ReadInt(in);
+			
+			if(passlen > 100 || passlen < 0){
+				throw new Exception("Watch Out! User pass is too long! val:" + passlen);
+			}
+			
+			byte[] t_buffer = new byte[passlen];
+			sendReceive.ForceReadByte(in,t_buffer,passlen);
+			String t_sendPass = new String(t_buffer,"UTF-8");
 		
 			if(msg_head.msgConfirm != t_msg_head 
 			|| !t_sendPass.equals(m_userPassword)){
