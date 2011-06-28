@@ -3,15 +3,15 @@
 
 	<EmailAccount
 
-        account="hu.shaoxing@trans-cosmos.com.cn"
+        account="hushaoxing@trans-cosmos.com.cn"
 
-        password="*******"
+        password="Abc123456"
 
         cryptPassword=""               
 
         sendName=""
 
-        UseFullNameSignIn="0"
+        useFullNameSignIn="1"
 
  
 

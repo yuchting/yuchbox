@@ -212,6 +212,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		RateLimitStatus limitStatus = m_weibo.rateLimitStatus();
 		m_currRemainCheckFolderNum = limitStatus.getRemainingHits();
 		m_maxCheckFolderNum			= limitStatus.getHourlyLimit();
+		
 	}
 	
 	
