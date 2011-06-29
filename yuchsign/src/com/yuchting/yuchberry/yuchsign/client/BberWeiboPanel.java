@@ -246,7 +246,7 @@ public class BberWeiboPanel extends FlowPanel{
 		if(m_pushType[0].getValue()){
 			t_ret.m_timelineSum = -30;
 		}else{
-			t_ret.m_timelineSum = 50;
+			t_ret.m_timelineSum = 20;
 		}
 		for(RadioButton but:m_type){
 			if(but.getValue()){

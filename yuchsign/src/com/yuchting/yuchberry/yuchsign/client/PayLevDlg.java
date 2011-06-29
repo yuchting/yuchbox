@@ -47,7 +47,7 @@ public class PayLevDlg extends DialogBox{
 		int t_startMoney = 0;
 				
 		for(int i = _bber.GetLevel() + 1;i < yuchbber.fsm_levelMoney.length ;i++){
-			t_levBut[i] = new RadioButton("payLev","￥" + (t_startMoney + yuchbber.fsm_levelMoney[i]) + " VIP" + i);
+			t_levBut[i] = new RadioButton("payLev","￥" + (t_startMoney + yuchbber.fsm_levelMoney[i]) + " VIP" + i + " （一次性费用）");
 			t_startMoney += yuchbber.fsm_levelMoney[i];
 			
 			t_levMoney[i] = t_startMoney;
@@ -68,9 +68,11 @@ public class PayLevDlg extends DialogBox{
 								long t_remainTime = t_expire - t_currTime;
 								t_remainTime = yuchbber.fsm_weekMoney[_bber.GetLevel()] * t_remainTime / yuchbber.fsm_weekMoney[i];
 								
-								t_remainTime = _bber.GetCreateTime() + t_remainTime;
+								t_remainTime = t_currTime + t_remainTime;
 								
-								t_expiredTime.setText("升级后到期时间："+ DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(new Date(t_remainTime)));	
+								t_expiredTime.setText("升级后到期时间："+ 
+													DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(new Date(t_remainTime)) + 
+													"（如果本机时间不准，显示就会有偏差，服务器会重新计算）");	
 						
 								break;
 							}						

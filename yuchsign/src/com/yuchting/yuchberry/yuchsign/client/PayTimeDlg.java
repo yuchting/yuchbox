@@ -23,10 +23,10 @@ public class PayTimeDlg extends DialogBox{
 													"<br /><b>YuchBerry不会因为推送帐户增加，而改变服务质量。</b><br />" +
 													"<br />如有疑问请访问<a href=\"http://code.google.com/p/yuchberry/wiki/Yuchsign_Using_Intro#账户充值时间、等级\" target=_blank>这里</a>，" +
 													"或者发送邮件到<a href=\"mailto:yuchberry@gmail.com\">yuchberry@gmail.com</a>，或者联系<a href=\"http://t.sina.com.cn/1894359415\" target=_blank>YuchBerry新浪WeiBo</a><br />" +
-													"<br />VIP0  (推送一个账户)：￥" + yuchbber.fsm_weekMoney[0] +"/星期" +
-													"<br />VIP1  (推送两个账户)：￥" + yuchbber.fsm_weekMoney[1] +"/星期" +
-													"<br />VIP2  (推送三个账户)：￥" + yuchbber.fsm_weekMoney[2] +"/星期" +
-													"<br />VIP3  (推送四个账户)：￥" + yuchbber.fsm_weekMoney[3] +"/星期<br /><br />";
+													"<br />VIP0  (推送一个账户)：￥" + yuchbber.fsm_weekMoney[0] +"/星期  (时间收费)" +
+													"<br />VIP1  (推送两个账户)：￥" + yuchbber.fsm_weekMoney[1] +"/星期  (时间收费)" +
+													"<br />VIP2  (推送三个账户)：￥" + yuchbber.fsm_weekMoney[2] +"/星期  (时间收费)" +
+													"<br />VIP3  (推送四个账户)：￥" + yuchbber.fsm_weekMoney[3] +"/星期  (时间收费)<br /><br />";
 													
 	String				m_buyURL	= null;
 	
