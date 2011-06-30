@@ -269,7 +269,8 @@ public class fetchMgr{
 			
 			// wait for signIn first
 			//
-			_s.setSoTimeout(10000);			
+			_s.setSoTimeout(10000);	
+			_s.setKeepAlive(true);
 			
 			ByteArrayInputStream in = new ByteArrayInputStream(t_tmp.RecvBufferFromSvr());
 									
@@ -321,8 +322,7 @@ public class fetchMgr{
 			}
 			
 			_s.setSoTimeout(0);
-			_s.setKeepAlive(true);
-						
+									
 			return t_tmp;
 			
 		}catch(Exception _e){

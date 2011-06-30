@@ -1328,25 +1328,19 @@ public class mainFrame extends JFrame implements ActionListener{
 										.append(m_currConnectAccount).append("/").append(m_currUsingAccount)
 										.append("/").append(m_accountList.size()).append("\n");
 				
-				long t_currTime = (new Date()).getTime();
 				
-				for(int i = m_checkFolderStateThread.size() - 1; i >= 0;i--){
+				if(!m_accountList.isEmpty()){
 					
-					fetchThread t_acc = m_checkFolderStateThread.elementAt(i);
-					t_result.append(t_acc.m_fetchMgr.GetAccountName()).append("\t\t");
-					
-					if(!t_acc.m_pauseState){
-
-						long t_remainTime = t_acc.GetLastTime(t_currTime);
-						t_result.append(t_remainTime / 3600000).append("h");
+					for(int i = m_accountList.size() - 1; i >= 0;i--){
+						fetchThread t_acc = m_accountList.elementAt(i);
 						
-					}else{
-						t_result.append("--");
+						if(t_acc.m_fetchMgr.GetClientConnected() == null){
+							t_result.append(t_acc.m_fetchMgr.GetAccountName()).append("\t\t");
+							t_result.append("\t\t").append(t_acc.GetStateString()).append("\n");
+						}						
 					}
-					
-					t_result.append("\t\t").append(t_acc.GetStateString()).append("\n");
 				}
-				
+							
 				return t_result.toString();
 				
 			}else if(_type.equals("2") && _bber != null){
