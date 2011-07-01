@@ -18,12 +18,6 @@ import com.yuchting.yuchberry.client.sendReceive;
 
 public class WeiboMainManager extends VerticalFieldManager implements FieldChangeListener{
 	
-//	public HyperlinkButtonField	 m_atBut				= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL));
-//	public HyperlinkButtonField	 m_forwardBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL));
-//	public HyperlinkButtonField	 m_favoriteBut			= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL));
-//	public HyperlinkButtonField	 m_picBut				= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL));
-//	public HyperlinkButtonField	 m_followCommentUser	= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_FOLLOW_USER_BUTTON_LABEL));
-
 	public WeiboButton	 m_atBut				= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL));
 	public WeiboButton	 m_forwardBut			= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL));
 	public WeiboButton	 m_favoriteBut			= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL));
@@ -45,7 +39,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	};
 	
 	public final static int		fsm_scrollbarSize	= 3;	
-	public final static int		fsm_maxItemInOneScreen = recvMain.fsm_display_height / WeiboItemField.fsm_closeHeight ;
+	public final static int		fsm_maxItemInOneScreen = recvMain.fsm_display_height / WeiboItemField.fsm_closeHeight;
 	
 	
 	WeiboItemField		m_selectedItem = null;
@@ -93,15 +87,6 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 		m_editTextArea.setChangeListener(this);
 		m_followCommentUser.setChangeListener(this);
-		
-		setScrollListener(new ScrollChangeListener() {
-			
-			public void scrollChanged(Manager manager, int newHorizontalScroll,
-					int newVerticalScroll) {
-			
-				invalidate();
-			}
-		});
 	}
 	
 	

@@ -70,7 +70,7 @@ public class WeiboUpdateField extends WeiboItemField{
         	
 			if(m_parentManager.getCurrExtendedItem() != null){
 				_g.setColor(fsm_darkColor);
-				_g.fillRect(0,0, getPreferredWidth(),fsm_closeHeight);
+				_g.fillRect(0,0, getPreferredWidth(),getPreferredHeight());
 				_g.setColor(0);
 			}
 				

@@ -50,7 +50,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListener,
 												ViewListenerExtended{
 		
-	final static int	fsm_clientVer = 8;
+	final static int	fsm_clientVer = 9;
 	 
 	sendReceive		m_connect = null;
 		
@@ -836,8 +836,11 @@ public class connectDeamon extends Thread implements SendListener,
 				sendReceive.WriteString(t_os,m_currentVersion);
 				sendReceive.WriteString(t_os,m_mainApp.m_passwordKey);
 				sendReceive.WriteBoolean(t_os,m_mainApp.m_enableWeiboModule);
+				sendReceive.WriteString(t_os,recvMain.fsm_OS_version);
+				int t_size = (recvMain.fsm_display_width << 16) | recvMain.fsm_display_height;
+				sendReceive.WriteInt(t_os,t_size);
 				
-				m_connect.SendBufferToSvr(t_os.toByteArray(), true,false);			
+				m_connect.SendBufferToSvr(t_os.toByteArray(), true,false);
 				
 				m_sendAuthMsg = true;				
 				

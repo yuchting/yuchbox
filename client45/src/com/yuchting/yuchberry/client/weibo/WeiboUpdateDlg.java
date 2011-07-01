@@ -37,7 +37,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 																Field.FIELD_LEFT);
 	
 	public WeiboUpdateManager(weiboTimeLineScreen _timeline){
-		super(Manager.NO_VERTICAL_SCROLL);
+		super(Manager.VERTICAL_SCROLL);
 		
 		m_timelineScreen = _timeline;
 
@@ -94,6 +94,27 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			m_editTextArea.setText("");
 		}
 	}
+	
+	public void subpaint(Graphics _g){
+		super.subpaint(_g);
+	}
+	
+	public boolean keyChar(char c,int status,int time){
+		if(c == Characters.ESCAPE){
+			getScreen().close();
+		}else if(c == Characters.ENTER){
+			if(m_editTextArea.getText().length() != 0 &&((status & KeypadListener.STATUS_SHIFT) != 0)){
+				sendUpdate();					
+			}
+			// consum the Enter key
+			//
+			return true;
+		}
+		
+		getScreen().invalidate();
+				
+		return super.keyChar(c,status,time);
+	}
 }
 
 public class WeiboUpdateDlg extends Screen {
@@ -117,15 +138,17 @@ public class WeiboUpdateDlg extends Screen {
 	
 	protected void sublayout(int width, int height){
 		
-		m_updateManager.sublayout(m_updateManager.getPreferredWidth(), m_updateManager.getPreferredWidth());
+		m_updateManager.sublayout(m_updateManager.getPreferredWidth(), m_updateManager.getPreferredHeight());
 		
 		setExtent(getPreferredWidth(), getPreferredHeight());		
 		setPosition((recvMain.fsm_display_width - getPreferredWidth()) / 2 ,
 				(recvMain.fsm_display_height - getPreferredHeight()) / 2);
+				
 	}
 	
 	protected void paint(Graphics _g){		
-		super.paint(_g);
+		
+		m_updateManager.subpaint(_g);
 		
 		int color = _g.getColor();
 		try{
@@ -146,29 +169,11 @@ public class WeiboUpdateDlg extends Screen {
 			
 		}finally{
 			_g.setColor(color);
-		}	
+		}
 	}
 	
 	public void close(){
 		super.close();
 		m_updateManager.m_timelineScreen.m_pushUpdateDlg = false;
-	}	
-	
-	protected boolean keyChar(char c,int status,int time){
-		if(c == Characters.ESCAPE){
-			close();
-		}else if(c == Characters.ENTER){
-			if(m_updateManager.m_editTextArea.getText().length() != 0 &&((status & KeypadListener.STATUS_SHIFT) != 0)){
-				m_updateManager.sendUpdate();					
-			}
-			// consum the Enter key
-			//
-			return true;
-		}
-		
-		invalidate();
-		
-		return super.keyChar(c,status,time);
-	}
-	
+	}		
 }
