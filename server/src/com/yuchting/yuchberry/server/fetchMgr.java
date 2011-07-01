@@ -65,9 +65,15 @@ public class fetchMgr{
     
     String			m_passwordKey		= "";
     
-    boolean		m_isCheckFolderState	= false;
+    boolean		m_isCheckFolderState= false;
     
     boolean		m_isWeiboEnabled	= true;
+    
+    String			m_clientOSVersion	= "";
+    int				m_clientDisplayWidth = 0;
+    int				m_clientDisplayHeight = 0;
+    
+    
     
     public void SetLatestVersion(String _version){
     	
@@ -319,6 +325,13 @@ public class fetchMgr{
 			
 			if(m_clientVer >= 6){
 				m_isWeiboEnabled = sendReceive.ReadBoolean(in);
+			}
+			
+			if(m_clientVer >= 9){
+				m_clientOSVersion = sendReceive.ReadString(in);
+				int t_size = sendReceive.ReadInt(in);
+				m_clientDisplayWidth = (t_size >>> 16);
+				m_clientDisplayHeight = (t_size & 0x0000ffff);
 			}
 			
 			_s.setSoTimeout(0);

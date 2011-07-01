@@ -779,7 +779,11 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		        ImageIO.write(bdest,"PNG",t_file);
 			}
 			
-			t_hashCode = (int)t_file.length();						
+			if(m_mainMgr.m_clientDisplayWidth <= 320){
+				t_hashCode = (int)t_file.length();
+			}else{
+				t_hashCode = (int)t_file_l.length();
+			}									
 	        
 		}catch(Exception e){
 			m_mainMgr.m_logger.PrinterException(e);
