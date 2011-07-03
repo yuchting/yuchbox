@@ -87,23 +87,27 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[])throws Exception{
 
-		//berryRecvTest();
 		
-		//getOAuthRequest();
+		String m_text = "ahahahah <a href=\"xxx.com\">xxx.com</a> ttttttt<a href=\"bbb.com\">bbb.com</a>";
 		
-		qgetOAuthRequest();
+		while(true){
+			int t_a = m_text.indexOf("<a");
+			if(t_a != -1){
+				int t_a_ref = m_text.indexOf(">",t_a);
+				int t_a_end = m_text.indexOf("</a>",t_a);
+				
+				if(t_a_ref != -1 && t_a_end != -1 && (t_a_ref < t_a_end) ){
+					m_text = m_text.substring(0,t_a) + m_text.substring(t_a_ref + 1,t_a_end) + m_text.substring(t_a_end + 4);
+				}else{
+					break;
+				}
+				
+			}else{
+				break;
+			}
+		}
 		
-//		QWeiboSyncApi t_api = new QWeiboSyncApi();
-//		t_api.setCostomerKey(fetchQWeibo.fsm_consumerKey, fetchQWeibo.fsm_consumerSecret);
-//		
-//		System.out.println(t_api.getVerifyPinURL(null));
-//		
-//		
-//		System.out.print("input PIN:");
-//		BufferedReader bufin = new BufferedReader(new   InputStreamReader(System.in)); 
-//		String PIN = bufin.readLine();
-//		
-//		System.out.println(t_api.requestTokenByVerfiyPIN(PIN));
+		System.out.print(m_text);
 		
 	}
 	

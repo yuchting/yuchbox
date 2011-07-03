@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.client;
 import java.io.ByteArrayOutputStream;
 
 import local.localResource;
+import net.rim.device.api.system.Clipboard;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.FocusChangeListener;
@@ -44,7 +45,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 LabelField			m_recvMailNum	= new LabelField();
 	 LabelField			m_sentWeiboNum	= new LabelField();
 	 LabelField			m_recvWeiboNum	= new LabelField();
-	 ButtonField		m_clearByteBut	= new ButtonField(recvMain.sm_local.getString(localResource.CLEAR_STATISTICS),Field.FIELD_RIGHT);
+	 ButtonField		m_clearByteBut	= new ButtonField(recvMain.sm_local.getString(localResource.SETTING_CLEAR_STATISTICS),Field.FIELD_RIGHT);
+	 ButtonField		m_copyStatBut	= new ButtonField(recvMain.sm_local.getString(localResource.SETTING_COPY_STATISTICS),Field.FIELD_RIGHT);
 	 
 	 CheckboxField		m_fulldayPrompt = null;
 	 NumericChoiceField	m_startPromptHour = null;
@@ -77,7 +79,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 
 	 recvMain			m_mainApp		= null;
 	 
-	 MenuItem	m_helpMenu = new MenuItem(recvMain.sm_local.getString(localResource.STATE_SCREEN_HELP_MENU), 99, 10) {	
+	 MenuItem	m_helpMenu = new MenuItem(recvMain.sm_local.getString(localResource.SETTING_HELP_MENU_LABEL), 99, 10) {	
 		 public void run() {
 			 recvMain.openURL("http://code.google.com/p/yuchberry/wiki/Use_introduction#高级设置");
 		 }
@@ -85,7 +87,6 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 
 	 protected void makeMenu(Menu _menu,int instance){
 		_menu.add(m_helpMenu);
-		
 		super.makeMenu(_menu, instance);
 	}
 	 
@@ -119,13 +120,13 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 
 		 m_useSSLCheckbox	= new CheckboxField(recvMain.sm_local.getString(localResource.USE_SSL_LABEL),m_mainApp.m_useSSL);
 		 add(m_useSSLCheckbox);
+		 m_useSSLCheckbox.setChangeListener(this);
 		 
 		 m_uesMDS			= new CheckboxField(recvMain.sm_local.getString(localResource.USE_MDS),m_mainApp.UseMDS());
 		 add(m_uesMDS);
 		 
 		 m_useWifi			= new CheckboxField(recvMain.sm_local.getString(localResource.USE_WIFI_LABEL), m_mainApp.m_useWifi);
 		 add(m_useWifi);
-		 m_useWifi.setChangeListener(this);
 		 
 		 m_autoRun			= new CheckboxField(recvMain.sm_local.getString(localResource.AUTO_RUN_CHECK_BOX), m_mainApp.m_autoRun);
 		 add(m_autoRun);
@@ -229,7 +230,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 add(m_sentWeiboNum);
 		 add(m_recvWeiboNum);
 		 add(m_clearByteBut);
+		 add(m_copyStatBut);
 		 m_clearByteBut.setChangeListener(this);
+		 m_copyStatBut.setChangeListener(this);
 		 
 		 if(m_mainApp.m_connectDeamon.m_connect != null){
 			 m_mainApp.m_connectDeamon.m_connect.StoreUpDownloadByteImm(true);
@@ -307,6 +310,21 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 					
 					RefreshUpDownloadByte();
 				}
+			}else if(field == m_copyStatBut){
+				StringBuffer t_string = new StringBuffer();
+				 
+				t_string.append(recvMain.sm_local.getString(localResource.BYTE_STATISTICS)).append("\n")
+						.append(m_uploadByte.getText()).append("\n")
+						.append(m_downloadByte.getText()).append("\n")
+						.append(m_totalByte.getText()).append("\n")
+						.append(m_sendMailNum.getText()).append("\n")
+						.append(m_recvMailNum.getText()).append("\n")
+						.append(m_sentWeiboNum.getText()).append("\n")
+						.append(m_recvWeiboNum.getText()).append("\n");
+				
+				Clipboard.getClipboard().put(t_string.toString());
+				m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.COPY_TO_CLIPBOARD_SUCC));
+				
 			}else if(field == m_pulseInterval){
 				if(m_pulseInterval.getSelectedIndex() == 0){
 					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.PULSE_INTERVAL_TOO_SHORT_PROMPT));
@@ -319,8 +337,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				if(m_publicForward.getChecked()){
 					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_PUBLIC_FW_PROMPT));
 				}
-			}else if(field == m_useWifi){
-				if(m_useWifi.getChecked()){
+			}else if(field == m_useSSLCheckbox){
+				if(m_useSSLCheckbox.getChecked()){
 					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.SETTING_ENABLE_SSL_ENABLE));
 				}
 			}else if(field == m_weiboModule){

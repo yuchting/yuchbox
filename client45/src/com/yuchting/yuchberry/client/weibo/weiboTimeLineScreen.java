@@ -33,6 +33,8 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	static recvMain				sm_mainApp = (recvMain)UiApplication.getUiApplication();
 	
+	static WeiboUserFindFactory	 sm_factory = new WeiboUserFindFactory();
+	
 	WeiboMainManager			m_mainMgr;
 	WeiboMainManager			m_mainAtMeMgr;
 	WeiboMainManager			m_mainCommitMeMgr;
@@ -850,12 +852,10 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		_menu.add(m_refreshItem);
 		
-		if(m_currMgr.getCurrExtendedItem() == null){
-			
-			_menu.add(m_topItem);
-			_menu.add(m_bottomItem);	
-			
-		}else{
+		_menu.add(m_topItem);
+		_menu.add(m_bottomItem);
+		
+		if(m_currMgr.getCurrExtendedItem() != null){
 			if(m_currMgr.getCurrEditItem() == null){
 				_menu.add(m_preWeiboItem);
 				_menu.add(m_nextWeiboItem);
@@ -917,6 +917,12 @@ public class weiboTimeLineScreen extends MainScreen{
 	    	case 'R':
 	    		m_refreshItem.run();
 	    		return true;
+	    	case 'T':		    		
+    			m_topItem.run();
+    			return true;
+	    	case 'B':
+    			m_bottomItem.run();	
+    			return true;
 			}
 			
 			if(m_currMgr.getCurrExtendedItem() != null && m_currMgr != m_mainDMMgr){
@@ -954,12 +960,6 @@ public class weiboTimeLineScreen extends MainScreen{
 			    	case 'S':
 			    		m_stateItem.run();
 			    		return true;
-			    	case 'T':		    		
-		    			m_currMgr.ScrollToTop();
-		    			return true;
-			    	case 'B':
-		    			m_currMgr.ScrollToBottom();	
-		    			return true;
 			    	case 'R':
 			    		SendRefreshMsg();
 			    		return true;
@@ -1138,5 +1138,8 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		return sm_isBBerSign;
 	}
+	
+	// 
+	//
 
 }

@@ -7,14 +7,14 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
-import net.rim.device.api.ui.ScrollChangeListener;
+import net.rim.device.api.ui.component.ActiveRichTextField;
 import net.rim.device.api.ui.component.AutoTextEditField;
-import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
+
 
 public class WeiboMainManager extends VerticalFieldManager implements FieldChangeListener{
 	
@@ -24,10 +24,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	public WeiboButton	 m_picBut				= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL));
 	public WeiboButton	 m_followCommentUser	= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FOLLOW_USER_BUTTON_LABEL));
 
-	
-	// BasicEditField for 4.2os
-	public TextField 			m_textArea				= new TextField(Field.READONLY);
-	public TextField 			m_commentTextArea		= new TextField(Field.READONLY);
+	public WeiboTextField 	m_textArea				= new WeiboTextField();
+	public WeiboTextField	m_commentTextArea		= new WeiboTextField();
 	
 	public int					m_currentSendType		= 0;
 	
@@ -290,12 +288,12 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 	public void AddWeibo(final fetchWeibo _weibo,final WeiboHeadImage _image,
 							final boolean _initAdd){
-		
-		final WeiboItemField t_field = new WeiboItemField(_weibo,_image,this);
-		
+				
 		m_mainApp.invokeLater(new Runnable() {
 			
 			public void run() {
+				
+				WeiboItemField t_field = new WeiboItemField(_weibo,_image,WeiboMainManager.this);
 				
 				if(m_timelineManager){
 					insert(t_field.getFocusField(),1);
@@ -502,19 +500,59 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	}
 	
 	public void ScrollToTop(){
-				
-		if(getFieldCount() != 0){
-			getField(0).setFocus();
-		}
+		if(getCurrExtendedItem() == null){
+			
+			if(getFieldCount() != 0){
+				getField(0).setFocus();
+			}
+			
+		}else{
+			EscapeKey();
+			
+			WeiboItemFocusField t_field = null;
+			
+			if(m_timelineManager){
+				if(getFieldCount() >= 2){
+					t_field = (WeiboItemFocusField)getField(1);
+				}
+			}else{
+				if(getFieldCount() != 0){
+					t_field = (WeiboItemFocusField)getField(0);
+				}
+			}
+			
+			if(t_field != null){
+				t_field.setFocus();
+				setCurrSelectedItem(t_field.m_itemField);
+			}
+		
+			Clicked(0, 0);
+		}		
 		
 		invalidate();
 	}
 	
 	public void ScrollToBottom(){
 		
-		if(getFieldCount() != 0){
-			getField(getFieldCount() - 1).setFocus();
-		}
+		if(getCurrExtendedItem() == null){
+					
+			if(getFieldCount() != 0){
+				getField(getFieldCount() - 1).setFocus();
+			}
+			
+		}else{
+			
+			if(getFieldCount() != 0){
+				EscapeKey();
+				
+				WeiboItemFocusField t_field = (WeiboItemFocusField)getField(getFieldCount() - 1);
+			
+				t_field.setFocus();
+				setCurrSelectedItem(t_field.m_itemField);
+				
+				Clicked(0, 0);
+			}
+		}		
 		
 		invalidate();
 	}

@@ -88,9 +88,12 @@ class checkStateThread extends Thread{
 			        
 			        String t_version = in.readLine();
 			        
-			        for(fetchThread t_thread:m_mainFrame.m_accountList){
-			        	t_thread.m_fetchMgr.SetLatestVersion(t_version);
-			        }
+			        synchronized (m_mainFrame.m_accountList) {
+			        	for(fetchThread t_thread:m_mainFrame.m_accountList){
+				        	t_thread.m_fetchMgr.SetLatestVersion(t_version);
+				        }
+					}
+			       
 
 					in.close();
 				}
@@ -346,7 +349,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		}
 	}
 	
-	public synchronized void StoreAccountInfo(){
+	public void StoreAccountInfo(){
 		
 		m_logger.LogOut("StoreAccountInfo start");
 		
@@ -355,14 +358,18 @@ public class mainFrame extends JFrame implements ActionListener{
 			
 			try{
 				StringBuffer t_buffer = new StringBuffer();
-				for(int i = 0;i < m_accountList.size();i++){
-					fetchThread t_thread = (fetchThread)m_accountList.elementAt(i);
-					t_buffer.append(t_thread.m_fetchMgr.GetAccountName()).append(",")
-							.append((t_thread.m_usingHours)).append(",")
-							.append(t_thread.m_formerTimer).append(",")
-							.append(t_thread.m_clientDisconnectTime).append(",")
-							.append("\r\n");
+				
+				synchronized (m_accountList) {
+					for(int i = 0;i < m_accountList.size();i++){
+						fetchThread t_thread = (fetchThread)m_accountList.elementAt(i);
+						t_buffer.append(t_thread.m_fetchMgr.GetAccountName()).append(",")
+								.append((t_thread.m_usingHours)).append(",")
+								.append(t_thread.m_formerTimer).append(",")
+								.append(t_thread.m_clientDisconnectTime).append(",")
+								.append("\r\n");
+					}
 				}
+				
 				
 				t_file.write(t_buffer.toString().getBytes("UTF-8"));
 				t_file.flush();
@@ -611,20 +618,23 @@ public class mainFrame extends JFrame implements ActionListener{
 		m_logInfo.setCaretPosition(m_logInfo.getDocument().getLength());
 	}
 		
-	public synchronized fetchThread SearchAccountThread(String _accountName,int _port){
+	public fetchThread SearchAccountThread(String _accountName,int _port){
 		
 		m_logger.LogOut("SearchAccountThread start name="+_accountName);
 		
-		for(int i = 0;i < m_accountList.size();i++){
-			fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
-			if(t_fetch.m_fetchMgr.GetAccountName().equalsIgnoreCase(_accountName) 
-			|| t_fetch.m_fetchMgr.GetServerPort() == _port){
-				
-				m_logger.LogOut("SearchAccountThread end");
-				
-				return t_fetch;
+		synchronized (m_accountList) {
+			for(int i = 0;i < m_accountList.size();i++){
+				fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
+				if(t_fetch.m_fetchMgr.GetAccountName().equalsIgnoreCase(_accountName) 
+				|| t_fetch.m_fetchMgr.GetServerPort() == _port){
+					
+					m_logger.LogOut("SearchAccountThread end");
+					
+					return t_fetch;
+				}
 			}
 		}
+		
 		
 		m_logger.LogOut("SearchAccountThread end name="+_accountName);
 		
@@ -632,20 +642,23 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 	}
 	
-	public synchronized boolean AddAccountThread(fetchThread _thread,boolean _storeAccountInfo){
+	public boolean AddAccountThread(fetchThread _thread,boolean _storeAccountInfo){
 		
 		m_logger.LogOut("AddAccountThread start");
 		
-		for(int i = 0;i < m_accountList.size();i++){
-			fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
-			if(t_fetch.m_fetchMgr.GetAccountName().equalsIgnoreCase(_thread.m_fetchMgr.GetAccountName())){
-				
-				m_logger.LogOut("AddAccountThread end");
-				return false;
+		synchronized (m_accountList){
+			for(int i = 0;i < m_accountList.size();i++){
+				fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
+				if(t_fetch.m_fetchMgr.GetAccountName().equalsIgnoreCase(_thread.m_fetchMgr.GetAccountName())){
+					
+					m_logger.LogOut("AddAccountThread end");
+					return false;
+				}
 			}
+			
+			m_accountList.addElement(_thread);
 		}
 		
-		m_accountList.addElement(_thread);
 		m_accountTable.AddAccount(_thread);
 				
 //		m_formerHost		= _thread.m_fetchMgr.GetHost();
@@ -668,29 +681,31 @@ public class mainFrame extends JFrame implements ActionListener{
 		return true;
 	}
 	
-	public synchronized void DelAccoutThread(String _accountName,boolean _storeAccountInfo){
+	public void DelAccoutThread(String _accountName,boolean _storeAccountInfo){
 		
 		m_logger.LogOut("DelAccoutThread start name="+_accountName);
 		
-		for(int i = 0;i < m_accountList.size();i++){
-			
-			fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
-			if(_accountName.equalsIgnoreCase(t_fetch.m_fetchMgr.GetAccountName())){
+		synchronized (m_accountList) {
+			for(int i = 0;i < m_accountList.size();i++){
 				
-				t_fetch.Destroy();
-				
-				DelDirectory(t_fetch.m_fetchMgr.GetAccountName());
-				
-				m_accountList.remove(t_fetch);
-				m_accountTable.DelAccount(t_fetch);
-				
-				if(_storeAccountInfo){
-					StoreAccountInfo();
-				}				
-				
-				break;
+				fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
+				if(_accountName.equalsIgnoreCase(t_fetch.m_fetchMgr.GetAccountName())){
+					
+					t_fetch.Destroy();
+					
+					DelDirectory(t_fetch.m_fetchMgr.GetAccountName());
+					
+					m_accountList.remove(t_fetch);
+					m_accountTable.DelAccount(t_fetch);
+					
+					if(_storeAccountInfo){
+						StoreAccountInfo();
+					}				
+					
+					break;
+				}
 			}
-		}
+		}		
 		
 		m_logger.LogOut("DelAccoutThread end name="+_accountName);
 	}
@@ -720,21 +735,24 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	public void SelectAccount(final String _text){
 		
-		for(int i = 0;i < m_accountList.size();i++){
-			fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
-			if(t_fetch.m_fetchMgr.GetAccountName().indexOf(_text) != -1){
-				
-				m_accountTable.setRowSelectionInterval(i,i);
-				m_currentSelectThread = t_fetch;
-				
-				CheckLogInfo(i);
-				
-				Rectangle rect = m_accountTable.getCellRect(i, 0, true);
-				m_accountTable.scrollRectToVisible(rect);
-				
-				break;				
+		synchronized (m_accountList) {
+			for(int i = 0;i < m_accountList.size();i++){
+				fetchThread t_fetch = (fetchThread)m_accountList.elementAt(i);
+				if(t_fetch.m_fetchMgr.GetAccountName().indexOf(_text) != -1){
+					
+					m_accountTable.setRowSelectionInterval(i,i);
+					m_currentSelectThread = t_fetch;
+					
+					CheckLogInfo(i);
+					
+					Rectangle rect = m_accountTable.getCellRect(i, 0, true);
+					m_accountTable.scrollRectToVisible(rect);
+					
+					break;				
+				}
 			}
 		}
+		
 	}
 	
 	static public void DelDirectory(final String _dir){
@@ -758,7 +776,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		StoreAccountInfo();
 	}
 	
-	public synchronized void RefreshState(){
+	public void RefreshState(){
 		
 		m_currUsingAccount		= 0;
 		m_currConnectAccount	= 0;
@@ -769,58 +787,60 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 		Vector<fetchThread> t_deadPool = new Vector<fetchThread>();
 		
-		for(int i = 0;i < m_accountList.size();i++){
-			fetchThread t_thread = (fetchThread)m_accountList.elementAt(i);
+		synchronized (m_accountList) {
+			for(int i = 0;i < m_accountList.size();i++){
+				fetchThread t_thread = (fetchThread)m_accountList.elementAt(i);
+							
+				if(!t_thread.m_pauseState){
+					
+					if(t_thread.m_fetchMgr.IsCheckFolderState()){
+						m_checkFolderStateThread.add(t_thread);
+					}
+					
+					if(t_thread.GetLastTime(t_currTime) < 0){
+						m_logger.LogOut("帐户暂停： " + t_thread.m_fetchMgr.GetAccountName());
+						t_thread.Pause();
+					}
+					
+					m_currUsingAccount++;
+					
+					final long t_lastTime = t_thread.GetLastTime(t_currTime);
+					
+					if(!t_thread.m_sendTimeupMail && t_lastTime > 0 && t_lastTime < 24 * 3600 * 1000){
 						
-			if(!t_thread.m_pauseState){
-				
-				if(t_thread.m_fetchMgr.IsCheckFolderState()){
-					m_checkFolderStateThread.add(t_thread);
-				}
-				
-				if(t_thread.GetLastTime(t_currTime) < 0){
-					m_logger.LogOut("帐户暂停： " + t_thread.m_fetchMgr.GetAccountName());
-					t_thread.Pause();
-				}
-				
-				m_currUsingAccount++;
-				
-				final long t_lastTime = t_thread.GetLastTime(t_currTime);
-				
-				if(!t_thread.m_sendTimeupMail && t_lastTime > 0 && t_lastTime < 24 * 3600 * 1000){
+						t_thread.m_sendTimeupMail = true;
+						
+						m_logger.LogOut("到期帐户，发送邮件： " + t_thread.m_fetchMgr.GetAccountName());
+						
+						SendTimeupMail(t_thread);
+					}
 					
-					t_thread.m_sendTimeupMail = true;
+					if(t_thread.m_fetchMgr.GetClientConnected() != null){
+						m_currConnectAccount++;
+						t_thread.m_clientDisconnectTime = 0;
+					}else{
+						if(t_thread.m_clientDisconnectTime == 0){
+							t_thread.m_clientDisconnectTime = t_currTime;
+						}
+					}
 					
-					m_logger.LogOut("到期帐户，发送邮件： " + t_thread.m_fetchMgr.GetAccountName());
-					
-					SendTimeupMail(t_thread);
-				}
-				
-				if(t_thread.m_fetchMgr.GetClientConnected() != null){
-					m_currConnectAccount++;
-					t_thread.m_clientDisconnectTime = 0;
 				}else{
 					if(t_thread.m_clientDisconnectTime == 0){
 						t_thread.m_clientDisconnectTime = t_currTime;
 					}
 				}
 				
-			}else{
-				if(t_thread.m_clientDisconnectTime == 0){
-					t_thread.m_clientDisconnectTime = t_currTime;
+				if(t_thread.m_clientDisconnectTime != 0 && t_thread.m_usingHours != 0){
+					
+					final long t_delTime = t_thread.m_pauseState?(12 * 3600 * 1000):(3 * 24 * 3600 * 1000);
+					
+					if(Math.abs(t_currTime - t_thread.m_clientDisconnectTime) >= t_delTime  ){
+						t_deadPool.add(t_thread);
+					}
 				}
 			}
-			
-			if(t_thread.m_clientDisconnectTime != 0 && t_thread.m_usingHours != 0){
-				
-				final long t_delTime = t_thread.m_pauseState?(12 * 3600 * 1000):(3 * 24 * 3600 * 1000);
-				
-				if(Math.abs(t_currTime - t_thread.m_clientDisconnectTime) >= t_delTime  ){
-					t_deadPool.add(t_thread);
-				}
-			}
-			
 		}
+		
 			
 		// delete the disconnect time-up thread
 		//
@@ -869,8 +889,7 @@ public class mainFrame extends JFrame implements ActionListener{
 			}
 		}		
 		
-		if(!t_deadPool.isEmpty() || t_deleteThread){
-						
+		if(!t_deadPool.isEmpty() || t_deleteThread){		
 			StoreAccountInfo();
 		}
 	}
@@ -938,7 +957,7 @@ public class mainFrame extends JFrame implements ActionListener{
 	/*
 	 * the HTTP process... 
 	 */
-	public synchronized int GetAvailableServerPort(){
+	public int GetAvailableServerPort(){
 		
 		m_logger.LogOut("GetAvailableServerPort start");
 		
@@ -950,9 +969,12 @@ public class mainFrame extends JFrame implements ActionListener{
 			
 			List<Integer> t_portList = new ArrayList<Integer>();
 							
-			for(fetchThread acc : m_accountList){
-				t_portList.add(new Integer(acc.m_fetchMgr.GetServerPort()));
+			synchronized (m_accountList) {
+				for(fetchThread acc : m_accountList){
+					t_portList.add(new Integer(acc.m_fetchMgr.GetServerPort()));
+				}
 			}
+			
 			
 			synchronized (m_bberRequestList) {
 				for(BberRequestThread req : m_bberRequestList){
@@ -1284,7 +1306,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		}
 	}
 	
-	private synchronized String ProcessAdminCheck(String _type,String _bber){
+	private String ProcessAdminCheck(String _type,String _bber){
 		
 		m_logger.LogOut("ProcessAdminCheck start fill admin data type: " + _type + " _bber:" + _bber);
 				
@@ -1294,35 +1316,39 @@ public class mainFrame extends JFrame implements ActionListener{
 				StringBuffer t_result = new StringBuffer();
 				
 				t_result.append("state:").append(m_checkFolderStateThread.size()).append("/")
-										.append(m_currConnectAccount).append("/").append(m_currUsingAccount)
-										.append("/").append(m_accountList.size()).append("\n");
+									.append(m_currConnectAccount).append("/").append(m_currUsingAccount)
+									.append("/").append(m_accountList.size()).append("\n");
 				
 				long t_currTime = (new Date()).getTime();
 				
 				if(!m_accountList.isEmpty()){
-					for(int i = m_accountList.size() - 1; i >= 0;i--){
-						fetchThread t_acc = m_accountList.elementAt(i);
-						t_result.append(t_acc.m_fetchMgr.GetAccountName()).append("\t\t");
-						
-						if(!t_acc.m_pauseState){
-
-							long t_remainTime = t_acc.GetLastTime(t_currTime);
-							t_result.append(t_remainTime / 3600000).append("h");
+					
+					synchronized (m_accountList) {
+						for(int i = m_accountList.size() - 1; i >= 0;i--){
+							fetchThread t_acc = m_accountList.elementAt(i);
+							t_result.append(t_acc.m_fetchMgr.GetAccountName()).append("\t\t");
 							
-						}else{
-							t_result.append("--");
+							if(!t_acc.m_pauseState){
+						
+								long t_remainTime = t_acc.GetLastTime(t_currTime);
+								t_result.append(t_remainTime / 3600000).append("h");
+								
+							}else{
+								t_result.append("--");
+							}
+							
+							t_result.append("\t\t").append(t_acc.GetStateString()).append("\n");
+							
 						}
-						
-						t_result.append("\t\t").append(t_acc.GetStateString()).append("\n");
-						
 					}
-				}
+				}				
 							
 				return t_result.toString();
 				
 			}else if(_type.equals("1")){
 				
 				StringBuffer t_result = new StringBuffer();
+				
 				
 				t_result.append("state:").append(m_checkFolderStateThread.size()).append("/")
 										.append(m_currConnectAccount).append("/").append(m_currUsingAccount)
@@ -1331,14 +1357,18 @@ public class mainFrame extends JFrame implements ActionListener{
 				
 				if(!m_accountList.isEmpty()){
 					
-					for(int i = m_accountList.size() - 1; i >= 0;i--){
-						fetchThread t_acc = m_accountList.elementAt(i);
+					synchronized (m_accountList) {
 						
-						if(t_acc.m_fetchMgr.GetClientConnected() == null){
-							t_result.append(t_acc.m_fetchMgr.GetAccountName()).append("\t\t");
-							t_result.append("\t\t").append(t_acc.GetStateString()).append("\n");
-						}						
+						for(int i = m_accountList.size() - 1; i >= 0;i--){
+							fetchThread t_acc = m_accountList.elementAt(i);
+							
+							if(t_acc.m_fetchMgr.GetClientConnected() == null){
+								t_result.append(t_acc.m_fetchMgr.GetAccountName()).append("\t\t");
+								t_result.append("\t\t").append(t_acc.GetStateString()).append("\n");
+							}						
+						}
 					}
+					
 				}
 							
 				return t_result.toString();
@@ -1444,7 +1474,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 	}
 	
-	private synchronized String ProcessCreateTimeQuery(Properties header){
+	private String ProcessCreateTimeQuery(Properties header){
 		
 		m_logger.LogOut("ProcessCreateTimeQuery start");
 		try{
@@ -1460,21 +1490,24 @@ public class mainFrame extends JFrame implements ActionListener{
 				
 				m_logger.LogOut("t_bber="+ t_bber+ " ProcessCreateTimeQuery");
 				
-				for(fetchThread thread:m_accountList){
-					if(thread.m_fetchMgr.GetAccountName().equalsIgnoreCase(t_bber)){
-						
-						thread.m_usingHours = Long.valueOf(t_usingHours).longValue();
-						thread.m_formerTimer = Long.valueOf(t_createTime).longValue();
-										
-						StoreAccountInfo();
-						
-						if(thread.m_pauseState){
-							thread.Reuse();
+				synchronized (m_accountList) {
+					for(fetchThread thread:m_accountList){
+						if(thread.m_fetchMgr.GetAccountName().equalsIgnoreCase(t_bber)){
+							
+							thread.m_usingHours = Long.valueOf(t_usingHours).longValue();
+							thread.m_formerTimer = Long.valueOf(t_createTime).longValue();
+											
+							StoreAccountInfo();
+							
+							if(thread.m_pauseState){
+								thread.Reuse();
+							}
+							
+							return "<OK />";
 						}
-												
-						return "<OK />";
 					}
 				}
+				
 				
 				return "原有账户已经因为长时间没有链接而删除，需要重新同步";
 				

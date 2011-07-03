@@ -69,6 +69,25 @@ public class QWeibo {
 			m_sourceWeibo = new QWeibo(new JSONObject(t_source));			
 		}
 		
+		// get ride of all link tag
+		//
+		while(true){
+			int t_a = m_text.indexOf("<a");
+			if(t_a != -1){
+				int t_a_ref = m_text.indexOf(">",t_a);
+				int t_a_end = m_text.indexOf("</a>",t_a);
+				
+				if(t_a_ref != -1 && t_a_end != -1 && (t_a_ref < t_a_end) ){
+					m_text = m_text.substring(0,t_a) + m_text.substring(t_a_ref + 1,t_a_end) + m_text.substring(t_a_end + 4);
+				}else{
+					break;
+				}
+				
+			}else{
+				break;
+			}
+		}
+		
 	}
 	
 	public String getText(){return m_text;}

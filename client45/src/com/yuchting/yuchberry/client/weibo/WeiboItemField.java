@@ -71,7 +71,7 @@ public class WeiboItemField extends Manager{
 	public final static int		fsm_spaceLineColor			= 0x5f5f5f;
 	public final static int		fsm_ownWeiboColor			= 0xffffee;
 	
-		
+	// BasicEditField for 4.2os
 	public static TextField 	sm_testTextArea	= new TextField(Field.READONLY){
 		public void setText(String _text){
 			super.setText(_text);
@@ -183,7 +183,7 @@ public class WeiboItemField extends Manager{
 		
 		t_weiboTextBuffer.append("@").append(m_weibo.GetUserScreenName()).append(" :").append(m_weibo.GetText());
 		
-		if(!sm_simpleMode){
+		if(!sm_simpleMode && m_weibo.GetSource().length() != 0){
 			t_weiboTextBuffer.append("\n").append(sm_followTextEmptySpace).append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
 			.append(parseSource(m_weibo.GetSource()));
 		}						
@@ -207,8 +207,14 @@ public class WeiboItemField extends Manager{
 			StringBuffer t_commentText = new StringBuffer();
 			t_commentText.append("@").append(t_comment.GetUserScreenName()).append(":").append(t_comment.GetText());
 			if(!sm_simpleMode){
-				t_commentText.append("\n").append(sm_followTextEmptySpace).append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
-				.append(parseSource(t_comment.GetSource()));
+				
+				t_commentText.append("\n").append(sm_followTextEmptySpace);
+				
+				if(t_comment.GetSource().length() != 0){
+					t_commentText.append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
+					.append(parseSource(t_comment.GetSource()));
+				}
+				
 			}
 						
 					
@@ -329,7 +335,7 @@ public class WeiboItemField extends Manager{
 						add(m_parentManager.m_commentTextArea);
 					}
 					
-					if(!sm_simpleMode){
+					if(!sm_simpleMode && !m_weibo.GetCommentWeibo().IsOwnWeibo()){
 						if(!m_hasControlField[fsm_controlField_followBtn]){
 							m_hasControlField[fsm_controlField_followBtn] = true;
 							add(m_parentManager.m_followCommentUser);
@@ -467,7 +473,7 @@ public class WeiboItemField extends Manager{
 				setPositionChild(m_parentManager.m_commentTextArea,fsm_headImageTextInterval,t_commentText_y);
 				layoutChild(m_parentManager.m_commentTextArea,fsm_commentTextWidth,m_functionButton_y - m_commentText_y);
 				
-				if(!sm_simpleMode){
+				if(!sm_simpleMode && !m_weibo.GetCommentWeibo().IsOwnWeibo()){
 					// follow button
 					//
 					setPositionChild(m_parentManager.m_followCommentUser,3,t_commentText_y + m_commentText_height - sm_fontHeight);
@@ -626,7 +632,7 @@ public class WeiboItemField extends Manager{
 					_g.setColor(0);
 					paintChild(_g,m_parentManager.m_commentTextArea);
 					
-					if(!sm_simpleMode){
+					if(!sm_simpleMode && !m_weibo.GetCommentWeibo().IsOwnWeibo()){
 						paintChild(_g,m_parentManager.m_followCommentUser);
 					}
 					
