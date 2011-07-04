@@ -276,8 +276,8 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		m_weibo.createFavorite(_id);			
 	}
 
-	protected void FollowUser(String _id)throws Exception{
-		m_weibo.createFriendship(_id);
+	protected void FollowUser(String _screenName)throws Exception{
+		m_weibo.createFriendship(_screenName);
 	}
 	
 	protected void DeleteWeibo(long _id,boolean _isComment)throws Exception{

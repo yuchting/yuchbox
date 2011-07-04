@@ -1,19 +1,6 @@
 package com.yuchting.yuchberry.server;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
 import java.net.Socket;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Vector;
-
-import javax.net.ssl.SSLSocket;
 
 
 class berrySvrPush extends Thread{
@@ -47,9 +34,7 @@ class berrySvrPush extends Thread{
 					break;
 				}
 				
-				m_serverDeamon.m_fetchMgr.Push(m_sendReceive);
-				
-				
+				m_serverDeamon.m_fetchMgr.Push(m_sendReceive);				
 				
 				sleep(m_serverDeamon.m_fetchMgr.GetPushInterval() * 1000);				
 							
@@ -75,7 +60,7 @@ public class berrySvrDeamon extends Thread{
 		
 	private berrySvrPush m_pushDeamon	= null;
 	
-	boolean			m_quit			= false;
+	boolean			m_quit			= true;
 	boolean			m_isCloseByMgr	= false;
 	
 	public berrySvrDeamon(fetchMgr _mgr,Socket _s,sendReceive _sendReceive)throws Exception{
@@ -114,7 +99,9 @@ public class berrySvrDeamon extends Thread{
 			// process....
 			//
 			try{
-												
+				
+				m_quit = false;
+				
 				byte[] t_package = m_sendReceive.RecvBufferFromSvr();
 				//m_fetchMgr.m_logger.LogOut("receive package head<" + t_package[0] + "> length<" + t_package.length + ">");
 				
@@ -140,7 +127,7 @@ public class berrySvrDeamon extends Thread{
 				m_pushDeamon.interrupt();
 							
 				m_fetchMgr.m_logger.PrinterException(_e);
-							
+				
 				m_quit = true;
 				
 				if(!m_isCloseByMgr){

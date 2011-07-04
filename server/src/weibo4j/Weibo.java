@@ -2177,21 +2177,31 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
      */
 
     public User create(String id) throws WeiboException {
-        return createFriendship(id);
+        return createFriendship(Long.parseLong(id));
     }
 
     /**
      * Befriends the user specified in the ID parameter as the authenticating user.  Returns the befriended user in the requested format when successful.  Returns a string describing the failure condition when unsuccessful.
      *
-     * @param id the ID or screen name of the user to be befriended
+     * @param id the ID of the user to be befriended
      * @return the befriended user
      * @throws WeiboException when Weibo service or network is unavailable
      * @since Weibo4J 1.1220
      * @see <a href="http://open.t.sina.com.cn/wiki/index.php/Friendships/create">friendships/create </a>
      */
-    public User createFriendship(String id) throws WeiboException {
+    public User createFriendship(long id) throws WeiboException {
 //        return new User(http.post(getBaseURL() + "friendships/create/" + id + ".xml", new PostParameter[0], true), this);
     	 return new User(http.post(getBaseURL() + "friendships/create/" + id + ".json", new PostParameter[0], true).asJSONObject());
+    }
+    
+    /** yuchberry modified
+     * follow the user by screen name 
+     * @param screenName 
+     * @return
+     * @throws WeiboException
+     */
+    public User createFriendship(String screenName) throws WeiboException {
+    	return new User(http.post(getBaseURL() + "friendships/create.json", new PostParameter[]{new PostParameter("screen_name",screenName)}, true).asJSONObject());
     }
 
     /**

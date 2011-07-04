@@ -144,8 +144,8 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		m_api.favoriteMessage(_id);
 	}
 
-	protected void FollowUser(String _id)throws Exception{
-		m_api.followUser(_id);
+	protected void FollowUser(String _screenName)throws Exception{
+		m_api.followUser(_screenName);
 	}
 	
 	private void AddWeibo(List<QWeibo> _from,fetchWeiboData _to,byte _class){

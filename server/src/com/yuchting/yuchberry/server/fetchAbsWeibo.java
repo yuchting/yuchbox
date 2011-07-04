@@ -565,7 +565,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 											GPSInfo _info,boolean _updateTimeline)throws Exception;
 	
 	protected abstract void FavoriteWeibo(long _id)throws Exception;
-	protected abstract void FollowUser(String _id)throws Exception;
+	protected abstract void FollowUser(String _screenName)throws Exception;
 	protected abstract void DeleteWeibo(long _id,boolean _isComment)throws Exception;
 	
 	protected boolean ProcessWeiboConfirmed(ByteArrayInputStream in)throws Exception{
@@ -680,17 +680,30 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		if(t_style == GetCurrWeiboStyle()){
 			
 			String t_id = null;
-			if(t_style == fetchWeibo.QQ_WEIBO_STYLE){
+			
+			if(m_mainMgr.GetConnectClientVersion() >= 10){
+				
 				t_id = sendReceive.ReadString(in);
+				
 			}else{
-				t_id = Long.toString(sendReceive.ReadLong(in));
+
+				if(t_style == fetchWeibo.QQ_WEIBO_STYLE){
+					t_id = sendReceive.ReadString(in);
+				}else{
+					t_id = Long.toString(sendReceive.ReadLong(in));
+				}	
 			}
 
 			m_mainMgr.m_logger.LogOut(GetAccountName() + " Follow User " + t_id);
 			
-			FollowUser(t_id);
-			
-			m_mainMgr.SendData(sm_followOkPrompt, false);
+			try{
+				
+				FollowUser(t_id);
+				m_mainMgr.SendData(sm_followOkPrompt, false);
+				
+			}catch(Exception e){
+				m_mainMgr.m_logger.PrinterException(e);
+			}			
 			
 			return true;
 		}

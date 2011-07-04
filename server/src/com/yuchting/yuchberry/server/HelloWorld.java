@@ -87,28 +87,8 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[])throws Exception{
 
-		
-		String m_text = "ahahahah <a href=\"xxx.com\">xxx.com</a> ttttttt<a href=\"bbb.com\">bbb.com</a>";
-		
-		while(true){
-			int t_a = m_text.indexOf("<a");
-			if(t_a != -1){
-				int t_a_ref = m_text.indexOf(">",t_a);
-				int t_a_end = m_text.indexOf("</a>",t_a);
+		berryRecvTest();
 				
-				if(t_a_ref != -1 && t_a_end != -1 && (t_a_ref < t_a_end) ){
-					m_text = m_text.substring(0,t_a) + m_text.substring(t_a_ref + 1,t_a_end) + m_text.substring(t_a_end + 4);
-				}else{
-					break;
-				}
-				
-			}else{
-				break;
-			}
-		}
-		
-		System.out.print(m_text);
-		
 	}
 	
 	static public void qgetOAuthRequest(){

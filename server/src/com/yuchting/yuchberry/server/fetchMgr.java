@@ -277,31 +277,21 @@ public class fetchMgr{
 			//
 			_s.setSoTimeout(10000);
 			_s.setKeepAlive(true);
-			
-			m_logger.LogOut("ValidateClient 0");
-			
+						
 			ByteArrayInputStream in = new ByteArrayInputStream(t_tmp.RecvBufferFromSvr());
 									
 			int t_msg_head = in.read();
-			
-			m_logger.LogOut("ValidateClient 1");
-			
+						
 			int passlen = sendReceive.ReadInt(in);
-			
-			m_logger.LogOut("ValidateClient 2");
-			
+						
 			if(passlen > 100 || passlen < 0){
 				throw new Exception("Watch Out! User pass is too long! val:" + passlen);
 			}
 			
-			m_logger.LogOut("ValidateClient 3");
-			
 			byte[] t_buffer = new byte[passlen];
 			sendReceive.ForceReadByte(in,t_buffer,passlen);
 			String t_sendPass = new String(t_buffer,"UTF-8");
-		
-			m_logger.LogOut("ValidateClient 4");
-			
+
 			if(msg_head.msgConfirm != t_msg_head 
 			|| !t_sendPass.equals(m_userPassword)){
 				
@@ -309,21 +299,15 @@ public class fetchMgr{
 				
 				throw new Exception("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> sent Pass<"+t_sendPass+"> connected.");			
 			}
-			
-			m_logger.LogOut("ValidateClient 5");
-			
+
 			if((m_clientVer = sendReceive.ReadInt(in)) < 2){
 				throw new Exception("error version client<"+ _s.getInetAddress().getHostAddress() +"> connected.");
 			}
-			
-			m_logger.LogOut("ValidateClient 6");
-			
+						
 			// read the language state
 			//
 			m_clientLanguage = in.read();
 						
-			m_logger.LogOut("ValidateClient 7");
-			
 			if(m_clientVer >= 3){
 				String t_clientVersion = sendReceive.ReadString(in);
 				
@@ -334,30 +318,22 @@ public class fetchMgr{
 					SendNewVersionPrompt(t_tmp);
 				}
 			}
-			
-			m_logger.LogOut("ValidateClient 8");
-			
+						
 			if(m_clientVer >= 5){
 				m_passwordKey = sendReceive.ReadString(in);
 			}
-			
-			m_logger.LogOut("ValidateClient 9");
-			
+						
 			if(m_clientVer >= 6){
 				m_isWeiboEnabled = sendReceive.ReadBoolean(in);
 			}
-			
-			m_logger.LogOut("ValidateClient 10");
-			
+						
 			if(m_clientVer >= 9){
 				m_clientOSVersion = sendReceive.ReadString(in);
 				int t_size = sendReceive.ReadInt(in);
 				m_clientDisplayWidth = (t_size >>> 16);
 				m_clientDisplayHeight = (t_size & 0x0000ffff);
 			}
-			
-			m_logger.LogOut("ValidateClient 11");
-			
+					
 			_s.setSoTimeout(0);
 									
 			return t_tmp;
@@ -403,14 +379,30 @@ public class fetchMgr{
 								
 								m_currConnect.m_isCloseByMgr = true;
 								
+								m_logger.LogOut("StartListening 0");
+								
 								// kick the former client
 								//
 								synchronized (m_currConnect) {
+									
+									m_logger.LogOut("StartListening 1");
+									
 									if(m_currConnect.m_socket != null && !m_currConnect.m_socket.isClosed()){
+										
+										m_logger.LogOut("StartListening 2");
+										
 										m_currConnect.m_socket.close();
+										
+										m_logger.LogOut("StartListening 3");
+										
 									}
+									
+									m_logger.LogOut("StartListening 4");
+									
 									m_currConnect.m_socket = null;
 								}		
+								
+								m_logger.LogOut("StartListening 5");
 								
 								// wait	quit
 								while(!m_currConnect.m_quit){

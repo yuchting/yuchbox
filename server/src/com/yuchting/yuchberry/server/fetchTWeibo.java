@@ -219,8 +219,8 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		m_twitter.createFavorite(_id);			
 	}
 
-	protected void FollowUser(String _id)throws Exception{
-		m_twitter.createFriendship(_id);
+	protected void FollowUser(String _screenName)throws Exception{
+		m_twitter.createFriendship(_screenName);
 	}
 	
 	protected void DeleteWeibo(long _id,boolean _isComment)throws Exception{
