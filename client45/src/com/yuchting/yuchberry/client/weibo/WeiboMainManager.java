@@ -1,7 +1,5 @@
 package com.yuchting.yuchberry.client.weibo;
 
-import java.io.ByteArrayOutputStream;
-
 import local.localResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -10,9 +8,7 @@ import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
-import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
-import com.yuchting.yuchberry.client.sendReceive;
 
 
 public class WeiboMainManager extends VerticalFieldManager implements FieldChangeListener{
@@ -64,7 +60,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 	public WeiboMainManager(recvMain _mainApp,weiboTimeLineScreen _parentScreen,boolean _timelineManager){
 		super(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
-		m_editTextArea.setMaxSize(WeiboItemField.fsm_maxWeiboTextLength);
+		m_editTextArea.setMaxSize(WeiboItemField.fsm_maxWeiboTextLength * 2);
 		
 		m_mainApp  			= _mainApp;
 		m_parentScreen		= _parentScreen;
@@ -161,6 +157,10 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 					m_updateWeiboField.m_sendUpdateText = m_editTextArea.getText();
 				}	
 			}
+			
+			m_parentScreen.setInputPromptText(Integer.toString(m_editTextArea.getText().length()) + 
+					"/" + m_editTextArea.getMaxSize());
+			
 		}else if(m_favoriteBut == field){
 			FavoriteWeibo(getCurrExtendedItem());			
 		}else if(m_picBut == field){
@@ -413,6 +413,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				}catch(Exception e){}
 			}		
 			
+			m_parentScreen.setInputPromptText("");
+			
 			sublayout(0, 0);
 			invalidate();
 			
@@ -603,8 +605,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				}
 				
 				t_text = t_forwardText.toString();
-				if(t_text.length() > WeiboItemField.fsm_maxWeiboTextLength - 15){
-					t_text = t_text.substring(0,WeiboItemField.fsm_maxWeiboTextLength - 15);
+				if(t_text.length() > m_editTextArea.getMaxSize()){
+					t_text = t_text.substring(0,m_editTextArea.getMaxSize());
 				}
 				
 			}else{

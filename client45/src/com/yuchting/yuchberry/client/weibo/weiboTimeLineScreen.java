@@ -154,8 +154,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		setTitle(m_weiboHeader);
 		
-		m_currMgr.setFocus();
-		
+		m_currMgr.setFocus();	
 	}
 	
 	public void enableHeader(boolean _enable){
@@ -194,9 +193,6 @@ public class weiboTimeLineScreen extends MainScreen{
 	private final static int fsm_promptBubbleArc = 8;
 	private final static int	fsm_promptBubbleWidth = recvMain.fsm_display_width - (fsm_promptBubble_x) * 2;
 	
-	private final static int fsm_promptTextPos_x = fsm_promptBubble_x + fsm_promptBubbleBorder;
-	private final static int fsm_promptTextPos_y = fsm_promptBubble_y + fsm_promptBubbleBorder;
-	
 	private final static int	fsm_promptTextWidth = fsm_promptBubbleWidth - fsm_promptBubbleBorder * 2;
 	
 	
@@ -206,13 +202,20 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	final class PromptTextField extends TextField {
 		
-		public PromptTextField(){
+		int m_width;
+		
+		public PromptTextField(boolean _small){
 			super(Field.READONLY);
-			
+			if(_small){
+				setFont(getFont().derive(getFont().getStyle(),getFont().getHeight() - 4));
+				m_width = getFont().getAdvance("999/999");
+			}else{
+				m_width = fsm_promptTextWidth;
+			}
 		}
 		public void setText(String _text){
 			super.setText(_text);
-			layout(fsm_promptTextWidth,1000);
+			layout(m_width,1000);
 		}
 		
 		public void paint(Graphics _g){
@@ -221,8 +224,9 @@ public class weiboTimeLineScreen extends MainScreen{
 
 	}
 	
-	public PromptTextField 	m_promptTextArea	= new PromptTextField();
-	
+	public PromptTextField 	m_promptTextArea	= new PromptTextField(false);
+	public PromptTextField m_inputTextNum		= new PromptTextField(true);
+
 	public synchronized void popupPromptText(String _prompt){
 		
 		if(!m_promptTextArea.getText().equals(_prompt)){
@@ -255,39 +259,60 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 	}
 
+	public void setInputPromptText(String _prompt){
+		m_inputTextNum.setText(_prompt);
+		
+		if(m_weiboHeaderShow){
+			m_weiboHeader.invalidate();
+		}
+		
+	}
+	
 	protected void paint(Graphics g){
 		super.paint(g);
 
 		if(m_promptTextArea.getText().length() != 0){
-			int t_height = m_promptTextArea.getHeight();
 			
-			int t_color = g.getColor();
-			try{
-				g.setColor(WeiboItemField.fsm_promptTextBGColor);
-	        	g.fillRoundRect(fsm_promptBubble_x, fsm_promptBubble_y, 
-	        			fsm_promptBubbleWidth, t_height + fsm_promptBubbleBorder * 2, 
-	        			fsm_promptBubbleArc, fsm_promptBubbleArc);
-	        	
-	        	g.setColor(WeiboItemField.fsm_promptTextBorderColor);
-	        	g.drawRoundRect(fsm_promptBubble_x, fsm_promptBubble_y, 
-	        			fsm_promptBubbleWidth, t_height + fsm_promptBubbleBorder * 2, 
-	        			fsm_promptBubbleArc, fsm_promptBubbleArc);
-				
-			}finally{
-				g.setColor(t_color);
-			}
-			
-	        boolean notEmpty = g.pushContext( fsm_promptTextPos_x, fsm_promptTextPos_y, 
-	        		fsm_promptTextWidth , t_height, fsm_promptTextPos_x, fsm_promptTextPos_y );
-	        try {
-	            if( notEmpty ) {
-	            	m_promptTextArea.paint(g);
-	            }
-	        } finally {
-	            g.popContext();
-	            g.setColor(t_color);
-	        }
+			paintPromptText(g,fsm_promptBubble_x,fsm_promptBubble_y,
+					fsm_promptBubbleWidth,m_promptTextArea.getHeight() + fsm_promptBubbleBorder * 2,m_promptTextArea);
 		}
+		
+		
+		if(m_inputTextNum.getText().length() != 0){
+			
+			paintPromptText(g,recvMain.fsm_display_width - m_inputTextNum.getWidth() - fsm_promptBubbleBorder * 2,
+					0,
+					m_inputTextNum.getWidth() + fsm_promptBubbleBorder * 2 ,
+					m_inputTextNum.getHeight() + fsm_promptBubbleBorder * 2,m_inputTextNum);
+		}
+	}
+	
+	public static void paintPromptText(Graphics g,int _x,int _y,int _width,int _height,PromptTextField _text){
+		
+		int t_color = g.getColor();
+		try{
+			g.setColor(WeiboItemField.fsm_promptTextBGColor);
+        	g.fillRoundRect(_x, _y, _width, _height, 
+        			fsm_promptBubbleArc, fsm_promptBubbleArc);
+        	
+        	g.setColor(WeiboItemField.fsm_promptTextBorderColor);
+        	g.drawRoundRect(_x, _y, _width, _height, 
+        			fsm_promptBubbleArc, fsm_promptBubbleArc);
+			
+		}finally{
+			g.setColor(t_color);
+		}
+		
+		boolean notEmpty = g.pushContext( _x + fsm_promptBubbleBorder , _y + fsm_promptBubbleBorder ,
+										_width , _height, _x + fsm_promptBubbleBorder, _y + fsm_promptBubbleBorder);
+        try {
+            if( notEmpty ) {
+            	_text.paint(g);
+            }
+        } finally {
+            g.popContext();
+            g.setColor(t_color);
+        }
 	}
 	
 	public void ClearWeibo(){
@@ -661,6 +686,13 @@ public class weiboTimeLineScreen extends MainScreen{
 			try{
 				
 				String t_text = m_currMgr.m_editTextArea.getText();
+				if(t_text.length() > WeiboItemField.fsm_maxWeiboTextLength){
+					if(Dialog.ask(Dialog.D_YES_NO,recvMain.sm_local.getString(localResource.WEIBO_SEND_TEXT_CUTTED_PROMPT),Dialog.NO) != Dialog.YES){
+						return;
+					}
+					
+					t_text = t_text.substring(0,WeiboItemField.fsm_maxWeiboTextLength);
+				}
 				
 				m_currMgr.BackupSendWeiboText(m_currMgr.m_currentSendType,m_currMgr.getCurrEditItem().m_weibo,t_text);
 				

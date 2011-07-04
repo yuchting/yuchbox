@@ -10,12 +10,16 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.component.AutoTextEditField;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 
 import com.yuchting.yuchberry.client.recvMain;
 
 final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	
-	public AutoTextEditField 	m_editTextArea			= new AutoTextEditField(){
+	public AutoTextEditField 	m_editTextArea	= new AutoTextEditField();
+	
+	private VerticalFieldManager m_editTextManager = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
+		
 		public int getPreferredHeight(){
 			return WeiboUpdateDlg.fsm_height - m_titleHeight - m_sendButton.getHeight() - 6;
 		}
@@ -24,8 +28,11 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			return WeiboUpdateDlg.fsm_width - 2;
 		}
 		
-		protected void layout(int width, int height){
-			super.layout(getPreferredWidth(), getPreferredHeight());			
+		protected void sublayout(int width, int height){
+			
+			setPositionChild(m_editTextArea,0,0);
+			layoutChild(m_editTextArea,getPreferredWidth(),999);
+			
 			setExtent(getPreferredWidth(),getPreferredHeight());
 		}
 	};
@@ -43,14 +50,17 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 
 		m_editTextArea.setMaxSize(WeiboItemField.fsm_maxWeiboTextLength);
 		m_sendButton.setChangeListener(this);
+		m_editTextArea.setChangeListener(this);
 		
-		add(m_editTextArea);
+		m_editTextManager.add(m_editTextArea);
+		
+		add(m_editTextManager);
 		add(m_sendButton);
 		
 		m_sendButton.layout(0, 0);
 		
 		m_titleHeight = m_editTextArea.getFont().getHeight() + 5;
-		m_separateLine_y = m_titleHeight + m_editTextArea.getPreferredHeight();
+		m_separateLine_y = m_titleHeight + m_editTextManager.getPreferredHeight();
 	}
 	
 	public int getPreferredHeight(){
@@ -65,19 +75,24 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		if(field == m_sendButton){
 			m_editTextArea.setFocus();
 			sendUpdate();			
+		}else if(field == m_editTextArea){
+			
+			// refresh the input number title text
+			//
+			getScreen().invalidate();
 		}
 	}
 	
 	public void sublayout(int width, int height){
 		
-		setPositionChild(m_editTextArea,0,m_titleHeight);
-		layoutChild(m_editTextArea,m_editTextArea.getPreferredWidth(),m_editTextArea.getPreferredHeight());
+		setPositionChild(m_editTextManager,0,m_titleHeight);
+		layoutChild(m_editTextManager,m_editTextManager.getPreferredWidth(),m_editTextManager.getPreferredHeight());
 		
 		int t_buttonWidth = m_sendButton.getWidth();
 		int t_buttonHeight = m_sendButton.getHeight();
 		
-		int t_sendButton_y = (m_editTextArea.getPreferredHeight() + m_titleHeight) + 
-					(WeiboUpdateDlg.fsm_height - (m_editTextArea.getPreferredHeight() + m_titleHeight) - t_buttonHeight) / 2;
+		int t_sendButton_y = (m_editTextManager.getPreferredHeight() + m_titleHeight) + 
+					(WeiboUpdateDlg.fsm_height - (m_editTextManager.getPreferredHeight() + m_titleHeight) - t_buttonHeight) / 2;
 		
 		setPositionChild(m_sendButton,WeiboUpdateDlg.fsm_width - t_buttonWidth - 3,t_sendButton_y);
 			
@@ -111,6 +126,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			return true;
 		}
 		
+		invalidate();
 		getScreen().invalidate();
 				
 		return super.keyChar(c,status,time);
@@ -164,8 +180,12 @@ public class WeiboUpdateDlg extends Screen {
 			_g.drawRect(0,0,getPreferredWidth(),getPreferredHeight());
 			
 			_g.setColor(0xffffff);
-			_g.drawText(recvMain.sm_local.getString(localResource.WEIBO_UPDATE_DIALOG_TITLE),
-					20,(m_updateManager.m_titleHeight - WeiboItemField.sm_fontHeight) / 2);
+			
+			String t_str = recvMain.sm_local.getString(localResource.WEIBO_UPDATE_DIALOG_TITLE) 
+				+ "  (" + m_updateManager.m_editTextArea.getText().length() + 
+					"/" + m_updateManager.m_editTextArea.getMaxSize() + ")";
+			
+			_g.drawText(t_str,0,(m_updateManager.m_titleHeight - WeiboItemField.sm_fontHeight) / 2 + 2);
 			
 		}finally{
 			_g.setColor(color);

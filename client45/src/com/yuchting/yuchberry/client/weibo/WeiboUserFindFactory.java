@@ -66,14 +66,16 @@ class WeiboUserFindActiveFieldCookie implements ActiveFieldCookie
     	
     	if(t_extendedItem != null){
             
-            if(!t_extendedItem.m_weibo.GetUserScreenName().equals(m_userName) || ){
-            	
+            if(!t_extendedItem.m_weibo.GetUserScreenName().equals(m_userName) || !t_extendedItem.m_weibo.IsOwnWeibo()){
             	WeiboUserFindFactory.sm_mainScreen.m_userSendMessageMenu.setUserName(m_userName);    	
                 items.addElement( WeiboUserFindFactory.sm_mainScreen.m_userSendMessageMenu);	
-                            	
-                WeiboUserFindFactory.sm_mainScreen.m_userFollowMenu.setUserName(m_userName);
+            }
+            
+            if(!t_extendedItem.m_weibo.GetUserScreenName().equals(m_userName)){
+            	WeiboUserFindFactory.sm_mainScreen.m_userFollowMenu.setUserName(m_userName);
                 items.addElement( WeiboUserFindFactory.sm_mainScreen.m_userFollowMenu );
             }
+            
     	}            
         
         return (MenuItem)items.elementAt(0);
