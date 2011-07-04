@@ -10,15 +10,30 @@ public class WeiboTextField extends ActiveRichTextField{
 	int[] m_bufferedOffset	 = new int[20];
 	byte[] m_bufferedAttr	= new byte[20];
 	
+	int[]		m_background = 
+	{
+		0xffffff,
+		0xffffff
+	};
+	
+	int[]		m_foreground = 
+	{
+		0,
+		0
+	};
+		
 	static Font[]		sm_fontList = 
 	{
 		WeiboItemField.sm_defaultFont,
 		WeiboItemField.sm_defaultFont
 	};
-	
 		
-	public WeiboTextField(){
-		super("",Field.READONLY | Field.FOCUSABLE);
+		
+	public WeiboTextField(int _foreground,int _background){
+		super("",Field.READONLY | Field.FOCUSABLE | SCANFLAG_THREAD_ON_CREATE);
+		
+		Arrays.fill(m_foreground,_foreground);
+		Arrays.fill(m_background,_background);
 	}
 	
 	public void setText(String _text){
@@ -38,7 +53,7 @@ public class WeiboTextField extends ActiveRichTextField{
 		m_bufferedOffset[0] = 0;
 		
 		Arrays.fill(m_bufferedAttr,(byte)0);
-		
+				
 		// parse the offset and attribute and style
 		//
 		int t_index = 0;
@@ -59,15 +74,7 @@ public class WeiboTextField extends ActiveRichTextField{
 					
 					t_attrIndex++;
 					t_offsetIndex++;
-				}
-				
-				if(t_offsetIndex >= m_bufferedOffset.length ){
-					// relocate that
-					//
-					if(!incBuffered()){
-						break;
-					}
-				}
+				}			
 				
 				for(int i = t_index + 1;i < t_textLength;i++,t_index++){
 					
@@ -76,7 +83,7 @@ public class WeiboTextField extends ActiveRichTextField{
 					if(!WeiboUserFind.isLeagalNameCharacter(a)){
 						break;
 					}
-				}
+				}				
 				
 				m_bufferedAttr[t_attrIndex] = 1;
 				
@@ -89,26 +96,48 @@ public class WeiboTextField extends ActiveRichTextField{
 			}else{
 				t_index++;
 			}
+			
+			if(t_offsetIndex >= m_bufferedOffset.length){
+				// relocate that
+				//
+				if(!incBuffered(t_textLength,(byte)0)){
+					break;
+				}
+			}
 		}
 		
-		super.setText(_text,m_bufferedOffset,m_bufferedAttr,sm_fontList);
+		super.setText(_text,m_bufferedOffset,m_bufferedAttr,sm_fontList,m_foreground,m_background);
 	}
 	
 	
-	private boolean incBuffered(){
+	private boolean incBuffered(int _offsetDefaultVal,byte _attrDefaultVal){
 		
 		if(m_bufferedOffset.length + 5 > 128){
 			return false;
 		}
 		
 		int[] t_newOffset =  new int[m_bufferedOffset.length + 5];
+		for(int i = 0;i < t_newOffset.length;i++){
+			if(i < m_bufferedOffset.length){
+				t_newOffset[i] = m_bufferedOffset[i];
+			}else{
+				t_newOffset[i] = _offsetDefaultVal;
+			}
+			
+		}
 		m_bufferedOffset = t_newOffset;
 		
-		byte[] t_newAttr = new byte[m_bufferedAttr.length + 5]; 
+		byte[] t_newAttr = new byte[m_bufferedAttr.length + 5];
+		for(int i = 0;i < t_newAttr.length;i++){
+			if(i < m_bufferedAttr.length){
+				t_newAttr[i] = m_bufferedAttr[i]; 
+			}else{
+				t_newAttr[i] = _attrDefaultVal;
+			}
+		}
 		m_bufferedAttr = t_newAttr;
 		
 		return true;
 	}
-	
 	
 }

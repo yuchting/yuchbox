@@ -250,4 +250,15 @@ public class fetchWeibo {
 			}			
 		}
 	}
+	
+	public String getForwardPrefix(){
+		switch(GetWeiboStyle()){
+		case TWITTER_WEIBO_STYLE:
+			return " RT ";
+		case QQ_WEIBO_STYLE:
+			return " || ";
+		}
+		
+		return " // ";
+	}
 }

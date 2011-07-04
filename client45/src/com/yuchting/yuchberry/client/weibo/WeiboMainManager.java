@@ -7,7 +7,6 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
-import net.rim.device.api.ui.component.ActiveRichTextField;
 import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
@@ -22,10 +21,9 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	public WeiboButton	 m_forwardBut			= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL));
 	public WeiboButton	 m_favoriteBut			= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL));
 	public WeiboButton	 m_picBut				= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL));
-	public WeiboButton	 m_followCommentUser	= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FOLLOW_USER_BUTTON_LABEL));
 
-	public WeiboTextField 	m_textArea				= new WeiboTextField();
-	public WeiboTextField	m_commentTextArea		= new WeiboTextField();
+	public WeiboTextField 	m_textArea				= new WeiboTextField(0,0xffffff);
+	public WeiboTextField	m_commentTextArea		= new WeiboTextField(0,WeiboItemField.fsm_weiboCommentBGColor);
 	
 	public int					m_currentSendType		= 0;
 	
@@ -84,11 +82,9 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		m_picBut.setChangeListener(this);
 		
 		m_editTextArea.setChangeListener(this);
-		m_followCommentUser.setChangeListener(this);
+	
 	}
-	
-	
-	
+
 	public void setCurrSelectedItem(WeiboItemField _field){
 		m_selectedItem = _field;
 	}
@@ -167,36 +163,11 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			}
 		}else if(m_favoriteBut == field){
 			FavoriteWeibo(getCurrExtendedItem());			
-		}else if(m_followCommentUser == field){
-			FollowCommentUser(getCurrExtendedItem());
 		}else if(m_picBut == field){
 			OpenOriginalPic(getCurrExtendedItem());
 		}
 	}
-	
-	public void FollowCommentUser(WeiboItemField _field){
-		if(_field != null && _field.m_weibo.GetCommentWeibo() != null){
-			
-			try{
-				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-				t_os.write(msg_head.msgWeiboFollowUser);
-				t_os.write(_field.m_weibo.GetCommentWeibo().GetWeiboStyle());
-				
-				if(_field.m_weibo.GetCommentWeibo().GetWeiboStyle() == fetchWeibo.QQ_WEIBO_STYLE){
-					sendReceive.WriteString(t_os,_field.m_weibo.GetCommentWeibo().GetUserScreenName());
-				}else{
-					sendReceive.WriteLong(t_os,_field.m_weibo.GetCommentWeibo().GetUserId());
-				}				
-				
-				weiboTimeLineScreen.sm_mainApp.m_connectDeamon.addSendingData(
-						msg_head.msgWeiboFollowUser, t_os.toByteArray(),true);
-				
-			}catch(Exception e){
-				weiboTimeLineScreen.sm_mainApp.SetErrorString("FCU:" + e.getMessage() + e.getClass().getName());
-			}
-		}
-	}
-	
+		
 	public int getPreferredWidth(){
 		return recvMain.fsm_display_width;
 	}
@@ -427,6 +398,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				}catch(Exception e){}
 				
 			}else{
+				
 				setCurrExtendedItem(null);
 				t_extendItem.AddDelControlField(false);
 				
@@ -438,8 +410,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 						//
 						t_extendItem.getFocusField().setFocus();						
 					}
-				}catch(Exception e){}				
-			}
+				}catch(Exception e){}
+			}		
 			
 			sublayout(0, 0);
 			invalidate();
@@ -620,7 +592,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			if(m_forwardIdBackup != _item.m_weibo.GetId()
 			|| m_forwardStyleBackup != _item.m_weibo.GetWeiboStyle()){
 								
-				String t_forwardSign = _item.m_weibo.GetWeiboStyle() == fetchWeibo.TWITTER_WEIBO_STYLE?" RT ":" //";
+				String t_forwardSign = _item.m_weibo.getForwardPrefix();
 				
 				StringBuffer t_forwardText = new StringBuffer();
 				t_forwardText.append(t_forwardSign).append("@").append(_item.m_weibo.GetUserScreenName()).
@@ -667,6 +639,6 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		&& _item.m_weiboPic != null){
 			recvMain.openURL(_item.m_weiboPic);
 		}
-	}
+	}  
 	
 }

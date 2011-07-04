@@ -18,7 +18,6 @@ import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
-import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.NullField;
@@ -29,11 +28,28 @@ import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
 
+abstract class WeiboUserMenu extends MenuItem{
+	
+	String m_userName = "@";
+	int	m_strRes;
+	
+	public WeiboUserMenu(int _strRes,int _ordinal ,int _priority){
+		super("",_ordinal,_priority);
+		
+		m_strRes = _strRes;
+	}
+	
+	public void setUserName(String _userName){
+		m_userName = _userName;
+		setText(recvMain.sm_local.getString(m_strRes) + " " + m_userName);
+	}
+}
+
 public class weiboTimeLineScreen extends MainScreen{
 	
 	static recvMain				sm_mainApp = (recvMain)UiApplication.getUiApplication();
 	
-	static WeiboUserFindFactory	 sm_factory = new WeiboUserFindFactory();
+	private WeiboUserFindFactory	m_userfactory = new WeiboUserFindFactory(this);
 	
 	WeiboMainManager			m_mainMgr;
 	WeiboMainManager			m_mainAtMeMgr;
@@ -809,6 +825,31 @@ public class weiboTimeLineScreen extends MainScreen{
         }
     };       
     
+    public WeiboUserMenu m_userGetInfoMenu = new WeiboUserMenu(localResource.WEIBO_CHECK_USER_MENU_LABEL,5,5){
+		public void run(){
+			
+		}
+	};
+	
+	public WeiboUserMenu m_userFollowMenu = new WeiboUserMenu(localResource.WEIBO_FOLLOW_USER_MENU_LABEL,5,6){
+		public void run(){
+			followUser(m_userName);
+		}
+	};
+	
+	public WeiboUserMenu m_userAtUserMenu = new WeiboUserMenu(localResource.WEIBO_AT_USER_MENU_LABEL,5,7){
+		public void run(){
+			m_updateItem.run();
+			m_currUpdateDlg.m_updateManager.m_editTextArea.setText("@" + this.m_userName + " ");
+		}
+	};
+	
+	public WeiboUserMenu m_userSendMessageMenu = new WeiboUserMenu(localResource.WEIBO_SEND_MESSAGE_USER_MENU_LABEL,5,8){
+		public void run(){
+			
+		}
+	};
+	
     public void deleteWeiboItem(){
     	
     	if(m_currMgr.getCurrSelectedItem() != null 
@@ -832,9 +873,32 @@ public class weiboTimeLineScreen extends MainScreen{
     			}
     		}
     	}
-    	
     }
     
+    
+    public void followUser(String _screenName){
+		
+    	WeiboItemField t_field = m_currMgr.getCurrExtendedItem();
+    	
+		if(t_field != null && _screenName.length() != 0){
+			
+			try{
+				
+				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+				t_os.write(msg_head.msgWeiboFollowUser);
+				t_os.write(t_field.m_weibo.GetWeiboStyle());
+
+				sendReceive.WriteString(t_os,_screenName);
+				
+				weiboTimeLineScreen.sm_mainApp.m_connectDeamon.addSendingData(
+						msg_head.msgWeiboFollowUser, t_os.toByteArray(),true);
+				
+			}catch(Exception e){
+				weiboTimeLineScreen.sm_mainApp.SetErrorString("FCU:" + e.getMessage() + e.getClass().getName());
+			}
+		}
+	}
+
 	protected void makeMenu(Menu _menu,int instance){
 		
 		if(m_currMgr.getCurrEditItem() == null){
@@ -948,9 +1012,6 @@ public class weiboTimeLineScreen extends MainScreen{
 		    		return true;
 		    	case '0':
 		    		m_currMgr.OpenNextWeiboItem(false);
-		    		return true;
-		    	case 'L':
-		    		m_currMgr.FollowCommentUser(m_currMgr.getCurrExtendedItem());
 		    		return true;
 				}
 			}else{
@@ -1066,7 +1127,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 		
 		m_currMgr.restoreFocusField();
-		
+				
 		if(m_currMgr.getFieldCount() <= WeiboMainManager.fsm_maxItemInOneScreen){
 			enableHeader(true);
 		}
