@@ -96,8 +96,8 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	}
 	
 	protected void ResetCheckFolderLimit()throws Exception{
-		m_currRemainCheckFolderNum = 50;
-		m_maxCheckFolderNum			= 50;
+		m_currRemainCheckFolderNum = 100;
+		m_maxCheckFolderNum			= 100;
 	}
 	
 	/**

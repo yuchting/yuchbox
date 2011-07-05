@@ -87,7 +87,9 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[])throws Exception{
 
-		berryRecvTest();
+		String t_test = "sdfjsdfjskjhttp://aa.com s;dlkfjs;ldfj http://bb.com 你好啊http://cc.com 你好哈。http://dd.com";
+		
+		System.out.print(t_test.replaceAll("(?<=\\S)http", " http"));
 				
 	}
 	

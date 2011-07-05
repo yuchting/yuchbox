@@ -119,20 +119,25 @@ public class berrySvrDeamon extends Thread{
 					}
 				}catch(Exception e){
 					m_fetchMgr.m_logger.PrinterException(_e);
-				}			
+				}	
 				
-				m_sendReceive.CloseSendReceive();
-				
-				m_pushDeamon.m_closed = true;
-				m_pushDeamon.interrupt();
-							
-				m_fetchMgr.m_logger.PrinterException(_e);
-				
-				m_quit = true;
-				
-				if(!m_isCloseByMgr){
-					m_fetchMgr.SetClientConnected(null);
-				}				
+				try{
+					
+					m_sendReceive.CloseSendReceive();
+					
+					m_pushDeamon.m_closed = true;
+					m_pushDeamon.interrupt();
+								
+					m_fetchMgr.m_logger.PrinterException(_e);
+					
+				}finally{
+					
+					m_quit = true;
+					
+					if(!m_isCloseByMgr){
+						m_fetchMgr.SetClientConnected(null);
+					}	
+				}							
 								
 				break;
 			}

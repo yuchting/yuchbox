@@ -103,7 +103,11 @@ public class fetchWeibo {
 	public void SetBBer(boolean _bber){m_isBBer = _bber;}
 	
 	public String GetText(){return m_text;}
-	public void SetText(final String _text){m_text = _text;}
+	public void SetText(final String _text)
+	{
+		// replace "???http" to "??? http" 
+		m_text = _text.replaceAll("(?<=\\S)http"," http");
+	}
 	
 	public long GetDateTime(){return m_dateTime;}
 	public void SetDateLong(final long _dateTime){m_dateTime = _dateTime;}
