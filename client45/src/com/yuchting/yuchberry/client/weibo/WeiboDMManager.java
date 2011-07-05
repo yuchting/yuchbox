@@ -11,13 +11,13 @@ public class WeiboDMManager extends WeiboMainManager{
 	}
 	
 	public void AddWeibo(final fetchWeibo _weibo,final WeiboHeadImage _image,
-							final boolean _resetSelectIdx){
+							final boolean _initAdd){
 		
 		m_mainApp.invokeLater(new Runnable() {
 			
 			public void run() {
 				
-				if(_resetSelectIdx){
+				if(!_initAdd){
 					m_hasNewWeibo = true;
 				}
 				

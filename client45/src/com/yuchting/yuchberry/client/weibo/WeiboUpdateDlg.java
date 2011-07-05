@@ -182,8 +182,7 @@ public class WeiboUpdateDlg extends Screen {
 			_g.setColor(0xffffff);
 			
 			String t_str = recvMain.sm_local.getString(localResource.WEIBO_UPDATE_DIALOG_TITLE) 
-				+ "  (" + m_updateManager.m_editTextArea.getText().length() + 
-					"/" + m_updateManager.m_editTextArea.getMaxSize() + ")";
+				+ " (" + m_updateManager.m_editTextArea.getText().length() + ")";
 			
 			_g.drawText(t_str,0,(m_updateManager.m_titleHeight - WeiboItemField.sm_fontHeight) / 2 + 2);
 			

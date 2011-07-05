@@ -71,7 +71,9 @@ class WeiboUserFindActiveFieldCookie implements ActiveFieldCookie
                 items.addElement( WeiboUserFindFactory.sm_mainScreen.m_userSendMessageMenu);	
             }
             
-            if(!t_extendedItem.m_weibo.GetUserScreenName().equals(m_userName)){
+            if(!t_extendedItem.m_weibo.GetUserScreenName().equals(m_userName) 
+            || t_extendedItem.m_weibo.GetWeiboClass() != fetchWeibo.TIMELINE_CLASS){
+            	
             	WeiboUserFindFactory.sm_mainScreen.m_userFollowMenu.setUserName(m_userName);
                 items.addElement( WeiboUserFindFactory.sm_mainScreen.m_userFollowMenu );
             }
