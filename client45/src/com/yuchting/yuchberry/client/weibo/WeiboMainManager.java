@@ -1,11 +1,13 @@
 package com.yuchting.yuchberry.client.weibo;
 
 import local.localResource;
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.AutoTextEditField;
+import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
 import com.yuchting.yuchberry.client.recvMain;
@@ -637,9 +639,18 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	}
 	
 	public void OpenOriginalPic(WeiboItemField _item){
-		if(_item != null 
-		&& _item.m_weiboPic != null){
-			recvMain.openURL(_item.m_weiboPic);
+		if(_item != null && _item.m_weiboPic != null){
+			
+			Dialog t_dlg = new Dialog(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_QUESTION),
+									new String[]
+									{
+										recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_0),
+										recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_1),
+										recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_2),
+									},
+									new int[]{0,1,2},1,Bitmap.getPredefinedBitmap(Bitmap.QUESTION),Manager.VERTICAL_SCROLL);
+			
+			recvMain.openURL(_item.getImageURL(t_dlg.doModal()));
 		}
 	}  
 	

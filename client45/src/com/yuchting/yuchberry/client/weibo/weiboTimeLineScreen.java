@@ -355,7 +355,15 @@ public class weiboTimeLineScreen extends MainScreen{
 			}
 			
 			if(!_initAdd){
+				
 				m_weiboHeader.invalidate();
+				
+				if(_weibo.GetWeiboClass() == fetchWeibo.COMMENT_ME_CLASS
+				|| _weibo.GetWeiboClass() == fetchWeibo.AT_ME_CLASS
+				|| _weibo.GetWeiboClass() == fetchWeibo.DIRECT_MESSAGE_CLASS){
+					
+					sm_mainApp.TriggerWeiboNotification();
+				}
 			}
 			
 		}catch(Exception e){
@@ -372,7 +380,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 	}
 	
-	public boolean AddWeibo(fetchWeibo _weibo,boolean _initAdd){
+	public void AddWeibo(fetchWeibo _weibo,boolean _initAdd){
 		
 		synchronized (m_delayWeiboAddList) {
 			
@@ -409,11 +417,6 @@ public class weiboTimeLineScreen extends MainScreen{
 				},500, true);
 			}
 		}
-		
-		
-		return _weibo.GetWeiboClass() == fetchWeibo.COMMENT_ME_CLASS
-				|| _weibo.GetWeiboClass() == fetchWeibo.AT_ME_CLASS
-				|| _weibo.GetWeiboClass() == fetchWeibo.DIRECT_MESSAGE_CLASS;		
 	}
 	
 	public void DelWeibo(fetchWeibo _weibo){

@@ -1769,13 +1769,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			}
 			
 			m_receivedWeiboList.addElement(_weibo);
-			
 		}		
 		
-		if(m_weiboTimeLineScreen.AddWeibo(_weibo,false)){
-			TriggerWeiboNotification();
-		}
-		
+		m_weiboTimeLineScreen.AddWeibo(_weibo,false);
 	}
 	
 	public void ChangeWeiboHeadImageHash(String _userId,int _weiboStyle,int _headImageHash){

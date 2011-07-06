@@ -18,7 +18,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	
 	public AutoTextEditField 	m_editTextArea	= new AutoTextEditField();
 	
-	private VerticalFieldManager m_editTextManager = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
+	public VerticalFieldManager m_editTextManager = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
 		
 		public int getPreferredHeight(){
 			return WeiboUpdateDlg.fsm_height - m_titleHeight - m_sendButton.getHeight() - 6;
@@ -140,7 +140,7 @@ public class WeiboUpdateDlg extends Screen {
 		
 	WeiboUpdateManager		m_updateManager;
 	public WeiboUpdateDlg(weiboTimeLineScreen _screen){
-		super(new WeiboUpdateManager(_screen));
+		super(new WeiboUpdateManager(_screen),Screen.DEFAULT_MENU | Manager.NO_VERTICAL_SCROLL);
 		m_updateManager = (WeiboUpdateManager)getDelegate();
 	}
 	
@@ -159,7 +159,18 @@ public class WeiboUpdateDlg extends Screen {
 		setExtent(getPreferredWidth(), getPreferredHeight());		
 		setPosition((recvMain.fsm_display_width - getPreferredWidth()) / 2 ,
 				(recvMain.fsm_display_height - getPreferredHeight()) / 2);
-				
+		
+	}
+	
+	protected  void	onDisplay(){
+		super.onDisplay();
+		
+		m_updateManager.setVerticalScroll(0);
+		
+		if(m_updateManager.m_editTextArea.getTextLength() != 0){
+			m_updateManager.m_editTextArea.setCursorPosition(m_updateManager.m_editTextArea.getTextLength());
+		}
+		m_updateManager.m_editTextArea.setFocus();		
 	}
 	
 	protected void paint(Graphics _g){		

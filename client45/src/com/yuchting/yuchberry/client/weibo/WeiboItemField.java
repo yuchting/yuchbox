@@ -528,7 +528,8 @@ public class WeiboItemField extends Manager{
 					+ "0" + t_minutes;
 		}		
 	}
-		
+
+	
 	public void subpaint(Graphics _g){
 		
 		if(m_parentManager.getCurrExtendedItem() == this){
@@ -776,6 +777,52 @@ public class WeiboItemField extends Manager{
 		}finally{
 			_g.setColor(color);
 		}
+	}
+	
+	/**
+	 * get the image url by the weibo style(full small or thumb)
+	 * @param _style 0:full 1:small 2:thumb
+	 * @return
+	 */
+	public String getImageURL(int _style){
+		
+		if(m_weiboPic != null){
+			
+			String t_ret = m_weiboPic;
+			
+			switch(m_weibo.GetWeiboStyle()){
+			case fetchWeibo.QQ_WEIBO_STYLE:
+				if(_style == 0){
+					t_ret = t_ret + "/2000";
+				}else if(_style == 1){
+					t_ret = t_ret + "/460";
+				}else{
+					t_ret = t_ret + "/160";
+				}
+				
+				break;
+				
+			case fetchWeibo.SINA_WEIBO_STYLE:
+				
+				int t_index = t_ret.indexOf("large");
+				
+				if(t_index != -1){
+					if(_style == 1){
+						t_ret = t_ret.substring(0,t_index) + "bmiddle" + t_ret.substring(t_index + 5);
+					}else if(_style == 2){
+						t_ret = t_ret.substring(0,t_index) + "thumbnail" + t_ret.substring(t_index + 5);
+					}
+				}
+				
+				break;
+			}
+			
+			return t_ret;
+			
+		}else{
+			return "";
+		}
+		
 	}
 		
 	private void displayHeadImage(Graphics _g,int _x,int _y,boolean _focus){

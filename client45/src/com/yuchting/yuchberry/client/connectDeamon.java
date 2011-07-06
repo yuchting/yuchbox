@@ -1756,21 +1756,29 @@ public class connectDeamon extends Thread implements SendListener,
 	    	multipart.addBodyPart(t_text);
 	    	
 	    	if(_mail.GetContain_html().length() != 0){
-	    		SupportedAttachmentPart sap;
+	    		SupportedAttachmentPart sap = null;
 	    		String t_filename = recvMain.sm_local.getString(localResource.HTML_PART_FILENAME);
 		    	try{
 		    		// if the UTF-8 decode sytem is NOT present in current system
 					// will throw the exception
 					//
 		    		
-		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
-		    					t_filename,_mail.GetContain_html().getBytes("UTF-8"));
+		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING+"; charset=GB2312",
+		    					t_filename,_mail.GetContain_html().getBytes("GB2312"));
+		    		
 		    	}catch(Exception e){
-		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
-		    				t_filename,_mail.GetContain_html().getBytes());
-		    	}	    		    			
-	    		
-		    	multipart.addBodyPart(sap);
+		    		
+		    		try{
+		    			sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
+			    				t_filename,_mail.GetContain_html().getBytes());
+		    					    			
+		    		}catch(Exception ex){}		    		
+		    	}
+		    	
+		    	if(sap != null){
+		    		multipart.addBodyPart(sap);
+		    	}
+		    	
 	    	}
 		
 	    	if(!_mail.GetAttachment().isEmpty()){
