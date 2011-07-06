@@ -119,11 +119,22 @@ public class fetchQWeibo extends fetchAbsWeibo{
 									GPSInfo _info,boolean _updateTimeline)throws Exception{
 		
 		if(_style == GetCurrWeiboStyle()){
+			
 			if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
 				m_api.commentMsg(_text, _orgWeiboId, _info.m_longitude, _info.m_latitude);
 			}else{
 				m_api.commentMsg(_text, _orgWeiboId);
 			}
+			
+			if(_updateTimeline){
+
+				if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
+					m_api.publishMsg(_text, _info.m_longitude, _info.m_latitude);
+				}else{
+					m_api.publishMsg(_text);
+				}	
+			}
+			
 		}else{
 					
 			if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){

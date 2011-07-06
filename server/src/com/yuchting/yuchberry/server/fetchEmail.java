@@ -1608,13 +1608,14 @@ public class fetchEmail extends fetchAccount{
 		    try{
 		    	_mail.SetContain(_mail.GetContain().concat(p.getContent().toString()));
 		    }catch(Exception e){
-		    	_mail.SetContain(_mail.GetContain().concat("can't decode content " + e.getMessage()));
+		    	_mail.SetContain(_mail.GetContain().concat("text/plain can't decode content " + e.getMessage()));
 		    }	    
 		    
 		} else if(p.isMimeType("text/html")){
 			
 			try{
-				String t_contain = ChangeHTMLCharset(p.getContent().toString());
+				String t_conString = p.getContent().toString();				
+				String t_contain = ChangeHTMLCharset(t_conString);
 								
 		    	_mail.SetContain_html(_mail.GetContain_html().concat(t_contain));
 		    	
@@ -1637,7 +1638,7 @@ public class fetchEmail extends fetchAccount{
 		    	}
 		    	
 		    }catch(Exception e){
-		    	_mail.SetContain_html(_mail.GetContain_html().concat("can't decode content " + e.getMessage()));
+		    	_mail.SetContain_html(_mail.GetContain_html().concat("text/html can't decode content " + e.getMessage()));
 		    }
 		    
 		    
@@ -1775,23 +1776,23 @@ public class fetchEmail extends fetchAccount{
 	
 	static public String ChangeHTMLCharset(String _html){
 		
-		final String ft_meta = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
-		final int t_charsetIdx = _html.indexOf("charset");
-		
-		if(t_charsetIdx == -1){
-			
-			final int t_headIdx = _html.indexOf("<head>");
-			if(t_headIdx != -1){
-				//
-				StringBuffer str = new StringBuffer(_html);
-				str.insert(t_headIdx + 6, ft_meta);
-				_html = str.toString();
-			}else{
-				_html = ft_meta + _html;
-			}
-		}else{
-			_html = _html.replaceAll("charset.[^\"]*", "charset=utf-8");
-		}
+//		final String ft_meta = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
+//		final int t_charsetIdx = _html.indexOf("charset");
+//		
+//		if(t_charsetIdx == -1){
+//			
+//			final int t_headIdx = _html.indexOf("<head>");
+//			if(t_headIdx != -1){
+//				//
+//				StringBuffer str = new StringBuffer(_html);
+//				str.insert(t_headIdx + 6, ft_meta);
+//				_html = str.toString();
+//			}else{
+//				_html = ft_meta + _html;
+//			}
+//		}else{
+//			_html = _html.replaceAll("charset.[^\"]*", "charset=utf-8");
+//		}
 		
 		return _html;
 	}

@@ -103,11 +103,13 @@ public class berrySvrDeamon extends Thread{
 				m_quit = false;
 				
 				byte[] t_package = m_sendReceive.RecvBufferFromSvr();
-				//m_fetchMgr.m_logger.LogOut("receive package head<" + t_package[0] + "> length<" + t_package.length + ">");
+				m_fetchMgr.m_logger.LogOut("receive package head<" + t_package[0] + "> length<" + t_package.length + ">");
 				
 				m_fetchMgr.ProcessPackage(t_package);
-				
+								
 			}catch(Exception _e){
+				
+				m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 0");
 				
 				try{
 					synchronized (this) {
@@ -121,24 +123,34 @@ public class berrySvrDeamon extends Thread{
 					m_fetchMgr.m_logger.PrinterException(_e);
 				}	
 				
+				m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 1");
+				
 				try{
 					
 					m_sendReceive.CloseSendReceive();
 					
+					m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 2");
+					
 					m_pushDeamon.m_closed = true;
 					m_pushDeamon.interrupt();
 								
+					m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 3");
+					
 					m_fetchMgr.m_logger.PrinterException(_e);
 					
-				}finally{
+					m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 4");
 					
+				}finally{
+										
 					m_quit = true;
 					
 					if(!m_isCloseByMgr){
 						m_fetchMgr.SetClientConnected(null);
 					}	
 				}							
-								
+					
+				m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 5");
+				
 				break;
 			}
 		}

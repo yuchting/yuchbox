@@ -121,7 +121,7 @@ public class QWeibo {
 		List<QWeibo> t_list = new ArrayList<QWeibo>();
 		
 		if(_json.getInt("ret") != 0){
-			throw new Exception("getHomeList error :" + _json.getString("msg"));
+			throw new Exception("getWeiboList error :" + _json.getString("msg"));
 		}
 		
 		try{

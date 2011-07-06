@@ -86,11 +86,18 @@ public class HelloWorld {
 	 *  @param arg  parameters
 	 */
 	public static void main(String arg[])throws Exception{
-
-		String t_test = "sdfjsdfjskjhttp://aa.com s;dlkfjs;ldfj http://bb.com 你好啊http://cc.com 你好哈。http://dd.com";
+		//berryRecvTest();
 		
-		System.out.print(t_test.replaceAll("(?<=\\S)http", " http"));
-				
+		String t_string = "bbbbbbbbcccccccc";
+		String t_ch = "中中中中中中中中中中中中问问问";
+		
+		byte[] t_utf_8_en = t_string.getBytes("UTF-8");
+		byte[] t_gb_en = t_string.getBytes("GB2312");
+		
+		byte[] t_utf_8_ch = t_ch.getBytes("UTF-8");
+		byte[] t_gb_ch = t_ch.getBytes("GB2312");
+		
+		System.out.print(t_string);
 	}
 	
 	static public void qgetOAuthRequest(){

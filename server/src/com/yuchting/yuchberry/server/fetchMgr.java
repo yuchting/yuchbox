@@ -379,38 +379,30 @@ public class fetchMgr{
 								
 								m_currConnect.m_isCloseByMgr = true;
 								
-								m_logger.LogOut("StartListening 0");
-								
 								// kick the former client
 								//
 								synchronized (m_currConnect) {
 									
-									m_logger.LogOut("StartListening 1");
-									
 									if(m_currConnect.m_socket != null && !m_currConnect.m_socket.isClosed()){
-										
-										m_logger.LogOut("StartListening 2");
-										
 										m_currConnect.m_socket.close();
-										
-										m_logger.LogOut("StartListening 3");
-										
-									}
-									
-									m_logger.LogOut("StartListening 4");
-									
+																			
+									}									
 									m_currConnect.m_socket = null;
 								}		
 								
-								m_logger.LogOut("StartListening 5");
-								
+								m_logger.LogOut("StartListening 0");
 								// wait	quit
 								while(!m_currConnect.m_quit){
 									Thread.sleep(50);
 								}
+								m_logger.LogOut("StartListening 1");
 							}
-													
+							
+							m_logger.LogOut("StartListening 2");
+							
 							m_currConnect = new berrySvrDeamon(this,t_sock,t_sendReceive);
+							
+							m_logger.LogOut("StartListening 3");
 							
 						}catch(Exception e){
 							t_sock.close();
