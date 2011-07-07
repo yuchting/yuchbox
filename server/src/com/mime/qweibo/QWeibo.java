@@ -69,7 +69,7 @@ public class QWeibo {
 			m_sourceWeibo = new QWeibo(new JSONObject(t_source));			
 		}
 		
-		// get ride of all link tag
+		// get rid of all link tag
 		//
 		while(true){
 			int t_a = m_text.indexOf("<a");
