@@ -605,10 +605,18 @@ public class weiboTimeLineScreen extends MainScreen{
 		try{
 
 			String t_imageFilename = null;
-			if(WeiboItemField.fsm_largeHeadImage){
-				t_imageFilename = m_mainApp.GetWeiboHeadImageDir(_weibo.GetWeiboStyle()) + _weibo.GetUserId() + "_l.png";
+			String t_id = null;
+			
+			if(_weibo.GetWeiboStyle() == fetchWeibo.QQ_WEIBO_STYLE){
+				t_id = _weibo.GetUserScreenName();
 			}else{
-				t_imageFilename = m_mainApp.GetWeiboHeadImageDir(_weibo.GetWeiboStyle()) + _weibo.GetUserId() + ".png";
+				t_id = Long.toString(_weibo.GetUserId());
+			}
+			
+			if(WeiboItemField.fsm_largeHeadImage){
+				t_imageFilename = m_mainApp.GetWeiboHeadImageDir(_weibo.GetWeiboStyle()) + t_id + "_l.png";
+			}else{
+				t_imageFilename = m_mainApp.GetWeiboHeadImageDir(_weibo.GetWeiboStyle()) + t_id + ".png";
 			}
 			
 			FileConnection t_fc = (FileConnection)Connector.open(t_imageFilename,Connector.READ_WRITE);

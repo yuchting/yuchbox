@@ -68,6 +68,14 @@ public class WeiboTextField extends ActiveRichTextField{
 				
 				if(t_offsetIndex != 1){
 					
+					if(t_offsetIndex >= m_bufferedOffset.length){
+						// relocate that
+						//
+						if(!incBuffered(t_textLength,(byte)0)){
+							break;
+						}
+					}
+					
 					m_bufferedAttr[t_attrIndex] = 0;
 					
 					m_bufferedOffset[t_offsetIndex] = t_index;
@@ -83,7 +91,15 @@ public class WeiboTextField extends ActiveRichTextField{
 					if(!WeiboUserFind.isLeagalNameCharacter(a)){
 						break;
 					}
-				}				
+				}
+				
+				if(t_offsetIndex >= m_bufferedOffset.length){
+					// relocate that
+					//
+					if(!incBuffered(t_textLength,(byte)0)){
+						break;
+					}
+				}
 				
 				m_bufferedAttr[t_attrIndex] = 1;
 				
@@ -95,15 +111,7 @@ public class WeiboTextField extends ActiveRichTextField{
 				
 			}else{
 				t_index++;
-			}
-			
-			if(t_offsetIndex >= m_bufferedOffset.length){
-				// relocate that
-				//
-				if(!incBuffered(t_textLength,(byte)0)){
-					break;
-				}
-			}
+			}			
 		}
 		
 		super.setText(_text,m_bufferedOffset,m_bufferedAttr,sm_fontList,m_foreground,m_background);
