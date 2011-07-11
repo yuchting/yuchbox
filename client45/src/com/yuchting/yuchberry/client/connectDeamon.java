@@ -1763,8 +1763,8 @@ public class connectDeamon extends Thread implements SendListener,
 					// will throw the exception
 					//
 		    		
-		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING+"; charset=GB2312",
-		    					t_filename,_mail.GetContain_html().getBytes("GB2312"));
+		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING+"; charset=UTF-8",
+		    					t_filename,_mail.GetContain_html().getBytes("UTF-8"));
 		    		
 		    	}catch(Exception e){
 		    		
