@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Yuchberry userPassword="111111" serverPort="9716" pushInterval="10" userSSL="0" convertoSimpleChar="0" >
-	<!--EmailAccount
-		account="tzt-123@163.com"
-		password="superman"
+	<EmailAccount
+		account="yuchting@gmail.com"
+		password="F4TpVMkZ2QgEuZK"
 		cryptPassword=""
 		sendName="tzz"
 		
 		useFullNameSignIn="0"
 		
-		protocol="imap"
-		host="imap.163.com"
-		port="143"
+		protocol="imaps"
+		host="imap.gmail.com"
+		port="993"
 		
 		protocol_send="smtp"
-		host_send="smtp.163.com"
-		port_send="25"
+		host_send="smtp.gmail.com"
+		port_send="587"
 		
 		appendHTML="1"
 		pushHistoryMsg="1"
-	/-->
+	/>
 	<!--WeiboAccount
 		type="sina"
 		account="yuchberry_test"
@@ -44,7 +44,7 @@
 		commentSum="5"
 	/-->
 		
-	<WeiboAccount
+	<!--WeiboAccount
 		type="sina"
 		account="yuchberry"
 		accessToken="1eef9899c847f1cd0735c6775fdcc576"
@@ -55,9 +55,9 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/>
+	/-->
 		
-	<WeiboAccount
+	<!--WeiboAccount
 		type="qq"
 		account="yuchberry"
 		accessToken="d7804a95bde0436ca9f0b62ef84de787"
@@ -68,5 +68,5 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/>	
+	/-->	
 </Yuchberry>

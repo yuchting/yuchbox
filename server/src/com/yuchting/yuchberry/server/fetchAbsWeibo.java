@@ -154,7 +154,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				}
 								
 				m_currRemainCheckFolderNum -= 4;
-				if(m_currRemainCheckFolderNum > 0){				
+				if(m_currRemainCheckFolderNum > 0){
+										
 					// timeline handle refresh adjudge
 					//
 					if(!m_timelineHandleRefresh || m_timeline.m_counter == -1){
@@ -163,7 +164,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 						m_currRemainCheckFolderNum--;
 					}
 					
-
+					
 					// at me handle refresh adjudge
 					//
 					if(!m_atMeHandleRefresh || m_atMeMessage.m_counter == -1){
@@ -189,7 +190,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					}
 					
 				}else{
-					
+										
 					ResetCheckFolderLimit();
 				}
 			}else{

@@ -21,7 +21,6 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 
-import weibo4j.Weibo;
 import weibo4j.http.OAuth;
 import weibo4j.http.OAuthToken;
 import weibo4j.http.PostParameter;
@@ -88,16 +87,40 @@ public class HelloWorld {
 	public static void main(String arg[])throws Exception{
 		//berryRecvTest();
 		
-		String t_string = "bbbbbbbbcccccccc";
-		String t_ch = "中中中中中中中中中中中中问问问";
+		// read the google code host page
+		//
+		final String ft_URL = new String("http://code.google.com/p/yuchberry/wiki/Thanks_sheet");
+		String charSet = "utf-8";
+		StringBuffer t_stringBuffer = new StringBuffer();
 		
-		byte[] t_utf_8_en = t_string.getBytes("UTF-8");
-		byte[] t_gb_en = t_string.getBytes("GB2312");
+		URL url = new URL(ft_URL);
+		URLConnection con = url.openConnection();
+		con.setAllowUserInteraction(false);
+		con.connect();
+		   
+		String type = URLConnection.guessContentTypeFromStream(con.getInputStream());
 		
-		byte[] t_utf_8_ch = t_ch.getBytes("UTF-8");
-		byte[] t_gb_ch = t_ch.getBytes("GB2312");
+		if (type == null)
+			type = con.getContentType();
 		
-		System.out.print(t_string);
+		if (type == null || type.trim().length() == 0 || type.trim().indexOf("text/html") < 0){
+			return ;
+		}
+		
+		if(type.indexOf("charset=") > 0){
+			charSet = type.substring(type.indexOf("charset=") + 8);
+		}
+					
+		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), charSet));
+		
+		String temp;
+		while ((temp = in.readLine()) != null) {
+			t_stringBuffer.append(temp+"\n");
+		}
+		in.close();
+		
+		
+		System.out.println(fetchEmail.ChangeHTMLCharset(t_stringBuffer.toString()));
 	}
 	
 	static public void qgetOAuthRequest(){

@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.regex.Pattern;
 
 import javax.mail.Address;
 import javax.mail.BodyPart;
@@ -614,17 +615,19 @@ public class fetchEmail extends fetchAccount{
 	 		    			String t_prompt = null;
 	 		    			switch (m_mainMgr.GetClientLanguage()) {
 			 		   		case 0:
-			 		   			t_prompt = "\nYuchBerry服务器提示：读取这封邮件的时候出现了错误，需要通过其它方式查看。\n\n\n"; 
+			 		   			t_prompt = "\nYuchBerry服务器提示：由于网络，格式等问题，读取这封邮件的时候出现了错误，需要通过其它方式查看。\n\n\n"; 
 			 		   			break;
 			 		   		case 1:
-			 		   			t_prompt = "\nYuchBerry服务器提示：讀取這封郵件的時候出現了錯誤，需要通過其他方式查看。\n\n\n";
+			 		   			t_prompt = "\nYuchBerry服务器提示：由於網絡，格式等問題，讀取這封郵件的時候出現了錯誤，需要通過其他方式查看。\n\n\n";
 			 		   			break;
 			 		   		default:
-			 		   			t_prompt = "\nThe yuchberry ImportMail Error! Please read the Mail via another way!\n\n\n";
+			 		   			t_prompt = "\nYuchBerry ImportMail Error! Please read the Mail via another way!\n\n\n";
 			 		   				
 			 		   		}
 	 		    			
 	 		    			t_mail.SetContain(t_mail.GetContain() + "\n\n\n" + e.getMessage() + t_prompt);
+	 		    			
+	 		    			m_mainMgr.m_logger.PrinterException(e);
 	 		    		}
 	 		    		 
 	 		    		AddMailIndexAttach(t_mail,false);
@@ -1776,23 +1779,24 @@ public class fetchEmail extends fetchAccount{
 	
 	static public String ChangeHTMLCharset(String _html){
 		
-//		final String ft_meta = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
-//		final int t_charsetIdx = _html.indexOf("charset");
-//		
-//		if(t_charsetIdx == -1){
-//			
-//			final int t_headIdx = _html.indexOf("<head>");
-//			if(t_headIdx != -1){
-//				//
-//				StringBuffer str = new StringBuffer(_html);
-//				str.insert(t_headIdx + 6, ft_meta);
-//				_html = str.toString();
-//			}else{
-//				_html = ft_meta + _html;
-//			}
-//		}else{
-//			_html = _html.replaceAll("charset.[^\"]*", "charset=utf-8");
-//		}
+		final String regEx = "content=\"(t|T)(e|E)(x|X)(t|T)/(h|H)(t|T)(m|M)(l|L);.charset.[^\"]*";
+		
+		if(Pattern.compile(regEx).matcher(_html).find() == false){
+			
+			final String ft_meta = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
+			final int t_headIdx = _html.indexOf("<head>");
+			
+			if(t_headIdx != -1){
+				//
+				StringBuffer str = new StringBuffer(_html);
+				str.insert(t_headIdx + 6, ft_meta);
+				_html = str.toString();
+			}else{
+				_html = ft_meta + _html;
+			}
+		}else{
+			_html = _html.replaceAll(regEx, "content=\"text/html; charset=utf-8");
+		}
 		
 		return _html;
 	}

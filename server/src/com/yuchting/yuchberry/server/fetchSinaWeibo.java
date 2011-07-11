@@ -54,14 +54,24 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		return fetchWeibo.SINA_WEIBO_STYLE;
 	}
 	protected void CheckTimeline()throws Exception{
+		
 		List<Status> t_fetch = null;
 		if(m_timeline.m_fromIndex > 1){
+			
+			m_mainMgr.m_logger.LogOut("fetchSinaWeibo$CheckTimeline 0");
+			
 			t_fetch = m_weibo.getHomeTimeline(new Paging(m_timeline.m_fromIndex));
 		}else{
+			
+			m_mainMgr.m_logger.LogOut("fetchSinaWeibo$CheckTimeline 1");
+			
 			t_fetch = m_weibo.getHomeTimeline();
 		}		 
 		
+		m_mainMgr.m_logger.LogOut("fetchSinaWeibo$CheckTimeline 2");
 		AddWeibo(t_fetch,m_timeline,fetchWeibo.TIMELINE_CLASS);
+		
+		m_mainMgr.m_logger.LogOut("fetchSinaWeibo$CheckTimeline 3");
 	}
 	
 	protected void CheckDirectMessage()throws Exception{
@@ -212,7 +222,6 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		RateLimitStatus limitStatus = m_weibo.rateLimitStatus();
 		m_currRemainCheckFolderNum = limitStatus.getRemainingHits();
 		m_maxCheckFolderNum			= limitStatus.getHourlyLimit();
-		
 	}
 	
 	
