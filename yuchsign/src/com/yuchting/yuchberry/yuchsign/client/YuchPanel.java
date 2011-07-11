@@ -90,6 +90,7 @@ public class YuchPanel extends TabPanel{
 		
 		PrepareHostListPanel();
 		PrepareAlipayPanel();
+		PrepareStatisticsPanel();
 		
 		setPixelSize(600,300);
 		selectTab(0);		
@@ -535,6 +536,43 @@ public class YuchPanel extends TabPanel{
 		}catch(Exception e){
 			Yuchsign.PopupPrompt("add host Exception:"+e.getMessage(), m_table);
 		}		
+	}
+	
+	private void PrepareStatisticsPanel(){
+		final VerticalPanel t_pane = new VerticalPanel();
+		
+		Button t_refreshPanel = new Button("获得统计信息");
+		
+		final HTML t_info = new HTML();
+		
+		t_refreshPanel.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				
+				try{
+					m_mainServer.greetingService.getStaticticsInfo(0,0,new AsyncCallback<String>(){
+						public void onFailure(Throwable caught) {
+							
+						}
+
+						public void onSuccess(String result) {
+							t_info.setHTML(result);							
+						}
+					});
+	
+				}catch(Exception e){
+					
+				}
+								
+			}
+		});
+		
+		t_pane.add(t_refreshPanel);
+		t_pane.add(t_info);		
+		
+		add(t_pane,"统计");
+		
 	}
 	
 }

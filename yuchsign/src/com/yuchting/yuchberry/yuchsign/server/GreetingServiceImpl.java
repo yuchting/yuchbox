@@ -32,6 +32,7 @@ import org.xml.sax.InputSource;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.yuchting.yuchberry.yuchsign.client.GreetingService;
 import com.yuchting.yuchberry.yuchsign.server.weibo.WeiboAuth;
@@ -1105,6 +1106,58 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		return result;
 	}
 	
+	public String getStaticticsInfo(long _startTime,long _endTime)throws Exception{
+		
+		if(!m_isAdministrator){
+			return "";
+		}
+		
+		PersistenceManager t_pm = PMF.get().getPersistenceManager();
+		
+		try{
+			
+			List<yuchbber> t_bberList = null;
+			if(_startTime != 0 && _endTime != 0){
+				t_bberList = (List<yuchbber>)t_pm.newQuery("select from " + yuchbber.class.getName() + 
+						" where m_signinTime>" + _startTime + 
+						" AND m_signinTime<=" + _endTime).execute();
+			}else{
+				t_bberList = (List<yuchbber>)t_pm.newQuery("select from " + yuchbber.class.getName()).execute();
+			}
 	
+			int t_activateNum = 0;
+			int t_syncNum = 0;
+			int t_payNum = 0;
+			
+			int t_totalPayNum = 0;
+			
+			for(yuchbber bber:t_bberList){
+				if(bber.GetSigninTime() > 0){
+					t_activateNum++;
+				}
+				
+				if(bber.GetConnectHost() != null && bber.GetConnectHost().length() > 0){
+					t_syncNum++;
+				}
+				
+				if(bber.GetTotalPayFee() > 0){
+					t_payNum++;
+					t_totalPayNum += bber.GetTotalPayFee();
+				}			
+			}
+			StringBuffer t_result = new StringBuffer();
+			t_result.append("<table border=\"1\">");
+			t_result.append("<tr><td>总注册用户:</td><td>").append(t_bberList.size()).append("</td></tr>")
+					.append("<tr><td>激活用户数:</td><td>").append(t_activateNum).append("</td></tr>")
+					.append("<tr><td>付费用户数:</td><td>").append(t_payNum).append("</td></tr>")
+					.append("<tr><td>所有收入:</td><td>").append(t_totalPayNum).append("</td></tr>");
+			t_result.append("</table>");
+			
+			return t_result.toString();
+			
+		}finally{
+			t_pm.close();
+		}
+	}
 
 }

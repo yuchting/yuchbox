@@ -39,6 +39,8 @@ public interface GreetingServiceAsync {
 	void delHost(String _hostName,AsyncCallback<String> callback)throws Exception;
 	
 	void modifyHost(String _hostName,String _hostXMLData,AsyncCallback<String> callback)throws Exception;
+	
+	void getStaticticsInfo(long _startTime,long _endTime,AsyncCallback<String> callback)throws Exception;
 
 	// weibo auth function
 	//
