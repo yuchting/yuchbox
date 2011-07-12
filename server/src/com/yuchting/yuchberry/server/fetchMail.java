@@ -18,7 +18,7 @@ final class MailAttachment{
 
 public class  fetchMail{
 	
-	final static int	VERSION = 1;
+	final static int	VERSION = 2;
 	
 	public final static String	fsm_noSubjectTile = "No Subject";
 	    	
@@ -42,13 +42,14 @@ public class  fetchMail{
 	private Vector		m_vectTo		= new Vector();
 	private Vector		m_vectGroup		= new Vector();
 	
-	private String			m_subject 		= new String();
+	private String			m_subject 		= "";
 	private Date			m_sendDate 		= new Date();
 	private int			m_flags 		= 0;
-	private String			m_XMailName 	= new String();
+	private String			m_XMailName 	= "";
 	
-	private String			m_contain		= new String();
-	private String			m_contain_html	= new String();
+	private String			m_contain		= "";
+	private String			m_contain_html	= "";
+	private String			m_contain_html_type	= "";
 	
 	// location information
 	boolean m_hasLocationInfo		= false;
@@ -158,6 +159,7 @@ public class  fetchMail{
 			m_gpsInfo.OutputData(_stream);
 		}
 		
+		sendReceive.WriteString(_stream,m_contain_html_type,m_convertoSimpleChar);
 	}
 		
 	public void InputMail(InputStream _stream)throws Exception{
@@ -199,6 +201,9 @@ public class  fetchMail{
 			m_gpsInfo.InputData(_stream);
 		}
 		
+		if(t_version >= 2){
+			m_contain_html_type = sendReceive.ReadString(_stream);
+		}		
 	}
 	
 	//set and gets function
@@ -217,7 +222,11 @@ public class  fetchMail{
 	public void SetContain(String _contain){m_contain = _contain;}
 	
 	public String GetContain_html(){return m_contain_html;}
-	public void SetContain_html(String _contain_html){m_contain_html = _contain_html;}
+	public void SetContain_html(String _contain_html,String _content_type){
+		m_contain_html = _contain_html;
+		m_contain_html_type = _content_type;
+	}
+	public String GetContain_html_type(){return m_contain_html_type;}
 	
 	public String GetXMailer(){return m_XMailName;}
 	public void SetXMailer(String _str){m_XMailName = _str;}

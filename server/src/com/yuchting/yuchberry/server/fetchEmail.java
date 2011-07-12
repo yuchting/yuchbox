@@ -638,19 +638,23 @@ public class fetchEmail extends fetchAccount{
 	 		    		// check the duplicating mail
 	 		    		//
 	 		    		boolean t_hasLoad = false;
-	 		    		for(int index = 0;index < m_unreadMailVector.size();index++ ){
-	 		    			fetchMail t_loadMail = (fetchMail)m_unreadMailVector.elementAt(index); 
-	 		    			if(t_loadMail.GetMailIndex() == t_mail.GetMailIndex()){
-	 		    				t_hasLoad = true;
-	 		    				break;
-	 		    			}
-	 		    		}
 	 		    		
-	 		    		if(t_hasLoad){
-	 		    			continue;
-	 		    		}
-	 		    		
-	 		    		m_unreadMailVector.addElement(t_mail);
+	 		    		synchronized (m_unreadMailVector) {
+	 		    			
+	 		    			for(int index = 0;index < m_unreadMailVector.size();index++ ){
+		 		    			fetchMail t_loadMail = (fetchMail)m_unreadMailVector.elementAt(index); 
+		 		    			if(t_loadMail.GetMailIndex() == t_mail.GetMailIndex()){
+		 		    				t_hasLoad = true;
+		 		    				break;
+		 		    			}
+		 		    		}
+		 		    		
+		 		    		if(t_hasLoad){
+		 		    			continue;
+		 		    		}
+		 		    		
+		 		    		m_unreadMailVector.addElement(t_mail);
+						}	 		    		
 	 		    			 		    		
 	 		    		synchronized (m_unreadMailVector_marking) {
 	 		    			
@@ -842,7 +846,7 @@ public class fetchEmail extends fetchAccount{
 		
 		m_mainMgr.m_logger.LogOut(GetAccountName() + " Check Mail simpleHash code: " + t_mailHash);
 		
-		synchronized(m_mainMgr){
+		synchronized(m_unreadMailVector_confirm){
 			
 			for(int i = 0;i < m_unreadMailVector_confirm.size();i++){
 				fetchMail t_confirmMail = (fetchMail)m_unreadMailVector_confirm.elementAt(i); 
@@ -1331,58 +1335,65 @@ public class fetchEmail extends fetchAccount{
 		}	
 	}
 			
-	public synchronized void PushMsg(sendReceive _sendReceive)throws Exception{
+	public void PushMsg(sendReceive _sendReceive)throws Exception{
 			
 		final long t_currTime = (new Date()).getTime();
 		
-		for(int i = m_unreadMailVector_confirm.size() - 1;i >= 0;i--){
+		synchronized(m_unreadMailVector_confirm) {
+
+			for(int i = m_unreadMailVector_confirm.size() - 1;i >= 0;i--){
+				
+				fetchMail t_confirmMail = (fetchMail)m_unreadMailVector_confirm.elementAt(i);
+								
+				if(Math.abs(t_currTime - t_confirmMail.m_sendConfirmTime) >= (5 * 60 * 1000) ){
+					
+					final int t_maxConfirmNum = 5;
+					
+					if(t_confirmMail.m_sendConfirmNum < t_maxConfirmNum){
+						
+						t_confirmMail.m_sendConfirmTime = t_currTime;
+						m_unreadMailVector.add(0,t_confirmMail);
+						
+						m_mainMgr.m_logger.LogOut(GetAccountName() + " load mail<" + t_confirmMail.GetMailIndex() + "> send again");	
+					}else{
+						m_mainMgr.m_logger.LogOut(GetAccountName() + " load mail<" + t_confirmMail.GetMailIndex() + "> send " + t_maxConfirmNum + " times, give up.");
+					}
 			
-			fetchMail t_confirmMail = (fetchMail)m_unreadMailVector_confirm.elementAt(i);
-							
-			if(Math.abs(t_currTime - t_confirmMail.m_sendConfirmTime) >= (5 * 60 * 1000) ){
+					m_unreadMailVector_confirm.removeElement(t_confirmMail);
 				
-				final int t_maxConfirmNum = 5;
-				
-				if(t_confirmMail.m_sendConfirmNum < t_maxConfirmNum){
-					
-					t_confirmMail.m_sendConfirmTime = t_currTime;
-					m_unreadMailVector.add(0,t_confirmMail);
-					
-					m_mainMgr.m_logger.LogOut(GetAccountName() + " load mail<" + t_confirmMail.GetMailIndex() + "> send again");	
 				}else{
-					m_mainMgr.m_logger.LogOut(GetAccountName() + " load mail<" + t_confirmMail.GetMailIndex() + "> send " + t_maxConfirmNum + " times, give up.");
+					
+					//m_mainMgr.m_logger.LogOut(GetAccountName() + " mail<" + t_confirmMail.GetMailIndex() + "> has not reach re-pushTime. currentTime<" 
+					//										+ t_currTime + "> sendConfirmTime<" + t_confirmMail.m_sendConfirmTime + ">");
 				}
-		
-				m_unreadMailVector_confirm.removeElement(t_confirmMail);
-			
-			}else{
-				
-				//m_mainMgr.m_logger.LogOut(GetAccountName() + " mail<" + t_confirmMail.GetMailIndex() + "> has not reach re-pushTime. currentTime<" 
-				//										+ t_currTime + "> sendConfirmTime<" + t_confirmMail.m_sendConfirmTime + ">");
-			}
+			}	
 		}
 		
-		while(!m_unreadMailVector.isEmpty()){
-			
-			fetchMail t_mail = (fetchMail)m_unreadMailVector.elementAt(0); 
-			
-			ByteArrayOutputStream t_output = new ByteArrayOutputStream();
-			
-			t_output.write(msg_head.msgMail);
-			t_mail.OutputMail(t_output);
-			
-			m_mainMgr.SendData(t_output,false);
-						
-			synchronized(this){
+		synchronized (m_unreadMailVector) {
+
+			while(!m_unreadMailVector.isEmpty()){
+				
+				fetchMail t_mail = (fetchMail)m_unreadMailVector.elementAt(0); 
+				
+				ByteArrayOutputStream t_output = new ByteArrayOutputStream();
+				
+				t_output.write(msg_head.msgMail);
+				t_mail.OutputMail(t_output);
+				
+				m_mainMgr.SendData(t_output,false);
+				
 				m_unreadMailVector.remove(0);
 				t_mail.m_sendConfirmTime = (new Date()).getTime();
-				m_unreadMailVector_confirm.addElement(t_mail);
-			}
-			
-			t_mail.m_sendConfirmNum++;
-			
-			m_mainMgr.m_logger.LogOut(GetAccountName() + " send mail<" + t_mail.GetMailIndex() + " : "
-					 				+ "simpleHash<"+ t_mail.GetSimpleHashCode() + " " + t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime() + ">,wait confirm...");
+				
+				synchronized(m_unreadMailVector_confirm){
+					m_unreadMailVector_confirm.addElement(t_mail);
+				}
+				
+				t_mail.m_sendConfirmNum++;
+				
+				m_mainMgr.m_logger.LogOut(GetAccountName() + " send mail<" + t_mail.GetMailIndex() + " : "
+						 				+ "simpleHash<"+ t_mail.GetSimpleHashCode() + " " + t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime() + ">,wait confirm...");
+			}	
 		}
 	}
 	
@@ -1617,10 +1628,29 @@ public class fetchEmail extends fetchAccount{
 		} else if(p.isMimeType("text/html")){
 			
 			try{
-				String t_conString = p.getContent().toString();				
-				String t_contain = ChangeHTMLCharset(t_conString);
-								
-		    	_mail.SetContain_html(_mail.GetContain_html().concat(t_contain));
+				
+				String t_conString = p.getContent().toString();
+				String t_contentType = p.getContentType();				
+			
+				if(m_mainMgr.GetConnectClientVersion() >= 11){
+					
+					if(m_mainMgr.GetClientOSVer().startsWith("4.2") 
+					|| m_mainMgr.GetClientOSVer().startsWith("4.5")){
+						
+						// the 4.2 and 4.5 os can parse the <meta /> tag
+						//
+						t_contentType = "TEXT/HTML;charset=GB2312";
+						t_conString = t_conString.replaceAll("<meta.[^>]*>", "");
+						
+					}else{
+						t_conString = ChangeHTMLCharset(t_conString,t_contentType);
+					}
+					
+				}else{
+					t_conString = ChangeHTMLCharset(t_conString,"TEXT/HTML;charset=utf-8");
+				}
+												
+		    	_mail.SetContain_html(_mail.GetContain_html().concat(t_conString),t_contentType);
 		    	
 		    	if(m_useAppendHTML){
 		    		
@@ -1637,11 +1667,11 @@ public class fetchEmail extends fetchAccount{
 					}
 				    // parser HTML append the plain text
 				    //		    	
-			    	_mail.SetContain(_mail.GetContain() + t_prompt + fetchMgr.ParseHTMLText(t_contain,true));
+			    	_mail.SetContain(_mail.GetContain() + t_prompt + fetchMgr.ParseHTMLText(t_conString,true));
 		    	}
 		    	
 		    }catch(Exception e){
-		    	_mail.SetContain_html(_mail.GetContain_html().concat("text/html can't decode content " + e.getMessage()));
+		    	_mail.SetContain_html(_mail.GetContain_html().concat("text/html can't decode content " + e.getMessage()),"");
 		    }
 		    
 		    
@@ -1777,13 +1807,13 @@ public class fetchEmail extends fetchAccount{
 		}		
 	}
 	
-	static public String ChangeHTMLCharset(String _html){
+	static final String fsm_htmlRegEx = "content=\"(t|T)(e|E)(x|X)(t|T)/(h|H)(t|T)(m|M)(l|L);.charset.[^\"]*";
+	
+	static public String ChangeHTMLCharset(String _html,String _type){		
 		
-		final String regEx = "content=\"(t|T)(e|E)(x|X)(t|T)/(h|H)(t|T)(m|M)(l|L);.charset.[^\"]*";
-		
-		if(Pattern.compile(regEx).matcher(_html).find() == false){
+		if(Pattern.compile(fsm_htmlRegEx).matcher(_html).find() == false){
 			
-			final String ft_meta = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
+			final String ft_meta = "<meta http-equiv=\"Content-Type\" content=\""+_type+"\" />";
 			final int t_headIdx = _html.indexOf("<head>");
 			
 			if(t_headIdx != -1){
@@ -1795,7 +1825,7 @@ public class fetchEmail extends fetchAccount{
 				_html = ft_meta + _html;
 			}
 		}else{
-			_html = _html.replaceAll(regEx, "content=\"text/html; charset=utf-8");
+			_html = _html.replaceAll(fsm_htmlRegEx, "content=\""+_type);
 		}
 		
 		return _html;

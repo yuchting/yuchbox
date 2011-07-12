@@ -113,6 +113,10 @@ public class fetchMgr{
     	return m_isWeiboEnabled;
     }
     
+    public String GetClientOSVer(){
+    	return m_clientOSVersion;
+    }
+    
     public void SendNewVersionPrompt(sendReceive _sendRecv)throws Exception{
     	if(m_hasPrompt){
     		

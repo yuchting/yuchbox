@@ -120,7 +120,7 @@ public class HelloWorld {
 		in.close();
 		
 		
-		System.out.println(fetchEmail.ChangeHTMLCharset(t_stringBuffer.toString()));
+		System.out.println(fetchEmail.ChangeHTMLCharset(t_stringBuffer.toString(),"text/html;charset=utf-8"));
 	}
 	
 	static public void qgetOAuthRequest(){
