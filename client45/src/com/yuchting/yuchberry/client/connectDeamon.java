@@ -50,7 +50,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListener,
 												ViewListenerExtended{
 		
-	final static int	fsm_clientVer = 10;
+	final static int	fsm_clientVer = 11;
 	 
 	sendReceive		m_connect = null;
 		
@@ -91,8 +91,9 @@ public class connectDeamon extends Thread implements SendListener,
 	 	 
 	// read the email temporary variables
 	// 
-	private String			m_plainTextContain 	= new String();
-	private String			m_htmlTextContain 	= new String();
+	private String			m_plainTextContain 	= "";
+	private String			m_htmlTextContain 	= "";
+	private String			m_htmlTextContain_type 	= "";
 	 
 	final class ComposingAttachment{
 		String m_filename;
@@ -1570,8 +1571,7 @@ public class connectDeamon extends Thread implements SendListener,
 		findEmailBody(m.getContent(),_mail);
 		
 		_mail.SetContain(m_plainTextContain);
-		_mail.SetContain_html(m_htmlTextContain);
-		
+		_mail.SetContain_html(m_htmlTextContain,m_htmlTextContain_type);
 	}
 	
 	private String composeAddress(Address a){
@@ -1660,6 +1660,10 @@ public class connectDeamon extends Thread implements SendListener,
 	   else if (mimeType.indexOf(ContentType.TYPE_TEXT_HTML_STRING) != -1)
 	   {
 		   m_plainTextContain = m_htmlTextContain.concat(body);
+		   m_htmlTextContain_type = mbp.getContentType();
+		   if(m_htmlTextContain_type == null){
+			   m_htmlTextContain_type = ""; 
+		   }
 	
 	      //Determine if all of the HTML body part is present.
 	      if (mbp.hasMore() && !mbp.moreRequestSent())
@@ -1758,19 +1762,27 @@ public class connectDeamon extends Thread implements SendListener,
 	    	if(_mail.GetContain_html().length() != 0){
 	    		SupportedAttachmentPart sap = null;
 	    		String t_filename = recvMain.sm_local.getString(localResource.HTML_PART_FILENAME);
+	    		
+	    		String t_type = "UTF-8";
+	    		    		
+	    		int t_charset = _mail.GetContain_html_type().indexOf("charset=");
+	    		if(t_charset != -1){
+	    			t_type = _mail.GetContain_html_type().substring(t_charset + 8);
+	    		}
+	    		
 		    	try{
 		    		// if the UTF-8 decode sytem is NOT present in current system
 					// will throw the exception
 					//
 		    		
-		    		sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING+"; charset=UTF-8",
-		    					t_filename,_mail.GetContain_html().getBytes("UTF-8"));
+		    		sap = new SupportedAttachmentPart(multipart,_mail.GetContain_html_type(),
+		    					t_filename,_mail.GetContain_html().getBytes(t_type));
 		    		
 		    	}catch(Exception e){
 		    		
 		    		try{
 		    			sap = new SupportedAttachmentPart(multipart,ContentType.TYPE_TEXT_HTML_STRING,
-			    				t_filename,_mail.GetContain_html().getBytes());
+			    				t_filename,_mail.GetContain_html().getBytes("UTF-8"));
 		    					    			
 		    		}catch(Exception ex){}		    		
 		    	}
