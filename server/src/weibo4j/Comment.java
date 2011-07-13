@@ -81,7 +81,9 @@ public class Comment extends WeiboResponse implements java.io.Serializable {
 			user = new User(json.getJSONObject("user"));
 		
 		//! yuchberry modify
-		if(!json.isNull("status")){
+		if(!json.isNull("reply_comment")){
+			m_origStatus = new Status(json.getJSONObject("reply_comment"));
+		}else if(!json.isNull("status")){
 			m_origStatus = new Status(json.getJSONObject("status")); 
 		}
     }
