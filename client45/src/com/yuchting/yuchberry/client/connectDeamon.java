@@ -118,7 +118,7 @@ public class connectDeamon extends Thread implements SendListener,
 	boolean			m_sendAuthMsg			= false;
 	 
 	 
-	int				m_ipConnectCounter 		= 10;
+	int				m_ipConnectCounter 		= 0;
 	 
 	int				m_connectCounter		= -1;
 	 
@@ -807,11 +807,13 @@ public class connectDeamon extends Thread implements SendListener,
 					sleep(15000);
 				}catch(Exception _e){}	
 			}
-												
-			m_ipConnectCounter = 10;
 			
 			try{
-	
+				
+				synchronized (this) {
+					m_ipConnectCounter++;
+				}				
+				
 				m_conn = GetConnection(m_mainApp.IsUseSSL(),m_mainApp.UseMDS());
 				
 				// TCP connect flowing bytes statistics 
@@ -843,7 +845,12 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				m_connect.SendBufferToSvr(t_os.toByteArray(), true,false);
 				
-				m_sendAuthMsg = true;				
+				m_sendAuthMsg = true;
+				
+				synchronized (this) {
+					m_ipConnectCounter = 0;
+				}
+				
 				
 				// set the text connect
 				//
@@ -885,7 +892,7 @@ public class connectDeamon extends Thread implements SendListener,
 				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline.png"));
 			}
 			
-			if(!m_mainApp.isForeground()){
+			if(!m_mainApp.isForeground() && m_ipConnectCounter >= 5){
 				m_mainApp.TriggerDisconnectNotification();
 			}			
 			
@@ -904,7 +911,6 @@ public class connectDeamon extends Thread implements SendListener,
 					m_connect = null;
 					m_conn = null;
 				}
-				
 			}			
 		}
 		
@@ -931,8 +937,10 @@ public class connectDeamon extends Thread implements SendListener,
 		 interrupt();	 
 		 
 		 m_connectCounter = -1;
-		 	
+				 	
 		 synchronized (this) {
+			 
+			 m_ipConnectCounter = 0;
 			 
 			 EndListener();	
 	
@@ -962,116 +970,99 @@ public class connectDeamon extends Thread implements SendListener,
 	 }
 	 
 	 private SocketConnection GetConnection(boolean _ssl,boolean _useMDS)throws Exception{
+		 			 
+		 final int t_sleep = GetConnectInterval();
+		 if(t_sleep != 0){
+			 sleep(t_sleep);
+		 }
 		 
-		 while(true){
-			 
-			 final int t_sleep = GetConnectInterval();
-			 if(t_sleep != 0){
-				 sleep(t_sleep);
-			 }
-			 
-			 if(m_disconnect == true){
-				 throw new Exception("user closed");
-			 }
-			 
-			 String URL ;
-		
-			 // first use IP address to decrease the DNS message  
-			 //
-			 final String t_hostname = m_mainApp.GetHostName();
-			 final int		t_hostport = m_mainApp.GetHostPort();
-			 
-			 if(_ssl){
-				 if(_useMDS){
-					 URL =  "ssl://" + (t_hostname) + ":" + t_hostport;
-				 }else{
-					 URL =  "ssl://" + (t_hostname) + ":" + t_hostport + ";deviceside=true;EndToEndDesired";
-				 }
-				 
+		 if(m_disconnect == true){
+			 throw new Exception("user closed");
+		 }
+		 
+		 String URL ;
+	
+		 // first use IP address to decrease the DNS message  
+		 //
+		 final String t_hostname = m_mainApp.GetHostName();
+		 final int		t_hostport = m_mainApp.GetHostPort();
+		 
+		 if(_ssl){
+			 if(_useMDS){
+				 URL =  "ssl://" + (t_hostname) + ":" + t_hostport;
 			 }else{
-				 if(_useMDS){
-					 URL =  "socket://" +(t_hostname) + ":" + t_hostport;
-				 }else{
-					 URL =  "socket://" +(t_hostname) + ":" + t_hostport + ";deviceside=true";
-				 }			 
+				 URL =  "ssl://" + (t_hostname) + ":" + t_hostport + ";deviceside=true;EndToEndDesired";
 			 }
 			 
-			 String t_append = "";
+		 }else{
+			 if(_useMDS){
+				 URL =  "socket://" +(t_hostname) + ":" + t_hostport;
+			 }else{
+				 URL =  "socket://" +(t_hostname) + ":" + t_hostport + ";deviceside=true";
+			 }			 
+		 }
+		 
+		 String t_append = "";
+		 
+		 if(!_useMDS){
+			 t_append = m_mainApp.GetURLAppendString();
+			 URL = URL + t_append;
+		 }
+		 
+		 SocketConnection socket = null;
+		 
+		 try{
 			 
-			 if(!_useMDS){
-				 t_append = m_mainApp.GetURLAppendString();
-				 URL = URL + t_append;
+			 socket = (SocketConnection)Connector.open(URL,Connector.READ_WRITE,false);
+			
+			 if(socket == null){
+				 throw new Exception("socket null");
 			 }
-			 
-			 SocketConnection socket = null;
 			 
 			 try{
-				 
-				 socket = (SocketConnection)Connector.open(URL,Connector.READ_WRITE,false);
-				
-				 if(socket == null){
-					 throw new Exception("socket null");
-				 }
-				 
-				 try{
-					 socket.setSocketOption(SocketConnection.DELAY, 0);	 
-				 }catch(Exception _e){
-					 m_mainApp.SetErrorString("CM0: " +_e.getMessage() + _e.getClass().getName());
-				 }
-				 
-				 try{
-					 socket.setSocketOption(SocketConnection.KEEPALIVE,m_mainApp.GetPulseIntervalMinutes());
-				 }catch(Exception _e){
-					 m_mainApp.SetErrorString("CM1: " +_e.getMessage()  + _e.getClass().getName());
-				 }
-				 
-				 try{
-					 socket.setSocketOption(SocketConnection.LINGER, 0);
-				 }catch(Exception _e){
-					 m_mainApp.SetErrorString("CM2: " +_e.getMessage() + _e.getClass().getName());
-				 }
-				 
-				 try{
-					 socket.setSocketOption(SocketConnection.RCVBUF, 256);
-				 }catch(Exception _e){
-					 m_mainApp.SetErrorString("CM3: " +_e.getMessage()+ _e.getClass().getName());
-				 }
-				 
-				 try{
-					 socket.setSocketOption(SocketConnection.SNDBUF, 128);
-				 }catch(Exception _e){
-					 m_mainApp.SetErrorString("CM4: " +_e.getMessage() + _e.getClass().getName()); 
-				 }
-				 
-				 return socket;
-				 
+				 socket.setSocketOption(SocketConnection.DELAY, 0);	 
 			 }catch(Exception _e){
-		
-				 String message = _e.getMessage();
-				 m_mainApp.SetErrorString("CM: " + t_append + " " + message + " " + _e.getClass().getName());
-				 
-				 if(message != null){
-					 
-					 if(message.indexOf("Peer") != -1){
-						 m_connectCounter = 1000;
-						 
-						 continue;
-						 
-					 }else if(message.toLowerCase().indexOf("tunnel down") != -1){
-						 
-						 continue;
-						 
-					 }else{
-						 
-						 throw _e;
-					 }
-					 
-				 }else{
-					 
-					 throw _e;
-				 }			 
-			 }			
-		 }
+				 m_mainApp.SetErrorString("CM0: " +_e.getMessage() + _e.getClass().getName());
+			 }
+			 
+			 try{
+				 socket.setSocketOption(SocketConnection.KEEPALIVE,m_mainApp.GetPulseIntervalMinutes());
+			 }catch(Exception _e){
+				 m_mainApp.SetErrorString("CM1: " +_e.getMessage()  + _e.getClass().getName());
+			 }
+			 
+			 try{
+				 socket.setSocketOption(SocketConnection.LINGER, 0);
+			 }catch(Exception _e){
+				 m_mainApp.SetErrorString("CM2: " +_e.getMessage() + _e.getClass().getName());
+			 }
+			 
+			 try{
+				 socket.setSocketOption(SocketConnection.RCVBUF, 256);
+			 }catch(Exception _e){
+				 m_mainApp.SetErrorString("CM3: " +_e.getMessage()+ _e.getClass().getName());
+			 }
+			 
+			 try{
+				 socket.setSocketOption(SocketConnection.SNDBUF, 128);
+			 }catch(Exception _e){
+				 m_mainApp.SetErrorString("CM4: " +_e.getMessage() + _e.getClass().getName()); 
+			 }
+			 
+			 return socket;
+			 
+		 }catch(Exception _e){
+	
+			 String message = _e.getMessage();
+
+			 if(message != null){
+				 if(message.indexOf("Peer") != -1){
+					 m_connectCounter = 1000;
+				 }
+			 }
+			 
+			 throw _e;
+		 } 
 		
 	 }
 	 
@@ -1576,7 +1567,7 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	private String composeAddress(Address a){
 		if(a.getName() != null){
-			return "\"" + a.getName() +"\" <" + a.getAddr() + ">";
+			return "\"" + a.getName().replace(',', ' ') +"\" <" + a.getAddr() + ">";
 		}else{
 			return a.getAddr();
 		}

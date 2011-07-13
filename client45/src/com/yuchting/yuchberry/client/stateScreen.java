@@ -5,6 +5,7 @@ import java.util.Vector;
 import local.localResource;
 import net.rim.device.api.servicebook.ServiceBook;
 import net.rim.device.api.servicebook.ServiceRecord;
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Keypad;
@@ -245,8 +246,8 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 					Dialog.alert(recvMain.sm_local.getString(localResource.INPUT_FULL_SIGN_IN_SEG));
 					
 					return;
-				}				
-												
+				}	
+															
 				if(m_mainApp.m_connectDeamon.IsConnectState()){
 					
 					try{

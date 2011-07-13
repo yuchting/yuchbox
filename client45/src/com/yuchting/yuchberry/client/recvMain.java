@@ -1094,9 +1094,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}
 		
 		// store the weibo item list
-		ReadWriteWeiboFile(false);
+		if(ReadWriteWeiboFile(false)){
+			System.exit(0);
+		}		
 		
-		System.exit(0);
 	}
 	
 	public void activate(){
@@ -1793,13 +1794,38 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	static final String fsm_weiboDataName = "weibo.data";
 	static final String fsm_weiboDataBackName = "~weibo.data";
 	
-	private synchronized void ReadWriteWeiboFile(boolean _read){
+	private synchronized boolean ReadWriteWeiboFile(final boolean _read){
 		
 		if(!m_receiveWeiboListChanged && !_read){
-			return ;
+			return true;
 		}
 		
-		m_receiveWeiboListChanged = false;
+		m_receiveWeiboListChanged = false;		
+					
+		if(_read){
+			
+			ReadWriteWeiboFile_impl(_read);
+			return true;
+			
+		}else{
+			
+			Dialog t_waitDlg = new Dialog(sm_local.getString(localResource.WAITING_FOR_STORE_DATA),new Object[0],new int[0],0,null);
+			t_waitDlg.show();
+			
+			invokeLater(new Runnable() {
+				
+				public void run() {
+					ReadWriteWeiboFile_impl(_read);
+					
+					System.exit(0);
+				}
+			},100,false);
+			
+			return false;
+		}
+	}
+	
+	private void ReadWriteWeiboFile_impl(final boolean _read){
 		
 		String t_weiboDataDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
 		
@@ -1807,12 +1833,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		String t_weiboDataBackPathName	= t_weiboDataDir + fsm_weiboDataBackName;
 		
 		PreWriteReadIni(_read, t_weiboDataBackPathName,t_weiboDataPathName,
-							fsm_weiboDataBackName, fsm_weiboDataName);
+				fsm_weiboDataBackName, fsm_weiboDataName);		
 		
 		try{
 			FileConnection t_fc = (FileConnection)Connector.open(t_weiboDataPathName);
-			try{
-
+			try{			
 				if(_read){
 					synchronized (m_receivedWeiboList) {
 						m_receivedWeiboList.removeAllElements();

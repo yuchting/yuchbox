@@ -27,14 +27,16 @@ class fileIcon {
 	String			m_filename_full 	= null;
 	Bitmap			m_bitmap		= null;
 	boolean		m_isFolder	= false;
+	long			m_lastModified = 0;
 	
-	public fileIcon(String _name,String _name_full,Bitmap _image,int _fileSize,boolean _isFolder){
+	public fileIcon(String _name,String _name_full,Bitmap _image,int _fileSize,boolean _isFolder,long _lastModified){
 		
 		m_fileSize	= _fileSize;
 		m_filename	= _name;
 		m_filename_full = _name_full;
 		m_bitmap		= _image;
 		m_isFolder	= _isFolder;
+		m_lastModified = _lastModified;
 	}
 	
 	public String toString(){
@@ -92,8 +94,8 @@ class IconListCallback implements ListFieldCallback {
 		return -1;
 	}
 	
-	public void insert(fileIcon _icon){
-		m_iconList.addElement(_icon);
+	public void insert(fileIcon _icon,int _index){
+		m_iconList.insertElementAt(_icon, _index);
 	}
 	
 }
@@ -230,10 +232,12 @@ public class uploadFileScreen extends MainScreen implements
 						bitmap = m_binFileBitmap;
 					}
 					
-					fileIcon t_icon = new fileIcon(t_name,t_att.m_filename,bitmap,t_att.m_fileSize,false);
+					fileIcon t_icon = new fileIcon(t_name,t_att.m_filename,bitmap,t_att.m_fileSize,false,0);
 					
-					m_fileList.insert(t_index++);
-					m_listCallback.insert(t_icon);
+					m_fileList.insert(t_index);
+					m_listCallback.insert(t_icon,t_index);
+					
+					t_index++;
 				}
 				
 			}catch(Exception _e){
@@ -251,7 +255,7 @@ public class uploadFileScreen extends MainScreen implements
 				
 				
 				FileConnection fc = (FileConnection) Connector.open(_path,Connector.READ);
-				int t_index = 0;
+
 				for(Enumeration e = fc.list("*",true); e.hasMoreElements() ;) {
 					String t_name = (String)e.nextElement();
 					String t_fullname = _path + t_name;
@@ -274,17 +278,42 @@ public class uploadFileScreen extends MainScreen implements
 						bitmap = m_binFileBitmap;
 					}
 					
+					long t_time = next.lastModified();					
 					
 					fileIcon t_icon ;
 					if(next.isDirectory()){
-						t_icon = new fileIcon(t_name,t_fullname,bitmap,0,true);
+						t_icon = new fileIcon(t_name,t_fullname,bitmap,0,true,t_time);
 					}else{
-						t_icon = new fileIcon(t_name,t_fullname,bitmap,(int)next.fileSize(),false);
+						t_icon = new fileIcon(t_name,t_fullname,bitmap,(int)next.fileSize(),false,t_time);
+					}					
+					
+					if(m_listCallback.m_iconList.size() == 0){
+						
+						m_fileList.insert(0);
+						m_listCallback.insert(t_icon,0);
+						
+					}else{
+						
+						boolean t_add = false;
+						
+						for(int i = 0;i < m_listCallback.m_iconList.size();i++){
+							fileIcon icon = (fileIcon)m_listCallback.m_iconList.elementAt(i);
+							if(icon.m_lastModified <= t_icon.m_lastModified){
+								
+								t_add = true;
+								
+								m_fileList.insert(i);
+								m_listCallback.insert(t_icon,i);
+								
+								break;
+							}
+						}
+						
+						if(!t_add){
+							m_fileList.insert(m_listCallback.m_iconList.size() - 1);
+							m_listCallback.insert(t_icon,m_listCallback.m_iconList.size() - 1);
+						}
 					}
-					
-					
-					m_fileList.insert(t_index++);
-					m_listCallback.insert(t_icon);
 				}
 
 			}catch(Exception _e){

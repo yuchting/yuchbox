@@ -337,6 +337,9 @@ public class weiboTimeLineScreen extends MainScreen{
 	private void AddWeibo_imple(fetchWeibo _weibo,boolean _initAdd){
 		
 		try{
+			
+			_initAdd = _initAdd || _weibo.IsOwnWeibo(); // don't prompt by own weibo...
+			
 			WeiboHeadImage t_headImage = SearchHeadImage(_weibo);
 			
 			switch(_weibo.GetWeiboClass()){
@@ -357,6 +360,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			if(!_initAdd){
 				
 				m_weiboHeader.invalidate();
+				
 				
 				if(_weibo.GetWeiboClass() == fetchWeibo.COMMENT_ME_CLASS
 				|| _weibo.GetWeiboClass() == fetchWeibo.AT_ME_CLASS
