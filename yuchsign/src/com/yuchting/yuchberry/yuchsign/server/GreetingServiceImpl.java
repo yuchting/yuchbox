@@ -1144,11 +1144,14 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					t_payNum++;
 					t_totalPayNum += bber.GetTotalPayFee();
 				}			
+				
+				
 			}
 			StringBuffer t_result = new StringBuffer();
 			t_result.append("<table border=\"1\">");
 			t_result.append("<tr><td>总注册用户:</td><td>").append(t_bberList.size()).append("</td></tr>")
 					.append("<tr><td>激活用户数:</td><td>").append(t_activateNum).append("</td></tr>")
+					.append("<tr><td>同步用户数:</td><td>").append(t_syncNum).append("</td></tr>")
 					.append("<tr><td>付费用户数:</td><td>").append(t_payNum).append("</td></tr>")
 					.append("<tr><td>所有收入:</td><td>").append(t_totalPayNum).append("</td></tr>");
 			t_result.append("</table>");

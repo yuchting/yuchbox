@@ -1,13 +1,16 @@
 package com.yuchting.yuchberry.client.weibo;
 
 import local.localResource;
-import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.AutoTextEditField;
-import net.rim.device.api.ui.component.Dialog;
+import net.rim.device.api.ui.component.ButtonField;
+import net.rim.device.api.ui.component.CheckboxField;
+import net.rim.device.api.ui.component.LabelField;
+import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
 import com.yuchting.yuchberry.client.recvMain;
@@ -638,19 +641,98 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		}
 	}
 	
-	public void OpenOriginalPic(WeiboItemField _item){
+	public void OpenOriginalPic(final WeiboItemField _item){
 		if(_item != null && _item.m_weiboPic != null){
 			
-			Dialog t_dlg = new Dialog(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_QUESTION),
-									new String[]
-									{
-										recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_0),
-										recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_1),
-										recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_2),
-									},
-									new int[]{0,1,2},1,Bitmap.getPredefinedBitmap(Bitmap.QUESTION),Manager.VERTICAL_SCROLL);
+			if(m_mainApp.m_hasPromptToCheckImg){
+				
+				VerticalFieldManager t_manager = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
+					public boolean keyChar(char c,int status,int time){
+						if(c == Characters.ESCAPE){
+							getScreen().close();
+						}
+						
+						return super.keyChar(c,status,time);
+					}
+				};
+				
+				PopupScreen t_popDlg = new PopupScreen(t_manager,Manager.VERTICAL_SCROLL);
+				
+				final CheckboxField t_samePrompt = new CheckboxField(recvMain.sm_local.getString(localResource.WEIBO_SAVE_CHECK_IMAGE_PROMPT),
+						false,Field.FIELD_HCENTER);
+				
+				final ButtonField[] t_buttons = new ButtonField[]
+				{
+					new ButtonField(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_0),Field.FIELD_HCENTER),
+					new ButtonField(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_1),Field.FIELD_HCENTER),
+					new ButtonField(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_2),Field.FIELD_HCENTER),
+				};
+
+				FieldChangeListener t_listener = new FieldChangeListener() {
+					
+					public void fieldChanged(Field field, int context) {
+						if(context != FieldChangeListener.PROGRAMMATIC){
+							if(t_samePrompt == field){
+								if(t_samePrompt.getChecked()){
+									m_mainApp.m_hasPromptToCheckImg = false;
+								}
+							}
+						}else{
+							for(int i = 0;i < t_buttons.length;i++){
+								if(t_buttons[i] == field){
+									m_mainApp.m_checkImgIndex = i;
+									recvMain.openURL(_item.getImageURL(i));
+									break;
+								}
+							}
+						}
+					}
+				};
+				
+				t_manager.add(new LabelField(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_QUESTION),Field.FIELD_HCENTER));
+				t_manager.add(t_samePrompt);
+				
+				t_samePrompt.setChangeListener(t_listener);
+								
+				for(int i = 0;i < t_buttons.length;i++){
+					t_manager.add(t_buttons[i]);
+					t_buttons[i].setChangeListener(t_listener);
+					
+					if(i == m_mainApp.m_checkImgIndex){
+						t_buttons[i].setFocus();
+					}
+				}
+				
+				m_mainApp.pushScreen(t_popDlg);
+				          
+				          
+//				CheckboxField t_samePrompt = new CheckboxField(recvMain.sm_local.getString(localResource.WEIBO_SAVE_CHECK_IMAGE_PROMPT),false);
+//				
+//				
+//				Dialog t_dlg = new Dialog(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_QUESTION),
+//										new Field[]
+//										{
+//											t_samePrompt,
+//											new ButtonField(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_0)),
+//											new ButtonField(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_1)),
+//											new ButtonField(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_2)),
+//										},
+//										new int[]{0,1,2},1,Bitmap.getPredefinedBitmap(Bitmap.QUESTION),Manager.VERTICAL_SCROLL);
+//				
+//				int t_result = t_dlg.doModal();
+//				
+//				if(t_samePrompt.getChecked()){
+//					m_mainApp.m_hasPromptToCheckImg = false;
+//					m_mainApp.m_checkImgIndex = t_result;
+//				}
+//				
+//				recvMain.openURL(_item.getImageURL(t_result));		
+				
+			}else{
+				
+				recvMain.openURL(_item.getImageURL(m_mainApp.m_checkImgIndex));
+			}
 			
-			recvMain.openURL(_item.getImageURL(t_dlg.doModal()));
 		}
 	}  
 	

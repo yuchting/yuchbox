@@ -1617,6 +1617,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public boolean				m_hideHeader = false;
 	public boolean				m_hasNewWeibo = false;
 	
+	public boolean				m_hasPromptToCheckImg = true;
+	public int					m_checkImgIndex = 1;
+	
 	boolean m_receiveWeiboListChanged = false;
 	
 	ApplicationMenuItem m_updateWeiboItem = null;

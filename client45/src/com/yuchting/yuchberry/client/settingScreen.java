@@ -76,6 +76,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 CheckboxField		m_hideWeiboHeader = null;
 	 CheckboxField		m_showAllInList	= null;
 	 ObjectChoiceField	m_maxWeiboNum	= null;
+	 ButtonField		m_clearCheckImageSetting = null;
 	 
 	 recvMain			m_mainApp		= null;
 	 
@@ -277,11 +278,15 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 			 m_showAllInList	= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SHOW_ALL_IN_LIST),WeiboItemField.sm_showAllInList);
 			 m_weiboSetManager.add(m_showAllInList);
 			 m_showAllInList.setChangeListener(this);
-			 
+			 		 
 			 m_maxWeiboNum		= new ObjectChoiceField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_MAX_WEIBO_NUM),
 									recvMain.fsm_maxWeiboNumList,m_mainApp.m_maxWeiboNumIndex);
 			 
 			 m_weiboSetManager.add(m_maxWeiboNum);
+			 
+			 m_clearCheckImageSetting = new ButtonField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_CLEAR_CHECK_IMAGE_PROMPT),Field.FIELD_RIGHT);
+			 m_clearCheckImageSetting.setChangeListener(this);
+			 m_weiboSetManager.add(m_clearCheckImageSetting);
 		 }		
 	 }
 	 
@@ -345,6 +350,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				enableWeiboSet(m_weiboModule.getChecked());
 			}else if(field == m_showAllInList){
 				m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SHOW_ALL_IN_LIST_PROMPT));				
+			}else if(field == m_clearCheckImageSetting){
+				m_mainApp.m_hasPromptToCheckImg = true;
+				m_mainApp.DialogAlert("Clear OK!");
 			}
 		}else{
 			// Perform action if application changed field.

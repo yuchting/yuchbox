@@ -345,6 +345,7 @@ public class BberPanel extends TabPanel{
 					Yuchsign.PopupPrompt("已经达到当前推送的最大数量:"+ m_currentBber.GetMaxPushNum() + "(需要升级)", m_pushList);
 					return;
 				}
+				boolean t_succ = false;
 				
 				if(m_pushContent.getSelectedIndex() == 0){
 					
@@ -361,6 +362,8 @@ public class BberPanel extends TabPanel{
 						m_currentBber.GetEmailList().add(t_email);
 						RefreshPushList(m_currentBber);
 						m_pushContent.m_emailPanel.RefreshEmail(null);
+						
+						t_succ = true;
 					}
 					
 				}else if(m_pushContent.getSelectedIndex() == 1){
@@ -378,8 +381,15 @@ public class BberPanel extends TabPanel{
 						m_currentBber.GetWeiboList().add(t_weibo);
 						RefreshPushList(m_currentBber);
 						m_pushContent.m_weiboPanel.RefreshWeibo(null);
+						
+						t_succ = true;
 					}
 				}
+				
+				if(t_succ){
+					Yuchsign.PopupPrompt("添加用户之后需要到 [账户属性] 去同步，才能保存，开始推送", BberPanel.this);
+				}				
+				
 			}
 		});
 		
@@ -402,7 +412,7 @@ public class BberPanel extends TabPanel{
 					}
 					
 					if(t_ok){
-						Yuchsign.PopupPrompt("更新数据成功，需要同步才能保存生效。",t_horzPane);
+						Yuchsign.PopupPrompt("更新数据成功，需要同步才能最终保存生效。",t_horzPane);
 					}
 				}
 				
@@ -438,6 +448,8 @@ public class BberPanel extends TabPanel{
 									m_pushContent.m_weiboPanel.RefreshWeibo(null);
 								}				
 								
+								
+								Yuchsign.PopupPrompt("删除用户之后需要到 [账户属性] 同步，才能保存", BberPanel.this);
 							}
 							
 						},null);

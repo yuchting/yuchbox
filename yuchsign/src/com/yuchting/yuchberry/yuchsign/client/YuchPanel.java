@@ -551,10 +551,12 @@ public class YuchPanel extends TabPanel{
 			public void onClick(ClickEvent event) {
 				
 				try{
+					
 					Yuchsign.PopupWaiting("正在获取统计信息……", YuchPanel.this);
+					
 					m_mainServer.greetingService.getStaticticsInfo(0,0,new AsyncCallback<String>(){
 						public void onFailure(Throwable caught) {
-							Yuchsign.PopupPrompt("获取统计信息失败："+caught.getMessage(), YuchPanel.this);
+							Yuchsign.PopupPrompt("获取统计信息失败：" + caught.getMessage(), YuchPanel.this);
 							Yuchsign.HideWaiting();
 						}
 
