@@ -727,7 +727,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 25;
+	final static int		fsm_clientVersion = 26;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -845,7 +845,6 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    		
 				    		if(t_currVer >= 19){
 				    			m_publicForward		= sendReceive.ReadBoolean(t_readFile);
-				    			
 				    		}
 				    		
 				    		if(t_currVer >= 20){
@@ -874,6 +873,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    		if(t_currVer >= 25){
 				    			WeiboItemField.sm_showAllInList = sendReceive.ReadBoolean(t_readFile);
 				    		}
+				    		
+				    		if(t_currVer >= 26){
+				    			m_hasPromptToCheckImg	= sendReceive.ReadBoolean(t_readFile);
+				    			m_checkImgIndex			= t_readFile.read();
+				    		}
+				    		
 				    		
 			    		}finally{
 			    			t_readFile.close();
@@ -951,6 +956,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						
 						sendReceive.WriteBoolean(t_writeFile,m_connectDisconnectPrompt);
 						sendReceive.WriteBoolean(t_writeFile,WeiboItemField.sm_showAllInList);
+						
+						sendReceive.WriteBoolean(t_writeFile, m_hasPromptToCheckImg);
+						t_writeFile.write(m_checkImgIndex);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
