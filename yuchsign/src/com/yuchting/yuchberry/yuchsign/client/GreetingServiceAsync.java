@@ -25,6 +25,8 @@ public interface GreetingServiceAsync {
 	
 	void getdownLev(String _signinName,AsyncCallback<String> callback)throws Exception;
 	
+	void sendActivateMail(String _signinName,String verifyCode,AsyncCallback<String> callback)throws Exception;
+	
 	
 	// administrator function
 	//

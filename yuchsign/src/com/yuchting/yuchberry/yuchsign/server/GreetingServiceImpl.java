@@ -122,30 +122,21 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					return "<Error>用户名已经存在!</Error>";
 				}
 				
-				m_isAdministrator = t_bber.GetSigninName().equalsIgnoreCase(FieldVerifier.fsm_admin);
-				
 			}catch(javax.jdo.JDOObjectNotFoundException e){
 				
 				try{
 				
 					long t_activateRand = -Math.abs((new Random()).nextLong());
 					
-					StringBuffer t_body = new StringBuffer();
-					t_body.append("欢迎注册YuchSign！\n\n您在YuchBerry的网站上的YuchSign邮件中转账户已经注册完成，需要您通过下面的链接完成激活：\n\nhttp://yuchberrysign.yuchberry.info/act/?acc=")
-							.append(URLEncoder.encode(_name,"UTF-8")).append("&rand=").append(URLEncoder.encode(Long.toString(t_activateRand),"UTF-8"))
-							.append("\n\n如果无法点击这个链接，请复制到网络浏览器的地址栏上进行访问\n\n致\n  敬!\nhttp://code.google.com/p/yuchberry/");
-					
-					// send the activate email
-					//
-					sendEmail(_name,"YuchSign 激活邮件",t_body.toString());
+					sendActivateMail_impl(_name,t_activateRand);
 					
 					// create account
 					//
-					t_newbber = new yuchbber(_name,_password);
+					t_newbber = new yuchbber(_name,_password);	
+					t_newbber.SetSigninTime(t_activateRand);
+					t_pm.makePersistent(t_newbber);
 					
-					t_newbber.SetSigninTime(t_activateRand);					
-					
-					t_pm.makePersistent(t_newbber);	
+					m_isAdministrator = _name.equalsIgnoreCase(FieldVerifier.fsm_admin);
 				}catch(Exception ex){
 					return "<Error>发送激活账户邮件出错：" + ex.getMessage() + "</Error>";
 				}
@@ -157,6 +148,49 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}finally{
 			t_pm.close();
 		}				
+	}
+	
+	private void sendActivateMail_impl(String _name,long _activateRand)throws Exception{
+							
+		StringBuffer t_body = new StringBuffer();
+		t_body.append("欢迎注册YuchSign！\n\n您在YuchBerry的网站上的YuchSign邮件中转账户已经注册完成，需要您通过下面的链接完成激活：\n\nhttp://yuchberrysign.yuchberry.info/act/?acc=")
+				.append(URLEncoder.encode(_name,"UTF-8")).append("&rand=").append(URLEncoder.encode(Long.toString(_activateRand),"UTF-8"))
+				.append("\n\n如果无法点击这个链接，请复制到网络浏览器的地址栏上进行访问\n\n致\n  敬!\nhttp://code.google.com/p/yuchberry/");
+		
+		// send the activate email
+		//
+		sendEmail(_name,"YuchSign 激活邮件",t_body.toString());
+	}
+	
+	public String sendActivateMail(String _signinName,String verifyCode)throws Exception{
+		
+		if(!m_currVerifyCode.compareCode(_signinName,verifyCode)){
+			return m_currVerifyCode.generate(_signinName,getThreadLocalRequest());
+		}
+		
+		PersistenceManager t_pm = PMF.get().getPersistenceManager();
+		
+		try{			
+			
+			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(), _signinName);
+			try{
+				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);
+				
+				if(t_bber.GetSigninTime() > 0 ){
+					return "账户已经激活！";
+				}
+
+				sendActivateMail_impl(_signinName,t_bber.GetSigninTime());
+				
+				return "发送激活邮件成功，请在 " + _signinName + " 进行查找\n也许会在垃圾邮箱中。";
+				
+			}catch(javax.jdo.JDOObjectNotFoundException e){
+				return "找不到用户!";
+			}
+			
+		}finally{
+			t_pm.close();
+		}
 	}
 	
 	public String syncAccount(String _xmlData,String verifyCode)throws Exception{

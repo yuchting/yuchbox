@@ -175,6 +175,16 @@ public class BberPanel extends TabPanel{
 			}
 		});
 		
+		final Button t_sendActivateMailBut = new Button("重新发送激活邮件");
+		
+		t_sendActivateMailBut.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				sendActivateMail();
+			}
+		});
+		
 		final BberPanel t_currPane = this;
 		final Button t_changePass = new Button("更改密码");
 		t_changePass.addClickHandler(new ClickHandler() {
@@ -208,9 +218,7 @@ public class BberPanel extends TabPanel{
 				}
 				
 			}
-		});
-		
-		
+		});	
 		
 		m_signature.setPixelSize(420,100);
 				
@@ -219,6 +227,7 @@ public class BberPanel extends TabPanel{
 		
 		int t_line = 0;
 		t_layout.setWidget(t_line,2,t_signoutBut);
+		t_layout.setWidget(t_line,3,t_sendActivateMailBut);
 		AddLabelWidget(t_layout,"用户名:",m_signinName,t_line++);
 		
 		t_layout.setWidget(t_line, 2, t_levelUpBut);
@@ -246,6 +255,41 @@ public class BberPanel extends TabPanel{
 		
 		add(t_attrPane,"账户属性");
 		
+	}
+	
+	private void sendActivateMail(){
+		try{
+
+			Yuchsign.PopupWaiting("正在请求发送……", this);
+			m_mainServer.greetingService.sendActivateMail(m_currentBber.GetSigninName(),m_verfiyCode,new AsyncCallback<String>() {
+				
+				@Override
+				public void onSuccess(String result) {
+					if(result.startsWith("/verifycode")){
+							new YuchVerifyCodeDlg(result, new InputVerfiyCode() {
+							
+							@Override
+							public void InputCode(String code) {
+								m_verfiyCode = code;
+								sendActivateMail();
+							}
+						});									
+					}else{
+						Yuchsign.HideWaiting();
+						Yuchsign.PopupPrompt(result,BberPanel.this);
+					}							
+				}
+				
+				@Override
+				public void onFailure(Throwable caught) {
+					Yuchsign.HideWaiting();
+					Yuchsign.PopupPrompt("失败：" + caught.getMessage(),BberPanel.this);
+				}
+			});	
+		}catch(Exception e){
+			Yuchsign.HideWaiting();
+			Yuchsign.PopupPrompt("异常：" + e.getMessage(),BberPanel.this);
+		}
 	}
 	
 	private void getdownLevProcess(){

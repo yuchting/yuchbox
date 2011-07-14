@@ -28,6 +28,8 @@ public interface GreetingService extends RemoteService {
 	
 	String getdownLev(String _signinName)throws Exception;
 	
+	String sendActivateMail(String _signinName,String verifyCode)throws Exception;
+	
 	
 	// administrator function
 	//
