@@ -11,6 +11,7 @@ import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
@@ -18,10 +19,12 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.ProvidesKey;
@@ -539,7 +542,21 @@ public class YuchPanel extends TabPanel{
 	}
 	
 	private void PrepareStatisticsPanel(){
+		
+		final HorizontalPanel t_dateSelectPanel = new HorizontalPanel();
+		final DateBox t_startdateBox = new DateBox();
+		t_startdateBox.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("yyyy 年 MM 月 dd 日")));
+		
+		final DateBox t_endDateBox = new DateBox();
+		t_endDateBox.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("yyyy 年 MM 月 dd 日")));
+		
+		t_dateSelectPanel.add(new HTML("起始时间："));
+		t_dateSelectPanel.add(t_startdateBox);
+		t_dateSelectPanel.add(new HTML("结束时间："));
+		t_dateSelectPanel.add(t_endDateBox);
+		
 		final VerticalPanel t_pane = new VerticalPanel();
+		t_pane.add(t_dateSelectPanel);
 		
 		Button t_refreshPanel = new Button("获得统计信息");
 		
@@ -554,7 +571,18 @@ public class YuchPanel extends TabPanel{
 					
 					Yuchsign.PopupWaiting("正在获取统计信息……", YuchPanel.this);
 					
-					m_mainServer.greetingService.getStaticticsInfo(0,0,new AsyncCallback<String>(){
+					long t_start = 0;
+					if(t_startdateBox.getValue() != null){
+						t_start = t_startdateBox.getValue().getTime();
+					}
+					
+					long t_end = 0;
+					if(t_endDateBox.getValue() != null){
+						t_end = t_endDateBox.getValue().getTime();
+					}
+					
+					m_mainServer.greetingService.getStaticticsInfo(t_start,t_end,
+					new AsyncCallback<String>(){
 						public void onFailure(Throwable caught) {
 							Yuchsign.PopupPrompt("获取统计信息失败：" + caught.getMessage(), YuchPanel.this);
 							Yuchsign.HideWaiting();

@@ -1011,8 +1011,9 @@ public class fetchEmail extends fetchAccount{
 					(_mail.m_style == fetchMail.FORWORD_STYLE)?_mail.m_forwardReplyMail:null,m_sendName);
 		
 		AddMailIndexAttach(_mail.m_sendMail,true);
-	    		
+	    
 		int t_tryTime = 0;
+		
 		while(t_tryTime++ < 5){
 			try{
 				
@@ -1025,7 +1026,7 @@ public class fetchEmail extends fetchAccount{
 					m_sendTransport.sendMessage(msg, msg.getAllRecipients());
 				}finally{
 					m_sendTransport.close();
-				}			
+				}
 				
 				try{
 					
@@ -1068,6 +1069,10 @@ public class fetchEmail extends fetchAccount{
 			}catch(Exception e){
 				m_mainMgr.m_logger.PrinterException(e);
 			}
+		}
+		
+		if(t_tryTime >= 5){
+			throw new Exception("Send the Message failed");
 		}
 		
 		// delete the tmp files

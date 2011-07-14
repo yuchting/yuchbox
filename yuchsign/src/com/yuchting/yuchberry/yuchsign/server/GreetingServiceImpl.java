@@ -30,9 +30,13 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.yuchting.yuchberry.yuchsign.client.GreetingService;
 import com.yuchting.yuchberry.yuchsign.server.weibo.WeiboAuth;
@@ -1150,20 +1154,30 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		
 		try{
 			
-			List<yuchbber> t_bberList = null;
-			if(_startTime != 0 && _endTime != 0){
-				t_bberList = (List<yuchbber>)t_pm.newQuery("select from " + yuchbber.class.getName() + 
-						" where m_signinTime>" + _startTime + 
-						" AND m_signinTime<=" + _endTime).execute();
-			}else{
-				t_bberList = (List<yuchbber>)t_pm.newQuery("select from " + yuchbber.class.getName()).execute();
-			}
-	
+			int t_totalNum = 0;
+			
 			int t_activateNum = 0;
 			int t_syncNum = 0;
 			int t_payNum = 0;
 			
 			int t_totalPayNum = 0;
+			
+			List<yuchbber> t_bberList = null;
+			
+			if(_startTime != 0 && _endTime != 0){
+				t_bberList = (List<yuchbber>)t_pm.newQuery("select from " + yuchbber.class.getName() + 
+						" where m_signinTime>" + _startTime + 
+						" && m_signinTime<=" + _endTime).execute();
+							
+			}else if(_startTime != 0){
+				t_bberList = (List<yuchbber>)t_pm.newQuery("select from " + yuchbber.class.getName() + 
+						" where m_signinTime>" + _startTime).execute();
+			}else if(_endTime != 0){
+				t_bberList = (List<yuchbber>)t_pm.newQuery("select from " + yuchbber.class.getName() + 
+						" where m_signinTime<=" + _endTime).execute();
+			}else{
+				t_bberList = (List<yuchbber>)t_pm.newQuery("select from " + yuchbber.class.getName()).execute();
+			}
 			
 			for(yuchbber bber:t_bberList){
 				if(bber.GetSigninTime() > 0){
@@ -1178,12 +1192,13 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					t_payNum++;
 					t_totalPayNum += bber.GetTotalPayFee();
 				}			
-				
-				
 			}
+			
+			t_totalNum = t_bberList.size();
+			
 			StringBuffer t_result = new StringBuffer();
 			t_result.append("<table border=\"1\">");
-			t_result.append("<tr><td>总注册用户:</td><td>").append(t_bberList.size()).append("</td></tr>")
+			t_result.append("<tr><td>总注册用户:</td><td>").append(t_totalNum).append("</td></tr>")
 					.append("<tr><td>激活用户数:</td><td>").append(t_activateNum).append("</td></tr>")
 					.append("<tr><td>同步用户数:</td><td>").append(t_syncNum).append("</td></tr>")
 					.append("<tr><td>付费用户数:</td><td>").append(t_payNum).append("</td></tr>")
