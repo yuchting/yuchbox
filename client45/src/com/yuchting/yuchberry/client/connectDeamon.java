@@ -302,7 +302,17 @@ public class connectDeamon extends Thread implements SendListener,
     	
 		final Message t_msg = message;
 		
-		m_mainApp.m_messageApplication = UiApplication.getUiApplication();
+		try{
+			Class msgClass = Class.forName("net.rim.device.apps.internal.messaging.MessagingApp");
+						
+			if(msgClass.isInstance(UiApplication.getUiApplication())){
+				m_mainApp.m_messageApplication = UiApplication.getUiApplication();
+			}
+			
+		}catch(Exception e){
+			m_mainApp.SetErrorString("sMClass:" + e.getMessage() + e.getClass().getName());
+			m_mainApp.m_messageApplication = UiApplication.getUiApplication();
+		}		
 		
 		// invokeLater maybe rise some exception in function ImportMail 
 		//
@@ -1061,6 +1071,10 @@ public class connectDeamon extends Thread implements SendListener,
 				 }
 			 }
 			 
+			 if(t_append.length() != 0){
+				 m_mainApp.SetErrorString("CM Field: " + t_append);
+			 }
+			 
 			 throw _e;
 		 } 
 		
@@ -1314,11 +1328,11 @@ public class connectDeamon extends Thread implements SendListener,
 		}		
 	}
 	 
-	public synchronized void AddSendingMail(fetchMail _mail,Vector _files,
-												fetchMail _forwardReply,int _sendStyle)throws Exception{
+	public void AddSendingMail(final fetchMail _mail,final Vector _files,
+											final fetchMail _forwardReply,final int _sendStyle)throws Exception{
 		// load the attachment if has 
 		//
-		Vector t_vfileReader = new Vector();
+		final Vector t_vfileReader = new Vector();
 		
 		if(_files != null && !_files.isEmpty()){
 			
@@ -1366,8 +1380,24 @@ public class connectDeamon extends Thread implements SendListener,
 			_mail.SetLocationInfo(m_mainApp.m_gpsInfo);
 		}
 	
-		sendMailAttachmentDeamon t_mailDeamon = new sendMailAttachmentDeamon(this, _mail, t_vfileReader,_forwardReply,_sendStyle);
-		m_sendingMailAttachment.addElement(t_mailDeamon);	
+		m_mainApp.invokeLater(new Runnable() {
+			
+			public void run() {
+				
+				try{
+					
+					sendMailAttachmentDeamon t_mailDeamon = new sendMailAttachmentDeamon(connectDeamon.this, 
+							_mail, t_vfileReader,_forwardReply,_sendStyle);
+					
+					m_sendingMailAttachment.addElement(t_mailDeamon);
+					
+				}catch(Exception e){
+					m_mainApp.SetErrorString("ASM:"+e.getMessage()+e.getClass().getName());
+				}
+								
+			}
+		});
+			
 	}
 	
 	
