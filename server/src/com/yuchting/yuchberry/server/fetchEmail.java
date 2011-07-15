@@ -609,26 +609,26 @@ public class fetchEmail extends fetchAccount{
 	 		    		
 	 		    		fetchMail t_mail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
 	 		    		t_mail.SetMailIndex(i + t_startIndex);
-	 		    		try{
+//	 		    		try{
 	 		    			ImportMail(t_msg,t_mail);
-	 		    		}catch(Exception e){
-	 		    			String t_prompt = null;
-	 		    			switch (m_mainMgr.GetClientLanguage()) {
-			 		   		case 0:
-			 		   			t_prompt = "\nYuchBerry服务器提示：由于网络，格式等问题，读取这封邮件的时候出现了错误，需要通过其它方式查看。\n\n\n"; 
-			 		   			break;
-			 		   		case 1:
-			 		   			t_prompt = "\nYuchBerry服务器提示：由於網絡，格式等問題，讀取這封郵件的時候出現了錯誤，需要通過其他方式查看。\n\n\n";
-			 		   			break;
-			 		   		default:
-			 		   			t_prompt = "\nYuchBerry ImportMail Error! Please read the Mail via another way!\n\n\n";
-			 		   				
-			 		   		}
-	 		    			
-	 		    			t_mail.SetContain(t_mail.GetContain() + "\n\n\n" + e.getMessage() + t_prompt);
-	 		    			
-	 		    			m_mainMgr.m_logger.PrinterException(e);
-	 		    		}
+//	 		    		}catch(Exception e){
+//	 		    			String t_prompt = null;
+//	 		    			switch (m_mainMgr.GetClientLanguage()) {
+//			 		   		case 0:
+//			 		   			t_prompt = "\nYuchBerry服务器提示：由于网络，格式等问题，读取这封邮件的时候出现了错误，需要通过其它方式查看。\n\n\n"; 
+//			 		   			break;
+//			 		   		case 1:
+//			 		   			t_prompt = "\nYuchBerry服务器提示：由於網絡，格式等問題，讀取這封郵件的時候出現了錯誤，需要通過其他方式查看。\n\n\n";
+//			 		   			break;
+//			 		   		default:
+//			 		   			t_prompt = "\nYuchBerry ImportMail Error! Please read the Mail via another way!\n\n\n";
+//			 		   				
+//			 		   		}
+//	 		    			
+//	 		    			t_mail.SetContain(t_mail.GetContain() + "\n\n\n" + e.getMessage() + t_prompt);
+//	 		    			
+//	 		    			m_mainMgr.m_logger.PrinterException(e);
+//	 		    		}
 	 		    		 
 	 		    		AddMailIndexAttach(t_mail,false);
 	 		    		
@@ -1469,8 +1469,9 @@ public class fetchEmail extends fetchAccount{
 		}catch(Exception e){}	    
 		
 	}
+	
 	public void ImportMail(Message m,fetchMail _mail)throws Exception{
-		
+				
 		Address[] a;
 		
 		// FROM 

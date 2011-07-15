@@ -16,6 +16,8 @@ import java.security.KeyStore;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -85,7 +87,23 @@ public class HelloWorld {
 	 *  @param arg  parameters
 	 */
 	public static void main(String arg[])throws Exception{
-		berryRecvTest();
+		//berryRecvTest();
+		
+		
+		Map<Long,Long > t_statList = new HashMap<Long,Long >();
+		
+		t_statList.put(new Long(11),new Long(1));
+		t_statList.put(new Long(1),new Long(2));
+		t_statList.put(new Long(211),new Long(3));
+		t_statList.put(new Long(13),new Long(4));
+		t_statList.put(new Long(12),new Long(5));
+		
+		Object[] t_key = t_statList.keySet().toArray();
+		Object[] t_value = t_statList.values().toArray();
+		
+		for(int i = 0;i < t_key.length;i++){
+			System.out.println(t_key[i] + ":" + t_value[i]);
+		}
 		
 	}
 	
