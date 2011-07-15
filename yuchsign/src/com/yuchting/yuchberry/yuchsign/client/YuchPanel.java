@@ -545,10 +545,10 @@ public class YuchPanel extends TabPanel{
 		
 		final HorizontalPanel t_dateSelectPanel = new HorizontalPanel();
 		final DateBox t_startdateBox = new DateBox();
-		t_startdateBox.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("yyyy 年 MM 月 dd 日")));
+		t_startdateBox.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("yyyy MM-dd")));
 		
 		final DateBox t_endDateBox = new DateBox();
-		t_endDateBox.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("yyyy 年 MM 月 dd 日")));
+		t_endDateBox.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("yyyy MM-dd")));
 		
 		t_dateSelectPanel.add(new HTML("起始时间："));
 		t_dateSelectPanel.add(t_startdateBox);

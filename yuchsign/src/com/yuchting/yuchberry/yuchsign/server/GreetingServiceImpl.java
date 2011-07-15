@@ -8,9 +8,13 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.TimeZone;
@@ -30,13 +34,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.datastore.PreparedQuery;
-import com.google.appengine.api.datastore.Query;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.yuchting.yuchberry.yuchsign.client.GreetingService;
 import com.yuchting.yuchberry.yuchsign.server.weibo.WeiboAuth;
@@ -1153,9 +1152,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
 		
 		try{
-			
-			int t_totalNum = 0;
-			
+						
 			int t_activateNum = 0;
 			int t_syncNum = 0;
 			int t_payNum = 0;
@@ -1179,30 +1176,81 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				t_bberList = (List<yuchbber>)t_pm.newQuery("select from " + yuchbber.class.getName()).execute();
 			}
 			
+			Map<Long,List<yuchbber> > t_statList = new HashMap<Long,List<yuchbber> >();
+			
 			for(yuchbber bber:t_bberList){
 				if(bber.GetSigninTime() > 0){
 					t_activateNum++;
-				}
-				
-				if(bber.GetConnectHost() != null && bber.GetConnectHost().length() > 0){
-					t_syncNum++;
-				}
-				
-				if(bber.GetTotalPayFee() > 0){
-					t_payNum++;
-					t_totalPayNum += bber.GetTotalPayFee();
-				}			
+					
+					if(bber.GetConnectHost() != null && bber.GetConnectHost().length() > 0){
+						t_syncNum++;
+					}
+					
+					if(bber.GetTotalPayFee() > 0){
+						t_payNum++;
+						t_totalPayNum += bber.GetTotalPayFee();
+					}	
+					
+					long t_dayTime = bber.GetSigninTime() - bber.GetSigninTime() % (24 * 3600000);
+					
+					Long t_keyDayTime = new Long(t_dayTime);
+					
+					List<yuchbber> t_newBber = t_statList.get(t_keyDayTime);
+					if(t_newBber == null){
+						t_newBber = new ArrayList<yuchbber>();
+						t_newBber.add(bber);
+						
+						t_statList.put(t_keyDayTime,t_newBber);
+					}else{
+						t_newBber.add(bber);
+					}
+				}	
 			}
 			
-			t_totalNum = t_bberList.size();
-			
 			StringBuffer t_result = new StringBuffer();
-			t_result.append("<table border=\"1\">");
-			t_result.append("<tr><td>总注册用户:</td><td>").append(t_totalNum).append("</td></tr>")
-					.append("<tr><td>激活用户数:</td><td>").append(t_activateNum).append("</td></tr>")
-					.append("<tr><td>同步用户数:</td><td>").append(t_syncNum).append("</td></tr>")
-					.append("<tr><td>付费用户数:</td><td>").append(t_payNum).append("</td></tr>")
-					.append("<tr><td>所有收入:</td><td>").append(t_totalPayNum).append("</td></tr>");
+			t_result.append("<table border=\"1\">");	
+			t_result.append("<tr><td>时间</td><td>激活用户数</td><td>同步用户数</td><td>付费用户数</td><td>收入</td></tr>");
+			
+			Object[] t_keys = t_statList.keySet().toArray();
+			Object[] t_values = t_statList.values().toArray();
+			SimpleDateFormat t_timeFormat = new SimpleDateFormat("yyyy-MM-dd");
+		
+			
+			for(int i = 0;i < t_keys.length;i++){
+				Long time = (Long)t_keys[i];
+				List<yuchbber> list = (List<yuchbber>)t_values[i];
+				
+				int syncNum = 0;
+				int payNum = 0;
+				int fee = 0;
+				
+				for(yuchbber bber:list){
+					if(bber.GetConnectHost() != null && bber.GetConnectHost().length() > 0){
+						syncNum++;
+					}
+					
+					if(bber.GetTotalPayFee() > 0){
+						payNum++;
+						fee += bber.GetTotalPayFee();
+					}
+				}
+				
+				t_result.append("<tr><td>")
+						.append(t_timeFormat.format(time.longValue())).append("</td><td>")
+						.append(list.size()).append("</td><td>")
+						.append(syncNum).append("</td><td>")
+						.append(payNum).append("</td><td>")
+						.append(fee).append("</td><tr>");
+				
+			}
+			
+			t_result.append("<tr><td>")
+					.append("").append("</td><td>")
+					.append(t_activateNum).append("</td><td>")
+					.append(t_syncNum).append("</td><td>")
+					.append(t_payNum).append("</td><td>")
+					.append(t_totalPayNum).append("</td><tr>");
+			
 			t_result.append("</table>");
 			
 			return t_result.toString();
