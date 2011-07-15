@@ -25,6 +25,13 @@ copy /Y .\client45\res\*.* .\client47\res\
 copy /Y .\client45\res\*.* .\client60\res\ 
 copy /Y .\client45\res\*.* .\client42\res\
 
+del /S /Q /AH .\client45\res\Thumbs.db
+del /S /Q /AH .\client\res\Thumbs.db
+del /S /Q /AH .\client46\res\Thumbs.db
+del /S /Q /AH .\client47\res\Thumbs.db
+del /S /Q /AH .\client60\res\Thumbs.db 
+del /S /Q /AH .\client42\res\Thumbs.db
+
 copy /Y .\client45\BlackBerry_App_Descriptor.xml .\client\
 copy /Y .\client45\BlackBerry_App_Descriptor.xml .\client46\
 copy /Y .\client45\BlackBerry_App_Descriptor.xml .\client47\
