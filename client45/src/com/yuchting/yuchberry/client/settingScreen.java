@@ -8,6 +8,7 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.FocusChangeListener;
 import net.rim.device.api.ui.Font;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.CheckboxField;
@@ -480,5 +481,18 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				m_latitude.setText(recvMain.sm_local.getString(localResource.CURRENT_LATITUDE_LABEL) + m_mainApp.m_gpsInfo.m_latitude);
 			}
 		});
+	 }
+	 
+	 protected boolean keyDown(int keycode,int time){
+		 
+		if(m_APN.isFocus()){
+			final int key = Keypad.key(keycode);
+			 
+			if(key == ' ' || key == 10){
+				return true;
+			}
+		}
+		
+		return super.keyDown(keycode,time);
 	 }
 }

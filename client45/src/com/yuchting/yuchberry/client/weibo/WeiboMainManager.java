@@ -558,6 +558,10 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 		if(getCurrEditItem() != _item){	
 			
+			if(getCurrExtendedItem() == null){
+				Clicked(0, 0);
+			}
+			
 			String t_finalText = null;
 			if(m_replyIdBackup != _item.m_weibo.GetId() 
 			|| m_replyStyleBackup != _item.m_weibo.GetWeiboStyle()){
@@ -594,6 +598,10 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	public void ForwardWeibo(WeiboItemField _item){
 		
 		if(getCurrEditItem() != _item){
+			
+			if(getCurrExtendedItem() == null){
+				Clicked(0, 0);
+			}
 			
 			String t_text =null;
 			if(m_forwardIdBackup != _item.m_weibo.GetId()
@@ -704,30 +712,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				}
 				
 				m_mainApp.pushScreen(t_popDlg);
-				          
-				          
-//				CheckboxField t_samePrompt = new CheckboxField(recvMain.sm_local.getString(localResource.WEIBO_SAVE_CHECK_IMAGE_PROMPT),false);
-//				
-//				
-//				Dialog t_dlg = new Dialog(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_QUESTION),
-//										new Field[]
-//										{
-//											t_samePrompt,
-//											new ButtonField(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_0)),
-//											new ButtonField(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_1)),
-//											new ButtonField(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_2)),
-//										},
-//										new int[]{0,1,2},1,Bitmap.getPredefinedBitmap(Bitmap.QUESTION),Manager.VERTICAL_SCROLL);
-//				
-//				int t_result = t_dlg.doModal();
-//				
-//				if(t_samePrompt.getChecked()){
-//					m_mainApp.m_hasPromptToCheckImg = false;
-//					m_mainApp.m_checkImgIndex = t_result;
-//				}
-//				
-//				recvMain.openURL(_item.getImageURL(t_result));		
-				
+
 			}else{
 				
 				recvMain.openURL(_item.getImageURL(m_mainApp.m_checkImgIndex));

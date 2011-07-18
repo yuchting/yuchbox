@@ -42,6 +42,7 @@ import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.util.Arrays;
 
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
+import com.yuchting.yuchberry.client.weibo.fetchWeiboUser;
 
 public class connectDeamon extends Thread implements SendListener,
 												MessageListener,
@@ -1131,9 +1132,18 @@ public class connectDeamon extends Thread implements SendListener,
 		 	case msg_head.msgWeiboHeadImage:
 		 		ProcessWeiboHeadImage(in);
 		 		break;
+		 		
 		 	case msg_head.msgWeiboPrompt:
 		 		if(m_mainApp.m_weiboTimeLineScreen != null){
 		 			m_mainApp.m_weiboTimeLineScreen.popupPromptText(sendReceive.ReadString(in));
+		 		}
+		 		break;
+		 	case msg_head.msgWeiboUser:
+		 		if(m_mainApp.m_weiboTimeLineScreen != null){
+		 			int t_style = in.read();
+		 			fetchWeiboUser t_user = new fetchWeiboUser((byte)t_style);
+		 			t_user.InputData(in);
+		 			m_mainApp.m_weiboTimeLineScreen.displayWeiboUser(t_user);
 		 		}
 		 		break;
 		 }
