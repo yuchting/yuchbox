@@ -99,7 +99,7 @@ public class QWeibo {
 	public long getId(){return m_id;}
 	
 	public String getImage(){return m_imageURL;}
-	public String getName(){return m_name;}
+	public String getScreenName(){return m_name;}
 	public String getNickName(){return m_nickName;}
 	public String getHeadImageURL(){return m_headImageURL;}
 	

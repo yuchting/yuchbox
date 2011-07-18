@@ -159,6 +159,36 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		m_api.followUser(_screenName);
 	}
 	
+	protected fetchWeiboUser getWeiboUser(String _name)throws Exception{
+		QUser t_user = m_api.getUserInfo(_name);
+		
+		fetchWeiboUser t_weibo = new fetchWeiboUser(fetchWeibo.QQ_WEIBO_STYLE,m_mainMgr.m_convertToSimpleChar);
+		
+		t_weibo.setId(0);
+		
+		t_weibo.setName(t_user.getName());
+		t_weibo.setScreenName(t_user.getScreenName());
+		t_weibo.setHeadURL(t_user.getHeadImageURL());
+		t_weibo.setDesc(t_user.getIntroduction());
+		t_weibo.setCity(t_user.getLocation());
+		t_weibo.setVerified(t_user.isVerified());
+		t_weibo.setHasBeenFollowed(t_user.hasBeenFollowed());
+		t_weibo.setIsMyFans(t_user.isMyFans());
+		t_weibo.setFollowNum(t_user.getIdolNum());
+		t_weibo.setFansNum(t_user.getFansNum());
+		t_weibo.setWeiboNum(t_user.getWeiboNum());
+		
+		List<QWeibo> t_list = m_api.getUserTimeline(_name);
+		for(QWeibo s:t_list){
+			fetchWeibo weibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
+			ImportWeibo(weibo, s,fetchWeibo.TIMELINE_CLASS);
+			
+			t_weibo.getUpdatedWeibo().add(weibo);
+		}
+		
+		return t_weibo;
+	}
+	
 	private void AddWeibo(List<QWeibo> _from,fetchWeiboData _to,byte _class){
 		
 		boolean t_insert;
@@ -219,7 +249,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		_weibo.SetOwnWeibo(_qweibo.isOwnWeibo());
 		
 		_weibo.SetUserName(_qweibo.getNickName());
-		_weibo.SetUserScreenName(_qweibo.getName());
+		_weibo.SetUserScreenName(_qweibo.getScreenName());
 		
 		_weibo.SetSinaVIP(_qweibo.isVIP());
 		
@@ -229,7 +259,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		
 		if(_qweibo.getHeadImageURL().length() != 0){
 			try{
-				_weibo.SetUserHeadImageHashCode(StoreHeadImage(new URL(_qweibo.getHeadImageURL()),_qweibo.getName()));
+				_weibo.SetUserHeadImageHashCode(StoreHeadImage(new URL(_qweibo.getHeadImageURL()),_qweibo.getNickName()));
 			}catch(Exception e){
 				m_mainMgr.m_logger.LogOut(GetAccountName() + " Exception:" + e.getMessage());
 				m_mainMgr.m_logger.PrinterException(e);
@@ -264,12 +294,12 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		
 		for(QWeibo weibo : t_list){
 			
-			System.out.println(Long.toString(weibo.getId()) + " @" + weibo.getName() + "("+weibo.getNickName()+") " + weibo.getTime() +":"+ weibo.getText());
+			System.out.println(Long.toString(weibo.getId()) + " @" + weibo.getScreenName() + "("+weibo.getNickName()+") " + weibo.getTime() +":"+ weibo.getText());
 			
 			if(weibo.getSourceWeibo() != null){
 				weibo = weibo.getSourceWeibo();
 				System.out.print("\t\tsource:");
-				System.out.print(Long.toString(weibo.getId()) + " @" + weibo.getName() + "("+weibo.getNickName()+") :"+ weibo.getText());
+				System.out.print(Long.toString(weibo.getId()) + " @" + weibo.getScreenName() + "("+weibo.getNickName()+") :"+ weibo.getText());
 			}
 			
 		}

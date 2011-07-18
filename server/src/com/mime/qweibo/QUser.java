@@ -30,6 +30,9 @@ public class QUser{
 	private int	m_idolNum;
 	private int	m_weiboNum;
 	
+	private boolean m_isMyFans;
+	private boolean m_hasBeenFollowed;
+	
 	private List<QUserTag>	m_tag	= null;
 	private List<QUserEdu>	m_edu	= null;
 	
@@ -101,6 +104,9 @@ public class QUser{
 		m_fansNum 		= _json.getInt("Fansnum");
 		m_idolNum 		= _json.getInt("Idolnum");
 		m_weiboNum 		= _json.getInt("Tweetnum");
+		
+		m_isMyFans		= _json.getInt("Ismyfans") == 1;
+		m_hasBeenFollowed = _json.getInt("Ismyidol") == 1;
 
 		JSONArray t_tag = _json.getJSONArray("Tag");
 		if(t_tag != null){
@@ -142,11 +148,11 @@ public class QUser{
 		}
 	}
 	
-	public String getName(){
+	public String getScreenName(){
 		return m_name;
 	}
 
-	public String getNickName(){
+	public String getName(){
 		return m_nick;
 	}
 
@@ -221,6 +227,13 @@ public class QUser{
 		return m_weiboNum;
 	}
 	
+	public boolean isMyFans(){
+		return m_isMyFans;
+	}
+	
+	public boolean hasBeenFollowed(){
+		return m_hasBeenFollowed;
+	}
 
 	public List<QUserTag> getTagList(){
 		return m_tag;

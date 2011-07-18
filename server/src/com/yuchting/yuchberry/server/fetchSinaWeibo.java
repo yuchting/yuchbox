@@ -293,6 +293,35 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		m_weibo.destroyStatus(_id);
 	}
 	
+	protected fetchWeiboUser getWeiboUser(String _name)throws Exception{
+		User t_user = m_weibo.showUser(_name);
+		
+		fetchWeiboUser t_weibo = new fetchWeiboUser(fetchWeibo.SINA_WEIBO_STYLE,m_mainMgr.m_convertToSimpleChar);
+		
+		t_weibo.setId(t_user.getId());
+		
+		t_weibo.setName(t_user.getName());
+		t_weibo.setScreenName(t_user.getScreenName());
+		t_weibo.setHeadURL(t_user.getProfileImageURL().getFile());
+		t_weibo.setDesc(t_user.getDescription());
+		t_weibo.setCity(t_user.getLocation());
+		
+	
+		t_weibo.setFollowNum(t_user.getFollowersCount());
+		t_weibo.setFansNum(t_user.getFriendsCount());
+		t_weibo.setWeiboNum(t_user.getStatusesCount());
+		
+		List<Status> t_list = m_weibo.getUserTimeline(Long.toString(t_user.getId()),new Paging(0, 10));
+		for(Status s:t_list){
+			fetchWeibo weibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
+			ImportWeibo(weibo, s,fetchWeibo.TIMELINE_CLASS);
+			
+			t_weibo.getUpdatedWeibo().add(weibo);
+		}
+		
+		return t_weibo;
+	}
+	
 	public void ImportWeibo(fetchWeibo _weibo,Status _stat,byte _weiboClass){
 		
 		_weibo.SetId(_stat.getId());

@@ -406,9 +406,34 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			case msg_head.msgWeiboDelete:
 				t_processed =  ProcessWeiboDelete(in);
 				break;
+			case msg_head.msgWeiboUser:
+				t_processed = ProcessWeiboUser(in);
+				break;
 		}
 		
 		return t_processed;
+	}
+	
+	protected boolean ProcessWeiboUser(ByteArrayInputStream in){
+		int t_style = in.read();
+		if(t_style == GetCurrWeiboStyle()){
+			try{
+				fetchWeiboUser t_user = getWeiboUser(sendReceive.ReadString(in));
+				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+			
+				t_os.write(msg_head.msgWeiboUser);
+				t_user.OutputData(t_os);
+				
+				m_mainMgr.SendData(t_os.toByteArray(), true);
+				
+			}catch(Exception e){
+				m_mainMgr.m_logger.PrinterException(e);
+			}
+			
+			return true; 
+		}
+		
+		return false;
 	}
 	
 	protected synchronized void ProcessWeiboRefresh(){
@@ -568,6 +593,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	protected abstract void FavoriteWeibo(long _id)throws Exception;
 	protected abstract void FollowUser(String _screenName)throws Exception;
 	protected abstract void DeleteWeibo(long _id,boolean _isComment)throws Exception;
+	
+	protected abstract fetchWeiboUser getWeiboUser(String _name)throws Exception;
 	
 	protected boolean ProcessWeiboConfirmed(ByteArrayInputStream in)throws Exception{
 		

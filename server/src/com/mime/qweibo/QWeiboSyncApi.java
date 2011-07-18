@@ -33,6 +33,9 @@ public class QWeiboSyncApi {
 	final static String fsm_deleteMessageURL				= "http://open.t.qq.com/api/t/del";
 	final static String fsm_favoriteMessageURL				= "http://open.t.qq.com/api/fav/addt";
 	
+	final static String fsm_userInfoURL					= "http://open.t.qq.com/api/user/other_info";
+	final static String fsm_userTimelingURL				= "http://open.t.qq.com/api/statuses/user_timeline";
+	
 	OauthKey 			m_oauthKey = new OauthKey();
 	QWeiboRequest 		m_request = new QWeiboRequest();
 	
@@ -169,7 +172,7 @@ public class QWeiboSyncApi {
 			_num = 70;
 		}
 		
-		return getWeiboList(fsm_homeTimelineURL,_startTime,_num);
+		return getWeiboList(fsm_homeTimelineURL,_startTime,_num,null);
 	}
 	
 	/**
@@ -194,7 +197,7 @@ public class QWeiboSyncApi {
 			_num = 100;
 		}
 		
-		return getWeiboList(fsm_mentionMeURL,_startTime,_num);		
+		return getWeiboList(fsm_mentionMeURL,_startTime,_num,null);		
 	}
 	
 	/**
@@ -204,8 +207,28 @@ public class QWeiboSyncApi {
 	 */
 	public List<QWeibo> getMentionList()throws Exception{
 		return getMentionList(0,20);
+	}	
+
+	public List<QWeibo> getUserTimeline(String _name)throws Exception{
+		return getWeiboList(fsm_userTimelingURL,0,10,_name);
 	}
 	
+	public QUser getUserInfo(String _name)throws Exception{
+		
+		m_parameters.clear();
+		
+		m_parameters.add(new QParameter("format", "json"));
+		m_parameters.add(new QParameter("name", _name));
+		
+
+		JSONObject t_json = new JSONObject(m_request.syncRequest(fsm_userInfoURL, "GET", m_oauthKey, m_parameters, null));
+		if(t_json.getInt("ret") != 0){
+			throw new Exception("get User info error:" + t_json.toString());
+		}
+		
+		return new QUser(t_json); 
+				
+	}
 	/**
 	 *  private sub-function to get the weibo list information by url 
 	 * @param _url		
@@ -214,17 +237,22 @@ public class QWeiboSyncApi {
 	 * @return
 	 * @throws Exception
 	 */
-	private List<QWeibo> getWeiboList(String _url,long _time,int _num)throws Exception{
+	private List<QWeibo> getWeiboList(String _url,long _time,int _num,String _userName)throws Exception{
 						
 		m_parameters.clear();
 		m_parameters.add(new QParameter("format", "json"));
 		m_parameters.add(new QParameter("pageflag", String.valueOf(0)));
 		m_parameters.add(new QParameter("reqnum", Integer.toString(_num)));
-		m_parameters.add(new QParameter("PageTime", Long.toString(_time / 1000))); //to convert GMT time
+		m_parameters.add(new QParameter("pageTime", Long.toString(_time / 1000))); //to convert GMT time
+		
+		if(_userName != null){
+			m_parameters.add(new QParameter("name", _userName));
+		}
 		
 		return QWeibo.getWeiboList(new JSONObject(m_request.syncRequest(_url, "GET", 
 																	m_oauthKey, m_parameters, null)));
 	}
+	
 	
 	/**
 	 *  publish a message 
