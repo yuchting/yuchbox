@@ -10,9 +10,11 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -1209,16 +1211,41 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			
 			StringBuffer t_result = new StringBuffer();
 			t_result.append("<table border=\"1\">");	
-			t_result.append("<tr><td>时间</td><td>激活用户数</td><td>同步用户数</td><td>付费用户数</td><td>收入</td></tr>");
-			
-			Object[] t_keys = t_statList.keySet().toArray();
-			Object[] t_values = t_statList.values().toArray();
+			t_result.append("<tr><td>时间</td><td>激活用户</td><td>同步用户</td><td>付费用户</td><td>收入</td></tr>");
+						
+			//Object[] t_keys = t_statList.keySet().toArray();
+			//Object[] t_values = t_statList.values().toArray();
 			SimpleDateFormat t_timeFormat = new SimpleDateFormat("yyyy-MM-dd");
 		
+			List t_arrayList = new ArrayList(t_statList.entrySet());
+					
+			Collections.sort(t_arrayList, new Comparator(){ 
+				public   int   compare(Object o1, Object o2){
+					Map.Entry   obj1   =   (Map.Entry)   o1; 
+					Map.Entry   obj2   =   (Map.Entry)   o2; 
+					long a = ((Long)obj1.getKey()).longValue();
+					long b = ((Long)obj2.getKey()).longValue();
+					if(a < b){
+						return -1;
+					}else if(a > b){
+						return 1;
+					}else{
+						return 0;
+					}
+				}
+			});
 			
-			for(int i = 0;i < t_keys.length;i++){
-				Long time = (Long)t_keys[i];
-				List<yuchbber> list = (List<yuchbber>)t_values[i];
+			
+			for(Iterator iter = t_arrayList.iterator(); iter.hasNext();){ 
+				Map.Entry   entry   =   (Map.Entry)   iter.next();
+			
+//			for(int i = 0;i < t_keys.length;i++){
+//				
+//				Long time = (Long)t_keys[i];
+//				List<yuchbber> list = (List<yuchbber>)t_values[i];
+				
+				Long time = (Long)entry.getKey();
+				List<yuchbber> list = (List<yuchbber>)entry.getValue();
 				
 				int syncNum = 0;
 				int payNum = 0;
@@ -1245,7 +1272,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			}
 			
 			t_result.append("<tr><td>")
-					.append("").append("</td><td>")
+					.append("总计").append("</td><td>")
 					.append(t_activateNum).append("</td><td>")
 					.append(t_syncNum).append("</td><td>")
 					.append(t_payNum).append("</td><td>")

@@ -569,7 +569,7 @@ public class YuchPanel extends TabPanel{
 				
 				try{
 					
-					Yuchsign.PopupWaiting("正在获取统计信息……", YuchPanel.this);
+					Yuchsign.PopupWaiting("正在获取统计信息…", YuchPanel.this);
 					
 					long t_start = 0;
 					if(t_startdateBox.getValue() != null){
