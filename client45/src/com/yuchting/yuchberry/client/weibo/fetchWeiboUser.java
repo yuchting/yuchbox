@@ -16,11 +16,11 @@ public class fetchWeiboUser {
 	long	m_id = 0;
 	String m_name = "";
 	String m_screenName = "";
-	String m_headURL = "";
 	String m_city = "";
 	
 	String m_desc = "";
 	boolean m_isVerified = false;
+	boolean m_isBBer		= false;
 	boolean m_hasBeenFollowed = false;
 	boolean m_isMyFans = false;
 	
@@ -29,11 +29,8 @@ public class fetchWeiboUser {
 	
 	int m_weiboNum = 0;	
 	
+	byte[] m_headImage = null;
 	Vector	m_updateWeibo = new Vector();
-			
-	public fetchWeiboUser(byte _style){
-		m_weiboUserStyle = _style;
-	}	
 	
 	public long getId(){return m_id;}
 	public void setId(long _id){m_id = _id;}
@@ -50,8 +47,8 @@ public class fetchWeiboUser {
 	public String getScreenName(){return m_screenName;}
 	public void setScreenName(String _screenName){m_screenName = _screenName;}
 	
-	public String getHeadURL(){return m_headURL;}
-	public void setHeadURL(String _URL){m_headURL = _URL;}
+	public byte[] getHeadImage(){return m_headImage;}
+	public void setHeadImage(byte[] _image){m_headImage = _image;}
 	
 	public String getCity(){return m_city;}
 	public void setCity(String _city){m_city = _city;}
@@ -61,6 +58,9 @@ public class fetchWeiboUser {
 	
 	public boolean isVerified(){return m_isVerified;}
 	public void setVerified(boolean _verified){m_isVerified = _verified;}
+	
+	public boolean isBber(){return m_isBBer;}
+	public void setIsBber(boolean _isBber){m_isBBer = _isBber;}
 	
 	public boolean hasBeenFollowed(){return m_hasBeenFollowed;}
 	public void setHasBeenFollowed(boolean _followed){m_hasBeenFollowed = _followed;}
@@ -88,11 +88,11 @@ public class fetchWeiboUser {
 		m_id				= sendReceive.ReadLong(in);
 		m_name				= sendReceive.ReadString(in);
 		m_screenName		= sendReceive.ReadString(in);
-		m_headURL			= sendReceive.ReadString(in);
 		m_city				= sendReceive.ReadString(in);
 		
 		m_desc				= sendReceive.ReadString(in);
 		m_isVerified		= sendReceive.ReadBoolean(in);
+		m_isBBer			= sendReceive.ReadBoolean(in);
 		m_hasBeenFollowed	= sendReceive.ReadBoolean(in);
 		m_isMyFans			= sendReceive.ReadBoolean(in);
 		
@@ -107,6 +107,14 @@ public class fetchWeiboUser {
 			
 			m_updateWeibo.addElement(t_weibo);			
 		}
+		
+		t_appendWeiboNum = sendReceive.ReadInt(in);
+		if(t_appendWeiboNum != 0){
+			m_headImage = new byte[t_appendWeiboNum];
+			sendReceive.ForceReadByte(in, m_headImage, t_appendWeiboNum);
+		}else{
+			m_headImage = null;
+		}
 	}
 	
 	public void OutputData(OutputStream os)throws Exception{
@@ -118,11 +126,11 @@ public class fetchWeiboUser {
 		sendReceive.WriteLong(os,m_id);
 		sendReceive.WriteString(os,m_name);
 		sendReceive.WriteString(os,m_screenName);
-		sendReceive.WriteString(os,m_headURL);
 		sendReceive.WriteString(os,m_city);
 		
 		sendReceive.WriteString(os,m_desc);
 		sendReceive.WriteBoolean(os, m_isVerified);
+		sendReceive.WriteBoolean(os,m_isBBer);
 		sendReceive.WriteBoolean(os,m_hasBeenFollowed);
 		sendReceive.WriteBoolean(os, m_isMyFans);
 		
@@ -136,5 +144,13 @@ public class fetchWeiboUser {
 			
 			t_weibo.OutputWeibo(os);
 		}
+		
+		if(m_headImage != null){
+			sendReceive.WriteInt(os,m_headImage.length);
+			os.write(m_headImage);
+		}else{
+			sendReceive.WriteInt(os,0);
+		}
+		
 	}
 }

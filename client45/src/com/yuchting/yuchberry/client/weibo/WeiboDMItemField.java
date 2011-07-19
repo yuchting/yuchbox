@@ -272,7 +272,7 @@ public class WeiboDMItemField extends WeiboItemField{
 				int t_sign_x = data.m_weibo.IsOwnWeibo()?(fsm_textWidth + fsm_headImageTextInterval):0;
 				
 				_g.drawBitmap(t_sign_x,m_textHeight,fsm_weiboSignImageSize, fsm_weiboSignImageSize, 
-						weiboTimeLineScreen.GetWeiboSign(data.m_weibo), 0, 0);
+						weiboTimeLineScreen.GetWeiboSign(data.m_weibo.GetWeiboStyle()), 0, 0);
 			
 				_g.drawBitmap(t_sign_x, m_textHeight + fsm_weiboSignImageSize + fsm_headImageTextInterval, 
 							fsm_headImageWidth, fsm_headImageWidth,data.m_headImage.m_headImage,0,0);

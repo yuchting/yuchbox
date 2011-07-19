@@ -1140,8 +1140,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 		break;
 		 	case msg_head.msgWeiboUser:
 		 		if(m_mainApp.m_weiboTimeLineScreen != null){
-		 			int t_style = in.read();
-		 			fetchWeiboUser t_user = new fetchWeiboUser((byte)t_style);
+		 			fetchWeiboUser t_user = new fetchWeiboUser();
 		 			t_user.InputData(in);
 		 			m_mainApp.m_weiboTimeLineScreen.displayWeiboUser(t_user);
 		 		}

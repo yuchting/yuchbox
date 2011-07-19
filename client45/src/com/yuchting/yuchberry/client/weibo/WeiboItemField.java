@@ -545,7 +545,7 @@ public class WeiboItemField extends Manager{
 				int t_textStart_y = WeiboItemField.sm_commentFirst?m_commentText_height : 0;
 				
 				_g.drawBitmap(0, t_textStart_y, fsm_weiboSignImageSize, fsm_weiboSignImageSize, 
-							weiboTimeLineScreen.GetWeiboSign(m_weibo), 0, 0);
+							weiboTimeLineScreen.GetWeiboSign(m_weibo.GetWeiboStyle()), 0, 0);
 				
 				displayHeadImage(_g,0, t_textStart_y + fsm_weiboSignImageSize + fsm_headImageTextInterval,true);
 							
@@ -555,7 +555,7 @@ public class WeiboItemField extends Manager{
 				//
 				if(m_weibo.IsSinaVIP()){
 					_g.drawBitmap(t_startSign_x,t_textStart_y,fsm_weiboVIPImageSize, fsm_weiboVIPImageSize, 
-							weiboTimeLineScreen.GetVIPSignBitmap(m_weibo), 0, 0);
+							weiboTimeLineScreen.GetVIPSignBitmap(m_weibo.GetWeiboStyle()), 0, 0);
 					
 					t_startSign_x += fsm_weiboVIPImageSize;
 	
@@ -665,7 +665,7 @@ public class WeiboItemField extends Manager{
 			// weibo sign 
 			//
 			_g.drawBitmap(t_leadingSpace, t_firstLineHeight, fsm_weiboSignImageSize, fsm_weiboSignImageSize, 
-						weiboTimeLineScreen.GetWeiboSign(m_weibo), 0, 0);
+						weiboTimeLineScreen.GetWeiboSign(m_weibo.GetWeiboStyle()), 0, 0);
 			
 			if(m_absTextAreaAdded){
 				
@@ -687,7 +687,7 @@ public class WeiboItemField extends Manager{
 				//
 				if(m_weibo.IsSinaVIP()){
 					_g.drawBitmap(fsm_weiboSignImageSize + t_leadingSpace ,t_leadingSpace, fsm_weiboVIPImageSize, fsm_weiboVIPImageSize, 
-							weiboTimeLineScreen.GetVIPSignBitmap(m_weibo), 0, 0);
+							weiboTimeLineScreen.GetVIPSignBitmap(m_weibo.GetWeiboStyle()), 0, 0);
 				}	
 				
 			}else{
@@ -729,7 +729,7 @@ public class WeiboItemField extends Manager{
 				//
 				if(m_weibo.IsSinaVIP()){
 					_g.drawBitmap(t_nameLength + t_leadingSpace, t_firstLineHeight, fsm_weiboVIPImageSize, fsm_weiboVIPImageSize, 
-							weiboTimeLineScreen.GetVIPSignBitmap(m_weibo), 0, 0);
+							weiboTimeLineScreen.GetVIPSignBitmap(m_weibo.GetWeiboStyle()), 0, 0);
 					
 					t_nameLength += fsm_weiboVIPImageSize;
 
