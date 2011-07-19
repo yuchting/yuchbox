@@ -741,6 +741,52 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	
 	static public final long	sm_startTime = (new Date()).getTime();
 	
+	protected byte[] DownloadHeadImage(URL _url,String _id){
+		
+		try{
+			
+			File t_file = new File(GetHeadImageFilename_l(_id));
+			if(t_file.exists()){
+				
+				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+				
+				BufferedInputStream t_read = new BufferedInputStream(new FileInputStream(t_file));
+				try{
+					int size = 0;
+			        while((size = t_read.read(m_headImageBuffer))!= -1){
+			        	t_os.write(m_headImageBuffer,0,size);
+			        }        
+			     	
+				}finally{
+					t_read.close();
+					t_read = null;
+				}			
+		        	        
+		        return t_os.toByteArray();
+			}
+			
+			URLConnection t_connect = _url.openConnection();
+	               
+	        BufferedInputStream t_read = new BufferedInputStream(t_connect.getInputStream()); 
+	   		try{
+	   			ByteArrayOutputStream fos = new ByteArrayOutputStream();
+	   			int size = 0;
+		        while((size = t_read.read(m_headImageBuffer))!= -1){
+		        	fos.write(m_headImageBuffer,0,size);
+		        }
+		    
+		        return fos.toByteArray();
+		        
+	   		}finally{
+	   			t_read.close();
+	   			t_read = null;
+	   		}
+	   		
+		}catch(Exception e){
+			
+			return null;
+		}
+	}
 	protected int StoreHeadImage(URL _url,String _id){
 		
 		final String t_filename 		= GetHeadImageFilename(_id);
@@ -778,7 +824,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		        	}
 		        }
 		        
-		        BufferedInputStream t_read = new   BufferedInputStream(t_connect.getInputStream()); 
+		        BufferedInputStream t_read = new BufferedInputStream(t_connect.getInputStream()); 
 		   		try{
 		   			FileOutputStream fos = new FileOutputStream(t_file_l);
 		   			int size = 0;

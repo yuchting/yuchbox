@@ -162,13 +162,14 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	protected fetchWeiboUser getWeiboUser(String _name)throws Exception{
 		QUser t_user = m_api.getUserInfo(_name);
 		
-		fetchWeiboUser t_weibo = new fetchWeiboUser(fetchWeibo.QQ_WEIBO_STYLE,m_mainMgr.m_convertToSimpleChar);
+		fetchWeiboUser t_weibo = new fetchWeiboUser(m_mainMgr.m_convertToSimpleChar);
 		
+		t_weibo.setStyle(fetchWeibo.QQ_WEIBO_STYLE);
 		t_weibo.setId(0);
 		
 		t_weibo.setName(t_user.getName());
 		t_weibo.setScreenName(t_user.getScreenName());
-		t_weibo.setHeadURL(t_user.getHeadImageURL());
+		t_weibo.setHeadImage(DownloadHeadImage(new URL(t_user.getHeadImageURL()),t_user.getName()));
 		t_weibo.setDesc(t_user.getIntroduction());
 		t_weibo.setCity(t_user.getLocation());
 		t_weibo.setVerified(t_user.isVerified());

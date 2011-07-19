@@ -1,5 +1,6 @@
 package com.mime.qweibo;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -218,7 +219,7 @@ public class QWeiboSyncApi {
 		m_parameters.clear();
 		
 		m_parameters.add(new QParameter("format", "json"));
-		m_parameters.add(new QParameter("name", _name));
+		m_parameters.add(new QParameter("name",URLEncoder.encode(_name,"UTF-8")));
 		
 
 		JSONObject t_json = new JSONObject(m_request.syncRequest(fsm_userInfoURL, "GET", m_oauthKey, m_parameters, null));

@@ -296,13 +296,14 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	protected fetchWeiboUser getWeiboUser(String _name)throws Exception{
 		User t_user = m_weibo.showUser(_name);
 		
-		fetchWeiboUser t_weibo = new fetchWeiboUser(fetchWeibo.SINA_WEIBO_STYLE,m_mainMgr.m_convertToSimpleChar);
+		fetchWeiboUser t_weibo = new fetchWeiboUser(m_mainMgr.m_convertToSimpleChar);
 		
+		t_weibo.setStyle(fetchWeibo.SINA_WEIBO_STYLE);
 		t_weibo.setId(t_user.getId());
 		
 		t_weibo.setName(t_user.getName());
 		t_weibo.setScreenName(t_user.getScreenName());
-		t_weibo.setHeadURL(t_user.getProfileImageURL().getFile());
+		t_weibo.setHeadImage(DownloadHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));
 		t_weibo.setDesc(t_user.getDescription());
 		t_weibo.setCity(t_user.getLocation());
 		
@@ -311,7 +312,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		t_weibo.setFansNum(t_user.getFriendsCount());
 		t_weibo.setWeiboNum(t_user.getStatusesCount());
 		
-		List<Status> t_list = m_weibo.getUserTimeline(Long.toString(t_user.getId()),new Paging(0, 10));
+		List<Status> t_list = m_weibo.getUserTimeline(Long.toString(t_user.getId()),new Paging(1, 10));
 		for(Status s:t_list){
 			fetchWeibo weibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
 			ImportWeibo(weibo, s,fetchWeibo.TIMELINE_CLASS);
@@ -462,7 +463,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		t_weibo.m_secretToken = "7529265879f3c97af609c694064bbc59";
 		
 		t_weibo.ResetSession(true);
-		User t_user = t_weibo.m_weibo.showUser("1894359415");
+		User t_user = t_weibo.m_weibo.showUser("国歆");
 				
 		System.out.print( t_weibo.StoreHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));
 	}

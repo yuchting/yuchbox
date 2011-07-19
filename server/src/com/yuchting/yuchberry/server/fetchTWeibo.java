@@ -230,13 +230,14 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	protected fetchWeiboUser getWeiboUser(String _name)throws Exception{
 		User t_user = m_twitter.showUser(_name);
 		
-		fetchWeiboUser t_weibo = new fetchWeiboUser(fetchWeibo.TWITTER_WEIBO_STYLE,m_mainMgr.m_convertToSimpleChar);
+		fetchWeiboUser t_weibo = new fetchWeiboUser(m_mainMgr.m_convertToSimpleChar);
 		
+		t_weibo.setStyle(fetchWeibo.TWITTER_WEIBO_STYLE);
 		t_weibo.setId(t_user.getId());
 		
 		t_weibo.setName(t_user.getName());
 		t_weibo.setScreenName(t_user.getScreenName());
-		t_weibo.setHeadURL(t_user.getProfileImageURL().getFile());
+		t_weibo.setHeadImage(DownloadHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));
 		t_weibo.setDesc(t_user.getDescription());
 		t_weibo.setCity(t_user.getLocation());
 		
@@ -247,7 +248,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		t_weibo.setFansNum(t_user.getFriendsCount());
 		t_weibo.setWeiboNum(t_user.getStatusesCount());
 		
-		List<Status> t_list = m_twitter.getUserListStatuses(t_user.getId(), 0, new Paging(0,10));
+		List<Status> t_list = m_twitter.getUserListStatuses(t_user.getId(), 0, new Paging(1,10));
 		for(Status s:t_list){
 			fetchWeibo weibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
 			ImportWeibo(weibo, s,fetchWeibo.TIMELINE_CLASS);

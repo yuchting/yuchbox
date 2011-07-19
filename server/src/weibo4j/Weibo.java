@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package weibo4j;
 
 import java.io.File;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import org.omg.Dynamic.Parameter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -1540,18 +1542,28 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
      * Returns extended information of a given user, specified by ID or screen name as per the required id parameter below.  This information includes design settings, so third party developers can theme their widgets according to a given user's preferences.
      * <br>This method calls http://api.t.sina.com.cn/users/show.format
      *
-     * @param id the ID or screen name of the user for whom to request the detail
+     * @param id the or screen name of the user for whom to request the detail
      * @return User
      * @throws WeiboException when Weibo service or network is unavailable
      * @see <a href="http://open.t.sina.com.cn/wiki/index.php/Users/show">users/show </a>
      * @since Weibo4J 1.1220
      */
-    public User showUser(String id) throws WeiboException {
+    public User showUser(String screenName) throws WeiboException {
        /* return new User(get(getBaseURL() + "users/show/" + id + ".xml"
                 , http.isAuthenticationEnabled()), this);*/
-    	 return new User(get(getBaseURL() + "users/show/" + id + ".json"
-                 , http.isAuthenticationEnabled()).asJSONObject());
+    	
+    	return new User(get(getBaseURL() + "users/show.json",
+    			new PostParameter[]{new PostParameter("screen_name", screenName)},
+    			http.isAuthenticationEnabled()).asJSONObject());
     }
+    
+    public User showUser(long id) throws WeiboException {
+        /* return new User(get(getBaseURL() + "users/show/" + id + ".xml"
+                 , http.isAuthenticationEnabled()), this);*/
+     	
+     	return new User(get(getBaseURL() + "users/show/"+id+".json",
+     			http.isAuthenticationEnabled()).asJSONObject());
+     }
 
     /**
      * Returns System hot user
