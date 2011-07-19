@@ -383,7 +383,12 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						return "<Error>所有的主机用户已经满员！</Error>";
 						
 					}catch(Exception e){
-						return "<Error>请求主机URL时出错:" + e.getMessage() + "</Error>";
+						
+						if(e.getMessage() != null && e.getMessage().startsWith("Timeout while fetching")){
+							return "<Error>请求主机URL时出错，中间链接质量不好，请稍候重试。</Error>";
+						}else{
+							return "<Error>请求主机URL时出错:" + e.getMessage() + "</Error>";
+						}
 					}
 			        
 										
