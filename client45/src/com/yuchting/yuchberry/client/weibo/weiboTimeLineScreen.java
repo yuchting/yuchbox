@@ -1063,18 +1063,18 @@ public class weiboTimeLineScreen extends MainScreen{
     		m_userInfoScreen = new WeiboUserInfoScreen(m_mainApp);
     	}
     	
-    	if(m_mainApp.getActiveScreen() != m_userInfoScreen){
-    		
-    		m_mainApp.invokeLater(new Runnable() {
-				public void run() {
-					
-					m_userInfoScreen.setWeiboUser(_user);
-					
+    	m_mainApp.invokeLater(new Runnable() {
+			public void run() {
+				
+		    	m_userInfoScreen.setWeiboUser(_user);
+		    	
+		    	if(m_mainApp.getActiveScreen() != m_userInfoScreen){
+	    			
 					m_mainApp.pushScreen(m_userInfoScreen);
 					m_userInfoScreen.updateDisplay();
-				}
-			});    		
-    	}
+				}   		
+	    	}				
+    	}); 
     }	
 	
 	private void SendRefreshMsg(){

@@ -15,8 +15,12 @@ import java.net.URLConnection;
 import java.security.KeyStore;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -98,11 +102,28 @@ public class HelloWorld {
 		t_statList.put(new Long(13),new Long(4));
 		t_statList.put(new Long(12),new Long(5));
 		
-		Object[] t_key = t_statList.keySet().toArray();
-		Object[] t_value = t_statList.values().toArray();
+
+		List t_arrayList = new ArrayList(t_statList.entrySet());
 		
-		for(int i = 0;i < t_key.length;i++){
-			System.out.println(t_key[i] + ":" + t_value[i]);
+		Collections.sort(t_arrayList, new Comparator(){ 
+			public   int   compare(Object o1, Object o2){
+				Map.Entry   obj1   =   (Map.Entry)   o1; 
+				Map.Entry   obj2   =   (Map.Entry)   o2; 
+				long a = ((Long)obj1.getKey()).longValue();
+				long b = ((Long)obj2.getKey()).longValue();
+				if(a < b){
+					return -1;
+				}else if(a > b){
+					return 1;
+				}else{
+					return 0;
+				}
+			}
+		});
+		for(Iterator iter = t_arrayList.iterator();iter.hasNext();){ 
+			Map.Entry   entry   =   (Map.Entry)   iter.next(); 
+			
+			System.out.println(entry.getKey() + ":" + entry.getValue());
 		}
 		
 	}

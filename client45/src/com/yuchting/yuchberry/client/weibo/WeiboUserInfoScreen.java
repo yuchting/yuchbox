@@ -42,7 +42,7 @@ public class WeiboUserInfoScreen extends MainScreen{
 		private int		m_infoFieldHeight = 15;
 		
 		public InfoField(){
-			super(Field.NON_FOCUSABLE);
+			super(Field.FOCUSABLE);
 		}
 		
 		public int getPreferredHeight(){
@@ -108,7 +108,7 @@ public class WeiboUserInfoScreen extends MainScreen{
 				t_start_x += ft_interval;
 				t_start_y += 2;
 				
-				_g.setColor(0xa0a0a0);
+				_g.setColor(0x606060);
 				
 				if(m_weiboUser.getName().equals(m_weiboUser.getScreenName())){
 					_g.drawText(m_weiboUser.getName() , t_start_x,t_start_y);
@@ -138,7 +138,6 @@ public class WeiboUserInfoScreen extends MainScreen{
 					}
 				} finally {
 					_g.popContext();
-					_g.setColor(t_color);
 				}
 				
 				t_start_y += m_descText.getHeight() + ft_interval * 3;
@@ -248,10 +247,9 @@ public class WeiboUserInfoScreen extends MainScreen{
 					}
 				}
 				
-				m_weiboMgr.setCurrEditItem(null);
-				m_weiboMgr.setCurrExtendedItem(null);
-				m_weiboMgr.setCurrSelectedItem(null);
-				
+				m_weiboMgr.EscapeKey();
+				m_weiboMgr.EscapeKey();
+								
 				m_weiboMgr.deleteAll();
 				
 				WeiboHeadImage t_headImage = new WeiboHeadImage();
@@ -270,10 +268,23 @@ public class WeiboUserInfoScreen extends MainScreen{
 				// to rise the layout calling
 				//
 				replace(m_infoField,m_nullField);
-				replace(m_nullField,m_infoField);				
+				replace(m_nullField,m_infoField);
+				
+				m_infoField.setFocus();
 			}
 		}
 	}
 	
-	
+	public boolean onClose(){
+		
+		if(!m_weiboMgr.EscapeKey()){
+			super.onClose();
+		}
+		
+		return false;
+	}
+
+	protected boolean navigationClick(int status, int time){
+		return m_weiboMgr.Clicked(status,time);
+	}
 }

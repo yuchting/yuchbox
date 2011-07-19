@@ -244,8 +244,8 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		t_weibo.setIsMyFans(t_user.isContributorsEnabled());
 		t_weibo.setHasBeenFollowed(t_user.isFollowRequestSent());
 		
-		t_weibo.setFollowNum(t_user.getFollowersCount());
-		t_weibo.setFansNum(t_user.getFriendsCount());
+		t_weibo.setFollowNum(t_user.getFriendsCount());
+		t_weibo.setFansNum(t_user.getFollowersCount());
 		t_weibo.setWeiboNum(t_user.getStatusesCount());
 		
 		List<Status> t_list = m_twitter.getUserListStatuses(t_user.getId(), 0, new Paging(1,10));

@@ -308,8 +308,8 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		t_weibo.setCity(t_user.getLocation());
 		
 	
-		t_weibo.setFollowNum(t_user.getFollowersCount());
-		t_weibo.setFansNum(t_user.getFriendsCount());
+		t_weibo.setFollowNum(t_user.getFriendsCount());
+		t_weibo.setFansNum(t_user.getFollowersCount());
 		t_weibo.setWeiboNum(t_user.getStatusesCount());
 		
 		List<Status> t_list = m_weibo.getUserTimeline(Long.toString(t_user.getId()),new Paging(1, 10));

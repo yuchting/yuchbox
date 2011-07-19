@@ -1073,7 +1073,7 @@ public class connectDeamon extends Thread implements SendListener,
 			 }
 			 
 			 if(t_append.length() != 0){
-				 m_mainApp.SetErrorString("CM Field: " + t_append);
+				 m_mainApp.SetErrorString("CM Failed: " + t_append);
 			 }
 			 
 			 throw _e;
