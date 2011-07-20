@@ -13,13 +13,13 @@ public class WeiboTextField extends ActiveRichTextField{
 	int[]		m_background = 
 	{
 		0xffffff,
-		0xffffff
+		0xffffff,
 	};
 	
 	int[]		m_foreground = 
 	{
 		0,
-		0
+		0x21bee7,
 	};
 		
 	static Font[]		sm_fontList = 
@@ -32,7 +32,7 @@ public class WeiboTextField extends ActiveRichTextField{
 	public WeiboTextField(int _foreground,int _background){
 		super("",Field.READONLY | Field.FOCUSABLE | SCANFLAG_THREAD_ON_CREATE);
 		
-		Arrays.fill(m_foreground,_foreground);
+		m_foreground[0] = _foreground;
 		Arrays.fill(m_background,_background);
 	}
 	
@@ -101,7 +101,7 @@ public class WeiboTextField extends ActiveRichTextField{
 				}
 				
 				m_bufferedAttr[t_attrIndex] = 1;
-				
+
 				t_index++;
 				m_bufferedOffset[t_offsetIndex] = t_index;
 				

@@ -1,7 +1,10 @@
 package com.yuchting.yuchberry.client.weibo;
 
 import local.localResource;
+import net.rim.device.api.io.IOUtilities;
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Characters;
+import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
@@ -17,25 +20,73 @@ import com.yuchting.yuchberry.client.recvMain;
 
 
 public class WeiboMainManager extends VerticalFieldManager implements FieldChangeListener{
-		
+	
+	public static Bitmap[]	sm_controlButImage = {	null,null,null,null};
+	public static Bitmap[]	sm_controlButImage_focus = {null,null,null,null};
+	
+	private static String[]	sm_controlButImageString = 
+	{
+		"/weibo/forward_comment_button.png",
+		"/weibo/at_reply_button.png",
+		"/weibo/favorite_button.png",
+		"/weibo/picture_button.png",
+	};
+	private static String[]	sm_controlButImageString_focus = 
+	{
+		"/weibo/forward_comment_button_focus.png",
+		"/weibo/at_reply_button_focus.png",
+		"/weibo/favorite_button_focus.png",
+		"/weibo/picture_button_focus.png",
+	};
+	
+	static{
+		try{
+			for(int i = 0;i < sm_controlButImage.length;i++){
+				byte[] bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream(sm_controlButImageString[i]));		
+				sm_controlButImage[i] =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
+				
+				bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream(sm_controlButImageString_focus[i]));		
+				sm_controlButImage_focus[i] =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
+			}			
+		}catch(Exception e){
+			weiboTimeLineScreen.sm_mainApp.DialogAlertAndExit("inner load error:" + e.getMessage());
+		}
+	}
+	
+	public static final int		fsm_controlButtonHeight = sm_controlButImage[0].getHeight();
+	
+	public static final int[]		fsm_controlButtonWidth = 
+	{
+		sm_controlButImage[0].getWidth(),
+		sm_controlButImage[1].getWidth(),
+		sm_controlButImage[2].getWidth(),
+		sm_controlButImage[3].getWidth(),
+	};
+	
+	public static int		sm_forwardBut_x				= 3;
+	public static int		sm_atBut_x					= sm_forwardBut_x + fsm_controlButtonWidth[0] + WeiboItemField.fsm_headImageTextInterval;
+	public static int		sm_favoriteBut_x			= sm_atBut_x + fsm_controlButtonWidth[1] + WeiboItemField.fsm_headImageTextInterval;
+	public static int		sm_picBut_x					= sm_favoriteBut_x + fsm_controlButtonWidth[2] + WeiboItemField.fsm_headImageTextInterval;
+	
+	
 	public WeiboButton	 m_forwardBut			= 
 		new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL),
-				weiboTimeLineScreen.sm_controlButImage[0],weiboTimeLineScreen.sm_controlButImage_focus[0]);
+				sm_controlButImage[0],sm_controlButImage_focus[0]);
 	
 	public WeiboButton	 m_atBut				= 
 		new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL),
-				weiboTimeLineScreen.sm_controlButImage[1],weiboTimeLineScreen.sm_controlButImage_focus[1]);
+				sm_controlButImage[1],sm_controlButImage_focus[1]);
 	
 	public WeiboButton	 m_favoriteBut			= 
 		new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL),
-				weiboTimeLineScreen.sm_controlButImage[2],weiboTimeLineScreen.sm_controlButImage_focus[2]);
+				sm_controlButImage[2],sm_controlButImage_focus[2]);
 	
 	public WeiboButton	 m_picBut				= 
 		new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL),
-				weiboTimeLineScreen.sm_controlButImage[3],weiboTimeLineScreen.sm_controlButImage_focus[3]);
+				sm_controlButImage[3],sm_controlButImage_focus[3]);
 
-	public WeiboTextField 	m_textArea				= new WeiboTextField(0,0xffffff);
-	public WeiboTextField	m_commentTextArea		= new WeiboTextField(0,WeiboItemField.fsm_weiboCommentBGColor);
+	public WeiboTextField 	m_textArea				= new WeiboTextField(0,WeiboItemField.fsm_darkColor);
+	public WeiboTextField	m_commentTextArea		= new WeiboTextField(WeiboItemField.fsm_weiboCommentFGColor,WeiboItemField.fsm_weiboCommentBGColor);
 	
 	public int					m_currentSendType		= 0;
 	

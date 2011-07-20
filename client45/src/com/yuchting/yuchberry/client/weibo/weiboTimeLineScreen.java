@@ -47,47 +47,7 @@ abstract class WeiboUserMenu extends MenuItem{
 
 public class weiboTimeLineScreen extends MainScreen{
 	
-	public static Bitmap[]	sm_controlButImage = {	null,null,null,null};
-	public static Bitmap[]	sm_controlButImage_focus = {null,null,null,null};
 	
-	private static String[]	sm_controlButImageString = 
-	{
-		"/weibo/forward_comment_button.png",
-		"/weibo/at_reply_button.png",
-		"/weibo/favorite_button.png",
-		"/weibo/picture_button.png",
-	};
-	private static String[]	sm_controlButImageString_focus = 
-	{
-		"/weibo/forward_comment_button_focus.png",
-		"/weibo/at_reply_button_focus.png",
-		"/weibo/favorite_button_focus.png",
-		"/weibo/picture_button_focus.png",
-	};
-	
-	static{
-		try{
-			for(int i = 0;i < sm_controlButImage.length;i++){
-				byte[] bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream(sm_controlButImageString[i]));		
-				sm_controlButImage[i] =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
-				
-				bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream(sm_controlButImageString_focus[i]));		
-				sm_controlButImage_focus[i] =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
-			}			
-		}catch(Exception e){
-			weiboTimeLineScreen.sm_mainApp.DialogAlertAndExit("inner load error:" + e.getMessage());
-		}
-	}
-	
-	public static final int		fsm_controlButtonHeight = sm_controlButImage[0].getHeight();
-	
-	public static final int[]		fsm_controlButtonWidth = 
-	{
-		sm_controlButImage[0].getWidth(),
-		sm_controlButImage[1].getWidth(),
-		sm_controlButImage[2].getWidth(),
-		sm_controlButImage[3].getWidth(),
-	};
 	
 	
 	public WeiboUserMenu m_userGetInfoMenu = new WeiboUserMenu(localResource.WEIBO_CHECK_USER_MENU_LABEL,5,5){

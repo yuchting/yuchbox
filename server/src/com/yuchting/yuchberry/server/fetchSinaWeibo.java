@@ -365,7 +365,6 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 				if(_stat.getCommentStatus() != null){
 	
 					fetchWeibo t_replayWeibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
-					
 					ImportWeibo(t_replayWeibo,_stat.getCommentStatus(),_weiboClass);
 					
 					_weibo.SetCommectWeiboId(t_replayWeibo.GetId());
@@ -414,8 +413,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 				
 		User t_user = _comment.getUser();
 		
-		if(t_user != null){
-			
+		if(t_user != null){	
 			_weibo.SetOwnWeibo(t_user.getId() == m_userself.getId());
 			_weibo.SetUserId(t_user.getId());
 			_weibo.SetUserName(t_user.getName());
@@ -429,9 +427,19 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 				
 				fetchWeibo t_replayWeibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
 				ImportWeibo(t_replayWeibo,_comment.getOriginalStatus(),fetchWeibo.TIMELINE_CLASS);
+								
+				_weibo.SetReplyWeiboId(t_replayWeibo.GetId());
+				_weibo.SetReplyWeibo(t_replayWeibo);
 				
-				_weibo.SetCommectWeiboId(t_replayWeibo.GetId());
-				_weibo.SetCommectWeibo(t_replayWeibo);
+				if(_comment.getReplyCommentStates() != null){
+					
+					fetchWeibo t_commnetWeibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
+					ImportWeibo(t_commnetWeibo,_comment.getReplyCommentStates(),fetchWeibo.TIMELINE_CLASS);
+					
+					_weibo.SetCommectWeiboId(t_commnetWeibo.GetId());
+					_weibo.SetCommectWeibo(t_commnetWeibo);
+				}
+				
 			}
 		
 		}catch(Exception e){

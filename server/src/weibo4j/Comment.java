@@ -40,6 +40,10 @@ public class Comment extends WeiboResponse implements java.io.Serializable {
     public Status getOriginalStatus(){
     	return m_origStatus;
     }
+    private Status m_replyCommentStatus = null;
+    public Status getReplyCommentStates(){
+    	return m_replyCommentStatus;
+    }
 
     
     /*package*/Comment(Response res, Weibo weibo) throws WeiboException {
@@ -58,12 +62,17 @@ public class Comment extends WeiboResponse implements java.io.Serializable {
 			source = json.getString("source");
 			createdAt = parseDate(json.getString("created_at"), "EEE MMM dd HH:mm:ss z yyyy");
 
-			if(!json.isNull("user"))
+			if(!json.isNull("user")){
 				user = new User(json.getJSONObject("user"));
+			}
 			
 			//! yuchberry modify
 			if(!json.isNull("status")){
 				m_origStatus = new Status(json.getJSONObject("status")); 
+			}
+			
+			if(!json.isNull("reply_comment")){
+				m_replyCommentStatus = new Status(json.getJSONObject("reply_comment"));
 			}
 			
 		} catch (JSONException je) {
@@ -77,14 +86,18 @@ public class Comment extends WeiboResponse implements java.io.Serializable {
 		text = json.getString("text");
 		source = json.getString("source");
 		createdAt = parseDate(json.getString("created_at"), "EEE MMM dd HH:mm:ss z yyyy");
-		if(!json.isNull("user"))
+		
+		if(!json.isNull("user")){
 			user = new User(json.getJSONObject("user"));
+		}
 		
 		//! yuchberry modify
-		if(!json.isNull("reply_comment")){
-			m_origStatus = new Status(json.getJSONObject("reply_comment"));
-		}else if(!json.isNull("status")){
+		if(!json.isNull("status")){
 			m_origStatus = new Status(json.getJSONObject("status")); 
+		}
+		
+		if(!json.isNull("reply_comment")){
+			m_replyCommentStatus = new Status(json.getJSONObject("reply_comment"));
 		}
     }
 
@@ -108,6 +121,9 @@ public class Comment extends WeiboResponse implements java.io.Serializable {
         //! yuchberry modify
 		if(!json.isNull("status")){
 			m_origStatus = new Status(json.getJSONObject("status")); 
+		}
+		if(!json.isNull("reply_comment")){
+			m_replyCommentStatus = new Status(json.getJSONObject("reply_comment"));
 		}
     }
 

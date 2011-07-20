@@ -40,13 +40,13 @@ public class WeiboButton extends Field
 
         m_text = text;
         m_image = _image;
-        m_image = _image_focus;
+        m_image_focus = _image_focus;
         _menuOrdinal = menuOrdinal;
         _menuPriority = menuPriority;
     }
             
     protected void layout(int width,int height){
-    	if(m_image != null){
+    	if(m_image != null && m_image_focus != null){
     		width = m_image.getWidth();
     		height= m_image.getHeight();
     	}else{

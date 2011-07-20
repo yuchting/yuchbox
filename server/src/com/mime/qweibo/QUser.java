@@ -108,8 +108,7 @@ public class QUser{
 		m_isMyFans		= _json.getInt("ismyfans") == 1;
 		m_hasBeenFollowed = _json.getInt("ismyidol") == 1;
 
-		String t_tagStr = _json.getString("tag");
-		if(t_tagStr != null && !t_tagStr.equals("null")){
+		if(!_json.isNull("tag")){
 			JSONArray t_tag = _json.getJSONArray("tag");
 			if(t_tag != null){
 				m_tag	= new ArrayList<QUserTag>();
@@ -129,10 +128,7 @@ public class QUser{
 			}
 		}
 		
-		
-		t_tagStr = _json.getString("edu");
-		
-		if(t_tagStr != null && !t_tagStr.equals("null")){
+		if(!_json.isNull("edu")){
 			
 			JSONArray t_edu = _json.getJSONArray("edu");
 			m_edu	= new ArrayList<QUserEdu>();
