@@ -1,5 +1,6 @@
 package com.yuchting.yuchberry.client.weibo;
 
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
@@ -21,27 +22,37 @@ public class WeiboButton extends Field
     private int _menuOrdinal = 0;
     private int _menuPriority = 0;
                 
-    String 	m_text;    
+    String 	m_text = "";
+    
+    Bitmap	m_image = null;
+    Bitmap	m_image_focus = null;
 
-    public WeiboButton( String text){
-        this( text,0,0,0);
+    public WeiboButton( String text,Bitmap _image,Bitmap _image_focus){
+        this( text,_image,_image_focus,0,0,0);
     }
     
-    public WeiboButton( String text,long _style){
-        this(text,0,0,_style);
+    public WeiboButton( String text,Bitmap _image,Bitmap _image_focus,long _style){
+        this(text,_image,_image_focus,0,0,_style);
     } 
 
-    public WeiboButton( String text, int menuOrdinal, int menuPriority, long style ){
+    public WeiboButton( String text, Bitmap _image,Bitmap _image_focus,int menuOrdinal, int menuPriority, long style ){
         super(Field.FOCUSABLE | style );
 
         m_text = text;
+        m_image = _image;
+        m_image = _image_focus;
         _menuOrdinal = menuOrdinal;
         _menuPriority = menuPriority;
     }
-        
+            
     protected void layout(int width,int height){
-    	height = getFont().getHeight() + fsm_borderWidth;
-    	width = getFont().getAdvance(m_text) + fsm_borderWidth * 2;
+    	if(m_image != null){
+    		width = m_image.getWidth();
+    		height= m_image.getHeight();
+    	}else{
+    		width = getFont().getAdvance(m_text) + fsm_borderWidth * 2;
+    		height = getFont().getHeight() + fsm_borderWidth;
+    	}
     	
     	setExtent(width,height);
     }
@@ -55,19 +66,28 @@ public class WeiboButton extends Field
 
     	try{
   	
-    		if( focus ) {
-    			g.setColor(fsm_focusBGColor);
+    		if(m_image != null && m_image_focus != null){
+    			if(focus){
+    				g.drawBitmap(0,0,getWidth(),getHeight(),m_image_focus,0,0);
+    			}else{
+    				g.drawBitmap(0,0,getWidth(),getHeight(),m_image,0,0);
+    			}
     		}else{
-    			g.setColor(fsm_textBGColor);
-    		}    		
-    		g.fillRoundRect(0,0,getWidth(),getHeight(),fsm_borderArc,fsm_borderArc);
-    		    		
-    		g.setColor(fsm_borderColor);
-    		g.drawRoundRect(0,0,getWidth(),getHeight(),fsm_borderArc,fsm_borderArc);
+
+        		if( focus ) {
+        			g.setColor(fsm_focusBGColor);
+        		}else{
+        			g.setColor(fsm_textBGColor);
+        		}    		
+        		g.fillRoundRect(0,0,getWidth(),getHeight(),fsm_borderArc,fsm_borderArc);
+        		    		
+        		g.setColor(fsm_borderColor);
+        		g.drawRoundRect(0,0,getWidth(),getHeight(),fsm_borderArc,fsm_borderArc);
+        		
+        		g.setColor( fsm_textColour );
+        		g.drawText(m_text,fsm_borderWidth,fsm_borderWidth);
+    		}
     		
-    		g.setColor( fsm_textColour );
-    		g.drawText(m_text,fsm_borderWidth,fsm_borderWidth);
-                 
     	}finally{
     		g.setColor( oldColour );
     	}

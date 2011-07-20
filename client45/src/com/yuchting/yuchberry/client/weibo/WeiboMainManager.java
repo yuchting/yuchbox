@@ -17,11 +17,22 @@ import com.yuchting.yuchberry.client.recvMain;
 
 
 public class WeiboMainManager extends VerticalFieldManager implements FieldChangeListener{
+		
+	public WeiboButton	 m_forwardBut			= 
+		new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL),
+				weiboTimeLineScreen.sm_controlButImage[0],weiboTimeLineScreen.sm_controlButImage_focus[0]);
 	
-	public WeiboButton	 m_atBut				= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL));
-	public WeiboButton	 m_forwardBut			= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL));
-	public WeiboButton	 m_favoriteBut			= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL));
-	public WeiboButton	 m_picBut				= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL));
+	public WeiboButton	 m_atBut				= 
+		new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL),
+				weiboTimeLineScreen.sm_controlButImage[1],weiboTimeLineScreen.sm_controlButImage_focus[1]);
+	
+	public WeiboButton	 m_favoriteBut			= 
+		new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL),
+				weiboTimeLineScreen.sm_controlButImage[2],weiboTimeLineScreen.sm_controlButImage_focus[2]);
+	
+	public WeiboButton	 m_picBut				= 
+		new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL),
+				weiboTimeLineScreen.sm_controlButImage[3],weiboTimeLineScreen.sm_controlButImage_focus[3]);
 
 	public WeiboTextField 	m_textArea				= new WeiboTextField(0,0xffffff);
 	public WeiboTextField	m_commentTextArea		= new WeiboTextField(0,WeiboItemField.fsm_weiboCommentBGColor);
@@ -664,7 +675,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 					}
 				};
 				
-				PopupScreen t_popDlg = new PopupScreen(t_manager,Manager.VERTICAL_SCROLL);
+				final PopupScreen t_popDlg = new PopupScreen(t_manager,Manager.VERTICAL_SCROLL);
 				
 				final CheckboxField t_samePrompt = new CheckboxField(recvMain.sm_local.getString(localResource.WEIBO_SAVE_CHECK_IMAGE_PROMPT),
 						false,Field.FIELD_HCENTER);
@@ -680,17 +691,23 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 					
 					public void fieldChanged(Field field, int context) {
 						if(context != FieldChangeListener.PROGRAMMATIC){
+							
 							if(t_samePrompt == field){
+								
 								if(t_samePrompt.getChecked()){
 									m_mainApp.m_hasPromptToCheckImg = false;
 								}
-							}
-						}else{
-							for(int i = 0;i < t_buttons.length;i++){
-								if(t_buttons[i] == field){
-									m_mainApp.m_checkImgIndex = i;
-									recvMain.openURL(_item.getImageURL(i));
-									break;
+								
+							}else{
+								for(int i = 0;i < t_buttons.length;i++){
+									if(t_buttons[i] == field){
+										m_mainApp.m_checkImgIndex = i;
+										recvMain.openURL(_item.getImageURL(i));
+										
+										t_popDlg.close();
+										
+										break;
+									}
 								}
 							}
 						}

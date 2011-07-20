@@ -68,7 +68,7 @@ public class WeiboTextField extends ActiveRichTextField{
 				
 				if(t_offsetIndex != 1){
 					
-					if(t_offsetIndex >= m_bufferedOffset.length){
+					if(t_offsetIndex >= m_bufferedOffset.length - 1){
 						// relocate that
 						//
 						if(!incBuffered(t_textLength,(byte)0)){
@@ -77,7 +77,6 @@ public class WeiboTextField extends ActiveRichTextField{
 					}
 					
 					m_bufferedAttr[t_attrIndex] = 0;
-					
 					m_bufferedOffset[t_offsetIndex] = t_index;
 					
 					t_attrIndex++;
@@ -93,7 +92,7 @@ public class WeiboTextField extends ActiveRichTextField{
 					}
 				}
 				
-				if(t_offsetIndex >= m_bufferedOffset.length){
+				if(t_offsetIndex >= m_bufferedOffset.length - 1){
 					// relocate that
 					//
 					if(!incBuffered(t_textLength,(byte)0)){

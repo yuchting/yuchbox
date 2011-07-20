@@ -1,11 +1,31 @@
 package com.yuchting.yuchberry.client.weibo;
 
-import com.yuchting.yuchberry.client.recvMain;
-
 import local.localResource;
+import net.rim.device.api.io.IOUtilities;
+import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.EncodedImage;
+import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 
+import com.yuchting.yuchberry.client.recvMain;
+
 public class WeiboUpdateField extends WeiboItemField{
+	
+	private final static int		fsm_updateBitmapSize = 32;
+	
+	private static Bitmap sm_updateBitmap = null;
+	
+	static {
+		try{
+			byte[] bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream("/weibo/update.png"));		
+			sm_updateBitmap =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
+			
+		}catch(Exception e){
+			weiboTimeLineScreen.sm_mainApp.DialogAlertAndExit("inner load error:" + e.getMessage());
+		}	 
+	}
+	
+	private String m_updatePromptText = recvMain.sm_local.getString(localResource.WEIBO_UPDATE_WEIBO_LABEL);
 	
 	String m_sendUpdateText = "";
 	
@@ -65,28 +85,37 @@ public class WeiboUpdateField extends WeiboItemField{
 	}
 	
 	public void paintFocus(Graphics _g,boolean _on){
+		
 		int oldColour = _g.getColor();
+		Font oldFont	= _g.getFont();
+		
         try{
-        	
-			if(m_parentManager.getCurrExtendedItem() != null){
-				_g.setColor(fsm_darkColor);
-				_g.fillRect(0,0, getPreferredWidth(),getPreferredHeight());
-				_g.setColor(0);
-			}
-				
+			
 			if(_on){
+			
 				_g.setColor(fsm_selectedColor);
-				_g.fillRoundRect(1,1,getPreferredWidth() - 2,sm_fontHeight - 3,5,5);
-				_g.setColor(0xffffff);
+				_g.fillRect(1,1,getPreferredWidth() - 2,sm_fontHeight - 3);
+				
 			}else{
 				
-				_g.drawLine(0,sm_fontHeight - 1,getPreferredWidth(),sm_fontHeight - 1);
-				_g.setColor(fsm_spaceLineColor);
+				if(m_parentManager.getCurrExtendedItem() != null){
+					_g.setColor(fsm_darkColor);
+					_g.fillRect(0,0, getPreferredWidth(),getPreferredHeight());
+				}else{
+					_g.setColor(0xc0c0c0);
+					_g.fillRect(0,0,getPreferredWidth(),getPreferredHeight());
+				}				
 			}	
         	
-        	_g.drawText(recvMain.sm_local.getString(localResource.WEIBO_UPDATE_WEIBO_LABEL),2,2,Graphics.ELLIPSIS);
+			_g.drawBitmap(2,0, fsm_updateBitmapSize, fsm_updateBitmapSize,sm_updateBitmap,0,0);
+        	
+			_g.setColor(0x757575);
+			_g.setFont(WeiboItemField.sm_boldFont);
+        	_g.drawText(m_updatePromptText,fsm_updateBitmapSize + 2,2,Graphics.ELLIPSIS);
+        	
         }finally{
         	_g.setColor( oldColour );
+        	_g.setFont(oldFont);
         }
 	}
 }

@@ -240,7 +240,7 @@ public class WeiboUserInfoScreen extends MainScreen{
 				
 				if(m_headImage == null){
 					try{
-						byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass().getResourceAsStream("/defaultHeadImage_l.png"));		
+						byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass().getResourceAsStream("/weibo/defaultHeadImage_l.png"));		
 						m_headImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
 					}catch(Exception e){
 						m_mainApp.SetErrorString("SWU2:"+e.getMessage() + e.getClass().getName());

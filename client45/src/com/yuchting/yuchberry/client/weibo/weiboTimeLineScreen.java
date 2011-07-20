@@ -47,6 +47,49 @@ abstract class WeiboUserMenu extends MenuItem{
 
 public class weiboTimeLineScreen extends MainScreen{
 	
+	public static Bitmap[]	sm_controlButImage = {	null,null,null,null};
+	public static Bitmap[]	sm_controlButImage_focus = {null,null,null,null};
+	
+	private static String[]	sm_controlButImageString = 
+	{
+		"/weibo/forward_comment_button.png",
+		"/weibo/at_reply_button.png",
+		"/weibo/favorite_button.png",
+		"/weibo/picture_button.png",
+	};
+	private static String[]	sm_controlButImageString_focus = 
+	{
+		"/weibo/forward_comment_button_focus.png",
+		"/weibo/at_reply_button_focus.png",
+		"/weibo/favorite_button_focus.png",
+		"/weibo/picture_button_focus.png",
+	};
+	
+	static{
+		try{
+			for(int i = 0;i < sm_controlButImage.length;i++){
+				byte[] bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream(sm_controlButImageString[i]));		
+				sm_controlButImage[i] =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
+				
+				bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream(sm_controlButImageString_focus[i]));		
+				sm_controlButImage_focus[i] =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
+			}			
+		}catch(Exception e){
+			weiboTimeLineScreen.sm_mainApp.DialogAlertAndExit("inner load error:" + e.getMessage());
+		}
+	}
+	
+	public static final int		fsm_controlButtonHeight = sm_controlButImage[0].getHeight();
+	
+	public static final int[]		fsm_controlButtonWidth = 
+	{
+		sm_controlButImage[0].getWidth(),
+		sm_controlButImage[1].getWidth(),
+		sm_controlButImage[2].getWidth(),
+		sm_controlButImage[3].getWidth(),
+	};
+	
+	
 	public WeiboUserMenu m_userGetInfoMenu = new WeiboUserMenu(localResource.WEIBO_CHECK_USER_MENU_LABEL,5,5){
 		public void run(){
 			checkUserInfo(m_userName);
@@ -96,13 +139,13 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	private static String[]		sm_VIPSignString = 
 	{
-		"/sinaVIP.png",
-		"/sinaVIP.png",
-		"/qqVIP.png",
+		"/weibo/sinaVIP.png",
+		"/weibo/sinaVIP.png",
+		"/weibo/qqVIP.png",
 		
-		"/sinaVIP.png",
-		"/sinaVIP.png",
-		"/sinaVIP.png",
+		"/weibo/sinaVIP.png",
+		"/weibo/sinaVIP.png",
+		"/weibo/sinaVIP.png",
 	};
 	
 	static Bitmap		sm_headImageMask = null;
@@ -120,13 +163,13 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	static String[]		sm_weiboSignFilename = 
 	{
-		"/sinaWeibo.png",
-		"/tWeibo.png",
-		"/qqWeibo.png",
+		"/weibo/sinaWeibo.png",
+		"/weibo/tWeibo.png",
+		"/weibo/qqWeibo.png",
 		
-		"/163Weibo.png",
-		"/sohuWeibo.png",
-		"/fanWeibo.png",
+		"/weibo/163Weibo.png",
+		"/weibo/sohuWeibo.png",
+		"/weibo/fanWeibo.png",
 	};
 	
 	static Bitmap		sm_isBBerSign = null;	
@@ -613,7 +656,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 			if(sm_defaultHeadImage == null){
 				byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass()
-						.getResourceAsStream(WeiboItemField.fsm_largeHeadImage?"/defaultHeadImage_l.png":"/defaultHeadImage.png"));		
+						.getResourceAsStream(WeiboItemField.fsm_largeHeadImage?"/weibo/defaultHeadImage_l.png":"/weibo/defaultHeadImage.png"));		
 				sm_defaultHeadImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
 			}
 			
@@ -1307,7 +1350,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		if(sm_headImageMask == null){
 			try{
 				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass()
-							.getResourceAsStream(WeiboItemField.fsm_largeHeadImage?"/headImageMask_l.png":"/headImageMask.png"));		
+							.getResourceAsStream(WeiboItemField.fsm_largeHeadImage?"/weibo/headImageMask_l.png":"/weibo/headImageMask.png"));		
 				sm_headImageMask =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
 			}catch(Exception e){
 				sm_mainApp.SetErrorString("GHIMB" + e.getMessage() + e.getClass().getName());
@@ -1320,7 +1363,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	static public Bitmap GetBBerSignBitmap(){
 		if(sm_isBBerSign == null){
 			try{
-				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/BBSign.png"));		
+				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/weibo/BBSign.png"));		
 				sm_isBBerSign =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();	
 			}catch(Exception e){
 				sm_mainApp.SetErrorString("GBSB:" + e.getMessage() + e.getClass().getName());

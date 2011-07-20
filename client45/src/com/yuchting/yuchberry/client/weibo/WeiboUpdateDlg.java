@@ -41,7 +41,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	int						m_titleHeight 	= 0;
 	int						m_separateLine_y = 0;
 	WeiboButton				m_sendButton	= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_SEND_LABEL),
-																Field.FIELD_LEFT);
+															null,null,Field.FIELD_LEFT);
 	
 	public WeiboUpdateManager(weiboTimeLineScreen _timeline){
 		super(Manager.VERTICAL_SCROLL);

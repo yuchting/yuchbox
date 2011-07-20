@@ -8,7 +8,7 @@ import com.yuchting.yuchberry.client.sendReceive;
 
 public class fetchWeibo {
 	
-	final static int	VERSION = 1;
+	final static int	VERSION = 2;
 	
 	final public static byte	SINA_WEIBO_STYLE 		= 0;
 	final public static byte	TWITTER_WEIBO_STYLE 	= 1;
@@ -55,6 +55,8 @@ public class fetchWeibo {
 	
 	long 		m_replyWeiboId = -1;
 	fetchWeibo	m_replyWeibo = null;
+	
+	String		m_replyName = ""; // add for QQ direct weibo  ...Orz...
 	
 	int			m_forwardWeiboNum = 0;
 	int			m_commentWeiboNum = 0;
@@ -140,6 +142,9 @@ public class fetchWeibo {
 	public fetchWeibo GetReplyWeibo(){return m_replyWeibo;}
 	public void SetReplyWeibo(fetchWeibo _weibo){m_replyWeibo = _weibo;}
 	
+	public String getReplyName(){return m_replyName;}
+	public void setReplyName(String _name){m_replyName = _name;}
+	
 	public String GetSource(){return m_source;}
 	public void SetSource(String _source){m_source = _source;}
 	
@@ -201,7 +206,9 @@ public class fetchWeibo {
 			if(m_replyWeibo != null){
 				m_replyWeibo.OutputWeibo(_stream);
 			}			
-		}	
+		}
+		
+		sendReceive.WriteString(_stream,m_replyName);
 	}
 	
 	public void InputWeibo(InputStream _stream)throws Exception{
@@ -248,6 +255,10 @@ public class fetchWeibo {
 				m_replyWeibo = new fetchWeibo();
 				m_replyWeibo.InputWeibo(_stream);
 			}			
+		}
+		
+		if(t_version >= 2){
+			m_replyName = sendReceive.ReadString(_stream);
 		}
 	}
 	
