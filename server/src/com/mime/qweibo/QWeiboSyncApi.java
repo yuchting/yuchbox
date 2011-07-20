@@ -79,7 +79,7 @@ public class QWeiboSyncApi {
 			throw new Exception("verify Credentials failed." + t_json.toString());
 		}
 		
-		return new QUser(t_json); 
+		return new QUser(t_json.getJSONObject("data")); 
 	}
 	
 	public String getVerifyPinURL(String _callback)throws Exception{
@@ -427,7 +427,7 @@ public class QWeiboSyncApi {
 	 * @throws Exception
 	 */
 	public List<QDirectMessage> getInboxDirectMessage(long _time,int _num,long _lastId)throws Exception{
-		return getDirectMsgList_impl(_time,_num,_lastId,QDirectMessage.fsm_inboxType);		
+		return getDirectMsgList_impl(_time,_num,_lastId,QDirectMessage.INBOX_TYPE);		
 	}
 	
 	/**
@@ -436,7 +436,7 @@ public class QWeiboSyncApi {
 	 * @throws Exception
 	 */
 	public List<QDirectMessage> getOutboxDirectMessage()throws Exception{
-		return getDirectMsgList_impl(0,20,0,QDirectMessage.fsm_outboxType);
+		return getDirectMsgList_impl(0,20,0,QDirectMessage.OUTBOX_TYPE);
 	}
 	
 	/**
@@ -448,7 +448,7 @@ public class QWeiboSyncApi {
 	 * @throws Exception
 	 */
 	public List<QDirectMessage> getOutboxDirectMessage(long _time,int _num,long _lastId)throws Exception{
-		return getDirectMsgList_impl(_time,_num,_lastId,QDirectMessage.fsm_outboxType);
+		return getDirectMsgList_impl(_time,_num,_lastId,QDirectMessage.OUTBOX_TYPE);
 	}
 	
 	private List<QDirectMessage> getDirectMsgList_impl(long _time,int _num,long _lastId,int _type)throws Exception{
@@ -458,7 +458,7 @@ public class QWeiboSyncApi {
 		}
 		
 		String t_url;
-		if(_type == QDirectMessage.fsm_inboxType){
+		if(_type == QDirectMessage.INBOX_TYPE){
 			t_url = fsm_directMessageInboxURL;
 		}else{
 			t_url = fsm_directMessageOutboxURL;

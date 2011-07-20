@@ -226,6 +226,24 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		
 	}	
 	
+	
+	
+	/**
+	 * push the message to client
+	 */
+	public synchronized void PushMsg(sendReceive _sendReceive)throws Exception{
+		
+		PrepareRepushUnconfirmMsg_impl(m_timeline);
+		PrepareRepushUnconfirmMsg_impl(m_directMessage);
+		PrepareRepushUnconfirmMsg_impl(m_atMeMessage);
+		PrepareRepushUnconfirmMsg_impl(m_commentMessage);
+		
+		PushMsg_impl(m_timeline,_sendReceive);
+		PushMsg_impl(m_directMessage,_sendReceive);
+		PushMsg_impl(m_atMeMessage,_sendReceive);
+		PushMsg_impl(m_commentMessage,_sendReceive);		
+	}
+	
 	protected void PrepareRepushUnconfirmMsg_impl(fetchWeiboData _weiboList){
 		
 		boolean t_repush = true;
@@ -279,22 +297,6 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			}
 		}
 		
-	}
-	
-	/**
-	 * push the message to client
-	 */
-	public synchronized void PushMsg(sendReceive _sendReceive)throws Exception{
-		
-		PrepareRepushUnconfirmMsg_impl(m_timeline);
-		PrepareRepushUnconfirmMsg_impl(m_directMessage);
-		PrepareRepushUnconfirmMsg_impl(m_atMeMessage);
-		PrepareRepushUnconfirmMsg_impl(m_commentMessage);
-		
-		PushMsg_impl(m_timeline,_sendReceive);
-		PushMsg_impl(m_directMessage,_sendReceive);
-		PushMsg_impl(m_atMeMessage,_sendReceive);
-		PushMsg_impl(m_commentMessage,_sendReceive);		
 	}
 	
 	protected void PushMsg_impl(fetchWeiboData _weiboList,sendReceive _sendReceive)throws Exception{

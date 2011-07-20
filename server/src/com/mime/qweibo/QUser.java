@@ -78,56 +78,63 @@ public class QUser{
 			Departmentid 院系ID
 			Level 学历级别
 		*/
-		m_name	= _json.getString("Name");
-		m_nick	= _json.getString("Nick");
-		m_id	= _json.getLong("Uid");
+		m_name	= _json.getString("name");
+		m_nick	= _json.getString("nick");
+		m_id	= _json.getLong("uid");
 		
-		m_headImageURL	= _json.getString("Head");
-		m_location 		= _json.getString("Location");
+		m_headImageURL	= _json.getString("head");
+		m_location 		= _json.getString("location");
 		
 		// json format? oh my qq...
 		//
-		m_isVerified	= _json.getInt("Isvip") == 1;
-		m_isEnterprise	= _json.getInt("Isent") == 1;
+		m_isVerified	= _json.getInt("isvip") == 1;
+		m_isEnterprise	= _json.getInt("isent") == 1;
 		
-		m_introduction	= _json.getString("Introduction");
-		m_verifyInfo	= _json.getString("Verifyinfo");
+		m_introduction	= _json.getString("introduction");
+		m_verifyInfo	= _json.getString("verifyinfo");
 		
-		m_birthYear		= _json.getInt("Birth_year");
-		m_birthMonth	= _json.getInt("Birth_month");
-		m_birthDay		= _json.getInt("Birth_day");
+		m_birthYear		= _json.getInt("birth_year");
+		m_birthMonth	= _json.getInt("birth_month");
+		m_birthDay		= _json.getInt("birth_day");
 		
-		m_countryCode 	= _json.getInt("Country_code");
-		m_provinceCode 	= _json.getInt("Province_code");
-		m_cityCode 		= _json.getInt("City_code");
-		m_sex 			= _json.getInt("Sex");
-		m_fansNum 		= _json.getInt("Fansnum");
-		m_idolNum 		= _json.getInt("Idolnum");
-		m_weiboNum 		= _json.getInt("Tweetnum");
+		m_countryCode 	= _json.getInt("country_code");
+		m_provinceCode 	= _json.getInt("province_code");
+		m_cityCode 		= _json.getInt("city_code");
+		m_sex 			= _json.getInt("sex");
+		m_fansNum 		= _json.getInt("fansnum");
+		m_idolNum 		= _json.getInt("idolnum");
+		m_weiboNum 		= _json.getInt("tweetnum");
 		
-		m_isMyFans		= _json.getInt("Ismyfans") == 1;
-		m_hasBeenFollowed = _json.getInt("Ismyidol") == 1;
+		m_isMyFans		= _json.getInt("ismyfans") == 1;
+		m_hasBeenFollowed = _json.getInt("ismyidol") == 1;
 
-		JSONArray t_tag = _json.getJSONArray("Tag");
-		if(t_tag != null){
-			m_tag	= new ArrayList<QUserTag>();
-				
-			int size = t_tag.length();
+		String t_tagStr = _json.getString("tag");
+		if(t_tagStr != null && !t_tagStr.equals("null")){
+			JSONArray t_tag = _json.getJSONArray("tag");
+			if(t_tag != null){
+				m_tag	= new ArrayList<QUserTag>();
+					
+				int size = t_tag.length();
 
-            for (int i = 0; i < size; i++) {
-            	QUserTag t_newTag = new QUserTag();
-            	JSONObject tag = t_tag.getJSONObject(i);
-            	
-            	t_newTag.m_tagId	= tag.getInt("Id");
-            	t_newTag.m_tagName	= tag.getString("Name");
-            	
-            	m_tag.add(t_newTag);
-            }
-		
+	            for (int i = 0; i < size; i++) {
+	            	QUserTag t_newTag = new QUserTag();
+	            	JSONObject tag = t_tag.getJSONObject(i);
+	            	
+	            	t_newTag.m_tagId	= tag.getInt("id");
+	            	t_newTag.m_tagName	= tag.getString("name");
+	            	
+	            	m_tag.add(t_newTag);
+	            }
+			
+			}
 		}
 		
-		JSONArray t_edu = _json.getJSONArray("Edu");
-		if(t_edu != null){
+		
+		t_tagStr = _json.getString("edu");
+		
+		if(t_tagStr != null && !t_tagStr.equals("null")){
+			
+			JSONArray t_edu = _json.getJSONArray("edu");
 			m_edu	= new ArrayList<QUserEdu>();
 			
 			int size = t_edu.length();
@@ -136,11 +143,11 @@ public class QUser{
             	QUserEdu t_newEdu = new QUserEdu();
             	JSONObject edu = t_edu.getJSONObject(i);
             	
-            	t_newEdu.m_id 			= edu.getInt("Id");
-            	t_newEdu.m_enterYear	= edu.getInt("Year");
-            	t_newEdu.m_schoolId		= edu.getInt("Schoolid");
-            	t_newEdu.m_departmentId	= edu.getInt("Departmentid");
-            	t_newEdu.m_enterLevel	= edu.getInt("Level");
+            	t_newEdu.m_id 			= edu.getInt("id");
+            	t_newEdu.m_enterYear	= edu.getInt("year");
+            	t_newEdu.m_schoolId		= edu.getInt("schoolid");
+            	t_newEdu.m_departmentId	= edu.getInt("departmentid");
+            	t_newEdu.m_enterLevel	= edu.getInt("level");
             	
             	
             	m_edu.add(t_newEdu);

@@ -8,12 +8,15 @@ import weibo4j.org.json.JSONObject;
 
 public class QDirectMessage {
 	
-	public final static int			fsm_inboxType = 0;
-	public final static int			fsm_outboxType = 1;
+	public final static int			INBOX_TYPE = 0;
+	public final static int			OUTBOX_TYPE = 1;
 	/*
 	 * direct type 0:inbox 1:outbox
 	 */
 	private int	m_directMessageType;
+	
+	private String m_tonick = "";
+	private String m_toname = "";
 	
 	private QWeibo m_weiboItem;
 	
@@ -25,6 +28,9 @@ public class QDirectMessage {
 	public QWeibo getWeiboContentItem(){
 		return m_weiboItem;
 	}
+	
+	public String getSendToScreenName(){return m_toname;}
+	public String getSentToNickName(){return m_tonick;}
 	
 	/**
 	 * get the direcet message type 
@@ -45,9 +51,13 @@ public class QDirectMessage {
 			JSONArray t_array = _json.getJSONObject("data").getJSONArray("info");
 			int t_num = t_array.length();
 			for(int i = 0;i < t_num;i++){
-				QWeibo t_weibo = new QWeibo(t_array.getJSONObject(i));
+				JSONObject json = t_array.getJSONObject(i);
+				QDirectMessage t_msg= new QDirectMessage(new QWeibo(json), _type);
 				
-				t_list.add(new QDirectMessage(t_weibo, _type));
+				t_msg.m_toname = json.getString("toname");
+				t_msg.m_tonick = json.getString("tonick");
+				
+				t_list.add(t_msg);
 			}
 		}catch(Exception e){
 			if(QWeiboSyncApi.sm_debug){

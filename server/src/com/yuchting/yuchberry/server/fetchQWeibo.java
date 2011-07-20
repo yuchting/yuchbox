@@ -2,10 +2,14 @@ package com.yuchting.yuchberry.server;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import org.dom4j.Element;
 
+import com.mime.qweibo.QDirectMessage;
 import com.mime.qweibo.QUser;
 import com.mime.qweibo.QWeibo;
 import com.mime.qweibo.QWeiboSyncApi;
@@ -54,7 +58,103 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	}
 	
 	protected void CheckDirectMessage()throws Exception{
-		return ;	
+		List<QDirectMessage> t_fetch = null;
+		
+		long t_fromIndex = m_directMessage.m_fromIndex;
+		if(t_fromIndex > 1){
+			t_fetch = m_api.getOutboxDirectMessage(t_fromIndex,10,0);
+		}else{
+			t_fetch = m_api.getOutboxDirectMessage();
+		}
+		
+		AddDirectMsgWeibo(t_fetch,m_directMessage,fetchWeibo.DIRECT_MESSAGE_CLASS);
+		
+		if(t_fromIndex > 1){
+			t_fetch = m_api.getInboxDirectMessage(t_fromIndex,10,0);
+		}else{
+			t_fetch = m_api.getInboxDirectMessage();
+		}
+		
+		AddDirectMsgWeibo(t_fetch,m_directMessage,fetchWeibo.DIRECT_MESSAGE_CLASS);
+		
+		// assign the max time value
+		//
+		for(fetchWeibo weibo:m_directMessage.m_weiboList){
+			if(weibo.GetDateTime() > t_fromIndex){
+				t_fromIndex = weibo.GetDateTime(); 
+			}
+		}
+		m_directMessage.m_fromIndex = t_fromIndex;
+		
+		// sort by time
+		//
+		Collections.sort(m_directMessage.m_weiboList,new Comparator<fetchWeibo>() {
+			
+			public   int   compare(fetchWeibo o1, fetchWeibo o2){
+				
+				long a = o1.GetDateTime();
+				long b = o2.GetDateTime();
+				if(a < b){
+					return 1;
+				}else if(a > b){
+					return -1;
+				}else{
+					return 0;
+				}
+			}
+		});
+		
+	}
+	
+	private void AddDirectMsgWeibo(List<QDirectMessage> _from,fetchWeiboData _to,byte _class){
+		
+		boolean t_insert;
+		
+		for(QDirectMessage fetchOne : _from){
+			
+			if(_to.m_fromIndex >= fetchOne.getWeiboContentItem().getTime()){
+				// directly return because of qq time fetching bug!
+				//
+				break;
+			}
+			
+			if(_to.m_weiboList.size() >= _to.m_sum){
+				break;
+			}
+			
+			t_insert = true;
+			for(fetchWeibo weibo : _to.m_weiboList){
+				if(weibo.GetId() == fetchOne.getWeiboContentItem().getId()){
+					t_insert = false;
+					break;
+				}
+			}
+			
+			if(t_insert){
+				for(fetchWeibo weibo : _to.m_WeiboComfirm){
+					if(weibo.GetId() == fetchOne.getWeiboContentItem().getId()){
+						t_insert = false;
+						break;
+					}
+				}
+			}
+			
+			if(t_insert){
+				fetchWeibo t_weibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
+				ImportWeibo(t_weibo, fetchOne.getWeiboContentItem(),_class);
+				
+				t_weibo.SetOwnWeibo(fetchOne.getDirectMessageType() == QDirectMessage.OUTBOX_TYPE);
+				
+				if(t_weibo.IsOwnWeibo()){
+					t_weibo.setReplyName(fetchOne.getSendToScreenName());
+				}else{
+					t_weibo.setReplyName(m_userself.getScreenName());
+				}
+				
+				
+				_to.m_weiboList.add(t_weibo);
+			}
+		}
 	}
 	
 	protected void CheckAtMeMessage()throws Exception{
@@ -116,7 +216,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	}
 	
 	protected void UpdateComment(int _style,String _text,long _orgWeiboId,
-									GPSInfo _info,boolean _updateTimeline)throws Exception{
+						GPSInfo _info,boolean _updateTimeline)throws Exception{
 		
 		if(_style == GetCurrWeiboStyle()){
 			
@@ -189,6 +289,8 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		
 		return t_weibo;
 	}
+	
+	
 	
 	private void AddWeibo(List<QWeibo> _from,fetchWeiboData _to,byte _class){
 		
@@ -275,6 +377,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 			if(_qweibo.getType() == 4){
 				_weibo.SetReplyWeiboId(t_sourceWeibo.GetId());
 				_weibo.SetReplyWeibo(t_sourceWeibo);
+				_weibo.setReplyName(t_sourceWeibo.GetUserScreenName());
 			}else{
 				_weibo.SetCommectWeiboId(t_sourceWeibo.GetId());
 				_weibo.SetCommectWeibo(t_sourceWeibo);				
@@ -284,26 +387,43 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	}
 	
 	public static void main(String[] _arg)throws Exception{
-		fetchQWeibo t_weibo = new fetchQWeibo(null);
+		
+		fetchMgr t_mgr = new fetchMgr();
+		Logger t_logger = new Logger("");
+		t_mgr.m_logger = t_logger;
+		
+		fetchQWeibo t_weibo = new fetchQWeibo(t_mgr);
 		
 		QWeiboSyncApi.sm_debug = true;
 		
 		t_weibo.m_api.setCostomerKey(fsm_consumerKey, fsm_consumerSecret);
-		t_weibo.m_api.setAccessToken("2189ff2946d3498a82e6bbb8b2b57d61", "8c160ee7358a5dc07e539429c3cbb487");
+		t_weibo.m_accessToken = "2189ff2946d3498a82e6bbb8b2b57d61";
+		t_weibo.m_secretToken = "8c160ee7358a5dc07e539429c3cbb487";
+				
+		t_weibo.ResetSession(true);
 		
-		List<QWeibo> t_list = t_weibo.m_api.getHomeList(1307720032001L,20);
+		t_weibo.m_atMeMessage.m_sum = 10;
+		t_weibo.m_timeline.m_sum = 10;
+		t_weibo.m_directMessage.m_sum = 10;
 		
-		for(QWeibo weibo : t_list){
-			
-			System.out.println(Long.toString(weibo.getId()) + " @" + weibo.getScreenName() + "("+weibo.getNickName()+") " + weibo.getTime() +":"+ weibo.getText());
-			
-			if(weibo.getSourceWeibo() != null){
-				weibo = weibo.getSourceWeibo();
-				System.out.print("\t\tsource:");
-				System.out.print(Long.toString(weibo.getId()) + " @" + weibo.getScreenName() + "("+weibo.getNickName()+") :"+ weibo.getText());
-			}
-			
-		}
+		t_weibo.CheckTimeline();
+		
+		System.out.print(t_weibo);
+		
+		
+//		
+//		List<QWeibo> t_list = t_weibo.m_api.getHomeList(1307720032001L,20);
+//		
+//		for(QWeibo weibo : t_list){
+//			
+//			System.out.println(Long.toString(weibo.getId()) + " @" + weibo.getScreenName() + "("+weibo.getNickName()+") " + weibo.getTime() +":"+ weibo.getText());
+//			
+//			if(weibo.getSourceWeibo() != null){
+//				weibo = weibo.getSourceWeibo();
+//				System.out.print("\t\tsource:");
+//				System.out.print(Long.toString(weibo.getId()) + " @" + weibo.getScreenName() + "("+weibo.getNickName()+") :"+ weibo.getText());
+//			}
+//		}
 		
 //		List<QDirectMessage> t_dmInboxlist =  t_weibo.m_api.getInboxDirectMessage();
 //		
