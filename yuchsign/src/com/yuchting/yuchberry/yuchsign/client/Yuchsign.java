@@ -179,7 +179,7 @@ public class Yuchsign implements EntryPoint {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
-		
+				
 		m_logonDlg = new LogonDialog(this);
 		m_logonDlg.setModal(false);
 		m_logonDlg.show();
@@ -287,6 +287,26 @@ public class Yuchsign implements EntryPoint {
 	public static native String getURL(String url)/*-{
 		return $wnd.open(url,
 		'target=_blank')
+	}-*/;
+		
+	public static native String forcePopupURL(String url)/*-{
+		function ForceWindow ()
+		{ 
+			this.r = document.documentElement; 
+			this.f = document.createElement("FORM"); 
+			this.f.target = "_blank"; 
+			this.f.method = "post"; 
+			this.r.insertBefore(this.f, this.r.childNodes[0]); 
+		}
+		
+		ForceWindow.prototype.open = function (sUrl) 
+		{ 
+			this.f.action = sUrl; 
+			this.f.submit(); 
+		}
+		
+		var myWindow = new ForceWindow();
+		myWindow.open(url); 
 	}-*/;
 	
 }

@@ -4,9 +4,7 @@ import java.util.Date;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -27,9 +25,7 @@ public class PayTimeDlg extends DialogBox{
 													"<br />VIP1  (推送两个账户)：￥" + yuchbber.fsm_weekMoney[1] +"/星期  (时间收费)" +
 													"<br />VIP2  (推送三个账户)：￥" + yuchbber.fsm_weekMoney[2] +"/星期  (时间收费)" +
 													"<br />VIP3  (推送四个账户)：￥" + yuchbber.fsm_weekMoney[3] +"/星期  (时间收费)<br /><br />";
-													
-	String				m_buyURL	= null;
-	
+														
 		
 	public PayTimeDlg(final Yuchsign _mainSign,final yuchbber _bber){
 		super(false,true);
@@ -89,51 +85,42 @@ public class PayTimeDlg extends DialogBox{
 			
 			@Override
 			public void onClick(ClickEvent event) {
+
+				Yuchsign.PopupWaiting("正在提交订单...", t_pane);
 				
-				if(m_buyURL != null){
-					
-					hide();
-					m_buyURL = URL.encode(m_buyURL);
-					Window.open(m_buyURL,"_blank","");
-					
-				}else{
-					
-					Yuchsign.PopupWaiting("正在提交订单...", t_pane);
-					
-					try{
-						_mainSign.greetingService.payTime(_bber.GetSigninName(),0,
-														(t_weekPay.getValue())?ft_payWeekFee:ft_payWeekFee*4,
-						new AsyncCallback<String>() {
-							
-							@Override
-							public void onSuccess(String result) {
-								if(result.startsWith("http")){
-									m_buyURL = result;
-									t_confirm.setText("去支付宝付费");
-									Yuchsign.PopupPrompt("提交订单成功！\n点击 去付费 按钮使用支付宝充值。", t_pane);
-									Yuchsign.HideWaiting();
-									
-									t_weekPay.setEnabled(false);
-									t_monthPay.setEnabled(false);
-								}else{
-									Yuchsign.HideWaiting();
-									Yuchsign.PopupPrompt("错误：" + result, t_pane);
-								}							
-							}
-							
-							@Override
-							public void onFailure(Throwable caught) {
-								Yuchsign.HideWaiting();
-								Yuchsign.PopupPrompt("错误：" + caught.getMessage(), t_pane);
+				try{
+					_mainSign.greetingService.payTime(_bber.GetSigninName(),0,
+													(t_weekPay.getValue())?ft_payWeekFee:ft_payWeekFee*4,
+					new AsyncCallback<String>() {
+						
+						@Override
+						public void onSuccess(String result) {
+							if(result.startsWith("http")){
 								
-							}
-						});
-					}catch(Exception e){
-						Yuchsign.HideWaiting();
-						Yuchsign.PopupPrompt("错误：" + e.getMessage(), t_pane);
-					}	
-				}		
+								Yuchsign.forcePopupURL(result);
+								Yuchsign.HideWaiting();
+								
+								t_weekPay.setEnabled(false);
+								t_monthPay.setEnabled(false);
+							}else{
+								Yuchsign.HideWaiting();
+								Yuchsign.PopupPrompt("错误：" + result, t_pane);
+							}							
+						}
+						
+						@Override
+						public void onFailure(Throwable caught) {
+							Yuchsign.HideWaiting();
+							Yuchsign.PopupPrompt("错误：" + caught.getMessage(), t_pane);
+							
+						}
+					});
+				}catch(Exception e){
+					Yuchsign.HideWaiting();
+					Yuchsign.PopupPrompt("错误：" + e.getMessage(), t_pane);
+				}	
 			}
+			
 		});
 		
 		t_cancel.addClickHandler(new ClickHandler() {

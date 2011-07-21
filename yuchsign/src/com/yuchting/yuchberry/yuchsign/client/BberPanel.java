@@ -275,6 +275,7 @@ public class BberPanel extends TabPanel{
 							}
 						});									
 					}else{
+						
 						Yuchsign.HideWaiting();
 						Yuchsign.PopupPrompt(result,BberPanel.this);
 					}							

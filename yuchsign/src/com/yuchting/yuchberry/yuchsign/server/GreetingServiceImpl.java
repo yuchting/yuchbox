@@ -1126,7 +1126,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			
 			String t_res = t_auth.getRequestURL("http://yuchberrysign.yuchberry.info/auth/?bber=" + URLEncoder.encode(_bber,"UTF-8"));
 			//String t_res = t_auth.getRequestURL("http://127.0.0.1:8888/auth/?bber=" + URLEncoder.encode(_bber,"UTF-8"));
-			 	
+
 			YuchsignCache.makeCacheWeiboAuth(t_auth);
 			
 			return t_res;
@@ -1137,6 +1137,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	}
 	
 	public String getWeiboAccessToken(String _bber){
+		
 		WeiboAuth t_auth = YuchsignCache.getWeiboAuth(_bber);
 		if(t_auth == null){
 			return "<Error>请重新授权</Error>";
@@ -1217,19 +1218,17 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			StringBuffer t_result = new StringBuffer();
 			t_result.append("<table border=\"1\">");	
 			t_result.append("<tr><td>时间</td><td>激活用户</td><td>同步用户</td><td>付费用户</td><td>收入</td></tr>");
-						
-			//Object[] t_keys = t_statList.keySet().toArray();
-			//Object[] t_values = t_statList.values().toArray();
+
 			SimpleDateFormat t_timeFormat = new SimpleDateFormat("yyyy-MM-dd");
 		
-			List t_arrayList = new ArrayList(t_statList.entrySet());
+			List<Map.Entry<Long,List<yuchbber>>> t_arrayList = new ArrayList<Map.Entry<Long,List<yuchbber>>>(t_statList.entrySet());
 					
-			Collections.sort(t_arrayList, new Comparator(){ 
-				public   int   compare(Object o1, Object o2){
-					Map.Entry   obj1   =   (Map.Entry)   o1; 
-					Map.Entry   obj2   =   (Map.Entry)   o2; 
-					long a = ((Long)obj1.getKey()).longValue();
-					long b = ((Long)obj2.getKey()).longValue();
+			Collections.sort(t_arrayList, new Comparator<Map.Entry<Long,List<yuchbber>>>(){ 
+				
+				public int compare(Map.Entry<Long,List<yuchbber>> o1, Map.Entry<Long,List<yuchbber>> o2){
+
+					long a = (o1.getKey()).longValue();
+					long b = (o1.getKey()).longValue();
 					if(a < b){
 						return -1;
 					}else if(a > b){
@@ -1241,13 +1240,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			});
 			
 			
-			for(Iterator iter = t_arrayList.iterator(); iter.hasNext();){ 
-				Map.Entry   entry   =   (Map.Entry)   iter.next();
-			
-//			for(int i = 0;i < t_keys.length;i++){
-//				
-//				Long time = (Long)t_keys[i];
-//				List<yuchbber> list = (List<yuchbber>)t_values[i];
+			for(Iterator<Map.Entry<Long,List<yuchbber>>> iter = t_arrayList.iterator(); iter.hasNext();){ 
+				Map.Entry<Long,List<yuchbber>>   entry   =   (Map.Entry<Long,List<yuchbber>>)   iter.next();
 				
 				Long time = (Long)entry.getKey();
 				List<yuchbber> list = (List<yuchbber>)entry.getValue();

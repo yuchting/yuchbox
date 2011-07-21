@@ -4,9 +4,7 @@ import java.util.Date;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -18,8 +16,6 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class PayLevDlg extends DialogBox{
 
-	String				m_buyURL	= null;
-	
 	public PayLevDlg(final Yuchsign _mainSign,final yuchbber _bber){
 		super(false,true);
 		
@@ -95,59 +91,50 @@ public class PayLevDlg extends DialogBox{
 			@Override
 			public void onClick(ClickEvent event) {
 				
-				if(m_buyURL != null){
-					
-					hide();
-					m_buyURL = URL.encode(m_buyURL);
-					Window.open(m_buyURL,"_blank","");
-					
-				}else{
-					int t_fee = 0;
-					for(int j = 0;j < t_levBut.length;j++){
-						if(t_levBut[j] != null && t_levBut[j].getValue()){
-							t_fee = t_levMoney[j];
-							break;
-						}
+				int t_fee = 0;
+				for(int j = 0;j < t_levBut.length;j++){
+					if(t_levBut[j] != null && t_levBut[j].getValue()){
+						t_fee = t_levMoney[j];
+						break;
 					}
-					
-					Yuchsign.PopupWaiting("正在提交订单...", t_pane);
-					
-					try{
-						_mainSign.greetingService.payTime(_bber.GetSigninName(),1,t_fee,
-						new AsyncCallback<String>() {
-							
-							@Override
-							public void onSuccess(String result) {
-								if(result.startsWith("http")){
-									m_buyURL = result;
-									t_confirm.setText("去支付宝付费");
-									Yuchsign.PopupPrompt("提交订单成功！\n点击 去付费 按钮使用支付宝充值。", t_pane);
-									Yuchsign.HideWaiting();
-									
-									for(RadioButton btn :t_levBut){
-										if(btn != null){
-											btn.setEnabled(false);
-										}										
-									}
-									
-								}else{
-									Yuchsign.HideWaiting();
-									Yuchsign.PopupPrompt("错误：" + result, t_pane);
-								}							
-							}
-							
-							@Override
-							public void onFailure(Throwable caught) {
-								Yuchsign.HideWaiting();
-								Yuchsign.PopupPrompt("错误：" + caught.getMessage(), t_pane);
-								
-							}
-						});
-					}catch(Exception e){
-						Yuchsign.HideWaiting();
-						Yuchsign.PopupPrompt("错误：" + e.getMessage(), t_pane);
-					}	
 				}
+				
+				Yuchsign.PopupWaiting("正在提交订单...", t_pane);
+				
+				try{
+					_mainSign.greetingService.payTime(_bber.GetSigninName(),1,t_fee,
+					new AsyncCallback<String>() {
+						
+						@Override
+						public void onSuccess(String result) {
+							if(result.startsWith("http")){
+								
+								Yuchsign.forcePopupURL(result);
+								
+								Yuchsign.HideWaiting();
+								for(RadioButton btn :t_levBut){
+									if(btn != null){
+										btn.setEnabled(false);
+									}										
+								}
+								
+							}else{
+								Yuchsign.HideWaiting();
+								Yuchsign.PopupPrompt("错误：" + result, t_pane);
+							}							
+						}
+						
+						@Override
+						public void onFailure(Throwable caught) {
+							Yuchsign.HideWaiting();
+							Yuchsign.PopupPrompt("错误：" + caught.getMessage(), t_pane);
+							
+						}
+					});
+				}catch(Exception e){
+					Yuchsign.HideWaiting();
+					Yuchsign.PopupPrompt("错误：" + e.getMessage(), t_pane);
+				}	
 			}
 		});
 		

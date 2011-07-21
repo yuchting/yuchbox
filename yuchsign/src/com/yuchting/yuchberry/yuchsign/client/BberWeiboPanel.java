@@ -14,16 +14,13 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class BberWeiboPanel extends FlowPanel{
 	
-	private static final String			fsm_genWeiboAuth = "生成授权信息";
-	private static final String			fsm_genAccessToken = "请求用户授权";
-
 	final RadioButton[]		m_type	= 
 	{
 		new RadioButton("type","sina"),
 		new RadioButton("type","qq"),
 	};
 	
-	final Button			m_requestButton	= new Button(fsm_genWeiboAuth);
+	final Button			m_requestButton	= new Button("授权并添加账户");
 	final Button			m_helpButton	= new Button("帮助");
 	
 	String					m_accessToken 		= null;
@@ -36,7 +33,6 @@ public class BberWeiboPanel extends FlowPanel{
 	};
 	
 	BberPanel				m_mainPanel			= null;
-	String					m_authURL			= null;
 	
 	public BberWeiboPanel(BberPanel _mainPanel){
 		
@@ -46,11 +42,10 @@ public class BberWeiboPanel extends FlowPanel{
 			
 			@Override
 			public void onClick(ClickEvent event) {
-				m_authURL = null;
+
 				m_accessToken = null;
 				m_secretToken = null;
 				
-				m_requestButton.setText(fsm_genWeiboAuth);
 				m_requestButton.setEnabled(true);
 				m_pushType[0].setValue(true);
 			}
@@ -76,14 +71,7 @@ public class BberWeiboPanel extends FlowPanel{
 											"(需要升级)", m_mainPanel.m_pushList);
 					return;
 				}
-				
-				if(m_authURL != null){
-					Yuchsign.PopupWaiting("等待用户完成授权……", BberWeiboPanel.this);
-					Window.open(m_authURL,"_blank","");
-					requestAccessToken();
-					return ;
-				}
-				
+								
 				String t_type = null;
 				
 				for(RadioButton but : m_type){
@@ -105,12 +93,12 @@ public class BberWeiboPanel extends FlowPanel{
 					public void onSuccess(String result) {
 						
 						if(result.startsWith("http")){
-							m_authURL = result;
-							m_requestButton.setText(fsm_genAccessToken);
 														
-							Yuchsign.PopupPrompt("生成授权信息成功，\n请点击 ["+fsm_genAccessToken+"] 按钮获得授权码。",BberWeiboPanel.this);
-							Yuchsign.HideWaiting();
+							Yuchsign.forcePopupURL(result);
+							requestAccessToken();
 							
+							Yuchsign.PopupWaiting("正在等待用户完成请求……", BberWeiboPanel.this);
+																					
 						}else{
 							Yuchsign.PopupPrompt(result, BberWeiboPanel.this);
 							Yuchsign.HideWaiting();
@@ -221,8 +209,7 @@ public class BberWeiboPanel extends FlowPanel{
 			m_type[0].setValue(true);
 			
 			m_requestButton.setEnabled(true);
-			m_requestButton.setText(fsm_genWeiboAuth);
-			
+
 			m_accessToken = null;
 			m_secretToken = null;
 		}
