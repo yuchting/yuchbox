@@ -425,19 +425,24 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 			
 			if(_comment.getOriginalStatus() != null){
 				
-				fetchWeibo t_replayWeibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
-				ImportWeibo(t_replayWeibo,_comment.getOriginalStatus(),fetchWeibo.TIMELINE_CLASS);
-								
-				_weibo.SetReplyWeiboId(t_replayWeibo.GetId());
-				_weibo.SetReplyWeibo(t_replayWeibo);
+				fetchWeibo t_replyWeibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
+				ImportWeibo(t_replyWeibo,_comment.getOriginalStatus(),fetchWeibo.TIMELINE_CLASS);
 				
 				if(_comment.getReplyCommentStates() != null){
+					
+					_weibo.SetReplyWeiboId(t_replyWeibo.GetId());
+					_weibo.SetReplyWeibo(t_replyWeibo);
 					
 					fetchWeibo t_commnetWeibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
 					ImportWeibo(t_commnetWeibo,_comment.getReplyCommentStates(),fetchWeibo.TIMELINE_CLASS);
 					
 					_weibo.SetCommectWeiboId(t_commnetWeibo.GetId());
 					_weibo.SetCommectWeibo(t_commnetWeibo);
+					
+				}else{
+					
+					_weibo.SetCommectWeiboId(t_replyWeibo.GetId());
+					_weibo.SetCommectWeibo(t_replyWeibo);					
 				}
 				
 			}
