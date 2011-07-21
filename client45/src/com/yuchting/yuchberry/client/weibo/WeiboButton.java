@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.client.weibo;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.MenuItem;
 
@@ -35,7 +36,7 @@ public class WeiboButton extends Field
         this(text,_image,_image_focus,0,0,_style);
     } 
 
-    public WeiboButton( String text, Bitmap _image,Bitmap _image_focus,int menuOrdinal, int menuPriority, long style ){
+    public WeiboButton( String text,Bitmap _image,Bitmap _image_focus,int menuOrdinal, int menuPriority, long style ){
         super(Field.FOCUSABLE | style );
 
         m_text = text;
@@ -63,7 +64,7 @@ public class WeiboButton extends Field
     
     private void focusPaint(Graphics g,boolean focus){
     	int oldColour = g.getColor();
-
+    	Font oldFont	= g.getFont();
     	try{
   	
     		if(m_image != null && m_image_focus != null){
@@ -71,7 +72,8 @@ public class WeiboButton extends Field
     				g.drawBitmap(0,0,getWidth(),getHeight(),m_image_focus,0,0);
     			}else{
     				g.drawBitmap(0,0,getWidth(),getHeight(),m_image,0,0);
-    			}
+    			}   			
+    			
     		}else{
 
         		if( focus ) {
@@ -90,6 +92,7 @@ public class WeiboButton extends Field
     		
     	}finally{
     		g.setColor( oldColour );
+    		g.setFont(oldFont);
     	}
     }
     

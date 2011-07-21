@@ -361,66 +361,7 @@ public class connectDeamon extends Thread implements SendListener,
 		}catch(Exception _e){
 			m_mainApp.SetErrorString("sMsg: " + _e.getMessage() + " " + _e.getClass().getName());
 		}
-		
-		// invokeLater maybe rise some exception in function ImportMail 
-		//
-//		m_mainApp.invokeAndWait(new Runnable(){
-//			
-//			 public void run(){
-//				 
-//				try{
-//					
-//					for(int i = 0;i < m_sendingMailAttachment.size();i++){
-//						sendMailAttachmentDeamon t_mail = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
-//						
-//						if(t_mail.m_sendMail.GetSendDate().equals(t_msg.getSentDate())){
-//							
-//							if(t_mail.isAlive()){
-//								// found the re-send message
-//								//
-//								return ;								
-//							}else{
-//								t_mail.m_closeState = true;
-//								m_sendingMailAttachment.removeElement(t_mail);
-//							}
-//							
-//							break;
-//						}
-//					}		
-//					
-//					m_mainApp.SetErrorString("sendMsg:" + t_msg.getSubject());
-//					
-//					m_mainApp.SetErrorString("sendMsg1");
-//					
-//					fetchMail t_mail = new fetchMail();
-//					ImportMail(t_msg,t_mail);
-//					
-//					m_mainApp.SetErrorString("sendMsg2");
-//					
-//					fetchMail t_forwardReplyMail = null;
-//					if(m_sendStyle != fetchMail.NOTHING_STYLE && m_forwordReplyMail != null){
-//											
-//						t_forwardReplyMail = new fetchMail();
-//						ImportMail(m_forwordReplyMail,t_forwardReplyMail);
-//						
-//						if(m_sendStyle == fetchMail.REPLY_STYLE && m_mainApp.m_discardOrgText){
-//							// discard the org text when reply
-//							//
-//							t_forwardReplyMail.SetContain("");
-//						}
-//					}
-//					
-//					m_mainApp.SetErrorString("sendMsg3");
-//																
-//					AddSendingMail(t_mail,m_composingAttachment,t_forwardReplyMail,m_sendStyle);
-//					m_composingAttachment.removeAllElements();
-//								
-//				}catch(Exception _e){
-//					m_mainApp.SetErrorString("sMsg: " + _e.getMessage() + " " + _e.getClass().getName());
-//				}
-//			 }
-//		});
-		
+				
 		return true;
 	}
 	
@@ -944,6 +885,7 @@ public class connectDeamon extends Thread implements SendListener,
 	 public void Disconnect()throws Exception{
 		 
 		 m_disconnect = true;
+		 m_mainApp.StopDisconnectNotification();
 		 
 		 interrupt();	 
 		 
@@ -1270,7 +1212,10 @@ public class connectDeamon extends Thread implements SendListener,
 			// to remark the message is read
 			//
 			m.addMessageListener(this);
-			m_markReadVector.addElement(new MarkReadMailData(t_mail));
+			
+			synchronized (m_markReadVector) {
+				m_markReadVector.addElement(new MarkReadMailData(t_mail));
+			}			
 			
 			// increase the receive mail quantity
 			//
@@ -1465,38 +1410,41 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 	}
 		
-	public synchronized boolean AddMarkReadOrDelMail(Message m,final boolean _del){
+	public boolean AddMarkReadOrDelMail(Message m,final boolean _del){
 		
-		for(int i = 0;i < m_markReadVector.size();i++){
-		
-			try{
-				
-				final MarkReadMailData t_mail = (MarkReadMailData)m_markReadVector.elementAt(i);
-				
-				if(t_mail.m_date == m.getSentDate().getTime() 
-				&& t_mail.m_fromAddr.indexOf(m.getFrom().getAddr()) != -1){
+		synchronized (m_markReadVector) {
+
+			for(int i = 0;i < m_markReadVector.size();i++){
+			
+				try{
 					
-					byte t_msgType = (_del && m_mainApp.m_delRemoteMail)?msg_head.msgMailDel:msg_head.msgBeenRead;
+					final MarkReadMailData t_mail = (MarkReadMailData)m_markReadVector.elementAt(i);
 					
-					ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-					t_os.write(t_msgType);
-					sendReceive.WriteInt(t_os, t_mail.m_simpleHashCode);
-					
-					m_sendingQueue.addSendingData(t_msgType, t_os.toByteArray(),true);
+					if(t_mail.m_date == m.getSentDate().getTime() 
+					&& t_mail.m_fromAddr.indexOf(m.getFrom().getAddr()) != -1){
+						
+						byte t_msgType = (_del && m_mainApp.m_delRemoteMail)?msg_head.msgMailDel:msg_head.msgBeenRead;
+						
+						ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+						t_os.write(t_msgType);
+						sendReceive.WriteInt(t_os, t_mail.m_simpleHashCode);
+						
+						m_sendingQueue.addSendingData(t_msgType, t_os.toByteArray(),true);
+											
+						if(_del){
+							m_markReadVector.removeElementAt(i);
+						}					
+						
+						return true;
+					}
 										
-					if(_del){
-						m_markReadVector.removeElementAt(i);
-					}					
-					
-					return true;
+				}catch(Exception _e){
+					break;
 				}
-									
-			}catch(Exception _e){
-				break;
 			}
+			
+			return false;	
 		}
-		
-		return false;
 	}
 	
 	
@@ -1957,8 +1905,7 @@ public class connectDeamon extends Thread implements SendListener,
 					t_imageFilename = m_mainApp.GetWeiboHeadImageDir(t_style) + t_id + ".png";
 				}
 				
-				FileConnection t_fc = (FileConnection)Connector.open(m_mainApp.GetWeiboHeadImageDir(t_style) + t_id + ".png",
-																			Connector.READ_WRITE);
+				FileConnection t_fc = (FileConnection)Connector.open(t_imageFilename,Connector.READ_WRITE);
 				try{
 					if(t_fc.exists()){
 						t_fc.delete();

@@ -743,7 +743,14 @@ public class weiboTimeLineScreen extends MainScreen{
 					
 					if(m_currMgr.getCurrEditItem().m_weibo.GetCommentWeibo() != null){
 						
-						long t_orgId = m_currMgr.getCurrEditItem().m_weibo.GetCommentWeiboId();
+						long t_orgId = 0;
+						
+						if(m_currMgr.getCurrEditItem().m_weibo.GetReplyWeiboId() != -1){
+							t_orgId = m_currMgr.getCurrEditItem().m_weibo.GetReplyWeiboId();
+						}else{
+							m_currMgr.getCurrEditItem().m_weibo.GetCommentWeiboId();
+						}
+						
 						long t_commentId = m_currMgr.getCurrEditItem().m_weibo.GetId();
 						
 						sendCommentReply(t_text,m_currMgr.getCurrEditItem().m_weibo.GetWeiboStyle(),

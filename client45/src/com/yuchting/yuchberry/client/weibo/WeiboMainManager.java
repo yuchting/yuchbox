@@ -21,8 +21,8 @@ import com.yuchting.yuchberry.client.recvMain;
 
 public class WeiboMainManager extends VerticalFieldManager implements FieldChangeListener{
 	
-	public static Bitmap[]	sm_controlButImage = {	null,null,null,null};
-	public static Bitmap[]	sm_controlButImage_focus = {null,null,null,null};
+	public static Bitmap[]	sm_controlButImage = {	null,null,null,null,null,null};
+	public static Bitmap[]	sm_controlButImage_focus = {null,null,null,null,null,null};
 	
 	private static String[]	sm_controlButImageString = 
 	{
@@ -30,6 +30,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		"/weibo/at_reply_button.png",
 		"/weibo/favorite_button.png",
 		"/weibo/picture_button.png",
+		"/weibo/favorite_button_en.png",
+		"/weibo/picture_button_en.png",
 	};
 	private static String[]	sm_controlButImageString_focus = 
 	{
@@ -37,6 +39,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		"/weibo/at_reply_button_focus.png",
 		"/weibo/favorite_button_focus.png",
 		"/weibo/picture_button_focus.png",
+		"/weibo/favorite_button_focus_en.png",
+		"/weibo/picture_button_focus_en.png",
 	};
 	
 	static{
@@ -69,21 +73,15 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	public static int		sm_picBut_x					= sm_favoriteBut_x + fsm_controlButtonWidth[2] + WeiboItemField.fsm_headImageTextInterval;
 	
 	
-	public WeiboButton	 m_forwardBut			= 
-		new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL),
+	public WeiboButton	 m_forwardBut			= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL),
 				sm_controlButImage[0],sm_controlButImage_focus[0]);
 	
-	public WeiboButton	 m_atBut				= 
-		new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL),
+	public WeiboButton	 m_atBut				= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL),
 				sm_controlButImage[1],sm_controlButImage_focus[1]);
 	
-	public WeiboButton	 m_favoriteBut			= 
-		new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL),
-				sm_controlButImage[2],sm_controlButImage_focus[2]);
-	
-	public WeiboButton	 m_picBut				= 
-		new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL),
-				sm_controlButImage[3],sm_controlButImage_focus[3]);
+	public WeiboButton	 m_favoriteBut			= null;
+	public WeiboButton	 m_picBut				= null; 
+		
 
 	public WeiboTextField 	m_textArea				= new WeiboTextField(0,WeiboItemField.fsm_darkColor);
 	public WeiboTextField	m_commentTextArea		= new WeiboTextField(WeiboItemField.fsm_weiboCommentFGColor,WeiboItemField.fsm_weiboCommentBGColor);
@@ -127,11 +125,28 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 	public WeiboMainManager(recvMain _mainApp,weiboTimeLineScreen _parentScreen,boolean _timelineManager){
 		super(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
+		
+		if(recvMain.GetClientLanguage() == 0){
+
+			m_favoriteBut = new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL),
+					sm_controlButImage[2],sm_controlButImage_focus[2]);
+			
+			m_picBut = new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL),
+					sm_controlButImage[3],sm_controlButImage_focus[3]);
+		}else{
+			
+			m_favoriteBut = new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL),
+					sm_controlButImage[4],sm_controlButImage_focus[4]);
+			
+			m_picBut = new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL),
+					sm_controlButImage[5],sm_controlButImage_focus[5]);
+		}
+		
+		
 		m_editTextArea.setMaxSize(WeiboItemField.fsm_maxWeiboTextLength * 2);
 		
 		m_mainApp  			= _mainApp;
 		m_parentScreen		= _parentScreen;
-		
 		m_timelineManager 	= _timelineManager;
 		
 		if(_timelineManager){
