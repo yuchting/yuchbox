@@ -306,7 +306,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		t_weibo.setHeadImage(DownloadHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));
 		t_weibo.setDesc(t_user.getDescription());
 		t_weibo.setCity(t_user.getLocation());
-		
+		t_weibo.setVerified(t_user.isVerified());		
 	
 		t_weibo.setFollowNum(t_user.getFriendsCount());
 		t_weibo.setFansNum(t_user.getFollowersCount());

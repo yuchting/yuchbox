@@ -25,12 +25,25 @@ copy /Y .\client45\res\*.* .\client47\res\
 copy /Y .\client45\res\*.* .\client60\res\ 
 copy /Y .\client45\res\*.* .\client42\res\
 
+copy /Y .\client45\res\weibo\*.* .\client\res\weibo\
+copy /Y .\client45\res\weibo\*.* .\client46\res\weibo\
+copy /Y .\client45\res\weibo\*.* .\client47\res\weibo\
+copy /Y .\client45\res\weibo\*.* .\client60\res\weibo\ 
+copy /Y .\client45\res\weibo\*.* .\client42\res\weibo\
+
 del /S /Q /AH .\client45\res\Thumbs.db
 del /S /Q /AH .\client\res\Thumbs.db
 del /S /Q /AH .\client46\res\Thumbs.db
 del /S /Q /AH .\client47\res\Thumbs.db
 del /S /Q /AH .\client60\res\Thumbs.db 
 del /S /Q /AH .\client42\res\Thumbs.db
+
+del /S /Q /AH .\client45\res\weibo\Thumbs.db
+del /S /Q /AH .\client\res\weibo\Thumbs.db
+del /S /Q /AH .\client46\res\weibo\Thumbs.db
+del /S /Q /AH .\client47\res\weibo\Thumbs.db
+del /S /Q /AH .\client60\res\weibo\Thumbs.db 
+del /S /Q /AH .\client42\res\weibo\Thumbs.db
 
 copy /Y .\client45\BlackBerry_App_Descriptor.xml .\client\
 copy /Y .\client45\BlackBerry_App_Descriptor.xml .\client46\
@@ -49,6 +62,12 @@ svn add .\client46\res\*.*
 svn add .\client47\res\*.* 
 svn add .\client60\res\*.* 
 svn add .\client42\res\*.*
+
+svn add .\client\res\weibo\*.* 
+svn add .\client46\res\weibo\*.* 
+svn add .\client47\res\weibo\*.* 
+svn add .\client60\res\weibo\*.* 
+svn add .\client42\res\weibo\*.*
 
 svn add .\client\src\com\yuchting\yuchberry\client\*.*
 svn add .\client60\src\com\yuchting\yuchberry\client\*.*

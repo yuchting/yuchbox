@@ -845,6 +845,7 @@ public class connectDeamon extends Thread implements SendListener,
 			}
 			
 			if(!m_mainApp.isForeground() && m_ipConnectCounter >= 5){
+				m_ipConnectCounter = 0;
 				m_mainApp.TriggerDisconnectNotification();
 			}			
 			

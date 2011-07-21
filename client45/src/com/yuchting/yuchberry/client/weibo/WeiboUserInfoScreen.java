@@ -1,5 +1,6 @@
 package com.yuchting.yuchberry.client.weibo;
 
+import local.localResource;
 import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
@@ -16,6 +17,10 @@ import com.yuchting.yuchberry.client.recvMain;
 
 public class WeiboUserInfoScreen extends MainScreen{
 
+	final static String fsm_follow_text	= recvMain.sm_local.getString(localResource.WEIBO_USER_INFO_FOLLOW);
+	final static String fsm_fans_text		= recvMain.sm_local.getString(localResource.WEIBO_USER_INFO_FANS);
+	final static String fsm_weibo_text		= recvMain.sm_local.getString(localResource.WEIBO_USER_INFO_WEIBO_NUM);
+	
 	fetchWeiboUser		m_weiboUser = null;	
 	WeiboMainManager	m_weiboMgr	= null;
 	recvMain			m_mainApp	= null;
@@ -50,7 +55,7 @@ public class WeiboUserInfoScreen extends MainScreen{
 		}
 		
 		public void setFieldHeight(int _height){
-			m_infoFieldHeight = _height;
+			m_infoFieldHeight = _height + 10;
 		}
 		
 		public int getPreferredWidth(){
@@ -63,7 +68,7 @@ public class WeiboUserInfoScreen extends MainScreen{
 			
 		public void paint(Graphics _g){
 			
-			final int ft_interval = 3;
+			final int ft_interval = 5;
 			
 			int t_start_x = ft_interval;
 			int t_start_y = ft_interval;
@@ -76,9 +81,7 @@ public class WeiboUserInfoScreen extends MainScreen{
 				_g.drawBitmap(t_start_x, t_start_y,
 						WeiboItemField.fsm_weiboSignImageSize,WeiboItemField.fsm_weiboSignImageSize, 
 						weiboTimeLineScreen.GetWeiboSign(m_weiboUser.getStyle()), 0, 0);
-				
-				
-					
+
 				if(m_weiboUser.isVerified()){
 					_g.drawBitmap(t_start_x,WeiboItemField.fsm_weiboSignImageSize + t_start_y + ft_interval,
 							WeiboItemField.fsm_weiboVIPImageSize,WeiboItemField.fsm_weiboVIPImageSize, 
@@ -100,10 +103,10 @@ public class WeiboUserInfoScreen extends MainScreen{
 				// name and location
 				//
 				t_start_x += ft_interval;
-				t_start_y += 2;
-				drawRoundRect(_g,t_start_x,t_start_y,
-						recvMain.fsm_display_width - t_start_x - ft_interval,
-						WeiboItemField.sm_fontHeight * 2 + 4,true);
+				t_start_y -= ft_interval;
+				WeiboItemField.drawBubble(_g,t_start_x,t_start_y,
+						recvMain.fsm_display_width - t_start_x,
+						WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,WeiboItemField.fsm_bubble_no_point);
 				
 				t_start_x += ft_interval;
 				t_start_y += 2;
@@ -128,7 +131,8 @@ public class WeiboUserInfoScreen extends MainScreen{
 				int t_desc_width = recvMain.fsm_display_width - ft_interval * 2;
 				int t_desc_height = m_descText.getHeight() + ft_interval * 2;
 				
-				drawRoundRect(_g,t_start_x,t_start_y,t_desc_width,t_desc_height,false);
+				WeiboItemField.drawBubble(_g,t_start_x,t_start_y,t_desc_width + ft_interval,
+						t_desc_height,WeiboItemField.fsm_bubble_top_point);
 				
 				boolean notEmpty = _g.pushContext( t_start_x + ft_interval ,t_start_y + ft_interval ,
 						t_desc_width , t_desc_height, t_start_x + ft_interval, t_start_y + ft_interval);
@@ -151,33 +155,30 @@ public class WeiboUserInfoScreen extends MainScreen{
 				int t_fans_x	= t_width + ft_interval;
 				int t_weibo_x	= t_width * 2 + ft_interval;
 				
-				String t_follow_text = "follow";
-				String t_fans_text = "fans";
-				String t_weibo_text = "weibo";
-				
 				String t_follow_num = Integer.toString(m_weiboUser.getFollowNum());
 				String t_fans_num = Integer.toString(m_weiboUser.getFansNum());
 				String t_weibo_num = Integer.toString(m_weiboUser.getWeiboNum());
 				
-				int t_follow_text_x	= t_follow_x + (t_infoWidth - WeiboItemField.sm_defaultFont.getAdvance(t_follow_text)) / 2 ;
-				int t_fans_text_x	= t_fans_x + (t_infoWidth - WeiboItemField.sm_defaultFont.getAdvance(t_fans_text)) / 2;
-				int t_weibo_text_x	= t_weibo_x + (t_infoWidth - WeiboItemField.sm_defaultFont.getAdvance(t_weibo_text)) / 2;
+				int t_follow_text_x	= t_follow_x + (t_infoWidth - WeiboItemField.sm_defaultFont.getAdvance(fsm_follow_text)) / 2 ;
+				int t_fans_text_x	= t_fans_x + (t_infoWidth - WeiboItemField.sm_defaultFont.getAdvance(fsm_fans_text)) / 2;
+				int t_weibo_text_x	= t_weibo_x + (t_infoWidth - WeiboItemField.sm_defaultFont.getAdvance(fsm_weibo_text)) / 2;
 				
 				int t_follow_num_x	= t_follow_x + (t_infoWidth - WeiboItemField.sm_defaultFont.getAdvance(t_follow_num)) / 2 ;
 				int t_fans_num_x	= t_fans_x + (t_infoWidth - WeiboItemField.sm_defaultFont.getAdvance(t_fans_num)) / 2;
 				int t_weibo_num_x	= t_weibo_x + (t_infoWidth - WeiboItemField.sm_defaultFont.getAdvance(t_weibo_num)) / 2;
 				
-				drawRoundRect(_g,t_follow_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,true);
-				drawRoundRect(_g,t_fans_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,true);
-				drawRoundRect(_g,t_weibo_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,true);
+				WeiboItemField.drawBubble(_g,t_follow_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,WeiboItemField.fsm_bubble_no_point);
+				WeiboItemField.drawBubble(_g,t_follow_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,WeiboItemField.fsm_bubble_no_point);
+				WeiboItemField.drawBubble(_g,t_fans_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,WeiboItemField.fsm_bubble_no_point);
+				WeiboItemField.drawBubble(_g,t_weibo_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,WeiboItemField.fsm_bubble_no_point);
 				
 				t_start_y += ft_interval;
 				
-				_g.drawText(t_follow_text,t_follow_text_x,t_start_y);
-				_g.drawText(t_fans_text,t_fans_text_x,t_start_y);
-				_g.drawText(t_weibo_text,t_weibo_text_x,t_start_y);
+				_g.drawText(fsm_follow_text,t_follow_text_x,t_start_y);
+				_g.drawText(fsm_fans_text,t_fans_text_x,t_start_y);
+				_g.drawText(fsm_weibo_text,t_weibo_text_x,t_start_y);
 				
-				t_start_y += WeiboItemField.sm_fontHeight + 2 + ft_interval;
+				t_start_y += WeiboItemField.sm_fontHeight + ft_interval;
 				
 				_g.drawText(t_follow_num,t_follow_num_x,t_start_y);
 				_g.drawText(t_fans_num,t_fans_num_x,t_start_y);
@@ -192,32 +193,11 @@ public class WeiboUserInfoScreen extends MainScreen{
 	DescTextField		m_descText = new DescTextField();
 	InfoField			m_infoField = new InfoField();
 	
-	static void drawRoundRect(Graphics _g,int _x,int _y,int _width,int _height,boolean _middleLine){
-		final int t_arc = 12;
-		
-		int t_color = _g.getColor();
-		try{
-			_g.setColor(0xffffff);
-			_g.fillRoundRect(_x,_y,_width,_height,t_arc,t_arc);
-			
-			_g.setColor(0x8f8f8f);
-			_g.drawRoundRect(_x,_y,_width,_height,t_arc,t_arc);
-			
-			if(_middleLine){
-				_g.drawLine(_x,_y + _height / 2,_x + _width - 1,_y + _height / 2);
-			}
-			
-		}finally{
-			_g.setColor(t_color);
-		}
-	}
-	
 	public WeiboUserInfoScreen(recvMain _mainApp){
 		m_mainApp = _mainApp;
 		m_weiboMgr = new WeiboMainManager(_mainApp,_mainApp.m_weiboTimeLineScreen,false);
 		
 		add(m_infoField);
-		add(new SeparatorField());
 		add(m_weiboMgr);
 	}
 	

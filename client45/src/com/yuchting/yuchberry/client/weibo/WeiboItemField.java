@@ -119,16 +119,13 @@ public class WeiboItemField extends Manager{
 	static public final int fsm_controlField_followBtn	= 6;
 	static public final int fsm_controlField_editText		= 7;
 	
-	static private Bitmap sm_weiboBackgroud = null;
 	static private Bitmap sm_weiboSelected = null;
 	static private Bitmap sm_weiboCommentSign = null;
 	static private Bitmap sm_weiboPicSign = null;
+	
 	static {
 		try{
-			byte[] data = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream("/weibo/weibo_bg.png"));
-			sm_weiboBackgroud = EncodedImage.createEncodedImage(data, 0, data.length).getBitmap();
-			
-			data = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream("/weibo/weibo_sel.png"));
+			byte[] data = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream("/weibo/weibo_sel.png"));
 			sm_weiboSelected = EncodedImage.createEncodedImage(data, 0, data.length).getBitmap();
 			
 			data = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream("/weibo/commentSign.png"));
@@ -231,7 +228,7 @@ public class WeiboItemField extends Manager{
 			
 			m_commentText_height = sm_testCommentTextArea.getHeight() + fsm_headImageTextInterval;
 			
-			m_commentText_y = m_functionButton_y + fsm_headImageTextInterval;
+			m_commentText_y = m_functionButton_y + fsm_headImageTextInterval * 2;
 			
 			m_functionButton_y = m_commentText_y + m_commentText_height + fsm_headImageTextInterval;
 			
@@ -266,9 +263,9 @@ public class WeiboItemField extends Manager{
 	
 	public static int getAbsTextPosX(){
 		if(sm_displayHeadImage){
-			return 2 + fsm_headImageTextInterval + fsm_headImageWidth + 1;
+			return 2 + fsm_headImageTextInterval + fsm_headImageWidth + 10;
 		}else{
-			return 2 + fsm_weiboSignImageSize + 1;
+			return 2 + fsm_weiboSignImageSize + 10;
 		}
 	}
 	
@@ -453,7 +450,7 @@ public class WeiboItemField extends Manager{
 		}else{
 			
 			if(m_absTextArea != null && sm_showAllInList){
-				return Math.max(m_absTextHeight + 1,fsm_weiboSignImageSize + fsm_headImageWidth + 8);
+				return Math.max(m_absTextHeight + 5,fsm_weiboSignImageSize + fsm_headImageWidth + 10);
 			}else{
 				return sm_fontHeight * 2 + 1;
 			}
@@ -467,7 +464,7 @@ public class WeiboItemField extends Manager{
 			
 			int t_commentText_y = WeiboItemField.sm_commentFirst?0:m_commentText_y;
 			
-			int t_text_y = WeiboItemField.sm_commentFirst?m_commentText_height:0;
+			int t_text_y = WeiboItemField.sm_commentFirst?m_commentText_height:1;
 		
 			if(m_commentText != null){
 				// comment area
@@ -475,6 +472,7 @@ public class WeiboItemField extends Manager{
 				setPositionChild(m_parentManager.m_commentTextArea,fsm_headImageTextInterval,t_commentText_y);
 				layoutChild(m_parentManager.m_commentTextArea,fsm_commentTextWidth,m_functionButton_y - m_commentText_y);
 				
+				t_text_y += sm_bubble_block_size / 2;
 			}
 			
 			if(!sm_simpleMode){
@@ -521,7 +519,7 @@ public class WeiboItemField extends Manager{
 		}else{
 			
 			if(m_absTextAreaAdded){
-				setPositionChild(m_absTextArea,getAbsTextPosX(),0);
+				setPositionChild(m_absTextArea,getAbsTextPosX(),fsm_headImageTextInterval + 1);
 				layoutChild(m_absTextArea,m_absTextArea.getTextWidth(), m_absTextHeight);
 			}
 			
@@ -563,9 +561,13 @@ public class WeiboItemField extends Manager{
 							
 				int t_textStart_y = WeiboItemField.sm_commentFirst?m_commentText_height : 0;
 				
+				// draw weibo style 
+				//
 				_g.drawBitmap(0, t_textStart_y, fsm_weiboSignImageSize, fsm_weiboSignImageSize, 
 							weiboTimeLineScreen.GetWeiboSign(m_weibo.GetWeiboStyle()), 0, 0);
 				
+				// draw head image
+				//
 				displayHeadImage(_g,0, t_textStart_y + fsm_weiboSignImageSize + fsm_headImageTextInterval,true);
 							
 				int t_startSign_x = fsm_weiboSignImageSize;
@@ -610,7 +612,8 @@ public class WeiboItemField extends Manager{
 					//
 					// draw a bubble
 					drawBubble(_g, 0, t_commentText_y - fsm_headImageTextInterval,
-							fsm_commentTextWidth + fsm_headImageTextInterval, m_commentText_height + 5,fsm_bubble_top_point);
+							fsm_commentTextWidth + fsm_headImageTextInterval * 2, m_commentText_height + 5,
+							WeiboItemField.sm_commentFirst?fsm_bubble_bottom_point : fsm_bubble_top_point);
 					
 					paintChild(_g,m_parentManager.m_commentTextArea);
 										
@@ -636,8 +639,8 @@ public class WeiboItemField extends Manager{
 	
 	public void paintFocus(Graphics _g,boolean _on){
 		
-		final int t_firstLineHeight = 4;
-		final int t_leadingSpace = 2;
+		int t_firstLineHeight = 4;
+		int t_leadingSpace = 2;
 		
 		int color		= _g.getColor();
 		Font oldFont	= _g.getFont();
@@ -645,13 +648,21 @@ public class WeiboItemField extends Manager{
 				
 			if(m_absTextAreaAdded){
 				
-				if(_on){
-					_g.setColor(0xffffff);
-				}else{
-					_g.setColor(0x3f3f3f);
-				}
+				//draw the background
+				//
+				fillWeiboFieldBG(_g,0,0,getPreferredWidth(),getPreferredHeight());
+
+				// draw the bubble
+				//
+				drawBubble(_g,getAbsTextPosX() - 5,fsm_headImageTextInterval,
+						m_absTextArea.getTextWidth() + 5,m_absTextHeight,fsm_bubble_left_point);
 				
 				paintChild(_g,m_absTextArea);
+				
+				// draw the weibo style
+				//
+				_g.drawBitmap(2, 2, fsm_weiboSignImageSize, fsm_weiboSignImageSize, 
+						weiboTimeLineScreen.GetWeiboSign(m_weibo.GetWeiboStyle()), 0, 0);
 				
 				if(sm_displayHeadImage){
 					// display head image when closed
@@ -943,12 +954,12 @@ public class WeiboItemField extends Manager{
 	private final static int fsm_bubble_bottom_left 	= 6;
 	private final static int fsm_bubble_left 		= 7;
 	
-	private final static int fsm_bubble_top_point		= 8;
-	private final static int fsm_bubble_right_point		= 9;
-	private final static int fsm_bubble_bottom_point		= 10;
-	private final static int fsm_bubble_left_point		= 11;
+	public  final static int fsm_bubble_top_point		= 8;
+	public final static int fsm_bubble_right_point		= 9;
+	public final static int fsm_bubble_bottom_point		= 10;
+	public final static int fsm_bubble_left_point		= 11;
 	
-	private final static int fsm_bubble_no_point			= 12;
+	public final static int fsm_bubble_no_point			= 12;
 		
 	private final static String[] fsm_bubble_string	=
 	{
@@ -963,9 +974,9 @@ public class WeiboItemField extends Manager{
 		"/weibo/bubble_left.png",
 		
 		"/weibo/bubble_top_point.png",
-		"/weibo/bubble_left.png",
-		"/weibo/bubble_left.png",
-		"/weibo/bubble_left.png",
+		"/weibo/bubble_right_point.png",
+		"/weibo/bubble_bottom_point.png",
+		"/weibo/bubble_left_point.png",
 	};
 	
 	private final static Bitmap[] fsm_bubble_image = 
@@ -1024,16 +1035,17 @@ public class WeiboItemField extends Manager{
 				
 				t_horz_x += sm_bubble_block_size;
 			}
+		}
+		int t_horz_remain_width = (_width - sm_bubble_block_size * 2) % sm_bubble_block_size;
+		if(t_horz_remain_width > 0){
+		
+			int t_horz_x = _x + t_horz_num * sm_bubble_block_size + sm_bubble_block_size;
 			
-			int t_horz_remain_width = (_width - sm_bubble_block_size * 2) % sm_bubble_block_size;
-			if(t_horz_remain_width > 0){
+			_g.drawBitmap(t_horz_x, _y,t_horz_remain_width, sm_bubble_block_size, 
+					fsm_bubble_image[fsm_bubble_top], 0, 0);
 			
-				_g.drawBitmap(t_horz_x, _y,t_horz_remain_width, sm_bubble_block_size, 
-						fsm_bubble_image[fsm_bubble_top], 0, 0);
-				
-				_g.drawBitmap(t_horz_x, _y + (_height - sm_bubble_block_size),t_horz_remain_width, 
-						sm_bubble_block_size, fsm_bubble_image[fsm_bubble_bottom], 0, 0);
-			}
+			_g.drawBitmap(t_horz_x, _y + (_height - sm_bubble_block_size),t_horz_remain_width, 
+					sm_bubble_block_size, fsm_bubble_image[fsm_bubble_bottom], 0, 0);
 		}
 		
 		// draw vert edge
@@ -1051,23 +1063,39 @@ public class WeiboItemField extends Manager{
 				
 				t_vert_y += sm_bubble_block_size;
 			}
+		}
+		
+		int t_vert_remain_height = (_height - sm_bubble_block_size * 2) % sm_bubble_block_size;
+		if(t_vert_remain_height > 0){
 			
-			int t_vert_remain_height = (_height - sm_bubble_block_size * 2) % sm_bubble_block_size;
-			if(t_vert_remain_height > 0){
-				
-				_g.drawBitmap(_x, t_vert_y,sm_bubble_block_size, t_vert_remain_height, 
-						fsm_bubble_image[fsm_bubble_left], 0, 0);
-				
-				_g.drawBitmap(_x + (_width - sm_bubble_block_size), t_vert_y,sm_bubble_block_size, 
-						t_vert_remain_height, fsm_bubble_image[fsm_bubble_right], 0, 0);
-			}
+			int t_vert_y = _y + t_vert_num * sm_bubble_block_size + sm_bubble_block_size;
+			
+			_g.drawBitmap(_x, t_vert_y,sm_bubble_block_size, t_vert_remain_height, 
+					fsm_bubble_image[fsm_bubble_left], 0, 0);
+			
+			_g.drawBitmap(_x + (_width - sm_bubble_block_size), t_vert_y,sm_bubble_block_size, 
+					t_vert_remain_height, fsm_bubble_image[fsm_bubble_right], 0, 0);
 		}
 		
 		// draw the point 
 		//
-		if(_point_style == fsm_bubble_top_point){
+		switch(_point_style){
+		case fsm_bubble_left_point:
+			_g.drawBitmap(_x - sm_bubble_block_size / 2, _y + sm_bubble_block_size , 
+					sm_bubble_block_size, sm_bubble_block_size, fsm_bubble_image[fsm_bubble_left_point],0, 0);
+			break;
+		case fsm_bubble_top_point:
 			_g.drawBitmap(_x + sm_bubble_block_size , _y - sm_bubble_block_size / 2, 
 					sm_bubble_block_size, sm_bubble_block_size, fsm_bubble_image[fsm_bubble_top_point],0, 0);
+			break;
+		case fsm_bubble_right_point:
+			_g.drawBitmap(_x + _width + sm_bubble_block_size / 2, _y + sm_bubble_block_size , 
+					sm_bubble_block_size, sm_bubble_block_size, fsm_bubble_image[fsm_bubble_right_point],0, 0);
+			break;
+		case fsm_bubble_bottom_point:
+			_g.drawBitmap(_x + sm_bubble_block_size * 2, _y + _height - sm_bubble_block_size / 2, 
+					sm_bubble_block_size, sm_bubble_block_size, fsm_bubble_image[fsm_bubble_bottom_point],0, 0);
+			break;
 		}
 		
 		// fill the inner rectangle
