@@ -223,9 +223,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		"SOHU/",
 		"FAN/",
 	};
+	
+	public static ImageSets	sm_weiboUIImage = null;
 		
 	public static void main(String[] args) {
-		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());		
+		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());
 		t_theApp.enterEventDispatcher();
 	}
 	
@@ -245,8 +247,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return fsm_maxWeiboNum[0];
 	}
 	
-	public recvMain(boolean _systemRun) {	
-	
+	public recvMain(boolean _systemRun){
+		
+		try{
+			sm_weiboUIImage = new ImageSets("/weibo_full_image.imageset");
+		}catch(Exception e){
+			System.err.print("Weibo UI image Exception :" + e.getMessage() + e.getClass().getName());
+		}
+		
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/",Connector.READ_WRITE);
 			try{

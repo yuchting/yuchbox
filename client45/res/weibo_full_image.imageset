@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Imageset Name="full_weibo_image" Imagefile="/full_weibo_image.png" NativeHorzRes="512" NativeVertRes="512" >
+	 
+	<Image Name="sinaWeibo" XPos="0" YPos="82" Width="16" Height="16" />
+	<Image Name="163Weibo" XPos="0" YPos="98" Width="16" Height="16" />
+	<Image Name="qqWeibo" XPos="16" YPos="98" Width="16" Height="16" />
+	<Image Name="tWeibo" XPos="16" YPos="82" Width="16" Height="16" />
+	<Image Name="fanWeibo" XPos="32" YPos="82" Width="16" Height="16" />
+	<Image Name="sohuWeibo" XPos="32" YPos="98" Width="16" Height="16" />
+	
+	<Image Name="BBSign" XPos="48" YPos="82" Width="12" Height="12" />
+	<Image Name="qqVIP" XPos="60" YPos="98" Width="12" Height="12" />
+	<Image Name="sinaVIP" XPos="48" YPos="98" Width="12" Height="12" />	
+	
+	<Image Name="atMe" XPos="0" YPos="50" Width="32" Height="32" />
+	<Image Name="atMe_hover" XPos="32" YPos="50" Width="32" Height="32" />
+	<Image Name="home" XPos="64" YPos="50" Width="32" Height="32" />
+	<Image Name="home_hover" XPos="96" YPos="50" Width="32" Height="32" />
+	<Image Name="commentMe" XPos="128" YPos="50" Width="32" Height="32" />
+	<Image Name="commentMe_hover" XPos="160" YPos="50" Width="32" Height="32" />
+	<Image Name="directMsg" XPos="192" YPos="50" Width="32" Height="32" />
+	<Image Name="directMsg_hover" XPos="215" YPos="50" Width="32" Height="32" />
+		
+	<Image Name="defaultHeadImage_l" XPos="50" YPos="0" Width="50" Height="50" />
+	<Image Name="headImageMask_l" XPos="0" YPos="0" Width="50" Height="50" />
+	<Image Name="defaultHeadImage" XPos="100" YPos="0" Width="32" Height="32" />
+	<Image Name="headImageMask" XPos="132" YPos="0" Width="32" Height="32" />
+	
+	<Image Name="at_reply_button" XPos="0" YPos="115" Width="75" Height="32" />
+	<Image Name="at_reply_button_focus" XPos="75" YPos="115" Width="75" Height="32" />
+	<Image Name="forward_comment_button" XPos="0" YPos="147" Width="75" Height="32" />
+	<Image Name="forward_comment_button_focus" XPos="75" YPos="147" Width="75" Height="32" />
+	<Image Name="favorite_button" XPos="0" YPos="179" Width="75" Height="32" />
+	<Image Name="favorite_button_focus" XPos="75" YPos="179" Width="75" Height="32" />
+	<Image Name="picture_button" XPos="0" YPos="211" Width="75" Height="32" />
+	<Image Name="picture_button_focus" XPos="75" YPos="211" Width="75" Height="32" />
+	<Image Name="favorite_button_en" XPos="0" YPos="243" Width="75" Height="32" />
+	<Image Name="favorite_button_focus_en" XPos="75" YPos="243" Width="75" Height="32" />
+	<Image Name="picture_button_en" XPos="0" YPos="275" Width="75" Height="32" />
+	<Image Name="picture_button_focus_en" XPos="75" YPos="275" Width="75" Height="32" />
+	<Image Name="update_button" XPos="0" YPos="307" Width="75" Height="32" />
+	<Image Name="update_button_focus" XPos="75" YPos="307" Width="75" Height="32" />
+	<Image Name="update_button_en" XPos="150" YPos="115" Width="75" Height="32" />
+	<Image Name="update_button_focus_en" XPos="150" YPos="275" Width="75" Height="32" />
+	
+	<Image Name="picSign" XPos="0" YPos="353" Width="16" Height="16" />
+	<Image Name="commentSign" XPos="16" YPos="353" Width="16" Height="16" />
+	<Image Name="update" XPos="32" YPos="353" Width="24" Height="24" />
+	
+	<Image Name="bubble_top_left" XPos="0" YPos="377" Width="16" Height="16" />
+	<Image Name="bubble_top" XPos="16" YPos="377" Width="16" Height="16" />
+	<Image Name="bubble_top_right" XPos="32" YPos="377" Width="16" Height="16" />
+	
+	<Image Name="bubble_left" XPos="0" YPos="393" Width="16" Height="16" />
+	<Image Name="bubble_bottom_left" XPos="0" YPos="409" Width="16" Height="16" />
+	<Image Name="bubble_bottom" XPos="16" YPos="409" Width="16" Height="16" />
+	
+	<Image Name="bubble_right" XPos="32" YPos="393" Width="16" Height="16" />
+	<Image Name="bubble_bottom_right" XPos="32" YPos="409" Width="16" Height="16" />
+	
+	<Image Name="bubble_top_point" XPos="48" YPos="377" Width="16" Height="16" />
+	<Image Name="bubble_right_point" XPos="64" YPos="377" Width="16" Height="16" />
+	<Image Name="bubble_bottom_point" XPos="48" YPos="393" Width="16" Height="16" />
+	<Image Name="bubble_left_point" XPos="64" YPos="393" Width="16" Height="16" />
+	
+	<Image Name="weibo_bg" XPos="80" YPos="377" Width="30" Height="30" />
+	<Image Name="space_line" XPos="110" YPos="377" Width="8" Height="2" />
+	
+	<Image Name="nav_bar_left" XPos="118" YPos="377" Width="8" Height="45" />
+	<Image Name="nav_bar_mid" XPos="126" YPos="377" Width="32" Height="45" />
+	<Image Name="nav_bar_right" XPos="158" YPos="377" Width="8" Height="45" />
+	
+</Imageset>

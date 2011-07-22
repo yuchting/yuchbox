@@ -19,7 +19,7 @@ public class WeiboTextField extends ActiveRichTextField{
 	int[]		m_foreground = 
 	{
 		0,
-		0x21bee7,
+		0x012a93,
 	};
 		
 	static Font[]		sm_fontList = 
