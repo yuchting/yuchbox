@@ -17,6 +17,8 @@ class CheckVersion extends Thread{
 				URL is_gd = new URL("http://yuchberry.googlecode.com/files/latest_version?a="+(new Random()).nextInt());
 				
 		        URLConnection yc = is_gd.openConnection();
+		        yc.setConnectTimeout(10000);
+		        yc.setReadTimeout(50000);
 		        BufferedReader in = new BufferedReader(
 		                                new InputStreamReader(yc.getInputStream()));
 		        		        

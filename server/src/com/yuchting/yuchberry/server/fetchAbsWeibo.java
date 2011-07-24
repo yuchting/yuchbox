@@ -768,7 +768,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			}
 			
 			URLConnection t_connect = _url.openConnection();
-	               
+			t_connect.setConnectTimeout(10000);
+		    t_connect.setReadTimeout(50000);
 	        BufferedInputStream t_read = new BufferedInputStream(t_connect.getInputStream()); 
 	   		try{
 	   			ByteArrayOutputStream fos = new ByteArrayOutputStream();
@@ -815,6 +816,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				URL t_url = _url;
 				
 		        URLConnection t_connect = t_url.openConnection();
+		        t_connect.setConnectTimeout(10000);
+		        t_connect.setReadTimeout(50000);
 		        if(t_file_l.exists() && t_file.exists()){
 		        	
 		        	// if the both file is exist and the image length is not changed

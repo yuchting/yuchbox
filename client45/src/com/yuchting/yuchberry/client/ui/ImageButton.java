@@ -1,13 +1,13 @@
-package com.yuchting.yuchberry.client.weibo;
+package com.yuchting.yuchberry.client.ui;
 
-import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.MenuItem;
 
-public class WeiboButton extends Field
+
+public class ImageButton extends Field
 {
     private static final int fsm_textColour = 0xffffff;
     
@@ -19,31 +19,32 @@ public class WeiboButton extends Field
     private static final int fsm_borderArc = 5;
     
     public  static final int fsm_borderWidth = 2;
-      
-    private int _menuOrdinal = 0;
-    private int _menuPriority = 0;
-                
+
     String 	m_text = "";
     
-    Bitmap	m_image = null;
-    Bitmap	m_image_focus = null;
+    ImageUnit	m_image = null;
+    ImageUnit	m_image_focus = null;
+    ImageSets	m_imageSets = null;
 
-    public WeiboButton( String text,Bitmap _image,Bitmap _image_focus){
-        this( text,_image,_image_focus,0,0,0);
+    public ImageButton( String text,ImageUnit _image,ImageUnit _image_focus,ImageSets _imageSets){
+        this( text,_image,_image_focus,_imageSets,0);
     }
-    
-    public WeiboButton( String text,Bitmap _image,Bitmap _image_focus,long _style){
-        this(text,_image,_image_focus,0,0,_style);
-    } 
 
-    public WeiboButton( String text,Bitmap _image,Bitmap _image_focus,int menuOrdinal, int menuPriority, long style ){
+    public ImageButton( String text,ImageUnit _image,ImageUnit _image_focus,ImageSets _imageSets,long style){
         super(Field.FOCUSABLE | style );
 
         m_text = text;
         m_image = _image;
         m_image_focus = _image_focus;
-        _menuOrdinal = menuOrdinal;
-        _menuPriority = menuPriority;
+        m_imageSets = _imageSets;
+    }
+    
+    public int getImageWidth(){
+    	return m_image.getWidth();
+    }
+    
+    public int getImageHeight(){
+    	return m_image.getHeight();
     }
             
     protected void layout(int width,int height){
@@ -69,9 +70,9 @@ public class WeiboButton extends Field
   	
     		if(m_image != null && m_image_focus != null){
     			if(focus){
-    				g.drawBitmap(0,0,getWidth(),getHeight(),m_image_focus,0,0);
+    				m_imageSets.drawImage(g,m_image_focus,0,0);
     			}else{
-    				g.drawBitmap(0,0,getWidth(),getHeight(),m_image,0,0);
+    				m_imageSets.drawImage(g,m_image,0,0);
     			}   			
     			
     		}else{
@@ -155,11 +156,7 @@ public class WeiboButton extends Field
      */
     public MenuItem getMenuItem()
     {
-        if( _menuOrdinal < 0
-         || _menuPriority < 0 ) {
-            return null;
-        }
-        return new MenuItem( getMenuText(), _menuOrdinal, _menuPriority ) {
+        return new MenuItem( getMenuText(), 0, 0 ) {
             public void run() {
                 fieldChangeNotify( 0 );
             }

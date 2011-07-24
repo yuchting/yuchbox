@@ -1886,7 +1886,7 @@ public class fetchEmail extends fetchAccount{
 	
 	public void ComposeMessage(MimeMessage msg,fetchMail _mail,fetchMail _forwardMail,String _sendName)throws Exception{
 		
-		msg.setFrom(new InternetAddress(m_strUserNameFull,_sendName));
+		msg.setFrom(new InternetAddress(MimeUtility.encodeText(m_strUserNameFull,"UTF-8","B"),_sendName));
 	
 		String t_sendTo = fetchMail.parseAddressList(_mail.GetSendToVect());
 		

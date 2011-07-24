@@ -585,6 +585,8 @@ public class fetchMgr{
 			
 			URL url = new URL(ft_URL);
 			URLConnection con = url.openConnection();
+			con.setConnectTimeout(10000);
+			con.setReadTimeout(50000);
 			con.setAllowUserInteraction(false);
 			con.connect();
 			   
@@ -820,6 +822,8 @@ public class fetchMgr{
 			URL is_gd = new URL("http://is.gd/api.php?longurl=" + _longURL);
 			
 	        URLConnection yc = is_gd.openConnection();
+	        yc.setConnectTimeout(10000);
+	        yc.setReadTimeout(50000);
 	        BufferedReader in = new BufferedReader(
 	                                new InputStreamReader(yc.getInputStream()));
 	        

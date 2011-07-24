@@ -7,6 +7,8 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
 
 import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.ui.ButtonSegImage;
+import com.yuchting.yuchberry.client.ui.ImageUnit;
 
 public class WeiboHeader extends Field{
 	
@@ -40,52 +42,33 @@ public class WeiboHeader extends Field{
 	
 	private final static int fsm_stateBitmapTop = (fsm_headHeight - fsm_stateBitmapSize) /2;
 	
-	private final static Bitmap[] fsm_stateBitmap = 
+	private final static ImageUnit[] fsm_stateBitmap = 
 	{
 		null,null,null,null
 	};
 	
-	private final static Bitmap[] fsm_stateBitmap_hover = 
+	private final static ImageUnit[] fsm_stateBitmap_hover = 
 	{
 		null,null,null,null
 	};
 	
 	private final static String[] fsm_stateBitmapString = 
 	{
-		"/weibo/home.png",
-		"/weibo/atMe.png",
-		"/weibo/commentMe.png",
-		"/weibo/directMsg.png",
+		"home",
+		"atMe",
+		"commentMe",
+		"directMsg",
 	};
 	
 	private final static String[] fsm_stateBitmapString_hover = 
 	{
-		"/weibo/home_hover.png",
-		"/weibo/atMe_hover.png",
-		"/weibo/commentMe_hover.png",
-		"/weibo/directMsg_hover.png",
+		"home_hover",
+		"atMe_hover",
+		"commentMe_hover",
+		"directMsg_hover",
 	};
 	
-	private static Bitmap sm_navigateBitmap = null;
-	
-	static{
-		try{
-			for(int i = 0;i < fsm_stateBitmap.length;i++){
-				byte[] bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream(fsm_stateBitmapString[i]));		
-				fsm_stateBitmap[i] =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
-				
-				bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream(fsm_stateBitmapString_hover[i]));		
-				fsm_stateBitmap_hover[i] =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
-			}
-			
-			byte[] data = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream(
-					WeiboItemField.fsm_largeHeadImage?"/weibo/nav_l.png":"/weibo/nav.png"));
-			sm_navigateBitmap = EncodedImage.createEncodedImage(data, 0, data.length).getBitmap();
-			
-		}catch(Exception e){
-			weiboTimeLineScreen.sm_mainApp.DialogAlertAndExit("inner load error:" + e.getMessage());
-		}	
-	}
+	private static ButtonSegImage sm_navigateBitmap = null;
 		
 	int	m_currState = STATE_TIMELINE;
 	
@@ -93,6 +76,20 @@ public class WeiboHeader extends Field{
 	
 	public WeiboHeader(weiboTimeLineScreen _screen){
 		m_parentScreen = _screen;
+		
+		if(sm_navigateBitmap == null){
+			for(int i = 0;i < fsm_stateBitmap.length;i++){
+				fsm_stateBitmap[i] = weiboTimeLineScreen.sm_weiboUIImage.getImageUnit(fsm_stateBitmapString[i]);
+				
+				fsm_stateBitmap_hover[i] = weiboTimeLineScreen.sm_weiboUIImage.getImageUnit(fsm_stateBitmapString_hover[i]);
+			}
+			
+			sm_navigateBitmap = new ButtonSegImage(
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("nav_bar_left"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("nav_bar_mid"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("nav_bar_right"),
+					weiboTimeLineScreen.sm_weiboUIImage);
+		}
 	}
 
 	public void invalidate(){
@@ -124,7 +121,7 @@ public class WeiboHeader extends Field{
 				g.drawBitmap(0,0,recvMain.fsm_display_width,fsm_headHeight,sm_unlinkedStateBitmap,0,0);
 			}
 			
-			g.drawBitmap(0,0,recvMain.fsm_display_width,fsm_headHeight,sm_navigateBitmap,0,0);
+			sm_navigateBitmap.draw(g,0,0,recvMain.fsm_display_width);
 			
 			int t_x = fsm_linkedStateSize;
 			boolean t_drawNewMsgSign = false;
@@ -150,18 +147,17 @@ public class WeiboHeader extends Field{
 				if(m_currState == i){
 					// hover
 					//
-					g.drawBitmap(t_x,fsm_stateBitmapTop,fsm_stateBitmapSize,fsm_stateBitmapSize,fsm_stateBitmap_hover[i],0,0);
+					weiboTimeLineScreen.sm_weiboUIImage.drawImage(g,fsm_stateBitmap_hover[i],t_x,fsm_stateBitmapTop);
 				}else{
 					// normal
 					//
-					g.drawBitmap(t_x,fsm_stateBitmapTop,fsm_stateBitmapSize,fsm_stateBitmapSize,fsm_stateBitmap[i],0,0);
+					weiboTimeLineScreen.sm_weiboUIImage.drawImage(g,fsm_stateBitmap[i],t_x,fsm_stateBitmapTop);
 				}				
 				
 				if(t_drawNewMsgSign){
 					// draw a new message sign
 					//
-					g.drawBitmap(t_x,fsm_stateBitmapTop,WeiboItemField.fsm_weiboBBerImageSize,WeiboItemField.fsm_weiboBBerImageSize,
-							weiboTimeLineScreen.GetBBerSignBitmap(),0,0);
+					weiboTimeLineScreen.sm_weiboUIImage.drawImage(g,weiboTimeLineScreen.GetBBerSignBitmap(),t_x,fsm_stateBitmapTop);
 				}
 				
 				t_x += recvMain.fsm_display_width / fsm_stateBitmap.length;

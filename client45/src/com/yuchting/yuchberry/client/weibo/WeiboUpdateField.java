@@ -1,36 +1,24 @@
 package com.yuchting.yuchberry.client.weibo;
 
 import local.localResource;
-import net.rim.device.api.io.IOUtilities;
-import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 
 import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.ui.ImageUnit;
 
 public class WeiboUpdateField extends WeiboItemField{
 	
-	private final static int		fsm_updateBitmapSize = 32;
-	
-	private static Bitmap sm_updateBitmap = null;
-	
-	static {
-		try{
-			byte[] bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream("/weibo/update.png"));		
-			sm_updateBitmap =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
-			
-		}catch(Exception e){
-			weiboTimeLineScreen.sm_mainApp.DialogAlertAndExit("inner load error:" + e.getMessage());
-		}	 
-	}
-	
+	private ImageUnit m_updateBitmap = null;
+		
 	private String m_updatePromptText = recvMain.sm_local.getString(localResource.WEIBO_UPDATE_WEIBO_LABEL);
 	
 	String m_sendUpdateText = "";
 	
 	public WeiboUpdateField(WeiboMainManager _mainManager){
 		super(_mainManager);
+		
+		m_updateBitmap = weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("compose");
 	}
 	
 	public void AddDelControlField(boolean _add){
@@ -107,11 +95,11 @@ public class WeiboUpdateField extends WeiboItemField{
 				}				
 			}	
         	
-			_g.drawBitmap(2,0, fsm_updateBitmapSize, fsm_updateBitmapSize,sm_updateBitmap,0,0);
+			weiboTimeLineScreen.sm_weiboUIImage.drawImage(_g,m_updateBitmap,2,0);
         	
 			_g.setColor(0x757575);
 			_g.setFont(WeiboItemField.sm_boldFont);
-        	_g.drawText(m_updatePromptText,fsm_updateBitmapSize + 2,2,Graphics.ELLIPSIS);
+        	_g.drawText(m_updatePromptText,m_updateBitmap.getWidth() + 2,2,Graphics.ELLIPSIS);
         	
         }finally{
         	_g.setColor( oldColour );

@@ -39,6 +39,7 @@ import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
 
+import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.weibo.WeiboItemField;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 import com.yuchting.yuchberry.client.weibo.weiboTimeLineScreen;
@@ -205,27 +206,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	FileConnection m_logfc				= null;
 	OutputStream	m_logfcOutput		= null;
-	
-	
-	// weibo module
-	public boolean			m_enableWeiboModule			= false;
-	public boolean			m_updateOwnListWhenFw		= true;
-	public boolean			m_updateOwnListWhenRe		= false;
-	public boolean			m_dontDownloadWeiboHeadImage= false;
-		
-	public String[]				m_weiboHeadImageDir_sub = 
-	{
-		"Sina/",
-		"TW/",
-		"QQ/",
-		
-		"163/",
-		"SOHU/",
-		"FAN/",
-	};
-	
-	public static ImageSets	sm_weiboUIImage = null;
-		
+			
 	public static void main(String[] args) {
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());
 		t_theApp.enterEventDispatcher();
@@ -248,13 +229,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	
 	public recvMain(boolean _systemRun){
-		
-		try{
-			sm_weiboUIImage = new ImageSets("/weibo_full_image.imageset");
-		}catch(Exception e){
-			System.err.print("Weibo UI image Exception :" + e.getMessage() + e.getClass().getName());
-		}
-		
+				
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/",Connector.READ_WRITE);
 			try{
@@ -1615,6 +1590,25 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///// weibo module
 	///////////////////////////////////////////////////////////////////////////////////////////
+	// weibo module
+	public boolean			m_enableWeiboModule			= false;
+	public boolean			m_updateOwnListWhenFw		= true;
+	public boolean			m_updateOwnListWhenRe		= false;
+	public boolean			m_dontDownloadWeiboHeadImage= false;
+		
+	public String[]				m_weiboHeadImageDir_sub = 
+	{
+		"Sina/",
+		"TW/",
+		"QQ/",
+		
+		"163/",
+		"SOHU/",
+		"FAN/",
+	};
+	
+	public static ImageSets	sm_weiboUIImage = null;
+	
 	public weiboTimeLineScreen	m_weiboTimeLineScreen = null;
 	public boolean				m_publicForward		= false;
 	private Vector				m_receivedWeiboList	= new Vector();
@@ -1644,7 +1638,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		if(m_enableWeiboModule){
 			
+			
+			
 			if(m_weiboTimeLineScreen == null){
+								
 				m_weiboTimeLineScreen = new weiboTimeLineScreen(this);
 				
 				m_updateWeiboItem = new ApplicationMenuItem(30) {

@@ -27,6 +27,9 @@ import net.rim.device.api.ui.container.MainScreen;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
+import com.yuchting.yuchberry.client.ui.BubbleImage;
+import com.yuchting.yuchberry.client.ui.ImageSets;
+import com.yuchting.yuchberry.client.ui.ImageUnit;
 
 abstract class WeiboUserMenu extends MenuItem{
 	
@@ -46,9 +49,6 @@ abstract class WeiboUserMenu extends MenuItem{
 }
 
 public class weiboTimeLineScreen extends MainScreen{
-	
-	
-	
 	
 	public WeiboUserMenu m_userGetInfoMenu = new WeiboUserMenu(localResource.WEIBO_CHECK_USER_MENU_LABEL,5,5){
 		public void run(){
@@ -74,8 +74,40 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 		}
 	};
+	public static recvMain				sm_mainApp = (recvMain)UiApplication.getUiApplication();
 	
-	static recvMain				sm_mainApp = (recvMain)UiApplication.getUiApplication();
+	public static ImageSets			sm_weiboUIImage = null;
+	public static BubbleImage 			sm_bubbleImage = null;
+	static {
+
+		try{
+			sm_weiboUIImage = new ImageSets("/weibo_full_image.imageset");
+		}catch(Exception e){
+			sm_mainApp.DialogAlertAndExit("weibo UI load Error:"+ e.getMessage() + e.getClass().getName());
+		}
+		
+		if(sm_bubbleImage == null){
+			sm_bubbleImage = new BubbleImage(
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_top_left"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_top"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_top_right"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_right"),
+					
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_bottom_right"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_bottom"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_bottom_left"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_left"),
+					
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_inner_block"),
+					new ImageUnit[]{
+						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_left_point"),
+						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_top_point"),
+						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_right_point"),
+						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_bottom_point"),
+					},
+					weiboTimeLineScreen.sm_weiboUIImage);
+		}
+	}
 	
 	private WeiboUserFindFactory	m_userfactory = new WeiboUserFindFactory(this);
 	
@@ -85,8 +117,8 @@ public class weiboTimeLineScreen extends MainScreen{
 	WeiboDMManager				m_mainDMMgr;
 	
 	WeiboMainManager			m_currMgr = null;
-	
-	private static Bitmap[]		sm_VIPSign = 
+		
+	private static ImageUnit[]	sm_VIPSign = 
 	{
 		null,
 		null,
@@ -99,18 +131,18 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	private static String[]		sm_VIPSignString = 
 	{
-		"/weibo/sinaVIP.png",
-		"/weibo/sinaVIP.png",
-		"/weibo/qqVIP.png",
+		"sinaVIP",
+		"sinaVIP",
+		"qqVIP",
 		
-		"/weibo/sinaVIP.png",
-		"/weibo/sinaVIP.png",
-		"/weibo/sinaVIP.png",
+		"sinaVIP",
+		"sinaVIP",
+		"sinaVIP",
 	};
 	
-	static Bitmap		sm_headImageMask = null;
+	static ImageUnit		sm_headImageMask = null;
 	
-	static Bitmap[]		sm_WeiboSign =
+	static ImageUnit[]		sm_WeiboSign =
 	{ 
 		null,
 		null,
@@ -123,16 +155,17 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	static String[]		sm_weiboSignFilename = 
 	{
-		"/weibo/sinaWeibo.png",
-		"/weibo/tWeibo.png",
-		"/weibo/qqWeibo.png",
+		"sinaWeibo",
+		"tWeibo",
+		"qqWeibo",
 		
-		"/weibo/163Weibo.png",
-		"/weibo/sohuWeibo.png",
-		"/weibo/fanWeibo.png",
+		"163Weibo",
+		"sohuWeibo",
+		"fanWeibo",
 	};
 	
-	static Bitmap		sm_isBBerSign = null;	
+	static ImageUnit		sm_isBBerSign = null;
+	
 	
 	private Vector		m_headImageList = new Vector();
 	
@@ -162,6 +195,9 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	public weiboTimeLineScreen(recvMain _mainApp){
 		super(Manager.VERTICAL_SCROLL);
+		
+		
+		
 		sm_mainApp 	= _mainApp;
 		m_mainApp	= _mainApp;
 		
@@ -236,7 +272,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			super(Field.READONLY);
 			if(_small){
 				setFont(getFont().derive(getFont().getStyle(),getFont().getHeight() - 4));
-				m_width = getFont().getAdvance("999/999");
+				m_width = getFont().getAdvance("000/000 ");
 			}else{
 				m_width = fsm_promptTextWidth;
 			}
@@ -446,7 +482,7 @@ public class weiboTimeLineScreen extends MainScreen{
 						}
 					}
 					
-				},500, true);
+				},WeiboItemField.fsm_largeHeadImage?400:800, true);
 			}
 		}
 	}
@@ -616,7 +652,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 			if(sm_defaultHeadImage == null){
 				byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass()
-						.getResourceAsStream(WeiboItemField.fsm_largeHeadImage?"/weibo/defaultHeadImage_l.png":"/weibo/defaultHeadImage.png"));		
+						.getResourceAsStream(WeiboItemField.fsm_largeHeadImage?"/defaultHeadImage_l.png":"/defaultHeadImage.png"));		
 				sm_defaultHeadImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
 			}
 			
@@ -748,7 +784,7 @@ public class weiboTimeLineScreen extends MainScreen{
 						if(m_currMgr.getCurrEditItem().m_weibo.GetReplyWeiboId() != -1){
 							t_orgId = m_currMgr.getCurrEditItem().m_weibo.GetReplyWeiboId();
 						}else{
-							m_currMgr.getCurrEditItem().m_weibo.GetCommentWeiboId();
+							t_orgId = m_currMgr.getCurrEditItem().m_weibo.GetCommentWeiboId();
 						}
 						
 						long t_commentId = m_currMgr.getCurrEditItem().m_weibo.GetId();
@@ -834,18 +870,14 @@ public class weiboTimeLineScreen extends MainScreen{
         	m_weiboHeader.setCurrState(WeiboHeader.STATE_DIRECT_MESSAGE);
     		refreshWeiboHeader();
         }
-    };    
+    };
    
     int m_menuIndex_op = 20;
     
-    public WeiboUpdateDlg m_currUpdateDlg = null;
+    public WeiboUpdateDlg m_currUpdateDlg = new WeiboUpdateDlg(weiboTimeLineScreen.this);
     public boolean m_pushUpdateDlg = false;
     public MenuItem m_updateItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_UPDATE_DLG),m_menuIndex_op++,0){
-        public void run() {
-        	if(m_currUpdateDlg == null){
-        		m_currUpdateDlg = new WeiboUpdateDlg(weiboTimeLineScreen.this);
-        	}
-        	
+        public void run() {        	
         	m_pushUpdateDlg = true;
         	UiApplication.getUiApplication().pushScreen(m_currUpdateDlg);
         }
@@ -1172,7 +1204,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			    	case ' ':
 			    	case '0':
 			    		m_currMgr.Clicked(0, 0);   		
-			    		return true;   		
+			    		return true;   	
 			    	
 			    	}
 				}
@@ -1285,59 +1317,62 @@ public class weiboTimeLineScreen extends MainScreen{
 		return m_currMgr.Clicked(status,time);		
 	}
 	
-	static public Bitmap GetWeiboSign(int _weiboStyle){
-		
+	static public ImageUnit GetWeiboSign(int _weiboStyle){
 		if(sm_WeiboSign[_weiboStyle] == null){
-			try{
-				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream(sm_weiboSignFilename[_weiboStyle]));		
-				sm_WeiboSign[_weiboStyle] =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();					
-			}catch(Exception e){
-				sm_mainApp.SetErrorString("GWS:" + e.getMessage() + e.getClass().getName());
-			}
+			sm_WeiboSign[_weiboStyle] = sm_weiboUIImage.getImageUnit(sm_weiboSignFilename[_weiboStyle]);
 		}
 		
 		return sm_WeiboSign[_weiboStyle];
 	}
 	
-	static public Bitmap GetVIPSignBitmap(int _weiboStyle){
+	static public ImageUnit GetVIPSignBitmap(int _weiboStyle){
 		
 		if(sm_VIPSign[_weiboStyle] == null){
-			try{
-				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream(sm_VIPSignString[_weiboStyle]));		
-				sm_VIPSign[_weiboStyle] =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();			
-			}catch(Exception e){
-				sm_mainApp.SetErrorString("GSVSB:" + e.getMessage() + e.getClass().getName());
-			}
+			sm_VIPSign[_weiboStyle] = sm_weiboUIImage.getImageUnit(sm_VIPSignString[_weiboStyle]);
 		}
 	
 		return sm_VIPSign[_weiboStyle];		
 	}
 	
-	static public Bitmap GetHeadImageMaskBitmap(){
+	static public ImageUnit GetHeadImageMaskBitmap(){
 		if(sm_headImageMask == null){
-			try{
-				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass()
-							.getResourceAsStream(WeiboItemField.fsm_largeHeadImage?"/weibo/headImageMask_l.png":"/weibo/headImageMask.png"));		
-				sm_headImageMask =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
-			}catch(Exception e){
-				sm_mainApp.SetErrorString("GHIMB" + e.getMessage() + e.getClass().getName());
-			}		
+			sm_headImageMask = sm_weiboUIImage.getImageUnit(WeiboItemField.fsm_largeHeadImage?"headImageMask_l":"headImageMask");				
 		}
 		
 		return sm_headImageMask;
 	}
 	
-	static public Bitmap GetBBerSignBitmap(){
+	static public ImageUnit GetBBerSignBitmap(){
 		if(sm_isBBerSign == null){
-			try{
-				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/weibo/BBSign.png"));		
-				sm_isBBerSign =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();	
-			}catch(Exception e){
-				sm_mainApp.SetErrorString("GBSB:" + e.getMessage() + e.getClass().getName());
-			}
+			sm_isBBerSign = sm_weiboUIImage.getImageUnit("BBSign");		
 		}
 		
 		return sm_isBBerSign;
+	}
+	
+	private static ImageUnit sm_weiboSelectedImage = null;
+	private static ImageUnit sm_weiboPicSignImage = null;
+	private static ImageUnit sm_weiboCommentSignImage = null;
+	
+	static public ImageUnit getWeiboSelectedImage(){
+		if(sm_weiboSelectedImage == null){
+			sm_weiboSelectedImage = sm_weiboUIImage.getImageUnit("weibo_sel");
+		}
+		return sm_weiboSelectedImage;
+	}
+	static public ImageUnit getWeiboPicSignImage(){
+		if(sm_weiboPicSignImage == null){
+			sm_weiboPicSignImage = sm_weiboUIImage.getImageUnit("picSign");
+		}
+		
+		return sm_weiboPicSignImage;
+	}
+	static public ImageUnit getWeiboCommentSignImage(){
+		if(sm_weiboCommentSignImage == null){
+			sm_weiboCommentSignImage = sm_weiboUIImage.getImageUnit("commentSign");
+		}
+		
+		return sm_weiboCommentSignImage;
 	}
 	
 	// 

@@ -1,10 +1,7 @@
 package com.yuchting.yuchberry.client.weibo;
 
 import local.localResource;
-import net.rim.device.api.io.IOUtilities;
-import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Characters;
-import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
@@ -17,70 +14,19 @@ import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
 import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.ui.ImageButton;
 
 
-public class WeiboMainManager extends VerticalFieldManager implements FieldChangeListener{
-	
-	public static Bitmap[]	sm_controlButImage = {	null,null,null,null,null,null};
-	public static Bitmap[]	sm_controlButImage_focus = {null,null,null,null,null,null};
-	
-	private static String[]	sm_controlButImageString = 
-	{
-		"/weibo/forward_comment_button.png",
-		"/weibo/at_reply_button.png",
-		"/weibo/favorite_button.png",
-		"/weibo/picture_button.png",
-		"/weibo/favorite_button_en.png",
-		"/weibo/picture_button_en.png",
-	};
-	private static String[]	sm_controlButImageString_focus = 
-	{
-		"/weibo/forward_comment_button_focus.png",
-		"/weibo/at_reply_button_focus.png",
-		"/weibo/favorite_button_focus.png",
-		"/weibo/picture_button_focus.png",
-		"/weibo/favorite_button_focus_en.png",
-		"/weibo/picture_button_focus_en.png",
-	};
-	
-	static{
-		try{
-			for(int i = 0;i < sm_controlButImage.length;i++){
-				byte[] bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream(sm_controlButImageString[i]));		
-				sm_controlButImage[i] =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
-				
-				bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream(sm_controlButImageString_focus[i]));		
-				sm_controlButImage_focus[i] =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
-			}			
-		}catch(Exception e){
-			weiboTimeLineScreen.sm_mainApp.DialogAlertAndExit("inner load error:" + e.getMessage());
-		}
-	}
-	
-	public static final int		fsm_controlButtonHeight = sm_controlButImage[0].getHeight();
-	
-	public static final int[]		fsm_controlButtonWidth = 
-	{
-		sm_controlButImage[0].getWidth(),
-		sm_controlButImage[1].getWidth(),
-		sm_controlButImage[2].getWidth(),
-		sm_controlButImage[3].getWidth(),
-	};
-	
+public class WeiboMainManager extends VerticalFieldManager implements FieldChangeListener{	
 	public static int		sm_forwardBut_x				= 3;
-	public static int		sm_atBut_x					= sm_forwardBut_x + fsm_controlButtonWidth[0] + WeiboItemField.fsm_headImageTextInterval;
-	public static int		sm_favoriteBut_x			= sm_atBut_x + fsm_controlButtonWidth[1] + WeiboItemField.fsm_headImageTextInterval;
-	public static int		sm_picBut_x					= sm_favoriteBut_x + fsm_controlButtonWidth[2] + WeiboItemField.fsm_headImageTextInterval;
+	public static int		sm_atBut_x					= 0;
+	public static int		sm_favoriteBut_x			= 0;
+	public static int		sm_picBut_x					= 0;
 	
-	
-	public WeiboButton	 m_forwardBut			= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL),
-				sm_controlButImage[0],sm_controlButImage_focus[0]);
-	
-	public WeiboButton	 m_atBut				= new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL),
-				sm_controlButImage[1],sm_controlButImage_focus[1]);
-	
-	public WeiboButton	 m_favoriteBut			= null;
-	public WeiboButton	 m_picBut				= null; 
+	public ImageButton	 m_forwardBut			= null;
+	public ImageButton	 m_atBut				= null;
+	public ImageButton	 m_favoriteBut			= null;
+	public ImageButton	 m_picBut				= null; 
 		
 
 	public WeiboTextField 	m_textArea				= new WeiboTextField(0,WeiboItemField.fsm_darkColor);
@@ -126,20 +72,46 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	public WeiboMainManager(recvMain _mainApp,weiboTimeLineScreen _parentScreen,boolean _timelineManager){
 		super(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
 		
+		
+		m_forwardBut	= new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL),
+				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("forward_comment_button"),
+				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("forward_comment_button_focus"),
+				weiboTimeLineScreen.sm_weiboUIImage);
+	
+		m_atBut	= new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL),
+				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("at_reply_button"),
+				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("at_reply_button_focus"),
+				weiboTimeLineScreen.sm_weiboUIImage);
+		
 		if(recvMain.GetClientLanguage() == 0){
 
-			m_favoriteBut = new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL),
-					sm_controlButImage[2],sm_controlButImage_focus[2]);
+			m_favoriteBut = new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("favorite_button"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("favorite_button_focus"),
+					weiboTimeLineScreen.sm_weiboUIImage);
 			
-			m_picBut = new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL),
-					sm_controlButImage[3],sm_controlButImage_focus[3]);
+			m_picBut = new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("picture_button"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("picture_button_focus"),
+					weiboTimeLineScreen.sm_weiboUIImage);
 		}else{
 			
-			m_favoriteBut = new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL),
-					sm_controlButImage[4],sm_controlButImage_focus[4]);
+			m_favoriteBut = new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("favorite_button_en"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("favorite_button_focus_en"),
+					weiboTimeLineScreen.sm_weiboUIImage);
 			
-			m_picBut = new WeiboButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL),
-					sm_controlButImage[5],sm_controlButImage_focus[5]);
+			m_picBut = new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("picture_button_en"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("picture_button_focus_en"),
+					weiboTimeLineScreen.sm_weiboUIImage);
+		}
+		
+		if(sm_atBut_x == 0){
+			sm_forwardBut_x		= 3;
+			sm_atBut_x			= sm_forwardBut_x + m_forwardBut.getImageWidth() + WeiboItemField.fsm_headImageTextInterval;
+			sm_favoriteBut_x	= sm_atBut_x + m_atBut.getImageWidth() + WeiboItemField.fsm_headImageTextInterval;
+			sm_picBut_x			= sm_favoriteBut_x + m_favoriteBut.getImageWidth() + WeiboItemField.fsm_headImageTextInterval;
 		}
 		
 		
@@ -295,7 +267,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		int oldColour = graphics.getColor();
 		try{
 			
-			graphics.setColor(WeiboItemField.fsm_spaceLineColor);
+			graphics.setColor(WeiboItemField.fsm_darkColor);
 			graphics.drawText(recvMain.sm_local.getString(localResource.WEIBO_REACH_MAX_WEIBO_NUM_PROMPT),
 								0,m_bufferedTotalHeight - WeiboItemField.sm_fontHeight);
 			
@@ -308,13 +280,13 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				int t_start_y = getManager().getVerticalScroll();
 				int t_start_x = recvMain.fsm_display_width - fsm_scrollbarSize;
 						
-				graphics.setColor(WeiboItemField.fsm_darkColor);
+				graphics.setColor(0xe0e0e0);
 				graphics.fillRect(t_start_x, t_start_y, fsm_scrollbarSize, t_visibleHeight);
 				
 				int t_scroll_height = t_visibleHeight * t_visibleHeight / m_bufferedTotalHeight;
 				int t_scroll_y = t_start_y + t_start_y * t_visibleHeight / m_bufferedTotalHeight;
 				
-				graphics.setColor(WeiboItemField.fsm_spaceLineColor);
+				graphics.setColor(0x606060);
 				graphics.fillRect(t_start_x,t_scroll_y,fsm_scrollbarSize,t_scroll_height);
 								
 				m_parentScreen.enableHeader(t_start_y == 0);
