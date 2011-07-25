@@ -92,40 +92,6 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[])throws Exception{
 		//berryRecvTest();
-		
-		
-		Map<Long,Long > t_statList = new HashMap<Long,Long >();
-		
-		t_statList.put(new Long(11),new Long(1));
-		t_statList.put(new Long(1),new Long(2));
-		t_statList.put(new Long(211),new Long(3));
-		t_statList.put(new Long(13),new Long(4));
-		t_statList.put(new Long(12),new Long(5));
-		
-
-		List t_arrayList = new ArrayList(t_statList.entrySet());
-		
-		Collections.sort(t_arrayList, new Comparator(){ 
-			public   int   compare(Object o1, Object o2){
-				Map.Entry   obj1   =   (Map.Entry)   o1; 
-				Map.Entry   obj2   =   (Map.Entry)   o2; 
-				long a = ((Long)obj1.getKey()).longValue();
-				long b = ((Long)obj2.getKey()).longValue();
-				if(a < b){
-					return -1;
-				}else if(a > b){
-					return 1;
-				}else{
-					return 0;
-				}
-			}
-		});
-		for(Iterator iter = t_arrayList.iterator();iter.hasNext();){ 
-			Map.Entry   entry   =   (Map.Entry)   iter.next(); 
-			
-			System.out.println(entry.getKey() + ":" + entry.getValue());
-		}
-		
 	}
 	
 	static public void qgetOAuthRequest(){
