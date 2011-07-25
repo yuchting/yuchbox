@@ -70,7 +70,7 @@ public class WeiboHeader extends Field{
 	
 	private static ButtonSegImage sm_navigateBitmap = null;
 		
-	int	m_currState = STATE_TIMELINE;
+	private int	m_currState = STATE_TIMELINE;
 	
 	weiboTimeLineScreen m_parentScreen;	
 	
@@ -100,9 +100,101 @@ public class WeiboHeader extends Field{
 		return m_currState;
 	}
 	
+	private final static int fsm_moveSliderHeight = 4;
+	private final static int	fsm_moveTime = 50;
+	private final static int[][]	fsm_moveColor = 
+	{
+		{0x68,0xff,0x59,0xff},
+		{0xd7,0x80,0xea,0xe4},
+		{0x03,0x04,0xfb,0x00},
+	};
+	
+	int					m_curr_x = fsm_linkedStateSize;
+	int					m_curr_color = (fsm_moveColor[0][0] << 16) | (fsm_moveColor[1][0] << 8) | (fsm_moveColor[2][0]);
+	int					m_former_x = fsm_linkedStateSize;
+	int					m_former_state = 0;
+	int					m_dest_x = 0;
+	int					m_animationRunId = -1;
+	int					m_deaccel_delta = 0; 
+	
 	public void setCurrState(int _state){
 		if(_state >= STATE_TIMELINE && _state <= STATE_DIRECT_MESSAGE){
-			m_currState = _state;
+			
+			if(m_currState != _state){
+				
+				m_former_state = m_currState;
+				m_currState = _state;
+									
+				m_deaccel_delta = 0;
+				m_former_x = m_curr_x;
+				m_dest_x = m_currState * (recvMain.fsm_display_width / fsm_stateBitmap.length) + fsm_linkedStateSize;
+				
+				synchronized (this) {
+					
+					if(m_animationRunId == -1){
+					
+						m_animationRunId = m_parentScreen.m_mainApp.invokeLater(new Runnable() {
+							public void run() {
+								int t_distance = Math.abs(m_former_x - m_dest_x);
+								
+								if(m_former_x < m_dest_x){
+									m_curr_x += t_distance / 3 - m_deaccel_delta;
+									
+									if(m_curr_x >= m_dest_x){
+										m_curr_x = m_dest_x;
+									}
+								}else{
+									m_curr_x -= t_distance / 3 - m_deaccel_delta;
+									
+									if(m_curr_x <= m_dest_x){
+										m_curr_x = m_dest_x;
+									}
+								}
+								m_deaccel_delta += 5;
+								
+								int r,g,b;
+								if(m_curr_x == m_dest_x){
+									
+									r = (fsm_moveColor[0][m_currState]);
+									g = (fsm_moveColor[1][m_currState]);
+									b = (fsm_moveColor[2][m_currState]);
+																		
+									synchronized (WeiboHeader.this) {
+										WeiboHeader.this.m_parentScreen.m_mainApp.cancelInvokeLater(m_animationRunId);
+										m_animationRunId = -1;
+									}
+									
+								}else{
+									r = (fsm_moveColor[0][m_currState] - fsm_moveColor[0][m_former_state]);
+									r = (m_curr_x - m_former_x) * r / t_distance  + fsm_moveColor[0][m_former_state];
+									
+									g = (fsm_moveColor[1][m_currState] - fsm_moveColor[1][m_former_state]);
+									g = (m_curr_x - m_former_x) * g / t_distance  + fsm_moveColor[1][m_former_state];
+									
+									b = (fsm_moveColor[2][m_currState] - fsm_moveColor[2][m_former_state]);
+									b = (m_curr_x - m_former_x) * b / t_distance  + fsm_moveColor[2][m_former_state];
+								}
+								
+								m_curr_color = (r << 16)| (g << 8) | b;
+								
+								WeiboHeader.this.invalidate(0,1,recvMain.fsm_display_width,fsm_moveSliderHeight);
+							}
+						},fsm_moveTime,true);
+						
+						// cant be allocated a usefull runnable id
+						//
+						if(m_animationRunId == -1){
+							m_curr_x = m_dest_x;
+							int r,g,b;
+							r = (fsm_moveColor[0][m_currState]);
+							g = (fsm_moveColor[1][m_currState]);
+							b = (fsm_moveColor[2][m_currState]);
+							m_curr_color = (r << 16)| (g << 8) | b;	
+						}
+					}
+				}
+			}
+			
 		}
 	}
 	
@@ -162,6 +254,14 @@ public class WeiboHeader extends Field{
 				
 				t_x += recvMain.fsm_display_width / fsm_stateBitmap.length;
 			}
+			
+			if(m_parentScreen.GetOnlineState()){
+				g.setColor(m_curr_color);
+			}else{
+				g.setColor(WeiboItemField.fsm_darkColor);
+			}
+			
+			g.fillRoundRect(m_curr_x,1,fsm_stateBitmap[0].getWidth(),fsm_moveSliderHeight,2,2);			
 			
 		}finally{
 			g.setColor(color);

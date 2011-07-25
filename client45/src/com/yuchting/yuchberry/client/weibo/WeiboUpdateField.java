@@ -82,7 +82,7 @@ public class WeiboUpdateField extends WeiboItemField{
 			if(_on){
 			
 				_g.setColor(fsm_selectedColor);
-				_g.fillRect(1,1,getPreferredWidth() - 2,sm_fontHeight - 3);
+				_g.fillRect(1,1,getPreferredWidth() - 2,getPreferredHeight());
 				
 			}else{
 				

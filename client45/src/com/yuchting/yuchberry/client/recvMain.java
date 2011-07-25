@@ -1134,7 +1134,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					m_weiboTimeLineScreen.m_currUpdateDlg.close();
 				}
 				
-				if(getActiveScreen() == m_weiboTimeLineScreen){
+				if(getActiveScreen() == m_weiboTimeLineScreen.m_optionScreen){
+					m_weiboTimeLineScreen.m_optionScreen.close();
+				}else if(getActiveScreen() == m_weiboTimeLineScreen){
 					popScreen(m_weiboTimeLineScreen);
 				}
 			}
@@ -1618,9 +1620,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	private int				m_receivedCommentWeiboNum = 0;
 	private int				m_receivedDirectMsgWeiboNum = 0;
 	
-	static final String[]	fsm_maxWeiboNumList = {"64","128","256","512","1024"};
-	static final int[]	fsm_maxWeiboNum		= {64,128,256,512,1024};
-	int						m_maxWeiboNumIndex = 0;
+	public static final String[]	fsm_maxWeiboNumList = {"64","128","256","512","1024"};
+	public static final int[]	fsm_maxWeiboNum		= {64,128,256,512,1024};
+	public int					m_maxWeiboNumIndex = 0;
 	
 	public int					m_receivedWeiboNum = 0;
 	public int					m_sentWeiboNum = 0;

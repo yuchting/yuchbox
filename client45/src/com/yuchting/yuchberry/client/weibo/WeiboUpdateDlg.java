@@ -149,7 +149,9 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			String t_str = recvMain.sm_local.getString(localResource.WEIBO_UPDATE_DIALOG_TITLE) 
 				+ " (" + m_editTextArea.getText().length() + ")";
 			
-			_g.drawText(t_str,0,(m_titleHeight - WeiboItemField.sm_fontHeight) / 2 + 2);
+			_g.drawText(t_str,(getPreferredWidth() - WeiboItemField.sm_boldFont.getAdvance(t_str)) / 2,
+					(m_titleHeight - WeiboItemField.sm_fontHeight) / 2 + 2);
+			
 		}finally{
 			_g.setColor(oldColor);
 			_g.setFont(oldFont);

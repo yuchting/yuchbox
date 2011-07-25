@@ -78,6 +78,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	public static ImageSets			sm_weiboUIImage = null;
 	public static BubbleImage 			sm_bubbleImage = null;
+	public static BubbleImage 			sm_bubbleImage_black = null;
 	static {
 
 		try{
@@ -104,6 +105,26 @@ public class weiboTimeLineScreen extends MainScreen{
 						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_top_point"),
 						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_right_point"),
 						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_bottom_point"),
+					},
+					weiboTimeLineScreen.sm_weiboUIImage);
+			
+			sm_bubbleImage_black = new BubbleImage(
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_top_left"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_top"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_top_right"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_right"),
+					
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_bottom_right"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_bottom"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_bottom_left"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_left"),
+					
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_inner_block"),
+					new ImageUnit[]{
+						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_left_point"),
+						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_top_point"),
+						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_right_point"),
+						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_bottom_point"),
 					},
 					weiboTimeLineScreen.sm_weiboUIImage);
 		}
@@ -949,8 +970,17 @@ public class weiboTimeLineScreen extends MainScreen{
         public void run() {
         	deleteWeiboItem();
         }
-    }; 
+    };
     
+    public WeiboOptionScreen m_optionScreen = null;
+    MenuItem m_optionItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPTION_MENU_LABEL),98,0){
+    	public void run() {
+        	if(m_optionScreen == null){
+        		m_optionScreen = new WeiboOptionScreen(m_mainApp);
+        	}
+        	m_mainApp.pushScreen(m_optionScreen);
+        }
+    };
     MenuItem m_helpItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_HELP_MENU_LABEL),99,0){
         public void run() {
         	recvMain.openURL("http://code.google.com/p/yuchberry/wiki/YuchBerry_Weibo");
@@ -962,9 +992,7 @@ public class weiboTimeLineScreen extends MainScreen{
         	recvMain t_recv = (recvMain)UiApplication.getUiApplication();
         	t_recv.pushStateScreen();
         }
-    };       
-    
-    
+    };
 	
 	protected void makeMenu(Menu _menu,int instance){
 		
@@ -1021,6 +1049,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 		
 		_menu.add(MenuItem.separator(50));
+		_menu.add(m_optionItem);
 		_menu.add(m_helpItem);
 		_menu.add(m_stateItem);
 		
@@ -1182,11 +1211,11 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 			if(m_currMgr.getCurrExtendedItem() != null && m_currMgr != m_mainDMMgr){
 				switch(key){
-		    	case ' ':
+				case '0':
 		    		//boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
 		    		m_currMgr.OpenNextWeiboItem(true);
 		    		return true;
-		    	case '0':
+				case ' ':
 		    		m_currMgr.OpenNextWeiboItem(false);
 		    		return true;
 				}

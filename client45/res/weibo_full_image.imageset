@@ -20,6 +20,8 @@
 	<Image Name="commentMe_hover" XPos="160" YPos="50" Width="32" Height="32" />
 	<Image Name="directMsg" XPos="192" YPos="50" Width="32" Height="32" />
 	<Image Name="directMsg_hover" XPos="224" YPos="50" Width="32" Height="32" />
+	<Image Name="weiboSetting" XPos="110" YPos="83" Width="32" Height="32" />
+	<Image Name="weiboSetting_hover" XPos="142" YPos="83" Width="32" Height="32" />
 		
 	<Image Name="headImageMask_l" XPos="0" YPos="0" Width="50" Height="50" />
 	<Image Name="headImageMask" XPos="50" YPos="0" Width="32" Height="32" />
@@ -39,7 +41,7 @@
 	<Image Name="update_button" XPos="0" YPos="307" Width="75" Height="32" />
 	<Image Name="update_button_focus" XPos="75" YPos="307" Width="75" Height="32" />
 	<Image Name="update_button_en" XPos="150" YPos="115" Width="75" Height="32" />
-	<Image Name="update_button_focus_en" XPos="150" YPos="275" Width="75" Height="32" />
+	<Image Name="update_button_focus_en" XPos="150" YPos="147" Width="75" Height="32" />
 	
 	<Image Name="picSign" XPos="0" YPos="353" Width="16" Height="16" />
 	<Image Name="commentSign" XPos="16" YPos="353" Width="16" Height="16" />
@@ -64,11 +66,30 @@
 	<Image Name="bubble_left_point" XPos="64" YPos="393" Width="16" Height="16" />
 	
 	<Image Name="weibo_bg" XPos="80" YPos="377" Width="30" Height="30" />
+	<Image Name="weibo_bg_own" XPos="80" YPos="407" Width="30" Height="30" />
 	<Image Name="space_line" XPos="110" YPos="377" Width="8" Height="2" />
 	
 	<Image Name="nav_bar_left" XPos="118" YPos="377" Width="8" Height="45" />
 	<Image Name="nav_bar_mid" XPos="126" YPos="377" Width="32" Height="45" />
 	<Image Name="nav_bar_right" XPos="158" YPos="377" Width="8" Height="45" />
+	
+	<Image Name="bubble_black_top_left" XPos="166" YPos="377" Width="16" Height="16" />
+	<Image Name="bubble_black_top" XPos="178" YPos="377" Width="16" Height="16" />
+	<Image Name="bubble_black_top_right" XPos="198" YPos="377" Width="16" Height="16" />
+	
+	<Image Name="bubble_black_left" XPos="166" YPos="393" Width="16" Height="16" />
+	<Image Name="bubble_black_bottom_left" XPos="166" YPos="409" Width="16" Height="16" />
+	<Image Name="bubble_black_bottom" XPos="178" YPos="409" Width="16" Height="16" />
+	
+	<Image Name="bubble_black_right" XPos="198" YPos="393" Width="16" Height="16" />
+	<Image Name="bubble_black_bottom_right" XPos="198" YPos="409" Width="16" Height="16" />
+	
+	<Image Name="bubble_black_inner_block" XPos="178" YPos="393" Width="16" Height="16" />
+	
+	<Image Name="bubble_black_top_point" XPos="214" YPos="377" Width="16" Height="16" />
+	<Image Name="bubble_black_right_point" XPos="230" YPos="377" Width="16" Height="16" />
+	<Image Name="bubble_black_bottom_point" XPos="214" YPos="393" Width="16" Height="16" />
+	<Image Name="bubble_black_left_point" XPos="230" YPos="393" Width="16" Height="16" />
 	
 	<Image Name="weibo_sel" XPos="0" YPos="452" Width="480" Height="60" />
 	
