@@ -248,7 +248,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		t_weibo.setFansNum(t_user.getFollowersCount());
 		t_weibo.setWeiboNum(t_user.getStatusesCount());
 		
-		List<Status> t_list = m_twitter.getUserListStatuses(_name, 0, new Paging(1,10));
+		List<Status> t_list = m_twitter.getUserTimeline(_name, new Paging(0));
 		for(Status s:t_list){
 			fetchWeibo weibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
 			ImportWeibo(weibo, s,fetchWeibo.TIMELINE_CLASS);
@@ -338,9 +338,9 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	
 	static public void main(String[] _arg)throws Exception{
 		
-		System.setProperty("proxySet", "true");
-		System.setProperty("proxyHost", "127.0.0.1");
-		System.setProperty("proxyPort", "8580");
+		//System.setProperty("proxySet", "true");
+		//System.setProperty("proxyHost", "127.0.0.1");
+		//System.setProperty("proxyPort", "8580");
 		
 		fetchMgr t_manger = new fetchMgr();
 		Logger t_logger = new Logger("");

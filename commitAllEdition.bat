@@ -13,6 +13,13 @@ copy /Y .\client45\src\com\yuchting\yuchberry\client\weibo\*.* .\client47\src\co
 copy /Y .\client45\src\com\yuchting\yuchberry\client\weibo\*.* .\client60\src\com\yuchting\yuchberry\client\weibo\
 copy /Y .\client45\src\com\yuchting\yuchberry\client\weibo\*.* .\client42\src\com\yuchting\yuchberry\client\weibo\
 
+copy /Y .\client45\src\com\yuchting\yuchberry\client\ui\*.* .\client\src\com\yuchting\yuchberry\client\ui\
+copy /Y .\client45\src\com\yuchting\yuchberry\client\ui\*.* .\client46\src\com\yuchting\yuchberry\client\ui\
+copy /Y .\client45\src\com\yuchting\yuchberry\client\ui\*.* .\client47\src\com\yuchting\yuchberry\client\ui\
+copy /Y .\client45\src\com\yuchting\yuchberry\client\ui\*.* .\client60\src\com\yuchting\yuchberry\client\ui\
+copy /Y .\client45\src\com\yuchting\yuchberry\client\ui\*.* .\client42\src\com\yuchting\yuchberry\client\ui\
+
+
 copy /Y .\client45\src\local\*.* .\client\src\local\
 copy /Y .\client45\src\local\*.* .\client46\src\local\
 copy /Y .\client45\src\local\*.* .\client47\src\local\
@@ -69,6 +76,7 @@ svn add .\client47\res\weibo\*.*
 svn add .\client60\res\weibo\*.* 
 svn add .\client42\res\weibo\*.*
 
+
 svn add .\client\src\com\yuchting\yuchberry\client\*.*
 svn add .\client60\src\com\yuchting\yuchberry\client\*.*
 svn add .\client46\src\com\yuchting\yuchberry\client\*.*
@@ -80,5 +88,11 @@ svn add .\client60\src\com\yuchting\yuchberry\client\weibo\*.*
 svn add .\client46\src\com\yuchting\yuchberry\client\weibo\*.*
 svn add .\client47\src\com\yuchting\yuchberry\client\weibo\*.*
 svn add .\client42\src\com\yuchting\yuchberry\client\weibo\*.*
+
+svn add .\client\src\com\yuchting\yuchberry\client\ui\*.*
+svn add .\client60\src\com\yuchting\yuchberry\client\ui\*.*
+svn add .\client46\src\com\yuchting\yuchberry\client\ui\*.*
+svn add .\client47\src\com\yuchting\yuchberry\client\ui\*.*
+svn add .\client42\src\com\yuchting\yuchberry\client\ui\*.*
 
 pause

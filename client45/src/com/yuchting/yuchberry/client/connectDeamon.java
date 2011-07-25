@@ -2,9 +2,11 @@ package com.yuchting.yuchberry.client;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Vector;
 
 import javax.microedition.io.Connector;
@@ -145,33 +147,7 @@ public class connectDeamon extends Thread implements SendListener,
 	Folder				m_listeningMessageFolder_out = null;
 	
 	String m_currentVersion = null;
-	
-	final static String fsm_findPrefix[] = 
-	{
-		"答复： ",
-		"回覆： ",
-		"回复： ",
-		"Re: ",
 		
-		"转发： ",
-		"轉寄： ",
-		"Forward: ",
-		"Fw: ",
-	};
-	
-	final static String fsm_replacePrefix[] =
-	{
-		"答复 ",
-		"回覆 ",
-		"回复 ",
-		"Re ",
-		
-		"转发 ",
-		"轉寄 ",
-		"Forward ",
-		"Fw ",
-	};
-	
 	final class SendingQueue extends Thread{
 		
 		final class SendingQueueData{
@@ -335,9 +311,7 @@ public class connectDeamon extends Thread implements SendListener,
 					
 					break;
 				}
-			}		
-			
-			m_mainApp.SetErrorString("sendMsg:" + t_msg.getSubject());
+			}			
 			
 			fetchMail t_mail = new fetchMail();
 			ImportMail(t_msg,t_mail);
@@ -353,7 +327,11 @@ public class connectDeamon extends Thread implements SendListener,
 					//
 					t_forwardReplyMail.SetContain("");
 				}
+				
+				m_mainApp.SetErrorString("origMsg:"+ t_forwardReplyMail.GetSubject());
 			}
+			
+			m_mainApp.SetErrorString("sendMsg:" + t_msg.getSubject());
 														
 			AddSendingMail(t_mail,m_composingAttachment,t_forwardReplyMail,m_sendStyle);
 			m_composingAttachment.removeAllElements();
@@ -544,119 +522,161 @@ public class connectDeamon extends Thread implements SendListener,
 	public void reply(MessageEvent e){
 		m_composingMail = e.getMessage();
 		m_composingAttachment.removeAllElements();
-	
+		
 		m_forwordReplyMail = FindOrgMessage(e.getMessage(),fetchMail.REPLY_STYLE);
 		
 		m_sendStyle = fetchMail.REPLY_STYLE;
 	}
 	//@}
 			
+	static final String fsm_origMsgFindTag = "Message-ID:";
+	
 	public Message FindOrgMessage(Message _message,int _style){
 		
-		Message t_org = null;
-		Store store = Session.getDefaultInstance().getStore();
-		try{
-			String t_messageSub = _message.getSubject();			
-			String t_trimString = null;
-			if(_style == fetchMail.REPLY_STYLE){
-				
-				if(t_messageSub.indexOf("：") != -1){
-					
-					for(int i = 0;i< fsm_findPrefix.length;i++){
-						if(t_messageSub.startsWith(fsm_findPrefix[i])){
-							t_trimString = fsm_findPrefix[i];
-							break;
-						}
-					}
-					
-				}else{
-
-					for(int i = 0;i< fsm_replacePrefix.length;i++){
-						if(t_messageSub.startsWith(fsm_replacePrefix[i])){
-							t_trimString = fsm_replacePrefix[i];
-							break;
-						}
-					}
-				}			
-				
-				final int t_prefixIndex = t_messageSub.indexOf(t_trimString);
-				if(t_prefixIndex != -1){
-					t_messageSub = t_messageSub.substring(t_prefixIndex + t_trimString.length());
-				}
-							
-			}else{
-				t_trimString = _message.forward().getSubject();
-								
-				if(t_trimString.equals(t_messageSub)){
-					
-					// it will equal in OS6
-					// find the prefix
-					//
-					for(int i = 0;i < fsm_findPrefix.length;i++){
-						if(t_messageSub.startsWith(fsm_findPrefix[i])){
-							t_messageSub = t_messageSub.substring(fsm_findPrefix[i].length());
-							break;
-						}
-					}
-					
-					
-				}else{
-					
-					final int t_start = t_trimString.indexOf(t_messageSub);
-					
-					if(t_start != -1){
-						t_trimString = t_trimString.substring(0,t_start);
-						t_messageSub = t_messageSub.substring(t_trimString.length());
-					}	
-				}
-				
-			}			
+		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+		try {
+			_message.writeTo(t_os);
+			String t_content = t_os.toString();
 			
-			Folder[] t_folders = store.list();
-			
-			find_lab:
-			for(int i = 0 ;i < t_folders.length;i++){
-				Message[] t_messages = t_folders[i].getMessages();
+			int t_first = t_content.indexOf(fsm_origMsgFindTag);
+			if(t_first != -1){
+				t_first = t_content.indexOf(fsm_origMsgFindTag,t_first + 1);
 				
-				// backword search the message
-				for(int j = t_messages.length - 1;j >= 0 ;j--){
+				if(t_first != -1){
+					int t_end = t_content.indexOf('\r',t_first);
 					
-					final String t_sub = t_messages[j].getSubject();
-					if(t_sub.startsWith(t_messageSub)){
+					if(t_end != -1){
+						String ID = t_content.substring(t_first + fsm_origMsgFindTag.length(), t_end);
 						
-						if(_style == fetchMail.REPLY_STYLE){
-							// the original reply to
-							//
-							Address[] t_replyTo = t_messages[j].getReplyTo();
+						int messageId = Integer.valueOf(ID).intValue();
+						
+						Store store = Session.getDefaultInstance().getStore();
+						Folder[] t_folders = store.list();
+						
+						for(int i = 0 ;i < t_folders.length;i++){
+							Message[] t_messages = t_folders[i].getMessages();
 							
-							// the message to reply to
-							//
-							Address[] t_replyTo1 = _message.getRecipients(Message.RecipientType.TO);
-														
-							for(int index = 0;index < t_replyTo.length;index++){
-								
-								for(int index1 = 0;index1 < t_replyTo1.length;index1++){
-									if(t_replyTo[index].getAddr().equalsIgnoreCase(t_replyTo1[index1].getAddr())){
-										t_org = t_messages[j];
-										break find_lab;
-									}
+							for(int j = t_messages.length - 1;j >= 0 ;j--){
+								if(t_messages[j].getMessageId() == messageId){
+									return t_messages[j]; 
 								}
-								
-							}																				
-						}else{
-							t_org = t_messages[j];
-							break find_lab;
+							}
 						}
-						
 					}
+					
 				}
 			}
 			
-		}catch(Exception e){
-			m_mainApp.SetErrorString("F:" + e.getMessage() + " " + e.getClass().getName());
+		} catch (Exception e1) {
+			e1.printStackTrace();
 		}
 		
-		return t_org;
+		return null;
+		
+//		Message t_org = null;
+//		Store store = Session.getDefaultInstance().getStore();
+//		try{
+//			String t_messageSub = _message.getSubject();			
+//			String t_trimString = null;
+//			if(_style == fetchMail.REPLY_STYLE){
+//				
+//				if(t_messageSub.indexOf("：") != -1){
+//					
+//					for(int i = 0;i< fsm_findPrefix.length;i++){
+//						if(t_messageSub.startsWith(fsm_findPrefix[i])){
+//							t_trimString = fsm_findPrefix[i];
+//							break;
+//						}
+//					}
+//					
+//				}else{
+//
+//					for(int i = 0;i< fsm_replacePrefix.length;i++){
+//						if(t_messageSub.startsWith(fsm_replacePrefix[i])){
+//							t_trimString = fsm_replacePrefix[i];
+//							break;
+//						}
+//					}
+//				}			
+//				
+//				final int t_prefixIndex = t_messageSub.indexOf(t_trimString);
+//				if(t_prefixIndex != -1){
+//					t_messageSub = t_messageSub.substring(t_prefixIndex + t_trimString.length());
+//				}
+//							
+//			}else{
+//				t_trimString = _message.forward().getSubject();
+//								
+//				if(t_trimString.equals(t_messageSub)){
+//					
+//					// it will equal in OS6
+//					// find the prefix
+//					//
+//					for(int i = 0;i < fsm_findPrefix.length;i++){
+//						if(t_messageSub.startsWith(fsm_findPrefix[i])){
+//							t_messageSub = t_messageSub.substring(fsm_findPrefix[i].length());
+//							break;
+//						}
+//					}
+//					
+//					
+//				}else{
+//					
+//					final int t_start = t_trimString.indexOf(t_messageSub);
+//					
+//					if(t_start != -1){
+//						t_trimString = t_trimString.substring(0,t_start);
+//						t_messageSub = t_messageSub.substring(t_trimString.length());
+//					}	
+//				}
+//				
+//			}			
+//			
+//			Folder[] t_folders = store.list();
+//			
+//			find_lab:
+//			for(int i = 0 ;i < t_folders.length;i++){
+//				Message[] t_messages = t_folders[i].getMessages();
+//				
+//				// backword search the message
+//				for(int j = t_messages.length - 1;j >= 0 ;j--){
+//					
+//					final String t_sub = t_messages[j].getSubject();
+//					if(t_sub.startsWith(t_messageSub)){
+//						
+//						if(_style == fetchMail.REPLY_STYLE){
+//							// the original reply to
+//							//
+//							Address[] t_replyTo = t_messages[j].getReplyTo();
+//							
+//							// the message to reply to
+//							//
+//							Address[] t_replyTo1 = _message.getRecipients(Message.RecipientType.TO);
+//														
+//							for(int index = 0;index < t_replyTo.length;index++){
+//								
+//								for(int index1 = 0;index1 < t_replyTo1.length;index1++){
+//									if(t_replyTo[index].getAddr().equalsIgnoreCase(t_replyTo1[index1].getAddr())){
+//										t_org = t_messages[j];
+//										break find_lab;
+//									}
+//								}
+//								
+//							}																				
+//						}else{
+//							t_org = t_messages[j];
+//							break find_lab;
+//						}
+//						
+//					}
+//				}
+//			}
+//			
+//		}catch(Exception e){
+//			m_mainApp.SetErrorString("F:" + e.getMessage() + " " + e.getClass().getName());
+//		}
+//		
+//		return t_org;
 	}
 	
 	public void SendFetchAttachmentFile(FetchAttachment _att)throws Exception{
@@ -1504,18 +1524,7 @@ public class connectDeamon extends Thread implements SendListener,
 		String t_sub = m.getSubject();
 		if(t_sub == null){
 			_mail.SetSubject(fetchMail.fsm_noSubjectTile);
-		}else{
-			
-			if(!m_mainApp.m_discardOrgText){
-				// replace the blackberry auto-prefix
-				//
-				for(int i = 0;i < fsm_findPrefix.length;i++){
-					if(t_sub.startsWith(fsm_findPrefix[i])){
-						t_sub = fsm_replacePrefix[i] + t_sub.substring(fsm_findPrefix[i].length());
-						break;
-					}
-				}
-			}			
+		}else{	
 			
 			_mail.SetSubject(t_sub);	
 		}
@@ -1709,17 +1718,7 @@ public class connectDeamon extends Thread implements SendListener,
 	    
 	    // replace the blackberry auto-prefix
 		//
-	    String t_sub = _mail.GetSubject();
-	    
-	    if(!_discardOrgText){
-	    	for(int i = 0;i < fsm_findPrefix.length;i++){
-				if(t_sub.startsWith(fsm_findPrefix[i])){
-					t_sub = fsm_replacePrefix[i] + t_sub.substring(fsm_findPrefix[i].length());
-					break;
-				}
-			}	
-	    }
-		
+	    String t_sub = _mail.GetSubject();		
 		
 	    msg.setSubject(t_sub);
 	    msg.setHeader("X-Mailer",_mail.GetXMailer());
