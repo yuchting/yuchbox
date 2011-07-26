@@ -31,7 +31,7 @@ class BberEmailPanel extends FlowPanel{
 	final TextBox			m_host_send	= new TextBox();
 	final TextBox			m_port_send = new TextBox();
 	
-	final CheckBox			m_usingFullname = new CheckBox("使用全地址作为用户名登录");
+	final CheckBox			m_usingFullname = new CheckBox("使用全地址作为用户名登录(GoogleApps 邮箱、QQ企业邮箱，hotmail等邮箱需要选择)");
 	final CheckBox			m_appendHTML	= new CheckBox("追加HTML到正文");
 	
 	final DisclosurePanel	m_advancedDisclosure = new DisclosurePanel("高级设置：");

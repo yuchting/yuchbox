@@ -1151,6 +1151,12 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		return result;
 	}
 	
+	final class StatData{
+		List<yuchbber>	m_userList = new ArrayList<yuchbber>();
+		List<yuchOrder> m_orderList = new ArrayList<yuchOrder>();
+		int				m_totalFee = 0;		
+	}
+	
 	public String getStaticticsInfo(long _startTime,long _endTime)throws Exception{
 		
 		if(!m_isAdministrator){
@@ -1184,7 +1190,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				t_bberList = (List<yuchbber>)t_pm.newQuery("select from " + yuchbber.class.getName()).execute();
 			}
 			
-			Map<Long,List<yuchbber> > t_statList = new HashMap<Long,List<yuchbber> >();
+			
+			
+			Map<Long,StatData > t_statList = new HashMap<Long,StatData >();
 			
 			for(yuchbber bber:t_bberList){
 				if(bber.GetSigninTime() > 0){
@@ -1203,16 +1211,44 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					
 					Long t_keyDayTime = new Long(t_dayTime);
 					
-					List<yuchbber> t_newBber = t_statList.get(t_keyDayTime);
+					StatData t_newBber = t_statList.get(t_keyDayTime);
 					if(t_newBber == null){
-						t_newBber = new ArrayList<yuchbber>();
-						t_newBber.add(bber);
-						
+						t_newBber = new StatData();
+						t_newBber.m_userList.add(bber);
 						t_statList.put(t_keyDayTime,t_newBber);
 					}else{
-						t_newBber.add(bber);
+						t_newBber.m_userList.add(bber);
 					}
 				}	
+			}
+			
+			List<yuchOrder> t_orderList = (List<yuchOrder>)t_pm.newQuery("select form " + yuchOrder.class.getName() + 
+											" where m_alipay_trade_no != ''").execute();
+			
+			SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+			format.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+			
+			for(yuchOrder order: t_orderList){
+				long t_dayTime = format.parse(order.GetOutTradeNO().substring(0,8)).getTime();
+				if(_startTime != 0 && t_dayTime < _startTime){
+					continue;
+				}
+				
+				if(_endTime != 0 && t_dayTime >= _endTime){
+					continue;					
+				}
+				
+				Long t_keyDayTime = new Long(t_dayTime);
+				
+				StatData t_newBber = t_statList.get(t_keyDayTime);
+				if(t_newBber == null){
+					t_newBber = new StatData();
+					t_newBber.m_orderList.add(order);
+					t_statList.put(t_keyDayTime,t_newBber);
+				}else{
+					t_newBber.m_orderList.add(order);
+				}
+				
 			}
 			
 			StringBuffer t_result = new StringBuffer();
@@ -1221,11 +1257,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 
 			SimpleDateFormat t_timeFormat = new SimpleDateFormat("yyyy-MM-dd");
 		
-			List<Map.Entry<Long,List<yuchbber>>> t_arrayList = new ArrayList<Map.Entry<Long,List<yuchbber>>>(t_statList.entrySet());
+			List<Map.Entry<Long,StatData>> t_arrayList = new ArrayList<Map.Entry<Long,StatData>>(t_statList.entrySet());
 					
-			Collections.sort(t_arrayList, new Comparator<Map.Entry<Long,List<yuchbber>>>(){ 
+			Collections.sort(t_arrayList, new Comparator<Map.Entry<Long,StatData>>(){ 
 				
-				public int compare(Map.Entry<Long,List<yuchbber>> o1, Map.Entry<Long,List<yuchbber>> o2){
+				public int compare(Map.Entry<Long,StatData> o1, Map.Entry<Long,StatData> o2){
 
 					long a = (o1.getKey()).longValue();
 					long b = (o1.getKey()).longValue();
@@ -1239,31 +1275,42 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				}
 			});
 			
-			
-			for(Iterator<Map.Entry<Long,List<yuchbber>>> iter = t_arrayList.iterator(); iter.hasNext();){ 
-				Map.Entry<Long,List<yuchbber>>   entry   =   (Map.Entry<Long,List<yuchbber>>)   iter.next();
+			List<String> t_findList = new ArrayList<String>();
+			for(Iterator<Map.Entry<Long,StatData>> iter = t_arrayList.iterator(); iter.hasNext();){ 
+				Map.Entry<Long,StatData>   entry   = iter.next();
 				
-				Long time = (Long)entry.getKey();
-				List<yuchbber> list = (List<yuchbber>)entry.getValue();
+				Long time = entry.getKey();
+				StatData list = entry.getValue();
 				
 				int syncNum = 0;
 				int payNum = 0;
 				int fee = 0;
 				
-				for(yuchbber bber:list){
+				for(yuchbber bber:list.m_userList){
 					if(bber.GetConnectHost() != null && bber.GetConnectHost().length() > 0){
 						syncNum++;
 					}
-					
-					if(bber.GetTotalPayFee() > 0){
-						payNum++;
-						fee += bber.GetTotalPayFee();
-					}
 				}
+				
+				t_findList.clear();
+				
+				find_order:
+				for(yuchOrder order:list.m_orderList){
+					fee += (int)order.GetTotalFee();
+					
+					for(String name:t_findList){
+						if(order.GetBuyerEmail().equals(name)){
+							continue find_order;
+						}
+					}
+					
+					t_findList.add(order.GetBuyerEmail());
+				}
+				payNum = t_findList.size();
 				
 				t_result.append("<tr><td>")
 						.append(t_timeFormat.format(time.longValue())).append("</td><td>")
-						.append(list.size()).append("</td><td>")
+						.append(list.m_userList.size()).append("</td><td>")
 						.append(syncNum).append("</td><td>")
 						.append(payNum).append("</td><td>")
 						.append(fee).append("</td><tr>");

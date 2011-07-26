@@ -164,7 +164,7 @@ public class BberWeiboPanel extends FlowPanel{
 							m_checkStateTimer.cancel();
 							m_mainPanel.m_addPushAccountBut.click();
 							
-							Yuchsign.PopupPrompt("授权，添加账户成功！", BberWeiboPanel.this);
+							Yuchsign.PopupPrompt("授权，添加账户成功！需要同步才能推送。\n请不要忘记在客户端上启用Weibo模块哦～", BberWeiboPanel.this);
 						}
 					}
 					
