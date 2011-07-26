@@ -248,7 +248,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		t_weibo.setFansNum(t_user.getFollowersCount());
 		t_weibo.setWeiboNum(t_user.getStatusesCount());
 		
-		List<Status> t_list = m_twitter.getUserTimeline(_name, new Paging(0));
+		List<Status> t_list = m_twitter.getUserTimeline(_name, new Paging(1,10));
 		for(Status s:t_list){
 			fetchWeibo weibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
 			ImportWeibo(weibo, s,fetchWeibo.TIMELINE_CLASS);

@@ -323,8 +323,8 @@ public class fetchEmail extends fetchAccount{
     Session m_session_send 				= null;
     SMTPTransport m_sendTransport 		= null;
         	
-    Vector m_unreadMailVector 			= new Vector();
-    Vector m_unreadMailVector_confirm 	= new Vector();
+    Vector<fetchMail> m_unreadMailVector 			= new Vector<fetchMail>();
+    Vector<fetchMail> m_unreadMailVector_confirm 	= new Vector<fetchMail>();
     
     final class UnreadMailMarkingData{
     	int m_simpleHashCode;
@@ -337,9 +337,6 @@ public class fetchEmail extends fetchAccount{
     }
     
     Vector<UnreadMailMarkingData> m_unreadMailVector_marking	= new Vector<UnreadMailMarkingData>();
-
-    // pushed mail index vector 
-    Vector m_vectPushedMailIndex 		= new Vector();
     
     int		m_beginFetchIndex 			= 0;
     int		m_totalMailCount			= -1;
@@ -348,7 +345,7 @@ public class fetchEmail extends fetchAccount{
     
     boolean m_useAppendHTML			= false;    
    
-    private Vector	m_recvMailAttach 	= new Vector();
+    private Vector<RecvMailAttach>	m_recvMailAttach 	= new Vector<RecvMailAttach>();
         
     class MailIndexAttachment{
     	int			m_mailHashCode;
@@ -545,7 +542,8 @@ public class fetchEmail extends fetchAccount{
     	
     	m_sendTransport = (SMTPTransport)m_session_send.getTransport(m_protocol_send);
 	}
-		
+	
+	int m_loadMessageErrorTime = 0;
 	public void CheckFolder()throws Exception{
 		
 		if(!m_store.isConnected()){
@@ -609,26 +607,41 @@ public class fetchEmail extends fetchAccount{
 	 		    		
 	 		    		fetchMail t_mail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
 	 		    		t_mail.SetMailIndex(i + t_startIndex);
-//	 		    		try{
+	 		    		try{
+	 		    			
 	 		    			ImportMail(t_msg,t_mail);
-//	 		    		}catch(Exception e){
-//	 		    			String t_prompt = null;
-//	 		    			switch (m_mainMgr.GetClientLanguage()) {
-//			 		   		case 0:
-//			 		   			t_prompt = "\nYuchBerry服务器提示：由于网络，格式等问题，读取这封邮件的时候出现了错误，需要通过其它方式查看。\n\n\n"; 
-//			 		   			break;
-//			 		   		case 1:
-//			 		   			t_prompt = "\nYuchBerry服务器提示：由於網絡，格式等問題，讀取這封郵件的時候出現了錯誤，需要通過其他方式查看。\n\n\n";
-//			 		   			break;
-//			 		   		default:
-//			 		   			t_prompt = "\nYuchBerry ImportMail Error! Please read the Mail via another way!\n\n\n";
-//			 		   				
-//			 		   		}
-//	 		    			
-//	 		    			t_mail.SetContain(t_mail.GetContain() + "\n\n\n" + e.getMessage() + t_prompt);
-//	 		    			
-//	 		    			m_mainMgr.m_logger.PrinterException(e);
-//	 		    		}
+	 		    			
+	 		    			m_loadMessageErrorTime = 0;
+	 		    			
+	 		    		}catch(Exception e){
+	 		    			
+	 		    			m_loadMessageErrorTime++;
+	 		    			
+	 		    			if(m_loadMessageErrorTime >= 2){
+
+	 		    				m_loadMessageErrorTime = 0;
+	 		    				
+		 		    			String t_prompt = null;
+		 		    			switch (m_mainMgr.GetClientLanguage()) {
+				 		   		case 0:
+				 		   			t_prompt = "\nYuchBerry服务器提示：由于网络，格式等问题，读取这封邮件的时候出现了错误，需要通过其它方式查看。\n\n\n"; 
+				 		   			break;
+				 		   		case 1:
+				 		   			t_prompt = "\nYuchBerry服务器提示：由於網絡，格式等問題，讀取這封郵件的時候出現了錯誤，需要通過其他方式查看。\n\n\n";
+				 		   			break;
+				 		   		default:
+				 		   			t_prompt = "\nYuchBerry ImportMail Error! Please read the Mail via another way!\n\n\n";
+				 		   				
+				 		   		}
+		 		    			
+		 		    			t_mail.SetContain(t_mail.GetContain() + "\n\n\n" + e.getMessage() + t_prompt);
+		 		    			
+		 		    			m_mainMgr.m_logger.PrinterException(e);
+		 		    			
+	 		    			}else{
+	 		    				throw e;
+	 		    			}
+	 		    		}
 	 		    		 
 	 		    		AddMailIndexAttach(t_mail,false);
 	 		    		
