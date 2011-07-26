@@ -68,6 +68,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	    }
 	};
 	
+	
 	final static long		fsm_notifyID_disconnect = 767918509114949L;
 	
 	final static Object 	fsm_notifyEvent_disconnect = new Object() {
@@ -75,6 +76,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	       return recvMain.sm_local.getString(localResource.NOTIFY_DISCONNECT_LABEL);
 	    }
 	};
+	
+	final static long		fsm_notifyID_weibo_home = 767918509114950L;
+	
+	final static Object 	fsm_notifyEvent_weibo_home = new Object() {
+	    public String toString() {
+	       return recvMain.sm_local.getString(localResource.NOTIFY_WEIBO_LABEL_HOME);
+	    }
+	};
+	
 	
 	public connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
@@ -271,7 +281,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	//
         	NotificationsManager.registerSource(fsm_notifyID_email, fsm_notifyEvent_email,NotificationsConstants.CASUAL);
         	NotificationsManager.registerSource(fsm_notifyID_weibo, fsm_notifyEvent_weibo,NotificationsConstants.CASUAL);
+        	NotificationsManager.registerSource(fsm_notifyID_weibo_home, fsm_notifyEvent_weibo_home,NotificationsConstants.CASUAL);
         	NotificationsManager.registerSource(fsm_notifyID_disconnect, fsm_notifyEvent_disconnect,NotificationsConstants.CASUAL);
+        	
         	
         	if(!m_autoRun || m_hostname.length() == 0 || m_port == 0 || m_userPassword.length() == 0){
         		System.exit(0);
@@ -1185,6 +1197,16 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public void StopWeiboNotification(){
 		NotificationsManager.cancelImmediateEvent(fsm_notifyID_weibo, 0, this, null);
+	}
+	
+	public void TriggerWeiboHomeNotification(){
+		if(IsPromptTime()){
+			NotificationsManager.triggerImmediateEvent(fsm_notifyID_weibo_home, 0, this, null);
+		}		
+	}
+	
+	public void StopWeiboHomeNotification(){
+		NotificationsManager.cancelImmediateEvent(fsm_notifyID_weibo_home, 0, this, null);
 	}
 	
 	public void TriggerDisconnectNotification(){

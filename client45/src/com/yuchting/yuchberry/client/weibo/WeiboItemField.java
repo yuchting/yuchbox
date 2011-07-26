@@ -66,7 +66,7 @@ public class WeiboItemField extends Manager{
 	public final static int		fsm_promptTextBGColor		= 0xffffcc;
 	public final static int		fsm_promptTextBorderColor	= 0xc0c0c0;
 	
-	public final static int		fsm_selectedColor			= 0x42a2de;
+	public final static int		fsm_selectedColor			= 0x00a7e6;
 	public final static int		fsm_absTextColor			= 0x8f8f8f;
 	
 	public final static int		fsm_weiboNameTextColor		= 0xededed;
@@ -335,7 +335,7 @@ public class WeiboItemField extends Manager{
 					add(m_parentManager.m_favoriteBut);
 				}
 				
-				if(!m_hasControlField[fsm_controlField_picBtn]){
+				if(!m_hasControlField[fsm_controlField_picBtn] && m_weiboPic != null){
 					m_hasControlField[fsm_controlField_picBtn] = true;
 					add(m_parentManager.m_picBut);
 				}

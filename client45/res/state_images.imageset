@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Imageset Name="state_images" Imagefile="/state_images.png" NativeHorzRes="512" NativeVertRes="512" >
+	 
+	<Image Name="state_bg" XPos="0" YPos="0" Width="480" Height="320" />
+	<Image Name="state_input_left" XPos="0" YPos="320" Width="16" Height="32" />
+	<Image Name="state_input_mid" XPos="16" YPos="320" Width="16" Height="32" />
+	<Image Name="state_input_right" XPos="32" YPos="320" Width="16" Height="32" />
+	
+	
+</Imageset>

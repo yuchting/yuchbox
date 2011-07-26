@@ -377,12 +377,10 @@ public class weiboTimeLineScreen extends MainScreen{
 		int t_color = g.getColor();
 		try{
 			g.setColor(WeiboItemField.fsm_promptTextBGColor);
-        	g.fillRoundRect(_x, _y, _width, _height, 
-        			fsm_promptBubbleArc, fsm_promptBubbleArc);
+        	g.fillRoundRect(_x, _y, _width, _height, fsm_promptBubbleArc, fsm_promptBubbleArc);
         	
         	g.setColor(WeiboItemField.fsm_promptTextBorderColor);
-        	g.drawRoundRect(_x, _y, _width, _height, 
-        			fsm_promptBubbleArc, fsm_promptBubbleArc);
+        	g.drawRoundRect(_x, _y, _width, _height, fsm_promptBubbleArc, fsm_promptBubbleArc);
 			
 		}finally{
 			g.setColor(t_color);
@@ -444,14 +442,12 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 			if(!_initAdd){
 				
-				m_weiboHeader.invalidate();
+				m_weiboHeader.invalidate();				
 				
-				
-				if(_weibo.GetWeiboClass() == fetchWeibo.COMMENT_ME_CLASS
-				|| _weibo.GetWeiboClass() == fetchWeibo.AT_ME_CLASS
-				|| _weibo.GetWeiboClass() == fetchWeibo.DIRECT_MESSAGE_CLASS){
-					
-					sm_mainApp.TriggerWeiboNotification();
+				if(_weibo.GetWeiboClass() == fetchWeibo.TIMELINE_CLASS){
+					m_mainApp.TriggerWeiboHomeNotification();					
+				}else{
+					m_mainApp.TriggerWeiboNotification();
 				}
 			}
 			
@@ -1232,7 +1228,9 @@ public class weiboTimeLineScreen extends MainScreen{
 			    	case 10: // enter key
 			    	case ' ':
 			    	case '0':
-			    		m_currMgr.Clicked(0, 0);   		
+			    		m_currMgr.Clicked(0, 0);
+			    		m_mainApp.StopWeiboNotification();
+			    		m_mainApp.StopWeiboHomeNotification();
 			    		return true;   	
 			    	
 			    	}
@@ -1339,6 +1337,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		m_weiboHeader.invalidate();
 		m_mainApp.StopWeiboNotification();
+		m_mainApp.StopWeiboHomeNotification();
 		
 	}
 	
