@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.client.weibo;
+package com.yuchting.yuchberry.client.ui;
 
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
@@ -22,7 +22,7 @@ public class HyperlinkButtonField extends LabelField
 
     public HyperlinkButtonField( String text)
     {
-        this( text,0x0000FF,0xFFFFFF,0x0000FF,0,0);
+        this( text,0x0000FF,0,0x0000FF,0,0);
     }
     
     public HyperlinkButtonField( String text, int textColour, int highlightColour, int menuOrdinal, int menuPriority )
@@ -82,6 +82,7 @@ public class HyperlinkButtonField extends LabelField
                     g.setDrawingStyle( Graphics.DRAWSTYLE_FOCUS, true );
                     g.setBackgroundColor( _highlightColour );
                 }
+                
                 g.clear();
                 paint( g );
             }
@@ -91,7 +92,11 @@ public class HyperlinkButtonField extends LabelField
             g.setDrawingStyle( Graphics.DRAWSTYLE_FOCUS, oldDrawStyleFocus );
         }
     }
-            
+    
+    protected  void	onUnfocus(){
+    	super.onUnfocus();
+    	getManager().invalidate();
+    }
             
     protected boolean keyChar( char character, int status, int time ) 
     {

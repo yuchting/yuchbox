@@ -62,7 +62,7 @@ public class WeiboItemField extends Manager{
 	
 	public final static int		fsm_commentTextWidth		= fsm_weiboItemFieldWidth - fsm_headImageTextInterval * 2;
 	
-	public final static int		fsm_darkColor				= 0x6d6d6d;
+	public final static int		fsm_darkColor				= 0xb1aeae;
 	public final static int		fsm_promptTextBGColor		= 0xffffcc;
 	public final static int		fsm_promptTextBorderColor	= 0xc0c0c0;
 	

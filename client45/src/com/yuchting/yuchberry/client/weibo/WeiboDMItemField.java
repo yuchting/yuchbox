@@ -8,6 +8,7 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.component.TextField;
 
 import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.ui.HyperlinkButtonField;
 
 final class WeiboDMData{
 	

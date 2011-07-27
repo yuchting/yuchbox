@@ -1,8 +1,5 @@
 package com.yuchting.yuchberry.client.weibo;
 
-import net.rim.device.api.io.IOUtilities;
-import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
 
@@ -21,22 +18,7 @@ public class WeiboHeader extends Field{
 	
 	
 	private final static int fsm_linkedStateSize = 20;
-	
-	private static Bitmap	sm_linkedStateBitmap =  null;
-	private static Bitmap	sm_unlinkedStateBitmap =  null;
-	static {
-		try{
-			byte[] bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream("/linked_state.png"));		
-			sm_linkedStateBitmap = EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();	
-			
-			bytes = IOUtilities.streamToBytes(weiboTimeLineScreen.sm_mainApp.getClass().getResourceAsStream("/unlink_state.png"));
-			sm_unlinkedStateBitmap = EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
-			
-		}catch(Exception e){
-			weiboTimeLineScreen.sm_mainApp.DialogAlertAndExit("inner load error:" + e.getMessage());
-		}	
-	}
-	
+		
 	private final static int fsm_stateBitmapInterval = 12;
 	private final static int fsm_stateBitmapSize = 32;
 	
@@ -101,7 +83,7 @@ public class WeiboHeader extends Field{
 	}
 	
 	private final static int fsm_moveSliderHeight = 4;
-	private final static int	fsm_moveTime = 50;
+	private final static int	fsm_moveTime = 35;
 	private final static int[][]	fsm_moveColor = 
 	{
 		{0x68,0xff,0x59,0xff},
@@ -177,7 +159,8 @@ public class WeiboHeader extends Field{
 								
 								m_curr_color = (r << 16)| (g << 8) | b;
 								
-								WeiboHeader.this.invalidate(0,1,recvMain.fsm_display_width,fsm_moveSliderHeight);
+								WeiboHeader.this.invalidate(0,sm_navigateBitmap.getImageHeight() - 1 - fsm_moveSliderHeight
+															,recvMain.fsm_display_width,fsm_moveSliderHeight);
 							}
 						},fsm_moveTime,true);
 						
@@ -207,12 +190,6 @@ public class WeiboHeader extends Field{
 		int color = g.getColor();
 		try{
 			
-			if(m_parentScreen.GetOnlineState()){
-				g.drawBitmap(0,0,recvMain.fsm_display_width,fsm_headHeight,sm_linkedStateBitmap,0,0);
-			}else{
-				g.drawBitmap(0,0,recvMain.fsm_display_width,fsm_headHeight,sm_unlinkedStateBitmap,0,0);
-			}
-			
 			sm_navigateBitmap.draw(g,0,0,recvMain.fsm_display_width);
 			
 			int t_x = fsm_linkedStateSize;
@@ -239,7 +216,7 @@ public class WeiboHeader extends Field{
 				if(m_currState == i){
 					// hover
 					//
-					weiboTimeLineScreen.sm_weiboUIImage.drawImage(g,fsm_stateBitmap_hover[i],t_x,fsm_stateBitmapTop);
+					weiboTimeLineScreen.sm_weiboUIImage.drawImage(g,fsm_stateBitmap_hover[i],t_x,fsm_stateBitmapTop - 1 - fsm_moveSliderHeight);
 				}else{
 					// normal
 					//
@@ -261,7 +238,8 @@ public class WeiboHeader extends Field{
 				g.setColor(WeiboItemField.fsm_darkColor);
 			}
 			
-			g.fillRoundRect(m_curr_x,1,fsm_stateBitmap[0].getWidth(),fsm_moveSliderHeight,2,2);			
+			g.fillRoundRect(m_curr_x,sm_navigateBitmap.getImageHeight() - 1 - fsm_moveSliderHeight,
+					fsm_stateBitmap[0].getWidth(),fsm_moveSliderHeight,2,2);			
 			
 		}finally{
 			g.setColor(color);

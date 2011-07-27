@@ -21,9 +21,6 @@ import net.rim.device.api.ui.component.NumericChoiceField;
 import net.rim.device.api.ui.component.ObjectChoiceField;
 import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
-import net.rim.device.api.ui.container.VerticalFieldManager;
-
-import com.yuchting.yuchberry.client.weibo.WeiboItemField;
 
 public class settingScreen extends MainScreen implements FieldChangeListener,FocusChangeListener{
 	
@@ -46,8 +43,11 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 LabelField			m_recvMailNum	= new LabelField();
 	 LabelField			m_sentWeiboNum	= new LabelField();
 	 LabelField			m_recvWeiboNum	= new LabelField();
-	 ButtonField		m_clearByteBut	= new ButtonField(recvMain.sm_local.getString(localResource.SETTING_CLEAR_STATISTICS),Field.FIELD_RIGHT);
-	 ButtonField		m_copyStatBut	= new ButtonField(recvMain.sm_local.getString(localResource.SETTING_COPY_STATISTICS),Field.FIELD_RIGHT);
+	 ButtonField		m_clearByteBut	= new ButtonField(recvMain.sm_local.getString(localResource.SETTING_CLEAR_STATISTICS),
+			 											Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
+	 
+	 ButtonField		m_copyStatBut	= new ButtonField(recvMain.sm_local.getString(localResource.SETTING_COPY_STATISTICS),
+			 											Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	 
 	 CheckboxField		m_fulldayPrompt = null;
 	 NumericChoiceField	m_startPromptHour = null;
@@ -61,7 +61,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 CheckboxField		m_delRemoteMail	= null;
 	 CheckboxField		m_copyToSentFolder = null;
 	 ObjectChoiceField	m_recvMsgTextLength	= null;
-	 ButtonField		m_changeSignature = new ButtonField(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_BUTTON_TEXT),Field.FIELD_RIGHT);
+	 ButtonField		m_changeSignature = new ButtonField(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_BUTTON_TEXT),
+			 										Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	 
 	 CheckboxField		m_weiboModule	= null;
 	 NullField			m_weiboNullField = new NullField();

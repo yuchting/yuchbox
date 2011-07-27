@@ -7,9 +7,6 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
 import local.localResource;
-import net.rim.device.api.io.IOUtilities;
-import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
@@ -20,16 +17,22 @@ import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.ObjectListField;
 import net.rim.device.api.ui.container.MainScreen;
 
+import com.yuchting.yuchberry.client.ui.ImageSets;
+import com.yuchting.yuchberry.client.ui.ImageUnit;
+
 class fileIcon {
 
+	static ImageSets	sm_imageSets = null;
+	
 	int				m_fileSize;
 	String			m_filename 	= null;
 	String			m_filename_full 	= null;
-	Bitmap			m_bitmap		= null;
+	ImageUnit		m_bitmap		= null;
 	boolean		m_isFolder	= false;
 	long			m_lastModified = 0;
 	
-	public fileIcon(String _name,String _name_full,Bitmap _image,int _fileSize,boolean _isFolder,long _lastModified){
+	public fileIcon(String _name,String _name_full,ImageUnit _image,
+			int _fileSize,boolean _isFolder,long _lastModified){
 		
 		m_fileSize	= _fileSize;
 		m_filename	= _name;
@@ -53,10 +56,8 @@ class IconListCallback implements ListFieldCallback {
 	public void drawListRow(ListField listField, Graphics graphics, int index, int y, int width) {
 		
 		fileIcon t_file = (fileIcon)m_iconList.elementAt(index);
-			
-		graphics.drawBitmap(0, y,uploadFileScreen.fsm_bitmap_width,
-							uploadFileScreen.fsm_bitmap_width,
-							t_file.m_bitmap, 0, 0);
+		
+		fileIcon.sm_imageSets.drawImage(graphics, t_file.m_bitmap, 0, y);
 		
 		if(t_file.m_isFolder){
 			graphics.drawText(t_file.m_filename, uploadFileScreen.fsm_bitmap_width, y);
@@ -134,12 +135,12 @@ public class uploadFileScreen extends MainScreen implements
 	final static int fsm_bitmap_width	= 32;
 	final static int fsm_bitmap_height = 32;
 	
-	Bitmap				m_textFileBitmap	= null;
-	Bitmap				m_audioFileBitmap = null;
-	Bitmap				m_binFileBitmap	= null;
-	Bitmap				m_folderBitmap	= null;
-	Bitmap				m_pictureBitmap	= null;
-	Bitmap				m_movieBitmap	= null;
+	ImageUnit				m_textFileBitmap= null;
+	ImageUnit				m_audioFileBitmap = null;
+	ImageUnit				m_binFileBitmap	= null;
+	ImageUnit				m_folderBitmap	= null;
+	ImageUnit				m_pictureBitmap	= null;
+	ImageUnit				m_movieBitmap	= null;
 	
 	IconListCallback	m_listCallback	= new IconListCallback();
 	
@@ -164,12 +165,14 @@ public class uploadFileScreen extends MainScreen implements
 		m_mainApp = _app;
 		m_delScreen = _del;
 		
-		m_textFileBitmap 	= GetConstFileBitmap("/Text_resize.jpg");
-		m_audioFileBitmap 	= GetConstFileBitmap("/Audio_resize.jpg");
-		m_binFileBitmap 	= GetConstFileBitmap("/Unknown_resize.jpg");
-		m_folderBitmap 		= GetConstFileBitmap("/Folder_resize.jpg");
-		m_pictureBitmap		= GetConstFileBitmap("/Picture_resize.jpg");
-		m_movieBitmap		= GetConstFileBitmap("/Movie_resize.jpg");
+		fileIcon.sm_imageSets = _app.m_allImageSets;
+		
+		m_textFileBitmap 	= _app.m_allImageSets.getImageUnit("text_resize");
+		m_audioFileBitmap 	= _app.m_allImageSets.getImageUnit("audio_resize");
+		m_binFileBitmap 	= _app.m_allImageSets.getImageUnit("unknown_resize");
+		m_folderBitmap 		= _app.m_allImageSets.getImageUnit("folder_resize");
+		m_pictureBitmap		= _app.m_allImageSets.getImageUnit("picture_resize");
+		m_movieBitmap		= _app.m_allImageSets.getImageUnit("movie_resize");
 		
 		m_fileList.setCallback(m_listCallback);	
 		add(m_fileList);		
@@ -218,7 +221,7 @@ public class uploadFileScreen extends MainScreen implements
 						t_name = t_att.m_filename.substring(t_lastSplash + 1,t_att.m_filename.length());
 					}				
 					
-					Bitmap bitmap;
+					ImageUnit bitmap;
 					
 					if(IsAudioFile(t_name)){
 						bitmap = m_audioFileBitmap;
@@ -262,7 +265,7 @@ public class uploadFileScreen extends MainScreen implements
 					
 					FileConnection next = (FileConnection) Connector.open(t_fullname,Connector.READ);
 				    
-					Bitmap bitmap = null;
+					ImageUnit bitmap = null;
 					
 					if(next.isDirectory()){
 						bitmap = m_folderBitmap;
@@ -321,37 +324,7 @@ public class uploadFileScreen extends MainScreen implements
 			}
 		}
 	}
-	
-		
-	public Bitmap GetConstFileBitmap(String res)throws Exception{
-		byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass().getResourceAsStream(res));
-		
-//		int[] t_data = new int[fsm_bitmap_width * fsm_bitmap_height];
-//		
-//		final int t_headSize = 0x35;
-//		
-//		for(int i = 0;i < fsm_bitmap_height;i++){
-//			
-//			for(int j = 0;j < fsm_bitmap_width; j++){
-//				
-//				final int int_index = fsm_bitmap_width * i + j;
-//				final int byte_index = (fsm_bitmap_width * ((fsm_bitmap_height - i) - 1) + j ) * 4 + t_headSize ;
-//				
-//				t_data[int_index] = (bytes[byte_index + 2]);
-//				t_data[int_index] |= (int)(bytes[byte_index + 1]) << 8;
-//				t_data[int_index] |= (int)(bytes[byte_index]) 	<< 16;
-//				t_data[int_index] |= (int)(bytes[byte_index + 3]) << 24;
-//			}
-//			
-//		}
-//		Bitmap b = new Bitmap(fsm_bitmap_width,fsm_bitmap_height);
-//		b.createAlpha(Bitmap.ALPHA_BITDEPTH_8BPP);
-//		b.setARGB(t_data, 0, fsm_bitmap_width, 0, 0, fsm_bitmap_width, fsm_bitmap_height);
-		
-		
-		return EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
-	}
-	 
+		 
 	public static boolean IsAudioFile(String _filename){
 		String t_lower = _filename.toLowerCase();
 		t_lower = t_lower.substring(Math.max(0, t_lower.length() - 4));

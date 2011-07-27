@@ -100,7 +100,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	UiApplication		m_messageApplication = null;
 	
-	String				m_stateString		= recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL);
+	public final static	int				DISCONNECT_STATE = 0;
+	public final static	int				CONNECTING_STATE = 1;
+	public final static	int				CONNECTED_STATE = 2;
+	
+	
+	int					m_connectState		= 0; 
 	String				m_aboutString		= recvMain.sm_local.getString(localResource.ABOUT_DESC);
 	
 	final class ErrorInfo{
@@ -214,6 +219,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	GPSInfo			m_gpsInfo = new GPSInfo();
 	//@}
 	
+	public ImageSets	m_allImageSets 		= null;
+	
 	FileConnection m_logfc				= null;
 	OutputStream	m_logfcOutput		= null;
 			
@@ -239,7 +246,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	
 	public recvMain(boolean _systemRun){
-				
+		
+		try{
+			m_allImageSets = new ImageSets("/state_images.imageset");
+    	}catch(Exception e){
+    		DialogAlertAndExit("load state_images error:"+e.getMessage()+e.getClass().getName());
+    		return ;
+    	}
+    	
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/",Connector.READ_WRITE);
 			try{
@@ -1399,17 +1413,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}		
 	}
 		
-	public void SetStateString(String _state){
-			
-		m_stateString = _state;
-		
-		invokeLater(new Runnable() {
-			public void run(){
-				if(m_stateScreen != null){
-					m_stateScreen.m_stateText.setText(GetStateString());
-				}
-			}
-		});
+	public void SetConnectState(int _state){
+		m_connectState = _state;
+
+		if(m_stateScreen != null){
+			m_stateScreen.m_connectBut.setConnectState(m_connectState,this);
+		}		
 	}
 	
 	public void DialogAlert(final String _msg){
@@ -1477,8 +1486,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return m_uploadingDesc;
 	}
 
-	public final String GetStateString(){
-		return recvMain.sm_local.getString(localResource.STATE_PROMPT) + m_stateString;
+	public final int GetConnectState(){
+		return m_connectState;
 	}
 	
 	public void LogOut(String _log){

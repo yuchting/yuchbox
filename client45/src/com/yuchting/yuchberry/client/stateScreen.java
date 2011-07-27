@@ -3,10 +3,15 @@ package com.yuchting.yuchberry.client;
 import java.util.Vector;
 
 import local.localResource;
+import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.servicebook.ServiceBook;
 import net.rim.device.api.servicebook.ServiceRecord;
+import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.Characters;
+import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
@@ -22,19 +27,200 @@ import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.ui.ButtonSegImage;
+import com.yuchting.yuchberry.client.ui.HyperlinkButtonField;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 
-public class stateScreen extends MainScreen implements FieldChangeListener{
-										
-  
-    
-	MenuItem	m_helpMenu = new MenuItem(recvMain.sm_local.getString(localResource.STATE_SCREEN_HELP_MENU), 99, 10) {
-		public void run() {
-			recvMain.openURL("http://code.google.com/p/yuchberry/wiki/YuchBerry_Client_Help");
-		}
-	};
+class ConnectButton extends Field{
 	
+    String 	m_text = "";
+    
+    ImageUnit[]	m_image = null;
+    ImageUnit[]	m_image_focus = null;
+    ImageSets	m_imageSets = null;
+    
+    int			m_connectState = 0;
+    int			m_drawStateIndex = 0;
+
+    public ConnectButton(String text,ImageUnit[] _image,ImageUnit[] _image_focus,ImageSets _imageSets){
+        this( text,_image,_image_focus,_imageSets,0);
+    }
+
+    public ConnectButton( String text,ImageUnit[] _image,ImageUnit[] _image_focus,ImageSets _imageSets,long style){
+        super(Field.FOCUSABLE | style );
+
+        m_text = text;
+        m_image = _image;
+        m_image_focus = _image_focus;
+        m_imageSets = _imageSets;
+    }
+    
+    int m_animationId = -1;
+    public void setConnectState(int _state,final recvMain _app){
+    	if(m_connectState != _state){
+    		
+    		m_connectState = _state;
+    		    		
+    		switch(m_connectState){
+    		case recvMain.CONNECTED_STATE:
+    		case recvMain.CONNECTING_STATE:
+    			m_text = recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL);
+    			break;
+    		case recvMain.DISCONNECT_STATE:
+    			m_text = recvMain.sm_local.getString(localResource.CONNECT_BUTTON_LABEL);
+    			break;
+    		}
+    		
+    		synchronized (this) {
+    			
+    			m_drawStateIndex = _state;
+    			
+    			if(m_connectState == recvMain.CONNECTING_STATE){
+    				
+    				if(m_animationId == -1){
+    					
+    					m_animationId = _app.invokeLater(new Runnable() {
+							public void run() {
+								
+								if(m_connectState == recvMain.CONNECTED_STATE
+									|| m_connectState == recvMain.DISCONNECT_STATE){
+									
+									synchronized (ConnectButton.this) {
+										_app.cancelInvokeLater(m_animationId);
+										m_animationId = -1;
+										m_drawStateIndex = m_connectState;
+									}
+								}else{
+									
+									if(m_drawStateIndex == recvMain.CONNECTING_STATE){
+										m_drawStateIndex = recvMain.DISCONNECT_STATE;
+									}else{
+										m_drawStateIndex = recvMain.CONNECTING_STATE;
+									}
+									
+									ConnectButton.this.invalidate();
+								}
+								
+							}
+							
+						}, 1000, true);
+    				}
+    				
+    			}else{
+    				
+    			}
+			}
+    		
+        	invalidate();	
+    	}    	
+    }
+    
+    public int getImageWidth(){
+    	return m_image[0].getWidth();
+    }
+    
+    public int getImageHeight(){
+    	return m_image[0].getHeight();
+    }    
+            
+    protected void layout(int width,int height){
+    
+		width = m_image[0].getWidth();
+		height= m_image[0].getHeight();    	
+    	
+    	setExtent(width,height);
+    }
+    
+    protected void paint( Graphics g ){
+    	focusPaint(g,isFocus());
+    }
+    
+    private void focusPaint(Graphics g,boolean focus){
+    	int oldColour = g.getColor();
+    	Font oldFont	= g.getFont();
+    	try{
+  	
+    		if(focus){
+    			m_imageSets.drawImage(g, m_image_focus[m_drawStateIndex], 0, 0);
+    		}else{
+    			m_imageSets.drawImage(g, m_image[m_drawStateIndex], 0, 0);
+    		}
+    		
+    		
+    	}finally{
+    		g.setColor( oldColour );
+    		g.setFont(oldFont);
+    	}
+    }
+    
+    protected void drawFocus( Graphics g, boolean on ){
+    	focusPaint(g,on);
+    }
+    
+    protected void onUnfocus(){
+    	super.onUnfocus();
+    	invalidate();
+    }
+            
+            
+    protected boolean keyChar( char character, int status, int time ) 
+    {
+        if( character == Characters.ENTER ) {
+            fieldChangeNotify( 0 );
+            return true;
+        }
+        return super.keyChar( character, status, time );
+    }
+
+    protected boolean navigationClick( int status, int time ) {        
+        keyChar(Characters.ENTER, status, time );            
+        return true;
+    }
+
+    protected boolean invokeAction( int action ) 
+    {
+        switch( action ) {
+            case ACTION_INVOKE: {
+                fieldChangeNotify( 0 );
+                return true;
+            }
+        }
+        return super.invokeAction( action );
+    }
+            
+
+    public void setDirty( boolean dirty ) 
+    {
+        // We never want to be dirty or muddy
+    }
+    
+            
+    public void setMuddy( boolean muddy ) 
+    {
+        // We never want to be dirty or muddy
+    }
+    
+    
+    public String getMenuText()
+    {
+        return m_text;
+    }
+    
+
+    /**
+     * Returns a MenuItem that could be used to invoke this link.
+     */
+    public MenuItem getMenuItem()
+    {
+        return new MenuItem( getMenuText(), 0, 0 ) {
+            public void run() {
+                fieldChangeNotify( 0 );
+            }
+        };
+    }
+}
+
+public class stateScreen extends MainScreen implements FieldChangeListener{
     
 	MenuItem 	m_aboutMenu = new MenuItem(recvMain.sm_local.getString(localResource.ABOUT_MENU_TEXT), 100, 10) {
 		public void run() {
@@ -46,7 +232,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 	MenuItem	m_shareMenu = new MenuItem(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_MENU), 101, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
-			t_app.PopupShareScreen();			
+			t_app.PopupShareScreen();
 		}
 	};
 	
@@ -89,8 +275,10 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 	EditField			m_hostport		= null;
     PasswordEditField   m_userPassword  = null;
        
-    ButtonField         m_connectBut    = null;
-    LabelField          m_stateText     = null;
+    ConnectButton		m_connectBut    = null;
+    
+    LabelField          m_promptText     = null;
+    HyperlinkButtonField m_getHostLink	= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.STATE_SCREEN_HELP_MENU));
    
     RichTextField		m_uploadingText = null;
             
@@ -122,12 +310,20 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 			y += m_stateInputBG.getImageHeight();
 			
 			setPositionChild(m_connectBut,t_start_x,y);
-			layoutChild(m_connectBut,m_connectBut.getPreferredWidth(),m_connectBut.getPreferredHeight());
+			layoutChild(m_connectBut,m_connectBut.getImageWidth(),m_connectBut.getImageHeight());
 			
-			y += m_connectBut.getPreferredHeight();
+			t_start_x += m_connectBut.getImageWidth();
 			
-			setPositionChild(m_stateText,t_start_x,y);
-			layoutChild(m_stateText,recvMain.fsm_display_width,m_stateText.getFont().getHeight());						
+			int t_promptTextWidth = m_promptText.getFont().getAdvance(m_promptText.getText()) + 5;
+			y = y + (m_connectBut.getImageHeight() - m_promptText.getFont().getHeight()) /2;
+			
+			setPositionChild(m_promptText,t_start_x,y);
+			layoutChild(m_promptText,t_promptTextWidth,m_promptText.getFont().getHeight());
+			
+			t_start_x += t_promptTextWidth;
+			
+			setPositionChild(m_getHostLink,t_start_x,y);
+			layoutChild(m_getHostLink,recvMain.fsm_display_width,m_getHostLink.getFont().getHeight());
 			
 			setExtent(recvMain.fsm_display_width, recvMain.fsm_display_height);
 		}
@@ -137,7 +333,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 			int x = (recvMain.fsm_display_width - m_stateBG.getWidth()) / 2;
 	    	int y = (recvMain.fsm_display_height - m_stateBG.getHeight()) / 2;
 	    	
-	    	m_stateImage.drawImage(_g, m_stateBG, x, y);
+	    	_g.drawBitmap(x, y, m_stateBG.getWidth(), m_stateBG.getWidth(), m_stateBG, 0, 0);
 	    	
 	    	int t_delta_x = 4;
 	    	int t_delta_y = (m_stateInputBG.getImageHeight() - m_hostName.getFont().getHeight()) / 2;
@@ -156,26 +352,25 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	
-	ImageSets	m_stateImage = null;
-	ImageUnit	m_stateBG = null;
-	ButtonSegImage m_stateInputBG = null;
+	Bitmap			m_stateBG = null;
+	ButtonSegImage	m_stateInputBG = null;
 	
-    public stateScreen(final recvMain _app){
-    	
+    public stateScreen(recvMain _app){
+    	m_mainApp	= _app;
+    	 
     	try{
-    		m_stateImage = new ImageSets("/state_images.imageset");
+    		byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass().getResourceAsStream("/state_bg.jpg"));	
+    		m_stateBG = EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
     	}catch(Exception e){
-    		_app.DialogAlertAndExit("load state_images error:"+e.getMessage()+e.getClass().getName());
+    		_app.DialogAlertAndExit("load state_bg.jpg error:"+e.getMessage()+e.getClass().getName());
     		return ;
     	}
-    	
-    	m_stateBG = m_stateImage.getImageUnit("state_bg");
-    	m_stateInputBG = new ButtonSegImage(m_stateImage.getImageUnit("state_input_left"), 
-    			m_stateImage.getImageUnit("state_input_mid"), 
-    			m_stateImage.getImageUnit("state_input_right"), 
-    			m_stateImage);
-    	
-        m_mainApp	= _app;
+    	   
+    	m_stateInputBG = new ButtonSegImage(m_mainApp.m_allImageSets.getImageUnit("state_input_left"), 
+							    			m_mainApp.m_allImageSets.getImageUnit("state_input_mid"), 
+							    			m_mainApp.m_allImageSets.getImageUnit("state_input_right"), 
+							    			m_mainApp.m_allImageSets);  	
+       
         
         m_hostName = new EditField(recvMain.sm_local.getString(localResource.HOST),
         				m_mainApp.m_hostname,128, EditField.FILTER_DEFAULT);
@@ -194,16 +389,30 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
         
         m_mainManger.add(m_userPassword);
                
-        m_connectBut = new ButtonField(recvMain.sm_local.getString(m_mainApp.m_connectDeamon.IsConnectState()?
-        									localResource.DISCONNECT_BUTTON_LABEL:localResource.CONNECT_BUTTON_LABEL),
-        									ButtonField.CONSUME_CLICK| ButtonField.NEVER_DIRTY);
+        m_connectBut = new ConnectButton(recvMain.sm_local.getString(localResource.CONNECT_BUTTON_LABEL),
+        								new ImageUnit[]{
+        									m_mainApp.m_allImageSets.getImageUnit("button_disconnect"),
+        									m_mainApp.m_allImageSets.getImageUnit("button_connecting"),
+        									m_mainApp.m_allImageSets.getImageUnit("button_connected")
+        								},
+        								new ImageUnit[]{
+											m_mainApp.m_allImageSets.getImageUnit("button_disconnect_focus"),
+											m_mainApp.m_allImageSets.getImageUnit("button_connecting_focus"),
+											m_mainApp.m_allImageSets.getImageUnit("button_connected_focus")
+										},m_mainApp.m_allImageSets);
         
+        m_connectBut.setConnectState(m_mainApp.GetConnectState(),m_mainApp);        
         m_connectBut.setChangeListener(this);
         
         m_mainManger.add(m_connectBut);
         
-        m_stateText = new LabelField(m_mainApp.GetStateString(), LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
-        m_mainManger.add(m_stateText);
+        m_promptText = new LabelField(recvMain.sm_local.getString(localResource.STATE_HELP_GET_HOST_PROMPT), 
+        								LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
+        
+        m_mainManger.add(m_promptText);
+        
+        m_getHostLink.setChangeListener(this);
+        m_mainManger.add(m_getHostLink);
         
         add(m_mainManger);
         
@@ -224,7 +433,6 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     }
     
     protected void makeMenu(Menu _menu,int instance){
-    	_menu.add(m_helpMenu);
     	_menu.add(m_aboutMenu);
     	_menu.add(m_shareMenu);
     	_menu.add(MenuItem.separator(102));
@@ -271,9 +479,6 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
         	case 'D':
         		m_debugInfoMenu.run();
         		return true;
-        	case 'H':
-        		m_helpMenu.run();
-        		return true;
         	case 'F':
         		m_shareMenu.run();
         		return true;
@@ -287,10 +492,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     	}
     	
     	return false;    	
-    }
-    
-    
-   
+    }   
     
     public void RefreshUploadState(final Vector _uploading){
     	String t_total = new String();
@@ -336,8 +538,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 						m_mainApp.m_connectDeamon.Disconnect();
 					}catch(Exception _e){}
 					
-					m_connectBut.setLabel(recvMain.sm_local.getString(localResource.CONNECT_BUTTON_LABEL));
-					m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
+					m_mainApp.SetConnectState(recvMain.DISCONNECT_STATE);
 					
 				}else{
 					
@@ -359,15 +560,15 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 						m_mainApp.m_userPassword 	= m_userPassword.getText();
 
 						m_mainApp.m_connectDeamon.Connect();
-						
-						m_connectBut.setLabel(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
-						
+												
 						m_mainApp.Start();
 						
 					}catch(Exception e){
 						m_mainApp.DialogAlert(e.getMessage() + e.getClass().getName());
 					}
 				}				
+			}else if(field == m_getHostLink){
+				recvMain.openURL("http://code.google.com/p/yuchberry/wiki/YuchBerry_Client_Help");
 			}
         }else{
         	// Perform action if application changed field.

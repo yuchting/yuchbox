@@ -2,11 +2,9 @@ package com.yuchting.yuchberry.client;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Vector;
 
 import javax.microedition.io.Connector;
@@ -826,7 +824,7 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				// set the text connect
 				//
-				m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTED_LABEL));
+				m_mainApp.SetConnectState(recvMain.CONNECTED_STATE);
 				
 				m_mainApp.StopDisconnectNotification();
 				
@@ -848,7 +846,7 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				if(m_disconnect != true){
 					try{
-						m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTING_RETRY_LABEL));
+						m_mainApp.SetConnectState(recvMain.CONNECTING_STATE);
 						m_mainApp.SetErrorString("M: " + _e.getMessage() + " "+ _e.getClass().getName());
 					}catch(Exception e){}	
 				}							
@@ -892,8 +890,8 @@ public class connectDeamon extends Thread implements SendListener,
 	 public synchronized void Connect()throws Exception{
 		 
 		 Disconnect();
-		
-		 m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.CONNECTING_LABEL));
+		 
+		 m_mainApp.SetConnectState(recvMain.CONNECTING_STATE);
 		 m_disconnect = false;	
 		 
 		 BeginListener();	

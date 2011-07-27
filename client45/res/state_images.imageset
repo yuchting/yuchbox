@@ -1,10 +1,24 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<Imageset Name="state_images" Imagefile="/state_images.png" NativeHorzRes="512" NativeVertRes="512" >
-	 
-	<Image Name="state_bg" XPos="0" YPos="0" Width="480" Height="320" />
-	<Image Name="state_input_left" XPos="0" YPos="320" Width="16" Height="32" />
-	<Image Name="state_input_mid" XPos="16" YPos="320" Width="16" Height="32" />
-	<Image Name="state_input_right" XPos="32" YPos="320" Width="16" Height="32" />
+<Imageset Name="state_images" Imagefile="/state_images.png" NativeHorzRes="256" NativeVertRes="256" >
+	
+	<Image Name="state_input_left" XPos="0" YPos="0" Width="16" Height="32" />
+	<Image Name="state_input_mid" XPos="16" YPos="0" Width="16" Height="32" />
+	<Image Name="state_input_right" XPos="32" YPos="0" Width="16" Height="32" />
+	
+	<Image Name="text_resize" XPos="0" YPos="32" Width="32" Height="32" />
+	<Image Name="picture_resize" XPos="0" YPos="64" Width="32" Height="32" />
+	<Image Name="movie_resize" XPos="0" YPos="96" Width="32" Height="32" />
+	<Image Name="folder_resize" XPos="0" YPos="128" Width="32" Height="32" />
+	<Image Name="audio_resize" XPos="0" YPos="160" Width="32" Height="32" />
+	<Image Name="unknown_resize" XPos="0" YPos="192" Width="32" Height="32" />	
+	
+	<Image Name="button_disconnect" XPos="32" YPos="32" Width="110" Height="32" />
+	<Image Name="button_disconnect_focus" XPos="142" YPos="32" Width="110" Height="32" />
+	<Image Name="button_connecting" XPos="32" YPos="64" Width="110" Height="32" />
+	<Image Name="button_connecting_focus" XPos="142" YPos="64" Width="110" Height="32" />
+	<Image Name="button_connected" XPos="32" YPos="64" Width="110" Height="32" />
+	<Image Name="button_connected_focus" XPos="142" YPos="64" Width="110" Height="32" />
+	
 	
 	
 </Imageset>

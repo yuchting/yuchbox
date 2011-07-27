@@ -63,7 +63,8 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 		 
 		 add(m_maxWeiboNum);
 		 
-		 m_clearCheckImageSetting = new ButtonField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_CLEAR_CHECK_IMAGE_PROMPT),Field.FIELD_RIGHT);
+		 m_clearCheckImageSetting = new ButtonField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_CLEAR_CHECK_IMAGE_PROMPT),
+				 									Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 		 m_clearCheckImageSetting.setChangeListener(this);
 		 
 		 add(m_clearCheckImageSetting);
