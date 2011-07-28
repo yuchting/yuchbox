@@ -119,7 +119,7 @@ public class BubbleImage {
 					_y - m_point[TOP_POINT_STYLE].m_height / 2);
 			break;
 		case RIGHT_POINT_STYLE:
-			m_parentSets.drawImage(_g,m_point[RIGHT_POINT_STYLE],_x + _width + m_point[RIGHT_POINT_STYLE].m_width / 2,
+			m_parentSets.drawImage(_g,m_point[RIGHT_POINT_STYLE],_x + _width - m_point[RIGHT_POINT_STYLE].m_width / 2,
 					_y + m_top_right.m_height);
 			break;
 		case BOTTOM_POINT_STYLE:

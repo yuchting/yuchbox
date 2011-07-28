@@ -1007,11 +1007,12 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		_menu.add(m_refreshItem);
 		
-		_menu.add(m_topItem);
-		_menu.add(m_bottomItem);
+		if(m_currMgr != m_mainDMMgr){
+			_menu.add(m_topItem);
+			_menu.add(m_bottomItem);
+		}	
 		
-		
-		if(m_currMgr.getCurrExtendedItem() != null){
+		if(m_currMgr.getCurrExtendedItem() != null && m_currMgr != m_mainDMMgr){
 			if(m_currMgr.getCurrEditItem() == null){
 				_menu.add(m_preWeiboItem);
 				_menu.add(m_nextWeiboItem);
@@ -1022,7 +1023,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			_menu.add(m_updateItem);
 		}
 		
-		if(m_currMgr.getCurrSelectedItem() != null){
+		if(m_currMgr.getCurrSelectedItem() != null && m_currMgr != m_mainDMMgr){
 			
 			if(m_currMgr.getCurrEditItem() == null){
 				_menu.add(m_forwardWeiboItem);
@@ -1040,7 +1041,8 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		if(m_currMgr.getCurrSelectedItem() != null				// has selected
 		&& m_currMgr.getCurrSelectedItem().m_weibo != null		// is not update weibo
-		&& m_currMgr.getCurrSelectedItem().m_weibo.IsOwnWeibo()){ // is own weibo
+		&& m_currMgr.getCurrSelectedItem().m_weibo.IsOwnWeibo()
+		&& m_currMgr != m_mainDMMgr){ // is own weibo
 			_menu.add(m_deleteItem);
 		}
 		

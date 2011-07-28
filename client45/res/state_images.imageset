@@ -5,6 +5,9 @@
 	<Image Name="state_input_mid" XPos="16" YPos="0" Width="16" Height="32" />
 	<Image Name="state_input_right" XPos="32" YPos="0" Width="16" Height="32" />
 	
+	<Image Name="state_bg" XPos="48" YPos="0" Width="32" Height="32" />
+	<Image Name="state_logo" XPos="32" YPos="128" Width="220" Height="96" />
+	
 	<Image Name="text_resize" XPos="0" YPos="32" Width="32" Height="32" />
 	<Image Name="picture_resize" XPos="0" YPos="64" Width="32" Height="32" />
 	<Image Name="movie_resize" XPos="0" YPos="96" Width="32" Height="32" />
@@ -16,8 +19,8 @@
 	<Image Name="button_disconnect_focus" XPos="142" YPos="32" Width="110" Height="32" />
 	<Image Name="button_connecting" XPos="32" YPos="64" Width="110" Height="32" />
 	<Image Name="button_connecting_focus" XPos="142" YPos="64" Width="110" Height="32" />
-	<Image Name="button_connected" XPos="32" YPos="64" Width="110" Height="32" />
-	<Image Name="button_connected_focus" XPos="142" YPos="64" Width="110" Height="32" />
+	<Image Name="button_connected" XPos="32" YPos="96" Width="110" Height="32" />
+	<Image Name="button_connected_focus" XPos="142" YPos="96" Width="110" Height="32" />
 	
 	
 	

@@ -3,12 +3,9 @@ package com.yuchting.yuchberry.client;
 import java.util.Vector;
 
 import local.localResource;
-import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.servicebook.ServiceBook;
 import net.rim.device.api.servicebook.ServiceRecord;
-import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Characters;
-import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
@@ -17,13 +14,13 @@ import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
-import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.PasswordEditField;
 import net.rim.device.api.ui.component.RichTextField;
+import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.ui.ButtonSegImage;
@@ -271,8 +268,14 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	
+	
+	HorizontalFieldManager m_hostNameMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
 	EditField           m_hostName      = null;
+	
+	HorizontalFieldManager m_hostportMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
 	EditField			m_hostport		= null;
+	
+	HorizontalFieldManager m_userPasswordMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
     PasswordEditField   m_userPassword  = null;
        
     ConnectButton		m_connectBut    = null;
@@ -294,18 +297,18 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 			
 			int y = recvMain.fsm_display_height/3 + 20;
 			
-			setPositionChild(m_hostName,t_start_x,y);
-			layoutChild(m_hostName,t_width,t_height);
+			setPositionChild(m_hostNameMgr,t_start_x,y);
+			layoutChild(m_hostNameMgr,t_width,t_height);
 			
 			y += m_stateInputBG.getImageHeight();
 			
-			setPositionChild(m_hostport,t_start_x,y);
-			layoutChild(m_hostport,t_width,t_height);
+			setPositionChild(m_hostportMgr,t_start_x,y);
+			layoutChild(m_hostportMgr,t_width,t_height);
 			
 			y += m_stateInputBG.getImageHeight();
 			
-			setPositionChild(m_userPassword,t_start_x,y);
-			layoutChild(m_userPassword,t_width,t_height);
+			setPositionChild(m_userPasswordMgr,t_start_x,y);
+			layoutChild(m_userPasswordMgr,t_width,t_height);
 			
 			y += m_stateInputBG.getImageHeight();
 			
@@ -323,49 +326,62 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 			t_start_x += t_promptTextWidth;
 			
 			setPositionChild(m_getHostLink,t_start_x,y);
-			layoutChild(m_getHostLink,recvMain.fsm_display_width,m_getHostLink.getFont().getHeight());
+			layoutChild(m_getHostLink,getPreferredWidth(),m_getHostLink.getFont().getHeight());
 			
-			setExtent(recvMain.fsm_display_width, recvMain.fsm_display_height);
+			y += m_connectBut.getImageHeight();
+			t_start_x = 0;
+			
+			setPositionChild(m_uploadingText, t_start_x, y);
+			layoutChild(m_uploadingText,getPreferredWidth(),getPreferredHeight() / 2);			
+			
+			setExtent(getPreferredWidth(), getPreferredHeight());
+		}
+		
+		public int getPreferredWidth(){
+			return recvMain.fsm_display_width;
+		}
+		
+		public int getPreferredHeight(){
+			return recvMain.fsm_display_height * 2;
 		}
 		
 		public void subpaint(Graphics _g){
 			
-			int x = (recvMain.fsm_display_width - m_stateBG.getWidth()) / 2;
-	    	int y = (recvMain.fsm_display_height - m_stateBG.getHeight()) / 2;
-	    	
-	    	_g.drawBitmap(x, y, m_stateBG.getWidth(), m_stateBG.getWidth(), m_stateBG, 0, 0);
-	    	
+			m_mainApp.m_allImageSets.fillImageBlock(_g, m_stateBG, 0, 0, getPreferredWidth(), getPreferredHeight());
+			
+			int t_logo_x = (getPreferredWidth() - m_stateLogo.getWidth()) / 2;
+			int t_logo_y = m_hostNameMgr.getExtent().y - m_stateLogo.getHeight();
+			
+			m_mainApp.m_allImageSets.drawImage(_g, m_stateLogo, t_logo_x, t_logo_y);
+			
 	    	int t_delta_x = 4;
-	    	int t_delta_y = (m_stateInputBG.getImageHeight() - m_hostName.getFont().getHeight()) / 2;
+	    	int t_delta_y = (m_stateInputBG.getImageHeight() - m_hostName.getFont().getHeight()) / 2;	    	
 	    	
+	    	m_stateInputBG.draw(_g, m_hostNameMgr.getExtent().x - t_delta_x, 
+	    							m_hostNameMgr.getExtent().y - t_delta_y, m_hostNameMgr.getExtent().width + t_delta_x * 2);
 	    	
-	    	m_stateInputBG.draw(_g, m_hostName.getExtent().x - t_delta_x, 
-	    							m_hostName.getExtent().y - t_delta_y, m_hostName.getExtent().width + t_delta_x * 2);
+	    	m_stateInputBG.draw(_g, m_hostportMgr.getExtent().x - t_delta_x, 
+	    							m_hostportMgr.getExtent().y - t_delta_y, m_hostportMgr.getExtent().width + t_delta_x * 2);
 	    	
-	    	m_stateInputBG.draw(_g, m_hostport.getExtent().x - t_delta_x, 
-	    							m_hostport.getExtent().y - t_delta_y, m_hostport.getExtent().width + t_delta_x * 2);
-	    	
-	    	m_stateInputBG.draw(_g, m_userPassword.getExtent().x - t_delta_x, 
-	    							m_userPassword.getExtent().y - t_delta_y, m_userPassword.getExtent().width + t_delta_x * 2);
+	    	m_stateInputBG.draw(_g, m_userPasswordMgr.getExtent().x - t_delta_x, 
+	    							m_userPasswordMgr.getExtent().y - t_delta_y, m_userPasswordMgr.getExtent().width + t_delta_x * 2);
 	    	
 			super.subpaint(_g);
 		}
 	};
 	
-	Bitmap			m_stateBG = null;
+	ImageUnit		m_stateBG = null;
+	ImageUnit		m_stateLogo = null;
+	
 	ButtonSegImage	m_stateInputBG = null;
 	
     public stateScreen(recvMain _app){
     	m_mainApp	= _app;
     	 
-    	try{
-    		byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass().getResourceAsStream("/state_bg.jpg"));	
-    		m_stateBG = EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
-    	}catch(Exception e){
-    		_app.DialogAlertAndExit("load state_bg.jpg error:"+e.getMessage()+e.getClass().getName());
-    		return ;
-    	}
-    	   
+    	
+    	m_stateBG		= m_mainApp.m_allImageSets.getImageUnit("state_bg");
+    	m_stateLogo		= m_mainApp.m_allImageSets.getImageUnit("state_logo");
+    	
     	m_stateInputBG = new ButtonSegImage(m_mainApp.m_allImageSets.getImageUnit("state_input_left"), 
 							    			m_mainApp.m_allImageSets.getImageUnit("state_input_mid"), 
 							    			m_mainApp.m_allImageSets.getImageUnit("state_input_right"), 
@@ -376,18 +392,21 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
         				m_mainApp.m_hostname,128, EditField.FILTER_DEFAULT);
                
         m_hostName.setChangeListener(this);
-        m_mainManger.add(m_hostName);
+        m_hostNameMgr.add(m_hostName);
+        m_mainManger.add(m_hostNameMgr);
         
         m_hostport = new EditField(recvMain.sm_local.getString(localResource.PORT),
         				m_mainApp.m_port == 0?"":Integer.toString(m_mainApp.m_port),5,EditField.FILTER_INTEGER);
 
         m_hostport.setChangeListener(this);
-        m_mainManger.add(m_hostport);
+        m_hostportMgr.add(m_hostport);
+        m_mainManger.add(m_hostportMgr);
         
         m_userPassword = new PasswordEditField(recvMain.sm_local.getString(localResource.USER_PASSWORD),
         								m_mainApp.m_userPassword,128,EditField.NO_COMPLEX_INPUT);
         
-        m_mainManger.add(m_userPassword);
+        m_userPasswordMgr.add(m_userPassword);
+        m_mainManger.add(m_userPasswordMgr);
                
         m_connectBut = new ConnectButton(recvMain.sm_local.getString(localResource.CONNECT_BUTTON_LABEL),
         								new ImageUnit[]{
@@ -414,11 +433,11 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
         m_getHostLink.setChangeListener(this);
         m_mainManger.add(m_getHostLink);
         
-        add(m_mainManger);
-        
         m_uploadingText = new RichTextField("", LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
-        add(m_uploadingText);
-            
+        m_mainManger.add(m_uploadingText);
+        
+        add(m_mainManger);      
+                    
         RefreshUploadState(_app.m_uploadingDesc);
         
         //setTitle(new LabelField(recvMain.sm_local.getString(localResource.STATE_TITLE_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
