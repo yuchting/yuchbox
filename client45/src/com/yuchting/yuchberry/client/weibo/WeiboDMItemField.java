@@ -3,7 +3,6 @@ package com.yuchting.yuchberry.client.weibo;
 import java.util.Vector;
 
 import local.localResource;
-import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.component.TextField;
 
@@ -86,9 +85,8 @@ public class WeiboDMItemField extends WeiboItemField{
 	public void AddDelControlField(boolean _add){
 		if(_add){
 			
-			m_parentManager.setCurrExtendedItem(this);
+			m_parentManager.setCurrExtendedItem(this);			
 			m_parentManager.setCurrEditItem(this);
-			
 			if(!m_hasControlField[fsm_controlField_edit_return]){
 				m_hasControlField[fsm_controlField_edit_return] = true;
 				add(m_parentManager.m_editTextArea);
@@ -111,6 +109,7 @@ public class WeiboDMItemField extends WeiboItemField{
 			m_parentManager.setCurrExtendedItem(null);
 			m_parentManager.setCurrEditItem(null);
 			
+			
 			if(m_hasControlField[fsm_controlField_edit_return]){
 				m_hasControlField[fsm_controlField_edit_return] = false;
 				delete(m_parentManager.m_editTextArea);
@@ -131,7 +130,13 @@ public class WeiboDMItemField extends WeiboItemField{
 	}
 	
 	public void AddDelEditTextArea(boolean _add,String _text){
-		// do nothing
+
+		if(!_add){
+			m_parentManager.setCurrEditItem(null);
+		}else{
+			m_parentManager.setCurrEditItem(this);
+		}
+		
 	}
 	
 	public int getPreferredHeight() {
