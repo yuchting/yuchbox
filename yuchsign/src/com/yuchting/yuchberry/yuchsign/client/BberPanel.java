@@ -602,7 +602,7 @@ public class BberPanel extends TabPanel{
 			return;
 		}
 		
-		Yuchsign.PopupWaiting("正在同步，可能需要3-5分钟，请耐心等待。", this);
+		Yuchsign.PopupWaiting("正在同步，可能需要3-5分钟，请耐心等待。如果长时间没反应，请刷新页面登录再试。", this);
 		
 		final Widget t_bberPanel = this;
 		try{
