@@ -5,7 +5,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 import org.dom4j.Element;
 
@@ -60,32 +59,36 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	protected void CheckDirectMessage()throws Exception{
 		List<QDirectMessage> t_fetch = null;
 		
-		long t_fromIndex = m_directMessage.m_fromIndex;
-		if(t_fromIndex > 1){
-			t_fetch = m_api.getOutboxDirectMessage(t_fromIndex,10,0);
+		if(m_directMessage.m_fromIndex > 1){
+			t_fetch = m_api.getOutboxDirectMessage(m_directMessage.m_fromIndex,10,0);
 		}else{
 			t_fetch = m_api.getOutboxDirectMessage();
 		}
 		
 		AddDirectMsgWeibo(t_fetch,m_directMessage,fetchWeibo.DIRECT_MESSAGE_CLASS);
 		
-		if(t_fromIndex > 1){
-			t_fetch = m_api.getInboxDirectMessage(t_fromIndex,10,0);
+		for(QDirectMessage msg : t_fetch){
+			if(m_directMessage.m_fromIndex < msg.getWeiboContentItem().getTime()){
+				m_directMessage.m_fromIndex = msg.getWeiboContentItem().getTime();
+			}
+		}		
+
+		// inbox
+		//
+		if(m_directMessage.m_fromIndex2 > 1){
+			t_fetch = m_api.getInboxDirectMessage(m_directMessage.m_fromIndex2,10,0);
 		}else{
 			t_fetch = m_api.getInboxDirectMessage();
 		}
 		
 		AddDirectMsgWeibo(t_fetch,m_directMessage,fetchWeibo.DIRECT_MESSAGE_CLASS);
 		
-		// assign the max time value
-		//
-		for(fetchWeibo weibo:m_directMessage.m_weiboList){
-			if(weibo.GetDateTime() > t_fromIndex){
-				t_fromIndex = weibo.GetDateTime(); 
+		for(QDirectMessage msg : t_fetch){
+			if(m_directMessage.m_fromIndex2 < msg.getWeiboContentItem().getTime()){
+				m_directMessage.m_fromIndex2 = msg.getWeiboContentItem().getTime();
 			}
 		}
-		m_directMessage.m_fromIndex = t_fromIndex;
-		
+				
 		// sort by time
 		//
 		Collections.sort(m_directMessage.m_weiboList,new Comparator<fetchWeibo>() {
@@ -94,6 +97,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 				
 				long a = o1.GetDateTime();
 				long b = o2.GetDateTime();
+				
 				if(a < b){
 					return 1;
 				}else if(a > b){
@@ -111,18 +115,9 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		boolean t_insert;
 		
 		for(QDirectMessage fetchOne : _from){
-			
-			if(_to.m_fromIndex >= fetchOne.getWeiboContentItem().getTime()){
-				// directly return because of qq time fetching bug!
-				//
-				break;
-			}
-			
-			if(_to.m_weiboList.size() >= _to.m_sum){
-				break;
-			}
-			
+
 			t_insert = true;
+			
 			for(fetchWeibo weibo : _to.m_weiboList){
 				if(weibo.GetId() == fetchOne.getWeiboContentItem().getId()){
 					t_insert = false;
@@ -149,8 +144,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 					t_weibo.setReplyName(fetchOne.getSendToScreenName());
 				}else{
 					t_weibo.setReplyName(m_userself.getScreenName());
-				}
-				
+				}				
 				
 				_to.m_weiboList.add(t_weibo);
 			}
@@ -397,16 +391,16 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		QWeiboSyncApi.sm_debug = true;
 		
 		t_weibo.m_api.setCostomerKey(fsm_consumerKey, fsm_consumerSecret);
-		t_weibo.m_accessToken = "2189ff2946d3498a82e6bbb8b2b57d61";
-		t_weibo.m_secretToken = "8c160ee7358a5dc07e539429c3cbb487";
+		t_weibo.m_accessToken = "d7804a95bde0436ca9f0b62ef84de787";
+		t_weibo.m_secretToken = "0a076b55a89ed75bada75b72d880a60b";
 				
 		t_weibo.ResetSession(true);
 		
 		t_weibo.m_atMeMessage.m_sum = 10;
 		t_weibo.m_timeline.m_sum = 10;
-		t_weibo.m_directMessage.m_sum = 10;
+		t_weibo.m_directMessage.m_sum = 5;
 		
-		t_weibo.CheckTimeline();
+		t_weibo.CheckDirectMessage();
 		
 		System.out.print(t_weibo);
 		
