@@ -103,7 +103,7 @@ public class WeiboItemField extends Manager{
 	public final static int	fsm_closeHeight			= sm_fontHeight * 2 + 1;
  
 	public static	boolean		sm_commentFirst		= false;
-	public static	boolean		sm_displayHeadImage	= false;
+	public static	boolean		sm_displayHeadImage	= true;
 	public static boolean			sm_simpleMode		= false;
 	public static boolean			sm_showAllInList	= false;
 	

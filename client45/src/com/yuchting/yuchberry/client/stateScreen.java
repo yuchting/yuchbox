@@ -280,7 +280,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
        
     ConnectButton		m_connectBut    = null;
     
-    LabelField          m_promptText     = null;
+    String				m_promptText     = recvMain.sm_local.getString(localResource.STATE_HELP_GET_HOST_PROMPT);
     HyperlinkButtonField m_getHostLink	= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.STATE_SCREEN_HELP_MENU));
    
     RichTextField		m_uploadingText = null;
@@ -317,11 +317,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 			
 			t_start_x += m_connectBut.getImageWidth();
 			
-			int t_promptTextWidth = m_promptText.getFont().getAdvance(m_promptText.getText()) + 5;
-			y = y + (m_connectBut.getImageHeight() - m_promptText.getFont().getHeight()) /2;
-			
-			setPositionChild(m_promptText,t_start_x,y);
-			layoutChild(m_promptText,t_promptTextWidth,m_promptText.getFont().getHeight());
+			int t_promptTextWidth = m_hostName.getFont().getAdvance(m_promptText) + 5;
 			
 			t_start_x += t_promptTextWidth;
 			
@@ -365,7 +361,15 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 	    	
 	    	m_stateInputBG.draw(_g, m_userPasswordMgr.getExtent().x - t_delta_x, 
 	    							m_userPasswordMgr.getExtent().y - t_delta_y, m_userPasswordMgr.getExtent().width + t_delta_x * 2);
-	    	
+
+	    	int oldColor = _g.getColor();
+	    	try{
+	    		_g.setColor(0xf0f0f0);
+	    		_g.drawText(m_promptText,m_connectBut.getExtent().x + m_connectBut.getImageWidth(),m_connectBut.getExtent().y);
+	    		
+	    	}finally{
+	    		_g.setColor(oldColor);
+	    	}
 			super.subpaint(_g);
 		}
 	};
@@ -424,11 +428,6 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
         m_connectBut.setChangeListener(this);
         
         m_mainManger.add(m_connectBut);
-        
-        m_promptText = new LabelField(recvMain.sm_local.getString(localResource.STATE_HELP_GET_HOST_PROMPT), 
-        								LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
-        
-        m_mainManger.add(m_promptText);
         
         m_getHostLink.setChangeListener(this);
         m_mainManger.add(m_getHostLink);

@@ -434,14 +434,15 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			final WeiboItemField t_extendItem = getCurrExtendedItem();
 						
 			if(getCurrEditItem() != null 
-			&& getCurrEditItem() != m_updateWeiboField){
+			&& getCurrEditItem() != m_updateWeiboField
+			&& m_parentScreen.m_currMgr != m_parentScreen.m_mainDMMgr){
 				
 				// the add/delete field operation will cause the sublayout being called
 				//
 				getCurrEditItem().AddDelEditTextArea(false,null);
 				
 				try{
-					if(m_parentScreen.m_currMgr == this){
+					if(m_parentScreen.m_currMgr == this && getCurrExtendedItem() != null){
 						// make the text area is visible
 						//
 						// some times it will appear follow exception

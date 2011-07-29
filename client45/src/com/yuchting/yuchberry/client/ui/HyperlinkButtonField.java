@@ -22,7 +22,7 @@ public class HyperlinkButtonField extends LabelField
 
     public HyperlinkButtonField( String text)
     {
-        this( text,0x0000FF,0,0x0000FF,0,0);
+        this( text,0x012a93,0,0x012a93,0,0);
     }
     
     public HyperlinkButtonField( String text, int textColour, int highlightColour, int menuOrdinal, int menuPriority )

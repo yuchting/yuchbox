@@ -87,6 +87,7 @@ public class WeiboDMItemField extends WeiboItemField{
 			
 			m_parentManager.setCurrExtendedItem(this);			
 			m_parentManager.setCurrEditItem(this);
+			
 			if(!m_hasControlField[fsm_controlField_edit_return]){
 				m_hasControlField[fsm_controlField_edit_return] = true;
 				add(m_parentManager.m_editTextArea);
@@ -129,14 +130,20 @@ public class WeiboDMItemField extends WeiboItemField{
 		}
 	}
 	
-	public void AddDelEditTextArea(boolean _add,String _text){
-
-		if(!_add){
-			m_parentManager.setCurrEditItem(null);
-		}else{
-			m_parentManager.setCurrEditItem(this);
+	public fetchWeibo getReplyWeibo(){
+		
+		for(int i = 0;i < m_DMList.size();i++){
+			WeiboDMData t_data = (WeiboDMData)m_DMList.elementAt(i);
+			if(!t_data.m_weibo.IsOwnWeibo()){				
+				return t_data.m_weibo;
+			}
 		}
 		
+		return null; 
+	}
+	
+	public void AddDelEditTextArea(boolean _add,String _text){
+		//AddDelControlField(_add);	
 	}
 	
 	public int getPreferredHeight() {

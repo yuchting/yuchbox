@@ -365,7 +365,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		if(m_inputTextNum.getText().length() != 0){
 			
-			paintPromptText(g,recvMain.fsm_display_width - m_inputTextNum.getWidth() - fsm_promptBubbleBorder * 2,
+			paintPromptText(g,recvMain.fsm_display_width - m_inputTextNum.getWidth() / 2 - fsm_promptBubbleBorder * 2 - 30,
 					0,
 					m_inputTextNum.getWidth() + fsm_promptBubbleBorder * 2 ,
 					m_inputTextNum.getHeight() + fsm_promptBubbleBorder * 2,m_inputTextNum);
@@ -777,8 +777,40 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 			UpdateNewWeibo(m_mainMgr.m_updateWeiboField.m_sendUpdateText);			
 			
+		}else if(m_currMgr == m_mainDMMgr && m_currMgr.getCurrExtendedItem() != null){
+			
+			// send direct message
+			//
+			String t_text = m_currMgr.m_editTextArea.getText();
+			WeiboDMItemField t_field = (WeiboDMItemField)m_currMgr.getCurrExtendedItem();
+					
+			try{
+				
+				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+				
+				fetchWeibo t_weibo = t_field.getReplyWeibo();
+				if(t_weibo != null){
+
+					t_os.write(msg_head.msgWeibo);
+					t_os.write(t_weibo.GetWeiboStyle());
+					t_os.write(fetchWeibo.SEND_DIRECT_MSG_TYPE);
+					sendReceive.WriteString(t_os,t_text);
+					sendReceive.WriteString(t_os,t_weibo.GetUserScreenName());					
+				}
+				
+				m_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeibo,t_os.toByteArray(),true);
+				m_mainApp.m_sentWeiboNum++;
+				
+			}catch(Exception e){
+				m_mainApp.SetErrorString("SMIC0:" + e.getMessage() + e.getClass().getName());
+			}
+			
+			m_currMgr.EscapeKey();
+			
 		}else{
 			
+			// send forward/reply message
+			//
 			try{
 				
 				String t_text = m_currMgr.m_editTextArea.getText();
@@ -822,7 +854,7 @@ public class weiboTimeLineScreen extends MainScreen{
 				
 				
 			}catch(Exception e){
-				m_mainApp.SetErrorString("SMIC:" + e.getMessage() + e.getClass().getName());
+				m_mainApp.SetErrorString("SMIC1:" + e.getMessage() + e.getClass().getName());
 			}
 		}
 	}
