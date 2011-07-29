@@ -259,6 +259,10 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		return t_weibo;
 	}
 	
+	protected void sendDirectMsg(String _screenName,String _text)throws Exception{
+		m_twitter.sendDirectMessage(_screenName, _text);
+	}
+	
 	public void ImportWeibo(fetchWeibo _weibo,Status _stat,byte _weiboClass){
 		_weibo.SetId(_stat.getId());
 		_weibo.SetDateLong(_stat.getCreatedAt().getTime());

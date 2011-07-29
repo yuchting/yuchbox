@@ -22,6 +22,7 @@ public class fetchWeibo {
 	final public static byte	SEND_NEW_UPDATE_TYPE	= 0;
 	final public static byte	SEND_FORWARD_TYPE		= 1;
 	final public static byte	SEND_REPLY_TYPE			= 2;
+	final public static byte	SEND_DIRECT_MSG_TYPE	= 3;
 	
 	final public static int	fsm_headImageSize		= 32;
 	final public static int	fsm_headImageSize_l		= 50;

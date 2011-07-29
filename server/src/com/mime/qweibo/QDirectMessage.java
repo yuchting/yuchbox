@@ -48,16 +48,19 @@ public class QDirectMessage {
 		}
 		
 		try{
-			JSONArray t_array = _json.getJSONObject("data").getJSONArray("info");
-			int t_num = t_array.length();
-			for(int i = 0;i < t_num;i++){
-				JSONObject json = t_array.getJSONObject(i);
-				QDirectMessage t_msg= new QDirectMessage(new QWeibo(json), _type);
-				
-				t_msg.m_toname = json.getString("toname");
-				t_msg.m_tonick = json.getString("tonick");
-				
-				t_list.add(t_msg);
+			if(!_json.isNull("data")){
+
+				JSONArray t_array = _json.getJSONObject("data").getJSONArray("info");
+				int t_num = t_array.length();
+				for(int i = 0;i < t_num;i++){
+					JSONObject json = t_array.getJSONObject(i);
+					QDirectMessage t_msg= new QDirectMessage(new QWeibo(json), _type);
+					
+					t_msg.m_toname = json.getString("toname");
+					t_msg.m_tonick = json.getString("tonick");
+					
+					t_list.add(t_msg);
+				}
 			}
 		}catch(Exception e){
 			if(QWeiboSyncApi.sm_debug){

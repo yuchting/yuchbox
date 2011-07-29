@@ -35,7 +35,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 
 	final class fetchWeiboData{
 		long					m_fromIndex = -1;
-		long					m_fromIndex2 = -1; // this var for QQ out/in box
+		long					m_fromIndex2 = -1; // this var for QQ out/in box		
 		Vector<fetchWeibo>		m_historyList = null;
 		Vector<fetchWeibo>		m_weiboList = new Vector<fetchWeibo>();
 		int						m_sum		= -1;
@@ -471,6 +471,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		}catch(Exception e){}
 	}
 	
+	
+	
 	protected boolean ProcessWeiboDelete(ByteArrayInputStream in)throws Exception{
 		int t_style = in.read();
 				
@@ -572,7 +574,16 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				}
 				
 				break;
+			case fetchWeibo.SEND_DIRECT_MSG_TYPE:
 				
+				String t_screenName = sendReceive.ReadString(in);
+				sendDirectMsg(t_screenName,t_text);
+				
+				m_mainMgr.SendData(sm_updateOkPrompt, false);
+				
+				ProcessWeiboRefresh();
+				
+				return true;
 			}
 			
 		}catch(Exception e){
@@ -596,6 +607,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	protected abstract void FavoriteWeibo(long _id)throws Exception;
 	protected abstract void FollowUser(String _screenName)throws Exception;
 	protected abstract void DeleteWeibo(long _id,boolean _isComment)throws Exception;
+	protected abstract void sendDirectMsg(String _screenName,String _text)throws Exception;
 	
 	protected abstract fetchWeiboUser getWeiboUser(String _name)throws Exception;
 	

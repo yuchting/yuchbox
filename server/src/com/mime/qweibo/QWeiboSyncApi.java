@@ -37,6 +37,8 @@ public class QWeiboSyncApi {
 	final static String fsm_userInfoURL					= "http://open.t.qq.com/api/user/other_info";
 	final static String fsm_userTimelingURL				= "http://open.t.qq.com/api/statuses/user_timeline";
 	
+	final static String fsm_sendDirectMsgURL				= "http://open.t.qq.com/api/private/add";
+	
 	OauthKey 			m_oauthKey = new OauthKey();
 	QWeiboRequest 		m_request = new QWeiboRequest();
 	
@@ -227,9 +229,31 @@ public class QWeiboSyncApi {
 			throw new Exception("get User info error:" + t_json.toString());
 		}
 		
-		return new QUser(t_json); 
+		return new QUser(t_json.getJSONObject("data")); 
 				
 	}
+	
+	public void sendDirectMessage(String _screenName, String _text,String _ip,
+									long _latitude,long _longitude)throws Exception{
+		m_parameters.clear();
+		
+		m_parameters.add(new QParameter("format", "json"));
+		m_parameters.add(new QParameter("name",_screenName));
+		m_parameters.add(new QParameter("content",_text));
+		
+		if(_latitude != -1 && _longitude != -1){
+			m_parameters.add(new QParameter("wei", Long.toString(_latitude)));
+			m_parameters.add(new QParameter("jing", Long.toString(_longitude)));
+		}else if(_ip != null){
+			m_parameters.add(new QParameter("clientip", _ip));
+		}
+		
+		JSONObject t_json = new JSONObject(m_request.syncRequest(fsm_sendDirectMsgURL, "POST", m_oauthKey, m_parameters, null));
+		if(t_json.getInt("ret") != 0){
+			throw new Exception("send direct message error:" + t_json.toString());
+		}
+	}
+	
 	/**
 	 *  private sub-function to get the weibo list information by url 
 	 * @param _url		
@@ -467,8 +491,8 @@ public class QWeiboSyncApi {
 		m_parameters.clear();
 		
 		m_parameters.add(new QParameter("format", "json"));
-		m_parameters.add(new QParameter("pagetime",Long.toString(_time)));
-		m_parameters.add(new QParameter("pageflag","0"));
+		m_parameters.add(new QParameter("pagetime",Long.toString(_time / 1000)));
+		m_parameters.add(new QParameter("pageflag","2"));
 		m_parameters.add(new QParameter("reqnum",Integer.toString(_num)));
 		m_parameters.add(new QParameter("lastid",Long.toString(_lastId)));
 		

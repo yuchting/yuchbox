@@ -317,10 +317,14 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 			fetchWeibo weibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
 			ImportWeibo(weibo, s,fetchWeibo.TIMELINE_CLASS);
 			
-			t_weibo.getUpdatedWeibo().add(weibo);
+			t_weibo.getUpdatedWeibo().insertElementAt(weibo, 0);
 		}
 		
 		return t_weibo;
+	}
+	
+	protected void sendDirectMsg(String _screenName,String _text)throws Exception{
+		throw new Exception("sina direct message no support."); 
 	}
 	
 	public void ImportWeibo(fetchWeibo _weibo,Status _stat,byte _weiboClass){
@@ -476,9 +480,9 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		t_weibo.m_secretToken = "7529265879f3c97af609c694064bbc59";
 		
 		t_weibo.ResetSession(true);
-		User t_user = t_weibo.m_weibo.showUser("国歆");
+		fetchWeiboUser t_user = t_weibo.getWeiboUser("yuchberry");
 				
-		System.out.print( t_weibo.StoreHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));
+		System.out.print( t_weibo);
 	}
 	
 }

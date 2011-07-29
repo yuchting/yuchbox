@@ -60,35 +60,31 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		List<QDirectMessage> t_fetch = null;
 		
 		if(m_directMessage.m_fromIndex > 1){
-			t_fetch = m_api.getOutboxDirectMessage(m_directMessage.m_fromIndex,10,0);
+			t_fetch = m_api.getOutboxDirectMessage(0,10,m_directMessage.m_fromIndex);
 		}else{
 			t_fetch = m_api.getOutboxDirectMessage();
 		}
 		
 		AddDirectMsgWeibo(t_fetch,m_directMessage,fetchWeibo.DIRECT_MESSAGE_CLASS);
 		
-		for(QDirectMessage msg : t_fetch){
-			if(m_directMessage.m_fromIndex < msg.getWeiboContentItem().getTime()){
-				m_directMessage.m_fromIndex = msg.getWeiboContentItem().getTime();
-			}
-		}		
-
+		if(!t_fetch.isEmpty()){
+			m_directMessage.m_fromIndex = t_fetch.get(0).getWeiboContentItem().getId();
+		}
+		
 		// inbox
 		//
 		if(m_directMessage.m_fromIndex2 > 1){
-			t_fetch = m_api.getInboxDirectMessage(m_directMessage.m_fromIndex2,10,0);
+			t_fetch = m_api.getInboxDirectMessage(0,10,m_directMessage.m_fromIndex2);
 		}else{
 			t_fetch = m_api.getInboxDirectMessage();
 		}
 		
 		AddDirectMsgWeibo(t_fetch,m_directMessage,fetchWeibo.DIRECT_MESSAGE_CLASS);
 		
-		for(QDirectMessage msg : t_fetch){
-			if(m_directMessage.m_fromIndex2 < msg.getWeiboContentItem().getTime()){
-				m_directMessage.m_fromIndex2 = msg.getWeiboContentItem().getTime();
-			}
+		if(!t_fetch.isEmpty()){
+			m_directMessage.m_fromIndex2 = t_fetch.get(0).getWeiboContentItem().getId();
 		}
-				
+						
 		// sort by time
 		//
 		Collections.sort(m_directMessage.m_weiboList,new Comparator<fetchWeibo>() {
@@ -278,10 +274,14 @@ public class fetchQWeibo extends fetchAbsWeibo{
 			fetchWeibo weibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
 			ImportWeibo(weibo, s,fetchWeibo.TIMELINE_CLASS);
 			
-			t_weibo.getUpdatedWeibo().add(weibo);
+			t_weibo.getUpdatedWeibo().insertElementAt(weibo, 0);
 		}
 		
 		return t_weibo;
+	}
+	
+	protected void sendDirectMsg(String _screenName,String _text)throws Exception{
+		m_api.sendDirectMessage(_screenName,_text,null,-1,-1);
 	}
 	
 	
@@ -400,8 +400,9 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		t_weibo.m_timeline.m_sum = 10;
 		t_weibo.m_directMessage.m_sum = 5;
 		
-		t_weibo.CheckDirectMessage();
-		
+		fetchWeiboUser t_user = t_weibo.getWeiboUser("yuchberry");
+				
+				
 		System.out.print(t_weibo);
 		
 		
