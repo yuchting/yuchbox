@@ -45,7 +45,7 @@ public final class LogonDialog extends DialogBox{
 		m_clientSign = _clientSign;
 		
 		final Button t_forgetPass = new Button("忘记密码");
-		
+
 		
 		final VerticalPanel t_logonPane = new VerticalPanel();
 		t_logonPane.setStyleName("logonVPanel");

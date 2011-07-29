@@ -1222,8 +1222,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				}	
 			}
 			
-			List<yuchOrder> t_orderList = (List<yuchOrder>)t_pm.newQuery("select form " + yuchOrder.class.getName() + 
-											" where m_alipay_trade_no != ''").execute();
+			List<yuchOrder> t_orderList = (List<yuchOrder>)t_pm.newQuery("select from " + yuchOrder.class.getName() + 
+													" where m_alipay_trade_no != \"\"").execute();
 			
 			SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
 			format.setTimeZone(TimeZone.getTimeZone("GMT+8"));
