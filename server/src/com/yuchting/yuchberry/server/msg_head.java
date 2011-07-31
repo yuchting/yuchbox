@@ -35,4 +35,6 @@ final public class msg_head {
 	final public static byte msgWeiboPrompt		= 20;
 	
 	final public static byte msgWeiboUser		= 21;
+	
+	final public static byte	msgDeviceInfo		= 22;
 }

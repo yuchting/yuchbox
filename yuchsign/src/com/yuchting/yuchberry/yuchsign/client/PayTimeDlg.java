@@ -4,8 +4,9 @@ import java.util.Date;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
@@ -84,41 +85,20 @@ public class PayTimeDlg extends DialogBox{
 		t_confirm.addClickHandler(new ClickHandler() {
 			
 			@Override
-			public void onClick(ClickEvent event) {
-
-				Yuchsign.PopupWaiting("正在提交订单...", t_pane);
-				
+			public void onClick(ClickEvent event){
 				try{
-					_mainSign.greetingService.payTime(_bber.GetSigninName(),0,
-													(t_weekPay.getValue())?ft_payWeekFee:ft_payWeekFee*4,
-					new AsyncCallback<String>() {
-						
-						@Override
-						public void onSuccess(String result) {
-							if(result.startsWith("http")){
-								
-								Yuchsign.forcePopupURL(result);
-								Yuchsign.HideWaiting();
-								
-								t_weekPay.setEnabled(false);
-								t_monthPay.setEnabled(false);
-							}else{
-								Yuchsign.HideWaiting();
-								Yuchsign.PopupPrompt("错误：" + result, t_pane);
-							}							
-						}
-						
-						@Override
-						public void onFailure(Throwable caught) {
-							Yuchsign.HideWaiting();
-							Yuchsign.PopupPrompt("错误：" + caught.getMessage(), t_pane);
-							
-						}
-					});
+					Window.open("http://yuchberrysign.yuchberry.info/pay/?yname=" + URL.encode(_bber.GetSigninName()) +
+							"&type=0&fee=" + ((t_weekPay.getValue())?ft_payWeekFee:ft_payWeekFee*4), "_blank", "");
+					
+//					Window.open("http://127.0.0.1:8888/pay/?yname=" + URL.encode(_bber.GetSigninName()) +
+//							"&type=0&fee=" + ((t_weekPay.getValue())?ft_payWeekFee:ft_payWeekFee*4), "_blank", "");
+//					
+					t_weekPay.setEnabled(false);
+					t_monthPay.setEnabled(false);
+					t_confirm.setEnabled(false);
 				}catch(Exception e){
-					Yuchsign.HideWaiting();
 					Yuchsign.PopupPrompt("错误：" + e.getMessage(), t_pane);
-				}	
+				}
 			}
 			
 		});

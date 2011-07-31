@@ -283,30 +283,14 @@ public class Yuchsign implements EntryPoint {
 	public static void HideWaiting(){
 		fsm_waitingLable.Hide();
 	}
-	
-	public static native String getURL(String url)/*-{
-		return $wnd.open(url,
-		'target=_blank')
-	}-*/;
 		
 	public static native String forcePopupURL(String url)/*-{
-		function ForceWindow ()
-		{ 
-			this.r = document.documentElement; 
-			this.f = document.createElement("FORM"); 
-			this.f.target = "_blank"; 
-			this.f.method = "post"; 
-			this.r.insertBefore(this.f, this.r.childNodes[0]); 
-		}
-		
-		ForceWindow.prototype.open = function (sUrl) 
-		{ 
-			this.f.action = sUrl; 
-			this.f.submit(); 
-		}
-		
-		var myWindow = new ForceWindow();
-		myWindow.open(url); 
+		var dom = document.createElement('a');   
+		dom.setAttribute('href',url);   
+		dom.setAttribute('target','_blank');   
+		document.body.appendChild(dom);   
+		dom.click();   
+		document.body.removeChild(dom);  
 	}-*/;
 	
 }

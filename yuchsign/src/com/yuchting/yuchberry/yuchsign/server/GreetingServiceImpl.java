@@ -637,97 +637,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	}
 	
 	
-	public String payTime(String _signinName,int _payType,int _fee)throws Exception{
-		
-		PersistenceManager t_pm = PMF.get().getPersistenceManager();
-		
-		try{
-			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(),_signinName);
-			try{
-				
-				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);				
-				
-				StringBuffer t_payURL = new StringBuffer();
-				
-				yuchAlipay t_alipay = YuchsignCache.getCacheAlipay();
-				
-				if(t_alipay == null){
-					k = KeyFactory.createKey(yuchAlipay.class.getSimpleName(),yuchAlipay.class.getName());
-					t_alipay = t_pm.getObjectById(yuchAlipay.class, k);
-					
-					YuchsignCache.makeCacheYuchAlipay(t_alipay);
-				}
-												
-				if(t_alipay != null){
-										
-					SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-					format.setTimeZone(TimeZone.getTimeZone("GMT+8"));
-					String t_out_trade_no = "" + format.format(new Date()) + (new Random()).nextInt(1000);
-					
-					// check the out trade no
-					//
-					Key t_order_key = KeyFactory.createKey(yuchOrder.class.getSimpleName(),t_out_trade_no);
-					try{
-						yuchOrder t_order = t_pm.getObjectById(yuchOrder.class, t_order_key);
-						if(t_order != null){
-							return  "内部错误，请重新操作";
-						}						
-					}catch(Exception ex){}
-					
-					
-					// generate the URL 
-					//
-					String t_subject = "yuchberry充值时间";
-					
-					switch(_payType){
-					case 1: t_subject = "yuchberry用户类型升级";break;
-					case 2: t_subject = "yuchberry推送间隔升级";break;
-					}
-					
-					StringBuffer t_body = new StringBuffer();
-
-					t_body.append("_input_charset=utf-8&")
-							.append("notify_url=http://yuchberrysign.yuchberry.info/pay/&")
-							.append("out_trade_no=" + t_out_trade_no + "&")
-							.append("partner=" + t_alipay.GetPartnerID() +"&")
-							.append("payment_type=1&")
-							.append("paymethod=directPay&")
-							.append("return_url=http://yuchberrysign.yuchberry.info/payok/&")
-							.append("seller_email="+ FieldVerifier.fsm_admin + "&")
-							.append("service=create_direct_pay_by_user&")
-							.append("subject="+ t_subject +"&")
-							.append("total_fee=" + _fee);
-					
-					String t_md5 = Md5Encrypt.md5(t_body.toString() + t_alipay.GetKey());
-					
-					t_payURL.append("https://www.alipay.com/cooperate/gateway.do?sign=")
-							.append(t_md5).append("&").append(t_body).append("&sign_type=MD5");
-					
-					yuchOrder t_order = new yuchOrder();
-					
-					t_order.SetOutTradeNO(t_out_trade_no);
-					t_order.SetTotalFee(_fee);
-					t_order.SetSubject(t_subject);
-					t_order.SetBuyerEmail(_signinName);
-					t_order.SetPayType(_payType);
-					
-					t_pm.makePersistent(t_order);
-					
-					return t_payURL.toString();
-					
-				}else{
-					return "暂时无法付费";
-				}
-		        
-			}catch(javax.jdo.JDOObjectNotFoundException e){
-				return "找不到用户!";
-			}
-						
-		}finally{
-			
-			t_pm.close();
-		}	
-	}
+	
 	
 	public String getdownLev(String _signinName)throws Exception{
 		
@@ -1119,22 +1029,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	}
 	
 	
-	public String getWeiboAuthURL(String _bber,String _type){
-		WeiboAuth t_auth = new WeiboAuth(_bber,_type);
-				
-		try{
-			
-			String t_res = t_auth.getRequestURL("http://yuchberrysign.yuchberry.info/auth/?bber=" + URLEncoder.encode(_bber,"UTF-8"));
-			//String t_res = t_auth.getRequestURL("http://127.0.0.1:8888/auth/?bber=" + URLEncoder.encode(_bber,"UTF-8"));
-
-			YuchsignCache.makeCacheWeiboAuth(t_auth);
-			
-			return t_res;
-			
-		}catch(Exception e){
-			return "<Error>请求出现错误 " + e.getMessage() +"</Error>";
-		}
-	}
+	
 	
 	public String getWeiboAccessToken(String _bber){
 		
@@ -1225,11 +1120,13 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			List<yuchOrder> t_orderList = (List<yuchOrder>)t_pm.newQuery("select from " + yuchOrder.class.getName() + 
 													" where m_alipay_trade_no != \"\"").execute();
 			
-			SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+			SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 			format.setTimeZone(TimeZone.getTimeZone("GMT+8"));
 			
 			for(yuchOrder order: t_orderList){
-				long t_dayTime = format.parse(order.GetOutTradeNO().substring(0,8)).getTime();
+				long t_dayTime = format.parse(order.GetOutTradeNO().substring(0,14)).getTime();
+				t_dayTime = t_dayTime - t_dayTime % (24 * 3600000);
+				
 				if(_startTime != 0 && t_dayTime < _startTime){
 					continue;
 				}
@@ -1264,7 +1161,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				public int compare(Map.Entry<Long,StatData> o1, Map.Entry<Long,StatData> o2){
 
 					long a = (o1.getKey()).longValue();
-					long b = (o1.getKey()).longValue();
+					long b = (o2.getKey()).longValue();
 					if(a < b){
 						return -1;
 					}else if(a > b){

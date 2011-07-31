@@ -51,7 +51,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListener,
 												ViewListenerExtended{
 		
-	final static int	fsm_clientVer = 11;
+	final static int	fsm_clientVer = 12;
 	 
 	sendReceive		m_connect = null;
 		
@@ -1105,6 +1105,13 @@ public class connectDeamon extends Thread implements SendListener,
 		 			t_user.InputData(in);
 		 			m_mainApp.m_weiboTimeLineScreen.displayWeiboUser(t_user);
 		 		}
+		 		break;
+		 	case msg_head.msgDeviceInfo:
+		 		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		 		os.write(msg_head.msgDeviceInfo);
+		 		sendReceive.WriteLong(os, recvMain.fsm_PIN);
+		 		sendReceive.WriteString(os,recvMain.fsm_IMEI);
+		 		addSendingData(msg_head.msgDeviceInfo, os.toByteArray(), true);
 		 		break;
 		 }
 	 }

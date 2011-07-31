@@ -586,8 +586,8 @@ public class BberPanel extends TabPanel{
 	String		m_verfiyCode = "";
 	private void StartSync(){
 		
-		if(m_signature.getText().length() > 200){
-			Yuchsign.PopupPrompt("签名不能大于200个字符", this);
+		if(m_signature.getText().length() > 500){
+			Yuchsign.PopupPrompt("签名不能大于500个字符", this);
 			return;
 		}
 		

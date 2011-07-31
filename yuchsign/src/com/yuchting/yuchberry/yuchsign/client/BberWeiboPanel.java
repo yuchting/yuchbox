@@ -2,6 +2,7 @@ package com.yuchting.yuchberry.yuchsign.client;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -79,38 +80,42 @@ public class BberWeiboPanel extends FlowPanel{
 						t_type = but.getText();
 					}
 				}
+				
 				if(t_type == null){
 					Yuchsign.PopupPrompt("内部错误，请选择Weibo类型", BberWeiboPanel.this);
 					return ;
 				}
 				
-				Yuchsign.PopupWaiting("正在请求服务器生成授权信息，请等待……", BberWeiboPanel.this);
+				Window.open("http://yuchberrysign.yuchberry.info/auth?bber="+
+						URL.encode(m_mainPanel.m_currentBber.GetSigninName()) + "&type="+t_type,"_blank","");
 				
-				m_mainPanel.m_mainServer.greetingService.getWeiboAuthURL(
-						m_mainPanel.m_currentBber.GetSigninName(), t_type, 
-				new AsyncCallback<String>() {
-					@Override
-					public void onSuccess(String result) {
-						
-						if(result.startsWith("http")){
-														
-							Yuchsign.forcePopupURL(result);
-							requestAccessToken();
-							
-							Yuchsign.PopupWaiting("正在等待用户完成请求……", BberWeiboPanel.this);
-																					
-						}else{
-							Yuchsign.PopupPrompt(result, BberWeiboPanel.this);
-							Yuchsign.HideWaiting();
-						}
-					}
-					
-					@Override
-					public void onFailure(Throwable caught) {
-						Yuchsign.PopupPrompt(caught.getMessage(), BberWeiboPanel.this);
-						Yuchsign.HideWaiting();
-					}											
-				});
+				requestAccessToken();
+				
+//				m_mainPanel.m_mainServer.greetingService.getWeiboAuthURL(
+//						m_mainPanel.m_currentBber.GetSigninName(), t_type, 
+//				new AsyncCallback<String>() {
+//					@Override
+//					public void onSuccess(String result) {
+//						
+//						if(result.startsWith("http")){
+//														
+//							Yuchsign.forcePopupURL(result);
+//							
+//							
+//							Yuchsign.PopupWaiting("正在等待用户完成请求……", BberWeiboPanel.this);
+//																					
+//						}else{
+//							Yuchsign.PopupPrompt(result, BberWeiboPanel.this);
+//							Yuchsign.HideWaiting();
+//						}
+//					}
+//					
+//					@Override
+//					public void onFailure(Throwable caught) {
+//						Yuchsign.PopupPrompt(caught.getMessage(), BberWeiboPanel.this);
+//						Yuchsign.HideWaiting();
+//					}											
+//				});
 			}
 		});
 		

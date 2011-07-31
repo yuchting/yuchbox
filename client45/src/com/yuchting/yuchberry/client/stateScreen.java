@@ -281,7 +281,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     ConnectButton		m_connectBut    = null;
     
     String				m_promptText     = recvMain.sm_local.getString(localResource.STATE_HELP_GET_HOST_PROMPT);
-    HyperlinkButtonField m_getHostLink	= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.STATE_SCREEN_HELP_MENU));
+    HyperlinkButtonField m_getHostLink	= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.STATE_SCREEN_HELP_MENU),0xffffff,0x8a8a8a);
    
     RichTextField		m_uploadingText = null;
             
@@ -365,12 +365,15 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 	    	int oldColor = _g.getColor();
 	    	try{
 	    		_g.setColor(0xf0f0f0);
-	    		_g.drawText(m_promptText,m_connectBut.getExtent().x + m_connectBut.getImageWidth(),m_connectBut.getExtent().y);
+	    		_g.drawText(m_promptText,m_connectBut.getExtent().x + m_connectBut.getImageWidth(),
+	    				m_connectBut.getExtent().y + (m_connectBut.getImageHeight() - _g.getFont().getHeight()) / 2);
 	    		
 	    	}finally{
 	    		_g.setColor(oldColor);
 	    	}
-			super.subpaint(_g);
+	    	
+	    	super.subpaint(_g);
+			
 		}
 	};
 	

@@ -7,9 +7,12 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
+import java.util.TimeZone;
 
 import javax.jdo.PersistenceManager;
 import javax.servlet.ServletException;
@@ -19,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
 public class PayServiceImpl extends HttpServlet {
 	
@@ -27,10 +31,44 @@ public class PayServiceImpl extends HttpServlet {
 	}
 	
 	public void doGet(HttpServletRequest request,HttpServletResponse response)throws ServletException,IOException{
+				
+		String t_client_pay			= (String)request.getParameter("yname");
 		
-		final String t_out_trade_no		= (String)request.getParameter("out_trade_no");
+		if(t_client_pay != null){
+			// client pay redirect URL
+			//
+			String t_type = (String)request.getParameter("type");
+			String t_fee = (String)request.getParameter("fee");
+						
+			try{
+				int t_typeVal = Integer.valueOf(t_type).intValue();
+				int t_feeVal = Integer.valueOf(t_fee).intValue();
+				
+				String t_redirectURL = payTime(t_client_pay,t_typeVal,t_feeVal);
+				
+				if(t_redirectURL.startsWith("http")){
+					response.sendRedirect(t_redirectURL);
+				}else{
+					throw new Exception(t_redirectURL);
+				}
+				
+			}catch(Exception e){
+				
+				PrintWriter out = response.getWriter();
+				out.println("<html><body>遇到错误： "+e.getMessage()+"</body></html>" );
+				out.flush();
+			}
+			
+		}else{
+			alipayRequest(request,response);
+		}
+		
+	}
+	
+	private void alipayRequest(HttpServletRequest request,HttpServletResponse response)throws ServletException,IOException{
+		String t_out_trade_no		= (String)request.getParameter("out_trade_no");
 		String t_alipay_trade_no		= (String)request.getParameter("trade_no");
-		final String t_total_fee		= (String)request.getParameter("total_fee");
+		String t_total_fee		= (String)request.getParameter("total_fee");
 		
 		String t_notify_id	= (String)request.getParameter("notify_id");
 				
@@ -157,7 +195,98 @@ public class PayServiceImpl extends HttpServlet {
 			out.println("success");
 			out.flush();
 		}
+	}
 		
+	private String payTime(String _signinName,int _payType,int _fee)throws Exception{
+		
+		PersistenceManager t_pm = PMF.get().getPersistenceManager();
+		
+		try{
+			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(),_signinName);
+			try{
+				
+				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);				
+				
+				StringBuffer t_payURL = new StringBuffer();
+				
+				yuchAlipay t_alipay = YuchsignCache.getCacheAlipay();
+				
+				if(t_alipay == null){
+					k = KeyFactory.createKey(yuchAlipay.class.getSimpleName(),yuchAlipay.class.getName());
+					t_alipay = t_pm.getObjectById(yuchAlipay.class, k);
+					
+					YuchsignCache.makeCacheYuchAlipay(t_alipay);
+				}
+												
+				if(t_alipay != null){
+										
+					SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+					format.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+					String t_out_trade_no = "" + format.format(new Date()) + (new Random()).nextInt(1000);
+					
+					// check the out trade no
+					//
+					Key t_order_key = KeyFactory.createKey(yuchOrder.class.getSimpleName(),t_out_trade_no);
+					try{
+						yuchOrder t_order = t_pm.getObjectById(yuchOrder.class, t_order_key);
+						if(t_order != null){
+							return  "内部错误，请重新操作";
+						}						
+					}catch(Exception ex){}
+					
+					
+					// generate the URL 
+					//
+					String t_subject = "yuchberryPayTime";
+					
+					switch(_payType){
+					case 1: t_subject = "yuchberryPayLevel";break;
+					case 2: t_subject = "yuchberryPayInterval";break;
+					}
+					
+					StringBuffer t_body = new StringBuffer();
+
+					t_body.append("_input_charset=utf-8&")
+							.append("notify_url=http://yuchberrysign.yuchberry.info/pay/&")
+							.append("out_trade_no=" + t_out_trade_no + "&")
+							.append("partner=" + t_alipay.GetPartnerID() +"&")
+							.append("payment_type=1&")
+							.append("paymethod=directPay&")
+							.append("return_url=http://yuchberrysign.yuchberry.info/payok/&")
+							.append("seller_email="+ FieldVerifier.fsm_admin + "&")
+							.append("service=create_direct_pay_by_user&")
+							.append("subject="+ t_subject +"&")
+							.append("total_fee=" + _fee);
+					
+					String t_md5 = Md5Encrypt.md5(t_body.toString() + t_alipay.GetKey());
+					
+					t_payURL.append("https://www.alipay.com/cooperate/gateway.do?sign=")
+							.append(t_md5).append("&").append(t_body).append("&sign_type=MD5");
+					
+					yuchOrder t_order = new yuchOrder();
+					
+					t_order.SetOutTradeNO(t_out_trade_no);
+					t_order.SetTotalFee(_fee);
+					t_order.SetSubject(t_subject);
+					t_order.SetBuyerEmail(_signinName);
+					t_order.SetPayType(_payType);
+					
+					t_pm.makePersistent(t_order);
+					
+					return t_payURL.toString();
+					
+				}else{
+					return "暂时无法付费";
+				}
+		        
+			}catch(javax.jdo.JDOObjectNotFoundException e){
+				return "找不到用户!";
+			}
+						
+		}finally{
+			
+			t_pm.close();
+		}	
 	}
 	
 	static public void RecalculateTime(PersistenceManager _pm,yuchbber _bber ,long _payHours,int _nextLev)throws Exception{

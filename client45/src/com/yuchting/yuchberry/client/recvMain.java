@@ -31,7 +31,9 @@ import net.rim.device.api.notification.NotificationsManager;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.CodeModuleManager;
+import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.Display;
+import net.rim.device.api.system.IDENInfo;
 import net.rim.device.api.system.WLANInfo;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
@@ -48,7 +50,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public final static int 		fsm_display_width		= Display.getWidth();
 	public final static int 		fsm_display_height		= Display.getHeight();
-	public final static String	fsm_OS_version			= CodeModuleManager.getModuleVersion((CodeModuleManager.getModuleHandleForObject("")));;
+	public final static String	fsm_OS_version			= CodeModuleManager.getModuleVersion((CodeModuleManager.getModuleHandleForObject("")));
+	public final static long		fsm_PIN					= DeviceInfo.getDeviceId();
+	public final static String	fsm_IMEI				= IDENInfo.imeiToString(IDENInfo.getIMEI());
+	
 	
 	public static ResourceBundle sm_local = ResourceBundle.getBundle(localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
 	
@@ -279,7 +284,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		try{
 			m_locationProvider = LocationProvider.getInstance(t_criteria);
 			if(m_locationProvider == null){
-				SetErrorString("your device can't support location");
+				SetErrorString("your device can't support GPS location.");
 			}
 		}catch(Exception e){
 			SetErrorString("location:"+e.getMessage()+" " + e.getClass().getName());

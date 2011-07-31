@@ -24,7 +24,7 @@ public interface GreetingService extends RemoteService {
 	
 	String checkAccountLog(String _signinName,String _pass)throws Exception;
 	
-	String payTime(String _signinName,int _payType,int _fee)throws Exception;
+	//String payTime(String _signinName,int _payType,int _fee)throws Exception;
 	
 	String getdownLev(String _signinName)throws Exception;
 	
@@ -49,7 +49,6 @@ public interface GreetingService extends RemoteService {
 	
 	// weibo function
 	//
-	String getWeiboAuthURL(String _bber,String _type);
 	String getWeiboAccessToken(String _bber);
 	
 	

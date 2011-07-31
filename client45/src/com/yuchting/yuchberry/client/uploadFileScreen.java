@@ -378,6 +378,8 @@ public class uploadFileScreen extends MainScreen implements
 	protected void makeMenu(Menu menu, int instance) {
 		menu.add(m_check);
 	    menu.add(m_ok);
+	    
+	    super.makeMenu(menu,instance);
 	}
 	
 	public void menuClicked(uploadFileScreenMenu _menu){
@@ -411,7 +413,9 @@ public class uploadFileScreen extends MainScreen implements
 					
 					close();					
 				}
-			}	
+			}else{
+				m_mainApp.SetErrorString("menuClicked:-1");
+			}
 			
 		}
 	}

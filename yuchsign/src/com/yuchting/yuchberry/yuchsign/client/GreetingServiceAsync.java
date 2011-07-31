@@ -21,7 +21,7 @@ public interface GreetingServiceAsync {
 	
 	void checkAccountLog(String _signinName,String _pass,AsyncCallback<String> callback)throws Exception;
 	
-	void payTime(String _signinName,int _payType,int _fee,AsyncCallback<String> callback)throws Exception;
+	//void payTime(String _signinName,int _payType,int _fee,AsyncCallback<String> callback)throws Exception;
 	
 	void getdownLev(String _signinName,AsyncCallback<String> callback)throws Exception;
 	
@@ -45,8 +45,6 @@ public interface GreetingServiceAsync {
 	void getStaticticsInfo(long _startTime,long _endTime,AsyncCallback<String> callback)throws Exception;
 
 	// weibo auth function
-	//
-	void getWeiboAuthURL(String _bber,String _type,AsyncCallback<String> callback);
-	
+	//	
 	void getWeiboAccessToken(String _bber,AsyncCallback<String> callback);
 }

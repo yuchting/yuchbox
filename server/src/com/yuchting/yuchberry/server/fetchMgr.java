@@ -73,6 +73,8 @@ public class fetchMgr{
     int				m_clientDisplayWidth = 0;
     int				m_clientDisplayHeight = 0;
     
+    long			m_pin				= -1;
+    String			m_IMEI				= null;    
     
     
     public void SetLatestVersion(String _version){
@@ -116,6 +118,12 @@ public class fetchMgr{
     public String GetClientOSVer(){
     	return m_clientOSVersion;
     }
+    
+    public void setClientPIN(long _pin){m_pin = _pin;}
+    public long getClientPIN(){return m_pin;}
+    
+    public void setClientIMEI(String _imei){m_IMEI = _imei;}
+    public String getClientIMEI(){return m_IMEI;}
     
     public void SendNewVersionPrompt(sendReceive _sendRecv)throws Exception{
     	if(m_hasPrompt){
@@ -337,7 +345,11 @@ public class fetchMgr{
 				m_clientDisplayWidth = (t_size >>> 16);
 				m_clientDisplayHeight = (t_size & 0x0000ffff);
 			}
-					
+			
+			if(m_clientVer >= 12 && (m_pin == -1)){
+				t_tmp.SendBufferToSvr(new byte[]{msg_head.msgDeviceInfo}, false);
+			}
+
 			_s.setSoTimeout(0);
 									
 			return t_tmp;
@@ -502,6 +514,10 @@ public class fetchMgr{
 			case msg_head.msgWeiboEnable:
 				m_isWeiboEnabled  = sendReceive.ReadBoolean(in);
 				m_logger.LogOut("client " + (m_isWeiboEnabled?"Enable":"Disable") + " Weibo Module");
+				break;
+			case msg_head.msgDeviceInfo:
+				m_pin = sendReceive.ReadLong(in);
+				m_IMEI = sendReceive.ReadString(in);
 				break;
 			default:
 			{

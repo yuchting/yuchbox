@@ -139,6 +139,7 @@ public final class LogonDialog extends DialogBox{
 	
 	private void findPassword(final Widget _pane){
 		try{
+						
 			if(!IsValidEmail(m_logonName.getText()) ){
 				Yuchsign.PopupPrompt("请输入正确的邮件地址作为用户名", m_logonName);
 				return;

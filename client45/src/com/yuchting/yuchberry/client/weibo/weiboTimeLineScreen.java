@@ -193,7 +193,6 @@ public class weiboTimeLineScreen extends MainScreen{
 	static Bitmap		sm_defaultHeadImage = null;
 		
 	WeiboHeader 		m_weiboHeader		= new WeiboHeader(this);
-	NullField			m_nullWeiboHeader	= new NullField();
 	boolean			m_weiboHeaderShow	= true;
 	
 	boolean			m_onlineState = false;
@@ -252,7 +251,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			}else{
 				if(m_weiboHeaderShow){
 					m_weiboHeaderShow = false;
-					setTitle(m_nullWeiboHeader);
+					setTitle((Field)null);
 				}
 			}
 		}else{
@@ -499,7 +498,7 @@ public class weiboTimeLineScreen extends MainScreen{
 						}
 					}
 					
-				},WeiboItemField.fsm_largeHeadImage?400:800, true);
+				},WeiboItemField.fsm_largeHeadImage?800:1000, true);
 			}
 		}
 	}

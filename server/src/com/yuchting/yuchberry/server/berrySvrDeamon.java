@@ -83,7 +83,6 @@ public class berrySvrDeamon extends Thread{
 		}		
 		
 		m_fetchMgr.SetClientConnected(this);
-		
 		m_fetchMgr.m_logger.LogOut("some client connect IP<" + m_socket.getInetAddress().getHostAddress() + ">");
 				
 		start();
