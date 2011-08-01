@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.yuchsign.client;
+package com.yuchting.yuchberry.yuchsign.client.account;
 
 import java.util.Date;
 import java.util.Vector;

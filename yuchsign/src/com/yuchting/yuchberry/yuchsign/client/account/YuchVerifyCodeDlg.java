@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.yuchsign.client;
+package com.yuchting.yuchberry.yuchsign.client.account;
 
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.yuchting.yuchberry.yuchsign.client.Yuchsign;
 
 interface InputVerfiyCode{
 	void InputCode(String _code);

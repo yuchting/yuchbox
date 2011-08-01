@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.yuchsign.client;
+package com.yuchting.yuchberry.yuchsign.client.account;
 
 
 import com.google.gwt.xml.client.Element;

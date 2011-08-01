@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.yuchsign.client;
+package com.yuchting.yuchberry.yuchsign.client.account;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +33,8 @@ import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.XMLParser;
+import com.yuchting.yuchberry.yuchsign.client.YesNoHandler;
+import com.yuchting.yuchberry.yuchsign.client.Yuchsign;
 
 public class YuchPanel extends TabPanel{
 

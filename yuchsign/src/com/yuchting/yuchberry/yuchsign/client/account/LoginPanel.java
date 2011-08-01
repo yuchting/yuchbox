@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.yuchsign.client;
+package com.yuchting.yuchberry.yuchsign.client.account;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -8,18 +8,21 @@ import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.PasswordTextBox;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.XMLParser;
+import com.yuchting.yuchberry.yuchsign.client.Yuchsign;
 
-public final class LogonDialog extends DialogBox{
+public final class LoginPanel extends HorizontalPanel{
 	
 	private Yuchsign m_clientSign = null;
 	
@@ -41,15 +44,14 @@ public final class LogonDialog extends DialogBox{
 	
 	boolean m_isSigninAccount				= false;
 	
-	public LogonDialog(Yuchsign _clientSign){
+	public LoginPanel(Yuchsign _clientSign){
 		m_clientSign = _clientSign;
-		
+			
 		final Button t_forgetPass = new Button("忘记密码");
-
 		
 		final VerticalPanel t_logonPane = new VerticalPanel();
-		t_logonPane.setStyleName("logonVPanel");
-		
+		t_logonPane.setStyleName("loginVPanel");
+		t_logonPane.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		t_logonPane.add(new HTML("用户名(邮箱地址):"));
 		t_logonPane.add(m_logonName);
 		t_logonPane.add(new HTML("密码(大于等于6位的字母或数字):"));
@@ -98,6 +100,7 @@ public final class LogonDialog extends DialogBox{
 		
 		final VerticalPanel t_signinPane = new VerticalPanel();
 		t_signinPane.setStyleName("signinVPanel");
+		t_signinPane.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		t_signinPane.add(new HTML("用户名(邮箱地址):"));
 		t_signinPane.add(m_signinName);
 		t_signinPane.add(new HTML("密码:"));
@@ -122,19 +125,21 @@ public final class LogonDialog extends DialogBox{
 			public void onClick(ClickEvent event) {
 				SigninEvent();
 			}
-		});		
+		});
 		
-		// add the two panel to the dialog
+		setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+
+		// add the two panel to the panel
 		//
-		final HorizontalPanel t_horzPane = new HorizontalPanel();
-		t_horzPane.addStyleName("dialogHPanel");
-		t_horzPane.add(t_logonPane);
-		t_horzPane.add(t_signinPane);
+		add(t_logonPane);
+		add(t_signinPane);
 		
-		setText("登录|注册");
-		setPopupPosition(0, 50);
-		setAnimationEnabled(true);
-		setWidget(t_horzPane);
+		
+		RootPanel t_accountPane =RootPanel.get("account"); 
+		t_accountPane.setSize("860px", "460px");	
+		t_accountPane.add(this);		
+		t_accountPane.setVisible(false);
 	}
 	
 	private void findPassword(final Widget _pane){
@@ -201,7 +206,7 @@ public final class LogonDialog extends DialogBox{
 				
 				m_isSigninAccount = false;
 				
-				hide();
+				setVisible(false);
 			}			
 			
 		}catch(Exception e){

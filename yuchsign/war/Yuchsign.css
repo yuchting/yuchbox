@@ -1,63 +1,39 @@
-/** Add css rules here for your application. */
+@charset "utf-8";
+/* CSS Document */
+.header{ height:84px; background:#708FB7; background:url(./images/headerbg.gif) repeat-x;}
+.header .headercon{ width:862px; height:84px; position:relative; margin:0 auto;}
+.header .headercon .logo{ position:absolute; left:0; top:0; display:block; background:url(./images/logo.jpg) no-repeat; width:350px; height:84px;}
+.header .headercon .nav{ float:right; position:relative; left: 0px; top: 43px;width:500px; height:41px;}
 
+.big{ margin:0 auto; background:#e1e4e9; border-bottom:1px solid #c8ccd3; }
+.big .bigicon{ margin:0 auto; width:860px; height:460px; background:url(./images/big.jpg) no-repeat;}
+.big .bigicon .actimage{ position:relative; float:left; left:176px; top:52px; width:143px; height:108px; }
 
-/** Example rules used by the template application (remove for your app) */
-h1 {
-  font-size: 2em;
-  font-weight: bold;
-  color: #777777;
-  margin: 40px 0px 70px;
-  text-align: left;
+.big .bigicon .download{ position:relative; float:right; top:0; left:0; width:300px; height:460px; }
+.big .bigicon .download a{ margin:0 auto; margin-top:52px; display:block; text-align:center; background:url(./images/downloadBut.jpg) no-repeat; width:226px; height:58px;}
+
+.big .account{ margin:0 auto 0 auto; padding: 0;}
+
+.signinVPanel{margin:20px 50px; padding:10px 20px;  width: 200px;  height:250px; border:2px solid #F0F0FF;  	background: #F5F5FF}
+.loginVPanel{margin:30px 60px;}
+
+.yb-ToggleButton-up,
+.yb-ToggleButton-up-hovering,
+.yb-ToggleButton-up-disabled,
+.yb-ToggleButton-down,
+.yb-ToggleButton-down-hovering,
+.yb-ToggleButton-down-disabled {
+ margin: 0; cursor: hand; display:inline-block; text-align:center; background:url(./images/nav.gif) no-repeat; width:105px; height:41px; line-height:41px; color:#fff
 }
 
-#plogo {
-	width: 40px;
-	text-align: center;
-	vertical-align: bottom;
+.yb-ToggleButton-up-hovering,
+.yb-ToggleButton-down-hovering {
+  cursor: pointer;
+  cursor: hand;
+  background-position:0 100%;
+  color:#000;
 }
-
-#pname {
-	font-size: 120%;
-	color:#888888;
-	font-family:"Times New Roman",Georgia,Serif;
-	margin: 0;
-	padding: 0;
+.yb-ToggleButton-down{
+  background-position:0 100%;
+  color:#000;
 }
-
-/** Most GWT widgets already have a style name defined */
-.gwt-DialogBox {
-  width: 420px;
-}
-
-.gwt-TextBox-SocketPort{
-	ime-mode:disabled;
-	height:20;
-}
-
-.waitingLabel{
-	padding:2px 2px 2px 2px;
-	border:1px solid #F0F0F0;
-	background: #FFFFF0;
-}
-
-.logonVPanel {
-  margin: 5px;
-  width: 180px;
-}
-
-.signinVPanel{
-	padding:10px 10px 10px 10px;
-  	width: 180px;
-  	border:2px solid #F0F0FF;
-  	background: #F5F5FF
-}
-
-.dialogHPanel {
-  margin: 5px;
-}
-
-/** Set ids using widget.getElement().setId("idOfElement") */
-#closeButton {
-  margin: 15px 6px 6px;
-}
-

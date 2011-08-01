@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.yuchsign.client;
+package com.yuchting.yuchberry.yuchsign.client.account;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.yuchting.yuchberry.yuchsign.client.Yuchsign;
 
 public class BberWeiboPanel extends FlowPanel{
 	
@@ -91,31 +92,6 @@ public class BberWeiboPanel extends FlowPanel{
 				
 				requestAccessToken();
 				
-//				m_mainPanel.m_mainServer.greetingService.getWeiboAuthURL(
-//						m_mainPanel.m_currentBber.GetSigninName(), t_type, 
-//				new AsyncCallback<String>() {
-//					@Override
-//					public void onSuccess(String result) {
-//						
-//						if(result.startsWith("http")){
-//														
-//							Yuchsign.forcePopupURL(result);
-//							
-//							
-//							Yuchsign.PopupWaiting("正在等待用户完成请求……", BberWeiboPanel.this);
-//																					
-//						}else{
-//							Yuchsign.PopupPrompt(result, BberWeiboPanel.this);
-//							Yuchsign.HideWaiting();
-//						}
-//					}
-//					
-//					@Override
-//					public void onFailure(Throwable caught) {
-//						Yuchsign.PopupPrompt(caught.getMessage(), BberWeiboPanel.this);
-//						Yuchsign.HideWaiting();
-//					}											
-//				});
 			}
 		});
 		

@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.yuchsign.client;
+package com.yuchting.yuchberry.yuchsign.client.account;
 
 import java.util.Date;
 import java.util.Vector;
@@ -33,6 +33,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.XMLParser;
+import com.yuchting.yuchberry.yuchsign.client.YesNoHandler;
+import com.yuchting.yuchberry.yuchsign.client.Yuchsign;
 
 
 class ContentTab extends TabPanel implements SelectionHandler<Integer>{

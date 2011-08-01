@@ -4,94 +4,21 @@ import java.util.logging.Logger;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DecoratedPopupPanel;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.yuchting.yuchberry.yuchsign.client.account.BberPanel;
+import com.yuchting.yuchberry.yuchsign.client.account.LoginPanel;
+import com.yuchting.yuchberry.yuchsign.client.account.YuchPanel;
+import com.yuchting.yuchberry.yuchsign.client.account.yuchbber;
+import com.yuchting.yuchberry.yuchsign.client.welcome.ActiveImage;
 import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
-interface YesNoHandler{
-	public void Process();
-}
-	
-final class YesNoDialog extends DialogBox{
-			
-	
-	YesNoHandler	m_yes		= null;
-	YesNoHandler	m_no		= null;
-	
-	Label			m_text 		= new Label();
-	
-	public YesNoDialog(){
-		super(false,false);
-		final VerticalPanel t_vert = new VerticalPanel();
-		t_vert.add(m_text);
-		t_vert.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		
-		final FlexTable t_butPane = new FlexTable();
-		t_butPane.setCellSpacing(20);
-		
-		final Button 	t_yesBut 	= new Button("确定");
-		final Button 	t_noBut 	= new Button("取消");
-		
-		t_yesBut.addClickHandler(new ClickHandler() {
-			
-			@Override
-			public void onClick(ClickEvent event) {
-				if(m_yes != null){
-					m_yes.Process();
-				}
-				
-				setModal(false);
-				hide();
-			}
-		});
-		
-		t_noBut.addClickHandler(new ClickHandler() {
-			
-			@Override
-			public void onClick(ClickEvent event) {
-				if(m_no != null){
-					m_no.Process();
-					
-				}	
-				setModal(false);
-				hide();
-			}
-		});
-		
-		t_butPane.setWidget(0, 0, t_yesBut);
-		t_butPane.setWidget(0, 1, t_noBut);
-		
-		t_vert.add(t_butPane);
-		
-		setWidget(t_vert);
-		setAnimationEnabled(true);
-		setGlassEnabled(true);
-		setPopupPosition(100, 300);
-	}
-	
-	public void Popup(String _prompt,YesNoHandler _yes,YesNoHandler _no){
-		setText("确定？");
-		m_text.setText(_prompt);
-		m_yes 	= _yes;
-		m_no	= _no;
-		
-		show();
-		setModal(true);
-	}		
-	
-}
 
 
 /**
@@ -109,11 +36,11 @@ public class Yuchsign implements EntryPoint {
 	 */
 	private final static Logger fsm_logger = Logger.getLogger("ClientLogger");
 	
-	private LogonDialog m_logonDlg = null;
+	public  LoginPanel m_logonDlg = null;
+	public  BberPanel	m_bberPane = null;
+	public  YuchPanel	m_yuchPanel = null;
 	
-	private BberPanel	m_bberPane = null;
-	
-	private YuchPanel	m_yuchPanel = null;
+	private ActiveImage m_actImage = null;
 	
 	static private final DecoratedPopupPanel fsm_simplePopup = new DecoratedPopupPanel(true);
 		
@@ -179,11 +106,11 @@ public class Yuchsign implements EntryPoint {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
-				
-		m_logonDlg = new LogonDialog(this);
-		m_logonDlg.setModal(false);
-		m_logonDlg.show();
 		
+		m_actImage = new ActiveImage();
+		m_actImage.enableChange(true);
+		
+		m_logonDlg = new LoginPanel(this);
 	}
 	
 	public void ShowYuchbberPanel(String _bberXMLData,boolean _signinState)throws Exception{
@@ -212,7 +139,7 @@ public class Yuchsign implements EntryPoint {
 	}
 	
 	public void Signout(){
-		m_logonDlg.show();
+		m_logonDlg.setVisible(true);
 		
 		if(m_yuchPanel != null){
 			m_yuchPanel.HideYuchPanel();
@@ -283,14 +210,5 @@ public class Yuchsign implements EntryPoint {
 	public static void HideWaiting(){
 		fsm_waitingLable.Hide();
 	}
-		
-	public static native String forcePopupURL(String url)/*-{
-		var dom = document.createElement('a');   
-		dom.setAttribute('href',url);   
-		dom.setAttribute('target','_blank');   
-		document.body.appendChild(dom);   
-		dom.click();   
-		document.body.removeChild(dom);  
-	}-*/;
-	
+
 }

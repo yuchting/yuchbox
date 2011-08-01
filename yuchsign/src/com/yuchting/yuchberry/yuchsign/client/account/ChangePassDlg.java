@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.yuchsign.client;
+package com.yuchting.yuchberry.yuchsign.client.account;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.yuchting.yuchberry.yuchsign.client.Yuchsign;
 
 
 class ChangePassDlg extends DialogBox{
@@ -89,12 +90,12 @@ class ChangePassDlg extends DialogBox{
 		String t_newPassString	= m_newPass.getText();
 		String t_newPass1String = m_newPass1.getText();
 		
-		if(!LogonDialog.IsValidPassword(t_origPassString)){
+		if(!LoginPanel.IsValidPassword(t_origPassString)){
 			Yuchsign.PopupPrompt("旧密码不符合规定，需要不小于6位的数字和字母组成。", m_origPass);
 			return;
 		}
 		
-		if(!LogonDialog.IsValidPassword(t_newPassString)){
+		if(!LoginPanel.IsValidPassword(t_newPassString)){
 			Yuchsign.PopupPrompt("新密码不符合规定，需要不小于6位的数字和字母组成。", m_newPass);
 			return;
 		}

@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.yuchsign.client;
+package com.yuchting.yuchberry.yuchsign.client.account;
 
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.TextBox;
+import com.yuchting.yuchberry.yuchsign.client.Yuchsign;
 
 
 class BberEmailPanel extends FlowPanel{
@@ -187,7 +188,7 @@ class BberEmailPanel extends FlowPanel{
 	
 	public yuchEmail AddAccount(final yuchEmail _email){
 		
-		if(!LogonDialog.IsValidEmail(m_account.getText())){
+		if(!LoginPanel.IsValidEmail(m_account.getText())){
 			Yuchsign.PopupPrompt("不是合法的邮件地址", m_account);
 			return null;
 		}
