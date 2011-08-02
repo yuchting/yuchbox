@@ -23,22 +23,22 @@
 
 .mid { margin:0 auto; width:960px; height:800px;}
 .mid .intro {float:left; width:560px; height:800px;}
-.mid .intro .introblock{float:left; margin-top:20px;padding-left:249px;  width:300px; height:169px; }
+.mid .intro .introblock{float:left; margin-top:20px;padding-left:249px; width:300px; height:169px; }
+.mid .intro .introblock h3{color:#666; font-size:120%}
 .mid .intro .introblock li{margin:5px 5px;font-size:110%;}
 .mid .intro .introblock#block0{background:url(./images/intro0.jpg) no-repeat;}
 .mid .intro .introblock#block1{background:url(./images/intro1.jpg) no-repeat;}
 .mid .intro .introblock#block2{background:url(./images/intro2.jpg) no-repeat;}
 
 .mid .contact {margin:20px auto; padding:10px 30px;float:left; width:340px; height:760px; background:#eceef0;}
-.mid .contact ul{margin:0 auto;width:auto; height:40px; background-color:#fff;}
-.mid .contact ul a{font-size:110%; text-decoration:none; color:#000; background-color:#fff; margin:12px 60px; outline:2px solid #dcdcdc;}
-.mid .contact ul a:hover{border:2px solid #86c6f7;}
-.mid .contact ul a#mail{background:url(./images/sendMail.jpg) no-repeat;}
-.mid .contact ul a#sina{background:url(./images/sinaweibo.jpg) no-repeat;}
-.mid .contact ul a#qq{background:url(./images/qqweibo.jpg) no-repeat;}
+.mid .contact a.but{width:auto; height:40px; font-size:110%; text-decoration:none; color:#000; background-color:#fff; padding:12px 40px; border:2px solid #dcdcdc;}
+.mid .contact a.but:hover{border:2px solid #86c6f7;}
+.mid .contact a.but#mail{background:#fff url(./images/sendMail.jpg) no-repeat;}
+.mid .contact a.but#sina{background:#fff url(./images/sinaweibo.jpg) no-repeat;}
+.mid .contact a.but#qq{background:#fff url(./images/qqweibo.jpg) no-repeat;}
 
-.mid .contact .user{text-align:left;}
-.mid .contact .user li{color:#535454;margin:10px auto;}
+.mid .contact .user{text-align:left; margin:50px auto;}
+.mid .contact .user li{color:#535454; margin:10px auto;}
 .mid .contact .user li a{color:#535454;}
 
 .foot {color:#a3a4a4; text-align:center; margin:0 auto; width:960px; height:50px; margin-top:20px; padding-bottom:20px;}
