@@ -1,9 +1,12 @@
 @charset "utf-8";
 /* CSS Document */
-.header{ height:84px; background:#708FB7; background:url(./images/headerbg.gif) repeat-x;}
-.header .headercon{ width:862px; height:84px; position:relative; margin:0 auto;}
-.header .headercon .logo{ position:absolute; left:0; top:0; display:block; background:url(./images/logo.jpg) no-repeat; width:350px; height:84px;}
-.header .headercon .nav{ float:right; position:relative; left: 0px; top: 43px;width:500px; height:41px;}
+.yheader{ height:84px; background:#708FB7; background:url(./images/headerbg.gif) repeat-x;}
+.yheader .headercon{ width:862px; height:84px; position:relative; margin:0 auto;}
+.yheader .headercon ul{ position:absolute; float:right; left:350px; margin:0 auto; width:auto; color:#CCC}
+.yheader .headercon ul a{ color:#999}
+.yheader .headercon ul a:hover{ color:#069}
+.yheader .headercon .logo{ position:absolute; left:0; top:0; display:block; background:url(./images/logo.jpg) no-repeat; width:350px; height:84px;}
+.yheader .headercon .nav{ float:right; position:relative; left: 0px; top: 43px;width:500px; height:41px;}
 
 .big{ margin:0 auto; background:#e1e4e9; border-bottom:1px solid #c8ccd3; }
 .big .bigicon{ margin:0 auto; width:860px; height:460px; background:url(./images/big.jpg) no-repeat;}
@@ -12,10 +15,15 @@
 .big .bigicon .download{ position:relative; float:right; top:0; left:0; width:300px; height:460px; }
 .big .bigicon .download a{ margin:0 auto; margin-top:52px; display:block; text-align:center; background:url(./images/downloadBut.jpg) no-repeat; width:226px; height:58px;}
 
-.big .account{ margin:0 auto 0 auto; padding: 0;}
+.big .account,
+.big .faq,
+.big .play,
+.big .yuchTab
+{ margin:0 auto 0 auto; padding:20px; width:860px; height:420px;}
 
-.signinVPanel{margin:20px 50px; padding:10px 20px;  width: 200px;  height:250px; border:2px solid #F0F0FF;  	background: #F5F5FF}
+.signinVPanel{margin:20px 50px; padding:10px 10px;  width: 230px;  height:250px; border:2px solid #F0F0FF;  	background: #F5F5FF}
 .loginVPanel{margin:30px 60px;}
+.waitingLabel{padding:2px 2px 2px 2px;border:1px solid #F0F0F0;background:#FFFFF0;}
 
 .yb-ToggleButton-up,
 .yb-ToggleButton-up-hovering,
@@ -23,17 +31,7 @@
 .yb-ToggleButton-down,
 .yb-ToggleButton-down-hovering,
 .yb-ToggleButton-down-disabled {
- margin: 0; cursor: hand; display:inline-block; text-align:center; background:url(./images/nav.gif) no-repeat; width:105px; height:41px; line-height:41px; color:#fff
-}
-
+ margin: 0; cursor: hand; display:inline-block; text-align:center; background:url(./images/nav.gif) no-repeat; width:105px; height:41px; line-height:41px; color:#fff}
 .yb-ToggleButton-up-hovering,
-.yb-ToggleButton-down-hovering {
-  cursor: pointer;
-  cursor: hand;
-  background-position:0 100%;
-  color:#000;
-}
-.yb-ToggleButton-down{
-  background-position:0 100%;
-  color:#000;
-}
+.yb-ToggleButton-down-hovering { cursor: pointer;  cursor: hand;  background-position:0 100%;  color:#000;}
+.yb-ToggleButton-down{  background-position:0 100%;  color:#000;}

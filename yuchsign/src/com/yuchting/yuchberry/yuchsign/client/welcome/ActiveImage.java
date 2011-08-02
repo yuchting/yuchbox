@@ -1,8 +1,12 @@
 package com.yuchting.yuchberry.yuchsign.client.welcome;
 
+
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.Frame;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -31,10 +35,18 @@ public class ActiveImage {
 		final ToggleButton[] t_controlPutton = 
 		{
 			new ToggleButton("欢迎"),
-			new ToggleButton("登录|注册")
+			new ToggleButton("登录|注册"),
+			new ToggleButton("语盒FAQ"),
+			new ToggleButton("玩转语盒"),
 		};
 		
-		
+		final RootPanel[] t_rootPanel = 
+		{
+			RootPanel.get("welcome"),
+			RootPanel.get("account"),
+			RootPanel.get("faq"),
+			RootPanel.get("play"),
+		};		
 
 		ClickHandler t_handler = new ClickHandler() {
 			
@@ -46,15 +58,10 @@ public class ActiveImage {
 					
 					if(but != event.getSource()){
 						but.setValue(false,false);
+						t_rootPanel[i].setVisible(false);
 					}else{
-						if(i == 1){
-							RootPanel.get("welcome").setVisible(false);
-							RootPanel.get("account").setVisible(true);						
-						}else{
-							RootPanel.get("welcome").setVisible(true);
-							RootPanel.get("account").setVisible(false);
-						}						
-					}					
+						t_rootPanel[i].setVisible(true);
+					}
 				}				
 			}
 		};
@@ -68,7 +75,7 @@ public class ActiveImage {
 		t_controlPutton[0].setValue(true,false);
 		
 		RootPanel.get("navBut").add(t_butpane);
-		
+				
 	}
 	
 	public void enableChange(boolean _change){

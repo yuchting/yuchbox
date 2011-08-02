@@ -122,6 +122,8 @@ public class Yuchsign implements EntryPoint {
 			m_bberPane = new BberPanel(this);
 		}
 		
+		m_logonDlg.setVisible(false);
+		
 		m_bberPane.ShowBberPanle();		
 		m_bberPane.ShowYuchbberData(t_bber);
 		

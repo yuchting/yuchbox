@@ -63,7 +63,7 @@ public class YesNoDialog extends DialogBox{
 		setWidget(t_vert);
 		setAnimationEnabled(true);
 		setGlassEnabled(true);
-		setPopupPosition(100, 300);
+		setPopupPosition(300, 300);
 	}
 	
 	public void Popup(String _prompt,YesNoHandler _yes,YesNoHandler _no){

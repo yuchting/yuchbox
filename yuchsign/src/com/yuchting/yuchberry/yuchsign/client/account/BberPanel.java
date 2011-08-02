@@ -122,11 +122,11 @@ public class BberPanel extends TabPanel{
 	}
 	
 	public void ShowBberPanle(){
-		RootPanel.get("mainTab").add(this);
+		RootPanel.get("account").add(this);
 	}
 	
 	public void HideBberPanel(){
-		RootPanel.get("mainTab").remove(this);
+		RootPanel.get("account").remove(this);
 	}
 		
 	private void AddAccountAttr(){

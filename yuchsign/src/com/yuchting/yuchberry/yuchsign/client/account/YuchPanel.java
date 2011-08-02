@@ -98,14 +98,20 @@ public class YuchPanel extends TabPanel{
 		PrepareStatisticsPanel();
 		
 		setPixelSize(600,300);
-		selectTab(0);		
+		selectTab(0);	
+		
+		
+		RootPanel t_accountPane =RootPanel.get("yuchTab"); 
+		t_accountPane.setSize("860px", "460px");		
+		t_accountPane.add(this);
 		
 		ShowYuchPanel();
 	}
 	
 	public void ShowYuchPanel(){
 		
-		RootPanel.get("yuchTab").add(this);
+		
+		RootPanel.get("yuchTab").setVisible(true);
 		
 		// query the host list
 		try{
@@ -116,7 +122,7 @@ public class YuchPanel extends TabPanel{
 	}
 	
 	public void HideYuchPanel(){
-		RootPanel.get("yuchTab").remove(this);
+		RootPanel.get("yuchTab").setVisible(false);
 	}
 	
 	private void PrepareHostListPanel(){
