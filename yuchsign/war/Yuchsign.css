@@ -1,27 +1,50 @@
 @charset "utf-8";
 /* CSS Document */
+.body{text-shadow: 1px 1px 1px #43818E;}
 .yheader{ height:84px; background:#708FB7; background:url(./images/headerbg.gif) repeat-x;}
-.yheader .headercon{ width:862px; height:84px; position:relative; margin:0 auto;}
-.yheader .headercon ul{ position:absolute; float:right; left:350px; margin:0 auto; width:auto; color:#CCC}
-.yheader .headercon ul a{ color:#999}
-.yheader .headercon ul a:hover{ color:#069}
+.yheader .headercon{ width:960px; height:84px; position:relative; margin:0 auto;}
 .yheader .headercon .logo{ position:absolute; left:0; top:0; display:block; background:url(./images/logo.jpg) no-repeat; width:350px; height:84px;}
 .yheader .headercon .nav{ float:right; position:relative; left: 0px; top: 43px;width:500px; height:41px;}
 
 .big{ margin:0 auto; background:#e1e4e9; border-bottom:1px solid #c8ccd3; }
-.big .bigicon{ margin:0 auto; width:860px; height:460px; background:url(./images/big.jpg) no-repeat;}
-.big .bigicon .actimage{ position:relative; float:left; left:176px; top:52px; width:143px; height:108px; }
+.big .bigicon{ margin:0 auto; width:960px; height:460px;}
+.big .bigicon .bg{ float:left;  margin:45px 40px; width:580px; height:340px; background:url(./images/big.jpg) no-repeat;}
+.big .bigicon .bg .actimage{ position:relative; float:left; left:176px; top:52px; width:143px; height:108px; }
 
 .big .bigicon .download{ position:relative; float:right; top:0; left:0; width:300px; height:460px; }
-.big .bigicon .download a{ margin:0 auto; margin-top:52px; display:block; text-align:center; background:url(./images/downloadBut.jpg) no-repeat; width:226px; height:58px;}
+.big .bigicon .download a{ margin:0 auto; display:block; text-align:center; background:url(./images/downloadBut.jpg) no-repeat; width:226px; height:58px;}
+.big .bigicon .download li{ margin:20px 5px; font-size:140%; }
 
 .big .account,
 .big .faq,
 .big .play,
 .big .yuchTab
-{ margin:0 auto 0 auto; padding:20px; width:860px; height:420px;}
+{ margin:0 auto 0 auto; padding:20px; width:960px; height:420px;}
 
-.signinVPanel{margin:20px 50px; padding:10px 10px;  width: 230px;  height:250px; border:2px solid #F0F0FF;  	background: #F5F5FF}
+.mid { margin:0 auto; width:960px; height:800px;}
+.mid .intro {float:left; width:560px; height:800px;}
+.mid .intro .introblock{float:left; margin-top:20px;padding-left:249px;  width:300px; height:169px; }
+.mid .intro .introblock li{margin:5px 5px;font-size:110%;}
+.mid .intro .introblock#block0{background:url(./images/intro0.jpg) no-repeat;}
+.mid .intro .introblock#block1{background:url(./images/intro1.jpg) no-repeat;}
+.mid .intro .introblock#block2{background:url(./images/intro2.jpg) no-repeat;}
+
+.mid .contact {margin:20px auto; padding:10px 30px;float:left; width:340px; height:760px; background:#eceef0;}
+.mid .contact ul{margin:0 auto;width:auto; height:40px; background-color:#fff;}
+.mid .contact ul a{font-size:110%; text-decoration:none; color:#000; background-color:#fff; margin:12px 60px; outline:2px solid #dcdcdc;}
+.mid .contact ul a:hover{border:2px solid #86c6f7;}
+.mid .contact ul a#mail{background:url(./images/sendMail.jpg) no-repeat;}
+.mid .contact ul a#sina{background:url(./images/sinaweibo.jpg) no-repeat;}
+.mid .contact ul a#qq{background:url(./images/qqweibo.jpg) no-repeat;}
+
+.mid .contact .user{text-align:left;}
+.mid .contact .user li{color:#535454;margin:10px auto;}
+.mid .contact .user li a{color:#535454;}
+
+.foot {color:#a3a4a4; text-align:center; margin:0 auto; width:960px; height:50px; margin-top:20px; padding-bottom:20px;}
+.foot a{color:#a3a4a4;text-decoration:none;margin:5 5px;}
+
+.signinVPanel{margin:20px 50px; padding:10px 10px;  width: 230px;  height:250px; border:2px solid #F0F0FF; background: #F5F5FF}
 .loginVPanel{margin:30px 60px;}
 .waitingLabel{padding:2px 2px 2px 2px;border:1px solid #F0F0F0;background:#FFFFF0;}
 

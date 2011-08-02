@@ -384,7 +384,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						
 					}catch(Exception e){
 						
-						if(e.getMessage() == null || e.getMessage().startsWith("Timeout while fetching")){
+						if(e.getMessage() == null || 
+							e.getMessage().startsWith("Timeout while fetching")||
+							e.getMessage().startsWith("Could not fetch")){
 							return "<Error>请求主机URL时出错，服务器繁忙，请稍候重试。</Error>";
 						}else{
 							return "<Error>请求主机URL时出错:" + e.getMessage() + "</Error>";
