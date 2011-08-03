@@ -1,50 +1,59 @@
 @charset "utf-8";
 /* CSS Document */
-.body{text-shadow: 1px 1px 1px #43818E;}
+body{text-shadow: 1px 1px 1px #ddd;}
 .yheader{ height:84px; background:#708FB7; background:url(./images/headerbg.gif) repeat-x;}
 .yheader .headercon{ width:960px; height:84px; position:relative; margin:0 auto;}
-.yheader .headercon .logo{ position:absolute; left:0; top:0; display:block; background:url(./images/logo.jpg) no-repeat; width:350px; height:84px;}
+.yheader .headercon .logo{ position:absolute; left:0; top:0; display:block; background:url(./images/logo.gif) no-repeat; width:350px; height:84px;}
 .yheader .headercon .nav{ float:right; position:relative; left: 0px; top: 43px;width:500px; height:41px;}
 
 .big{ margin:0 auto; background:#e1e4e9; border-bottom:1px solid #c8ccd3; }
 .big .bigicon{ margin:0 auto; width:960px; height:460px;}
-.big .bigicon .bg{ float:left;  margin:45px 40px; width:580px; height:340px; background:url(./images/big.jpg) no-repeat;}
-.big .bigicon .bg .actimage{ position:relative; float:left; left:176px; top:52px; width:143px; height:108px; }
+.big .bigicon .bg{ float:left;  margin:5px 20px; width:620px; height:450px; background:url(./images/big.jpg) no-repeat;}
+.big .bigicon .bg .actimage{ position:relative; float:left; left:216px; top:86px; width:172px; height:128px; }
 
 .big .bigicon .download{ position:relative; float:right; top:0; left:0; width:300px; height:460px; }
-.big .bigicon .download a{ margin:0 auto; display:block; text-align:center; background:url(./images/downloadBut.jpg) no-repeat; width:226px; height:58px;}
-.big .bigicon .download li{ margin:20px 5px; font-size:140%; }
+.big .bigicon .download a{ margin:0 auto; display:block; text-align:center; background:url(./images/downloadBut.gif) no-repeat; width:226px; height:58px;}
+.big .bigicon .download a:hover{ background-position:0 100%; }
+.big .bigicon .download li{ margin:20px 5px; font-size:180%; }
 
 .big .account,
 .big .faq,
 .big .play,
 .big .yuchTab
 { margin:0 auto 0 auto; padding:20px; width:960px; height:420px;}
+.big .play{width:1100px; height:420px; background:url(./images/book.jpg) no-repeat;}
+.big .play .page{font-size:120%; width:1100px; height:420px;}
+.big .play .page ul{  line-height:130%}
+.big .play .left{float:left; margin:20px 20px; width:490px; height:380px;}
+.big .play .right{float:right; margin:20px 50px 0 0; width:500px; height:380px;}
 
-.mid { margin:0 auto; width:960px; height:800px;}
-.mid .intro {float:left; width:560px; height:800px;}
+.mid { margin:0 auto; width:960px; height:969px;}
+.mid .intro {float:left; width:560px; height:969px;}
 .mid .intro .introblock{float:left; margin-top:20px;padding-left:249px; width:300px; height:169px; }
-.mid .intro .introblock h3{color:#666; font-size:120%}
-.mid .intro .introblock li{margin:5px 5px;font-size:110%;}
-.mid .intro .introblock#block0{background:url(./images/intro0.jpg) no-repeat;}
-.mid .intro .introblock#block1{background:url(./images/intro1.jpg) no-repeat;}
-.mid .intro .introblock#block2{background:url(./images/intro2.jpg) no-repeat;}
+.mid .intro .introblock h3{color:#666; font-size:130%}
+.mid .intro .introblock li{margin:15px 5px;font-size:115%;}
+.mid .intro .introblock a{margin:15px 0 0 180px;}
+.mid .intro .introblock#block0{background:url(./images/intro0.gif) no-repeat;}
+.mid .intro .introblock#block1{background:url(./images/intro1.gif) no-repeat;}
+.mid .intro .introblock#block2{background:url(./images/intro2.gif) no-repeat;}
+.mid .intro .introblock#block3{background:url(./images/intro3.gif) no-repeat;}
+.mid .intro .introblock#block4{background:url(./images/intro4.gif) no-repeat;}
 
-.mid .contact {margin:20px auto; padding:10px 30px;float:left; width:340px; height:760px; background:#eceef0;}
-.mid .contact a.but{width:auto; height:40px; font-size:110%; text-decoration:none; color:#000; background-color:#fff; padding:12px 40px; border:2px solid #dcdcdc;}
+.mid .contact {margin:20px auto; padding:10px 30px;float:left; width:340px; height:929px; background:#eceef0;}
+.mid .contact a.but{width:auto; height:40px; font-size:130%; text-decoration:none; color:#000; background-color:#fff; padding:10px 40px; border:2px solid #dcdcdc;}
 .mid .contact a.but:hover{border:2px solid #86c6f7;}
-.mid .contact a.but#mail{background:#fff url(./images/sendMail.jpg) no-repeat;}
-.mid .contact a.but#sina{background:#fff url(./images/sinaweibo.jpg) no-repeat;}
-.mid .contact a.but#qq{background:#fff url(./images/qqweibo.jpg) no-repeat;}
+.mid .contact a.but#mail{background:#fff url(./images/sendMail.gif) no-repeat;}
+.mid .contact a.but#sina{background:#fff url(./images/sinaweibo.gif) no-repeat;}
+.mid .contact a.but#qq{background:#fff url(./images/qqweibo.gif) no-repeat;}
 
 .mid .contact .user{text-align:left; margin:50px auto;}
-.mid .contact .user li{color:#535454; margin:10px auto;}
+.mid .contact .user li{color:#232424; font-size:105%; margin:10px auto;}
 .mid .contact .user li a{color:#535454;}
 
 .foot {color:#a3a4a4; text-align:center; margin:0 auto; width:960px; height:50px; margin-top:20px; padding-bottom:20px;}
 .foot a{color:#a3a4a4;text-decoration:none;margin:5 5px;}
 
-.signinVPanel{margin:20px 50px; padding:10px 10px;  width: 230px;  height:250px; border:2px solid #F0F0FF; background: #F5F5FF}
+.signinVPanel{margin:20px 0 0 250px; padding:10px 10px; width: 230px;  height:250px; border:2px solid #F0F0FF; background: #F5F5FF}
 .loginVPanel{margin:30px 60px;}
 .waitingLabel{padding:2px 2px 2px 2px;border:1px solid #F0F0F0;background:#FFFFF0;}
 
@@ -54,7 +63,7 @@
 .yb-ToggleButton-down,
 .yb-ToggleButton-down-hovering,
 .yb-ToggleButton-down-disabled {
- margin: 0; cursor: hand; display:inline-block; text-align:center; background:url(./images/nav.gif) no-repeat; width:105px; height:41px; line-height:41px; color:#fff}
+ margin: 0; cursor: hand; display:inline-block; text-align:center; background:url(./images/nav.gif) no-repeat; width:105px; height:41px; line-height:41px; color:#fff;text-shadow:none;}
 .yb-ToggleButton-up-hovering,
 .yb-ToggleButton-down-hovering { cursor: pointer;  cursor: hand;  background-position:0 100%;  color:#000;}
 .yb-ToggleButton-down{  background-position:0 100%;  color:#000;}
