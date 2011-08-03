@@ -23,7 +23,7 @@ body{text-shadow: 1px 1px 1px #ddd;}
 { margin:0 auto 0 auto; padding:20px; width:960px; height:420px;}
 .big .play{width:1100px; height:420px; background:url(./images/book.jpg) no-repeat;}
 .big .play .page{font-size:120%; width:1100px; height:420px;}
-.big .play .page ul{  line-height:130%}
+.big .play .page ul{ margin:15px 10px 15px 0;line-height:130%}
 .big .play .left{float:left; margin:20px 20px; width:490px; height:380px;}
 .big .play .right{float:right; margin:20px 50px 0 0; width:500px; height:380px;}
 
