@@ -420,7 +420,10 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				//
 				m_hasNewWeibo = false;
 				m_parentScreen.m_weiboHeader.invalidate();
-			}	
+			}
+			
+			m_mainApp.StopWeiboNotification();
+    		m_mainApp.StopWeiboHomeNotification();
 						
 			return true;
 		}

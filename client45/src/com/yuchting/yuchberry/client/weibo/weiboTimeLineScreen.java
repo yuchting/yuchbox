@@ -1262,8 +1262,6 @@ public class weiboTimeLineScreen extends MainScreen{
 			    	case ' ':
 			    	case '0':
 			    		m_currMgr.Clicked(0, 0);
-			    		m_mainApp.StopWeiboNotification();
-			    		m_mainApp.StopWeiboHomeNotification();
 			    		return true;   	
 			    	
 			    	}
