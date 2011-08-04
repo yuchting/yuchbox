@@ -1,6 +1,6 @@
 @charset "utf-8";
 /* CSS Document */
-body{text-shadow: 1px 1px 1px #ddd;}
+body{text-shadow: 1px 1px 1px #fff;}
 .yheader{ height:84px; background:#708FB7; background:url(./images/headerbg.gif) repeat-x;}
 .yheader .headercon{ width:960px; height:84px; position:relative; margin:0 auto;}
 .yheader .headercon .logo{ position:absolute; left:0; top:0; display:block; background:url(./images/logo.gif) no-repeat; width:350px; height:84px;}
@@ -14,17 +14,20 @@ body{text-shadow: 1px 1px 1px #ddd;}
 .big .bigicon .download{ position:relative; float:right; top:0; left:0; width:300px; height:460px; }
 .big .bigicon .download a{ margin:0 auto; display:block; text-align:center; background:url(./images/downloadBut.gif) no-repeat; width:226px; height:58px;}
 .big .bigicon .download a:hover{ background-position:0 100%; }
-.big .bigicon .download li{ margin:20px 5px; font-size:180%; }
+.big .bigicon .download li{ margin:20px 5px; font-size:20px; }
 
 .big .account,
 .big .faq,
 .big .play,
 .big .yuchTab
 { margin:0 auto 0 auto; padding:20px; width:960px; height:420px;}
-.big .play{width:1100px; height:420px; background:url(./images/book.jpg) no-repeat;}
-.big .play .page{font-size:120%; width:1100px; height:420px;}
-.big .play .page ul{ margin:15px 10px 15px 0;line-height:130%}
+.big .play{width:1100px; height:460px; background:url(./images/book.jpg) no-repeat;}
+.big .play .pageButton{float:right; margin:0 500px;}
+.big .play img{ border:2px #FFF solid;}
+.big .play .page{ margin:20px auto 0 auto; font-size:120%; width:1100px; height:420px;}
+.big .play .page ul{ margin:15px 10px 15px 0;line-height:30px}
 .big .play .left{float:left; margin:20px 20px; width:490px; height:380px;}
+.big .play .left img{ margin:0px 0 0 40px;}
 .big .play .right{float:right; margin:20px 50px 0 0; width:500px; height:380px;}
 
 .mid { margin:0 auto; width:960px; height:969px;}

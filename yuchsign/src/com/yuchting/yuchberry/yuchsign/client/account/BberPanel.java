@@ -260,6 +260,12 @@ public class BberPanel extends TabPanel{
 	}
 	
 	private void sendActivateMail(){
+		
+		if(!m_currentBber.GetConnectHost().isEmpty()){
+			Yuchsign.PopupPrompt("已经激活过了，无需再激活。", this);
+			return;
+		}
+		
 		try{
 
 			Yuchsign.PopupWaiting("正在请求发送……", this);

@@ -12,7 +12,9 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.PasswordTextBox;
+import com.google.gwt.user.client.ui.PushButton;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -46,7 +48,7 @@ public final class LoginPanel extends HorizontalPanel{
 	
 	public LoginPanel(Yuchsign _clientSign){
 		m_clientSign = _clientSign;
-			
+		
 		final Button t_forgetPass = new Button("忘记密码");
 		
 		final VerticalPanel t_logonPane = new VerticalPanel();
