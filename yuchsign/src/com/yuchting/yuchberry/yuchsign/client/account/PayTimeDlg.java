@@ -125,6 +125,6 @@ public class PayTimeDlg extends DialogBox{
 		setText("充值时间");
 		setAnimationEnabled(true);
 		setGlassEnabled(true);		
-		setPopupPosition(30,100);
+		setPopupPosition(200,100);
 	}	
 }

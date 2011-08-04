@@ -60,7 +60,7 @@ public class YuchVerifyCodeDlg extends DialogBox{
 		
 		setAnimationEnabled(true);
 		setGlassEnabled(true);		
-		setPopupPosition(20,100);
+		setPopupPosition(200,100);
 		
 		show();
 	}

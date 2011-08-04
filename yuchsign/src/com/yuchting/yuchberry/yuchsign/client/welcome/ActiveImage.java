@@ -5,9 +5,11 @@ import java.util.Vector;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
@@ -41,6 +43,7 @@ public class ActiveImage {
 			new ToggleButton("登录|注册"),
 			new ToggleButton("语盒FAQ"),
 			new ToggleButton("玩转语盒"),
+			new ToggleButton("官方论坛"),
 		};
 		
 		final RootPanel[] t_rootPanel = 
@@ -49,6 +52,7 @@ public class ActiveImage {
 			RootPanel.get("account"),
 			RootPanel.get("faq"),
 			RootPanel.get("play"),
+			null,
 		};		
 
 		ClickHandler t_handler = new ClickHandler() {
@@ -56,14 +60,28 @@ public class ActiveImage {
 			@Override
 			public void onClick(ClickEvent event) {
 				
+				if(t_controlPutton[4] == event.getSource()){
+					// official forum
+					//
+					Window.open("http://yuchberrybbs.com/","_blank","");
+					t_controlPutton[4].setValue(false,false);
+					return;
+				}
 				for(int i = 0;i < t_controlPutton.length;i++){
 					ToggleButton but = t_controlPutton[i];
-					
+			
 					if(but != event.getSource()){
 						but.setValue(false,false);
-						t_rootPanel[i].setVisible(false);
+						
+						if(t_rootPanel[i] != null){
+							t_rootPanel[i].setVisible(false);
+						}
+						
 					}else{
-						t_rootPanel[i].setVisible(true);
+						
+						if(t_rootPanel[i] != null){
+							t_rootPanel[i].setVisible(true);
+						}
 					}
 				}				
 			}
@@ -182,8 +200,12 @@ public class ActiveImage {
 	private synchronized void changePlayPages(){
 		
 		for(Element elm:m_playPages){
-			elm.getStyle().setProperty("display", "none");
-			elm.getStyle().setProperty("opacity", "0");
+			Style t_style = elm.getStyle();
+			
+			t_style.setProperty("display", "none");
+			t_style.setProperty("opacity", "0");
+
+			t_style.setProperty("fliter","alpha(opacity=0)");
 		}
 		
 		
@@ -210,7 +232,21 @@ public class ActiveImage {
 						m_pageTimer = null;
 					}			
 					
-					m_playPages.get(m_pageIndex).getStyle().setProperty("opacity", Float.toString(m_pageOpacityCounter));
+					Style t_style = m_playPages.get(m_pageIndex).getStyle();
+					
+					if(m_pageOpacityCounter == 1.0f){
+						t_style.setProperty("fliter","alpha(opacity=100)");
+						t_style.setProperty("opacity", "1");
+					}else{
+						
+						String s = Integer.toString((int)Math.round(m_pageOpacityCounter * 100));
+						String sDecimal = (s.length() == 1 ? ".0" : ".") + s;
+						
+						t_style.setProperty("fliter","alpha(opacity="+s+")");
+						t_style.setProperty("opacity", sDecimal);
+					}
+					
+					
 				}
 	    	}
 		};

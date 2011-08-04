@@ -73,7 +73,7 @@ class ChangePassDlg extends DialogBox{
 		setText("更改密码");
 		setAnimationEnabled(true);
 				
-		setPopupPosition(50,100);
+		setPopupPosition(200,100);
 	}
 	
 	public void show(){

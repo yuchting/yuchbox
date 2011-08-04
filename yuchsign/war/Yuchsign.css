@@ -7,11 +7,11 @@ body{text-shadow: 1px 1px 1px #fff;}
 .yheader .headercon .nav{ float:right; position:relative; left: 0px; top: 43px;width:500px; height:41px;}
 
 .big{ margin:0 auto; background:#e1e4e9; border-bottom:1px solid #c8ccd3; }
-.big .bigicon{ margin:0 auto; width:960px; height:460px;}
-.big .bigicon .bg{ float:left;  margin:5px 20px; width:620px; height:450px; background:url(./images/big.jpg) no-repeat;}
-.big .bigicon .bg .actimage{ position:relative; float:left; left:216px; top:86px; width:172px; height:128px; }
+.big .bigicon{ margin:0 auto; width:960px; height:500px;}
+.big .bigicon .bg{ float:left;  margin:5px 20px; width:620px; height:450px; background:url(http://farm7.static.flickr.com/6026/6009050380_609b765c32_z.jpg) no-repeat;}
+.big .bigicon .bg .actimage{ position:relative; float:left; left:215px; top:85px; width:172px; height:128px; }
 
-.big .bigicon .download{ position:relative; float:right; top:0; left:0; width:300px; height:460px; }
+.big .bigicon .download{ position:relative; float:right; top:0; left:0; width:280px; height:460px; }
 .big .bigicon .download a{ margin:0 auto; display:block; text-align:center; background:url(./images/downloadBut.gif) no-repeat; width:226px; height:58px;}
 .big .bigicon .download a:hover{ background-position:0 100%; }
 .big .bigicon .download li{ margin:20px 5px; font-size:20px; }
@@ -20,15 +20,18 @@ body{text-shadow: 1px 1px 1px #fff;}
 .big .faq,
 .big .play,
 .big .yuchTab
-{ margin:0 auto 0 auto; padding:20px; width:960px; height:420px;}
-.big .play{width:1100px; height:460px; background:url(./images/book.jpg) no-repeat;}
-.big .play .pageButton{float:right; margin:0 500px;}
+{ margin:0 auto 0 auto; width:960px; height:500px;}
+
+.big .account{padding:30px 200px 0 200px;}
+
+.big .play{width:1100px; height:500px; background:url(./images/book.jpg) no-repeat;}
+.big .play .pageButton{position:relative; float:right; margin:0 50px 0 0;}
 .big .play img{ border:2px #FFF solid;}
-.big .play .page{ margin:20px auto 0 auto; font-size:120%; width:1100px; height:420px;}
-.big .play .page ul{ margin:15px 10px 15px 0;line-height:30px}
-.big .play .left{float:left; margin:20px 20px; width:490px; height:380px;}
-.big .play .left img{ margin:0px 0 0 40px;}
-.big .play .right{float:right; margin:20px 50px 0 0; width:500px; height:380px;}
+.big .play .page{font-size:15px; height:420px;}
+.big .play .page ul{position: relative; margin:0 0 15px 20px;line-height:25px}
+.big .play .left{position: relative; float:left; margin:45px 0 0 30px; width:500px; height:380px;}
+.big .play .left img{ margin:0 0 20px 40px;}
+.big .play .right{position: relative; float:right; margin:45px 30px 0 0; width:500px; height:380px;}
 
 .mid { margin:0 auto; width:960px; height:969px;}
 .mid .intro {float:left; width:560px; height:969px;}

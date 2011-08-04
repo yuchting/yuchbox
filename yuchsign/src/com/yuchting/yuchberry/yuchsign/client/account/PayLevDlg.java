@@ -132,6 +132,6 @@ public class PayLevDlg extends DialogBox{
 		setText("升级用户等级");
 		setAnimationEnabled(true);
 		setGlassEnabled(true);		
-		setPopupPosition(30,100);
+		setPopupPosition(200,100);
 	}
 }

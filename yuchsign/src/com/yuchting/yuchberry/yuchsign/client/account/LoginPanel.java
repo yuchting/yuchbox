@@ -12,9 +12,7 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.PasswordTextBox;
-import com.google.gwt.user.client.ui.PushButton;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -138,8 +136,7 @@ public final class LoginPanel extends HorizontalPanel{
 		add(t_signinPane);
 		
 		
-		RootPanel t_accountPane =RootPanel.get("account"); 
-		t_accountPane.setSize("860px", "420px");	
+		RootPanel t_accountPane =RootPanel.get("account");
 		t_accountPane.add(this);		
 		t_accountPane.setVisible(false);
 	}

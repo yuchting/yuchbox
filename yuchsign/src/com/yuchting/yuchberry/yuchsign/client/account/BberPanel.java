@@ -256,7 +256,7 @@ public class BberPanel extends TabPanel{
 		t_attrPane.add(t_syncBut);
 		
 		add(t_attrPane,"账户属性");
-		
+				
 	}
 	
 	private void sendActivateMail(){
