@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Yuchberry userPassword="111111" serverPort="9716" pushInterval="10" userSSL="0" convertoSimpleChar="0" >
+<Yuchberry userPassword="111111" serverPort="9716" pushInterval="10" userSSL="0" convertoSimpleChar="0" disableLog="1" >
 	<!--EmailAccount
 		account="tzt-123@163.com"
 		password=""

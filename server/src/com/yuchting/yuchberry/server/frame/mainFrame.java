@@ -165,6 +165,7 @@ public class mainFrame extends JFrame implements ActionListener{
 	Vector<fetchThread>	m_checkFolderStateThread = new Vector<fetchThread>();
 		
 	static public void main(String _arg[])throws Exception{
+		
 		if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("cryptTool")){
 			if(_arg.length == 2 && _arg[1].equalsIgnoreCase("console")){
 				new cryptPassTool_c();

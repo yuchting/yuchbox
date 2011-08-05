@@ -215,6 +215,9 @@ public class fetchMgr{
 			m_userSSL						= fetchAccount.ReadBooleanAttr(t_root,"userSSL");
 			m_convertToSimpleChar			= fetchAccount.ReadBooleanAttr(t_root,"convertoSimpleChar");
 			
+			boolean disableLog				= fetchAccount.ReadBooleanAttr(t_root, "disableLog");
+			m_logger.disableLog(disableLog);
+			
 			for( Iterator i = t_root.elementIterator("EmailAccount"); i.hasNext();){
 	            Element element = (Element) i.next();
 	            fetchAccount t_email = new fetchEmail(this);

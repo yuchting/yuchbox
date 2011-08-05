@@ -68,7 +68,7 @@ public class BberPanel extends TabPanel{
 
 	final Label m_signinName 		= new Label();
 	final Label m_connectHost		= new Label();
-	final Label m_serverPort 		= new Label();	
+	final Label m_serverPort 		= new Label();
 	final Label m_pushInterval 		= new Label();
 	final Label m_bberLev			= new Label();
 	final Label m_endTime			= new Label();
@@ -222,7 +222,7 @@ public class BberPanel extends TabPanel{
 			}
 		});	
 		
-		m_signature.setPixelSize(420,100);
+		m_signature.setPixelSize(720,200);
 				
 		
 		final FlexTable  t_layout = new FlexTable();	
@@ -518,7 +518,7 @@ public class BberPanel extends TabPanel{
 		final Button t_checkBut = new Button("检查日志");
 		final Button t_seekHelp = new Button("查找帮助");
 		
-		m_logText.setSize("600px", "300px");
+		m_logText.setSize("720px", "450px");
 		m_logText.setReadOnly(true);
 		
 		final HorizontalPanel t_buttonPane = new HorizontalPanel();

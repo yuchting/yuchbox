@@ -20,7 +20,6 @@ import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.Menu;
-import net.rim.device.api.ui.component.NullField;
 import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.container.MainScreen;
 
@@ -1241,11 +1240,10 @@ public class weiboTimeLineScreen extends MainScreen{
 			if(m_currMgr.getCurrExtendedItem() != null && m_currMgr != m_mainDMMgr){
 				switch(key){
 				case '0':
-		    		//boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
-		    		m_currMgr.OpenNextWeiboItem(true);
+		    		m_currMgr.OpenNextWeiboItem(!m_mainApp.m_spaceDownWeiboShortcutKey);
 		    		return true;
 				case ' ':
-		    		m_currMgr.OpenNextWeiboItem(false);
+		    		m_currMgr.OpenNextWeiboItem(m_mainApp.m_spaceDownWeiboShortcutKey);
 		    		return true;
 				}
 			}else{

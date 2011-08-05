@@ -1,5 +1,7 @@
 package com.yuchting.yuchberry.yuchsign.client.account;
 
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -7,6 +9,7 @@ import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.TextBox;
@@ -21,6 +24,8 @@ class BberEmailPanel extends FlowPanel{
 	
 	final TextBox			m_host		= new TextBox();
 	final TextBox			m_port		= new TextBox();
+	
+	final ListBox			m_reminderBox = new ListBox(false);
 	
 	final RadioButton[]		m_protocal	= {
 											new RadioButton("protocal","imap"),
@@ -109,6 +114,12 @@ class BberEmailPanel extends FlowPanel{
 		new commonConfig("@sohu.com,imap,mail.sohu.com,143,mail.sohu.com,25,0")
 	};
 	
+	commonConfig				m_googleApp = 
+		new commonConfig("@gmail.com,imaps,imap.gmail.com,993,smtp.gmail.com,587,1");
+	
+	commonConfig				m_qqEnterprise = 
+		new commonConfig("@qq.com,imap,imap.exmail.qq.com,143,smtp.exmail.qq.com,25,1");
+	
 	public BberEmailPanel(){
 				
 		m_account.addKeyUpHandler(new KeyUpHandler() {
@@ -133,9 +144,33 @@ class BberEmailPanel extends FlowPanel{
 
 		final FlowPanel t_subPane1 = new FlowPanel();
 		
+		m_reminderBox.setWidth("200px");
+		m_reminderBox.addItem("一般类型");
+		m_reminderBox.addItem("Google App 企业邮箱");
+		m_reminderBox.addItem("腾讯企业邮箱");
+		m_reminderBox.addChangeHandler(new ChangeHandler() {
+			
+			@Override
+			public void onChange(ChangeEvent event) {
+				switch(m_reminderBox.getSelectedIndex()){
+				case 0:
+					Yuchsign.PopupPrompt("请在地址栏输入一般信箱地址，程序会自动填写下面内容。", m_account);
+					break;
+				case 1:
+					m_googleApp.SetConfig(BberEmailPanel.this);
+					break;
+				case 2:
+					m_qqEnterprise.SetConfig(BberEmailPanel.this);
+					break;
+				}
+			}
+		});
+		
+		t_subPane1.add(m_reminderBox);
+		
 		for(RadioButton but : m_protocal){
 			t_subPane1.add(but);
-		}
+		}			
 		
 		final FlexTable t_hostPane = new FlexTable();
 		m_host.setWidth("10em");

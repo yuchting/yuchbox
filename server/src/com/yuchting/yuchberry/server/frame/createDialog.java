@@ -4,10 +4,12 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -19,6 +21,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -52,7 +55,6 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
 import com.yuchting.yuchberry.server.Logger;
-import com.yuchting.yuchberry.server.cryptPassword;
 import com.yuchting.yuchberry.server.fetchAccount;
 import com.yuchting.yuchberry.server.fetchEmail;
 import com.yuchting.yuchberry.server.fetchMgr;
@@ -101,7 +103,7 @@ final class createEmailData{
 	// account attribute
 	String m_accountName	;
 	String m_password		;
-	String m_passwordKey	;
+	String m_cryptPassword	;
 	String m_sendName		;
 	String m_protocal		;
 	
@@ -114,6 +116,7 @@ final class createEmailData{
 	boolean m_appendHTML	;
 	boolean m_useFullNameSignIn;
 }
+
 
 final class mainAttrData{
 	
@@ -219,8 +222,10 @@ public class createDialog extends JDialog implements DocumentListener,
 	
 	JTextField 	m_account		= new JTextField();
 	JTextField 	m_password		= new JTextField();
+	JButton		m_cryptPasswordHelpBut = new JButton("加密密码:");
+	JTextField 	m_cryptPassword	= new JTextField();
 	JTextField 	m_sendName		= new JTextField();
-	JTextField 	m_passwordKey	= new JTextField();
+	
 	JTextField 	m_host			= new JTextField();
 	JTextField 	m_port			= new JTextField();
 	
@@ -253,7 +258,7 @@ public class createDialog extends JDialog implements DocumentListener,
 										String _userPassword,String _serverPort,
 										String _pushInterval,String _expiredTime){
 		
-		super(_main,"添加一个账户",true);
+		super(_main,"添加一个账户",false);
 		
 		m_mainFrame = _main;
 		
@@ -376,9 +381,15 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 		AddTextLabel(t_accountPanel,"帐号名称:",m_account,220,"");
 		AddTextLabel(t_accountPanel,"帐号密码:",m_password,220,"");
-		AddTextLabel(t_accountPanel,"邮件名字:",m_sendName,220,"");
 		
-		AddTextLabel(t_accountPanel,"密码算子:",m_passwordKey,220,"");
+		m_cryptPasswordHelpBut.setMargin(new Insets(1, 1, 1, 1));
+		t_accountPanel.add(m_cryptPasswordHelpBut);
+		m_cryptPassword.setPreferredSize(new Dimension(216, 25));
+		t_accountPanel.add(m_cryptPassword);
+		
+		m_cryptPasswordHelpBut.addActionListener(this);
+		
+		AddTextLabel(t_accountPanel,"邮件名字:",m_sendName,220,"");
 		
 		AddTextLabel(t_accountPanel,"主机地址:",m_host,120,_formerHost);
 		AddTextLabel(t_accountPanel,"端口:",m_port,60,_formerPort);
@@ -445,7 +456,7 @@ public class createDialog extends JDialog implements DocumentListener,
 			t_email.m_accountName	= m_account.getText();
 			t_email.m_sendName		= m_sendName.getText();
 			t_email.m_password		= m_password.getText();
-			t_email.m_passwordKey	= m_passwordKey.getText();
+			t_email.m_cryptPassword	= m_cryptPassword.getText();
 			t_email.m_host			= m_host.getText();
 			t_email.m_port			= m_port.getText();
 			t_email.m_send_host		= m_send_host.getText();
@@ -515,6 +526,8 @@ public class createDialog extends JDialog implements DocumentListener,
 				PromptAndLog(ex);
 			}
 						
+		}else if(e.getSource() == m_cryptPasswordHelpBut){
+			new cryptPassTool();		
 		}
 	}
 	
@@ -592,8 +605,8 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 		CheckMainAttr();
 		
-		if(_email.m_accountName.length() == 0 || _email.m_password.length() == 0){
-			throw new Exception("账户名、密码不能为空");
+		if(_email.m_accountName.length() == 0 || (_email.m_password.isEmpty() && _email.m_cryptPassword.isEmpty())){
+			throw new Exception("账户名、密码(加密密码)不能为空");
 		}
 		
 		if(_email.m_host.length() == 0 || _email.m_port.length() == 0){
@@ -641,6 +654,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		Element t_elem = DocumentFactory.getInstance().createDocument().addElement("EmailAccount");
 		t_elem.addAttribute("account", _email.m_accountName);
 		t_elem.addAttribute("password", _email.m_password);
+		t_elem.addAttribute("cryptPassword",_email.m_cryptPassword);
 		t_elem.addAttribute("sendName",_email.m_sendName);
 				
 		t_elem.addAttribute("useFullNameSignIn", _email.m_useFullNameSignIn?"1":"0");
@@ -656,13 +670,9 @@ public class createDialog extends JDialog implements DocumentListener,
 		fetchEmail t_emailAccount = new fetchEmail(m_fetchMgrCreate);
 		t_emailAccount.InitAccount(t_elem);
 		
-		t_emailAccount.ResetSession(true);
-		t_emailAccount.DestroySession();
-		
-		if(!_email.m_passwordKey.isEmpty()){
-			cryptPassword t_crypt = new cryptPassword(cryptPassword.md5(_email.m_passwordKey));
-			t_elem.addAttribute("password","");
-			t_elem.addAttribute("cryptPassword",t_crypt.encrypt(_email.m_password));
+		if(_email.m_cryptPassword.isEmpty() && !_email.m_password.isEmpty()){
+			t_emailAccount.ResetSession(true);
+			t_emailAccount.DestroySession();
 		}
 		
 		m_createConfigDoc_root.add((Element)t_elem.clone());

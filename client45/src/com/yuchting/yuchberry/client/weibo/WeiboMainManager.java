@@ -1,5 +1,7 @@
 package com.yuchting.yuchberry.client.weibo;
 
+import java.util.Date;
+
 import local.localResource;
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
@@ -241,6 +243,9 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	}
 	
 	protected void sublayout(int width, int height){
+		
+		WeiboItemField.sm_currTime = (new Date()).getTime();
+		
 		m_bufferedTotalHeight = 0;
 				
 		final int t_num = getFieldCount();

@@ -40,7 +40,7 @@ public class ActiveImage {
 		final ToggleButton[] t_controlPutton = 
 		{
 			new ToggleButton("欢迎"),
-			new ToggleButton("登录|注册"),
+			new ToggleButton("登录 | 注册"),
 			new ToggleButton("语盒FAQ"),
 			new ToggleButton("玩转语盒"),
 			new ToggleButton("官方论坛"),

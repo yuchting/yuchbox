@@ -16,6 +16,8 @@ public class Logger{
 	
 	private boolean			m_systemOut = false;
 	
+	private boolean			m_disable = false;
+	
 	public Logger(){
 		// empty logger
 	}
@@ -26,6 +28,10 @@ public class Logger{
 		RestartLogging();
 	}
 	
+	public void disableLog(boolean _disable){
+		m_disable = _disable;
+	}
+
 	public void EnabelSystemOut(boolean _enabled){
 		m_systemOut = _enabled;
 	}
@@ -43,6 +49,10 @@ public class Logger{
 	}
 	
 	public synchronized void LogOut(String _log){
+		
+		if(m_disable){
+			return ;
+		}
 		
 		if(m_logFileStream != null){
 			SimpleDateFormat format = new SimpleDateFormat("MM-dd HH:mm:ss");
@@ -65,6 +75,10 @@ public class Logger{
 	}
 	
 	public synchronized void PrinterException(Exception _e){
+		
+		if(m_disable){
+			return ;
+		}
 		
 		if(m_printStack != null){
 			SimpleDateFormat format = new SimpleDateFormat("MM-dd HH:mm:ss :");

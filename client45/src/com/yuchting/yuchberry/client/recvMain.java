@@ -741,7 +741,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 26;
+	final static int		fsm_clientVersion = 27;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -893,6 +893,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_checkImgIndex			= t_readFile.read();
 				    		}
 				    		
+				    		if(t_currVer >= 27){
+				    			m_spaceDownWeiboShortcutKey = sendReceive.ReadBoolean(t_readFile);
+				    		}
+				    		
 				    		
 			    		}finally{
 			    			t_readFile.close();
@@ -973,6 +977,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						
 						sendReceive.WriteBoolean(t_writeFile, m_hasPromptToCheckImg);
 						t_writeFile.write(m_checkImgIndex);
+						sendReceive.WriteBoolean(t_writeFile,m_spaceDownWeiboShortcutKey);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1637,6 +1642,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public boolean			m_updateOwnListWhenFw		= true;
 	public boolean			m_updateOwnListWhenRe		= false;
 	public boolean			m_dontDownloadWeiboHeadImage= false;
+	public boolean			m_spaceDownWeiboShortcutKey	= true;
 		
 	public String[]				m_weiboHeadImageDir_sub = 
 	{

@@ -6,6 +6,8 @@ import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.CheckboxField;
 import net.rim.device.api.ui.component.ObjectChoiceField;
+import net.rim.device.api.ui.component.RadioButtonField;
+import net.rim.device.api.ui.component.RadioButtonGroup;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.recvMain;
@@ -24,6 +26,11 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 	 ObjectChoiceField	m_maxWeiboNum	= null;
 	 ButtonField		m_clearCheckImageSetting = null;
 	 
+	 private RadioButtonGroup m_shortkeyTypeGroup = new RadioButtonGroup();
+	 private RadioButtonField m_spaceDown	= new RadioButtonField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SPACE_DOWN),m_shortkeyTypeGroup,true);
+	 private RadioButtonField m_spaceUp	= new RadioButtonField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SPACE_UP),m_shortkeyTypeGroup,false);
+	
+	
 	 recvMain			m_mainApp = null;
 	 
 	 public WeiboOptionScreen(recvMain _mainApp){
@@ -69,6 +76,15 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 		 
 		 add(m_clearCheckImageSetting);
 		 
+		 add(m_spaceDown);
+		 add(m_spaceUp);
+		 
+		 if(m_mainApp.m_spaceDownWeiboShortcutKey){
+			 m_spaceDown.setSelected(true);
+		 }else{
+			 m_spaceUp.setSelected(true);
+		 }
+		 
 		 setTitle(recvMain.sm_local.getString(localResource.WEIBO_SETTING_SCREEN_TITLE));
 	 }
 	 
@@ -100,7 +116,9 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 			 WeiboItemField.sm_displayHeadImage	= m_displayHeadImage.getChecked();
 			 WeiboItemField.sm_simpleMode		= m_simpleMode.getChecked();
 			 WeiboItemField.sm_showAllInList		= m_showAllInList.getChecked();
-			 m_mainApp.m_dontDownloadWeiboHeadImage	= m_dontDownloadHeadImage.getChecked();	 
+			 m_mainApp.m_dontDownloadWeiboHeadImage	= m_dontDownloadHeadImage.getChecked();
+			 
+			 m_mainApp.m_spaceDownWeiboShortcutKey  = m_spaceDown.isSelected();
 			
 			 m_mainApp.WriteReadIni(false);
 		 }

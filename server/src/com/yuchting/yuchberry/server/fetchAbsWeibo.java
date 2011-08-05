@@ -708,10 +708,21 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		return false;
 	}
 	
+	static byte[] sm_favorOkPrompt = null;
+	static {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgWeiboPrompt);
+		try{
+			sendReceive.WriteString(os,"Favorite OK!",false);
+			sm_favorOkPrompt = os.toByteArray();
+		}catch(Exception e){}
+	}
+	
 	protected boolean ProcessWeiboFavorite(ByteArrayInputStream in)throws Exception{
 		
 		if(in.read() == GetCurrWeiboStyle()){
 			FavoriteWeibo(sendReceive.ReadLong(in));
+			m_mainMgr.SendData(sm_favorOkPrompt, true);
 			return true;
 		}
 		

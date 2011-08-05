@@ -516,21 +516,37 @@ public class WeiboItemField extends Manager{
 	
 	static Calendar sm_calendar = Calendar.getInstance();
 	static Date		sm_timeDate = new Date();
+	static public long sm_currTime = sm_timeDate.getTime();
+	
+	static String sm_timeUnitStr = recvMain.sm_local.getString(localResource.WEIBO_TIME_UNIT);
+	static String sm_timeAgoStr = recvMain.sm_local.getString(localResource.WEIBO_TIME_UNIT);
 	
 	static protected synchronized String getTimeString(fetchWeibo _weibo){
 		
-		sm_timeDate.setTime(_weibo.GetDateTime());
-		sm_calendar.setTime(sm_timeDate);		
-		
-		int t_minutes = sm_calendar.get(Calendar.MINUTE);
-		String t_day = WeiboItemField.sm_simpleMode?"":((sm_calendar.get(Calendar.MONTH) + 1) + "-" +sm_calendar.get(Calendar.DAY_OF_MONTH));
-		if(t_minutes > 9){
-			return t_day + " " + sm_calendar.get(Calendar.HOUR_OF_DAY) + ":" 
-					+ t_minutes;
+		long t_diff = sm_currTime - _weibo.GetDateTime();
+		if(t_diff < 3600000){
+			t_diff = t_diff / 60000; 
+			if(t_diff < 1){
+				t_diff = 1;
+			}
+			
+			return Long.toString(t_diff) + sm_timeUnitStr + sm_timeAgoStr;
+			
 		}else{
-			return t_day + " " + sm_calendar.get(Calendar.HOUR_OF_DAY) + ":" 
-					+ "0" + t_minutes;
-		}		
+			sm_timeDate.setTime(_weibo.GetDateTime());
+			sm_calendar.setTime(sm_timeDate);		
+			
+			int t_minutes = sm_calendar.get(Calendar.MINUTE);
+			String t_day = WeiboItemField.sm_simpleMode?"":((sm_calendar.get(Calendar.MONTH) + 1) + "-" +sm_calendar.get(Calendar.DAY_OF_MONTH));
+			if(t_minutes > 9){
+				return t_day + " " + sm_calendar.get(Calendar.HOUR_OF_DAY) + ":" 
+						+ t_minutes;
+			}else{
+				return t_day + " " + sm_calendar.get(Calendar.HOUR_OF_DAY) + ":" 
+						+ "0" + t_minutes;
+			}
+		}
+			
 	}
 
 	
@@ -554,8 +570,7 @@ public class WeiboItemField extends Manager{
 				// draw time string , weibo pic/comment
 				//
 				_g.setColor(0);
-				drawWeiboTime(_g,t_textStart_y,false);
-				
+				drawWeiboTime(_g,t_textStart_y,false);				
 				
 				// draw head image
 				//
@@ -779,39 +794,34 @@ public class WeiboItemField extends Manager{
 		
 		// draw time string
 		//
-		int t_oldColor = _g.getColor();
-		try{
-			_g.setColor(0xc0c0c0);
-	        String t_dateString = getTimeString(m_weibo);
-	    	_g.setFont(sm_timeFont);
-	    	int t_time_x = _g.drawText(t_dateString,fsm_weiboItemFieldWidth - sm_timeFont.getAdvance(t_dateString)
-					,_y,Graphics.ELLIPSIS);
-	    	
-	    	if(!_drawSign){
-	    		return;
-	    	}
-	    	
-	    	t_time_x = fsm_weiboItemFieldWidth - t_time_x;
-	    	
-	    	// draw weibo picture or comment sign
-	    	//
-	    	if(m_weiboPic != null){
-	    		t_time_x -= weiboTimeLineScreen.getWeiboPicSignImage().getWidth();
-	    		
-	    		weiboTimeLineScreen.sm_weiboUIImage.drawImage(_g,weiboTimeLineScreen.getWeiboPicSignImage(),t_time_x, _y);
-	    		
-	    		t_time_x -= 3;
-			}
-	    	
-	    	if(m_commentText != null){
-	    		
-	    		t_time_x -= weiboTimeLineScreen.getWeiboCommentSignImage().getWidth();
-	    		
-	    		weiboTimeLineScreen.sm_weiboUIImage.drawImage(_g,weiboTimeLineScreen.getWeiboCommentSignImage(),t_time_x, _y);
-	    	}
-		}finally{
-			_g.setColor(t_oldColor);
+        String t_dateString = getTimeString(m_weibo);
+    	_g.setFont(sm_timeFont);
+    	int t_time_x = _g.drawText(t_dateString,fsm_weiboItemFieldWidth - sm_timeFont.getAdvance(t_dateString)
+				,_y,Graphics.ELLIPSIS);
+    	
+    	if(!_drawSign){
+    		return;
+    	}
+    	
+    	t_time_x = fsm_weiboItemFieldWidth - t_time_x;
+    	
+    	// draw weibo picture or comment sign
+    	//
+    	if(m_weiboPic != null){
+    		t_time_x -= weiboTimeLineScreen.getWeiboPicSignImage().getWidth();
+    		
+    		weiboTimeLineScreen.sm_weiboUIImage.drawImage(_g,weiboTimeLineScreen.getWeiboPicSignImage(),t_time_x, _y);
+    		
+    		t_time_x -= 3;
 		}
+    	
+    	if(m_commentText != null){
+    		
+    		t_time_x -= weiboTimeLineScreen.getWeiboCommentSignImage().getWidth();
+    		
+    		weiboTimeLineScreen.sm_weiboUIImage.drawImage(_g,weiboTimeLineScreen.getWeiboCommentSignImage(),t_time_x, _y);
+    	}
+		
 	}
 	
 	/**

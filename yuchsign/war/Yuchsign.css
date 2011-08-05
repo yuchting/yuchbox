@@ -36,8 +36,8 @@ body{text-shadow: 1px 1px 1px #fff;}
 .mid { margin:0 auto; width:960px; height:969px;}
 .mid .intro {float:left; width:560px; height:969px;}
 .mid .intro .introblock{float:left; margin-top:20px;padding-left:249px; width:300px; height:169px; }
-.mid .intro .introblock h3{color:#666; font-size:130%}
-.mid .intro .introblock li{margin:15px 5px;font-size:115%;}
+.mid .intro .introblock h3{color:#666; margin:0 0;font-size:19px}
+.mid .intro .introblock li{margin:14px 5px;font-size:14px;}
 .mid .intro .introblock a{margin:15px 0 0 180px;}
 .mid .intro .introblock#block0{background:url(./images/intro0.gif) no-repeat;}
 .mid .intro .introblock#block1{background:url(./images/intro1.gif) no-repeat;}

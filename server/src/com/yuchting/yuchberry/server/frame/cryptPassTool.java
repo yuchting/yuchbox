@@ -26,7 +26,7 @@ public class cryptPassTool extends JFrame implements ActionListener{
 		
 		setTitle("加密密码工具");
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		setSize(400,170);
+		
 		setResizable(false);
 		
 		
@@ -45,6 +45,10 @@ public class cryptPassTool extends JFrame implements ActionListener{
 		m_convert.addActionListener(this);
 		m_help.addActionListener(this);
 		
+		setLocationRelativeTo(null);
+		
+		pack();
+		setSize(400,170);
 		setVisible(true);
 	}
 	
