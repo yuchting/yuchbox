@@ -231,20 +231,13 @@ public class fetchMgr{
 	            
 	            String t_type = fetchAccount.ReadStringAttr(element,"type");
 	            
-	            fetchAccount t_weibo = null;
+	            fetchAccount t_weibo = getWeiboInstance(t_type,this);
 	            
-	            if(t_type.equalsIgnoreCase("sina")){
-	            	t_weibo = new fetchSinaWeibo(this);
-	            }else if(t_type.equalsIgnoreCase("twitter") || t_type.equalsIgnoreCase("tw")){
-	            	t_weibo = new fetchTWeibo(this);
-	            }else if(t_type.equalsIgnoreCase("qq")){
-	            	t_weibo = new fetchQWeibo(this);
-	            }else{
+	            if(t_weibo == null){
 	            	continue;
 	            }
 	            
 	            t_weibo.InitAccount(element);
-	            
 	            m_fetchAccount.addElement(t_weibo);
 	        }
 			
@@ -262,6 +255,21 @@ public class fetchMgr{
 			
 	}
 	
+	static public fetchAbsWeibo getWeiboInstance(String _type,fetchMgr _mgr){
+		
+		fetchAbsWeibo t_weibo = null;
+		
+		if(_type.equalsIgnoreCase("sina")){
+        	t_weibo = new fetchSinaWeibo(_mgr);
+        }else if(_type.equalsIgnoreCase("twitter") || _type.equalsIgnoreCase("tw")){
+        	t_weibo = new fetchTWeibo(_mgr);
+        }else if(_type.equalsIgnoreCase("qq")){
+        	t_weibo = new fetchQWeibo(_mgr);
+        }
+		
+		return t_weibo;
+	}
+	
 	public String GetPasswordKey(){
 		return m_passwordKey;
 	}
@@ -272,7 +280,7 @@ public class fetchMgr{
 		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 		t_os.write(msg_head.msgNote);
 		try{
-			sendReceive.WriteString(t_os,"User Password or Port Error!(用户密码或端口错误)",false);
+			sendReceive.WriteString(t_os,"User Password or Port Error! Check server's log please.(用户密码或端口错误，请检查服务器日志)",false);
 		}catch(Exception e){}
 		
 		fsm_userPasswordErrorData = t_os.toByteArray();

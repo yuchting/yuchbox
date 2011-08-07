@@ -519,7 +519,7 @@ public class WeiboItemField extends Manager{
 	static public long sm_currTime = sm_timeDate.getTime();
 	
 	static String sm_timeUnitStr = recvMain.sm_local.getString(localResource.WEIBO_TIME_UNIT);
-	static String sm_timeAgoStr = recvMain.sm_local.getString(localResource.WEIBO_TIME_UNIT);
+	static String sm_timeAgoStr = recvMain.sm_local.getString(localResource.WEIBO_TIME_AGO);
 	
 	static protected synchronized String getTimeString(fetchWeibo _weibo){
 		

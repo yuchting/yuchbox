@@ -41,9 +41,11 @@ public class PayTimeDlg extends DialogBox{
 		
 		final RadioButton		t_weekPay	= new RadioButton("pay","￥" + t_weekMoney + "/一个星期");
 		final RadioButton		t_monthPay	= new RadioButton("pay","￥" + (t_weekMoney*4) + "/一个月");
+		final RadioButton		t_seasonPay = new RadioButton("pay","￥" + (t_weekMoney*10) + "/一个季度");
 		
 		t_pane.add(t_weekPay);
 		t_pane.add(t_monthPay);
+		t_pane.add(t_seasonPay);
 		
 		t_pane.add(new HTML("<br />"));
 		
@@ -58,11 +60,15 @@ public class PayTimeDlg extends DialogBox{
 				
 				long t_payTime 				= (7 * 24 * 3600000);
 				if(t_monthPay.getValue()){
+					
 					t_payTime *= 4;
 					
 					// give two days
 					//
 					t_payTime += (2 * 24 * 3600000);
+				}else if(t_seasonPay.getValue()){
+					
+					t_payTime *= 12; // 12 weeks
 				}
 				
 				long t_currTime 			= (new Date()).getTime();
@@ -75,6 +81,7 @@ public class PayTimeDlg extends DialogBox{
 		
 		t_weekPay.addClickHandler(t_radioClicked);
 		t_monthPay.addClickHandler(t_radioClicked);
+		t_seasonPay.addClickHandler(t_radioClicked);
 		
 		t_weekPay.fireEvent(new ClickEvent(){});
 		
@@ -88,11 +95,20 @@ public class PayTimeDlg extends DialogBox{
 			@Override
 			public void onClick(ClickEvent event){
 				try{
+					
+					int t_fee = ft_payWeekFee;
+					
+					if(t_monthPay.getValue()){
+						t_fee = ft_payWeekFee*4;
+					}else if(t_seasonPay.getValue()){
+						t_fee = t_weekMoney*10;
+					}
+					
 					Window.open("http://yuchberrysign.yuchberry.info/pay/?yname=" + URL.encode(_bber.GetSigninName()) +
-							"&type=0&fee=" + ((t_weekPay.getValue())?ft_payWeekFee:ft_payWeekFee*4), "_blank", "");
+							"&type=0&fee=" + t_fee, "_blank", "");
 					
 //					Window.open("http://127.0.0.1:8888/pay/?yname=" + URL.encode(_bber.GetSigninName()) +
-//							"&type=0&fee=" + ((t_weekPay.getValue())?ft_payWeekFee:ft_payWeekFee*4), "_blank", "");
+//							"&type=0&fee=" + t_fee, "_blank", "");
 //					
 					t_weekPay.setEnabled(false);
 					t_monthPay.setEnabled(false);

@@ -52,7 +52,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public final static int 		fsm_display_height		= Display.getHeight();
 	public final static String	fsm_OS_version			= CodeModuleManager.getModuleVersion((CodeModuleManager.getModuleHandleForObject("")));
 	public final static long		fsm_PIN					= DeviceInfo.getDeviceId();
-	public final static String	fsm_IMEI				= IDENInfo.imeiToString(IDENInfo.getIMEI());
+	public final static String	fsm_IMEI				= "bb";
 	
 	
 	public static ResourceBundle sm_local = ResourceBundle.getBundle(localResource.BUNDLE_ID, localResource.BUNDLE_NAME);

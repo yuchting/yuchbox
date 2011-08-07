@@ -31,7 +31,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	public void InitAccount(Element _elem)throws Exception{
 		super.InitAccount(_elem);
 		
-		m_accountName = m_accountName + "[QWeibo]";
+		m_accountName = m_accountName + "[QQWeibo]";
 		
 		m_headImageDir			= m_headImageDir + "QQ/";
 		File t_file = new File(m_headImageDir);

@@ -52,9 +52,10 @@ body{text-shadow: 1px 1px 1px #fff;}
 .mid .contact a.but#sina{background:#fff url(./images/sinaweibo.gif) no-repeat;}
 .mid .contact a.but#qq{background:#fff url(./images/qqweibo.gif) no-repeat;}
 
-.mid .contact .user{text-align:left; margin:50px auto;}
+.mid .contact .user{text-align:left; margin:50px 0 20 0;}
 .mid .contact .user li{color:#232424; font-size:105%; margin:10px auto;}
 .mid .contact .user li a{color:#535454;}
+.mid .outlink a{font-size:16px; text-decoration:none; color:#666}
 
 .foot {color:#a3a4a4; text-align:center; margin:0 auto; width:960px; height:50px; margin-top:20px; padding-bottom:20px;}
 .foot a{color:#a3a4a4;text-decoration:none;margin:5 5px;}

@@ -136,6 +136,10 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		return m_accountName;
 	}
 	
+	public String toString(){
+		return GetAccountName();
+	}
+	
 	/**
 	 * check the folder to find the news to push
 	 */

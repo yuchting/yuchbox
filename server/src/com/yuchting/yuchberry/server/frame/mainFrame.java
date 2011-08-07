@@ -165,35 +165,36 @@ public class mainFrame extends JFrame implements ActionListener{
 	Vector<fetchThread>	m_checkFolderStateThread = new Vector<fetchThread>();
 		
 	static public void main(String _arg[])throws Exception{
-		
-		if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("cryptTool")){
-			if(_arg.length == 2 && _arg[1].equalsIgnoreCase("console")){
-				new cryptPassTool_c();
-			}else{
-				new cryptPassTool();
-			}
-			
-		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("weiboReq")){
-			if(_arg.length >= 2){
-				if(_arg[1].equalsIgnoreCase("sina")){
-					new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
-				}else if(_arg[1].equalsIgnoreCase("tw")){
-					new weiboRequestTool(fetchWeibo.TWITTER_WEIBO_STYLE);
-				}else if(_arg[1].equalsIgnoreCase("qq")){
-					new weiboRequestTool(fetchWeibo.QQ_WEIBO_STYLE);
-				}
-			}else{
-				new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
-			}
-			
-		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("frame")){
-			new fakeMDSSvr();
-			new mainFrame(_arg);
-		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("clear")){
-			new ClearAccount();			
-		}else{
-			new fetchMain();
-		}
+		new mainFrame(_arg);
+				
+//		if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("cryptTool")){
+//			if(_arg.length == 2 && _arg[1].equalsIgnoreCase("console")){
+//				new cryptPassTool_c();
+//			}else{
+//				new cryptPassTool();
+//			}
+//			
+//		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("weiboReq")){
+//			if(_arg.length >= 2){
+//				if(_arg[1].equalsIgnoreCase("sina")){
+//					(new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE)).startAuth();
+//				}else if(_arg[1].equalsIgnoreCase("tw")){
+//					(new weiboRequestTool(fetchWeibo.TWITTER_WEIBO_STYLE)).startAuth();
+//				}else if(_arg[1].equalsIgnoreCase("qq")){
+//					(new weiboRequestTool(fetchWeibo.QQ_WEIBO_STYLE)).startAuth();
+//				}
+//			}else{
+//				new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
+//			}
+//			
+//		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("frame")){
+//			new fakeMDSSvr();
+//			new mainFrame(_arg);
+//		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("clear")){
+//			new ClearAccount();			
+//		}else{
+//			new fetchMain();
+//		}
 	}	
 	
 	public mainFrame(String _arg[]){

@@ -9,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -21,7 +20,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -55,9 +53,12 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
 import com.yuchting.yuchberry.server.Logger;
+import com.yuchting.yuchberry.server.fetchAbsWeibo;
 import com.yuchting.yuchberry.server.fetchAccount;
 import com.yuchting.yuchberry.server.fetchEmail;
 import com.yuchting.yuchberry.server.fetchMgr;
+import com.yuchting.yuchberry.server.fetchQWeibo;
+import com.yuchting.yuchberry.server.fetchWeibo;
 
 class NumberMaxMinLimitedDmt extends PlainDocument {
 	 
@@ -117,6 +118,21 @@ final class createEmailData{
 	boolean m_useFullNameSignIn;
 }
 
+final class createWeiboData{
+	
+	// account attribute
+	String m_accountName	;
+	String m_type		;
+	String m_token	;
+	String m_secretToken	;
+	
+	int		m_homeSum = 30;
+	int		m_atMeSum = 5;
+	int		m_commentMeSum = 5;
+	int		m_directMsgSum = 1;
+	
+}
+
 
 final class mainAttrData{
 	
@@ -134,7 +150,7 @@ final class mainAttrData{
 
 public class createDialog extends JDialog implements DocumentListener,
 															ActionListener,
-															ItemListener{
+															ItemListener,IWeiboAuthOk{
 	
 	final static int		fsm_width = 520;
 	final static int		fsm_height = 680;
@@ -245,6 +261,28 @@ public class createDialog extends JDialog implements DocumentListener,
 	
 	JButton		m_confirmBut		= new JButton("确定");
 	
+	// weibo tab
+	//
+	ButtonGroup m_weiboTypeGroup = new ButtonGroup();
+	JRadioButton[]	m_weiboType	= 
+	{
+			new JRadioButton("sina"),
+			new JRadioButton("qq"),
+	};
+	
+	JTextField		m_weiboAccountName	= new JTextField();
+	JTextField		m_weiboToken		= new JTextField();
+	JTextField		m_weiboSecret		= new JTextField();
+	
+	ButtonGroup m_weiboSumGroup = new ButtonGroup();
+	
+	JRadioButton	m_pushType_refresh	= new JRadioButton("主页手动刷新（耗电少，\n建议主页Weibo多的用户选择）");
+	JRadioButton	m_pushType_push	= new JRadioButton("主页主动推送（微博控专用，\n实时推送主页Weibo）");
+	
+	JButton			m_weiboAuthBut		= new JButton("授权获得访问码");
+	weiboRequestTool m_weiboAuthTool	= null;
+	
+	
 	// write xml data
 	Document	m_createConfigDoc	= DocumentFactory.getInstance().createDocument();
 	Element		m_createConfigDoc_root = m_createConfigDoc.addElement("Yuchberry");
@@ -342,7 +380,6 @@ public class createDialog extends JDialog implements DocumentListener,
 		t_accountMainPanel.add(m_accountListScroll);
 		
 		t_accountMainPanel.add(PrepareAccountBut());
-		
 		t_accountMainPanel.add(PrepareAccountDataPanel(_formerHost,_formerPort,_formerHost_send,_formerPort_send));				
 		
 		getContentPane().add(t_accountMainPanel);
@@ -364,7 +401,8 @@ public class createDialog extends JDialog implements DocumentListener,
 		setVisible(true);	
 	}
 	
-	private JComponent PrepareAccountDataPanel(String _formerHost,String _formerPort,String _formerHost_send,String _formerPort_send){
+	private JComponent PrepareAccountDataPanel(String _formerHost,String _formerPort,String _formerHost_send,
+											String _formerPort_send){
 				
 		JPanel t_accountPanel = new JPanel();
 		t_accountPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -411,9 +449,45 @@ public class createDialog extends JDialog implements DocumentListener,
 
 		
 		m_tabbedPane.addTab("邮件",null,t_accountPanel,"添加邮件账户");
+		m_tabbedPane.addTab("Weibo",null,PrepareWeiboDataPanel(),"添加推送微博账户");
 		m_tabbedPane.setPreferredSize(new Dimension(300, 330));
 		
 		return m_tabbedPane;
+	}
+	
+	private JComponent PrepareWeiboDataPanel(){
+		JPanel t_accountPanel = new JPanel();
+		t_accountPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		
+		
+		JPanel t_typePanel = new JPanel();
+		t_typePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		
+		t_typePanel.add(new JLabel("微博类型:"));
+		for(int i = 0;i < m_weiboType.length;i++){
+			m_weiboTypeGroup.add(m_weiboType[i]);
+			t_typePanel.add(m_weiboType[i]);
+		}
+		m_weiboType[0].setSelected(true);
+		
+		t_typePanel.setPreferredSize(new Dimension(300, 30));
+		t_accountPanel.add(t_typePanel);
+		
+		AddTextLabel(t_accountPanel,"微博帐户名:",m_weiboAccountName,210,"");
+		AddTextLabel(t_accountPanel,"accessToken:",m_weiboToken,200,"");
+		AddTextLabel(t_accountPanel,"secretToken:",m_weiboSecret,200,"");
+		
+		m_weiboSumGroup.add(m_pushType_refresh);
+		m_weiboSumGroup.add(m_pushType_push);
+		t_accountPanel.add(m_pushType_refresh);
+		t_accountPanel.add(m_pushType_push);
+		
+		m_pushType_refresh.setSelected(true);
+		
+		t_accountPanel.add(m_weiboAuthBut);
+		m_weiboAuthBut.addActionListener(this);
+		
+		return t_accountPanel;
 	}
 	
 	private JComponent PrepareAccountBut(){
@@ -450,34 +524,68 @@ public class createDialog extends JDialog implements DocumentListener,
 	
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == m_addAccountBut){
-						
-			createEmailData t_email = new createEmailData();
 			
-			t_email.m_accountName	= m_account.getText();
-			t_email.m_sendName		= m_sendName.getText();
-			t_email.m_password		= m_password.getText();
-			t_email.m_cryptPassword	= m_cryptPassword.getText();
-			t_email.m_host			= m_host.getText();
-			t_email.m_port			= m_port.getText();
-			t_email.m_send_host		= m_send_host.getText();
-			t_email.m_send_port		= m_send_port.getText();
-			t_email.m_appendHTML	= m_appendHTML.isSelected();
-			t_email.m_useFullNameSignIn = m_signInAsFullname.isSelected();
-			
-			for(int i = 0;i < m_protocal.length;i++){
-				if(m_protocal[i].isSelected()){
-					t_email.m_protocal = m_protocal[i].getText();
-					break;
+			if(m_tabbedPane.getSelectedIndex() == 0){
+				createEmailData t_email = new createEmailData();
+				
+				t_email.m_accountName	= m_account.getText();
+				t_email.m_sendName		= m_sendName.getText();
+				t_email.m_password		= m_password.getText();
+				t_email.m_cryptPassword	= m_cryptPassword.getText();
+				t_email.m_host			= m_host.getText();
+				t_email.m_port			= m_port.getText();
+				t_email.m_send_host		= m_send_host.getText();
+				t_email.m_send_port		= m_send_port.getText();
+				t_email.m_appendHTML	= m_appendHTML.isSelected();
+				t_email.m_useFullNameSignIn = m_signInAsFullname.isSelected();
+				
+				for(int i = 0;i < m_protocal.length;i++){
+					if(m_protocal[i].isSelected()){
+						t_email.m_protocal = m_protocal[i].getText();
+						break;
+					}
+				}
+							
+				try{
+					
+					CreateAccountAndTest(t_email);	
+					
+				}catch(Exception ex){
+					JOptionPane.showMessageDialog(this, ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+				}
+			}else if(m_tabbedPane.getSelectedIndex() == 1){
+				
+				createWeiboData t_weibo = new createWeiboData();
+				
+				for(int i = 0;i < m_weiboType.length;i++){
+					if(m_weiboType[i].isSelected()){
+						t_weibo.m_type = m_weiboType[i].getText();
+						break;
+					}
+				}
+				
+				t_weibo.m_accountName = m_weiboAccountName.getText();
+				t_weibo.m_token = m_weiboToken.getText();
+				t_weibo.m_secretToken = m_weiboSecret.getText();
+				
+				if(m_pushType_refresh.isSelected()){
+					t_weibo.m_homeSum = -30;
+				}else{
+					t_weibo.m_homeSum = 10;
+				}
+				t_weibo.m_atMeSum = 5;
+				t_weibo.m_commentMeSum = 5;
+				t_weibo.m_directMsgSum = 1;
+							
+				try{
+					
+					CreateAccountAndTest(t_weibo);
+					
+				}catch(Exception ex){
+					JOptionPane.showMessageDialog(this, ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 						
-			try{
-				
-				CreateAccountAndTest(t_email);	
-				
-			}catch(Exception ex){
-				JOptionPane.showMessageDialog(this, ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
-			}			
 			
 		}else if(e.getSource() == m_delAccountBut){
 			final int t_selectIndex = m_accountList.getSelectedIndex();
@@ -507,10 +615,20 @@ public class createDialog extends JDialog implements DocumentListener,
 			}
 		}else if(e.getSource() == m_confirmBut){
 			
+			if(m_createAccountList.isEmpty()){
+				return ;
+			}
+			
 			fetchAccount t_account = (fetchAccount)m_createAccountList.elementAt(0);
 			try{
 				
 				String t_prefix = t_account.GetAccountName() + "/";
+				
+				File t_dir = new File(t_prefix);
+				if(!t_dir.exists() || !t_dir.isDirectory()){
+					t_dir.mkdir();
+				}	
+				
 				WriteXmlFile(m_createConfigDoc,t_prefix + fetchMgr.fsm_configFilename);
 				WriteSignatureAndGooglePos(t_prefix,m_signature.getText());
 				
@@ -528,6 +646,41 @@ public class createDialog extends JDialog implements DocumentListener,
 						
 		}else if(e.getSource() == m_cryptPasswordHelpBut){
 			new cryptPassTool();		
+		}else if(e.getSource() == m_weiboAuthBut){
+			for(final JRadioButton but:m_weiboType){
+				if(but.isSelected()){
+					
+					if(m_weiboAuthTool != null){
+						m_weiboAuthTool.closeTool();
+					}
+					
+					Thread t_authThread = new Thread(){
+						public void run(){
+							
+							if(but.getText().equals("sina")){
+								m_weiboAuthTool = new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE,createDialog.this);
+							}else if(but.getText().equals("qq")){
+								m_weiboAuthTool = new weiboRequestTool(fetchWeibo.QQ_WEIBO_STYLE,createDialog.this);
+							}
+							
+							m_weiboAuthTool.startAuth();
+						}
+					};			
+					
+					t_authThread.start();					
+					
+					break;
+				}
+			}
+		}
+	}
+	
+	public void weiboAuthOK(String _accessToken,String _secretToken){
+		m_weiboToken.setText(_accessToken);
+		m_weiboSecret.setText(_secretToken);
+		
+		if(m_weiboAuthTool != null){
+			m_weiboAuthTool.closeTool();
 		}
 	}
 	
@@ -638,6 +791,56 @@ public class createDialog extends JDialog implements DocumentListener,
 		m_createAccountList.addElement(CheckEmailConnect(_email));
 		
 		RefreshAccountList();
+	}
+	
+	private void CreateAccountAndTest(final createWeiboData _weibo)throws Exception{
+		CheckMainAttr();
+		
+		if(m_weiboAccountName.getText().isEmpty() || !m_weiboAccountName.getText().matches("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$")){
+			throw new Exception("请输入帐号名（必须是邮件地址！腾讯微博用【QQ号码+@qq.com】）");
+		}
+		
+		if(m_weiboToken.getText().isEmpty() || m_weiboSecret.getText().isEmpty()){
+			throw new Exception("请先填写授权码，或者点击授权按钮进行授权！");
+		}
+		
+		if(!m_createAccountList.isEmpty()){
+			
+			for(int i = 0;i < m_createAccountList.size();i++){
+				fetchAccount account = (fetchAccount)m_createAccountList.elementAt(i);
+				if(account.GetAccountName().equalsIgnoreCase(_weibo.m_accountName + "[" + _weibo.m_type + "Weibo]")){
+					throw new Exception(account.GetAccountName() + " 微博账户已经添加");
+				}				
+			}
+		}
+		
+		m_createAccountList.addElement(CheckWeiboConnect(_weibo));
+		
+		RefreshAccountList();
+		
+		
+	}
+	
+	private fetchAbsWeibo CheckWeiboConnect(createWeiboData _weibo)throws Exception{
+		Element t_elem = DocumentFactory.getInstance().createDocument().addElement("WeiboAccount");
+		
+		t_elem.addAttribute("type", _weibo.m_type);
+		t_elem.addAttribute("account", _weibo.m_accountName);
+		t_elem.addAttribute("accessToken", _weibo.m_token);
+		t_elem.addAttribute("secretToken", _weibo.m_secretToken);
+		
+		t_elem.addAttribute("timelineSum", Integer.toString(_weibo.m_homeSum));
+		t_elem.addAttribute("directMessageSum", Integer.toString(_weibo.m_directMsgSum));
+		t_elem.addAttribute("atMeSum", Integer.toString(_weibo.m_atMeSum));
+		t_elem.addAttribute("commentSum", Integer.toString(_weibo.m_commentMeSum));
+		
+		fetchAbsWeibo t_weibo = fetchMgr.getWeiboInstance(_weibo.m_type, m_fetchMgrCreate);
+		t_weibo.InitAccount(t_elem);
+		
+		t_weibo.ResetSession(true);
+		
+		m_createConfigDoc_root.add((Element)t_elem.clone());
+		return t_weibo;
 	}
 	
 	private void RefreshAccountList(){

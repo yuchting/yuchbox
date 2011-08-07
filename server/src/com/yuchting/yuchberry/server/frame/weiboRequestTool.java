@@ -12,10 +12,14 @@ import com.yuchting.yuchberry.server.fetchSinaWeibo;
 import com.yuchting.yuchberry.server.fetchTWeibo;
 import com.yuchting.yuchberry.server.fetchWeibo;
 
+interface IWeiboAuthOk{
+	public void weiboAuthOK(String _accessToken,String _secretToken);
+}
+
 public class weiboRequestTool{
 
 	JButton		m_openRequestURL	= new JButton("请求授权");
-	
+	IWeiboAuthOk	m_weiboAuthOK	= null;
 
 	Object		m_requestToken	= null;
 	
@@ -25,14 +29,25 @@ public class weiboRequestTool{
 	
 	private String		m_subfix	= null;
 	
+	boolean		m_closed = false;
+	
 	private final static int			fsm_daemonPort		= 4928;
 	private final static String	fsm_callbackURL =  "http://localhost:" + fsm_daemonPort;
+		
+	public weiboRequestTool(int _style,IWeiboAuthOk _callback){
+		m_weiboAuthOK = _callback;
+		m_style = _style;
+	}
 	
 	public weiboRequestTool(int _style){
-
 		m_style = _style;
+	}
+	
+	// synchronized function 
+	//	
+	public void startAuth(){		
 				
-		switch(_style){
+		switch(m_style){
 		case fetchWeibo.SINA_WEIBO_STYLE:
 			m_subfix = "Sina";
 			break;
@@ -55,7 +70,7 @@ public class weiboRequestTool{
 			try{
 				prt("YuchBerry 正在请求"+m_subfix+" Weibo 授权并打开浏览器，获得授权码之前，请不要关闭这个窗口……");
 				
-				if(_style == fetchWeibo.TWITTER_WEIBO_STYLE){
+				if(m_style == fetchWeibo.TWITTER_WEIBO_STYLE){
 					prt("对了，还有一件事情，你貌似在请求一个不存在的网站，需要打开神马通道进行连接么？（直接回车表示不需要）");
 					pt("神马通道IP: ");
 					BufferedReader bufin = new BufferedReader(new   InputStreamReader(System.in)); 
@@ -94,14 +109,28 @@ public class weiboRequestTool{
 				prt("出现错误:" + ex.getMessage());
 				ex.printStackTrace();
 			}
-			
+
 		}catch(Exception e){
 			prt("错误，无法打开系统的"+fsm_daemonPort +"端口，请确认是否有其他程序占有这个端口。");
 		}		
 		
 		try{
-			Thread.sleep(99999999999L);
+			
+			while(!m_closed){
+				Thread.sleep(100);
+			}
+			
+			if(m_httpd != null){
+				m_httpd.stop();
+			}
+			
 		}catch(Exception ex){}		
+		
+	}
+	
+	public void closeTool(){
+		m_closed = true;
+		
 	}
 	
 	private void prt(String _log){
@@ -161,7 +190,12 @@ public class weiboRequestTool{
 				t_response.append("YuchBerry 申请"+m_subfix+" Weibo 授权成功！获得如下授权码，请按照 <a href=\"http://code.google.com/p/yuchberry/wiki/YuchBerry_Weibo#填写config.xml配置文件\" target=_blank>说明文档</a> 将其填写到config.xml里面。<br /><br />");
 				t_response.append("accessToken=\""+t_tokenString+"\"<br />");
 				t_response.append("secretToken=\""+t_tokenSecret+"\"<br />");
-
+				
+				if(m_weiboAuthOK != null){
+					m_weiboAuthOK.weiboAuthOK(t_tokenString, t_tokenSecret);
+				}
+				
+				closeTool();
 				
 			}else{
 				t_response.append("你不要这样访问，木有用滴。");
@@ -180,6 +214,6 @@ public class weiboRequestTool{
 	}	
 	
 	static public void main(String _arg[]){
-		new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
+		(new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE)).startAuth();
 	}
 }
