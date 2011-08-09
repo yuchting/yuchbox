@@ -641,7 +641,7 @@ public class weiboTimeLineScreen extends MainScreen{
 				if(_weibo.GetWeiboStyle() == t_image.m_weiboStyle 
 					&& t_image.m_userID.equals(_weibo.GetHeadImageId()) ){
 					
-					if(t_image.m_dataHash != _weibo.GetUserHeadImageHashCode()){
+					if(t_image.m_dataHash != _weibo.GetUserHeadImageHashCode() || t_image.m_headImage == sm_defaultHeadImage){
 						SendHeadImageQueryMsg(_weibo);
 					}
 					
