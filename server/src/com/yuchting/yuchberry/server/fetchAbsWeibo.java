@@ -578,16 +578,22 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				}
 				
 				break;
+				
 			case fetchWeibo.SEND_DIRECT_MSG_TYPE:
 				
-				String t_screenName = sendReceive.ReadString(in);
-				sendDirectMsg(t_screenName,t_text);
+				if(t_style == GetCurrWeiboStyle()){
+
+					String t_screenName = sendReceive.ReadString(in);
+					sendDirectMsg(t_screenName,t_text);
+					
+					m_mainMgr.SendData(sm_updateOkPrompt, false);
+					
+					ProcessWeiboRefresh();
+					
+					return true;	
+				}
 				
-				m_mainMgr.SendData(sm_updateOkPrompt, false);
-				
-				ProcessWeiboRefresh();
-				
-				return true;
+				break;
 			}
 			
 		}catch(Exception e){

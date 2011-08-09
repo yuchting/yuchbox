@@ -280,7 +280,7 @@ public class fetchMgr{
 		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 		t_os.write(msg_head.msgNote);
 		try{
-			sendReceive.WriteString(t_os,"User Password or Port Error! Check server's log please.(用户密码或端口错误，请检查服务器日志)",false);
+			sendReceive.WriteString(t_os,"User Password or Port Error! Check server's log please.(用户密码或端口错误，请检查服务器日志，或重新同步)",false);
 		}catch(Exception e){}
 		
 		fsm_userPasswordErrorData = t_os.toByteArray();

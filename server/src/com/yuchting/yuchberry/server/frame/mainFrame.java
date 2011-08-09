@@ -165,36 +165,35 @@ public class mainFrame extends JFrame implements ActionListener{
 	Vector<fetchThread>	m_checkFolderStateThread = new Vector<fetchThread>();
 		
 	static public void main(String _arg[])throws Exception{
-		new mainFrame(_arg);
 				
-//		if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("cryptTool")){
-//			if(_arg.length == 2 && _arg[1].equalsIgnoreCase("console")){
-//				new cryptPassTool_c();
-//			}else{
-//				new cryptPassTool();
-//			}
-//			
-//		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("weiboReq")){
-//			if(_arg.length >= 2){
-//				if(_arg[1].equalsIgnoreCase("sina")){
-//					(new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE)).startAuth();
-//				}else if(_arg[1].equalsIgnoreCase("tw")){
-//					(new weiboRequestTool(fetchWeibo.TWITTER_WEIBO_STYLE)).startAuth();
-//				}else if(_arg[1].equalsIgnoreCase("qq")){
-//					(new weiboRequestTool(fetchWeibo.QQ_WEIBO_STYLE)).startAuth();
-//				}
-//			}else{
-//				new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
-//			}
-//			
-//		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("frame")){
-//			new fakeMDSSvr();
-//			new mainFrame(_arg);
-//		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("clear")){
-//			new ClearAccount();			
-//		}else{
-//			new fetchMain();
-//		}
+		if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("cryptTool")){
+			if(_arg.length == 2 && _arg[1].equalsIgnoreCase("console")){
+				new cryptPassTool_c();
+			}else{
+				new cryptPassTool();
+			}
+			
+		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("weiboReq")){
+			if(_arg.length >= 2){
+				if(_arg[1].equalsIgnoreCase("sina")){
+					(new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE)).startAuth();
+				}else if(_arg[1].equalsIgnoreCase("tw")){
+					(new weiboRequestTool(fetchWeibo.TWITTER_WEIBO_STYLE)).startAuth();
+				}else if(_arg[1].equalsIgnoreCase("qq")){
+					(new weiboRequestTool(fetchWeibo.QQ_WEIBO_STYLE)).startAuth();
+				}
+			}else{
+				new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
+			}
+			
+		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("frame")){
+			new fakeMDSSvr();
+			new mainFrame(_arg);
+		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("clear")){
+			new ClearAccount();			
+		}else{
+			new fetchMain();
+		}
 	}	
 	
 	public mainFrame(String _arg[]){
@@ -836,7 +835,7 @@ public class mainFrame extends JFrame implements ActionListener{
 				
 				if(t_thread.m_clientDisconnectTime != 0 && t_thread.m_usingHours != 0){
 					
-					final long t_delTime = t_thread.m_pauseState?(12 * 3600 * 1000):(3 * 24 * 3600 * 1000);
+					final long t_delTime = t_thread.m_pauseState?(12 * 3600 * 1000):(5 * 24 * 3600 * 1000);
 					
 					if(Math.abs(t_currTime - t_thread.m_clientDisconnectTime) >= t_delTime  ){
 						t_deadPool.add(t_thread);
@@ -849,7 +848,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		// delete the disconnect time-up thread
 		//
 		for(fetchThread thread : t_deadPool){
-			m_logger.LogOut("未连接时间超过3天，删除帐户 " + thread.m_fetchMgr.GetAccountName() + " 账户暂停状态：" + thread.m_pauseState);
+			m_logger.LogOut("未连接时间超过5天，删除帐户 " + thread.m_fetchMgr.GetAccountName() + " 账户暂停状态：" + thread.m_pauseState);
 			
 			DelAccoutThread(thread.m_fetchMgr.GetAccountName(), false);			
 		}

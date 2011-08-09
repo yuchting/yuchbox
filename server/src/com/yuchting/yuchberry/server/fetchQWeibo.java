@@ -356,7 +356,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		
 		if(_qweibo.getHeadImageURL().length() != 0){
 			try{
-				_weibo.SetUserHeadImageHashCode(StoreHeadImage(new URL(_qweibo.getHeadImageURL()),_qweibo.getNickName()));
+				_weibo.SetUserHeadImageHashCode(StoreHeadImage(new URL(_qweibo.getHeadImageURL()),_qweibo.getScreenName()));
 			}catch(Exception e){
 				m_mainMgr.m_logger.LogOut(GetAccountName() + " Exception:" + e.getMessage());
 				m_mainMgr.m_logger.PrinterException(e);
