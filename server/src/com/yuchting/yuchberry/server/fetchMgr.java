@@ -417,19 +417,20 @@ public class fetchMgr{
 									m_currConnect.m_socket = null;
 								}		
 								
-								m_logger.LogOut("StartListening 0");
+								//m_logger.LogOut("StartListening 0");
+								
 								// wait	quit
 								while(!m_currConnect.m_quit){
 									Thread.sleep(50);
 								}
-								m_logger.LogOut("StartListening 1");
+								//m_logger.LogOut("StartListening 1");
 							}
 							
-							m_logger.LogOut("StartListening 2");
+							//m_logger.LogOut("StartListening 2");
 							
 							m_currConnect = new berrySvrDeamon(this,t_sock,t_sendReceive);
 							
-							m_logger.LogOut("StartListening 3");
+							//m_logger.LogOut("StartListening 3");
 							
 						}catch(Exception e){
 							t_sock.close();

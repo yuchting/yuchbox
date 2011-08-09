@@ -108,7 +108,7 @@ public class berrySvrDeamon extends Thread{
 								
 			}catch(Exception _e){
 				
-				m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 0");
+				//m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 0");
 				
 				try{
 					synchronized (this) {
@@ -122,22 +122,22 @@ public class berrySvrDeamon extends Thread{
 					m_fetchMgr.m_logger.PrinterException(_e);
 				}	
 				
-				m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 1");
+				//m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 1");
 				
 				try{
 					
 					m_sendReceive.CloseSendReceive();
 					
-					m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 2");
+					//m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 2");
 					
 					m_pushDeamon.m_closed = true;
 					m_pushDeamon.interrupt();
 								
-					m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 3");
+					//m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 3");
 					
 					m_fetchMgr.m_logger.PrinterException(_e);
 					
-					m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 4");
+					//m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 4");
 					
 				}finally{
 										
@@ -148,7 +148,7 @@ public class berrySvrDeamon extends Thread{
 					}	
 				}							
 					
-				m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 5");
+				//m_fetchMgr.m_logger.LogOut("berrySvrDeamon$run 5");
 				
 				break;
 			}
