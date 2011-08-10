@@ -752,7 +752,7 @@ public class BberPanel extends TabPanel{
 		t_search.append("配置推送账户出现错误：").append(_help).append("\n");
 
 		t_search.append("<a href=\"http://www.google.com.hk/search?hl=zh-CN&source=hp&q=").append(URL.encode(_help)).
-				append("\" target=_blank>搜索获得帮助</a>，有任何疑问请联系:<a href=\"mailto:yuchberry@gmail.com\">yuchberry@gmail.com</a>");		
+				append("\" target=_blank>搜索获得帮助</a>，请稍候重试。如有任何疑问请联系:<a href=\"mailto:yuchberry@gmail.com\">yuchberry@gmail.com</a>");		
 		
 		Yuchsign.PopupPrompt(t_search.toString(),_panel);
 	}

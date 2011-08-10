@@ -153,9 +153,9 @@ public class GenVerifyCode implements Serializable{
 		}
 		
 		Random t_rand = new Random();
-		float t_capacity = t_rand.nextFloat();
-		if(t_capacity < 0.1f){
-			t_capacity = 0.1f;
+		float t_opacity = t_rand.nextFloat();
+		if(t_opacity < 0.3f){
+			t_opacity = 0.3f;
 		}
 		
 		final int ft_offset = 12;
@@ -163,7 +163,7 @@ public class GenVerifyCode implements Serializable{
 		return ImagesServiceFactory.makeComposite(transfromImage(t_data),
 													_xOffset + t_rand.nextInt(ft_offset) - ft_offset / 2,
 													t_rand.nextInt(ft_offset) - ft_offset / 2,
-													t_capacity,
+													t_opacity,
 													Composite.Anchor.TOP_LEFT);
 	}
 	
