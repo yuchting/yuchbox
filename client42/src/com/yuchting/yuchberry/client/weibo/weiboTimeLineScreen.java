@@ -18,20 +18,118 @@ import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
-import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.Menu;
-import net.rim.device.api.ui.component.NullField;
 import net.rim.device.api.ui.component.BasicEditField;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
+import com.yuchting.yuchberry.client.ui.BubbleImage;
+import com.yuchting.yuchberry.client.ui.ImageSets;
+import com.yuchting.yuchberry.client.ui.ImageUnit;
+
+abstract class WeiboUserMenu extends MenuItem{
+	
+	String m_userName = "@";
+	int	m_strRes;
+	
+	public WeiboUserMenu(int _strRes,int _ordinal ,int _priority){
+		super("",_ordinal,_priority);
+		
+		m_strRes = _strRes;
+	}
+	
+	public void setUserName(String _userName){
+		m_userName = _userName;
+		setText(recvMain.sm_local.getString(m_strRes) + " " + m_userName);
+	}
+}
 
 public class weiboTimeLineScreen extends MainScreen{
 	
-	static recvMain				sm_mainApp = (recvMain)UiApplication.getUiApplication();
+	public WeiboUserMenu m_userGetInfoMenu = new WeiboUserMenu(localResource.WEIBO_CHECK_USER_MENU_LABEL,5,5){
+		public void run(){
+			checkUserInfo(m_userName);
+		}
+	};
+	
+	public WeiboUserMenu m_userFollowMenu = new WeiboUserMenu(localResource.WEIBO_FOLLOW_USER_MENU_LABEL,5,6){
+		public void run(){
+			followUser(m_userName);
+		}
+	};
+	
+	public WeiboUserMenu m_userAtUserMenu = new WeiboUserMenu(localResource.WEIBO_AT_USER_MENU_LABEL,5,7){
+		public void run(){
+			m_updateItem.run();
+			m_currUpdateDlg.m_updateManager.m_editTextArea.setText("@" + this.m_userName + " ");
+		}
+	};
+	
+	public WeiboUserMenu m_userSendMessageMenu = new WeiboUserMenu(localResource.WEIBO_SEND_MESSAGE_USER_MENU_LABEL,5,8){
+		public void run(){
+			
+		}
+	};
+	public static recvMain				sm_mainApp = (recvMain)UiApplication.getUiApplication();
+	
+	public static ImageSets			sm_weiboUIImage = null;
+	public static BubbleImage 			sm_bubbleImage = null;
+	public static BubbleImage 			sm_bubbleImage_black = null;
+	static {
+
+		try{
+			sm_weiboUIImage = new ImageSets("/weibo_full_image.imageset");
+		}catch(Exception e){
+			sm_mainApp.DialogAlertAndExit("weibo UI load Error:"+ e.getMessage() + e.getClass().getName());
+		}
+		
+		if(sm_bubbleImage == null){
+			sm_bubbleImage = new BubbleImage(
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_top_left"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_top"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_top_right"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_right"),
+					
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_bottom_right"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_bottom"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_bottom_left"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_left"),
+					
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_inner_block"),
+					new ImageUnit[]{
+						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_left_point"),
+						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_top_point"),
+						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_right_point"),
+						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_bottom_point"),
+					},
+					weiboTimeLineScreen.sm_weiboUIImage);
+			
+			sm_bubbleImage_black = new BubbleImage(
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_top_left"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_top"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_top_right"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_right"),
+					
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_bottom_right"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_bottom"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_bottom_left"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_left"),
+					
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_inner_block"),
+					new ImageUnit[]{
+						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_left_point"),
+						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_top_point"),
+						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_right_point"),
+						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_bottom_point"),
+					},
+					weiboTimeLineScreen.sm_weiboUIImage);
+		}
+	}
+	
+	private WeiboUserFindFactory	m_userfactory = new WeiboUserFindFactory(this);
 	
 	WeiboMainManager			m_mainMgr;
 	WeiboMainManager			m_mainAtMeMgr;
@@ -39,8 +137,8 @@ public class weiboTimeLineScreen extends MainScreen{
 	WeiboDMManager				m_mainDMMgr;
 	
 	WeiboMainManager			m_currMgr = null;
-	
-	private static Bitmap[]		sm_VIPSign = 
+		
+	private static ImageUnit[]	sm_VIPSign = 
 	{
 		null,
 		null,
@@ -53,18 +151,18 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	private static String[]		sm_VIPSignString = 
 	{
-		"/sinaVIP.png",
-		"/sinaVIP.png",
-		"/qqVIP.png",
+		"sinaVIP",
+		"sinaVIP",
+		"qqVIP",
 		
-		"/sinaVIP.png",
-		"/sinaVIP.png",
-		"/sinaVIP.png",
+		"sinaVIP",
+		"sinaVIP",
+		"sinaVIP",
 	};
 	
-	static Bitmap		sm_headImageMask = null;
+	static ImageUnit		sm_headImageMask = null;
 	
-	static Bitmap[]		sm_WeiboSign =
+	static ImageUnit[]		sm_WeiboSign =
 	{ 
 		null,
 		null,
@@ -77,23 +175,23 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	static String[]		sm_weiboSignFilename = 
 	{
-		"/sinaWeibo.png",
-		"/tWeibo.png",
-		"/qqWeibo.png",
+		"sinaWeibo",
+		"tWeibo",
+		"qqWeibo",
 		
-		"/163Weibo.png",
-		"/sohuWeibo.png",
-		"/fanWeibo.png",
+		"163Weibo",
+		"sohuWeibo",
+		"fanWeibo",
 	};
 	
-	static Bitmap		sm_isBBerSign = null;	
+	static ImageUnit		sm_isBBerSign = null;
+	
 	
 	private Vector		m_headImageList = new Vector();
 	
 	static Bitmap		sm_defaultHeadImage = null;
 		
 	WeiboHeader 		m_weiboHeader		= new WeiboHeader(this);
-	NullField			m_nullWeiboHeader	= new NullField();
 	boolean			m_weiboHeaderShow	= true;
 	
 	boolean			m_onlineState = false;
@@ -116,6 +214,9 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	public weiboTimeLineScreen(recvMain _mainApp){
 		super(Manager.VERTICAL_SCROLL);
+		
+		
+		
 		sm_mainApp 	= _mainApp;
 		m_mainApp	= _mainApp;
 		
@@ -136,8 +237,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		setTitle(m_weiboHeader);
 		
-		m_currMgr.setFocus();
-		
+		m_currMgr.setFocus();	
 	}
 	
 	public void enableHeader(boolean _enable){
@@ -150,7 +250,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			}else{
 				if(m_weiboHeaderShow){
 					m_weiboHeaderShow = false;
-					setTitle(m_nullWeiboHeader);
+					setTitle((Field)null);
 				}
 			}
 		}else{
@@ -176,9 +276,6 @@ public class weiboTimeLineScreen extends MainScreen{
 	private final static int fsm_promptBubbleArc = 8;
 	private final static int	fsm_promptBubbleWidth = recvMain.fsm_display_width - (fsm_promptBubble_x) * 2;
 	
-	private final static int fsm_promptTextPos_x = fsm_promptBubble_x + fsm_promptBubbleBorder;
-	private final static int fsm_promptTextPos_y = fsm_promptBubble_y + fsm_promptBubbleBorder;
-	
 	private final static int	fsm_promptTextWidth = fsm_promptBubbleWidth - fsm_promptBubbleBorder * 2;
 	
 	
@@ -188,13 +285,20 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	final class PromptBasicEditField extends BasicEditField {
 		
-		public PromptBasicEditField(){
+		int m_width;
+		
+		public PromptBasicEditField(boolean _small){
 			super(Field.READONLY);
-			
+			if(_small){
+				setFont(getFont().derive(getFont().getStyle(),getFont().getHeight() - 4));
+				m_width = getFont().getAdvance("000/000 ");
+			}else{
+				m_width = fsm_promptTextWidth;
+			}
 		}
 		public void setText(String _text){
 			super.setText(_text);
-			layout(fsm_promptTextWidth,1000);
+			layout(m_width,1000);
 		}
 		
 		public void paint(Graphics _g){
@@ -203,8 +307,9 @@ public class weiboTimeLineScreen extends MainScreen{
 
 	}
 	
-	public PromptBasicEditField 	m_promptTextArea	= new PromptBasicEditField();
-	
+	public PromptBasicEditField 	m_promptTextArea	= new PromptBasicEditField(false);
+	public PromptBasicEditField m_inputTextNum		= new PromptBasicEditField(true);
+
 	public synchronized void popupPromptText(String _prompt){
 		
 		if(!m_promptTextArea.getText().equals(_prompt)){
@@ -237,39 +342,58 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 	}
 
+	public void setInputPromptText(String _prompt){
+		m_inputTextNum.setText(_prompt);
+		
+		if(m_weiboHeaderShow){
+			m_weiboHeader.invalidate();
+		}
+		
+	}
+	
 	protected void paint(Graphics g){
 		super.paint(g);
 
 		if(m_promptTextArea.getText().length() != 0){
-			int t_height = m_promptTextArea.getHeight();
 			
-			int t_color = g.getColor();
-			try{
-				g.setColor(WeiboItemField.fsm_promptTextBGColor);
-	        	g.fillRoundRect(fsm_promptBubble_x, fsm_promptBubble_y, 
-	        			fsm_promptBubbleWidth, t_height + fsm_promptBubbleBorder * 2, 
-	        			fsm_promptBubbleArc, fsm_promptBubbleArc);
-	        	
-	        	g.setColor(WeiboItemField.fsm_promptTextBorderColor);
-	        	g.drawRoundRect(fsm_promptBubble_x, fsm_promptBubble_y, 
-	        			fsm_promptBubbleWidth, t_height + fsm_promptBubbleBorder * 2, 
-	        			fsm_promptBubbleArc, fsm_promptBubbleArc);
-				
-			}finally{
-				g.setColor(t_color);
-			}
-			
-	        boolean notEmpty = g.pushContext( fsm_promptTextPos_x, fsm_promptTextPos_y, 
-	        		fsm_promptTextWidth , t_height, fsm_promptTextPos_x, fsm_promptTextPos_y );
-	        try {
-	            if( notEmpty ) {
-	            	m_promptTextArea.paint(g);
-	            }
-	        } finally {
-	            g.popContext();
-	            g.setColor(t_color);
-	        }
+			paintPromptText(g,fsm_promptBubble_x,fsm_promptBubble_y,
+					fsm_promptBubbleWidth,m_promptTextArea.getHeight() + fsm_promptBubbleBorder * 2,m_promptTextArea);
 		}
+		
+		
+		if(m_inputTextNum.getText().length() != 0){
+			
+			paintPromptText(g,recvMain.fsm_display_width - m_inputTextNum.getWidth() / 2 - fsm_promptBubbleBorder * 2 - 30,
+					0,
+					m_inputTextNum.getWidth() + fsm_promptBubbleBorder * 2 ,
+					m_inputTextNum.getHeight() + fsm_promptBubbleBorder * 2,m_inputTextNum);
+		}
+	}
+	
+	public static void paintPromptText(Graphics g,int _x,int _y,int _width,int _height,PromptBasicEditField _text){
+		
+		int t_color = g.getColor();
+		try{
+			g.setColor(WeiboItemField.fsm_promptTextBGColor);
+        	g.fillRoundRect(_x, _y, _width, _height, fsm_promptBubbleArc, fsm_promptBubbleArc);
+        	
+        	g.setColor(WeiboItemField.fsm_promptTextBorderColor);
+        	g.drawRoundRect(_x, _y, _width, _height, fsm_promptBubbleArc, fsm_promptBubbleArc);
+			
+		}finally{
+			g.setColor(t_color);
+		}
+		
+		boolean notEmpty = g.pushContext( _x + fsm_promptBubbleBorder , _y + fsm_promptBubbleBorder ,
+										_width , _height, _x + fsm_promptBubbleBorder, _y + fsm_promptBubbleBorder);
+        try {
+            if( notEmpty ) {
+            	_text.paint(g);
+            }
+        } finally {
+            g.popContext();
+            g.setColor(t_color);
+        }
 	}
 	
 	public void ClearWeibo(){
@@ -294,6 +418,9 @@ public class weiboTimeLineScreen extends MainScreen{
 	private void AddWeibo_imple(fetchWeibo _weibo,boolean _initAdd){
 		
 		try{
+			
+			_initAdd = _initAdd || _weibo.IsOwnWeibo(); // don't prompt by own weibo...
+			
 			WeiboHeadImage t_headImage = SearchHeadImage(_weibo);
 			
 			switch(_weibo.GetWeiboClass()){
@@ -312,7 +439,14 @@ public class weiboTimeLineScreen extends MainScreen{
 			}
 			
 			if(!_initAdd){
-				m_weiboHeader.invalidate();
+				
+				m_weiboHeader.invalidate();				
+				
+				if(_weibo.GetWeiboClass() == fetchWeibo.TIMELINE_CLASS){
+					m_mainApp.TriggerWeiboHomeNotification();					
+				}else{
+					m_mainApp.TriggerWeiboNotification();
+				}
 			}
 			
 		}catch(Exception e){
@@ -329,7 +463,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 	}
 	
-	public boolean AddWeibo(fetchWeibo _weibo,boolean _initAdd){
+	public void AddWeibo(fetchWeibo _weibo,boolean _initAdd){
 		
 		synchronized (m_delayWeiboAddList) {
 			
@@ -363,14 +497,9 @@ public class weiboTimeLineScreen extends MainScreen{
 						}
 					}
 					
-				},500, true);
+				},WeiboItemField.fsm_largeHeadImage?800:1000, true);
 			}
 		}
-		
-		
-		return _weibo.GetWeiboClass() == fetchWeibo.COMMENT_ME_CLASS
-				|| _weibo.GetWeiboClass() == fetchWeibo.AT_ME_CLASS
-				|| _weibo.GetWeiboClass() == fetchWeibo.DIRECT_MESSAGE_CLASS;		
 	}
 	
 	public void DelWeibo(fetchWeibo _weibo){
@@ -512,7 +641,7 @@ public class weiboTimeLineScreen extends MainScreen{
 				if(_weibo.GetWeiboStyle() == t_image.m_weiboStyle 
 					&& t_image.m_userID.equals(_weibo.GetHeadImageId()) ){
 					
-					if(t_image.m_dataHash != _weibo.GetUserHeadImageHashCode()){
+					if(t_image.m_dataHash != _weibo.GetUserHeadImageHashCode() || t_image.m_headImage == sm_defaultHeadImage){
 						SendHeadImageQueryMsg(_weibo);
 					}
 					
@@ -559,10 +688,18 @@ public class weiboTimeLineScreen extends MainScreen{
 		try{
 
 			String t_imageFilename = null;
-			if(WeiboItemField.fsm_largeHeadImage){
-				t_imageFilename = m_mainApp.GetWeiboHeadImageDir(_weibo.GetWeiboStyle()) + _weibo.GetUserId() + "_l.png";
+			String t_id = null;
+			
+			if(_weibo.GetWeiboStyle() == fetchWeibo.QQ_WEIBO_STYLE){
+				t_id = _weibo.GetUserScreenName();
 			}else{
-				t_imageFilename = m_mainApp.GetWeiboHeadImageDir(_weibo.GetWeiboStyle()) + _weibo.GetUserId() + ".png";
+				t_id = Long.toString(_weibo.GetUserId());
+			}
+			
+			if(WeiboItemField.fsm_largeHeadImage){
+				t_imageFilename = m_mainApp.GetWeiboHeadImageDir(_weibo.GetWeiboStyle()) + t_id + "_l.png";
+			}else{
+				t_imageFilename = m_mainApp.GetWeiboHeadImageDir(_weibo.GetWeiboStyle()) + t_id + ".png";
 			}
 			
 			FileConnection t_fc = (FileConnection)Connector.open(t_imageFilename,Connector.READ_WRITE);
@@ -638,11 +775,50 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 			UpdateNewWeibo(m_mainMgr.m_updateWeiboField.m_sendUpdateText);			
 			
+		}else if(m_currMgr == m_mainDMMgr && m_currMgr.getCurrExtendedItem() != null){
+			
+			// send direct message
+			//
+			String t_text = m_currMgr.m_editTextArea.getText();
+			WeiboDMItemField t_field = (WeiboDMItemField)m_currMgr.getCurrExtendedItem();
+					
+			try{
+				
+				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+				
+				fetchWeibo t_weibo = t_field.getReplyWeibo();
+				if(t_weibo != null){
+
+					t_os.write(msg_head.msgWeibo);
+					t_os.write(t_weibo.GetWeiboStyle());
+					t_os.write(fetchWeibo.SEND_DIRECT_MSG_TYPE);
+					sendReceive.WriteString(t_os,t_text);
+					sendReceive.WriteString(t_os,t_weibo.GetUserScreenName());					
+				}
+				
+				m_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeibo,t_os.toByteArray(),true);
+				m_mainApp.m_sentWeiboNum++;
+				
+			}catch(Exception e){
+				m_mainApp.SetErrorString("SMIC0:" + e.getMessage() + e.getClass().getName());
+			}
+			
+			m_currMgr.EscapeKey();
+			
 		}else{
 			
+			// send forward/reply message
+			//
 			try{
 				
 				String t_text = m_currMgr.m_editTextArea.getText();
+				if(t_text.length() > WeiboItemField.fsm_maxWeiboTextLength){
+					if(Dialog.ask(Dialog.D_YES_NO,recvMain.sm_local.getString(localResource.WEIBO_SEND_TEXT_CUTTED_PROMPT),Dialog.NO) != Dialog.YES){
+						return;
+					}
+					
+					t_text = t_text.substring(0,WeiboItemField.fsm_maxWeiboTextLength);
+				}
 				
 				m_currMgr.BackupSendWeiboText(m_currMgr.m_currentSendType,m_currMgr.getCurrEditItem().m_weibo,t_text);
 				
@@ -650,7 +826,14 @@ public class weiboTimeLineScreen extends MainScreen{
 					
 					if(m_currMgr.getCurrEditItem().m_weibo.GetCommentWeibo() != null){
 						
-						long t_orgId = m_currMgr.getCurrEditItem().m_weibo.GetCommentWeiboId();
+						long t_orgId = 0;
+						
+						if(m_currMgr.getCurrEditItem().m_weibo.GetReplyWeiboId() != -1){
+							t_orgId = m_currMgr.getCurrEditItem().m_weibo.GetReplyWeiboId();
+						}else{
+							t_orgId = m_currMgr.getCurrEditItem().m_weibo.GetCommentWeiboId();
+						}
+						
 						long t_commentId = m_currMgr.getCurrEditItem().m_weibo.GetId();
 						
 						sendCommentReply(t_text,m_currMgr.getCurrEditItem().m_weibo.GetWeiboStyle(),
@@ -669,9 +852,8 @@ public class weiboTimeLineScreen extends MainScreen{
 				
 				
 			}catch(Exception e){
-				m_mainApp.SetErrorString("SMIC:" + e.getMessage() + e.getClass().getName());
+				m_mainApp.SetErrorString("SMIC1:" + e.getMessage() + e.getClass().getName());
 			}
-			
 		}
 	}
 	
@@ -735,18 +917,14 @@ public class weiboTimeLineScreen extends MainScreen{
         	m_weiboHeader.setCurrState(WeiboHeader.STATE_DIRECT_MESSAGE);
     		refreshWeiboHeader();
         }
-    };    
+    };
    
     int m_menuIndex_op = 20;
     
-    public WeiboUpdateDlg m_currUpdateDlg = null;
+    public WeiboUpdateDlg m_currUpdateDlg = new WeiboUpdateDlg(weiboTimeLineScreen.this);
     public boolean m_pushUpdateDlg = false;
     public MenuItem m_updateItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_UPDATE_DLG),m_menuIndex_op++,0){
-        public void run() {
-        	if(m_currUpdateDlg == null){
-        		m_currUpdateDlg = new WeiboUpdateDlg(weiboTimeLineScreen.this);
-        	}
-        	
+        public void run() {        	
         	m_pushUpdateDlg = true;
         	UiApplication.getUiApplication().pushScreen(m_currUpdateDlg);
         }
@@ -782,18 +960,53 @@ public class weiboTimeLineScreen extends MainScreen{
         	m_currMgr.OpenNextWeiboItem(false);
         }
     };
+    
     MenuItem m_nextWeiboItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_NEXT_WEIBO_MENU_LABEL),m_menuIndex_op++,0){
         public void run() {
         	m_currMgr.OpenNextWeiboItem(true);
         }
     };
     
+	
+    MenuItem m_forwardWeiboItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL),m_menuIndex_op++,0){
+		public void run(){
+			m_currMgr.ForwardWeibo(m_currMgr.getCurrSelectedItem());
+		}
+	};
+        
+	MenuItem m_atWeiboItem	= new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL),m_menuIndex_op++,0){
+		public void run(){
+			m_currMgr.AtWeibo(m_currMgr.getCurrSelectedItem());
+		}
+	};
+	
+	MenuItem m_favWeiboItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL),m_menuIndex_op++,0){
+    	public void run(){
+    		m_currMgr.FavoriteWeibo(m_currMgr.getCurrSelectedItem());
+    	}
+    };
+    
+	MenuItem m_picWeiboItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL),m_menuIndex_op++,0){
+		public void run(){
+			m_currMgr.OpenOriginalPic(m_currMgr.getCurrSelectedItem());
+		}
+	};   
+    
     MenuItem m_deleteItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_DELETE_MENU_LABEL),m_menuIndex_op++,0){
         public void run() {
         	deleteWeiboItem();
         }
-    }; 
+    };
     
+    public WeiboOptionScreen m_optionScreen = null;
+    MenuItem m_optionItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPTION_MENU_LABEL),98,0){
+    	public void run() {
+        	if(m_optionScreen == null){
+        		m_optionScreen = new WeiboOptionScreen(m_mainApp);
+        	}
+        	m_mainApp.pushScreen(m_optionScreen);
+        }
+    };
     MenuItem m_helpItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_HELP_MENU_LABEL),99,0){
         public void run() {
         	recvMain.openURL("http://code.google.com/p/yuchberry/wiki/YuchBerry_Weibo");
@@ -805,8 +1018,72 @@ public class weiboTimeLineScreen extends MainScreen{
         	recvMain t_recv = (recvMain)UiApplication.getUiApplication();
         	t_recv.pushStateScreen();
         }
-    };       
-    
+    };
+	
+	protected void makeMenu(Menu _menu,int instance){
+		
+		if(m_currMgr.getCurrEditItem() == null){
+			_menu.add(m_homeManagerItem);
+			_menu.add(m_atMeManagerItem);
+			_menu.add(m_commentMeItem);
+			_menu.add(m_directMsgItem);
+			
+			_menu.add(MenuItem.separator(m_menuIndex));
+		}
+		
+		if(m_currMgr.getCurrEditItem() != null && m_currMgr.getCurrExtendedItem() != null){
+			_menu.add(m_sendItem);
+		}		
+		
+		_menu.add(m_refreshItem);
+		
+		if(m_currMgr != m_mainDMMgr){
+			_menu.add(m_topItem);
+			_menu.add(m_bottomItem);
+		}	
+		
+		if(m_currMgr.getCurrExtendedItem() != null && m_currMgr != m_mainDMMgr){
+			if(m_currMgr.getCurrEditItem() == null){
+				_menu.add(m_preWeiboItem);
+				_menu.add(m_nextWeiboItem);
+			}
+		}
+		
+		if(m_currMgr.getCurrEditItem() == null && !m_pushUpdateDlg){
+			_menu.add(m_updateItem);
+		}
+		
+		if(m_currMgr.getCurrSelectedItem() != null && m_currMgr != m_mainDMMgr){
+			
+			if(m_currMgr.getCurrEditItem() == null){
+				_menu.add(m_forwardWeiboItem);
+				_menu.add(m_atWeiboItem);
+				
+				_menu.setDefault(m_forwardWeiboItem);
+			}
+			
+			_menu.add(m_favWeiboItem);
+
+			if(m_currMgr.getCurrSelectedItem().m_weiboPic != null){
+				_menu.add(m_picWeiboItem);
+			}
+		}		
+		
+		if(m_currMgr.getCurrSelectedItem() != null				// has selected
+		&& m_currMgr.getCurrSelectedItem().m_weibo != null		// is not update weibo
+		&& m_currMgr.getCurrSelectedItem().m_weibo.IsOwnWeibo()
+		&& m_currMgr != m_mainDMMgr){ // is own weibo
+			_menu.add(m_deleteItem);
+		}
+		
+		_menu.add(MenuItem.separator(50));
+		_menu.add(m_optionItem);
+		_menu.add(m_helpItem);
+		_menu.add(m_stateItem);
+		
+		super.makeMenu(_menu,instance);
+    }
+
     public void deleteWeiboItem(){
     	
     	if(m_currMgr.getCurrSelectedItem() != null 
@@ -830,54 +1107,74 @@ public class weiboTimeLineScreen extends MainScreen{
     			}
     		}
     	}
-    	
     }
     
-	protected void makeMenu(Menu _menu,int instance){
+    public void checkUserInfo(String _screenName){
+    	
+    	WeiboItemField t_field = m_currMgr.getCurrExtendedItem();
+    	
+    	if(t_field != null && _screenName.length() != 0){
+    		
+	    	try{
+				
+				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+				t_os.write(msg_head.msgWeiboUser);
+				t_os.write(t_field.m_weibo.GetWeiboStyle());
+	
+				sendReceive.WriteString(t_os,_screenName);
+				
+				weiboTimeLineScreen.sm_mainApp.m_connectDeamon.addSendingData(
+									msg_head.msgWeiboUser, t_os.toByteArray(),true);
+				
+			}catch(Exception e){
+				weiboTimeLineScreen.sm_mainApp.SetErrorString("CUI:" + e.getMessage() + e.getClass().getName());
+			}
+    	}
+    }
+    
+    public void followUser(String _screenName){
 		
-		if(m_currMgr.getCurrEditItem() == null){
-			_menu.add(m_homeManagerItem);
-			_menu.add(m_atMeManagerItem);
-			_menu.add(m_commentMeItem);
-			_menu.add(m_directMsgItem);
+    	WeiboItemField t_field = m_currMgr.getCurrExtendedItem();
+    	
+		if(t_field != null && _screenName.length() != 0){
 			
-			_menu.add(MenuItem.separator(m_menuIndex));
-		}
-		
-		if(m_currMgr.getCurrEditItem() != null && m_currMgr.getCurrExtendedItem() != null){
-			_menu.add(m_sendItem);
-		}		
-		
-		_menu.add(m_refreshItem);
-		
-		if(m_currMgr.getCurrExtendedItem() == null){
-			
-			_menu.add(m_topItem);
-			_menu.add(m_bottomItem);	
-			
-		}else{
-			if(m_currMgr.getCurrEditItem() == null){
-				_menu.add(m_preWeiboItem);
-				_menu.add(m_nextWeiboItem);
+			try{
+				
+				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+				t_os.write(msg_head.msgWeiboFollowUser);
+				t_os.write(t_field.m_weibo.GetWeiboStyle());
+
+				sendReceive.WriteString(t_os,_screenName);
+				
+				weiboTimeLineScreen.sm_mainApp.m_connectDeamon.addSendingData(
+						msg_head.msgWeiboFollowUser, t_os.toByteArray(),true);
+				
+			}catch(Exception e){
+				weiboTimeLineScreen.sm_mainApp.SetErrorString("FCU:" + e.getMessage() + e.getClass().getName());
 			}
 		}
-		
-		if(m_currMgr.getCurrEditItem() == null && !m_pushUpdateDlg){
-			_menu.add(m_updateItem);
-		}
-		
-		if(m_currMgr.getCurrSelectedItem() != null				// has selected
-		&& m_currMgr.getCurrSelectedItem().m_weibo != null		// is not update weibo
-		&& m_currMgr.getCurrSelectedItem().m_weibo.IsOwnWeibo()){ // is own weibo
-			_menu.add(m_deleteItem);
-		}
-		
-		_menu.add(MenuItem.separator(50));
-		_menu.add(m_helpItem);
-		_menu.add(m_stateItem);		
-		
-		super.makeMenu(_menu,instance);
-    }
+	}
+
+    private WeiboUserInfoScreen m_userInfoScreen = null;
+    public void displayWeiboUser(final fetchWeiboUser _user){
+    	
+    	if(m_userInfoScreen == null){
+    		m_userInfoScreen = new WeiboUserInfoScreen(m_mainApp);
+    	}
+    	
+    	m_mainApp.invokeLater(new Runnable() {
+			public void run() {
+				
+		    	m_userInfoScreen.setWeiboUser(_user);
+		    	
+		    	if(m_mainApp.getActiveScreen() != m_userInfoScreen){
+	    			
+					m_mainApp.pushScreen(m_userInfoScreen);
+					m_userInfoScreen.updateDisplay();
+				}   		
+	    	}				
+    	}); 
+    }	
 	
 	private void SendRefreshMsg(){
 		try{
@@ -887,7 +1184,6 @@ public class weiboTimeLineScreen extends MainScreen{
 		}catch(Exception e){
 			m_mainApp.SetErrorString("SRM:"+e.getMessage() + e.getClass().getName());
 		}
-		
 	}
 	
 	boolean m_shiftKeyIsDown = false;
@@ -917,34 +1213,37 @@ public class weiboTimeLineScreen extends MainScreen{
 	    	case 'R':
 	    		m_refreshItem.run();
 	    		return true;
+	    	case 'T':		    		
+    			m_topItem.run();
+    			return true;
+	    	case 'B':
+    			m_bottomItem.run();	
+    			return true;
+    			
+	    	case 'F':
+	    		m_forwardWeiboItem.run();
+	    		return true;
+	    	case 'V':
+	    		m_favWeiboItem.run();
+	    		return true;
+	    	case 'E':
+	    		m_atWeiboItem.run();
+	    		return true;
+	    	case 'G':
+	    		m_picWeiboItem.run();
+	    		return true;
+	    	case 'D':
+	    		m_deleteItem.run();
+	    		return true;
 			}
 			
 			if(m_currMgr.getCurrExtendedItem() != null && m_currMgr != m_mainDMMgr){
 				switch(key){
-		    	case ' ':
-		    		//boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
-		    		m_currMgr.OpenNextWeiboItem(true);
+				case '0':
+		    		m_currMgr.OpenNextWeiboItem(!m_mainApp.m_spaceDownWeiboShortcutKey);
 		    		return true;
-		    	case 'F':
-		    		m_currMgr.ForwardWeibo(m_currMgr.getCurrExtendedItem());
-		    		return true;
-		    	case 'V':
-		    		m_currMgr.FavoriteWeibo(m_currMgr.getCurrExtendedItem());
-		    		return true;
-		    	case 'E':
-		    		m_currMgr.AtWeibo(m_currMgr.getCurrExtendedItem());
-		    		return true;
-		    	case 'G':
-		    		m_currMgr.OpenOriginalPic(m_currMgr.getCurrExtendedItem());
-		    		return true;
-		    	case 'D':
-		    		deleteWeiboItem();
-		    		return true;
-		    	case '0':
-		    		m_currMgr.OpenNextWeiboItem(false);
-		    		return true;
-		    	case 'L':
-		    		m_currMgr.FollowCommentUser(m_currMgr.getCurrExtendedItem());
+				case ' ':
+		    		m_currMgr.OpenNextWeiboItem(m_mainApp.m_spaceDownWeiboShortcutKey);
 		    		return true;
 				}
 			}else{
@@ -954,20 +1253,14 @@ public class weiboTimeLineScreen extends MainScreen{
 			    	case 'S':
 			    		m_stateItem.run();
 			    		return true;
-			    	case 'T':		    		
-		    			m_currMgr.ScrollToTop();
-		    			return true;
-			    	case 'B':
-		    			m_currMgr.ScrollToBottom();	
-		    			return true;
 			    	case 'R':
 			    		SendRefreshMsg();
 			    		return true;
 			    	case 10: // enter key
 			    	case ' ':
 			    	case '0':
-			    		m_currMgr.Clicked(0, 0);   		
-			    		return true;   		
+			    		m_currMgr.Clicked(0, 0);
+			    		return true;   	
 			    	
 			    	}
 				}
@@ -1066,13 +1359,14 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 		
 		m_currMgr.restoreFocusField();
-		
+				
 		if(m_currMgr.getFieldCount() <= WeiboMainManager.fsm_maxItemInOneScreen){
 			enableHeader(true);
 		}
 		
 		m_weiboHeader.invalidate();
 		m_mainApp.StopWeiboNotification();
+		m_mainApp.StopWeiboHomeNotification();
 		
 	}
 	
@@ -1080,63 +1374,65 @@ public class weiboTimeLineScreen extends MainScreen{
 		return m_currMgr.Clicked(status,time);		
 	}
 	
-	static public Bitmap GetWeiboSign(fetchWeibo _weibo){
-		
-		try{
-			if(sm_WeiboSign[_weibo.GetWeiboStyle()] == null){
-				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream(sm_weiboSignFilename[_weibo.GetWeiboStyle()]));		
-				sm_WeiboSign[_weibo.GetWeiboStyle()] =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();					
-			}
-			return sm_WeiboSign[_weibo.GetWeiboStyle()];
-			
-		}catch(Exception e){
-			sm_mainApp.SetErrorString("GWS:" + e.getMessage() + e.getClass().getName());
-		}		
-		
-		return null;
-	}
-	
-	static public Bitmap GetVIPSignBitmap(fetchWeibo _weibo){
-		
-		if(sm_VIPSign[_weibo.GetWeiboStyle()] == null){
-			try{
-				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream(sm_VIPSignString[_weibo.GetWeiboStyle()]));		
-				sm_VIPSign[_weibo.GetWeiboStyle()] =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();	
-			}catch(Exception e){
-				sm_mainApp.SetErrorString("GSVSB:" + e.getMessage() + e.getClass().getName());
-			}
-					
+	static public ImageUnit GetWeiboSign(int _weiboStyle){
+		if(sm_WeiboSign[_weiboStyle] == null){
+			sm_WeiboSign[_weiboStyle] = sm_weiboUIImage.getImageUnit(sm_weiboSignFilename[_weiboStyle]);
 		}
 		
-		return sm_VIPSign[_weibo.GetWeiboStyle()];
+		return sm_WeiboSign[_weiboStyle];
 	}
 	
-	static public Bitmap GetHeadImageMaskBitmap(){
+	static public ImageUnit GetVIPSignBitmap(int _weiboStyle){
+		
+		if(sm_VIPSign[_weiboStyle] == null){
+			sm_VIPSign[_weiboStyle] = sm_weiboUIImage.getImageUnit(sm_VIPSignString[_weiboStyle]);
+		}
+	
+		return sm_VIPSign[_weiboStyle];		
+	}
+	
+	static public ImageUnit GetHeadImageMaskBitmap(){
 		if(sm_headImageMask == null){
-			try{
-				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass()
-							.getResourceAsStream(WeiboItemField.fsm_largeHeadImage?"/headImageMask_l.png":"/headImageMask.png"));		
-				sm_headImageMask =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();	
-			}catch(Exception e){
-				sm_mainApp.SetErrorString("GHIMB" + e.getMessage() + e.getClass().getName());
-			}
-					
+			sm_headImageMask = sm_weiboUIImage.getImageUnit(WeiboItemField.fsm_largeHeadImage?"headImageMask_l":"headImageMask");				
 		}
 		
 		return sm_headImageMask;
 	}
 	
-	static public Bitmap GetBBerSignBitmap(){
+	static public ImageUnit GetBBerSignBitmap(){
 		if(sm_isBBerSign == null){
-			try{
-				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass().getResourceAsStream("/BBSign.png"));		
-				sm_isBBerSign =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();	
-			}catch(Exception e){
-				sm_mainApp.SetErrorString("GBSB:" + e.getMessage() + e.getClass().getName());
-			}
+			sm_isBBerSign = sm_weiboUIImage.getImageUnit("BBSign");		
 		}
 		
 		return sm_isBBerSign;
 	}
+	
+	private static ImageUnit sm_weiboSelectedImage = null;
+	private static ImageUnit sm_weiboPicSignImage = null;
+	private static ImageUnit sm_weiboCommentSignImage = null;
+	
+	static public ImageUnit getWeiboSelectedImage(){
+		if(sm_weiboSelectedImage == null){
+			sm_weiboSelectedImage = sm_weiboUIImage.getImageUnit("weibo_sel");
+		}
+		return sm_weiboSelectedImage;
+	}
+	static public ImageUnit getWeiboPicSignImage(){
+		if(sm_weiboPicSignImage == null){
+			sm_weiboPicSignImage = sm_weiboUIImage.getImageUnit("picSign");
+		}
+		
+		return sm_weiboPicSignImage;
+	}
+	static public ImageUnit getWeiboCommentSignImage(){
+		if(sm_weiboCommentSignImage == null){
+			sm_weiboCommentSignImage = sm_weiboUIImage.getImageUnit("commentSign");
+		}
+		
+		return sm_weiboCommentSignImage;
+	}
+	
+	// 
+	//
 
 }

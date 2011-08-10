@@ -29,6 +29,7 @@ import net.rim.device.api.notification.NotificationsManager;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.CodeModuleManager;
+import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
@@ -36,6 +37,7 @@ import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
 
+import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.weibo.WeiboItemField;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 import com.yuchting.yuchberry.client.weibo.weiboTimeLineScreen;
@@ -44,7 +46,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public final static int 		fsm_display_width		= Display.getWidth();
 	public final static int 		fsm_display_height		= Display.getHeight();
-	public final static String	fsm_OS_version			= CodeModuleManager.getModuleVersion((CodeModuleManager.getModuleHandleForObject("")));;
+	public final static String	fsm_OS_version			= CodeModuleManager.getModuleVersion((CodeModuleManager.getModuleHandleForObject("")));
+	public final static long		fsm_PIN					= DeviceInfo.getDeviceId();
+	public final static String	fsm_IMEI				= "bb";
+	
 	
 	public static ResourceBundle sm_local = ResourceBundle.getBundle(localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
 	
@@ -64,6 +69,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	    }
 	};
 	
+	
 	final static long		fsm_notifyID_disconnect = 767918509114949L;
 	
 	final static Object 	fsm_notifyEvent_disconnect = new Object() {
@@ -71,6 +77,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	       return recvMain.sm_local.getString(localResource.NOTIFY_DISCONNECT_LABEL);
 	    }
 	};
+	
+	final static long		fsm_notifyID_weibo_home = 767918509114950L;
+	
+	final static Object 	fsm_notifyEvent_weibo_home = new Object() {
+	    public String toString() {
+	       return recvMain.sm_local.getString(localResource.NOTIFY_WEIBO_LABEL_HOME);
+	    }
+	};
+	
 	
 	public connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
@@ -86,7 +101,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	UiApplication		m_messageApplication = null;
 	
-	String				m_stateString		= recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL);
+	public final static	int				DISCONNECT_STATE = 0;
+	public final static	int				CONNECTING_STATE = 1;
+	public final static	int				CONNECTED_STATE = 2;
+	
+	
+	int					m_connectState		= 0; 
 	String				m_aboutString		= recvMain.sm_local.getString(localResource.ABOUT_DESC);
 	
 	final class ErrorInfo{
@@ -200,29 +220,13 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	GPSInfo			m_gpsInfo = new GPSInfo();
 	//@}
 	
+	public ImageSets	m_allImageSets 		= null;
+	
 	FileConnection m_logfc				= null;
 	OutputStream	m_logfcOutput		= null;
-	
-	
-	// weibo module
-	public boolean			m_enableWeiboModule			= false;
-	public boolean			m_updateOwnListWhenFw		= true;
-	public boolean			m_updateOwnListWhenRe		= false;
-	public boolean			m_dontDownloadWeiboHeadImage= false;
-		
-	public String[]				m_weiboHeadImageDir_sub = 
-	{
-		"Sina/",
-		"TW/",
-		"QQ/",
-		
-		"163/",
-		"SOHU/",
-		"FAN/",
-	};
-		
+			
 	public static void main(String[] args) {
-		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());		
+		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());
 		t_theApp.enterEventDispatcher();
 	}
 	
@@ -242,8 +246,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return fsm_maxWeiboNum[0];
 	}
 	
-	public recvMain(boolean _systemRun) {	
-	
+	public recvMain(boolean _systemRun){
+		
+		try{
+			m_allImageSets = new ImageSets("/state_images.imageset");
+    	}catch(Exception e){
+    		DialogAlertAndExit("load state_images error:"+e.getMessage()+e.getClass().getName());
+    		return ;
+    	}
+    	
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/",Connector.READ_WRITE);
 			try{
@@ -269,7 +280,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		try{
 			m_locationProvider = LocationProvider.getInstance(t_criteria);
 			if(m_locationProvider == null){
-				SetErrorString("your device can't support location");
+				SetErrorString("your device can't support GPS location.");
 			}
 		}catch(Exception e){
 			SetErrorString("location:"+e.getMessage()+" " + e.getClass().getName());
@@ -285,7 +296,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	//
         	NotificationsManager.registerSource(fsm_notifyID_email, fsm_notifyEvent_email,NotificationsConstants.CASUAL);
         	NotificationsManager.registerSource(fsm_notifyID_weibo, fsm_notifyEvent_weibo,NotificationsConstants.CASUAL);
+        	NotificationsManager.registerSource(fsm_notifyID_weibo_home, fsm_notifyEvent_weibo_home,NotificationsConstants.CASUAL);
         	NotificationsManager.registerSource(fsm_notifyID_disconnect, fsm_notifyEvent_disconnect,NotificationsConstants.CASUAL);
+        	
         	
         	if(!m_autoRun || m_hostname.length() == 0 || m_port == 0 || m_userPassword.length() == 0){
         		System.exit(0);
@@ -498,7 +511,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 //			SetErrorString("Using wifi to connect");
 //			return true;
 //		}
-		
+//		
 //		return false;
 	}
 	
@@ -724,7 +737,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 24;
+	final static int		fsm_clientVersion = 27;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -842,7 +855,6 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    		
 				    		if(t_currVer >= 19){
 				    			m_publicForward		= sendReceive.ReadBoolean(t_readFile);
-				    			
 				    		}
 				    		
 				    		if(t_currVer >= 20){
@@ -867,6 +879,20 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    		if(t_currVer >= 24){
 				    			m_connectDisconnectPrompt = sendReceive.ReadBoolean(t_readFile);
 				    		}
+				    		
+				    		if(t_currVer >= 25){
+				    			WeiboItemField.sm_showAllInList = sendReceive.ReadBoolean(t_readFile);
+				    		}
+				    		
+				    		if(t_currVer >= 26){
+				    			m_hasPromptToCheckImg	= sendReceive.ReadBoolean(t_readFile);
+				    			m_checkImgIndex			= t_readFile.read();
+				    		}
+				    		
+				    		if(t_currVer >= 27){
+				    			m_spaceDownWeiboShortcutKey = sendReceive.ReadBoolean(t_readFile);
+				    		}
+				    		
 				    		
 			    		}finally{
 			    			t_readFile.close();
@@ -943,6 +969,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						sendReceive.WriteBoolean(t_writeFile,m_hideHeader);
 						
 						sendReceive.WriteBoolean(t_writeFile,m_connectDisconnectPrompt);
+						sendReceive.WriteBoolean(t_writeFile,WeiboItemField.sm_showAllInList);
+						
+						sendReceive.WriteBoolean(t_writeFile, m_hasPromptToCheckImg);
+						t_writeFile.write(m_checkImgIndex);
+						sendReceive.WriteBoolean(t_writeFile,m_spaceDownWeiboShortcutKey);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1086,9 +1117,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}
 		
 		// store the weibo item list
-		ReadWriteWeiboFile(false);
+		if(ReadWriteWeiboFile(false)){
+			System.exit(0);
+		}		
 		
-		System.exit(0);
 	}
 	
 	public void activate(){
@@ -1134,7 +1166,13 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					m_weiboTimeLineScreen.m_currUpdateDlg.close();
 				}
 				
-				if(getScreenCount() == 1){
+				if(m_weiboTimeLineScreen.m_optionScreen != null 
+				&& getActiveScreen() == m_weiboTimeLineScreen.m_optionScreen){
+					
+					m_weiboTimeLineScreen.m_optionScreen.close();
+					
+				}else if(getActiveScreen() == m_weiboTimeLineScreen){
+					
 					popScreen(m_weiboTimeLineScreen);
 				}
 			}
@@ -1179,6 +1217,16 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public void StopWeiboNotification(){
 		NotificationsManager.cancelImmediateEvent(fsm_notifyID_weibo, 0, this, null);
+	}
+	
+	public void TriggerWeiboHomeNotification(){
+		if(IsPromptTime()){
+			NotificationsManager.triggerImmediateEvent(fsm_notifyID_weibo_home, 0, this, null);
+		}		
+	}
+	
+	public void StopWeiboHomeNotification(){
+		NotificationsManager.cancelImmediateEvent(fsm_notifyID_weibo_home, 0, this, null);
 	}
 	
 	public void TriggerDisconnectNotification(){
@@ -1371,17 +1419,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}		
 	}
 		
-	public void SetStateString(String _state){
-			
-		m_stateString = _state;
-		
-		invokeLater(new Runnable() {
-			public void run(){
-				if(m_stateScreen != null){
-					m_stateScreen.m_stateText.setText(GetStateString());
-				}
-			}
-		});
+	public void SetConnectState(int _state){
+		m_connectState = _state;
+
+		if(m_stateScreen != null){
+			m_stateScreen.m_connectBut.setConnectState(m_connectState,this);
+		}		
 	}
 	
 	public void DialogAlert(final String _msg){
@@ -1449,8 +1492,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return m_uploadingDesc;
 	}
 
-	public final String GetStateString(){
-		return recvMain.sm_local.getString(localResource.STATE_PROMPT) + m_stateString;
+	public final int GetConnectState(){
+		return m_connectState;
 	}
 	
 	public void LogOut(String _log){
@@ -1590,6 +1633,26 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///// weibo module
 	///////////////////////////////////////////////////////////////////////////////////////////
+	// weibo module
+	public boolean			m_enableWeiboModule			= false;
+	public boolean			m_updateOwnListWhenFw		= true;
+	public boolean			m_updateOwnListWhenRe		= false;
+	public boolean			m_dontDownloadWeiboHeadImage= false;
+	public boolean			m_spaceDownWeiboShortcutKey	= true;
+		
+	public String[]				m_weiboHeadImageDir_sub = 
+	{
+		"Sina/",
+		"TW/",
+		"QQ/",
+		
+		"163/",
+		"SOHU/",
+		"FAN/",
+	};
+	
+	public static ImageSets	sm_weiboUIImage = null;
+	
 	public weiboTimeLineScreen	m_weiboTimeLineScreen = null;
 	public boolean				m_publicForward		= false;
 	private Vector				m_receivedWeiboList	= new Vector();
@@ -1599,14 +1662,17 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	private int				m_receivedCommentWeiboNum = 0;
 	private int				m_receivedDirectMsgWeiboNum = 0;
 	
-	static final String[]	fsm_maxWeiboNumList = {"64","128","256","512","1024"};
-	static final int[]	fsm_maxWeiboNum		= {64,128,256,512,1024};
-	int						m_maxWeiboNumIndex = 0;
+	public static final String[]	fsm_maxWeiboNumList = {"64","128","256","512","1024"};
+	public static final int[]	fsm_maxWeiboNum		= {64,128,256,512,1024};
+	public int					m_maxWeiboNumIndex = 0;
 	
 	public int					m_receivedWeiboNum = 0;
 	public int					m_sentWeiboNum = 0;
 	public boolean				m_hideHeader = false;
 	public boolean				m_hasNewWeibo = false;
+	
+	public boolean				m_hasPromptToCheckImg = true;
+	public int					m_checkImgIndex = 1;
 	
 	boolean m_receiveWeiboListChanged = false;
 	
@@ -1616,7 +1682,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		if(m_enableWeiboModule){
 			
+			
+			
 			if(m_weiboTimeLineScreen == null){
+								
 				m_weiboTimeLineScreen = new weiboTimeLineScreen(this);
 				
 				m_updateWeiboItem = new ApplicationMenuItem(30) {
@@ -1761,13 +1830,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			}
 			
 			m_receivedWeiboList.addElement(_weibo);
-			
 		}		
 		
-		if(m_weiboTimeLineScreen.AddWeibo(_weibo,false)){
-			TriggerWeiboNotification();
-		}
-		
+		m_weiboTimeLineScreen.AddWeibo(_weibo,false);
 	}
 	
 	public void ChangeWeiboHeadImageHash(String _userId,int _weiboStyle,int _headImageHash){
@@ -1789,13 +1854,38 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	static final String fsm_weiboDataName = "weibo.data";
 	static final String fsm_weiboDataBackName = "~weibo.data";
 	
-	private synchronized void ReadWriteWeiboFile(boolean _read){
+	private synchronized boolean ReadWriteWeiboFile(final boolean _read){
 		
 		if(!m_receiveWeiboListChanged && !_read){
-			return ;
+			return true;
 		}
 		
-		m_receiveWeiboListChanged = false;
+		m_receiveWeiboListChanged = false;		
+					
+		if(_read){
+			
+			ReadWriteWeiboFile_impl(_read);
+			return true;
+			
+		}else{
+			
+			Dialog t_waitDlg = new Dialog(sm_local.getString(localResource.WAITING_FOR_STORE_DATA),new Object[0],new int[0],0,null);
+			t_waitDlg.show();
+			
+			invokeLater(new Runnable() {
+				
+				public void run() {
+					ReadWriteWeiboFile_impl(_read);
+					
+					System.exit(0);
+				}
+			},100,false);
+			
+			return false;
+		}
+	}
+	
+	private void ReadWriteWeiboFile_impl(final boolean _read){
 		
 		String t_weiboDataDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
 		
@@ -1803,12 +1893,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		String t_weiboDataBackPathName	= t_weiboDataDir + fsm_weiboDataBackName;
 		
 		PreWriteReadIni(_read, t_weiboDataBackPathName,t_weiboDataPathName,
-							fsm_weiboDataBackName, fsm_weiboDataName);
+				fsm_weiboDataBackName, fsm_weiboDataName);		
 		
 		try{
 			FileConnection t_fc = (FileConnection)Connector.open(t_weiboDataPathName);
-			try{
-
+			try{			
 				if(_read){
 					synchronized (m_receivedWeiboList) {
 						m_receivedWeiboList.removeAllElements();

@@ -41,7 +41,7 @@ public class ConnectMDPThread extends Thread implements DatagramStatusListener
        int result = 0;
        try
        {
-           _listener.informStatus("  ÕıÔÚ½¨Á¢Á¬½Ó...");
+           _listener.informStatus("  æ­£åœ¨å»ºç«‹è¿æ¥...");
 
            Class mdpClass = Class.forName("net.rim.device.cldc.io.mdp.Protocol");
            connection = (DatagramConnectionBase)mdpClass.newInstance();
@@ -50,9 +50,9 @@ public class ConnectMDPThread extends Thread implements DatagramStatusListener
            //connection.setup(1462989747, null);
            connection.setDatagramStatusListener(this);
 
-           _listener.informStatus("  Á¬½ÓÒÑ½¨Á¢¡£");
+           _listener.informStatus("  è¿æ¥å·²å»ºç«‹ã€‚");
 
-           _listener.informStatus("  ÕıÔÚ·¢ËÍÊı¾İ...");
+           _listener.informStatus("  æ­£åœ¨å‘é€æ•°æ®...");
 
            sendingDiagram = connection.newDatagram();
            sendingDiagram.setAddress(_address);
@@ -62,7 +62,7 @@ public class ConnectMDPThread extends Thread implements DatagramStatusListener
 
            connection.send(sendingDiagram);
 
-           _listener.informStatus("  Êı¾İ·¢ËÍ³É¹¦¡£");
+           _listener.informStatus("  æ•°æ®å‘é€æˆåŠŸã€‚");
        }
        catch(IOCancelledException ex)
        {
@@ -77,9 +77,9 @@ public class ConnectMDPThread extends Thread implements DatagramStatusListener
        {
            try
            {
-               _listener.informStatus("  ÕıÔÚ¹Ø±ÕÁ¬½Ó...");
+               _listener.informStatus("  æ­£åœ¨å…³é—­è¿æ¥...");
                connection.close();
-               _listener.informStatus("  Á¬½ÓÕı³£¹Ø±Õ¡£");
+               _listener.informStatus("  è¿æ¥æ­£å¸¸å…³é—­ã€‚");
            }
            catch(IOException ioe)
            {
@@ -95,10 +95,10 @@ public class ConnectMDPThread extends Thread implements DatagramStatusListener
        switch (code)
        {
            case DatagramStatusListener.PENDING:
-               _listener.informStatus("    µÈ´ı·¢ËÍ...");
+               _listener.informStatus("    ç­‰å¾…å‘é€...");
                break;
            case DatagramStatusListener.SENDING:
-               _listener.informStatus("    ·¢ËÍÖĞ...");
+               _listener.informStatus("    å‘é€ä¸­...");
        }
    }
 

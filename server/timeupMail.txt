@@ -4,16 +4,13 @@
 #
 你好！
 
-你的yuchberry beta 测试时间已经到了，稍等一段时间后服务器会暂停服务。
+你的语盒使用时间已经到了，稍等一段时间后服务器会暂停服务。
 
-这次yuchberry beta 测试报告在：
-http://code.google.com/p/yuchberry/wiki/Beta_Report
-
-希望你能自己搭建yuchberry的服务器，具体可以查看FAQ：
-http://code.google.com/p/yuchberry/wiki/FAQ
+希望你能自己搭建语盒的服务器，具体可以查看FAQ：
+http://www.yuchberry.info/
 
 从里面的链接中可以找到你的搭建方案教程。
 
-感谢你对yuchberry的关注和支持！
+感谢你对语盒的关注和支持！
 
-yuchberry开发者敬上！
+语盒开发者敬上！

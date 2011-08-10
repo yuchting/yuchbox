@@ -5,42 +5,221 @@ import java.util.Vector;
 import local.localResource;
 import net.rim.device.api.servicebook.ServiceBook;
 import net.rim.device.api.servicebook.ServiceRecord;
+import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Font;
+import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
+import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
-import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.PasswordEditField;
 import net.rim.device.api.ui.component.RichTextField;
+import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.MainScreen;
 
-public class stateScreen extends MainScreen implements FieldChangeListener{
-										
-        
-    EditField           m_hostName      = null;
-    EditField			m_hostport		= null;
-    PasswordEditField   m_userPassword  = null;
-       
-    ButtonField         m_connectBut    = null;
-    LabelField          m_stateText     = null;
-   
-    RichTextField		m_uploadingText = null;
-            
-    recvMain			m_mainApp		= null;
-    
-	MenuItem	m_helpMenu = new MenuItem(recvMain.sm_local.getString(localResource.STATE_SCREEN_HELP_MENU), 99, 10) {
-		public void run() {
-			recvMain.openURL("http://code.google.com/p/yuchberry/wiki/YuchBerry_Client_Help");
-		}
-	};
+import com.yuchting.yuchberry.client.ui.ButtonSegImage;
+import com.yuchting.yuchberry.client.ui.HyperlinkButtonField;
+import com.yuchting.yuchberry.client.ui.ImageSets;
+import com.yuchting.yuchberry.client.ui.ImageUnit;
+
+class ConnectButton extends Field{
 	
+    String 	m_text = "";
     
-    MenuItem 	m_aboutMenu = new MenuItem(recvMain.sm_local.getString(localResource.ABOUT_MENU_TEXT), 100, 10) {
+    ImageUnit[]	m_image = null;
+    ImageUnit[]	m_image_focus = null;
+    ImageSets	m_imageSets = null;
+    
+    int			m_connectState = 0;
+    int			m_drawStateIndex = 0;
+
+    public ConnectButton(String text,ImageUnit[] _image,ImageUnit[] _image_focus,ImageSets _imageSets){
+        this( text,_image,_image_focus,_imageSets,0);
+    }
+
+    public ConnectButton( String text,ImageUnit[] _image,ImageUnit[] _image_focus,ImageSets _imageSets,long style){
+        super(Field.FOCUSABLE | style );
+
+        m_text = text;
+        m_image = _image;
+        m_image_focus = _image_focus;
+        m_imageSets = _imageSets;
+    }
+    
+    int m_animationId = -1;
+    public void setConnectState(int _state,final recvMain _app){
+    	if(m_connectState != _state){
+    		
+    		m_connectState = _state;
+    		    		
+    		switch(m_connectState){
+    		case recvMain.CONNECTED_STATE:
+    		case recvMain.CONNECTING_STATE:
+    			m_text = recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL);
+    			break;
+    		case recvMain.DISCONNECT_STATE:
+    			m_text = recvMain.sm_local.getString(localResource.CONNECT_BUTTON_LABEL);
+    			break;
+    		}
+    		
+    		synchronized (this) {
+    			
+    			m_drawStateIndex = _state;
+    			
+    			if(m_connectState == recvMain.CONNECTING_STATE){
+    				
+    				if(m_animationId == -1){
+    					
+    					m_animationId = _app.invokeLater(new Runnable() {
+							public void run() {
+								
+								if(m_connectState == recvMain.CONNECTED_STATE
+									|| m_connectState == recvMain.DISCONNECT_STATE){
+									
+									synchronized (ConnectButton.this) {
+										_app.cancelInvokeLater(m_animationId);
+										m_animationId = -1;
+										m_drawStateIndex = m_connectState;
+									}
+								}else{
+									
+									if(m_drawStateIndex == recvMain.CONNECTING_STATE){
+										m_drawStateIndex = recvMain.DISCONNECT_STATE;
+									}else{
+										m_drawStateIndex = recvMain.CONNECTING_STATE;
+									}
+									
+									ConnectButton.this.invalidate();
+								}
+								
+							}
+							
+						}, 1000, true);
+    				}
+    				
+    			}else{
+    				
+    			}
+			}
+    		
+        	invalidate();	
+    	}    	
+    }
+    
+    public int getImageWidth(){
+    	return m_image[0].getWidth();
+    }
+    
+    public int getImageHeight(){
+    	return m_image[0].getHeight();
+    }    
+            
+    protected void layout(int width,int height){
+    
+		width = m_image[0].getWidth();
+		height= m_image[0].getHeight();    	
+    	
+    	setExtent(width,height);
+    }
+    
+    protected void paint( Graphics g ){
+    	focusPaint(g,isFocus());
+    }
+    
+    private void focusPaint(Graphics g,boolean focus){
+    	int oldColour = g.getColor();
+    	Font oldFont	= g.getFont();
+    	try{
+  	
+    		if(focus){
+    			m_imageSets.drawImage(g, m_image_focus[m_drawStateIndex], 0, 0);
+    		}else{
+    			m_imageSets.drawImage(g, m_image[m_drawStateIndex], 0, 0);
+    		}
+    		
+    		
+    	}finally{
+    		g.setColor( oldColour );
+    		g.setFont(oldFont);
+    	}
+    }
+    
+    protected void drawFocus( Graphics g, boolean on ){
+    	focusPaint(g,on);
+    }
+    
+    protected void onUnfocus(){
+    	super.onUnfocus();
+    	invalidate();
+    }
+            
+            
+    protected boolean keyChar( char character, int status, int time ) 
+    {
+        if( character == Characters.ENTER ) {
+            fieldChangeNotify( 0 );
+            return true;
+        }
+        return super.keyChar( character, status, time );
+    }
+
+    protected boolean navigationClick( int status, int time ) {        
+        keyChar(Characters.ENTER, status, time );            
+        return true;
+    }
+
+    protected boolean invokeAction( int action ) 
+    {
+        switch( action ) {
+            case ACTION_INVOKE: {
+                fieldChangeNotify( 0 );
+                return true;
+            }
+        }
+        return super.invokeAction( action );
+    }
+            
+
+    public void setDirty( boolean dirty ) 
+    {
+        // We never want to be dirty or muddy
+    }
+    
+            
+    public void setMuddy( boolean muddy ) 
+    {
+        // We never want to be dirty or muddy
+    }
+    
+    
+    public String getMenuText()
+    {
+        return m_text;
+    }
+    
+
+    /**
+     * Returns a MenuItem that could be used to invoke this link.
+     */
+    public MenuItem getMenuItem()
+    {
+        return new MenuItem( getMenuText(), 0, 0 ) {
+            public void run() {
+                fieldChangeNotify( 0 );
+            }
+        };
+    }
+}
+
+public class stateScreen extends MainScreen implements FieldChangeListener{
+    
+	MenuItem 	m_aboutMenu = new MenuItem(recvMain.sm_local.getString(localResource.ABOUT_MENU_TEXT), 100, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
 			t_app.PopupAboutScreen();
@@ -50,7 +229,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 	MenuItem	m_shareMenu = new MenuItem(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_MENU), 101, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
-			t_app.PopupShareScreen();			
+			t_app.PopupShareScreen();
 		}
 	};
 	
@@ -88,49 +267,182 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 			t_app.Exit();
 		}
 	};
+	
+	
+	HorizontalFieldManager m_hostNameMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
+	EditField           m_hostName      = null;
+	
+	HorizontalFieldManager m_hostportMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
+	EditField			m_hostport		= null;
+	
+	HorizontalFieldManager m_userPasswordMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
+    PasswordEditField   m_userPassword  = null;
+       
+    ConnectButton		m_connectBut    = null;
+    
+    String				m_promptText     = recvMain.sm_local.getString(localResource.STATE_HELP_GET_HOST_PROMPT);
+    HyperlinkButtonField m_getHostLink	= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.STATE_SCREEN_HELP_MENU),0xffffff,0x8a8a8a);
+   
+    RichTextField		m_uploadingText = null;
+            
+    recvMain			m_mainApp		= null;
+    
+	Manager m_mainManger = new Manager(Manager.VERTICAL_SCROLL){
+		
+		public void sublayout(int _width,int _height){
+			
+			int t_start_x = 10;
+			int t_width = recvMain.fsm_display_width - t_start_x * 2;
+			int t_height = m_stateInputBG.getImageHeight();
+			
+			int y = recvMain.fsm_display_height/3 + 20;
+			
+			setPositionChild(m_hostNameMgr,t_start_x,y);
+			layoutChild(m_hostNameMgr,t_width,t_height);
+			
+			y += m_stateInputBG.getImageHeight();
+			
+			setPositionChild(m_hostportMgr,t_start_x,y);
+			layoutChild(m_hostportMgr,t_width,t_height);
+			
+			y += m_stateInputBG.getImageHeight();
+			
+			setPositionChild(m_userPasswordMgr,t_start_x,y);
+			layoutChild(m_userPasswordMgr,t_width,t_height);
+			
+			y += m_stateInputBG.getImageHeight();
+			
+			setPositionChild(m_connectBut,t_start_x,y);
+			layoutChild(m_connectBut,m_connectBut.getImageWidth(),m_connectBut.getImageHeight());
+			
+			t_start_x += m_connectBut.getImageWidth();
+			
+			int t_promptTextWidth = m_hostName.getFont().getAdvance(m_promptText) + 5;
+			
+			t_start_x += t_promptTextWidth;
+			
+			setPositionChild(m_getHostLink,t_start_x,y);
+			layoutChild(m_getHostLink,getPreferredWidth(),m_getHostLink.getFont().getHeight());
+			
+			y += m_connectBut.getImageHeight();
+			t_start_x = 0;
+			
+			setPositionChild(m_uploadingText, t_start_x, y);
+			layoutChild(m_uploadingText,getPreferredWidth(),getPreferredHeight() / 2);			
+			
+			setExtent(getPreferredWidth(), getPreferredHeight());
+		}
+		
+		public int getPreferredWidth(){
+			return recvMain.fsm_display_width;
+		}
+		
+		public int getPreferredHeight(){
+			return recvMain.fsm_display_height * 2;
+		}
+		
+		public void subpaint(Graphics _g){
+			
+			m_mainApp.m_allImageSets.fillImageBlock(_g, m_stateBG, 0, 0, getPreferredWidth(), getPreferredHeight());
+			
+			int t_logo_x = (getPreferredWidth() - m_stateLogo.getWidth()) / 2;
+			int t_logo_y = m_hostNameMgr.getExtent().y - m_stateLogo.getHeight();
+			
+			m_mainApp.m_allImageSets.drawImage(_g, m_stateLogo, t_logo_x, t_logo_y);
+			
+	    	int t_delta_x = 4;
+	    	int t_delta_y = (m_stateInputBG.getImageHeight() - m_hostName.getFont().getHeight()) / 2;	    	
+	    	
+	    	m_stateInputBG.draw(_g, m_hostNameMgr.getExtent().x - t_delta_x, 
+	    							m_hostNameMgr.getExtent().y - t_delta_y, m_hostNameMgr.getExtent().width + t_delta_x * 2);
+	    	
+	    	m_stateInputBG.draw(_g, m_hostportMgr.getExtent().x - t_delta_x, 
+	    							m_hostportMgr.getExtent().y - t_delta_y, m_hostportMgr.getExtent().width + t_delta_x * 2);
+	    	
+	    	m_stateInputBG.draw(_g, m_userPasswordMgr.getExtent().x - t_delta_x, 
+	    							m_userPasswordMgr.getExtent().y - t_delta_y, m_userPasswordMgr.getExtent().width + t_delta_x * 2);
 
-    public stateScreen(final recvMain _app) {
-    	        
-        super();
-              
-        m_mainApp	= _app;        
+	    	int oldColor = _g.getColor();
+	    	try{
+	    		_g.setColor(0xf0f0f0);
+	    		_g.drawText(m_promptText,m_connectBut.getExtent().x + m_connectBut.getImageWidth(),
+	    				m_connectBut.getExtent().y + (m_connectBut.getImageHeight() - _g.getFont().getHeight()) / 2);
+	    		
+	    	}finally{
+	    		_g.setColor(oldColor);
+	    	}
+	    	
+	    	super.subpaint(_g);
+			
+		}
+	};
+	
+	ImageUnit		m_stateBG = null;
+	ImageUnit		m_stateLogo = null;
+	
+	ButtonSegImage	m_stateInputBG = null;
+	
+    public stateScreen(recvMain _app){
+    	m_mainApp	= _app;
+    	 
+    	
+    	m_stateBG		= m_mainApp.m_allImageSets.getImageUnit("state_bg");
+    	m_stateLogo		= m_mainApp.m_allImageSets.getImageUnit("state_logo");
+    	
+    	m_stateInputBG = new ButtonSegImage(m_mainApp.m_allImageSets.getImageUnit("state_input_left"), 
+							    			m_mainApp.m_allImageSets.getImageUnit("state_input_mid"), 
+							    			m_mainApp.m_allImageSets.getImageUnit("state_input_right"), 
+							    			m_mainApp.m_allImageSets);  	
+       
         
         m_hostName = new EditField(recvMain.sm_local.getString(localResource.HOST),
         				m_mainApp.m_hostname,128, EditField.FILTER_DEFAULT);
-        
-       
+               
         m_hostName.setChangeListener(this);
-        add(m_hostName);
+        m_hostNameMgr.add(m_hostName);
+        m_mainManger.add(m_hostNameMgr);
         
         m_hostport = new EditField(recvMain.sm_local.getString(localResource.PORT),
         				m_mainApp.m_port == 0?"":Integer.toString(m_mainApp.m_port),5,EditField.FILTER_INTEGER);
 
         m_hostport.setChangeListener(this);
-        add(m_hostport);
+        m_hostportMgr.add(m_hostport);
+        m_mainManger.add(m_hostportMgr);
         
         m_userPassword = new PasswordEditField(recvMain.sm_local.getString(localResource.USER_PASSWORD),
         								m_mainApp.m_userPassword,128,EditField.NO_COMPLEX_INPUT);
         
-        add(m_userPassword);
+        m_userPasswordMgr.add(m_userPassword);
+        m_mainManger.add(m_userPasswordMgr);
+               
+        m_connectBut = new ConnectButton(recvMain.sm_local.getString(localResource.CONNECT_BUTTON_LABEL),
+        								new ImageUnit[]{
+        									m_mainApp.m_allImageSets.getImageUnit("button_disconnect"),
+        									m_mainApp.m_allImageSets.getImageUnit("button_connecting"),
+        									m_mainApp.m_allImageSets.getImageUnit("button_connected")
+        								},
+        								new ImageUnit[]{
+											m_mainApp.m_allImageSets.getImageUnit("button_disconnect_focus"),
+											m_mainApp.m_allImageSets.getImageUnit("button_connecting_focus"),
+											m_mainApp.m_allImageSets.getImageUnit("button_connected_focus")
+										},m_mainApp.m_allImageSets);
         
-       
-        m_connectBut = new ButtonField(recvMain.sm_local.getString(m_mainApp.m_connectDeamon.IsConnectState()?
-        									localResource.DISCONNECT_BUTTON_LABEL:localResource.CONNECT_BUTTON_LABEL),
-        									ButtonField.CONSUME_CLICK| ButtonField.NEVER_DIRTY);
-        
+        m_connectBut.setConnectState(m_mainApp.GetConnectState(),m_mainApp);        
         m_connectBut.setChangeListener(this);
         
-        add(m_connectBut);              
+        m_mainManger.add(m_connectBut);
         
-        m_stateText = new LabelField(m_mainApp.GetStateString(), LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
-        add(m_stateText);
+        m_getHostLink.setChangeListener(this);
+        m_mainManger.add(m_getHostLink);
         
         m_uploadingText = new RichTextField("", LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
-        add(m_uploadingText);
-            
+        m_mainManger.add(m_uploadingText);
+        
+        add(m_mainManger);      
+                    
         RefreshUploadState(_app.m_uploadingDesc);
         
-        setTitle(new LabelField(recvMain.sm_local.getString(localResource.STATE_TITLE_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
+        //setTitle(new LabelField(recvMain.sm_local.getString(localResource.STATE_TITLE_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
         
         if(m_mainApp.m_connectDeamon.IsConnectState()){
         	m_connectBut.setFocus();
@@ -138,12 +450,10 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
             if(m_mainApp.m_hostname.length() != 0){
             	m_connectBut.setFocus();            	
             }
-        }    
-               
+        }         
     }
     
     protected void makeMenu(Menu _menu,int instance){
-    	_menu.add(m_helpMenu);
     	_menu.add(m_aboutMenu);
     	_menu.add(m_shareMenu);
     	_menu.add(MenuItem.separator(102));
@@ -190,9 +500,6 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
         	case 'D':
         		m_debugInfoMenu.run();
         		return true;
-        	case 'H':
-        		m_helpMenu.run();
-        		return true;
         	case 'F':
         		m_shareMenu.run();
         		return true;
@@ -206,8 +513,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     	}
     	
     	return false;    	
-    }       
-   
+    }   
     
     public void RefreshUploadState(final Vector _uploading){
     	String t_total = new String();
@@ -245,16 +551,15 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 					Dialog.alert(recvMain.sm_local.getString(localResource.INPUT_FULL_SIGN_IN_SEG));
 					
 					return;
-				}				
-												
+				}	
+															
 				if(m_mainApp.m_connectDeamon.IsConnectState()){
 					
 					try{
 						m_mainApp.m_connectDeamon.Disconnect();
 					}catch(Exception _e){}
 					
-					m_connectBut.setLabel(recvMain.sm_local.getString(localResource.CONNECT_BUTTON_LABEL));
-					m_mainApp.SetStateString(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
+					m_mainApp.SetConnectState(recvMain.DISCONNECT_STATE);
 					
 				}else{
 					
@@ -276,15 +581,15 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 						m_mainApp.m_userPassword 	= m_userPassword.getText();
 
 						m_mainApp.m_connectDeamon.Connect();
-						
-						m_connectBut.setLabel(recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL));
-						
+												
 						m_mainApp.Start();
 						
 					}catch(Exception e){
 						m_mainApp.DialogAlert(e.getMessage() + e.getClass().getName());
 					}
 				}				
+			}else if(field == m_getHostLink){
+				recvMain.openURL("http://code.google.com/p/yuchberry/wiki/YuchBerry_Client_Help");
 			}
         }else{
         	// Perform action if application changed field.

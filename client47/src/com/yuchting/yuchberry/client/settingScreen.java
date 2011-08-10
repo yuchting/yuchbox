@@ -3,10 +3,12 @@ package com.yuchting.yuchberry.client;
 import java.io.ByteArrayOutputStream;
 
 import local.localResource;
+import net.rim.device.api.system.Clipboard;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.FocusChangeListener;
 import net.rim.device.api.ui.Font;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.CheckboxField;
@@ -19,9 +21,6 @@ import net.rim.device.api.ui.component.NumericChoiceField;
 import net.rim.device.api.ui.component.ObjectChoiceField;
 import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
-import net.rim.device.api.ui.container.VerticalFieldManager;
-
-import com.yuchting.yuchberry.client.weibo.WeiboItemField;
 
 public class settingScreen extends MainScreen implements FieldChangeListener,FocusChangeListener{
 	
@@ -44,7 +43,11 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 LabelField			m_recvMailNum	= new LabelField();
 	 LabelField			m_sentWeiboNum	= new LabelField();
 	 LabelField			m_recvWeiboNum	= new LabelField();
-	 ButtonField		m_clearByteBut	= new ButtonField(recvMain.sm_local.getString(localResource.CLEAR_STATISTICS),Field.FIELD_RIGHT);
+	 ButtonField		m_clearByteBut	= new ButtonField(recvMain.sm_local.getString(localResource.SETTING_CLEAR_STATISTICS),
+			 											Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
+	 
+	 ButtonField		m_copyStatBut	= new ButtonField(recvMain.sm_local.getString(localResource.SETTING_COPY_STATISTICS),
+			 											Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	 
 	 CheckboxField		m_fulldayPrompt = null;
 	 NumericChoiceField	m_startPromptHour = null;
@@ -58,25 +61,16 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 CheckboxField		m_delRemoteMail	= null;
 	 CheckboxField		m_copyToSentFolder = null;
 	 ObjectChoiceField	m_recvMsgTextLength	= null;
-	 ButtonField		m_changeSignature = new ButtonField(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_BUTTON_TEXT),Field.FIELD_RIGHT);
+	 ButtonField		m_changeSignature = new ButtonField(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_BUTTON_TEXT),
+			 										Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	 
 	 CheckboxField		m_weiboModule	= null;
 	 NullField			m_weiboNullField = new NullField();
-	 VerticalFieldManager	m_weiboSetManager = null;
-	 
-	 CheckboxField		m_updateOwnWhenFw = null;
-	 CheckboxField		m_updateOwnWhenRe = null;
-	 CheckboxField		m_commentFirst	= null;
-	 CheckboxField		m_publicForward	= null;
-	 CheckboxField		m_displayHeadImage = null;
-	 CheckboxField		m_simpleMode 	= null;
-	 CheckboxField		m_dontDownloadHeadImage = null;
-	 CheckboxField		m_hideWeiboHeader = null;	
-	 ObjectChoiceField	m_maxWeiboNum	= null;
+	 LabelField			m_weiboSettingPrompt = new LabelField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SETTING_PROMPT));
 	 
 	 recvMain			m_mainApp		= null;
 	 
-	 MenuItem	m_helpMenu = new MenuItem(recvMain.sm_local.getString(localResource.STATE_SCREEN_HELP_MENU), 99, 10) {	
+	 MenuItem	m_helpMenu = new MenuItem(recvMain.sm_local.getString(localResource.SETTING_HELP_MENU_LABEL), 99, 10) {	
 		 public void run() {
 			 recvMain.openURL("http://code.google.com/p/yuchberry/wiki/Use_introduction#高级设置");
 		 }
@@ -84,7 +78,6 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 
 	 protected void makeMenu(Menu _menu,int instance){
 		_menu.add(m_helpMenu);
-		
 		super.makeMenu(_menu, instance);
 	}
 	 
@@ -118,13 +111,13 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 
 		 m_useSSLCheckbox	= new CheckboxField(recvMain.sm_local.getString(localResource.USE_SSL_LABEL),m_mainApp.m_useSSL);
 		 add(m_useSSLCheckbox);
+		 m_useSSLCheckbox.setChangeListener(this);
 		 
 		 m_uesMDS			= new CheckboxField(recvMain.sm_local.getString(localResource.USE_MDS),m_mainApp.UseMDS());
 		 add(m_uesMDS);
 		 
 		 m_useWifi			= new CheckboxField(recvMain.sm_local.getString(localResource.USE_WIFI_LABEL), m_mainApp.m_useWifi);
 		 add(m_useWifi);
-		 m_useWifi.setChangeListener(this);
 		 
 		 m_autoRun			= new CheckboxField(recvMain.sm_local.getString(localResource.AUTO_RUN_CHECK_BOX), m_mainApp.m_autoRun);
 		 add(m_autoRun);
@@ -228,7 +221,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 add(m_sentWeiboNum);
 		 add(m_recvWeiboNum);
 		 add(m_clearByteBut);
+		 add(m_copyStatBut);
 		 m_clearByteBut.setChangeListener(this);
+		 m_copyStatBut.setChangeListener(this);
 		 
 		 if(m_mainApp.m_connectDeamon.m_connect != null){
 			 m_mainApp.m_connectDeamon.m_connect.StoreUpDownloadByteImm(true);
@@ -240,49 +235,12 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 setTitle(new LabelField(recvMain.sm_local.getString(localResource.ADVANCE_SETTING_TITEL_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
 		 
 	 }
-	 
-	 private void initWeiboModuleSet(){
-		 if(m_weiboSetManager == null){
-			 m_weiboSetManager = new VerticalFieldManager();
-			 
-			 m_updateOwnWhenFw = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_UPDATE_FW),m_mainApp.m_updateOwnListWhenFw);
-			 m_weiboSetManager.add(m_updateOwnWhenFw);
-			 
-			 m_updateOwnWhenRe = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_UPDATE_RE),m_mainApp.m_updateOwnListWhenRe);
-			 m_weiboSetManager.add(m_updateOwnWhenRe);
-			 
-			 m_commentFirst		= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DISPLAY_COMMENT_FIRST),WeiboItemField.sm_commentFirst);
-			 m_weiboSetManager.add(m_commentFirst);
-			 
-			 m_publicForward	= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_PUBLIC_FW),m_mainApp.m_publicForward);
-			 m_publicForward.setChangeListener(this);
-			 m_weiboSetManager.add(m_publicForward);
-			 
-			 m_displayHeadImage = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DISPLAY_HEAD_IMAGE),WeiboItemField.sm_displayHeadImage);
-			 m_weiboSetManager.add(m_displayHeadImage);
-			 
-			 m_simpleMode 	=  new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SIMPLE_MODE),WeiboItemField.sm_simpleMode);
-			 m_weiboSetManager.add(m_simpleMode);
-			 
-			 m_dontDownloadHeadImage = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DONT_DOWNLOAD_HEAD_IMAGE),m_mainApp.m_dontDownloadWeiboHeadImage);
-			 m_weiboSetManager.add(m_dontDownloadHeadImage);
-			 
-			 m_hideWeiboHeader = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_HIDE_HEADER),m_mainApp.m_hideHeader);
-			 m_weiboSetManager.add(m_hideWeiboHeader);
-			 
-			 m_maxWeiboNum		= new ObjectChoiceField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_MAX_WEIBO_NUM),
-									recvMain.fsm_maxWeiboNumList,m_mainApp.m_maxWeiboNumIndex);
-			 
-			 m_weiboSetManager.add(m_maxWeiboNum);
-		 }		
-	 }
-	 
+	 	 
 	 private void enableWeiboSet(boolean _enable){
 		 if(_enable){
-			 initWeiboModuleSet();
-			 replace(m_weiboNullField,m_weiboSetManager);
+			 replace(m_weiboNullField,m_weiboSettingPrompt);
 		 }else{
-			 replace(m_weiboSetManager,m_weiboNullField);
+			 replace(m_weiboSettingPrompt,m_weiboNullField);
 		 }
 	 }
 	 
@@ -302,6 +260,21 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 					
 					RefreshUpDownloadByte();
 				}
+			}else if(field == m_copyStatBut){
+				StringBuffer t_string = new StringBuffer();
+				 
+				t_string.append(recvMain.sm_local.getString(localResource.BYTE_STATISTICS)).append("\n")
+						.append(m_uploadByte.getText()).append("\n")
+						.append(m_downloadByte.getText()).append("\n")
+						.append(m_totalByte.getText()).append("\n")
+						.append(m_sendMailNum.getText()).append("\n")
+						.append(m_recvMailNum.getText()).append("\n")
+						.append(m_sentWeiboNum.getText()).append("\n")
+						.append(m_recvWeiboNum.getText()).append("\n");
+				
+				Clipboard.getClipboard().put(t_string.toString());
+				m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.COPY_TO_CLIPBOARD_SUCC));
+				
 			}else if(field == m_pulseInterval){
 				if(m_pulseInterval.getSelectedIndex() == 0){
 					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.PULSE_INTERVAL_TOO_SHORT_PROMPT));
@@ -310,12 +283,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_PROMPT_TEXT));
 			}else if(field == m_passwordKey){			
 				m_hasChangePasswordKey = true;
-			}else if(field == m_publicForward){
-				if(m_publicForward.getChecked()){
-					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_PUBLIC_FW_PROMPT));
-				}
-			}else if(field == m_useWifi){
-				if(m_useWifi.getChecked()){
+			}else if(field == m_useSSLCheckbox){
+				if(m_useSSLCheckbox.getChecked()){
 					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.SETTING_ENABLE_SSL_ENABLE));
 				}
 			}else if(field == m_weiboModule){
@@ -398,19 +367,6 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 			}
 		}
 		
-		if(m_weiboSetManager != null){
-			m_mainApp.m_updateOwnListWhenFw = m_updateOwnWhenFw.getChecked();
-			m_mainApp.m_updateOwnListWhenRe = m_updateOwnWhenRe.getChecked();
-			WeiboItemField.sm_commentFirst	= m_commentFirst.getChecked();
-			m_mainApp.m_publicForward		= m_publicForward.getChecked();		
-			m_mainApp.m_maxWeiboNumIndex	= m_maxWeiboNum.getSelectedIndex();
-			m_mainApp.m_hideHeader			= m_hideWeiboHeader.getChecked();
-			
-			WeiboItemField.sm_displayHeadImage	= m_displayHeadImage.getChecked();
-			WeiboItemField.sm_simpleMode		= m_simpleMode.getChecked();
-			m_mainApp.m_dontDownloadWeiboHeadImage	= m_dontDownloadHeadImage.getChecked();
-		}
-		
 		m_mainApp.WriteReadIni(false);
 		
 		m_mainApp.m_settingScreen = null;
@@ -446,5 +402,18 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				m_latitude.setText(recvMain.sm_local.getString(localResource.CURRENT_LATITUDE_LABEL) + m_mainApp.m_gpsInfo.m_latitude);
 			}
 		});
+	 }
+	 
+	 protected boolean keyDown(int keycode,int time){
+		 
+		if(m_APN.isFocus()){
+			final int key = Keypad.key(keycode);
+			 
+			if(key == ' ' || key == 10){
+				return true;
+			}
+		}
+		
+		return super.keyDown(keycode,time);
 	 }
 }

@@ -11,13 +11,13 @@ public class WeiboDMManager extends WeiboMainManager{
 	}
 	
 	public void AddWeibo(final fetchWeibo _weibo,final WeiboHeadImage _image,
-							final boolean _resetSelectIdx){
+							final boolean _initAdd){
 		
 		m_mainApp.invokeLater(new Runnable() {
 			
 			public void run() {
 				
-				if(_resetSelectIdx){
+				if(!_initAdd){
 					m_hasNewWeibo = true;
 				}
 				
@@ -33,13 +33,21 @@ public class WeiboDMManager extends WeiboMainManager{
 					}
 					
 					if(t_dmField.AddSameSender(_weibo,_image)){
+						
+						if(i != 0){
+							delete(field);
+							insert(field,0);
+						}else{
+							invalidate();
+						}					
+						
 						return;
 					}
 				}
 				
 				WeiboDMItemField t_field = new WeiboDMItemField(_weibo,_image,WeiboDMManager.this);
 	
-				insert(t_field.m_focusField,0);			
+				insert(t_field.m_focusField,0);	
 			}
 		});					
 	}

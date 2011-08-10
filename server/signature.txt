@@ -8,5 +8,5 @@
 # http://code.google.com/p/yuchberry/issues/detail?id=104&colspec=ID%20Type%20Status%20Priority%20Stars%20Summary#makechanges
 #
 --
-sent from my yuchberry @$time$ 
-http://code.google.com/p/yuchberry 
+使用语盒发送 @$time$ 
+http://www.yuchberry.info
