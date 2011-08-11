@@ -56,7 +56,7 @@ public final class yuchbber {
 	private boolean m_convertSimpleChar = false;
 	
 	@Persistent
-	private String m_signature = "--\nsent from my yuchberry\nhttp://code.google.com/p/yuchberry";
+	private String m_signature = "--\nsent from my yuchberry\nhttp://www.yuchberry.info";
 	
 	@Persistent
 	private int m_bberLev = 0;

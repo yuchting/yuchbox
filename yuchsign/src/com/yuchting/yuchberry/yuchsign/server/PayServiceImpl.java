@@ -369,7 +369,8 @@ public class PayServiceImpl extends HttpServlet {
 	
 	private boolean VerifyURL(String _notify_id){
 		
-		boolean t_result = false;
+		boolean t_result = true;
+		
 		try{
 			String t_partnerID = null;
 			
@@ -399,18 +400,32 @@ public class PayServiceImpl extends HttpServlet {
 			
 			String veryfy_url = "https://www.alipay.com/cooperate/gateway.do?service=notify_verify&partner=" + t_partnerID + "&notify_id=" + _notify_id; 
 			
-			URL url = new URL(veryfy_url);
-			URLConnection con = url.openConnection();
-			con.setAllowUserInteraction(false);
-			con.connect();
-			
-			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));		
-			
-			veryfy_url = in.readLine();
-						
-			if(veryfy_url.indexOf("true") != -1){
-				t_result = true;
-			}
+			int t_count = 0;
+			while(t_count++ < 2){
+				
+				try{
+					
+					URL url = new URL(veryfy_url);
+					URLConnection con = url.openConnection();
+					con.setAllowUserInteraction(false);
+					con.connect();
+					
+					BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));		
+					
+					veryfy_url = in.readLine();
+								
+					if(veryfy_url.indexOf("true") != -1){
+						t_result = true;
+					}else{
+						t_result = false;
+					}
+					
+					break;
+					
+				}catch(Exception e){
+					System.err.println("!Verify Alipay Exception:" + e.getMessage());
+				}			
+			}			
 			
 		}catch(Exception e){
 			System.err.println("Verify Alipay Exception:" + e.getMessage());
