@@ -65,7 +65,7 @@ class checkStateThread extends Thread{
 	
 	public void run(){
 		
-		int t_counter = 0;
+		int t_counter = -1;
 		
 		while(true){
 			
@@ -77,7 +77,8 @@ class checkStateThread extends Thread{
 				
 				m_mainFrame.RefreshState();
 				
-				if(t_counter++ > 120 * 2){
+				if(t_counter == -1 ||  t_counter > 120 * 2){
+					
 					t_counter = 0;
 					
 					URL is_gd = new URL("http://yuchberry.googlecode.com/files/latest_version?a="+(new Random()).nextInt());
@@ -95,10 +96,11 @@ class checkStateThread extends Thread{
 				        	t_thread.m_fetchMgr.SetLatestVersion(t_version);
 				        }
 					}
-			       
 
 					in.close();
 				}
+				
+				t_counter++;
 				
 			}catch(Exception ex){}
 		}		
