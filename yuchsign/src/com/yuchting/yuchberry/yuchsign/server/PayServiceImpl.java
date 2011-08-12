@@ -39,10 +39,35 @@ public class PayServiceImpl extends HttpServlet {
 			//
 			String t_type = (String)request.getParameter("type");
 			String t_fee = (String)request.getParameter("fee");
+			String t_lev = (String)request.getParameter("lev");
 						
 			try{
 				int t_typeVal = Integer.valueOf(t_type).intValue();
 				int t_feeVal = Integer.valueOf(t_fee).intValue();
+				int t_levVal = Integer.valueOf(t_lev).intValue();
+
+				PersistenceManager t_pm = PMF.get().getPersistenceManager();
+				try{
+					yuchbber t_bber = null;
+					
+					Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(), t_client_pay);
+					try{
+						t_bber = t_pm.getObjectById(yuchbber.class, k);
+					}catch(javax.jdo.JDOObjectNotFoundException e){
+						throw new Exception("找不到用户，请重新刷新页面登录后提交。");
+					}
+					
+					if(t_bber == null){
+						throw new Exception("找不到用户，请重新刷新页面登录后提交。");	
+					}
+					
+					if(t_bber.GetLevel() != t_levVal){
+						throw new Exception("用户等级与数据库不符，请退出后重新登录，再次充值。");
+					}					
+										
+				}finally{
+					t_pm.close();
+				}
 				
 				String t_redirectURL = payTime(t_client_pay,t_typeVal,t_feeVal);
 				

@@ -105,7 +105,7 @@ public class PayTimeDlg extends DialogBox{
 					}
 					
 					Window.open("http://yuchberrysign.yuchberry.info/pay/?yname=" + URL.encode(_bber.GetSigninName()) +
-							"&type=0&fee=" + t_fee, "_blank", "");
+							"&type=0&fee=" + t_fee + "&lev="+_bber.GetLevel(), "_blank", "");
 					
 //					Window.open("http://127.0.0.1:8888/pay/?yname=" + URL.encode(_bber.GetSigninName()) +
 //							"&type=0&fee=" + t_fee, "_blank", "");

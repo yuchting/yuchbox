@@ -45,8 +45,8 @@ body{text-shadow: 1px 1px 1px #fff;}
 .mid .intro .introblock#block3{background:url(./images/intro3.gif) no-repeat;}
 .mid .intro .introblock#block4{background:url(./images/intro4.gif) no-repeat;}
 
-.mid .contact {margin:20px auto; padding:10px 10px;float:left; width:340px; height:929px; background:#eceef0;}
-.mid .contact .mailWeibo {float:left;}
+.mid .contact {margin:20px auto; padding:0 10px;float:left; width:340px; height:929px; background:#eceef0;}
+.mid .contact .mailWeibo {float:left;height:110px;padding:20px 0;}
 .mid .contact .qq {float:right; font-size:14px;line-height:30px;}
 .mid .contact a.but{font-size:16px; text-decoration:none; color:#000; background-color:#fff; padding:10px 5px 10px 40px; border:2px solid #dcdcdc;}
 .mid .contact a.but:hover{border:2px solid #86c6f7;}
@@ -54,8 +54,8 @@ body{text-shadow: 1px 1px 1px #fff;}
 .mid .contact a.but#sina{background:#fff url(./images/sinaweibo.gif) no-repeat;}
 .mid .contact a.but#qq{background:#fff url(./images/qqweibo.gif) no-repeat;}
 
-.mid .contact .user{text-align:left; margin:140px 0 20px 0;}
-.mid .contact .user li{color:#232424; font-size:105%; margin:10px auto;}
+.mid .contact .user{text-align:left; margin:175px 0 20px 0;}
+.mid .contact .user li{color:#232424; font-size:13px; margin:10px auto;}
 .mid .contact .user li a{color:#535454;}
 .mid .outlink a{font-size:16px; text-decoration:none; color:#666}
 

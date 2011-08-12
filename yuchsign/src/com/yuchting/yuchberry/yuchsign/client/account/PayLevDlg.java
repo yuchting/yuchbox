@@ -102,7 +102,7 @@ public class PayLevDlg extends DialogBox{
 
 				try{
 					Window.open("http://yuchberrysign.yuchberry.info/pay/?yname=" + 
-								URL.encode(_bber.GetSigninName()) + "&type=1&fee=" + t_fee,"_blank","");
+								URL.encode(_bber.GetSigninName()) + "&type=1&fee=" + t_fee + "&lev="+_bber.GetLevel(),"_blank","");
 				}catch(Exception e){
 					Yuchsign.PopupPrompt("错误：" + e.getMessage(), t_pane);
 				}
