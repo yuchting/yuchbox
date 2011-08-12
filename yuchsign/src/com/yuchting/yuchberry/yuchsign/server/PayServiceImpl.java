@@ -79,6 +79,9 @@ public class PayServiceImpl extends HttpServlet {
 				
 			}catch(Exception e){
 				
+				response.setCharacterEncoding("utf-8");
+				response.setContentType("text/html");
+				
 				PrintWriter out = response.getWriter();
 				out.println("<html><body>遇到错误： "+e.getMessage()+"</body></html>" );
 				out.flush();

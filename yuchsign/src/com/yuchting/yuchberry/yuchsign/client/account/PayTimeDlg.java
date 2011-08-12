@@ -112,6 +112,7 @@ public class PayTimeDlg extends DialogBox{
 //					
 					t_weekPay.setEnabled(false);
 					t_monthPay.setEnabled(false);
+					t_seasonPay.setEnabled(false);
 					t_confirm.setEnabled(false);
 				}catch(Exception e){
 					Yuchsign.PopupPrompt("错误：" + e.getMessage(), t_pane);
