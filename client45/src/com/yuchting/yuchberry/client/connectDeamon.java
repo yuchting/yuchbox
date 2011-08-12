@@ -1122,10 +1122,10 @@ public class connectDeamon extends Thread implements SendListener,
 		Folder folder = null; 
 		Folder[] t_folders = store.list();
 		for(int i = 0;i < t_folders.length;i++){
-			String t_name = t_folders[i].toString();
-			if((t_name.indexOf("Inbox") != -1 || t_name.indexOf("收件") != -1) //收件匣 收件箱
-			&& (t_name.indexOf("no service book") == -1)){
-				
+			
+			int t_type = t_folders[i].getType();
+			
+			if(t_type == Folder.INBOX){
 				folder = t_folders[i];
 				break;
 			}
@@ -1154,10 +1154,10 @@ public class connectDeamon extends Thread implements SendListener,
 		Folder folder = null; 
 		Folder[] t_folders = store.list();
 		for(int i = 0;i < t_folders.length;i++){
-			String t_name = t_folders[i].toString();
-			if((t_name.indexOf("Outbox") != -1 || t_name.indexOf("发件箱") != -1 || t_name.indexOf("寄件匣") != -1) 
-			&& (t_name.indexOf("no service book") == -1)){
-				
+		
+			int t_type = t_folders[i].getType();
+			
+			if(t_type == Folder.OUTBOX){
 				folder = t_folders[i];
 				break;
 			}
