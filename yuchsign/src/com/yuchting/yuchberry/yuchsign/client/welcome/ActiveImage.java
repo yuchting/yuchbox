@@ -63,7 +63,7 @@ public class ActiveImage {
 				if(t_controlPutton[4] == event.getSource()){
 					// official forum
 					//
-					Window.open("http://bbs.yuchberry.info/","_blank","");
+					Window.open("http://yuchberrybbs.com/","_blank","");
 					t_controlPutton[4].setValue(false,false);
 					return;
 				}
