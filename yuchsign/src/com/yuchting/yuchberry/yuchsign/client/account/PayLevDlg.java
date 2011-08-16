@@ -45,7 +45,7 @@ public class PayLevDlg extends DialogBox{
 		int t_startMoney = 0;
 				
 		for(int i = _bber.GetLevel() + 1;i < yuchbber.fsm_levelMoney.length ;i++){
-			t_levBut[i] = new RadioButton("payLev","￥" + (t_startMoney + yuchbber.fsm_levelMoney[i]) + " VIP" + i + " （一次性费用）");
+			t_levBut[i] = new RadioButton("payLev","￥" + (t_startMoney + yuchbber.fsm_levelMoney[i]) + " VIP" + i + " （一次性升级费用，还需周期性时间缴费）");
 			t_startMoney += yuchbber.fsm_levelMoney[i];
 			
 			t_levMoney[i] = t_startMoney;

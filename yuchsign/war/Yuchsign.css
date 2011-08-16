@@ -8,7 +8,7 @@ body{text-shadow: 1px 1px 1px #fff;}
 
 .big{ margin:0 auto; background:#e1e4e9; border-bottom:1px solid #c8ccd3; }
 .big .bigicon{ margin:0 auto; width:960px; height:500px;}
-.big .bigicon .bg{ float:left;  margin:5px 20px; width:620px; height:450px; background:url(http://photo2.bababian.com/upload5/20110813/2FF77B3735E2CA86CA3AAEB82053868A.jpg) no-repeat;}
+.big .bigicon .bg{ float:left;  margin:5px 20px; width:620px; height:450px; background:url(http://yuchberrybbs.com/outlinkimage/6009050380_609b765c32_z.jpg) no-repeat;}
 .big .bigicon .bg .actimage{ position:relative; float:left; left:215px; top:85px; width:172px; height:128px; }
 
 .big .bigicon .download{ position:relative; float:right; top:0; left:0; width:280px; height:460px; }
@@ -39,11 +39,11 @@ body{text-shadow: 1px 1px 1px #fff;}
 .mid .intro .introblock h3{color:#666; margin:0 0;font-size:19px}
 .mid .intro .introblock li{margin:14px 5px;font-size:14px;}
 .mid .intro .introblock a{margin:15px 0 0 180px;}
-.mid .intro .introblock#block0{background:url(http://photo2.bababian.com/upload5/20110813/68F679F3700E7C9037797CBDBDA0DF26.jpg) no-repeat;}
-.mid .intro .introblock#block1{background:url(http://photo2.bababian.com/upload5/20110813/67DDD2DB9477BA4C554E7412EBE5EEBF.jpg) no-repeat;}
-.mid .intro .introblock#block2{background:url(http://photo2.bababian.com/upload5/20110813/CD8547455372FC97D70B6AE098A7CF9B.jpg) no-repeat;}
-.mid .intro .introblock#block3{background:url(http://photo2.bababian.com/upload5/20110813/1EBF01466923CCB577D386F8856F5451.jpg) no-repeat;}
-.mid .intro .introblock#block4{background:url(http://photo2.bababian.com/upload5/20110813/9BB6C58E80500CD35D540871765DC72A.jpg) no-repeat;}
+.mid .intro .introblock#block0{background:url(http://yuchberrybbs.com/outlinkimage/intro0.gif) no-repeat;}
+.mid .intro .introblock#block1{background:url(http://yuchberrybbs.com/outlinkimage/intro1.gif) no-repeat;}
+.mid .intro .introblock#block2{background:url(http://yuchberrybbs.com/outlinkimage/intro2.gif) no-repeat;}
+.mid .intro .introblock#block3{background:url(http://yuchberrybbs.com/outlinkimage/intro3.gif) no-repeat;}
+.mid .intro .introblock#block4{background:url(http://yuchberrybbs.com/outlinkimage/intro4.gif) no-repeat;}
 
 .mid .contact {margin:20px auto; padding:0 10px;float:left; width:340px; height:929px; background:#eceef0;}
 .mid .contact .mailWeibo {float:left;height:110px;padding:20px 0;}

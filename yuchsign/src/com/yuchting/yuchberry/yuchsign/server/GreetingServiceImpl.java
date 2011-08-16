@@ -1099,11 +1099,6 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						t_syncNum++;
 					}
 					
-					if(bber.GetTotalPayFee() > 0){
-						t_payNum++;
-						t_totalPayNum += bber.GetTotalPayFee();
-					}	
-					
 					long t_dayTime = bber.GetSigninTime() - bber.GetSigninTime() % (24 * 3600000);
 					
 					Long t_keyDayTime = new Long(t_dayTime);
@@ -1213,6 +1208,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						.append(syncNum).append("</td><td>")
 						.append(payNum).append("</td><td>")
 						.append(fee).append("</td><tr>");
+				
+				t_payNum += payNum;
+				t_totalPayNum += fee;
 				
 			}
 			

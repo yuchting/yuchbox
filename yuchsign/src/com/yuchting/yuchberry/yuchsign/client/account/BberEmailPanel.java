@@ -145,7 +145,7 @@ class BberEmailPanel extends FlowPanel{
 		final FlowPanel t_subPane1 = new FlowPanel();
 		
 		m_reminderBox.setWidth("200px");
-		m_reminderBox.addItem("一般类型");
+		m_reminderBox.addItem("一般（填写邮件地址时自动填写）");
 		m_reminderBox.addItem("Google App 企业邮箱");
 		m_reminderBox.addItem("腾讯企业邮箱");
 		m_reminderBox.addChangeHandler(new ChangeHandler() {
