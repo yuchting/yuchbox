@@ -33,7 +33,6 @@ import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.Display;
-import net.rim.device.api.system.IDENInfo;
 import net.rim.device.api.system.WLANInfo;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
@@ -223,6 +222,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	GPSInfo			m_gpsInfo = new GPSInfo();
 	//@}
+	
+	boolean		m_mailUseLocation = false;
 	
 	public ImageSets	m_allImageSets 		= null;
 	
@@ -741,7 +742,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 27;
+	final static int		fsm_clientVersion = 28;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -897,6 +898,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_spaceDownWeiboShortcutKey = sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
+				    		if(t_currVer >= 28){
+				    			m_mailUseLocation  = sendReceive.ReadBoolean(t_readFile);
+				    			m_weiboUseLocation = sendReceive.ReadBoolean(t_readFile);
+				    			m_refreshWeiboIntervalIndex = sendReceive.ReadInt(t_readFile);
+				    		}
+				    		
 				    		
 			    		}finally{
 			    			t_readFile.close();
@@ -978,6 +985,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						sendReceive.WriteBoolean(t_writeFile, m_hasPromptToCheckImg);
 						t_writeFile.write(m_checkImgIndex);
 						sendReceive.WriteBoolean(t_writeFile,m_spaceDownWeiboShortcutKey);
+						
+						sendReceive.WriteBoolean(t_writeFile,m_mailUseLocation);
+						sendReceive.WriteBoolean(t_writeFile,m_weiboUseLocation);
+						sendReceive.WriteInt(t_writeFile,m_refreshWeiboIntervalIndex);						
+						
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1677,6 +1689,19 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public boolean				m_hasPromptToCheckImg = true;
 	public int					m_checkImgIndex = 1;
+	public boolean				m_weiboUseLocation = false;
+	
+	public static final String[]	fsm_refreshWeiboIntervalList = {"0","10","20","30","40"};
+	public static final int[]		fsm_refreshWeiboInterval		= {0,10,20,30,40};
+	public int						m_refreshWeiboIntervalIndex = 0;
+	
+	public int getRefreshWeiboInterval(){
+		if(m_refreshWeiboIntervalIndex < fsm_refreshWeiboInterval.length){
+			return fsm_refreshWeiboInterval[m_refreshWeiboIntervalIndex];
+		}
+		
+		return 0;
+	}
 	
 	boolean m_receiveWeiboListChanged = false;
 	

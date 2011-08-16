@@ -60,6 +60,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 CheckboxField		m_discardOrgText = null;
 	 CheckboxField		m_delRemoteMail	= null;
 	 CheckboxField		m_copyToSentFolder = null;
+	 CheckboxField		m_mailUseLocation = null;
 	 ObjectChoiceField	m_recvMsgTextLength	= null;
 	 ButtonField		m_changeSignature = new ButtonField(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_BUTTON_TEXT),
 			 										Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
@@ -142,6 +143,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 
 		 m_copyToSentFolder	= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_COPY_MAIL_TO_SENT_FOLDER),m_mainApp.m_copyMailToSentFolder);
 		 add(m_copyToSentFolder);
+		 
+		 m_mailUseLocation = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_MAIL_USER_LOCATION),m_mainApp.m_mailUseLocation);
+		 add(m_mailUseLocation);
 		 
 		 m_recvMsgTextLength = new ObjectChoiceField(recvMain.sm_local.getString(localResource.MESSAGE_CONTAIN_MAX_LENGTH),
 				 					recvMain.fsm_recvMaxTextLenghtString,m_mainApp.m_recvMsgTextLengthIndex);
@@ -338,6 +342,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		m_mainApp.m_delRemoteMail	= m_delRemoteMail.getChecked();
 		m_mainApp.m_recvMsgTextLengthIndex = m_recvMsgTextLength.getSelectedIndex();
 		m_mainApp.m_copyMailToSentFolder = m_copyToSentFolder.getChecked();
+		m_mainApp.m_mailUseLocation = m_mailUseLocation.getChecked();
 		
 		if(m_mainApp.m_enableWeiboModule != m_weiboModule.getChecked()){
 			

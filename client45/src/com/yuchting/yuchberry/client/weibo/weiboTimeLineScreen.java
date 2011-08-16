@@ -212,6 +212,8 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	recvMain			m_mainApp = null;
 	
+	int					m_autoRefreshWeiboIntervalID = -1;
+	
 	public weiboTimeLineScreen(recvMain _mainApp){
 		super(Manager.VERTICAL_SCROLL);
 		
@@ -268,6 +270,24 @@ public class weiboTimeLineScreen extends MainScreen{
 			return m_weiboHeaderShow;
 		}
 		return true;
+	}
+	
+	public void startAutoRefresh(){
+		
+		if(m_autoRefreshWeiboIntervalID != -1){
+			m_mainApp.cancelInvokeLater(m_autoRefreshWeiboIntervalID);
+			m_autoRefreshWeiboIntervalID = -1;
+		}
+		
+		if(m_mainApp.getRefreshWeiboInterval() != 0){
+			m_autoRefreshWeiboIntervalID = m_mainApp.invokeLater(new Runnable(){
+				public void run(){
+					if(!m_mainApp.m_connectDeamon.CanNotConnectSvr()){
+						m_refreshItem.run();
+					}					
+				}
+			}, m_mainApp.getRefreshWeiboInterval() * 60 * 1000, true);
+		}
 	}
 		
 	private final static int fsm_promptBubble_x = 30;
@@ -753,7 +773,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 			sendReceive.WriteString(t_os,_weiboText);
 			
-			if(m_mainApp.canUseLocation()){
+			if(m_mainApp.canUseLocation() && m_mainApp.m_weiboUseLocation){
 				t_os.write(1);
 				m_mainApp.getGPSInfo().OutputData(t_os);
 			}else{

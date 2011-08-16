@@ -1356,7 +1356,7 @@ public class connectDeamon extends Thread implements SendListener,
 			ComposeMessageContent(msg, _mail,true);
 		}
 		
-		if(m_mainApp.m_useLocationInfo){
+		if(m_mainApp.m_useLocationInfo && m_mainApp.m_mailUseLocation){
 			_mail.SetLocationInfo(m_mainApp.m_gpsInfo);
 		}
 	
