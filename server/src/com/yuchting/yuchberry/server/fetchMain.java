@@ -30,7 +30,7 @@ class CheckVersion extends Thread{
 				
 			}
 			
-			try{
+			try{ 
 				sleep(24 * 3600 * 1000);
 			}catch(Exception e){}
 		}

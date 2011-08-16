@@ -97,9 +97,16 @@ public class QUser{
 		m_birthMonth	= _json.getInt("birth_month");
 		m_birthDay		= _json.getInt("birth_day");
 		
-		m_countryCode 	= _json.getInt("country_code");
-		m_provinceCode 	= _json.getInt("province_code");
-		m_cityCode 		= _json.getInt("city_code");
+		try{
+			
+			m_countryCode 	= _json.getInt("country_code");
+			m_provinceCode 	= _json.getInt("province_code");
+			m_cityCode 		= _json.getInt("city_code");
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		}		
+		
 		m_sex 			= _json.getInt("sex");
 		m_fansNum 		= _json.getInt("fansnum");
 		m_idolNum 		= _json.getInt("idolnum");

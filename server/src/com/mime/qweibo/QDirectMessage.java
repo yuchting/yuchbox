@@ -44,7 +44,7 @@ public class QDirectMessage {
 		List<QDirectMessage> t_list = new ArrayList<QDirectMessage>();
 		
 		if(_json.getInt("ret") != 0){
-			throw new Exception("getHomeList error :" + _json.getString("msg"));
+			throw new Exception("getDMList error :" + _json.getString("msg"));
 		}
 		
 		try{
