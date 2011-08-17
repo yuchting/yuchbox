@@ -243,7 +243,7 @@ public class BberPanel extends TabPanel{
 		AddLabelWidget(t_layout,"端口:",m_serverPort,t_line++);
 		
 		t_layout.setWidget(t_line,2,t_changePass);
-		AddLabelWidget(t_layout,"用户密码:",new HTML("[YuchSign登录密码]"),t_line++);		
+		AddLabelWidget(t_layout,"用户密码:",new HTML("[语盒账户登录密码]"),t_line++);		
 		
 		AddLabelWidget(t_layout,"推送间隔(秒):",m_pushInterval,t_line++);
 		
@@ -393,11 +393,14 @@ public class BberPanel extends TabPanel{
 			
 			@Override
 			public void onClick(ClickEvent event) {
-
+				
 				if(m_currentBber.getAccountTotalNum() >= m_currentBber.GetMaxPushNum()){
 					Yuchsign.PopupPrompt("已经达到当前推送的最大数量:"+ m_currentBber.GetMaxPushNum() + "(需要升级)", m_pushList);
 					return;
 				}
+				
+				String t_prompt = "添加推送账户后需要到 [账户属性] 去同步，才能保存，开始推送";
+				
 				boolean t_succ = false;
 				
 				if(m_pushContent.getSelectedIndex() == 0){
@@ -417,6 +420,10 @@ public class BberPanel extends TabPanel{
 						m_pushContent.m_emailPanel.RefreshEmail(null);
 						
 						t_succ = true;
+						
+						if(m_pushContent.m_emailPanel.m_addHostPrompt != null){
+							t_prompt = m_pushContent.m_emailPanel.m_addHostPrompt + "\n" + t_prompt;
+						}
 					}
 					
 				}else if(m_pushContent.getSelectedIndex() == 1){
@@ -440,7 +447,7 @@ public class BberPanel extends TabPanel{
 				}
 				
 				if(t_succ){
-					Yuchsign.PopupPrompt("添加用户之后需要到 [账户属性] 去同步，才能保存，开始推送", BberPanel.this);
+					Yuchsign.PopupPrompt(t_prompt, BberPanel.this);
 				}				
 				
 			}

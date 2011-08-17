@@ -180,7 +180,7 @@ public class PayServiceImpl extends HttpServlet {
 							if(t_total_fee_value == t_weekMoney * 4){
 								t_payHours += 2 * 24;
 							}else if(t_total_fee_value == t_weekMoney * 10){
-								t_payHours += 14 * 24;
+								t_payHours += 21 * 24;
 							}
 							
 						}else if(t_order.GetPayType() == 1){

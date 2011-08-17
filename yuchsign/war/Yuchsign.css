@@ -4,7 +4,7 @@ body{text-shadow: 1px 1px 1px #fff;}
 .yheader{ height:84px; background:#708FB7; background:url(./images/headerbg.gif) repeat-x;}
 .yheader .headercon{ width:960px; height:84px; position:relative; margin:0 auto;}
 .yheader .headercon .logo{ position:absolute; left:0; top:0; display:block; background:url(./images/logo.gif) no-repeat; width:350px; height:84px;}
-.yheader .headercon .nav{ float:right; position:relative; left: 0px; top: 43px;width:500px; height:41px;}
+.yheader .headercon .nav{ float:right; position:relative; left: 0px; top: 43px;width:550px; height:41px;}
 
 .big{ margin:0 auto; background:#e1e4e9; border-bottom:1px solid #c8ccd3; }
 .big .bigicon{ margin:0 auto; width:960px; height:500px;}
@@ -22,7 +22,7 @@ body{text-shadow: 1px 1px 1px #fff;}
 .big .yuchTab
 { margin:0 auto 0 auto; width:960px; height:500px;}
 
-.big .account{padding:30px 200px 0 200px;}
+.big .account{padding:30px 200px 50px 200px;}
 
 .big .play{width:1100px; height:500px; background:url(./images/book.jpg) no-repeat;}
 .big .play .pageButton{position:relative; float:right; margin:0 50px 0 0;}
@@ -45,9 +45,9 @@ body{text-shadow: 1px 1px 1px #fff;}
 .mid .intro .introblock#block3{background:url(http://yuchberrybbs.com/outlinkimage/intro3.gif) no-repeat;}
 .mid .intro .introblock#block4{background:url(http://yuchberrybbs.com/outlinkimage/intro4.gif) no-repeat;}
 
-.mid .contact {margin:20px auto; padding:0 10px;float:left; width:340px; height:929px; background:#eceef0;}
+.mid .contact {margin:20px auto; padding:0 10px;float:left; width:380px; height:929px; background:#eceef0;}
 .mid .contact .mailWeibo {float:left;height:110px;padding:20px 0;}
-.mid .contact .qq {float:right; font-size:14px;line-height:30px;}
+.mid .contact .qq {float:right; font-size:18px;line-height:30px; width:180px}
 .mid .contact a.but{font-size:16px; text-decoration:none; color:#000; background-color:#fff; padding:10px 5px 10px 40px; border:2px solid #dcdcdc;}
 .mid .contact a.but:hover{border:2px solid #86c6f7;}
 .mid .contact a.but#mail{background:#fff url(./images/sendMail.gif) no-repeat;}
@@ -55,7 +55,7 @@ body{text-shadow: 1px 1px 1px #fff;}
 .mid .contact a.but#qq{background:#fff url(./images/qqweibo.gif) no-repeat;}
 
 .mid .contact .user{text-align:left; margin:175px 0 20px 0;}
-.mid .contact .user li{color:#232424; font-size:13px; margin:10px auto;}
+.mid .contact .user li{color:#232424; font-size:14px; margin:10px auto;}
 .mid .contact .user li a{color:#535454;}
 .mid .outlink a{font-size:16px; text-decoration:none; color:#666}
 

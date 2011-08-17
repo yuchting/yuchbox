@@ -68,7 +68,7 @@ public class PayTimeDlg extends DialogBox{
 					t_payTime += (2 * 24 * 3600000);
 				}else if(t_seasonPay.getValue()){
 					
-					t_payTime *= 12; // 12 weeks
+					t_payTime *= 13; // 13 weeks
 				}
 				
 				long t_currTime 			= (new Date()).getTime();
