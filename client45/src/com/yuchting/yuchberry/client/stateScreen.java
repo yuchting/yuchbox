@@ -328,7 +328,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 			t_start_x = 0;
 			
 			setPositionChild(m_uploadingText, t_start_x, y);
-			layoutChild(m_uploadingText,getPreferredWidth(),getPreferredHeight() / 2);			
+			layoutChild(m_uploadingText,getPreferredWidth(),getPreferredHeight() / 2);
 			
 			setExtent(getPreferredWidth(), getPreferredHeight());
 		}
@@ -367,13 +367,32 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 	    		_g.setColor(0xf0f0f0);
 	    		_g.drawText(m_promptText,m_connectBut.getExtent().x + m_connectBut.getImageWidth(),
 	    				m_connectBut.getExtent().y + (m_connectBut.getImageHeight() - _g.getFont().getHeight()) / 2);
+	    	
+	    		_g.setColor(0xffffff);
+	    		_g.drawText(recvMain.fsm_client_version, 0, 0);
 	    		
 	    	}finally{
 	    		_g.setColor(oldColor);
-	    	}
+	    	}    	
 	    	
-	    	super.subpaint(_g);
-			
+	    	int t_num = getFieldCount();
+	    	for(int i = 0 ;i < t_num;i++){
+	    		Field t_field = getField(i);
+	    			    		
+	    		if(t_field == m_uploadingText){
+	    			// set the uploading text
+	    			//
+	    			oldColor = _g.getColor();
+	    			try{
+	    				_g.setColor(0xffffff);
+	    				paintChild(_g, t_field);
+	    			}finally{
+	    				_g.setColor(oldColor);
+	    			}
+	    		}else{
+	    			paintChild(_g, t_field);
+	    		}	    		
+	    	}
 		}
 	};
 	

@@ -28,6 +28,7 @@ import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.i18n.SimpleDateFormat;
 import net.rim.device.api.notification.NotificationsConstants;
 import net.rim.device.api.notification.NotificationsManager;
+import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.CodeModuleManager;
@@ -50,6 +51,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public final static int 		fsm_display_width		= Display.getWidth();
 	public final static int 		fsm_display_height		= Display.getHeight();
 	public final static String	fsm_OS_version			= CodeModuleManager.getModuleVersion((CodeModuleManager.getModuleHandleForObject("")));
+	public final static String	fsm_client_version		= ApplicationDescriptor.currentApplicationDescriptor().getVersion();
 	public final static long		fsm_PIN					= DeviceInfo.getDeviceId();
 	public final static String	fsm_IMEI				= "bb";
 	

@@ -318,7 +318,65 @@ public class connectDeamon extends Thread implements SendListener,
 			if(m_sendStyle != fetchMail.NOTHING_STYLE && m_forwordReplyMail != null){
 									
 				t_forwardReplyMail = new fetchMail();
-				ImportMail(m_forwordReplyMail,t_forwardReplyMail);
+				
+				Folder t_folder = m_forwordReplyMail.getFolder();
+				if(t_folder != null && t_folder.getType() == Folder.SENT){
+					
+					// if reply/forward the message of OUTBOX
+					//
+					Message t_original = FindOrgMessage(m_forwordReplyMail);
+					
+					if(t_original != null && m_sendStyle == fetchMail.REPLY_STYLE){
+						
+						fetchMail t_originalMail = new fetchMail();
+						ImportMail(m_forwordReplyMail, t_originalMail);
+						
+						m_forwordReplyMail = t_original;
+						ImportMail(m_forwordReplyMail,t_forwardReplyMail);
+						
+						// append the original message text 
+						//
+						StringBuffer t_contain = new StringBuffer(t_originalMail.GetContain());
+						t_contain.append("\r\n\r\n\r\n---\r\n\r\n");
+						t_contain.append(t_forwardReplyMail.GetContain());
+						
+						t_forwardReplyMail.SetContain(t_contain.toString());
+						
+					}else{
+					
+						ImportMail(m_forwordReplyMail,t_forwardReplyMail);
+						t_forwardReplyMail.GetSendToVect().removeAllElements();
+						
+						if(t_original != null){
+						
+							// change the forward mail account of server 
+							//
+							Address[] a;
+							
+							if((a = t_original.getRecipients(Message.RecipientType.TO)) != null) {
+								
+							    for (int j = 0; j < a.length; j++) {
+							    	t_forwardReplyMail.GetSendToVect().addElement(composeAddress(a[j]));
+							    }
+							}
+							
+							// append the original message text 
+							//
+							fetchMail t_originalMail = new fetchMail();
+							ImportMail(t_original, t_originalMail);
+							
+							StringBuffer t_contain = new StringBuffer(t_forwardReplyMail.GetContain());
+							t_contain.append("\r\n\r\n\r\n---\r\n\r\n");
+							t_contain.append(t_originalMail.GetContain());
+							
+							t_forwardReplyMail.SetContain(t_contain.toString());
+						}
+					}				
+					
+				}else{
+					ImportMail(m_forwordReplyMail,t_forwardReplyMail);
+				}			
+				
 				
 				if(m_sendStyle == fetchMail.REPLY_STYLE && m_mainApp.m_discardOrgText){
 					// discard the org text when reply
@@ -506,7 +564,7 @@ public class connectDeamon extends Thread implements SendListener,
 		m_composingMail = e.getMessage();
 		m_composingAttachment.removeAllElements();
 		
-		m_forwordReplyMail = FindOrgMessage(e.getMessage(),fetchMail.FORWORD_STYLE);
+		m_forwordReplyMail = FindOrgMessage(e.getMessage());
 		
 		m_sendStyle = fetchMail.FORWORD_STYLE;
 	}
@@ -521,7 +579,7 @@ public class connectDeamon extends Thread implements SendListener,
 		m_composingMail = e.getMessage();
 		m_composingAttachment.removeAllElements();
 		
-		m_forwordReplyMail = FindOrgMessage(e.getMessage(),fetchMail.REPLY_STYLE);
+		m_forwordReplyMail = FindOrgMessage(e.getMessage());
 		
 		m_sendStyle = fetchMail.REPLY_STYLE;
 	}
@@ -529,7 +587,7 @@ public class connectDeamon extends Thread implements SendListener,
 			
 	static final String fsm_origMsgFindTag = "Message-ID:";
 	
-	public Message FindOrgMessage(Message _message,int _style){
+	public Message FindOrgMessage(Message _message){
 		
 		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 		try {
@@ -565,116 +623,12 @@ public class connectDeamon extends Thread implements SendListener,
 				}
 			}
 			
-		} catch (Exception e1) {
+		}catch (Exception e1) {
 			e1.printStackTrace();
 		}
 		
 		return null;
 		
-//		Message t_org = null;
-//		Store store = Session.getDefaultInstance().getStore();
-//		try{
-//			String t_messageSub = _message.getSubject();			
-//			String t_trimString = null;
-//			if(_style == fetchMail.REPLY_STYLE){
-//				
-//				if(t_messageSub.indexOf("：") != -1){
-//					
-//					for(int i = 0;i< fsm_findPrefix.length;i++){
-//						if(t_messageSub.startsWith(fsm_findPrefix[i])){
-//							t_trimString = fsm_findPrefix[i];
-//							break;
-//						}
-//					}
-//					
-//				}else{
-//
-//					for(int i = 0;i< fsm_replacePrefix.length;i++){
-//						if(t_messageSub.startsWith(fsm_replacePrefix[i])){
-//							t_trimString = fsm_replacePrefix[i];
-//							break;
-//						}
-//					}
-//				}			
-//				
-//				final int t_prefixIndex = t_messageSub.indexOf(t_trimString);
-//				if(t_prefixIndex != -1){
-//					t_messageSub = t_messageSub.substring(t_prefixIndex + t_trimString.length());
-//				}
-//							
-//			}else{
-//				t_trimString = _message.forward().getSubject();
-//								
-//				if(t_trimString.equals(t_messageSub)){
-//					
-//					// it will equal in OS6
-//					// find the prefix
-//					//
-//					for(int i = 0;i < fsm_findPrefix.length;i++){
-//						if(t_messageSub.startsWith(fsm_findPrefix[i])){
-//							t_messageSub = t_messageSub.substring(fsm_findPrefix[i].length());
-//							break;
-//						}
-//					}
-//					
-//					
-//				}else{
-//					
-//					final int t_start = t_trimString.indexOf(t_messageSub);
-//					
-//					if(t_start != -1){
-//						t_trimString = t_trimString.substring(0,t_start);
-//						t_messageSub = t_messageSub.substring(t_trimString.length());
-//					}	
-//				}
-//				
-//			}			
-//			
-//			Folder[] t_folders = store.list();
-//			
-//			find_lab:
-//			for(int i = 0 ;i < t_folders.length;i++){
-//				Message[] t_messages = t_folders[i].getMessages();
-//				
-//				// backword search the message
-//				for(int j = t_messages.length - 1;j >= 0 ;j--){
-//					
-//					final String t_sub = t_messages[j].getSubject();
-//					if(t_sub.startsWith(t_messageSub)){
-//						
-//						if(_style == fetchMail.REPLY_STYLE){
-//							// the original reply to
-//							//
-//							Address[] t_replyTo = t_messages[j].getReplyTo();
-//							
-//							// the message to reply to
-//							//
-//							Address[] t_replyTo1 = _message.getRecipients(Message.RecipientType.TO);
-//														
-//							for(int index = 0;index < t_replyTo.length;index++){
-//								
-//								for(int index1 = 0;index1 < t_replyTo1.length;index1++){
-//									if(t_replyTo[index].getAddr().equalsIgnoreCase(t_replyTo1[index1].getAddr())){
-//										t_org = t_messages[j];
-//										break find_lab;
-//									}
-//								}
-//								
-//							}																				
-//						}else{
-//							t_org = t_messages[j];
-//							break find_lab;
-//						}
-//						
-//					}
-//				}
-//			}
-//			
-//		}catch(Exception e){
-//			m_mainApp.SetErrorString("F:" + e.getMessage() + " " + e.getClass().getName());
-//		}
-//		
-//		return t_org;
 	}
 	
 	public void SendFetchAttachmentFile(FetchAttachment _att)throws Exception{
@@ -1136,8 +1090,7 @@ public class connectDeamon extends Thread implements SendListener,
 			for(int i = 0;i < t_folders.length;i++){
 				m_mainApp.SetErrorString( t_folders[i].toString());
 			}
-			
-			folder = store.getFolder(Folder.OUTBOX);
+			folder = store.getFolder(Folder.INBOX);
 		}
 		
 		if(folder == null){
@@ -1157,7 +1110,7 @@ public class connectDeamon extends Thread implements SendListener,
 		
 			int t_type = t_folders[i].getType();
 			
-			if(t_type == Folder.OUTBOX){
+			if(t_type == Folder.SENT){
 				folder = t_folders[i];
 				break;
 			}
@@ -1168,7 +1121,7 @@ public class connectDeamon extends Thread implements SendListener,
 			for(int i = 0;i < t_folders.length;i++){
 				m_mainApp.SetErrorString( t_folders[i].toString());
 			}
-			folder = store.getFolder(Folder.OUTBOX);
+			folder = store.getFolder(Folder.SENT);
 		}
 		
 		if(folder == null){

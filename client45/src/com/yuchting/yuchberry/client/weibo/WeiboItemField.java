@@ -228,7 +228,7 @@ public class WeiboItemField extends Manager{
 		
 		// get the abstract text height
 		//
-		if(sm_showAllInList){
+		if(sm_showAllInList && !(this instanceof WeiboDMItemField)){
 			
 			m_absTextAreaAdded = true;
 			

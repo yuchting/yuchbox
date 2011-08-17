@@ -282,7 +282,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		if(m_mainApp.getRefreshWeiboInterval() != 0){
 			m_autoRefreshWeiboIntervalID = m_mainApp.invokeLater(new Runnable(){
 				public void run(){
-					if(!m_mainApp.m_connectDeamon.CanNotConnectSvr()){
+					if(!m_mainApp.m_connectDeamon.CanNotConnectSvr() && m_mainApp.IsPromptTime()){
 						m_refreshItem.run();
 					}					
 				}

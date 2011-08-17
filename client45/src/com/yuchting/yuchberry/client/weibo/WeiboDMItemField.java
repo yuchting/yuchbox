@@ -78,7 +78,7 @@ public class WeiboDMItemField extends WeiboItemField{
 	
 	
 	public WeiboDMItemField(fetchWeibo _weibo,WeiboHeadImage _headImage,WeiboMainManager _manager){
-		super(_weibo,_headImage,_manager);
+		super(_weibo,_headImage,_manager);		
 		m_DMList.addElement(new WeiboDMData(_weibo,_headImage));
 	}
 	
