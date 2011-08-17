@@ -14,7 +14,7 @@ body{text-shadow: 1px 1px 1px #fff;}
 .big .bigicon .download{ position:relative; float:right; top:0; left:0; width:280px; height:460px; }
 .big .bigicon .download a{ margin:0 auto; display:block; text-align:center; background:url(./images/downloadBut.gif) no-repeat; width:226px; height:58px;}
 .big .bigicon .download a:hover{ background-position:0 100%; }
-.big .bigicon .download li{ margin:20px 5px; font-size:20px; }
+.big .bigicon .download li{ margin:20px 5px; font-size:17px; }
 
 .big .account,
 .big .faq,

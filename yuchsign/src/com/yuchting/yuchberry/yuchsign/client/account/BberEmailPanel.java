@@ -262,12 +262,7 @@ class BberEmailPanel extends FlowPanel{
 		if(m_password.getText().indexOf("+") != -1 || m_password.getText().indexOf("&") != -1){
 			Yuchsign.PopupPrompt("实在抱歉，因为在数据传输过程中无法支持符号\"+&\"\n无法添加成功。", m_password);
 			return null;
-		}
-		
-		if(m_addHostPrompt != null){
-			Yuchsign.PopupPrompt(m_addHostPrompt, getParent());
-		}
-		
+		}		
 		
 		yuchEmail t_email = _email == null?(new yuchEmail()):_email;
 		

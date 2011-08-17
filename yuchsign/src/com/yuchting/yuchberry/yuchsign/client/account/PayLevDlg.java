@@ -70,7 +70,7 @@ public class PayLevDlg extends DialogBox{
 								
 								t_expiredTime.setText("升级后到期时间："+ 
 													DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(new Date(t_remainTime)) + 
-													"（如果本机时间不准，显示就会有偏差，服务器会重新计算）");	
+													"（如果本机时间不准，显示就会有偏差，服务器会重新计算。充值后重新登录才能看到）");	
 						
 								break;
 							}						
