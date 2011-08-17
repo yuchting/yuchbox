@@ -3,7 +3,7 @@
 	<!--EmailAccount
 		account="tzt-123@163.com"
 		password=""
-		cryptPassword="dfbee7db0b285cda5f0179d0d3ce77d1"
+		cryptPassword="8dbf031d4b9b5e96ef8857158d44258d"
 		sendName="tzz"
 		
 		useFullNameSignIn="0"
@@ -44,7 +44,7 @@
 		commentSum="5"
 	/-->
 		
-	<WeiboAccount
+	<!--WeiboAccount
 		type="sina"
 		account="yuchberry"
 		accessToken="1eef9899c847f1cd0735c6775fdcc576"
@@ -55,9 +55,9 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/>
+	/-->
 		
-	<!--WeiboAccount
+	<WeiboAccount
 		type="qq"
 		account="yuchberry"
 		accessToken="d7804a95bde0436ca9f0b62ef84de787"
@@ -68,5 +68,5 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/-->
+	/>
 </Yuchberry>
