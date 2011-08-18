@@ -51,7 +51,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListener,
 												ViewListenerExtended{
 		
-	final static int	fsm_clientVer = 12;
+	final static int	fsm_clientVer = 13;
 	 
 	sendReceive		m_connect = null;
 		
@@ -294,7 +294,7 @@ public class connectDeamon extends Thread implements SendListener,
 		try{
 			
 			for(int i = 0;i < m_sendingMailAttachment.size();i++){
-				sendMailAttachmentDeamon t_mail = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
+				SendMailDeamon t_mail = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
 				
 				if(t_mail.m_sendMail.GetSendDate().equals(t_msg.getSentDate())){
 					
@@ -359,7 +359,7 @@ public class connectDeamon extends Thread implements SendListener,
 							    	t_forwardReplyMail.GetSendToVect().addElement(composeAddress(a[j]));
 							    }
 							}
-							
+									
 							// append the original message text 
 							//
 							fetchMail t_originalMail = new fetchMail();
@@ -881,14 +881,10 @@ public class connectDeamon extends Thread implements SendListener,
 			 }			
 			 
 			 for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
-				 sendMailAttachmentDeamon send = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
-				 if(send.isAlive()){
-	
-					 send.m_closeState = true;
-					 if(send.isAlive()){
-						 send.interrupt();
-					 }
-				 }				 
+				 SendMailDeamon send = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
+				 	
+				 send.m_closeState = true; 
+				 send.inter(); 
 			 }
 			 
 			 m_sendingMailAttachment.removeAllElements();
@@ -1029,6 +1025,9 @@ public class connectDeamon extends Thread implements SendListener,
 		 		break;
 		 	case msg_head.msgMailAttach:
 		 		ProcessMailAttach(in);
+		 		break;
+		 	case msg_head.msgFileAttach:
+		 		ProcessFileAttach(in);
 		 		break;
 		 	case msg_head.msgSponsorList:
 		 		m_mainApp.SetAboutInfo(sendReceive.ReadString(in));
@@ -1220,7 +1219,7 @@ public class connectDeamon extends Thread implements SendListener,
 		// delete the fetchMail send deamon thread
 		//
 		for(int i = 0;i < m_sendingMailAttachment.size();i++){
-			sendMailAttachmentDeamon t_deamon = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
+			SendMailDeamon t_deamon = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
 			
 			if(t_deamon.m_sendMail.GetSendDate().getTime() == t_time){
 			
@@ -1239,9 +1238,8 @@ public class connectDeamon extends Thread implements SendListener,
 				}
 				
 				t_deamon.m_closeState = true;
-				if(t_deamon.isAlive()){
-					t_deamon.interrupt();
-				}				
+				t_deamon.inter();
+							
 				
 				m_sendingMailAttachment.removeElement(t_deamon);
 				
@@ -1319,8 +1317,8 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				try{
 					
-					sendMailAttachmentDeamon t_mailDeamon = new sendMailAttachmentDeamon(connectDeamon.this, 
-							_mail, t_vfileReader,_forwardReply,_sendStyle);
+					SendMailDeamon t_mailDeamon = new SendMailDeamon(connectDeamon.this, 
+													_mail, t_vfileReader,_forwardReply,_sendStyle);
 					
 					m_sendingMailAttachment.addElement(t_mailDeamon);
 					
@@ -1387,6 +1385,26 @@ public class connectDeamon extends Thread implements SendListener,
 				break;
 			}
 		}
+	}
+	
+	public void ProcessFileAttach(InputStream in)throws Exception{
+		
+		int t_hashCode = sendReceive.ReadInt(in);
+		int t_attachIndex = sendReceive.ReadInt(in);
+		
+		for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
+			SendMailDeamon t_mail = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
+			if(t_mail.m_sendMail.GetSimpleHashCode() == t_hashCode){
+				
+				t_mail.m_sendFileDaemon.sendNextFile(t_attachIndex);
+								
+				return;
+			}
+		}
+		
+		// TODO weibo process....
+		//
+		
 	}
 		
 	public boolean AddMarkReadOrDelMail(Message m,final boolean _del){

@@ -1781,6 +1781,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			ApplicationMenuItemRepository.getInstance()
 				.removeMenuItem(ApplicationMenuItemRepository.MENUITEM_MESSAGE_LIST,m_updateWeiboItem);
 			m_updateWeiboItem = null;
+			
+			StopWeiboHomeNotification();
+			StopWeiboNotification();
 		}
 	}
 		
