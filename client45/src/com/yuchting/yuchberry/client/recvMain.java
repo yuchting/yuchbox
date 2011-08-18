@@ -1141,6 +1141,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
+	boolean m_weiboUpdateDlg = false;
 	public void activate(){
 		
 		if(m_enableWeiboModule && m_connectDeamon.IsConnectState()){
@@ -1150,6 +1151,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			}
 			if(getScreenCount() == 0){
 				pushScreen(m_weiboTimeLineScreen);
+				if(m_weiboUpdateDlg){
+					m_weiboUpdateDlg = false;
+					pushScreen(m_weiboTimeLineScreen.m_currUpdateDlg);
+				}
 			}			
 			
 		}else{
@@ -1181,6 +1186,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			if(m_weiboTimeLineScreen != null){
 				
 				if(m_weiboTimeLineScreen.m_pushUpdateDlg){
+					m_weiboUpdateDlg = true;
 					m_weiboTimeLineScreen.m_currUpdateDlg.close();
 				}
 				

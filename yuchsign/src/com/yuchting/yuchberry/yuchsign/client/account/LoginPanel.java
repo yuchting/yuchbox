@@ -52,7 +52,7 @@ public final class LoginPanel extends HorizontalPanel{
 		final VerticalPanel t_logonPane = new VerticalPanel();
 		t_logonPane.setStyleName("loginVPanel");
 		t_logonPane.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-		t_logonPane.add(new HTML("登录用户名(邮箱地址):"));
+		t_logonPane.add(new HTML("语盒登录账户名(邮箱地址):"));
 		t_logonPane.add(m_logonName);
 		t_logonPane.add(new HTML("密码:"));
 		t_logonPane.add(m_logonPassword);
@@ -101,7 +101,7 @@ public final class LoginPanel extends HorizontalPanel{
 		final VerticalPanel t_signinPane = new VerticalPanel();
 		t_signinPane.setStyleName("signinVPanel");
 		t_signinPane.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-		t_signinPane.add(new HTML("注册用户名(邮箱地址):"));
+		t_signinPane.add(new HTML("语盒注册账户名(邮箱地址):"));
 		t_signinPane.add(m_signinName);
 		t_signinPane.add(new HTML("密码(大于等于6位的字母或数字):"));
 		t_signinPane.add(m_signinPass);

@@ -17,6 +17,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
+
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public final class yuchbber {
 	
@@ -38,7 +40,7 @@ public final class yuchbber {
 	private String m_password = "";
 	
 	@Persistent
-	private long m_usingHours = 360;
+	private long m_usingHours = FieldVerifier.fsm_freeDays * 24;
 	
 	@Persistent
 	private long m_createTime = 0;

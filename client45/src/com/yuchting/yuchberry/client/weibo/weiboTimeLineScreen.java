@@ -216,11 +216,11 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	public weiboTimeLineScreen(recvMain _mainApp){
 		super(Manager.VERTICAL_SCROLL);
-		
-		
-		
+			
 		sm_mainApp 	= _mainApp;
 		m_mainApp	= _mainApp;
+		
+		m_currUpdateDlg = new WeiboUpdateDlg(weiboTimeLineScreen.this);
 		
 		m_mainMgr = new WeiboMainManager(_mainApp,this,true);
 		add(m_mainMgr);
@@ -941,10 +941,13 @@ public class weiboTimeLineScreen extends MainScreen{
    
     int m_menuIndex_op = 20;
     
-    public WeiboUpdateDlg m_currUpdateDlg = new WeiboUpdateDlg(weiboTimeLineScreen.this);
+    public WeiboUpdateDlg m_currUpdateDlg = null;
     public boolean m_pushUpdateDlg = false;
     public MenuItem m_updateItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_UPDATE_DLG),m_menuIndex_op++,0){
-        public void run() {        	
+        public void run() {
+        	if(m_currUpdateDlg == null){
+        		m_currUpdateDlg = new WeiboUpdateDlg(weiboTimeLineScreen.this);
+        	}
         	m_pushUpdateDlg = true;
         	UiApplication.getUiApplication().pushScreen(m_currUpdateDlg);
         }

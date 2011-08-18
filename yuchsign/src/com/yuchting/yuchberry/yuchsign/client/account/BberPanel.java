@@ -35,6 +35,7 @@ import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.XMLParser;
 import com.yuchting.yuchberry.yuchsign.client.YesNoHandler;
 import com.yuchting.yuchberry.yuchsign.client.Yuchsign;
+import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
 
 class ContentTab extends TabPanel implements SelectionHandler<Integer>{
@@ -230,7 +231,7 @@ public class BberPanel extends TabPanel{
 		int t_line = 0;
 		t_layout.setWidget(t_line,2,t_signoutBut);
 		t_layout.setWidget(t_line,3,t_sendActivateMailBut);
-		AddLabelWidget(t_layout,"用户名:",m_signinName,t_line++);
+		AddLabelWidget(t_layout,"账户名:",m_signinName,t_line++);
 		
 		t_layout.setWidget(t_line, 2, t_levelUpBut);
 		t_layout.setWidget(t_line, 3, t_getdownLev);
@@ -770,7 +771,7 @@ public class BberPanel extends TabPanel{
 		m_signinName.setText(_bber.GetSigninName());
 		
 		if(_bber.GetConnectHost().isEmpty()){
-			m_connectHost.setText("<没有同步>");
+			m_connectHost.setText("<"+FieldVerifier.fsm_freeDays+"天免费，尚未同步>");
 		}else{
 			m_connectHost.setText(_bber.GetConnectHost());
 		}		
@@ -778,7 +779,7 @@ public class BberPanel extends TabPanel{
 		m_bberLev.setText(GetBberLevelString(_bber.GetLevel()));
 	    
 		if(_bber.GetCreateTime() == 0){
-		    m_endTime.setText("<没有同步>");
+		    m_endTime.setText("<"+FieldVerifier.fsm_freeDays+"天免费，尚未同步>");
 		}else{
 			Date date = new Date(_bber.GetCreateTime() + _bber.GetUsingHours() * 3600000);
 		    m_endTime.setText(DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(date));
@@ -787,7 +788,7 @@ public class BberPanel extends TabPanel{
 	    if(_bber.GetServerPort() != 0){
 	    	m_serverPort.setText("" + _bber.GetServerPort());
 	    }else{
-	    	m_serverPort.setText("<没有同步>");
+	    	m_serverPort.setText("<"+FieldVerifier.fsm_freeDays+"天免费，尚未同步>");
 	    }	
 		
 		m_pushInterval.setText("" + _bber.GetPushInterval());

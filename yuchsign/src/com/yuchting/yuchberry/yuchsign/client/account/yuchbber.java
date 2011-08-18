@@ -8,6 +8,7 @@ import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.Node;
 import com.google.gwt.xml.client.NodeList;
 import com.google.gwt.xml.client.XMLParser;
+import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
 public final class yuchbber {
 	
@@ -20,7 +21,7 @@ public final class yuchbber {
 	
 	private String m_password = "";
 	
-	private long m_usingHours = 120;
+	private long m_usingHours = FieldVerifier.fsm_freeDays * 24;
 
 	private long m_createTime = 0;
 	

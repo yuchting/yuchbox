@@ -23,6 +23,8 @@ package com.yuchting.yuchberry.yuchsign.shared;
  */
 public class FieldVerifier {
 	
-	public final static String		fsm_admin = "yuchting@gmail.com";	
+	public final static String		fsm_admin = "yuchting@gmail.com";
+	
+	public final static int			fsm_freeDays = 15;
 		
 }
