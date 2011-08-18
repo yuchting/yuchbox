@@ -5,7 +5,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
@@ -531,6 +534,12 @@ public class fetchMgr{
 				m_pin = sendReceive.ReadLong(in);
 				m_IMEI = sendReceive.ReadString(in);
 				break;
+			case msg_head.msgFileAttach:
+				ProcessFileAttach(in);
+				break;
+			case msg_head.msgFileAttachSeg:
+				ProcessFileAttachSeg(in);
+				break;
 			default:
 			{
 				for(fetchAccount account :m_fetchAccount){
@@ -540,6 +549,64 @@ public class fetchMgr{
 				}
 			}
 		}		
+	}
+	
+	public void ProcessFileAttach(InputStream in)throws Exception{
+		
+		int t_hashCode = sendReceive.ReadInt(in);
+		int t_num = sendReceive.ReadInt(in);
+		
+		for(int i = 0;i < t_num;i++){
+			int t_size = sendReceive.ReadInt(in);
+			
+			String t_filename =  GetPrefixString() + t_hashCode + "_" + i + ".satt";
+			FileOutputStream fos = new FileOutputStream(t_filename);
+			
+			for(int j = 0;j < t_size;j++){
+				fos.write(0);
+			}
+			
+			fos.flush();
+			fos.close();
+		}
+	}
+	
+	public void ProcessFileAttachSeg(InputStream in)throws Exception{
+		
+		final int t_hashCode = sendReceive.ReadInt(in);
+				
+		final int t_attachmentIdx = sendReceive.ReadInt(in);
+		final int t_segIdx = sendReceive.ReadInt(in);
+		final int t_segSize = sendReceive.ReadInt(in);
+		
+		String t_filename = GetPrefixString() + t_hashCode + "_" + t_attachmentIdx + ".satt";
+		File t_file = new File(t_filename);
+		
+		if(t_segIdx + t_segSize > t_file.length()){
+			throw new Exception("error attach" + t_filename + " idx and size");
+		}
+		
+		m_logger.LogOut("recv msgFileAttach time<"+ t_hashCode + "> attIndex<" + t_attachmentIdx + "> beginIndex<" + t_segIdx + "> size:" + t_segSize);
+		
+		byte[] t_bytes = new byte[t_segSize];
+		sendReceive.ForceReadByte(in, t_bytes, t_segSize);
+		
+		RandomAccessFile t_fwrite = new RandomAccessFile(t_file,"rw");
+		t_fwrite.seek(t_segIdx);
+		t_fwrite.write(t_bytes);
+		
+		t_fwrite.close();
+		
+		if(t_segIdx + t_segSize == t_file.length()){
+					
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			os.write(msg_head.msgFileAttach);
+			sendReceive.WriteInt(os,t_hashCode);
+			sendReceive.WriteInt(os,t_attachmentIdx);
+			
+			SendData(os, true);
+		}
+		
 	}
 	
 	public void SendImmMail(final String _subject ,final String _contain,final String _from){

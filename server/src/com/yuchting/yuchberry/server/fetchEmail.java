@@ -843,9 +843,10 @@ public class fetchEmail extends fetchAccount{
 		}
 		
 		
-		if(t_mail.GetAttachment().isEmpty()){
+		if(t_mail.GetAttachment().isEmpty() || m_mainMgr.GetConnectClientVersion() >= 13){
 			SendMailToSvr(new RecvMailAttach(m_mainMgr,t_mail,t_forwardReplyMail,t_style,t_copyToSentFolder));
 		}else{
+			
 			m_mainMgr.m_logger.LogOut("Create Tmp Send Maill Attach file");
 			CreateTmpSendMailAttachFile(new RecvMailAttach(m_mainMgr,t_mail,t_forwardReplyMail,t_style,t_copyToSentFolder));
 		}
@@ -1963,7 +1964,14 @@ public class fetchEmail extends fetchAccount{
 					MimeBodyPart t_filePart = new MimeBodyPart();
 					t_filePart.setFileName(MimeUtility.encodeText(t_attachment.m_name));
 
-					String t_fullname = GetAccountPrefix() + _mail.GetSendDate().getTime() + "_" + i + ".satt";
+					String t_fullname = null;
+					
+					if(m_mainMgr.GetConnectClientVersion() >= 13){
+						t_fullname = m_mainMgr.GetPrefixString() + _mail.GetSimpleHashCode() + "_" + i + ".satt";
+					}else{
+						t_fullname = GetAccountPrefix() + _mail.GetSendDate().getTime() + "_" + i + ".satt";
+					}
+					
 					t_filePart.setContent(ReadFileBuffer( t_fullname ), t_attachment.m_type);
 					
 					t_mainPart.addBodyPart(t_filePart);
