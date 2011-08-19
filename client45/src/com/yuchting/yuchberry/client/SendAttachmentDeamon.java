@@ -23,6 +23,8 @@ public class SendAttachmentDeamon extends Thread{
 	
 	int					m_attachmentIndex = 0;
 	Vector				m_vFileConnection = null;
+	
+	byte[]				m_uploadingBuffer = null;
 		
 	final static private int fsm_segmentSize = 512;
 	
@@ -33,6 +35,14 @@ public class SendAttachmentDeamon extends Thread{
 	public SendAttachmentDeamon(connectDeamon _connect,
 								Vector _vFileConnection,int _sendHashCode,
 								ISendAttachmentCallback _sendCallback)throws Exception{
+		
+		if(_sendCallback == null){
+			throw new IllegalArgumentException("SendAttachmentDeamon _sendCallback == null");
+		}
+		
+		if(_vFileConnection == null){
+			throw new IllegalArgumentException("SendAttachmentDeamon _vFileConnection == null"); 
+		}
 		
 		m_connect			= _connect;
 		m_vFileConnection	= _vFileConnection;
@@ -61,13 +71,47 @@ public class SendAttachmentDeamon extends Thread{
 		start();
 	}
 	
+	public SendAttachmentDeamon(connectDeamon _connect,
+					byte[] _buffer,int _sendHashCode,
+					ISendAttachmentCallback _sendCallback)throws Exception{
+		
+		if(_buffer == null){
+			throw new IllegalArgumentException("SendAttachmentDeamon _buffer == null"); 
+		}
+		
+		if(_sendCallback == null){
+			throw new IllegalArgumentException("SendAttachmentDeamon _sendCallback == null");
+		}
+		
+		m_connect			= _connect;
+		m_uploadingBuffer	= _buffer;
+		m_sendHashCode		= _sendHashCode;
+		m_sendCallback		= _sendCallback;
+		m_totalSize			= _buffer.length;
+		
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgFileAttach);
+		sendReceive.WriteInt(os,m_sendHashCode);
+		sendReceive.WriteInt(os,1);
+		sendReceive.WriteInt(os, _buffer.length);			
+				
+		_connect.m_connect.SendBufferToSvr(os.toByteArray(), true, false);
+							
+		start();
+	}
+	
 	private void ReleaseAttachFile(){
 		try{
 			
-			for(int i = 0;i < m_vFileConnection.size();i++){
-				FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(i);
-				t_file.close();
+			if(m_vFileConnection != null){
+				for(int i = 0;i < m_vFileConnection.size();i++){
+					FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(i);
+					t_file.close();
+				}
+			}else{
+				m_uploadingBuffer = null;
 			}
+			
 			
 		}catch(Exception e){}
 	}
@@ -80,35 +124,46 @@ public class SendAttachmentDeamon extends Thread{
 		
 		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 		
-		final int t_size = (m_beginIndex + fsm_segmentSize) > (int)m_fileConnection.fileSize()?
-							((int)m_fileConnection.fileSize() - m_beginIndex) : fsm_segmentSize;
-		try{
-			
-			sendReceive.ForceReadByte(m_fileIn, m_bufferBytes, t_size);
-			
-		}catch(Exception _e){
-			try{
-				sleep(5000);
-				m_connect.m_mainApp.SetErrorString("SA: read file fail" + _e.getMessage() + _e.getClass().getName());
-			}catch(Exception ex){}
-			
-			m_fileIn.close();
-			
-			m_fileIn = m_fileConnection.openInputStream();
-			m_fileIn.skip(m_beginIndex);
-			
-			// try again...
-			//
-			try{
-				sendReceive.ForceReadByte(m_fileIn, m_bufferBytes, t_size);
-			}catch(Exception _ex){
-				// failed again...
-				//
-				throw new Exception("SA: read file fail again, close. " + _e.getMessage() + _e.getClass().getName());
-			}
-			
-		}
+		int t_currSize = (m_vFileConnection != null)?(int)m_fileConnection.fileSize():m_uploadingBuffer.length;
+		int t_size = (m_beginIndex + fsm_segmentSize) > (int)t_currSize?
+								((int)t_currSize - m_beginIndex) : fsm_segmentSize;
 		
+		if(m_vFileConnection != null){
+			
+			try{
+				
+				sendReceive.ForceReadByte(m_fileIn, m_bufferBytes, t_size);
+				
+			}catch(Exception _e){
+				try{
+					sleep(5000);
+					m_connect.m_mainApp.SetErrorString("SA: read file fail" + _e.getMessage() + _e.getClass().getName());
+				}catch(Exception ex){}
+				
+				m_fileIn.close();
+				
+				m_fileIn = m_fileConnection.openInputStream();
+				m_fileIn.skip(m_beginIndex);
+				
+				// try again...
+				//
+				try{
+					sendReceive.ForceReadByte(m_fileIn, m_bufferBytes, t_size);
+				}catch(Exception _ex){
+					// failed again...
+					//
+					throw new Exception("SA: read file fail again, close. " + _e.getMessage() + _e.getClass().getName());
+				}
+				
+			}
+		}else{
+								
+			int t_index = 0;
+			for(int i = m_beginIndex;i < t_size;i++,t_index++){
+				m_bufferBytes[t_index] = m_uploadingBuffer[i];
+			}
+		}
+				
 		t_os.write(msg_head.msgFileAttachSeg);
 		sendReceive.WriteInt(t_os, m_sendHashCode);
 		sendReceive.WriteInt(t_os, m_attachmentIndex);
@@ -118,18 +173,12 @@ public class SendAttachmentDeamon extends Thread{
 		
 		m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), _send,false);
 		
-		System.out.println("send msgMailAttach time:"+ m_sendHashCode + " attIdx<" +m_attachmentIndex + "> beginIndex<" + m_beginIndex + "> size:" + t_size);
+		//System.out.println("send msgMailAttach time:"+ m_sendHashCode + " attIdx<" +m_attachmentIndex + "> beginIndex<" + m_beginIndex + "> size:" + t_size);
 		
 		m_sendCallback.sendProgress(m_attachmentIndex, m_uploadedSize, m_totalSize);
 		
-//		m_connect.m_mainApp.SetUploadingDesc(m_sendMail,m_attachmentIndex,
-//											m_uploadedSize,m_totalSize);
-		
-		
-		if((m_beginIndex + t_size) >= (int)m_fileConnection.fileSize()){
-			
+		if((m_beginIndex + t_size) >= t_currSize){
 			m_beginIndex = 0;
-			
 			return true;
 			
 		}else{
@@ -146,36 +195,44 @@ public class SendAttachmentDeamon extends Thread{
 		
 		try{
 			
-			if(_attachIndex != m_attachmentIndex){
+			if(m_vFileConnection != null){
 				
-				m_closeState = true;
-				
-			}else{
-				
-				m_beginIndex = 0;
-				m_attachmentIndex++;
-				
-				m_fileIn.close();
-				m_fileConnection.close();
-				
-				m_fileIn = null;
-				
-				if(m_attachmentIndex >= m_vFileConnection.size()){
-					
-					// send over
-					//
-					//m_sendCallback.sendProgress(m_sendHashCode, -2, 0, 0);
-					//m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-2,0,0);
-					
-					m_sendCallback.sendFinish();
+				if(_attachIndex != m_attachmentIndex){
 					
 					m_closeState = true;
-				
+					
 				}else{
-					m_fileConnection = (FileConnection)m_vFileConnection.elementAt(m_attachmentIndex);
-					m_fileIn = m_fileConnection.openInputStream();
-				}
-			}			
+					
+					m_beginIndex = 0;
+					m_attachmentIndex++;
+					
+					m_fileIn.close();
+					m_fileConnection.close();
+					
+					m_fileIn = null;
+					
+					if(m_attachmentIndex >= m_vFileConnection.size()){
+						
+						// send over
+						//
+						//m_sendCallback.sendProgress(m_sendHashCode, -2, 0, 0);
+						//m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-2,0,0);
+						
+						m_sendCallback.sendFinish();
+						
+						m_closeState = true;
+					
+					}else{
+						m_fileConnection = (FileConnection)m_vFileConnection.elementAt(m_attachmentIndex);
+						m_fileIn = m_fileConnection.openInputStream();
+					}
+				}	
+			}else{
+				
+				m_sendCallback.sendFinish();
+				m_closeState = true;
+			}
+					
 			
 			if(isAlive()){
 				interrupt();

@@ -162,7 +162,7 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		
 		
-		public void addSendingData(byte _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
+		public boolean addSendingData(byte _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
 			
 			if(!isDisconnectState()){
 				m_connect.SendBufferToSvr(_data, false, false);
@@ -172,13 +172,15 @@ public class connectDeamon extends Thread implements SendListener,
 						for(int i = 0 ;i < m_sendingData.size();i++){
 							SendingQueueData t_data = (SendingQueueData)m_sendingData.elementAt(i);
 							if(t_data.msgType == _msgType && Arrays.equals(t_data.msgData,_data)){
-								return;
+								return false;
 							}
 						}
 					}
 					m_sendingData.addElement(new SendingQueueData(_msgType,_data));
 				}				
-			}			
+			}
+			
+			return true;
 		}
 				
 		public void run(){
@@ -210,8 +212,8 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	SendingQueue	 m_sendingQueue = new SendingQueue();
 	
-	public void addSendingData(byte _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
-		m_sendingQueue.addSendingData(_msgType, _data, _exceptSame);
+	public boolean addSendingData(byte _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
+		return m_sendingQueue.addSendingData(_msgType, _data, _exceptSame);
 	}
 	
 	public boolean isDisconnectState(){
@@ -1404,6 +1406,9 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		// TODO weibo process....
 		//
+		if(m_mainApp.m_weiboTimeLineScreen != null){
+			m_mainApp.m_weiboTimeLineScreen.weiboSendFileConfirm(t_hashCode,t_attachIndex);
+		}
 		
 	}
 		

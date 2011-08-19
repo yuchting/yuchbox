@@ -41,8 +41,12 @@ class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 			super.interrupt();
 		}
 		
-		if(m_sendFileDaemon != null && m_sendFileDaemon.isAlive()){
-			m_sendFileDaemon.interrupt();
+		if(m_sendFileDaemon != null ){
+			m_sendFileDaemon.m_closeState = true;
+			if(m_sendFileDaemon.isAlive()){
+				m_sendFileDaemon.interrupt();
+			}
+			
 		}
 	}
 		

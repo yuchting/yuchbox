@@ -145,10 +145,62 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 
 	public void sendUpdate(){
 		if(m_editTextArea.getText().length() != 0){
+			
 			getScreen().close();
-			m_timelineScreen.UpdateNewWeibo(m_editTextArea.getText());
+			byte[] t_content = null;
+			
+			if(m_timelineScreen.m_currUpdateDlg.m_imagePath != null){
+				
+				try{
+					FileConnection t_file = (FileConnection)Connector.open("file://" + m_timelineScreen.m_currUpdateDlg.m_imagePath,
+																			Connector.READ_WRITE);
+					
+					if(t_file.exists()){
+						try{
+							InputStream t_fileIn = t_file.openInputStream();
+							try{
+								
+								byte[] t_buffer = new byte[(int)t_file.fileSize()];
+								sendReceive.ForceReadByte(t_fileIn, t_buffer, t_buffer.length);
+								
+//								EncodedImage t_origImage = EncodedImage.createEncodedImage(t_buffer, 0, t_buffer.length);
+//								try{
+//									int scaleX = Fixed32.div(Fixed32.toFP(t_origImage.getWidth()), Fixed32.toFP(recvMain.fsm_display_width));
+//									int scaleY = Fixed32.div(Fixed32.toFP(t_origImage.getHeight()), Fixed32.toFP(recvMain.fsm_display_height));
+//									
+//									t_content = t_origImage.scaleImage32(scaleX, scaleY).getData();
+//									
+//								}finally{
+//									t_origImage = null;
+//									t_buffer = null;
+//								}
+								
+								t_content = t_buffer;
+								
+							}finally{
+								t_fileIn.close();
+								t_fileIn = null;
+							}
+							
+							
+						}finally{
+							t_file.close();
+							t_file = null;
+						}
+					}											
+					
+				}catch(Exception e){
+					m_timelineScreen.m_mainApp.DialogAlert("camera file process error:"+ e.getMessage()+ e.getClass());
+					m_timelineScreen.m_mainApp.SetErrorString("su:"+ e.getMessage()+ e.getClass());
+				}
+			}
+			
+			m_timelineScreen.UpdateNewWeibo(m_editTextArea.getText(),
+					t_content,m_timelineScreen.m_currUpdateDlg.m_imageType);
+			
 			m_editTextArea.setText("");
-			m_timelineScreen.m_currUpdateDlg.m_resizeImage = null;
+			
+			m_timelineScreen.m_currUpdateDlg.m_imagePath = null;
 		}
 	}
 	
@@ -211,7 +263,7 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener{
     
     MenuItem m_cameraItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPEN_CAMERA),m_menuIndex_op++,0){
     	public void run(){
-    		m_resizeImage = null;
+    		m_imagePath = null;
     		Invoke.invokeApplication(Invoke.APP_TYPE_CAMERA, new CameraArguments());
     	}
     };
@@ -220,7 +272,9 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener{
 	
 	private long 			m_lastUSN;
 	
-	EncodedImage			m_resizeImage;
+	String					m_imagePath = null;
+	int						m_imageType = 0;
+	
 		
 	public WeiboUpdateDlg(weiboTimeLineScreen _screen){
 		super(new WeiboUpdateManager(_screen),Screen.DEFAULT_MENU | Manager.NO_VERTICAL_SCROLL);
@@ -254,11 +308,13 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener{
 		
 		super.makeMenu(_menu,instance);
 	}
+	
 	public void fileJournalChanged() {
 		
 		long nextUSN = FileSystemJournal.getNextUSN();
 		
 		for (long lookUSN = nextUSN - 1; lookUSN >= m_lastUSN ; --lookUSN) {
+			
 			FileSystemJournalEntry entry = FileSystemJournal.getEntry(lookUSN);
 			if (entry == null) {
 			    break; 
@@ -266,49 +322,24 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener{
 			
 			if(entry.getEvent() == FileSystemJournalEntry.FILE_ADDED){
 				
-				String path = entry.getPath();
+				String entryPath = entry.getPath();
 				
-				if (path != null && m_resizeImage == null
-				&& (path.endsWith("png") || path.endsWith("jpg") 
-					|| path.endsWith("bmp") || path.endsWith("gif"))) {
+				if (entryPath != null && m_imagePath == null){
+					String t_path = entryPath.toLowerCase();
 					
-					//TODO add file
-					//
-					try{
-						FileConnection t_file = (FileConnection)Connector.open("file://" + path);
-						try{
-							InputStream t_fileIn = t_file.openInputStream();
-							try{
-								
-								byte[] t_buffer = new byte[(int)t_file.fileSize()];
-								sendReceive.ForceReadByte(t_fileIn, t_buffer, t_buffer.length);
-								
-								EncodedImage t_origImage = EncodedImage.createEncodedImage(t_buffer, 0, t_buffer.length);
-								
-								int scaleX = Fixed32.div(Fixed32.toFP(t_origImage.getWidth()), Fixed32.toFP(recvMain.fsm_display_width));
-								int scaleY = Fixed32.div(Fixed32.toFP(t_origImage.getHeight()), Fixed32.toFP(recvMain.fsm_display_height));
-								
-								m_resizeImage = t_origImage.scaleImage32(scaleX, scaleY);
-								
-								t_origImage = null;
-								t_buffer = null;
-								
-							}finally{
-								t_fileIn.close();
-								t_fileIn = null;
-							}
-							
-							
-						}finally{
-							t_file.close();
-							t_file = null;
-						}						
-						
-					}catch(Exception e){
-						m_updateManager.m_timelineScreen.m_mainApp.DialogAlert("camera file process error:"+ e.getMessage()+ e.getClass());
-						m_updateManager.m_timelineScreen.m_mainApp.SetErrorString("fJC:"+ e.getMessage()+ e.getClass());
-					}					
+					if(t_path.endsWith("png")){
+						m_imageType = fetchWeibo.IMAGE_TYPE_PNG;
+					}else if(t_path.endsWith("jpg")){
+						m_imageType = fetchWeibo.IMAGE_TYPE_JPG;
+					}else if(t_path.endsWith("bmp")){
+						m_imageType = fetchWeibo.IMAGE_TYPE_BMP;
+					}else if(t_path.endsWith("gif")){
+						m_imageType = fetchWeibo.IMAGE_TYPE_GIF;
+					}else{
+						continue;
+					}
 					
+					m_imagePath = entryPath;										
 				}
 			}
 		}

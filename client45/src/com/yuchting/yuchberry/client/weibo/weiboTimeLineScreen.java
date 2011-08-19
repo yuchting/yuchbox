@@ -137,6 +137,8 @@ public class weiboTimeLineScreen extends MainScreen{
 	WeiboDMManager				m_mainDMMgr;
 	
 	WeiboMainManager			m_currMgr = null;
+	
+	Vector						m_sendDaemonList = new Vector();
 		
 	private static ImageUnit[]	sm_VIPSign = 
 	{
@@ -760,40 +762,44 @@ public class weiboTimeLineScreen extends MainScreen{
 		return null;
 	}
 	
-	public void UpdateNewWeibo(String _weiboText){
+	public void weiboSendFileConfirm(int _hashCode,int _index){
+		
+		for(int i = 0 ;i < m_sendDaemonList.size();i++){
+			
+			WeiboSendDaemon t_daemon = (WeiboSendDaemon)m_sendDaemonList.elementAt(i);
+			
+			if(t_daemon.m_hashCode == _hashCode){
+				if(t_daemon.m_sendFileDaemon != null){
+					t_daemon.m_sendFileDaemon.sendNextFile(_index);
+				}
+				
+				t_daemon.inter();
+				
+				m_sendDaemonList.removeElementAt(i);
+				
+				break;
+			}
+		}
+	}
+	public void UpdateNewWeibo(String _weiboText,byte[] _fileBuffer,int _fileType){
 		
 		try{
-			// update a single weibo
-			//
-			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-			t_os.write(msg_head.msgWeibo);
-			
-			t_os.write(fetchWeibo.SINA_WEIBO_STYLE);
-			t_os.write(fetchWeibo.SEND_NEW_UPDATE_TYPE);
-			
-			sendReceive.WriteString(t_os,_weiboText);
-			
-			if(m_mainApp.canUseLocation() && m_mainApp.m_weiboUseLocation){
-				t_os.write(1);
-				m_mainApp.getGPSInfo().OutputData(t_os);
-			}else{
-				t_os.write(0);
-			}
-			
-			m_currMgr.EscapeKey();
-					
-			m_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeibo,t_os.toByteArray(),true);
+			m_sendDaemonList.addElement(new WeiboSendDaemon(_weiboText,_fileBuffer,_fileType,m_mainApp));
+
 			m_mainApp.m_sentWeiboNum++;
+			m_currMgr.EscapeKey();
 			
 		}catch(Exception e){
-			m_mainApp.SetErrorString("UNW:" + e.getMessage() + e.getClass().getName());
+			m_mainApp.SetErrorString("UNW:"+e.getMessage()+e.getClass().getName());
 		}
+		
 	}
 	
 	public void SendMenuItemClick(){
+		
 		if(m_currMgr.getCurrExtendedItem() == m_mainMgr.m_updateWeiboField){
 			
-			UpdateNewWeibo(m_mainMgr.m_updateWeiboField.m_sendUpdateText);			
+			UpdateNewWeibo(m_mainMgr.m_updateWeiboField.m_sendUpdateText,null,0);			
 			
 		}else if(m_currMgr == m_mainDMMgr && m_currMgr.getCurrExtendedItem() != null){
 			
@@ -801,29 +807,18 @@ public class weiboTimeLineScreen extends MainScreen{
 			//
 			String t_text = m_currMgr.m_editTextArea.getText();
 			WeiboDMItemField t_field = (WeiboDMItemField)m_currMgr.getCurrExtendedItem();
-					
-			try{
-				
-				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-				
-				fetchWeibo t_weibo = t_field.getReplyWeibo();
-				if(t_weibo != null){
-
-					t_os.write(msg_head.msgWeibo);
-					t_os.write(t_weibo.GetWeiboStyle());
-					t_os.write(fetchWeibo.SEND_DIRECT_MSG_TYPE);
-					sendReceive.WriteString(t_os,t_text);
-					sendReceive.WriteString(t_os,t_weibo.GetUserScreenName());					
-				}
-				
-				m_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeibo,t_os.toByteArray(),true);
-				m_mainApp.m_sentWeiboNum++;
-				
-			}catch(Exception e){
-				m_mainApp.SetErrorString("SMIC0:" + e.getMessage() + e.getClass().getName());
-			}
+			fetchWeibo t_weibo = t_field.getReplyWeibo();
 			
-			m_currMgr.EscapeKey();
+			if(t_weibo != null){
+				try{
+					m_sendDaemonList.addElement(new WeiboSendDaemon(t_text,t_weibo.GetWeiboStyle(),
+														t_weibo.GetUserScreenName(),m_mainApp));
+					m_mainApp.m_sentWeiboNum++;
+					m_currMgr.EscapeKey();
+				}catch(Exception e){
+					m_mainApp.SetErrorString("SMIC:"+e.getMessage()+e.getClass().getName());
+				}				
+			}
 			
 		}else{
 			
@@ -860,7 +855,7 @@ public class weiboTimeLineScreen extends MainScreen{
 										m_currMgr.m_currentSendType,t_orgId,t_commentId);
 						
 					}else{
-						UpdateNewWeibo(t_text);
+						UpdateNewWeibo(t_text,null,0);
 						return ;
 					}
 				}else{
@@ -878,35 +873,11 @@ public class weiboTimeLineScreen extends MainScreen{
 	}
 	
 	private void sendCommentReply(String _text,int _weiboStyle,int _sendType,long _orgId,long _commentId)throws Exception{
-		
-		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-		
-		t_os.write(msg_head.msgWeibo);
-		t_os.write(_weiboStyle);
-		t_os.write(m_currMgr.m_currentSendType);
-		
-		sendReceive.WriteString(t_os,_text);
-		sendReceive.WriteBoolean(t_os,m_mainApp.m_publicForward);
-		sendReceive.WriteLong(t_os,_orgId);
-		sendReceive.WriteLong(t_os,_commentId);
-		
-		if(m_mainApp.canUseLocation()){
-			t_os.write(1);
-			m_mainApp.getGPSInfo().OutputData(t_os);
-		}else{
-			t_os.write(0);
-		}
-		
-		if(_sendType == fetchWeibo.SEND_FORWARD_TYPE){
-			sendReceive.WriteBoolean(t_os,m_mainApp.m_updateOwnListWhenFw);
-		}else{
-			sendReceive.WriteBoolean(t_os,m_mainApp.m_updateOwnListWhenRe);
-		}
-		
-		m_currMgr.EscapeKey();
-		m_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeibo,t_os.toByteArray(),true);
+					
+		m_sendDaemonList.addElement(new WeiboSendDaemon(_text,(byte)_weiboStyle,(byte)_sendType,_orgId,_commentId,m_mainApp));
 		
 		m_mainApp.m_sentWeiboNum++;
+		m_currMgr.EscapeKey();
 	}
 	
 	int m_menuIndex = 0;
