@@ -515,15 +515,66 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			
 			switch(t_type){
 			case fetchWeibo.SEND_NEW_UPDATE_TYPE:
-				
-				m_mainMgr.m_logger.LogOut(GetAccountName() + " update new weibo");
-				
+							
 				if(in.read() != 0){
 					t_gpsInfo = new GPSInfo();
 					t_gpsInfo.InputData(in);
 				}
 				
-				UpdateStatus(t_text,t_gpsInfo);
+				byte[] t_fileBuffer = null;
+				String	t_fileType	= null;
+				
+				try{
+					if(m_mainMgr.GetConnectClientVersion() >= 13){
+						// find the uploaded file
+						//
+						int attach = sendReceive.ReadInt(in);
+						int t_fileTypeVal = in.read();
+						
+						sendWeiboConfirm(attach);
+						
+						File t_attachFile = new File(m_mainMgr.GetPrefixString() + attach + "_0.satt");
+						
+						if(t_attachFile.exists() && !t_attachFile.isDirectory()){
+							FileInputStream t_file= new FileInputStream(t_attachFile);
+							try{
+								
+								t_fileBuffer = new byte[(int)t_attachFile.length()];
+								sendReceive.ForceReadByte(t_file, t_fileBuffer, t_fileBuffer.length);
+								
+								switch(t_fileTypeVal){				
+								case fetchWeibo.IMAGE_TYPE_GIF:
+									t_fileType = "image/gif";
+									break;
+								case fetchWeibo.IMAGE_TYPE_JPG:
+									t_fileType = "image/jpeg";
+									break;
+								case fetchWeibo.IMAGE_TYPE_PNG:
+									t_fileType = "image/png";
+									break;
+								case fetchWeibo.IMAGE_TYPE_BMP:
+									t_fileType = "image/jpeg";
+									t_fileBuffer = convertBMPImage(t_fileBuffer);
+									break;					
+								}
+																
+							}finally{
+								t_file.close();
+							}
+						}
+						
+					}
+				}catch(Exception e){
+					m_mainMgr.m_logger.PrinterException(e);
+				}
+				
+				UpdateStatus(t_text,t_gpsInfo,t_fileBuffer,t_fileType);
+				
+				if(t_fileBuffer == null){
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " update new weibo ");
+				}else{
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " update new weibo with file:"+ t_fileBuffer.length +"B type:"+t_fileType);
+				}				
 				
 				m_mainMgr.SendData(sm_updateOkPrompt, false);
 				
@@ -551,6 +602,12 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					}
 					
 					boolean t_updateTimeline = (in.read() == 1);
+					
+					if(m_mainMgr.GetConnectClientVersion() >= 13){
+						// find the uploaded file
+						//						
+						sendWeiboConfirm(sendReceive.ReadInt(in));						
+					}
 					
 					if(t_type == fetchWeibo.SEND_FORWARD_TYPE){
 						
@@ -584,7 +641,14 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				if(t_style == GetCurrWeiboStyle()){
 
 					String t_screenName = sendReceive.ReadString(in);
-					sendDirectMsg(t_screenName,t_text);
+					if(m_mainMgr.GetConnectClientVersion() >= 13){
+						// find the uploaded file
+						//						
+						sendWeiboConfirm(sendReceive.ReadInt(in));						
+					}
+					
+					
+					sendDirectMsg(t_screenName,t_text);				
 					
 					m_mainMgr.SendData(sm_updateOkPrompt, false);
 					
@@ -605,9 +669,17 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		
 		return false;
 	}
+	
+	protected void sendWeiboConfirm(int _hashCode)throws Exception{
+		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+		t_os.write(msg_head.msgWeiboConfirm);
+		sendReceive.WriteInt(t_os,_hashCode);
+		
+		m_mainMgr.SendData(t_os, true);		
+	}
 
 	protected abstract int GetCurrWeiboStyle(); 
-	protected abstract void UpdateStatus(String _text,GPSInfo _info)throws Exception;
+	protected abstract void UpdateStatus(String _text,GPSInfo _info,byte[] _filePic,String _fileType)throws Exception;
 	protected abstract void UpdateComment(int _style,String _text,long _commentWeiboId,
 											GPSInfo _info,boolean _updateTimeline)throws Exception;
 	
@@ -916,6 +988,16 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		}
 		
 		return t_hashCode;
+	}
+	
+	static public byte[] convertBMPImage(byte[] _bmpBuffer)throws Exception{
+		
+		BufferedImage orig = ImageIO.read(new ByteArrayInputStream(_bmpBuffer));
+		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+		
+		ImageIO.write(orig,"JPG",t_os);
+		
+		return t_os.toByteArray();
 	}
 	
 	

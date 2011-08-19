@@ -109,7 +109,7 @@ public class WeiboTest {
 	@Test
 	public void testUploadStatusStringImageItem() throws Exception {
 		byte[] content= readFileImage("c:/1.jpg");
-		ImageItem pic=new ImageItem("pic",content);
+		ImageItem pic=new ImageItem("pic",content,"image/jpeg");
 		String url1=java.net.URLEncoder.encode("Nice ","UTF-8");
 		assertNotNull(weibo.uploadStatus(url1, pic));
 	}

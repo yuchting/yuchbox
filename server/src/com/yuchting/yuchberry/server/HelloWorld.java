@@ -15,13 +15,8 @@ import java.net.URLConnection;
 import java.security.KeyStore;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.Vector;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -91,7 +86,11 @@ public class HelloWorld {
 	 *  @param arg  parameters
 	 */
 	public static void main(String arg[])throws Exception{
-		//berryRecvTest();
+		Vector<Object> t_o = new Vector<Object>();
+		
+		t_o.removeElement(null);
+		
+		System.out.print("OK");
 	}
 	
 	static public void qgetOAuthRequest(){

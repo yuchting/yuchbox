@@ -49,6 +49,38 @@ public class QWeiboRequest {
 			return http.httpPostWithFile(oauthUrl, queryString, listFile);
 		}
 	}
+	/** yuchberry added
+	 * 
+	 * @param url
+	 * @param httpMethod
+	 * @param key
+	 * @param listParam
+	 * @param _fileBuffer  file to added
+	 * @param _fileType file type "image/jpeg"/"image/gif"/"image/png"
+	 * @return
+	 * @throws Exception
+	 */
+	public String syncRequest(String url, OauthKey key,
+			List<QParameter> listParam,byte[] _fileBuffer,String _fileType)
+			throws Exception {
+		
+		if (url == null || url.equals("")) {
+			throw new IllegalArgumentException("syncRequest url == null"); 
+		}
+		
+		QOAuth oauth = new QOAuth();
+
+		StringBuffer sbQueryString = new StringBuffer();
+		String oauthUrl = oauth.getOauthUrl(url, "POST", key.customKey,
+				key.customSecrect, key.tokenKey, key.tokenSecrect, key.verify,
+				key.callbackUrl, listParam, sbQueryString);
+		String queryString = sbQueryString.toString();
+
+		QHttpClient http = new QHttpClient();
+
+		return http.httpPostWithFile(oauthUrl, queryString, _fileBuffer,_fileType);
+		
+	}
 
 	/**
 	 * Do async request

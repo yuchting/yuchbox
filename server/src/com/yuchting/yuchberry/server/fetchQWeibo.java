@@ -1,6 +1,7 @@
 package com.yuchting.yuchberry.server;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Comparator;
@@ -197,11 +198,21 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		
 	}	
 	
-	protected void UpdateStatus(String _text,GPSInfo _info)throws Exception{
+	protected void UpdateStatus(String _text,GPSInfo _info,byte[] _filePic,String _fileType)throws Exception{
 		if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
-			m_api.publishMsg(_text, _info.m_longitude, _info.m_latitude);
+			if(_filePic != null && _fileType != null){
+				m_api.publishMsg(_text, _info.m_longitude, _info.m_latitude,_filePic,_fileType);
+			}else{
+				m_api.publishMsg(_text, _info.m_longitude, _info.m_latitude);
+			}
+			
 		}else{
-			m_api.publishMsg(_text);
+			if(_filePic != null && _fileType != null){
+				m_api.publishMsg(_text,_filePic,_fileType);
+			}else{
+				m_api.publishMsg(_text);
+			}
+			
 		}
 	}
 	
@@ -400,8 +411,13 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		t_weibo.m_timeline.m_sum = 10;
 		t_weibo.m_directMessage.m_sum = 5;
 		
-		fetchWeiboUser t_user = t_weibo.getWeiboUser("yuchberry");
-				
+		File t_file = new File("logo.png");
+		FileInputStream t_fileIn = new FileInputStream(t_file);
+		byte[] t_fileBuffer = new byte[(int)t_file.length()];
+		
+		sendReceive.ForceReadByte(t_fileIn, t_fileBuffer, t_fileBuffer.length);
+		
+		t_weibo.UpdateStatus("image again", null, t_fileBuffer, "image/png");	
 				
 		System.out.print(t_weibo);
 		

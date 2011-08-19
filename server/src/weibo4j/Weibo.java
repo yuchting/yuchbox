@@ -1323,10 +1323,40 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
         /*return new Status(http.multPartURL(getBaseURL() + "statuses/upload.xml",
                 new PostParameter[]{new PostParameter("status", status), new PostParameter("source", source)},item, true), this);*/
     }
+    
+    public Status uploadStatus(String status,ImageItem item,double _lat,double _long) throws WeiboException {
+    	return new Status(http.multPartURL(getBaseURL() + "statuses/upload.json",
+                new PostParameter[]
+                {
+    				new PostParameter("status", status), 
+    				new PostParameter("source", source),
+    				new PostParameter("lat", Double.toString(_lat)),
+    				new PostParameter("long", Double.toString(_long)),
+    			},item, true));
+        /*return new Status(http.multPartURL(getBaseURL() + "statuses/upload.xml",
+                new PostParameter[]{new PostParameter("status", status), new PostParameter("source", source)},item, true), this);*/
+    }
 
     public Status uploadStatus(String status,File file) throws WeiboException {
     	return new Status(http.multPartURL("pic",getBaseURL() + "statuses/upload.json",
-                new PostParameter[]{new PostParameter("status", status), new PostParameter("source", source)},file, true));
+                new PostParameter[]
+                {
+    				new PostParameter("status", status),
+    				new PostParameter("source", source),
+                },file, true));
+        /*return new Status(http.multPartURL(getBaseURL() + "statuses/upload.xml",
+                new PostParameter[]{new PostParameter("status", status), new PostParameter("source", source)},item, true), this);*/
+    }
+    
+    public Status uploadStatus(String status,File file,double _lat,double _long) throws WeiboException {
+    	return new Status(http.multPartURL("pic",getBaseURL() + "statuses/upload.json",
+                new PostParameter[]
+                {
+    				new PostParameter("status", status),
+    				new PostParameter("source", source),
+    				new PostParameter("lat", Double.toString(_lat)),
+    				new PostParameter("long", Double.toString(_long)),
+                },file, true));
         /*return new Status(http.multPartURL(getBaseURL() + "statuses/upload.xml",
                 new PostParameter[]{new PostParameter("status", status), new PostParameter("source", source)},item, true), this);*/
     }

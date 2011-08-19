@@ -1,6 +1,7 @@
 package com.yuchting.yuchberry.server;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.List;
 
 import org.dom4j.Element;
@@ -178,7 +179,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		
 	}
 	
-	protected void UpdateStatus(String _text,GPSInfo _info)throws Exception{
+	protected void UpdateStatus(String _text,GPSInfo _info,byte[] _filePic,String _fileType)throws Exception{
 		if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
 			
 			GeoLocation t_geo = new GeoLocation(_info.m_latitude,_info.m_longitude);

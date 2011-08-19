@@ -40,4 +40,5 @@ final public class msg_head {
 	
 	final public static byte msgFileAttach		= 23;
 	final public static byte msgFileAttachSeg	= 24;
+	
 }

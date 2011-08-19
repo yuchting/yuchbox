@@ -1,6 +1,7 @@
 package com.yuchting.yuchberry.server;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.List;
 import java.util.Vector;
 
@@ -13,6 +14,7 @@ import weibo4j.RateLimitStatus;
 import weibo4j.Status;
 import weibo4j.User;
 import weibo4j.Weibo;
+import weibo4j.http.ImageItem;
 import weibo4j.http.RequestToken;
 
 public class fetchSinaWeibo extends fetchAbsWeibo{
@@ -220,14 +222,32 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	
 	
 	
-	protected void UpdateStatus(String _text,GPSInfo _info)throws Exception{
+	protected void UpdateStatus(String _text,GPSInfo _info,byte[] _filePic,String _fileType)throws Exception{
+				
 		if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
-			m_weibo.updateStatus(_text,_info.m_latitude,_info.m_longitude);
+			
+			if(_filePic != null && _fileType != null){
+						
+				ImageItem t_image = new ImageItem("pic",_filePic,_fileType);
+				m_weibo.uploadStatus(_text,t_image,_info.m_latitude,_info.m_longitude);
+							
+			}else{
+				m_weibo.updateStatus(_text,_info.m_latitude,_info.m_longitude);
+			}			
+	
 		}else{
-			m_weibo.updateStatus(_text);
+			
+			if(_filePic != null && _fileType != null){
+				
+				ImageItem t_image = new ImageItem("pic",_filePic,_fileType);
+				m_weibo.uploadStatus(_text,t_image);
+			
+			}else{
+				m_weibo.updateStatus(_text);
+			}
 		}	
 	}
-	
+		
  
 	protected void UpdateComment(int _style,String _text,long _orgWeiboId,
 									GPSInfo _info,boolean _updateTimeline)throws Exception{
@@ -474,9 +494,18 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		t_weibo.m_secretToken = "7529265879f3c97af609c694064bbc59";
 		
 		t_weibo.ResetSession(true);
-		fetchWeiboUser t_user = t_weibo.getWeiboUser("yuchberry");
+		
+		File t_file = new File("logo.png");
+		FileInputStream t_fileIn = new FileInputStream(t_file);
+		byte[] t_fileBuffer = new byte[(int)t_file.length()];
+		
+		sendReceive.ForceReadByte(t_fileIn, t_fileBuffer, t_fileBuffer.length);
+		
+		//t_weibo.m_weibo.uploadStatus("heheh",t_file);
+		t_weibo.UpdateStatus("t image", null, t_fileBuffer,"image/png");
+		
 				
-		System.out.print( t_weibo);
+		System.out.print(t_weibo);
 	}
 	
 }

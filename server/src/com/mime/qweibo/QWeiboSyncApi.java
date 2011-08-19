@@ -22,22 +22,24 @@ public class QWeiboSyncApi {
 	final static String fsm_mentionMeURL				= "http://open.t.qq.com/api/statuses/mentions_timeline";
 	
 	final static String fsm_publishURL					= "http://open.t.qq.com/api/t/add";
-	final static String fsm_publishReplyURL					= "http://open.t.qq.com/api/t/reply";
-	final static String fsm_publishForwardURL					= "http://open.t.qq.com/api/t/re_add";
-	final static String fsm_publishCommentURL					= "http://open.t.qq.com/api/t/comment";
+	final static String fsm_publishFileURL				= "http://open.t.qq.com/api/t/add_pic";
+	final static String fsm_publishReplyURL			= "http://open.t.qq.com/api/t/reply";
+	final static String fsm_publishForwardURL			= "http://open.t.qq.com/api/t/re_add";
+	final static String fsm_publishCommentURL			= "http://open.t.qq.com/api/t/comment";
 	
-	final static String fsm_followUserURL					= "http://open.t.qq.com/api/friends/add";
+	final static String fsm_followUserURL				= "http://open.t.qq.com/api/friends/add";
 	
-	final static String fsm_directMessageInboxURL			= "http://open.t.qq.com/api/private/recv";
-	final static String fsm_directMessageOutboxURL			= "http://open.t.qq.com/api/private/send";
+	final static String fsm_directMessageInboxURL		= "http://open.t.qq.com/api/private/recv";
+	final static String fsm_directMessageOutboxURL		= "http://open.t.qq.com/api/private/send";
 	
-	final static String fsm_deleteMessageURL				= "http://open.t.qq.com/api/t/del";
-	final static String fsm_favoriteMessageURL				= "http://open.t.qq.com/api/fav/addt";
+	final static String fsm_deleteMessageURL			= "http://open.t.qq.com/api/t/del";
+	final static String fsm_favoriteMessageURL			= "http://open.t.qq.com/api/fav/addt";
 	
-	final static String fsm_userInfoURL					= "http://open.t.qq.com/api/user/other_info";
-	final static String fsm_userTimelingURL				= "http://open.t.qq.com/api/statuses/user_timeline";
+	final static String fsm_userInfoURL				= "http://open.t.qq.com/api/user/other_info";
+	final static String fsm_userTimelingURL			= "http://open.t.qq.com/api/statuses/user_timeline";
 	
-	final static String fsm_sendDirectMsgURL				= "http://open.t.qq.com/api/private/add";
+	final static String fsm_sendDirectMsgURL			= "http://open.t.qq.com/api/private/add";
+	
 	
 	OauthKey 			m_oauthKey = new OauthKey();
 	QWeiboRequest 		m_request = new QWeiboRequest();
@@ -286,7 +288,10 @@ public class QWeiboSyncApi {
 	 * @throws Exception
 	 */
 	public long publishMsg(String _text)throws Exception{
-		return publishMsg_impl(_text,-1,-1,-1,-1,-1);
+		return publishMsg_impl(_text,-1,-1,-1,-1,-1,null,null);
+	}
+	public long publishMsg(String _text,byte[] _fileBuffer,String _fileType)throws Exception{
+		return publishMsg_impl(_text,-1,-1,-1,-1,-1,_fileBuffer,_fileType);
 	}
 	
 	/**
@@ -298,7 +303,11 @@ public class QWeiboSyncApi {
 	 * @throws Exception
 	 */
 	public long publishMsg(String _text,double _longitude,double _latitude)throws Exception{
-		return publishMsg_impl(_text,-1,-1,-1,_longitude,_longitude);
+		return publishMsg_impl(_text,-1,-1,-1,_longitude,_longitude,null,null);
+	}
+	
+	public long publishMsg(String _text,double _longitude,double _latitude,byte[] _fileBuffer,String _fileType)throws Exception{
+		return publishMsg_impl(_text,-1,-1,-1,_longitude,_longitude,_fileBuffer,_fileType);
 	}
 	
 	/**
@@ -309,7 +318,7 @@ public class QWeiboSyncApi {
 	 * @throws Exception
 	 */
 	public long forwardMsg(String _text,long _forwardId)throws Exception{
-		return publishMsg_impl(_text,_forwardId,-1,-1,-1,-1);
+		return publishMsg_impl(_text,_forwardId,-1,-1,-1,-1,null,null);
 	}
 	
 	/**
@@ -322,7 +331,7 @@ public class QWeiboSyncApi {
 	 * @throws Exception
 	 */
 	public long forwardMsg(String _text,long _forwardId,double _longitude,double _latitude)throws Exception{
-		return publishMsg_impl(_text,_forwardId,-1,-1,_longitude,_latitude);
+		return publishMsg_impl(_text,_forwardId,-1,-1,_longitude,_latitude,null,null);
 	}
 	
 	/**
@@ -333,7 +342,7 @@ public class QWeiboSyncApi {
 	 * @throws Exception
 	 */
 	public long replyMsg(String _text,long _reply)throws Exception{
-		return publishMsg_impl(_text,-1,_reply,-1,-1,-1);
+		return publishMsg_impl(_text,-1,_reply,-1,-1,-1,null,null);
 	}
 	
 	/**
@@ -346,7 +355,7 @@ public class QWeiboSyncApi {
 	 * @throws Exception
 	 */
 	public long replyMsg(String _text,long _reply,double _longitude,double _latitude)throws Exception{
-		return publishMsg_impl(_text,-1,_reply,-1,_longitude,_latitude);
+		return publishMsg_impl(_text,-1,_reply,-1,_longitude,_latitude,null,null);
 	}
 	
 	/**
@@ -356,7 +365,7 @@ public class QWeiboSyncApi {
 	 * @return				return published message id if successfully
 	 */
 	public long commentMsg(String _text,long _commentId)throws Exception{
-		return publishMsg_impl(_text,-1,-1,_commentId,-1,-1);
+		return publishMsg_impl(_text,-1,-1,_commentId,-1,-1,null,null);
 	}
 	
 	/**
@@ -368,10 +377,11 @@ public class QWeiboSyncApi {
 	 * @return			return published message id if successfully
 	 */
 	public long commentMsg(String _text,long _commentId,double _longitude,double _latitude)throws Exception{
-		return publishMsg_impl(_text,-1,-1,_commentId,_longitude,_latitude);
+		return publishMsg_impl(_text,-1,-1,_commentId,_longitude,_latitude,null,null);
 	}
 	
-	private long publishMsg_impl(String _text,long _forwardId,long _replyId,long _commentId,double _longitude,double _latitude)throws Exception{
+	private long publishMsg_impl(String _text,long _forwardId,long _replyId,long _commentId,
+			double _longitude,double _latitude,byte[] _fileBuffer,String _fileType)throws Exception{
 		
 		String t_url = fsm_publishURL;
 		
@@ -401,7 +411,14 @@ public class QWeiboSyncApi {
 			m_parameters.add(new QParameter("wei", Double.toString(_latitude)));
 		}
 		
-		JSONObject t_ret = new JSONObject(m_request.syncRequest(t_url, "POST", m_oauthKey, m_parameters, null));
+		JSONObject t_ret = null;
+		
+		if(_fileBuffer != null && _fileType != null && !_fileType.isEmpty()){
+			t_url = fsm_publishFileURL;
+			t_ret = new JSONObject(m_request.syncRequest(t_url,m_oauthKey,m_parameters,_fileBuffer,_fileType));
+		}else{
+			t_ret = new JSONObject(m_request.syncRequest(t_url, "POST", m_oauthKey, m_parameters, null));
+		}	
 		
 		if(t_ret.getInt("ret") != 0){
 			throw new Exception("publish message failed:" + t_ret.getString("msg"));
