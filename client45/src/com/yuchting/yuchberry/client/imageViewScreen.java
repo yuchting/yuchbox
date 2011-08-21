@@ -13,6 +13,17 @@ public class imageViewScreen extends fileViewScreen{
 		
 		super(_name,_mainApp,true);
 		
+		init();
+	}
+	
+	public imageViewScreen(byte[] _buffer,recvMain _mainApp)throws Exception{
+		
+		super(_buffer,_mainApp);
+		
+		init();
+	}
+	
+	private void init(){
 		m_image = new BitmapField();
 		EncodedImage image = EncodedImage.createEncodedImage(m_fileContain, 0, m_fileContain.length);
 		
@@ -20,5 +31,5 @@ public class imageViewScreen extends fileViewScreen{
 		
 		m_image.setImage(image.scaleImage32(scale,scale));
 		add(m_image);
-	}	
+	}
 }

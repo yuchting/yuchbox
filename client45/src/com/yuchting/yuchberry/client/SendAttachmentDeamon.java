@@ -158,9 +158,9 @@ public class SendAttachmentDeamon extends Thread{
 			}
 		}else{
 								
-			int t_index = 0;
-			for(int i = m_beginIndex;i < t_size;i++,t_index++){
-				m_bufferBytes[t_index] = m_uploadingBuffer[i];
+			int t_index = m_beginIndex;
+			for(int i = 0;i < t_size;i++,t_index++){
+				m_bufferBytes[i] = m_uploadingBuffer[t_index];
 			}
 		}
 				

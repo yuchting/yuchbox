@@ -40,6 +40,7 @@ import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
+import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.weibo.WeiboItemField;
@@ -96,7 +97,6 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
     aboutScreen			m_aboutScreen		= null;
 	stateScreen 		m_stateScreen 		= null;
-	uploadFileScreen 	m_uploadFileScreen	= null;
 	debugInfo			m_debugInfoScreen	= null;
 	downloadDlg			m_downloadDlg		= null;
 	settingScreen		m_settingScreen		= null;
@@ -191,8 +191,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		public Object run(Object context){
 			if(context instanceof Message ){
-				OpenAttachmentFileScreen(false);
-				return m_uploadFileScreen;
+				
+				return OpenAttachmentFileScreen(false);
 			}
 			
 			return context;
@@ -207,8 +207,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		public Object run(Object context){
 			if(context instanceof Message ){
 
-				OpenAttachmentFileScreen(true);
-				return m_uploadFileScreen;
+				return OpenAttachmentFileScreen(true);
 			}
 			
 			return context;	
@@ -1312,22 +1311,21 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			}
 		});		
 	}
-	public void OpenAttachmentFileScreen(final boolean _del){
+	public Object OpenAttachmentFileScreen(final boolean _del){
 		
 		try{
 
-			m_uploadFileScreen = new uploadFileScreen(m_connectDeamon, this,_del);
-			UiApplication.getUiApplication().pushScreen(m_uploadFileScreen);
+			MainScreen t_uploadFileScreen = new uploadFileScreen(m_connectDeamon, this,_del,m_connectDeamon);
+			UiApplication.getUiApplication().pushScreen(t_uploadFileScreen);
+			
+			return t_uploadFileScreen;
 			
 		}catch(Exception _e){
 			SetErrorString("att screen error:" + _e.getMessage());
 		}
 		
+		return null;
 	}	
-	
-	public void ClearUploadingScreen(){
-		m_uploadFileScreen = null;
-	}
 	
 	public void PushViewFileScreen(final String _filename){
 		
@@ -1674,9 +1672,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		"SOHU/",
 		"FAN/",
 	};
-	
-	public static ImageSets	sm_weiboUIImage = null;
-	
+		
 	public weiboTimeLineScreen	m_weiboTimeLineScreen = null;
 	public boolean				m_publicForward		= false;
 	private Vector				m_receivedWeiboList	= new Vector();

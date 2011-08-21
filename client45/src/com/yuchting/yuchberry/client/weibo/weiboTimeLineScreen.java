@@ -519,7 +519,7 @@ public class weiboTimeLineScreen extends MainScreen{
 						}
 					}
 					
-				},WeiboItemField.fsm_largeHeadImage?800:1000, true);
+				},WeiboItemField.fsm_largeHeadImage?600:800, true);
 			}
 		}
 	}
@@ -797,11 +797,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	public void SendMenuItemClick(){
 		
-		if(m_currMgr.getCurrExtendedItem() == m_mainMgr.m_updateWeiboField){
-			
-			UpdateNewWeibo(m_mainMgr.m_updateWeiboField.m_sendUpdateText,null,0);			
-			
-		}else if(m_currMgr == m_mainDMMgr && m_currMgr.getCurrExtendedItem() != null){
+		if(m_currMgr == m_mainDMMgr && m_currMgr.getCurrExtendedItem() != null){
 			
 			// send direct message
 			//
@@ -920,6 +916,7 @@ public class weiboTimeLineScreen extends MainScreen{
         		m_currUpdateDlg = new WeiboUpdateDlg(weiboTimeLineScreen.this);
         	}
         	m_pushUpdateDlg = true;
+        	m_currUpdateDlg.clearAttachment();
         	UiApplication.getUiApplication().pushScreen(m_currUpdateDlg);
         }
     };

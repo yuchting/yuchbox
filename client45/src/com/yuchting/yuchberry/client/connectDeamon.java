@@ -49,7 +49,8 @@ public class connectDeamon extends Thread implements SendListener,
 												FolderListener,
 												AttachmentHandler,
 												ViewListener,
-												ViewListenerExtended{
+												ViewListenerExtended,
+												IUploadFileScreenCallback{
 		
 	final static int	fsm_clientVer = 13;
 	 
@@ -642,6 +643,14 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		m_connect.SendBufferToSvr(t_os.toByteArray(), true,false);
 			
+	}
+	
+	public boolean clickOK(String _filename,int _size){
+		AddAttachmentFile(_filename,_size);
+		return true;
+	}
+	public void clickDel(String _filename){
+		DelAttachmentFile(_filename);
 	}
 	
 	//! the attachment file selection screen(uploadFileScreen) will call

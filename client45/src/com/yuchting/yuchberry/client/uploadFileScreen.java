@@ -159,11 +159,19 @@ public class uploadFileScreen extends MainScreen implements
 	
 	boolean			m_delScreen		=false;
 	
-	uploadFileScreen(connectDeamon _deamon,recvMain _app,boolean _del) throws Exception {
+	IUploadFileScreenCallback	m_clickCallback = null;
+	
+	public uploadFileScreen(connectDeamon _deamon,recvMain _app,boolean _del,IUploadFileScreenCallback _callback) 
+							throws Exception {
+		
+		if(_callback == null){
+			throw new IllegalArgumentException("uploadFileScreen _callback == null");
+		}
 		
 		m_deamon = _deamon;
 		m_mainApp = _app;
 		m_delScreen = _del;
+		m_clickCallback = _callback;
 		
 		fileIcon.sm_imageSets = _app.m_allImageSets;
 		
@@ -402,16 +410,19 @@ public class uploadFileScreen extends MainScreen implements
 					// add a attachment file
 					//
 					if(m_delScreen){
-						m_deamon.DelAttachmentFile(t_file.m_filename_full);
-						m_mainApp.DialogAlert(m_mainApp.sm_local.getString(localResource.DEL_ATTACHMENT_SUCC));
+						m_clickCallback.clickDel(t_file.m_filename_full);
+						
+						m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.DEL_ATTACHMENT_SUCC));
 					}else{
-						m_deamon.AddAttachmentFile(t_file.m_filename_full,t_file.m_fileSize);
-						m_mainApp.DialogAlert(m_mainApp.sm_local.getString(localResource.ADD_ATTACHMENT_SUCC));
+						
+						if(!m_clickCallback.clickOK(t_file.m_filename_full,t_file.m_fileSize)){
+							return ;
+						}
+						
+						m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.ADD_ATTACHMENT_SUCC));
 					}				
-					
-					m_mainApp.ClearUploadingScreen();
-					
-					close();					
+										
+					close();
 				}
 			}else{
 				m_mainApp.SetErrorString("menuClicked:-1");

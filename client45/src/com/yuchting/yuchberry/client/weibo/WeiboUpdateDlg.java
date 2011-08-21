@@ -14,6 +14,7 @@ import net.rim.device.api.io.file.FileSystemJournalEntry;
 import net.rim.device.api.io.file.FileSystemJournalListener;
 import net.rim.device.api.math.Fixed32;
 import net.rim.device.api.system.Characters;
+import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
@@ -23,15 +24,22 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Screen;
+import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
+import com.yuchting.yuchberry.client.CameraScreen;
+import com.yuchting.yuchberry.client.ICameraScreenCallback;
+import com.yuchting.yuchberry.client.IUploadFileScreenCallback;
+import com.yuchting.yuchberry.client.imageViewScreen;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
+import com.yuchting.yuchberry.client.uploadFileScreen;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ButtonSegImage;
 import com.yuchting.yuchberry.client.ui.ImageButton;
+import com.yuchting.yuchberry.client.ui.ImageUnit;
 
 final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	
@@ -43,6 +51,8 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	ImageButton				m_sendButton	= null;
 	ButtonSegImage			m_updateTitle		= null;
 	BubbleImage				m_editBubbleImage = null;
+	
+	WeiboUpdateDlg			m_parentDlg = null;
 	
 	public VerticalFieldManager m_editTextManager = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
 		
@@ -88,6 +98,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		
 		m_editBubbleImage = weiboTimeLineScreen.sm_bubbleImage;
 		m_timelineScreen = _timeline;
+		m_parentDlg 	= m_timelineScreen.m_currUpdateDlg;
 
 		m_editTextArea.setMaxSize(WeiboItemField.fsm_maxWeiboTextLength);
 		m_sendButton.setChangeListener(this);
@@ -100,6 +111,8 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 				
 		m_titleHeight = m_updateTitle.getImageHeight() + 2;
 		m_separateLine_y = m_titleHeight + m_editTextManager.getPreferredHeight();
+		
+		
 	}
 	
 	
@@ -149,10 +162,10 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			getScreen().close();
 			byte[] t_content = null;
 			
-			if(m_timelineScreen.m_currUpdateDlg.m_imagePath != null){
+			if(m_parentDlg.m_imagePath != null){
 				
 				try{
-					FileConnection t_file = (FileConnection)Connector.open("file://" + m_timelineScreen.m_currUpdateDlg.m_imagePath,
+					FileConnection t_file = (FileConnection)Connector.open(m_parentDlg.m_imagePath,
 																			Connector.READ_WRITE);
 					
 					if(t_file.exists()){
@@ -163,20 +176,18 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 								byte[] t_buffer = new byte[(int)t_file.fileSize()];
 								sendReceive.ForceReadByte(t_fileIn, t_buffer, t_buffer.length);
 								
-//								EncodedImage t_origImage = EncodedImage.createEncodedImage(t_buffer, 0, t_buffer.length);
-//								try{
-//									int scaleX = Fixed32.div(Fixed32.toFP(t_origImage.getWidth()), Fixed32.toFP(recvMain.fsm_display_width));
-//									int scaleY = Fixed32.div(Fixed32.toFP(t_origImage.getHeight()), Fixed32.toFP(recvMain.fsm_display_height));
-//									
-//									t_content = t_origImage.scaleImage32(scaleX, scaleY).getData();
-//									
-//								}finally{
-//									t_origImage = null;
-//									t_buffer = null;
-//								}
-								
-								t_content = t_buffer;
-								
+								EncodedImage t_origImage = EncodedImage.createEncodedImage(t_buffer, 0, t_buffer.length);
+								try{
+									int scaleX = Fixed32.div(Fixed32.toFP(t_origImage.getWidth()), Fixed32.toFP(1024));
+									int scaleY = Fixed32.div(Fixed32.toFP(t_origImage.getHeight()), Fixed32.toFP(768));
+									
+									t_content = t_origImage.scaleImage32(scaleX, scaleY).getData();
+									
+								}finally{
+									t_origImage = null;
+									t_buffer = null;
+								}
+																
 							}finally{
 								t_fileIn.close();
 								t_fileIn = null;
@@ -196,11 +207,11 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			}
 			
 			m_timelineScreen.UpdateNewWeibo(m_editTextArea.getText(),
-					t_content,m_timelineScreen.m_currUpdateDlg.m_imageType);
+					t_content,m_parentDlg.m_imageType);
 			
 			m_editTextArea.setText("");
 			
-			m_timelineScreen.m_currUpdateDlg.m_imagePath = null;
+			m_parentDlg.m_imagePath = null;
 		}
 	}
 	
@@ -248,7 +259,8 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	}
 }
 
-public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener{
+public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
+															IUploadFileScreenCallback{
 	
 	public final static int			fsm_width = recvMain.fsm_display_width - 20;
 	public final static int			fsm_height = (recvMain.fsm_display_height - 30 > 300?300:(recvMain.fsm_display_height - 30));
@@ -261,26 +273,96 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener{
         }
     };
     
+    MenuItem m_snapItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPEN_CAMERA_SNAP),m_menuIndex_op++,0){
+    	public void run(){
+    		m_cameraScreen = new CameraScreen(new ICameraScreenCallback(){
+    			public void snapOK(byte[] _buffer){
+    				m_snapBuffer = _buffer;
+    				m_imagePath = null;
+    				
+    				invalidate();
+    			}
+    		});
+    		
+    		m_mainApp.pushScreen(m_cameraScreen);
+    	}
+    };
+    
     MenuItem m_cameraItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPEN_CAMERA),m_menuIndex_op++,0){
     	public void run(){
-    		m_imagePath = null;
     		Invoke.invokeApplication(Invoke.APP_TYPE_CAMERA, new CameraArguments());
     	}
     };
+    
+    MenuItem m_attachItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_ADD_ATTACH_MENU_LABEL),m_menuIndex_op++,0){
+    	public void run(){
+    		try{
+    			m_mainApp.pushScreen(new uploadFileScreen(m_mainApp.m_connectDeamon,m_mainApp,false,WeiboUpdateDlg.this));
+    		}catch(Exception e){
+    			m_mainApp.SetErrorString("WAI:"+e.getMessage()+e.getClass().getName());
+    		}
+    		
+    	}
+    };
+    
+    MenuItem m_checkPic		= new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_CHECK_UPLOADING_IMAGE),m_menuIndex_op++,0){
+    	public void run(){
+    		try{
+    			if(m_imagePath != null){
+    				
+    				if(!m_mainApp.CheckMediaNativeApps(m_imagePath)){
+    					m_mainApp.pushGlobalScreen(new imageViewScreen(m_imagePath,m_mainApp),0,UiEngine.GLOBAL_MODAL);
+    				}
+        			
+        		}else{
+        			m_mainApp.pushGlobalScreen(new imageViewScreen(m_snapBuffer,m_mainApp),0,UiEngine.GLOBAL_MODAL);
+        		}	
+    		}catch(Exception e){
+    			m_mainApp.SetErrorString("WCP:"+e.getMessage()+e.getClass().getName());
+    		}
+    		    		
+    	}
+    };
+    
+    MenuItem m_deletePic	= new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_DELETE_PIC_MENU_LABEL),m_menuIndex_op++,0){
+    	public void run(){
+    		clearAttachment();
+    	}
+    };
+    
 		
-	WeiboUpdateManager		m_updateManager;
-	
+	WeiboUpdateManager		m_updateManager = null;;
+	CameraScreen			m_cameraScreen = null;;
 	private long 			m_lastUSN;
 	
 	String					m_imagePath = null;
 	int						m_imageType = 0;
 	
-		
+	byte[]					m_snapBuffer = null;
+	
+	recvMain				m_mainApp	= null;
+	
+	boolean				m_snapshotAvailible = false;
+	
+	ImageUnit				m_hasImageSign	= null;
+	
 	public WeiboUpdateDlg(weiboTimeLineScreen _screen){
 		super(new WeiboUpdateManager(_screen),Screen.DEFAULT_MENU | Manager.NO_VERTICAL_SCROLL);
 		m_updateManager = (WeiboUpdateManager)getDelegate();
 		
-		_screen.m_mainApp.addFileSystemJournalListener(this);
+		m_mainApp = _screen.m_mainApp;
+		m_mainApp.addFileSystemJournalListener(this);
+		
+		m_snapshotAvailible = Float.valueOf(recvMain.fsm_OS_version.substring(0,3)).floatValue() > 4.5f;
+		
+		m_hasImageSign = weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("picSign");
+	}
+	
+	public void clearAttachment(){
+		m_imagePath = null;
+		m_snapBuffer = null;
+		
+		invalidate();
 	}
 	
 	public int getPreferredHeight(){
@@ -300,10 +382,22 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener{
 				(recvMain.fsm_display_height - getPreferredHeight()) / 2);
 		
 	}
+	
 	protected void makeMenu(Menu _menu,int instance){
 		_menu.add(m_sendItem);
-		_menu.add(m_cameraItem);
 		
+		if(DeviceInfo.hasCamera()){
+			if(m_snapshotAvailible){
+				_menu.add(m_snapItem);
+			}			
+			_menu.add(m_cameraItem);
+		}
+		
+		_menu.add(m_attachItem);
+		if(m_imagePath != null || m_snapBuffer != null){
+			_menu.add(m_deletePic);
+			_menu.add(m_checkPic);
+		}
 		_menu.add(MenuItem.separator(m_menuIndex_op));
 		
 		super.makeMenu(_menu,instance);
@@ -325,26 +419,52 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener{
 				String entryPath = entry.getPath();
 				
 				if (entryPath != null && m_imagePath == null){
-					String t_path = entryPath.toLowerCase();
-					
-					if(t_path.endsWith("png")){
-						m_imageType = fetchWeibo.IMAGE_TYPE_PNG;
-					}else if(t_path.endsWith("jpg")){
-						m_imageType = fetchWeibo.IMAGE_TYPE_JPG;
-					}else if(t_path.endsWith("bmp")){
-						m_imageType = fetchWeibo.IMAGE_TYPE_BMP;
-					}else if(t_path.endsWith("gif")){
-						m_imageType = fetchWeibo.IMAGE_TYPE_GIF;
-					}else{
-						continue;
-					}
-					
-					m_imagePath = entryPath;										
+										
+					if(addUploadingPic("file://" + entryPath)){
+						break;
+					}					
 				}
 			}
 		}
 	}
+	
+	private boolean addUploadingPic(String _file){
+			
+		String t_path = _file.toLowerCase();
+		
+		if(t_path.endsWith("png")){
+			m_imageType = fetchWeibo.IMAGE_TYPE_PNG;
+		}else if(t_path.endsWith("jpg")){
+			m_imageType = fetchWeibo.IMAGE_TYPE_JPG;
+		}else if(t_path.endsWith("bmp")){
+			m_imageType = fetchWeibo.IMAGE_TYPE_BMP;
+		}else if(t_path.endsWith("gif")){
+			m_imageType = fetchWeibo.IMAGE_TYPE_GIF;
+		}else{
+			return false;
+		}
+		
+		m_imagePath = _file;
+		m_snapBuffer = null;
+		
+		invalidate();
+		
+		return true;
+	
+	}
 
+	public boolean clickOK(String _filename,int _size){
+		if(!addUploadingPic(_filename)){
+			m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.WEIBO_ADD_ATTACH_PROMPT));
+			return false;
+		}
+				
+		return true;
+	}
+	
+	public void clickDel(String _filename){
+		clearAttachment();
+	}
 	
 	protected  void	onDisplay(){
 		super.onDisplay();
@@ -373,6 +493,11 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener{
 		}
 		
 		m_updateManager.subpaint(_g);
+		
+		if(m_imagePath != null || m_snapBuffer != null){
+			weiboTimeLineScreen.sm_weiboUIImage.drawImage(_g, m_hasImageSign,
+					2,getPreferredHeight() - m_hasImageSign.getHeight() - 10);
+		}
 	}
 	
 	public void close(){

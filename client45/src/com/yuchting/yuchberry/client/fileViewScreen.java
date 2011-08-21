@@ -36,6 +36,13 @@ public class fileViewScreen extends MainScreen{
 		}
 
 	}
+	
+	public fileViewScreen(byte[] _buffer,recvMain _mainApp) throws Exception{
+		m_viewFileName = "contain";
+		m_mainApp = _mainApp;
+		
+		m_fileContain = _buffer;
+	}
 
 	public boolean onClose(){
 		close();

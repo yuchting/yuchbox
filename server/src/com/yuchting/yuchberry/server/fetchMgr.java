@@ -568,7 +568,10 @@ public class fetchMgr{
 			
 			fos.flush();
 			fos.close();
+			
+			m_logger.LogOut("recv msgFileAttach hashCode<"+ t_hashCode + "> num<" + t_num + "> size<" + t_size + ">");
 		}
+		
 	}
 	
 	public void ProcessFileAttachSeg(InputStream in)throws Exception{
@@ -585,9 +588,7 @@ public class fetchMgr{
 		if(t_segIdx + t_segSize > t_file.length()){
 			throw new Exception("error attach" + t_filename + " idx and size");
 		}
-		
-		m_logger.LogOut("recv msgFileAttach time<"+ t_hashCode + "> attIndex<" + t_attachmentIdx + "> beginIndex<" + t_segIdx + "> size:" + t_segSize);
-		
+				
 		byte[] t_bytes = new byte[t_segSize];
 		sendReceive.ForceReadByte(in, t_bytes, t_segSize);
 		
@@ -605,6 +606,8 @@ public class fetchMgr{
 			sendReceive.WriteInt(os,t_attachmentIdx);
 			
 			SendData(os, true);
+			
+			m_logger.LogOut("recv msgFileAttachSeg time<"+ t_hashCode + "> attIndex<" + t_attachmentIdx + "> beginIndex<" + t_segIdx + "> size:" + t_segSize);
 		}
 		
 	}

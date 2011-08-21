@@ -52,7 +52,6 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	WeiboItemField		m_editItem	= null;
 	
 	recvMain			m_mainApp;
-	WeiboUpdateField	m_updateWeiboField = null;
 	boolean			m_timelineManager;
 	
 	weiboTimeLineScreen	m_parentScreen = null;
@@ -124,8 +123,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		m_timelineManager 	= _timelineManager;
 		
 		if(_timelineManager){
-			m_updateWeiboField = new WeiboUpdateField(this);
-			add(m_updateWeiboField.getFocusField());
+//			m_updateWeiboField = new WeiboUpdateField(this);
+//			add(m_updateWeiboField.getFocusField());
 		}
 		
 		m_atBut.setChangeListener(this);
@@ -208,11 +207,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			invalidate();
 			sublayout(0, 0);
 			
-			if(m_timelineManager){
-				if(getCurrEditItem() == m_updateWeiboField){
-					m_updateWeiboField.m_sendUpdateText = m_editTextArea.getText();
-				}	
-			}
+			
 			
 			m_parentScreen.setInputPromptText(Integer.toString(m_editTextArea.getText().length()) + 
 					"/" + m_editTextArea.getMaxSize());
@@ -317,25 +312,20 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	}
 		
 	public void AddWeibo(final fetchWeibo _weibo,final WeiboHeadImage _image,
-							final boolean _initAdd){
-				
-		m_mainApp.invokeLater(new Runnable() {
-			
-			public void run() {
-				
-				WeiboItemField t_field = new WeiboItemField(_weibo,_image,WeiboMainManager.this);
-				
-				if(m_timelineManager){
-					insert(t_field.getFocusField(),1);
-				}else{
-					insert(t_field.getFocusField(),0);
-				}
-				
-				if(!_initAdd){				
-					m_hasNewWeibo = true;
-				}
-			}
-		});					
+							final boolean _initAdd){	
+
+		WeiboItemField t_field = new WeiboItemField(_weibo,_image,WeiboMainManager.this);
+		
+		if(m_timelineManager){
+			insert(t_field.getFocusField(),1);
+		}else{
+			insert(t_field.getFocusField(),0);
+		}
+		
+		if(!_initAdd){				
+			m_hasNewWeibo = true;
+		}
+						
 	}
 	
 	public boolean DelWeibo(final fetchWeibo _weibo){
@@ -442,7 +432,6 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			final WeiboItemField t_extendItem = getCurrExtendedItem();
 						
 			if(getCurrEditItem() != null 
-			&& getCurrEditItem() != m_updateWeiboField
 			&& m_parentScreen.m_currMgr != m_parentScreen.m_mainDMMgr){
 				
 				// the add/delete field operation will cause the sublayout being called
