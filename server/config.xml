@@ -19,7 +19,7 @@
 		appendHTML="1"
 		pushHistoryMsg="1"
 	/-->
-	<WeiboAccount
+	<!--WeiboAccount
 		type="sina"
 		account="yuchberry_test"
 		accessToken="8a2bf4e5a97194a1eb73740b448f034e"
@@ -30,7 +30,7 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/>
+	/-->
 	<!--WeiboAccount
 		type="twitter"
 		account="yuchting"
@@ -44,7 +44,7 @@
 		commentSum="5"
 	/-->
 		
-	<!--WeiboAccount
+	<WeiboAccount
 		type="sina"
 		account="yuchberry"
 		accessToken="1eef9899c847f1cd0735c6775fdcc576"
@@ -55,7 +55,7 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/-->
+	/>
 		
 	<!--WeiboAccount
 		type="qq"
