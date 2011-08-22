@@ -1,6 +1,10 @@
-package com.yuchting.yuchberry.client;
+package com.yuchting.yuchberry.client.screen;
 
 import java.io.ByteArrayOutputStream;
+
+import com.yuchting.yuchberry.client.msg_head;
+import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.sendReceive;
 
 import local.localResource;
 import net.rim.device.api.system.Clipboard;

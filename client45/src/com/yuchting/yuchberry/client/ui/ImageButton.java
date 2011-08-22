@@ -7,8 +7,8 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.MenuItem;
 
 
-public class ImageButton extends Field
-{
+public class ImageButton extends Field{
+	
     private static final int fsm_textColour = 0xffffff;
     
     private static final int fsm_textBGColor = 0x7ebdff;

@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.client;
+package com.yuchting.yuchberry.client.screen;
 
 import java.util.Enumeration;
 import java.util.Vector;
@@ -9,6 +9,9 @@ import javax.microedition.pim.PIM;
 import javax.wireless.messaging.Message;
 import javax.wireless.messaging.MessageConnection;
 import javax.wireless.messaging.TextMessage;
+
+import com.yuchting.yuchberry.client.fetchMail;
+import com.yuchting.yuchberry.client.recvMain;
 
 import local.localResource;
 import net.rim.blackberry.api.pdap.BlackBerryContact;

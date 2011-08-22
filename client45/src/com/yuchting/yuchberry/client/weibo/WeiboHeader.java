@@ -13,6 +13,7 @@ public class WeiboHeader extends Field{
 	public final static int STATE_AT_ME = 1;
 	public final static int STATE_COMMENT_ME = 2;
 	public final static int STATE_DIRECT_MESSAGE = 3;	
+	public final static int STATE_WEIBO_USER = 4;
 	
 	public final static int fsm_headHeight = 45;
 	
@@ -26,12 +27,12 @@ public class WeiboHeader extends Field{
 	
 	private final static ImageUnit[] fsm_stateBitmap = 
 	{
-		null,null,null,null
+		null,null,null,null,null
 	};
 	
 	private final static ImageUnit[] fsm_stateBitmap_hover = 
 	{
-		null,null,null,null
+		null,null,null,null,null
 	};
 	
 	private final static String[] fsm_stateBitmapString = 
@@ -40,6 +41,7 @@ public class WeiboHeader extends Field{
 		"atMe",
 		"commentMe",
 		"directMsg",
+		"weiboUser",
 	};
 	
 	private final static String[] fsm_stateBitmapString_hover = 
@@ -48,6 +50,7 @@ public class WeiboHeader extends Field{
 		"atMe_hover",
 		"commentMe_hover",
 		"directMsg_hover",
+		"weiboUser_hover",
 	};
 	
 	private static ButtonSegImage sm_navigateBitmap = null;
@@ -86,9 +89,9 @@ public class WeiboHeader extends Field{
 	private final static int	fsm_moveTime = 35;
 	private final static int[][]	fsm_moveColor = 
 	{
-		{0x68,0xff,0x59,0xff},
-		{0xd7,0xa8,0xea,0xe4},
-		{0x03,0x06,0xfb,0x00},
+		{0x68,0xff,0x59,0xff,0x00},
+		{0xd7,0xa8,0xea,0xe4,0x94},
+		{0x03,0x06,0xfb,0x00,0xf2},
 	};
 	
 	int					m_curr_x = fsm_linkedStateSize;
@@ -100,7 +103,7 @@ public class WeiboHeader extends Field{
 	int					m_deaccel_delta = 0; 
 	
 	public void setCurrState(int _state){
-		if(_state >= STATE_TIMELINE && _state <= STATE_DIRECT_MESSAGE){
+		if(_state >= 0 && _state < fsm_stateBitmapString.length){
 			
 			if(m_currState != _state){
 				
@@ -132,7 +135,7 @@ public class WeiboHeader extends Field{
 										m_curr_x = m_dest_x;
 									}
 								}
-								m_deaccel_delta += 5;
+								m_deaccel_delta += 3;
 								
 								int r,g,b;
 								if(m_curr_x == m_dest_x){
@@ -195,7 +198,7 @@ public class WeiboHeader extends Field{
 			int t_x = fsm_linkedStateSize;
 			boolean t_drawNewMsgSign = false;
 			
-			for(int i = 0 ;i <= STATE_DIRECT_MESSAGE;i++){
+			for(int i = 0 ;i < fsm_stateBitmapString.length;i++){
 				
 				t_drawNewMsgSign = false;
 				
@@ -211,6 +214,8 @@ public class WeiboHeader extends Field{
 					break;
 				case STATE_DIRECT_MESSAGE:
 					t_drawNewMsgSign = m_parentScreen.m_mainDMMgr.hasNewWeibo();
+					break;
+				case STATE_WEIBO_USER:
 					break;
 				}
 				if(m_currState == i){

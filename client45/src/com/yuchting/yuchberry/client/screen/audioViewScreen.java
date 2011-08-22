@@ -1,8 +1,10 @@
-package com.yuchting.yuchberry.client;
+package com.yuchting.yuchberry.client.screen;
 
 import java.io.ByteArrayInputStream;
 
 import javax.microedition.media.Player;
+
+import com.yuchting.yuchberry.client.recvMain;
 
 public class audioViewScreen extends fileViewScreen{
 	

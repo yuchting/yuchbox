@@ -8,6 +8,7 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
 import local.localResource;
+import net.rim.device.api.browser.field.SetHeaderEvent;
 import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
@@ -131,14 +132,16 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	private WeiboUserFindFactory	m_userfactory = new WeiboUserFindFactory(this);
 	
-	WeiboMainManager			m_mainMgr;
-	WeiboMainManager			m_mainAtMeMgr;
-	WeiboMainManager			m_mainCommitMeMgr;
-	WeiboDMManager				m_mainDMMgr;
+	WeiboMainManager		m_mainMgr;
+	WeiboMainManager		m_mainAtMeMgr;
+	WeiboMainManager		m_mainCommitMeMgr;
+	WeiboDMManager			m_mainDMMgr;
 	
-	WeiboMainManager			m_currMgr = null;
+	WeiboUserInfoMgr 		m_userInfoScreen = null;
 	
-	Vector						m_sendDaemonList = new Vector();
+	WeiboMainManager		m_currMgr = null;
+	
+	Vector					m_sendDaemonList = new Vector();
 		
 	private static ImageUnit[]	sm_VIPSign = 
 	{
@@ -235,7 +238,9 @@ public class weiboTimeLineScreen extends MainScreen{
 		m_refMainManager[0] = m_mainMgr;
 		m_refMainManager[1] = m_mainAtMeMgr;
 		m_refMainManager[2] = m_mainCommitMeMgr;
-		m_refMainManager[3] = m_mainDMMgr;		
+		m_refMainManager[3] = m_mainDMMgr;	
+		
+		m_userInfoScreen = new WeiboUserInfoMgr(_mainApp,this);
 		
 		m_currMgr = m_mainMgr;
 		
@@ -420,7 +425,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	public void ClearWeibo(){
 		m_mainMgr.deleteAll();
-		m_mainMgr.add(m_mainMgr.m_updateWeiboField.getFocusField());
+		m_mainMgr.add(m_mainMgr.m_updateWeiboFieldNull);
 		
 		m_mainAtMeMgr.deleteAll();
 		m_mainCommitMeMgr.deleteAll();
@@ -464,9 +469,7 @@ public class weiboTimeLineScreen extends MainScreen{
 				
 				m_weiboHeader.invalidate();				
 				
-				if(_weibo.GetWeiboClass() == fetchWeibo.TIMELINE_CLASS){
-					m_mainApp.TriggerWeiboHomeNotification();					
-				}else{
+				if(_weibo.GetWeiboClass() != fetchWeibo.TIMELINE_CLASS){
 					m_mainApp.TriggerWeiboNotification();
 				}
 			}
@@ -1146,25 +1149,19 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 	}
 
-    private WeiboUserInfoScreen m_userInfoScreen = null;
+    
     public void displayWeiboUser(final fetchWeiboUser _user){
-    	
-    	if(m_userInfoScreen == null){
-    		m_userInfoScreen = new WeiboUserInfoScreen(m_mainApp);
-    	}
-    	
     	m_mainApp.invokeLater(new Runnable() {
 			public void run() {
 				
-		    	m_userInfoScreen.setWeiboUser(_user);
-		    	
-		    	if(m_mainApp.getActiveScreen() != m_userInfoScreen){
-	    			
-					m_mainApp.pushScreen(m_userInfoScreen);
-					m_userInfoScreen.updateDisplay();
-				}   		
-	    	}				
-    	}); 
+				m_weiboHeader.setCurrState(WeiboHeader.STATE_WEIBO_USER);
+				refreshWeiboHeader();
+				
+				m_userInfoScreen.setWeiboUser(_user);
+			}
+		});
+    	
+    	
     }	
 	
 	private void SendRefreshMsg(){
@@ -1345,6 +1342,15 @@ public class weiboTimeLineScreen extends MainScreen{
 				m_currMgr = m_mainDMMgr;
 			}else{
 				return;
+			}
+			break;
+		case WeiboHeader.STATE_WEIBO_USER:
+			if(m_currMgr != m_userInfoScreen){
+				m_currMgr.backupFocusField();
+				replace(m_currMgr,m_userInfoScreen);
+				m_currMgr = m_userInfoScreen;
+			}else{
+				return ;
 			}
 			break;
 		}

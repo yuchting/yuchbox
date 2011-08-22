@@ -20,8 +20,8 @@
 	<Image Name="commentMe_hover" XPos="160" YPos="50" Width="32" Height="32" />
 	<Image Name="directMsg" XPos="192" YPos="50" Width="32" Height="32" />
 	<Image Name="directMsg_hover" XPos="224" YPos="50" Width="32" Height="32" />
-	<Image Name="weiboSetting" XPos="110" YPos="83" Width="32" Height="32" />
-	<Image Name="weiboSetting_hover" XPos="142" YPos="83" Width="32" Height="32" />
+	<Image Name="weiboUser" XPos="76" YPos="83" Width="32" Height="32" />
+	<Image Name="weiboUser_hover" XPos="108" YPos="83" Width="32" Height="32" />
 		
 	<Image Name="headImageMask_l" XPos="0" YPos="0" Width="50" Height="50" />
 	<Image Name="headImageMask" XPos="50" YPos="0" Width="32" Height="32" />

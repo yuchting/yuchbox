@@ -6,6 +6,8 @@ import java.util.Vector;
 
 import javax.microedition.io.file.FileConnection;
 
+import com.yuchting.yuchberry.client.screen.ISendAttachmentCallback;
+
 public class SendAttachmentDeamon extends Thread{
 	
 	connectDeamon		m_connect 	= null;

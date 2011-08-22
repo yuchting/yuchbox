@@ -1,6 +1,7 @@
 package com.yuchting.yuchberry.client.weibo;
 
 import java.util.Date;
+import java.util.Vector;
 
 import local.localResource;
 import net.rim.device.api.system.Characters;
@@ -12,6 +13,7 @@ import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.CheckboxField;
 import net.rim.device.api.ui.component.LabelField;
+import net.rim.device.api.ui.component.NullField;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
@@ -69,6 +71,12 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	byte				m_replyStyleBackup = 0;
 	long				m_replyIdBackup	= 0;
 	String				m_replyText		= "";
+	
+	
+	Vector 				m_bufferedWeiboList = null;
+	int					m_bufferedAddInvokeId = -1;
+	WeiboUpdateField	m_updateWeiboField = null;
+	NullField			m_updateWeiboFieldNull = null;
 		
 	public WeiboMainManager(recvMain _mainApp,weiboTimeLineScreen _parentScreen,boolean _timelineManager){
 		super(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
@@ -123,8 +131,10 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		m_timelineManager 	= _timelineManager;
 		
 		if(_timelineManager){
-//			m_updateWeiboField = new WeiboUpdateField(this);
-//			add(m_updateWeiboField.getFocusField());
+			m_bufferedWeiboList	= new Vector();
+			m_updateWeiboField = new WeiboUpdateField(this);
+			m_updateWeiboFieldNull = new NullField(Field.NON_FOCUSABLE);
+			add(m_updateWeiboFieldNull);
 		}
 		
 		m_atBut.setChangeListener(this);
@@ -310,22 +320,68 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 		invalidate(t_start_x,t_start_y,fsm_scrollbarSize, t_visibleHeight);
 	}
+	
+	final class BufferedWeibo{
+		fetchWeibo		m_weibo;
+		WeiboHeadImage	m_image;
 		
+		public BufferedWeibo(fetchWeibo _weibo,WeiboHeadImage _image){
+			m_weibo = _weibo;
+			m_image = _image;
+		}
+	}
 	public void AddWeibo(final fetchWeibo _weibo,final WeiboHeadImage _image,
 							final boolean _initAdd){	
 
-		WeiboItemField t_field = new WeiboItemField(_weibo,_image,WeiboMainManager.this);
+		if(m_timelineManager && !_initAdd){
+			
+			synchronized (m_bufferedWeiboList) {
+				m_bufferedWeiboList.addElement(new BufferedWeibo(_weibo,_image));
+			}
+			
+			if(m_parentScreen.m_mainApp.hasEventThread()){
+				if(getField(0) == m_updateWeiboFieldNull){
+					replace(m_updateWeiboFieldNull,m_updateWeiboField);
+				}
+			}else{
+				m_parentScreen.m_mainApp.invokeLater(new Runnable(){
+					public void run() {
+						if(getField(0) == m_updateWeiboFieldNull){
+							replace(m_updateWeiboFieldNull,m_updateWeiboField);
+							
+							m_mainApp.TriggerWeiboHomeNotification();
+						}
+					}
+				});
+			}
+							
+					
+		}else{
+			if(m_parentScreen.m_mainApp.hasEventThread()){
+				AddWeibo_impl(_weibo, _image);
+			}else{
+				m_parentScreen.m_mainApp.invokeLater(new Runnable(){
+					public void run(){
+						AddWeibo_impl(_weibo, _image);
+					}
+				});
+			}
+			
+		}
+
+		if(!_initAdd){				
+			m_hasNewWeibo = true;
+		}
+	}
+	
+	protected void AddWeibo_impl(fetchWeibo _weibo,WeiboHeadImage _image){
+		WeiboItemField t_field = new WeiboItemField(_weibo,_image,this);
 		
 		if(m_timelineManager){
 			insert(t_field.getFocusField(),1);
 		}else{
 			insert(t_field.getFocusField(),0);
 		}
-		
-		if(!_initAdd){				
-			m_hasNewWeibo = true;
-		}
-						
 	}
 	
 	public boolean DelWeibo(final fetchWeibo _weibo){
@@ -390,37 +446,80 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	}
 		
 	public boolean Clicked(int status, int time){
-				
-		final WeiboItemField t_formerExtendItem 	= getCurrExtendedItem(); 
-		final WeiboItemField t_currentExtendItem	= getCurrSelectedItem();
-
-		if(t_formerExtendItem == null && t_currentExtendItem != null){	
 		
-			setCurrExtendedItem(null);
+		if(m_timelineManager 
+		&& getField(0) == m_updateWeiboField 
+		&& m_updateWeiboField.isFocus()){
 			
-			if(t_formerExtendItem != null){
-				t_formerExtendItem.AddDelControlField(false);
+			if(m_parentScreen.m_mainApp.hasEventThread()){
+				replace(m_updateWeiboField,m_updateWeiboFieldNull);
+			}else{
+				m_parentScreen.m_mainApp.invokeLater(new Runnable(){
+					public void run(){
+						replace(m_updateWeiboField,m_updateWeiboFieldNull);
+					}
+				});
 			}
 			
-			t_currentExtendItem.AddDelControlField(true);
-			setCurrExtendedItem(t_currentExtendItem);
 			
-			replace(t_currentExtendItem.getFocusField(),t_currentExtendItem);
-			
-			sublayout(0, 0);
-			invalidate();			
-					
-			if(m_hasNewWeibo){
-				// hide the new Weibo sign 
-				//
-				m_hasNewWeibo = false;
-				m_parentScreen.m_weiboHeader.invalidate();
+			synchronized (m_bufferedWeiboList) {
+				if(!m_bufferedWeiboList.isEmpty() && m_bufferedAddInvokeId == -1){
+					m_bufferedAddInvokeId = m_parentScreen.m_mainApp.invokeLater(new Runnable(){
+						public void run(){
+							
+							synchronized (m_bufferedWeiboList) {
+								BufferedWeibo t_weibo = (BufferedWeibo)m_bufferedWeiboList.elementAt(0);
+								AddWeibo_impl(t_weibo.m_weibo, t_weibo.m_image);
+								
+								m_bufferedWeiboList.removeElementAt(0);
+								
+								if(m_bufferedWeiboList.isEmpty()){
+									m_parentScreen.m_mainApp.cancelInvokeLater(m_bufferedAddInvokeId);
+									m_bufferedAddInvokeId = -1;
+								}
+							}
+							
+						}
+					}, 500, true);
+				}
 			}
 			
-			m_mainApp.StopWeiboNotification();
-    		m_mainApp.StopWeiboHomeNotification();
-						
 			return true;
+			
+		}else{
+
+			final WeiboItemField t_formerExtendItem 	= getCurrExtendedItem(); 
+			final WeiboItemField t_currentExtendItem	= getCurrSelectedItem();
+
+			if(t_formerExtendItem == null && t_currentExtendItem != null){	
+			
+				setCurrExtendedItem(null);
+				
+				if(t_formerExtendItem != null){
+					t_formerExtendItem.AddDelControlField(false);
+				}
+				
+				setCurrExtendedItem(t_currentExtendItem);
+				t_currentExtendItem.AddDelControlField(true);			
+				
+				replace(t_currentExtendItem.getFocusField(),t_currentExtendItem);
+				
+				sublayout(0, 0);
+				invalidate();			
+						
+				if(m_hasNewWeibo){
+					// hide the new Weibo sign 
+					//
+					m_hasNewWeibo = false;
+					m_parentScreen.m_weiboHeader.invalidate();
+				}
+				
+				m_mainApp.StopWeiboNotification();
+	    		m_mainApp.StopWeiboHomeNotification();
+							
+				return true;
+			}
+	
 		}
 		
 		return false;
@@ -528,9 +627,20 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	public void ScrollToTop(){
 		if(getCurrExtendedItem() == null){
 			
-			if(getFieldCount() != 0){
-				getField(0).setFocus();
+			if(m_timelineManager){
+				if(getField(0) == m_updateWeiboField){
+					getField(0).setFocus();
+				}else{
+					if(getFieldCount() >= 2){
+						getField(1).setFocus();
+					}
+				}
+			}else{
+				if(getFieldCount() > 0){
+					getField(0).setFocus();
+				}
 			}
+			
 			
 		}else{
 			EscapeKey();
@@ -542,7 +652,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 					t_field = (WeiboItemFocusField)getField(1);
 				}
 			}else{
-				if(getFieldCount() != 0){
+				if(getFieldCount() > 0){
 					t_field = (WeiboItemFocusField)getField(0);
 				}
 			}

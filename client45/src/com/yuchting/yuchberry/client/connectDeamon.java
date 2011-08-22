@@ -41,6 +41,8 @@ import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.util.Arrays;
 
+import com.yuchting.yuchberry.client.screen.IUploadFileScreenCallback;
+import com.yuchting.yuchberry.client.screen.uploadFileScreen;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 import com.yuchting.yuchberry.client.weibo.fetchWeiboUser;
 
@@ -54,7 +56,7 @@ public class connectDeamon extends Thread implements SendListener,
 		
 	final static int	fsm_clientVer = 13;
 	 
-	sendReceive		m_connect = null;
+	public sendReceive		m_connect = null;
 		
 	 
 	FileConnection		m_keyfile;
@@ -97,11 +99,11 @@ public class connectDeamon extends Thread implements SendListener,
 	private String			m_htmlTextContain 	= "";
 	private String			m_htmlTextContain_type 	= "";
 	 
-	final class ComposingAttachment{
-		String m_filename;
-		int	m_fileSize;
+	public final class ComposingAttachment{
+		public String m_filename;
+		public int	m_fileSize;
 		 
-		ComposingAttachment(String _filename,int _size){
+		public ComposingAttachment(String _filename,int _size){
 			m_filename = _filename;
 			m_fileSize = _size;
 		}

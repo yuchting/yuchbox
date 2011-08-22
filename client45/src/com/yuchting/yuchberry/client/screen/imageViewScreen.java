@@ -1,4 +1,6 @@
-package com.yuchting.yuchberry.client;
+package com.yuchting.yuchberry.client.screen;
+
+import com.yuchting.yuchberry.client.recvMain;
 
 import net.rim.device.api.math.Fixed32;
 import net.rim.device.api.system.Display;

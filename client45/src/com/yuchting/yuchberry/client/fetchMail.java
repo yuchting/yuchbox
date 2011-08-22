@@ -23,16 +23,16 @@ public class  fetchMail{
 	
 	public final static String	fsm_noSubjectTile = "No Subject";
 	    	
-	final static int	ANSWERED 	= 1 << 0;
-	final static int	DELETED 	= 1 << 1;
-	final static int	DRAFT 		= 1 << 2;
-	final static int	FLAGGED 	= 1 << 3;
-	final static int	RECENT 		= 1 << 4;
-	final static int	SEEN 		= 1 << 5;
+	public final static int	ANSWERED 	= 1 << 0;
+	public final static int	DELETED 	= 1 << 1;
+	public final static int	DRAFT 		= 1 << 2;
+	public final static int	FLAGGED 	= 1 << 3;
+	public final static int	RECENT 		= 1 << 4;
+	public final static int	SEEN 		= 1 << 5;
 	
-	final static int	NOTHING_STYLE = 0;
-	final static int	FORWORD_STYLE = 1;
-	final static int	REPLY_STYLE = 2;
+	public final static int	NOTHING_STYLE = 0;
+	public final static int	FORWORD_STYLE = 1;
+	public final static int	REPLY_STYLE = 2;
 	
 	private int 		m_mailIndex = 0;
 	

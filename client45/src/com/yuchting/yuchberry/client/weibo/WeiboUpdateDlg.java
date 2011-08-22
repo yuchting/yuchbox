@@ -29,13 +29,13 @@ import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
-import com.yuchting.yuchberry.client.CameraScreen;
-import com.yuchting.yuchberry.client.ICameraScreenCallback;
-import com.yuchting.yuchberry.client.IUploadFileScreenCallback;
-import com.yuchting.yuchberry.client.imageViewScreen;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
-import com.yuchting.yuchberry.client.uploadFileScreen;
+import com.yuchting.yuchberry.client.screen.CameraScreen;
+import com.yuchting.yuchberry.client.screen.ICameraScreenCallback;
+import com.yuchting.yuchberry.client.screen.IUploadFileScreenCallback;
+import com.yuchting.yuchberry.client.screen.imageViewScreen;
+import com.yuchting.yuchberry.client.screen.uploadFileScreen;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ButtonSegImage;
 import com.yuchting.yuchberry.client.ui.ImageButton;

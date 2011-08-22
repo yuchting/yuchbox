@@ -3,6 +3,8 @@ package com.yuchting.yuchberry.client;
 import java.io.ByteArrayOutputStream;
 import java.util.Vector;
 
+import com.yuchting.yuchberry.client.screen.ISendAttachmentCallback;
+
 import net.rim.blackberry.api.mail.Message;
 
 

@@ -8,21 +8,19 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.component.NullField;
 import net.rim.device.api.ui.component.TextField;
-import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 
 
 
-public class WeiboUserInfoScreen extends MainScreen{
+public class WeiboUserInfoMgr extends WeiboMainManager{
 
 	final static String fsm_follow_text	= recvMain.sm_local.getString(localResource.WEIBO_USER_INFO_FOLLOW);
 	final static String fsm_fans_text		= recvMain.sm_local.getString(localResource.WEIBO_USER_INFO_FANS);
 	final static String fsm_weibo_text		= recvMain.sm_local.getString(localResource.WEIBO_USER_INFO_WEIBO_NUM);
 	
 	fetchWeiboUser		m_weiboUser = null;	
-	WeiboMainManager	m_weiboMgr	= null;
 	recvMain			m_mainApp	= null;
 	
 	Bitmap				m_headImage = null;
@@ -67,6 +65,10 @@ public class WeiboUserInfoScreen extends MainScreen{
 		}
 			
 		public void paint(Graphics _g){
+			
+			if(m_weiboUser == null){
+				return ;
+			}
 			
 			final int ft_interval = 5;
 			
@@ -191,12 +193,11 @@ public class WeiboUserInfoScreen extends MainScreen{
 	DescTextField		m_descText = new DescTextField();
 	InfoField			m_infoField = new InfoField();
 	
-	public WeiboUserInfoScreen(recvMain _mainApp){
-		m_mainApp = _mainApp;
-		m_weiboMgr = new WeiboMainManager(_mainApp,_mainApp.m_weiboTimeLineScreen,false);
+	public WeiboUserInfoMgr(recvMain _mainApp,weiboTimeLineScreen _screen){
+		super(_mainApp,_screen,false);
 		
-		add(m_infoField);
-		add(m_weiboMgr);
+		m_mainApp = _mainApp;
+		m_timelineManager = true;
 	}
 	
 	private NullField m_nullField = new NullField();
@@ -204,6 +205,7 @@ public class WeiboUserInfoScreen extends MainScreen{
 	public void setWeiboUser(fetchWeiboUser _weiboUser){
 		
 		if(m_weiboUser != _weiboUser){
+			
 			m_weiboUser = _weiboUser;
 			
 			if(m_weiboUser != null){
@@ -224,45 +226,31 @@ public class WeiboUserInfoScreen extends MainScreen{
 						m_mainApp.SetErrorString("SWU2:"+e.getMessage() + e.getClass().getName());
 					}
 				}
-				
-				m_weiboMgr.EscapeKey();
-				m_weiboMgr.EscapeKey();
 								
-				m_weiboMgr.deleteAll();
+				deleteAll();
+				add(m_infoField);
 				
 				WeiboHeadImage t_headImage = new WeiboHeadImage();
 				t_headImage.m_headImage = m_headImage;
 								
 				for(int i = 0;i < m_weiboUser.getUpdatedWeibo().size();i++){
 					fetchWeibo weibo = (fetchWeibo)m_weiboUser.getUpdatedWeibo().elementAt(i);
-					m_weiboMgr.AddWeibo(weibo, t_headImage, true);
+					AddWeibo_impl(weibo, t_headImage);
 				}
 				
 				// set the field height
 				//
 				m_descText.setText(m_weiboUser.getDesc());
-				m_infoField.setFieldHeight(121 + m_descText.getHeight());
+				m_infoField.setFieldHeight(WeiboItemField.sm_fontHeight * 6 + m_descText.getHeight());
 				
-				// to rise the layout calling
-				//
-				replace(m_infoField,m_nullField);
-				replace(m_nullField,m_infoField);
+				layout(0, 0);
 				
 				m_infoField.setFocus();
 			}
 		}
 	}
 	
-	public boolean onClose(){
-		
-		if(!m_weiboMgr.EscapeKey()){
-			super.onClose();
-		}
-		
-		return false;
-	}
-
 	protected boolean navigationClick(int status, int time){
-		return m_weiboMgr.Clicked(status,time);
+		return Clicked(status,time);
 	}
 }

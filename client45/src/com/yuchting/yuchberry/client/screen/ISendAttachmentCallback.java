@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.client;
+package com.yuchting.yuchberry.client.screen;
 
 public interface ISendAttachmentCallback {
 

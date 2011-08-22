@@ -1,8 +1,10 @@
-package com.yuchting.yuchberry.client;
+package com.yuchting.yuchberry.client.screen;
 
 import javax.microedition.media.Manager;
 import javax.microedition.media.Player;
 import javax.microedition.media.control.VideoControl;
+
+import com.yuchting.yuchberry.client.recvMain;
 
 public class videoViewScreen extends fileViewScreen{
 	Player 		m_player			= null;

@@ -42,6 +42,15 @@ import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
 import net.rim.device.api.ui.container.MainScreen;
 
+import com.yuchting.yuchberry.client.screen.aboutScreen;
+import com.yuchting.yuchberry.client.screen.audioViewScreen;
+import com.yuchting.yuchberry.client.screen.imageViewScreen;
+import com.yuchting.yuchberry.client.screen.settingScreen;
+import com.yuchting.yuchberry.client.screen.shareYBScreen;
+import com.yuchting.yuchberry.client.screen.stateScreen;
+import com.yuchting.yuchberry.client.screen.textViewScreen;
+import com.yuchting.yuchberry.client.screen.uploadFileScreen;
+import com.yuchting.yuchberry.client.screen.videoViewScreen;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.weibo.WeiboItemField;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
@@ -95,12 +104,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
-    aboutScreen			m_aboutScreen		= null;
-	stateScreen 		m_stateScreen 		= null;
-	debugInfo			m_debugInfoScreen	= null;
-	downloadDlg			m_downloadDlg		= null;
-	settingScreen		m_settingScreen		= null;
-	shareYBScreen		m_shareScreen		= null;
+	public aboutScreen			m_aboutScreen		= null;
+	public stateScreen 			m_stateScreen 		= null;
+	public debugInfo			m_debugInfoScreen	= null;
+	public downloadDlg			m_downloadDlg		= null;
+	public settingScreen		m_settingScreen		= null;
+	public shareYBScreen		m_shareScreen		= null;
 		
 	UiApplication		m_downloadDlgParent = null;
 	
@@ -111,8 +120,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public final static	int				CONNECTED_STATE = 2;
 	
 	
-	int					m_connectState		= 0; 
-	String				m_aboutString		= recvMain.sm_local.getString(localResource.ABOUT_DESC);
+	public int					m_connectState		= 0; 
+	public String				m_aboutString		= recvMain.sm_local.getString(localResource.ABOUT_DESC);
 	
 	final class ErrorInfo{
 		Date		m_time;
@@ -125,62 +134,62 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	Vector				m_errorString		= new Vector();	
-	Vector				m_uploadingDesc 	= new Vector();
+	public Vector			m_errorString		= new Vector();	
+	public Vector			m_uploadingDesc 	= new Vector();
 	
-	String				m_hostname 			= new String();
-	int					m_port 				= 0;
-	String				m_userPassword 		= new String();
-	boolean			m_useSSL			= false;
-	boolean			m_useWifi			= false;
-	boolean			m_useMDS			= false;
+	public String			m_hostname 			= new String();
+	public int				m_port 				= 0;
+	public String			m_userPassword 		= new String();
+	public boolean			m_useSSL			= false;
+	public boolean			m_useWifi			= false;
+	public boolean			m_useMDS			= false;
 		
-	boolean			m_autoRun			= false;
+	public boolean			m_autoRun			= false;
 	
-	boolean			m_discardOrgText	= false;
-	boolean			m_delRemoteMail		= false;
+	public boolean			m_discardOrgText	= false;
+	public boolean			m_delRemoteMail		= false;
 	
-	final class APNSelector{
-		String		m_name			= null;
-		int			m_validateNum	= 0;
+	public final class APNSelector{
+		public String		m_name			= null;
+		public int			m_validateNum	= 0;
 	}
 	
-	Vector				m_APNList 			= new Vector();
-	int					m_currentAPNIdx 	= 0;
-	int					m_changeAPNCounter 	= 0;
-	String				m_appendString		= new String();
+	public Vector				m_APNList 			= new Vector();
+	public int					m_currentAPNIdx 	= 0;
+	public int					m_changeAPNCounter 	= 0;
+	public String				m_appendString		= new String();
 	
-	long				m_uploadByte		= 0;
-	long				m_downloadByte		= 0;
+	public long				m_uploadByte		= 0;
+	public long				m_downloadByte		= 0;
 	
-	int					m_sendMailNum		= 0;
-	int					m_recvMailNum		= 0;
-	String				m_passwordKey		= "";
+	public int					m_sendMailNum		= 0;
+	public int					m_recvMailNum		= 0;
+	public String				m_passwordKey		= "";
 	
-	boolean			m_connectDisconnectPrompt = false;
-	
-	
-	static final String[]	fsm_recvMaxTextLenghtString = {"∞","1KB","5KB","10KB","50KB"};
-	static final int[]	fsm_recvMaxTextLenght		= {0,1024,1024*5,1024*10,1024*50};
-	int						m_recvMsgTextLengthIndex = 0;
+	public boolean			m_connectDisconnectPrompt = false;
 	
 	
-	static final String[]	fsm_pulseIntervalString = {"1","3","5","10","30"};
-	static final int[]	fsm_pulseInterval		= {1,3,5,10,30};
-	int						m_pulseIntervalIndex = 2;
+	public static final String[]	fsm_recvMaxTextLenghtString = {"∞","1KB","5KB","10KB","50KB"};
+	public static final int[]	fsm_recvMaxTextLenght		= {0,1024,1024*5,1024*10,1024*50};
+	public int						m_recvMsgTextLengthIndex = 0;
 	
-	boolean			m_fulldayPrompt		= true;
-	int					m_startPromptHour	= 8;
-	int					m_endPromptHour		= 22;
 	
-	boolean			m_copyMailToSentFolder = false;
+	public static final String[]	fsm_pulseIntervalString = {"1","3","5","10","30"};
+	public static final int[]	fsm_pulseInterval		= {1,3,5,10,30};
+	public int						m_pulseIntervalIndex = 2;
 	
-	final class UploadingDesc{
+	public boolean			m_fulldayPrompt		= true;
+	public int					m_startPromptHour	= 8;
+	public int					m_endPromptHour		= 22;
+	
+	public boolean			m_copyMailToSentFolder = false;
+	
+	public final class UploadingDesc{
 		
-		fetchMail		m_mail = null;
-		int				m_attachmentIdx;
-		int				m_uploadedSize;
-		int				m_totalSize;		
+		public fetchMail		m_mail = null;
+		public int				m_attachmentIdx;
+		public int				m_uploadedSize;
+		public int				m_totalSize;		
 	}
 		
 	ApplicationMenuItem m_addItem	= new ApplicationMenuItem(20){
@@ -217,14 +226,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	String m_latestVersion			= null;
 	
 	//@{ location information
-	LocationProvider m_locationProvider = null;
-	boolean		 m_useLocationInfo = false;
-	boolean		 m_setLocationListener = false;
+	public LocationProvider m_locationProvider = null;
+	public boolean		 m_useLocationInfo = false;
+	public boolean		 m_setLocationListener = false;
 	
-	GPSInfo			m_gpsInfo = new GPSInfo();
+	public GPSInfo			m_gpsInfo = new GPSInfo();
 	//@}
 	
-	boolean		m_mailUseLocation = false;
+	public boolean		m_mailUseLocation = false;
 	
 	public ImageSets	m_allImageSets 		= null;
 	
@@ -1445,7 +1454,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		m_connectState = _state;
 
 		if(m_stateScreen != null){
-			m_stateScreen.m_connectBut.setConnectState(m_connectState,this);
+			m_stateScreen.setConnectButState(m_connectState,this);
 		}		
 	}
 	

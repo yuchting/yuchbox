@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.client;
+package com.yuchting.yuchberry.client.screen;
 
 import java.util.Enumeration;
 import java.util.Vector;
@@ -17,6 +17,8 @@ import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.ObjectListField;
 import net.rim.device.api.ui.container.MainScreen;
 
+import com.yuchting.yuchberry.client.connectDeamon;
+import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 
@@ -132,8 +134,8 @@ public class uploadFileScreen extends MainScreen implements
 	uploadFileScreenMenu	m_check		= new uploadFileScreenMenu(recvMain.sm_local.getString(localResource.CHECK_UPLOAD_FILE),1,100,this);	
 	
 	
-	final static int fsm_bitmap_width	= 32;
-	final static int fsm_bitmap_height = 32;
+	public final static int fsm_bitmap_width	= 32;
+	public final static int fsm_bitmap_height = 32;
 	
 	ImageUnit				m_textFileBitmap= null;
 	ImageUnit				m_audioFileBitmap = null;
@@ -150,8 +152,8 @@ public class uploadFileScreen extends MainScreen implements
 	
 	recvMain			m_mainApp		= null;
 	
-	final static String fsm_rootPath_back		= "file:///store/home/user/";
-	final static String fsm_rootPath_default	= "file:///SDCard/";
+	public final static String fsm_rootPath_back		= "file:///store/home/user/";
+	public final static String fsm_rootPath_default	= "file:///SDCard/";
 	
 	String				m_rootPath = null;
 	

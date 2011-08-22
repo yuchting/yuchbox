@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.client;
+package com.yuchting.yuchberry.client.screen;
 
 import java.util.Vector;
 
@@ -23,6 +23,8 @@ import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.MainScreen;
 
+import com.yuchting.yuchberry.client.debugInfo;
+import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.ButtonSegImage;
 import com.yuchting.yuchberry.client.ui.HyperlinkButtonField;
 import com.yuchting.yuchberry.client.ui.ImageSets;
@@ -278,7 +280,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 	HorizontalFieldManager m_userPasswordMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
     PasswordEditField   m_userPassword  = null;
        
-    ConnectButton		m_connectBut    = null;
+    public ConnectButton	m_connectBut    = null;
     
     String				m_promptText     = recvMain.sm_local.getString(localResource.STATE_HELP_GET_HOST_PROMPT);
     HyperlinkButtonField m_getHostLink	= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.STATE_SCREEN_HELP_MENU),0xffffff,0x8a8a8a);
@@ -470,6 +472,10 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
             	m_connectBut.setFocus();            	
             }
         }         
+    }
+    
+    public void setConnectButState(int _state,recvMain _mainApp){
+    	m_connectBut.setConnectState(_state, _mainApp);
     }
     
     protected void makeMenu(Menu _menu,int instance){

@@ -5,11 +5,11 @@ import java.util.Date;
 
 import net.rim.device.api.system.EncodedImage;
 
-import com.yuchting.yuchberry.client.ISendAttachmentCallback;
 import com.yuchting.yuchberry.client.SendAttachmentDeamon;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
+import com.yuchting.yuchberry.client.screen.ISendAttachmentCallback;
 
 public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 

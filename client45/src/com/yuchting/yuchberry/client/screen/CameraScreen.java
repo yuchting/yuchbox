@@ -1,7 +1,9 @@
-package com.yuchting.yuchberry.client;
+package com.yuchting.yuchberry.client.screen;
 
 import javax.microedition.media.Player;
 import javax.microedition.media.control.VideoControl;
+
+import com.yuchting.yuchberry.client.recvMain;
 
 import local.localResource;
 import net.rim.device.api.system.Characters;
