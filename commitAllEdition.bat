@@ -19,6 +19,12 @@ copy /Y .\client45\src\com\yuchting\yuchberry\client\ui\*.* .\client47\src\com\y
 copy /Y .\client45\src\com\yuchting\yuchberry\client\ui\*.* .\client60\src\com\yuchting\yuchberry\client\ui\
 copy /Y .\client45\src\com\yuchting\yuchberry\client\ui\*.* .\client42\src\com\yuchting\yuchberry\client\ui\
 
+copy /Y .\client45\src\com\yuchting\yuchberry\client\screen\*.* .\client\src\com\yuchting\yuchberry\client\screen\
+copy /Y .\client45\src\com\yuchting\yuchberry\client\screen\*.* .\client46\src\com\yuchting\yuchberry\client\screen\
+copy /Y .\client45\src\com\yuchting\yuchberry\client\screen\*.* .\client47\src\com\yuchting\yuchberry\client\screen\
+copy /Y .\client45\src\com\yuchting\yuchberry\client\screen\*.* .\client60\src\com\yuchting\yuchberry\client\screen\
+copy /Y .\client45\src\com\yuchting\yuchberry\client\screen\*.* .\client42\src\com\yuchting\yuchberry\client\screen\
+
 
 copy /Y .\client45\src\local\*.* .\client\src\local\
 copy /Y .\client45\src\local\*.* .\client46\src\local\
@@ -31,12 +37,6 @@ copy /Y .\client45\res\*.* .\client46\res\
 copy /Y .\client45\res\*.* .\client47\res\ 
 copy /Y .\client45\res\*.* .\client60\res\ 
 copy /Y .\client45\res\*.* .\client42\res\
-
-copy /Y .\client45\res\weibo\*.* .\client\res\weibo\
-copy /Y .\client45\res\weibo\*.* .\client46\res\weibo\
-copy /Y .\client45\res\weibo\*.* .\client47\res\weibo\
-copy /Y .\client45\res\weibo\*.* .\client60\res\weibo\ 
-copy /Y .\client45\res\weibo\*.* .\client42\res\weibo\
 
 del /S /Q /AH .\client45\res\Thumbs.db
 del /S /Q /AH .\client\res\Thumbs.db
@@ -70,13 +70,6 @@ svn add .\client47\res\*.*
 svn add .\client60\res\*.* 
 svn add .\client42\res\*.*
 
-svn add .\client\res\weibo\*.* 
-svn add .\client46\res\weibo\*.* 
-svn add .\client47\res\weibo\*.* 
-svn add .\client60\res\weibo\*.* 
-svn add .\client42\res\weibo\*.*
-
-
 svn add .\client\src\com\yuchting\yuchberry\client\*.*
 svn add .\client60\src\com\yuchting\yuchberry\client\*.*
 svn add .\client46\src\com\yuchting\yuchberry\client\*.*
@@ -94,5 +87,11 @@ svn add .\client60\src\com\yuchting\yuchberry\client\ui\*.*
 svn add .\client46\src\com\yuchting\yuchberry\client\ui\*.*
 svn add .\client47\src\com\yuchting\yuchberry\client\ui\*.*
 svn add .\client42\src\com\yuchting\yuchberry\client\ui\*.*
+
+svn add .\client\src\com\yuchting\yuchberry\client\screen\*.*
+svn add .\client60\src\com\yuchting\yuchberry\client\screen\*.*
+svn add .\client46\src\com\yuchting\yuchberry\client\screen\*.*
+svn add .\client47\src\com\yuchting\yuchberry\client\screen\*.*
+svn add .\client42\src\com\yuchting\yuchberry\client\screen\*.*
 
 pause
