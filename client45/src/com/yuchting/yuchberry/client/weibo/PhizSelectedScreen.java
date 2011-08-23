@@ -1,11 +1,8 @@
 package com.yuchting.yuchberry.client.weibo;
 
-import local.localResource;
-
-import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Vector;
 
+import local.localResource;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
@@ -152,7 +149,9 @@ final class PhizMgr extends Manager{
 		
 	public void resetSelected(){
 		m_move_x = m_move_y = 0;
-		getField(0).setFocus();
+		if(getFieldCount() > 0){
+			getField(0).setFocus();
+		}		
 	}
 	
 	protected boolean navigationMovement(int dx,int dy,int status,int time){
@@ -207,13 +206,12 @@ public class PhizSelectedScreen extends MainScreen{
 		add(t_prompt);
 		add(new SeparatorField());
 		
-		Hashtable t_imageList = weiboTimeLineScreen.sm_weiboUIImage.getImageList();
+		Vector t_imageList = weiboTimeLineScreen.sm_weiboUIImage.getImageList();
 		
 		Vector t_phizList = new Vector();
 		
-		Enumeration elements = t_imageList.elements();
-		while(elements.hasMoreElements()) {
-		    ImageUnit t_unit = (ImageUnit)elements.nextElement();
+		for(int i = 0;i < t_imageList.size();i++){
+		    ImageUnit t_unit = (ImageUnit)t_imageList.elementAt(i);
 		    
 		    if(t_unit.getName().charAt(0) == '['){
 		    	t_phizList.addElement(new Phiz(t_unit,weiboTimeLineScreen.sm_weiboUIImage));

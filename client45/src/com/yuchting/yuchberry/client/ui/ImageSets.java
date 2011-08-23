@@ -1,6 +1,7 @@
 package com.yuchting.yuchberry.client.ui;
 
 import java.util.Hashtable;
+import java.util.Vector;
 
 import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.system.Bitmap;
@@ -17,7 +18,7 @@ import com.yuchting.yuchberry.client.recvMain;
 
 public class ImageSets {
 
-	Hashtable	m_mapImageUnits = new Hashtable();
+	Vector		m_imageUnits = new Vector();
 	
 	String		m_name		= "";
 	Bitmap		m_fullImage = null;
@@ -50,38 +51,47 @@ public class ImageSets {
 					 t_unit.m_width = Integer.valueOf(attributes.getValue("Width")).intValue();
 					 t_unit.m_height = Integer.valueOf(attributes.getValue("Height")).intValue();
 					 
-					 m_mapImageUnits.put(t_unit.m_name,t_unit);
+					 m_imageUnits.addElement(t_unit);
 				 }							 
 			 }
 		});
 	}
 	
-	public Hashtable getImageList()	{
-		return m_mapImageUnits;
+	public Vector getImageList()	{
+		return m_imageUnits;
 	}
 	
 	public XYDimension getImageSize(String _name){
-		ImageUnit t_unit = (ImageUnit)m_mapImageUnits.get(_name);
-		if(t_unit != null){
-			return new XYDimension(t_unit.m_width,t_unit.m_height);
+		for(int i = 0;i < m_imageUnits.size();i++){
+			ImageUnit t_unit = (ImageUnit)m_imageUnits.elementAt(i);
+			if(t_unit.getName().equals(_name)){
+				return new XYDimension(t_unit.m_width,t_unit.m_height);
+			}
 		}
 		
 		return null;
 	}
 	
 	public ImageUnit getImageUnit(String _name){
-		return (ImageUnit)m_mapImageUnits.get(_name);
+		for(int i = 0;i < m_imageUnits.size();i++){
+			ImageUnit t_unit = (ImageUnit)m_imageUnits.elementAt(i);
+			if(t_unit.getName().equals(_name)){
+				return t_unit;
+			}
+		}
+		
+		return null;
 	}
 	
 	public void drawImage(Graphics _g,String _name,int _x,int _y){
-		ImageUnit t_unit = (ImageUnit)m_mapImageUnits.get(_name);
+		ImageUnit t_unit = (ImageUnit)getImageUnit(_name);
 		if(t_unit != null){
 			_g.drawBitmap(_x,_y,t_unit.m_width,t_unit.m_height,m_fullImage,t_unit.m_x,t_unit.m_y);
 		}
 	}
 	
 	public void drawImage(Graphics _g,String _name,int _x,int _y,int _width,int _height){
-		ImageUnit t_unit = (ImageUnit)m_mapImageUnits.get(_name);
+		ImageUnit t_unit = (ImageUnit)getImageUnit(_name);
 		if(t_unit != null){
 			if(_width > t_unit.m_width){
 				_width = t_unit.m_width;

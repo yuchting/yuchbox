@@ -902,6 +902,14 @@ public class weiboTimeLineScreen extends MainScreen{
     		refreshWeiboHeader();
         }
     };
+    
+    MenuItem m_userInfoItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_USER_INFO_MENU_LABEL),m_menuIndex++,0){
+        public void run() {
+        	m_weiboHeader.setCurrState(WeiboHeader.STATE_WEIBO_USER);
+    		refreshWeiboHeader();
+        }
+    };
+    
    
     int m_menuIndex_op = 20;
     
@@ -924,25 +932,27 @@ public class weiboTimeLineScreen extends MainScreen{
         }
     };
     
-    public PhizSelectedScreen	m_phizScreen = null;
-    IPhizSelected				m_phizSelected = new IPhizSelected() {
+    public PhizSelectedScreen	m_phizScreen 	= null;
+    public AutoTextEditField	m_phizSelectingText = null;
+    
+    IPhizSelected				m_phizSelected 	= new IPhizSelected() {
 		
 		public void phizSelected(String phizName) {
-			if(m_currMgr.getCurrEditItem() != null){
-				int t_position = m_currMgr.m_editTextArea.getCursorPosition();
+			if(m_phizSelectingText != null){
+				int t_position = m_phizSelectingText.getCursorPosition();
 				
-				AutoTextEditField t_editText = m_currMgr.m_editTextArea;
+				String t_text = m_phizSelectingText.getText();
 				
 				StringBuffer t_final = new StringBuffer();
 				if(t_position != 0){
-					t_final.append(t_editText.getText(0,t_position));
+					t_final.append(t_text.substring(0,t_position));
 				}
 				t_final.append(phizName);
 				
-				t_final.append(t_editText.getText(t_position,t_editText.getTextLength()));
+				t_final.append(t_text.substring(t_position,t_text.length()));
 				
-				t_editText.setText(t_final.toString());
-				t_editText.setCursorPosition(t_position + phizName.length());
+				m_phizSelectingText.setText(t_final.toString());
+				m_phizSelectingText.setCursorPosition(t_position + phizName.length());
 			}			
 		}
 	};
@@ -1051,12 +1061,14 @@ public class weiboTimeLineScreen extends MainScreen{
 			_menu.add(m_atMeManagerItem);
 			_menu.add(m_commentMeItem);
 			_menu.add(m_directMsgItem);
+			_menu.add(m_userInfoItem);
 			
 			_menu.add(MenuItem.separator(m_menuIndex));
 		}
 		
 		if(m_currMgr.getCurrEditItem() != null && m_currMgr.getCurrExtendedItem() != null){
 			_menu.add(m_sendItem);
+			m_phizSelectingText = m_currMgr.m_editTextArea;
 			_menu.add(m_phizItem);
 		}		
 		
@@ -1217,17 +1229,20 @@ public class weiboTimeLineScreen extends MainScreen{
 			case 'C':
 				m_updateItem.run();
 				return true;
-			case 'U':
+			case 'Y':
 	    		m_homeManagerItem.run();
 	    		return true;
-	    	case 'I':
+	    	case 'U':
 	    		m_atMeManagerItem.run();
 	    		return true;
-	    	case 'O':
+	    	case 'I':
 	    		m_commentMeItem.run();
 	    		return true;
-	    	case 'P':
+	    	case 'O':
 	    		m_directMsgItem.run();
+	    		return true;
+	    	case 'P':
+	    		m_userInfoItem.run();
 	    		return true;
 	    	case 'R':
 	    		m_refreshItem.run();
