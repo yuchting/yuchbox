@@ -44,15 +44,20 @@ public class ImageSets {
 					
 					 ImageUnit t_unit = new ImageUnit();
 					 
+					 t_unit.m_name = attributes.getValue("Name");
 					 t_unit.m_x = Integer.valueOf(attributes.getValue("XPos")).intValue();
 					 t_unit.m_y = Integer.valueOf(attributes.getValue("YPos")).intValue();
 					 t_unit.m_width = Integer.valueOf(attributes.getValue("Width")).intValue();
 					 t_unit.m_height = Integer.valueOf(attributes.getValue("Height")).intValue();
 					 
-					 m_mapImageUnits.put(attributes.getValue("Name"),t_unit);
+					 m_mapImageUnits.put(t_unit.m_name,t_unit);
 				 }							 
 			 }
 		});
+	}
+	
+	public Hashtable getImageList()	{
+		return m_mapImageUnits;
 	}
 	
 	public XYDimension getImageSize(String _name){

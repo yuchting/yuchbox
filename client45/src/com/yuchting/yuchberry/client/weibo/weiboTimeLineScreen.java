@@ -8,7 +8,6 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
 import local.localResource;
-import net.rim.device.api.browser.field.SetHeaderEvent;
 import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
@@ -19,6 +18,7 @@ import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.TextField;
@@ -136,11 +136,11 @@ public class weiboTimeLineScreen extends MainScreen{
 	WeiboMainManager		m_mainAtMeMgr;
 	WeiboMainManager		m_mainCommitMeMgr;
 	WeiboDMManager			m_mainDMMgr;
-	
 	WeiboUserInfoMgr 		m_userInfoScreen = null;
 	
-	WeiboMainManager		m_currMgr = null;
 	
+	WeiboMainManager		m_currMgr = null;
+		
 	Vector					m_sendDaemonList = new Vector();
 		
 	private static ImageUnit[]	sm_VIPSign = 
@@ -169,13 +169,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	static ImageUnit[]		sm_WeiboSign =
 	{ 
-		null,
-		null,
-		null,
-		
-		null,
-		null,
-		null,
+		null,null,null,null,null,	null,
 	};
 	
 	static String[]		sm_weiboSignFilename = 
@@ -930,6 +924,42 @@ public class weiboTimeLineScreen extends MainScreen{
         }
     };
     
+    public PhizSelectedScreen	m_phizScreen = null;
+    IPhizSelected				m_phizSelected = new IPhizSelected() {
+		
+		public void phizSelected(String phizName) {
+			if(m_currMgr.getCurrEditItem() != null){
+				int t_position = m_currMgr.m_editTextArea.getCursorPosition();
+				
+				AutoTextEditField t_editText = m_currMgr.m_editTextArea;
+				
+				StringBuffer t_final = new StringBuffer();
+				if(t_position != 0){
+					t_final.append(t_editText.getText(0,t_position));
+				}
+				t_final.append(phizName);
+				
+				t_final.append(t_editText.getText(t_position,t_editText.getTextLength()));
+				
+				t_editText.setText(t_final.toString());
+				t_editText.setCursorPosition(t_position + phizName.length());
+			}			
+		}
+	};
+    
+    MenuItem m_phizItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_PHIZ_LABEL),m_menuIndex_op++,0){
+    	
+        public void run() {
+        	if(m_phizScreen == null){
+        		m_phizScreen = new PhizSelectedScreen(m_mainApp, m_phizSelected);
+        	}else{
+        		m_phizScreen.getPhizMgr().setSelectedCallback(m_phizSelected);
+        	}
+        	
+        	m_mainApp.pushScreen(m_phizScreen);
+        }
+    };
+    
     MenuItem m_refreshItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_REFRESH_MENU_LABEL),m_menuIndex_op++,0){
         public void run() {
         	SendRefreshMsg();
@@ -1027,6 +1057,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		if(m_currMgr.getCurrEditItem() != null && m_currMgr.getCurrExtendedItem() != null){
 			_menu.add(m_sendItem);
+			_menu.add(m_phizItem);
 		}		
 		
 		_menu.add(m_refreshItem);
@@ -1263,6 +1294,14 @@ public class weiboTimeLineScreen extends MainScreen{
     			m_sendItem.run();
     			return true;
     		}			
+		}else if(key == 'P'){
+			boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
+			if(t_shiftDown && m_currMgr.getCurrEditItem() != null){
+				
+				m_phizItem.run();
+				
+				return true;
+			}
 		}
 		
 		return super.keyDown(keycode,time);   	

@@ -1203,6 +1203,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					
 					m_weiboTimeLineScreen.m_optionScreen.close();
 					
+				}else if(getActiveScreen() == m_weiboTimeLineScreen.m_phizScreen
+				&& m_weiboTimeLineScreen.m_phizScreen != null){
+					
+					m_weiboTimeLineScreen.m_phizScreen.close();
+					
 				}else if(getActiveScreen() == m_weiboTimeLineScreen){
 					
 					popScreen(m_weiboTimeLineScreen);
