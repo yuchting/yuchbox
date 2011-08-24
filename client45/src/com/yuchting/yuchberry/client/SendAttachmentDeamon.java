@@ -50,23 +50,7 @@ public class SendAttachmentDeamon extends Thread{
 		m_vFileConnection	= _vFileConnection;
 		m_sendHashCode		= _sendHashCode;
 		m_sendCallback		= _sendCallback;
-		
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		os.write(msg_head.msgFileAttach);
-		sendReceive.WriteInt(os,m_sendHashCode);
-		sendReceive.WriteInt(os,m_vFileConnection.size());
-		
-		for(int i = 0;i < m_vFileConnection.size();i++){
-			FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(i);
-			
-			int t_fileSize =(int)t_file.fileSize(); 
-			m_totalSize += t_fileSize;
-			
-			sendReceive.WriteInt(os, t_fileSize);			
-		}
-		
-		_connect.m_connect.SendBufferToSvr(os.toByteArray(), true, false);
-				
+						
 		m_fileConnection = (FileConnection)m_vFileConnection.elementAt(m_attachmentIndex);
 		m_fileIn = m_fileConnection.openInputStream();
 										
@@ -90,15 +74,7 @@ public class SendAttachmentDeamon extends Thread{
 		m_sendHashCode		= _sendHashCode;
 		m_sendCallback		= _sendCallback;
 		m_totalSize			= _buffer.length;
-		
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		os.write(msg_head.msgFileAttach);
-		sendReceive.WriteInt(os,m_sendHashCode);
-		sendReceive.WriteInt(os,1);
-		sendReceive.WriteInt(os, _buffer.length);			
-				
-		_connect.m_connect.SendBufferToSvr(os.toByteArray(), true, false);
-							
+									
 		start();
 	}
 	
@@ -124,11 +100,15 @@ public class SendAttachmentDeamon extends Thread{
 			return true;
 		}
 		
+		m_connect.m_mainApp.SetErrorString("SAF:0");
+		
 		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 		
 		int t_currSize = (m_vFileConnection != null)?(int)m_fileConnection.fileSize():m_uploadingBuffer.length;
 		int t_size = (m_beginIndex + fsm_segmentSize) > (int)t_currSize?
 								((int)t_currSize - m_beginIndex) : fsm_segmentSize;
+		
+		m_connect.m_mainApp.SetErrorString("SAF:1");
 		
 		if(m_vFileConnection != null){
 			
@@ -165,7 +145,9 @@ public class SendAttachmentDeamon extends Thread{
 				m_bufferBytes[i] = m_uploadingBuffer[t_index];
 			}
 		}
-				
+		
+		m_connect.m_mainApp.SetErrorString("SAF:2");
+		
 		t_os.write(msg_head.msgFileAttachSeg);
 		sendReceive.WriteInt(t_os, m_sendHashCode);
 		sendReceive.WriteInt(t_os, m_attachmentIndex);
@@ -173,11 +155,16 @@ public class SendAttachmentDeamon extends Thread{
 		sendReceive.WriteInt(t_os, t_size);
 		t_os.write(m_bufferBytes,0,t_size);
 		
+		m_connect.m_mainApp.SetErrorString("SAF:3");
+		
 		m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), _send,false);
+		
+		m_connect.m_mainApp.SetErrorString("SAF:4");
 		
 		//System.out.println("send msgMailAttach time:"+ m_sendHashCode + " attIdx<" +m_attachmentIndex + "> beginIndex<" + m_beginIndex + "> size:" + t_size);
 		
 		m_sendCallback.sendProgress(m_attachmentIndex, m_uploadedSize, m_totalSize);
+		
 		
 		if((m_beginIndex + t_size) >= t_currSize){
 			m_beginIndex = 0;
@@ -189,6 +176,8 @@ public class SendAttachmentDeamon extends Thread{
 		
 		m_uploadedSize += t_size;
 		t_os.close();
+		
+		m_connect.m_mainApp.SetErrorString("SAF:5");
 		
 		return false;
 	}
@@ -246,9 +235,39 @@ public class SendAttachmentDeamon extends Thread{
 		
 	}
 	
+	private void sendFileCreateMsg()throws Exception{
+		
+		if(m_vFileConnection != null){
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			os.write(msg_head.msgFileAttach);
+			sendReceive.WriteInt(os,m_sendHashCode);
+			sendReceive.WriteInt(os,m_vFileConnection.size());
+			
+			for(int i = 0;i < m_vFileConnection.size();i++){
+				FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(i);
+				
+				int t_fileSize =(int)t_file.fileSize(); 
+				m_totalSize += t_fileSize;
+				
+				sendReceive.WriteInt(os, t_fileSize);			
+			}
+			
+			m_connect.m_connect.SendBufferToSvr(os.toByteArray(), true, false);
+		}else{
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			os.write(msg_head.msgFileAttach);
+			sendReceive.WriteInt(os,m_sendHashCode);
+			sendReceive.WriteInt(os,1);
+			sendReceive.WriteInt(os, m_uploadingBuffer.length);			
+			
+			m_connect.m_connect.SendBufferToSvr(os.toByteArray(), true, false);
+		}	
+	}
+	
 	public void run(){		
 
 		boolean t_setPaddingState = false;
+		boolean t_sendFileCreate = false;
 		
 		while(true){
 			
@@ -279,12 +298,21 @@ public class SendAttachmentDeamon extends Thread{
 				}
 			}
 			
+			
+			
+			
 			if(m_closeState){
 				break;
 			}
 			
 			try{
 
+				if(!t_sendFileCreate){
+					t_sendFileCreate = true;
+					sendFileCreateMsg();
+				}
+				
+				
 				m_sendCallback.sendStart();
 				
 				boolean t_sendOver = false;
@@ -308,6 +336,9 @@ public class SendAttachmentDeamon extends Thread{
 				if(t_sendOver){
 					try{
 						sleep(90 * 1000);
+						
+						t_sendFileCreate = false;
+						
 					}catch(Exception e){
 						m_connect.m_mainApp.SetErrorString("SA: OK " + e.getMessage() +  e.getClass().getName());			
 					}

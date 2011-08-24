@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Yuchberry userPassword="111111" serverPort="9716" pushInterval="10" userSSL="0" convertoSimpleChar="0" disableLog="0" >
-	<EmailAccount
+	<!--EmailAccount
 		account="tzt-123@163.com"
 		password=""
 		cryptPassword="8dbf031d4b9b5e96ef8857158d44258d"
@@ -18,9 +18,9 @@
 		
 		appendHTML="1"
 		pushHistoryMsg="1"
-	/>
+	/-->
 	
-	<EmailAccount
+	<!--EmailAccount
 		account="233010045@qq.com"
 		password=""
 		cryptPassword="8dbf031d4b9b5e9639d6b561de8e76ed"
@@ -38,7 +38,7 @@
 		
 		appendHTML="1"
 		pushHistoryMsg="1"
-	/>
+	/-->
 	
 	<WeiboAccount
 		type="sina"

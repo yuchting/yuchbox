@@ -37,6 +37,9 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 	//
 	public WeiboSendDaemon(String _text,byte[] _file,int _fileType,recvMain _mainApp)throws Exception{
 		
+		if(m_mainApp == null){
+			throw new IllegalArgumentException("WeiboSendDeamon _mainApp == null");
+		}
 		m_mainApp		= _mainApp;
 		
 		m_updateText	= _text;
