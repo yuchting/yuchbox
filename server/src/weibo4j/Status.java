@@ -86,6 +86,10 @@ public class Status extends WeiboResponse implements java.io.Serializable {
     	super(res);
     	JSONObject json=res.asJSONObject();
     	try {
+    		if(json.get("id") == null){
+    			throw new WeiboException("Error respose to create Status :"+ res.asString());
+    		}
+    		
 			id = json.getLong("id");
 			text = json.getString("text");
 			source = json.getString("source");

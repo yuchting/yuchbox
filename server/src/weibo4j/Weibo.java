@@ -1317,18 +1317,22 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
      * @since Weibo4J 1.1220
      * @see <a href="http://open.t.sina.com.cn/wiki/index.php/Statuses/upload">statuses/upload </a>
      */
-    public Status uploadStatus(String status,ImageItem item) throws WeiboException {
+    public Status uploadStatus(String status,ImageItem item) throws Exception {
     	return new Status(http.multPartURL(getBaseURL() + "statuses/upload.json",
-                new PostParameter[]{new PostParameter("status", status), new PostParameter("source", source)},item, true));
+                new PostParameter[]
+                {
+    				new PostParameter("status", URLEncoder.encode(status,"UTF-8")), 
+    				new PostParameter("source", source)
+    			},item, true));
         /*return new Status(http.multPartURL(getBaseURL() + "statuses/upload.xml",
                 new PostParameter[]{new PostParameter("status", status), new PostParameter("source", source)},item, true), this);*/
     }
     
-    public Status uploadStatus(String status,ImageItem item,double _lat,double _long) throws WeiboException {
+    public Status uploadStatus(String status,ImageItem item,double _lat,double _long) throws Exception {
     	return new Status(http.multPartURL(getBaseURL() + "statuses/upload.json",
                 new PostParameter[]
                 {
-    				new PostParameter("status", status), 
+    				new PostParameter("status", URLEncoder.encode(status,"UTF-8")), 
     				new PostParameter("source", source),
     				new PostParameter("lat", Double.toString(_lat)),
     				new PostParameter("long", Double.toString(_long)),
@@ -1337,22 +1341,22 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
                 new PostParameter[]{new PostParameter("status", status), new PostParameter("source", source)},item, true), this);*/
     }
 
-    public Status uploadStatus(String status,File file) throws WeiboException {
+    public Status uploadStatus(String status,File file) throws Exception {
     	return new Status(http.multPartURL("pic",getBaseURL() + "statuses/upload.json",
                 new PostParameter[]
                 {
-    				new PostParameter("status", status),
+    				new PostParameter("status", URLEncoder.encode(status,"UTF-8")),
     				new PostParameter("source", source),
                 },file, true));
         /*return new Status(http.multPartURL(getBaseURL() + "statuses/upload.xml",
                 new PostParameter[]{new PostParameter("status", status), new PostParameter("source", source)},item, true), this);*/
     }
     
-    public Status uploadStatus(String status,File file,double _lat,double _long) throws WeiboException {
+    public Status uploadStatus(String status,File file,double _lat,double _long) throws Exception {
     	return new Status(http.multPartURL("pic",getBaseURL() + "statuses/upload.json",
                 new PostParameter[]
                 {
-    				new PostParameter("status", status),
+    				new PostParameter("status", URLEncoder.encode(status,"UTF-8")),
     				new PostParameter("source", source),
     				new PostParameter("lat", Double.toString(_lat)),
     				new PostParameter("long", Double.toString(_long)),

@@ -333,14 +333,16 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         InitWeiboModule();
 	}
 	
-	private boolean m_initWeiboHeadImageDir = false; 
+	private boolean m_initWeiboHeadImageDir = false;
+	public final static String fsm_weiboImageDir = "YuchBerry/WeiboImage/";
+	
 	public String GetWeiboHeadImageDir(int _style)throws Exception{
 		
 		if(!isSDCardAvaible()){
 			throw new Exception("Can't use the sd card to store weibo head image.");
 		}
 		
-		String t_weiboHeadImageDir = uploadFileScreen.fsm_rootPath_default + "YuchBerry/WeiboImage/";
+		String t_weiboHeadImageDir = uploadFileScreen.fsm_rootPath_default + fsm_weiboImageDir;
 		
 		// connect the string of head image directory
 		//

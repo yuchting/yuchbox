@@ -2,6 +2,7 @@ package com.yuchting.yuchberry.server;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.net.URLDecoder;
 import java.util.List;
 import java.util.Vector;
 
@@ -482,6 +483,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	}
 	
 	static public void main(String[] _arg)throws Exception{
+		
 		fetchMgr t_manger = new fetchMgr();
 		Logger t_logger = new Logger("");
 		
@@ -495,14 +497,15 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		
 		t_weibo.ResetSession(true);
 		
-		File t_file = new File("1314183455_0.satt");
+		File t_file = new File("1314193031_0.satt");
 		FileInputStream t_fileIn = new FileInputStream(t_file);
 		byte[] t_fileBuffer = new byte[(int)t_file.length()];
 		
 		sendReceive.ForceReadByte(t_fileIn, t_fileBuffer, t_fileBuffer.length);
 		
-		//t_weibo.m_weibo.uploadStatus("heheh",t_file);
-		t_weibo.UpdateStatus("t image", null, t_fileBuffer,"image/jpeg");
+		//t_weibo.m_weibo.updateStatus("果我的话说长了是不是就发不出来了呢？[哈哈]");
+		//t_weibo.m_weibo.uploadStatus("果我的话说长了是不是就发不出来了呢？[哈哈]",t_file);
+		t_weibo.UpdateStatus("如果我的话说长了是不是就发不出来了呢？[哈哈]", null, t_fileBuffer,"image/jpeg");
 		
 				
 		System.out.print("");

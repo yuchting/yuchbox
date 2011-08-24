@@ -515,25 +515,25 @@ public class HttpClient implements java.io.Serializable {
     		parts[parts.length-1]= filePart;
 
     		post.setRequestEntity( new MultipartRequestEntity(parts, post.getParams()) );
-    		 List<Header> headers = new ArrayList<Header>();
+    		List<Header> headers = new ArrayList<Header>();
 
-    		 if (authenticated) {
-    	            if (basic == null && oauth == null) {
-    	            }
-    	            String authorization = null;
-    	            if (null != oauth) {
-    	                // use OAuth
-    	                authorization = oauth.generateAuthorizationHeader( "POST" , url, params, oauthToken);
-    	            } else if (null != basic) {
-    	                // use Basic Auth
-    	                authorization = this.basic;
-    	            } else {
-    	                throw new IllegalStateException(
-    	                        "Neither user ID/password combination nor OAuth consumer key/secret combination supplied");
-    	            }
-    	            headers.add(new Header("Authorization", authorization));
-    	            log("Authorization: " + authorization);
-    	        }
+    		if(authenticated) {
+	            if (basic == null && oauth == null) {
+	            }
+	            String authorization = null;
+	            if (null != oauth) {
+	                // use OAuth
+	                authorization = oauth.generateAuthorizationHeader( "POST" ,url, params, oauthToken);
+	            } else if (null != basic) {
+	                // use Basic Auth
+	                authorization = this.basic;
+	            } else {
+	                throw new IllegalStateException(
+	                        "Neither user ID/password combination nor OAuth consumer key/secret combination supplied");
+	            }
+	            headers.add(new Header("Authorization", authorization));
+	            log("Authorization: " + authorization);
+	        }
     	    client.getHostConfiguration().getParams().setParameter("http.default-headers", headers);
     		client.executeMethod(post);
 
