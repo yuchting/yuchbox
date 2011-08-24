@@ -794,9 +794,27 @@ public class fetchEmail extends fetchAccount{
 			
 		}else{
 			
-			if(t_mail.GetSubject().startsWith("设置签名") 
-			|| t_mail.GetSubject().toLowerCase().startsWith("set signature")
-			|| t_mail.GetSubject().startsWith("設置簽名") ){
+			if(!t_mail.GetFromVect().isEmpty()){
+				
+				String t_from = (String)t_mail.GetFromVect().elementAt(0);
+								
+				if(!t_from.equalsIgnoreCase(GetAccountName())){
+					
+					for(fetchAccount acc:m_mainMgr.m_fetchAccount){
+						if(acc != this && acc instanceof fetchEmail){
+							if(t_from.equalsIgnoreCase(((fetchEmail)acc).GetAccountName())){
+								
+								// another email account is found
+								//
+								return false;
+							}
+						}
+					}
+				}				
+				
+			}else if(t_mail.GetSubject().startsWith("设置签名") 
+				|| t_mail.GetSubject().toLowerCase().startsWith("set signature")
+				|| t_mail.GetSubject().startsWith("設置簽名") ){
 				
 				if(!t_mail.GetSendToVect().isEmpty() 
 				&& ((String)t_mail.GetSendToVect().elementAt(0)).toLowerCase().indexOf(GetAccountName()) != -1 ){
@@ -830,9 +848,7 @@ public class fetchEmail extends fetchAccount{
 						t_mail.SetContain("YuchBerry Prompt: Set signature OK!"+(t_overMaxlength?("Over Max Length:" + t_maxSignatureLength):"")+"\n\n" + t_mail.GetContain());
 						break;
 					}
-					
 				}
-				
 			}
 		}
 		

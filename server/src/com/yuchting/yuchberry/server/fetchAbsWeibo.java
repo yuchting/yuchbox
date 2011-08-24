@@ -524,8 +524,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				byte[] t_fileBuffer = null;
 				String	t_fileType	= null;
 				
-				try{
-					if(m_mainMgr.GetConnectClientVersion() >= 13){
+				if(m_mainMgr.GetConnectClientVersion() >= 13){
+					try{
 						// find the uploaded file
 						//
 						int attach = sendReceive.ReadInt(in);
@@ -562,11 +562,10 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 								t_file.close();
 							}
 						}
-						
+					}catch(Exception e){
+						m_mainMgr.m_logger.PrinterException(e);
 					}
-				}catch(Exception e){
-					m_mainMgr.m_logger.PrinterException(e);
-				}
+				}			
 				
 				UpdateStatus(t_text,t_gpsInfo,t_fileBuffer,t_fileType);
 				

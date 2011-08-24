@@ -242,10 +242,7 @@ public class fetchMgr{
 	            
 	            t_weibo.InitAccount(element);
 	            m_fetchAccount.addElement(t_weibo);
-	        }
-			
-
-			
+	        }			
 	    	
 		}catch(Exception ex){
 			
@@ -539,6 +536,21 @@ public class fetchMgr{
 				break;
 			case msg_head.msgFileAttachSeg:
 				ProcessFileAttachSeg(in);
+				break;
+			case msg_head.msgMailAccountList:
+				
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+				os.write(msg_head.msgMailAccountList);
+				
+				Vector t_list = new Vector();
+				for(fetchAccount acc : m_fetchAccount){
+					if(acc instanceof fetchEmail){
+						t_list.add(((fetchEmail)acc).GetAccountName());
+					}
+				}
+				sendReceive.WriteStringVector(os, t_list, false);
+				SendData(os, true);
+				
 				break;
 			default:
 			{

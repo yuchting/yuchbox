@@ -495,17 +495,17 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		
 		t_weibo.ResetSession(true);
 		
-		File t_file = new File("logo.png");
+		File t_file = new File("1314183455_0.satt");
 		FileInputStream t_fileIn = new FileInputStream(t_file);
 		byte[] t_fileBuffer = new byte[(int)t_file.length()];
 		
 		sendReceive.ForceReadByte(t_fileIn, t_fileBuffer, t_fileBuffer.length);
 		
 		//t_weibo.m_weibo.uploadStatus("heheh",t_file);
-		t_weibo.UpdateStatus("t image", null, t_fileBuffer,"image/png");
+		t_weibo.UpdateStatus("t image", null, t_fileBuffer,"image/jpeg");
 		
 				
-		System.out.print(t_weibo);
+		System.out.print("");
 	}
 	
 }
