@@ -1,6 +1,7 @@
 package com.yuchting.yuchberry.client.screen;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Vector;
 
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
@@ -13,6 +14,7 @@ import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.FocusChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Keypad;
+import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.CheckboxField;
@@ -23,8 +25,11 @@ import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.NullField;
 import net.rim.device.api.ui.component.NumericChoiceField;
 import net.rim.device.api.ui.component.ObjectChoiceField;
+import net.rim.device.api.ui.component.RadioButtonField;
+import net.rim.device.api.ui.component.RadioButtonGroup;
 import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 
 public class settingScreen extends MainScreen implements FieldChangeListener,FocusChangeListener{
 	
@@ -40,19 +45,17 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 CheckboxField		m_conDisPrompt 	= null;
 	 ObjectChoiceField	m_pulseInterval	= null;
 	 
-	 LabelField			m_uploadByte	= new LabelField();
-	 LabelField			m_downloadByte	= new LabelField();
+	 
+	 
+	 LabelField			m_uploadDownloadByte	= new LabelField();
 	 LabelField			m_totalByte		= new LabelField();
-	 LabelField			m_sendMailNum	= new LabelField();
-	 LabelField			m_recvMailNum	= new LabelField();
-	 LabelField			m_sentWeiboNum	= new LabelField();
-	 LabelField			m_recvWeiboNum	= new LabelField();
+	 LabelField			m_sendRecvMailNum	= new LabelField();
+	 LabelField			m_sentRecvWeiboNum	= new LabelField();
 	 ButtonField		m_clearByteBut	= new ButtonField(recvMain.sm_local.getString(localResource.SETTING_CLEAR_STATISTICS),
 			 											Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	 
 	 ButtonField		m_copyStatBut	= new ButtonField(recvMain.sm_local.getString(localResource.SETTING_COPY_STATISTICS),
 			 											Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
-	 
 	 CheckboxField		m_fulldayPrompt = null;
 	 NumericChoiceField	m_startPromptHour = null;
 	 NumericChoiceField	m_endPromptHour = null;
@@ -68,6 +71,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 ObjectChoiceField	m_recvMsgTextLength	= null;
 	 ButtonField		m_changeSignature = new ButtonField(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_BUTTON_TEXT),
 			 										Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
+	 
+	 VerticalFieldManager	m_sendMailAccountList = new VerticalFieldManager(Manager.VERTICAL_SCROLL);
+	 ButtonField		m_requestMailAccountBut = new ButtonField(recvMain.sm_local.getString(localResource.SETTING_REQUEST_MAIL_ACCOUNT),
+			 											Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	 
 	 CheckboxField		m_weiboModule	= null;
 	 NullField			m_weiboNullField = new NullField();
@@ -157,6 +164,13 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 
 		 add(m_changeSignature);
 		 m_changeSignature.setChangeListener(this);
+		 		 
+		 add(new LabelField(recvMain.sm_local.getString(localResource.SETTING_DEFAULT_MAIL_ACCOUNT)));
+		 add(m_sendMailAccountList);
+		 add(m_requestMailAccountBut);
+		 m_requestMailAccountBut.setChangeListener(this);
+		 
+		 refreshMailAccountList();
 		 
 		 //@}
 		 
@@ -221,13 +235,11 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
 		 add(t_title);
 		 
-		 add(m_uploadByte);
-		 add(m_downloadByte);
+		 add(m_sendRecvMailNum);
+		 add(m_sentRecvWeiboNum);	 
+		 add(m_uploadDownloadByte);
 		 add(m_totalByte);
-		 add(m_sendMailNum);
-		 add(m_recvMailNum);
-		 add(m_sentWeiboNum);
-		 add(m_recvWeiboNum);
+		 
 		 add(m_clearByteBut);
 		 add(m_copyStatBut);
 		 m_clearByteBut.setChangeListener(this);
@@ -272,13 +284,11 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				StringBuffer t_string = new StringBuffer();
 				 
 				t_string.append(recvMain.sm_local.getString(localResource.BYTE_STATISTICS)).append("\n")
-						.append(m_uploadByte.getText()).append("\n")
-						.append(m_downloadByte.getText()).append("\n")
-						.append(m_totalByte.getText()).append("\n")
-						.append(m_sendMailNum.getText()).append("\n")
-						.append(m_recvMailNum.getText()).append("\n")
-						.append(m_sentWeiboNum.getText()).append("\n")
-						.append(m_recvWeiboNum.getText()).append("\n");
+						.append(m_sendRecvMailNum.getText()).append("\n")
+						.append(m_sentRecvWeiboNum.getText()).append("\n")
+						.append(m_uploadDownloadByte.getText()).append("\n")
+						.append(m_totalByte.getText()).append("\n");
+						
 				
 				Clipboard.getClipboard().put(t_string.toString());
 				m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.COPY_TO_CLIPBOARD_SUCC));
@@ -297,6 +307,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				}
 			}else if(field == m_weiboModule){
 				enableWeiboSet(m_weiboModule.getChecked());
+			}else if(field == m_requestMailAccountBut){
+				m_mainApp.m_connectDeamon.sendRequestMailAccountMsg();
 			}
 		}else{
 			// Perform action if application changed field.
@@ -315,6 +327,31 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				 }
 			 }
 		 }
+	 }
+	 
+	 private RadioButtonGroup m_sendMailAccountGroup = new RadioButtonGroup();
+	 
+	 public void refreshMailAccountList(){
+		 
+		m_mainApp.invokeLater(new Runnable() {
+			public void run() {
+				m_sendMailAccountList.deleteAll();
+				Vector	t_list = m_mainApp.m_sendMailAccountList;
+				
+				if(m_mainApp.m_defaultSendMailAccountIndex >= t_list.size()){
+					m_mainApp.m_defaultSendMailAccountIndex = 0;
+				}
+				
+				for(int i = 0 ;i < t_list.size();i++){
+					String t_name = (String)t_list.elementAt(i);
+					 
+					RadioButtonField t_acc = new RadioButtonField(t_name, m_sendMailAccountGroup, i == m_mainApp.m_defaultSendMailAccountIndex);
+					 
+					m_sendMailAccountList.add(t_acc);
+				}		
+			}
+		});
+		 
 	 }
 	 
 	 public boolean onClose(){
@@ -347,6 +384,17 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		m_mainApp.m_recvMsgTextLengthIndex = m_recvMsgTextLength.getSelectedIndex();
 		m_mainApp.m_copyMailToSentFolder = m_copyToSentFolder.getChecked();
 		m_mainApp.m_mailUseLocation = m_mailUseLocation.getChecked();
+		
+		// set the default mail
+		//
+		int t_accountNum = m_sendMailAccountList.getFieldCount();
+		for(int i = 0 ;i < t_accountNum;i++){
+			RadioButtonField acc = (RadioButtonField)m_sendMailAccountList.getField(i);
+			if(acc.isSelected()){
+				m_mainApp.m_defaultSendMailAccountIndex = i;
+				break;
+			}
+		}
 		
 		if(m_mainApp.m_enableWeiboModule != m_weiboModule.getChecked()){
 			
@@ -391,15 +439,17 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 public void RefreshUpDownloadByte(){
 		 m_mainApp.invokeLater(new Runnable() {
 			public void run() {
-				m_uploadByte.setText(recvMain.sm_local.getString(localResource.UPLOAD_STATISTICS) + recvMain.GetByteStr(m_mainApp.m_uploadByte));
-				m_downloadByte.setText(recvMain.sm_local.getString(localResource.DOWNLOAD_STATISTICS) + recvMain.GetByteStr(m_mainApp.m_downloadByte));
-				m_totalByte.setText(recvMain.sm_local.getString(localResource.TOTAL_STATISTICS) + recvMain.GetByteStr(m_mainApp.m_downloadByte + m_mainApp.m_uploadByte));
+				m_sendRecvMailNum.setText(recvMain.sm_local.getString(localResource.SETTING_SEND_RECV_MAIL_NUM) + 
+						m_mainApp.GetSendMailNum() + " / " + m_mainApp.GetRecvMailNum());
+								
+				m_sentRecvWeiboNum.setText(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SENT_RECV_NUM) + 
+						m_mainApp.m_sentWeiboNum + " / " + m_mainApp.m_receivedWeiboNum);
 				
-				m_sendMailNum.setText(recvMain.sm_local.getString(localResource.SEND_MAIL_NUM) + m_mainApp.GetSendMailNum());
-				m_recvMailNum.setText(recvMain.sm_local.getString(localResource.RECV_MAIL_NUM) + m_mainApp.GetRecvMailNum());
+				m_uploadDownloadByte.setText(recvMain.sm_local.getString(localResource.SETTING_UPLOAD_DOWNLOAD_STATISTICS) + 
+						recvMain.GetByteStr(m_mainApp.m_uploadByte) + " / " + recvMain.GetByteStr(m_mainApp.m_downloadByte));
 				
-				m_sentWeiboNum.setText(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SENT_NUM) + m_mainApp.m_sentWeiboNum);
-				m_recvWeiboNum.setText(recvMain.sm_local.getString(localResource.SETTING_WEIBO_RECEIVED_NUM) + m_mainApp.m_receivedWeiboNum);
+				m_totalByte.setText(recvMain.sm_local.getString(localResource.TOTAL_STATISTICS) + 
+						recvMain.GetByteStr(m_mainApp.m_downloadByte + m_mainApp.m_uploadByte));
 			}
 		});
 	 }

@@ -38,6 +38,7 @@ import net.rim.device.api.system.WLANInfo;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
+import net.rim.device.api.ui.XYPoint;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
 import net.rim.device.api.ui.container.MainScreen;
@@ -179,10 +180,13 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public int						m_pulseIntervalIndex = 2;
 	
 	public boolean			m_fulldayPrompt		= true;
-	public int					m_startPromptHour	= 8;
-	public int					m_endPromptHour		= 22;
+	public int				m_startPromptHour	= 8;
+	public int				m_endPromptHour		= 22;
 	
 	public boolean			m_copyMailToSentFolder = false;
+	
+	public Vector 			m_sendMailAccountList = new Vector();
+	public int				m_defaultSendMailAccountIndex = 0;
 	
 	public final class UploadingDesc{
 		
@@ -305,15 +309,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		//
 		WriteReadIni(true);		
 		
-        if(_systemRun){
-        	
-        	// register the notification
-        	//
-        	NotificationsManager.registerSource(fsm_notifyID_email, fsm_notifyEvent_email,NotificationsConstants.CASUAL);
-        	NotificationsManager.registerSource(fsm_notifyID_weibo, fsm_notifyEvent_weibo,NotificationsConstants.CASUAL);
-        	NotificationsManager.registerSource(fsm_notifyID_weibo_home, fsm_notifyEvent_weibo_home,NotificationsConstants.CASUAL);
-        	NotificationsManager.registerSource(fsm_notifyID_disconnect, fsm_notifyEvent_disconnect,NotificationsConstants.CASUAL);
-        	
+		// register the notification
+    	//
+    	NotificationsManager.registerSource(fsm_notifyID_email, fsm_notifyEvent_email,NotificationsConstants.CASUAL);
+    	NotificationsManager.registerSource(fsm_notifyID_weibo, fsm_notifyEvent_weibo,NotificationsConstants.CASUAL);
+    	NotificationsManager.registerSource(fsm_notifyID_weibo_home, fsm_notifyEvent_weibo_home,NotificationsConstants.CASUAL);
+    	NotificationsManager.registerSource(fsm_notifyID_disconnect, fsm_notifyEvent_disconnect,NotificationsConstants.CASUAL);
+    	
+        if(_systemRun){       
         	
         	if(!m_autoRun || m_hostname.length() == 0 || m_port == 0 || m_userPassword.length() == 0){
         		System.exit(0);
@@ -752,7 +755,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 28;
+	final static int		fsm_clientVersion = 29;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -914,6 +917,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_refreshWeiboIntervalIndex = sendReceive.ReadInt(t_readFile);
 				    		}
 				    		
+				    		if(t_currVer >= 29){
+				    			m_weiboUploadImageSizeIndex = t_readFile.read();
+				    			m_defaultSendMailAccountIndex = sendReceive.ReadInt(t_readFile);
+				    			sendReceive.ReadStringVector(t_readFile, m_sendMailAccountList);				    			
+				    		}
+				    		
 				    		
 			    		}finally{
 			    			t_readFile.close();
@@ -998,8 +1007,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						
 						sendReceive.WriteBoolean(t_writeFile,m_mailUseLocation);
 						sendReceive.WriteBoolean(t_writeFile,m_weiboUseLocation);
-						sendReceive.WriteInt(t_writeFile,m_refreshWeiboIntervalIndex);						
+						sendReceive.WriteInt(t_writeFile,m_refreshWeiboIntervalIndex);
 						
+						t_writeFile.write(m_weiboUploadImageSizeIndex);
+						sendReceive.WriteStringVector(t_writeFile, m_sendMailAccountList);
+						sendReceive.WriteInt(t_writeFile,m_defaultSendMailAccountIndex);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1713,6 +1725,17 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public static final int[]		fsm_refreshWeiboInterval		= {0,10,20,30,40};
 	public int						m_refreshWeiboIntervalIndex = 0;
 	
+	public static final String[]	fsm_weiboUploadImageSizeList = {"800×600","1280×800",sm_local.getString(localResource.WEIBO_IMAGE_ORIGINAL_SIZE)};
+	public static final XYPoint[]	fsm_weiboUploadImageSize_size		= 
+	{
+		new XYPoint(800,600),
+		new XYPoint(1280,800),
+		null,
+	};
+	
+	public int						m_weiboUploadImageSizeIndex = 0;
+	
+	
 	public int getRefreshWeiboInterval(){
 		if(m_refreshWeiboIntervalIndex < fsm_refreshWeiboInterval.length){
 			return fsm_refreshWeiboInterval[m_refreshWeiboIntervalIndex];
@@ -1724,6 +1747,17 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	boolean m_receiveWeiboListChanged = false;
 	
 	ApplicationMenuItem m_updateWeiboItem = null;
+	
+	public XYPoint getWeiboUploadSize(){
+		
+		if(m_weiboUploadImageSizeIndex >= 0 && m_weiboUploadImageSizeIndex < fsm_weiboUploadImageSize_size.length){
+			return fsm_weiboUploadImageSize_size[m_weiboUploadImageSizeIndex];
+		}else{
+			m_weiboUploadImageSizeIndex = 0;
+		}
+		
+		return null;
+	}
 	
 	public void InitWeiboModule(){
 		

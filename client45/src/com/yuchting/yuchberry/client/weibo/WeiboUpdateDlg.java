@@ -16,16 +16,17 @@ import net.rim.device.api.math.Fixed32;
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.EncodedImage;
+import net.rim.device.api.system.JPEGEncodedImage;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
-import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiEngine;
+import net.rim.device.api.ui.XYPoint;
 import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.VerticalFieldManager;
@@ -52,9 +53,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	ImageButton				m_sendButton	= null;
 	ButtonSegImage			m_updateTitle		= null;
 	BubbleImage				m_editBubbleImage = null;
-	
-	WeiboUpdateDlg			m_parentDlg = null;
-	
+		
 	public VerticalFieldManager m_editTextManager = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
 		
 		public int getPreferredHeight(){
@@ -99,7 +98,6 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		
 		m_editBubbleImage = weiboTimeLineScreen.sm_bubbleImage;
 		m_timelineScreen = _timeline;
-		m_parentDlg 	= m_timelineScreen.m_currUpdateDlg;
 
 		m_editTextArea.setMaxSize(WeiboItemField.fsm_maxWeiboTextLength);
 		m_sendButton.setChangeListener(this);
@@ -155,18 +153,16 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		
 		setExtent(getPreferredWidth(), getPreferredHeight());
 	}
-	
-
+		
 	public void sendUpdate(){
 		if(m_editTextArea.getText().length() != 0){
-			
-			getScreen().close();
+						
 			byte[] t_content = null;
 			
-			if(m_parentDlg.m_imagePath != null){
+			if(m_timelineScreen.m_currUpdateDlg.m_imagePath != null){
 				
 				try{
-					FileConnection t_file = (FileConnection)Connector.open(m_parentDlg.m_imagePath,
+					FileConnection t_file = (FileConnection)Connector.open(m_timelineScreen.m_currUpdateDlg.m_imagePath,
 																			Connector.READ_WRITE);
 					
 					if(t_file.exists()){
@@ -178,12 +174,26 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 								sendReceive.ForceReadByte(t_fileIn, t_buffer, t_buffer.length);
 								
 								EncodedImage t_origImage = EncodedImage.createEncodedImage(t_buffer, 0, t_buffer.length);
+								
+								int t_origWidth = t_origImage.getWidth();
+								int t_origHeight = t_origImage.getHeight();
+								
+								XYPoint t_scaleSize = m_timelineScreen.m_mainApp.getWeiboUploadSize();
+								
 								try{
-									int scaleX = Fixed32.div(Fixed32.toFP(t_origImage.getWidth()), Fixed32.toFP(1024));
-									int scaleY = Fixed32.div(Fixed32.toFP(t_origImage.getHeight()), Fixed32.toFP(768));
-									
-									t_content = t_origImage.scaleImage32(scaleX, scaleY).getData();
-									
+									if(t_scaleSize != null && t_origWidth > t_scaleSize.x && t_origHeight > t_scaleSize.y){
+										
+										int scaleX = Fixed32.div(Fixed32.toFP(t_origWidth), Fixed32.toFP(t_scaleSize.x));
+										int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(t_scaleSize.y));
+																			
+										JPEGEncodedImage finalJPEG = JPEGEncodedImage.encode(t_origImage.scaleImage32(scaleX, scaleY).getBitmap(), 80);
+										
+										t_content = finalJPEG.getData();
+										
+									}else{
+										t_content = t_buffer;
+									}
+																		
 								}finally{
 									t_origImage = null;
 									t_buffer = null;
@@ -208,11 +218,12 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			}
 			
 			m_timelineScreen.UpdateNewWeibo(m_editTextArea.getText(),
-					t_content,m_parentDlg.m_imageType);
+					t_content,m_timelineScreen.m_currUpdateDlg.m_imageType);
 			
 			m_editTextArea.setText("");
 			
-			m_parentDlg.m_imagePath = null;
+			m_timelineScreen.m_currUpdateDlg.m_imagePath = null;
+			m_timelineScreen.m_currUpdateDlg.close();
 		}
 	}
 	
@@ -251,7 +262,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			// consum the Enter key
 			//
 			return true;
-		}else if(c == 'p' && ( (status & KeypadListener.STATUS_SHIFT) != 0) ){
+		}else if((c == 'P' || c == 'p') && ( (status & KeypadListener.STATUS_SHIFT) != 0) ){
 			
 			m_timelineScreen.m_phizSelectingText = m_editTextArea;
 			m_timelineScreen.m_phizItem.run();

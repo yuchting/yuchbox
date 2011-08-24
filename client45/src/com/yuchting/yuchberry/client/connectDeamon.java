@@ -390,6 +390,21 @@ public class connectDeamon extends Thread implements SendListener,
 				}
 				
 				m_mainApp.SetErrorString("origMsg:"+ t_forwardReplyMail.GetSubject());
+			}else{
+				
+				// select sending from mail address
+				//
+				if(!m_mainApp.m_sendMailAccountList.isEmpty() 
+				&& m_mainApp.m_defaultSendMailAccountIndex < m_mainApp.m_sendMailAccountList.size()
+				&& m_mainApp.m_defaultSendMailAccountIndex >= 0){
+					
+					String t_defaultAcc = (String)m_mainApp.m_sendMailAccountList.elementAt(m_mainApp.m_defaultSendMailAccountIndex);
+					
+					t_mail.GetFromVect().removeAllElements();
+					t_mail.GetFromVect().addElement(t_defaultAcc);
+					
+					m_mainApp.SetErrorString("from:"+t_defaultAcc);
+				}
 			}
 			
 			m_mainApp.SetErrorString("sendMsg:" + t_msg.getSubject());
@@ -1051,7 +1066,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 		if(!m_currentVersion.equals(t_latestVersion)){
 		 			m_currentVersion = t_latestVersion;
 		 			m_mainApp.SetReportLatestVersion(t_latestVersion);
-		 		}		 		 			
+		 		}
 		 		break;
 		 	case msg_head.msgWeibo:
 		 		ProcessWeibo(in);
@@ -1072,6 +1087,11 @@ public class connectDeamon extends Thread implements SendListener,
 		 			m_mainApp.m_weiboTimeLineScreen.displayWeiboUser(t_user);
 		 		}
 		 		break;
+		 	case msg_head.msgWeiboConfirm:
+				if(m_mainApp.m_weiboTimeLineScreen != null){
+					m_mainApp.m_weiboTimeLineScreen.weiboSendFileConfirm(sendReceive.ReadInt(in),0);
+				}
+		 		break;
 		 	case msg_head.msgDeviceInfo:
 		 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		 		os.write(msg_head.msgDeviceInfo);
@@ -1079,9 +1099,23 @@ public class connectDeamon extends Thread implements SendListener,
 		 		sendReceive.WriteString(os,recvMain.fsm_IMEI);
 		 		addSendingData(msg_head.msgDeviceInfo, os.toByteArray(), true);
 		 		break;
+		 	case msg_head.msgMailAccountList:
+		 		sendReceive.ReadStringVector(in, m_mainApp.m_sendMailAccountList);
+		 		if(m_mainApp.m_settingScreen != null){
+		 			m_mainApp.m_settingScreen.refreshMailAccountList();
+		 		}
+		 		break;
 		 }
 	 }
 	
+	public void sendRequestMailAccountMsg(){
+		try{
+			addSendingData(msg_head.msgMailAccountList, new byte[]{msg_head.msgMailAccountList}, true);
+		}catch(Exception e){
+			m_mainApp.SetErrorString("SRMAM:"+e.getMessage()+ e.getClass().getName());
+		}
+		
+	}
 	private Folder GetDefaultFolder()throws Exception{
 		
 		Store store = Session.waitForDefaultSession().getStore();
@@ -1169,12 +1203,12 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				SendMailConfirmMsg(t_hashcode);
 				
-				m_mainApp.SetErrorString("" + t_hashcode + " Mail has been added!");
+				m_mainApp.SetErrorString("" + t_hashcode + " Mail has been added! ");
 				
 				return;
 			}
 		}
-		
+				
 		if(m_recvMailSimpleHashCodeSet.size() > 256){
 			m_recvMailSimpleHashCodeSet.removeElementAt(0);
 		}
@@ -1188,9 +1222,13 @@ public class connectDeamon extends Thread implements SendListener,
 			}
 		}
 		
+		if(m_mainApp.m_sendMailAccountList.isEmpty()){
+			sendRequestMailAccountMsg();
+		}
+
 		try{
 			
-			final Message m = new Message();
+			Message m = new Message();
 			
 			ComposeMessage(m,t_mail,m_mainApp.m_discardOrgText);
 			

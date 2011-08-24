@@ -172,7 +172,7 @@ public class WeiboDMItemField extends WeiboItemField{
 			// edit text
 			//
 			setPositionChild(m_parentManager.m_editTextArea,0,0);
-			layoutChild(m_parentManager.m_editTextArea,m_parentManager.m_editTextArea.getPreferredWidth(),sm_editTextAreaHeight);
+			layoutChild(m_parentManager.m_editTextArea,fsm_weiboItemFieldWidth,sm_editTextAreaHeight);
 			
 			height =  recalculateHeight(false,false,true,null);						
 			

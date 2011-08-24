@@ -29,6 +29,7 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 	 CheckboxField		m_weiboUseLocation = null;
 	 ObjectChoiceField	m_refreshWeiboInterval = null;
 	 ObjectChoiceField	m_maxWeiboNum	= null;
+	 ObjectChoiceField	m_uploadImageSize	= null;
 	 ButtonField		m_clearCheckImageSetting = null;
 	 
 	 private RadioButtonGroup m_shortkeyTypeGroup = new RadioButtonGroup();
@@ -69,6 +70,10 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 		 m_refreshWeiboInterval		= new ObjectChoiceField(recvMain.sm_local.getString(localResource.WEIBO_OPTION_REFRESH_INTERVAL),
 								recvMain.fsm_refreshWeiboIntervalList,m_mainApp.m_refreshWeiboIntervalIndex);
 		 add(m_refreshWeiboInterval);
+		 
+		 m_uploadImageSize			= new ObjectChoiceField(recvMain.sm_local.getString(localResource.WEIBO_UPLOAD_IMAGE_SIZE),
+								recvMain.fsm_weiboUploadImageSizeList,m_mainApp.m_weiboUploadImageSizeIndex);
+		 add(m_uploadImageSize);
 		 
 		 m_clearCheckImageSetting = new ButtonField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_CLEAR_CHECK_IMAGE_PROMPT),
 				 									Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
@@ -138,6 +143,7 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 			 WeiboItemField.sm_commentFirst	= m_commentFirst.getChecked();
 			 m_mainApp.m_publicForward		= m_publicForward.getChecked();		
 			 m_mainApp.m_maxWeiboNumIndex	= m_maxWeiboNum.getSelectedIndex();
+			 m_mainApp.m_weiboUploadImageSizeIndex = m_uploadImageSize.getSelectedIndex();
 			 
 			 m_mainApp.m_refreshWeiboIntervalIndex = m_refreshWeiboInterval.getSelectedIndex();
 			 m_mainApp.m_weiboTimeLineScreen.startAutoRefresh();

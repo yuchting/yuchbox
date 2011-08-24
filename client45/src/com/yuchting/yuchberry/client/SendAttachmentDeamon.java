@@ -289,7 +289,7 @@ public class SendAttachmentDeamon extends Thread{
 				
 				boolean t_sendOver = false;
 				int t_sendSegmentNum = 0;
-				while(t_sendSegmentNum++ < 4){
+				while(t_sendSegmentNum++ < 6){
 					
 					if(SendFileSegment(false)){
 						t_sendOver = true;

@@ -661,6 +661,13 @@ public class weiboTimeLineScreen extends MainScreen{
 					&& t_image.m_userID.equals(_weibo.GetHeadImageId()) ){
 					
 					if(t_image.m_dataHash != _weibo.GetUserHeadImageHashCode() || t_image.m_headImage == sm_defaultHeadImage){
+						
+						if(t_image.m_headImage == sm_defaultHeadImage){
+							m_mainApp.SetErrorString("requery Head 0 " + _weibo.GetHeadImageId());
+						}else{
+							m_mainApp.SetErrorString("requery Head 1 " + _weibo.GetHeadImageId());
+						}
+						
 						SendHeadImageQueryMsg(_weibo);
 					}
 					
@@ -673,12 +680,17 @@ public class weiboTimeLineScreen extends MainScreen{
 			WeiboHeadImage t_image = LoadWeiboImage(_weibo);
 			if(t_image != null){
 				if(t_image.m_dataHash != _weibo.GetUserHeadImageHashCode()){
+					
+					m_mainApp.SetErrorString("requery Head 2 " + _weibo.GetHeadImageId());
+					
 					SendHeadImageQueryMsg(_weibo);
 				}
 				
 				m_headImageList.addElement(t_image);
 				return t_image;
 			}
+			
+			m_mainApp.SetErrorString("requery Head 3 " + _weibo.GetHeadImageId());
 			
 			// load the default image and send head image query message
 			//
@@ -707,14 +719,8 @@ public class weiboTimeLineScreen extends MainScreen{
 		try{
 
 			String t_imageFilename = null;
-			String t_id = null;
-			
-			if(_weibo.GetWeiboStyle() == fetchWeibo.QQ_WEIBO_STYLE){
-				t_id = _weibo.GetUserScreenName();
-			}else{
-				t_id = Long.toString(_weibo.GetUserId());
-			}
-			
+			String t_id = _weibo.GetHeadImageId();
+						
 			if(WeiboItemField.fsm_largeHeadImage){
 				t_imageFilename = m_mainApp.GetWeiboHeadImageDir(_weibo.GetWeiboStyle()) + t_id + "_l.png";
 			}else{
@@ -746,6 +752,9 @@ public class weiboTimeLineScreen extends MainScreen{
 						t_fileIn.close();
 						t_fileIn = null;
 					}
+				}else{
+					
+					m_mainApp.SetErrorString("LWI:" + t_imageFilename);
 				}
 				
 			}finally{
