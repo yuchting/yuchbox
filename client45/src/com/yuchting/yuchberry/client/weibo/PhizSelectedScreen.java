@@ -25,7 +25,7 @@ final class Phiz extends ImageButton{
         super( "",_image,_image,_imageSets,0);
     }
 	
-	protected void focusPaint(Graphics g,boolean focus){
+	public void focusPaint(Graphics g,boolean focus){
 		super.focusPaint(g,focus);
 		
 		if(focus){

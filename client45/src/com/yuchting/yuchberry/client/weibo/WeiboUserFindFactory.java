@@ -166,18 +166,18 @@ class WeiboUserFind extends StringPattern
 		return Character.isLowerCase(a) || Character.isUpperCase(a);
 	}
 	
-	public static boolean findPhizName(String _phizName){
+	public static Phiz findPhizName(String _phizName){
 		Vector t_list = WeiboUserFindFactory.sm_mainScreen.m_phizImageList;
 		for(int i = 0;i < t_list.size();i++){
 			
 			Phiz t_phiz = (Phiz)t_list.elementAt(i);
 			
 			if(_phizName.equals(t_phiz.getImage().getName()) ){
-				return true;
+				return t_phiz;
 			}
 		}
 		
-		return false;
+		return null;
 	}
 }
 

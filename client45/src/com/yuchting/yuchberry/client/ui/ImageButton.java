@@ -42,6 +42,8 @@ public class ImageButton extends Field{
     public ImageUnit getImage(){return m_image;}
     public ImageUnit getFocusImage(){return m_image_focus;}
     
+    public ImageSets getImageSets(){return m_imageSets;}
+    
     public int getImageWidth(){
     	return m_image.getWidth();
     }
