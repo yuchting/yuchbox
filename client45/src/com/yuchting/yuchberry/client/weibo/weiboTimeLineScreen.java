@@ -76,7 +76,10 @@ public class weiboTimeLineScreen extends MainScreen{
 	};
 	public static recvMain				sm_mainApp = (recvMain)UiApplication.getUiApplication();
 	
+	public ImageSets					m_weiboUIImage = null;
+	
 	public static ImageSets			sm_weiboUIImage = null;
+	
 	public static BubbleImage 			sm_bubbleImage = null;
 	public static BubbleImage 			sm_bubbleImage_black = null;
 	static {
@@ -210,14 +213,26 @@ public class weiboTimeLineScreen extends MainScreen{
 	};
 	
 	recvMain			m_mainApp = null;
-	
 	int					m_autoRefreshWeiboIntervalID = -1;
+	
+	Vector				m_phizImageList = new Vector();
 	
 	public weiboTimeLineScreen(recvMain _mainApp){
 		super(Manager.VERTICAL_SCROLL);
-			
+		
 		sm_mainApp 	= _mainApp;
 		m_mainApp	= _mainApp;
+		
+		m_weiboUIImage	= sm_weiboUIImage;
+		
+		Vector t_imageList = m_weiboUIImage.getImageList();
+		for(int i = 0;i < t_imageList.size();i++){
+		    ImageUnit t_unit = (ImageUnit)t_imageList.elementAt(i);
+		    
+		    if(t_unit.getName().charAt(0) == '['){
+		    	m_phizImageList.addElement(new Phiz(t_unit,m_weiboUIImage));
+		    }
+		}
 		
 		m_currUpdateDlg = new WeiboUpdateDlg(weiboTimeLineScreen.this);
 		
@@ -242,6 +257,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		m_currMgr.setFocus();	
 	}
+	
 	
 	public void enableHeader(boolean _enable){
 		if(m_mainApp.m_hideHeader){
@@ -439,9 +455,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	private void AddWeibo_imple(fetchWeibo _weibo,boolean _initAdd){
 		
 		try{
-			
-			_initAdd = _initAdd || _weibo.IsOwnWeibo(); // don't prompt by own weibo...
-			
+						
 			WeiboHeadImage t_headImage = SearchHeadImage(_weibo);
 			
 			switch(_weibo.GetWeiboClass()){
@@ -459,7 +473,7 @@ public class weiboTimeLineScreen extends MainScreen{
 				break;
 			}
 			
-			if(!_initAdd){
+			if(!_initAdd && !_weibo.IsOwnWeibo()){
 				
 				m_weiboHeader.invalidate();				
 				
@@ -681,7 +695,8 @@ public class weiboTimeLineScreen extends MainScreen{
 			if(t_image != null){
 				if(t_image.m_dataHash != _weibo.GetUserHeadImageHashCode()){
 					
-					m_mainApp.SetErrorString("requery Head 2 " + _weibo.GetHeadImageId());
+					m_mainApp.SetErrorString("requery Head 2 " + _weibo.GetHeadImageId() + 
+							" local:" + t_image.m_dataHash + " remote:" + _weibo.GetUserHeadImageHashCode());
 					
 					SendHeadImageQueryMsg(_weibo);
 				}
@@ -970,12 +985,12 @@ public class weiboTimeLineScreen extends MainScreen{
     	
         public void run() {
         	if(m_phizScreen == null){
-        		m_phizScreen = new PhizSelectedScreen(m_mainApp, m_phizSelected);
+        		m_phizScreen = new PhizSelectedScreen(m_mainApp,m_phizImageList,m_phizSelected);
         	}else{
         		m_phizScreen.getPhizMgr().setSelectedCallback(m_phizSelected);
         	}
         	
-        	m_mainApp.pushScreen(m_phizScreen);
+        	UiApplication.getUiApplication().pushScreen(m_phizScreen);
         }
     };
     

@@ -3,13 +3,11 @@ package com.yuchting.yuchberry.client.weibo;
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
 
-import net.rim.device.api.system.EncodedImage;
-
+import com.yuchting.yuchberry.client.ISendAttachmentCallback;
 import com.yuchting.yuchberry.client.SendAttachmentDeamon;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
-import com.yuchting.yuchberry.client.screen.ISendAttachmentCallback;
 
 public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 
@@ -144,7 +142,7 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 			}
 			
 			try{
-				sleep(60000);
+				sleep(3 * 60000);
 			}catch(Exception e){}
 		}
 	}

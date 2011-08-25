@@ -1012,8 +1012,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						sendReceive.WriteInt(t_writeFile,m_refreshWeiboIntervalIndex);
 						
 						t_writeFile.write(m_weiboUploadImageSizeIndex);
-						sendReceive.WriteStringVector(t_writeFile, m_sendMailAccountList);
 						sendReceive.WriteInt(t_writeFile,m_defaultSendMailAccountIndex);
+						sendReceive.WriteStringVector(t_writeFile, m_sendMailAccountList);
+						
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());

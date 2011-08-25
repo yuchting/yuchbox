@@ -22,6 +22,7 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Screen;
@@ -262,18 +263,28 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			// consum the Enter key
 			//
 			return true;
-		}else if((c == 'P' || c == 'p') && ( (status & KeypadListener.STATUS_SHIFT) != 0) ){
-			
-			m_timelineScreen.m_phizSelectingText = m_editTextArea;
-			m_timelineScreen.m_phizItem.run();
-			
-			return true;
 		}
 		
 		invalidate();
 		getScreen().invalidate();
 				
 		return super.keyChar(c,status,time);
+	}
+	
+	public boolean keyDown(int keycode,int time){
+		final int key = Keypad.key(keycode);
+		
+		if(key == 'P'){
+			boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
+			if(t_shiftDown){
+				m_timelineScreen.m_phizSelectingText = m_editTextArea;
+				m_timelineScreen.m_phizItem.run();
+				
+				return true;
+			}
+		}
+		
+		return super.keyDown(keycode,time);
 	}
 }
 

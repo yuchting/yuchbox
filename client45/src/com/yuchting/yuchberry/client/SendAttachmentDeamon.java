@@ -6,7 +6,6 @@ import java.util.Vector;
 
 import javax.microedition.io.file.FileConnection;
 
-import com.yuchting.yuchberry.client.screen.ISendAttachmentCallback;
 
 public class SendAttachmentDeamon extends Thread{
 	
@@ -99,17 +98,13 @@ public class SendAttachmentDeamon extends Thread{
 		if(m_closeState){
 			return true;
 		}
-		
-		m_connect.m_mainApp.SetErrorString("SAF:0");
-		
+				
 		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 		
 		int t_currSize = (m_vFileConnection != null)?(int)m_fileConnection.fileSize():m_uploadingBuffer.length;
 		int t_size = (m_beginIndex + fsm_segmentSize) > (int)t_currSize?
 								((int)t_currSize - m_beginIndex) : fsm_segmentSize;
-		
-		m_connect.m_mainApp.SetErrorString("SAF:1");
-		
+				
 		if(m_vFileConnection != null){
 			
 			try{
@@ -146,20 +141,14 @@ public class SendAttachmentDeamon extends Thread{
 			}
 		}
 		
-		m_connect.m_mainApp.SetErrorString("SAF:2");
-		
 		t_os.write(msg_head.msgFileAttachSeg);
 		sendReceive.WriteInt(t_os, m_sendHashCode);
 		sendReceive.WriteInt(t_os, m_attachmentIndex);
 		sendReceive.WriteInt(t_os, m_beginIndex);
 		sendReceive.WriteInt(t_os, t_size);
 		t_os.write(m_bufferBytes,0,t_size);
-		
-		m_connect.m_mainApp.SetErrorString("SAF:3");
-		
+				
 		m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), _send,false);
-		
-		m_connect.m_mainApp.SetErrorString("SAF:4");
 		
 		//System.out.println("send msgMailAttach time:"+ m_sendHashCode + " attIdx<" +m_attachmentIndex + "> beginIndex<" + m_beginIndex + "> size:" + t_size);
 		
@@ -176,9 +165,7 @@ public class SendAttachmentDeamon extends Thread{
 		
 		m_uploadedSize += t_size;
 		t_os.close();
-		
-		m_connect.m_mainApp.SetErrorString("SAF:5");
-		
+				
 		return false;
 	}
 	

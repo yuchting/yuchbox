@@ -348,7 +348,10 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 						if(getField(0) == m_updateWeiboFieldNull){
 							replace(m_updateWeiboFieldNull,m_updateWeiboField);
 							
-							m_mainApp.TriggerWeiboHomeNotification();
+							if(!_weibo.IsOwnWeibo()){
+								m_mainApp.TriggerWeiboHomeNotification();
+							}
+							
 						}
 					}
 				});
@@ -356,6 +359,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 							
 					
 		}else{
+			
 			if(m_parentScreen.m_mainApp.hasEventThread()){
 				AddWeibo_impl(_weibo, _image);
 			}else{
@@ -368,7 +372,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			
 		}
 
-		if(!_initAdd){				
+		if(!_initAdd && !_weibo.IsOwnWeibo()){				
 			m_hasNewWeibo = true;
 		}
 	}

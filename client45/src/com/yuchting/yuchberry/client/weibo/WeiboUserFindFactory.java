@@ -12,6 +12,8 @@ import net.rim.device.api.util.Factory;
 import net.rim.device.api.util.StringPattern;
 import net.rim.device.api.util.StringPatternRepository;
 
+import com.yuchting.yuchberry.client.ui.ImageUnit;
+
 /**
  *  copy from the blackberry system sample
  * 
@@ -162,6 +164,20 @@ class WeiboUserFind extends StringPattern
 	
 	public static boolean isAlpha(char a){
 		return Character.isLowerCase(a) || Character.isUpperCase(a);
+	}
+	
+	public static boolean findPhizName(String _phizName){
+		Vector t_list = WeiboUserFindFactory.sm_mainScreen.m_phizImageList;
+		for(int i = 0;i < t_list.size();i++){
+			
+			Phiz t_phiz = (Phiz)t_list.elementAt(i);
+			
+			if(_phizName.equals(t_phiz.getImage().getName()) ){
+				return true;
+			}
+		}
+		
+		return false;
 	}
 }
 

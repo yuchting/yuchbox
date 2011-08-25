@@ -199,26 +199,14 @@ public class PhizSelectedScreen extends MainScreen{
 
 	PhizMgr		m_phizMgr;
 	
-	public PhizSelectedScreen(recvMain _mainApp,IPhizSelected _selectedCallback){
+	public PhizSelectedScreen(recvMain _mainApp,Vector _phizList,IPhizSelected _selectedCallback){
 		
 		LabelField		t_prompt = new LabelField(recvMain.sm_local.getString(localResource.WEIBO_PHIZ_SCREEN_PROMPT),Field.NON_FOCUSABLE);
 		
 		add(t_prompt);
 		add(new SeparatorField());
-		
-		Vector t_imageList = weiboTimeLineScreen.sm_weiboUIImage.getImageList();
-		
-		Vector t_phizList = new Vector();
-		
-		for(int i = 0;i < t_imageList.size();i++){
-		    ImageUnit t_unit = (ImageUnit)t_imageList.elementAt(i);
-		    
-		    if(t_unit.getName().charAt(0) == '['){
-		    	t_phizList.addElement(new Phiz(t_unit,weiboTimeLineScreen.sm_weiboUIImage));
-		    }
-		}
-		
-		m_phizMgr = new PhizMgr(t_phizList, _selectedCallback);
+				
+		m_phizMgr = new PhizMgr(_phizList, _selectedCallback);
 		add(m_phizMgr);
 	}
 	

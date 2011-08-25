@@ -1,5 +1,7 @@
 package com.yuchting.yuchberry.client.weibo;
 
+import java.util.Vector;
+
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.component.ActiveRichTextField;
@@ -14,19 +16,24 @@ public class WeiboTextField extends ActiveRichTextField{
 	{
 		0xffffff,
 		0xffffff,
+		0xffffff,
 	};
 	
 	int[]		m_foreground = 
 	{
 		0,
 		0x012a93,
+		0x012a93,
 	};
 		
 	static Font[]		sm_fontList = 
 	{
 		WeiboItemField.sm_defaultFont,
-		WeiboItemField.sm_defaultFont
+		WeiboItemField.sm_defaultFont,
+		WeiboItemField.sm_defaultFont,
 	};
+	
+	Vector m_phizList	= new Vector();
 		
 		
 	public WeiboTextField(int _foreground,int _background){
@@ -60,11 +67,18 @@ public class WeiboTextField extends ActiveRichTextField{
 		int t_offsetIndex = 1;
 		int t_attrIndex = 0;
 		
+		
+		setText_while:
 		while(t_index < t_textLength){
 			
 			char a = _text.charAt(t_index);
 			
-			if(a == '@'){
+			boolean t_userName = (a == '@');
+			boolean t_phiz = (a == '[');
+			
+			int t_beginIndex = t_index;
+			
+			if(t_userName || t_phiz){
 				
 				if(t_offsetIndex != 1){
 					
@@ -87,9 +101,27 @@ public class WeiboTextField extends ActiveRichTextField{
 					
 					a = _text.charAt(i);
 					
-					if(!WeiboUserFind.isLeagalNameCharacter(a)){
-						break;
+					if(t_userName){
+						
+						if(!WeiboUserFind.isLeagalNameCharacter(a)){
+							break;
+						}
+						
+					}else{
+						if(a == ']'){
+							
+							String t_phizStr = _text.substring(t_beginIndex,t_index + 2);
+							if(WeiboUserFind.findPhizName(t_phizStr)){
+								t_index += 2;
+								break;
+							}else{
+								t_index = t_beginIndex + 1;
+								continue setText_while;
+							}
+						}
+						
 					}
+					
 				}
 				
 				if(t_offsetIndex >= m_bufferedOffset.length - 1){
@@ -100,7 +132,14 @@ public class WeiboTextField extends ActiveRichTextField{
 					}
 				}
 				
-				m_bufferedAttr[t_attrIndex] = 1;
+				if(t_phiz){
+					m_bufferedAttr[t_attrIndex] = 2;
+					m_phizList.addElement(new Integer(t_attrIndex));
+					
+				}else{
+					m_bufferedAttr[t_attrIndex] = 1;
+				}
+				
 
 				t_index++;
 				m_bufferedOffset[t_offsetIndex] = t_index;
@@ -114,8 +153,15 @@ public class WeiboTextField extends ActiveRichTextField{
 		}
 		
 		super.setText(_text,m_bufferedOffset,m_bufferedAttr,sm_fontList,m_foreground,m_background);
+		
+		for(int i = 0;i < m_phizList.size();i++){
+			Integer t_val = (Integer)m_phizList.elementAt(i);
+			Object t_obj = getRegionCookie(t_val.intValue());
+			
+			System.out.println(t_obj);
+		}
 	}
-	
+			
 	
 	private boolean incBuffered(int _offsetDefaultVal,byte _attrDefaultVal){
 		
