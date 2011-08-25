@@ -2,7 +2,6 @@ package com.yuchting.yuchberry.server;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.net.URLDecoder;
 import java.util.List;
 import java.util.Vector;
 
@@ -367,6 +366,10 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		
 		_weibo.SetUserHeadImageHashCode(StoreHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));		
 
+		if(_weibo.GetUserScreenName().equals("yuchberry")){
+			System.out.print("");
+		}
+		
 		try{
 			
 			if(_stat.getInReplyToStatusId() != -1){
@@ -483,6 +486,9 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	}
 	
 	static public void main(String[] _arg)throws Exception{
+		
+		File t_testfile = new File("yuchberry/WeiboHeadImage/QQ/yuchberry.png");
+		System.out.print(t_testfile.length());
 		
 		fetchMgr t_manger = new fetchMgr();
 		Logger t_logger = new Logger("");

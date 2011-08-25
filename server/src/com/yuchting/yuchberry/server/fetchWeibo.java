@@ -79,6 +79,10 @@ public class fetchWeibo {
 		m_convertoSimpleChar = _convertToSimple;
 	}
 	
+	public String GetHeadImageId(){
+		return m_WeiboStyle == fetchWeibo.QQ_WEIBO_STYLE ? 
+				GetUserScreenName():Long.toString(GetUserId());
+	}
 	
 	public byte GetWeiboStyle(){return m_WeiboStyle;}
 	public void SetWeiboStyle( byte _style){m_WeiboStyle = _style;}
@@ -96,7 +100,10 @@ public class fetchWeibo {
 	public void SetUserId(final long _id){m_userId = _id;}
 	
 	public int GetUserHeadImageHashCode(){return m_userHeadImageHashCode;}
-	public void SetUserHeadImageHashCode(final int _hashCode){m_userHeadImageHashCode = _hashCode;}	
+	public void SetUserHeadImageHashCode(final int _hashCode)
+	{
+		m_userHeadImageHashCode = _hashCode;
+	}	
 	
 	public String GetUserName(){return m_userName;}
 	public void SetUserName(final String _name){m_userName = _name;}

@@ -845,9 +845,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		
 		return false;
 	}
-	
-	static public final long	sm_startTime = (new Date()).getTime();
-	
+		
 	protected byte[] DownloadHeadImage(URL _url,String _id){
 		
 		try{
@@ -897,6 +895,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	}
 	protected int StoreHeadImage(URL _url,String _id){
 		
+		long t_currentTime = (new Date()).getTime();
+		
 		final String t_filename 		= GetHeadImageFilename(_id);
 		final String t_filename_l		= GetHeadImageFilename_l(_id);
 		
@@ -911,77 +911,82 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			if(t_file_l.exists()){
 				// over the modified time to refresh these
 				// 
-				t_forceDownload = Math.abs(sm_startTime - t_file_l.lastModified()) > 5 * 24 * 3600000;
+				long t_modified = t_file_l.lastModified();
+				
+				t_forceDownload = Math.abs(t_currentTime - t_modified) > 3 * 24 * 3600000;
 			}
 			
 			if(!t_file_l.exists() || !t_file.exists() || t_forceDownload){
 				
-				// local file is NOT exist then download from the URL
+				// local file is NOT exist and then download from the URL
 				//
 				URL t_url = _url;
 				
 		        URLConnection t_connect = t_url.openConnection();
 		        t_connect.setConnectTimeout(10000);
 		        t_connect.setReadTimeout(50000);
-		        if(t_file_l.exists() && t_file.exists()){
+		        
+		        if(t_file_l.exists() 
+		        	&& t_file.exists()
+		        	&& t_file_l.length() == t_connect.getContentLength()){
 		        	
 		        	// if the both file is exist and the image length is not changed
-		        	// return immediately instead of download it 
-		        	// 
+		        	// don't download and set the modified time 
+		        	//		        	
+	        		t_file_l.setLastModified(t_currentTime);
+	        		
+		        }else{
 		        	
-		        	if(t_file_l.length() == t_connect.getContentLength()){
-		        		return (int)t_file_l.length();
-		        	}
-		        }
-		        
-		        BufferedInputStream t_read = new BufferedInputStream(t_connect.getInputStream()); 
-		   		try{
-		   			FileOutputStream fos = new FileOutputStream(t_file_l);
-		   			int size = 0;
-			        try{
-				        while((size = t_read.read(m_headImageBuffer))!= -1){
-				        	fos.write(m_headImageBuffer,0,size);
+		        	BufferedInputStream t_read = new BufferedInputStream(t_connect.getInputStream()); 
+			   		try{
+			   			FileOutputStream fos = new FileOutputStream(t_file_l);
+			   			int size = 0;
+				        try{
+					        while((size = t_read.read(m_headImageBuffer))!= -1){
+					        	fos.write(m_headImageBuffer,0,size);
+					        }
+				        }finally{
+				        	fos.flush();
+					        fos.close();
+					        fos = null;
 				        }
-			        }finally{
-			        	fos.flush();
-				        fos.close();
-				        fos = null;
+			   		}finally{
+			   			t_read.close();
+			   			t_read = null;
+			   		}
+			   		
+			        // scale the image and store
+			        //		   		
+			        BufferedImage bsrc = ImageIO.read(t_file_l);
+			        if(bsrc.getWidth() != fetchWeibo.fsm_headImageSize_l){
+			        	// store the large file
+			        	//
+			        	BufferedImage bdest = new BufferedImage(fetchWeibo.fsm_headImageSize_l,fetchWeibo.fsm_headImageSize_l, BufferedImage.TYPE_INT_RGB);
+				        Graphics2D g = bdest.createGraphics();
+				        AffineTransform at = AffineTransform.getScaleInstance((double)fetchWeibo.fsm_headImageSize_l/bsrc.getWidth(),
+				        														(double)fetchWeibo.fsm_headImageSize_l/bsrc.getHeight());
+				        g.drawRenderedImage(bsrc,at);
+				        ImageIO.write(bdest,"PNG",t_file_l);
 			        }
-		   		}finally{
-		   			t_read.close();
-		   			t_read = null;
-		   		}
-		   		
-		        // scale the image and store
-		        //		   		
-		        BufferedImage bsrc = ImageIO.read(t_file_l);
-		        if(bsrc.getWidth() != fetchWeibo.fsm_headImageSize_l){
-		        	// store the large file
-		        	//
-		        	BufferedImage bdest = new BufferedImage(fetchWeibo.fsm_headImageSize_l,fetchWeibo.fsm_headImageSize_l, BufferedImage.TYPE_INT_RGB);
+			  
+		        	// store to a small file
+			        //
+			        BufferedImage bdest = new BufferedImage(fetchWeibo.fsm_headImageSize,fetchWeibo.fsm_headImageSize, BufferedImage.TYPE_INT_RGB);
 			        Graphics2D g = bdest.createGraphics();
-			        AffineTransform at = AffineTransform.getScaleInstance((double)fetchWeibo.fsm_headImageSize_l/bsrc.getWidth(),
-			        														(double)fetchWeibo.fsm_headImageSize_l/bsrc.getHeight());
-			        g.drawRenderedImage(bsrc,at);
-			        ImageIO.write(bdest,"PNG",t_file_l);
+			        AffineTransform at = AffineTransform.getScaleInstance((double)fetchWeibo.fsm_headImageSize/bsrc.getWidth(),
+			        														(double)fetchWeibo.fsm_headImageSize/bsrc.getHeight());
+			        g.drawRenderedImage(bsrc,at);		       
+			        ImageIO.write(bdest,"PNG",t_file);
 		        }
-		  
-	        	// store to a small file
-		        //
-		        BufferedImage bdest = new BufferedImage(fetchWeibo.fsm_headImageSize,fetchWeibo.fsm_headImageSize, BufferedImage.TYPE_INT_RGB);
-		        Graphics2D g = bdest.createGraphics();
-		        AffineTransform at = AffineTransform.getScaleInstance((double)fetchWeibo.fsm_headImageSize/bsrc.getWidth(),
-		        														(double)fetchWeibo.fsm_headImageSize/bsrc.getHeight());
-		        g.drawRenderedImage(bsrc,at);		       
-		        ImageIO.write(bdest,"PNG",t_file);
+		        	        
 			}
 			
 			if(m_mainMgr.m_clientDisplayWidth <= 320){
 				t_hashCode = (int)t_file.length();
 			}else{
 				t_hashCode = (int)t_file_l.length();
-			}									
-	        
+			}	
+				        
 		}catch(Exception e){
 			m_mainMgr.m_logger.PrinterException(e);
 		}
