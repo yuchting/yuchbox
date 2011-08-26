@@ -93,7 +93,7 @@ class sendReceive extends Thread{
 		OutputStream os = m_socketOutputStream;
 		
 		ByteArrayOutputStream zos = new ByteArrayOutputStream();
-		GZIPOutputStream zo = new GZIPOutputStream(zos);
+		GZIPOutputStream zo = new GZIPOutputStream(zos,6);
 		zo.write(_write);
 		zo.close();	
 		

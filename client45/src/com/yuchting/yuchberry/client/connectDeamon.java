@@ -865,6 +865,7 @@ public class connectDeamon extends Thread implements SendListener,
 				}							
 			}		
 			
+
 			if(m_mainApp.m_weiboTimeLineScreen != null){
 				m_mainApp.m_weiboTimeLineScreen.SetOnlineState(false);
 			}
@@ -895,7 +896,8 @@ public class connectDeamon extends Thread implements SendListener,
 					m_connect = null;
 					m_conn = null;
 				}
-			}			
+			}
+									
 		}
 		
 	 }

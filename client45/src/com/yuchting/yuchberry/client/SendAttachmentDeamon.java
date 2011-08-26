@@ -27,7 +27,7 @@ public class SendAttachmentDeamon extends Thread{
 	
 	byte[]				m_uploadingBuffer = null;
 		
-	final static private int fsm_segmentSize = 512;
+	final static private int fsm_segmentSize = 1024;
 	
 	byte[] 				m_bufferBytes 		= new byte[fsm_segmentSize];
 	

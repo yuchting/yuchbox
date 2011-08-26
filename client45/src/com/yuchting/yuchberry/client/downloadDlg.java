@@ -74,9 +74,4 @@ public class downloadDlg extends Dialog{
 			}
 		});
 	}
-	
-	public boolean onClose(){
-		close();
-		return true;
-	}
 }

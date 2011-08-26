@@ -51,7 +51,7 @@ class EmailSendAttachment extends Thread{
 	
 	public	boolean 	m_closeState = false;
 	
-	final static int	fsm_sendSize = 512;
+	final static int	fsm_sendSize = 1024;
 	
 	EmailSendAttachment(int _mailIndex,int _attachIdx,fetchEmail _mgr){
 		
@@ -122,7 +122,7 @@ class EmailSendAttachment extends Thread{
 				}
 				
 				int t_sendNum = 0;
-				while(t_sendNum++ < 6){
+				while(t_sendNum++ < 4){
 					if(SendAttachment(false)){
 						m_file.close();
 						return;

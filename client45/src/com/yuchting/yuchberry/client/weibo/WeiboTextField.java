@@ -40,10 +40,15 @@ public class WeiboTextField extends ActiveRichTextField{
 	Vector m_phizList	= new Vector();
 		
 	static String sm_replacePhizText = " ";
+	static int sm_replacePhiz_x_offset = 0;
 	static {
-		while(sm_fontList[0].getAdvance(sm_replacePhizText) < Phiz.fsm_phizSize){
+		int t_width = 0;
+		while((t_width = sm_fontList[0].getAdvance(sm_replacePhizText)) < Phiz.fsm_phizSize){
 			sm_replacePhizText = sm_replacePhizText + " ";
 		}
+		
+		sm_replacePhiz_x_offset = (t_width - Phiz.fsm_phizSize) / 2;
+		
 	}
 	
 	public WeiboTextField(int _foreground,int _background){
@@ -188,6 +193,14 @@ public class WeiboTextField extends ActiveRichTextField{
 			
 			t_offsetIndex++;
 			t_attrIndex++;
+			
+			if(t_offsetIndex >= m_bufferedOffset.length - 1){
+				// relocate that
+				//
+				if(!incBuffered(0,(byte)0)){
+					break;
+				}
+			}
 		}
 		
 		String t_finalT = t_finalText.toString();
@@ -210,9 +223,10 @@ public class WeiboTextField extends ActiveRichTextField{
 			}
 			
 			if(t_offset == m_bufferedOffset[i] && m_bufferedAttr[i] == 2){
-				
+
 				Phiz t_phiz = (Phiz)m_phizList.elementAt(t_phizIndex);
-				t_phiz.getImageSets().drawImage(_g, t_phiz.getImage(), x, y - sm_fontList[0].getBaseline());
+				t_phiz.getImageSets().drawImage(_g, t_phiz.getImage(), 
+						x + sm_replacePhiz_x_offset,y - sm_fontList[0].getBaseline());
 				
 				return 0;
 			}

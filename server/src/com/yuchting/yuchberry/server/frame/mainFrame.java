@@ -1332,6 +1332,7 @@ public class mainFrame extends JFrame implements ActionListener{
 						for(int i = m_accountList.size() - 1; i >= 0;i--){
 							fetchThread t_acc = m_accountList.elementAt(i);
 							t_result.append(t_acc.m_fetchMgr.GetAccountName()).append("\t\t");
+							t_result.append(t_acc.m_fetchMgr.GetServerPort()).append("\t\t");
 							
 							if(!t_acc.m_pauseState){
 						
