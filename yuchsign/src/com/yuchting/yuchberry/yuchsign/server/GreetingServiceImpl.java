@@ -158,13 +158,13 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	private void sendActivateMail_impl(String _name,long _activateRand)throws Exception{
 							
 		StringBuffer t_body = new StringBuffer();
-		t_body.append("欢迎注册YuchSign！\n\n您在YuchBerry的网站上的YuchSign邮件中转账户已经注册完成，需要您通过下面的链接完成激活：\n\nhttp://yuchberrysign.yuchberry.info/act/?acc=")
+		t_body.append("欢迎注册语盒！\n\n您在语盒的网站上的邮件中转账户已经注册完成，需要您通过下面的链接完成激活：\n\nhttp://yuchberrysign.yuchberry.info/act/?acc=")
 				.append(URLEncoder.encode(_name,"UTF-8")).append("&rand=").append(URLEncoder.encode(Long.toString(_activateRand),"UTF-8"))
 				.append("\n\n如果无法点击这个链接，请复制到网络浏览器的地址栏上进行访问\n\n致\n  敬!\nhttp://code.google.com/p/yuchberry/");
 		
 		// send the activate email
 		//
-		sendEmail(_name,"YuchSign 激活邮件",t_body.toString());
+		sendEmail(_name,"语盒激活邮件",t_body.toString());
 	}
 	
 	public String sendActivateMail(String _signinName,String verifyCode)throws Exception{
@@ -567,10 +567,10 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				}
 				
 		        StringBuffer t_body = new StringBuffer();
-		        t_body.append("您好！\n\n您收到这封邮件，是因为您在登录 YuchSign 账户时忘记了密码，您使用这个邮箱地址注册时的密码为(去除两边单引号)：\n\n    '")
+		        t_body.append("您好！\n\n您收到这封邮件，是因为您在登录语盒账户时忘记了密码，您使用这个邮箱地址注册时的密码为(去除两边单引号)：\n\n    '")
 		        	.append(t_bber.GetPassword()).append("'\n\n   请您务必保管好，以防下次遗失。\n\n致\n  敬！\nhttp://code.google.com/p/yuchberry/");
 		        		        	
-		        sendEmail(_signinName,"YuchSign 找回密码",t_body.toString());
+		        sendEmail(_signinName,"语盒找回密码",t_body.toString());
 	            
 	            m_foundPassword = true;		    
 				
