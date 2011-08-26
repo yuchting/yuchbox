@@ -40,7 +40,7 @@ import com.sun.mail.smtp.SMTPTransport;
 class EmailSendAttachment extends Thread{
 	
 	FileInputStream		m_file;
-	fetchEmail			m_fetchEmail;
+	fetchMgr			m_mainMgr;
 	int					m_fileLength;
 	int					m_mailIndex;
 	int					m_attachIndex;
@@ -49,21 +49,22 @@ class EmailSendAttachment extends Thread{
 	byte[] 				m_buffer = new byte[fsm_sendSize];
 	ByteArrayOutputStream m_os = new ByteArrayOutputStream();
 	
+	public	boolean 	m_closeState = false;
+	
 	final static int	fsm_sendSize = 512;
 	
 	EmailSendAttachment(int _mailIndex,int _attachIdx,fetchEmail _mgr){
 		
-		m_fetchEmail 	= _mgr;
+		m_mainMgr		= _mgr.m_mainMgr;
 		m_mailIndex 	= _mailIndex;
 		m_attachIndex 	= _attachIdx;
 		
 		try{
-			File t_file = new File(m_fetchEmail.GetAccountPrefix() + _mailIndex +"_"+ _attachIdx + ".att");	
+			File t_file = new File(_mgr.GetAccountPrefix() + _mailIndex +"_"+ _attachIdx + ".att");	
 			m_fileLength = (int)t_file.length();
 			m_file = new FileInputStream(t_file);
-			
 		}catch(Exception _e){
-			m_fetchEmail.m_mainMgr.m_logger.PrinterException(_e);
+			m_mainMgr.m_logger.PrinterException(_e);
 			return;
 		}
 		
@@ -83,11 +84,12 @@ class EmailSendAttachment extends Thread{
 		sendReceive.WriteInt(m_os,t_size);
 		m_os.write(m_buffer);
 		
-		m_fetchEmail.m_mainMgr.m_logger.LogOut("send msgMailAttach mailIndex:" + m_mailIndex + " attachIndex:" + m_attachIndex + " startIndex:" +
+		m_mainMgr.m_logger.LogOut("send msgMailAttach mailIndex:" + m_mailIndex + " attachIndex:" + m_attachIndex + " startIndex:" +
 									m_startIndex + " size:" + t_size + " first:" + (int)m_buffer[0]);
 		
 		int t_waitTimer = 0;
-		while(m_fetchEmail.m_mainMgr.GetClientConnected() == null || m_fetchEmail.m_mainMgr.GetClientConnected().m_sendReceive == null){
+		while(m_mainMgr.GetClientConnected() == null 
+			|| m_mainMgr.GetClientConnected().m_sendReceive == null){
 			
 			t_waitTimer++;
 			
@@ -98,7 +100,7 @@ class EmailSendAttachment extends Thread{
 			}			
 		}
 		
-		m_fetchEmail.m_mainMgr.SendData(m_os,_send);
+		m_mainMgr.SendData(m_os,_send);
 		
 		if(m_startIndex + t_size >= m_fileLength){
 			return true;
@@ -114,8 +116,13 @@ class EmailSendAttachment extends Thread{
 		while(true){
 			try{
 				
+				if(m_closeState){
+					m_mainMgr.m_logger.LogOut("client cancel mail attachment download, index:" + m_mailIndex);
+					break;
+				}
+				
 				int t_sendNum = 0;
-				while(t_sendNum++ < 4){
+				while(t_sendNum++ < 6){
 					if(SendAttachment(false)){
 						m_file.close();
 						return;
@@ -126,9 +133,10 @@ class EmailSendAttachment extends Thread{
 					break;
 				}
 				
+				//sleep(1000);
 				
 			}catch(Exception _e){
-				m_fetchEmail.m_mainMgr.m_logger.PrinterException(_e);
+				m_mainMgr.m_logger.PrinterException(_e);
 				break;
 			}			
 		}
@@ -136,7 +144,6 @@ class EmailSendAttachment extends Thread{
 		try{
 			m_file.close();
 		}catch(Exception e){}
-		
 	}
 }
 
@@ -325,6 +332,8 @@ public class fetchEmail extends fetchAccount{
         	
     Vector<fetchMail> m_unreadMailVector 			= new Vector<fetchMail>();
     Vector<fetchMail> m_unreadMailVector_confirm 	= new Vector<fetchMail>();
+    
+    Vector<EmailSendAttachment>	m_emailSendAttachList = new Vector<EmailSendAttachment>();
     
     final class UnreadMailMarkingData{
     	int m_simpleHashCode;
@@ -727,6 +736,8 @@ public class fetchEmail extends fetchAccount{
 			case msg_head.msgMailDel:
 				t_processed = ProcessBeenReadOrDelMail(in,true);
 				break;
+			case msg_head.msgMailAttCancel:
+				t_processed = ProcessMailAttCancel(in);
 			default:
 				t_processed = false;
 		}
@@ -894,15 +905,57 @@ public class fetchEmail extends fetchAccount{
 		
 		return false;
 	}	
-	
+	private boolean ProcessMailAttCancel(InputStream in)throws Exception{
+		
+		int t_mailIndex		= sendReceive.ReadInt(in);
+		
+		synchronized (m_emailSendAttachList) {
+			
+			for(int i = 0 ;i < m_emailSendAttachList.size();i++){
+				EmailSendAttachment att = m_emailSendAttachList.elementAt(i);
+				
+				if(!att.isAlive()){
+					m_emailSendAttachList.remove(i);
+					i--;
+				}
+			}
+			
+			for(EmailSendAttachment att: m_emailSendAttachList){
+				
+				if(att.m_mailIndex == t_mailIndex){
+					
+					att.m_closeState = true;
+					m_emailSendAttachList.remove(att);
+					
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
 	private boolean ProcessFetchMailAttach(InputStream in)throws Exception{
 		
-		final int t_mailIndex		= sendReceive.ReadInt(in);
-		final int t_attachIndex	= sendReceive.ReadInt(in);
+		int t_mailIndex		= sendReceive.ReadInt(in);
+		int t_attachIndex	= sendReceive.ReadInt(in);
 		
 		File t_file = new File(GetAccountPrefix() + t_mailIndex +"_"+ t_attachIndex + ".att");
 		if(t_file.exists()){
-			new EmailSendAttachment(t_mailIndex,t_attachIndex,this);
+			
+			synchronized (m_emailSendAttachList) {
+				
+				for(int i = 0 ;i < m_emailSendAttachList.size();i++){
+					EmailSendAttachment att = m_emailSendAttachList.elementAt(i);
+					
+					if(!att.isAlive()){
+						m_emailSendAttachList.remove(i);
+						i--;
+					}
+				}
+				
+				m_emailSendAttachList.add(new EmailSendAttachment(t_mailIndex,t_attachIndex,this));
+			}
+			
 			return true;
 		}
 		

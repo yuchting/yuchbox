@@ -42,4 +42,6 @@ final public class msg_head {
 	final public static byte msgFileAttachSeg	= 24;
 	
 	final public static byte msgMailAccountList	= 25;
+	final public static byte msgMailAttCancel	= 26;
+	
 }
