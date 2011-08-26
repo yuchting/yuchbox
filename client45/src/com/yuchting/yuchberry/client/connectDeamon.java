@@ -415,8 +415,12 @@ public class connectDeamon extends Thread implements SendListener,
 		}catch(Exception _e){
 			m_mainApp.SetErrorString("sMsg: " + _e.getMessage() + " " + _e.getClass().getName());
 		}
-				
-		return true;
+		
+		
+		// return false to forbidden system to delivery this mail
+		// and let the YB set header sign of mail immediately
+		//
+		return false;
 	}
 	
 	 
@@ -510,18 +514,16 @@ public class connectDeamon extends Thread implements SendListener,
 					m_mainApp.PushViewFileScreen(t_filename);
 					
 				}else{
-					
-					m_mainApp.PopupDownloadFileDlg(t_realName);
-					
+									
 					// fetch from the server 
 					//
 					for(int i = 0;i < m_vectReceiveAttach.size();i++){
 						FetchAttachment t_att = (FetchAttachment)m_vectReceiveAttach.elementAt(i);
 												
 						if(t_att.m_messageHashCode == t_messageCode){
-							// found...
-							//
-							m_mainApp.m_downloadDlg.RefreshProgress(t_att);
+							
+							m_mainApp.refreshDownloadFileDlg(t_att);
+							
 							return;
 						}
 					}				
@@ -538,6 +540,8 @@ public class connectDeamon extends Thread implements SendListener,
 					SendFetchAttachmentFile(t_att);
 					
 					m_vectReceiveAttach.addElement(t_att);
+					
+					m_mainApp.PopupDownloadFileDlg(t_att);
 				}
 				
 				t_file.close();
@@ -557,6 +561,33 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	public boolean supports(String contentType){
 		return true;
+	}
+	
+	public void cancelDownloadAtt(FetchAttachment _att){
+		
+		for(int i = 0;i < m_vectReceiveAttach.size();i++){
+			FetchAttachment t_att = (FetchAttachment)m_vectReceiveAttach.elementAt(i);
+									
+			if(t_att == _att){
+				m_vectReceiveAttach.removeElementAt(i);
+				
+				try{
+					ByteArrayOutputStream os = new ByteArrayOutputStream();
+					os.write(msg_head.msgMailAttCancel);
+					sendReceive.WriteInt(os,_att.m_mailIndex);
+					
+					addSendingData(msg_head.msgMailAttCancel, os.toByteArray(), true);
+					
+				}catch(Exception e){
+					m_mainApp.SetErrorString("CDA:"+e.getMessage() + e.getClass().getName());
+				}
+				
+				
+				break;
+			}
+		}
+		
+		
 	}
 	//@}
 	

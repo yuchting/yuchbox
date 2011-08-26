@@ -12,7 +12,7 @@ import net.rim.device.api.util.Factory;
 import net.rim.device.api.util.StringPattern;
 import net.rim.device.api.util.StringPatternRepository;
 
-import com.yuchting.yuchberry.client.ui.ImageUnit;
+import com.yuchting.yuchberry.client.ui.Phiz;
 
 /**
  *  copy from the blackberry system sample

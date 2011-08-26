@@ -5,7 +5,6 @@ import java.util.Vector;
 import local.localResource;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
-import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.LabelField;
@@ -13,36 +12,7 @@ import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.recvMain;
-import com.yuchting.yuchberry.client.ui.ImageButton;
-import com.yuchting.yuchberry.client.ui.ImageSets;
-import com.yuchting.yuchberry.client.ui.ImageUnit;
-
-final class Phiz extends ImageButton{
-	
-	public final static int		fsm_phizSize = 22;
-	
-	public Phiz(ImageUnit _image,ImageSets _imageSets){
-        super( "",_image,_image,_imageSets,0);
-    }
-	
-	public void focusPaint(Graphics g,boolean focus){
-		super.focusPaint(g,focus);
-		
-		if(focus){
-			int t_color = g.getColor();
-			try{
-				g.setColor(0x4694ea);
-				g.drawRect(0,0,m_image.getWidth(),m_image.getHeight());
-			}finally{
-				g.setColor(t_color);
-			}
-		}
-	}
-	
-	public String getPhizName(){
-		return m_image.getName();
-	}
-}
+import com.yuchting.yuchberry.client.ui.Phiz;
 
 final class PhizMgr extends Manager{
 	

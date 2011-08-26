@@ -17,7 +17,6 @@ final public class msg_head {
 	
 	final public static byte msgSponsorList		= 9;
 	
-	
 	final public static byte msgWeibo			= 10;
 	final public static byte msgWeiboConfirm		= 11;
 	final public static byte msgWeiboHeadImage	= 12;
@@ -42,4 +41,5 @@ final public class msg_head {
 	final public static byte msgFileAttachSeg	= 24;
 			
 	final public static byte msgMailAccountList	= 25;
+	final public static byte msgMailAttCancel	= 26;
 }

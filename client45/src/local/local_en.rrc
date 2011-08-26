@@ -100,7 +100,6 @@ SHARE_USE_SMS#0="Use SMS";
 SOUND_OPTION_LABEL#0="sound volume(0 means close)";
 START_BIGGER_THAN_END_PROMPT#0="start hour must less than end hour";
 START_HOUR_PROMPT_LABEL#0="start prompt hour";
-STATE_HELP_GET_HOST_PROMPT#0="No Host?";
 STATE_HOST_STRING_ILLEGAL_PROMPT#0="There is space char in Host text.";
 STATE_PROMPT#0="connect state:";
 STATE_QUIT_MENU_LABEL#0="Save data and quit YB";

@@ -109,7 +109,7 @@ class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 			//
 			// CAN NOT BE LESS THAN 500 !!!
 			//
-			sleep(500);
+			//sleep(200);
 			
 			m_connect.m_mainApp.UpdateMessageStatus(m_sendMail.GetAttachMessage(),t_style);
 			

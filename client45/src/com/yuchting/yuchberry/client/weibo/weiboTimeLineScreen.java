@@ -30,6 +30,7 @@ import com.yuchting.yuchberry.client.sendReceive;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
+import com.yuchting.yuchberry.client.ui.Phiz;
 
 abstract class WeiboUserMenu extends MenuItem{
 	

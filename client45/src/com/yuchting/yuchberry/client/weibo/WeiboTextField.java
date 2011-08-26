@@ -9,6 +9,8 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.component.ActiveRichTextField;
 import net.rim.device.api.util.Arrays;
 
+import com.yuchting.yuchberry.client.ui.Phiz;
+
 public class WeiboTextField extends ActiveRichTextField{
 	
 	int[] m_bufferedOffset	 = new int[20];
@@ -51,6 +53,79 @@ public class WeiboTextField extends ActiveRichTextField{
 		Arrays.fill(m_background,_background);
 	}
 	
+	final class ReadText{
+		String m_originalText = null;
+		int m_index = 0;
+		public ReadText(String _text){
+			m_originalText = _text;
+		}
+	}
+	
+	private String getTag(ReadText _text){
+		
+		if(_text.m_index >= _text.m_originalText.length() - 1){
+			return null;
+		}
+		
+		StringBuffer t_tag = new StringBuffer();
+		
+		getTag_while:
+		while(_text.m_index < _text.m_originalText.length()){
+			
+			char a = _text.m_originalText.charAt(_text.m_index);
+			
+			switch(a){
+			case '@':
+				
+				if(t_tag.length() != 0){
+					break getTag_while;
+				}
+				
+				while(_text.m_index < _text.m_originalText.length()){
+					
+					t_tag.append(a);
+					_text.m_index++;
+					
+					a = _text.m_originalText.charAt(_text.m_index);
+					
+					if(!WeiboUserFind.isLeagalNameCharacter(a)){
+						break getTag_while;
+					}
+				}
+				break;
+			case '[':
+				
+				if(t_tag.length() != 0){
+					break getTag_while;
+				}
+				
+				while(_text.m_index < _text.m_originalText.length()){
+					
+					t_tag.append(a);
+					_text.m_index++;
+					
+					a = _text.m_originalText.charAt(_text.m_index);
+					
+					switch(a){
+					case ']':
+						t_tag.append(a);
+						_text.m_index++;
+						break getTag_while;
+					case '[':
+						break getTag_while;
+					}
+				}
+				break;
+			default:
+				t_tag.append(a);
+			}
+			
+			_text.m_index++;
+		}
+		
+		return t_tag.toString();
+	}
+	
 	public void setText(String _text){
 		
 		// if the superclass is call the override function
@@ -63,15 +138,12 @@ public class WeiboTextField extends ActiveRichTextField{
 		
 		// clear the initialized buffered state
 		//
-		int t_textLength = _text.length();
 		m_bufferedOffset[0] = 0;
 		
 		Arrays.fill(m_bufferedAttr,(byte)0);
 				
 		// parse the offset and attribute and style
 		//
-		int t_index = 0;
-		int t_assignIndex = 0;
 		int t_offsetIndex = 1;
 		int t_attrIndex = 0;
 		
@@ -79,107 +151,43 @@ public class WeiboTextField extends ActiveRichTextField{
 		
 		StringBuffer t_finalText = new StringBuffer();
 		
-		setText_while:
-		while(t_index < t_textLength){
+		ReadText t_originalText = new ReadText(_text);
+		
+		String t_read = null;
+		while((t_read = getTag(t_originalText)) != null){
+			char a = t_read.charAt(0);
 			
-			char a = _text.charAt(t_index);
-			
-			boolean t_userName = (a == '@');
-			boolean t_phiz = (a == '[');
-			
-			int t_beginIndex = t_index;
-			int t_beginAssignIndex = t_assignIndex;
-			
-			if(t_userName || t_phiz){
+			switch(a){
+			case '@':
+				t_finalText.append(t_read);
+				m_bufferedOffset[t_offsetIndex] = t_finalText.length();
+				m_bufferedAttr[t_attrIndex]		= 1;			
+				break;
+			case '[':
 				
-				if(t_offsetIndex != 1){
+				Phiz t_phiz = WeiboUserFind.findPhizName(t_read);
+				if(t_phiz != null){
+					t_finalText.append(sm_replacePhizText);
+					m_bufferedAttr[t_attrIndex]		= 2;
+					m_phizList.addElement(t_phiz);
 					
-					if(t_offsetIndex >= m_bufferedOffset.length - 1){
-						// relocate that
-						//
-						if(!incBuffered(t_textLength,(byte)0)){
-							break;
-						}
-					}
-					
-					m_bufferedAttr[t_attrIndex] = 0;
-					m_bufferedOffset[t_offsetIndex] = t_assignIndex;
-					
-					t_attrIndex++;
-					t_offsetIndex++;
-				}			
-				
-				for(int i = t_index + 1;i < t_textLength;i++,t_index++,t_assignIndex++){
-					
-					a = _text.charAt(i);
-					
-					if(t_phiz){
-						
-						if(a == ']'){
-							
-							String t_phizStr = _text.substring(t_beginIndex,t_index + 2);
-							
-							Phiz t_phizImage = WeiboUserFind.findPhizName(t_phizStr);
-							if(t_phizImage != null){
-								
-								m_phizList.addElement(t_phizImage);
-								t_finalText.append(sm_replacePhizText);
-								
-								t_index += 1;
-								
-								t_assignIndex += sm_replacePhizText.length() - t_phizStr.length() - 1;
-								
-								break;
-								
-							}else{
-								
-								t_finalText.append(_text.charAt(t_beginIndex));
-								
-								t_index = t_beginIndex + 1;
-								t_assignIndex = t_beginAssignIndex + 1;
-								
-								continue setText_while;
-							}
-						}
-						
-					}else{
-						
-						if(!WeiboUserFind.isLeagalNameCharacter(a)){
-							break;
-						}
-						
-						t_finalText.append(a);
-					}
-					
-				}
-				
-				if(t_offsetIndex >= m_bufferedOffset.length - 1){
-					// relocate that
-					//
-					if(!incBuffered(t_textLength,(byte)0)){
-						break;
-					}
-				}
-				
-				if(t_phiz){
-					m_bufferedAttr[t_attrIndex] = 2;
 				}else{
-					m_bufferedAttr[t_attrIndex] = 1;	
+					t_finalText.append(t_read);
+					m_bufferedAttr[t_attrIndex]		= 0;
 				}
 				
-				t_index++;
-				t_assignIndex++;
-				m_bufferedOffset[t_offsetIndex] = t_assignIndex;
+				m_bufferedOffset[t_offsetIndex] = t_finalText.length();
+				break;
+			default:
+				t_finalText.append(t_read);
 				
-				t_attrIndex++;
-				t_offsetIndex++;
-				
-			}else{
-				t_finalText.append(a);
-				
-				t_index++;
-				t_assignIndex++;
-			}			
+				m_bufferedOffset[t_offsetIndex] = t_finalText.length();
+				m_bufferedAttr[t_attrIndex]		= 0;
+				break;
+			}
+			
+			t_offsetIndex++;
+			t_attrIndex++;
 		}
 		
 		String t_finalT = t_finalText.toString();

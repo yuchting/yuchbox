@@ -282,7 +282,6 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
        
     public ConnectButton	m_connectBut    = null;
     
-    String				m_promptText     = recvMain.sm_local.getString(localResource.STATE_HELP_GET_HOST_PROMPT);
     HyperlinkButtonField m_getHostLink	= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.STATE_SCREEN_HELP_MENU),0xffffff,0x8a8a8a);
    
     RichTextField		m_uploadingText = null;
@@ -318,11 +317,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 			layoutChild(m_connectBut,m_connectBut.getImageWidth(),m_connectBut.getImageHeight());
 			
 			t_start_x += m_connectBut.getImageWidth();
-			
-			int t_promptTextWidth = m_hostName.getFont().getAdvance(m_promptText) + 5;
-			
-			t_start_x += t_promptTextWidth;
-			
+						
 			setPositionChild(m_getHostLink,t_start_x,y);
 			layoutChild(m_getHostLink,getPreferredWidth(),m_getHostLink.getFont().getHeight());
 			
@@ -365,11 +360,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 	    							m_userPasswordMgr.getExtent().y - t_delta_y, m_userPasswordMgr.getExtent().width + t_delta_x * 2);
 
 	    	int oldColor = _g.getColor();
-	    	try{
-	    		_g.setColor(0xf0f0f0);
-	    		_g.drawText(m_promptText,m_connectBut.getExtent().x + m_connectBut.getImageWidth(),
-	    				m_connectBut.getExtent().y + (m_connectBut.getImageHeight() - _g.getFont().getHeight()) / 2);
-	    	
+	    	try{	    	
 	    		_g.setColor(0xffffff);
 	    		_g.drawText(recvMain.fsm_client_version, 0, 0);
 	    		

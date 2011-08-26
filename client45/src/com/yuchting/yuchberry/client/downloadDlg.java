@@ -9,19 +9,30 @@ import net.rim.device.api.ui.component.DialogClosedListener;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.container.DialogFieldManager;
 
+import com.yuchting.yuchberry.client.connectDeamon.FetchAttachment;
+
 public class downloadDlg extends Dialog{
 
 	LabelField       	m_stateText  	= new LabelField();
 	
 	recvMain			m_mainApp		= null;
 	UiApplication		m_parent		= null;
+	
+	FetchAttachment		m_att			= null;
 			
-	public downloadDlg(recvMain _mainApp,UiApplication _parent,String _filename){
-		super("Download " + _filename,new Object[]{recvMain.sm_local.getString(localResource.DOWNLOAD_BACKGROUND)},new int[]{0},
-				Dialog.OK, Bitmap.getPredefinedBitmap(Bitmap.INFORMATION), Dialog.GLOBAL_STATUS);
+	public downloadDlg(recvMain _mainApp,FetchAttachment _att){
+		super("Download " + _att.m_realName,
+			new Object[]
+			{
+				recvMain.sm_local.getString(localResource.DOWNLOAD_BACKGROUND),
+				recvMain.sm_local.getString(localResource.DOWNLOAD_CANCEL),
+			},new int[]{0,1},
+			0, Bitmap.getPredefinedBitmap(Bitmap.INFORMATION),Dialog.GLOBAL_STATUS);
 		
-		m_parent	= _parent;
+		
+		m_parent	= UiApplication.getUiApplication();
 		m_mainApp	= _mainApp;
+		m_att		= _att;
 		
 		Manager delegate = getDelegate();
 		if( delegate instanceof DialogFieldManager ){
@@ -43,6 +54,9 @@ public class downloadDlg extends Dialog{
 					case Dialog.OK:
 						onClose();
 						break;
+					case 1:
+						m_mainApp.m_connectDeamon.cancelDownloadAtt(m_att);
+						break;
 					
 					default:
 						break;
@@ -53,6 +67,7 @@ public class downloadDlg extends Dialog{
 	}
 	
 	public void RefreshProgress(final connectDeamon.FetchAttachment _att){
+				
 		m_parent.invokeAndWait(new Runnable(){
 			public void run() {
 				m_stateText.setText("" + _att.m_completePercent + "%");
@@ -62,8 +77,6 @@ public class downloadDlg extends Dialog{
 	
 	public boolean onClose(){
 		close();
-		m_mainApp.m_downloadDlg = null;
 		return true;
 	}
-
 }

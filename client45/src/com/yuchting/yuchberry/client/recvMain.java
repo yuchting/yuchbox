@@ -43,6 +43,7 @@ import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
 import net.rim.device.api.ui.container.MainScreen;
 
+import com.yuchting.yuchberry.client.connectDeamon.FetchAttachment;
 import com.yuchting.yuchberry.client.screen.aboutScreen;
 import com.yuchting.yuchberry.client.screen.audioViewScreen;
 import com.yuchting.yuchberry.client.screen.imageViewScreen;
@@ -111,9 +112,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public downloadDlg			m_downloadDlg		= null;
 	public settingScreen		m_settingScreen		= null;
 	public shareYBScreen		m_shareScreen		= null;
-		
-	UiApplication		m_downloadDlgParent = null;
-	
+			
 	UiApplication		m_messageApplication = null;
 	
 	public final static	int				DISCONNECT_STATE = 0;
@@ -1318,13 +1317,24 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}		
 	}
 	
-	public void PopupDownloadFileDlg(final String _filename){
+	public void PopupDownloadFileDlg(FetchAttachment _att){
+		m_downloadDlg = new downloadDlg(this,_att);		
+		UiApplication.getUiApplication().pushScreen(m_downloadDlg);		
+	}
+	
+	public void refreshDownloadFileDlg(FetchAttachment _att){
 		if(m_downloadDlg == null){
-			m_downloadDlgParent = UiApplication.getUiApplication();
-			m_downloadDlg = new downloadDlg(this,m_downloadDlgParent, _filename);
-			m_downloadDlgParent.pushScreen(m_downloadDlg);
-		}
 			
+			PopupDownloadFileDlg(_att);
+			
+		}else{
+			// found...
+			if(m_downloadDlg.m_parent.getActiveScreen() != m_downloadDlg){
+				m_downloadDlg.m_parent.pushScreen(m_downloadDlg);
+			}
+		}
+		
+		m_downloadDlg.RefreshProgress(_att);
 	}
 	
 	public void SetAboutInfo(String _about){
@@ -1432,12 +1442,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public void PopupDlgToOpenAttach(final connectDeamon.FetchAttachment _att){
 				
 		if(m_downloadDlg != null){
-			m_downloadDlgParent.invokeLater(new Runnable() {
+			m_downloadDlg.m_parent.invokeLater(new Runnable() {
 				public void run() {
-
-					m_downloadDlgParent.popScreen(m_downloadDlg);
-					m_downloadDlg = null;
-					m_downloadDlgParent = null;
+					m_downloadDlg.m_parent.popScreen(m_downloadDlg);
 				}
 			});			
 		}
@@ -1446,7 +1453,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		//
 				
 		Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,_att.m_realName + sm_local.getString(localResource.DOWNLOAD_OVER_PROMPT),
-	    							Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL);
+	    							Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.QUESTION),Manager.VERTICAL_SCROLL);
 		
 		t_dlg.setDialogClosedListener(new DialogClosedListener(){
 			
