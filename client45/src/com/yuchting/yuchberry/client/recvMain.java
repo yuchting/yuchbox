@@ -1445,6 +1445,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			m_downloadDlg.m_parent.invokeLater(new Runnable() {
 				public void run() {
 					m_downloadDlg.m_parent.popScreen(m_downloadDlg);
+					m_downloadDlg = null;
 				}
 			});			
 		}

@@ -135,7 +135,7 @@ public class sendReceive extends Thread{
 	}
 	
 	//! send buffer implement
-	private void SendBufferToSvr_imple(byte[] _write)throws Exception{
+	synchronized private void SendBufferToSvr_imple(byte[] _write)throws Exception{
 		
 		if(_write == null){
 			return;

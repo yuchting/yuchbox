@@ -1698,6 +1698,9 @@ public class fetchEmail extends fetchAccount{
 		ImportPart(m,_mail);
 	}
 	
+	static final String fsm_defaultHTML_charset_utf8 = "TEXT/HTML;charset=UTF-8";
+	static final String fsm_defaultHTML_charset_GB = "TEXT/HTML;charset=GB2312";
+	
 	public void ImportPart(Part p,fetchMail _mail)throws Exception{
 		
 		String filename = p.getFileName();
@@ -1721,14 +1724,21 @@ public class fetchEmail extends fetchAccount{
 				String t_conString = p.getContent().toString();
 				String t_contentType = p.getContentType();				
 			
-				if(m_mainMgr.GetConnectClientVersion() >= 11){
+				if(t_contentType.toLowerCase().indexOf("gbk") != -1){
+					// ths RIM os can't support gbk
+					//
+					t_contentType = fsm_defaultHTML_charset_utf8;
+				}
+				
+				if(m_mainMgr.GetConnectClientVersion() >= 11){  
 					
 					if(m_mainMgr.GetClientOSVer().startsWith("4.2") 
 					|| m_mainMgr.GetClientOSVer().startsWith("4.5")){
 						
 						// the 4.2 and 4.5 os can parse the <meta /> tag
 						//
-						t_contentType = "TEXT/HTML;charset=GB2312";
+						t_contentType = fsm_defaultHTML_charset_GB;
+						
 						t_conString = t_conString.replaceAll("<meta.[^>]*>", "");
 						
 					}else{
@@ -1736,7 +1746,7 @@ public class fetchEmail extends fetchAccount{
 					}
 					
 				}else{
-					t_conString = ChangeHTMLCharset(t_conString,"TEXT/HTML;charset=utf-8");
+					t_conString = ChangeHTMLCharset(t_conString,fsm_defaultHTML_charset_utf8);
 				}
 												
 		    	_mail.SetContain_html(_mail.GetContain_html().concat(t_conString),t_contentType);
