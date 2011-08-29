@@ -11,9 +11,9 @@ import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.RosterListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smackx.pubsub.PresenceState;
+import org.jivesoftware.smackx.packet.VCard;
 
-public class fetchGTalk extends fetchAccount{
+public class fetchGTalk extends fetchAccount implements RosterListener{
 	
 	String	m_accountName 		= null;
 	String	m_prefix			= null;
@@ -37,8 +37,6 @@ public class fetchGTalk extends fetchAccount{
 		m_password		= fetchAccount.ReadStringAttr(_elem,"password");
 		
 		m_cryptPassword	= fetchAccount.ReadStringAttr(_elem,"cryptPassword");
-		
-		
 	}
 	
 	public String GetAccountName(){
@@ -50,8 +48,9 @@ public class fetchGTalk extends fetchAccount{
 	}
 	
 	public String GetAccountPrefix(){
-		return m_accountName + "[GTalk]";
+		return m_accountName + "[GTalk]/";
 	}
+	
 	
 	public void ResetSession(boolean _fullTest)throws Exception{
 		
@@ -77,20 +76,7 @@ public class fetchGTalk extends fetchAccount{
 		m_mainConnection.login(t_account,m_password,"YuchBerry.info");
 		
 		m_roster = m_mainConnection.getRoster();
-		m_roster.addRosterListener(new RosterListener(){
-		    public void entriesAdded(Collection<String> addresses){
-		    	
-		    }
-		    public void entriesDeleted(Collection<String> addresses){
-		    	
-		    }
-		    public void entriesUpdated(Collection<String> addresses){
-		    	
-		    }
-		    public void presenceChanged(Presence presence) {
-		        System.out.println("Presence changed: " + presence.getFrom() + " " + presence);
-		    }
-		});
+		m_roster.addRosterListener(this);
 		
 		synchronized (m_chatRosterList) {
 
@@ -104,6 +90,86 @@ public class fetchGTalk extends fetchAccount{
 		}
 	}
 	
+	public void entriesAdded(Collection<String> addresses){
+    	synchronized (m_chatRosterList) {
+    		
+    		addRosterListener_flag:
+    		for(String acc:addresses){
+    			
+    			for(fetchChatRoster roster : m_chatRosterList){
+    				if(roster.getAccount().toLowerCase().equals(acc)){
+    					
+	    				continue addRosterListener_flag;
+	    			}
+	    		}
+    			
+    			RosterEntry t_entry = m_roster.getEntry(acc);
+    			
+    			m_chatRosterList.add(convertRoster(t_entry));
+    			
+    			m_mainMgr.m_logger.LogOut(GetAccountName() + " entriesAdded:" + acc);
+    		}
+    		
+    		
+    	}
+    }
+    public void entriesDeleted(Collection<String> addresses){
+    	
+    	synchronized (m_chatRosterList) {
+    		for(String acc:addresses){
+    			
+    			for(fetchChatRoster roster : m_chatRosterList){
+    				if(roster.getAccount().toLowerCase().equals(acc)){
+    					
+	    				m_chatRosterList.remove(roster);
+	    				
+	    				m_mainMgr.m_logger.LogOut(GetAccountName() + " entriesDeleted:" + acc);
+	    				
+	    				break;
+	    			}
+	    		}
+    		}
+    		
+    	}
+    }
+    public void entriesUpdated(Collection<String> addresses){
+    	
+    }
+    public void presenceChanged(Presence presence) {
+    	
+    	//That will return the presence value for the user with the highest priority and availability.
+    	//
+    	presence = m_roster.getPresence(presence.getFrom());
+    	
+    	String account = presence.getFrom();
+    	int t_slashIndex = account.indexOf('/');
+    	if(t_slashIndex != -1){
+    		account = account.substring(0,t_slashIndex);
+    	}
+    	
+    	synchronized (m_chatRosterList) {
+    		
+    		for(fetchChatRoster roster : m_chatRosterList){
+    			if(roster.getAccount().toLowerCase().equals(account)){
+    				setPresence(roster,presence);
+    				
+    				m_mainMgr.m_logger.LogOut(GetAccountName() + " presenceChanged:" + account + " Presence:" + presence);
+    				
+    				VCard vCard = new VCard();
+    				try{
+    					vCard.load(m_mainConnection, roster.getSource());
+    				}catch(Exception e){
+    					m_mainMgr.m_logger.PrinterException(e);
+    				}
+    				
+    				System.out.println(vCard);
+    				
+    				break;
+    			}
+    		}
+    	}
+    }
+	
 	private fetchChatRoster convertRoster(RosterEntry _entry){
 		
 		fetchChatRoster roster = new fetchChatRoster();
@@ -114,6 +180,9 @@ public class fetchGTalk extends fetchAccount{
 				
 		Presence t_presence = m_roster.getPresence(roster.getAccount());
 		setPresence(roster, t_presence);
+		
+		
+		
 		
 		return roster;
 	}
@@ -157,9 +226,12 @@ public class fetchGTalk extends fetchAccount{
 	}
 	
 	
+	
 	public static void main(String[] _arg)throws Exception{
 		try{
 
+			Connection.DEBUG_ENABLED = true;
+			
 			fetchMgr t_manger = new fetchMgr();
 			Logger t_logger = new Logger("");
 			
@@ -168,19 +240,17 @@ public class fetchGTalk extends fetchAccount{
 			
 			fetchGTalk t_talk = new fetchGTalk(t_manger);
 			
-			t_talk.m_accountName = "yuchting@gmail.com";
-			t_talk.m_password = "";
+			t_talk.m_accountName = "yuchdroid@gmail.com";
+			t_talk.m_password = "hF8IBrCmBDQsKaWa";
 			
 			t_talk.ResetSession(true);
 			
 			System.out.println("OK");
 			
+			Thread.sleep(500000);
+			
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		
-		
-		
 	}
 }
