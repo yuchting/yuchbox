@@ -25,6 +25,12 @@ copy /Y .\client45\src\com\yuchting\yuchberry\client\screen\*.* .\client47\src\c
 copy /Y .\client45\src\com\yuchting\yuchberry\client\screen\*.* .\client60\src\com\yuchting\yuchberry\client\screen\
 copy /Y .\client45\src\com\yuchting\yuchberry\client\screen\*.* .\client42\src\com\yuchting\yuchberry\client\screen\
 
+copy /Y .\client45\src\com\yuchting\yuchberry\client\im\*.* .\client\src\com\yuchting\yuchberry\client\im\
+copy /Y .\client45\src\com\yuchting\yuchberry\client\im\*.* .\client46\src\com\yuchting\yuchberry\client\im\
+copy /Y .\client45\src\com\yuchting\yuchberry\client\im\*.* .\client47\src\com\yuchting\yuchberry\client\im\
+copy /Y .\client45\src\com\yuchting\yuchberry\client\im\*.* .\client60\src\com\yuchting\yuchberry\client\im\
+copy /Y .\client45\src\com\yuchting\yuchberry\client\im\*.* .\client42\src\com\yuchting\yuchberry\client\im\
+
 
 copy /Y .\client45\src\local\*.* .\client\src\local\
 copy /Y .\client45\src\local\*.* .\client46\src\local\
@@ -93,5 +99,11 @@ svn add .\client60\src\com\yuchting\yuchberry\client\screen\*.*
 svn add .\client46\src\com\yuchting\yuchberry\client\screen\*.*
 svn add .\client47\src\com\yuchting\yuchberry\client\screen\*.*
 svn add .\client42\src\com\yuchting\yuchberry\client\screen\*.*
+
+svn add .\client\src\com\yuchting\yuchberry\client\im\*.*
+svn add .\client60\src\com\yuchting\yuchberry\client\im\*.*
+svn add .\client46\src\com\yuchting\yuchberry\client\im\*.*
+svn add .\client47\src\com\yuchting\yuchberry\client\im\*.*
+svn add .\client42\src\com\yuchting\yuchberry\client\im\*.*
 
 pause
