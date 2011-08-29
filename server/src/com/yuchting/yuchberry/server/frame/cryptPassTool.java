@@ -36,9 +36,9 @@ public class cryptPassTool extends JFrame implements ActionListener{
 		
 		m_cryptPass.setEditable(false);
 		
-		createDialog.AddTextLabel(t_con,"加密算子:",m_cryptKey,300,"");
-		createDialog.AddTextLabel(t_con,"明文密码:",m_orgPass,300,"");
-		createDialog.AddTextLabel(t_con,"加密密码:",m_cryptPass,300,"");
+		createDialog.AddTextLabel(t_con,"加密算子:",m_cryptKey,500,"");
+		createDialog.AddTextLabel(t_con,"明文密码:",m_orgPass,500,"");
+		createDialog.AddTextLabel(t_con,"加密密码:",m_cryptPass,500,"");
 		
 		t_con.add(m_convert);
 		t_con.add(m_help);
@@ -48,7 +48,7 @@ public class cryptPassTool extends JFrame implements ActionListener{
 		setLocationRelativeTo(null);
 		
 		pack();
-		setSize(400,170);
+		setSize(600,170);
 		setVisible(true);
 	}
 	

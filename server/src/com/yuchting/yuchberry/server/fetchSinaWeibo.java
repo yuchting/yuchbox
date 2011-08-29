@@ -9,6 +9,7 @@ import org.dom4j.Element;
 
 import weibo4j.Comment;
 import weibo4j.DirectMessage;
+import weibo4j.IDs;
 import weibo4j.Paging;
 import weibo4j.RateLimitStatus;
 import weibo4j.Status;
@@ -503,15 +504,33 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		
 		t_weibo.ResetSession(true);
 		
-		File t_file = new File("1314193031_0.satt");
-		FileInputStream t_fileIn = new FileInputStream(t_file);
-		byte[] t_fileBuffer = new byte[(int)t_file.length()];
-		
-		sendReceive.ForceReadByte(t_fileIn, t_fileBuffer, t_fileBuffer.length);
+//		File t_file = new File("1314193031_0.satt");
+//		FileInputStream t_fileIn = new FileInputStream(t_file);
+//		byte[] t_fileBuffer = new byte[(int)t_file.length()];
+//		
+//		sendReceive.ForceReadByte(t_fileIn, t_fileBuffer, t_fileBuffer.length);
 		
 		//t_weibo.m_weibo.updateStatus("果我的话说长了是不是就发不出来了呢？[哈哈]");
 		//t_weibo.m_weibo.uploadStatus("果我的话说长了是不是就发不出来了呢？[哈哈]",t_file);
-		t_weibo.UpdateStatus("如果我的话说长了是不是就发不出来了呢？[哈哈]", null, t_fileBuffer,"image/jpeg");
+		//t_weibo.UpdateStatus("如果我的话说长了是不是就发不出来了呢？[哈哈]", null, t_fileBuffer,"image/jpeg");
+		
+		long t_cursor = -1l;
+		while(true){
+			IDs t_ids = t_weibo.m_weibo.getFriendsIDs(t_cursor);
+			
+			if(t_ids.getIDs().length == 0){
+				System.out.println("over " + t_ids.getNextCursor());
+				break;
+			}
+			
+			long[] t_idsIndex = t_ids.getIDs();
+			for(long id : t_idsIndex){
+				System.out.println(id);
+			}
+			
+			t_cursor = t_ids.getNextCursor();
+			
+		}
 		
 				
 		System.out.print("");

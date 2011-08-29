@@ -44,7 +44,7 @@ import weibo4j.org.json.JSONObject;
  * @author Yusuke Yamamoto - yusuke at mac.com
  */
 public class IDs extends WeiboResponse {
-    private int[] ids;
+    private long[] ids;
     private long previousCursor;
     private long nextCursor;
     private static final long serialVersionUID = -6585026560164704953L;
@@ -55,10 +55,10 @@ public class IDs extends WeiboResponse {
         Element elem = res.asDocument().getDocumentElement();
         ensureRootNodeNameIs(ROOT_NODE_NAMES, elem);
         NodeList idlist = elem.getElementsByTagName("id");
-        ids = new int[idlist.getLength()];
+        ids = new long[idlist.getLength()];
         for (int i = 0; i < idlist.getLength(); i++) {
             try {
-                ids[i] = Integer.parseInt(idlist.item(i).getFirstChild().getNodeValue());
+                ids[i] = Long.parseLong(idlist.item(i).getFirstChild().getNodeValue());
             } catch (NumberFormatException nfe) {
                 throw new WeiboException("Weibo API returned malformed response: " + elem, nfe);
             }
@@ -77,9 +77,9 @@ public class IDs extends WeiboResponse {
             if(!json.isNull("ids")){
         		JSONArray jsona= json.getJSONArray("ids");
         		int size=jsona.length();
-        		ids =new int[ size];
+        		ids =new long[ size];
         		for (int i = 0; i < size; i++) {
-        			ids[i] =jsona.getInt(i);
+        			ids[i] =jsona.getLong(i);
 				}
         	}
         	
@@ -89,7 +89,7 @@ public class IDs extends WeiboResponse {
         
     }
 
-    public int[] getIDs() {
+    public long[] getIDs() {
         return ids;
     }
 
