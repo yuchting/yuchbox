@@ -1057,7 +1057,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	public String getStaticticsInfo(long _startTime,long _endTime)throws Exception{
 		
 		if(!m_isAdministrator){
-			return "";
+			return "不是Administrator";
 		}
 		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
@@ -1069,6 +1069,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			int t_payNum = 0;
 			
 			int t_totalPayNum = 0;
+						
+			int[] t_accNum = new int[yuchbber.fsm_weekMoney.length];
+			int[] t_accPayNum = new int[yuchbber.fsm_weekMoney.length];
 			
 			List<yuchbber> t_bberList = null;
 			
@@ -1087,16 +1090,33 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				t_bberList = (List<yuchbber>)t_pm.newQuery("select from " + yuchbber.class.getName()).execute();
 			}
 			
-			
-			
 			Map<Long,StatData > t_statList = new HashMap<Long,StatData >();
 			
 			for(yuchbber bber:t_bberList){
 				if(bber.GetSigninTime() > 0){
+				//if(true){
 					t_activateNum++;
 					
 					if(bber.GetConnectHost() != null && bber.GetConnectHost().length() > 0){
 						t_syncNum++;
+					}
+					
+					int t_accNumIndex = bber.GetEmailList().size();
+					
+					if(bber.GetWeiboList() != null){
+						t_accNumIndex += bber.GetWeiboList().size();
+					}
+					
+					if(t_accNumIndex < t_accNum.length){
+						t_accNum[t_accNumIndex]++;
+						
+						if(bber.GetTotalPayFee() > 0){
+							t_accPayNum[t_accNumIndex]++;
+						}
+						
+					}else{
+						
+						System.err.println(bber.GetSigninName() + "!!!!! t_accNumInfo :" + t_accNumIndex );
 					}
 					
 					long t_dayTime = bber.GetSigninTime() - bber.GetSigninTime() % (24 * 3600000);
@@ -1113,7 +1133,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					}
 				}	
 			}
-			
+						
 			List<yuchOrder> t_orderList = (List<yuchOrder>)t_pm.newQuery("select from " + yuchOrder.class.getName() + 
 													" where m_alipay_trade_no != \"\"").execute();
 			
@@ -1144,7 +1164,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				}
 				
 			}
-			
+						
 			StringBuffer t_result = new StringBuffer();
 			t_result.append("<table border=\"1\">");	
 			t_result.append("<tr><td>时间</td><td>激活用户</td><td>同步用户</td><td>付费用户</td><td>收入</td></tr>");
@@ -1213,13 +1233,30 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				t_totalPayNum += fee;
 				
 			}
-			
+						
 			t_result.append("<tr><td>")
 					.append("总计").append("</td><td>")
 					.append(t_activateNum).append("</td><td>")
 					.append(t_syncNum).append("</td><td>")
 					.append(t_payNum).append("</td><td>")
 					.append(t_totalPayNum).append("</td><tr>");
+			
+			t_result.append("</table>");
+						
+			t_result.append("<table border=\"1\">");	
+			t_result.append("<tr><td></td><td>1个推送</td><td>2个推送</td><td>3个推送</td><td>4个推送</td></tr>");
+			t_result.append("<tr><td>全部账户</td>");
+			
+			for(int i = 0 ;i < t_accNum.length;i++){
+				t_result.append("<td>").append(t_accNum[i]).append("</td>");
+			}
+			t_result.append("</tr>");
+			
+			t_result.append("<tr><td>付费账户</td>");
+			for(int i = 0 ;i < t_accPayNum.length;i++){
+				t_result.append("<td>").append(t_accPayNum[i]).append("</td>");
+			}
+			t_result.append("</tr>");
 			
 			t_result.append("</table>");
 			
