@@ -25,15 +25,20 @@ public class CameraScreen extends MainScreen
     /** The field containing the feed from the camera. */
     private Field m_videoField;
             
-    private final String fsm_encoding = "encoding=jpeg&width=1024&height=768&quality=fine";
+    private final String fsm_encoding_800 = "encoding=jpeg&width=800&height=600&quality=fine";
+    private final String fsm_encoding_1024 = "encoding=jpeg&width=1024&height=768&quality=fine";
+    private final String fsm_encoding_1600 = "encoding=jpeg&width=1600&height=1200&quality=fine";
 
     private ICameraScreenCallback m_snapOKCallback = null;
+    
+    int			m_maxWidth			= 800;
     /**
      * Constructor. Initializes the camera 
      */
-    public CameraScreen(ICameraScreenCallback _callback){
+    public CameraScreen(ICameraScreenCallback _callback,int _maxWidth){
     	
     	m_snapOKCallback = _callback;
+    	m_maxWidth		= _maxWidth;
     	
         //Initialize the camera object and video field.
         initializeCamera();
@@ -90,6 +95,18 @@ public class CameraScreen extends MainScreen
         }
     }
     
+    private String getEncodeSize(){
+    	
+    	switch(m_maxWidth){
+    	case 800:
+    		return fsm_encoding_800;
+    	case 1024:
+    		return fsm_encoding_1024;
+    	default:
+    		return fsm_encoding_1600;
+    	}
+    }
+    
     private MenuItem takePhoto = new MenuItem(recvMain.sm_local.getString(localResource.CAMERA_SCREEN_TAKE_LABEL), 1000, 10){
         public void run(){
             try{
@@ -97,7 +114,7 @@ public class CameraScreen extends MainScreen
             	if(m_videoControl != null){
             		//Retrieve the raw image from the VideoControl and
                     //create a screen to display the image to the user.
-                    createImageScreen( m_videoControl.getSnapshot( fsm_encoding ) );
+                    createImageScreen( m_videoControl.getSnapshot( getEncodeSize() ) );
             	}
                 
                 
@@ -146,7 +163,7 @@ public class CameraScreen extends MainScreen
             try{
                 
             	if(m_videoControl != null){
-            		createImageScreen( m_videoControl.getSnapshot( fsm_encoding ) );
+            		createImageScreen( m_videoControl.getSnapshot( getEncodeSize() ) );
             	}
                 
             }catch(Throwable e){

@@ -51,7 +51,13 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	weiboTimeLineScreen		m_timelineScreen;
 	int						m_titleHeight 	= 0;
 	int						m_separateLine_y = 0;
+
+    ImageButton				m_phizButton = null;
+    ImageButton				m_photoButton = null;
+    ImageButton				m_attachButton = null;
+    
 	ImageButton				m_sendButton	= null;
+	
 	ButtonSegImage			m_updateTitle		= null;
 	BubbleImage				m_editBubbleImage = null;
 		
@@ -91,6 +97,21 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 					Field.FIELD_RIGHT);
 		}
 		
+		m_phizButton = new ImageButton("phiz",
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("phiz_button"),
+					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("phiz_button_focus"),
+					weiboTimeLineScreen.sm_weiboUIImage,Field.FIELD_LEFT);
+		
+		m_photoButton = new ImageButton("photo",
+				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("photo_button"),
+				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("photo_button_focus"),
+				weiboTimeLineScreen.sm_weiboUIImage,Field.FIELD_LEFT);
+		
+		m_attachButton = new ImageButton("attachment",
+				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("attach_button"),
+				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("attach_button_focus"),
+				weiboTimeLineScreen.sm_weiboUIImage,Field.FIELD_LEFT);
+		
 		m_updateTitle = new ButtonSegImage(
 				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("composeTitle_left"),
 				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("composeTitle_mid"),
@@ -101,12 +122,21 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		m_timelineScreen = _timeline;
 
 		m_editTextArea.setMaxSize(WeiboItemField.fsm_maxWeiboTextLength);
+		
+		m_phizButton.setChangeListener(this);
+		m_photoButton.setChangeListener(this);
+		m_attachButton.setChangeListener(this);
 		m_sendButton.setChangeListener(this);
 		m_editTextArea.setChangeListener(this);
 		
 		m_editTextManager.add(m_editTextArea);
 		
 		add(m_editTextManager);
+		
+		add(m_phizButton);
+		add(m_photoButton);
+		add(m_attachButton);
+		
 		add(m_sendButton);
 				
 		m_titleHeight = m_updateTitle.getImageHeight() + 2;
@@ -134,22 +164,51 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			// refresh the input number title text
 			//
 			getScreen().invalidate();
+		}else if(field == m_phizButton){
+			m_timelineScreen.m_currUpdateDlg.m_phizItem.run();
+		}else if(field == m_photoButton){
+			if(m_timelineScreen.m_currUpdateDlg.m_snapshotAvailible){
+				m_timelineScreen.m_currUpdateDlg.m_snapItem.run();
+			}else{
+				m_timelineScreen.m_currUpdateDlg.m_cameraItem.run();
+			}
+			
+		}else if(field == m_attachButton){
+			m_timelineScreen.m_currUpdateDlg.m_attachItem.run();
 		}
 	}
 	
 	public void sublayout(int width, int height){
 		
+		int t_buttons_line = (m_editTextManager.getPreferredHeight() + m_titleHeight);
+		
 		setPositionChild(m_editTextManager,2,m_titleHeight + 2);
 		layoutChild(m_editTextManager,m_editTextManager.getPreferredWidth(),m_editTextManager.getPreferredHeight());
+			
+		int t_button_x = m_timelineScreen.m_currUpdateDlg.m_hasImageSign.getWidth() + 2;
+		int t_button_y = t_buttons_line + (WeiboUpdateDlg.fsm_height - t_buttons_line - m_phizButton.getImageHeight()) / 2;
 		
+		setPositionChild(m_phizButton,t_button_x,t_button_y);
+		layoutChild(m_phizButton,m_phizButton.getImageWidth(),m_phizButton.getImageHeight());
+		
+		t_button_x += m_phizButton.getWidth() + 2;
+		
+		setPositionChild(m_photoButton,t_button_x,t_button_y);
+		layoutChild(m_photoButton, m_photoButton.getImageWidth(),m_photoButton.getImageHeight());
+		
+		t_button_x += m_photoButton.getWidth() + 2;
+		
+		setPositionChild(m_attachButton,t_button_x,t_button_y);
+		layoutChild(m_attachButton, m_attachButton.getImageWidth(),m_attachButton.getImageHeight());		
+		
+		// layout the send update button
+		//
 		int t_buttonWidth = m_sendButton.getImageWidth();
 		int t_buttonHeight = m_sendButton.getImageHeight();
 		
-		int t_sendButton_y = (m_editTextManager.getPreferredHeight() + m_titleHeight) + 
-					(WeiboUpdateDlg.fsm_height - (m_editTextManager.getPreferredHeight() + m_titleHeight) - t_buttonHeight) / 2;
+		t_button_y = t_buttons_line + (WeiboUpdateDlg.fsm_height - t_buttons_line - t_buttonHeight) / 2;
 		
-		setPositionChild(m_sendButton,WeiboUpdateDlg.fsm_width - t_buttonWidth - 3,t_sendButton_y);
-			
+		setPositionChild(m_sendButton,WeiboUpdateDlg.fsm_width - t_buttonWidth - 3,t_button_y);
 		layoutChild(m_sendButton,t_buttonWidth,t_buttonHeight);
 		
 		setExtent(getPreferredWidth(), getPreferredHeight());
@@ -216,6 +275,8 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 					m_timelineScreen.m_mainApp.DialogAlert("camera file process error:"+ e.getMessage()+ e.getClass());
 					m_timelineScreen.m_mainApp.SetErrorString("su:"+ e.getMessage()+ e.getClass());
 				}
+			}else{
+				t_content = m_timelineScreen.m_currUpdateDlg.m_snapBuffer;				
 			}
 			
 			m_timelineScreen.UpdateNewWeibo(m_editTextArea.getText(),
@@ -271,21 +332,6 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		return super.keyChar(c,status,time);
 	}
 	
-	public boolean keyDown(int keycode,int time){
-		final int key = Keypad.key(keycode);
-		
-		if(key == 'P'){
-			boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
-			if(t_shiftDown){
-				m_timelineScreen.m_phizSelectingText = m_editTextArea;
-				m_timelineScreen.m_phizItem.run();
-				
-				return true;
-			}
-		}
-		
-		return super.keyDown(keycode,time);
-	}
 }
 
 public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
@@ -302,17 +348,25 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
         }
     };
     
+    MenuItem m_phizItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_PHIZ_LABEL),m_menuIndex_op++,0){
+        public void run() {
+        	m_mainApp.m_weiboTimeLineScreen.m_phizSelectingText = m_updateManager.m_editTextArea;
+        	m_mainApp.m_weiboTimeLineScreen.m_phizItem.run();
+        }
+    };    
     
     MenuItem m_snapItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPEN_CAMERA_SNAP),m_menuIndex_op++,0){
     	public void run(){
     		m_cameraScreen = new CameraScreen(new ICameraScreenCallback(){
     			public void snapOK(byte[] _buffer){
     				m_snapBuffer = _buffer;
+    				m_imageType	= fetchWeibo.IMAGE_TYPE_JPG;
+    				
     				m_imagePath = null;
     				
     				invalidate();
     			}
-    		});
+    		},m_mainApp.getWeiboUploadSize().x);
     		
     		m_mainApp.pushScreen(m_cameraScreen);
     	}
@@ -359,10 +413,9 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
     		clearAttachment();
     	}
     };
-    
-		
-	WeiboUpdateManager		m_updateManager = null;;
-	CameraScreen			m_cameraScreen = null;;
+    		
+	WeiboUpdateManager		m_updateManager = null;
+	CameraScreen			m_cameraScreen = null;
 	private long 			m_lastUSN;
 	
 	String					m_imagePath = null;
@@ -371,7 +424,6 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
 	byte[]					m_snapBuffer = null;
 	
 	recvMain				m_mainApp	= null;
-	
 	boolean				m_snapshotAvailible = false;
 	
 	ImageUnit				m_hasImageSign	= null;
@@ -415,8 +467,7 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
 	
 	protected void makeMenu(Menu _menu,int instance){
 		_menu.add(m_sendItem);
-		m_mainApp.m_weiboTimeLineScreen.m_phizSelectingText = m_updateManager.m_editTextArea;
-		_menu.add(m_mainApp.m_weiboTimeLineScreen.m_phizItem);
+		_menu.add(m_phizItem);
 		
 		if(DeviceInfo.hasCamera()){
 			if(m_snapshotAvailible){

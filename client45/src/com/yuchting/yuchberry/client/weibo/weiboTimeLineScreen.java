@@ -1334,14 +1334,6 @@ public class weiboTimeLineScreen extends MainScreen{
     			m_sendItem.run();
     			return true;
     		}			
-		}else if(key == 'P'){
-			boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
-			if(t_shiftDown && m_currMgr.getCurrEditItem() != null){
-				
-				m_phizItem.run();
-				
-				return true;
-			}
 		}
 		
 		return super.keyDown(keycode,time);   	

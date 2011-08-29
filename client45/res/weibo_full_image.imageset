@@ -43,9 +43,16 @@
 	<Image Name="update_button_en" XPos="150" YPos="115" Width="75" Height="32" />
 	<Image Name="update_button_focus_en" XPos="150" YPos="147" Width="75" Height="32" />
 	
+	<Image Name="phiz_button_focus" XPos="150" YPos="179" Width="40" Height="24" />
+	<Image Name="phiz_button" XPos="150" YPos="203" Width="40" Height="24" />
+	<Image Name="photo_button_focus" XPos="150" YPos="227" Width="40" Height="24" />
+	<Image Name="photo_button" XPos="150" YPos="251" Width="40" Height="24" />
+	<Image Name="attach_button_focus" XPos="190" YPos="179" Width="40" Height="24" />
+	<Image Name="attach_button" XPos="190" YPos="203" Width="40" Height="24" />
+	
 	<Image Name="picSign" XPos="0" YPos="353" Width="16" Height="16" />
 	<Image Name="commentSign" XPos="16" YPos="353" Width="16" Height="16" />
-	<Image Name="compose" XPos="32" YPos="353" Width="24" Height="24" />
+	<Image Name="compose" XPos="32" YPos="353" Width="24" Height="24" /> 
 	
 	<Image Name="bubble_top_left" XPos="0" YPos="377" Width="16" Height="16" />
 	<Image Name="bubble_top" XPos="16" YPos="377" Width="16" Height="16" />

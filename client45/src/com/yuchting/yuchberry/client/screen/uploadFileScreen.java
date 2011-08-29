@@ -221,6 +221,7 @@ public class uploadFileScreen extends MainScreen implements
 				int t_index = 0;
 				Vector t_files = m_deamon.GetAttachmentFile();
 				for(int i = 0;i < t_files.size();i++){
+					
 					connectDeamon.ComposingAttachment t_att = (connectDeamon.ComposingAttachment)t_files.elementAt(i);
 					String t_name = null;
 					
@@ -270,6 +271,7 @@ public class uploadFileScreen extends MainScreen implements
 				FileConnection fc = (FileConnection) Connector.open(_path,Connector.READ);
 
 				for(Enumeration e = fc.list("*",true); e.hasMoreElements() ;) {
+					
 					String t_name = (String)e.nextElement();
 					String t_fullname = _path + t_name;
 					

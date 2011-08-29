@@ -44,6 +44,7 @@ import net.rim.device.api.ui.component.DialogClosedListener;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.connectDeamon.FetchAttachment;
+import com.yuchting.yuchberry.client.im.MainIMScreen;
 import com.yuchting.yuchberry.client.screen.aboutScreen;
 import com.yuchting.yuchberry.client.screen.audioViewScreen;
 import com.yuchting.yuchberry.client.screen.imageViewScreen;
@@ -2068,5 +2069,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			SetErrorString("RWWF:"+e.getMessage()+e.getClass().getName());
 		}
 	}
+	
+	///////////////////////////////////////////////////////////////////////////////////////////
+	///// im module
+	///////////////////////////////////////////////////////////////////////////////////////////
+	MainIMScreen				m_mainIMScreen = null;
+	
 }
 
