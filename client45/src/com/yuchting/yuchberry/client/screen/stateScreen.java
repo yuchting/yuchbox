@@ -256,22 +256,14 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 	MenuItem	m_weiboMenu = new MenuItem(recvMain.sm_local.getString(localResource.YB_WEIBO_MENU_LABEL), m_menu_op++, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
-			if(t_app.getScreenCount() == 2){
-				t_app.popStateScreen();
-			}else{
-				t_app.PopupWeiboScreen();
-			}
+			t_app.PopupWeiboScreen();			
 		}
 	};
 	
 	MenuItem	m_imMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_MENU_LABEL),m_menu_op++, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
-			if(t_app.getScreenCount() == 2){
-				t_app.popStateScreen();
-			}else{
-				t_app.PopupIMScreen();
-			}
+			t_app.PopupIMScreen();			
 		}
 	};
 	

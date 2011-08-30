@@ -19,6 +19,7 @@ import net.rim.device.api.ui.container.VerticalFieldManager;
 
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.ImageButton;
+import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 
 
 public class WeiboMainManager extends VerticalFieldManager implements FieldChangeListener{	

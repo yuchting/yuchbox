@@ -104,6 +104,15 @@
 	<Image Name="composeTitle_mid" XPos="60" YPos="349" Width="16" Height="28" />
 	<Image Name="composeTitle_right" XPos="76" YPos="349" Width="4" Height="28" />
 	
+	<!-- im -->
+	<Image Name="gtalk_sign" XPos="80" YPos="345" Width="16" Height="16" />
+	<Image Name="msn_sign" XPos="80" YPos="361" Width="16" Height="16" />
+	<Image Name="away_state" XPos="80" YPos="345" Width="16" Height="16" />
+	<Image Name="busy_state" XPos="96" YPos="345" Width="16" Height="16" />
+	<Image Name="far_away_state" XPos="112" YPos="345" Width="16" Height="16" />
+	<Image Name="avail_state" XPos="80" YPos="361" Width="16" Height="16" />
+	<Image Name="unavail_state" XPos="96" YPos="361" Width="16" Height="16" />
+	
 	<!-- phiz -->
 	<Image Name="[呵呵]" XPos="84" YPos="0" Width="22" Height="22" />
 	<Image Name="[嘻嘻]" XPos="106" YPos="0" Width="22" Height="22" />

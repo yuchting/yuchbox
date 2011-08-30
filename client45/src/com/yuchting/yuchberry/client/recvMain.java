@@ -57,6 +57,7 @@ import com.yuchting.yuchberry.client.screen.videoViewScreen;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
+import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 import com.yuchting.yuchberry.client.weibo.WeiboItemField;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 import com.yuchting.yuchberry.client.weibo.weiboTimeLineScreen;
@@ -332,41 +333,73 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	}      	
         }
         
+        // for the add-on
+        //
+        WeiboHeadImage.sm_mainApp = this;
         InitWeiboModule();
         initIMModule();
 	}
 	
 	private boolean m_initWeiboHeadImageDir = false;
 	public final static String fsm_weiboImageDir = "YuchBerry/WeiboImage/";
+	public String[]				m_weiboHeadImageDir_sub = 
+	{
+		"Sina/","TW/","QQ/",		
+		"163/","SOHU/","FAN/",
+	};
 	
 	public String GetWeiboHeadImageDir(int _style)throws Exception{
+		
+		mkHeadImageDir(uploadFileScreen.fsm_rootPath_default + fsm_weiboImageDir,
+						m_weiboHeadImageDir_sub,m_initWeiboHeadImageDir);
+		
+		m_initWeiboHeadImageDir = true;
+		
+		return m_weiboHeadImageDir_sub[_style];
+	}
+	
+	private boolean m_initIMHeadImageDir = false;
+	public final static String fsm_IMImageDir = "YuchBerry/IMImage/";
+	public String[]				m_IMHeadImageDir_sub = 
+	{
+		"GTalk/","MSN/"
+	};
+	
+	public String GetIMHeadImageDir(int _style)throws Exception{
+		
+		mkHeadImageDir(uploadFileScreen.fsm_rootPath_default + fsm_IMImageDir,
+						m_IMHeadImageDir_sub,m_initIMHeadImageDir);
+		
+		m_initIMHeadImageDir = true;
+		
+		return m_IMHeadImageDir_sub[_style];
+	}
+	
+	private void mkHeadImageDir(String _prefix,String[] dir,boolean _init)throws Exception{
+
+		// connect the string of head image directory
+		//
+		if(!_init){
+        	for(int i = 0;i < dir.length;i++){
+        		dir[i] = _prefix + dir[i];
+        	}
+    	}
 		
 		if(!isSDCardAvaible()){
 			throw new Exception("Can't use the sd card to store weibo head image.");
 		}
 		
-		String t_weiboHeadImageDir = uploadFileScreen.fsm_rootPath_default + fsm_weiboImageDir;
-		
-		// connect the string of head image directory
-		//
-		if(!m_initWeiboHeadImageDir){
-    		m_initWeiboHeadImageDir = true;
-        	for(int i = 0;i < m_weiboHeadImageDir_sub.length;i++){
-        		m_weiboHeadImageDir_sub[i] = t_weiboHeadImageDir + m_weiboHeadImageDir_sub[i];
-        	}
-    	}
-		
 		// create the sdcard path 
 		//
-    	FileConnection fc = (FileConnection) Connector.open(t_weiboHeadImageDir,Connector.READ_WRITE);
+    	FileConnection fc = (FileConnection) Connector.open(_prefix,Connector.READ_WRITE);
     	try{
     		if(!fc.exists()){
         		fc.mkdir();
         		
         		// attempt create the head image directory
         		//
-        		for(int i = 0;i < m_weiboHeadImageDir_sub.length;i++){
-        			FileConnection tfc = (FileConnection) Connector.open(m_weiboHeadImageDir_sub[i],Connector.READ_WRITE);
+        		for(int i = 0;i < dir.length;i++){
+        			FileConnection tfc = (FileConnection) Connector.open(dir[i],Connector.READ_WRITE);
                 	try{
                 		if(!tfc.exists()){
                 			tfc.mkdir();
@@ -382,9 +415,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
     		fc = null;
     	}
     	    	
-    	t_weiboHeadImageDir = null;
-        
-		return m_weiboHeadImageDir_sub[_style];
+    	dir = null;
 	}
 	
 	public boolean isSDCardAvaible(){
@@ -1285,9 +1316,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public void pushStateScreen(){
 		if(m_stateScreen == null){
-			m_stateScreen = new stateScreen(this);
-			pushScreen(m_stateScreen);
+			m_stateScreen = new stateScreen(this);	
 		}
+		
+		pushScreen(m_stateScreen);
 	}
 	
 	public void popStateScreen(){
@@ -1358,13 +1390,25 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	
 	public void PopupWeiboScreen(){
+		
 		if(m_weiboTimeLineScreen != null){
+			
+			if(getActiveScreen() == m_stateScreen && m_stateScreen != null){
+				popStateScreen();
+			}
+			
 			pushScreen(m_weiboTimeLineScreen);
 		}		
 	}
 	
 	public void PopupIMScreen(){
+		
 		if(m_mainIMScreen != null){
+			
+			if(getActiveScreen() == m_stateScreen && m_stateScreen != null){
+				popStateScreen();
+			}
+			
 			pushScreen(m_mainIMScreen);
 		}		
 	}
@@ -1750,18 +1794,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public boolean			m_updateOwnListWhenRe		= false;
 	public boolean			m_dontDownloadWeiboHeadImage= false;
 	public boolean			m_spaceDownWeiboShortcutKey	= true;
-		
-	public String[]				m_weiboHeadImageDir_sub = 
-	{
-		"Sina/",
-		"TW/",
-		"QQ/",
-		
-		"163/",
-		"SOHU/",
-		"FAN/",
-	};
-		
+				
 	public weiboTimeLineScreen	m_weiboTimeLineScreen = null;
 	public boolean				m_publicForward		= false;
 	private Vector				m_receivedWeiboList	= new Vector();
@@ -2188,7 +2221,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public void initIMModule(){
 		if(m_enableIMModule){
-			m_mainIMScreen = new MainIMScreen();
+			m_mainIMScreen = new MainIMScreen(this);
 		}
 	}
 	

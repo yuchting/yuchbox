@@ -31,6 +31,7 @@ import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.Phiz;
+import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 
 abstract class WeiboUserMenu extends MenuItem{
 	
@@ -138,13 +139,11 @@ public class weiboTimeLineScreen extends MainScreen{
 		"fanWeibo",
 	};
 	
-	static ImageUnit		sm_isBBerSign = null;
+	static ImageUnit	sm_isBBerSign = null;
 	
 	
-	private Vector		m_headImageList = new Vector();
-	
-	static Bitmap		sm_defaultHeadImage = null;
-		
+	public Vector		m_headImageList = new Vector();
+			
 	WeiboHeader 		m_weiboHeader		= new WeiboHeader(this);
 	boolean			m_weiboHeaderShow	= true;
 	
@@ -408,7 +407,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		try{
 						
-			WeiboHeadImage t_headImage = SearchHeadImage(_weibo);
+			WeiboHeadImage t_headImage = WeiboHeadImage.SearchHeadImage(m_headImageList,_weibo);
 			
 			switch(_weibo.GetWeiboClass()){
 			case fetchWeibo.TIMELINE_CLASS:
@@ -531,7 +530,7 @@ public class weiboTimeLineScreen extends MainScreen{
 									}
 								}
 								
-								DelWeiboHeadImage(t_delWeibo.GetWeiboStyle(),Long.toString(t_delWeibo.GetId()));
+								WeiboHeadImage.DelWeiboHeadImage(m_headImageList,t_delWeibo.GetWeiboStyle(),Long.toString(t_delWeibo.GetId()));
 							}
 							
 							if(m_delayWeiboDelList.isEmpty()){
@@ -549,191 +548,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 	}
 	
-	public void AddWeiboHeadImage(int _style,String _id,byte[] _dataArray){
-		
-		synchronized (m_headImageList) {
-
-			for(int i = 0 ;i < m_headImageList.size();i++){
-				WeiboHeadImage t_image = (WeiboHeadImage)m_headImageList.elementAt(i);
-				
-				if(t_image.m_userID.equals(_id) && _style == t_image.m_weiboStyle){
-					try{
-						t_image.m_headImage = EncodedImage.createEncodedImage(_dataArray, 0, _dataArray.length).getBitmap();
-						t_image.m_dataHash 	= _dataArray.length;
-						
-						m_mainApp.SetErrorString("recv weibo head image " + _id + " dataHash " + t_image.m_dataHash);					
-								
-					}catch(Exception ex){
-						m_mainApp.SetErrorString("AWHI:"+ _id + " " + ex.getMessage() + ex.getClass().getName() );
-					}
-					
-					break;				
-				}
-			}
-		}
-	}
 	
-	public void DelWeiboHeadImage(int _style,String _id){
-		
-		synchronized (m_headImageList) {
-
-			for(int i = 0 ;i < m_headImageList.size();i++){
-				WeiboHeadImage t_image = (WeiboHeadImage)m_headImageList.elementAt(i);
-				
-				if(t_image.m_userID.equals(_id) && _style == t_image.m_weiboStyle){
-					m_headImageList.removeElementAt(i);
-					
-					break;				
-				}
-			}
-		}
-	}
-	
-	private void SendHeadImageQueryMsg(fetchWeibo _weibo)throws Exception{
-		
-		if(m_mainApp.m_dontDownloadWeiboHeadImage){
-			return ;
-		}
-		
-		if(!m_mainApp.isSDCardAvaible()){
-			return ;
-		}
-		
-		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-		t_os.write(msg_head.msgWeiboHeadImage);
-		t_os.write(_weibo.GetWeiboStyle());
-		
-		if(_weibo.GetWeiboStyle() == fetchWeibo.QQ_WEIBO_STYLE){
-			sendReceive.WriteString(t_os,_weibo.GetUserScreenName());
-		}else{
-			sendReceive.WriteLong(t_os,_weibo.GetUserId());
-		}
-		
-		// whether large image 
-		sendReceive.WriteBoolean(t_os,WeiboItemField.fsm_headImageWidth == fetchWeibo.fsm_headImageSize_l);
-		
-		m_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeiboHeadImage, t_os.toByteArray(),true);
-	
-	}
-	
-	private WeiboHeadImage SearchHeadImage(fetchWeibo _weibo)throws Exception{
-		
-		synchronized (m_headImageList) {
-			
-			for(int i = 0 ;i < m_headImageList.size();i++){
-				WeiboHeadImage t_image = (WeiboHeadImage)m_headImageList.elementAt(i);
-								
-				if(_weibo.GetWeiboStyle() == t_image.m_weiboStyle 
-					&& t_image.m_userID.equals(_weibo.GetHeadImageId()) ){
-					
-					if(t_image.m_dataHash != _weibo.GetUserHeadImageHashCode() || t_image.m_headImage == sm_defaultHeadImage){
-						
-						if(t_image.m_headImage == sm_defaultHeadImage){
-							m_mainApp.SetErrorString("requery Head 0 " + _weibo.GetHeadImageId());
-						}else{
-							m_mainApp.SetErrorString("requery Head 1 " + _weibo.GetHeadImageId());
-						}
-						
-						SendHeadImageQueryMsg(_weibo);
-					}
-					
-					return t_image;
-				}
-			}
-			
-			// find/load from the local FileStore
-			//
-			WeiboHeadImage t_image = LoadWeiboImage(_weibo);
-			if(t_image != null){
-				if(t_image.m_dataHash != _weibo.GetUserHeadImageHashCode()){
-					
-					m_mainApp.SetErrorString("requery Head 2 " + _weibo.GetHeadImageId() + 
-							" local:" + t_image.m_dataHash + " remote:" + _weibo.GetUserHeadImageHashCode());
-					
-					SendHeadImageQueryMsg(_weibo);
-				}
-				
-				m_headImageList.addElement(t_image);
-				return t_image;
-			}
-			
-			m_mainApp.SetErrorString("requery Head 3 " + _weibo.GetHeadImageId());
-			
-			// load the default image and send head image query message
-			//
-			SendHeadImageQueryMsg(_weibo);
-			
-			if(sm_defaultHeadImage == null){
-				byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass()
-						.getResourceAsStream(WeiboItemField.fsm_largeHeadImage?"/defaultHeadImage_l.png":"/defaultHeadImage.png"));		
-				sm_defaultHeadImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
-			}
-			
-			t_image = new WeiboHeadImage();
-			
-			t_image.m_userID = _weibo.GetHeadImageId();
-			t_image.m_headImage = sm_defaultHeadImage;
-			t_image.m_dataHash = _weibo.GetUserHeadImageHashCode();
-			t_image.m_weiboStyle = _weibo.GetWeiboStyle();
-			
-			m_headImageList.addElement(t_image);
-			
-			return t_image;
-		}		
-	}
-	
-	private WeiboHeadImage LoadWeiboImage(fetchWeibo _weibo){
-		try{
-
-			String t_imageFilename = null;
-			String t_id = _weibo.GetHeadImageId();
-						
-			if(WeiboItemField.fsm_largeHeadImage){
-				t_imageFilename = m_mainApp.GetWeiboHeadImageDir(_weibo.GetWeiboStyle()) + t_id + "_l.png";
-			}else{
-				t_imageFilename = m_mainApp.GetWeiboHeadImageDir(_weibo.GetWeiboStyle()) + t_id + ".png";
-			}
-			
-			FileConnection t_fc = (FileConnection)Connector.open(t_imageFilename,Connector.READ_WRITE);
-			try{
-				if(t_fc.exists()){
-					
-					InputStream t_fileIn = t_fc.openInputStream();
-					try{
-																	
-						byte[] t_data = new byte[(int)t_fc.fileSize()];
-						
-						sendReceive.ForceReadByte(t_fileIn, t_data, t_data.length);
-						
-						WeiboHeadImage t_image = new WeiboHeadImage();
-						t_image.m_headImage =  EncodedImage.createEncodedImage(t_data, 0, t_data.length).getBitmap();
-						
-						t_image.m_dataHash = t_data.length;
-						t_image.m_userID = _weibo.GetHeadImageId();
-						t_image.m_weiboStyle = _weibo.GetWeiboStyle();
-																		
-						return t_image;
-						
-					}finally{
-						
-						t_fileIn.close();
-						t_fileIn = null;
-					}
-				}else{
-					
-					m_mainApp.SetErrorString("LWI:" + t_imageFilename);
-				}
-				
-			}finally{
-				t_fc.close();
-				t_fc = null;
-			}	
-		}catch(Exception e){
-			m_mainApp.SetErrorString("LWI:"+ e.getMessage() + e.getClass().getName());
-		}
-		
-		return null;
-	}
 	
 	public void weiboSendFileConfirm(int _hashCode,int _index){
 		
@@ -1298,8 +1113,9 @@ public class weiboTimeLineScreen extends MainScreen{
 	    		m_mainApp.requestBackground();
 	    		return false;
 	    	}else{
-	    		close();
+	    		m_mainApp.popScreen(this);
 	    		m_mainApp.pushStateScreen();
+	    		
 	    		return true;
 	    	}
 		}

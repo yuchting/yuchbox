@@ -43,6 +43,7 @@ import net.rim.device.api.util.Arrays;
 
 import com.yuchting.yuchberry.client.screen.IUploadFileScreenCallback;
 import com.yuchting.yuchberry.client.screen.uploadFileScreen;
+import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 import com.yuchting.yuchberry.client.weibo.fetchWeiboUser;
 
@@ -152,10 +153,10 @@ public class connectDeamon extends Thread implements SendListener,
 	final class SendingQueue extends Thread{
 		
 		final class SendingQueueData{
-			public byte msgType;
+			public int msgType;
 			public byte[] msgData;
 			
-			public SendingQueueData(byte _type,byte[] _data){
+			public SendingQueueData(int _type,byte[] _data){
 				msgType = _type;
 				msgData = _data;
 			}
@@ -163,14 +164,12 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		Vector	m_sendingData = new Vector();
 		
-		
-		
-		public boolean addSendingData(byte _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
+		public boolean addSendingData(int _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
 			
 			if(!isDisconnectState()){
 				m_connect.SendBufferToSvr(_data, false, false);
 			}else{
-				synchronized (this) {
+				synchronized (m_sendingData) {
 					if(_exceptSame){
 						for(int i = 0 ;i < m_sendingData.size();i++){
 							SendingQueueData t_data = (SendingQueueData)m_sendingData.elementAt(i);
@@ -197,7 +196,7 @@ public class connectDeamon extends Thread implements SendListener,
 						}catch(Exception e){}
 					}
 					
-					synchronized (this) {
+					synchronized (m_sendingData) {
 						for(int i = 0 ;i < m_sendingData.size();i++){
 							SendingQueueData t_data = (SendingQueueData)m_sendingData.elementAt(i);
 							m_connect.SendBufferToSvr(t_data.msgData, false, false);
@@ -215,7 +214,7 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	SendingQueue	 m_sendingQueue = new SendingQueue();
 	
-	public boolean addSendingData(byte _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
+	public boolean addSendingData(int _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
 		return m_sendingQueue.addSendingData(_msgType, _data, _exceptSame);
 	}
 	
@@ -1948,57 +1947,75 @@ public class connectDeamon extends Thread implements SendListener,
 				t_id = Long.toString(sendReceive.ReadLong(in));
 			}
 			
-			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-			try{
-				int t_data = -1;
-				while((t_data = in.read()) != -1){
-					t_os.write(t_data);
-				}
-				
-				byte[] t_dataArray = t_os.toByteArray();
-				
-				m_mainApp.m_weiboTimeLineScreen.AddWeiboHeadImage(t_style,t_id,t_dataArray);
-				m_mainApp.ChangeWeiboHeadImageHash(t_id, t_style, t_dataArray.length);
-				
-				String t_imageFilename = null;
-				
-				if(t_largeSize){
-					t_imageFilename = m_mainApp.GetWeiboHeadImageDir(t_style) + t_id + "_l.png";
-				}else{
-					t_imageFilename = m_mainApp.GetWeiboHeadImageDir(t_style) + t_id + ".png";
-				}
-				
-				FileConnection t_fc = (FileConnection)Connector.open(t_imageFilename,Connector.READ_WRITE);
-				try{
-					if(t_fc.exists()){
-						t_fc.delete();
-					}
-					
-					t_fc.create();
-					
-					OutputStream t_fileOS = t_fc.openOutputStream();
-					try{
-						t_fileOS.write(t_dataArray);
-					}finally{
-						t_fileOS.flush();
-						t_fileOS.close();
-						t_fileOS = null;
-					}
-				}finally{
-					t_fc.close();
-					t_fc = null;
-				}
-				
-				
-			}finally{
-				t_os.close();
-				t_os = null;
-			}
+			StoreHeadImage(m_mainApp.m_weiboTimeLineScreen.m_headImageList,
+							true,t_largeSize,t_style,t_id,in);
 			
 		}catch(Exception e){
 			m_mainApp.SetErrorString("PWHI:" + e.getMessage() + e.getClass().getName());
 		}
 	}
-	 
+	
+	private void StoreHeadImage(Vector _imageList,boolean _isWeiboOrIM,boolean _largeSize,
+							int _style,String _imageId,InputStream in)throws Exception{
+		
+		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+		try{
+			int t_data = -1;
+			while((t_data = in.read()) != -1){
+				t_os.write(t_data);
+			}
+			
+			byte[] t_dataArray = t_os.toByteArray();
+			
+
+			WeiboHeadImage.AddWeiboHeadImage(_imageList,_style,_imageId,t_dataArray);
+			
+			if(_isWeiboOrIM){
+				m_mainApp.ChangeWeiboHeadImageHash(_imageId, _style, t_dataArray.length);
+			}
+			
+			
+			String t_imageFilename = null;
+			
+			if(_largeSize){
+				if(_isWeiboOrIM){
+					t_imageFilename = m_mainApp.GetWeiboHeadImageDir(_style) + _imageId + "_l.png";
+				}else{
+					t_imageFilename = m_mainApp.GetIMHeadImageDir(_style) + _imageId + "_l.png";
+				}
+				
+			}else{
+				if(_isWeiboOrIM){
+					t_imageFilename = m_mainApp.GetWeiboHeadImageDir(_style) + _imageId + ".png";
+				}else{
+					t_imageFilename = m_mainApp.GetIMHeadImageDir(_style) + _imageId + ".png";
+				}
+			}
+			
+			FileConnection t_fc = (FileConnection)Connector.open(t_imageFilename,Connector.READ_WRITE);
+			try{
+				if(t_fc.exists()){
+					t_fc.delete();
+				}
+				
+				t_fc.create();
+				
+				OutputStream t_fileOS = t_fc.openOutputStream();
+				try{
+					t_fileOS.write(t_dataArray);
+				}finally{
+					t_fileOS.flush();
+					t_fileOS.close();
+					t_fileOS = null;
+				}
+			}finally{
+				t_fc.close();
+				t_fc = null;
+			}
+		}finally{
+			t_os.close();
+			t_os = null;
+		}
+	}	 
 }
  
