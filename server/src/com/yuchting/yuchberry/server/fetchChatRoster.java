@@ -15,17 +15,20 @@ public class fetchChatRoster {
 	
 	int m_style		= fetchChatMsg.STYLE_GTALK;
 	int m_presence	= 0;
+	int m_headImageHashCode = 0; 
 	
 	String m_name		= "";
 	String m_account	= "";
-	String m_status = "";
-	
-	String m_source = "";
-		
+	String m_status		= "";
+	String m_source 	= "";
+			
 	public fetchChatRoster(){}
 	
 	public String getName(){return m_name;}
 	public void setName(String _name){m_name = _name;}
+	
+	public int getHeadImageHashCode(){return m_headImageHashCode;}
+	public void setHeadImageHashCode(int _code){m_headImageHashCode = _code;}
 	
 	public String getAccount(){return m_account;}
 	public void setAccount(String _acc){m_account = _acc;}
@@ -49,10 +52,11 @@ public class fetchChatRoster {
 		m_style = in.read();
 		m_presence = in.read();
 		
-		m_name	= sendReceive.ReadString(in);
-		m_account = sendReceive.ReadString(in);
-		m_status = sendReceive.ReadString(in);
-		m_source = sendReceive.ReadString(in);
+		m_headImageHashCode = sendReceive.ReadInt(in);
+		m_name				= sendReceive.ReadString(in);
+		m_account 			= sendReceive.ReadString(in);
+		m_status 			= sendReceive.ReadString(in);
+		m_source 			= sendReceive.ReadString(in);
 	}
 	
 	public void Outport(OutputStream os)throws Exception{
@@ -62,6 +66,8 @@ public class fetchChatRoster {
 		
 		os.write(m_style);
 		os.write(m_presence);
+		
+		sendReceive.WriteInt(os,m_headImageHashCode);
 		
 		if(m_name != null){
 			sendReceive.WriteString(os,m_name,false);

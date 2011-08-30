@@ -44,4 +44,6 @@ final public class msg_head {
 	final public static byte msgMailAccountList	= 25;
 	final public static byte msgMailAttCancel	= 26;
 	
+	final public static byte msgChat				= 27;
+	
 }

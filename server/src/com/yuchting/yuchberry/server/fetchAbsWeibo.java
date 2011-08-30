@@ -956,27 +956,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			   		}
 			   		
 			        // scale the image and store
-			        //		   		
-			        BufferedImage bsrc = ImageIO.read(t_file_l);
-			        if(bsrc.getWidth() != fetchWeibo.fsm_headImageSize_l){
-			        	// store the large file
-			        	//
-			        	BufferedImage bdest = new BufferedImage(fetchWeibo.fsm_headImageSize_l,fetchWeibo.fsm_headImageSize_l, BufferedImage.TYPE_INT_RGB);
-				        Graphics2D g = bdest.createGraphics();
-				        AffineTransform at = AffineTransform.getScaleInstance((double)fetchWeibo.fsm_headImageSize_l/bsrc.getWidth(),
-				        														(double)fetchWeibo.fsm_headImageSize_l/bsrc.getHeight());
-				        g.drawRenderedImage(bsrc,at);
-				        ImageIO.write(bdest,"PNG",t_file_l);
-			        }
-			  
-		        	// store to a small file
 			        //
-			        BufferedImage bdest = new BufferedImage(fetchWeibo.fsm_headImageSize,fetchWeibo.fsm_headImageSize, BufferedImage.TYPE_INT_RGB);
-			        Graphics2D g = bdest.createGraphics();
-			        AffineTransform at = AffineTransform.getScaleInstance((double)fetchWeibo.fsm_headImageSize/bsrc.getWidth(),
-			        														(double)fetchWeibo.fsm_headImageSize/bsrc.getHeight());
-			        g.drawRenderedImage(bsrc,at);		       
-			        ImageIO.write(bdest,"PNG",t_file);
+			        writeHeadImage(ImageIO.read(t_file_l),"PNG",t_file_l,t_file);
 		        }
 		        	        
 			}

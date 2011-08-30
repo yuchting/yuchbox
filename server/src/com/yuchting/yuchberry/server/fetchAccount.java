@@ -1,6 +1,12 @@
 package com.yuchting.yuchberry.server;
 
-import java.io.InputStream;
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.Date;
+
+import javax.imageio.ImageIO;
 
 import org.dom4j.Element;
 
@@ -88,6 +94,61 @@ abstract public class fetchAccount {
 	 */
 	static public int ReadIntegerAttr(Element _elem,String _attrName)throws Exception{
 		return Integer.valueOf(ReadStringAttr(_elem,_attrName)).intValue();
+	}
+	
+	static public String getImageType(byte[] _data){
+		
+		String type = null;
+		
+		byte b0 = _data[0];
+		byte b1 = _data[1];
+		byte b2 = _data[2];
+		byte b3 = _data[3];
+		byte b6 = _data[6];
+		byte b7 = _data[7];
+		byte b8 = _data[8];
+		byte b9 = _data[9];
+		
+		// GIF
+		if (b0 == (byte) 'G' && b1 == (byte) 'I' && b2 == (byte) 'F'){
+			type = "GIF";
+		}else if (b1 == (byte) 'P' && b2 == (byte) 'N' && b3 == (byte) 'G'){
+			type = "PNG";
+		}else if (b6 == (byte) 'J' && b7 == (byte) 'F' && b8 == (byte) 'I' && b9 == (byte) 'F'){
+			type = "JPEG";
+		}else{
+			type = "JPEG";
+		}
+		
+		return type;
+	}
+
+	static public void writeHeadImage(BufferedImage bsrc,String _convertType,
+										File _headImage_l,File _headImage)throws Exception {
+		
+		long t_currentTime = (new Date()).getTime();
+		
+		if(bsrc.getWidth() != fetchWeibo.fsm_headImageSize_l){
+        	// store the large file
+        	//
+        	BufferedImage bdest = new BufferedImage(fetchWeibo.fsm_headImageSize_l,fetchWeibo.fsm_headImageSize_l, BufferedImage.TYPE_INT_RGB);
+	        Graphics2D g = bdest.createGraphics();
+	        AffineTransform at = AffineTransform.getScaleInstance((double)fetchWeibo.fsm_headImageSize_l/bsrc.getWidth(),
+	        														(double)fetchWeibo.fsm_headImageSize_l/bsrc.getHeight());
+	        g.drawRenderedImage(bsrc,at);
+	        ImageIO.write(bdest,_convertType,_headImage_l);
+        }
+  
+    	// store to a small file
+        //
+        BufferedImage bdest = new BufferedImage(fetchWeibo.fsm_headImageSize,fetchWeibo.fsm_headImageSize, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = bdest.createGraphics();
+        AffineTransform at = AffineTransform.getScaleInstance((double)fetchWeibo.fsm_headImageSize/bsrc.getWidth(),
+        														(double)fetchWeibo.fsm_headImageSize/bsrc.getHeight());
+        g.drawRenderedImage(bsrc,at);		       
+        ImageIO.write(bdest,_convertType,_headImage);
+							
+        _headImage_l.setLastModified(t_currentTime);
 	}
 	
 	
