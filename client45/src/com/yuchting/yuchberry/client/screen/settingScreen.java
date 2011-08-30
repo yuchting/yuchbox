@@ -80,6 +80,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 NullField			m_weiboNullField = new NullField();
 	 LabelField			m_weiboSettingPrompt = new LabelField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SETTING_PROMPT));
 	 
+	 CheckboxField		m_imModule		= null;
+	 NullField			m_imNullField	= new NullField();
+	 LabelField			m_imSettingPrompt = new LabelField(recvMain.sm_local.getString(localResource.SETTING_IM_SETTING_PROMPT));
+	 
 	 recvMain			m_mainApp		= null;
 	 
 	 MenuItem	m_helpMenu = new MenuItem(recvMain.sm_local.getString(localResource.SETTING_HELP_MENU_LABEL), 99, 10) {	
@@ -191,8 +195,24 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 if(m_mainApp.m_enableWeiboModule){
 			 enableWeiboSet(true);
 		 }		 
-		
 		 //@}
+		 
+		 add(new SeparatorField());
+		 
+		 //@{ im op
+		 t_title = new LabelField(recvMain.sm_local.getString(localResource.SETTING_IM_OP));
+		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
+		 add(t_title);
+		 
+		 m_imModule = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_IM_OP_ENABLE),m_mainApp.m_enableIMModule);
+		 add(m_imModule);
+		 m_imModule.setChangeListener(this);
+		 
+		 add(m_imNullField);
+		 if(m_mainApp.m_enableIMModule){
+			 enableIMSet(true);
+		 }
+		 //
 		 		 
 		 add(new SeparatorField());		 
 		 
@@ -264,6 +284,14 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 }
 	 }
 	 
+	 private void enableIMSet(boolean _enable){
+		 if(_enable){
+			 replace(m_imNullField,m_imSettingPrompt);
+		 }else{
+			 replace(m_imSettingPrompt,m_imNullField);
+		 }
+	 }
+	 
 	 public void fieldChanged(Field field, int context) {
 		if(context != FieldChangeListener.PROGRAMMATIC){
 			// Perform action if user changed field. 
@@ -309,6 +337,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				enableWeiboSet(m_weiboModule.getChecked());
 			}else if(field == m_requestMailAccountBut){
 				m_mainApp.m_connectDeamon.sendRequestMailAccountMsg();
+			}else if(field == m_imModule){
+				enableIMSet(m_imModule.getChecked());
 			}
 		}else{
 			// Perform action if application changed field.
@@ -418,6 +448,31 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 					m_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeiboEnable, t_os.toByteArray(), true);	
 					
 					t_os.close();
+				}catch(Exception e){}
+						
+				t_os = null;
+			}
+		}
+		
+		if(m_mainApp.m_enableIMModule != m_imModule.getChecked()){
+			
+			boolean t_hasEnabled = m_mainApp.m_enableIMModule;
+			
+			m_mainApp.m_enableIMModule = m_imModule.getChecked();
+			
+			if(m_mainApp.m_enableIMModule && !t_hasEnabled){
+				m_mainApp.initIMModule();
+			}
+			
+			if(m_mainApp.m_connectDeamon.IsConnectState()){
+				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+				try{
+					t_os.write(msg_head.msgChatEnable);
+					sendReceive.WriteBoolean(t_os,m_mainApp.m_enableIMModule);
+					m_mainApp.m_connectDeamon.addSendingData(msg_head.msgChatEnable, t_os.toByteArray(), true);	
+					
+					t_os.close();
+					
 				}catch(Exception e){}
 						
 				t_os = null;

@@ -9,6 +9,8 @@ public class fetchChatMsg{
 	
 	public final static byte			STYLE_GTALK = 0;
 		
+	public final static byte 		CHAT_STATE_COMMON = 0;
+	public final static byte 		CHAT_STATE_COMPOSING = 1;
 	
 	public final static byte			FILE_TYPE_IMG = 0;
 	public final static byte			FILE_TYPE_SOUND = 0;

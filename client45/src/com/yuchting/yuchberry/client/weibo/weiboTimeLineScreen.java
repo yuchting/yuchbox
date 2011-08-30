@@ -83,58 +83,9 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	public static BubbleImage 			sm_bubbleImage = null;
 	public static BubbleImage 			sm_bubbleImage_black = null;
-	static {
-
-		try{
-			sm_weiboUIImage = new ImageSets("/weibo_full_image.imageset");
-		}catch(Exception e){
-			sm_mainApp.DialogAlertAndExit("weibo UI load Error:"+ e.getMessage() + e.getClass().getName());
-		}
-		
-		if(sm_bubbleImage == null){
-			sm_bubbleImage = new BubbleImage(
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_top_left"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_top"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_top_right"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_right"),
-					
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_bottom_right"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_bottom"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_bottom_left"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_left"),
-					
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_inner_block"),
-					new ImageUnit[]{
-						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_left_point"),
-						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_top_point"),
-						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_right_point"),
-						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_bottom_point"),
-					},
-					weiboTimeLineScreen.sm_weiboUIImage);
-			
-			sm_bubbleImage_black = new BubbleImage(
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_top_left"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_top"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_top_right"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_right"),
-					
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_bottom_right"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_bottom"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_bottom_left"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_left"),
-					
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_inner_block"),
-					new ImageUnit[]{
-						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_left_point"),
-						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_top_point"),
-						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_right_point"),
-						weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("bubble_black_bottom_point"),
-					},
-					weiboTimeLineScreen.sm_weiboUIImage);
-		}
-	}
 	
-	private WeiboUserFindFactory	m_userfactory = new WeiboUserFindFactory(this);
+	
+	private WeiboUserFindFactory		m_userfactory = new WeiboUserFindFactory(this);
 	
 	WeiboMainManager		m_mainMgr;
 	WeiboMainManager		m_mainAtMeMgr;
