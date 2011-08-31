@@ -1,6 +1,5 @@
 package com.yuchting.yuchberry.client.ui;
 
-import java.util.Hashtable;
 import java.util.Vector;
 
 import net.rim.device.api.io.IOUtilities;

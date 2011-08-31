@@ -10,11 +10,11 @@ import javax.microedition.io.file.FileConnection;
 import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
+import net.rim.device.api.ui.Graphics;
 
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
-import com.yuchting.yuchberry.client.weibo.WeiboItemField;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 
 public final class WeiboHeadImage {
@@ -25,9 +25,14 @@ public final class WeiboHeadImage {
 	public Bitmap	m_headImage;
 	public int		m_dataHash;
 	
-	public static Bitmap sm_defaultHeadImage = null;
-	public static int		sm_defaultHeadImageHashCode = 0;
-	public static recvMain sm_mainApp;
+	public final static boolean	fsm_largeHeadImage			= recvMain.fsm_display_width > 320;	
+	public final static int		fsm_headImageWidth 			= recvMain.fsm_display_width>320?fetchWeibo.fsm_headImageSize_l:fetchWeibo.fsm_headImageSize;
+
+	
+	public static ImageUnit	sm_headImageMask = null;
+	public static Bitmap 		sm_defaultHeadImage = null;
+	public static int			sm_defaultHeadImageHashCode = 0;
+	public static recvMain 	sm_mainApp;
 		
 	public static void AddWeiboHeadImage(Vector _imageList,int _style,String _id,byte[] _dataArray){
 		
@@ -89,7 +94,7 @@ public final class WeiboHeadImage {
 		sendReceive.WriteString(t_os,_imageID);
 		
 		// whether large image 
-		sendReceive.WriteBoolean(t_os,WeiboItemField.fsm_headImageWidth == fetchWeibo.fsm_headImageSize_l);
+		sendReceive.WriteBoolean(t_os,fsm_headImageWidth == fetchWeibo.fsm_headImageSize_l);
 		
 		sm_mainApp.m_connectDeamon.addSendingData(sign, t_os.toByteArray(),true);
 	
@@ -135,7 +140,7 @@ public final class WeiboHeadImage {
 			
 			if(sm_defaultHeadImage == null){
 				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass()
-						.getResourceAsStream(WeiboItemField.fsm_largeHeadImage?"/defaultHeadImage_l.png":"/defaultHeadImage.png"));		
+						.getResourceAsStream(fsm_largeHeadImage?"/defaultHeadImage_l.png":"/defaultHeadImage.png"));		
 				sm_defaultHeadImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
 				sm_defaultHeadImageHashCode = bytes.length;
 			}
@@ -166,7 +171,7 @@ public final class WeiboHeadImage {
 
 			String t_imageFilename = null;
 
-			if(WeiboItemField.fsm_largeHeadImage){
+			if(fsm_largeHeadImage){
 				if(_isWeiboOrIM){
 					t_imageFilename = sm_mainApp.GetWeiboHeadImageDir(_style) + _imageID + "_l.png";
 				}else{
@@ -214,5 +219,44 @@ public final class WeiboHeadImage {
 		}
 		
 		return t_image;
+	}
+		
+	static public int displayHeadImage(Graphics _g,int _x,int _y,WeiboHeadImage _image){
+		
+		if(sm_headImageMask == null){
+			if(fsm_largeHeadImage){
+				sm_headImageMask = recvMain.sm_weiboUIImage.getImageUnit("headImageMask_l");
+			}else{
+				sm_headImageMask = recvMain.sm_weiboUIImage.getImageUnit("headImageMask");
+			}
+			
+		}
+		
+		_g.drawBitmap(_x,_y,_image.m_headImage.getWidth(),_image.m_headImage.getHeight(),_image.m_headImage,0,0);
+		
+		recvMain.sm_weiboUIImage.drawImage(_g,sm_headImageMask, _x, _y);
+		
+		return _x + sm_headImageMask.getWidth();
+	}
+	
+	private static ImageUnit sm_selectedImage = null;
+	static public void drawSelectedImage(Graphics _g,int _limitWidth,int _limitHeight){
+		
+		if(sm_selectedImage == null){
+			sm_selectedImage = recvMain.sm_weiboUIImage.getImageUnit("weibo_sel");
+		}
+		
+		int t_draw_y = 0;
+		int t_y = sm_selectedImage.getHeight() - _limitHeight;
+		
+		if(t_y < 0){
+			t_y = 0;
+			t_draw_y = -t_y;
+		}
+		
+		// draw selected backgroud
+		//
+		recvMain.sm_weiboUIImage.drawImage(_g,sm_selectedImage,
+						0, t_draw_y, _limitWidth, _limitHeight,0, t_y);
 	}
 }

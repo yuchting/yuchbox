@@ -22,7 +22,6 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
-import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Screen;
@@ -85,38 +84,38 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		
 		if(recvMain.GetClientLanguage() == 0){
 			m_sendButton = new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_SEND_LABEL),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("update_button"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("update_button_focus"),
-					weiboTimeLineScreen.sm_weiboUIImage,
+					recvMain.sm_weiboUIImage.getImageUnit("update_button"),
+					recvMain.sm_weiboUIImage.getImageUnit("update_button_focus"),
+					recvMain.sm_weiboUIImage,
 					Field.FIELD_RIGHT);
 		}else{
 			m_sendButton = new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_SEND_LABEL),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("update_button_en"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("update_button_focus_en"),
-					weiboTimeLineScreen.sm_weiboUIImage,
+					recvMain.sm_weiboUIImage.getImageUnit("update_button_en"),
+					recvMain.sm_weiboUIImage.getImageUnit("update_button_focus_en"),
+					recvMain.sm_weiboUIImage,
 					Field.FIELD_RIGHT);
 		}
 		
 		m_phizButton = new ImageButton("phiz",
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("phiz_button"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("phiz_button_focus"),
-					weiboTimeLineScreen.sm_weiboUIImage,Field.FIELD_LEFT);
+					recvMain.sm_weiboUIImage.getImageUnit("phiz_button"),
+					recvMain.sm_weiboUIImage.getImageUnit("phiz_button_focus"),
+					recvMain.sm_weiboUIImage,Field.FIELD_LEFT);
 		
 		m_photoButton = new ImageButton("photo",
-				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("photo_button"),
-				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("photo_button_focus"),
-				weiboTimeLineScreen.sm_weiboUIImage,Field.FIELD_LEFT);
+				recvMain.sm_weiboUIImage.getImageUnit("photo_button"),
+				recvMain.sm_weiboUIImage.getImageUnit("photo_button_focus"),
+				recvMain.sm_weiboUIImage,Field.FIELD_LEFT);
 		
 		m_attachButton = new ImageButton("attachment",
-				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("attach_button"),
-				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("attach_button_focus"),
-				weiboTimeLineScreen.sm_weiboUIImage,Field.FIELD_LEFT);
+				recvMain.sm_weiboUIImage.getImageUnit("attach_button"),
+				recvMain.sm_weiboUIImage.getImageUnit("attach_button_focus"),
+				recvMain.sm_weiboUIImage,Field.FIELD_LEFT);
 		
 		m_updateTitle = new ButtonSegImage(
-				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("composeTitle_left"),
-				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("composeTitle_mid"),
-				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("composeTitle_right"),
-				weiboTimeLineScreen.sm_weiboUIImage);
+				recvMain.sm_weiboUIImage.getImageUnit("composeTitle_left"),
+				recvMain.sm_weiboUIImage.getImageUnit("composeTitle_mid"),
+				recvMain.sm_weiboUIImage.getImageUnit("composeTitle_right"),
+				recvMain.sm_weiboUIImage);
 		
 		m_editBubbleImage = weiboTimeLineScreen.sm_bubbleImage;
 		m_timelineScreen = _timeline;
@@ -437,7 +436,7 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
 		
 		m_snapshotAvailible = Float.valueOf(recvMain.fsm_OS_version.substring(0,3)).floatValue() > 4.5f;
 		
-		m_hasImageSign = weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("picSign");
+		m_hasImageSign = recvMain.sm_weiboUIImage.getImageUnit("picSign");
 	}
 	
 	public void clearAttachment(){
@@ -585,7 +584,7 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
 		m_updateManager.subpaint(_g);
 		
 		if(m_imagePath != null || m_snapBuffer != null){
-			weiboTimeLineScreen.sm_weiboUIImage.drawImage(_g, m_hasImageSign,
+			recvMain.sm_weiboUIImage.drawImage(_g, m_hasImageSign,
 					2,getPreferredHeight() - m_hasImageSign.getHeight() - 10);
 		}
 	}

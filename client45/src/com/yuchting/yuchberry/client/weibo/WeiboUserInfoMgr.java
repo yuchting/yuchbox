@@ -81,11 +81,11 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 				_g.setColor(0xf0f0f0);
 				_g.fillRect(0, 0, getPreferredWidth(),getPreferredHeight());
 				
-				weiboTimeLineScreen.sm_weiboUIImage.drawImage(
+				recvMain.sm_weiboUIImage.drawImage(
 						_g,weiboTimeLineScreen.GetWeiboSign(m_weiboUser.getStyle()),t_start_x, t_start_y);
 
 				if(m_weiboUser.isVerified()){
-					weiboTimeLineScreen.sm_weiboUIImage.drawImage(
+					recvMain.sm_weiboUIImage.drawImage(
 							_g,weiboTimeLineScreen.GetVIPSignBitmap(m_weiboUser.getStyle()),
 							t_start_x,WeiboItemField.fsm_weiboSignImageSize + t_start_y + ft_interval);
 				}

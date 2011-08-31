@@ -84,37 +84,37 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 		
 		m_forwardBut	= new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL),
-				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("forward_comment_button"),
-				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("forward_comment_button_focus"),
-				weiboTimeLineScreen.sm_weiboUIImage);
+				recvMain.sm_weiboUIImage.getImageUnit("forward_comment_button"),
+				recvMain.sm_weiboUIImage.getImageUnit("forward_comment_button_focus"),
+				recvMain.sm_weiboUIImage);
 	
 		m_atBut	= new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL),
-				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("at_reply_button"),
-				weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("at_reply_button_focus"),
-				weiboTimeLineScreen.sm_weiboUIImage);
+				recvMain.sm_weiboUIImage.getImageUnit("at_reply_button"),
+				recvMain.sm_weiboUIImage.getImageUnit("at_reply_button_focus"),
+				recvMain.sm_weiboUIImage);
 		
 		if(recvMain.GetClientLanguage() == 0){
 
 			m_favoriteBut = new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("favorite_button"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("favorite_button_focus"),
-					weiboTimeLineScreen.sm_weiboUIImage);
+					recvMain.sm_weiboUIImage.getImageUnit("favorite_button"),
+					recvMain.sm_weiboUIImage.getImageUnit("favorite_button_focus"),
+					recvMain.sm_weiboUIImage);
 			
 			m_picBut = new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("picture_button"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("picture_button_focus"),
-					weiboTimeLineScreen.sm_weiboUIImage);
+					recvMain.sm_weiboUIImage.getImageUnit("picture_button"),
+					recvMain.sm_weiboUIImage.getImageUnit("picture_button_focus"),
+					recvMain.sm_weiboUIImage);
 		}else{
 			
 			m_favoriteBut = new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("favorite_button_en"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("favorite_button_focus_en"),
-					weiboTimeLineScreen.sm_weiboUIImage);
+					recvMain.sm_weiboUIImage.getImageUnit("favorite_button_en"),
+					recvMain.sm_weiboUIImage.getImageUnit("favorite_button_focus_en"),
+					recvMain.sm_weiboUIImage);
 			
 			m_picBut = new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("picture_button_en"),
-					weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("picture_button_focus_en"),
-					weiboTimeLineScreen.sm_weiboUIImage);
+					recvMain.sm_weiboUIImage.getImageUnit("picture_button_en"),
+					recvMain.sm_weiboUIImage.getImageUnit("picture_button_focus_en"),
+					recvMain.sm_weiboUIImage);
 		}
 		
 		if(sm_atBut_x == 0){

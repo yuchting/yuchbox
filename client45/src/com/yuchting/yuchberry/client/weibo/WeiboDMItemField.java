@@ -32,7 +32,7 @@ final class WeiboDMData{
 		WeiboDMItemField.sm_testTextArea.setText(m_renderText);
 		m_dataItemHeight = WeiboDMItemField.sm_testTextArea.getHeight();
 	
-		int t_minHeight = WeiboItemField.fsm_weiboSignImageSize + WeiboItemField.fsm_headImageWidth;
+		int t_minHeight = WeiboItemField.fsm_weiboSignImageSize + WeiboHeadImage.fsm_headImageWidth;
 		if(m_dataItemHeight < t_minHeight){
 			m_dataItemHeight = t_minHeight;			
 		}
@@ -45,7 +45,7 @@ public class WeiboDMItemField extends WeiboItemField{
 	
 	public final static int		fsm_msgTextInterval = 8;
 	
-	public final static int		fms_msgTextWidth	= fsm_weiboItemFieldWidth - fsm_headImageWidth - fsm_msgTextInterval;
+	public final static int		fms_msgTextWidth	= fsm_weiboItemFieldWidth - WeiboHeadImage.fsm_headImageWidth - fsm_msgTextInterval;
 	
 	final static TextField[]		sm_renderTextArray = 
 	{
@@ -312,7 +312,7 @@ public class WeiboDMItemField extends WeiboItemField{
 			}
 			
 			if(_sublayout){
-				int t_text_x = data.m_weibo.IsOwnWeibo()?0:(fsm_headImageWidth + fsm_msgTextInterval); 
+				int t_text_x = data.m_weibo.IsOwnWeibo()?0:(WeiboHeadImage.fsm_headImageWidth + fsm_msgTextInterval); 
 				
 				setPositionChild(sm_renderTextArray[t_messageFieldIndex],t_text_x + 3,m_textHeight + 1);
 				layoutChild(sm_renderTextArray[t_messageFieldIndex],fms_msgTextWidth - 4,data.m_dataItemHeight - 4);
@@ -320,13 +320,14 @@ public class WeiboDMItemField extends WeiboItemField{
 			
 			if(_g != null){
 				
-				int t_text_x = data.m_weibo.IsOwnWeibo()?0:(fsm_headImageWidth + fsm_msgTextInterval); 
+				int t_text_x = data.m_weibo.IsOwnWeibo()?0:(WeiboHeadImage.fsm_headImageWidth + fsm_msgTextInterval); 
 				int t_sign_x = data.m_weibo.IsOwnWeibo()?(fms_msgTextWidth + fsm_msgTextInterval):0;
 				
-				weiboTimeLineScreen.sm_weiboUIImage.drawImage(
+				recvMain.sm_weiboUIImage.drawImage(
 						_g,weiboTimeLineScreen.GetWeiboSign(data.m_weibo.GetWeiboStyle()),t_sign_x,m_textHeight);
 			
-				displayHeadImage(_g,t_sign_x,m_textHeight + fsm_weiboSignImageSize + fsm_headImageTextInterval,data.m_headImage);
+				WeiboHeadImage.displayHeadImage(_g,t_sign_x,
+						m_textHeight + fsm_weiboSignImageSize + fsm_headImageTextInterval,data.m_headImage);
 				
 				weiboTimeLineScreen.sm_bubbleImage.draw(
 							_g,t_text_x,m_textHeight-2,fms_msgTextWidth,data.m_dataItemHeight + 6 ,

@@ -22,7 +22,7 @@ public class WeiboUpdateField extends Field{
 		super(Field.FOCUSABLE);
 		
 		m_parentManager = _mainManager;		
-		m_updateBitmap = weiboTimeLineScreen.sm_weiboUIImage.getImageUnit("compose");
+		m_updateBitmap = recvMain.sm_weiboUIImage.getImageUnit("compose");
 		
 	}
 	
@@ -60,7 +60,7 @@ public class WeiboUpdateField extends Field{
 				_g.fillRect(0,0, getPreferredWidth(),getPreferredHeight());			
 			}	
         	
-			weiboTimeLineScreen.sm_weiboUIImage.drawImage(_g,m_updateBitmap,2,0);
+			recvMain.sm_weiboUIImage.drawImage(_g,m_updateBitmap,2,0);
         	
 			_g.setColor(0x757575);
 			_g.setFont(WeiboItemField.sm_boldFont);

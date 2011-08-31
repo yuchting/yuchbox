@@ -1,16 +1,9 @@
 package com.yuchting.yuchberry.client.weibo;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.Vector;
 
-import javax.microedition.io.Connector;
-import javax.microedition.io.file.FileConnection;
-
 import local.localResource;
-import net.rim.device.api.io.IOUtilities;
-import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
@@ -79,9 +72,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	public static recvMain				sm_mainApp = (recvMain)UiApplication.getUiApplication();
 	
 	public ImageSets					m_weiboUIImage = null;
-	
-	public static ImageSets			sm_weiboUIImage = null;
-	
+		
 	public static BubbleImage 			sm_bubbleImage = null;
 	public static BubbleImage 			sm_bubbleImage_black = null;
 	
@@ -121,7 +112,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		"sinaVIP",
 	};
 	
-	static ImageUnit		sm_headImageMask = null;
+	
 	
 	static ImageUnit[]		sm_WeiboSign =
 	{ 
@@ -144,10 +135,10 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	public Vector		m_headImageList = new Vector();
 			
-	WeiboHeader 		m_weiboHeader		= new WeiboHeader(this);
+	WeiboHeader 		m_weiboHeader		= null;
 	boolean			m_weiboHeaderShow	= true;
 	
-	boolean			m_onlineState = false;
+	boolean			m_onlineState 		= false;
 	
 	private Vector		m_delayWeiboAddList = new Vector();
 	private int		m_delayWeiboAddRunnableID = -1;
@@ -174,7 +165,8 @@ public class weiboTimeLineScreen extends MainScreen{
 		sm_mainApp 	= _mainApp;
 		m_mainApp	= _mainApp;
 		
-		m_weiboUIImage	= sm_weiboUIImage;
+		m_weiboUIImage	= recvMain.sm_weiboUIImage;
+		m_weiboHeader = new WeiboHeader(this);
 		
 		Vector t_imageList = m_weiboUIImage.getImageList();
 		for(int i = 0;i < t_imageList.size();i++){
@@ -407,7 +399,8 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		try{
 						
-			WeiboHeadImage t_headImage = WeiboHeadImage.SearchHeadImage(m_headImageList,_weibo);
+			WeiboHeadImage t_headImage = WeiboHeadImage.SearchHeadImage(m_headImageList,
+					_weibo.GetHeadImageId(),_weibo.GetWeiboStyle(),_weibo.GetUserHeadImageHashCode(),true);
 			
 			switch(_weibo.GetWeiboClass()){
 			case fetchWeibo.TIMELINE_CLASS:
@@ -481,7 +474,7 @@ public class weiboTimeLineScreen extends MainScreen{
 						}
 					}
 					
-				},WeiboItemField.fsm_largeHeadImage?600:800, true);
+				},WeiboHeadImage.fsm_largeHeadImage?600:800, true);
 			}
 		}
 	}
@@ -544,8 +537,6 @@ public class weiboTimeLineScreen extends MainScreen{
 				}, 200, true);
 			}
 		}
-		
-		
 	}
 	
 	
@@ -1211,7 +1202,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	static public ImageUnit GetWeiboSign(int _weiboStyle){
 		if(sm_WeiboSign[_weiboStyle] == null){
-			sm_WeiboSign[_weiboStyle] = sm_weiboUIImage.getImageUnit(sm_weiboSignFilename[_weiboStyle]);
+			sm_WeiboSign[_weiboStyle] = recvMain.sm_weiboUIImage.getImageUnit(sm_weiboSignFilename[_weiboStyle]);
 		}
 		
 		return sm_WeiboSign[_weiboStyle];
@@ -1220,48 +1211,36 @@ public class weiboTimeLineScreen extends MainScreen{
 	static public ImageUnit GetVIPSignBitmap(int _weiboStyle){
 		
 		if(sm_VIPSign[_weiboStyle] == null){
-			sm_VIPSign[_weiboStyle] = sm_weiboUIImage.getImageUnit(sm_VIPSignString[_weiboStyle]);
+			sm_VIPSign[_weiboStyle] = recvMain.sm_weiboUIImage.getImageUnit(sm_VIPSignString[_weiboStyle]);
 		}
 	
 		return sm_VIPSign[_weiboStyle];		
 	}
 	
-	static public ImageUnit GetHeadImageMaskBitmap(){
-		if(sm_headImageMask == null){
-			sm_headImageMask = sm_weiboUIImage.getImageUnit(WeiboItemField.fsm_largeHeadImage?"headImageMask_l":"headImageMask");				
-		}
-		
-		return sm_headImageMask;
-	}
+	
 	
 	static public ImageUnit GetBBerSignBitmap(){
 		if(sm_isBBerSign == null){
-			sm_isBBerSign = sm_weiboUIImage.getImageUnit("BBSign");		
+			sm_isBBerSign = recvMain.sm_weiboUIImage.getImageUnit("BBSign");		
 		}
 		
 		return sm_isBBerSign;
 	}
 	
-	private static ImageUnit sm_weiboSelectedImage = null;
+	
 	private static ImageUnit sm_weiboPicSignImage = null;
 	private static ImageUnit sm_weiboCommentSignImage = null;
-	
-	static public ImageUnit getWeiboSelectedImage(){
-		if(sm_weiboSelectedImage == null){
-			sm_weiboSelectedImage = sm_weiboUIImage.getImageUnit("weibo_sel");
-		}
-		return sm_weiboSelectedImage;
-	}
+		
 	static public ImageUnit getWeiboPicSignImage(){
 		if(sm_weiboPicSignImage == null){
-			sm_weiboPicSignImage = sm_weiboUIImage.getImageUnit("picSign");
+			sm_weiboPicSignImage = recvMain.sm_weiboUIImage.getImageUnit("picSign");
 		}
 		
 		return sm_weiboPicSignImage;
 	}
 	static public ImageUnit getWeiboCommentSignImage(){
 		if(sm_weiboCommentSignImage == null){
-			sm_weiboCommentSignImage = sm_weiboUIImage.getImageUnit("commentSign");
+			sm_weiboCommentSignImage = recvMain.sm_weiboUIImage.getImageUnit("commentSign");
 		}
 		
 		return sm_weiboCommentSignImage;
