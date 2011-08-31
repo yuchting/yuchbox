@@ -313,12 +313,11 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		
 		if(_presence.isAvailable()){
 
-			if(_presence.getMode() == Presence.Mode.available){
+			if(_presence.getMode() == Presence.Mode.available
+			 || _presence.getMode() == Presence.Mode.chat){
 				_roster.setPresence(fetchChatRoster.PRESENCE_AVAIL);
 			}else if(_presence.getMode() == Presence.Mode.away){
 				_roster.setPresence(fetchChatRoster.PRESENCE_AWAY);
-			}else if(_presence.getMode() == Presence.Mode.chat){
-				_roster.setPresence(fetchChatRoster.PRESENCE_CHATTING);
 			}else if(_presence.getMode() == Presence.Mode.dnd){
 				_roster.setPresence(fetchChatRoster.PRESENCE_BUSY);
 			}else if(_presence.getMode() == Presence.Mode.xa){

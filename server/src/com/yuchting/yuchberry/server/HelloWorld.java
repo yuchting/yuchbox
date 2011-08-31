@@ -86,9 +86,7 @@ public class HelloWorld {
 	 *  @param arg  parameters
 	 */
 	public static void main(String arg[])throws Exception{
-		Vector<Object> t_o = new Vector<Object>();
-		
-		t_o.removeElement(null);
+		Long[] t_arr = new Long[6];
 		
 		System.out.print("OK");
 	}
