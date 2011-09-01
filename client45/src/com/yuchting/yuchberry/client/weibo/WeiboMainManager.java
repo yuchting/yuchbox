@@ -216,9 +216,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			RefreshEditTextAreHeight();
 			
 			invalidate();
-			sublayout(0, 0);
-			
-			
+			sublayout(0, 0);		
 			
 			m_parentScreen.setInputPromptText(Integer.toString(m_editTextArea.getText().length()) + 
 					"/" + m_editTextArea.getMaxSize());

@@ -10,12 +10,13 @@ import com.yuchting.yuchberry.client.ui.WeiboTextField;
 
 public class ChatField extends Manager{
 	
-	public final static int	fsm_offsetWidth = 10;	
+	public final static int	fsm_offsetWidth = 10;
+	public final static int	fsm_bubblePointWidth = 8;
 	public final static int	fsm_border		= 3;
 	
-	public final static int	fsm_textWidth 	= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2;
+	public final static int	fsm_textWidth 	= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth;
 	
-	public final static int	fsm_ownChatTextBGColor		= 0x6f6f6f;
+	public final static int	fsm_ownChatTextBGColor		= 0xd8d8d8;
 	public final static int	fsm_otherChatTextBGColor	= 0xadadad;	
 	
 	fetchChatMsg			m_msg 			= null;
@@ -46,7 +47,7 @@ public class ChatField extends Manager{
 	}
 	
 	public int getPreferredHeight(){
-		return m_msgTextHeight + fsm_border * 2;;
+		return m_msgTextHeight + fsm_border * 2;
 	}
 	
 	protected void sublayout(int _width, int _height){
@@ -56,7 +57,7 @@ public class ChatField extends Manager{
 		if(m_msg.isOwnMsg()){
 			t_x = fsm_offsetWidth + fsm_border;
 		}else{
-			t_x = fsm_border;
+			t_x = fsm_border + fsm_bubblePointWidth;
 		}
 		
 		setPositionChild(m_textfield,t_x,fsm_border);
@@ -70,12 +71,12 @@ public class ChatField extends Manager{
 		if(m_msg.isOwnMsg()){
 						
 			recvMain.sm_bubbleImage.draw(_g, fsm_offsetWidth, 0, 
-					recvMain.fsm_display_width - fsm_offsetWidth, getPreferredHeight(), 
+					recvMain.fsm_display_width - fsm_offsetWidth - fsm_bubblePointWidth, getPreferredHeight(), 
 					BubbleImage.RIGHT_POINT_STYLE);
 		}else{
 						
-			recvMain.sm_bubbleImage_black.draw(_g, 0, 0, 
-					recvMain.fsm_display_width - fsm_offsetWidth, getPreferredHeight(), 
+			recvMain.sm_bubbleImage_black.draw(_g,fsm_bubblePointWidth, 0, 
+					recvMain.fsm_display_width - fsm_offsetWidth - fsm_bubblePointWidth, getPreferredHeight(), 
 					BubbleImage.LEFT_POINT_STYLE);
 		}
 		

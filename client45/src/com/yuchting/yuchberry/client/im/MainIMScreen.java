@@ -4,6 +4,7 @@ import java.util.Vector;
 
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.container.MainScreen;
@@ -162,6 +163,14 @@ public class MainIMScreen extends MainScreen{
 		}
 		
 		return super.navigationClick(status, time);
+	}
+	
+	protected boolean keyDown(int keycode,int time){
+		final int key = Keypad.key(keycode);
+		if(key == 10 && click()){
+			return true;
+		}
+		return super.keyDown(keycode,time);
 	}
 	
 	private boolean click(){

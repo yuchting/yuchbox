@@ -1308,6 +1308,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					m_isChatScreen = true;
 					
 					popScreen(m_mainIMScreen.m_chatScreen);
+					popScreen(m_mainIMScreen);
 					
 				}else if(getActiveScreen() == m_mainIMScreen){
 					

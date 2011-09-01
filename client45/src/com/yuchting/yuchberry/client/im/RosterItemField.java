@@ -109,7 +109,7 @@ public class RosterItemField extends Field{
 	public static int drawChatSign(Graphics _g,int _limitWidth,int _limitHeight,int _style){
 		
 		int x = _limitWidth - 3 - sm_rosterState[0].getWidth();
-		int y = 1;
+		int y = 3;
 		
 		if(_style == fetchChatMsg.STYLE_GTALK){
 			if(sm_gtalkSign == null){
