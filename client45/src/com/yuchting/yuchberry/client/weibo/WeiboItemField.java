@@ -615,7 +615,7 @@ public class WeiboItemField extends Manager{
 					// comment area
 					//
 					// draw a bubble
-					weiboTimeLineScreen.sm_bubbleImage.draw(_g, 0, t_commentText_y - fsm_headImageTextInterval,
+					recvMain.sm_bubbleImage.draw(_g, 0, t_commentText_y - fsm_headImageTextInterval,
 							fsm_commentTextWidth + fsm_headImageTextInterval * 2, m_commentText_height + 5,
 							WeiboItemField.sm_commentFirst?BubbleImage.BOTTOM_POINT_STYLE:BubbleImage.TOP_POINT_STYLE);
 					
@@ -673,10 +673,10 @@ public class WeiboItemField extends Manager{
 				// draw the bubble
 				//
 				if(_on){
-					weiboTimeLineScreen.sm_bubbleImage.draw(_g,getAbsTextPosX() - 4,t_firstLineHeight - 1,
+					recvMain.sm_bubbleImage.draw(_g,getAbsTextPosX() - 4,t_firstLineHeight - 1,
 							m_absTextArea.getTextWidth() + 4,m_absTextHeight + 5,BubbleImage.LEFT_POINT_STYLE);
 				}else{
-					weiboTimeLineScreen.sm_bubbleImage_black.draw(_g,getAbsTextPosX() - 4,t_firstLineHeight - 1,
+					recvMain.sm_bubbleImage_black.draw(_g,getAbsTextPosX() - 4,t_firstLineHeight - 1,
 							m_absTextArea.getTextWidth() + 4,m_absTextHeight + 5,BubbleImage.LEFT_POINT_STYLE);	
 				}
 				

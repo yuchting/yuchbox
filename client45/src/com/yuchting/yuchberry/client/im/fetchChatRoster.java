@@ -15,7 +15,7 @@ public class fetchChatRoster {
 	
 	
 	int m_style		= fetchChatMsg.STYLE_GTALK;
-	int m_presence	= 0;
+	int m_presence	= PRESENCE_AVAIL;
 	int m_headImageHashCode = 0; 
 	
 	String m_name		= "";

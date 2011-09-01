@@ -1,11 +1,11 @@
 package com.yuchting.yuchberry.client.screen;
 
-import com.yuchting.yuchberry.client.recvMain;
-
 import net.rim.device.api.math.Fixed32;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.component.BitmapField;
+
+import com.yuchting.yuchberry.client.recvMain;
 
 public class imageViewScreen extends fileViewScreen{
 

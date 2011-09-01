@@ -57,6 +57,7 @@ import com.yuchting.yuchberry.client.screen.videoViewScreen;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
+import com.yuchting.yuchberry.client.ui.Phiz;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 import com.yuchting.yuchberry.client.weibo.WeiboItemField;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
@@ -1208,6 +1209,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
+	boolean m_isChatScreen = true;
 	boolean m_isWeiboOrIMScreen = true;
 	boolean m_weiboUpdateDlg = false;
 	
@@ -1230,7 +1232,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			if(getScreenCount() == 0){
 				
 				if(m_isWeiboOrIMScreen){
-					
+					m_isWeiboOrIMScreen = false;
 					pushScreen(m_weiboTimeLineScreen);
 					
 					if(m_weiboUpdateDlg){
@@ -1241,6 +1243,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				}else{
 					
 					pushScreen(m_mainIMScreen);
+					
+					if(m_isChatScreen){
+						m_isChatScreen = false;
+						pushScreen(m_mainIMScreen.m_chatScreen);
+					}
 				}
 			}			
 			
@@ -1296,10 +1303,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			}
 			
 			if(m_mainIMScreen != null){
-				if(getActiveScreen() == m_mainIMScreen){
+				if(getActiveScreen() == m_mainIMScreen.m_chatScreen){
+					
+					m_isChatScreen = true;
+					
+					popScreen(m_mainIMScreen.m_chatScreen);
+					
+				}else if(getActiveScreen() == m_mainIMScreen){
 					
 					m_isWeiboOrIMScreen = false;
-					
 					popScreen(m_mainIMScreen);
 				}
 			}
@@ -1431,6 +1443,31 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}
 		
 		m_downloadDlg.RefreshProgress(_att);
+	}
+	
+	public void SetModuleOnlineState(boolean _state){
+		
+		if(_state){
+			if(m_hasNewWeibo){
+				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_new.png"));
+			}else{
+				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main.png"));
+			}
+		}else{
+			if(m_hasNewWeibo){
+				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline_new.png"));
+			}else{
+				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline.png"));
+			}
+		}		
+		
+		if(m_weiboTimeLineScreen != null){
+			m_weiboTimeLineScreen.getHeader().invalidate();
+		}
+		
+		if(m_mainIMScreen != null){
+			m_weiboTimeLineScreen.getHeader().invalidate();
+		}
 	}
 	
 	public void SetAboutInfo(String _about){
@@ -1857,6 +1894,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public static ImageSets			sm_weiboUIImage = null;
 	
+	public static BubbleImage 			sm_bubbleImage = null;
+	public static BubbleImage 			sm_bubbleImage_black = null;
+	
+	public static Vector				sm_phizImageList = new Vector();
+	
 	public void loadImageSets(){
 		
 		if(sm_weiboUIImage== null){
@@ -1867,9 +1909,18 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				DialogAlertAndExit("weibo UI load Error:"+ e.getMessage() + e.getClass().getName());
 			}
 			
-			if(weiboTimeLineScreen.sm_bubbleImage == null){
+			Vector t_imageList = sm_weiboUIImage.getImageList();
+			for(int i = 0;i < t_imageList.size();i++){
+			    ImageUnit t_unit = (ImageUnit)t_imageList.elementAt(i);
+			    
+			    if(t_unit.getName().charAt(0) == '['){
+			    	sm_phizImageList.addElement(new Phiz(t_unit,sm_weiboUIImage));
+			    }
+			}
+			
+			if(sm_bubbleImage == null){
 				
-				weiboTimeLineScreen.sm_bubbleImage = new BubbleImage(
+				sm_bubbleImage = new BubbleImage(
 						sm_weiboUIImage.getImageUnit("bubble_top_left"),
 						sm_weiboUIImage.getImageUnit("bubble_top"),
 						sm_weiboUIImage.getImageUnit("bubble_top_right"),
@@ -1889,7 +1940,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						},
 						sm_weiboUIImage);
 				
-				weiboTimeLineScreen.sm_bubbleImage_black = new BubbleImage(
+				sm_bubbleImage_black = new BubbleImage(
 						sm_weiboUIImage.getImageUnit("bubble_black_top_left"),
 						sm_weiboUIImage.getImageUnit("bubble_black_top"),
 						sm_weiboUIImage.getImageUnit("bubble_black_top_right"),

@@ -1,8 +1,8 @@
 package com.yuchting.yuchberry.client.screen;
 
-import com.yuchting.yuchberry.client.recvMain;
-
 import net.rim.device.api.ui.component.RichTextField;
+
+import com.yuchting.yuchberry.client.recvMain;
 
 public class textViewScreen extends fileViewScreen{
 

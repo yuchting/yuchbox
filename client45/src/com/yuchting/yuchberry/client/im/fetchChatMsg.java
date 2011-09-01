@@ -25,6 +25,8 @@ public class fetchChatMsg{
 	byte[]		m_fileContent	= null;
 	int			m_contentType	= 0;
 	
+	boolean 	m_isOwnMsg		= false;
+	
 	public fetchChatMsg(){}
 	
 	public int getFileContentType(){return m_contentType;}
@@ -37,6 +39,9 @@ public class fetchChatMsg{
 	
 	public int getStyle(){	return m_style;	}
 	public void setStyle(int _style){m_style = _style;}
+	
+	public boolean isOwnMsg(){return m_isOwnMsg;}
+	public void setIsOwnMsg(boolean _isOwnMsg){m_isOwnMsg = _isOwnMsg;}
 	
 	public long getSendTime(){return m_sendTime;}
 	public void setSendTime(long _time){m_sendTime = _time;}

@@ -20,6 +20,7 @@ import net.rim.device.api.ui.container.VerticalFieldManager;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.ImageButton;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
+import com.yuchting.yuchberry.client.ui.WeiboTextField;
 
 
 public class WeiboMainManager extends VerticalFieldManager implements FieldChangeListener{	
@@ -42,7 +43,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	public AutoTextEditField 	m_editTextArea			= new AutoTextEditField(){
 		public void setText(String _text){
 			super.setText(_text);
-			layout(WeiboItemField.fsm_weiboItemFieldWidth,1000);
+			this.layout(WeiboItemField.fsm_weiboItemFieldWidth,1000);
 		}
 	};
 	

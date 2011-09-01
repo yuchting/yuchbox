@@ -3,8 +3,6 @@ package com.yuchting.yuchberry.client.screen;
 import javax.microedition.media.Player;
 import javax.microedition.media.control.VideoControl;
 
-import com.yuchting.yuchberry.client.recvMain;
-
 import local.localResource;
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
@@ -12,6 +10,8 @@ import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.container.MainScreen;
+
+import com.yuchting.yuchberry.client.recvMain;
 
 
 /**

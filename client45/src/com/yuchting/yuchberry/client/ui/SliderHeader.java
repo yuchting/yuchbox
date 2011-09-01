@@ -92,6 +92,8 @@ public abstract class SliderHeader extends Field{
 				m_former_x = m_curr_x;
 				m_dest_x = m_currState * (recvMain.fsm_display_width / m_stateBitmap.length) + fsm_linkedStateSize;
 				
+				invalidate();
+				
 				synchronized (this) {
 					
 					if(m_animationRunId == -1){

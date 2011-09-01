@@ -16,7 +16,7 @@ public class MainIMScreenHeader extends SliderHeader{
 	private final static String[] fsm_stateBitmapString_hover = 
 	{
 		"commentMe_hover",
-		"home_hover",
+		"weiboUser_hover",
 	};
 	
 	MainIMScreen	m_parentScreen = null;

@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.client.weibo;
+package com.yuchting.yuchberry.client.ui;
 
 import java.util.Vector;
 
@@ -9,7 +9,7 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.component.ActiveRichTextField;
 import net.rim.device.api.util.Arrays;
 
-import com.yuchting.yuchberry.client.ui.Phiz;
+import com.yuchting.yuchberry.client.recvMain;
 
 public class WeiboTextField extends ActiveRichTextField{
 	
@@ -32,30 +32,37 @@ public class WeiboTextField extends ActiveRichTextField{
 		
 	static Font[]		sm_fontList = 
 	{
-		WeiboItemField.sm_defaultFont,
-		WeiboItemField.sm_defaultFont,
+		null,
+		null,
 		null,
 	};
-	
+		
 	Vector m_phizList	= new Vector();
 		
 	static String sm_replacePhizText = " ";
 	static int sm_replacePhiz_x_offset = 0;
-	static {
-		int t_width = 0;
-		while((t_width = sm_fontList[0].getAdvance(sm_replacePhizText)) < Phiz.fsm_phizSize){
-			sm_replacePhizText = sm_replacePhizText + " ";
-		}
-		
-		sm_replacePhiz_x_offset = (t_width - Phiz.fsm_phizSize) / 2;
-		
-	}
 	
 	public WeiboTextField(int _foreground,int _background){
 		super("",Field.READONLY | Field.FOCUSABLE | SCANFLAG_THREAD_ON_CREATE);
 		
 		m_foreground[0] = _foreground;
 		Arrays.fill(m_background,_background);
+		
+		if(sm_fontList[0] == null){
+			
+			for(int i = 0;i < sm_fontList.length;i++){
+				sm_fontList[i] = getFont();
+			}
+			
+			int t_width = 0;
+			while((t_width = sm_fontList[0].getAdvance(sm_replacePhizText)) < Phiz.fsm_phizSize){
+				sm_replacePhizText = sm_replacePhizText + " ";
+			}
+			
+			sm_replacePhiz_x_offset = (t_width - Phiz.fsm_phizSize) / 2;
+		}
+		
+		
 	}
 	
 	final class ReadText{
@@ -93,7 +100,7 @@ public class WeiboTextField extends ActiveRichTextField{
 					
 					a = _text.m_originalText.charAt(_text.m_index);
 					
-					if(!WeiboUserFind.isLeagalNameCharacter(a)){
+					if(!isLeagalNameCharacter(a)){
 						break getTag_while;
 					}
 				}
@@ -129,6 +136,52 @@ public class WeiboTextField extends ActiveRichTextField{
 		}
 		
 		return t_tag.toString();
+	}
+	
+	public static boolean isLeagalNameCharacter(char a){
+		
+		if(a == '，' || a == '；' ||a == '：' ||a == '？' ||a == '‘'){
+			return false;
+		}
+		
+		if(Character.isDigit(a) || isChinese(a) || isAlpha(a)){
+			return true;
+		}
+		
+		if(a == '-' || a== '_' ){
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public static boolean isChinese(char a){ 
+		int v = (int)a; 
+		return (v>=19968 && v <=171941);	
+	}
+	
+	public static boolean isAlpha(char a){
+		return Character.isLowerCase(a) || Character.isUpperCase(a);
+	}
+	
+	public static Phiz findPhizName(String _phizName){
+		
+		Vector t_list = recvMain.sm_phizImageList;
+		
+		for(int i = 0;i < t_list.size();i++){
+			
+			Phiz t_phiz = (Phiz)t_list.elementAt(i);
+			
+			if(_phizName.equals(t_phiz.getImage().getName()) ){
+				return t_phiz;
+			}
+		}
+		
+		return null;
+	}
+	
+	public void paint(Graphics _g){
+		super.paint(_g);
 	}
 	
 	public void setText(String _text){
@@ -170,7 +223,7 @@ public class WeiboTextField extends ActiveRichTextField{
 				break;
 			case '[':
 				
-				Phiz t_phiz = WeiboUserFind.findPhizName(t_read);
+				Phiz t_phiz = findPhizName(t_read);
 				if(t_phiz != null){
 					t_finalText.append(sm_replacePhizText);
 					m_bufferedAttr[t_attrIndex]		= 2;

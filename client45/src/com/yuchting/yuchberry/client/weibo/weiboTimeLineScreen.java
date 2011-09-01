@@ -20,10 +20,10 @@ import net.rim.device.api.ui.container.MainScreen;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
-import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
-import com.yuchting.yuchberry.client.ui.Phiz;
+import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
+import com.yuchting.yuchberry.client.ui.SliderHeader;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 
 abstract class WeiboUserMenu extends MenuItem{
@@ -72,11 +72,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	public static recvMain				sm_mainApp = (recvMain)UiApplication.getUiApplication();
 	
 	public ImageSets					m_weiboUIImage = null;
-		
-	public static BubbleImage 			sm_bubbleImage = null;
-	public static BubbleImage 			sm_bubbleImage_black = null;
-	
-	
+			
 	private WeiboUserFindFactory		m_userfactory = new WeiboUserFindFactory(this);
 	
 	WeiboMainManager		m_mainMgr;
@@ -137,9 +133,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 	WeiboHeader 		m_weiboHeader		= null;
 	boolean			m_weiboHeaderShow	= true;
-	
-	boolean			m_onlineState 		= false;
-	
+		
 	private Vector		m_delayWeiboAddList = new Vector();
 	private int		m_delayWeiboAddRunnableID = -1;
 	
@@ -157,7 +151,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	recvMain			m_mainApp = null;
 	int					m_autoRefreshWeiboIntervalID = -1;
 	
-	Vector				m_phizImageList = new Vector();
+	
 	
 	public weiboTimeLineScreen(recvMain _mainApp){
 		super(Manager.VERTICAL_SCROLL);
@@ -167,16 +161,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		m_weiboUIImage	= recvMain.sm_weiboUIImage;
 		m_weiboHeader = new WeiboHeader(this);
-		
-		Vector t_imageList = m_weiboUIImage.getImageList();
-		for(int i = 0;i < t_imageList.size();i++){
-		    ImageUnit t_unit = (ImageUnit)t_imageList.elementAt(i);
-		    
-		    if(t_unit.getName().charAt(0) == '['){
-		    	m_phizImageList.addElement(new Phiz(t_unit,m_weiboUIImage));
-		    }
-		}
-		
+				
 		m_currUpdateDlg = new WeiboUpdateDlg(weiboTimeLineScreen.this);
 		
 		m_mainMgr = new WeiboMainManager(_mainApp,this,true);
@@ -201,6 +186,9 @@ public class weiboTimeLineScreen extends MainScreen{
 		m_currMgr.setFocus();	
 	}
 	
+	public SliderHeader getHeader(){
+		return m_weiboHeader;
+	}
 	
 	public void enableHeader(boolean _enable){
 		if(m_mainApp.m_hideHeader){
@@ -385,16 +373,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		invalidate();
 	}
-	
-	public void SetOnlineState(boolean _online){
-		m_onlineState = _online;
-		m_weiboHeader.invalidate();
-	}
-	
-	public boolean GetOnlineState(){
-		return m_onlineState;
-	}
-	
+		
 	private void AddWeibo_imple(fetchWeibo _weibo,boolean _initAdd){
 		
 		try{
@@ -743,9 +722,9 @@ public class weiboTimeLineScreen extends MainScreen{
     	
         public void run() {
         	if(m_phizScreen == null){
-        		m_phizScreen = new PhizSelectedScreen(m_mainApp,m_phizImageList,m_phizSelected);
+        		m_phizScreen = new PhizSelectedScreen(m_mainApp,recvMain.sm_phizImageList,m_phizSelected);
         	}else{
-        		m_phizScreen.getPhizMgr().setSelectedCallback(m_phizSelected);
+        		m_phizScreen.setSelectedCallback(m_phizSelected);
         	}
         	
         	UiApplication.getUiApplication().pushScreen(m_phizScreen);
@@ -1190,7 +1169,6 @@ public class weiboTimeLineScreen extends MainScreen{
 			enableHeader(true);
 		}
 		
-		m_weiboHeader.invalidate();
 		m_mainApp.StopWeiboNotification();
 		m_mainApp.StopWeiboHomeNotification();
 		

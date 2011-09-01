@@ -1,7 +1,5 @@
 package com.yuchting.yuchberry.client.screen;
 
-import com.yuchting.yuchberry.client.recvMain;
-
 import local.localResource;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
@@ -9,6 +7,8 @@ import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.MainScreen;
+
+import com.yuchting.yuchberry.client.recvMain;
 
 public class aboutScreen extends MainScreen{
 	

@@ -3,10 +3,6 @@ package com.yuchting.yuchberry.client.screen;
 import java.io.ByteArrayOutputStream;
 import java.util.Vector;
 
-import com.yuchting.yuchberry.client.msg_head;
-import com.yuchting.yuchberry.client.recvMain;
-import com.yuchting.yuchberry.client.sendReceive;
-
 import local.localResource;
 import net.rim.device.api.system.Clipboard;
 import net.rim.device.api.ui.Field;
@@ -30,6 +26,10 @@ import net.rim.device.api.ui.component.RadioButtonGroup;
 import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
+
+import com.yuchting.yuchberry.client.msg_head;
+import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.sendReceive;
 
 public class settingScreen extends MainScreen implements FieldChangeListener,FocusChangeListener{
 	

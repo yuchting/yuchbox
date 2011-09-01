@@ -107,11 +107,29 @@
 	<!-- im -->
 	<Image Name="gtalk_sign" XPos="80" YPos="345" Width="16" Height="16" />
 	<Image Name="msn_sign" XPos="80" YPos="361" Width="16" Height="16" />
-	<Image Name="away_state" XPos="80" YPos="345" Width="16" Height="16" />
-	<Image Name="busy_state" XPos="96" YPos="345" Width="16" Height="16" />
-	<Image Name="far_away_state" XPos="112" YPos="345" Width="16" Height="16" />
-	<Image Name="avail_state" XPos="80" YPos="361" Width="16" Height="16" />
-	<Image Name="unavail_state" XPos="96" YPos="361" Width="16" Height="16" />
+	<Image Name="away_state" XPos="96" YPos="345" Width="16" Height="16" />
+	<Image Name="busy_state" XPos="112" YPos="345" Width="16" Height="16" />
+	<Image Name="far_away_state" XPos="128" YPos="345" Width="16" Height="16" />
+	<Image Name="avail_state" XPos="96" YPos="361" Width="16" Height="16" />
+	<Image Name="unavail_state" XPos="112" YPos="361" Width="16" Height="16" />
+	
+	<Image Name="sent_chat" XPos="192" YPos="345" Width="16" Height="16" />
+	<Image Name="padding_chat" XPos="192" YPos="345" Width="16" Height="16" />
+	<Image Name="sending_chat" XPos="192" YPos="361" Width="16" Height="16" />
+	<Image Name="read_chat" XPos="208" YPos="361" Width="16" Height="16" />
+	
+	<Image Name="input_top_left" XPos="144" YPos="345" Width="16" Height="10" />
+	<Image Name="input_top" XPos="160" YPos="345" Width="16" Height="10" />
+	<Image Name="input_top_right" XPos="176" YPos="345" Width="16" Height="10" />
+	
+	<Image Name="input_left" XPos="144" YPos="355" Width="16" Height="10" />
+	<Image Name="input_bottom_left" XPos="144" YPos="365" Width="16" Height="10" />
+	<Image Name="input_bottom" XPos="160" YPos="365" Width="16" Height="10" />
+	
+	<Image Name="input_right" XPos="176" YPos="355" Width="16" Height="10" />
+	<Image Name="input_bottom_right" XPos="176" YPos="365" Width="16" Height="10" />
+	
+	<Image Name="input_inner_block" XPos="160" YPos="355" Width="16" Height="10" />
 	
 	<!-- phiz -->
 	<Image Name="[呵呵]" XPos="84" YPos="0" Width="22" Height="22" />

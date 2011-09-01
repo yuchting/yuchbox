@@ -832,24 +832,14 @@ public class connectDeamon extends Thread implements SendListener,
 				synchronized (this) {
 					m_ipConnectCounter = 0;
 				}
-				
-				
+								
 				// set the text connect
 				//
 				m_mainApp.SetConnectState(recvMain.CONNECTED_STATE);
-				
 				m_mainApp.StopDisconnectNotification();
 				
-				if(m_mainApp.m_hasNewWeibo){
-					HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_new.png"));
-				}else{
-					HomeScreen.updateIcon(Bitmap.getBitmapResource("Main.png"));
-				}
-				
-				if(m_mainApp.m_weiboTimeLineScreen != null){
-					m_mainApp.m_weiboTimeLineScreen.SetOnlineState(true);
-				}				
-				
+				m_mainApp.SetModuleOnlineState(true);
+								
 				while(true){
 					ProcessMsg(m_connect.RecvBufferFromSvr());
 				}
@@ -863,18 +853,7 @@ public class connectDeamon extends Thread implements SendListener,
 					}catch(Exception e){}	
 				}							
 			}		
-			
-
-			if(m_mainApp.m_weiboTimeLineScreen != null){
-				m_mainApp.m_weiboTimeLineScreen.SetOnlineState(false);
-			}
-			
-			if(m_mainApp.m_hasNewWeibo){
-				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline_new.png"));
-			}else{
-				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline.png"));
-			}
-			
+					
 			if(!m_mainApp.isForeground() && m_ipConnectCounter >= 5){
 				m_ipConnectCounter = 0;
 				m_mainApp.TriggerDisconnectNotification();
@@ -896,7 +875,8 @@ public class connectDeamon extends Thread implements SendListener,
 					m_conn = null;
 				}
 			}
-									
+			
+			m_mainApp.SetModuleOnlineState(false);									
 		}
 		
 	 }

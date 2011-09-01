@@ -10,9 +10,6 @@ import javax.wireless.messaging.Message;
 import javax.wireless.messaging.MessageConnection;
 import javax.wireless.messaging.TextMessage;
 
-import com.yuchting.yuchberry.client.fetchMail;
-import com.yuchting.yuchberry.client.recvMain;
-
 import local.localResource;
 import net.rim.blackberry.api.pdap.BlackBerryContact;
 import net.rim.device.api.system.Bitmap;
@@ -33,6 +30,9 @@ import net.rim.device.api.ui.container.DialogFieldManager;
 import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
+
+import com.yuchting.yuchberry.client.fetchMail;
+import com.yuchting.yuchberry.client.recvMain;
 
 final class sendingSMSDlg extends Dialog{
 

@@ -43,15 +43,20 @@ public class RosterItemField extends Field{
 	}
 	
 	public int getPreferredHeight() {
-		return MainIMScreen.sm_defaultFontHeight + 1;
+		return 2 * MainIMScreen.sm_defaultFontHeight + 1;
 	}
 	
 	protected void layout(int _width,int _height){
-		setExtent(getPreferredWidth(),getPreferredWidth());
+		setExtent(getPreferredWidth(),getPreferredHeight());
 	}
 	
 	protected void paint(Graphics _g){
 		drawFocus(_g, isFocus());
+	}
+	
+	protected void onUnfocus(){
+	    super.onUnfocus();
+	    invalidate();
 	}
 	
 	protected void drawFocus(Graphics _g,boolean _on){
@@ -65,12 +70,13 @@ public class RosterItemField extends Field{
 			//
 			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight());
 		}
+		// draw roster state
+		//
+		drawRosterState(_g,1,1,m_currRoster);
 		
 		// draw the IM sign and head image
 		//
-		
-		drawChatSign(_g,1,1,m_currRoster.getStyle());
-		int t_x = WeiboHeadImage.displayHeadImage(_g,sm_gtalkSign.getWidth() + 2, 1, m_headImage);
+		int t_x = WeiboHeadImage.displayHeadImage(_g,sm_rosterState[0].getWidth() + 2, 1, m_headImage);
 		
 		int color = _g.getColor();
 		Font font = _g.getFont();
@@ -78,7 +84,7 @@ public class RosterItemField extends Field{
 			_g.setColor(fsm_nameTextColor);
 			_g.setFont(MainIMScreen.sm_boldFont);
 			
-			_g.drawText(m_currRoster.getSource(),t_x,1);
+			_g.drawText(m_currRoster.getName(),t_x,1);
 			
 			_g.setColor(fsm_statusTextColor);
 			_g.setFont(font);
@@ -86,7 +92,7 @@ public class RosterItemField extends Field{
 			if(m_isChatHistoryItem && m_lastChat != null){
 				_g.drawText(m_lastChat,t_x,MainIMScreen.sm_defaultFontHeight + 1);
 			}else{
-				_g.drawText(m_currRoster.getSource(),t_x,MainIMScreen.sm_defaultFontHeight + 1);
+				_g.drawText(m_currRoster.getStatus(),t_x,MainIMScreen.sm_defaultFontHeight + 1);
 			}
 						
 		}finally{
@@ -94,30 +100,33 @@ public class RosterItemField extends Field{
 			_g.setFont(font);
 		}
 		
-		drawRosterState(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster);
+		drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.getStyle());
 	}
 	
 	public static ImageUnit	sm_gtalkSign = null;
 	public static ImageUnit	sm_MSNSign = null;
 	
-	public static int drawChatSign(Graphics _g,int _x,int _y,int _style){
-			
+	public static int drawChatSign(Graphics _g,int _limitWidth,int _limitHeight,int _style){
+		
+		int x = _limitWidth - 3 - sm_rosterState[0].getWidth();
+		int y = 1;
+		
 		if(_style == fetchChatMsg.STYLE_GTALK){
 			if(sm_gtalkSign == null){
 				sm_gtalkSign = recvMain.sm_weiboUIImage.getImageUnit("gtalk_sign");
 			}
 			
-			recvMain.sm_weiboUIImage.drawImage(_g, sm_gtalkSign, _x, _y);
+			recvMain.sm_weiboUIImage.drawImage(_g, sm_gtalkSign, x, y);
 			
-			return sm_gtalkSign.getWidth() + _x;
+			return sm_gtalkSign.getWidth() + x;
 		}else if(_style == fetchChatMsg.STYLE_MSN){
 			if(sm_MSNSign == null){
 				sm_MSNSign = recvMain.sm_weiboUIImage.getImageUnit("msn_sign");
 			}
 			
-			recvMain.sm_weiboUIImage.drawImage(_g, sm_MSNSign, _x, _y);
+			recvMain.sm_weiboUIImage.drawImage(_g, sm_MSNSign, x, y);
 			
-			return sm_MSNSign.getWidth() + _x;
+			return sm_MSNSign.getWidth() + x;
 		}
 		
 		return 0;
@@ -152,7 +161,7 @@ public class RosterItemField extends Field{
 		"busy_state"
 	};
 	
-	public static void drawRosterState(Graphics _g,int _limitWidth,int _limitHeight,fetchChatRoster _roster){
+	public static int drawRosterState(Graphics _g,int _x,int _y,fetchChatRoster _roster){
 		
 		if(sm_rosterState[0] == null){
 			for(int i = 0 ;i < sm_rosterState.length;i++){
@@ -160,10 +169,9 @@ public class RosterItemField extends Field{
 			}
 		}
 		
-		int x = _limitWidth - 3 - sm_rosterState[0].getWidth();
-		int y = (_limitHeight - sm_rosterState[0].getHeight()) / 2;
+		recvMain.sm_weiboUIImage.drawImage(_g, sm_rosterState[_roster.getPresence()], _x, _y);
 		
-		recvMain.sm_weiboUIImage.drawImage(_g, sm_rosterState[_roster.getPresence()], x, y);
+		return _x + sm_rosterState[0].getWidth(); 
 	}
 	
 }

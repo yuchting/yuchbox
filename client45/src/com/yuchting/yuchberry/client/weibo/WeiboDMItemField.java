@@ -10,6 +10,7 @@ import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.HyperlinkButtonField;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
+import com.yuchting.yuchberry.client.ui.WeiboTextField;
 
 final class WeiboDMData{
 	
@@ -329,7 +330,7 @@ public class WeiboDMItemField extends WeiboItemField{
 				WeiboHeadImage.displayHeadImage(_g,t_sign_x,
 						m_textHeight + fsm_weiboSignImageSize + fsm_headImageTextInterval,data.m_headImage);
 				
-				weiboTimeLineScreen.sm_bubbleImage.draw(
+				recvMain.sm_bubbleImage.draw(
 							_g,t_text_x,m_textHeight-2,fms_msgTextWidth,data.m_dataItemHeight + 6 ,
 							data.m_weibo.IsOwnWeibo()?BubbleImage.RIGHT_POINT_STYLE:BubbleImage.LEFT_POINT_STYLE);
 											

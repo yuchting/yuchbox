@@ -100,6 +100,19 @@ public final class WeiboHeadImage {
 	
 	}
 	
+	private static Bitmap getDefaultHeadImage()throws Exception{
+		
+		if(sm_defaultHeadImage == null){
+			byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass()
+					.getResourceAsStream(fsm_largeHeadImage?"/defaultHeadImage_l.png":"/defaultHeadImage.png"));		
+			sm_defaultHeadImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
+			sm_defaultHeadImageHashCode = bytes.length;
+		}
+		
+		return sm_defaultHeadImage;
+	}
+	
+	
 	public static WeiboHeadImage SearchHeadImage(Vector _imageList,String _imageID,
 													byte _style,int _hashCode,
 													boolean _isWeiboOrIM)throws Exception{
@@ -113,7 +126,7 @@ public final class WeiboHeadImage {
 					&& t_image.m_userID.equals(_imageID) ){
 					
 					if(t_image.m_dataHash != _hashCode 
-						|| t_image.m_headImage == sm_defaultHeadImage){
+						|| t_image.m_headImage == getDefaultHeadImage()){
 						
 						SendHeadImageQueryMsg(_imageID,_style,_isWeiboOrIM);
 					}
@@ -136,19 +149,12 @@ public final class WeiboHeadImage {
 			
 			// load the default image and send head image query message
 			//
-			SendHeadImageQueryMsg(_imageID,_style,_isWeiboOrIM);
-			
-			if(sm_defaultHeadImage == null){
-				byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass()
-						.getResourceAsStream(fsm_largeHeadImage?"/defaultHeadImage_l.png":"/defaultHeadImage.png"));		
-				sm_defaultHeadImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
-				sm_defaultHeadImageHashCode = bytes.length;
-			}
+			SendHeadImageQueryMsg(_imageID,_style,_isWeiboOrIM);			
 			
 			t_image = new WeiboHeadImage();
 			
 			t_image.m_userID = _imageID;
-			t_image.m_headImage = sm_defaultHeadImage;
+			t_image.m_headImage = getDefaultHeadImage();
 			t_image.m_dataHash = _hashCode;
 			t_image.m_weiboStyle = _style;
 			
@@ -158,13 +164,13 @@ public final class WeiboHeadImage {
 		}		
 	}
 	
-	public static WeiboHeadImage LoadWeiboImage(String _imageID,byte _style,boolean _isWeiboOrIM){
+	public static WeiboHeadImage LoadWeiboImage(String _imageID,byte _style,boolean _isWeiboOrIM)throws Exception{
 		
 		WeiboHeadImage t_image = new WeiboHeadImage();
 		
 		t_image.m_userID 		= _imageID;
 		t_image.m_weiboStyle 	= _style;
-		t_image.m_headImage 	= sm_defaultHeadImage;
+		t_image.m_headImage 	= getDefaultHeadImage();
 		t_image.m_dataHash 		= sm_defaultHeadImageHashCode;
 		
 		try{
@@ -229,7 +235,6 @@ public final class WeiboHeadImage {
 			}else{
 				sm_headImageMask = recvMain.sm_weiboUIImage.getImageUnit("headImageMask");
 			}
-			
 		}
 		
 		_g.drawBitmap(_x,_y,_image.m_headImage.getWidth(),_image.m_headImage.getHeight(),_image.m_headImage,0,0);

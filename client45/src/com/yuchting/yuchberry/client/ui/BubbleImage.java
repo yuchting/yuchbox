@@ -69,7 +69,7 @@ public class BubbleImage {
 			int t_horz_x = _x + m_top_left.m_width;
 			for(int i = 0;i < t_horz_num;i++){
 				m_parentSets.drawImage(_g,m_top,t_horz_x, _y);
-				m_parentSets.drawImage(_g,m_bottom,t_horz_x, _y + (_height - m_bottom.m_width));
+				m_parentSets.drawImage(_g,m_bottom,t_horz_x, _y + (_height - m_bottom.m_height));
 				t_horz_x += m_top.m_width;
 			}
 		}

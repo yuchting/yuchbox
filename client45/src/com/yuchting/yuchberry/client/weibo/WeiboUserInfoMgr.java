@@ -106,7 +106,7 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 				//
 				t_start_x += ft_interval;
 				t_start_y -= ft_interval;
-				weiboTimeLineScreen.sm_bubbleImage.draw(_g,t_start_x,t_start_y,recvMain.fsm_display_width - t_start_x,
+				recvMain.sm_bubbleImage.draw(_g,t_start_x,t_start_y,recvMain.fsm_display_width - t_start_x,
 						WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
 				
 				t_start_x += ft_interval;
@@ -132,7 +132,7 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 				int t_desc_width = recvMain.fsm_display_width - ft_interval * 2;
 				int t_desc_height = m_descText.getHeight() + ft_interval * 2;
 				
-				weiboTimeLineScreen.sm_bubbleImage.draw(_g,t_start_x,t_start_y,t_desc_width + ft_interval,
+				recvMain.sm_bubbleImage.draw(_g,t_start_x,t_start_y,t_desc_width + ft_interval,
 						t_desc_height,BubbleImage.TOP_POINT_STYLE);
 				
 				boolean notEmpty = _g.pushContext( t_start_x + ft_interval ,t_start_y + ft_interval ,
@@ -168,10 +168,10 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 				int t_fans_num_x	= t_fans_x + (t_infoWidth - WeiboItemField.sm_defaultFont.getAdvance(t_fans_num)) / 2;
 				int t_weibo_num_x	= t_weibo_x + (t_infoWidth - WeiboItemField.sm_defaultFont.getAdvance(t_weibo_num)) / 2;
 				
-				weiboTimeLineScreen.sm_bubbleImage.draw(_g,t_follow_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
-				weiboTimeLineScreen.sm_bubbleImage.draw(_g,t_follow_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
-				weiboTimeLineScreen.sm_bubbleImage.draw(_g,t_fans_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
-				weiboTimeLineScreen.sm_bubbleImage.draw(_g,t_weibo_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
+				recvMain.sm_bubbleImage.draw(_g,t_follow_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
+				recvMain.sm_bubbleImage.draw(_g,t_follow_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
+				recvMain.sm_bubbleImage.draw(_g,t_fans_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
+				recvMain.sm_bubbleImage.draw(_g,t_weibo_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
 				
 				t_start_y += ft_interval;
 				

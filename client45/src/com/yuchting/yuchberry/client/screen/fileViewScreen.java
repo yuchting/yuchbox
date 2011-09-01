@@ -3,11 +3,11 @@ package com.yuchting.yuchberry.client.screen;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
-import com.yuchting.yuchberry.client.recvMain;
-import com.yuchting.yuchberry.client.sendReceive;
-
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.container.MainScreen;
+
+import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.sendReceive;
 
 public class fileViewScreen extends MainScreen{
 	

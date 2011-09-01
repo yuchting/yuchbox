@@ -117,7 +117,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 				recvMain.sm_weiboUIImage.getImageUnit("composeTitle_right"),
 				recvMain.sm_weiboUIImage);
 		
-		m_editBubbleImage = weiboTimeLineScreen.sm_bubbleImage;
+		m_editBubbleImage = recvMain.sm_bubbleImage;
 		m_timelineScreen = _timeline;
 
 		m_editTextArea.setMaxSize(WeiboItemField.fsm_maxWeiboTextLength);

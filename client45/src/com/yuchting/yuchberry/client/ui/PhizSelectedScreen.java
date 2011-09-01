@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.client.weibo;
+package com.yuchting.yuchberry.client.ui;
 
 import java.util.Vector;
 
@@ -12,7 +12,7 @@ import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.recvMain;
-import com.yuchting.yuchberry.client.ui.Phiz;
+import com.yuchting.yuchberry.client.weibo.IPhizSelected;
 
 final class PhizMgr extends Manager{
 	
@@ -165,6 +165,7 @@ final class PhizMgr extends Manager{
 	}
 	
 }
+
 public class PhizSelectedScreen extends MainScreen{
 
 	PhizMgr		m_phizMgr;
@@ -180,16 +181,16 @@ public class PhizSelectedScreen extends MainScreen{
 		add(m_phizMgr);
 	}
 	
-	public PhizMgr getPhizMgr(){
-		return m_phizMgr;
-	}
-	
 	protected  void	onDisplay(){
 		super.onDisplay();
 		
 		m_phizMgr.resetSelected();
 	}
 
+	public void setSelectedCallback(IPhizSelected _callback){
+		m_phizMgr.setSelectedCallback(_callback);
+	}
+	
 	protected boolean navigationMovement(int dx,int dy,int status,int time){
 		return m_phizMgr.navigationMovement(dx, dy, status, time);
 	}

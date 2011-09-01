@@ -1,12 +1,9 @@
 package com.yuchting.yuchberry.client;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Vector;
-
-import javax.microedition.io.file.FileConnection;
 
 import net.rim.blackberry.api.mail.Address;
 import net.rim.blackberry.api.mail.Message;
