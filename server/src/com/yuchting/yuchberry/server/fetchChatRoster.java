@@ -23,6 +23,21 @@ public class fetchChatRoster {
 			
 	public fetchChatRoster(){}
 	
+	public boolean equals(fetchChatRoster _roster){
+		return m_style == _roster.m_style && m_account.equals(_roster.m_account);
+	}
+	
+	public void copyFrom(fetchChatRoster _roster){
+		m_style 				= _roster.m_style;
+		m_presence				= _roster.m_presence;
+		m_headImageHashCode		= _roster.m_headImageHashCode;
+		
+		m_name					= _roster.m_name;
+		m_account				= _roster.m_account;
+		m_status				= _roster.m_status;
+		m_source				= _roster.m_source;
+	}
+	
 	public String getName(){return m_name;}
 	public void setName(String _name){m_name = _name;}
 	

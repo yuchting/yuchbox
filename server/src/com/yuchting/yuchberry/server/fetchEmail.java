@@ -51,7 +51,7 @@ class EmailSendAttachment extends Thread{
 	
 	public	boolean 	m_closeState = false;
 	
-	final static int	fsm_sendSize = 1024;
+	final static int	fsm_sendSize = 512;
 	
 	EmailSendAttachment(int _mailIndex,int _attachIdx,fetchEmail _mgr){
 		

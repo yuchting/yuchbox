@@ -173,10 +173,31 @@ public class fetchMgr{
 	
 	public synchronized void SetClientConnected(berrySvrDeamon _set){
 		m_currConnect = _set;
+		
+		if(_set == null){
+			ClientDisconnected();
+		}		
 	}
 	
 	public void SendData(ByteArrayOutputStream _os,boolean _sendImm)throws Exception{
 		SendData(_os.toByteArray(),_sendImm);		
+	}
+	
+	public boolean isClientConnected(){
+		
+		if(m_currConnect == null){
+			return false;
+		}
+		
+		if(m_currConnect.m_sendReceive == null ){
+			return false;
+		}
+		
+		if(!m_currConnect.m_sendReceive.isAlive()){
+			return false;
+		}
+		
+		return true;
 	}
 	
 	public void SendData(byte[] _data,boolean _sendImm)throws Exception{
@@ -242,7 +263,22 @@ public class fetchMgr{
 	            
 	            t_weibo.InitAccount(element);
 	            m_fetchAccount.addElement(t_weibo);
-	        }			
+	        }
+			
+			for( Iterator i = t_root.elementIterator("IMAccount"); i.hasNext();){
+	            Element element = (Element) i.next();
+	            
+	            String t_type = fetchAccount.ReadStringAttr(element,"type");
+	            
+	            fetchAccount t_im = getIMInstance(t_type,this);
+	            
+	            if(t_im == null){
+	            	continue;
+	            }
+	            
+	            t_im.InitAccount(element);
+	            m_fetchAccount.addElement(t_im);
+	        }	
 	    	
 		}catch(Exception ex){
 			
@@ -253,6 +289,17 @@ public class fetchMgr{
 			t_xmlFile.close();
 		}
 			
+	}
+	
+	static public fetchAccount getIMInstance(String _type,fetchMgr _mgr){
+		
+		fetchAccount t_im = null;
+		
+		if(_type.equalsIgnoreCase("gtalk")){
+			t_im = new fetchGTalk(_mgr);
+        }
+		
+		return t_im;
 	}
 	
 	static public fetchAbsWeibo getWeiboInstance(String _type,fetchMgr _mgr){
@@ -430,6 +477,8 @@ public class fetchMgr{
 							
 							m_currConnect = new berrySvrDeamon(this,t_sock,t_sendReceive);
 							
+							ClientConnected();
+							
 							//m_logger.LogOut("StartListening 3");
 							
 						}catch(Exception e){
@@ -460,6 +509,18 @@ public class fetchMgr{
 		}
 		
 		SetClientConnected(null);		
+	}
+	
+	private void ClientConnected(){
+		for(fetchAccount acc:m_fetchAccount){
+			acc.ClientConnected();
+		}		
+	}
+	
+	public void ClientDisconnected(){
+		for(fetchAccount acc:m_fetchAccount){
+			acc.ClientDisconnected();
+		}
 	}
 	
 	public synchronized void EndListening(){

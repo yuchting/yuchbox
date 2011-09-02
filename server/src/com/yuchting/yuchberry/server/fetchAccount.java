@@ -68,6 +68,16 @@ abstract public class fetchAccount {
 	 * push the message to client
 	 */
 	abstract public void PushMsg(sendReceive _sendReceive)throws Exception;
+	
+	/**
+	 * client is connected to server
+	 */
+	public void ClientConnected(){}
+	
+	/**
+	 * client is disconnected from the server
+	 */
+	public void ClientDisconnected(){}
 		
 		
 	/**

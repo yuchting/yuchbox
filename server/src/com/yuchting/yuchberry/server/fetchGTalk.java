@@ -1,6 +1,7 @@
 package com.yuchting.yuchberry.server;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Collection;
@@ -45,8 +46,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	ChatManager	m_chatManager	= null;
 	
 	Vector<fetchChatRoster>		m_chatRosterList = new Vector<fetchChatRoster>();
-	
-	
+		
 	final class ChatData{		
 		Chat			m_chatData;
 		long			m_lastActiveTime;
@@ -65,7 +65,9 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	}
 	
 	Vector<ChatData>			m_chatList = new Vector<ChatData>();
-		
+	
+	Vector<fetchChatMsg>		m_pushedChatMsgList = new Vector<fetchChatMsg>();
+	
 	public fetchGTalk(fetchMgr _mainMgr){
 		super(_mainMgr);
 	}
@@ -132,6 +134,31 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				m_chatRosterList.add(convertRoster(entry));
 			}	
 		}
+		
+		m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " prepare OK!");
+		
+		ClientDisconnected();
+	}
+	
+
+	/**
+	 * client is connected to server
+	 */
+	public void ClientConnected(){
+		Presence t_presence = new Presence(Presence.Type.available);
+		t_presence.setMode(Presence.Mode.available);
+		
+		m_mainConnection.sendPacket(t_presence);
+	}
+	
+	/**
+	 * client is disconnected from the server
+	 */
+	public void ClientDisconnected(){
+		Presence t_presence = new Presence(Presence.Type.available);
+		t_presence.setMode(Presence.Mode.xa);
+		
+		m_mainConnection.sendPacket(t_presence);
 	}
 	
 	public void entriesAdded(Collection<String> addresses){
@@ -266,12 +293,12 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		}else{
 			//TODO send to client...
     		//
-    		System.out.println(chat.getParticipant() + " Chat subject:" + message.getSubject() + " body:" + message.getBody());
-    		try{
-    			chat.sendMessage("echo");
-    		}catch(Exception e){
-    			m_mainMgr.m_logger.PrinterException(e);
-    		}                		
+			fetchChatMsg msg = convertChat(chat, message);
+			sendClientChatMsg(msg,true);
+			
+			synchronized (m_pushedChatMsgList) {
+				m_pushedChatMsgList.add(msg);				
+			}		
 		}
 		
 		synchronized(m_chatList){
@@ -291,15 +318,62 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			}
 		}
     }
+    
+    private fetchChatMsg convertChat(Chat _chat, Message message){
     	
+    	fetchChatMsg t_msg = new fetchChatMsg();
+    	
+    	t_msg.setStyle(fetchChatMsg.STYLE_GTALK);
+    	t_msg.setMsg(message.getBody());
+    	
+    	String t_owner = _chat.getParticipant().toLowerCase();
+    	int t_slash = t_owner.indexOf('/');
+    	if(t_slash != -1){
+    		t_owner = t_owner.substring(0,t_slash);
+    	}
+    	
+    	t_msg.setOwner(t_owner);
+    	
+    	t_msg.setSendTime((new Date()).getTime());
+    	
+    	return t_msg;
+    }
+    
+    private boolean sendClientChatMsg(fetchChatMsg _msg,boolean _imm){
+    	
+    	if(!m_mainMgr.isClientConnected()){
+    		return false;
+    	}
+    	
+    	try{
+    		
+    		ByteArrayOutputStream os = new ByteArrayOutputStream();
+    		os.write(msg_head.msgChat);
+    		
+    		_msg.Output(os);
+    		
+    		m_mainMgr.SendData(os, _imm);
+    		
+    		return true;
+    		
+    	}catch(Exception e){
+    		m_mainMgr.m_logger.PrinterException(e);
+    	}
+    	
+    	return false;
+    	
+    }
+    
 	private fetchChatRoster convertRoster(RosterEntry _entry){
 		
 		fetchChatRoster roster = new fetchChatRoster();
 		
 		roster.setStyle(fetchChatMsg.STYLE_GTALK);
-		roster.setName(_entry.getName());
 		roster.setAccount(_entry.getUser().toLowerCase());
-				
+		
+		String t_name = _entry.getName();
+		roster.setName(t_name == null?roster.getAccount():t_name);
+						
 		Presence t_presence = m_roster.getPresence(roster.getAccount());
 		setPresence(roster, t_presence);
 				
@@ -313,10 +387,9 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		
 		if(_presence.isAvailable()){
 
-			if(_presence.getMode() == Presence.Mode.available
-			 || _presence.getMode() == Presence.Mode.chat){
-				_roster.setPresence(fetchChatRoster.PRESENCE_AVAIL);
-			}else if(_presence.getMode() == Presence.Mode.away){
+			_roster.setPresence(fetchChatRoster.PRESENCE_AVAIL);
+			
+			if(_presence.getMode() == Presence.Mode.away){
 				_roster.setPresence(fetchChatRoster.PRESENCE_AWAY);
 			}else if(_presence.getMode() == Presence.Mode.dnd){
 				_roster.setPresence(fetchChatRoster.PRESENCE_BUSY);
@@ -381,12 +454,75 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			case msg_head.msgChat:
 				t_processed = ProcessMsgChat(in);
 				break;
+			case msg_head.msgChatRosterList:
+				t_processed = true;
+				// fetch all IM fetchAccount roster to return
+				//
+				ProcessMsgRosterList();
+				break;
+			case msg_head.msgChatConfirm:
+				t_processed = ProcessMsgChatConfirm(in);
+				break;
 		}
 		
 		return t_processed;
 	}
 	
-	public boolean ProcessMsgChat(InputStream in)throws Exception{
+	private void ProcessMsgRosterList()throws Exception{
+		
+		Vector<fetchChatRoster> t_rosterList = new Vector<fetchChatRoster>();
+		
+		for(fetchAccount t_acc: m_mainMgr.m_fetchAccount){
+			if(t_acc instanceof fetchGTalk){
+				((fetchGTalk)t_acc).loadRosterList(t_rosterList);
+			}
+		}
+		
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgChatRosterList);
+		os.write(0);
+		
+		sendReceive.WriteInt(os,t_rosterList.size());
+		
+		for(fetchChatRoster roster:t_rosterList){
+			roster.Outport(os);
+		}
+		
+		m_mainMgr.SendData(os, true);		
+	}
+	
+	private void loadRosterList(Vector<fetchChatRoster> _rosterList){
+		synchronized (m_chatRosterList) {
+			for(fetchChatRoster roster: m_chatRosterList){
+				_rosterList.add(roster);
+			}
+		}
+	}
+	
+	private boolean ProcessMsgChatConfirm(InputStream in)throws Exception{
+		int t_style = in.read();
+				
+		if(t_style == fetchChatMsg.STYLE_GTALK){
+			int t_hashCode = sendReceive.ReadInt(in);
+			
+			synchronized (m_pushedChatMsgList) {
+				for(fetchChatMsg msg:m_pushedChatMsgList){
+					if(msg.hashCode() == t_hashCode){
+						
+						m_pushedChatMsgList.remove(msg);
+						
+						m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " confirm " + t_hashCode);
+						
+						return true;
+					}
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	private boolean ProcessMsgChat(InputStream in)throws Exception{
 		int t_style = in.read();
 		
 		if(t_style == fetchChatMsg.STYLE_GTALK){
@@ -427,7 +563,12 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	}
 	
 	public void CheckFolder()throws Exception{
-		
+		if(!m_mainConnection.isConnected()){
+			
+			m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " disconnected reset it.");
+			
+			ResetSession(true);
+		}
 	}
 	
 	public void PushMsg(sendReceive _sendReceive)throws Exception{
@@ -442,6 +583,32 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 					
 					// TODO send to client this chat state
 					//
+				}
+			}
+		}
+		
+		synchronized (m_pushedChatMsgList) {
+			
+			for(int i = 0 ;i < m_pushedChatMsgList.size();i++){
+				fetchChatMsg msg = m_pushedChatMsgList.elementAt(i);
+				
+				if(msg.m_sentTimes >= 5){
+					
+					m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " sent msg 5 times give up!" + msg.hashCode());
+					m_pushedChatMsgList.remove(i);
+					
+					i--;					
+					continue;
+				}
+				
+				if(Math.abs(msg.m_sendTime - t_currTime) > 2 * 60000) {
+					
+					if(sendClientChatMsg(msg,false)){
+						
+						m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " sent msg again..." + msg.hashCode());
+						
+						msg.m_sentTimes++;
+					}
 				}
 			}
 		}

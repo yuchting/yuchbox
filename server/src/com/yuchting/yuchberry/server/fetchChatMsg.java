@@ -23,6 +23,10 @@ public class fetchChatMsg{
 	byte[]		m_fileContent	= null;
 	int			m_contentType	= 0;
 	
+
+	// server send counter
+	public		int m_sentTimes		= 0;
+	
 	public fetchChatMsg(){}
 	
 	public int getFileContentType(){return m_contentType;}
@@ -31,6 +35,10 @@ public class fetchChatMsg{
 	public void setFileContent(byte[] _fileContent,int _type){
 		m_fileContent = _fileContent;
 		m_contentType = _type;
+	}
+	
+	public int hashCode(){
+		return (getOwner() + getStyle() + getSendTime()).hashCode();
 	}
 	
 	public int getStyle(){	return m_style;	}
@@ -63,7 +71,7 @@ public class fetchChatMsg{
 		}
 	}
 	
-	public void Import(OutputStream os)throws Exception{
+	public void Output(OutputStream os)throws Exception{
 		final int version = 0;
 		sendReceive.WriteInt(os,version);
 		
