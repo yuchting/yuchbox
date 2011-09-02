@@ -37,6 +37,10 @@ public class fetchChatMsg{
 		m_contentType = _type;
 	}
 	
+	public int hashCode(){
+		return (getOwner() + getStyle() + getSendTime()).hashCode();
+	}
+	
 	public int getStyle(){	return m_style;	}
 	public void setStyle(int _style){m_style = _style;}
 	
@@ -70,7 +74,7 @@ public class fetchChatMsg{
 		}
 	}
 	
-	public void Import(OutputStream os)throws Exception{
+	public void Output(OutputStream os)throws Exception{
 		final int version = 0;
 		sendReceive.WriteInt(os,version);
 		

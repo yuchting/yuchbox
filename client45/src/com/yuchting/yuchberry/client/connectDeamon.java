@@ -1115,6 +1115,16 @@ public class connectDeamon extends Thread implements SendListener,
 		 			m_mainApp.m_settingScreen.refreshMailAccountList();
 		 		}
 		 		break;
+		 	case msg_head.msgChat:
+		 		if(m_mainApp.m_mainIMScreen != null){
+		 			m_mainApp.m_mainIMScreen.processChatMsg(in);
+		 		}
+		 		break;
+		 	case msg_head.msgChatRosterList:
+		 		if(m_mainApp.m_mainIMScreen != null){
+		 			m_mainApp.m_mainIMScreen.processChatRosterList(in);
+		 		}
+		 		break;
 		 }
 	 }
 	

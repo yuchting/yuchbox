@@ -12,23 +12,31 @@ public class ChatField extends Manager{
 	
 	public final static int	fsm_offsetWidth = 10;
 	public final static int	fsm_bubblePointWidth = 8;
-	public final static int	fsm_border		= 3;
+	public final static int	fsm_border		= 6;
 	
-	public final static int	fsm_textWidth 	= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth;
+	public final static int	fsm_maxTextWidth 	= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth;
 	
 	public final static int	fsm_ownChatTextBGColor		= 0xd8d8d8;
 	public final static int	fsm_otherChatTextBGColor	= 0xadadad;	
 	
 	fetchChatMsg			m_msg 			= null;
 	int						m_msgTextHeight = 0;
-	
+	int						m_msgTextWidth	= 0;
 	WeiboTextField			m_textfield 	= null;
 	
 	public ChatField(fetchChatMsg _msg){
 		super(Field.FOCUSABLE | Manager.NO_VERTICAL_SCROLL);
 		m_msg = _msg;
 		
-		MainIMScreen.sm_testTextArea.setText(_msg.getMsg());
+		String t_converText = WeiboTextField.getConvertString(_msg.getMsg());
+		m_msgTextWidth = MainIMScreen.sm_defaultFont.getAdvance(t_converText);
+		if(m_msgTextWidth > fsm_maxTextWidth){
+			m_msgTextWidth = fsm_maxTextWidth;
+		}
+		
+		MainIMScreen.sm_testTextArea.setPreferredWidth(m_msgTextWidth);
+		
+		MainIMScreen.sm_testTextArea.setText(t_converText);
 		m_msgTextHeight = MainIMScreen.sm_testTextArea.getHeight();
 						
 		if(_msg.isOwnMsg()){
@@ -55,28 +63,32 @@ public class ChatField extends Manager{
 		int t_x = 0;
 		
 		if(m_msg.isOwnMsg()){
-			t_x = fsm_offsetWidth + fsm_border;
+			t_x = recvMain.fsm_display_width - m_msgTextWidth - fsm_border - fsm_bubblePointWidth;
 		}else{
 			t_x = fsm_border + fsm_bubblePointWidth;
 		}
 		
 		setPositionChild(m_textfield,t_x,fsm_border);
-		layoutChild(m_textfield,fsm_textWidth,m_msgTextHeight);
+		layoutChild(m_textfield,m_msgTextWidth,m_msgTextHeight);
 
 		setExtent(recvMain.fsm_display_width,getPreferredHeight());
 	}
 	
 	protected void subpaint(Graphics _g){
 
+		int t_bubbleWidth = m_msgTextWidth + fsm_border * 2;
+		
 		if(m_msg.isOwnMsg()){
-						
-			recvMain.sm_bubbleImage.draw(_g, fsm_offsetWidth, 0, 
-					recvMain.fsm_display_width - fsm_offsetWidth - fsm_bubblePointWidth, getPreferredHeight(), 
+			
+			int t_x = recvMain.fsm_display_width - t_bubbleWidth - fsm_bubblePointWidth;
+			
+			recvMain.sm_bubbleImage.draw(_g, t_x, 0,
+					t_bubbleWidth, getPreferredHeight(), 
 					BubbleImage.RIGHT_POINT_STYLE);
 		}else{
 						
 			recvMain.sm_bubbleImage_black.draw(_g,fsm_bubblePointWidth, 0, 
-					recvMain.fsm_display_width - fsm_offsetWidth - fsm_bubblePointWidth, getPreferredHeight(), 
+					t_bubbleWidth, getPreferredHeight(), 
 					BubbleImage.LEFT_POINT_STYLE);
 		}
 		

@@ -1209,8 +1209,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	boolean m_isChatScreen = true;
-	boolean m_isWeiboOrIMScreen = true;
+	public boolean m_isChatScreen = false;
+	public boolean m_isWeiboOrIMScreen = true;
 	boolean m_weiboUpdateDlg = false;
 	
 	public void activate(){

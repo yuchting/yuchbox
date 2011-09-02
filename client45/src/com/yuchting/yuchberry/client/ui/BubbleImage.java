@@ -97,7 +97,7 @@ public class BubbleImage {
 			}
 		}
 		
-		int t_vert_remain_height = (_height - - m_top_left.m_height - m_bottom_left.m_height) % m_left.m_height;
+		int t_vert_remain_height = (_height - m_top_left.m_height - m_bottom_left.m_height) % m_left.m_height;
 		if(t_vert_remain_height > 0){
 			
 			int t_vert_y = _y + t_vert_num * m_left.m_height + m_top_left.m_height;
@@ -112,7 +112,7 @@ public class BubbleImage {
 		switch(_pointStyle){
 		case LEFT_POINT_STYLE:
 			m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width / 2,
-					_y + m_top_left.m_height);
+					_y + m_top_left.m_height / 2);
 			break;
 		case TOP_POINT_STYLE:
 			m_parentSets.drawImage(_g,m_point[TOP_POINT_STYLE],_x + m_top_left.m_width ,
@@ -120,7 +120,7 @@ public class BubbleImage {
 			break;
 		case RIGHT_POINT_STYLE:
 			m_parentSets.drawImage(_g,m_point[RIGHT_POINT_STYLE],_x + _width - m_point[RIGHT_POINT_STYLE].m_width / 2,
-					_y + m_top_right.m_height);
+					_y + m_top_right.m_height / 2);
 			break;
 		case BOTTOM_POINT_STYLE:
 			m_parentSets.drawImage(_g,m_point[BOTTOM_POINT_STYLE],_x + m_bottom_left.m_width * 2, 

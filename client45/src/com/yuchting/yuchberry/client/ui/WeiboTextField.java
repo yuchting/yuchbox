@@ -11,6 +11,14 @@ import net.rim.device.api.util.Arrays;
 
 import com.yuchting.yuchberry.client.recvMain;
 
+final class ReadText{
+	String m_originalText = null;
+	int m_index = 0;
+	public ReadText(String _text){
+		m_originalText = _text;
+	}
+}
+
 public class WeiboTextField extends ActiveRichTextField{
 	
 	int[] m_bufferedOffset	 = new int[20];
@@ -65,15 +73,9 @@ public class WeiboTextField extends ActiveRichTextField{
 		
 	}
 	
-	final class ReadText{
-		String m_originalText = null;
-		int m_index = 0;
-		public ReadText(String _text){
-			m_originalText = _text;
-		}
-	}
 	
-	private String getTag(ReadText _text){
+	
+	public static String getTag(ReadText _text){
 		
 		if(_text.m_index >= _text.m_originalText.length() - 1){
 			return null;
@@ -182,6 +184,42 @@ public class WeiboTextField extends ActiveRichTextField{
 	
 	public void paint(Graphics _g){
 		super.paint(_g);
+	}
+	
+	public static String getConvertString(String _text){
+		
+		StringBuffer t_finalText = new StringBuffer();
+		
+		ReadText t_originalText = new ReadText(_text);
+		
+		String t_read = null;
+		while((t_read = getTag(t_originalText)) != null){
+			char a = t_read.charAt(0);
+			
+			switch(a){
+			case '@':
+				t_finalText.append(t_read);		
+				break;
+			case '[':
+				
+				Phiz t_phiz = findPhizName(t_read);
+				if(t_phiz != null){
+					t_finalText.append(sm_replacePhizText);
+					
+				}else{
+					t_finalText.append(t_read);
+				}
+				
+
+				break;
+			default:
+				t_finalText.append(t_read);
+
+				break;
+			}
+		}
+		
+		return t_finalText.toString();
 	}
 	
 	public void setText(String _text){

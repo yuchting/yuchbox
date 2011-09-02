@@ -122,14 +122,14 @@
 	<Image Name="input_top" XPos="160" YPos="345" Width="16" Height="10" />
 	<Image Name="input_top_right" XPos="176" YPos="345" Width="16" Height="10" />
 	
-	<Image Name="input_left" XPos="144" YPos="355" Width="16" Height="10" />
+	<Image Name="input_left" XPos="144" YPos="355" Width="16" Height="12" />
 	<Image Name="input_bottom_left" XPos="144" YPos="365" Width="16" Height="10" />
 	<Image Name="input_bottom" XPos="160" YPos="365" Width="16" Height="10" />
 	
-	<Image Name="input_right" XPos="176" YPos="355" Width="16" Height="10" />
+	<Image Name="input_right" XPos="176" YPos="355" Width="16" Height="12" />
 	<Image Name="input_bottom_right" XPos="176" YPos="365" Width="16" Height="10" />
 	
-	<Image Name="input_inner_block" XPos="160" YPos="355" Width="16" Height="10" />
+	<Image Name="input_inner_block" XPos="160" YPos="355" Width="16" Height="12" />
 	
 	<!-- phiz -->
 	<Image Name="[呵呵]" XPos="84" YPos="0" Width="22" Height="22" />

@@ -810,7 +810,10 @@ public class weiboTimeLineScreen extends MainScreen{
     
     MenuItem m_stateItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_STATE_SCREEN_MENU_LABEL),100,0){
         public void run() {
+        	
         	recvMain t_recv = (recvMain)UiApplication.getUiApplication();
+        	
+        	t_recv.popScreen(weiboTimeLineScreen.this);
         	t_recv.pushStateScreen();
         }
     };
@@ -1081,10 +1084,11 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 			if(m_mainApp.m_connectDeamon.IsConnectState()){
 	    		m_mainApp.requestBackground();
+	    		m_mainApp.m_isWeiboOrIMScreen = true;
 	    		return false;
 	    	}else{
-	    		m_mainApp.popScreen(this);
-	    		m_mainApp.pushStateScreen();
+	    		
+	    		m_stateItem.run();
 	    		
 	    		return true;
 	    	}

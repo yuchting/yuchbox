@@ -23,7 +23,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 	public final static int fsm_minHeight = MainIMScreen.sm_defaultFontHeight + (fsm_textBorder + fsm_inputBubbleBorder) * 2;
 	public final static int fsm_maxHeight = recvMain.fsm_display_height / 2;
 	
-	MainChatScreen		m_screen	= null;
+	MiddleMgr			m_middleMgr	= null;
 	ImageButton			m_phizButton = null;
 	
 	int					m_textWidth	= 0;
@@ -64,15 +64,15 @@ final class InputManager extends Manager implements FieldChangeListener{
 		}
 	};
 	
-	public InputManager(MainChatScreen _mainScreen){
+	public InputManager(MiddleMgr _mainScreen){
 		super(Manager.NO_VERTICAL_SCROLL);
 		
-		m_screen = _mainScreen;
+		m_middleMgr		= _mainScreen;
 		
 		m_phizButton	= new ImageButton("Phiz", 
-				recvMain.sm_weiboUIImage.getImageUnit("phiz_button"), 
-				recvMain.sm_weiboUIImage.getImageUnit("phiz_button_focus"), 
-				recvMain.sm_weiboUIImage);
+								recvMain.sm_weiboUIImage.getImageUnit("phiz_button"), 
+								recvMain.sm_weiboUIImage.getImageUnit("phiz_button_focus"), 
+								recvMain.sm_weiboUIImage);
 		
 		m_textWidth = getPreferredWidth() - m_phizButton.getImageWidth() - (fsm_textBorder + fsm_inputBubbleBorder)* 2;
 		
@@ -131,7 +131,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 		
 		m_inputBackground.draw(_g, fsm_inputBubbleBorder, fsm_inputBubbleBorder, 
 								m_textWidth + fsm_textBorder * 2,
-								m_inputManager.getPreferredHeight() - fsm_inputBubbleBorder * 2,
+								getPreferredHeight() - fsm_inputBubbleBorder * 2,
 								BubbleImage.NO_POINT_STYLE);
 		
 		super.subpaint(_g);
@@ -141,9 +141,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 		if(context != FieldChangeListener.PROGRAMMATIC){
 			if(field == m_editTextArea){
 
-				m_screen.m_currRoster.m_lastChatText = m_editTextArea.getText();
-				
-				int t_formerHeight = m_currHeight;
+				m_middleMgr.m_chatScreen.m_currRoster.m_lastChatText = m_editTextArea.getText();
 				
 				m_currHeight = m_editTextArea.getHeight() + (fsm_textBorder + fsm_inputBubbleBorder) * 2;
 				
@@ -154,16 +152,102 @@ final class InputManager extends Manager implements FieldChangeListener{
 				if(m_currHeight > fsm_maxHeight){
 					m_currHeight = fsm_maxHeight;
 				}
-				
-				if(t_formerHeight != m_currHeight){
-					sublayout(0,0);
-				}
-				
+									
+				m_middleMgr.invalidate();
+				m_middleMgr.sublayout(0, 0);					
+								
 			}
 		}
 	}
 }
 
+final class MiddleMgr extends VerticalFieldManager{
+	
+	VerticalFieldManager	m_chatMsgMgr = null;
+	
+	VerticalFieldManager	m_chatMsgMiddleMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
+		
+		public int getPreferredHeight(){
+			return MiddleMgr.this.getPreferredHeight() - m_inputMgr.getPreferredHeight();
+		}
+		
+		protected void sublayout(int _width,int _height){
+			super.sublayout(_width, this.getPreferredHeight());
+		}
+	};
+	
+	InputManager			m_inputMgr		= null;
+	
+	MainChatScreen		m_chatScreen	= null;
+	
+	public MiddleMgr(MainChatScreen _charScreen){
+		super(Manager.VERTICAL_SCROLL);
+		
+		m_chatScreen	= _charScreen;
+		
+		m_chatMsgMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL);
+		m_chatMsgMiddleMgr.add(m_chatMsgMgr);
+		add(m_chatMsgMiddleMgr);
+		
+		m_inputMgr = new InputManager(this);
+		add(m_inputMgr);
+	}
+	
+	public void prepareChatScreen(RosterChatData _chatData){
+		m_chatMsgMgr.deleteAll();
+		
+		for(int i = 0 ;i < _chatData.m_chatMsgList.size();i++){
+			ChatField t_field = new ChatField((fetchChatMsg)_chatData.m_chatMsgList.elementAt(i));
+			
+			m_chatMsgMgr.add(t_field);
+		}
+		
+		m_inputMgr.m_editTextArea.setText(_chatData.m_lastChatText);
+	}
+	
+	public int getPreferredWidth(){
+		return recvMain.fsm_display_width;
+	}
+	
+	public int getPreferredHeight(){
+		return recvMain.fsm_display_height - 
+			m_chatScreen.m_title.getImageHeight() - MainChatScreen.fsm_titleBottomBorder;
+	}
+	
+	public void sublayout(int _width,int _height){
+		
+		setPositionChild(m_chatMsgMiddleMgr,0,0);		
+		layoutChild(m_chatMsgMiddleMgr,m_chatMsgMiddleMgr.getPreferredWidth(),m_chatMsgMiddleMgr.getPreferredHeight());
+		
+		int t_y = getPreferredHeight() - m_inputMgr.getPreferredHeight();
+		
+		setPositionChild(m_inputMgr,0,t_y);
+		layoutChild(m_inputMgr,m_inputMgr.getPreferredWidth(),m_inputMgr.getPreferredHeight());	
+		
+		setExtent(recvMain.fsm_display_width,getPreferredHeight());
+	}
+	
+	public void onDisplay(){
+		
+		int t_chatNum = m_chatMsgMgr.getFieldCount();
+		if(t_chatNum > 0){
+			m_chatMsgMgr.getField(t_chatNum - 1).setFocus();
+		}
+		
+		m_inputMgr.m_editTextArea.setFocus();
+		
+		if(m_inputMgr.m_editTextArea.getTextLength() > 0){
+			
+			m_inputMgr.m_editTextArea.setCursorPosition(
+					m_inputMgr.m_editTextArea.getTextLength() - 1);
+		}	
+	}
+	
+	public void addChatMsg(fetchChatMsg _msg){
+		ChatField t_field = new ChatField(_msg);
+		m_chatMsgMgr.add(t_field);
+	}
+}
 public class MainChatScreen extends MainScreen{
 
 	public final static int		fsm_titleBottomBorder = 4;
@@ -176,12 +260,10 @@ public class MainChatScreen extends MainScreen{
 	ButtonSegImage	m_title			= null;
 	Field			m_header 		= null;
 	
-	InputManager	m_inputMgr		= null;
-	
-	VerticalFieldManager	m_chatMsgMgr = null;
+	MiddleMgr		m_middleMgr		= new MiddleMgr(this);
 			
 	public MainChatScreen(recvMain _mainApp,MainIMScreen _mainScreen){
-		super(Manager.VERTICAL_SCROLL);
+		super(Manager.NO_VERTICAL_SCROLL);
 		
 		m_mainApp = _mainApp;
 		m_mainScreen = _mainScreen;
@@ -232,40 +314,26 @@ public class MainChatScreen extends MainScreen{
 		
 		setTitle(m_header);
 		
-		m_chatMsgMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL);		
-		add(m_chatMsgMgr);
+		add(m_middleMgr);
 		
-		m_inputMgr = new InputManager(this);
-		setStatus(m_inputMgr);
 	}
 	
 	public void prepareChatScreen(RosterChatData _chatData){
 		m_currRoster = _chatData;
-		m_chatMsgMgr.deleteAll();
-		
-		for(int i = 0 ;i < _chatData.m_chatList.size();i++){
-			ChatField t_field = new ChatField((fetchChatMsg)_chatData.m_chatList.elementAt(i));
-			
-			m_chatMsgMgr.add(t_field);
-		}
-		
-		m_inputMgr.m_editTextArea.setText(_chatData.m_lastChatText);
-		
+		m_middleMgr.prepareChatScreen(_chatData);		
 		invalidate();
 	}
 	
 	protected void onDisplay(){
-		super.onDisplay();	
-		
-		m_inputMgr.m_editTextArea.setFocus();
-		
-		if(m_inputMgr.m_editTextArea.getTextLength() > 0){
-			m_inputMgr.m_editTextArea.setCursorPosition(m_inputMgr.m_editTextArea.getTextLength() - 1);
-		}		
+		super.onDisplay();
+		m_middleMgr.onDisplay();	
 	}
 	
 	public boolean onClose(){
+		m_mainApp.m_isChatScreen = false;
+		
 		close();
+		
 		return true;
 	}
 }
