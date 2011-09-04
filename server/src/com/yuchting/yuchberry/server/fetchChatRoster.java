@@ -21,10 +21,14 @@ public class fetchChatRoster {
 	String m_status		= "";
 	String m_source 	= "";
 			
+	String m_ownAccount = "";
+	
 	public fetchChatRoster(){}
 	
 	public boolean equals(fetchChatRoster _roster){
-		return m_style == _roster.m_style && m_account.equals(_roster.m_account);
+		return m_style == _roster.m_style 
+				&& m_account.equals(_roster.m_account) 
+				&& m_ownAccount.equals(_roster.m_ownAccount);
 	}
 	
 	public void copyFrom(fetchChatRoster _roster){
@@ -36,6 +40,7 @@ public class fetchChatRoster {
 		m_account				= _roster.m_account;
 		m_status				= _roster.m_status;
 		m_source				= _roster.m_source;
+		m_ownAccount 			= _roster.m_ownAccount;
 	}
 	
 	public String getName(){return m_name;}
@@ -59,6 +64,8 @@ public class fetchChatRoster {
 	public String getSource(){return m_source;}
 	public void setSource(String _source){m_source = _source;}
 	
+	public String getOwnAccount(){return m_ownAccount;}
+	public void setOwnAccount(String _own){m_ownAccount = _own;}	
 
 	public void Import(InputStream in)throws Exception{
 		final int version = sendReceive.ReadInt(in);
@@ -71,6 +78,7 @@ public class fetchChatRoster {
 		m_account 			= sendReceive.ReadString(in);
 		m_status 			= sendReceive.ReadString(in);
 		m_source 			= sendReceive.ReadString(in);
+		m_ownAccount		= sendReceive.ReadString(in);
 	}
 	
 	public void Outport(OutputStream os)throws Exception{
@@ -105,6 +113,12 @@ public class fetchChatRoster {
 			sendReceive.WriteString(os,m_source,false);
 		}else{
 			sendReceive.WriteString(os,"",false);
+		}
+		
+		if(m_ownAccount != null){
+			sendReceive.WriteString(os,m_ownAccount,false);
+		}else{
+			sendReceive.WriteString(os, m_ownAccount,false);
 		}
 	}
 }

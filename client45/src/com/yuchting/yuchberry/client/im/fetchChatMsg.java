@@ -7,6 +7,12 @@ import com.yuchting.yuchberry.client.sendReceive;
 
 public class fetchChatMsg{
 	
+	public static int 				SEND_STATE_PADDING	= 0;
+	public static int 				SEND_STATE_SENDING	= 1;
+	public static int					SEND_STATE_SENT		= 2;
+	public static int					SEND_STATE_READ		= 3;
+	
+	
 	public final static byte			STYLE_GTALK = 0;
 	public final static byte			STYLE_MSN = 1;
 		
@@ -25,8 +31,11 @@ public class fetchChatMsg{
 	byte[]		m_fileContent	= null;
 	int			m_contentType	= 0;
 	
+	// client using variables
+	//
 	boolean 	m_isOwnMsg		= false;
-	
+	int			m_sendState		= SEND_STATE_PADDING;
+		
 	public fetchChatMsg(){}
 	
 	public int getFileContentType(){return m_contentType;}
@@ -46,6 +55,9 @@ public class fetchChatMsg{
 	
 	public boolean isOwnMsg(){return m_isOwnMsg;}
 	public void setIsOwnMsg(boolean _isOwnMsg){m_isOwnMsg = _isOwnMsg;}
+	
+	public int getSendState(){return m_sendState;}
+	public void setSendState(int _state){m_sendState = _state;}
 	
 	public long getSendTime(){return m_sendTime;}
 	public void setSendTime(long _time){m_sendTime = _time;}

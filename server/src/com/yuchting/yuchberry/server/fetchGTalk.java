@@ -27,6 +27,36 @@ import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.packet.VCard;
 
 
+final class ChatData{		
+	Chat			m_chatData;
+	
+	String			m_accountName;
+	long			m_lastActiveTime;
+	
+	boolean		m_isYBClient;
+	
+	int				m_chatState 		= fetchChatMsg.CHAT_STATE_COMMON;
+	int				m_chatState_sent	= fetchChatMsg.CHAT_STATE_COMMON;
+	
+	public ChatData(Chat _data,long _time){
+		m_chatData = _data;
+		m_accountName = convertAccount(_data.getParticipant());
+		
+		m_lastActiveTime = _time;
+		m_isYBClient = _data.getParticipant().indexOf(fetchGTalk.fsm_ybClientSource) != -1;
+	}
+	
+	static public String convertAccount(String _participant){
+		
+		int t_slash = _participant.indexOf('/');
+		if(t_slash != -1){
+			_participant = _participant.substring(0,t_slash).toLowerCase();
+		}
+		return _participant;
+	}
+}
+
+
 public class fetchGTalk extends fetchAccount implements RosterListener,
 															ChatManagerListener,
 															MessageListener{
@@ -47,22 +77,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	
 	Vector<fetchChatRoster>		m_chatRosterList = new Vector<fetchChatRoster>();
 		
-	final class ChatData{		
-		Chat			m_chatData;
-		long			m_lastActiveTime;
-		
-		boolean		m_isYBClient;
-		
-		int				m_chatState 		= fetchChatMsg.CHAT_STATE_COMMON;
-		int				m_chatState_sent	= fetchChatMsg.CHAT_STATE_COMMON;
-		
-		public ChatData(Chat _data,long _time){
-			m_chatData = _data;
-			m_lastActiveTime = _time;
-			
-			m_isYBClient = _data.getParticipant().indexOf(fsm_ybClientSource) != -1;
-		}
-	}
+	
 	
 	Vector<ChatData>			m_chatList = new Vector<ChatData>();
 	
@@ -245,12 +260,14 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
         if(!createdLocally){
         	        	
         	chat.addMessageListener(this);
+        	
+        	String t_acc = ChatData.convertAccount(chat.getParticipant());
             
             synchronized(m_chatList){
             	
 				for(ChatData data:m_chatList){
 					
-					if(data.m_chatData.getParticipant().equals(chat.getParticipant())){
+					if(data.m_accountName.equals(t_acc)){
 						
 						data.m_lastActiveTime = (new Date()).getTime();
 						
@@ -301,11 +318,13 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			}		
 		}
 		
+		String t_acc  = ChatData.convertAccount(chat.getParticipant());
 		synchronized(m_chatList){
+			
 			
 			for(ChatData data:m_chatList){
 				
-				if(data.m_chatData.getParticipant().equals(chat.getParticipant())){
+				if(data.m_accountName.equals(t_acc)){
 					
 					data.m_lastActiveTime = (new Date()).getTime();
 					
@@ -326,13 +345,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     	t_msg.setStyle(fetchChatMsg.STYLE_GTALK);
     	t_msg.setMsg(message.getBody());
     	
-    	String t_owner = _chat.getParticipant().toLowerCase();
-    	int t_slash = t_owner.indexOf('/');
-    	if(t_slash != -1){
-    		t_owner = t_owner.substring(0,t_slash);
-    	}
-    	
-    	t_msg.setOwner(t_owner);
+    	t_msg.setOwner(ChatData.convertAccount(_chat.getParticipant()));
     	
     	t_msg.setSendTime((new Date()).getTime());
     	
@@ -370,6 +383,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		
 		roster.setStyle(fetchChatMsg.STYLE_GTALK);
 		roster.setAccount(_entry.getUser().toLowerCase());
+		roster.setOwnAccount(GetAccountName().toLowerCase());
 		
 		String t_name = _entry.getName();
 		roster.setName(t_name == null?roster.getAccount():t_name);
@@ -527,6 +541,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		
 		if(t_style == fetchChatMsg.STYLE_GTALK){
 			
+			long	t_sendTime = sendReceive.ReadLong(in);
 			String from = sendReceive.ReadString(in);
 			
 			if(from.equals(m_accountName)){
@@ -545,15 +560,21 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				synchronized (m_chatList){
 					
 					for(ChatData data:m_chatList){
-						if(data.m_chatData.getParticipant().equals(to)){
+						if(data.m_accountName.equals(to)){
 							
 							data.m_chatData.sendMessage(message);
 							data.m_lastActiveTime = (new Date()).getTime();
 							
-							return true;
+							break;
 						}
 					}
 				}
+				
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+				os.write(msg_head.msgChatConfirm);
+				sendReceive.WriteLong(os,t_sendTime);
+				
+				m_mainMgr.SendData(os, true);
 				
 				return true;
 			}

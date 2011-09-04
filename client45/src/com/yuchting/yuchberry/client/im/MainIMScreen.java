@@ -1,5 +1,6 @@
 package com.yuchting.yuchberry.client.im;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Vector;
@@ -91,6 +92,8 @@ public class MainIMScreen extends MainScreen{
 	Vector					m_rosterChatDataList = new Vector();
 	
 	VerticalFieldManager	m_currMgr	= null;	
+	
+	Vector					m_sendChatDeamon = new Vector();
 	
 	boolean				m_isRequestRoster  = false;
 	
@@ -451,5 +454,27 @@ public class MainIMScreen extends MainScreen{
 		
 	}
 	
+	public void processChatConfirm(ByteArrayInputStream in)throws Exception{
+		
+		long t_sendTime = sendReceive.ReadLong(in);
+		synchronized (m_sendChatDeamon) {
+			for(int i = 0 ;i < m_sendChatDeamon.size();i++){
+				SendChatMsgDeamon t_daemon = (SendChatMsgDeamon)m_sendChatDeamon.elementAt(i);
+				if(t_daemon.m_sendMsg.getSendTime() == t_sendTime){
+					
+					t_daemon.inter();
+					
+					m_sendChatDeamon.removeElementAt(i);
+					
+					break;
+				}
+			}
+		}
+	}
+	
+	public void addSendChatMsg(fetchChatMsg _msg,String _sendTo){
+		SendChatMsgDeamon t_daemon = new SendChatMsgDeamon(_msg, _sendTo, m_chatScreen);
+		m_sendChatDeamon.addElement(t_daemon);
+	}
 
 }

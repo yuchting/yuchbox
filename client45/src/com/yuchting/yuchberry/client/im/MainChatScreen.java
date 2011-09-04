@@ -1,14 +1,22 @@
 package com.yuchting.yuchberry.client.im;
 
+import java.util.Date;
+
+
+import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.component.AutoTextEditField;
+import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
+import local.localResource;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ButtonSegImage;
@@ -138,26 +146,49 @@ final class InputManager extends Manager implements FieldChangeListener{
 	}
 	
 	public void fieldChanged(Field field, int context) {
-		if(context != FieldChangeListener.PROGRAMMATIC){
-			if(field == m_editTextArea){
+		
+		if(field == m_editTextArea){
 
-				m_middleMgr.m_chatScreen.m_currRoster.m_lastChatText = m_editTextArea.getText();
-				
-				m_currHeight = m_editTextArea.getHeight() + (fsm_textBorder + fsm_inputBubbleBorder) * 2;
-				
-				if(m_currHeight < fsm_minHeight){
-					m_currHeight = fsm_minHeight;
-				}
-				
-				if(m_currHeight > fsm_maxHeight){
-					m_currHeight = fsm_maxHeight;
-				}
-									
-				m_middleMgr.invalidate();
-				m_middleMgr.sublayout(0, 0);					
-								
+			m_middleMgr.m_chatScreen.m_currRoster.m_lastChatText = m_editTextArea.getText();
+			
+			m_currHeight = m_editTextArea.getHeight() + (fsm_textBorder + fsm_inputBubbleBorder) * 2;
+			
+			if(m_currHeight < fsm_minHeight){
+				m_currHeight = fsm_minHeight;
 			}
+			
+			if(m_currHeight > fsm_maxHeight){
+				m_currHeight = fsm_maxHeight;
+			}
+								
+			m_middleMgr.invalidate();
+			m_middleMgr.sublayout(0, 0);					
+							
 		}
+	
+	}
+	
+	protected boolean keyDown(int keycode,int time){
+		final int key = Keypad.key(keycode);
+		if(key == 10){
+			boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
+    		if(t_shiftDown && send()){
+    			return true;
+    		}
+		}
+		return super.keyDown(keycode,time);
+	}
+	
+	public boolean send(){
+		String text = m_editTextArea.getText();
+		if(text.length() != 0){
+			m_middleMgr.m_chatScreen.sendChatMsg(text);
+			m_editTextArea.setText("");
+			
+			return true;
+		}
+		
+		return false;
 	}
 }
 
@@ -176,7 +207,7 @@ final class MiddleMgr extends VerticalFieldManager{
 		}
 	};
 	
-	InputManager			m_inputMgr		= null;
+	InputManager		m_inputMgr		= null;
 	
 	MainChatScreen		m_chatScreen	= null;
 	
@@ -196,10 +227,15 @@ final class MiddleMgr extends VerticalFieldManager{
 	public void prepareChatScreen(RosterChatData _chatData){
 		m_chatMsgMgr.deleteAll();
 		
+		ChatField t_field = null;
 		for(int i = 0 ;i < _chatData.m_chatMsgList.size();i++){
-			ChatField t_field = new ChatField((fetchChatMsg)_chatData.m_chatMsgList.elementAt(i));
+			t_field = new ChatField((fetchChatMsg)_chatData.m_chatMsgList.elementAt(i));
 			
 			m_chatMsgMgr.add(t_field);
+		}
+		
+		if(t_field != null){
+			t_field.setFocus();
 		}
 		
 		m_inputMgr.m_editTextArea.setText(_chatData.m_lastChatText);
@@ -227,6 +263,8 @@ final class MiddleMgr extends VerticalFieldManager{
 		setExtent(recvMain.fsm_display_width,getPreferredHeight());
 	}
 	
+	
+	
 	public void onDisplay(){
 		
 		int t_chatNum = m_chatMsgMgr.getFieldCount();
@@ -243,12 +281,41 @@ final class MiddleMgr extends VerticalFieldManager{
 		}	
 	}
 	
-	public void addChatMsg(fetchChatMsg _msg){
+	public synchronized void addChatMsg(fetchChatMsg _msg){
 		ChatField t_field = new ChatField(_msg);
 		m_chatMsgMgr.add(t_field);
+		
+		// scroll to bottom
+		//
+		t_field.setFocus();
+		
+		// set the focus back
+		//
+		m_inputMgr.m_editTextArea.setFocus();
+	}
+	
+	public synchronized ChatField findChatField(fetchChatMsg _msg){
+		int t_num = getFieldCount();
+		for(int i = 0;i < t_num;i++){
+			ChatField t_field = (ChatField)m_chatMsgMgr.getField(i);
+			
+			if(t_field.m_msg == _msg){
+				return t_field;
+			}
+		}
+		
+		return null;
 	}
 }
 public class MainChatScreen extends MainScreen{
+	
+	int m_menu_op = 0;
+	MenuItem m_sendMenu = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_SEND_LABEL),m_menu_op++,0){
+		public void run(){
+			m_middleMgr.m_inputMgr.send();
+		}
+	};
+	
 
 	public final static int		fsm_titleBottomBorder = 4;
 	
@@ -265,7 +332,7 @@ public class MainChatScreen extends MainScreen{
 	public MainChatScreen(recvMain _mainApp,MainIMScreen _mainScreen){
 		super(Manager.NO_VERTICAL_SCROLL);
 		
-		m_mainApp = _mainApp;
+		m_mainApp 	= _mainApp;
 		m_mainScreen = _mainScreen;
 
 		m_title = new ButtonSegImage(recvMain.sm_weiboUIImage.getImageUnit("nav_bar_left"),
@@ -317,6 +384,11 @@ public class MainChatScreen extends MainScreen{
 		add(m_middleMgr);
 		
 	}
+	protected void makeMenu(Menu _menu,int instance){
+		_menu.add(m_sendMenu);
+
+		super.makeMenu(_menu,instance);
+	}
 	
 	public void prepareChatScreen(RosterChatData _chatData){
 		m_currRoster = _chatData;
@@ -335,5 +407,23 @@ public class MainChatScreen extends MainScreen{
 		close();
 		
 		return true;
+	}
+	
+	public void sendChatMsg(String _text){
+		// add UI
+		//
+		fetchChatMsg t_msg = new fetchChatMsg();
+		t_msg.setOwner(m_currRoster.m_roster.getOwnAccount());
+		t_msg.setSendTime((new Date()).getTime());
+		t_msg.setMsg(_text);
+		t_msg.setStyle(m_currRoster.m_roster.getStyle());
+		t_msg.setIsOwnMsg(true);
+		
+		m_currRoster.m_chatMsgList.addElement(t_msg);
+		m_middleMgr.addChatMsg(t_msg);
+		
+		// add send daemon
+		//
+		m_mainScreen.addSendChatMsg(t_msg,m_currRoster.m_roster.getAccount());
 	}
 }

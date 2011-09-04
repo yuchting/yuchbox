@@ -6,11 +6,12 @@ import net.rim.device.api.ui.Manager;
 
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
+import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.WeiboTextField;
 
 public class ChatField extends Manager{
-	
-	public final static int	fsm_offsetWidth = 10;
+		
+	public final static int	fsm_offsetWidth = 16;
 	public final static int	fsm_bubblePointWidth = 8;
 	public final static int	fsm_border		= 6;
 	
@@ -24,9 +25,29 @@ public class ChatField extends Manager{
 	int						m_msgTextWidth	= 0;
 	WeiboTextField			m_textfield 	= null;
 	
+	int						m_sendState		= fetchChatMsg.SEND_STATE_PADDING;
+	
+	final static String[]	fsm_stateImageStr = 
+	{
+		"padding_chat",
+		"sending_chat",
+		"sent_chat",
+		"read_chat",
+	};
+	
+	static ImageUnit[]	sm_stateImage = new ImageUnit[fsm_stateImageStr.length];
+	static {
+		try{
+			for(int i = 0 ;i < fsm_stateImageStr.length;i++){
+				sm_stateImage[i] = recvMain.sm_weiboUIImage.getImageUnit(fsm_stateImageStr[i]);
+			}
+		}catch(Exception e){}
+	}
+	
 	public ChatField(fetchChatMsg _msg){
 		super(Field.FOCUSABLE | Manager.NO_VERTICAL_SCROLL);
 		m_msg = _msg;
+		m_sendState = _msg.getSendState();
 		
 		String t_converText = WeiboTextField.getConvertString(_msg.getMsg());
 		m_msgTextWidth = MainIMScreen.sm_defaultFont.getAdvance(t_converText);
@@ -50,6 +71,13 @@ public class ChatField extends Manager{
 		add(m_textfield);		
 	}
 	
+	public void setSendState(int _state){
+		if(_state >= 0 && _state <= fetchChatMsg.SEND_STATE_READ){
+			m_sendState = _state;
+			
+			invalidate();
+		}
+	}
 	public int getPreferredWidth(){
 		return recvMain.fsm_display_width;
 	}
@@ -78,20 +106,27 @@ public class ChatField extends Manager{
 
 		int t_bubbleWidth = m_msgTextWidth + fsm_border * 2;
 		
+		int t_x = 0;
+		
 		if(m_msg.isOwnMsg()){
 			
-			int t_x = recvMain.fsm_display_width - t_bubbleWidth - fsm_bubblePointWidth;
+			t_x = recvMain.fsm_display_width - t_bubbleWidth - fsm_bubblePointWidth;
 			
 			recvMain.sm_bubbleImage.draw(_g, t_x, 0,
 					t_bubbleWidth, getPreferredHeight(), 
 					BubbleImage.RIGHT_POINT_STYLE);
 		}else{
-						
+			
 			recvMain.sm_bubbleImage_black.draw(_g,fsm_bubblePointWidth, 0, 
 					t_bubbleWidth, getPreferredHeight(), 
 					BubbleImage.LEFT_POINT_STYLE);
 		}
 		
 		super.subpaint(_g);
+		
+		if(m_msg.isOwnMsg()){
+			recvMain.sm_weiboUIImage.drawImage(_g, sm_stateImage[m_msg.getSendState()], 
+							t_x - sm_stateImage[m_msg.getSendState()].getWidth(), 0);
+		}
 	}
 }

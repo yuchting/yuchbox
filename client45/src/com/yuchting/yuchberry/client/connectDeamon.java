@@ -60,7 +60,7 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	FileConnection		m_keyfile;
 	 
-	SocketConnection	m_conn 					= null;
+	public SocketConnection m_conn 					= null;
 	 
 	Vector				m_sendingMailAttachment = new Vector();
 	
@@ -116,9 +116,9 @@ public class connectDeamon extends Thread implements SendListener,
 	Vector				m_composingAttachment 	= new Vector();
 	 
 	String				m_currStateString 		= new String();
-	recvMain			m_mainApp 				= null;
-	 
-	boolean			m_sendAuthMsg			= false;
+	
+	public recvMain		m_mainApp 				= null; 
+	public boolean		m_sendAuthMsg			= false;
 	 
 	 
 	int				m_ipConnectCounter 		= 0;
@@ -1123,6 +1123,11 @@ public class connectDeamon extends Thread implements SendListener,
 		 	case msg_head.msgChatRosterList:
 		 		if(m_mainApp.m_mainIMScreen != null){
 		 			m_mainApp.m_mainIMScreen.processChatRosterList(in);
+		 		}
+		 		break;
+		 	case msg_head.msgChatConfirm:
+		 		if(m_mainApp.m_mainIMScreen != null){
+		 			m_mainApp.m_mainIMScreen.processChatConfirm(in);
 		 		}
 		 		break;
 		 }
