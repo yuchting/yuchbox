@@ -23,6 +23,7 @@ import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.RosterListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.packet.VCard;
 
@@ -56,13 +57,136 @@ final class ChatData{
 	}
 }
 
+final class ComposeStateMessage extends Packet{
+	
+	int m_composeState = 0;
+	String m_to = null;
+	
+	public ComposeStateMessage(int _state,String _to){
+		m_composeState = _state;
+		m_to = _to;
+	}
+	
+	public String toXML(){
+		StringBuffer t_final = new StringBuffer();
+		t_final.append("<message type=\"chat\" id=\"").append(nextID()).append("\" to=\"")
+			 .append(m_to).append("\">");
+		
+		if(m_composeState == fetchChatMsg.CHAT_STATE_COMPOSING){
+			t_final.append("<composing xmlns=\"").append(fetchGTalk.fsm_chatStateNamespace).append("\"/></message> ");
+		}else{
+			t_final.append("<paused xmlns=\"").append(fetchGTalk.fsm_chatStateNamespace).append("\"/></message> ");
+		}
+		
+		return t_final.toString();
+	}
+	
+}
 
 public class fetchGTalk extends fetchAccount implements RosterListener,
 															ChatManagerListener,
 															MessageListener{
 		
-
-	public final static	String fsm_ybClientSource = "YuchBerry.info";
+	public final static String[] fsm_gtalkPhiz = 
+	{
+		":)",
+		":-D",
+		":-(",
+		";-)",
+		
+		":P",
+		"=-O",
+		":kiss:",
+		"8-)",
+		
+		":[",
+		":'-(",
+		":-/",
+		"O:-)",
+		
+		":-X",
+		":-$",
+		":-!",
+		">:o",
+		
+		">:-(",
+		":yes:",
+		":no:",
+		":wait:",
+		
+		"@->--",
+		":telephone:",
+		":email:",
+		":jabber:",
+		
+		":cake:",
+		":heart:",
+		":brokenheart",
+		":music:",
+		
+		":beer:",
+		":coffee:",
+		":money:",
+		":moon:",
+		
+		":sun:",
+		":star:",
+		":|",
+		"\\m/",
+		
+	};
+	
+	public final static String[] fsm_weiboPhiz = 
+	{
+		"[呵呵]",
+		"[嘻嘻]",
+		"[失望]",
+		"[太开心]",
+		
+		"[馋嘴]",
+		"[抓狂]",
+		"[爱你]",
+		"[酷]",
+		
+		"[可爱]",
+		"[泪]",
+		"[懒得理你]",
+		"[晕]",
+		
+		"[闭嘴]",
+		"[嘘]",
+		"[闭嘴]",
+		"[怒骂]",
+		
+		"[怒]",
+		"[good]",
+		"[弱]",
+		"[wait]",
+		
+		"[花]",
+		"[电话]",
+		"[邮件]",
+		"[jabber]",
+		
+		"[蛋糕]",
+		"[心]",
+		"[伤心]",
+		"[音乐]",
+		
+		"[干杯]",
+		"[咖啡]",
+		"[钱]",
+		"[月亮]",
+		
+		"[太阳]",
+		"[星星]",
+		"[吃惊]",
+		"[猪头]",
+		
+	};
+	
+	public final static String fsm_ybClientSource = "YuchBerry.info";
+	public final static String fsm_chatStateNamespace = "http://jabber.org/protocol/chatstates";
 	
 	String	m_accountName 		= null;
 	String	m_prefix			= null;
@@ -77,8 +201,6 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	
 	Vector<fetchChatRoster>		m_chatRosterList = new Vector<fetchChatRoster>();
 		
-	
-	
 	Vector<ChatData>			m_chatList = new Vector<ChatData>();
 	
 	Vector<fetchChatMsg>		m_pushedChatMsgList = new Vector<fetchChatMsg>();
@@ -90,6 +212,8 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	public void InitAccount(Element _elem)throws Exception{
 		
 		m_accountName	= fetchAccount.ReadStringAttr(_elem,"account");
+		m_accountName	= m_accountName.toLowerCase();
+		
 		m_password		= fetchAccount.ReadStringAttr(_elem,"password");
 		
 		m_cryptPassword	= fetchAccount.ReadStringAttr(_elem,"cryptPassword");
@@ -109,8 +233,13 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		return m_accountName + "[GTalk]/";
 	}
 	
+	public int getCurrChatStyle(){
+		return fetchChatMsg.STYLE_GTALK;
+	}
 	
 	public void ResetSession(boolean _fullTest)throws Exception{
+		
+		DestroySession();
 		
 		if(m_mainConnection == null){
 			// Create a connection to the jabber.org server on a specific port.
@@ -253,31 +382,29 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     	}
     }
     
-    final static String fsm_chatStateNamespace = "http://jabber.org/protocol/chatstates";
+   
     
     public void chatCreated(Chat chat, boolean createdLocally){
+    	        	        	
+    	chat.addMessageListener(this);
     	
-        if(!createdLocally){
-        	        	
-        	chat.addMessageListener(this);
+    	String t_acc = ChatData.convertAccount(chat.getParticipant());
+        
+        synchronized(m_chatList){
         	
-        	String t_acc = ChatData.convertAccount(chat.getParticipant());
-            
-            synchronized(m_chatList){
-            	
-				for(ChatData data:m_chatList){
-					
-					if(data.m_accountName.equals(t_acc)){
-						
-						data.m_lastActiveTime = (new Date()).getTime();
-						
-						return;
-					}
-				}
+			for(ChatData data:m_chatList){
 				
-				m_chatList.add(new ChatData(chat, (new Date()).getTime()));
-			}            
-        }
+				if(data.m_accountName.equals(t_acc)){
+					
+					data.m_lastActiveTime = (new Date()).getTime();
+					
+					return;
+				}
+			}
+			
+			m_chatList.add(new ChatData(chat, (new Date()).getTime()));
+		}            
+        
     }
     
     public void processMessage(Chat chat, Message message){
@@ -313,6 +440,8 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			fetchChatMsg msg = convertChat(chat, message);
 			sendClientChatMsg(msg,true);
 			
+			t_state = fetchChatMsg.CHAT_STATE_COMMON;
+			
 			synchronized (m_pushedChatMsgList) {
 				m_pushedChatMsgList.add(msg);				
 			}		
@@ -343,13 +472,28 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     	fetchChatMsg t_msg = new fetchChatMsg();
     	
     	t_msg.setStyle(fetchChatMsg.STYLE_GTALK);
-    	t_msg.setMsg(message.getBody());
-    	
+    	t_msg.setMsg(convertPhiz(message.getBody(),true));
+    	t_msg.setSendTo(GetAccountName());
     	t_msg.setOwner(ChatData.convertAccount(_chat.getParticipant()));
     	
     	t_msg.setSendTime((new Date()).getTime());
     	
     	return t_msg;
+    }
+    
+    private String convertPhiz(String _org,boolean _gtalkToYB){
+    	
+    	if(_gtalkToYB){
+    		for(int i = 0 ;i < fsm_gtalkPhiz.length;i++){
+    			_org = _org.replace(fsm_gtalkPhiz[i], fsm_weiboPhiz[i]);
+    		}
+    	}else{
+    		for(int i = 0 ;i < fsm_gtalkPhiz.length;i++){
+    			_org = _org.replace(fsm_weiboPhiz[i],fsm_gtalkPhiz[i]);
+    		}
+    	}
+    	
+    	return _org;
     }
     
     private boolean sendClientChatMsg(fetchChatMsg _msg,boolean _imm){
@@ -362,11 +506,10 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     		
     		ByteArrayOutputStream os = new ByteArrayOutputStream();
     		os.write(msg_head.msgChat);
-    		
     		_msg.Output(os);
     		
     		m_mainMgr.SendData(os, _imm);
-    		
+    		    		
     		return true;
     		
     	}catch(Exception e){
@@ -477,9 +620,43 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			case msg_head.msgChatConfirm:
 				t_processed = ProcessMsgChatConfirm(in);
 				break;
+			case msg_head.msgChatState:
+				t_processed = ProcessMsgChatState(in);
+				break;
 		}
 		
 		return t_processed;
+	}
+	
+	private boolean ProcessMsgChatState(InputStream in)throws Exception{
+		int t_style = in.read();
+		if(t_style == getCurrChatStyle()){
+			
+			String t_ownAccount = sendReceive.ReadString(in);
+			if(GetAccountName().equals(t_ownAccount)){
+				
+				String to = sendReceive.ReadString(in);
+				
+				int t_state = in.read();
+				
+				synchronized (m_chatList) {
+					for(ChatData data:m_chatList){
+						if(data.m_accountName.equals(to)){
+							
+							ComposeStateMessage t_msg = new ComposeStateMessage(t_state,data.m_chatData.getParticipant());
+							
+							m_mainConnection.sendPacket(t_msg);
+							
+							data.m_lastActiveTime = (new Date()).getTime();
+							
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		return false;
 	}
 	
 	private void ProcessMsgRosterList()throws Exception{
@@ -516,10 +693,11 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	private boolean ProcessMsgChatConfirm(InputStream in)throws Exception{
 		int t_style = in.read();
 				
-		if(t_style == fetchChatMsg.STYLE_GTALK){
+		if(t_style == getCurrChatStyle()){
 			int t_hashCode = sendReceive.ReadInt(in);
 			
 			synchronized (m_pushedChatMsgList) {
+				
 				for(fetchChatMsg msg:m_pushedChatMsgList){
 					if(msg.hashCode() == t_hashCode){
 						
@@ -539,7 +717,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	private boolean ProcessMsgChat(InputStream in)throws Exception{
 		int t_style = in.read();
 		
-		if(t_style == fetchChatMsg.STYLE_GTALK){
+		if(t_style == getCurrChatStyle()){
 			
 			long	t_sendTime = sendReceive.ReadLong(in);
 			String from = sendReceive.ReadString(in);
@@ -557,17 +735,27 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 					//
 				}
 				
+				boolean found = false;
 				synchronized (m_chatList){
 					
 					for(ChatData data:m_chatList){
 						if(data.m_accountName.equals(to)){
 							
-							data.m_chatData.sendMessage(message);
+							data.m_chatData.sendMessage(convertPhiz(message,false));
 							data.m_lastActiveTime = (new Date()).getTime();
+
+							found = true;
 							
 							break;
 						}
 					}
+				}
+				
+				if(!found){
+					// the fetchGTalk.chatCreated will add it to list
+					//
+					Chat t_newChat = m_chatManager.createChat(to, this);
+					t_newChat.sendMessage(convertPhiz(message,false));
 				}
 				
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -601,9 +789,19 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			for(ChatData data : m_chatList){
 				
 				if(data.m_chatState != data.m_chatState_sent){
+					data.m_chatState_sent = data.m_chatState;
 					
 					// TODO send to client this chat state
 					//
+					ByteArrayOutputStream os = new ByteArrayOutputStream();
+					os.write(msg_head.msgChatState);
+					os.write(getCurrChatStyle());
+					os.write(data.m_chatState_sent);
+					sendReceive.WriteString(os,GetAccountName(),false);
+					sendReceive.WriteString(os,data.m_accountName,false);
+					
+					
+					m_mainMgr.SendData(os, true);
 				}
 			}
 		}

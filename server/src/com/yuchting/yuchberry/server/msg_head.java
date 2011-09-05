@@ -49,4 +49,5 @@ final public class msg_head {
 	final public static byte msgChatHeadImage	= 29;
 	final public static byte msgChatRosterList	= 30;	
 	final public static byte msgChatConfirm		= 31;
+	final public static byte msgChatState		= 32;
 }

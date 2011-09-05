@@ -1341,15 +1341,13 @@ public class fetchEmail extends fetchAccount{
 	}
 	
 	public synchronized void ResetSession(boolean _fullTest)throws Exception{
-		
-		m_mainMgr.m_logger.LogOut("start ResetSession");
-		
+				
 		DestroySession();
 		
 		if(!m_cryptPassword.isEmpty() && m_password.isEmpty()){		
 			
 			if(m_mainMgr.GetPasswordKey().isEmpty()){
-				m_mainMgr.m_logger.LogOut("PasswordKey is Empty, wait for client send PasswordKey.");
+				m_mainMgr.m_logger.LogOut(GetAccountName() + "PasswordKey is Empty, wait for client send PasswordKey.");
 				
 				return ;
 				
@@ -1362,26 +1360,21 @@ public class fetchEmail extends fetchAccount{
 				}catch(Exception e){
 
 					m_mainMgr.SendData(sm_cryptPasswordKeyError, false);
-					m_mainMgr.m_logger.LogOut("crypt password error,please check the PasswordKey of client.");
+					m_mainMgr.m_logger.LogOut(GetAccountName() + "crypt password error,please check the PasswordKey of client.");
 					
 					return;
 				}
 				
-				m_mainMgr.m_logger.LogOut("used crpty Password key to decode.");				
+				m_mainMgr.m_logger.LogOut(GetAccountName() +  "used crpty Password key to decode.");				
 			}
 		}
-		
-  	
-    	m_mainMgr.m_logger.LogOut("ResetSession 1 ");
-    	
+		    	
 		if(m_useFullNameSignIn){
 			m_store.connect(m_host,m_port,m_strUserNameFull,m_password);
 		}else{
 			m_store.connect(m_host,m_port,m_userName,m_password);
 		}  	
-		
-		m_mainMgr.m_logger.LogOut("ResetSession 2 ");
-    	
+		    	
     	// test connected
     	//
     	if(_fullTest){
@@ -1392,8 +1385,6 @@ public class fetchEmail extends fetchAccount{
 			}
         	m_sendTransport.close();        		
     	}
-
-    	m_mainMgr.m_logger.LogOut("end ResetSession");
     	
     	m_mainMgr.m_logger.LogOut("prepare Email account <" + m_strUserNameFull + "> OK" );
 	}
