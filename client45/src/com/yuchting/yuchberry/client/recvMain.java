@@ -58,6 +58,7 @@ import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.Phiz;
+import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 import com.yuchting.yuchberry.client.weibo.WeiboItemField;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
@@ -1270,11 +1271,17 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public void deactivate(){
 		
-		if(m_enableWeiboModule ){
+		if(m_enableWeiboModule || m_enableIMModule){
 			
 			if(m_stateScreen != null){
 				popScreen(m_stateScreen);
 				m_stateScreen = null;
+			}
+			
+			if(getActiveScreen() == PhizSelectedScreen.sm_phizScreen
+				&& PhizSelectedScreen.sm_phizScreen != null){
+						
+				PhizSelectedScreen.sm_phizScreen.close();
 			}
 			
 			if(m_weiboTimeLineScreen != null ){
@@ -1291,11 +1298,6 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					
 					m_weiboTimeLineScreen.m_optionScreen.close();
 					
-				}else if(getActiveScreen() == m_weiboTimeLineScreen.m_phizScreen
-				&& m_weiboTimeLineScreen.m_phizScreen != null){
-					
-					m_weiboTimeLineScreen.m_phizScreen.close();
-					
 				}else if(getActiveScreen() == m_weiboTimeLineScreen){
 					
 					popScreen(m_weiboTimeLineScreen);
@@ -1303,8 +1305,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			}
 			
 			if(m_mainIMScreen != null){
+				
 				if(getActiveScreen() == m_mainIMScreen.m_chatScreen){
 					
+					m_isWeiboOrIMScreen = false;
 					m_isChatScreen = true;
 					
 					popScreen(m_mainIMScreen.m_chatScreen);
@@ -1341,7 +1345,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			m_stateScreen = null;
 		}	
 	}
-	
+		
 	public void TriggerNotification(){
 		if(IsPromptTime()){
 			NotificationsManager.triggerImmediateEvent(fsm_notifyID_email, 0, this, null);
@@ -1416,7 +1420,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public void PopupIMScreen(){
 		
-		if(m_mainIMScreen != null){
+		if(m_enableIMModule){
+			if(m_mainIMScreen == null){
+				initIMModule();
+			}
 			
 			if(getActiveScreen() == m_stateScreen && m_stateScreen != null){
 				popStateScreen();
@@ -1467,7 +1474,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}
 		
 		if(m_mainIMScreen != null){
-			m_weiboTimeLineScreen.getHeader().invalidate();
+			m_mainIMScreen.getHeader().invalidate();
 		}
 	}
 	

@@ -16,16 +16,15 @@ public class RosterItemField extends Field{
 	
 	public final static int		fsm_headImageWidth 			= recvMain.fsm_display_width>320 ? fetchWeibo.fsm_headImageSize_l:fetchWeibo.fsm_headImageSize;
 	
-	public final static int		fsm_nameTextColor		= 0xededed;
-	public final static int		fsm_statusTextColor		= 0x8f8f8f;
+	public final static int		fsm_nameTextColor			= 0xededed;
+	public final static int		fsm_statusTextColor			= 0xdfdfdf;
 	
-	fetchChatRoster					m_currRoster;
+	RosterChatData					m_currRoster;
 	WeiboHeadImage					m_headImage;
 	
 	boolean						m_isChatHistoryItem = false;
-	String							m_lastChat = null;
 	
-	public RosterItemField(fetchChatRoster _roster,WeiboHeadImage _head,boolean _isChatHistroyItem){
+	public RosterItemField(RosterChatData _roster,WeiboHeadImage _head,boolean _isChatHistroyItem){
 		super(Field.FOCUSABLE);
 		
 		m_currRoster = _roster;
@@ -33,11 +32,7 @@ public class RosterItemField extends Field{
 		
 		m_isChatHistoryItem = _isChatHistroyItem;
 	}
-	
-	public void setLastChat(String _chat){
-		m_lastChat = _chat;
-	}
-	
+
 	public int getPreferredWidth() {
 		return fsm_rosterItemFieldWidth;
 	}
@@ -72,7 +67,7 @@ public class RosterItemField extends Field{
 		}
 		// draw roster state
 		//
-		drawRosterState(_g,1,1,m_currRoster);
+		drawRosterState(_g,1,1,m_currRoster.m_roster);
 		
 		// draw the IM sign and head image
 		//
@@ -84,15 +79,37 @@ public class RosterItemField extends Field{
 			_g.setColor(fsm_nameTextColor);
 			_g.setFont(MainIMScreen.sm_boldFont);
 			
-			_g.drawText(m_currRoster.getName(),t_x,1);
+			_g.drawText(m_currRoster.m_roster.getName(),t_x,1);
 			
 			_g.setColor(fsm_statusTextColor);
 			_g.setFont(font);
 			
-			if(m_isChatHistoryItem && m_lastChat != null){
-				_g.drawText(m_lastChat,t_x,MainIMScreen.sm_defaultFontHeight + 1);
+			int t_y = MainIMScreen.sm_defaultFontHeight + 1;		
+			
+			if(m_isChatHistoryItem && !m_currRoster.m_chatMsgList.isEmpty()){
+				// 
+				//
+				fetchChatMsg t_msg = (fetchChatMsg)m_currRoster.m_chatMsgList.elementAt(m_currRoster.m_chatMsgList.size() - 1);
+				
+				String t_textMsg = t_msg.getMsg();
+				
+				if(t_textMsg.length() > 30){
+					t_textMsg = t_textMsg.substring(0,30);
+				}
+				
+				if(t_msg.isOwnMsg()){
+					
+					ImageUnit t_unit = ChatField.sm_stateImage[m_currRoster.m_currChatState];
+					
+					recvMain.sm_weiboUIImage.drawImage(_g,t_unit,t_x,t_y);
+					_g.drawText(t_textMsg,t_x + t_unit.getWidth() + 2,t_y);
+					
+				}else{
+					_g.drawText(t_textMsg,t_x,t_y);
+				}
+				
 			}else{
-				_g.drawText(m_currRoster.getStatus(),t_x,MainIMScreen.sm_defaultFontHeight + 1);
+				_g.drawText(m_currRoster.m_roster.getStatus(),t_x,MainIMScreen.sm_defaultFontHeight + 1);
 			}
 						
 		}finally{
@@ -100,7 +117,7 @@ public class RosterItemField extends Field{
 			_g.setFont(font);
 		}
 		
-		drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.getStyle());
+		drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle());
 	}
 	
 	public static ImageUnit	sm_gtalkSign = null;
@@ -118,7 +135,8 @@ public class RosterItemField extends Field{
 			
 			recvMain.sm_weiboUIImage.drawImage(_g, sm_gtalkSign, x, y);
 			
-			return sm_gtalkSign.getWidth() + x;
+			return x;
+			
 		}else if(_style == fetchChatMsg.STYLE_MSN){
 			if(sm_MSNSign == null){
 				sm_MSNSign = recvMain.sm_weiboUIImage.getImageUnit("msn_sign");
@@ -126,7 +144,8 @@ public class RosterItemField extends Field{
 			
 			recvMain.sm_weiboUIImage.drawImage(_g, sm_MSNSign, x, y);
 			
-			return sm_MSNSign.getWidth() + x;
+			return x;
+			
 		}
 		
 		return 0;

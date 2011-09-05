@@ -25,6 +25,7 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Screen;
+import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.XYPoint;
 import net.rim.device.api.ui.component.AutoTextEditField;
@@ -42,6 +43,7 @@ import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ButtonSegImage;
 import com.yuchting.yuchberry.client.ui.ImageButton;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
+import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
 
 final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	
@@ -349,8 +351,8 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
     
     MenuItem m_phizItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_PHIZ_LABEL),m_menuIndex_op++,0){
         public void run() {
-        	m_mainApp.m_weiboTimeLineScreen.m_phizSelectingText = m_updateManager.m_editTextArea;
-        	m_mainApp.m_weiboTimeLineScreen.m_phizItem.run();
+        	UiApplication.getUiApplication().pushScreen(
+        			PhizSelectedScreen.getPhizScreen(m_mainApp, m_updateManager.m_editTextArea));
         }
     };    
     

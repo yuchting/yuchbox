@@ -1130,6 +1130,10 @@ public class connectDeamon extends Thread implements SendListener,
 		 			m_mainApp.m_mainIMScreen.processChatConfirm(in);
 		 		}
 		 		break;
+		 	case msg_head.msgChatState:
+		 		if(m_mainApp.m_mainIMScreen != null){
+		 			m_mainApp.m_mainIMScreen.processChatState(in);
+		 		}
 		 }
 	 }
 	

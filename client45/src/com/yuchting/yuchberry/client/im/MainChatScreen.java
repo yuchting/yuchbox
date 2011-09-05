@@ -1,8 +1,9 @@
 package com.yuchting.yuchberry.client.im;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Date;
 
-
+import local.localResource;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -11,17 +12,20 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
+import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
-import local.localResource;
+import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.sendReceive;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ButtonSegImage;
 import com.yuchting.yuchberry.client.ui.ImageButton;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
+import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
 
 final class InputManager extends Manager implements FieldChangeListener{
 	
@@ -41,6 +45,9 @@ final class InputManager extends Manager implements FieldChangeListener{
 	ImageUnit			m_background_line = null;
 	
 	int					m_currHeight	= fsm_minHeight;
+	
+	int					m_inputInvokeID	= -1;
+	long				m_inputTimer	= (new Date()).getTime();
 	
 	VerticalFieldManager m_inputManager = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
 		public int getPreferredWidth(){
@@ -81,6 +88,8 @@ final class InputManager extends Manager implements FieldChangeListener{
 								recvMain.sm_weiboUIImage.getImageUnit("phiz_button"), 
 								recvMain.sm_weiboUIImage.getImageUnit("phiz_button_focus"), 
 								recvMain.sm_weiboUIImage);
+		
+		m_phizButton.setChangeListener(this);
 		
 		m_textWidth = getPreferredWidth() - m_phizButton.getImageWidth() - (fsm_textBorder + fsm_inputBubbleBorder)* 2;
 		
@@ -126,7 +135,9 @@ final class InputManager extends Manager implements FieldChangeListener{
 		setPositionChild(m_inputManager,fsm_textBorder + fsm_inputBubbleBorder,fsm_textBorder + fsm_inputBubbleBorder);		
 		layoutChild(m_inputManager,m_inputManager.getPreferredWidth(),m_inputManager.getPreferredHeight());
 		
-		setPositionChild(m_phizButton,getPreferredWidth() - m_phizButton.getImageWidth(),fsm_textBorder);		
+		setPositionChild(m_phizButton,getPreferredWidth() - m_phizButton.getImageWidth(),
+							(getPreferredHeight() - m_phizButton.getImageHeight()) /2);
+		
 		layoutChild(m_phizButton,m_phizButton.getImageWidth(),m_phizButton.getImageHeight());
 				
 		setExtent(getPreferredWidth(), getPreferredHeight());
@@ -162,12 +173,39 @@ final class InputManager extends Manager implements FieldChangeListener{
 			}
 								
 			m_middleMgr.invalidate();
-			m_middleMgr.sublayout(0, 0);					
+			m_middleMgr.sublayout(0, 0);
+			
+			if(context != FieldChangeListener.PROGRAMMATIC){
+				synchronized (this) {
+					if(m_inputInvokeID == -1){
+						
+						m_inputTimer = 0;
+						
+						m_inputInvokeID = m_middleMgr.m_chatScreen.m_mainApp.invokeLater(new Runnable() {
+							public void run() {
+								
+								synchronized (InputManager.this) {
+									
+									if(++m_inputTimer > 5){
+										m_middleMgr.m_chatScreen.m_mainApp.cancelInvokeLater(m_inputInvokeID);
+										m_inputInvokeID = -1;
+										
+										m_middleMgr.m_chatScreen.sendChatComposeState(fetchChatMsg.CHAT_STATE_COMMON);
+									}
+								}								
+							}
+						}, 3000, true);
+						
+						m_middleMgr.m_chatScreen.sendChatComposeState(fetchChatMsg.CHAT_STATE_COMPOSING);
+					}
+				}
+			}
 							
+		}else if(field == m_phizButton){
+			UiApplication.getUiApplication().pushScreen(
+					PhizSelectedScreen.getPhizScreen(m_middleMgr.m_chatScreen.m_mainApp, m_editTextArea));
 		}
-	
-	}
-	
+	}	
 	protected boolean keyDown(int keycode,int time){
 		final int key = Keypad.key(keycode);
 		if(key == 10){
@@ -176,6 +214,7 @@ final class InputManager extends Manager implements FieldChangeListener{
     			return true;
     		}
 		}
+		
 		return super.keyDown(keycode,time);
 	}
 	
@@ -185,10 +224,24 @@ final class InputManager extends Manager implements FieldChangeListener{
 			m_middleMgr.m_chatScreen.sendChatMsg(text);
 			m_editTextArea.setText("");
 			
+			cancelComposeTimer();
+			
 			return true;
 		}
 		
 		return false;
+	}
+	
+	public void cancelComposeTimer(){
+		// cancel the compose timer
+		//
+		if(m_inputInvokeID != -1){
+			synchronized (this) {
+				m_middleMgr.m_chatScreen.m_mainApp.cancelInvokeLater(m_inputInvokeID);
+				m_inputInvokeID = -1;
+				m_inputTimer = 0;
+			}
+		}
 	}
 }
 
@@ -295,7 +348,7 @@ final class MiddleMgr extends VerticalFieldManager{
 	}
 	
 	public synchronized ChatField findChatField(fetchChatMsg _msg){
-		int t_num = getFieldCount();
+		int t_num = m_chatMsgMgr.getFieldCount();
 		for(int i = 0;i < t_num;i++){
 			ChatField t_field = (ChatField)m_chatMsgMgr.getField(i);
 			
@@ -307,6 +360,8 @@ final class MiddleMgr extends VerticalFieldManager{
 		return null;
 	}
 }
+
+
 public class MainChatScreen extends MainScreen{
 	
 	int m_menu_op = 0;
@@ -316,7 +371,58 @@ public class MainChatScreen extends MainScreen{
 		}
 	};
 	
-
+	
+	static ImageUnit sm_composing = null;
+	static {
+		sm_composing = recvMain.sm_weiboUIImage.getImageUnit("composing_chat_state");
+	}
+	
+	final class ChatScreenHeader extends Field{
+		
+		public int getPreferredWidth() {
+			return recvMain.fsm_display_width;
+		}
+		
+		public int getPreferredHeight() {
+			return m_title.getImageHeight();
+		}
+		
+		public void invalidate(){
+			super.invalidate();
+		}
+		protected void layout(int _width,int _height){
+			setExtent(recvMain.fsm_display_width,m_title.getImageHeight());
+		}
+		
+		protected void paint(Graphics _g){
+			m_title.draw(_g,0,0,getPreferredWidth());
+			
+			// draw roster state
+			//
+			int t_x = RosterItemField.drawRosterState(_g,3,3,m_currRoster.m_roster);
+			
+			int color = _g.getColor();
+			Font font = _g.getFont();
+			try{
+				
+				_g.setColor(RosterItemField.fsm_nameTextColor);
+				_g.setFont(MainIMScreen.sm_boldFont);
+				
+				_g.drawText(m_currRoster.m_roster.getName(),t_x,1);
+				
+			}finally{
+				_g.setColor(color);
+				_g.setFont(font);
+			}
+			
+			t_x = RosterItemField.drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle());
+			
+			if(m_currRoster.m_currChatState == fetchChatMsg.CHAT_STATE_COMPOSING){
+				recvMain.sm_weiboUIImage.drawImage(_g, sm_composing, t_x - sm_composing.getWidth(), 3);
+			}
+		}
+	}
+	
 	public final static int		fsm_titleBottomBorder = 4;
 	
 	RosterChatData	m_currRoster 	= null;
@@ -325,7 +431,7 @@ public class MainChatScreen extends MainScreen{
 	MainIMScreen	m_mainScreen 	= null;
 	
 	ButtonSegImage	m_title			= null;
-	Field			m_header 		= null;
+	ChatScreenHeader m_header 		= null;
 	
 	MiddleMgr		m_middleMgr		= new MiddleMgr(this);
 			
@@ -335,49 +441,20 @@ public class MainChatScreen extends MainScreen{
 		m_mainApp 	= _mainApp;
 		m_mainScreen = _mainScreen;
 
-		m_title = new ButtonSegImage(recvMain.sm_weiboUIImage.getImageUnit("nav_bar_left"),
-									recvMain.sm_weiboUIImage.getImageUnit("nav_bar_mid"),
-									recvMain.sm_weiboUIImage.getImageUnit("nav_bar_right"),
-									recvMain.sm_weiboUIImage);
+		if(recvMain.fsm_display_height <= 240){
+			m_title = new ButtonSegImage(recvMain.sm_weiboUIImage.getImageUnit("composeTitle_left"),
+					recvMain.sm_weiboUIImage.getImageUnit("composeTitle_mid"),
+					recvMain.sm_weiboUIImage.getImageUnit("composeTitle_right"),
+					recvMain.sm_weiboUIImage);
+		}else{
+			m_title = new ButtonSegImage(recvMain.sm_weiboUIImage.getImageUnit("nav_bar_left"),
+					recvMain.sm_weiboUIImage.getImageUnit("nav_bar_mid"),
+					recvMain.sm_weiboUIImage.getImageUnit("nav_bar_right"),
+					recvMain.sm_weiboUIImage);
+		}
 		
-		m_header = new Field(){
-			
-			public int getPreferredWidth() {
-				return recvMain.fsm_display_width;
-			}
-			
-			public int getPreferredHeight() {
-				return m_title.getImageHeight();
-			}
-			
-			protected void layout(int _width,int _height){
-				setExtent(recvMain.fsm_display_width,m_title.getImageHeight());
-			}
-			
-			protected void paint(Graphics _g){
-				m_title.draw(_g,0,0,getPreferredWidth());
-				
-				// draw roster state
-				//
-				int t_x = RosterItemField.drawRosterState(_g,3,3,m_currRoster.m_roster);
-				
-				int color = _g.getColor();
-				Font font = _g.getFont();
-				try{
-					
-					_g.setColor(RosterItemField.fsm_nameTextColor);
-					_g.setFont(MainIMScreen.sm_boldFont);
-					
-					_g.drawText(m_currRoster.m_roster.getName(),t_x,1);
-					
-				}finally{
-					_g.setColor(color);
-					_g.setFont(font);
-				}
-				
-				RosterItemField.drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle());
-			}
-		};
+		
+		m_header = new ChatScreenHeader();
 		
 		setTitle(m_header);
 		
@@ -390,23 +467,25 @@ public class MainChatScreen extends MainScreen{
 		super.makeMenu(_menu,instance);
 	}
 	
-	public void prepareChatScreen(RosterChatData _chatData){
-		m_currRoster = _chatData;
-		m_middleMgr.prepareChatScreen(_chatData);		
-		invalidate();
-	}
-	
 	protected void onDisplay(){
 		super.onDisplay();
+		if(m_currRoster != null){
+			m_middleMgr.prepareChatScreen(m_currRoster);
+		}
 		m_middleMgr.onDisplay();	
 	}
 	
 	public boolean onClose(){
 		m_mainApp.m_isChatScreen = false;
 		
-		close();
-		
+		close();		
 		return true;
+	}
+	
+	public void close(){
+		super.close();
+		
+		m_middleMgr.m_inputMgr.cancelComposeTimer();
 	}
 	
 	public void sendChatMsg(String _text){
@@ -424,6 +503,27 @@ public class MainChatScreen extends MainScreen{
 		
 		// add send daemon
 		//
-		m_mainScreen.addSendChatMsg(t_msg,m_currRoster.m_roster.getAccount());
+		m_mainScreen.addSendChatMsg(t_msg,m_currRoster);
+	}
+	
+	public void sendChatComposeState(byte _state){
+		
+		try{
+			
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			os.write(msg_head.msgChatState);
+			os.write(m_currRoster.m_roster.getStyle());
+			
+			sendReceive.WriteString(os,m_currRoster.m_roster.getOwnAccount());
+			sendReceive.WriteString(os,m_currRoster.m_roster.getAccount());
+			
+			os.write(_state);
+					
+			m_mainApp.m_connectDeamon.addSendingData(msg_head.msgChatState, os.toByteArray(), true);
+			
+		}catch(Exception e){
+			m_mainApp.SetErrorString("SCCS:"+e.getMessage()+e.getClass().getName());
+		}
+		
 	}
 }

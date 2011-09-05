@@ -1,4 +1,4 @@
-package com.yuchting.yuchberry.client.weibo;
+package com.yuchting.yuchberry.client.ui;
 
 public interface IPhizSelected {
 	public void phizSelected(String _phizName);

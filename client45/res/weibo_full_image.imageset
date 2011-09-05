@@ -118,6 +118,8 @@
 	<Image Name="sent_chat" XPos="192" YPos="345" Width="16" Height="16" />
 	<Image Name="read_chat" XPos="208" YPos="361" Width="16" Height="16" />
 	
+	<Image Name="composing_chat_state" XPos="224" YPos="345" Width="22" Height="22" />
+	
 	<Image Name="input_top_left" XPos="144" YPos="345" Width="16" Height="10" />
 	<Image Name="input_top" XPos="160" YPos="345" Width="16" Height="10" />
 	<Image Name="input_top_right" XPos="176" YPos="345" Width="16" Height="10" />

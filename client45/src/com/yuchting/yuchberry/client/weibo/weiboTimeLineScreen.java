@@ -20,6 +20,7 @@ import net.rim.device.api.ui.container.MainScreen;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
+import com.yuchting.yuchberry.client.ui.IPhizSelected;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
@@ -693,41 +694,9 @@ public class weiboTimeLineScreen extends MainScreen{
         }
     };
     
-    public PhizSelectedScreen	m_phizScreen 	= null;
-    public AutoTextEditField	m_phizSelectingText = null;
-    
-    IPhizSelected				m_phizSelected 	= new IPhizSelected() {
-		
-		public void phizSelected(String phizName) {
-			if(m_phizSelectingText != null){
-				int t_position = m_phizSelectingText.getCursorPosition();
-				
-				String t_text = m_phizSelectingText.getText();
-				
-				StringBuffer t_final = new StringBuffer();
-				if(t_position != 0){
-					t_final.append(t_text.substring(0,t_position));
-				}
-				t_final.append(phizName);
-				
-				t_final.append(t_text.substring(t_position,t_text.length()));
-				
-				m_phizSelectingText.setText(t_final.toString());
-				m_phizSelectingText.setCursorPosition(t_position + phizName.length());
-			}			
-		}
-	};
-    
     MenuItem m_phizItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_PHIZ_LABEL),m_menuIndex_op++,0){
-    	
         public void run() {
-        	if(m_phizScreen == null){
-        		m_phizScreen = new PhizSelectedScreen(m_mainApp,recvMain.sm_phizImageList,m_phizSelected);
-        	}else{
-        		m_phizScreen.setSelectedCallback(m_phizSelected);
-        	}
-        	
-        	UiApplication.getUiApplication().pushScreen(m_phizScreen);
+        	UiApplication.getUiApplication().pushScreen(PhizSelectedScreen.getPhizScreen(m_mainApp, m_currMgr.m_editTextArea));
         }
     };
     
@@ -817,6 +786,19 @@ public class weiboTimeLineScreen extends MainScreen{
         	t_recv.pushStateScreen();
         }
     };
+    
+    MenuItem m_imScreenItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_IM_SCREEN_MENU_LABEL),101,0){
+        public void run() {
+        	
+        	if(m_mainApp.m_enableIMModule){
+        		
+        		recvMain t_recv = (recvMain)UiApplication.getUiApplication();
+            	t_recv.popScreen(weiboTimeLineScreen.this);
+            	
+        		m_mainApp.PopupIMScreen();
+        	}
+        }
+    };
 	
 	protected void makeMenu(Menu _menu,int instance){
 		
@@ -832,7 +814,6 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		if(m_currMgr.getCurrEditItem() != null && m_currMgr.getCurrExtendedItem() != null){
 			_menu.add(m_sendItem);
-			m_phizSelectingText = m_currMgr.m_editTextArea;
 			_menu.add(m_phizItem);
 		}		
 		
@@ -881,6 +862,9 @@ public class weiboTimeLineScreen extends MainScreen{
 		_menu.add(m_optionItem);
 		_menu.add(m_helpItem);
 		_menu.add(m_stateItem);
+		if(m_mainApp.m_enableIMModule){
+			_menu.add(m_imScreenItem);
+		}
 		
 		super.makeMenu(_menu,instance);
     }
@@ -1032,6 +1016,9 @@ public class weiboTimeLineScreen extends MainScreen{
 	    		return true;
 	    	case 'D':
 	    		m_deleteItem.run();
+	    		return true;
+	    	case 'M':
+	    		m_imScreenItem.run();
 	    		return true;
 			}
 			

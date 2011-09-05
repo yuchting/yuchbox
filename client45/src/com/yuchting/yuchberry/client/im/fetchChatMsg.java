@@ -26,6 +26,7 @@ public class fetchChatMsg{
 	int			m_style			= STYLE_GTALK;
 	long		m_sendTime		= 0;
 	String		m_msgOwner		= "";
+	String		m_sendTo		= "";
 	String		m_msg			= "";
 	
 	byte[]		m_fileContent	= null;
@@ -65,6 +66,9 @@ public class fetchChatMsg{
 	public String getOwner(){return m_msgOwner;}
 	public void setOwner(String _owner){m_msgOwner = _owner;}
 	
+	public String getSendTo(){return m_sendTo;}
+	public void setSendTo(String _to){m_sendTo = _to;}
+	
 	public String getMsg(){return m_msg;}
 	public void setMsg(String _msg){m_msg = _msg;}	
 	
@@ -74,6 +78,7 @@ public class fetchChatMsg{
 		m_style		= in.read();
 		m_sendTime	= sendReceive.ReadLong(in);
 		m_msgOwner	= sendReceive.ReadString(in);
+		m_sendTo	= sendReceive.ReadString(in);
 		
 		m_msg		= sendReceive.ReadString(in);
 		
@@ -95,6 +100,12 @@ public class fetchChatMsg{
 		
 		if(m_msgOwner != null){
 			sendReceive.WriteString(os,m_msgOwner);
+		}else{
+			sendReceive.WriteString(os,"");
+		}
+		
+		if(m_sendTo != null){
+			sendReceive.WriteString(os,m_sendTo);
 		}else{
 			sendReceive.WriteString(os,"");
 		}

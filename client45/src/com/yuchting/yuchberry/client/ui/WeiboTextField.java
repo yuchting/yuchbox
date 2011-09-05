@@ -77,7 +77,7 @@ public class WeiboTextField extends ActiveRichTextField{
 	
 	public static String getTag(ReadText _text){
 		
-		if(_text.m_index >= _text.m_originalText.length() - 1){
+		if(_text.m_index >= _text.m_originalText.length()){
 			return null;
 		}
 		

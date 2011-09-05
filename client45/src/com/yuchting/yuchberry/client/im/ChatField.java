@@ -15,6 +15,7 @@ public class ChatField extends Manager{
 	public final static int	fsm_bubblePointWidth = 8;
 	public final static int	fsm_border		= 6;
 	
+	public final static int	fsm_minTextWidth	= fsm_offsetWidth + fsm_bubblePointWidth;  
 	public final static int	fsm_maxTextWidth 	= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth;
 	
 	public final static int	fsm_ownChatTextBGColor		= 0xd8d8d8;
@@ -35,7 +36,7 @@ public class ChatField extends Manager{
 		"read_chat",
 	};
 	
-	static ImageUnit[]	sm_stateImage = new ImageUnit[fsm_stateImageStr.length];
+	public static ImageUnit[]	sm_stateImage = new ImageUnit[fsm_stateImageStr.length];
 	static {
 		try{
 			for(int i = 0 ;i < fsm_stateImageStr.length;i++){
@@ -51,9 +52,14 @@ public class ChatField extends Manager{
 		
 		String t_converText = WeiboTextField.getConvertString(_msg.getMsg());
 		m_msgTextWidth = MainIMScreen.sm_defaultFont.getAdvance(t_converText);
+		
+		if(m_msgTextWidth < fsm_minTextWidth){
+			m_msgTextWidth = fsm_minTextWidth;
+		}
+		
 		if(m_msgTextWidth > fsm_maxTextWidth){
 			m_msgTextWidth = fsm_maxTextWidth;
-		}
+		}		
 		
 		MainIMScreen.sm_testTextArea.setPreferredWidth(m_msgTextWidth);
 		

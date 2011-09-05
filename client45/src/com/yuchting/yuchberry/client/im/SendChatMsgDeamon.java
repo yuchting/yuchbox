@@ -11,7 +11,7 @@ import com.yuchting.yuchberry.client.sendReceive;
 public class SendChatMsgDeamon extends Thread implements ISendAttachmentCallback{
 
 	fetchChatMsg		m_sendMsg	= null;
-	String				m_sendTo	= null;
+	RosterChatData		m_sendTo	= null;
 
 	MainChatScreen		m_chatScreen = null;
 	
@@ -20,7 +20,7 @@ public class SendChatMsgDeamon extends Thread implements ISendAttachmentCallback
 	public	boolean	m_closeState = false;
 	public SendAttachmentDeamon m_sendFileDaemon = null;
 	
-	public SendChatMsgDeamon(fetchChatMsg _msg,String _sendTo,MainChatScreen _chatScreen){
+	public SendChatMsgDeamon(fetchChatMsg _msg,RosterChatData _sendTo,MainChatScreen _chatScreen){
 		m_sendMsg		= _msg;
 		m_chatScreen	= _chatScreen;
 		m_connect		= _chatScreen.m_mainApp.m_connectDeamon;
@@ -82,7 +82,7 @@ public class SendChatMsgDeamon extends Thread implements ISendAttachmentCallback
 			t_os.write(m_sendMsg.getStyle());
 			sendReceive.WriteLong(t_os,m_sendMsg.getSendTime());
 			sendReceive.WriteString(t_os,m_sendMsg.getOwner());
-			sendReceive.WriteString(t_os,m_sendTo);
+			sendReceive.WriteString(t_os,m_sendTo.m_roster.getAccount());
 			sendReceive.WriteString(t_os,m_sendMsg.getMsg());
 			
 			// file length

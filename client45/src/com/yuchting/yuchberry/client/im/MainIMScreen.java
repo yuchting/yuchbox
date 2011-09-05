@@ -22,6 +22,7 @@ import com.yuchting.yuchberry.client.sendReceive;
 import com.yuchting.yuchberry.client.ui.BubbleTextField;
 import com.yuchting.yuchberry.client.ui.SliderHeader;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
+import com.yuchting.yuchberry.client.weibo.weiboTimeLineScreen;
 
 
 final class RosterChatData{
@@ -30,6 +31,7 @@ final class RosterChatData{
 	public Vector				m_chatMsgList = new Vector();
 	
 	public String				m_lastChatText = "";
+	public int					m_currChatState;
 	
 	public RosterChatData(fetchChatRoster _roster){
 		m_roster = _roster;
@@ -70,6 +72,20 @@ public class MainIMScreen extends MainScreen{
         	t_recv.pushStateScreen();
 		}
 	};
+	
+	  
+    MenuItem m_weiboScreenItem = new MenuItem(recvMain.sm_local.getString(localResource.YB_WEIBO_MENU_LABEL),101,0){
+        public void run() {
+        	        	
+        	if(m_mainApp.m_enableIMModule){
+        		
+        		recvMain t_recv = (recvMain)UiApplication.getUiApplication();
+            	t_recv.popScreen(MainIMScreen.this);
+            	
+            	t_recv.PopupWeiboScreen();		
+        	}
+        }
+    };
 
 	// BasicEditField for 4.2os
 	public static BubbleTextField 	sm_testTextArea	= new BubbleTextField(Field.READONLY);
@@ -86,7 +102,6 @@ public class MainIMScreen extends MainScreen{
 	recvMain				m_mainApp = null;
 	
 	VerticalFieldManager	m_historyChatMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
-	Vector					m_historyChatMgrList = new Vector();
 	
 	VerticalFieldManager	m_rosterListMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
 	Vector					m_rosterChatDataList = new Vector();
@@ -185,6 +200,10 @@ public class MainIMScreen extends MainScreen{
 		_menu.add(MenuItem.separator(m_menu_op));
 		
 		_menu.add(m_stateMenu);
+		if(m_mainApp.m_enableWeiboModule){
+			_menu.add(m_weiboScreenItem);
+		}
+		
 		
 		super.makeMenu(_menu,instance);
 	}
@@ -200,17 +219,6 @@ public class MainIMScreen extends MainScreen{
 		
 	}
 	
-	private RosterChatData searchRosterChatData(String _acc){
-		for(int i = 0 ;i < m_rosterChatDataList.size();i++){
-			RosterChatData t_data = (RosterChatData)m_rosterChatDataList.elementAt(i);
-			if(t_data.m_roster.getAccount().equals(_acc)){
-				return t_data;
-			}
-		}
-		
-		return null;
-	}
-	
 	protected boolean navigationClick(int status, int time){
 		
 		if(click()){
@@ -221,10 +229,27 @@ public class MainIMScreen extends MainScreen{
 	}
 	
 	protected boolean keyDown(int keycode,int time){
+		
 		final int key = Keypad.key(keycode);
+		switch(key){
+		case 'H':
+			m_historyChatMenu.run();
+			return true;
+		case 'J':
+			m_rosterListMenu.run();
+			return true;
+		case 'S':
+			m_stateMenu.run();
+			return true;
+		case 'W':
+			m_weiboScreenItem.run();
+			return true;
+		}
+		
 		if(key == 10 && click()){
 			return true;
 		}
+		
 		return super.keyDown(keycode,time);
 	}
 	
@@ -234,17 +259,11 @@ public class MainIMScreen extends MainScreen{
 		for(int i = 0 ;i < t_fieldCount;i++){
 			RosterItemField field = (RosterItemField)m_currMgr.getField(i);
 			if(field.isFocus()){
+							
+				m_chatScreen.m_currRoster = field.m_currRoster;
+				m_mainApp.pushScreen(m_chatScreen);
 				
-				RosterChatData t_data = searchRosterChatData(field.m_currRoster.getAccount());
-				
-				if(t_data != null){
-					m_chatScreen.prepareChatScreen(t_data);
-					m_mainApp.pushScreen(m_chatScreen);
-					
-					return true;
-				}
-				
-				break;
+				return true;
 				
 			}
 		}
@@ -297,19 +316,25 @@ public class MainIMScreen extends MainScreen{
 			for(int i = 0;i < m_rosterChatDataList.size();i++){
 				RosterChatData data = (RosterChatData)m_rosterChatDataList.elementAt(i);
 				
-				if(data.m_roster.getAccount().equals(_msg.getOwner())
-				&& data.m_roster.getStyle() == _msg.getStyle()){
+				if(data.m_roster.getStyle() == _msg.getStyle()
+					&& data.m_roster.getAccount().equals(_msg.getOwner())
+					&& data.m_roster.getOwnAccount().equals(_msg.getSendTo())){
 					
 					data.m_chatMsgList.addElement(_msg);
 					
+					data.m_currChatState = fetchChatMsg.CHAT_STATE_COMMON;
+					
+					addHistroyChatMgr(data);
+					
 					if(m_chatScreen.m_currRoster == data){
 						m_chatScreen.m_middleMgr.addChatMsg(_msg);
+						m_chatScreen.m_header.invalidate();
 					}
 					
 					break;
 				}
 			}	
-		}
+		}		
 	}
 	
 	private void sendChatConfirmMsg(fetchChatMsg _msg){
@@ -352,20 +377,20 @@ public class MainIMScreen extends MainScreen{
 								fetchChatRoster t_roster = new fetchChatRoster();
 								t_roster.Import(in);
 								
-								m_rosterChatDataList.addElement(new RosterChatData(t_roster));
+								RosterChatData t_data = new RosterChatData(t_roster);
+								m_rosterChatDataList.addElement(t_data);
 								
 								WeiboHeadImage t_image = WeiboHeadImage.SearchHeadImage(m_headImageList, t_roster.getAccount(), 
 										(byte)t_roster.getStyle(), 
 										t_roster.getHeadImageHashCode(), false);
 
-								m_rosterListMgr.add(new RosterItemField(t_roster, t_image, true));
+								m_rosterListMgr.add(new RosterItemField(t_data, t_image, true));
 							}
 	
 						}
 												
 						refreshRosterList();
 						
-						m_historyChatMgrList.removeAllElements();
 						m_historyChatMgr.deleteAll();
 						
 						break;
@@ -437,7 +462,7 @@ public class MainIMScreen extends MainScreen{
 																			(byte)t_rosterData.m_roster.getStyle(), 
 																			t_rosterData.m_roster.getHeadImageHashCode(), false);
 					
-					m_rosterListMgr.add(new RosterItemField(t_rosterData.m_roster, t_image, true));		
+					m_rosterListMgr.add(new RosterItemField(t_rosterData, t_image, false));		
 				}
 			}	
 		}
@@ -471,10 +496,73 @@ public class MainIMScreen extends MainScreen{
 			}
 		}
 	}
+	public void processChatState(ByteArrayInputStream in)throws Exception{
+		int t_style = in.read();
+		int t_state = in.read();
+		String t_ownAccount = sendReceive.ReadString(in);
+		String t_account	= sendReceive.ReadString(in);
+		
+		synchronized (m_rosterChatDataList) {
+			for(int i = 0 ;i < m_rosterChatDataList.size();i++){
+				RosterChatData t_data = (RosterChatData)m_rosterChatDataList.elementAt(i);
+				if(t_data.m_roster.getStyle() == t_style
+					&& t_data.m_roster.getOwnAccount().equals(t_ownAccount)
+					&& t_data.m_roster.getAccount().equals(t_account)){
+					
+					t_data.m_currChatState = t_state;
+					
+					if(m_chatScreen.m_currRoster == t_data){
+						m_chatScreen.m_header.invalidate();
+					}
+					
+					break;
+				}
+			}
+		}
+	}
 	
-	public void addSendChatMsg(fetchChatMsg _msg,String _sendTo){
+	public void addSendChatMsg(fetchChatMsg _msg,RosterChatData _sendTo){
+		
 		SendChatMsgDeamon t_daemon = new SendChatMsgDeamon(_msg, _sendTo, m_chatScreen);
 		m_sendChatDeamon.addElement(t_daemon);
+		
+		addHistroyChatMgr(_sendTo);
+	}
+	
+	private void addHistroyChatMgr(RosterChatData _rosterData){
+		
+		synchronized (m_historyChatMgr) {
+			
+			// find the field inhistroy chat
+			//
+			int t_num = m_historyChatMgr.getFieldCount();
+			
+			boolean t_found = false;
+			for(int i = 0 ;i < t_num;i++){
+				RosterItemField t_field = (RosterItemField)m_historyChatMgr.getField(i);
+				if(t_field.m_currRoster == _rosterData){				
+					m_historyChatMgr.delete(t_field);
+					m_historyChatMgr.insert(t_field, 0);
+					t_found = true;
+					
+					break;
+				}
+			}
+			
+			if(!t_found){
+				try{
+					
+					WeiboHeadImage t_image = WeiboHeadImage.SearchHeadImage(m_headImageList, _rosterData.m_roster.getAccount(), 
+							(byte)_rosterData.m_roster.getStyle(), 
+							_rosterData.m_roster.getHeadImageHashCode(), false);
+
+					m_historyChatMgr.insert(new RosterItemField(_rosterData,t_image,true),0);
+					
+				}catch(Exception e){
+					m_mainApp.SetErrorString("ASCM:"+e.getMessage()+e.getClass().getName());
+				}
+			}
+		}
 	}
 
 }
