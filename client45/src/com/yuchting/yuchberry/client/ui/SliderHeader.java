@@ -27,6 +27,15 @@ public abstract class SliderHeader extends Field{
 	
 	protected int	m_currState = 0;
 	
+	static ImageUnit	sm_isBBerSign = null;
+	static public ImageUnit GetBBerSignBitmap(){
+		if(sm_isBBerSign == null){
+			sm_isBBerSign = recvMain.sm_weiboUIImage.getImageUnit("BBSign");		
+		}
+		
+		return sm_isBBerSign;
+	}
+	
 	public SliderHeader(recvMain _mainApp,String[] _stateName,String[] _stateName_hover,int[][] _moveColor){
 		m_mainApp = _mainApp;
 			

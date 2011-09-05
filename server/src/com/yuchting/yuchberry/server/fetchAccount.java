@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.server;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Date;
 
@@ -78,8 +79,48 @@ abstract public class fetchAccount {
 	 * client is disconnected from the server
 	 */
 	public void ClientDisconnected(){}
+	
+	protected static byte[] sm_cryptPasswordKeyError = null;
+	static{
+		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+		t_os.write(msg_head.msgNote);
+		try{
+			sendReceive.WriteString(t_os,"crypt password key error!(加密算子错误)",false);
+		}catch(Exception e){}
 		
+		sm_cryptPasswordKeyError = t_os.toByteArray();
+	}
+	
+	public String decryptPassword(String _cryptPassword,String _password)throws Exception{
 		
+		if(!_cryptPassword.isEmpty() && _password.isEmpty()){		
+			
+			if(m_mainMgr.GetPasswordKey().isEmpty()){
+				m_mainMgr.m_logger.LogOut(GetAccountName() + "PasswordKey is Empty, wait for client send PasswordKey.");
+				
+				return null;
+				
+			}else{
+							
+				try{
+					cryptPassword t_crypt = new cryptPassword(m_mainMgr.GetPasswordKey());
+					_password = t_crypt.decrypt(_cryptPassword);
+					
+				}catch(Exception e){
+
+					m_mainMgr.SendData(sm_cryptPasswordKeyError, false);
+					m_mainMgr.m_logger.LogOut(GetAccountName() + "crypt password error,please check the PasswordKey of client.");
+					
+					return null;
+				}
+				
+				m_mainMgr.m_logger.LogOut(GetAccountName() +  "used crpty Password key to decode.");
+			}
+		}
+		
+		return _password;
+	}
+			
 	/**
 	 * read String attribute from xml
 	 */

@@ -331,7 +331,7 @@ final class MiddleMgr extends VerticalFieldManager{
 			
 			m_inputMgr.m_editTextArea.setCursorPosition(
 					m_inputMgr.m_editTextArea.getTextLength() - 1);
-		}	
+		}
 	}
 	
 	public synchronized void addChatMsg(fetchChatMsg _msg){
@@ -369,8 +369,7 @@ public class MainChatScreen extends MainScreen{
 		public void run(){
 			m_middleMgr.m_inputMgr.send();
 		}
-	};
-	
+	};	
 	
 	static ImageUnit sm_composing = null;
 	static {
@@ -472,7 +471,10 @@ public class MainChatScreen extends MainScreen{
 		if(m_currRoster != null){
 			m_middleMgr.prepareChatScreen(m_currRoster);
 		}
-		m_middleMgr.onDisplay();	
+		m_middleMgr.onDisplay();
+		m_mainApp.StopIMNotification();
+		
+		m_mainScreen.clearNewChatSign();
 	}
 	
 	public boolean onClose(){
@@ -486,6 +488,7 @@ public class MainChatScreen extends MainScreen{
 		super.close();
 		
 		m_middleMgr.m_inputMgr.cancelComposeTimer();
+		m_mainApp.StopIMNotification();
 	}
 	
 	public void sendChatMsg(String _text){

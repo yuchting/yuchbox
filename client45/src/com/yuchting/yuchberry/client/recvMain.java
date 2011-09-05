@@ -109,6 +109,13 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	    }
 	};
 	
+	final static long		fsm_notifyID_im = 767918509114951L;
+	
+	final static Object 	fsm_notifyEvent_im = new Object() {
+	    public String toString() {
+	       return recvMain.sm_local.getString(localResource.NOTIFY_IM_LABEL);
+	    }
+	};
 	
 	public connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
@@ -320,6 +327,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
     	NotificationsManager.registerSource(fsm_notifyID_weibo, fsm_notifyEvent_weibo,NotificationsConstants.CASUAL);
     	NotificationsManager.registerSource(fsm_notifyID_weibo_home, fsm_notifyEvent_weibo_home,NotificationsConstants.CASUAL);
     	NotificationsManager.registerSource(fsm_notifyID_disconnect, fsm_notifyEvent_disconnect,NotificationsConstants.CASUAL);
+    	NotificationsManager.registerSource(fsm_notifyID_im, fsm_notifyEvent_im,NotificationsConstants.CASUAL);
     	
         if(_systemRun){       
         	
@@ -1379,6 +1387,16 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		if(IsPromptTime() && m_connectDisconnectPrompt){
 			NotificationsManager.triggerImmediateEvent(fsm_notifyID_disconnect, 0, this, null);
 		}		
+	}
+	
+	public void TriggerIMNotification(){
+		if(IsPromptTime()){
+			NotificationsManager.triggerImmediateEvent(fsm_notifyID_im, 0, this, null);
+		}		
+	}
+	
+	public void StopIMNotification(){
+		NotificationsManager.cancelImmediateEvent(fsm_notifyID_im, 0, this, null);
 	}
 	
 	public void StopDisconnectNotification(){

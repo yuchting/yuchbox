@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.Vector;
 
 import local.localResource;
+import net.rim.device.api.system.Backlight;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Keypad;
@@ -22,7 +23,6 @@ import com.yuchting.yuchberry.client.sendReceive;
 import com.yuchting.yuchberry.client.ui.BubbleTextField;
 import com.yuchting.yuchberry.client.ui.SliderHeader;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
-import com.yuchting.yuchberry.client.weibo.weiboTimeLineScreen;
 
 
 final class RosterChatData{
@@ -95,7 +95,7 @@ public class MainIMScreen extends MainScreen{
 	
 	public final static Font		sm_boldFont				= sm_defaultFont.derive(sm_defaultFont.getStyle() | Font.BOLD);
 		
-	Vector					m_headImageList = new Vector();
+	public Vector					m_headImageList = new Vector();
 		
 	
 	MainIMScreenHeader		m_header = null;
@@ -113,6 +113,8 @@ public class MainIMScreen extends MainScreen{
 	boolean				m_isRequestRoster  = false;
 	
 	public MainChatScreen	m_chatScreen = null;
+	
+	public boolean			m_hasNewChatMsg = false;
 	
 		
 	public MainIMScreen(recvMain _mainApp){
@@ -271,6 +273,13 @@ public class MainIMScreen extends MainScreen{
 		return false;
 	}
 	
+	public void clearNewChatSign(){
+		if(m_hasNewChatMsg){
+			m_hasNewChatMsg = false;
+			m_header.invalidate();
+		}
+	}
+	
 	private void refreshHeader(){
 		
 		switch(m_header.getCurrState()){
@@ -278,6 +287,9 @@ public class MainIMScreen extends MainScreen{
 			if(m_currMgr != m_historyChatMgr){
 				replace(m_currMgr,m_historyChatMgr);
 				m_currMgr = m_historyChatMgr;
+				
+				clearNewChatSign();
+				
 			}else{
 				return;
 			}
@@ -312,6 +324,10 @@ public class MainIMScreen extends MainScreen{
 	
 	private void addChatMsg(fetchChatMsg _msg){
 		
+		if(!Backlight.isEnabled() || !m_mainApp.isForeground()){
+			m_mainApp.TriggerIMNotification();
+		}	
+		
 		synchronized (m_rosterChatDataList) {
 			for(int i = 0;i < m_rosterChatDataList.size();i++){
 				RosterChatData data = (RosterChatData)m_rosterChatDataList.elementAt(i);
@@ -326,9 +342,17 @@ public class MainIMScreen extends MainScreen{
 					
 					addHistroyChatMgr(data);
 					
-					if(m_chatScreen.m_currRoster == data){
+					if(m_mainApp.getActiveScreen() == m_chatScreen
+						&& m_chatScreen.m_currRoster == data){
+						// the activate screen is chat screen
+						//
 						m_chatScreen.m_middleMgr.addChatMsg(_msg);
 						m_chatScreen.m_header.invalidate();
+						
+					}else{
+						
+						m_hasNewChatMsg = true;
+						m_header.invalidate();
 					}
 					
 					break;

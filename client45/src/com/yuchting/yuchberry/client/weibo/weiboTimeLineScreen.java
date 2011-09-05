@@ -127,7 +127,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		"fanWeibo",
 	};
 	
-	static ImageUnit	sm_isBBerSign = null;
+	
 	
 	
 	public Vector		m_headImageList = new Vector();
@@ -1185,18 +1185,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 		return sm_VIPSign[_weiboStyle];		
 	}
-	
-	
-	
-	static public ImageUnit GetBBerSignBitmap(){
-		if(sm_isBBerSign == null){
-			sm_isBBerSign = recvMain.sm_weiboUIImage.getImageUnit("BBSign");		
-		}
 		
-		return sm_isBBerSign;
-	}
-	
-	
 	private static ImageUnit sm_weiboPicSignImage = null;
 	private static ImageUnit sm_weiboCommentSignImage = null;
 		

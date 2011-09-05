@@ -71,7 +71,7 @@ public class RosterItemField extends Field{
 		
 		// draw the IM sign and head image
 		//
-		int t_x = WeiboHeadImage.displayHeadImage(_g,sm_rosterState[0].getWidth() + 2, 1, m_headImage);
+		int t_x = WeiboHeadImage.displayHeadImage(_g,sm_rosterState[0].getWidth() + 2, 2, m_headImage);
 		
 		int color = _g.getColor();
 		Font font = _g.getFont();

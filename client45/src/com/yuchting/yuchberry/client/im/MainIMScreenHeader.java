@@ -1,5 +1,8 @@
 package com.yuchting.yuchberry.client.im;
 
+import net.rim.device.api.ui.Graphics;
+
+import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.SliderHeader;
 
 public class MainIMScreenHeader extends SliderHeader{
@@ -30,7 +33,16 @@ public class MainIMScreenHeader extends SliderHeader{
 				});
 		
 		m_parentScreen = _parentScreen;
-		
 	}
 	
+	protected void paint( Graphics g ){
+		super.paint(g);
+		
+		if(m_parentScreen.m_hasNewChatMsg){
+			
+			// draw a new message sign
+			//
+			recvMain.sm_weiboUIImage.drawImage(g,GetBBerSignBitmap(),fsm_linkedStateSize,fsm_stateBitmapTop);
+		}
+    }
 }

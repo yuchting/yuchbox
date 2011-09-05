@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.server;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
@@ -190,6 +191,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	
 	String	m_accountName 		= null;
 	String	m_prefix			= null;
+	String	m_headImageDir		= null;
 	
 	String m_password			= null;
 	String m_cryptPassword		= null;
@@ -200,6 +202,8 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	ChatManager	m_chatManager	= null;
 	
 	Vector<fetchChatRoster>		m_chatRosterList = new Vector<fetchChatRoster>();
+	
+	Vector<fetchChatRoster>		m_changeChatRosterList = new Vector<fetchChatRoster>();
 		
 	Vector<ChatData>			m_chatList = new Vector<ChatData>();
 	
@@ -218,7 +222,15 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		
 		m_cryptPassword	= fetchAccount.ReadStringAttr(_elem,"cryptPassword");
 		
+		m_prefix				= m_accountName + "[GTalk]/";
+		m_headImageDir			= m_mainMgr.GetPrefixString() + m_prefix;
+		
 		File t_file  = new File(GetAccountPrefix());
+		if(!t_file.exists() || !t_file.isDirectory()){
+			t_file.mkdir();
+		}
+		
+		t_file  = new File(m_headImageDir);
 		if(!t_file.exists() || !t_file.isDirectory()){
 			t_file.mkdir();
 		}
@@ -230,7 +242,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	
 	
 	public String GetAccountPrefix(){
-		return m_accountName + "[GTalk]/";
+		return m_prefix;
 	}
 	
 	public int getCurrChatStyle(){
@@ -242,13 +254,31 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		DestroySession();
 		
 		if(m_mainConnection == null){
+			String t_domain = "gmail.com";
+			int t_index = 0;
+			if((t_index = m_accountName.toLowerCase().indexOf("@")) != -1){
+				t_domain = m_accountName.substring(t_index + 1);
+			}
+			
 			// Create a connection to the jabber.org server on a specific port.
 			//
-			ConnectionConfiguration t_config = new ConnectionConfiguration("talk.google.com", 5222,"gmail.com");
-			t_config.setSASLAuthenticationEnabled(false);
+			ConnectionConfiguration t_config = new ConnectionConfiguration("talk.google.com",5222,t_domain);
+			
+			if(t_domain.equals("gmail.com")){
+				t_config.setSASLAuthenticationEnabled(false);
+			}			
 			
 			m_mainConnection = new XMPPConnection(t_config);
 		}
+		
+		String decryptPass = decryptPassword(m_cryptPassword,m_password);
+		if(decryptPass != null){
+			m_password = decryptPass;
+		}else{
+			// haven't got the client password key
+			//
+			return ;
+		}		
 		
 		m_mainConnection.connect();
 				
@@ -258,7 +288,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			t_account = m_accountName.substring(0,t_index);
 		}else{
 			t_account = m_accountName;
-		}
+		}	
 		
 		m_mainConnection.login(t_account,m_password,fsm_ybClientSource + "-" + (new Random()).nextInt(1000));
 		
@@ -289,20 +319,37 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	 * client is connected to server
 	 */
 	public void ClientConnected(){
-		Presence t_presence = new Presence(Presence.Type.available);
-		t_presence.setMode(Presence.Mode.available);
 		
-		m_mainConnection.sendPacket(t_presence);
+		if(m_mainConnection.isConnected()){
+			
+			Presence t_presence = new Presence(Presence.Type.available);
+			t_presence.setMode(Presence.Mode.available);
+			
+			try{
+				m_mainConnection.sendPacket(t_presence);
+			}catch(Exception e){
+				m_mainMgr.m_logger.PrinterException(e);
+			}
+			
+		}
 	}
 	
 	/**
 	 * client is disconnected from the server
 	 */
 	public void ClientDisconnected(){
-		Presence t_presence = new Presence(Presence.Type.available);
-		t_presence.setMode(Presence.Mode.xa);
 		
-		m_mainConnection.sendPacket(t_presence);
+		if(!m_mainConnection.isConnected()){
+			
+			Presence t_presence = new Presence(Presence.Type.available);
+			t_presence.setMode(Presence.Mode.xa);
+			
+			try{	
+				m_mainConnection.sendPacket(t_presence);
+			}catch(Exception e){
+				m_mainMgr.m_logger.PrinterException(e);
+			}
+		}
 	}
 	
 	public void entriesAdded(Collection<String> addresses){
@@ -358,23 +405,33 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     	//
     	presence = m_roster.getPresence(presence.getFrom());
     	
-    	String account = presence.getFrom();
-    	int t_slashIndex = account.indexOf('/');
-    	if(t_slashIndex != -1){
-    		// parse the JID to the account name;
-    		//
-    		account = account.substring(0,t_slashIndex);
-    	}
-    	
+    	String account = ChatData.convertAccount(presence.getFrom());
+    	    	
     	synchronized (m_chatRosterList) {
     		
     		for(fetchChatRoster roster : m_chatRosterList){
     			if(roster.getAccount().toLowerCase().equals(account)){
     				setPresence(roster,presence);
     				
-    				m_mainMgr.m_logger.LogOut(GetAccountName() + " presenceChanged:" + account + " Presence:" + presence);
+    				m_mainMgr.m_logger.LogOut(GetAccountName() + 
+    										" presenceChanged:" + account + " Presence:" + presence);
    
     				storeHeadImage(roster);
+
+    				boolean t_hasBeenAdded = false;
+    				
+    				synchronized (m_changeChatRosterList) {
+						for(fetchChatRoster roster1:m_changeChatRosterList){
+							if(roster1 == roster){
+								t_hasBeenAdded = true;
+								break;
+							}
+						}
+						
+						if(!t_hasBeenAdded){
+							m_changeChatRosterList.add(roster);
+						}
+					}
     				
     				break;
     			}
@@ -561,8 +618,8 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	
 	private void storeHeadImage(fetchChatRoster _roster){
 		
-		File t_headImageFile_l = new File(GetAccountPrefix() + _roster.getAccount() + "_l.jpg");
-		File t_headImageFile = new File(GetAccountPrefix() + _roster.getAccount() + ".jpg");
+		File t_headImageFile_l = new File(m_headImageDir + _roster.getAccount() + "_l.jpg");
+		File t_headImageFile = new File(m_headImageDir + _roster.getAccount() + ".jpg");
 		
 		long t_currentTime = (new Date()).getTime();
 		
@@ -623,9 +680,48 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			case msg_head.msgChatState:
 				t_processed = ProcessMsgChatState(in);
 				break;
+			case msg_head.msgChatHeadImage:
+				t_processed = ProcessChatHeadImage(in);
+				break;
 		}
 		
 		return t_processed;
+	}
+	
+	private boolean ProcessChatHeadImage(InputStream in)throws Exception{
+		int t_style = in.read();
+		
+		if(t_style == getCurrChatStyle()){
+			String t_imageID = sendReceive.ReadString(in);
+			boolean t_largeImage = sendReceive.ReadBoolean(in);
+			
+			File t_headImageFile = new File(m_headImageDir + t_imageID + (t_largeImage?"_l.jpg":".jpg"));
+			
+			if(t_headImageFile.exists()){
+				
+				FileInputStream t_fileIn = new FileInputStream(t_headImageFile);
+				byte[] t_fileData = null;
+				try{
+					t_fileData = new byte[(int)t_headImageFile.length()];
+					sendReceive.ForceReadByte(t_fileIn, t_fileData, t_fileData.length);
+				}finally{
+					t_fileIn.close();
+				}
+				
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+				os.write(msg_head.msgChatHeadImage);
+				os.write(t_style);
+				sendReceive.WriteBoolean(os, t_largeImage);
+				sendReceive.WriteString(os,t_imageID,false);
+				os.write(t_fileData);				
+				
+				m_mainMgr.SendData(os, false);
+				
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	private boolean ProcessMsgChatState(InputStream in)throws Exception{
@@ -777,6 +873,8 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " disconnected reset it.");
 			
 			ResetSession(true);
+			
+			ClientConnected();
 		}
 	}
 	
@@ -831,6 +929,20 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				}
 			}
 		}
+		
+		synchronized (m_changeChatRosterList){
+			for(fetchChatRoster roster:m_changeChatRosterList){
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+				os.write(msg_head.msgChatRosterList);
+				os.write(1);
+				
+				roster.Outport(os);
+				
+				m_mainMgr.SendData(os, false);
+			}
+			
+			m_changeChatRosterList.removeAllElements();
+		}
 	}
 	
 	public static void main(String[] _arg)throws Exception{
@@ -848,6 +960,8 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			
 			t_talk.m_accountName = "yuchdroid@gmail.com";
 			t_talk.m_password = "hF8IBrCmBDQsKaWa";
+
+			t_talk.m_cryptPassword = "";
 			
 			t_talk.ResetSession(true);
 			

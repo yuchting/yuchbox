@@ -1134,6 +1134,10 @@ public class connectDeamon extends Thread implements SendListener,
 		 		if(m_mainApp.m_mainIMScreen != null){
 		 			m_mainApp.m_mainIMScreen.processChatState(in);
 		 		}
+		 		break;
+		 	case msg_head.msgChatHeadImage:
+		 		ProcessChatHeadImage(in);
+		 		break;
 		 }
 	 }
 	
@@ -1949,6 +1953,27 @@ public class connectDeamon extends Thread implements SendListener,
 			
 		}catch(Exception e){
 			m_mainApp.SetErrorString("PWHI:" + e.getMessage() + e.getClass().getName());
+		}
+	}
+	
+	private void ProcessChatHeadImage(InputStream in){
+		
+		if(m_mainApp.m_mainIMScreen == null){
+			m_mainApp.SetErrorString("recevive chat IM message,but haven't enable IM module");
+			return;
+		}
+		
+		try{
+			int t_style = in.read();
+			boolean t_largeSize = sendReceive.ReadBoolean(in);
+			
+			String t_id = sendReceive.ReadString(in);
+						
+			StoreHeadImage(m_mainApp.m_mainIMScreen.m_headImageList,
+							false,t_largeSize,t_style,t_id,in);
+			
+		}catch(Exception e){
+			m_mainApp.SetErrorString("PCHI:" + e.getMessage() + e.getClass().getName());
 		}
 	}
 	

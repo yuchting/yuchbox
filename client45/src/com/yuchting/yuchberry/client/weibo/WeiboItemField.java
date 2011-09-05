@@ -13,6 +13,7 @@ import net.rim.device.api.ui.component.TextField;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
+import com.yuchting.yuchberry.client.ui.SliderHeader;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 
 class ContentTextField extends TextField{
@@ -590,7 +591,7 @@ public class WeiboItemField extends Manager{
 				//
 				if(m_weibo.IsBBer()){
 					recvMain.sm_weiboUIImage.drawImage(
-							_g,weiboTimeLineScreen.GetBBerSignBitmap(),t_startSign_x,t_textStart_y);
+							_g,SliderHeader.GetBBerSignBitmap(),t_startSign_x,t_textStart_y);
 				}
 				
 				// draw text
@@ -756,7 +757,7 @@ public class WeiboItemField extends Manager{
 				//
 				if(m_weibo.IsBBer()){
 					recvMain.sm_weiboUIImage.drawImage(
-							_g,weiboTimeLineScreen.GetBBerSignBitmap(),t_nameLength + t_nameLeadingSpace, t_firstLineHeight);
+							_g,SliderHeader.GetBBerSignBitmap(),t_nameLength + t_nameLeadingSpace, t_firstLineHeight);
 				}
 				
 				// contain abstract

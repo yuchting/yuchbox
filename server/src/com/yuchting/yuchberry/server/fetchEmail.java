@@ -1329,44 +1329,18 @@ public class fetchEmail extends fetchAccount{
 		return m_session != null;
 	}
 	
-	static byte[] sm_cryptPasswordKeyError = null;
-	static{
-		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-		t_os.write(msg_head.msgNote);
-		try{
-			sendReceive.WriteString(t_os,"crypt password key error!(加密算子错误)",false);
-		}catch(Exception e){}
-		
-		sm_cryptPasswordKeyError = t_os.toByteArray();
-	}
 	
 	public synchronized void ResetSession(boolean _fullTest)throws Exception{
 				
 		DestroySession();
 		
-		if(!m_cryptPassword.isEmpty() && m_password.isEmpty()){		
-			
-			if(m_mainMgr.GetPasswordKey().isEmpty()){
-				m_mainMgr.m_logger.LogOut(GetAccountName() + "PasswordKey is Empty, wait for client send PasswordKey.");
-				
-				return ;
-				
-			}else{
-							
-				try{
-					cryptPassword t_crypt = new cryptPassword(m_mainMgr.GetPasswordKey());
-					m_password = t_crypt.decrypt(m_cryptPassword);
-					
-				}catch(Exception e){
-
-					m_mainMgr.SendData(sm_cryptPasswordKeyError, false);
-					m_mainMgr.m_logger.LogOut(GetAccountName() + "crypt password error,please check the PasswordKey of client.");
-					
-					return;
-				}
-				
-				m_mainMgr.m_logger.LogOut(GetAccountName() +  "used crpty Password key to decode.");				
-			}
+		String decryptPass = decryptPassword(m_cryptPassword,m_password);
+		if(decryptPass != null){
+			m_password = decryptPass;
+		}else{
+			// haven't got the client password key
+			//
+			return ;
 		}
 		    	
 		if(m_useFullNameSignIn){

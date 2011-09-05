@@ -76,7 +76,7 @@ public class WeiboHeader extends SliderHeader{
 			if(t_drawNewMsgSign){
 				// draw a new message sign
 				//
-				recvMain.sm_weiboUIImage.drawImage(g,weiboTimeLineScreen.GetBBerSignBitmap(),t_x,fsm_stateBitmapTop);
+				recvMain.sm_weiboUIImage.drawImage(g,GetBBerSignBitmap(),t_x,fsm_stateBitmapTop);
 			}
 			
 			t_x += recvMain.fsm_display_width / m_stateBitmap.length;
