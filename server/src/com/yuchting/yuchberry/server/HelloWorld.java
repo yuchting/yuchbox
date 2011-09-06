@@ -16,7 +16,6 @@ import java.security.KeyStore;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Vector;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -86,9 +85,11 @@ public class HelloWorld {
 	 *  @param arg  parameters
 	 */
 	public static void main(String arg[])throws Exception{
-		Long[] t_arr = new Long[6];
 		
-		System.out.print("OK");
+		if(!("dd".equals(null))){
+			System.out.print("OK");
+		}
+		
 	}
 	
 	static public void qgetOAuthRequest(){

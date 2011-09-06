@@ -6,10 +6,10 @@ import java.io.OutputStream;
 public class fetchChatRoster {
 	
 	public final static int	PRESENCE_AVAIL = 0;
-	public final static int	PRESENCE_UNAVAIL = 1;
-	public final static int	PRESENCE_AWAY = 2;
-	public final static int	PRESENCE_FAR_AWAY = 3;
-	public final static int	PRESENCE_BUSY = 4;
+	public final static int	PRESENCE_AWAY = 1;
+	public final static int	PRESENCE_BUSY = 2;
+	public final static int	PRESENCE_UNAVAIL = 3;
+	public final static int	PRESENCE_FAR_AWAY = 4;
 	
 	
 	int m_style		= fetchChatMsg.STYLE_GTALK;
