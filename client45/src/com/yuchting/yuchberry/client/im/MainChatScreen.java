@@ -175,7 +175,9 @@ final class InputManager extends Manager implements FieldChangeListener{
 			m_middleMgr.invalidate();
 			m_middleMgr.sublayout(0, 0);
 			
-			if(context != FieldChangeListener.PROGRAMMATIC){
+			if(m_middleMgr.m_chatScreen.m_mainApp.m_enableChatState
+				&& context != FieldChangeListener.PROGRAMMATIC){
+				
 				synchronized (this) {
 					if(m_inputInvokeID == -1){
 						
@@ -398,7 +400,7 @@ public class MainChatScreen extends MainScreen{
 			
 			// draw roster state
 			//
-			int t_x = RosterItemField.drawRosterState(_g,3,3,m_currRoster.m_roster);
+			int t_x = RosterItemField.drawRosterState(_g,3,3,m_currRoster.m_roster.getPresence());
 			
 			int color = _g.getColor();
 			Font font = _g.getFont();
@@ -407,7 +409,7 @@ public class MainChatScreen extends MainScreen{
 				_g.setColor(RosterItemField.fsm_nameTextColor);
 				_g.setFont(MainIMScreen.sm_boldFont);
 				
-				_g.drawText(m_currRoster.m_roster.getName(),t_x,1);
+				_g.drawText(m_currRoster.m_roster.getName(),t_x,2);
 				
 			}finally{
 				_g.setColor(color);

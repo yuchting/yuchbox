@@ -47,8 +47,8 @@ public class WeiboTextField extends ActiveRichTextField{
 		
 	Vector m_phizList	= new Vector();
 		
-	static String sm_replacePhizText = " ";
-	static int sm_replacePhiz_x_offset = 0;
+	public static String sm_replacePhizText = " ";
+	public static int sm_replacePhiz_x_offset = 0;
 	
 	public WeiboTextField(int _foreground,int _background){
 		super("",Field.READONLY | Field.FOCUSABLE | SCANFLAG_THREAD_ON_CREATE);

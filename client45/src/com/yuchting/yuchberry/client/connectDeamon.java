@@ -1138,6 +1138,11 @@ public class connectDeamon extends Thread implements SendListener,
 		 	case msg_head.msgChatHeadImage:
 		 		ProcessChatHeadImage(in);
 		 		break;
+		 	case msg_head.msgChatPresence:
+		 		if(m_mainApp.m_mainIMScreen != null){
+		 			m_mainApp.m_mainIMScreen.processChatPresence(in);
+		 		}
+		 		break;
 		 }
 	 }
 	

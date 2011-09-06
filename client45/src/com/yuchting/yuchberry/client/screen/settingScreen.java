@@ -77,11 +77,11 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 			 											Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	 
 	 CheckboxField		m_weiboModule	= null;
-	 NullField			m_weiboNullField = new NullField();
+	 NullField			m_weiboNullField = new NullField(Field.NON_FOCUSABLE);
 	 LabelField			m_weiboSettingPrompt = new LabelField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SETTING_PROMPT));
 	 
 	 CheckboxField		m_imModule		= null;
-	 NullField			m_imNullField	= new NullField();
+	 NullField			m_imNullField	= new NullField(Field.NON_FOCUSABLE);
 	 LabelField			m_imSettingPrompt = new LabelField(recvMain.sm_local.getString(localResource.SETTING_IM_SETTING_PROMPT));
 	 
 	 recvMain			m_mainApp		= null;

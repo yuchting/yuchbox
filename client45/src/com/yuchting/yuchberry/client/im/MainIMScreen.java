@@ -13,6 +13,7 @@ import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
@@ -56,13 +57,122 @@ public class MainIMScreen extends MainScreen{
 		}
 	};
 	
+	MenuItem	m_statusListMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_STATUS_LIST_MENU_LABEL),m_menu_label++,0){
+		public void run(){
+			m_header.setCurrState(MainIMScreenHeader.STATE_STATUS_LIST);
+			refreshHeader();
+		}
+	};
+	
 	int m_menu_op = 20;
 	
-	MenuItem	m_refreshListMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_REFRESH_ROSTER_MENU_LABEL),m_menu_label++,0){
+	MenuItem	m_refreshListMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_REFRESH_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			sendRequestRosterListMsg();
 		}
 	};
+	
+	MenuItem	m_showUnvailRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_SHOW_UNVAIL_ROSTER_MENU_LABEL),m_menu_op++,0){
+		public void run(){
+			m_mainApp.m_hideUnvailiableRoster = false;
+			
+			try{
+				refreshRosterList();
+			}catch(Exception e){
+				m_mainApp.SetErrorString("SURM:"+e.getMessage()+e.getClass().getName());
+			}
+			
+			m_mainApp.WriteReadIni(false);
+		}
+	};
+	
+	MenuItem	m_hideUnvailRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_HIDE_UNVAIL_ROSTER_MENU_LABEL),m_menu_op++,0){
+		public void run(){
+			m_mainApp.m_hideUnvailiableRoster = true;
+			
+			try{
+				refreshRosterList();
+			}catch(Exception e){
+				m_mainApp.SetErrorString("HURM:"+e.getMessage()+e.getClass().getName());
+			}
+			
+			m_mainApp.WriteReadIni(false);
+		}
+	};
+	public IMStatusAddScreen m_statusAddScreen = null;
+	MenuItem	m_addStatusMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_ADD_STATUS),m_menu_op++,0){
+		public void run(){
+			m_statusAddScreen = new IMStatusAddScreen(MainIMScreen.this, null);
+			m_mainApp.pushScreen(m_statusAddScreen);
+			
+		}
+	};
+	
+	MenuItem	m_modifyStatusMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_MODIFY_STATUS),m_menu_op++,0){
+		public void run(){
+			
+			int num = m_statusListMgr.getFieldCount();
+			for(int i = 0;i < num;i++){
+				IMStatusField t_field = (IMStatusField)m_statusListMgr.getField(i);
+				if(t_field.isFocus()){
+					
+					m_statusAddScreen = new IMStatusAddScreen(MainIMScreen.this, IMStatus.sm_currUseStatus);
+					m_mainApp.pushScreen(m_statusAddScreen);
+					
+					break;
+				}
+			}
+		}
+	};
+	
+	MenuItem	m_delStatusMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_DELETE_STATUS),m_menu_op++,0){
+		public void run(){
+			
+			int num = m_statusListMgr.getFieldCount();
+			for(int i = 0;i < num;i++){
+				IMStatusField t_field = (IMStatusField)m_statusListMgr.getField(i);
+				if(t_field.isFocus()){
+					
+					if(Dialog.ask(Dialog.D_YES_NO,
+						recvMain.sm_local.getString(localResource.IM_DELETE_STATUS_PROMPT) + t_field.m_status,Dialog.NO) != Dialog.YES){
+						
+						return;
+					}
+					
+					for(int j = 0;j< recvMain.sm_imStatusList.size();j++){
+						
+						IMStatus t_status = (IMStatus)recvMain.sm_imStatusList.elementAt(j);
+						
+						if(t_field.m_status == t_status){
+							
+							recvMain.sm_imStatusList.removeElementAt(j);
+							
+							if(IMStatus.sm_currUseStatus == t_status){
+								
+								m_mainApp.m_imCurrUseStatusIndex = 0;
+								
+								if(!recvMain.sm_imStatusList.isEmpty()){
+									IMStatus.sm_currUseStatus = (IMStatus)recvMain.sm_imStatusList.elementAt(0);
+									
+									sendUseStatus(IMStatus.sm_currUseStatus);
+								}
+							}
+							
+							m_mainApp.WriteReadIni(false);
+							
+							refreshStatusList();
+							
+							break;
+							
+						}
+					}
+					
+					break;
+				}
+			}
+		}
+	};
+		
 	
 	MenuItem	m_stateMenu = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_STATE_SCREEN_MENU_LABEL),100,0){
 		public void run(){
@@ -102,8 +212,9 @@ public class MainIMScreen extends MainScreen{
 	recvMain				m_mainApp = null;
 	
 	VerticalFieldManager	m_historyChatMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
-	
 	VerticalFieldManager	m_rosterListMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
+	VerticalFieldManager	m_statusListMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
+		
 	Vector					m_rosterChatDataList = new Vector();
 	
 	VerticalFieldManager	m_currMgr	= null;	
@@ -124,52 +235,13 @@ public class MainIMScreen extends MainScreen{
 		m_header = new MainIMScreenHeader(this);
 		m_chatScreen = new MainChatScreen(_mainApp,this);
 		
-//		//@{ test code
-//		for(int i = 0 ;i < 10;i++){
-//			fetchChatRoster t_roster = new fetchChatRoster();
-//			
-//			t_roster.setAccount("yuchting@gmail.com");
-//			t_roster.setName("YuchTing");
-//			t_roster.setStyle(fetchChatMsg.STYLE_GTALK);
-//			
-//			try{
-//				WeiboHeadImage t_image = WeiboHeadImage.SearchHeadImage(m_headImageList, t_roster.getAccount(), (byte)t_roster.getStyle(), 
-//						t_roster.getHeadImageHashCode(), false);
-//				
-//				m_historyChatMgr.add(new RosterItemField(t_roster, t_image, true));
-//				
-//			}catch(Exception e){
-//				m_mainApp.SetErrorString("MIMS:"+e.getMessage() + e.getClass().getName());
-//			}
-//			
-//			m_historyChatMgrList.addElement(t_roster);
-//			
-//			StringBuffer t_msgText = new StringBuffer("笑多了[哈哈]");
-//			RosterChatData t_data = new RosterChatData(t_roster);
-//			for(int j = 0 ;j < 10;j++){
-//				
-//				fetchChatMsg t_msg = new fetchChatMsg();
-//				t_msg.setOwner(t_roster.getAccount());
-//				
-//				
-//				t_msg.setMsg(t_msgText.toString());
-//				
-//				t_msgText.append("笑多了[哈哈]");				
-//				
-//				t_msg.setIsOwnMsg(j % 2 == 0);
-//				
-//				t_data.m_chatList.addElement(t_msg);
-//				
-//			}
-//			m_rosterChatDataList.addElement(t_data);
-//		}
-//		//@}		
-		
 		add(m_historyChatMgr);
 		setTitle(m_header);
 		
 		m_historyChatMgr.setFocus();
 		m_currMgr = m_historyChatMgr;
+		
+		refreshStatusList();
 	}
 	
 	 
@@ -193,12 +265,94 @@ public class MainIMScreen extends MainScreen{
     	}
 	}
 	
+	private void prepareCurrUseStatus(){
+		if(!recvMain.sm_imStatusList.isEmpty()){
+			if(m_mainApp.m_imCurrUseStatusIndex < 0 
+				|| m_mainApp.m_imCurrUseStatusIndex >= recvMain.sm_imStatusList.size()){
+				
+				m_mainApp.m_imCurrUseStatusIndex = 0;
+			}
+			
+			IMStatus.sm_currUseStatus = (IMStatus)recvMain.sm_imStatusList.elementAt(m_mainApp.m_imCurrUseStatusIndex);
+		}
+	}
+	
+	public void refreshStatusList(){
+		
+		prepareCurrUseStatus();
+		
+		m_statusListMgr.deleteAll();
+		
+		for(int i = 0 ;i < recvMain.sm_imStatusList.size();i++){
+			m_statusListMgr.add(new IMStatusField((IMStatus)recvMain.sm_imStatusList.elementAt(i)));
+		}
+	}
+	
+	public void addStatus(IMStatus _status){
+		
+		boolean insert = false;
+		
+		for(int i = 0 ;i < recvMain.sm_imStatusList.size();i++){
+			IMStatus t_status = (IMStatus)recvMain.sm_imStatusList.elementAt(i); 
+			if(t_status.m_presence == _status.m_presence){
+				
+				insert = true;
+				
+				recvMain.sm_imStatusList.insertElementAt(_status, i);
+				
+				if(i > m_mainApp.m_imCurrUseStatusIndex){
+					// needn't change status index;
+					//
+					refreshStatusList();
+					m_mainApp.WriteReadIni(false);
+					return ;
+				}else{
+					break;
+				}
+				
+			}			
+		}
+		
+		if(!insert){
+			
+			recvMain.sm_imStatusList.addElement(_status);
+			
+		}else{
+
+			// find the default status index
+			//
+			for(int i = 0 ;i < recvMain.sm_imStatusList.size();i++){
+				IMStatus t_status = (IMStatus)recvMain.sm_imStatusList.elementAt(i); 
+				if(t_status == IMStatus.sm_currUseStatus){
+					m_mainApp.m_imCurrUseStatusIndex = i;
+					break;
+				}
+			}
+		}
+		
+		refreshStatusList();
+		m_mainApp.WriteReadIni(false);
+	}
+	
 	protected void makeMenu(Menu _menu,int instance){
 		_menu.add(m_historyChatMenu);
 		_menu.add(m_rosterListMenu);
 		_menu.add(MenuItem.separator(m_menu_label));
 		
 		_menu.add(m_refreshListMenu);
+		if(m_currMgr == m_rosterListMgr){
+
+			if(m_mainApp.m_hideUnvailiableRoster){
+				_menu.add(m_showUnvailRosterMenu);
+			}else{
+				_menu.add(m_hideUnvailRosterMenu);
+			}
+		}else if(m_currMgr == m_statusListMgr){
+			_menu.add(m_addStatusMenu);
+			_menu.add(m_modifyStatusMenu);
+			_menu.add(m_delStatusMenu);
+		}
+		
 		_menu.add(MenuItem.separator(m_menu_op));
 		
 		_menu.add(m_stateMenu);
@@ -257,18 +411,43 @@ public class MainIMScreen extends MainScreen{
 	
 	private boolean click(){
 
-		int t_fieldCount = m_currMgr.getFieldCount();
-		for(int i = 0 ;i < t_fieldCount;i++){
-			RosterItemField field = (RosterItemField)m_currMgr.getField(i);
-			if(field.isFocus()){
-							
-				m_chatScreen.m_currRoster = field.m_currRoster;
-				m_mainApp.pushScreen(m_chatScreen);
+		if(m_currMgr == m_statusListMgr){
+			
+			int t_fieldCount = m_currMgr.getFieldCount();
+			
+			for(int i = 0 ;i < t_fieldCount;i++){
 				
-				return true;
+				IMStatusField field = (IMStatusField)m_currMgr.getField(i);
 				
+				if(field.isFocus() && m_mainApp.m_imCurrUseStatusIndex != i){
+					
+					m_mainApp.m_imCurrUseStatusIndex = i;
+					IMStatus.sm_currUseStatus = field.m_status;
+					
+					sendUseStatus(IMStatus.sm_currUseStatus);
+					
+					refreshStatusList();
+					
+					return true;					
+				}
 			}
+			
+		}else{
+			
+			int t_fieldCount = m_currMgr.getFieldCount();
+			for(int i = 0 ;i < t_fieldCount;i++){
+				RosterItemField field = (RosterItemField)m_currMgr.getField(i);
+				if(field.isFocus()){
+								
+					m_chatScreen.m_currRoster = field.m_currRoster;
+					m_mainApp.pushScreen(m_chatScreen);
+					
+					return true;
+					
+				}
+			}	
 		}
+		
 		
 		return false;
 	}
@@ -306,6 +485,15 @@ public class MainIMScreen extends MainScreen{
 				return;
 			}
 			break;
+		case MainIMScreenHeader.STATE_STATUS_LIST:
+			if(m_currMgr != m_statusListMgr){
+				replace(m_currMgr,m_statusListMgr);
+				m_currMgr = m_statusListMgr;
+			}else{
+				return;
+			}
+			break;
+			
 		}
 	}
 	
@@ -433,17 +621,21 @@ public class MainIMScreen extends MainScreen{
 									
 									t_modified = true;
 									
+									rangeRosterItemField(data);
+									
+									if(m_mainApp.getActiveScreen() == m_chatScreen
+									&& m_chatScreen.m_currRoster == data){
+										m_chatScreen.m_header.invalidate();
+									}
+									
+									m_currMgr.invalidate();
+									
 									break;
 								}
 							}	
-						}
+						}						
 						
-						
-						if(t_modified){
-							
-							m_currMgr.invalidate();
-							
-						}else{
+						if(!t_modified){
 							
 							synchronized (m_rosterChatDataList) {
 								m_rosterChatDataList.addElement(new RosterChatData(t_roster));
@@ -459,6 +651,79 @@ public class MainIMScreen extends MainScreen{
 				
 			}
 		});
+	}
+	
+	private void rangeRosterItemField(RosterChatData _rosterData){
+		
+		int num = m_rosterListMgr.getFieldCount();
+		for(int j = 0;j < num;j++){
+			RosterItemField t_field = (RosterItemField)m_rosterListMgr.getField(j);
+			if(_rosterData == t_field.m_currRoster){
+				// delete the changed field and re-insert it by it's presence state 
+				//
+				m_rosterListMgr.delete(t_field);
+				
+				if(!m_mainApp.m_hideUnvailiableRoster 
+				|| t_field.m_currRoster.m_roster.getPresence() != fetchChatRoster.PRESENCE_UNAVAIL){
+					
+					insertRosterItemField(t_field);
+				}
+				
+				return ;
+			}
+		}
+		
+		// insert a new field by roster data
+		//
+		if(!m_mainApp.m_hideUnvailiableRoster 
+		|| _rosterData.m_roster.getPresence() != fetchChatRoster.PRESENCE_UNAVAIL){
+			
+			try{
+				WeiboHeadImage t_image = WeiboHeadImage.SearchHeadImage(m_headImageList, _rosterData.m_roster.getAccount(), 
+											(byte)_rosterData.m_roster.getStyle(),
+											_rosterData.m_roster.getHeadImageHashCode(), false);
+				
+				insertRosterItemField(new RosterItemField(_rosterData,t_image,false));	
+				
+			}catch(Exception e){
+				m_mainApp.SetErrorString("RRIF:"+e.getMessage()+e.getClass().getName());
+			}
+			
+		}
+	}
+	
+	private void insertRosterItemField(RosterItemField _field){
+					
+		int t_insertPresence = _field.m_currRoster.m_roster.getPresence();
+		int num = m_rosterListMgr.getFieldCount() - 1;
+		int index = 0;
+		
+		for(;index < num;index++){
+			RosterItemField item = (RosterItemField)m_rosterListMgr.getField(index);
+			if(item.m_currRoster.m_roster.getPresence() == t_insertPresence ){
+				break;
+			}
+		}
+		
+		for(;index < num;index++){
+							
+			RosterItemField cmp = (RosterItemField)m_rosterListMgr.getField(index + 1);
+			
+			int t_cmpPresenece = cmp.m_currRoster.m_roster.getPresence();
+			
+			int t_cmpResult = cmp.m_currRoster.m_roster.getAccount().compareTo(_field.m_currRoster.m_roster.getAccount());
+			
+			if((t_cmpResult > 0 && t_cmpPresenece == t_insertPresence) || t_cmpPresenece != t_insertPresence){
+				
+				m_rosterListMgr.insert(_field,index);
+				
+				return;
+			}
+		}
+		
+		// add to rear
+		//
+		m_rosterListMgr.add(_field);
 		
 	}
 	
@@ -470,8 +735,10 @@ public class MainIMScreen extends MainScreen{
 		refreshRosterList_impl(fetchChatRoster.PRESENCE_AWAY);
 		refreshRosterList_impl(fetchChatRoster.PRESENCE_BUSY);
 		refreshRosterList_impl(fetchChatRoster.PRESENCE_FAR_AWAY);
-		refreshRosterList_impl(fetchChatRoster.PRESENCE_UNAVAIL);
 		
+		if(!m_mainApp.m_hideUnvailiableRoster){
+			refreshRosterList_impl(fetchChatRoster.PRESENCE_UNAVAIL);
+		}
 	}
 	
 	private void refreshRosterList_impl(int _presence)throws Exception{
@@ -520,7 +787,9 @@ public class MainIMScreen extends MainScreen{
 			}
 		}
 	}
+	
 	public void processChatState(ByteArrayInputStream in)throws Exception{
+		
 		int t_style = in.read();
 		int t_state = in.read();
 		String t_ownAccount = sendReceive.ReadString(in);
@@ -545,6 +814,32 @@ public class MainIMScreen extends MainScreen{
 		}
 	}
 	
+	public void processChatPresence(InputStream in){
+		
+		prepareCurrUseStatus();
+		
+		if(IMStatus.sm_currUseStatus != null){
+			sendUseStatus(IMStatus.sm_currUseStatus);
+		}
+	}
+	
+	public synchronized void sendUseStatus(IMStatus _status){
+		
+		try{
+				
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			os.write(msg_head.msgChatPresence);
+			os.write(_status.m_presence);
+			sendReceive.WriteString(os,_status.m_status);
+			
+			m_mainApp.m_connectDeamon.addSendingData(msg_head.msgChatPresence, os.toByteArray(), true);
+			
+		}catch(Exception e){
+			m_mainApp.SetErrorString("SUP:"+e.getMessage()+e.getClass().getName());
+		}
+		
+	}
+	
 	public void addSendChatMsg(fetchChatMsg _msg,RosterChatData _sendTo){
 		
 		SendChatMsgDeamon t_daemon = new SendChatMsgDeamon(_msg, _sendTo, m_chatScreen);
@@ -564,7 +859,8 @@ public class MainIMScreen extends MainScreen{
 			boolean t_found = false;
 			for(int i = 0 ;i < t_num;i++){
 				RosterItemField t_field = (RosterItemField)m_historyChatMgr.getField(i);
-				if(t_field.m_currRoster == _rosterData){				
+				if(t_field.m_currRoster == _rosterData){
+					
 					m_historyChatMgr.delete(t_field);
 					m_historyChatMgr.insert(t_field, 0);
 					t_found = true;
@@ -588,5 +884,4 @@ public class MainIMScreen extends MainScreen{
 			}
 		}
 	}
-
 }

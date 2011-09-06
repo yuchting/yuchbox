@@ -67,7 +67,7 @@ public class RosterItemField extends Field{
 		}
 		// draw roster state
 		//
-		drawRosterState(_g,1,1,m_currRoster.m_roster);
+		drawRosterState(_g,1,1,m_currRoster.m_roster.getPresence());
 		
 		// draw the IM sign and head image
 		//
@@ -79,7 +79,7 @@ public class RosterItemField extends Field{
 			_g.setColor(fsm_nameTextColor);
 			_g.setFont(MainIMScreen.sm_boldFont);
 			
-			_g.drawText(m_currRoster.m_roster.getName(),t_x,1);
+			_g.drawText(m_currRoster.m_roster.getName(),t_x,2);
 			
 			_g.setColor(fsm_statusTextColor);
 			_g.setFont(font);
@@ -109,7 +109,11 @@ public class RosterItemField extends Field{
 				}
 				
 			}else{
-				_g.drawText(m_currRoster.m_roster.getStatus(),t_x,MainIMScreen.sm_defaultFontHeight + 1);
+				String t_status = m_currRoster.m_roster.getStatus();
+				if(t_status.length() == 0){
+					t_status = m_currRoster.m_roster.getAccount();
+				}
+				_g.drawText(t_status,t_x,MainIMScreen.sm_defaultFontHeight + 1);
 			}
 						
 		}finally{
@@ -174,13 +178,14 @@ public class RosterItemField extends Field{
 	private static String[] sm_rosterStateStr = 
 	{
 		"avail_state",
-		"unavail_state",
+		"busy_state",
 		"away_state",
+		"unavail_state",
 		"far_away_state",
-		"busy_state"
+		
 	};
 	
-	public static int drawRosterState(Graphics _g,int _x,int _y,fetchChatRoster _roster){
+	public static int drawRosterState(Graphics _g,int _x,int _y,int _presence){
 		
 		if(sm_rosterState[0] == null){
 			for(int i = 0 ;i < sm_rosterState.length;i++){
@@ -188,7 +193,7 @@ public class RosterItemField extends Field{
 			}
 		}
 		
-		recvMain.sm_weiboUIImage.drawImage(_g, sm_rosterState[_roster.getPresence()], _x, _y);
+		recvMain.sm_weiboUIImage.drawImage(_g, sm_rosterState[_presence], _x, _y);
 		
 		return _x + sm_rosterState[0].getWidth(); 
 	}

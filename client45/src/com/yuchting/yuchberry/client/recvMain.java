@@ -44,7 +44,9 @@ import net.rim.device.api.ui.component.DialogClosedListener;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.connectDeamon.FetchAttachment;
+import com.yuchting.yuchberry.client.im.IMStatus;
 import com.yuchting.yuchberry.client.im.MainIMScreen;
+import com.yuchting.yuchberry.client.im.fetchChatRoster;
 import com.yuchting.yuchberry.client.screen.aboutScreen;
 import com.yuchting.yuchberry.client.screen.audioViewScreen;
 import com.yuchting.yuchberry.client.screen.imageViewScreen;
@@ -63,6 +65,8 @@ import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 import com.yuchting.yuchberry.client.weibo.WeiboItemField;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 import com.yuchting.yuchberry.client.weibo.weiboTimeLineScreen;
+
+
 
 public class recvMain extends UiApplication implements localResource,LocationListener {
 	
@@ -973,6 +977,23 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_enableIMModule = sendReceive.ReadBoolean(t_readFile);
 				    			m_enableChatChecked = sendReceive.ReadBoolean(t_readFile);
 				    			m_enableChatState = sendReceive.ReadBoolean(t_readFile);
+				    			m_hideUnvailiableRoster	= sendReceive.ReadBoolean(t_readFile);
+				    			
+				    			m_imCurrUseStatusIndex = sendReceive.ReadInt(t_readFile);
+				    			
+				    			sm_imStatusList.removeAllElements();
+				    			
+				    			int t_num = sendReceive.ReadInt(t_readFile);
+				    			for(int i = 0 ;i < t_num;i++){
+				    				IMStatus t_status = new IMStatus();
+				    				t_status.Import(t_readFile);
+				    				
+				    				sm_imStatusList.addElement(t_status);
+				    			}
+				    			
+				    			if(m_imCurrUseStatusIndex < 0 || m_imCurrUseStatusIndex >= sm_imStatusList.size()){
+				    				m_imCurrUseStatusIndex = 0;
+				    			}
 				    		}
 				    		
 				    		
@@ -1068,7 +1089,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						sendReceive.WriteBoolean(t_writeFile,m_enableIMModule);
 		    			sendReceive.WriteBoolean(t_writeFile,m_enableChatChecked);
 		    			sendReceive.WriteBoolean(t_writeFile,m_enableChatState);
-						
+		    			sendReceive.WriteBoolean(t_writeFile,m_hideUnvailiableRoster);
+		    			
+		    			sendReceive.WriteInt(t_writeFile,m_imCurrUseStatusIndex);		    			
+		    			sendReceive.WriteInt(t_writeFile,sm_imStatusList.size());
+		    			for(int i = 0;i < sm_imStatusList.size();i++){
+		    				IMStatus status = (IMStatus)sm_imStatusList.elementAt(i);
+		    				status.Ouput(t_writeFile);
+		    			}
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1314,12 +1342,21 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 			if(m_mainIMScreen != null){
 				
-				if(getActiveScreen() == m_mainIMScreen.m_chatScreen){
+				if(getActiveScreen() == m_mainIMScreen.m_chatScreen
+					&& m_mainIMScreen.m_chatScreen != null){
 					
 					m_isWeiboOrIMScreen = false;
 					m_isChatScreen = true;
 					
 					popScreen(m_mainIMScreen.m_chatScreen);
+					popScreen(m_mainIMScreen);
+					
+				}else if(getActiveScreen() == m_mainIMScreen.m_statusAddScreen
+						&& m_mainIMScreen.m_statusAddScreen != null){
+					
+					m_isWeiboOrIMScreen = false;
+					
+					m_mainIMScreen.m_statusAddScreen.close();
 					popScreen(m_mainIMScreen);
 					
 				}else if(getActiveScreen() == m_mainIMScreen){
@@ -2292,15 +2329,26 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///// im module
 	///////////////////////////////////////////////////////////////////////////////////////////
-	public boolean				m_enableIMModule = false;
-	public boolean				m_enableChatChecked = true;
-	public boolean				m_enableChatState	= true;
+	public boolean				m_enableIMModule 		= false;
+	public boolean				m_enableChatChecked 	= true;
+	public boolean				m_enableChatState		= true;
+	public boolean				m_hideUnvailiableRoster = true;
+		
+	public int					m_imCurrUseStatusIndex	= 0;
+	public static Vector		sm_imStatusList			= new Vector();
+	static{
+		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_AVAIL,sm_local.getString(localResource.IM_STATUS_DEFAULT_AVAIL)));
+		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_AWAY,sm_local.getString(localResource.IM_STATUS_DEFAULT_AWAY)));
+		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_BUSY,sm_local.getString(localResource.IM_STATUS_DEFAULT_BUSY)));
+	}
 	
 	MainIMScreen				m_mainIMScreen = null;
 	
 	public void initIMModule(){
 		if(m_enableIMModule){
 			
+			
+			 
 			loadImageSets();
 			
 			if(m_mainIMScreen == null){
