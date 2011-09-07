@@ -17,6 +17,7 @@ import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -558,10 +559,13 @@ public class YuchPanel extends TabPanel{
 		final DateBox t_endDateBox = new DateBox();
 		t_endDateBox.setFormat(new DateBox.DefaultFormat(DateTimeFormat.getFormat("yyyy MM-dd")));
 		
+		final CheckBox t_withPushAccount = new CheckBox("统计推送账户");
+		
 		t_dateSelectPanel.add(new HTML("起始时间："));
 		t_dateSelectPanel.add(t_startdateBox);
 		t_dateSelectPanel.add(new HTML("结束时间："));
 		t_dateSelectPanel.add(t_endDateBox);
+		t_dateSelectPanel.add(t_withPushAccount);
 		
 		final VerticalPanel t_pane = new VerticalPanel();
 		t_pane.add(t_dateSelectPanel);
@@ -589,7 +593,7 @@ public class YuchPanel extends TabPanel{
 						t_end = t_endDateBox.getValue().getTime();
 					}
 					
-					m_mainServer.greetingService.getStaticticsInfo(t_start,t_end,
+					m_mainServer.greetingService.getStaticticsInfo(t_start,t_end,t_withPushAccount.getValue(),
 					new AsyncCallback<String>(){
 						public void onFailure(Throwable caught) {
 							Yuchsign.PopupPrompt("获取统计信息失败：" + caught.getMessage(), YuchPanel.this);

@@ -44,7 +44,7 @@ public interface GreetingService extends RemoteService {
 	
 	String modifyHost(String _hostName,String _hostXMLData)throws Exception;
 	
-	String getStaticticsInfo(long _startTime,long _endTime)throws Exception;
+	String getStaticticsInfo(long _startTime,long _endTime,boolean _withPushAccount)throws Exception;
 	
 	// weibo function
 	//

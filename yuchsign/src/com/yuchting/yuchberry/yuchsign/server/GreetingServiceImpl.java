@@ -1054,7 +1054,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		int				m_totalFee = 0;		
 	}
 	
-	public String getStaticticsInfo(long _startTime,long _endTime)throws Exception{
+	public String getStaticticsInfo(long _startTime,long _endTime,boolean _withPushNum)throws Exception{
 		
 		if(!m_isAdministrator){
 			return "不是Administrator";
@@ -1100,24 +1100,26 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					if(bber.GetConnectHost() != null && bber.GetConnectHost().length() > 0){
 						t_syncNum++;
 					}
-					
-					int t_accNumIndex = bber.GetEmailList().size();
-					
-					if(bber.GetWeiboList() != null){
-						t_accNumIndex += bber.GetWeiboList().size();
-					}
-					
-					if(t_accNumIndex < t_accNum.length){
-						t_accNum[t_accNumIndex]++;
+					if(_withPushNum){
 						
-						if(bber.GetTotalPayFee() > 0){
-							t_accPayNum[t_accNumIndex]++;
+						int t_accNumIndex = bber.GetEmailList().size();
+						
+						if(bber.GetWeiboList() != null){
+							t_accNumIndex += bber.GetWeiboList().size();
 						}
 						
-					}else{
-						
-						System.err.println(bber.GetSigninName() + "!!!!! t_accNumInfo :" + t_accNumIndex );
+						if(t_accNumIndex < t_accNum.length){
+							t_accNum[t_accNumIndex]++;
+							
+							if(bber.GetTotalPayFee() > 0){
+								t_accPayNum[t_accNumIndex]++;
+							}
+							
+						}else{	
+							System.err.println(bber.GetSigninName() + "!!!!! t_accNumInfo :" + t_accNumIndex );
+						}	
 					}
+					
 					
 					long t_dayTime = bber.GetSigninTime() - bber.GetSigninTime() % (24 * 3600000);
 					
@@ -1242,23 +1244,27 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					.append(t_totalPayNum).append("</td><tr>");
 			
 			t_result.append("</table>");
-						
-			t_result.append("<table border=\"1\">");	
-			t_result.append("<tr><td></td><td>1个推送</td><td>2个推送</td><td>3个推送</td><td>4个推送</td></tr>");
-			t_result.append("<tr><td>全部账户</td>");
 			
-			for(int i = 0 ;i < t_accNum.length;i++){
-				t_result.append("<td>").append(t_accNum[i]).append("</td>");
+			if(_withPushNum){
+				
+				t_result.append("<table border=\"1\">");	
+				t_result.append("<tr><td></td><td>1个推送</td><td>2个推送</td><td>3个推送</td><td>4个推送</td></tr>");
+				t_result.append("<tr><td>全部账户</td>");
+				
+				for(int i = 0 ;i < t_accNum.length;i++){
+					t_result.append("<td>").append(t_accNum[i]).append("</td>");
+				}
+				t_result.append("</tr>");
+				
+				t_result.append("<tr><td>付费账户</td>");
+				for(int i = 0 ;i < t_accPayNum.length;i++){
+					t_result.append("<td>").append(t_accPayNum[i]).append("</td>");
+				}
+				t_result.append("</tr>");
+				
+				t_result.append("</table>");	
 			}
-			t_result.append("</tr>");
 			
-			t_result.append("<tr><td>付费账户</td>");
-			for(int i = 0 ;i < t_accPayNum.length;i++){
-				t_result.append("<td>").append(t_accPayNum[i]).append("</td>");
-			}
-			t_result.append("</tr>");
-			
-			t_result.append("</table>");
 			
 			return t_result.toString();
 			
