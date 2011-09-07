@@ -211,7 +211,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	
 	int		m_connectPresence	= -1;
 	String	m_connectStatus		= null;
-	
+		
 	public fetchGTalk(fetchMgr _mainMgr){
 		super(_mainMgr);
 	}
@@ -504,16 +504,13 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			}
 			
 		}else{
-			//TODO send to client...
-    		//
+			
 			fetchChatMsg msg = convertChat(chat, message);
 			sendClientChatMsg(msg,true);
 			
-			t_state = fetchChatMsg.CHAT_STATE_COMMON;
+			m_pushedChatMsgList.add(msg);
 			
-			synchronized (m_pushedChatMsgList) {
-				m_pushedChatMsgList.add(msg);				
-			}		
+			t_state = fetchChatMsg.CHAT_STATE_COMMON;
 		}
 		
 		String t_acc  = ChatData.convertAccount(chat.getParticipant());
@@ -738,6 +735,15 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			case msg_head.msgChatPresence:
 				ProcessChatPresence(in);
 				break;
+			case msg_head.msgChatEnable:
+				
+				m_mainMgr.setIMEnabled(sendReceive.ReadBoolean(in));
+				m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " client disable :"+m_mainMgr.isIMEnabled());
+				
+				if(!m_mainMgr.isIMEnabled() && m_mainConnection.isConnected()){
+					m_mainConnection.disconnect();
+				}
+				break;
 		}
 		
 		return t_processed;
@@ -940,6 +946,11 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	}
 	
 	public void CheckFolder()throws Exception{
+		
+		if(!m_mainMgr.isIMEnabled()){
+			return;
+		}
+		
 		if(!m_mainConnection.isConnected()){
 			
 			m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " disconnected reset it.");
@@ -956,6 +967,10 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	
 	public void PushMsg(sendReceive _sendReceive)throws Exception{
 
+		if(!m_mainMgr.isIMEnabled()){
+			return;
+		}
+		
 		long t_currTime = (new Date()).getTime();
 		
 		synchronized(m_chatList){
@@ -964,9 +979,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				
 				if(data.m_chatState != data.m_chatState_sent){
 					data.m_chatState_sent = data.m_chatState;
-					
-					// TODO send to client this chat state
-					//
+
 					ByteArrayOutputStream os = new ByteArrayOutputStream();
 					os.write(msg_head.msgChatState);
 					os.write(getCurrChatStyle());

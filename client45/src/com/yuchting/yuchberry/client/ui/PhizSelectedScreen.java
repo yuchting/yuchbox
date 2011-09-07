@@ -212,11 +212,11 @@ public class PhizSelectedScreen extends MainScreen{
 	}
 	
 	public void close(){
-		super.close();
-		
 		if(sm_phizSelectingText != null){
 			sm_phizSelectingText.setFocus();
 		}
+		
+		super.close();
 	}
 
 	

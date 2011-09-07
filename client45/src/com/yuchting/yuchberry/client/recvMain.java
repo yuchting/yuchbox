@@ -805,7 +805,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 30;
+	final static int		fsm_clientVersion = 31;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -989,13 +989,17 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    				t_status.Import(t_readFile);
 				    				
 				    				sm_imStatusList.addElement(t_status);
-				    			}
-				    			
+				    			}				    			
 				    			if(m_imCurrUseStatusIndex < 0 || m_imCurrUseStatusIndex >= sm_imStatusList.size()){
 				    				m_imCurrUseStatusIndex = 0;
 				    			}
+				    			
 				    		}
 				    		
+				    		if(t_currVer >= 31){
+				    			m_imChatMsgHistory = sendReceive.ReadInt(t_readFile);
+				    			m_imChatScreenReceiveReturn = sendReceive.ReadBoolean(t_readFile);
+				    		}
 				    		
 			    		}finally{
 			    			t_readFile.close();
@@ -1097,6 +1101,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		    				IMStatus status = (IMStatus)sm_imStatusList.elementAt(i);
 		    				status.Ouput(t_writeFile);
 		    			}
+		    			sendReceive.WriteInt(t_writeFile,m_imChatMsgHistory);
+		    			sendReceive.WriteBoolean(t_writeFile,m_imChatScreenReceiveReturn);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1346,10 +1352,19 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					&& m_mainIMScreen.m_chatScreen != null){
 					
 					m_isWeiboOrIMScreen = false;
-					m_isChatScreen = true;
-					
+									
 					popScreen(m_mainIMScreen.m_chatScreen);
-					popScreen(m_mainIMScreen);
+					
+					if(getScreenCount() != 0){
+						// is NOT IM prompt dialog popup and MainChatScreen.close()
+						// ( called mainApp.requestBackground ) 
+						//
+						m_isChatScreen = true;
+						popScreen(m_mainIMScreen);
+					}else{
+						m_isChatScreen = false;
+					}
+					
 					
 				}else if(getActiveScreen() == m_mainIMScreen.m_statusAddScreen
 						&& m_mainIMScreen.m_statusAddScreen != null){
@@ -2342,19 +2357,31 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_BUSY,sm_local.getString(localResource.IM_STATUS_DEFAULT_BUSY)));
 	}
 	
+	public static final String[]	fsm_imChatMsgHistoryList = {"32","64","128","256"};
+	public static final int[]		fsm_imChatMsgHistory		= {32,64,128,256};
+	public int						m_imChatMsgHistory 	= 0;
+	
+	public boolean 				m_imChatScreenReceiveReturn = false;
+	
 	MainIMScreen				m_mainIMScreen = null;
 	
 	public void initIMModule(){
+		
 		if(m_enableIMModule){
-			
-			
-			 
 			loadImageSets();
 			
 			if(m_mainIMScreen == null){
 				m_mainIMScreen = new MainIMScreen(this);
 			}			
 		}
+	}
+	
+	public int getIMChatMsgHistory(){
+		if(m_imChatMsgHistory < 0 || m_imChatMsgHistory >= fsm_imChatMsgHistory.length){
+			m_imChatMsgHistory = 0;
+		}
+		
+		return fsm_imChatMsgHistory[m_imChatMsgHistory];
 	}
 	
 }

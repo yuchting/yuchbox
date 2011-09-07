@@ -164,7 +164,7 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 	 }
 	 
 	 public void close(){
-		 super.close();
 		 m_mainApp.m_weiboTimeLineScreen.m_optionScreen = null;
+		 super.close();
 	 }
 }

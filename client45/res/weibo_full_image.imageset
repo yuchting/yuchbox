@@ -154,10 +154,11 @@
 	<Image Name="[怒骂]" XPos="414" YPos="0" Width="22" Height="22" />
 	<Image Name="[太开心]" XPos="436" YPos="0" Width="22" Height="22" />
 	<Image Name="[懒得理你]" XPos="458" YPos="0" Width="22" Height="22" />
+	<Image Name="[左哼哼]" XPos="480" YPos="22" Width="22" Height="22" />
 	<Image Name="[右哼哼]" XPos="480" YPos="0" Width="22" Height="22" />
 	
 	<Image Name="[睡觉]" XPos="84" YPos="22" Width="22" Height="22" />
-	<Image Name="[钱]" XPos="106" YPos="0" Width="22" Height="22" />
+	<Image Name="[钱]" XPos="106" YPos="22" Width="22" Height="22" />
 	<Image Name="[偷笑]" XPos="128" YPos="22" Width="22" Height="22" />
 	<Image Name="[酷]" XPos="150" YPos="22" Width="22" Height="22" />
 	<Image Name="[衰]" XPos="172" YPos="22" Width="22" Height="22" />
@@ -173,8 +174,7 @@
 	<Image Name="[亲亲]" XPos="392" YPos="22" Width="22" Height="22" />
 	<Image Name="[嘘]" XPos="414" YPos="22" Width="22" Height="22" />
 	<Image Name="[委屈]" XPos="436" YPos="22" Width="22" Height="22" />
-	<Image Name="[吐]" XPos="458" YPos="22" Width="22" Height="22" />
-	<Image Name="[左哼哼]" XPos="480" YPos="22" Width="22" Height="22" />
+	<Image Name="[吐]" XPos="458" YPos="22" Width="22" Height="22" />	
 	
 	<Image Name="[可怜]" XPos="260" YPos="44" Width="22" Height="22" />
 	<Image Name="[打哈气]" XPos="282" YPos="44" Width="22" Height="22" />

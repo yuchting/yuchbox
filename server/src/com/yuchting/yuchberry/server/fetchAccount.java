@@ -96,7 +96,7 @@ abstract public class fetchAccount {
 		if(!_cryptPassword.isEmpty() && _password.isEmpty()){		
 			
 			if(m_mainMgr.GetPasswordKey().isEmpty()){
-				m_mainMgr.m_logger.LogOut(GetAccountName() + "PasswordKey is Empty, wait for client send PasswordKey.");
+				m_mainMgr.m_logger.LogOut(GetAccountName() + " PasswordKey is Empty, wait for client send PasswordKey.");
 				
 				return null;
 				

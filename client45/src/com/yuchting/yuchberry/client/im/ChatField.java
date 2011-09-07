@@ -19,7 +19,7 @@ public class ChatField extends Manager{
 	public final static int	fsm_maxTextWidth 	= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth;
 	
 	public final static int	fsm_ownChatTextBGColor		= 0xd8d8d8;
-	public final static int	fsm_otherChatTextBGColor	= 0xadadad;	
+	public final static int	fsm_otherChatTextBGColor	= 0xadadad;
 	
 	fetchChatMsg			m_msg 			= null;
 	int						m_msgTextHeight = 0;
@@ -59,8 +59,8 @@ public class ChatField extends Manager{
 		
 		if(m_msgTextWidth > fsm_maxTextWidth){
 			m_msgTextWidth = fsm_maxTextWidth;
-		}		
-		
+		}
+				
 		MainIMScreen.sm_testTextArea.setPreferredWidth(m_msgTextWidth);
 		
 		MainIMScreen.sm_testTextArea.setText(t_converText);

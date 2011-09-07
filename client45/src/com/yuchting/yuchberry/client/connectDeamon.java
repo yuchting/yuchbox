@@ -53,7 +53,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListenerExtended,
 												IUploadFileScreenCallback{
 		
-	final static int	fsm_clientVer = 13;
+	final static int	fsm_clientVer = 14;
 	 
 	public sendReceive		m_connect = null;
 		
@@ -822,6 +822,7 @@ public class connectDeamon extends Thread implements SendListener,
 				sendReceive.WriteString(t_os,recvMain.fsm_OS_version);
 				int t_size = (recvMain.fsm_display_width << 16) | recvMain.fsm_display_height;
 				sendReceive.WriteInt(t_os,t_size);
+				sendReceive.WriteBoolean(t_os,m_mainApp.m_enableIMModule);
 				
 				m_connect.SendBufferToSvr(t_os.toByteArray(), true,false);
 				

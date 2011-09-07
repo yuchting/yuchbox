@@ -592,7 +592,9 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
 	}
 	
 	public void close(){
-		super.close();
+		
 		m_updateManager.m_timelineScreen.m_pushUpdateDlg = false;
+		
+		super.close();
 	}		
 }

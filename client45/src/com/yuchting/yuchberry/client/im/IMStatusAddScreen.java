@@ -1,7 +1,5 @@
 package com.yuchting.yuchberry.client.im;
 
-import javax.microedition.lcdui.TextField;
-
 import local.localResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -74,7 +72,7 @@ public class IMStatusAddScreen extends PopupScreen implements FieldChangeListene
 		m_ok.setChangeListener(this);
 		m_cancel.setChangeListener(this);
 		
-		HorizontalFieldManager t_buttonHorzMgr = new HorizontalFieldManager();
+		HorizontalFieldManager t_buttonHorzMgr = new HorizontalFieldManager(Field.FIELD_HCENTER);
 		t_buttonHorzMgr.add(m_ok);
 		t_buttonHorzMgr.add(m_cancel);
 		
@@ -119,8 +117,14 @@ public class IMStatusAddScreen extends PopupScreen implements FieldChangeListene
 		}
 	}
 	
+	public boolean onClose(){
+		close();
+		return true;
+	}
+	
 	public void close(){
-		super.close();
 		m_mainScreen.m_statusAddScreen = null;
+		
+		super.close();
 	}
 }

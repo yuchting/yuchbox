@@ -71,6 +71,7 @@ public class fetchMgr{
     boolean		m_isCheckFolderState= false;
     
     boolean		m_isWeiboEnabled	= true;
+    boolean		m_isIMEnabled		= true;
     
     String			m_clientOSVersion	= "";
     int				m_clientDisplayWidth = 0;
@@ -100,6 +101,13 @@ public class fetchMgr{
     
     public boolean IsCheckFolderState(){
     	return m_isCheckFolderState;
+    }
+    
+    public boolean isIMEnabled(){
+    	return m_isIMEnabled;
+    }
+    public void setIMEnabled(boolean _enabled){
+    	m_isIMEnabled = _enabled;
     }
     
     public synchronized void SetCheckFolderState(boolean _state){
@@ -406,6 +414,10 @@ public class fetchMgr{
 			
 			if(m_clientVer >= 12 && (m_pin == -1)){
 				t_tmp.SendBufferToSvr(new byte[]{msg_head.msgDeviceInfo}, false);
+			}
+			
+			if(m_clientVer >= 14){
+				m_isIMEnabled = sendReceive.ReadBoolean(in);
 			}
 
 			_s.setSoTimeout(0);

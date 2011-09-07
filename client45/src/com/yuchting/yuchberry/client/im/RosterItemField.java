@@ -178,11 +178,10 @@ public class RosterItemField extends Field{
 	private static String[] sm_rosterStateStr = 
 	{
 		"avail_state",
-		"busy_state",
 		"away_state",
+		"busy_state",
 		"unavail_state",
 		"far_away_state",
-		
 	};
 	
 	public static int drawRosterState(Graphics _g,int _x,int _y,int _presence){

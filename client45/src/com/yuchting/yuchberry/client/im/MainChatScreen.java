@@ -212,8 +212,14 @@ final class InputManager extends Manager implements FieldChangeListener{
 		final int key = Keypad.key(keycode);
 		if(key == 10){
 			boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
-    		if(t_shiftDown && send()){
-    			return true;
+    		if(t_shiftDown ){
+    			if(send()){
+    				return true;
+    			}
+    		}else{
+    			if(!m_middleMgr.m_chatScreen.m_mainApp.m_imChatScreenReceiveReturn){
+    				return true;
+    			}
     		}
 		}
 		
@@ -343,6 +349,9 @@ final class MiddleMgr extends VerticalFieldManager{
 		// scroll to bottom
 		//
 		t_field.setFocus();
+		if(_msg.getMsg().length() != 0){
+			t_field.m_textfield.setCursorPosition(_msg.getMsg().length() - 1);
+		}		
 		
 		// set the focus back
 		//
@@ -363,7 +372,6 @@ final class MiddleMgr extends VerticalFieldManager{
 	}
 }
 
-
 public class MainChatScreen extends MainScreen{
 	
 	int m_menu_op = 0;
@@ -371,7 +379,15 @@ public class MainChatScreen extends MainScreen{
 		public void run(){
 			m_middleMgr.m_inputMgr.send();
 		}
-	};	
+	};
+	
+	MenuItem m_phizMenu = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_PHIZ_LABEL),m_menu_op++,0){
+		public void run(){
+			UiApplication.getUiApplication().pushScreen(
+					PhizSelectedScreen.getPhizScreen(m_middleMgr.m_chatScreen.m_mainApp, 
+													m_middleMgr.m_inputMgr.m_editTextArea));
+		}
+	};
 	
 	static ImageUnit sm_composing = null;
 	static {
@@ -464,7 +480,8 @@ public class MainChatScreen extends MainScreen{
 	}
 	protected void makeMenu(Menu _menu,int instance){
 		_menu.add(m_sendMenu);
-
+		_menu.add(m_phizMenu);
+		
 		super.makeMenu(_menu,instance);
 	}
 	
@@ -487,10 +504,16 @@ public class MainChatScreen extends MainScreen{
 	}
 	
 	public void close(){
-		super.close();
-		
+	
 		m_middleMgr.m_inputMgr.cancelComposeTimer();
 		m_mainApp.StopIMNotification();
+		
+		if(m_mainApp.getScreenCount() == 1){
+			m_mainApp.requestBackground();
+			
+		}else{
+			super.close();
+		}
 	}
 	
 	public void sendChatMsg(String _text){
