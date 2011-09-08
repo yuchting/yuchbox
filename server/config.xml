@@ -111,10 +111,16 @@
 		commentSum="5"
 	/-->
 	
-	<IMAccount
+	<!--IMAccount
 		type="gtalk"
 		account="yuchdroid@gmail.com"
 		password="hF8IBrCmBDQsKaWa"
 		cryptPassword=""
+	/-->
+	<IMAccount
+		type="gtalk"
+		account="yuchberry@gmail.com"
+		password=""
+		cryptPassword="7b371a95bc2d7a9b9d7c68d2cca46d98ef8857158d44258d"
 	/>
 </Yuchberry>

@@ -17,7 +17,6 @@ final public class msg_head {
 	
 	final public static byte msgSponsorList		= 9;
 	
-	
 	final public static byte msgWeibo			= 10;
 	final public static byte msgWeiboConfirm		= 11;
 	final public static byte msgWeiboHeadImage	= 12;
@@ -51,4 +50,5 @@ final public class msg_head {
 	final public static byte msgChatConfirm		= 31;
 	final public static byte msgChatState		= 32;
 	final public static byte msgChatPresence		= 33;
+	final public static byte msgChatRead			= 34;
 }

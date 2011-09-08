@@ -25,6 +25,7 @@ import org.jivesoftware.smack.RosterListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.packet.VCard;
 
@@ -79,6 +80,29 @@ final class ComposeStateMessage extends Packet{
 			t_final.append("<paused xmlns=\"").append(fetchGTalk.fsm_chatStateNamespace).append("\"/></message> ");
 		}
 		
+		return t_final.toString();
+	}
+	
+}
+
+final class ChatReadMessage extends Packet{
+	
+	String 	m_to = null;
+	int		m_hashCode = 0;
+	
+	public ChatReadMessage(int _hashCode,String _to){
+		m_hashCode = _hashCode;
+		m_to = _to;
+	}
+	
+	public String toXML(){
+		StringBuffer t_final = new StringBuffer();
+		t_final.append("<message type=\"chat\" id=\"").append(nextID()).append("\" to=\"")
+			 .append(m_to).append("\">");
+		
+		t_final.append("<read xmlns=\"").append(fetchGTalk.fsm_chatStateNamespace).append("\"/>");
+		t_final.append("<hashcode>").append(m_hashCode).append("</hashcode></message>");
+				
 		return t_final.toString();
 	}
 	
@@ -208,6 +232,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	Vector<ChatData>			m_chatList = new Vector<ChatData>();
 	
 	Vector<fetchChatMsg>		m_pushedChatMsgList = new Vector<fetchChatMsg>();
+	Vector<fetchChatMsg>		m_markReadChatMsgList = new Vector<fetchChatMsg>();
 	
 	int		m_connectPresence	= -1;
 	String	m_connectStatus		= null;
@@ -426,8 +451,8 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
    				
     				if(changed){
     					
-    					m_mainMgr.m_logger.LogOut(GetAccountName() + 
-								" presenceChanged:" + account + " Presence:" + presence);
+//    					m_mainMgr.m_logger.LogOut(GetAccountName() + 
+//								" presenceChanged:" + account + " Presence:" + presence);
     					
     					boolean t_hasBeenAdded = false;        				
     					
@@ -488,7 +513,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				//   <composing xmlns='http://jabber.org/protocol/chatstates'/>
 				// </message>
 				//			
-				System.out.println(chat.getParticipant() + " composing");
+				//System.out.println(chat.getParticipant() + " composing");
 				
 				t_state = fetchChatMsg.CHAT_STATE_COMPOSING;
 				
@@ -498,9 +523,13 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				//   <paused xmlns='http://jabber.org/protocol/chatstates'/>
 				// </message>
 				//
-				System.out.println(chat.getParticipant() + " paused");
+				//System.out.println(chat.getParticipant() + " paused");
 				
 				t_state = fetchChatMsg.CHAT_STATE_COMMON;
+			}else if(message.getExtension("read", fsm_chatStateNamespace) != null){
+				PacketExtension t_hashCodeString = message.getExtension("hashcode");
+								
+				System.out.println(chat.getParticipant() + " read");
 			}
 			
 		}else{
@@ -510,7 +539,36 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			
 			m_pushedChatMsgList.add(msg);
 			
+			synchronized (m_markReadChatMsgList) {
+				while(m_markReadChatMsgList.size() > 256){
+					m_markReadChatMsgList.remove(0);
+				}
+				m_markReadChatMsgList.add(msg);	
+			}			
+			
 			t_state = fetchChatMsg.CHAT_STATE_COMMON;
+			
+
+			if(echo){
+				
+				String t_acc = ChatData.convertAccount(chat.getParticipant());
+				
+				synchronized(m_chatList){		
+					
+					for(ChatData data:m_chatList){
+						
+						if(data.m_accountName.equals(t_acc)){
+							try{
+								data.m_chatData.sendMessage("echo");
+							}catch(Exception e){
+								
+							}							
+							
+							break;
+						}
+					}
+				}
+			}
 		}
 		
 		String t_acc  = ChatData.convertAccount(chat.getParticipant());
@@ -744,9 +802,51 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 					m_mainConnection.disconnect();
 				}
 				break;
+			case msg_head.msgChatRead:
+				t_processed = ProcessChatRead(in);
+				break;
 		}
 		
 		return t_processed;
+	}
+	
+	private boolean ProcessChatRead(InputStream in)throws Exception{
+	
+		int t_style = in.read();
+		
+		if(t_style == getCurrChatStyle()){
+			int t_hashCode = sendReceive.ReadInt(in);
+			
+			synchronized (m_markReadChatMsgList) {
+				for(fetchChatMsg msg:m_markReadChatMsgList){
+					if(t_hashCode == msg.hashCode()){
+						
+						if(m_mainConnection.isConnected()){
+							
+							synchronized (m_chatList) {
+								for(ChatData data:m_chatList){
+									if(data.m_accountName.equals(msg.getOwner())){
+										
+										ChatReadMessage t_msg = new ChatReadMessage(t_hashCode,data.m_chatData.getParticipant());
+										
+										m_mainConnection.sendPacket(t_msg);
+										data.m_lastActiveTime = (new Date()).getTime();
+										
+										break;
+									}
+								}
+							}
+							
+						}
+						
+						m_markReadChatMsgList.remove(msg);
+						return true;
+					}
+				}
+			}			
+		}
+		
+		return false;
 	}
 	
 	private void ProcessChatPresence(InputStream in)throws Exception{
@@ -812,7 +912,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				String to = sendReceive.ReadString(in);
 				
 				int t_state = in.read();
-				
+								
 				synchronized (m_chatList) {
 					for(ChatData data:m_chatList){
 						if(data.m_accountName.equals(to)){
@@ -1034,9 +1134,11 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		}
 	}
 	
+	static boolean echo = false;
 	public static void main(String[] _arg)throws Exception{
 		try{
-
+			echo = true;
+			
 			Connection.DEBUG_ENABLED = true;
 			
 			fetchMgr t_manger = new fetchMgr();
