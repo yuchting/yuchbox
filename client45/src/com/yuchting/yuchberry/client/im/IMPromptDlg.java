@@ -11,6 +11,7 @@ import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
+import com.yuchting.yuchberry.client.fetchMail;
 import com.yuchting.yuchberry.client.recvMain;
 
 public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
@@ -73,13 +74,36 @@ public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 				}
 				
 				m_mainScreen.m_mainApp.StopIMNotification();
-				close();
+				if(!hasMoreChatPrompt()){
+					close();
+				}
 				
 			}else if(m_laterBut == _field){
 				m_mainScreen.m_mainApp.StopIMNotification();
-				close();
+				if(!hasMoreChatPrompt()){
+					close();
+				}				
 			}
 		}
+	}
+	
+	private boolean hasMoreChatPrompt(){
+		if(!m_mainScreen.m_promptQueue.isEmpty()){
+			RosterChatData t_promptData = (RosterChatData)m_mainScreen.m_promptQueue.elementAt(0);
+			m_mainScreen.m_promptQueue.removeElementAt(0);
+			
+			int t_num = t_promptData.m_chatMsgList.size();
+			if(t_num > 0){
+				fetchChatMsg msg = (fetchChatMsg)t_promptData.m_chatMsgList.elementAt(t_num - 1);
+				
+				setRosterChatData(t_promptData, msg.getMsg());
+				
+				return true;
+			}			
+		}
+	
+		return false;
+		
 	}
 
 }

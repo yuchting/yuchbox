@@ -224,7 +224,8 @@ public class MainIMScreen extends MainScreen{
 	boolean				m_isRequestRoster  = false;
 	
 	public MainChatScreen	m_chatScreen = null;
-	public IMPromptDlg m_promptDlg = new IMPromptDlg(this);
+	public IMPromptDlg 		m_promptDlg = new IMPromptDlg(this);
+	Vector					m_promptQueue = new Vector();
 	
 	public boolean			m_hasNewChatMsg = false;
 	
@@ -529,20 +530,49 @@ public class MainIMScreen extends MainScreen{
 					&& data.m_roster.getAccount().equals(_msg.getOwner())
 					&& data.m_roster.getOwnAccount().equals(_msg.getSendTo())){
 					
+					// remove the history chat record
+					//
 					while(data.m_chatMsgList.size() > m_mainApp.getIMChatMsgHistory()){
 						data.m_chatMsgList.removeElementAt(0);
 					}
 					
 					data.m_chatMsgList.addElement(_msg);
-					
 					data.m_currChatState = fetchChatMsg.CHAT_STATE_COMMON;
 					
 					addHistroyChatMgr(data);
 					
+					// popup the dialog to prompt
+					//
 					if(!m_mainApp.isForeground() || m_mainApp.getActiveScreen() != m_chatScreen){
-						m_promptDlg.setRosterChatData(data,_msg.getMsg());
-						m_mainApp.pushGlobalScreen(m_promptDlg, 0, UiEngine.GLOBAL_QUEUE);
+						if(m_promptDlg.isGlobal()){
+							// has been popup to prompt
+							//
+							boolean t_added = false;
+							for(int index = 0 ;index < m_promptQueue.size();index++){
+								RosterChatData t_promptData = (RosterChatData)m_promptQueue.elementAt(index);
+								if(t_promptData == data){
+									t_added = true;
+									break;
+								}
+							}
+							
+							if(!t_added){
+								if(m_promptDlg.m_openData == data){
+									// the same roster
+									//
+									m_promptDlg.setRosterChatData(data,_msg.getMsg());
+								}else{
+									m_promptQueue.addElement(data);
+								}								
+							}
+						}else{
+							m_promptDlg.setRosterChatData(data,_msg.getMsg());
+							m_mainApp.pushGlobalScreen(m_promptDlg, 0, UiEngine.GLOBAL_QUEUE);
+						}
+						
+						
 					}
+					
 					
 					if(m_mainApp.getActiveScreen() == m_chatScreen
 						&& m_chatScreen.m_currRoster == data){
