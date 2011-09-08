@@ -43,7 +43,7 @@ public class IMStatusAddScreen extends PopupScreen implements FieldChangeListene
 		m_modifyStatus 		= _modifyStatus;
 		
 		LabelField t_title = new LabelField();
-		t_title.setFont(MainIMScreen.sm_boldFont);
+		t_title.setFont(MainIMScreen.fsm_boldFont);
 		
 		add(t_title);
 		add(new SeparatorField());

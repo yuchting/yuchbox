@@ -50,4 +50,5 @@ final public class msg_head {
 	final public static byte msgChatConfirm		= 31;
 	final public static byte msgChatState		= 32;
 	final public static byte msgChatPresence		= 33;
+	final public static byte msgChatRead			= 34;
 }

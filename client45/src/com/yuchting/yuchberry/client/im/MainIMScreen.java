@@ -35,9 +35,12 @@ final class RosterChatData{
 	public String				m_lastChatText = "";
 	public int					m_currChatState;
 	
+	boolean					m_isYuch = false;
+	
 	public RosterChatData(fetchChatRoster _roster){
 		m_roster = _roster;
-	}
+		m_isYuch = m_roster.getSource().indexOf(MainIMScreen.fsm_YuchBerrySource) != -1;
+	}	
 }
 
 public class MainIMScreen extends MainScreen{
@@ -199,12 +202,13 @@ public class MainIMScreen extends MainScreen{
     };
 
 	// BasicEditField for 4.2os
-	public static BubbleTextField 	sm_testTextArea	= new BubbleTextField(Field.READONLY);
+	public final static BubbleTextField 	fsm_testTextArea	= new BubbleTextField(Field.READONLY);
 	
-	public final static Font		sm_defaultFont			= sm_testTextArea.getFont();
-	public final static int		sm_defaultFontHeight	= sm_defaultFont.getHeight(); 
+	public final static Font		fsm_defaultFont			= fsm_testTextArea.getFont();
+	public final static int		fsm_defaultFontHeight	= fsm_defaultFont.getHeight();
 	
-	public final static Font		sm_boldFont				= sm_defaultFont.derive(sm_defaultFont.getStyle() | Font.BOLD);
+	public final static String	fsm_YuchBerrySource		= "YuchBerry.info";
+	public final static Font		fsm_boldFont			= fsm_defaultFont.derive(fsm_defaultFont.getStyle() | Font.BOLD);
 		
 	public Vector					m_headImageList = new Vector();
 
@@ -228,6 +232,10 @@ public class MainIMScreen extends MainScreen{
 	Vector					m_promptQueue = new Vector();
 	
 	public boolean			m_hasNewChatMsg = false;
+	
+	public	Field	m_currFocusRosterItemField = null;
+	public	Field	m_currFocusHistoryRosterItemField = null;
+	public Field	m_currFocusStatusField = null;
 	
 		
 	public MainIMScreen(recvMain _mainApp){
@@ -284,6 +292,7 @@ public class MainIMScreen extends MainScreen{
 		prepareCurrUseStatus();
 		
 		m_statusListMgr.deleteAll();
+		m_currFocusStatusField = null;
 		
 		for(int i = 0 ;i < recvMain.sm_imStatusList.size();i++){
 			m_statusListMgr.add(new IMStatusField((IMStatus)recvMain.sm_imStatusList.elementAt(i)));
@@ -339,6 +348,7 @@ public class MainIMScreen extends MainScreen{
 	protected void makeMenu(Menu _menu,int instance){
 		_menu.add(m_historyChatMenu);
 		_menu.add(m_rosterListMenu);
+		_menu.add(m_statusListMenu);
 		_menu.add(MenuItem.separator(m_menu_label));
 		
 		_menu.add(m_refreshListMenu);
@@ -395,6 +405,9 @@ public class MainIMScreen extends MainScreen{
 			return true;
 		case 'J':
 			m_rosterListMenu.run();
+			return true;
+		case 'K':
+			m_statusListMenu.run();
 			return true;
 		case 'S':
 			m_stateMenu.run();
@@ -466,6 +479,14 @@ public class MainIMScreen extends MainScreen{
 	
 	private void refreshHeader(){
 		
+		if(m_currMgr == m_historyChatMgr){
+			m_currFocusHistoryRosterItemField = m_currMgr.getFieldWithFocus();
+		}else if(m_currMgr == m_rosterListMgr){
+			m_currFocusRosterItemField = m_currMgr.getFieldWithFocus();
+		}else if(m_currMgr == m_statusListMgr){
+			m_currFocusStatusField = m_currMgr.getFieldWithFocus();
+		}		
+		
 		switch(m_header.getCurrState()){
 		case MainIMScreenHeader.STATE_HISTORY_CHAT:
 			if(m_currMgr != m_historyChatMgr){
@@ -473,7 +494,6 @@ public class MainIMScreen extends MainScreen{
 				m_currMgr = m_historyChatMgr;
 				
 				clearNewChatSign();
-				
 			}else{
 				return;
 			}
@@ -487,6 +507,7 @@ public class MainIMScreen extends MainScreen{
 					m_isRequestRoster = true;
 					sendRequestRosterListMsg();
 				}
+								
 			}else{
 				return;
 			}
@@ -501,6 +522,14 @@ public class MainIMScreen extends MainScreen{
 			break;
 			
 		}
+		
+		if(m_currMgr == m_historyChatMgr && m_currFocusHistoryRosterItemField != null){
+			m_currFocusHistoryRosterItemField.setFocus();
+		}else if(m_currMgr == m_rosterListMgr && m_currFocusRosterItemField != null){
+			m_currFocusRosterItemField.setFocus();
+		}else if(m_currMgr == m_statusListMgr && m_currFocusStatusField != null){
+			m_currFocusStatusField.setFocus();
+		}	
 	}
 	
 	public void processChatMsg(InputStream in)throws Exception{
@@ -611,6 +640,31 @@ public class MainIMScreen extends MainScreen{
 		}
 	}
 	
+	public void sendChatReadMsg(fetchChatMsg _msg){
+		
+		if(_msg.isOwnMsg() || _msg.hasSendMsgChatReadMsg()){
+			return ;
+		}
+		
+		_msg.setSendMsgChatReadMsg(true);
+		
+		try{
+			
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			os.write(msg_head.msgChatRead);
+			os.write(_msg.getStyle());
+			sendReceive.WriteInt(os,_msg.hashCode());
+			
+			m_mainApp.m_connectDeamon.addSendingData(msg_head.msgChatRead,os.toByteArray(),true);
+			
+			os.close();
+			os = null;
+			
+		}catch(Exception e){
+			m_mainApp.SetErrorString("SCCM:"+e.getMessage()+e.getClass().getName());
+		}
+	}
+	
 	public void processChatRosterList(final InputStream in){
 		
 		m_mainApp.invokeLater(new Runnable() {
@@ -640,6 +694,7 @@ public class MainIMScreen extends MainScreen{
 						refreshRosterList();
 						
 						m_historyChatMgr.deleteAll();
+						m_currFocusHistoryRosterItemField = null;
 						
 						break;
 					case 1:
@@ -653,7 +708,9 @@ public class MainIMScreen extends MainScreen{
 								RosterChatData data = (RosterChatData)m_rosterChatDataList.elementAt(i);
 								
 								if(data.m_roster.equals(t_roster)){
+									
 									data.m_roster.copyFrom(t_roster);
+									data.m_isYuch = data.m_roster.getSource().indexOf(MainIMScreen.fsm_YuchBerrySource) != -1;
 									
 									t_modified = true;
 									
@@ -773,6 +830,7 @@ public class MainIMScreen extends MainScreen{
 			
 			m_rosterListMgr.deleteAll();
 			m_delayRefreshRosterListList.removeAllElements();
+			m_currFocusRosterItemField = null;
 			
 			refreshRosterList_impl(fetchChatRoster.PRESENCE_AVAIL);
 			refreshRosterList_impl(fetchChatRoster.PRESENCE_AWAY);

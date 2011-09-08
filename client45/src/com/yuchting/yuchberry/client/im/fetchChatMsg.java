@@ -11,6 +11,7 @@ public class fetchChatMsg{
 	public static int 				SEND_STATE_SENDING	= 1;
 	public static int					SEND_STATE_SENT		= 2;
 	public static int					SEND_STATE_READ		= 3;
+	public static int					SEND_STATE_ERROR	= 4;
 	
 	
 	public final static byte			STYLE_GTALK = 0;
@@ -36,6 +37,7 @@ public class fetchChatMsg{
 	//
 	boolean 	m_isOwnMsg		= false;
 	int			m_sendState		= SEND_STATE_PADDING;
+	boolean	m_sendReadMsg	= false;
 		
 	public fetchChatMsg(){}
 	
@@ -53,6 +55,9 @@ public class fetchChatMsg{
 	
 	public int getStyle(){	return m_style;	}
 	public void setStyle(int _style){m_style = _style;}
+	
+	public boolean hasSendMsgChatReadMsg(){return m_sendReadMsg;}
+	public void setSendMsgChatReadMsg(boolean _send){m_sendReadMsg = _send;}
 	
 	public boolean isOwnMsg(){return m_isOwnMsg;}
 	public void setIsOwnMsg(boolean _isOwnMsg){m_isOwnMsg = _isOwnMsg;}

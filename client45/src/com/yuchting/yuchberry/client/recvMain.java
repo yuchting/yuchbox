@@ -1274,7 +1274,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 			if(getScreenCount() == 0){
 				
-				if(m_isWeiboOrIMScreen){
+				if(m_isWeiboOrIMScreen && m_weiboTimeLineScreen != null){
 					m_isWeiboOrIMScreen = false;
 					pushScreen(m_weiboTimeLineScreen);
 					
@@ -1283,7 +1283,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						pushScreen(m_weiboTimeLineScreen.m_currUpdateDlg);
 					}
 					
-				}else{
+				}else if(m_mainIMScreen != null){
 					
 					pushScreen(m_mainIMScreen);
 					
@@ -1291,6 +1291,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						m_isChatScreen = false;
 						pushScreen(m_mainIMScreen.m_chatScreen);
 					}
+				}else{
+					pushStateScreen();
 				}
 			}			
 			

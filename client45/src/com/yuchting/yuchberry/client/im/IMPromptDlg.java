@@ -11,7 +11,6 @@ import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
-import com.yuchting.yuchberry.client.fetchMail;
 import com.yuchting.yuchberry.client.recvMain;
 
 public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
@@ -33,7 +32,7 @@ public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 		m_mainScreen = _mainScreen;
 		
 		LabelField t_title = new LabelField(recvMain.sm_local.getString(localResource.IM_PROMPT_DLG_TITLE));
-		t_title.setFont(MainIMScreen.sm_boldFont);
+		t_title.setFont(MainIMScreen.fsm_boldFont);
 		add(t_title);
 		
 		add(m_nameText);

@@ -42,7 +42,7 @@ public final class IMStatus{
 
 final class IMStatusField extends Field{
 	public IMStatus		m_status;
-			
+				
 	public IMStatusField(IMStatus _status){
 		super(Field.FOCUSABLE);
 		m_status = _status;
@@ -53,7 +53,7 @@ final class IMStatusField extends Field{
 	}
 	
 	public int getPreferredHeight() {
-		return MainIMScreen.sm_defaultFontHeight;
+		return MainIMScreen.fsm_defaultFontHeight;
 	}
 	
 	public void invalidate(){
@@ -92,7 +92,7 @@ final class IMStatusField extends Field{
 		
 		try{
 			if(IMStatus.sm_currUseStatus == m_status){
-				_g.setFont(MainIMScreen.sm_boldFont);
+				_g.setFont(MainIMScreen.fsm_boldFont);
 			}
 			
 			_g.setColor(RosterItemField.fsm_nameTextColor);

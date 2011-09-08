@@ -1,6 +1,7 @@
 package com.yuchting.yuchberry.client.im;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Vector;
 
 import com.yuchting.yuchberry.client.ISendAttachmentCallback;
 import com.yuchting.yuchberry.client.SendAttachmentDeamon;
@@ -69,7 +70,19 @@ public class SendChatMsgDeamon extends Thread implements ISendAttachmentCallback
 	}
 	
 	public void sendError(){
-		setChatState(fetchChatMsg.SEND_STATE_PADDING);
+		setChatState(fetchChatMsg.SEND_STATE_ERROR);
+		
+		Vector t_deamonList = m_chatScreen.m_mainScreen.m_sendChatDeamon;
+		
+		synchronized (t_deamonList) {
+			for(int i = 0 ;i < t_deamonList.size();i++){
+				SendChatMsgDeamon t_deamon = (SendChatMsgDeamon)t_deamonList.elementAt(i);
+				if(t_deamon == this){
+					t_deamonList.removeElementAt(i);
+					break;
+				}
+			}	
+		}		
 	}
 	
 	public void sendFinish(){

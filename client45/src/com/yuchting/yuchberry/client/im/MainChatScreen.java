@@ -2,8 +2,10 @@ package com.yuchting.yuchberry.client.im;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
+import java.util.Vector;
 
 import local.localResource;
+import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -32,7 +34,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 	public final static int fsm_inputBubbleBorder = 4;
 	public final static int fsm_textBorder = 2;
 	
-	public final static int fsm_minHeight = MainIMScreen.sm_defaultFontHeight + (fsm_textBorder + fsm_inputBubbleBorder) * 2;
+	public final static int fsm_minHeight = MainIMScreen.fsm_defaultFontHeight + (fsm_textBorder + fsm_inputBubbleBorder) * 2;
 	public final static int fsm_maxHeight = recvMain.fsm_display_height / 2;
 	
 	MiddleMgr			m_middleMgr	= null;
@@ -209,13 +211,28 @@ final class InputManager extends Manager implements FieldChangeListener{
 		}
 	}	
 	protected boolean keyDown(int keycode,int time){
+		
+		// send the read message to the server
+		//
+		Vector list = m_middleMgr.m_chatScreen.m_currRoster.m_chatMsgList;
+		int num = list.size();
+		for(int i = 0 ;i < num;i++){
+			fetchChatMsg msg = (fetchChatMsg)list.elementAt(i);
+			if(!msg.isOwnMsg() && !msg.hasSendMsgChatReadMsg()){
+				m_middleMgr.m_chatScreen.m_mainScreen.sendChatReadMsg(msg);
+			}			
+		}
+		
+		
 		final int key = Keypad.key(keycode);
 		if(key == 10){
 			boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
-    		if(t_shiftDown ){
-    			if(send()){
-    				return true;
-    			}
+    		if(t_shiftDown && m_editTextArea.getText().length() != 0){
+    			
+    			send();
+    			
+    			return true;
+    			
     		}else{
     			if(!m_middleMgr.m_chatScreen.m_mainApp.m_imChatScreenReceiveReturn){
     				return true;
@@ -226,18 +243,14 @@ final class InputManager extends Manager implements FieldChangeListener{
 		return super.keyDown(keycode,time);
 	}
 	
-	public boolean send(){
+	public void send(){
 		String text = m_editTextArea.getText();
 		if(text.length() != 0){
 			m_middleMgr.m_chatScreen.sendChatMsg(text);
 			m_editTextArea.setText("");
 			
 			cancelComposeTimer();
-			
-			return true;
-		}
-		
-		return false;
+		}		
 	}
 	
 	public void cancelComposeTimer(){
@@ -290,9 +303,12 @@ final class MiddleMgr extends VerticalFieldManager{
 		
 		ChatField t_field = null;
 		for(int i = 0 ;i < _chatData.m_chatMsgList.size();i++){
-			t_field = new ChatField((fetchChatMsg)_chatData.m_chatMsgList.elementAt(i));
+			fetchChatMsg msg = (fetchChatMsg)_chatData.m_chatMsgList.elementAt(i);
+			t_field = new ChatField(msg);
 			
 			m_chatMsgMgr.add(t_field);
+			
+			m_chatScreen.m_mainScreen.sendChatReadMsg(msg);
 		}
 		
 		if(t_field != null){
@@ -356,6 +372,28 @@ final class MiddleMgr extends VerticalFieldManager{
 		// set the focus back
 		//
 		m_inputMgr.m_editTextArea.setFocus();
+		
+		if(Backlight.isEnabled() 
+		&& m_chatScreen.m_mainApp.isForeground() 
+		&& m_chatScreen.m_mainApp.getActiveScreen() == m_chatScreen){
+			
+			m_chatScreen.m_mainScreen.sendChatReadMsg(_msg);
+		}
+	}
+	
+	public synchronized void addChatMsg(ChatField _field){
+		m_chatMsgMgr.add(_field);
+		
+		// scroll to bottom
+		//
+		_field.setFocus();
+		if(_field.m_msg.getMsg().length() != 0){
+			_field.m_textfield.setCursorPosition(_field.m_msg.getMsg().length() - 1);
+		}		
+		
+		// set the focus back
+		//
+		m_inputMgr.m_editTextArea.setFocus();
 	}
 	
 	public synchronized ChatField findChatField(fetchChatMsg _msg){
@@ -386,6 +424,25 @@ public class MainChatScreen extends MainScreen{
 			UiApplication.getUiApplication().pushScreen(
 					PhizSelectedScreen.getPhizScreen(m_middleMgr.m_chatScreen.m_mainApp, 
 													m_middleMgr.m_inputMgr.m_editTextArea));
+		}
+	};
+	
+	MenuItem m_resendMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_RESEND_MSG_MENU_LABEL),m_menu_op++,0){
+		public void run(){
+			ChatField t_field = getResendField();
+			if(t_field != null){
+				m_middleMgr.m_chatMsgMgr.delete(t_field);
+				m_currRoster.m_chatMsgList.removeElement(t_field.m_msg);
+				
+				
+				m_currRoster.m_chatMsgList.addElement(t_field.m_msg);
+				m_middleMgr.addChatMsg(t_field);
+				
+				// add send daemon
+				//
+				m_mainScreen.addSendChatMsg(t_field.m_msg,m_currRoster);
+			}
+			
 		}
 	};
 	
@@ -423,7 +480,7 @@ public class MainChatScreen extends MainScreen{
 			try{
 				
 				_g.setColor(RosterItemField.fsm_nameTextColor);
-				_g.setFont(MainIMScreen.sm_boldFont);
+				_g.setFont(MainIMScreen.fsm_boldFont);
 				
 				_g.drawText(m_currRoster.m_roster.getName(),t_x,2);
 				
@@ -432,8 +489,8 @@ public class MainChatScreen extends MainScreen{
 				_g.setFont(font);
 			}
 			
-			t_x = RosterItemField.drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle());
-			
+			t_x = RosterItemField.drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch);
+						
 			if(m_currRoster.m_currChatState == fetchChatMsg.CHAT_STATE_COMPOSING){
 				recvMain.sm_weiboUIImage.drawImage(_g, sm_composing, t_x - sm_composing.getWidth(), 3);
 			}
@@ -481,6 +538,9 @@ public class MainChatScreen extends MainScreen{
 	protected void makeMenu(Menu _menu,int instance){
 		_menu.add(m_sendMenu);
 		_menu.add(m_phizMenu);
+		if(getResendField() != null){
+			_menu.add(m_resendMenu);
+		}
 		
 		super.makeMenu(_menu,instance);
 	}
@@ -494,6 +554,23 @@ public class MainChatScreen extends MainScreen{
 		m_mainApp.StopIMNotification();
 		
 		m_mainScreen.clearNewChatSign();
+	}
+	
+	public ChatField getResendField(){
+		if(m_middleMgr.m_inputMgr.m_editTextArea.isFocus()
+		|| m_middleMgr.m_inputMgr.m_phizButton.isFocus()){
+			return null;
+		}
+		
+		int t_num = m_middleMgr.m_chatMsgMgr.getFieldCount();
+		for(int i = 0 ;i < t_num;i++){
+			ChatField t_chatField = (ChatField)m_middleMgr.m_chatMsgMgr.getField(i);
+			if(t_chatField.isFocus() && t_chatField.m_msg.getSendState() == fetchChatMsg.SEND_STATE_ERROR){
+				return t_chatField;
+			}
+		}
+		
+		return null;
 	}
 	
 	public boolean onClose(){
@@ -533,6 +610,7 @@ public class MainChatScreen extends MainScreen{
 		//
 		m_mainScreen.addSendChatMsg(t_msg,m_currRoster);
 	}
+	
 	
 	public void sendChatComposeState(byte _state){
 		
