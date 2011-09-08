@@ -120,7 +120,7 @@ public class MainIMScreen extends MainScreen{
 				IMStatusField t_field = (IMStatusField)m_statusListMgr.getField(i);
 				if(t_field.isFocus()){
 					
-					m_statusAddScreen = new IMStatusAddScreen(MainIMScreen.this, IMStatus.sm_currUseStatus);
+					m_statusAddScreen = new IMStatusAddScreen(MainIMScreen.this, t_field.m_status);
 					m_mainApp.pushScreen(m_statusAddScreen);
 					
 					break;
@@ -653,7 +653,7 @@ public class MainIMScreen extends MainScreen{
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			os.write(msg_head.msgChatRead);
 			os.write(_msg.getStyle());
-			sendReceive.WriteInt(os,_msg.hashCode());
+			sendReceive.WriteInt(os,_msg.getReadHashCode());
 			
 			m_mainApp.m_connectDeamon.addSendingData(msg_head.msgChatRead,os.toByteArray(),true);
 			
@@ -959,6 +959,54 @@ public class MainIMScreen extends MainScreen{
 		
 		if(IMStatus.sm_currUseStatus != null){
 			sendUseStatus(IMStatus.sm_currUseStatus);
+		}
+	}
+	
+	public void processChatRead(InputStream in)throws Exception{
+		int t_style = in.read();
+		String t_account = sendReceive.ReadString(in);
+		int t_hashcode = sendReceive.ReadInt(in);
+		
+		for(int i = 0 ;i < m_rosterChatDataList.size();i++){
+			RosterChatData data = (RosterChatData)m_rosterChatDataList.elementAt(i);
+			if(data.m_roster.getStyle() == t_style
+			&& data.m_roster.getAccount().equals(t_account)){
+				// the right account has been found
+				//
+				for(int j = data.m_chatMsgList.size() - 1;j >= 0;j--){
+					fetchChatMsg msg = (fetchChatMsg)data.m_chatMsgList.elementAt(j);
+					if(msg.hashCode() == t_hashcode){
+						
+						// find the right msg
+						//
+						msg.setSendState(fetchChatMsg.SEND_STATE_READ);
+						
+						if(m_mainApp.getActiveScreen() == m_chatScreen
+							&& m_chatScreen.m_currRoster == data){
+							
+							// refresh the right ChatField 
+							//
+							synchronized (m_chatScreen.m_middleMgr){
+								Manager t_manager = m_chatScreen.m_middleMgr.m_chatMsgMgr;
+								int num = t_manager.getFieldCount();
+								for(int index = num - 1;index >= 0;index--){
+									ChatField t_field = (ChatField)t_manager.getField(index);
+									if(t_field.m_msg == msg){
+										
+										t_field.invalidate();
+										
+										break;
+									}
+								}
+							}
+						}
+						
+						break;
+					}
+				}
+				break;
+			}
+			
 		}
 	}
 	

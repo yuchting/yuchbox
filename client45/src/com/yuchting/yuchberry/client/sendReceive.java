@@ -315,6 +315,10 @@ public class sendReceive extends Thread{
 	}
 	
 	static public void WriteString(OutputStream _stream,String _string)throws Exception{
+		if(_string == null){
+			_string = "";
+		}
+		
 		byte[] t_strByte;
 		
 		try{

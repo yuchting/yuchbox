@@ -97,6 +97,7 @@ public class SendChatMsgDeamon extends Thread implements ISendAttachmentCallback
 			sendReceive.WriteString(t_os,m_sendMsg.getOwner());
 			sendReceive.WriteString(t_os,m_sendTo.m_roster.getAccount());
 			sendReceive.WriteString(t_os,m_sendMsg.getMsg());
+			sendReceive.WriteInt(t_os,m_sendMsg.hashCode());
 			
 			// file length
 			//

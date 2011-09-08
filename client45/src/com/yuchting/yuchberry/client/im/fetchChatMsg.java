@@ -29,6 +29,7 @@ public class fetchChatMsg{
 	String		m_msgOwner		= "";
 	String		m_sendTo		= "";
 	String		m_msg			= "";
+	int			m_readHashCode	= 0;
 	
 	byte[]		m_fileContent	= null;
 	int			m_contentType	= 0;
@@ -52,6 +53,9 @@ public class fetchChatMsg{
 	public int hashCode(){
 		return (getOwner() + getStyle() + getSendTime()).hashCode();
 	}
+	
+	public int getReadHashCode(){return m_readHashCode;}
+	public void setReadHashCode(int _hashcode){m_readHashCode = _hashcode;}
 	
 	public int getStyle(){	return m_style;	}
 	public void setStyle(int _style){m_style = _style;}
@@ -84,8 +88,9 @@ public class fetchChatMsg{
 		m_sendTime	= sendReceive.ReadLong(in);
 		m_msgOwner	= sendReceive.ReadString(in);
 		m_sendTo	= sendReceive.ReadString(in);
-		
 		m_msg		= sendReceive.ReadString(in);
+		
+		m_readHashCode = sendReceive.ReadInt(in);
 		
 		int t_content = sendReceive.ReadInt(in);
 		if(t_content > 0){
@@ -102,24 +107,10 @@ public class fetchChatMsg{
 		
 		os.write(m_style);
 		sendReceive.WriteLong(os,m_sendTime);
-		
-		if(m_msgOwner != null){
-			sendReceive.WriteString(os,m_msgOwner);
-		}else{
-			sendReceive.WriteString(os,"");
-		}
-		
-		if(m_sendTo != null){
-			sendReceive.WriteString(os,m_sendTo);
-		}else{
-			sendReceive.WriteString(os,"");
-		}
-		
-		if(m_msg != null){
-			sendReceive.WriteString(os,m_msg);
-		}else{
-			sendReceive.WriteString(os,"");
-		}
+		sendReceive.WriteString(os,m_msgOwner);
+		sendReceive.WriteString(os,m_sendTo);
+		sendReceive.WriteString(os,m_msg);
+		sendReceive.WriteInt(os,m_readHashCode);		
 		
 		if(m_fileContent != null && m_fileContent.length > 0){
 			sendReceive.WriteInt(os,m_fileContent.length);

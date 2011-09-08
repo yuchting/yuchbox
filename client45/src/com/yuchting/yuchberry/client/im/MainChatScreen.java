@@ -286,7 +286,7 @@ final class MiddleMgr extends VerticalFieldManager{
 	MainChatScreen		m_chatScreen	= null;
 	
 	public MiddleMgr(MainChatScreen _charScreen){
-		super(Manager.VERTICAL_SCROLL);
+		super(Manager.NO_VERTICAL_SCROLL);
 		
 		m_chatScreen	= _charScreen;
 		
@@ -298,7 +298,7 @@ final class MiddleMgr extends VerticalFieldManager{
 		add(m_inputMgr);
 	}
 	
-	public void prepareChatScreen(RosterChatData _chatData){
+	public synchronized void prepareChatScreen(RosterChatData _chatData){
 		m_chatMsgMgr.deleteAll();
 		
 		ChatField t_field = null;

@@ -210,6 +210,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		
 	};
 	
+	public final static String fsm_ybReadProperty = "YuchBerryRead";
 	public final static String fsm_ybClientSource = "YuchBerry.info";
 	public final static String fsm_chatStateNamespace = "http://jabber.org/protocol/chatstates";
 	
@@ -507,6 +508,8 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     	
 		if(message.getBody() == null){
 
+			Object t_read;
+			
 			if(message.getExtension("composing", fsm_chatStateNamespace) != null){
 				
 				// <message type='chat' id='purple296e7714' to='yuchberry@gmail.com'>
@@ -526,10 +529,13 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				//System.out.println(chat.getParticipant() + " paused");
 				
 				t_state = fetchChatMsg.CHAT_STATE_COMMON;
-			}else if(message.getExtension("read", fsm_chatStateNamespace) != null){
-				PacketExtension t_hashCodeString = message.getExtension("hashcode");
-								
-				System.out.println(chat.getParticipant() + " read");
+			}else if((t_read = message.getProperty(fsm_ybReadProperty)) != null && t_read instanceof Integer){
+				
+				// get the property of YB read
+				//
+				Integer t_readHashCode = (Integer)t_read;
+				
+				sendChatMsgRead(ChatData.convertAccount(chat.getParticipant()),t_readHashCode.intValue());
 			}
 			
 		}else{
@@ -547,37 +553,16 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			}			
 			
 			t_state = fetchChatMsg.CHAT_STATE_COMMON;
-			
-
-			if(echo){
-				
-				String t_acc = ChatData.convertAccount(chat.getParticipant());
-				
-				synchronized(m_chatList){		
-					
-					for(ChatData data:m_chatList){
-						
-						if(data.m_accountName.equals(t_acc)){
-							try{
-								data.m_chatData.sendMessage("echo");
-							}catch(Exception e){
-								
-							}							
-							
-							break;
-						}
-					}
-				}
-			}
 		}
 		
 		String t_acc  = ChatData.convertAccount(chat.getParticipant());
+		
 		synchronized(m_chatList){		
 			
 			for(ChatData data:m_chatList){
-				
 				if(data.m_accountName.equals(t_acc)){
 					
+					data.m_isYBClient = chat.getParticipant().indexOf(fsm_ybClientSource) != -1;
 					data.m_lastActiveTime = (new Date()).getTime();
 					
 					if(t_state != -1){
@@ -598,8 +583,12 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     	t_msg.setMsg(convertPhiz(message.getBody(),true));
     	t_msg.setSendTo(GetAccountName());
     	t_msg.setOwner(ChatData.convertAccount(_chat.getParticipant()));
+    	t_msg.setSendTime((new Date()).getTime());  
     	
-    	t_msg.setSendTime((new Date()).getTime());
+    	Object t_read = message.getProperty(fsm_ybReadProperty);
+    	if(t_read != null && t_read instanceof Integer){
+    		t_msg.setReadHashCode(((Integer)t_read).intValue());
+    	}
     	
     	return t_msg;
     }
@@ -617,6 +606,27 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     	}
     	
     	return _org;
+    }
+    
+    private void sendChatMsgRead(String _account,int _hashCode){
+    	
+    	if(!m_mainMgr.isClientConnected()){
+    		return ;
+    	}
+    	
+    	try{
+    		ByteArrayOutputStream os = new ByteArrayOutputStream();
+    		os.write(msg_head.msgChatRead);
+    		os.write(getCurrChatStyle());
+    		
+    		sendReceive.WriteString(os,_account,false);
+    		sendReceive.WriteInt(os,_hashCode);
+    		
+    		m_mainMgr.SendData(os, true);
+
+    	}catch(Exception e){
+    		m_mainMgr.m_logger.PrinterException(e);
+    	}
     }
     
     private boolean sendClientChatMsg(fetchChatMsg _msg,boolean _imm){
@@ -819,17 +829,18 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			
 			synchronized (m_markReadChatMsgList) {
 				for(fetchChatMsg msg:m_markReadChatMsgList){
-					if(t_hashCode == msg.hashCode()){
+					if(t_hashCode == msg.getReadHashCode()){
 						
 						if(m_mainConnection.isConnected()){
 							
 							synchronized (m_chatList) {
 								for(ChatData data:m_chatList){
 									if(data.m_accountName.equals(msg.getOwner())){
+									
+										Message t_msg = new Message();
+										t_msg.setProperty(fsm_ybReadProperty,t_hashCode);
 										
-										ChatReadMessage t_msg = new ChatReadMessage(t_hashCode,data.m_chatData.getParticipant());
-										
-										m_mainConnection.sendPacket(t_msg);
+										data.m_chatData.sendMessage(t_msg);
 										data.m_lastActiveTime = (new Date()).getTime();
 										
 										break;
@@ -998,8 +1009,9 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			
 			if(from.equals(m_accountName)){
 
-				String to = sendReceive.ReadString(in);
-				String message = sendReceive.ReadString(in);
+				String	to = sendReceive.ReadString(in);
+				String	message = sendReceive.ReadString(in);
+				int		hashcode = sendReceive.ReadInt(in);
 				
 				int t_filelen = sendReceive.ReadInt(in);
 				if(t_filelen != 0){
@@ -1009,16 +1021,23 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 					//
 				}
 				
+				String convertText = convertPhiz(message,false);
+				Message t_message = new Message();
+				t_message.setBody(convertText);
+				t_message.setProperty(fsm_ybReadProperty, hashcode);
+					
 				boolean found = false;
 				synchronized (m_chatList){
 					
 					for(ChatData data:m_chatList){
 						if(data.m_accountName.equals(to)){
 							
-							data.m_chatData.sendMessage(convertPhiz(message,false));
+							data.m_chatData.sendMessage(t_message);
 							data.m_lastActiveTime = (new Date()).getTime();
 
 							found = true;
+							
+							
 							
 							break;
 						}
@@ -1026,10 +1045,10 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				}
 				
 				if(!found){
-					// the fetchGTalk.chatCreated will add it to list
+					// the fetchGTalk.chatCreated will add it to m_chatList
 					//
 					Chat t_newChat = m_chatManager.createChat(to, this);
-					t_newChat.sendMessage(convertPhiz(message,false));
+					t_newChat.sendMessage(t_message);
 				}
 				
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
