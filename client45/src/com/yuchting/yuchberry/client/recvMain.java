@@ -62,7 +62,6 @@ import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.Phiz;
 import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
-import com.yuchting.yuchberry.client.weibo.WeiboItemField;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 import com.yuchting.yuchberry.client.weibo.weiboTimeLineScreen;
 
@@ -918,7 +917,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    		}
 				    		
 				    		if(t_currVer >= 18){
-				    			WeiboItemField.sm_commentFirst = sendReceive.ReadBoolean(t_readFile);
+				    			sm_commentFirst = sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
 				    		if(t_currVer >= 19){
@@ -935,8 +934,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    		}
 				    		
 				    		if(t_currVer >= 22){
-				    			WeiboItemField.sm_displayHeadImage = sendReceive.ReadBoolean(t_readFile);
-				    			WeiboItemField.sm_simpleMode = sendReceive.ReadBoolean(t_readFile);
+				    			sm_displayHeadImage = sendReceive.ReadBoolean(t_readFile);
+				    			sm_simpleMode = sendReceive.ReadBoolean(t_readFile);
 				    			m_dontDownloadWeiboHeadImage = sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
@@ -949,7 +948,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    		}
 				    		
 				    		if(t_currVer >= 25){
-				    			WeiboItemField.sm_showAllInList = sendReceive.ReadBoolean(t_readFile);
+				    			sm_showAllInList = sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
 				    		if(t_currVer >= 26){
@@ -1062,21 +1061,21 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						sendReceive.WriteBoolean(t_writeFile,m_enableWeiboModule);
 						sendReceive.WriteBoolean(t_writeFile,m_updateOwnListWhenFw);
 						sendReceive.WriteBoolean(t_writeFile,m_updateOwnListWhenRe);
-						sendReceive.WriteBoolean(t_writeFile,WeiboItemField.sm_commentFirst);
+						sendReceive.WriteBoolean(t_writeFile,sm_commentFirst);
 						sendReceive.WriteBoolean(t_writeFile,m_publicForward);
 						
 						sendReceive.WriteInt(t_writeFile,m_maxWeiboNumIndex);
 						sendReceive.WriteInt(t_writeFile,m_receivedWeiboNum);
 						sendReceive.WriteInt(t_writeFile,m_sentWeiboNum);
 						
-						sendReceive.WriteBoolean(t_writeFile,WeiboItemField.sm_displayHeadImage);
-						sendReceive.WriteBoolean(t_writeFile,WeiboItemField.sm_simpleMode);
+						sendReceive.WriteBoolean(t_writeFile,sm_displayHeadImage);
+						sendReceive.WriteBoolean(t_writeFile,sm_simpleMode);
 						sendReceive.WriteBoolean(t_writeFile,m_dontDownloadWeiboHeadImage);
 						
 						sendReceive.WriteBoolean(t_writeFile,m_hideHeader);
 						
 						sendReceive.WriteBoolean(t_writeFile,m_connectDisconnectPrompt);
-						sendReceive.WriteBoolean(t_writeFile,WeiboItemField.sm_showAllInList);
+						sendReceive.WriteBoolean(t_writeFile,sm_showAllInList);
 						
 						sendReceive.WriteBoolean(t_writeFile, m_hasPromptToCheckImg);
 						t_writeFile.write(m_checkImgIndex);
@@ -1911,6 +1910,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public boolean			m_updateOwnListWhenRe		= false;
 	public boolean			m_dontDownloadWeiboHeadImage= false;
 	public boolean			m_spaceDownWeiboShortcutKey	= true;
+	
+	public static	boolean		sm_commentFirst		= false;
+	public static	boolean		sm_displayHeadImage	= true;
+	public static boolean			sm_simpleMode		= false;
+	public static boolean			sm_showAllInList	= false;
+	
 				
 	public weiboTimeLineScreen	m_weiboTimeLineScreen = null;
 	public boolean				m_publicForward		= false;
@@ -2350,6 +2355,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public boolean				m_enableChatChecked 	= true;
 	public boolean				m_enableChatState		= true;
 	public boolean				m_hideUnvailiableRoster = true;
+	
+	public static boolean		sm_displayTime	= true;
 		
 	public int					m_imCurrUseStatusIndex	= 0;
 	public static Vector		sm_imStatusList			= new Vector();

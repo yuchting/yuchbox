@@ -101,11 +101,6 @@ public class WeiboItemField extends Manager{
 	
 	public final static int	fsm_closeHeight			= sm_fontHeight * 2 + 1;
  
-	public static	boolean		sm_commentFirst		= false;
-	public static	boolean		sm_displayHeadImage	= true;
-	public static boolean			sm_simpleMode		= false;
-	public static boolean			sm_showAllInList	= false;
-	
 	static public final int fsm_controlField_text 		= 0;
 	static public final int fsm_controlField_comment 		= 1;
 	static public final int fsm_controlField_forwardBtn 	= 2;
@@ -167,7 +162,7 @@ public class WeiboItemField extends Manager{
 		
 		t_weiboTextBuffer.append("@").append(m_weibo.GetUserScreenName()).append(" :").append(m_weibo.GetText());
 		
-		if(!sm_simpleMode && m_weibo.GetSource().length() != 0){
+		if(!recvMain.sm_simpleMode && m_weibo.GetSource().length() != 0){
 			t_weiboTextBuffer.append("\n       --").append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
 			.append(parseSource(m_weibo.GetSource()));
 		}						
@@ -189,7 +184,7 @@ public class WeiboItemField extends Manager{
 			
 			StringBuffer t_commentText = new StringBuffer();
 			t_commentText.append("@").append(t_comment.GetUserScreenName()).append(":").append(t_comment.GetText());
-			if(!sm_simpleMode && t_comment.GetSource().length() != 0){		
+			if(!recvMain.sm_simpleMode && t_comment.GetSource().length() != 0){		
 				t_commentText.append("\n       --").append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
 							.append(parseSource(t_comment.GetSource()));
 			}
@@ -219,7 +214,7 @@ public class WeiboItemField extends Manager{
 			}
 		}
 		
-		if(!sm_simpleMode){
+		if(!recvMain.sm_simpleMode){
 			m_extendHeight 			= m_functionButton_y + _manager.m_forwardBut.getImageHeight() + fsm_headImageTextInterval;
 		}else{
 			m_extendHeight 			= m_functionButton_y + fsm_headImageTextInterval ;
@@ -227,7 +222,7 @@ public class WeiboItemField extends Manager{
 		
 		// get the abstract text height
 		//
-		if(sm_showAllInList && !(this instanceof WeiboDMItemField)){
+		if(recvMain.sm_showAllInList && !(this instanceof WeiboDMItemField)){
 			
 			m_absTextAreaAdded = true;
 			
@@ -246,7 +241,7 @@ public class WeiboItemField extends Manager{
 	}
 	
 	public int getAbsTextPosX(){
-		if(sm_displayHeadImage || m_absTextAreaAdded){
+		if(recvMain.sm_displayHeadImage || m_absTextAreaAdded){
 			return 2 + fsm_headImageTextInterval + WeiboHeadImage.fsm_headImageWidth + 10;
 		}else{
 			return 2 + fsm_weiboSignImageSize + 10;
@@ -290,7 +285,7 @@ public class WeiboItemField extends Manager{
 				delete(m_absTextArea);
 			}
 			
-			if(WeiboItemField.sm_commentFirst){
+			if(recvMain.sm_commentFirst){
 				
 				if(m_commentText != null){
 					if(!m_hasControlField[fsm_controlField_comment]){
@@ -326,7 +321,7 @@ public class WeiboItemField extends Manager{
 				}
 			}		
 			
-			if(!sm_simpleMode){
+			if(!recvMain.sm_simpleMode){
 				if(!m_hasControlField[fsm_controlField_forwardBtn]){
 					m_hasControlField[fsm_controlField_forwardBtn] = true;
 					add(m_parentManager.m_forwardBut);
@@ -351,7 +346,7 @@ public class WeiboItemField extends Manager{
 			
 		}else{
 			
-			if(sm_showAllInList && !m_absTextAreaAdded){
+			if(recvMain.sm_showAllInList && !m_absTextAreaAdded){
 				initAbsTextArea();
 				
 				m_absTextAreaAdded = true;
@@ -433,7 +428,7 @@ public class WeiboItemField extends Manager{
 			
 		}else{
 			
-			if(m_absTextArea != null && sm_showAllInList){
+			if(m_absTextArea != null && recvMain.sm_showAllInList){
 				return Math.max(m_absTextHeight + 5 + sm_timeFont.getHeight() + fsm_headImageTextInterval,
 									fsm_weiboSignImageSize + WeiboHeadImage.fsm_headImageWidth + 10);
 			}else{
@@ -447,7 +442,7 @@ public class WeiboItemField extends Manager{
 		
 		if(m_parentManager.getCurrExtendedItem() == this){
 			
-			int t_commentText_y = WeiboItemField.sm_commentFirst?0:m_commentText_y;
+			int t_commentText_y = recvMain.sm_commentFirst?0:m_commentText_y;
 					
 			if(m_commentText != null){
 				// comment area
@@ -456,7 +451,7 @@ public class WeiboItemField extends Manager{
 				layoutChild(m_parentManager.m_commentTextArea,fsm_commentTextWidth,m_functionButton_y - m_commentText_y);			
 			}
 			
-			if(!sm_simpleMode){
+			if(!recvMain.sm_simpleMode){
 				// forward button
 				//
 				setPositionChild(m_parentManager.m_forwardBut,WeiboMainManager.sm_forwardBut_x,m_functionButton_y);
@@ -481,7 +476,7 @@ public class WeiboItemField extends Manager{
 				}
 			}
 			
-			int t_text_y = WeiboItemField.sm_commentFirst?m_commentText_height:1;
+			int t_text_y = recvMain.sm_commentFirst?m_commentText_height:1;
 			t_text_y += fsm_weiboSignImageSize;
 			
 			// text area
@@ -536,7 +531,7 @@ public class WeiboItemField extends Manager{
 			sm_calendar.setTime(sm_timeDate);		
 			
 			int t_minutes = sm_calendar.get(Calendar.MINUTE);
-			String t_day = WeiboItemField.sm_simpleMode?"":((sm_calendar.get(Calendar.MONTH) + 1) + "-" +sm_calendar.get(Calendar.DAY_OF_MONTH));
+			String t_day = recvMain.sm_simpleMode?"":((sm_calendar.get(Calendar.MONTH) + 1) + "-" +sm_calendar.get(Calendar.DAY_OF_MONTH));
 			if(t_minutes > 9){
 				return t_day + " " + sm_calendar.get(Calendar.HOUR_OF_DAY) + ":" 
 						+ t_minutes;
@@ -559,7 +554,7 @@ public class WeiboItemField extends Manager{
 				_g.setColor(fsm_darkColor);
 				_g.fillRect(0,0,fsm_weiboItemFieldWidth,m_extendHeight);				
 							
-				int t_textStart_y = WeiboItemField.sm_commentFirst?m_commentText_height : 1;
+				int t_textStart_y = recvMain.sm_commentFirst?m_commentText_height : 1;
 				
 				// draw weibo style 
 				//
@@ -599,7 +594,7 @@ public class WeiboItemField extends Manager{
 				_g.setColor(0);
 				paintChild(_g,m_parentManager.m_textArea);	
 				
-				if(!sm_simpleMode){
+				if(!recvMain.sm_simpleMode){
 					paintChild(_g,m_parentManager.m_atBut);
 					paintChild(_g,m_parentManager.m_forwardBut);
 					paintChild(_g,m_parentManager.m_favoriteBut);
@@ -611,14 +606,14 @@ public class WeiboItemField extends Manager{
 				
 				if(m_commentText != null){
 					
-					int t_commentText_y = WeiboItemField.sm_commentFirst?0:m_commentText_y;
+					int t_commentText_y = recvMain.sm_commentFirst?0:m_commentText_y;
 					
 					// comment area
 					//
 					// draw a bubble
 					recvMain.sm_bubbleImage.draw(_g, 0, t_commentText_y - fsm_headImageTextInterval,
 							fsm_commentTextWidth + fsm_headImageTextInterval * 2, m_commentText_height + 5,
-							WeiboItemField.sm_commentFirst?BubbleImage.BOTTOM_POINT_STYLE:BubbleImage.TOP_POINT_STYLE);
+							recvMain.sm_commentFirst?BubbleImage.BOTTOM_POINT_STYLE:BubbleImage.TOP_POINT_STYLE);
 					
 					paintChild(_g,m_parentManager.m_commentTextArea);
 										
@@ -713,7 +708,7 @@ public class WeiboItemField extends Manager{
 				
 				int t_nameLeadingSpace = t_leadingSpace;
 				
-				if(sm_displayHeadImage){
+				if(recvMain.sm_displayHeadImage){
 					// display head image when closed
 					//
 					WeiboHeadImage.displayHeadImage(_g,t_leadingSpace + fsm_weiboSignImageSize + fsm_headImageTextInterval,

@@ -10,6 +10,10 @@ public final class GPSInfo{
 	public float	 m_speed				= 0;
 	public float	 m_heading				= 0;
 	
+	// statistics 
+	//
+	long			m_time					= 0;
+	
 	public void InputData(InputStream in)throws Exception{
 		m_longitude = sendReceive.ReadDouble(in);
 		m_latitude 	= sendReceive.ReadDouble(in);

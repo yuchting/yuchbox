@@ -26,7 +26,7 @@ public class ChatField extends Manager{
 	public final static int	fsm_otherChatTextBGColor	= 0xadadad;
 	public final static int	fsm_timeTextBGColor			= 0xffffcc;
 	public final static int	fsm_timeTextBorderColor		= 0xc0c0c0;
-	
+		
 	fetchChatMsg			m_msg 			= null;
 	int						m_msgTextHeight = 0;
 	int						m_msgTextWidth	= 0;
@@ -88,7 +88,13 @@ public class ChatField extends Manager{
 		//
 		fsm_timeDate.setTime(_msg.getSendTime());
 		fsm_calendar.setTime(fsm_timeDate);
-		m_timeText = Integer.toString(fsm_calendar.get(Calendar.HOUR_OF_DAY)) + ":" + fsm_calendar.get(Calendar.MINUTE);
+		int minute = fsm_calendar.get(Calendar.MINUTE); 
+		if(minute < 10){
+			m_timeText = Integer.toString(fsm_calendar.get(Calendar.HOUR_OF_DAY)) + ":0" + minute;
+		}else{
+			m_timeText = Integer.toString(fsm_calendar.get(Calendar.HOUR_OF_DAY)) + ":" + minute;
+		}
+		
 	}
 	
 	public void setSendState(int _state){
@@ -171,10 +177,12 @@ public class ChatField extends Manager{
 			_g.setColor(fsm_timeTextBorderColor);
 			_g.drawRoundRect(t_time_x,t_time_y, t_time_width, fsm_timeFont.getHeight(), 5, 5);
 			
-			_g.setColor(0);
-			
-			_g.setFont(fsm_timeFont);
-			_g.drawText(m_timeText,t_time_x,t_time_y);
+			if(recvMain.sm_displayTime){
+				_g.setColor(0);
+				
+				_g.setFont(fsm_timeFont);
+				_g.drawText(m_timeText,t_time_x,t_time_y);
+			}			
 			
 		}finally{
 			_g.setFont(t_font);

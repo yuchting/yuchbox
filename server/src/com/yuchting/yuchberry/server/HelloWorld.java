@@ -21,6 +21,8 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.jivesoftware.smackx.bytestreams.ibb.packet.Data;
+
 import weibo4j.http.OAuth;
 import weibo4j.http.OAuthToken;
 import weibo4j.http.PostParameter;
@@ -85,10 +87,12 @@ public class HelloWorld {
 	 *  @param arg  parameters
 	 */
 	public static void main(String arg[])throws Exception{
+		zeromqTest();
+	}
+	
+	static public void zeromqTest()throws Exception{
 		
-		if(!("dd".equals(null))){
-			System.out.print("OK");
-		}
+		
 		
 	}
 	

@@ -14,6 +14,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyStore;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -31,6 +32,9 @@ import org.htmlparser.Parser;
 import org.htmlparser.nodes.TextNode;
 import org.htmlparser.tags.LinkTag;
 import org.htmlparser.util.NodeList;
+
+import twitter4j.internal.org.json.JSONArray;
+import twitter4j.internal.org.json.JSONObject;
 
 public class fetchMgr{
 		
@@ -286,8 +290,8 @@ public class fetchMgr{
 	            
 	            t_im.InitAccount(element);
 	            m_fetchAccount.addElement(t_im);
-	        }	
-	    	
+	        }
+			    	
 		}catch(Exception ex){
 			
 			m_logger.PrinterException(ex);
@@ -573,6 +577,8 @@ public class fetchMgr{
 			}
 			
 		}
+		
+		sendStatictiscInfo();
 	}
 	
 	public String GetAccountName(){
@@ -1020,5 +1026,140 @@ public class fetchMgr{
 		return _longURL;
 		
         
+	}
+	
+	// statistics
+	//
+	boolean	m_stat_disableReport = false;
+	
+	String 				m_stat_clientID = "";
+	Vector<GPSInfo>		m_stat_clientGEO = new Vector<GPSInfo>();
+	int					m_stat_emailSend = 0;
+	int					m_stat_emailRecv = 0;
+	int					m_stat_emailSendB = 0;
+	int					m_stat_emailRecvB = 0;
+	
+	
+	public void addGPSInfo(GPSInfo _info){
+		_info.m_time = (new Date()).getTime();
+		m_stat_clientGEO.add(_info);
+	}
+	
+	public void incEmailSend(){
+		m_stat_emailSend++;
+	}
+	
+	public void incEmailRecv(){
+		m_stat_emailRecv++;
+	}
+	
+	public void addEmailSendByte(int _add){
+		m_stat_emailSendB += _add;
+	}
+	
+	public void addEmailRecvByte(int _add){
+		m_stat_emailRecvB += _add;
+	}
+	
+	public void sendStatictiscInfo(){
+		if(m_stat_disableReport){
+			return ;
+		}
+		
+		try{
+			JSONObject t_json = new JSONObject();
+			t_json.put("ID","" + m_IMEI + "-" + m_pin);
+			t_json.put("Time",(new Date()).getTime());
+			
+			JSONArray t_geoList = new JSONArray();
+			for(GPSInfo gps: m_stat_clientGEO){
+				JSONObject t_gps = new JSONObject();
+				t_gps.put("x",gps.m_latitude);
+				t_gps.put("y",gps.m_longitude);
+				t_gps.put("t",gps.m_time);
+				
+				t_geoList.put(t_gps);
+			}
+			
+			JSONObject t_email = new JSONObject();
+			JSONArray t_sinaWeibo = new JSONArray();
+			JSONArray t_qqWeibo = new JSONArray();
+			JSONArray t_tWeibo = new JSONArray();
+			
+			JSONArray t_IMGTalk = new JSONArray();
+			
+			JSONArray t_emailList = new JSONArray();
+
+			for(fetchAccount acc:m_fetchAccount){
+				if(acc instanceof fetchEmail){
+					
+					fetchEmail t_accE = (fetchEmail)acc;
+					t_emailList.put(t_accE.GetAccountName());
+					
+				}else if(acc instanceof fetchSinaWeibo){
+					fetchSinaWeibo t_accSina = (fetchSinaWeibo)acc;
+					JSONObject t_sina = new JSONObject();
+					t_sina.put("WeiboA",t_accSina.m_userself.getId());
+					
+					setStatisticsWeibo(t_accSina,t_sina);
+					
+					t_sinaWeibo.put(t_sina);
+				}else if(acc instanceof fetchQWeibo){
+					fetchQWeibo t_accQQ = (fetchQWeibo)acc;
+					JSONObject t_qq = new JSONObject();
+					
+					t_qq.put("WeiboA",t_accQQ.m_userself.getScreenName());
+					setStatisticsWeibo(t_accQQ, t_qq);
+					
+					t_qqWeibo.put(t_qq);
+				}else if(acc instanceof fetchTWeibo){
+					fetchTWeibo t_accT = (fetchTWeibo)acc;
+					JSONObject t_T = new JSONObject();
+					
+					t_T.put("WeiboA",t_accT.m_userself.getId());
+					setStatisticsWeibo(t_accT, t_T);
+					
+					t_tWeibo.put(t_T);
+					
+				}else if(acc instanceof fetchGTalk){
+					fetchGTalk t_accG = (fetchGTalk)acc;
+					JSONObject t_G = new JSONObject();
+					
+					t_G.put("IMA",t_accG.GetAccountName());
+					t_G.put("IMSend",t_accG.m_stat_IMSend);
+					t_G.put("IMRecv",t_accG.m_stat_IMRecv);
+					t_G.put("IMSendB",t_accG.m_stat_IMSendB);
+					t_G.put("IMRecvB",t_accG.m_stat_IMRecvB);
+					
+					t_IMGTalk.put(t_G);
+					
+				}
+			}
+			
+			t_email.put("EmailA",t_emailList);
+			t_email.put("EmailSend",m_stat_emailSend);
+			t_email.put("EmailRecv",m_stat_emailRecv);
+			t_email.put("EmailSendB",m_stat_emailSendB);
+			t_email.put("EmailRecvB",m_stat_emailRecvB);
+			
+			t_json.put("Email",t_email);
+			t_json.put("WeiboSina",t_sinaWeibo);
+			t_json.put("WeiboQQ",t_qqWeibo);
+			t_json.put("WeiboT",t_tWeibo);
+			t_json.put("IMGtalk",t_IMGTalk);
+			
+			System.out.print(t_json);
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+	}
+	
+	private static void setStatisticsWeibo(fetchAbsWeibo _acc,JSONObject _json)throws Exception{
+		_json.put("WeiboSend",_acc.m_stat_weiboSend);
+		_json.put("WeiboRecv",_acc.m_stat_weiboRecv);
+		_json.put("WeiboSendB",_acc.m_stat_weiboSendB);
+		_json.put("WeiboRecvB",_acc.m_stat_weiboRecvB);
 	}
 }

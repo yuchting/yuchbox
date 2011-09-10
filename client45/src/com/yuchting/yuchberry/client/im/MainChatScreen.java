@@ -212,16 +212,19 @@ final class InputManager extends Manager implements FieldChangeListener{
 	}	
 	protected boolean keyDown(int keycode,int time){
 		
-		// send the read message to the server
-		//
-		Vector list = m_middleMgr.m_chatScreen.m_currRoster.m_chatMsgList;
-		int num = list.size();
-		for(int i = 0 ;i < num;i++){
-			fetchChatMsg msg = (fetchChatMsg)list.elementAt(i);
-			if(!msg.isOwnMsg() && !msg.hasSendMsgChatReadMsg()){
-				m_middleMgr.m_chatScreen.m_mainScreen.sendChatReadMsg(msg);
-			}			
+		if(m_middleMgr.m_chatScreen.m_currRoster.m_isYuch){
+			// send the read message to the server
+			//	
+			Vector list = m_middleMgr.m_chatScreen.m_currRoster.m_chatMsgList;
+			int num = list.size();
+			for(int i = 0 ;i < num;i++){
+				fetchChatMsg msg = (fetchChatMsg)list.elementAt(i);
+				if(!msg.isOwnMsg() && !msg.hasSendMsgChatReadMsg()){
+					m_middleMgr.m_chatScreen.m_mainScreen.sendChatReadMsg(msg);
+				}			
+			}
 		}
+		
 		
 		
 		final int key = Keypad.key(keycode);
@@ -308,7 +311,10 @@ final class MiddleMgr extends VerticalFieldManager{
 			
 			m_chatMsgMgr.add(t_field);
 			
-			m_chatScreen.m_mainScreen.sendChatReadMsg(msg);
+			if(_chatData.m_isYuch){
+				m_chatScreen.m_mainScreen.sendChatReadMsg(msg);
+			}
+			
 		}
 		
 		if(t_field != null){
@@ -373,7 +379,8 @@ final class MiddleMgr extends VerticalFieldManager{
 		//
 		m_inputMgr.m_editTextArea.setFocus();
 		
-		if(Backlight.isEnabled() 
+		if(m_chatScreen.m_currRoster.m_isYuch
+		&& Backlight.isEnabled() 
 		&& m_chatScreen.m_mainApp.isForeground() 
 		&& m_chatScreen.m_mainApp.getActiveScreen() == m_chatScreen){
 			
@@ -445,6 +452,27 @@ public class MainChatScreen extends MainScreen{
 			
 		}
 	};
+	
+	MenuItem m_displayTimeMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_DISPLAY_CHAT_FIELD_TIME),m_menu_op++,0){
+		public void run(){
+			if(!recvMain.sm_displayTime){
+				recvMain.sm_displayTime = true;
+				
+				m_middleMgr.m_chatMsgMgr.invalidate();
+			}
+		}
+	};
+	
+	MenuItem m_hideTimeMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_HIDE_CHAT_FIELD_TIME),m_menu_op++,0){
+		public void run(){
+			if(recvMain.sm_displayTime){
+				recvMain.sm_displayTime = false;
+				
+				m_middleMgr.m_chatMsgMgr.invalidate();
+			}
+		}
+	};
+	
 	
 	static ImageUnit sm_composing = null;
 	static {

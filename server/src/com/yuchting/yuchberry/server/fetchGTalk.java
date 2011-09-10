@@ -237,6 +237,13 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	
 	int		m_connectPresence	= -1;
 	String	m_connectStatus		= null;
+	
+	// statistics
+	//
+	int		m_stat_IMSend = 0;
+	int		m_stat_IMRecv = 0;
+	int		m_stat_IMSendB = 0;
+	int		m_stat_IMRecvB = 0;
 		
 	public fetchGTalk(fetchMgr _mainMgr){
 		super(_mainMgr);
@@ -562,7 +569,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			for(ChatData data:m_chatList){
 				if(data.m_accountName.equals(t_acc)){
 					
-					data.m_isYBClient = chat.getParticipant().indexOf(fsm_ybClientSource) != -1;
+					data.m_isYBClient = chat.getParticipant().indexOf(fsm_ybClientSource) != -1;					
 					data.m_lastActiveTime = (new Date()).getTime();
 					
 					if(t_state != -1){
@@ -642,6 +649,11 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     		_msg.Output(os);
     		
     		m_mainMgr.SendData(os, _imm);
+    		
+    		// statistics 
+    		//
+    		m_stat_IMRecv++;
+    		m_stat_IMRecvB += os.size();
     		    		
     		return true;
     		
@@ -1000,6 +1012,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	}
 	
 	private boolean ProcessMsgChat(InputStream in)throws Exception{
+		int t_byte = in.available();
 		int t_style = in.read();
 		
 		if(t_style == getCurrChatStyle()){
@@ -1056,6 +1069,11 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				sendReceive.WriteLong(os,t_sendTime);
 				
 				m_mainMgr.SendData(os, true);
+				
+				//statistics
+				//
+				m_stat_IMSend++;
+				m_stat_IMSendB += t_byte;
 				
 				return true;
 			}

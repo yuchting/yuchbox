@@ -60,6 +60,13 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	int		m_maxCheckFolderNum = 0;
 	int		m_currRemainCheckFolderNum = 0;
 	
+	// statistics
+	//
+	int		m_stat_weiboSend = 0;
+	int		m_stat_weiboRecv = 0;
+	int		m_stat_weiboSendB = 0;
+	int		m_stat_weiboRecvB = 0;
+	
 	public fetchAbsWeibo(fetchMgr _mainMgr){
 		super(_mainMgr);
 	}
@@ -337,10 +344,15 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				_weiboList.m_WeiboComfirm.add(t_weibo);
 				
 				t_weibo.m_sendConfirmTime = t_currTime;
-											
+				
+				// statistics
+				//
+				m_stat_weiboRecvB += t_output.size();
+				
 				t_output.reset();
 			}			
 	
+			m_stat_weiboRecv += t_weiboNum;
 			
 			if(t_weiboNum != 0){
 				m_mainMgr.m_logger.LogOut(GetAccountName() + " Pushed <" + t_weiboNum + ">Weibo");
@@ -503,6 +515,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	
 	protected boolean ProcessWeiboUpdate(ByteArrayInputStream in)throws Exception{
 		
+		int t_byte = in.available();
+		
 		int t_style = in.read();
 		int t_type = in.read();	
 		
@@ -579,6 +593,11 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				
 				ProcessWeiboRefresh();
 				
+				//statistics
+				//
+				m_stat_weiboSend++;
+				m_stat_weiboSendB += t_byte;
+				
 				break;
 			case fetchWeibo.SEND_FORWARD_TYPE:
 			case fetchWeibo.SEND_REPLY_TYPE:
@@ -627,6 +646,11 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 						ProcessWeiboRefresh();
 					}
 					
+					//statistics
+					//
+					m_stat_weiboSend++;
+					m_stat_weiboSendB += t_byte;
+					
 					// public the forward commect/forward
 					// return false to give another weibo to process if public forward
 					//
@@ -652,6 +676,11 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					m_mainMgr.SendData(sm_updateOkPrompt, false);
 					
 					ProcessWeiboRefresh();
+					
+					//statistics
+					//
+					m_stat_weiboSend++;
+					m_stat_weiboSendB += t_byte;
 					
 					return true;	
 				}

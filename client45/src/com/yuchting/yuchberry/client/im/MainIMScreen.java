@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.client.im;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.Vector;
 
 import local.localResource;
@@ -70,6 +71,7 @@ public class MainIMScreen extends MainScreen{
 	
 	int m_menu_op = 20;
 	
+	long m_refreshRosterTimer = 0;
 	MenuItem	m_refreshListMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_REFRESH_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			sendRequestRosterListMsg();
@@ -645,7 +647,7 @@ public class MainIMScreen extends MainScreen{
 		if(_msg.isOwnMsg() || _msg.hasSendMsgChatReadMsg()){
 			return ;
 		}
-		
+				
 		_msg.setSendMsgChatReadMsg(true);
 		
 		try{
@@ -900,6 +902,14 @@ public class MainIMScreen extends MainScreen{
 	}
 	
 	private void sendRequestRosterListMsg(){
+		
+		long t_currTime = (new Date()).getTime();
+		if(Math.abs(m_refreshRosterTimer - t_currTime) < 5 * 6000){
+			m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.IM_REFRESH_MIN_TIME_PROMPT));
+			return;
+		}
+		
+		m_refreshRosterTimer = t_currTime;
 		
 		try{
 			m_mainApp.m_connectDeamon.addSendingData(msg_head.msgChatRosterList, new byte[]{msg_head.msgChatRosterList},true);

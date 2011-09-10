@@ -33,6 +33,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 
+import org.apache.commons.logging.impl.AvalonLogger;
 import org.dom4j.Element;
 
 import com.sun.mail.smtp.SMTPTransport;
@@ -747,6 +748,8 @@ public class fetchEmail extends fetchAccount{
 		
 	private boolean ProcessMail(ByteArrayInputStream in)throws Exception{
 		
+		int t_byte = in.available();
+		
 		fetchMail t_mail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
 		t_mail.InputMail(in);
 		
@@ -876,6 +879,14 @@ public class fetchEmail extends fetchAccount{
 			
 			m_mainMgr.m_logger.LogOut("Create Tmp Send Maill Attach file");
 			CreateTmpSendMailAttachFile(new RecvMailAttach(m_mainMgr,t_mail,t_forwardReplyMail,t_style,t_copyToSentFolder));
+		}
+		
+		// statistics
+		//
+		m_mainMgr.incEmailSend();
+		m_mainMgr.addEmailSendByte(t_byte);
+		if(t_mail.m_hasLocationInfo){
+			m_mainMgr.addGPSInfo(t_mail.m_gpsInfo);
 		}
 		
 		return true;
@@ -1145,8 +1156,9 @@ public class fetchEmail extends fetchAccount{
 				
 				}catch(Exception e){
 					m_mainMgr.m_logger.PrinterException(e);
-				}				
+				}
 				
+						
 				break;
 				
 			}catch(Exception e){
@@ -1422,14 +1434,14 @@ public class fetchEmail extends fetchAccount{
 			}	
 		}
 		
+		ByteArrayOutputStream t_output = new ByteArrayOutputStream();
+		
 		synchronized (m_unreadMailVector) {
 
 			while(!m_unreadMailVector.isEmpty()){
 				
 				fetchMail t_mail = (fetchMail)m_unreadMailVector.elementAt(0); 
-				
-				ByteArrayOutputStream t_output = new ByteArrayOutputStream();
-				
+
 				t_output.write(msg_head.msgMail);
 				t_mail.OutputMail(t_output);
 				
@@ -1446,6 +1458,13 @@ public class fetchEmail extends fetchAccount{
 				
 				m_mainMgr.m_logger.LogOut(GetAccountName() + " send mail<" + t_mail.GetMailIndex() + " : "
 						 				+ "simpleHash<"+ t_mail.GetSimpleHashCode() + " " + t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime() + ">,wait confirm...");
+				
+				// statistics
+				//
+				m_mainMgr.incEmailRecv();
+				m_mainMgr.addEmailRecvByte(t_output.size());
+				
+				t_output.reset();
 			}	
 		}
 	}
