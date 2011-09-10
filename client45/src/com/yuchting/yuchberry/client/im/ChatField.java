@@ -166,27 +166,29 @@ public class ChatField extends Manager{
 							t_x - sm_stateImage[m_msg.getSendState()].getWidth(), 0);
 		}
 		
-		// draw the time string
-		//
-		int t_color = _g.getColor();
-		Font t_font	= _g.getFont();
-		try{
-			_g.setColor(fsm_timeTextBGColor);
-			_g.fillRoundRect(t_time_x,t_time_y, t_time_width, fsm_timeFont.getHeight(), 5, 5);
-			
-			_g.setColor(fsm_timeTextBorderColor);
-			_g.drawRoundRect(t_time_x,t_time_y, t_time_width, fsm_timeFont.getHeight(), 5, 5);
-			
-			if(recvMain.sm_displayTime){
-				_g.setColor(0);
+		if(recvMain.sm_displayTime){
+			// draw the time string
+			//
+			int t_color = _g.getColor();
+			Font t_font	= _g.getFont();
+			try{
+				_g.setColor(fsm_timeTextBGColor);
+				_g.fillRoundRect(t_time_x,t_time_y, t_time_width, fsm_timeFont.getHeight(), 5, 5);
 				
-				_g.setFont(fsm_timeFont);
-				_g.drawText(m_timeText,t_time_x,t_time_y);
-			}			
-			
-		}finally{
-			_g.setFont(t_font);
-			_g.setColor(t_color);
-		}
+				_g.setColor(fsm_timeTextBorderColor);
+				_g.drawRoundRect(t_time_x,t_time_y, t_time_width, fsm_timeFont.getHeight(), 5, 5);
+				
+				
+					_g.setColor(0);
+					
+					_g.setFont(fsm_timeFont);
+					_g.drawText(m_timeText,t_time_x,t_time_y);
+						
+				
+			}finally{
+				_g.setFont(t_font);
+				_g.setColor(t_color);
+			}
+		}	
 	}
 }

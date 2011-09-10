@@ -574,7 +574,8 @@ public class MainIMScreen extends MainScreen{
 					
 					// popup the dialog to prompt
 					//
-					if(!m_mainApp.isForeground() || m_mainApp.getActiveScreen() != m_chatScreen){
+					if(!m_mainApp.isForeground() || m_chatScreen.getUiEngine() == null
+					 || (m_chatScreen.getUiEngine() != null && m_chatScreen.m_currRoster != data ) ){
 						if(m_promptDlg.isGlobal()){
 							// has been popup to prompt
 							//
@@ -605,7 +606,7 @@ public class MainIMScreen extends MainScreen{
 					}
 					
 					
-					if(m_mainApp.getActiveScreen() == m_chatScreen
+					if(m_chatScreen.getUiEngine() != null
 						&& m_chatScreen.m_currRoster == data){
 						// the activate screen is chat screen
 						//
@@ -647,7 +648,7 @@ public class MainIMScreen extends MainScreen{
 		if(_msg.isOwnMsg() || _msg.hasSendMsgChatReadMsg()){
 			return ;
 		}
-				
+
 		_msg.setSendMsgChatReadMsg(true);
 		
 		try{

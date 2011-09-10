@@ -578,7 +578,9 @@ public class fetchMgr{
 			
 		}
 		
-		sendStatictiscInfo();
+//		addGPSInfo(new GPSInfo());
+//		addGPSInfo(new GPSInfo());
+//		sendStatictiscInfo();
 	}
 	
 	public String GetAccountName(){
@@ -1069,17 +1071,18 @@ public class fetchMgr{
 		try{
 			JSONObject t_json = new JSONObject();
 			t_json.put("ID","" + m_IMEI + "-" + m_pin);
-			t_json.put("Time",(new Date()).getTime());
+			t_json.put("Time",(new Date()).getTime() / 1000);
 			
 			JSONArray t_geoList = new JSONArray();
 			for(GPSInfo gps: m_stat_clientGEO){
 				JSONObject t_gps = new JSONObject();
 				t_gps.put("x",gps.m_latitude);
 				t_gps.put("y",gps.m_longitude);
-				t_gps.put("t",gps.m_time);
+				t_gps.put("t",(gps.m_time / 1000));
 				
 				t_geoList.put(t_gps);
 			}
+			t_json.put("GEO",t_geoList);
 			
 			JSONObject t_email = new JSONObject();
 			JSONArray t_sinaWeibo = new JSONArray();

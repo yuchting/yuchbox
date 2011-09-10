@@ -459,6 +459,8 @@ public class MainChatScreen extends MainScreen{
 				recvMain.sm_displayTime = true;
 				
 				m_middleMgr.m_chatMsgMgr.invalidate();
+				
+				m_mainApp.WriteReadIni(false);
 			}
 		}
 	};
@@ -469,6 +471,8 @@ public class MainChatScreen extends MainScreen{
 				recvMain.sm_displayTime = false;
 				
 				m_middleMgr.m_chatMsgMgr.invalidate();
+				
+				m_mainApp.WriteReadIni(false);
 			}
 		}
 	};
@@ -570,6 +574,12 @@ public class MainChatScreen extends MainScreen{
 			_menu.add(m_resendMenu);
 		}
 		
+		if(recvMain.sm_displayTime){
+			_menu.add(m_hideTimeMenu);
+		}else{
+			_menu.add(m_displayTimeMenu);
+		}
+		
 		super.makeMenu(_menu,instance);
 	}
 	
@@ -609,13 +619,12 @@ public class MainChatScreen extends MainScreen{
 	}
 	
 	public void close(){
-	
+		
 		m_middleMgr.m_inputMgr.cancelComposeTimer();
 		m_mainApp.StopIMNotification();
 		
 		if(m_mainApp.getScreenCount() == 1){
 			m_mainApp.requestBackground();
-			
 		}else{
 			super.close();
 		}

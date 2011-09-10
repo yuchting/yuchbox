@@ -533,6 +533,10 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				if(in.read() != 0){
 					t_gpsInfo = new GPSInfo();
 					t_gpsInfo.InputData(in);
+					
+					// statistics
+					//
+					m_mainMgr.addGPSInfo(t_gpsInfo);
 				}
 				
 				byte[] t_fileBuffer = null;
@@ -651,7 +655,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					m_stat_weiboSend++;
 					m_stat_weiboSendB += t_byte;
 					
-					// public the forward commect/forward
+					// public the forward comment/forward
 					// return false to give another weibo to process if public forward
 					//
 					return !t_public_fw;

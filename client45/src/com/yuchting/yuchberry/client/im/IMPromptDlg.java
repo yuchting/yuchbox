@@ -72,18 +72,22 @@ public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 					m_mainScreen.m_chatScreen.m_middleMgr.prepareChatScreen(m_openData);
 				}
 				
-				m_mainScreen.m_mainApp.StopIMNotification();
-				if(!hasMoreChatPrompt()){
-					close();
-				}
+				onClose();
 				
 			}else if(m_laterBut == _field){
-				m_mainScreen.m_mainApp.StopIMNotification();
-				if(!hasMoreChatPrompt()){
-					close();
-				}				
+				onClose();	
 			}
 		}
+	}
+	
+	public boolean onClose(){
+		m_mainScreen.m_mainApp.StopIMNotification();
+		if(!hasMoreChatPrompt()){
+			close();
+			return true;
+		}
+		
+		return false;
 	}
 	
 	private boolean hasMoreChatPrompt(){
