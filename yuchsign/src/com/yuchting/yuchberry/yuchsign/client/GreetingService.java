@@ -11,7 +11,7 @@ public interface GreetingService extends RemoteService {
 	
 	String logonServer(String name,String password) throws Exception;
 	
-	String signinAccount(String name,String password,String verifyCode)throws Exception;
+	String signinAccount(String name,String password,String verifyCode,String _inviteCode)throws Exception;
 	
 	String findPassword(String _signinName,String _verifyCode)throws Exception;
 	
@@ -28,6 +28,8 @@ public interface GreetingService extends RemoteService {
 	String getdownLev(String _signinName)throws Exception;
 	
 	String sendActivateMail(String _signinName,String verifyCode)throws Exception;
+	
+	String sendInviteMail(String _signinName,String _emailList,String _contain)throws Exception;
 	
 	
 	// administrator function

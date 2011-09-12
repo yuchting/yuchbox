@@ -1,5 +1,7 @@
 package com.yuchting.yuchberry.client.screen;
 
+import java.util.Vector;
+
 import javax.microedition.media.Player;
 import javax.microedition.media.control.VideoControl;
 
@@ -13,6 +15,10 @@ import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.recvMain;
 
+final class EncodeFormat{
+	public int width = 0;
+	public String encode = "";
+}
 
 /**
  * A UI screen to display the camera display and buttons.
@@ -25,9 +31,9 @@ public class CameraScreen extends MainScreen
     /** The field containing the feed from the camera. */
     private Field m_videoField;
             
-    private final String fsm_encoding_800 = "encoding=jpeg&width=800&height=600&quality=fine";
-    private final String fsm_encoding_1024 = "encoding=jpeg&width=1024&height=768&quality=fine";
-    private final String fsm_encoding_1600 = "encoding=jpeg&width=1600&height=1200&quality=fine";
+    private static String fsm_encoding_800 = null;
+    private static String fsm_encoding_1024 = null;
+    private static String fsm_encoding_1600 = null;
 
     private ICameraScreenCallback m_snapOKCallback = null;
     
@@ -35,15 +41,83 @@ public class CameraScreen extends MainScreen
     /**
      * Constructor. Initializes the camera 
      */
-    public CameraScreen(ICameraScreenCallback _callback,int _maxWidth){
+    public CameraScreen(ICameraScreenCallback _callback,int _maxWidth)throws Exception{
     	
     	m_snapOKCallback = _callback;
     	m_maxWidth		= _maxWidth;
+    	
+    	initializeSnapshotSize();
     	
         //Initialize the camera object and video field.
         initializeCamera();
         
         addMenuItem(takePhoto);
+    }
+    
+   
+    
+    private void initializeSnapshotSize()throws Exception{
+    	
+    	if(fsm_encoding_800 != null){
+    		return;
+    	}
+    	
+    	String t_encodeList = System.getProperty("video.snapshot.encodings");
+    	
+    	Vector t_encodings = new Vector();
+    	
+    	int t_start = 0;
+    	int t_end = 0;
+    	
+    	while(true){
+    		
+    		if((t_end = t_encodeList.indexOf(' ', t_start)) == -1){
+    			break;
+    		}
+    		
+    		String t_encoder = t_encodeList.substring(t_start,t_end);
+    		int t_widthIndex = 0;
+    		if((t_widthIndex = t_encoder.indexOf("width=")) != -1 && t_encoder.indexOf("quality=fine") != -1){
+    			int t_widthEndIndex = t_encoder.indexOf('&',t_widthIndex);
+    			String t_width = t_encoder.substring(t_widthIndex + 6,t_widthEndIndex);
+
+
+    			EncodeFormat t_formatEncode = new EncodeFormat();
+    			t_formatEncode.width = Integer.valueOf(t_width).intValue();
+    			t_formatEncode.encode = t_encoder;
+    			
+    			boolean added = false;
+    			
+    			for(int i = 0;i < t_encodings.size();i++){
+    				EncodeFormat t_format = (EncodeFormat)t_encodings.elementAt(i);
+    				if(t_format.width > t_formatEncode.width){
+    					
+    					added = true;
+    					
+    					t_encodings.insertElementAt(t_formatEncode, i);
+    					break;
+    				}
+    			}
+    			
+    			if(!added){
+    				t_encodings.addElement(t_formatEncode);
+    			}
+    		}
+    		
+    		t_start = t_end + 1;
+    	}
+    	
+    	if(t_encodings.isEmpty()){
+    		throw new Exception("can't snapshot in this deveice!");
+    	}
+    	
+    	EncodeFormat t_low = (EncodeFormat)t_encodings.elementAt(0);
+    	EncodeFormat t_mid = (EncodeFormat)t_encodings.elementAt(t_encodings.size() / 2);
+    	EncodeFormat t_high = (EncodeFormat)t_encodings.elementAt(t_encodings.size() - 1);
+    	
+    	fsm_encoding_800 = t_low.encode;
+    	fsm_encoding_1024 = t_mid.encode;
+    	fsm_encoding_1600 = t_high.encode;    	
     }
 
     /**

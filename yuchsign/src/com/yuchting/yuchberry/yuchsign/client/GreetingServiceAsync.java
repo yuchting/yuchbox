@@ -9,7 +9,7 @@ public interface GreetingServiceAsync {
 	
 	void logonServer(String name,String password,AsyncCallback<String> callback)throws Exception;
 	
-	void signinAccount(String name,String password,String verifyCode,AsyncCallback<String> callback)throws Exception;
+	void signinAccount(String name,String password,String verifyCode,String _inviteCode,AsyncCallback<String> callback)throws Exception;
 	
 	void findPassword(String _signinName,String _verifyCode,AsyncCallback<String> callback)throws Exception;
 	
@@ -26,6 +26,8 @@ public interface GreetingServiceAsync {
 	void getdownLev(String _signinName,AsyncCallback<String> callback)throws Exception;
 	
 	void sendActivateMail(String _signinName,String verifyCode,AsyncCallback<String> callback)throws Exception;
+	
+	void sendInviteMail(String _signinName,String _emailList,String _contain,AsyncCallback<String> callbac)throws Exception;
 	
 	
 	// administrator function

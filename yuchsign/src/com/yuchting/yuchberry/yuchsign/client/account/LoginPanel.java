@@ -21,6 +21,7 @@ import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.XMLParser;
 import com.yuchting.yuchberry.yuchsign.client.Yuchsign;
+import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
 public final class LoginPanel extends HorizontalPanel{
 	
@@ -36,6 +37,7 @@ public final class LoginPanel extends HorizontalPanel{
 	final TextBox m_signinName 				= new TextBox();
 	final PasswordTextBox m_signinPass 		= new PasswordTextBox();
 	final PasswordTextBox m_signinPass1 	= new PasswordTextBox();
+	final TextBox m_inviteCode				= new TextBox();
 	final Button m_signinBut 				= new Button("注册");
 	
 	final CheckBox m_agreeCheckbox			= new CheckBox("我同意");
@@ -107,6 +109,11 @@ public final class LoginPanel extends HorizontalPanel{
 		t_signinPane.add(m_signinPass);
 		t_signinPane.add(new HTML("确认密码:"));
 		t_signinPane.add(m_signinPass1);
+		t_signinPane.add(new HTML("邀请码(可空):"));
+		final HorizontalPanel t_invitePane = new HorizontalPanel();
+		t_invitePane.add(m_inviteCode);
+		t_invitePane.add(new HTML("<a href=\"http://code.google.com/p/yuchberry/wiki/Invite_Mechanism\" target=_blank>什么是邀请码？</a>"));
+		t_signinPane.add(t_invitePane);
 		
 		final HorizontalPanel t_agreePane = new HorizontalPanel();
 		t_agreePane.add(m_agreeCheckbox);
@@ -253,9 +260,10 @@ public final class LoginPanel extends HorizontalPanel{
 	}
 	
 	private void SigninEvent(){
-		final String t_name = m_signinName.getText().toLowerCase();
-		final String t_pass = m_signinPass.getText();
-		final String t_pass1 = m_signinPass1.getText();
+		String t_name = m_signinName.getText().toLowerCase();
+		String t_pass = m_signinPass.getText();
+		String t_pass1 = m_signinPass1.getText();
+		String t_inviteCode = m_inviteCode.getText();
 		
 		if(!IsValidEmail(t_name)){
 			Yuchsign.PopupPrompt("用户名不是合法的Email地址！",m_signinName);
@@ -277,6 +285,11 @@ public final class LoginPanel extends HorizontalPanel{
 			return ;
 		}
 		
+		if(!t_inviteCode.isEmpty() && !FieldVerifier.isValidInviteCode(t_inviteCode)){
+			Yuchsign.PopupPrompt("邀请码错误，邀请码是由"+FieldVerifier.fsm_inviteCodeBits+"位字母或者数字组成\n检查是否有多余的字符",m_inviteCode);
+			return ;
+		}
+		
 		m_logonName.setText("");
 		m_logonPassword.setText("");
 		
@@ -285,7 +298,7 @@ public final class LoginPanel extends HorizontalPanel{
 			
 			m_isSigninAccount = true;
 			
-			m_clientSign.greetingService.signinAccount(t_name,t_pass,m_verfiyCode,new AsyncCallback<String>(){
+			m_clientSign.greetingService.signinAccount(t_name,t_pass,m_verfiyCode,t_inviteCode,new AsyncCallback<String>(){
 				public void onFailure(Throwable caught) {
 					Yuchsign.PopupPrompt(caught.getMessage(),null);
 					Yuchsign.HideWaiting();

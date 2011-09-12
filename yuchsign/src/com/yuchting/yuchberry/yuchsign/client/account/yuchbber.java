@@ -37,6 +37,10 @@ public final class yuchbber {
 	private int m_bberLev = 0;
 	
 	private long m_latestSyncTime = 0;
+	
+	private String m_inviteCode = "";
+	
+	private Integer m_inviteNum = new Integer(0);
 
 	private Vector<yuchEmail>	m_emailList = new Vector<yuchEmail>();
 	
@@ -90,10 +94,34 @@ public final class yuchbber {
 	
 	public Vector<yuchWeibo> GetWeiboList(){return m_weiboList;}
 	
+	public String getInviteCode(){return m_inviteCode;}
+	public void setInviteCode(String _code){m_inviteCode = _code;}
+	
+	public void setInviteNum(int _num){
+		m_inviteNum = new Integer(_num);
+	}
+	public int getInviteNum(){
+		if(m_inviteNum == null){
+			m_inviteNum = new Integer(0);
+			return 0;
+		}else{
+			return m_inviteNum.intValue();
+		}
+	}
+	
 	public void NewWeiboList(){
 		if(m_weiboList == null){
 			m_weiboList = new Vector<yuchWeibo>();
 		}
+				
+		if(m_inviteCode == null){
+			m_inviteCode = "";
+		}
+		
+		if(m_inviteNum == null){
+			m_inviteNum = new Integer(0);
+		}
+		
 	}
 	
 	public String OuputXMLData(){
@@ -120,6 +148,8 @@ public final class yuchbber {
 									append("\" signature=\"").append(t_signature).
 									append("\" lev=\"").append(m_bberLev).
 									append("\" sync=\"").append(m_latestSyncTime).
+									append("\" invite=\"").append(m_inviteCode).
+									append("\" inviteNum=\"").append(getInviteCode()).
 									append("\">\n");
 				
 		for(yuchEmail email : m_emailList){
@@ -155,6 +185,8 @@ public final class yuchbber {
 		
 		m_signature = ReadStringAttr(t_elem,"signature");
 		m_bberLev	= ReadIntegerAttr(t_elem, "lev");
+		m_inviteCode = ReadStringAttr(t_elem, "invite");
+		m_inviteNum =  new Integer(ReadIntegerAttr(t_elem, "inviteNum"));
 		
 		// validate the bber level
 		//

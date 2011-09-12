@@ -30,6 +30,7 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeUtility;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -40,6 +41,7 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.yuchting.yuchberry.yuchsign.client.GreetingService;
+import com.yuchting.yuchberry.yuchsign.client.Yuchsign;
 import com.yuchting.yuchberry.yuchsign.server.weibo.WeiboAuth;
 import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
@@ -108,10 +110,15 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}		
 	}
 	
-	public String signinAccount(String _name,String _password,String _verifyCode)throws Exception{
+	public String signinAccount(String _name,String _password,String _verifyCode,String _inviteCode)throws Exception{
 		
 		if(!GenVerifyCode.compareCode(_name,_verifyCode)){
 			return GenVerifyCode.generate(_name,getThreadLocalRequest());
+		}
+		
+		if(!_inviteCode.isEmpty() && !FieldVerifier.isValidInviteCode(_inviteCode)){
+			return "<Error>邀请码错误，邀请码是由"+FieldVerifier.fsm_inviteCodeBits+
+					"位字母或者数字组成\n检查是否有多余的字符</Error>";
 		}
 		
 		PersistenceManager t_pm = PMF.get().getPersistenceManager();
@@ -130,14 +137,27 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			}catch(javax.jdo.JDOObjectNotFoundException e){
 				
 				try{
-				
+					String t_inviter = "";
+					
+					if(!_inviteCode.isEmpty()){
+						List<yuchbber> t_bberList = 
+							(List<yuchbber>)t_pm.newQuery("select from " + yuchbber.class.getName() + 
+															" where m_inviteCode == " + "\"" + _inviteCode + "\"").execute();
+						if(t_bberList == null || t_bberList.isEmpty()){
+							return "<Error>邀请码错误，请确认邀请码是否正确。</Error>";
+						}
+						
+						t_inviter = t_bberList.get(0).GetSigninName();
+					}
+					
+					
 					long t_activateRand = -Math.abs((new Random()).nextLong());
 					
 					sendActivateMail_impl(_name,t_activateRand);
 					
 					// create account
 					//
-					t_newbber = new yuchbber(_name,_password);	
+					t_newbber = new yuchbber(_name,_password,t_inviter);	
 					t_newbber.SetSigninTime(t_activateRand);
 					t_pm.makePersistent(t_newbber);
 					
@@ -158,9 +178,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 	private void sendActivateMail_impl(String _name,long _activateRand)throws Exception{
 							
 		StringBuffer t_body = new StringBuffer();
-		t_body.append("欢迎注册语盒！\n\n您在语盒的网站上的邮件中转账户已经注册完成，需要您通过下面的链接完成激活：\n\nhttp://yuchberrysign.yuchberry.info/act/?acc=")
+		t_body.append("欢迎注册语盒！\n\n您在语盒的网站上的邮件中转账户已经注册完成，需要您通过下面的链接完成激活：\n\n")
+				.append(FieldVerifier.fsm_mainURL).append("/act/?acc=")
 				.append(URLEncoder.encode(_name,"UTF-8")).append("&rand=").append(URLEncoder.encode(Long.toString(_activateRand),"UTF-8"))
-				.append("\n\n如果无法点击这个链接，请复制到网络浏览器的地址栏上进行访问\n\n致\n  敬!\nhttp://code.google.com/p/yuchberry/");
+				.append("\n\n如果无法点击这个链接，请复制到网络浏览器的地址栏上进行访问\n\n致\n  敬!\n")
+				.append(FieldVerifier.fsm_mainURL);
 		
 		// send the activate email
 		//
@@ -196,6 +218,65 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}finally{
 			t_pm.close();
 		}
+	}
+	
+	public String sendInviteMail(String _signinName,String _emailList,String _contain)throws Exception{
+		
+		String t_inviteCode = null;
+		
+		PersistenceManager t_pm = PMF.get().getPersistenceManager();
+		
+		try{			
+			
+			Key k = KeyFactory.createKey(yuchbber.class.getSimpleName(), _signinName);
+			try{
+				yuchbber t_bber = t_pm.getObjectById(yuchbber.class, k);
+				t_inviteCode = t_bber.getInviteCode();
+				
+			}catch(javax.jdo.JDOObjectNotFoundException e){
+				return "找不到用户!";
+			}
+			
+		}finally{
+			t_pm.close();
+		}
+		
+		String[] t_emList = _emailList.split("\n");
+
+		String t_subject  = "来自语盒好友的邀请";
+		
+		String t_debugList = "";
+		
+		Properties props = new Properties();
+        Session session = Session.getDefaultInstance(props, null);
+ 	
+        MimeMessage msg = new MimeMessage(session);
+        
+        msg.setFrom(new InternetAddress("yuchting@yuchberry.info",MimeUtility.encodeText("语盒开发者","UTF-8","B")));
+        for(String email:t_emList){
+        	 msg.addRecipient(Message.RecipientType.TO,new InternetAddress(email));
+        	 t_debugList += email;
+        }
+
+        msg.setSubject(t_subject,"UTF-8");
+        
+        StringBuffer t_body = new StringBuffer();
+        t_body.append("你好，你收到了这个邮件，是因为你的好友 ").append(_signinName)
+        		.append(" 邀请你注册使用语盒。\n这是他的留言：\n\n    ").append(_contain).append("\n\n\n");
+        
+        t_body.append("访问官方网站 " + FieldVerifier.fsm_mainURL + "(如果地址不能点击，请复制到浏览器的地址栏进行访问)\n\n")
+        		.append("使用邀请码\n").append(t_inviteCode)
+        		.append("\n注册并激活语盒账户，立刻获得").append(FieldVerifier.fsm_inviteDays).append("天的免费使用时间。\n\n")
+        		.append("语盒是一款开源开放的黑莓推送软件，目前可以推送邮件、微博以及Gtalk。\n")
+        		.append("语盒开发者们期待你的支持！");
+        
+        msg.setText(t_body.toString(),"UTF-8");
+        
+        Transport.send(msg);
+        
+        System.err.println(_signinName+" send invite message<" + t_subject + ">to user: " + t_debugList);
+		
+		return "<OK>";
 	}
 	
 	public String syncAccount(String _xmlData,String verifyCode)throws Exception{
@@ -621,21 +702,21 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 		}	
 	}
 	
-	private void sendEmail(String _addr,String _subject,String _text)throws Exception{
+	private void sendEmail(String _to,String _subject,String _text)throws Exception{
 		
 		Properties props = new Properties();
         Session session = Session.getDefaultInstance(props, null);
         		        	
         MimeMessage msg = new MimeMessage(session);
         
-        msg.setFrom(new InternetAddress("yuchting@yuchberry.info","YuchBerry Sign"));
-        msg.addRecipient(Message.RecipientType.TO,new InternetAddress(_addr));
+        msg.setFrom(new InternetAddress("yuchting@yuchberry.info",MimeUtility.encodeText("语盒开发者","UTF-8","B")));
+        msg.addRecipient(Message.RecipientType.TO,new InternetAddress(_to));
         msg.setSubject(_subject,"UTF-8");
         msg.setText(_text,"UTF-8");
         
         Transport.send(msg);
         
-        System.err.println("send message<" + _subject + ">to user:" + _addr);
+        System.err.println("send message<" + _subject + ">to user:" + _to);
 	}
 	
 	

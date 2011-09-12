@@ -358,18 +358,24 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
     
     MenuItem m_snapItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPEN_CAMERA_SNAP),m_menuIndex_op++,0){
     	public void run(){
-    		m_cameraScreen = new CameraScreen(new ICameraScreenCallback(){
-    			public void snapOK(byte[] _buffer){
-    				m_snapBuffer = _buffer;
-    				m_imageType	= fetchWeibo.IMAGE_TYPE_JPG;
-    				
-    				m_imagePath = null;
-    				
-    				invalidate();
-    			}
-    		},m_mainApp.getWeiboUploadSize().x);
-    		
-    		m_mainApp.pushScreen(m_cameraScreen);
+    		try{
+    			m_cameraScreen = new CameraScreen(new ICameraScreenCallback(){
+        			public void snapOK(byte[] _buffer){
+        				m_snapBuffer = _buffer;
+        				m_imageType	= fetchWeibo.IMAGE_TYPE_JPG;
+        				
+        				m_imagePath = null;
+        				
+        				invalidate();
+        			}
+        		},m_mainApp.getWeiboUploadSize().x);
+        		
+        		m_mainApp.pushScreen(m_cameraScreen);	
+    		}catch(Exception e){
+    			
+    			m_mainApp.SetErrorString("WUDS:" + e.getMessage());
+    			m_cameraItem.run();
+    		}    		
     	}
     };
     

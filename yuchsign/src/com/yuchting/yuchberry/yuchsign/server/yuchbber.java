@@ -1,8 +1,11 @@
 package com.yuchting.yuchberry.yuchsign.server;
 
 import java.io.StringReader;
+import java.util.List;
+import java.util.Random;
 import java.util.Vector;
 
+import javax.jdo.PersistenceManager;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
@@ -58,7 +61,7 @@ public final class yuchbber {
 	private boolean m_convertSimpleChar = false;
 	
 	@Persistent
-	private String m_signature = "--\nsent from my yuchberry\nhttp://www.yuchberry.info";
+	private String m_signature = "--\nsent from my yuchberry\n" + FieldVerifier.fsm_mainURL;
 	
 	@Persistent
 	private int m_bberLev = 0;
@@ -77,10 +80,19 @@ public final class yuchbber {
 	@javax.jdo.annotations.Element(dependent = "true")
 	private Vector<yuchWeibo>	m_weiboList = new Vector<yuchWeibo>();
 	
+	@Persistent
+	private String m_inviteCode = null;
+	
+	@Persistent
+	private Integer m_inviteNum = new Integer(0);
+	
+	@Persistent
+	private String m_inviter =  "";
 		
-	public yuchbber(final String _name,final String _pass){
+	public yuchbber(final String _name,final String _pass,final String _inviter){
 		m_signinName	= _name;
 		m_password		= _pass;
+		m_inviter		= _inviter;
 	}
 	
 	public yuchbber(){}
@@ -127,13 +139,43 @@ public final class yuchbber {
 	public String GetSignature(){return m_signature;}
 	public void SetSignature(final String _signature){m_signature = _signature;}
 	
+	public String getInviteCode(){return m_inviteCode;}
+	public void setInviteCode(String _code){m_inviteCode = _code;}
+	
+	public String getInviter(){return m_inviter;}
+	public void setInviter(String _inviter){m_inviter = _inviter;}
+	
 	public Vector<yuchEmail> GetEmailList(){return m_emailList;}
 	
 	public Vector<yuchWeibo> GetWeiboList(){return m_weiboList;}
 	
+	public void setInviteNum(int _num){
+		m_inviteNum = new Integer(_num);
+	}
+	public int getInviteNum(){
+		if(m_inviteNum == null){
+			m_inviteNum = new Integer(0);
+			return 0;
+		}else{
+			return m_inviteNum.intValue();
+		}
+	}
+	
 	public void NewWeiboList(){
 		if(m_weiboList == null){
 			m_weiboList = new Vector<yuchWeibo>();
+		}
+		
+		if(m_inviteCode == null){
+			m_inviteCode = genInviteCode();
+		}
+		
+		if(m_inviteNum == null){
+			m_inviteNum = new Integer(0);
+		}
+		
+		if(m_inviter == null){
+			m_inviter = "";
 		}
 	}
 	
@@ -161,6 +203,8 @@ public final class yuchbber {
 									append("\" signature=\"").append(t_signature).
 									append("\" lev=\"").append(m_bberLev).
 									append("\" sync=\"").append(m_latestSyncTime).
+									append("\" invite=\"").append(m_inviteCode).
+									append("\" inviteNum=\"").append(m_inviteNum.intValue()).
 									append("\">\n");
 				
 		for(yuchEmail email : m_emailList){
@@ -198,6 +242,8 @@ public final class yuchbber {
 		
 		m_signature = ReadStringAttr(t_elem,"signature");
 		m_bberLev	= ReadIntegerAttr(t_elem, "lev");
+		m_inviteCode = ReadStringAttr(t_elem, "invite");
+		m_inviteNum =  new Integer(ReadIntegerAttr(t_elem, "inviteNum"));
 		
 		// validate the bber level
 		//
@@ -293,5 +339,56 @@ public final class yuchbber {
 	 */
 	static public long ReadLongAttr(Element _elem,String _attrName)throws Exception{
 		return Long.valueOf(ReadStringAttr(_elem,_attrName)).longValue();
+	}
+	
+	/**
+	 * generate the invite code
+	 */
+	static public String genInviteCode(){
+		PersistenceManager t_pm = PMF.get().getPersistenceManager();
+		
+		int t_genTime = 0;
+		String t_inviteCode = getRandomString();
+		try{
+			while(t_genTime++ < 3){
+				
+				List<yuchbber> t_bberList = 
+					(List<yuchbber>)t_pm.newQuery("select from " + yuchbber.class.getName() + 
+													" where m_inviteCode == " + "\"" + t_inviteCode + "\"").execute();
+				if(t_bberList == null || t_bberList.isEmpty()){
+					break;
+				}
+				
+				t_inviteCode = getRandomString();
+			}
+			
+		}finally{
+			t_pm.close();
+		}
+		
+		return t_inviteCode;
+	}
+	
+	static public String getRandomString(){
+		StringBuffer t_str = new StringBuffer();
+		
+		Random t_rand = new Random();
+		for(int i = 0; i < FieldVerifier.fsm_inviteCodeBits;i++){
+			if(t_rand.nextBoolean()){
+				char a = 'a';
+				if(t_rand.nextBoolean()){
+					a = 'A';
+				}
+				
+				a = (char) (a + Math.abs(t_rand.nextInt() % 26));
+
+				t_str.append(a);
+
+			}else{
+				t_str.append(Math.abs(t_rand.nextInt() % 10));
+			}
+		}
+		
+		return t_str.toString();
 	}
 }

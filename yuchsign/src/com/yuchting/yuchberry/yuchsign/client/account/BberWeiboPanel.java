@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.yuchting.yuchberry.yuchsign.client.Yuchsign;
+import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
 public class BberWeiboPanel extends FlowPanel{
 	
@@ -87,7 +88,7 @@ public class BberWeiboPanel extends FlowPanel{
 					return ;
 				}
 				
-				Window.open("http://yuchberrysign.yuchberry.info/auth?bber="+
+				Window.open(FieldVerifier.fsm_mainURL+"/auth?bber="+
 						URL.encode(m_mainPanel.m_currentBber.GetSigninName()) + "&type="+t_type,"_blank","");
 				
 				requestAccessToken();

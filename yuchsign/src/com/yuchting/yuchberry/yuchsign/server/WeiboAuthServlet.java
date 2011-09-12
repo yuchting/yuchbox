@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.yuchting.yuchberry.yuchsign.server.weibo.WeiboAuth;
+import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
 public class WeiboAuthServlet extends HttpServlet {
 
@@ -69,7 +70,7 @@ public class WeiboAuthServlet extends HttpServlet {
 						//
 						WeiboAuth t_auth = new WeiboAuth(t_accountName,t_type);
 						
-						String t_res = t_auth.getRequestURL("http://yuchberrysign.yuchberry.info/auth/?bber=" + URLEncoder.encode(t_accountName,"UTF-8"));
+						String t_res = t_auth.getRequestURL(FieldVerifier.fsm_mainURL+"/auth/?bber=" + URLEncoder.encode(t_accountName,"UTF-8"));
 						//String t_res = t_auth.getRequestURL("http://127.0.0.1:8888/auth/?bber=" + URLEncoder.encode(t_accountName,"UTF-8"));
 	
 						YuchsignCache.makeCacheWeiboAuth(t_auth);					

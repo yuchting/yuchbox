@@ -20,6 +20,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -30,12 +31,12 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.XMLParser;
 import com.yuchting.yuchberry.yuchsign.client.YesNoHandler;
 import com.yuchting.yuchberry.yuchsign.client.Yuchsign;
-import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
 
 class ContentTab extends TabPanel implements SelectionHandler<Integer>{
@@ -73,6 +74,8 @@ public class BberPanel extends TabPanel{
 	final Label m_pushInterval 		= new Label();
 	final Label m_bberLev			= new Label();
 	final Label m_endTime			= new Label();
+	final Label m_inviteCode		= new Label();
+	final Label m_inviteNum			= new Label();
 	
 	final CheckBox m_usingSSL		= new CheckBox("使用SSL");
 	final CheckBox m_convertToSimple = new CheckBox("转换繁体到简体");
@@ -95,6 +98,8 @@ public class BberPanel extends TabPanel{
 	
 	ChangePassDlg m_changePassDlg	= null;
 	
+	final static String	fsm_payPrompt = "请先添加推送账户，然后同步\n同步成功后可以试用一段时间\n谢谢你的支持！";
+	
 	public static final KeyPressHandler 	fsm_socketPortHandler = new KeyPressHandler() {
 		
 		public void onKeyPress(KeyPressEvent event) {
@@ -110,6 +115,7 @@ public class BberPanel extends TabPanel{
 			}
 		}
 	};
+	private static final HorizontalAlignmentConstant HorizontalAlignmentConstant = null;
 	
 	public BberPanel(final Yuchsign _sign){
 		m_mainServer = _sign;
@@ -135,6 +141,7 @@ public class BberPanel extends TabPanel{
 		final VerticalPanel t_attrPane = new VerticalPanel();
 		
 		Button t_syncBut = new Button("同步账户");
+		t_syncBut.setSize("100px", "50px");
 		t_syncBut.addClickHandler(new ClickHandler() {
 			
 			@Override
@@ -148,6 +155,7 @@ public class BberPanel extends TabPanel{
 			
 			@Override
 			public void onClick(ClickEvent event) {
+				
 				if((m_currentBber.GetLevel() + 1) >= yuchbber.fsm_levelMoney.length){
 					Yuchsign.PopupPrompt("你已经是最高等级的用户了，无法再升级了。", t_attrPane);
 					return;
@@ -164,6 +172,10 @@ public class BberPanel extends TabPanel{
 			
 			@Override
 			public void onClick(ClickEvent event) {
+				if(m_currentBber.GetConnectHost().isEmpty()){
+					Yuchsign.PopupPrompt(fsm_payPrompt, BberPanel.this);
+					return;
+				}
 				PayTimeDlg t_dlg = new PayTimeDlg(m_mainServer, m_currentBber);
 				t_dlg.show();				
 			}
@@ -223,7 +235,16 @@ public class BberPanel extends TabPanel{
 			}
 		});	
 		
-		m_signature.setPixelSize(720,200);
+		final Button t_sendInviteCode = new Button("发送邀请");
+		t_sendInviteCode.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				new SendInviteDlg(m_currentBber, m_mainServer);				
+			}
+		});
+		
+		m_signature.setPixelSize(720,150);
 				
 		
 		final FlexTable  t_layout = new FlexTable();	
@@ -236,6 +257,10 @@ public class BberPanel extends TabPanel{
 		t_layout.setWidget(t_line, 2, t_levelUpBut);
 		t_layout.setWidget(t_line, 3, t_getdownLev);
 		AddLabelWidget(t_layout,"用户等级:",m_bberLev,t_line++);
+		
+		t_layout.setWidget(t_line,2,t_sendInviteCode);
+		t_layout.setWidget(t_line,3,m_inviteNum);
+		AddLabelWidget(t_layout,"用户邀请码:",m_inviteCode,t_line++);
 		
 		t_layout.setWidget(t_line, 2, t_payTime);
 		AddLabelWidget(t_layout,"到期时间:",m_endTime,t_line++);
@@ -253,7 +278,7 @@ public class BberPanel extends TabPanel{
 		t_attrPane.add(m_convertToSimple);
 		t_attrPane.add(new HTML( "签名:<br />"));
 		t_attrPane.add(m_signature);
-		
+
 		t_attrPane.add(t_syncBut);
 		
 		add(t_attrPane,"账户属性");
@@ -755,6 +780,9 @@ public class BberPanel extends TabPanel{
 		if(_help == null){
 			_help = "null";
 		}
+		if(_help.indexOf("qq.com") != -1){
+			_help = _help + "\n(QQ邮箱出现不兼容问题，请稍候再试。如果仍然不行，请更换邮箱，推荐163，126，GMAIL邮箱)";
+		}
 		
 		StringBuffer t_search = new StringBuffer();
 		t_search.append("配置推送账户出现错误：").append(_help).append("\n");
@@ -770,8 +798,10 @@ public class BberPanel extends TabPanel{
 		
 		m_signinName.setText(_bber.GetSigninName());
 		
+		long t_mainTime = m_currentBber.GetUsingHours() / 24;
+		
 		if(_bber.GetConnectHost().isEmpty()){
-			m_connectHost.setText("<"+FieldVerifier.fsm_freeDays+"天免费，尚未同步>");
+			m_connectHost.setText("<"+t_mainTime+"天免费，尚未同步>");
 		}else{
 			m_connectHost.setText(_bber.GetConnectHost());
 		}		
@@ -779,7 +809,7 @@ public class BberPanel extends TabPanel{
 		m_bberLev.setText(GetBberLevelString(_bber.GetLevel()));
 	    
 		if(_bber.GetCreateTime() == 0){
-		    m_endTime.setText("<"+FieldVerifier.fsm_freeDays+"天免费，尚未同步>");
+		    m_endTime.setText("<"+t_mainTime+"天免费，尚未同步>");
 		}else{
 			Date date = new Date(_bber.GetCreateTime() + _bber.GetUsingHours() * 3600000);
 		    m_endTime.setText(DateTimeFormat.getFormat("yyyy-MM-dd HH:mm").format(date));
@@ -788,7 +818,7 @@ public class BberPanel extends TabPanel{
 	    if(_bber.GetServerPort() != 0){
 	    	m_serverPort.setText("" + _bber.GetServerPort());
 	    }else{
-	    	m_serverPort.setText("<"+FieldVerifier.fsm_freeDays+"天免费，尚未同步>");
+	    	m_serverPort.setText("<"+t_mainTime+"天免费，尚未同步>");
 	    }	
 		
 		m_pushInterval.setText("" + _bber.GetPushInterval());
@@ -798,7 +828,8 @@ public class BberPanel extends TabPanel{
 		m_convertToSimple.setValue(_bber.IsConvertSimpleChar());
 		
 		m_signature.setText(_bber.GetSignature());
-		
+		m_inviteCode.setText(_bber.getInviteCode());
+		m_inviteNum.setText("你已经成功邀请"+_bber.getInviteNum()+"名新语盒用户！");
 		m_logText.setText("");
 		
 		RefreshPushList(_bber);

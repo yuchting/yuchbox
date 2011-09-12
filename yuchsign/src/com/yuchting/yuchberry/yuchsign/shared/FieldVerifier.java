@@ -26,5 +26,27 @@ public class FieldVerifier {
 	public final static String		fsm_admin = "yuchting@gmail.com";
 	
 	public final static int			fsm_freeDays = 15;
+	
+	public final static int			fsm_inviteDays = 15;
+	
+	public final static int			fsm_inviteCodeBits = 15;
+	
+	public final static String		fsm_mainURL = "http://www.yuchberry.info";
+	
+	
+	public static boolean isValidInviteCode(String _code){
+		if(_code.length() != fsm_inviteCodeBits){
+			return false;
+		}
+		
+		for(int i = 0;i < fsm_inviteCodeBits;i++){
+			char a = _code.charAt(i);
+			if(!Character.isDigit(a) && !Character.isLetter(a)){
+				return false; 
+			}
+		}
+		
+		return true;
+	}
 		
 }

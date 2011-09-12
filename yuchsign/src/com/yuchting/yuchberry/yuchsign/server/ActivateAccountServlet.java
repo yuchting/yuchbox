@@ -13,31 +13,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
 public class ActivateAccountServlet extends HttpServlet {
-	
-	public final String fsm_googleAdsCode = "<!-- Google Code for &#27880;&#20876; Conversion Page -->" +
-											"	<script type=\"text/javascript\">" +
-											"	/* <![CDATA[ */" +
-											"	var google_conversion_id = 977072348;" +
-											"	var google_conversion_language = \"zh_CN\";" +
-											"	var google_conversion_format = \"1\";" +
-											"	var google_conversion_color = \"ffffff\";" +
-											"	var google_conversion_label = \"A8-4COzWsAIQ3OHz0QM\";" +
-											"	var google_conversion_value = 0;" +
-											"	if (2) {" +
-											"	  google_conversion_value = 2;" +
-											"	}" +
-											"	/* ]]> */" +
-											"	</script>" +
-											"	<script type=\"text/javascript\" src=\"http://www.googleadservices.com/pagead/conversion.js\">" +
-											"				</script>" +
-											"	<noscript>" +
-											"	<div style=\"display:inline;\">" +
-											"	<img height=\"1\" width=\"\1\" style=\"border-style:none;\" alt=\"\" src=\"http://www.googleadservices.com/pagead/conversion/977072348/?value=2&amp;label=A8-4COzWsAIQ3OHz0QM&amp;guid=ON&amp;script=0\"/>" +
-											"	</div>" +
-											"	</noscript>";			
-	
+
 	public void doPost(HttpServletRequest request,HttpServletResponse response)throws ServletException,IOException{
 		this.doGet(request,response);
 	}
@@ -84,9 +63,36 @@ public class ActivateAccountServlet extends HttpServlet {
 						if(t_bber.GetSigninTime() == Long.valueOf(t_rand).longValue()){
 							t_bber.SetSigninTime((new Date()).getTime());
 							
-							out.println("注册用户：" + t_account + " 激活成功，现在可以使用同步功能进行同步了。");
+							out.println("注册用户：" + t_account + " 激活成功，现在可以使用同步功能进行同步了 <br /><br />");
 							
-							t_insertCode = fsm_googleAdsCode;
+							if(!t_bber.getInviter().isEmpty()){
+								
+								System.err.println(t_bber.GetSigninName() + " has been invited by "+ t_bber.getInviter());
+								
+								k = KeyFactory.createKey(yuchbber.class.getSimpleName(), t_bber.getInviter());
+								try{
+									yuchbber t_inviterbber = t_pm.getObjectById(yuchbber.class, k);
+									
+									t_bber.SetUsingHours(t_bber.GetUsingHours() + FieldVerifier.fsm_inviteDays * 24);
+									
+									if(t_inviterbber != null){
+										
+										int t_inviterNum = t_inviterbber.getInviteNum() + 1;
+										
+										t_inviterbber.setInviteNum(t_inviterNum);
+										
+										out.println("你是受" + t_bber.getInviter() + "之邀，<b>第"+t_inviterNum+"个</b>注册激活语盒账户的，" +
+													"所以你和他两人都会获得<b>"+ FieldVerifier.fsm_inviteDays + "天的免费使用时间</b>。" +
+													"<br />可能需要退出一下账户重新登录一下才能看见。" +
+													"<br /><br />语盒开发者们感谢你们的支持！");
+										
+										PayServiceImpl.RecalculateTime(t_pm,t_inviterbber,FieldVerifier.fsm_inviteDays * 24,t_inviterbber.GetLevel());										
+									}									
+								}catch(Exception e){
+									out.println("无法找到邀请者！错误：" + e.getMessage());
+								}
+							}
+							
 						}else{
 							out.println("激活参数错误");
 						}

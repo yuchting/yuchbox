@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.yuchting.yuchberry.yuchsign.client.Yuchsign;
+import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
 public class PayTimeDlg extends DialogBox{
 
@@ -104,7 +105,7 @@ public class PayTimeDlg extends DialogBox{
 						t_fee = t_weekMoney*10;
 					}
 					
-					Window.open("http://yuchberrysign.yuchberry.info/pay/?yname=" + URL.encode(_bber.GetSigninName()) +
+					Window.open(FieldVerifier.fsm_mainURL + "/pay/?yname=" + URL.encode(_bber.GetSigninName()) +
 							"&type=0&fee=" + t_fee + "&lev="+_bber.GetLevel(), "_blank", "");
 					
 //					Window.open("http://127.0.0.1:8888/pay/?yname=" + URL.encode(_bber.GetSigninName()) +

@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.yuchting.yuchberry.yuchsign.client.Yuchsign;
+import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
 public class PayLevDlg extends DialogBox{
 
@@ -102,7 +103,7 @@ public class PayLevDlg extends DialogBox{
 
 				
 				try{
-					Window.open("http://yuchberrysign.yuchberry.info/pay/?yname=" + 
+					Window.open(FieldVerifier.fsm_mainURL+"/pay/?yname=" + 
 								URL.encode(_bber.GetSigninName()) + "&type=1&fee=" + t_fee + "&lev="+_bber.GetLevel(),"_blank","");
 					
 					for(int j = 0;j < t_levBut.length;j++){
