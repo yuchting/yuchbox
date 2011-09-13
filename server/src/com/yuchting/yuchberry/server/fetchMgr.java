@@ -8,7 +8,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
@@ -23,6 +25,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 
+import org.apache.commons.codec.binary.Base64;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
@@ -580,6 +583,7 @@ public class fetchMgr{
 		
 //		addGPSInfo(new GPSInfo());
 //		addGPSInfo(new GPSInfo());
+//		
 //		sendStatictiscInfo();
 	}
 	
@@ -724,32 +728,24 @@ public class fetchMgr{
 			}catch(Exception e){
 				
 				m_logger.PrinterException(e);
-							
-				int t_reconnectNum = 0;
-				while(t_reconnectNum++ < 5){
-								
-					try{
-						Thread.sleep(t_reconnectNum * 20000);
-					}catch(Exception ex){
-						m_logger.LogOut(account.GetAccountName() + " checkfolder interpret.");
-						return;
-					}
+									
+				try{
+					Thread.sleep(10000);
+				}catch(Exception ex){
+					m_logger.LogOut(account.GetAccountName() + " checkfolder interpret.");
+					return;
+				}
+				
+				try{
 					
-					try{
-						
-						account.ResetSession(false);
-						
-						return ;
-						
-					}catch(Exception ex){
-						m_logger.PrinterException(ex);
-					}					
+					account.ResetSession(false);
+
+					account.CheckFolder();
+										
+				}catch(Exception ex){
+					m_logger.PrinterException(ex);
+					m_logger.LogOut(account.GetAccountName() + " failed to ResetSession/CheckFolder again!");
 				}
-				
-				if(t_reconnectNum > 5){
-					m_logger.LogOut(account.GetAccountName() + " failed to ResetSession!");
-				}
-				
 			}
 		}
 	}
@@ -1036,33 +1032,13 @@ public class fetchMgr{
 	
 	String 				m_stat_clientID = "";
 	Vector<GPSInfo>		m_stat_clientGEO = new Vector<GPSInfo>();
-	int					m_stat_emailSend = 0;
-	int					m_stat_emailRecv = 0;
-	int					m_stat_emailSendB = 0;
-	int					m_stat_emailRecvB = 0;
-	
+
 	
 	public void addGPSInfo(GPSInfo _info){
 		_info.m_time = (new Date()).getTime();
 		m_stat_clientGEO.add(_info);
 	}
-	
-	public void incEmailSend(){
-		m_stat_emailSend++;
-	}
-	
-	public void incEmailRecv(){
-		m_stat_emailRecv++;
-	}
-	
-	public void addEmailSendByte(int _add){
-		m_stat_emailSendB += _add;
-	}
-	
-	public void addEmailRecvByte(int _add){
-		m_stat_emailRecvB += _add;
-	}
-	
+		
 	public void sendStatictiscInfo(){
 		if(m_stat_disableReport){
 			return ;
@@ -1074,53 +1050,63 @@ public class fetchMgr{
 			t_json.put("Time",(new Date()).getTime() / 1000);
 			
 			JSONArray t_geoList = new JSONArray();
-			for(GPSInfo gps: m_stat_clientGEO){
-				JSONObject t_gps = new JSONObject();
-				t_gps.put("x",gps.m_latitude);
-				t_gps.put("y",gps.m_longitude);
-				t_gps.put("t",(gps.m_time / 1000));
-				
-				t_geoList.put(t_gps);
-			}
-			t_json.put("GEO",t_geoList);
 			
-			JSONObject t_email = new JSONObject();
+			synchronized (m_stat_clientGEO) {
+				for(GPSInfo gps: m_stat_clientGEO){
+					JSONObject t_gps = new JSONObject();
+					t_gps.put("x",gps.m_latitude);
+					t_gps.put("y",gps.m_longitude);
+					t_gps.put("t",(gps.m_time / 1000));
+					
+					t_geoList.put(t_gps);
+				}
+				t_json.put("GEO",t_geoList);
+				
+				m_stat_clientGEO.clear();
+			}			
+			
+			JSONArray t_email = new JSONArray();		
 			JSONArray t_sinaWeibo = new JSONArray();
 			JSONArray t_qqWeibo = new JSONArray();
 			JSONArray t_tWeibo = new JSONArray();
 			
 			JSONArray t_IMGTalk = new JSONArray();
 			
-			JSONArray t_emailList = new JSONArray();
-
 			for(fetchAccount acc:m_fetchAccount){
 				if(acc instanceof fetchEmail){
 					
 					fetchEmail t_accE = (fetchEmail)acc;
-					t_emailList.put(t_accE.GetAccountName());
+				
+					JSONObject t_obj = new JSONObject();
+					t_accE.fillStatJSON(t_obj);
+					
+					t_email.put(t_obj);
 					
 				}else if(acc instanceof fetchSinaWeibo){
 					fetchSinaWeibo t_accSina = (fetchSinaWeibo)acc;
 					JSONObject t_sina = new JSONObject();
+					
 					t_sina.put("WeiboA",t_accSina.m_userself.getId());
 					
-					setStatisticsWeibo(t_accSina,t_sina);
+					t_accSina.setStatisticsWeibo(t_sina);
 					
 					t_sinaWeibo.put(t_sina);
+					
 				}else if(acc instanceof fetchQWeibo){
 					fetchQWeibo t_accQQ = (fetchQWeibo)acc;
 					JSONObject t_qq = new JSONObject();
 					
 					t_qq.put("WeiboA",t_accQQ.m_userself.getScreenName());
-					setStatisticsWeibo(t_accQQ, t_qq);
+					t_accQQ.setStatisticsWeibo(t_qq);
 					
 					t_qqWeibo.put(t_qq);
+					
 				}else if(acc instanceof fetchTWeibo){
 					fetchTWeibo t_accT = (fetchTWeibo)acc;
 					JSONObject t_T = new JSONObject();
 					
 					t_T.put("WeiboA",t_accT.m_userself.getId());
-					setStatisticsWeibo(t_accT, t_T);
+					t_accT.setStatisticsWeibo( t_T);
 					
 					t_tWeibo.put(t_T);
 					
@@ -1128,41 +1114,89 @@ public class fetchMgr{
 					fetchGTalk t_accG = (fetchGTalk)acc;
 					JSONObject t_G = new JSONObject();
 					
-					t_G.put("IMA",t_accG.GetAccountName());
-					t_G.put("IMSend",t_accG.m_stat_IMSend);
-					t_G.put("IMRecv",t_accG.m_stat_IMRecv);
-					t_G.put("IMSendB",t_accG.m_stat_IMSendB);
-					t_G.put("IMRecvB",t_accG.m_stat_IMRecvB);
+					t_accG.setStatisticsIM(t_G);
 					
 					t_IMGTalk.put(t_G);
-					
 				}
 			}
-			
-			t_email.put("EmailA",t_emailList);
-			t_email.put("EmailSend",m_stat_emailSend);
-			t_email.put("EmailRecv",m_stat_emailRecv);
-			t_email.put("EmailSendB",m_stat_emailSendB);
-			t_email.put("EmailRecvB",m_stat_emailRecvB);
-			
+						
 			t_json.put("Email",t_email);
 			t_json.put("WeiboSina",t_sinaWeibo);
 			t_json.put("WeiboQQ",t_qqWeibo);
 			t_json.put("WeiboT",t_tWeibo);
 			t_json.put("IMGtalk",t_IMGTalk);
 			
-			System.out.print(t_json);
+			//System.out.println(t_json);
+			
+			postURLStat(t_json.toString());
 			
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		
 	}
+		
+	final static  private String fsm_statURL = "http://yuchberrybbs.com/ym/apps/interface/ys.php";
 	
-	private static void setStatisticsWeibo(fetchAbsWeibo _acc,JSONObject _json)throws Exception{
-		_json.put("WeiboSend",_acc.m_stat_weiboSend);
-		_json.put("WeiboRecv",_acc.m_stat_weiboRecv);
-		_json.put("WeiboSendB",_acc.m_stat_weiboSendB);
-		_json.put("WeiboRecvB",_acc.m_stat_weiboRecvB);
+	private static void postURLStat(String _info){
+		
+		try{
+			_info = new String(Base64.encodeBase64(_info.getBytes("UTF-8")));			
+		}catch(Exception e){
+			return ;
+		}		
+					
+		int t_retryTime = 0;
+		
+		while(t_retryTime++ < 3){
+			
+			try{
+				
+				URL url = new URL(fsm_statURL);
+				HttpURLConnection con = (HttpURLConnection)url.openConnection();
+
+				con.setConnectTimeout(10000);
+				con.setReadTimeout(20000);
+				con.setDoInput(true);
+				con.setRequestMethod("POST");
+				con.setDoOutput(true);
+						
+				String t_params = "s=" + _info;
+				byte[] bytes = t_params.getBytes("UTF-8");
+				
+				con.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
+				con.setRequestProperty("Content-Length",Integer.toString(bytes.length));			
+				
+				OutputStream t_os = con.getOutputStream();
+						
+				t_os.write(bytes);
+				t_os.flush();
+				t_os.close();			
+				
+				String t_response = null;
+				BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+				try{
+					StringBuffer t_stringBuffer = new StringBuffer();
+					
+					String temp;
+					while ((temp = in.readLine()) != null) {
+						t_stringBuffer.append(temp+"\n");
+					}
+					
+					t_response = t_stringBuffer.toString();
+				}finally{
+					in.close();	
+				}
+				
+				if(t_response.indexOf("OK") != -1){
+					break;
+				}
+								
+			}catch(Exception e){
+				
+			}
+		}
 	}
+	
+	
 }

@@ -11,6 +11,8 @@ class CheckVersion extends Thread{
 	public fetchMgr		m_fetchMain = null;
 	
 	public void run(){
+		
+		boolean firstTime = true;
 		while(true){
 			
 			try{
@@ -25,13 +27,19 @@ class CheckVersion extends Thread{
 				m_fetchMain.SetLatestVersion(in.readLine());
 				
 				in.close();
-								
+												
 			}catch(Exception e){
 				
 			}
 			
+			if(!firstTime){
+				m_fetchMain.sendStatictiscInfo();
+			}
+			
+			firstTime = false;
+			
 			try{ 
-				sleep(24 * 3600 * 1000);
+				sleep(12 * 3600 * 1000);
 			}catch(Exception e){}
 		}
 	}

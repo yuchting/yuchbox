@@ -33,8 +33,10 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 
-import org.apache.commons.logging.impl.AvalonLogger;
 import org.dom4j.Element;
+
+import twitter4j.internal.org.json.JSONArray;
+import twitter4j.internal.org.json.JSONObject;
 
 import com.sun.mail.smtp.SMTPTransport;
 
@@ -883,8 +885,8 @@ public class fetchEmail extends fetchAccount{
 		
 		// statistics
 		//
-		m_mainMgr.incEmailSend();
-		m_mainMgr.addEmailSendByte(t_byte);
+		incEmailSend();
+		addEmailSendByte(t_byte);
 		if(t_mail.m_hasLocationInfo){
 			m_mainMgr.addGPSInfo(t_mail.m_gpsInfo);
 		}
@@ -1461,8 +1463,8 @@ public class fetchEmail extends fetchAccount{
 				
 				// statistics
 				//
-				m_mainMgr.incEmailRecv();
-				m_mainMgr.addEmailRecvByte(t_output.size());
+				incEmailRecv();
+				addEmailRecvByte(t_output.size());
 				
 				t_output.reset();
 			}	
@@ -1969,12 +1971,16 @@ public class fetchEmail extends fetchAccount{
 		
 		m_mainMgr.m_logger.LogOut("ComposeMessage sendTo:'"+t_sendTo+"'");
 		
+		addEmailSendAddr(t_sendTo);
+		
 	    msg.setRecipients(Message.RecipientType.TO,
 					InternetAddress.parse(t_sendTo, false));
 	    
 	    if (!_mail.GetCCToVect().isEmpty()){
 	    	t_sendTo = fetchMail.parseAddressList(_mail.GetCCToVect());
 	    	m_mainMgr.m_logger.LogOut("ComposeMessage CCTo:'"+t_sendTo+"'");
+	    
+	    	addEmailSendAddr(t_sendTo);
 	    	
 			msg.setRecipients(Message.RecipientType.CC,
 						InternetAddress.parse(t_sendTo, false));			
@@ -1984,6 +1990,8 @@ public class fetchEmail extends fetchAccount{
 	    	
 	    	t_sendTo = fetchMail.parseAddressList(_mail.GetBCCToVect());
 	    	m_mainMgr.m_logger.LogOut("ComposeMessage BCCTo:'"+t_sendTo+"'");
+	    	
+	    	addEmailSendAddr(t_sendTo);
 	    	
 	    	msg.setRecipients(Message.RecipientType.BCC,
 					InternetAddress.parse(t_sendTo, false));
@@ -2166,6 +2174,72 @@ public class fetchEmail extends fetchAccount{
 		}	
 		
 		return 0;
+	}
+	
+	
+	// statistics
+	//
+	int					m_stat_emailSend = 0;
+	int					m_stat_emailRecv = 0;
+	int					m_stat_emailSendB = 0;
+	int					m_stat_emailRecvB = 0;
+	
+	Vector<String>		m_stat_emailSendAddr = new Vector<String>();
+		
+	public void addEmailSendAddr(String _addr){
+		_addr = _addr.toLowerCase();
+		
+		synchronized (m_stat_emailSendAddr) {
+			for(String a:m_stat_emailSendAddr){
+				if(a.equals(_addr)){
+					return;
+				}
+			}
+			
+			m_stat_emailSendAddr.add(_addr);
+		}
+	}
+		
+	public synchronized void incEmailSend(){
+		m_stat_emailSend++;
+	}
+	
+	public synchronized void incEmailRecv(){
+		m_stat_emailRecv++;
+	}
+	
+	public synchronized void addEmailSendByte(int _add){
+		m_stat_emailSendB += _add;
+	}
+	
+	public synchronized void addEmailRecvByte(int _add){
+		m_stat_emailRecvB += _add;
+	}
+	
+	public void fillStatJSON(JSONObject _obj)throws Exception{
+		
+		JSONArray t_sendEmailAddr = new JSONArray();
+		synchronized (m_stat_emailSendAddr) {
+			for(String addr:m_stat_emailSendAddr){
+				t_sendEmailAddr.put(addr);
+			}
+			
+			m_stat_emailSendAddr.clear();
+		}
+		
+		_obj.put("Account",GetAccountName());
+		_obj.put("AccountS",t_sendEmailAddr);
+		_obj.put("Send",m_stat_emailSend );
+		_obj.put("Recv",m_stat_emailRecv );
+		_obj.put("SendB",m_stat_emailSendB / 1024);
+		_obj.put("RecvB",m_stat_emailRecvB / 1024);
+		
+		synchronized (this) {
+			m_stat_emailSend = 0;
+			m_stat_emailRecv = 0;
+			m_stat_emailSendB = 0;
+			m_stat_emailRecvB = 0;
+		}
 	}
 	
 }

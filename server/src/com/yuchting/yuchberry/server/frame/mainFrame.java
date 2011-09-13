@@ -67,6 +67,8 @@ class checkStateThread extends Thread{
 		
 		int t_counter = -1;
 		
+		Vector<fetchMgr> t_mgrList = new Vector<fetchMgr>();
+		
 		while(true){
 			
 			try{
@@ -78,9 +80,7 @@ class checkStateThread extends Thread{
 				m_mainFrame.RefreshState();
 				
 				if(t_counter == -1 ||  t_counter > 120 * 2){
-					
-					t_counter = 0;
-					
+									
 					URL is_gd = new URL("http://yuchberry.googlecode.com/files/latest_version?a="+(new Random()).nextInt());
 					
 			        URLConnection yc = is_gd.openConnection();
@@ -90,14 +90,26 @@ class checkStateThread extends Thread{
 			                                new InputStreamReader(yc.getInputStream()));
 			        
 			        String t_version = in.readLine();
+			        in.close();
+			        
+			        t_mgrList.clear();
 			        
 			        synchronized (m_mainFrame.m_accountList) {
 			        	for(fetchThread t_thread:m_mainFrame.m_accountList){
-				        	t_thread.m_fetchMgr.SetLatestVersion(t_version);
+				        	t_mgrList.add(t_thread.m_fetchMgr);    	
 				        }
 					}
-
-					in.close();
+			        
+			        for(fetchMgr mgr:t_mgrList){
+			        	mgr.SetLatestVersion(t_version);
+			        	
+			        	if(t_counter != -1){
+			        		mgr.sendStatictiscInfo();
+			        	}			        	
+			        }
+			        
+			        
+			        t_counter = 0;
 				}
 				
 				t_counter++;

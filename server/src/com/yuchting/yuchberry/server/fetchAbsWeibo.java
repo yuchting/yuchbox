@@ -18,6 +18,8 @@ import javax.imageio.ImageIO;
 
 import org.dom4j.Element;
 
+import twitter4j.internal.org.json.JSONObject;
+
 public abstract class fetchAbsWeibo extends fetchAccount{
 	
 	static public boolean		sm_debug = false;
@@ -59,14 +61,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	//! check number 
 	int		m_maxCheckFolderNum = 0;
 	int		m_currRemainCheckFolderNum = 0;
-	
-	// statistics
-	//
-	int		m_stat_weiboSend = 0;
-	int		m_stat_weiboRecv = 0;
-	int		m_stat_weiboSendB = 0;
-	int		m_stat_weiboRecvB = 0;
-	
+		
 	public fetchAbsWeibo(fetchMgr _mainMgr){
 		super(_mainMgr);
 	}
@@ -599,8 +594,10 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				
 				//statistics
 				//
-				m_stat_weiboSend++;
-				m_stat_weiboSendB += t_byte;
+				synchronized (this) {
+					m_stat_weiboSend++;
+					m_stat_weiboSendB += t_byte;
+				}				
 				
 				break;
 			case fetchWeibo.SEND_FORWARD_TYPE:
@@ -652,8 +649,10 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					
 					//statistics
 					//
-					m_stat_weiboSend++;
-					m_stat_weiboSendB += t_byte;
+					synchronized (this) {
+						m_stat_weiboSend++;
+						m_stat_weiboSendB += t_byte;
+					}					
 					
 					// public the forward comment/forward
 					// return false to give another weibo to process if public forward
@@ -683,8 +682,11 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					
 					//statistics
 					//
-					m_stat_weiboSend++;
-					m_stat_weiboSendB += t_byte;
+					synchronized (this) {
+						m_stat_weiboSend++;
+						m_stat_weiboSendB += t_byte;
+					}
+					
 					
 					return true;	
 				}
@@ -1017,6 +1019,27 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		
 		return t_os.toByteArray();
 	}
+
 	
-	
+	// statistics
+	//
+	int		m_stat_weiboSend = 0;
+	int		m_stat_weiboRecv = 0;
+	int		m_stat_weiboSendB = 0;
+	int		m_stat_weiboRecvB = 0;
+
+	public void setStatisticsWeibo(JSONObject _json)throws Exception{
+		
+		_json.put("Send",m_stat_weiboSend );
+		_json.put("Recv",m_stat_weiboRecv );
+		_json.put("SendB",m_stat_weiboSendB / 1024);
+		_json.put("RecvB",m_stat_weiboRecvB / 1024);
+		
+		synchronized (this) {
+			m_stat_weiboSend = 0;
+			m_stat_weiboRecv = 0;
+			m_stat_weiboSendB = 0;
+			m_stat_weiboRecvB = 0;	
+		}			
+	}
 }

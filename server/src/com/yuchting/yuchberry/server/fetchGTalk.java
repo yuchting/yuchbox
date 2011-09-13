@@ -25,9 +25,10 @@ import org.jivesoftware.smack.RosterListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.packet.VCard;
+
+import twitter4j.internal.org.json.JSONObject;
 
 
 final class ChatData{		
@@ -238,13 +239,6 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	int		m_connectPresence	= -1;
 	String	m_connectStatus		= null;
 	
-	// statistics
-	//
-	int		m_stat_IMSend = 0;
-	int		m_stat_IMRecv = 0;
-	int		m_stat_IMSendB = 0;
-	int		m_stat_IMRecvB = 0;
-		
 	public fetchGTalk(fetchMgr _mainMgr){
 		super(_mainMgr);
 	}
@@ -652,8 +646,10 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     		
     		// statistics 
     		//
-    		m_stat_IMRecv++;
-    		m_stat_IMRecvB += os.size();
+    		synchronized (this) {
+    			m_stat_IMRecv++;
+        		m_stat_IMRecvB += os.size();
+			}    		
     		    		
     		return true;
     		
@@ -1072,8 +1068,10 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				
 				//statistics
 				//
-				m_stat_IMSend++;
-				m_stat_IMSendB += t_byte;
+				synchronized (this) {
+					m_stat_IMSend++;
+					m_stat_IMSendB += t_byte;
+				}				
 				
 				return true;
 			}
@@ -1201,4 +1199,27 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			e.printStackTrace();
 		}
 	}
+	
+	// statistics
+	//
+	int		m_stat_IMSend = 0;
+	int		m_stat_IMRecv = 0;
+	int		m_stat_IMSendB = 0;
+	int		m_stat_IMRecvB = 0;
+	
+	public void setStatisticsIM(JSONObject _json)throws Exception{
+		_json.put("Account",GetAccountName());
+		_json.put("Send",m_stat_IMSend);
+		_json.put("Recv",m_stat_IMRecv);
+		_json.put("SendB",m_stat_IMSendB / 1024);
+		_json.put("RecvB",m_stat_IMRecvB / 1024);
+		
+		synchronized (this) {
+			m_stat_IMSend = 0;
+			m_stat_IMRecv = 0;
+			m_stat_IMSendB = 0;
+			m_stat_IMRecvB = 0;
+		}	
+	}
+		
 }
