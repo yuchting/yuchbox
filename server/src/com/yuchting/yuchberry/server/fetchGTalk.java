@@ -1133,7 +1133,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			for(int i = 0 ;i < m_pushedChatMsgList.size();i++){
 				fetchChatMsg msg = m_pushedChatMsgList.elementAt(i);
 				
-				if(msg.m_sentTimes >= 5){
+				if(msg.m_sentTimes >= 2){
 					
 					m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " sent msg 5 times give up!" + msg.hashCode());
 					m_pushedChatMsgList.remove(i);

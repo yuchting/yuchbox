@@ -257,6 +257,8 @@ public class fetchMgr{
 			boolean disableLog				= fetchAccount.ReadBooleanAttr(t_root, "disableLog");
 			m_logger.disableLog(disableLog);
 			
+			m_stat_disableReport			= fetchAccount.ReadBooleanAttr(t_root, "disableReport");
+			
 			for( Iterator i = t_root.elementIterator("EmailAccount"); i.hasNext();){
 	            Element element = (Element) i.next();
 	            fetchAccount t_email = new fetchEmail(this);

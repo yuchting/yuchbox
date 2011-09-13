@@ -69,17 +69,21 @@ class checkStateThread extends Thread{
 		
 		Vector<fetchMgr> t_mgrList = new Vector<fetchMgr>();
 		
+		final int t_sleepInterval = 240000;
+		
+		final int t_versionDetect = 12 * 3600000 / t_sleepInterval;
+		
 		while(true){
 			
 			try{
 				
 				try{
-					sleep(240000);
+					sleep(t_sleepInterval);
 				}catch(Exception e){}
 				
 				m_mainFrame.RefreshState();
 				
-				if(t_counter == -1 ||  t_counter > 120 * 2){
+				if(t_counter == -1 ||  t_counter > t_versionDetect ){
 									
 					URL is_gd = new URL("http://yuchberry.googlecode.com/files/latest_version?a="+(new Random()).nextInt());
 					
