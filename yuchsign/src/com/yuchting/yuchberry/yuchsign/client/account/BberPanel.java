@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.yuchsign.client.account;
 import java.util.Date;
 import java.util.Vector;
 
+import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -20,7 +21,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -279,7 +280,12 @@ public class BberPanel extends TabPanel{
 		t_attrPane.add(new HTML( "签名:<br />"));
 		t_attrPane.add(m_signature);
 
-		t_attrPane.add(t_syncBut);
+		HorizontalPanel t_syncButPane = new HorizontalPanel();
+		t_syncButPane.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+		t_syncButPane.add(t_syncBut);
+		t_syncButPane.add(new HTML("同步成功后，手机需要使用<font color=red >NET</font>移动无线网络进行连接。"));
+		
+		t_attrPane.add(t_syncButPane);
 		
 		add(t_attrPane,"账户属性");
 				
