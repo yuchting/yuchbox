@@ -352,7 +352,12 @@ final class MiddleMgr extends VerticalFieldManager{
 		
 		int t_chatNum = m_chatMsgMgr.getFieldCount();
 		if(t_chatNum > 0){
-			m_chatMsgMgr.getField(t_chatNum - 1).setFocus();
+			ChatField t_field = (ChatField)m_chatMsgMgr.getField(t_chatNum - 1);
+			
+			t_field.setFocus();
+			if(t_field.m_msg.getMsg().length() != 0){
+				t_field.m_textfield.setCursorPosition(t_field.m_msg.getMsg().length() - 1);
+			}
 		}
 		
 		m_inputMgr.m_editTextArea.setFocus();
