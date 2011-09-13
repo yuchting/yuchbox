@@ -28,7 +28,7 @@ public class SendInviteDlg extends DialogBox{
 		VerticalPanel t_mainPane = new VerticalPanel();
 		
 		t_mainPane.add(new HTML("发送语盒账户的邀请码给你的好友，邀请好友注册语盒账户，" +
-				"<br />在你的好友账户激活时，两人都会获得"+FieldVerifier.fsm_inviteDays+"天的使用时间哦，赶紧邀请吧！<br />" +
+				"<br />在你的好友账户激活时，<b>两人都会获得"+FieldVerifier.fsm_inviteDays+"天的使用时间</b>哦，赶紧邀请吧！<br />" +
 				"详情请参见<a href=\"http://code.google.com/p/yuchberry/wiki/Invite_Mechanism\" target=_blank>这里</a><br />" +
 				"<br /> 好友邮箱(一行一个)：<br />"));
 		

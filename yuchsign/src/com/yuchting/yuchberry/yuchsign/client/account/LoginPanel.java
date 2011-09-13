@@ -203,9 +203,11 @@ public final class LoginPanel extends HorizontalPanel{
 				m_signinName.setText("");
 				m_signinPass.setText("");
 				m_signinPass1.setText("");
+				m_inviteCode.setText("");
 				
 				m_logonName.setText("");
 				m_logonPassword.setText("");
+				
 				m_agreeCheckbox.setValue(false);
 				
 				m_clientSign.ShowYuchbberPanel(_result,m_isSigninAccount);

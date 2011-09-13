@@ -41,7 +41,6 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.yuchting.yuchberry.yuchsign.client.GreetingService;
-import com.yuchting.yuchberry.yuchsign.client.Yuchsign;
 import com.yuchting.yuchberry.yuchsign.server.weibo.WeiboAuth;
 import com.yuchting.yuchberry.yuchsign.shared.FieldVerifier;
 
