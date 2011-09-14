@@ -145,13 +145,18 @@ class BberEmailPanel extends FlowPanel{
 		final FlowPanel t_subPane1 = new FlowPanel();
 		
 		m_reminderBox.setWidth("200px");
-		m_reminderBox.addItem("一般（填写邮件地址时自动填写）");
+		m_reminderBox.addItem("一般（填写通用邮件地址时自动填写）");
 		m_reminderBox.addItem("Google App 企业邮箱");
 		m_reminderBox.addItem("腾讯企业邮箱");
+		for(commonConfig cfg:m_commonConfigList){
+			m_reminderBox.addItem(cfg.m_name);
+		}
 		m_reminderBox.addChangeHandler(new ChangeHandler() {
 			
 			@Override
 			public void onChange(ChangeEvent event) {
+				int t_selectIndex = m_reminderBox.getSelectedIndex();
+				
 				switch(m_reminderBox.getSelectedIndex()){
 				case 0:
 					Yuchsign.PopupPrompt("请在地址栏输入一般信箱地址，程序会自动填写下面内容。", m_account);
@@ -162,6 +167,13 @@ class BberEmailPanel extends FlowPanel{
 				case 2:
 					m_qqEnterprise.SetConfig(BberEmailPanel.this);
 					break;
+				}
+				
+				if(t_selectIndex >= 3){
+					t_selectIndex -= 3;
+					if(t_selectIndex < m_commonConfigList.length ){
+						m_commonConfigList[t_selectIndex].SetConfig(BberEmailPanel.this);
+					}				
 				}
 			}
 		});
