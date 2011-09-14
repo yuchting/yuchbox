@@ -353,6 +353,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         initIMModule();
 	}
 	
+	public boolean isBackground(){
+		return !isForeground();
+	}
+	
 	private boolean m_initWeiboHeadImageDir = false;
 	public final static String fsm_weiboImageDir = "YuchBerry/WeiboImage/";
 	public String[]				m_weiboHeadImageDir_sub = 
@@ -1358,6 +1362,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					
 					popScreen(m_weiboTimeLineScreen);
 				}
+				
+				m_weiboTimeLineScreen.autoLoadTimelineWeibo();
 			}
 			
 			if(m_mainIMScreen != null){

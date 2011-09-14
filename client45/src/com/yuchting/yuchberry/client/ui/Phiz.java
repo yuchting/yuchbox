@@ -10,17 +10,18 @@ public class Phiz extends ImageButton{
     }
 	
 	public void focusPaint(Graphics g,boolean focus){
-		super.focusPaint(g,focus);
-		
+				
 		if(focus){
 			int t_color = g.getColor();
 			try{
 				g.setColor(0x4694ea);
-				g.drawRect(0,0,m_image.getWidth(),m_image.getHeight());
+				g.fillRect(0,0,m_image.getWidth(),m_image.getHeight());
 			}finally{
 				g.setColor(t_color);
 			}
 		}
+		
+		super.focusPaint(g,focus);
 	}
 	
 	public String getPhizName(){

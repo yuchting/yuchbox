@@ -409,6 +409,12 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 	}
 	
+	public void autoLoadTimelineWeibo(){
+		if(m_mainApp.m_autoLoadNewTimelineWeibo){
+			m_mainMgr.clickUpdateField();
+		}
+	}
+	
 	final class DelayAddWeiboData{
 		public fetchWeibo	m_weibo;
 		public boolean		m_initAdd;
