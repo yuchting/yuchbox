@@ -16,11 +16,12 @@ import java.security.KeyStore;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Vector;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
+
+import org.apache.commons.codec.binary.Base64;
 
 import weibo4j.http.OAuth;
 import weibo4j.http.OAuthToken;
@@ -92,52 +93,11 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[])throws Exception{
 		
-		String t_encodeList = "encoding=rgb565 encoding=jpeg&width=1600&height=1200&quality=superfine encoding=jpeg&width=1600&height=1200&quality=normal encoding=jpeg&width=1600&height=1200&quality=fine encoding=jpeg&width=1024&height=768&quality=normal encoding=jpeg&width=1024&height=768&quality=fine encoding=jpeg&width=1024&height=768&quality=superfine encoding=jpeg&width=640&height=480&quality=normal encoding=jpeg&width=640&height=480&quality=fine encoding=jpeg&width=640&height=480&quality=superfine";
+		String string = "eyJJTUd0YWxrIjpbeyJTZW5kIjowLCJSZWN2QiI6MCwiU2VuZEIiOjAsIlJlY3YiOjAsIkFjY291bnQiOiJ5dWNoZHJvaWRAZ21haWwuY29tIn1dLCJUaW1lIjoxMzE1OTgxNTUwLCJFbWFpbCI6W10sIkdFTyI6W3sidCI6MTMxNTk4MTU1MCwieSI6MCwieCI6MH0seyJ0IjoxMzE1OTgxNTUwLCJ5IjowLCJ4IjowfV0sIldlaWJvUVEiOltdLCJXZWlib1QiOltdLCJJRCI6Iui/meaYr S4reaWh a1i ivlVRlc3QtLTEiLCJXZWlib1NpbmEiOltdfQ==";
 		
-		Vector t_encodings = new Vector();
-    	
-    	int t_start = 0;
-    	int t_end = 0;
-    	
-    	while(true){
-    		
-    		if((t_end = t_encodeList.indexOf(' ', t_start)) == -1){
-    			break;
-    		}
-    		
-    		String t_encoder = t_encodeList.substring(t_start,t_end);
-    		int t_widthIndex = 0;
-    		if((t_widthIndex = t_encoder.indexOf("width=")) != -1 && t_encoder.indexOf("quality=fine") != -1){
-    			int t_widthEndIndex = t_encoder.indexOf('&',t_widthIndex);
-    			String t_width = t_encoder.substring(t_widthIndex + 6,t_widthEndIndex);
-
-
-    			EncodeFormat t_formatEncode = new EncodeFormat();
-    			t_formatEncode.width = Integer.valueOf(t_width).intValue();
-    			t_formatEncode.encode = t_encoder;
-    			
-    			boolean added = false;
-    			
-    			for(int i = 0;i < t_encodings.size();i++){
-    				EncodeFormat t_format = (EncodeFormat)t_encodings.elementAt(i);
-    				if(t_format.width > t_formatEncode.width){
-    					
-    					added = true;
-    					
-    					t_encodings.insertElementAt(t_formatEncode, i);
-    					break;
-    				}
-    			}
-    			
-    			if(!added){
-    				t_encodings.addElement(t_formatEncode);
-    			}
-    		}
-    		
-    		t_start = t_end + 1;
-    	}
-    	
-    	System.out.println(t_encodings);
+		string = new String(Base64.decodeBase64(string.getBytes("UTF-8")));
+		
+		System.out.println(string);
 	}
 	
 	

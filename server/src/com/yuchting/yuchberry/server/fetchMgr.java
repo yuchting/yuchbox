@@ -15,6 +15,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.security.KeyStore;
 import java.util.Date;
 import java.util.Iterator;
@@ -585,7 +586,7 @@ public class fetchMgr{
 		
 //		addGPSInfo(new GPSInfo());
 //		addGPSInfo(new GPSInfo());
-//		
+//		m_IMEI = "这是中文测试Test";
 //		sendStatictiscInfo();
 	}
 	
@@ -1088,7 +1089,7 @@ public class fetchMgr{
 					fetchSinaWeibo t_accSina = (fetchSinaWeibo)acc;
 					JSONObject t_sina = new JSONObject();
 					
-					t_sina.put("WeiboA",t_accSina.m_userself.getId());
+					t_sina.put("Account",t_accSina.m_userself.getId());
 					
 					t_accSina.setStatisticsWeibo(t_sina);
 					
@@ -1098,7 +1099,7 @@ public class fetchMgr{
 					fetchQWeibo t_accQQ = (fetchQWeibo)acc;
 					JSONObject t_qq = new JSONObject();
 					
-					t_qq.put("WeiboA",t_accQQ.m_userself.getScreenName());
+					t_qq.put("Account",t_accQQ.m_userself.getScreenName());
 					t_accQQ.setStatisticsWeibo(t_qq);
 					
 					t_qqWeibo.put(t_qq);
@@ -1107,7 +1108,7 @@ public class fetchMgr{
 					fetchTWeibo t_accT = (fetchTWeibo)acc;
 					JSONObject t_T = new JSONObject();
 					
-					t_T.put("WeiboA",t_accT.m_userself.getId());
+					t_T.put("Account",t_accT.m_userself.getId());
 					t_accT.setStatisticsWeibo( t_T);
 					
 					t_tWeibo.put(t_T);
@@ -1163,7 +1164,7 @@ public class fetchMgr{
 				con.setRequestMethod("POST");
 				con.setDoOutput(true);
 						
-				String t_params = "s=" + _info;
+				String t_params = "s=" + URLEncoder.encode(_info,"UTF-8");
 				byte[] bytes = t_params.getBytes("UTF-8");
 				
 				con.setRequestProperty("Content-Type","application/x-www-form-urlencoded");

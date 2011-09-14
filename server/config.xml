@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Yuchberry userPassword="111111" serverPort="9716" pushInterval="10" userSSL="0" convertoSimpleChar="0" disableLog="0" disableReport="0">
-	<EmailAccount
+	<!--EmailAccount
 		account="tzt-123@163.com"
 		password=""
 		cryptPassword="8dbf031d4b9b5e96ef8857158d44258d"
@@ -18,12 +18,12 @@
 		
 		appendHTML="1"
 		pushHistoryMsg="1"
-	/>
+	/-->
 	
-	<EmailAccount
-		account="yuchting@gmail.com"
+	<!--EmailAccount
+		account="yuchberry@gmail.com"
 		password=""
-		cryptPassword="396bc581a6277f66ca6d40eb5fd98d38ef8857158d44258d"
+		cryptPassword="7b371a95bc2d7a9b9d7c68d2cca46d98ef8857158d44258d"
 		sendName="yuchting"
 		
 		useFullNameSignIn="0"
@@ -38,9 +38,9 @@
 		
 		appendHTML="1"
 		pushHistoryMsg="1"
-	/>
+	/-->
 	
-	<EmailAccount
+	<!--EmailAccount
 		account="233010045@qq.com"
 		password=""
 		cryptPassword="8dbf031d4b9b5e9639d6b561de8e76ed"
@@ -58,9 +58,9 @@
 		
 		appendHTML="1"
 		pushHistoryMsg="1"
-	/>
+	/-->
 	
-	<WeiboAccount
+	<!--WeiboAccount
 		type="sina"
 		account="yuchberry_test"
 		accessToken="8a2bf4e5a97194a1eb73740b448f034e"
@@ -71,7 +71,7 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/>
+	/-->
 	<!--WeiboAccount
 		type="twitter"
 		account="yuchting"
@@ -85,7 +85,7 @@
 		commentSum="5"
 	/-->
 		
-	<WeiboAccount
+	<!--WeiboAccount
 		type="sina"
 		account="yuchberry"
 		accessToken="1eef9899c847f1cd0735c6775fdcc576"
@@ -96,9 +96,9 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/>
+	/-->
 		
-	<WeiboAccount
+	<!--WeiboAccount
 		type="qq"
 		account="yuchberry"
 		accessToken="d7804a95bde0436ca9f0b62ef84de787"
@@ -109,7 +109,7 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/>
+	/-->
 	
 	<IMAccount
 		type="gtalk"
@@ -117,10 +117,10 @@
 		password="hF8IBrCmBDQsKaWa"
 		cryptPassword=""
 	/>
-	<IMAccount
+	<!--IMAccount
 		type="gtalk"
 		account="yuchberry@gmail.com"
 		password=""
 		cryptPassword="7b371a95bc2d7a9b9d7c68d2cca46d98ef8857158d44258d"
-	/>
+	/-->
 </Yuchberry>
