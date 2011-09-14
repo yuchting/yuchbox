@@ -578,7 +578,7 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
 
 		int color = _g.getColor();
 		try{
-						
+
 			_g.setColor(0x737373);
 			_g.fillRect(0,0,getPreferredWidth(),getPreferredHeight());
 						

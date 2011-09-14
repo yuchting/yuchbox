@@ -212,7 +212,8 @@ final class InputManager extends Manager implements FieldChangeListener{
 	}	
 	protected boolean keyDown(int keycode,int time){
 		
-		if(m_middleMgr.m_chatScreen.m_currRoster.m_isYuch){
+		if(m_middleMgr.m_chatScreen.m_currRoster.m_isYuch
+		&& m_middleMgr.m_chatScreen.m_mainApp.m_enableChatChecked){
 			// send the read message to the server
 			//	
 			Vector list = m_middleMgr.m_chatScreen.m_currRoster.m_chatMsgList;
@@ -229,8 +230,12 @@ final class InputManager extends Manager implements FieldChangeListener{
 		
 		final int key = Keypad.key(keycode);
 		if(key == 10){
+			
 			boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
-    		if(t_shiftDown && m_editTextArea.getText().length() != 0){
+			boolean t_returnSend = m_middleMgr.m_chatScreen.m_mainApp.m_imReturnSend;
+			
+    		if(m_editTextArea.getText().length() != 0 
+    		&& ( (t_returnSend && !t_shiftDown) || (!t_returnSend && t_shiftDown))){
     			
     			send();
     			
@@ -349,14 +354,17 @@ final class MiddleMgr extends VerticalFieldManager{
 	
 	
 	public void onDisplay(){
+		super.onDisplay();
 		
 		int t_chatNum = m_chatMsgMgr.getFieldCount();
 		if(t_chatNum > 0){
 			ChatField t_field = (ChatField)m_chatMsgMgr.getField(t_chatNum - 1);
 			
 			t_field.setFocus();
-			if(t_field.m_msg.getMsg().length() != 0){
-				t_field.m_textfield.setCursorPosition(t_field.m_msg.getMsg().length() - 1);
+			
+			int t_length = t_field.m_textfield.getTextLength();
+			if(t_length != 0){
+				t_field.m_textfield.setCursorPosition(t_length);
 			}
 		}
 		
@@ -365,7 +373,7 @@ final class MiddleMgr extends VerticalFieldManager{
 		if(m_inputMgr.m_editTextArea.getTextLength() > 0){
 			
 			m_inputMgr.m_editTextArea.setCursorPosition(
-					m_inputMgr.m_editTextArea.getTextLength() - 1);
+					m_inputMgr.m_editTextArea.getTextLength());
 		}
 	}
 	
@@ -376,8 +384,9 @@ final class MiddleMgr extends VerticalFieldManager{
 		// scroll to bottom
 		//
 		t_field.setFocus();
-		if(_msg.getMsg().length() != 0){
-			t_field.m_textfield.setCursorPosition(_msg.getMsg().length() - 1);
+		int t_length = t_field.m_textfield.getTextLength();
+		if(t_length != 0){
+			t_field.m_textfield.setCursorPosition(t_length);
 		}		
 		
 		// set the focus back
@@ -398,9 +407,9 @@ final class MiddleMgr extends VerticalFieldManager{
 		
 		// scroll to bottom
 		//
-		_field.setFocus();
-		if(_field.m_msg.getMsg().length() != 0){
-			_field.m_textfield.setCursorPosition(_field.m_msg.getMsg().length() - 1);
+		int t_length = _field.m_textfield.getTextLength();
+		if(t_length != 0){
+			_field.m_textfield.setCursorPosition(t_length);
 		}		
 		
 		// set the focus back
@@ -460,8 +469,8 @@ public class MainChatScreen extends MainScreen{
 	
 	MenuItem m_displayTimeMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_DISPLAY_CHAT_FIELD_TIME),m_menu_op++,0){
 		public void run(){
-			if(!recvMain.sm_displayTime){
-				recvMain.sm_displayTime = true;
+			if(!recvMain.sm_imDisplayTime){
+				recvMain.sm_imDisplayTime = true;
 				
 				m_middleMgr.m_chatMsgMgr.invalidate();
 				
@@ -472,8 +481,8 @@ public class MainChatScreen extends MainScreen{
 	
 	MenuItem m_hideTimeMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_HIDE_CHAT_FIELD_TIME),m_menu_op++,0){
 		public void run(){
-			if(recvMain.sm_displayTime){
-				recvMain.sm_displayTime = false;
+			if(recvMain.sm_imDisplayTime){
+				recvMain.sm_imDisplayTime = false;
 				
 				m_middleMgr.m_chatMsgMgr.invalidate();
 				
@@ -534,7 +543,7 @@ public class MainChatScreen extends MainScreen{
 		}
 	}
 	
-	public final static int		fsm_titleBottomBorder = 4;
+	public final static int		fsm_titleBottomBorder = recvMain.fsm_OS_version.startsWith("6")?0:4;
 	
 	RosterChatData	m_currRoster 	= null;
 		
@@ -579,7 +588,7 @@ public class MainChatScreen extends MainScreen{
 			_menu.add(m_resendMenu);
 		}
 		
-		if(recvMain.sm_displayTime){
+		if(recvMain.sm_imDisplayTime){
 			_menu.add(m_hideTimeMenu);
 		}else{
 			_menu.add(m_displayTimeMenu);
@@ -590,10 +599,11 @@ public class MainChatScreen extends MainScreen{
 	
 	protected void onDisplay(){
 		super.onDisplay();
+		
 		if(m_currRoster != null){
 			m_middleMgr.prepareChatScreen(m_currRoster);
 		}
-		m_middleMgr.onDisplay();
+
 		m_mainApp.StopIMNotification();
 		
 		m_mainScreen.clearNewChatSign();

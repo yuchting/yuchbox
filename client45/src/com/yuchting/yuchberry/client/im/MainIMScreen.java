@@ -41,7 +41,12 @@ final class RosterChatData{
 	public RosterChatData(fetchChatRoster _roster){
 		m_roster = _roster;
 		m_isYuch = m_roster.getSource().indexOf(MainIMScreen.fsm_YuchBerrySource) != -1;
-	}	
+	}
+	
+	public void copyFrom(fetchChatRoster _roster){
+		m_roster.copyFrom(m_roster);
+		m_isYuch = m_roster.getSource().indexOf(MainIMScreen.fsm_YuchBerrySource) != -1;
+	}
 }
 
 public class MainIMScreen extends MainScreen{
@@ -71,7 +76,6 @@ public class MainIMScreen extends MainScreen{
 	
 	int m_menu_op = 20;
 	
-	long m_refreshRosterTimer = 0;
 	MenuItem	m_refreshListMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_REFRESH_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			sendRequestRosterListMsg();
@@ -178,6 +182,16 @@ public class MainIMScreen extends MainScreen{
 			}
 		}
 	};
+	
+	MenuItem	m_optionMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_OPTION_SCREEN),m_menu_op++,0){
+		public void run(){
+			if(m_optionScreen == null){
+				m_optionScreen = new IMOptionScreen(MainIMScreen.this);
+			}
+			
+			m_mainApp.pushScreen(m_optionScreen);
+		}
+	};
 		
 	
 	MenuItem	m_stateMenu = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_STATE_SCREEN_MENU_LABEL),100,0){
@@ -215,6 +229,9 @@ public class MainIMScreen extends MainScreen{
 	public Vector					m_headImageList = new Vector();
 
 	MainIMScreenHeader		m_header = null;
+	
+	public IMOptionScreen	m_optionScreen = null;
+	
 	recvMain				m_mainApp = null;
 	
 	VerticalFieldManager	m_historyChatMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
@@ -367,6 +384,7 @@ public class MainIMScreen extends MainScreen{
 			_menu.add(m_delStatusMenu);
 		}
 		
+		_menu.add(m_optionMenu);
 		_menu.add(MenuItem.separator(m_menu_op));
 		
 		_menu.add(m_stateMenu);
@@ -571,40 +589,41 @@ public class MainIMScreen extends MainScreen{
 					data.m_currChatState = fetchChatMsg.CHAT_STATE_COMMON;
 					
 					addHistroyChatMgr(data);
-					
-					// popup the dialog to prompt
-					//
-					if(!m_mainApp.isForeground() || m_chatScreen.getUiEngine() == null
-					 || (m_chatScreen.getUiEngine() != null && m_chatScreen.m_currRoster != data ) ){
-						if(m_promptDlg.isGlobal()){
-							// has been popup to prompt
-							//
-							boolean t_added = false;
-							for(int index = 0 ;index < m_promptQueue.size();index++){
-								RosterChatData t_promptData = (RosterChatData)m_promptQueue.elementAt(index);
-								if(t_promptData == data){
-									t_added = true;
-									break;
-								}
-							}
+										
+					if(m_mainApp.m_imPopupPrompt){
+						
+						// popup the dialog to prompt
+						//
+						if(!m_mainApp.isForeground() || m_chatScreen.getUiEngine() == null
+						 || (m_chatScreen.getUiEngine() != null && m_chatScreen.m_currRoster != data ) ){
 							
-							if(!t_added){
-								if(m_promptDlg.m_openData == data){
-									// the same roster
-									//
-									m_promptDlg.setRosterChatData(data,_msg.getMsg());
-								}else{
-									m_promptQueue.addElement(data);
-								}								
-							}
-						}else{
-							m_promptDlg.setRosterChatData(data,_msg.getMsg());
-							m_mainApp.pushGlobalScreen(m_promptDlg, 0, UiEngine.GLOBAL_QUEUE);
+							if(m_promptDlg.isGlobal()){
+								// has been popup to prompt
+								//
+								boolean t_added = false;
+								for(int index = 0 ;index < m_promptQueue.size();index++){
+									RosterChatData t_promptData = (RosterChatData)m_promptQueue.elementAt(index);
+									if(t_promptData == data){
+										t_added = true;
+										break;
+									}
+								}
+								
+								if(!t_added){
+									if(m_promptDlg.m_openData == data){
+										// the same roster
+										//
+										m_promptDlg.setRosterChatData(data,_msg.getMsg());
+									}else{
+										m_promptQueue.addElement(data);
+									}								
+								}
+							}else{
+								m_promptDlg.setRosterChatData(data,_msg.getMsg());
+								m_mainApp.pushGlobalScreen(m_promptDlg, 0, UiEngine.GLOBAL_QUEUE);
+							}						
 						}
-						
-						
-					}
-					
+					}					
 					
 					if(m_chatScreen.getUiEngine() != null
 						&& m_chatScreen.m_currRoster == data){
@@ -648,6 +667,10 @@ public class MainIMScreen extends MainScreen{
 		if(_msg.isOwnMsg() || _msg.hasSendMsgChatReadMsg()){
 			return ;
 		}
+		
+		if(!m_mainApp.m_enableChatChecked){
+			return ;
+		}
 
 		_msg.setSendMsgChatReadMsg(true);
 		
@@ -681,24 +704,48 @@ public class MainIMScreen extends MainScreen{
 						
 						// all list
 						//
+						boolean t_found = false;
+						
+						Vector t_tmpRosterList = new Vector();
+						
+						int t_num = sendReceive.ReadInt(in);
+						for(int i = 0 ;i < t_num;i++){
+							fetchChatRoster t_roster = new fetchChatRoster();
+							t_roster.Import(in);
+							
+							t_found = false;
+							
+							synchronized(m_rosterChatDataList){
+								for(int j = 0;j < m_rosterChatDataList.size();j++){
+									RosterChatData t_data = (RosterChatData)m_rosterChatDataList.elementAt(j);
+									
+									if(t_data.m_roster.getAccount().equals(t_roster.getAccount())){
+										t_data.copyFrom(t_roster);
+										t_tmpRosterList.addElement(t_data);
+										
+										t_found = true;
+										break;
+									}
+								}
+							}
+							
+							if(!t_found){				
+								RosterChatData t_data = new RosterChatData(t_roster);
+								t_tmpRosterList.addElement(t_data);
+							}
+						}
 						synchronized (m_rosterChatDataList) {
 							m_rosterChatDataList.removeAllElements();
 							
-							int t_num = sendReceive.ReadInt(in);
-							for(int i = 0 ;i < t_num;i++){
-								fetchChatRoster t_roster = new fetchChatRoster();
-								t_roster.Import(in);
-								
-								RosterChatData t_data = new RosterChatData(t_roster);
-								m_rosterChatDataList.addElement(t_data);
+							for(int i = 0;i < t_tmpRosterList.size();i++){
+								RosterChatData t_data = (RosterChatData)t_tmpRosterList.elementAt(i);
+								m_rosterChatDataList.addElement(t_data);								
 							}
 						}
+						
 												
 						refreshRosterList();
-						
-						m_historyChatMgr.deleteAll();
-						m_currFocusHistoryRosterItemField = null;
-						
+												
 						break;
 					case 1:
 						fetchChatRoster t_roster = new fetchChatRoster();
@@ -712,9 +759,8 @@ public class MainIMScreen extends MainScreen{
 								
 								if(data.m_roster.equals(t_roster)){
 									
-									data.m_roster.copyFrom(t_roster);
-									data.m_isYuch = data.m_roster.getSource().indexOf(MainIMScreen.fsm_YuchBerrySource) != -1;
-									
+									data.copyFrom(t_roster);
+																		
 									t_modified = true;
 									
 									rangeRosterItemField(data);
@@ -901,6 +947,8 @@ public class MainIMScreen extends MainScreen{
 		}
 		
 	}
+	
+	long m_refreshRosterTimer = 0;
 	
 	private void sendRequestRosterListMsg(){
 		

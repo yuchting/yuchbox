@@ -26,6 +26,7 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 	 CheckboxField		m_dontDownloadHeadImage = null;
 	 CheckboxField		m_hideWeiboHeader = null;
 	 CheckboxField		m_showAllInList	= null;
+	 CheckboxField		m_autoLoadNewTimelineWeibo = null;
 	 CheckboxField		m_weiboUseLocation = null;
 	 ObjectChoiceField	m_refreshWeiboInterval = null;
 	 ObjectChoiceField	m_maxWeiboNum	= null;
@@ -99,21 +100,31 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 		 t_label.setFont(t_label.getFont().derive(t_label.getFont().getStyle() | Font.BOLD));
 		 add(t_label);
 		 
-		 m_commentFirst		= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DISPLAY_COMMENT_FIRST),recvMain.sm_commentFirst);
+		 m_commentFirst		= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DISPLAY_COMMENT_FIRST),
+				 							recvMain.sm_commentFirst);
 		 add(m_commentFirst);
 		 
-		 m_displayHeadImage = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DISPLAY_HEAD_IMAGE),recvMain.sm_displayHeadImage);
+		 m_displayHeadImage = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DISPLAY_HEAD_IMAGE),
+				 							recvMain.sm_displayHeadImage);
 		 add(m_displayHeadImage);
 		 
-		 m_simpleMode 	=  new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SIMPLE_MODE),recvMain.sm_simpleMode);
+		 m_simpleMode 	=  new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SIMPLE_MODE),
+				 							recvMain.sm_simpleMode);
 		 add(m_simpleMode);
 		 
-		 m_hideWeiboHeader = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_HIDE_HEADER),m_mainApp.m_hideHeader);
+		 m_hideWeiboHeader = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_HIDE_HEADER),
+				 							m_mainApp.m_hideHeader);
 		 add(m_hideWeiboHeader);
 		 
-		 m_showAllInList	= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SHOW_ALL_IN_LIST),recvMain.sm_showAllInList);
+		 m_showAllInList	= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SHOW_ALL_IN_LIST),
+				 							recvMain.sm_showAllInList);
 		 add(m_showAllInList);
 		 m_showAllInList.setChangeListener(this);
+		 
+		 m_autoLoadNewTimelineWeibo = new CheckboxField(recvMain.sm_local.getString(localResource.WEIBO_OPTION_AUTO_LOAD_TIMELINE),
+				 				m_mainApp.m_autoLoadNewTimelineWeibo);
+		 
+		 add(m_autoLoadNewTimelineWeibo);
 		 //@} 
 		 
 		 
@@ -155,6 +166,8 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 			 recvMain.sm_simpleMode			= m_simpleMode.getChecked();
 			 recvMain.sm_showAllInList		= m_showAllInList.getChecked();
 			 m_mainApp.m_dontDownloadWeiboHeadImage	= m_dontDownloadHeadImage.getChecked();
+			 
+			 m_mainApp.m_autoLoadNewTimelineWeibo = m_autoLoadNewTimelineWeibo.getChecked();
 			 
 			 m_mainApp.m_spaceDownWeiboShortcutKey  = m_spaceDown.isSelected();
 			

@@ -166,7 +166,7 @@ public class ChatField extends Manager{
 							t_x - sm_stateImage[m_msg.getSendState()].getWidth(), 0);
 		}
 		
-		if(recvMain.sm_displayTime){
+		if(recvMain.sm_imDisplayTime){
 			// draw the time string
 			//
 			int t_color = _g.getColor();

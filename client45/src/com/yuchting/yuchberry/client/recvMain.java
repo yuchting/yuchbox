@@ -804,7 +804,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 31;
+	final static int		fsm_clientVersion = 32;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -1000,6 +1000,13 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_imChatScreenReceiveReturn = sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
+				    		if(t_currVer >= 32){
+				    			sm_imDisplayTime	= sendReceive.ReadBoolean(t_readFile);
+				    			m_imReturnSend		= sendReceive.ReadBoolean(t_readFile);
+				    			m_imPopupPrompt		= sendReceive.ReadBoolean(t_readFile);
+				    			m_autoLoadNewTimelineWeibo = sendReceive.ReadBoolean(t_readFile);
+				    		}
+				    		
 			    		}finally{
 			    			t_readFile.close();
 			    			t_readFile = null;
@@ -1102,6 +1109,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		    			}
 		    			sendReceive.WriteInt(t_writeFile,m_imChatMsgHistory);
 		    			sendReceive.WriteBoolean(t_writeFile,m_imChatScreenReceiveReturn);
+		    			
+		    			sendReceive.WriteBoolean(t_writeFile,sm_imDisplayTime);
+		    			sendReceive.WriteBoolean(t_writeFile, m_imReturnSend);
+		    			sendReceive.WriteBoolean(t_writeFile, m_imPopupPrompt);
+		    			
+		    			sendReceive.WriteBoolean(t_writeFile,m_autoLoadNewTimelineWeibo);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1373,6 +1386,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					m_isWeiboOrIMScreen = false;
 					
 					m_mainIMScreen.m_statusAddScreen.close();
+					popScreen(m_mainIMScreen);
+					
+				}else if(getActiveScreen() == m_mainIMScreen.m_optionScreen
+						&& m_mainIMScreen.m_optionScreen != null){
+					
+					m_isWeiboOrIMScreen = false;
+					
+					m_mainIMScreen.m_optionScreen.close();
 					popScreen(m_mainIMScreen);
 					
 				}else if(getActiveScreen() == m_mainIMScreen){
@@ -1938,6 +1959,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public boolean				m_hasPromptToCheckImg = true;
 	public int					m_checkImgIndex = 1;
 	public boolean				m_weiboUseLocation = false;
+	public boolean				m_autoLoadNewTimelineWeibo = false;
 	
 	public static final String[]	fsm_refreshWeiboIntervalList = {"0","10","20","30","40"};
 	public static final int[]		fsm_refreshWeiboInterval		= {0,10,20,30,40};
@@ -2356,7 +2378,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public boolean				m_enableChatState		= true;
 	public boolean				m_hideUnvailiableRoster = true;
 	
-	public static boolean		sm_displayTime	= true;
+	public boolean 			m_imChatScreenReceiveReturn = false;
+	
+	public static boolean		sm_imDisplayTime		= true;
+	
+	public boolean				m_imReturnSend	= false;
+	public boolean				m_imPopupPrompt	= true;
 		
 	public int					m_imCurrUseStatusIndex	= 0;
 	public static Vector		sm_imStatusList			= new Vector();
@@ -2366,11 +2393,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_BUSY,sm_local.getString(localResource.IM_STATUS_DEFAULT_BUSY)));
 	}
 	
-	public static final String[]	fsm_imChatMsgHistoryList = {"32","64","128","256"};
+	public static final String[]	fsm_imChatMsgHistoryList 	= {"32","64","128","256"};
 	public static final int[]		fsm_imChatMsgHistory		= {32,64,128,256};
-	public int						m_imChatMsgHistory 	= 0;
+	public int						m_imChatMsgHistory 			= 0;
 	
-	public boolean 				m_imChatScreenReceiveReturn = false;
+	
 	
 	MainIMScreen				m_mainIMScreen = null;
 	

@@ -77,4 +77,8 @@ public class WeiboUpdateField extends Field{
     	super.onUnfocus();
     	invalidate();
     }
+	
+	public void invalidate(){
+		super.invalidate();
+	}
 }

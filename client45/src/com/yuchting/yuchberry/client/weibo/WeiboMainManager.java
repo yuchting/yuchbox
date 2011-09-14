@@ -295,6 +295,10 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				int t_scroll_height = t_visibleHeight * t_visibleHeight / m_bufferedTotalHeight;
 				int t_scroll_y = t_start_y + t_start_y * t_visibleHeight / m_bufferedTotalHeight;
 				
+				if(t_scroll_height < 4){
+					t_scroll_height = 4;
+				}
+				
 				graphics.setColor(0x606060);
 				graphics.fillRect(t_start_x,t_scroll_y,fsm_scrollbarSize,t_scroll_height);
 								
@@ -332,7 +336,12 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	public void AddWeibo(final fetchWeibo _weibo,final WeiboHeadImage _image,
 							final boolean _initAdd){	
 
-		if(m_timelineManager && !_initAdd){
+		if(m_timelineManager // is timeline 
+		&& !_initAdd		// is send new  
+		&& (m_mainApp.isForeground() || !m_mainApp.m_autoLoadNewTimelineWeibo) ){ // the application is foreground
+			
+			// add it into buffer list 
+			//
 			
 			synchronized (m_bufferedWeiboList) {
 				m_bufferedWeiboList.addElement(new BufferedWeibo(_weibo,_image));
@@ -341,6 +350,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			if(m_parentScreen.m_mainApp.hasEventThread()){
 				if(getField(0) == m_updateWeiboFieldNull){
 					replace(m_updateWeiboFieldNull,m_updateWeiboField);
+				}else{
+					m_updateWeiboField.invalidate();
 				}
 			}else{
 				m_parentScreen.m_mainApp.invokeLater(new Runnable(){

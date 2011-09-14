@@ -95,17 +95,20 @@ public class WeiboTextField extends ActiveRichTextField{
 					break getTag_while;
 				}
 				
+				t_tag.append(a);
+				_text.m_index++;
+				
 				while(_text.m_index < _text.m_originalText.length()){
-					
-					t_tag.append(a);
-					_text.m_index++;
-					
 					a = _text.m_originalText.charAt(_text.m_index);
-					
+										
 					if(!isLeagalNameCharacter(a)){
 						break getTag_while;
 					}
+					
+					t_tag.append(a);
+					_text.m_index++;
 				}
+				
 				break;
 			case '[':
 				
@@ -113,10 +116,10 @@ public class WeiboTextField extends ActiveRichTextField{
 					break getTag_while;
 				}
 				
+				t_tag.append(a);
+				_text.m_index++;
+				
 				while(_text.m_index < _text.m_originalText.length()){
-					
-					t_tag.append(a);
-					_text.m_index++;
 					
 					a = _text.m_originalText.charAt(_text.m_index);
 					
@@ -125,9 +128,13 @@ public class WeiboTextField extends ActiveRichTextField{
 						t_tag.append(a);
 						_text.m_index++;
 						break getTag_while;
+					case ' ':
 					case '[':
 						break getTag_while;
 					}
+					
+					t_tag.append(a);
+					_text.m_index++;					
 				}
 				break;
 			default:
@@ -210,7 +217,6 @@ public class WeiboTextField extends ActiveRichTextField{
 					t_finalText.append(t_read);
 				}
 				
-
 				break;
 			default:
 				t_finalText.append(t_read);

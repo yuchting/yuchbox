@@ -80,6 +80,12 @@ public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 		}
 	}
 	
+	protected void onDisplay(){
+		super.onDisplay();
+		
+		m_replyBut.setFocus();
+	}
+	
 	public boolean onClose(){
 		m_mainScreen.m_mainApp.StopIMNotification();
 		if(!hasMoreChatPrompt()){
