@@ -376,6 +376,8 @@ public class fetchMgr{
 				throw new Exception("Watch Out! User pass is too long! val:" + passlen);
 			}
 			
+			m_logger.LogOut("ValidateClient 0");
+						
 			byte[] t_buffer = new byte[passlen];
 			sendReceive.ForceReadByte(in,t_buffer,passlen);
 			String t_sendPass = new String(t_buffer,"UTF-8");
@@ -388,6 +390,8 @@ public class fetchMgr{
 				throw new Exception("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> sent Pass<"+t_sendPass+"> connected.");			
 			}
 
+			m_logger.LogOut("ValidateClient 1");
+			
 			if((m_clientVer = sendReceive.ReadInt(in)) < 2){
 				throw new Exception("error version client<"+ _s.getInetAddress().getHostAddress() +"> connected.");
 			}
@@ -406,7 +410,9 @@ public class fetchMgr{
 					SendNewVersionPrompt(t_tmp);
 				}
 			}
-						
+			
+			m_logger.LogOut("ValidateClient 2");
+			
 			if(m_clientVer >= 5){
 				m_passwordKey = sendReceive.ReadString(in);
 			}
@@ -422,6 +428,10 @@ public class fetchMgr{
 				m_clientDisplayHeight = (t_size & 0x0000ffff);
 			}
 			
+			
+			m_logger.LogOut("ValidateClient 3");
+			
+			
 			if(m_clientVer >= 12 && (m_pin == -1)){
 				t_tmp.SendBufferToSvr(new byte[]{msg_head.msgDeviceInfo}, false);
 			}
@@ -430,6 +440,8 @@ public class fetchMgr{
 				m_isIMEnabled = sendReceive.ReadBoolean(in);
 			}
 
+			m_logger.LogOut("ValidateClient 4");
+			
 			_s.setSoTimeout(0);
 									
 			return t_tmp;
@@ -486,22 +498,22 @@ public class fetchMgr{
 									m_currConnect.m_socket = null;
 								}		
 								
-								//m_logger.LogOut("StartListening 0");
+								m_logger.LogOut("StartListening 0");
 								
 								// wait	quit
 								while(!m_currConnect.m_quit){
 									Thread.sleep(50);
 								}
-								//m_logger.LogOut("StartListening 1");
+								m_logger.LogOut("StartListening 1");
 							}
 							
-							//m_logger.LogOut("StartListening 2");
+							m_logger.LogOut("StartListening 2");
 							
 							m_currConnect = new berrySvrDeamon(this,t_sock,t_sendReceive);
 							
 							ClientConnected();
 							
-							//m_logger.LogOut("StartListening 3");
+							m_logger.LogOut("StartListening 3");
 							
 						}catch(Exception e){
 							t_sock.close();

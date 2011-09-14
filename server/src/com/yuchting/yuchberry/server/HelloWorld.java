@@ -93,11 +93,7 @@ public class HelloWorld {
 	 */
 	public static void main(String arg[])throws Exception{
 		
-		String string = "eyJJTUd0YWxrIjpbeyJTZW5kIjowLCJSZWN2QiI6MCwiU2VuZEIiOjAsIlJlY3YiOjAsIkFjY291bnQiOiJ5dWNoZHJvaWRAZ21haWwuY29tIn1dLCJUaW1lIjoxMzE1OTgxNTUwLCJFbWFpbCI6W10sIkdFTyI6W3sidCI6MTMxNTk4MTU1MCwieSI6MCwieCI6MH0seyJ0IjoxMzE1OTgxNTUwLCJ5IjowLCJ4IjowfV0sIldlaWJvUVEiOltdLCJXZWlib1QiOltdLCJJRCI6Iui/meaYr S4reaWh a1i ivlVRlc3QtLTEiLCJXZWlib1NpbmEiOltdfQ==";
-		
-		string = new String(Base64.decodeBase64(string.getBytes("UTF-8")));
-		
-		System.out.println(string);
+		berryRecvTest();
 	}
 	
 	
