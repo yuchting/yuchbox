@@ -2003,10 +2003,7 @@ public class connectDeamon extends Thread implements SendListener,
 
 			WeiboHeadImage.AddWeiboHeadImage(_imageList,_style,_imageId,t_dataArray);
 			
-			if(_isWeiboOrIM){
-				m_mainApp.ChangeWeiboHeadImageHash(_imageId, _style, t_dataArray.length);
-			}
-			
+			m_mainApp.ChangeHeadImageHash(_isWeiboOrIM,_imageId, _style, t_dataArray.length);
 			
 			String t_imageFilename = null;
 			

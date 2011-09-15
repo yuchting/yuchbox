@@ -491,6 +491,8 @@ public class fetchMgr{
 								//
 								synchronized (m_currConnect) {
 									
+									m_logger.LogOut("StartListening -1");
+									
 									if(m_currConnect.m_socket != null && !m_currConnect.m_socket.isClosed()){
 										m_currConnect.m_socket.close();
 																			

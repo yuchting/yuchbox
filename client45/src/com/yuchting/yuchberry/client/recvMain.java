@@ -76,6 +76,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public final static long		fsm_PIN					= DeviceInfo.getDeviceId();
 	public final static String	fsm_IMEI				= "bb";
 	
+	public final static int		fsm_delayLoadingTime	= fsm_display_width>320?600:800;
+	
 	
 	public static ResourceBundle sm_local = ResourceBundle.getBundle(localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
 	
@@ -2237,20 +2239,27 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		m_weiboTimeLineScreen.AddWeibo(_weibo,false);
 	}
 	
-	public void ChangeWeiboHeadImageHash(String _userId,int _weiboStyle,int _headImageHash){
+	public void ChangeHeadImageHash(boolean _isWeiboOrIM,String _userId,int _weiboStyle,int _headImageHash){
 		
-		synchronized(m_receivedWeiboList) {
+		if(_isWeiboOrIM){
+			synchronized(m_receivedWeiboList) {
 
-			for(int i = 0 ;i < m_receivedWeiboList.size();i++){
-				fetchWeibo weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
-				
-				if(weibo.GetWeiboStyle() == _weiboStyle 
-				&& weibo.GetHeadImageId().equals(_userId) ){
+				for(int i = 0 ;i < m_receivedWeiboList.size();i++){
+					fetchWeibo weibo = (fetchWeibo)m_receivedWeiboList.elementAt(i);
 					
-					weibo.SetUserHeadImageHashCode(_headImageHash);
+					if(weibo.GetWeiboStyle() == _weiboStyle 
+					&& weibo.GetHeadImageId().equals(_userId) ){
+						
+						weibo.SetUserHeadImageHashCode(_headImageHash);
+					}
 				}
 			}
+		}else{
+			if(m_mainIMScreen != null){
+				m_mainIMScreen.changeHeadImageHash(_userId,_weiboStyle,_headImageHash);
+			}
 		}
+		
 	}
 	
 	static final String fsm_weiboDataName = "weibo.data";

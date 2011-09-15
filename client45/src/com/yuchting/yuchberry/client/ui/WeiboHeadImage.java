@@ -91,7 +91,15 @@ public final class WeiboHeadImage {
 		t_os.write(sign);
 		t_os.write(_style);		
 		
-		sendReceive.WriteString(t_os,_imageID);
+		if(_isWeiboOrIM){
+			if(_style == fetchWeibo.QQ_WEIBO_STYLE){
+				sendReceive.WriteString(t_os,_imageID);
+			}else{
+				sendReceive.WriteLong(t_os,Long.parseLong(_imageID));
+			}
+		}else{
+			sendReceive.WriteString(t_os,_imageID);
+		}
 		
 		// whether large image 
 		sendReceive.WriteBoolean(t_os,fsm_headImageWidth == fetchWeibo.fsm_headImageSize_l);
@@ -125,7 +133,7 @@ public final class WeiboHeadImage {
 				if(_style == t_image.m_weiboStyle 
 					&& t_image.m_userID.equals(_imageID) ){
 					
-					if(t_image.m_dataHash != _hashCode 
+					if((t_image.m_dataHash != _hashCode && _hashCode != 0)
 						|| t_image.m_headImage == getDefaultHeadImage()){
 						
 						SendHeadImageQueryMsg(_imageID,_style,_isWeiboOrIM);
@@ -139,7 +147,7 @@ public final class WeiboHeadImage {
 			//
 			WeiboHeadImage t_image = LoadWeiboImage(_imageID,_style,_isWeiboOrIM);
 			if(t_image != null){
-				if(t_image.m_dataHash != _hashCode){					
+				if(t_image.m_dataHash != _hashCode && _hashCode != 0){					
 					SendHeadImageQueryMsg(_imageID,_style,_isWeiboOrIM);
 				}
 				
@@ -155,7 +163,7 @@ public final class WeiboHeadImage {
 			
 			t_image.m_userID = _imageID;
 			t_image.m_headImage = getDefaultHeadImage();
-			t_image.m_dataHash = sm_defaultHeadImageHashCode;
+			t_image.m_dataHash = _hashCode;
 			t_image.m_weiboStyle = _style;
 			
 			_imageList.addElement(t_image);

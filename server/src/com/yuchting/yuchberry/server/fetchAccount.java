@@ -109,12 +109,12 @@ abstract public class fetchAccount {
 				}catch(Exception e){
 
 					m_mainMgr.SendData(sm_cryptPasswordKeyError, false);
-					m_mainMgr.m_logger.LogOut(GetAccountName() + "crypt password error,please check the PasswordKey of client.");
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " crypt password error,please check the PasswordKey of client.");
 					
 					return null;
 				}
 				
-				m_mainMgr.m_logger.LogOut(GetAccountName() +  "used crpty Password key to decode.");
+				m_mainMgr.m_logger.LogOut(GetAccountName() +  " used crpty Password key to decode.");
 			}
 		}
 		

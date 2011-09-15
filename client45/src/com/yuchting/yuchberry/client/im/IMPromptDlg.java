@@ -88,11 +88,11 @@ public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 	
 	public boolean onClose(){
 		m_mainScreen.m_mainApp.StopIMNotification();
+		
 		if(!hasMoreChatPrompt()){
 			close();
 			return true;
-		}
-		
+		}		
 		return false;
 	}
 	

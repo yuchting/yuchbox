@@ -336,7 +336,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			
 			for(RosterEntry entry:t_rosterList){
 				m_chatRosterList.add(convertRoster(entry));
-			}	
+			}
 		}
 		
 		
@@ -676,7 +676,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 						
 		Presence t_presence = m_roster.getPresence(roster.getAccount());
 		setPresence(roster, t_presence);
-				
+		
 		return roster;
 	}
 	
@@ -975,6 +975,8 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		for(fetchChatRoster roster:t_rosterList){
 			roster.Outport(os);
 		}
+		
+		m_mainMgr.m_logger.LogOut("IM send Roster " + t_rosterList.size());
 		
 		m_mainMgr.SendData(os, true);		
 	}

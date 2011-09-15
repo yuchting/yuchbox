@@ -21,8 +21,6 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 
-import org.apache.commons.codec.binary.Base64;
-
 import weibo4j.http.OAuth;
 import weibo4j.http.OAuthToken;
 import weibo4j.http.PostParameter;

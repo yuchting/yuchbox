@@ -415,6 +415,10 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 	}
 	
+	public boolean isAddingWeibo(){
+		return m_delayWeiboAddRunnableID != -1;
+	}
+	
 	final class DelayAddWeiboData{
 		public fetchWeibo	m_weibo;
 		public boolean		m_initAdd;
@@ -458,7 +462,7 @@ public class weiboTimeLineScreen extends MainScreen{
 						}
 					}
 					
-				},WeiboHeadImage.fsm_largeHeadImage?600:800, true);
+				},recvMain.fsm_delayLoadingTime, true);
 			}
 		}
 	}

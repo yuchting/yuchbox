@@ -3,7 +3,6 @@ package com.yuchting.yuchberry.yuchsign.client.account;
 import java.util.Date;
 import java.util.Vector;
 
-import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
