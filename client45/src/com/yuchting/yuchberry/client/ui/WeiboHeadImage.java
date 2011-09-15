@@ -155,7 +155,7 @@ public final class WeiboHeadImage {
 			
 			t_image.m_userID = _imageID;
 			t_image.m_headImage = getDefaultHeadImage();
-			t_image.m_dataHash = _hashCode;
+			t_image.m_dataHash = sm_defaultHeadImageHashCode;
 			t_image.m_weiboStyle = _style;
 			
 			_imageList.addElement(t_image);
@@ -164,14 +164,9 @@ public final class WeiboHeadImage {
 		}		
 	}
 	
-	public static WeiboHeadImage LoadWeiboImage(String _imageID,byte _style,boolean _isWeiboOrIM)throws Exception{
+	private static WeiboHeadImage LoadWeiboImage(String _imageID,byte _style,boolean _isWeiboOrIM)throws Exception{
 		
-		WeiboHeadImage t_image = new WeiboHeadImage();
-		
-		t_image.m_userID 		= _imageID;
-		t_image.m_weiboStyle 	= _style;
-		t_image.m_headImage 	= getDefaultHeadImage();
-		t_image.m_dataHash 		= sm_defaultHeadImageHashCode;
+		WeiboHeadImage t_image = null;
 		
 		try{
 
@@ -190,30 +185,30 @@ public final class WeiboHeadImage {
 				}else{
 					t_imageFilename = sm_mainApp.GetIMHeadImageDir(_style) + _imageID + ".png";
 				}
-			
 			}
 			
 			FileConnection t_fc = (FileConnection)Connector.open(t_imageFilename,Connector.READ_WRITE);
 			try{
 				if(t_fc.exists()){
-					
 					InputStream t_fileIn = t_fc.openInputStream();
 					try{
 																	
 						byte[] t_data = new byte[(int)t_fc.fileSize()];
 						
 						sendReceive.ForceReadByte(t_fileIn, t_data, t_data.length);
+					
+						t_image = new WeiboHeadImage();
 						
-						t_image.m_headImage =  EncodedImage.createEncodedImage(t_data, 0, t_data.length).getBitmap();
-						t_image.m_dataHash = t_data.length;
+						t_image.m_userID 		= _imageID;
+						t_image.m_weiboStyle 	= _style;
+						
+						t_image.m_headImage		=  EncodedImage.createEncodedImage(t_data, 0, t_data.length).getBitmap();
+						t_image.m_dataHash 		= t_data.length;
 						
 					}finally{
-						
 						t_fileIn.close();
 						t_fileIn = null;
 					}
-				}else{
-					sm_mainApp.SetErrorString("LWI:" + t_imageFilename);
 				}
 				
 			}finally{
@@ -221,6 +216,7 @@ public final class WeiboHeadImage {
 				t_fc = null;
 			}	
 		}catch(Exception e){
+			t_image = null;
 			sm_mainApp.SetErrorString("LWI:"+ e.getMessage() + e.getClass().getName());
 		}
 		
@@ -237,7 +233,7 @@ public final class WeiboHeadImage {
 			}
 		}
 		
-		_g.drawBitmap(_x,_y,_image.m_headImage.getWidth(),_image.m_headImage.getHeight(),_image.m_headImage,0,0);
+		_g.drawBitmap(_x,_y,fsm_headImageWidth,fsm_headImageWidth,_image.m_headImage,0,0);
 		
 		recvMain.sm_weiboUIImage.drawImage(_g,sm_headImageMask, _x, _y);
 		

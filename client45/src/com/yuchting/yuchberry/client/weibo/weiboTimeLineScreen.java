@@ -1056,16 +1056,29 @@ public class weiboTimeLineScreen extends MainScreen{
 			}	
 		}
 		
-		if(key == 10){
-			boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
-    		if(t_shiftDown && m_currMgr.getCurrEditItem() != null){
-    			// send the contain
-    			//
-    			m_sendItem.run();
-    			return true;
-    		}			
+		if(m_currMgr.getCurrEditItem() != null){
+			if(key == 10){
+				
+				boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
+				
+	    		if(t_shiftDown){
+	    			// send the contain
+	    			//
+	    			m_sendItem.run();
+	    			return true;
+	    		}			
+			}else if(key == ' '){
+							
+				boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
+				
+	    		if(t_shiftDown ){
+	    			
+	    			m_phizItem.run();    			
+	    			return true;
+	    		}
+			}
 		}
-		
+				
 		return super.keyDown(keycode,time);   	
 	}
 		 

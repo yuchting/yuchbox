@@ -44,7 +44,7 @@ final class RosterChatData{
 	}
 	
 	public void copyFrom(fetchChatRoster _roster){
-		m_roster.copyFrom(m_roster);
+		m_roster.copyFrom(_roster);
 		m_isYuch = m_roster.getSource().indexOf(MainIMScreen.fsm_YuchBerrySource) != -1;
 	}
 }
@@ -709,6 +709,9 @@ public class MainIMScreen extends MainScreen{
 						Vector t_tmpRosterList = new Vector();
 						
 						int t_num = sendReceive.ReadInt(in);
+						
+						m_mainApp.SetErrorString("PCRL: recv " + t_num + " roster");
+						
 						for(int i = 0 ;i < t_num;i++){
 							fetchChatRoster t_roster = new fetchChatRoster();
 							t_roster.Import(in);

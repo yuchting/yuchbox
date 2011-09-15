@@ -246,6 +246,12 @@ final class InputManager extends Manager implements FieldChangeListener{
     				return true;
     			}
     		}
+		}else if(key ==' '){
+			
+			if((Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0){
+				m_middleMgr.m_chatScreen.m_phizMenu.run();
+				return true;
+			}
 		}
 		
 		return super.keyDown(keycode,time);
