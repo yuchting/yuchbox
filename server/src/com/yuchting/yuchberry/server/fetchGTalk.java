@@ -339,7 +339,9 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			}	
 		}
 		
-		m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " prepare OK!");
+		
+		
+		m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " prepare OK! load " + m_chatRosterList.size() + " roster");
 		
 		ClientDisconnected();
 	}
@@ -913,6 +915,8 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				os.write(t_fileData);				
 				
 				m_mainMgr.SendData(os, false);
+				
+				m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " send HeadImage:" + t_imageID);
 				
 				return true;
 			}
