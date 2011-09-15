@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">语盒</string>
+    <string name="start_svr_but">启动服务</string>
+    <string name="stop_svr_but">停止服务</string>
+</resources>
