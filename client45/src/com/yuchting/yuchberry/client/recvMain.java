@@ -76,7 +76,18 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public final static long		fsm_PIN					= DeviceInfo.getDeviceId();
 	public final static String	fsm_IMEI				= "bb";
 	
-	public final static int		fsm_delayLoadingTime	= fsm_display_width>320?600:800;
+	public static int				fsm_delayLoadingTime	= 500;
+	static{
+		if(fsm_OS_version.startsWith("7.")){
+			fsm_delayLoadingTime = 200;
+		}else if(fsm_OS_version.startsWith("6.")){
+			fsm_delayLoadingTime = 300;
+		}else if(fsm_OS_version.startsWith("5.")){
+			fsm_delayLoadingTime = 500;
+		}else{
+			fsm_delayLoadingTime = 800;
+		}		
+	}
 	
 	
 	public static ResourceBundle sm_local = ResourceBundle.getBundle(localResource.BUNDLE_ID, localResource.BUNDLE_NAME);

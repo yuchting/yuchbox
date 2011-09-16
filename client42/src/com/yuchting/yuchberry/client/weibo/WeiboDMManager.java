@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.client.weibo;
 import net.rim.device.api.ui.Field;
 
 import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 
 public class WeiboDMManager extends WeiboMainManager{
 	

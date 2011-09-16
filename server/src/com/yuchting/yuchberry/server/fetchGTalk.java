@@ -398,19 +398,18 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     			
     			for(fetchChatRoster roster : m_chatRosterList){
     				if(roster.getAccount().toLowerCase().equals(acc)){
-    					
 	    				continue addRosterListener_flag;
 	    			}
 	    		}
     			
     			RosterEntry t_entry = m_roster.getEntry(acc);
     			
-    			m_chatRosterList.add(convertRoster(t_entry));
+    			fetchChatRoster t_roster = convertRoster(t_entry);
+    			m_chatRosterList.add(t_roster);
     			
+    			m_changeChatRosterList.add(t_roster);    			
     			m_mainMgr.m_logger.LogOut(GetAccountName() + " entriesAdded:" + acc);
     		}
-    		
-    		
     	}
     }
     public void entriesDeleted(Collection<String> addresses){
@@ -546,8 +545,13 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			fetchChatMsg msg = convertChat(chat, message);
 			sendClientChatMsg(msg,true);
 			
-			m_pushedChatMsgList.add(msg);
-			
+			synchronized (m_pushedChatMsgList) {
+				while(m_pushedChatMsgList.size() > 64){
+					m_pushedChatMsgList.remove(0);
+				}
+				m_pushedChatMsgList.add(msg);
+			}
+						
 			synchronized (m_markReadChatMsgList) {
 				while(m_markReadChatMsgList.size() > 256){
 					m_markReadChatMsgList.remove(0);

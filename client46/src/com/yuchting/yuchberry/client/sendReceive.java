@@ -135,7 +135,7 @@ public class sendReceive extends Thread{
 	}
 	
 	//! send buffer implement
-	private void SendBufferToSvr_imple(byte[] _write)throws Exception{
+	synchronized private void SendBufferToSvr_imple(byte[] _write)throws Exception{
 		
 		if(_write == null){
 			return;
@@ -144,7 +144,7 @@ public class sendReceive extends Thread{
 		OutputStream os = m_socketOutputStream;
 		
 		ByteArrayOutputStream zos = new ByteArrayOutputStream();
-		GZIPOutputStream zo = new GZIPOutputStream(zos);
+		GZIPOutputStream zo = new GZIPOutputStream(zos,6);
 		zo.write(_write);
 		zo.close();	
 		
@@ -264,8 +264,7 @@ public class sendReceive extends Thread{
 			// 20 is TCP pack head length
 			m_downloadByte += t_ziplen + 4 + 20;
 			
-			GZIPInputStream zi	= new GZIPInputStream(
-										new ByteArrayInputStream(t_zipdata));
+			GZIPInputStream zi	= new GZIPInputStream(new ByteArrayInputStream(t_zipdata));
 
 			ForceReadByte(zi,t_orgdata,t_orglen);
 			
@@ -316,6 +315,10 @@ public class sendReceive extends Thread{
 	}
 	
 	static public void WriteString(OutputStream _stream,String _string)throws Exception{
+		if(_string == null){
+			_string = "";
+		}
+		
 		byte[] t_strByte;
 		
 		try{

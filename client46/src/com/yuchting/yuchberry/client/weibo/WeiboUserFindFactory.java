@@ -12,6 +12,8 @@ import net.rim.device.api.util.Factory;
 import net.rim.device.api.util.StringPattern;
 import net.rim.device.api.util.StringPatternRepository;
 
+import com.yuchting.yuchberry.client.ui.WeiboTextField;
+
 /**
  *  copy from the blackberry system sample
  * 
@@ -116,7 +118,7 @@ class WeiboUserFind extends StringPattern
 				
 				a = str.charAt(i);
 				
-				if(!isLeagalNameCharacter(a)){
+				if(!WeiboTextField.isLeagalNameCharacter(a)){
 					break;
 				}
 			}
@@ -137,32 +139,6 @@ class WeiboUserFind extends StringPattern
     	super.findMatch(str,beginIndex,match);
     	return false;
     }
-    
-    public static boolean isLeagalNameCharacter(char a){
-		
-		if(a == '，' || a == '；' ||a == '：' ||a == '？' ||a == '‘'){
-			return false;
-		}
-		
-		if(Character.isDigit(a) || isChinese(a) || isAlpha(a)){
-			return true;
-		}
-		
-		if(a == '-' || a== '_' ){
-			return true;
-		}
-		
-		return false;
-	}
-	
-	public static boolean isChinese(char a){ 
-		int v = (int)a; 
-		return (v>=19968 && v <=171941);	
-	}
-	
-	public static boolean isAlpha(char a){
-		return Character.isLowerCase(a) || Character.isUpperCase(a);
-	}
 }
 
 /**

@@ -7,24 +7,24 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.MenuItem;
 
 
-public class ImageButton extends Field
-{
-    private static final int fsm_textColour = 0xffffff;
+public class ImageButton extends Field{
+	
+    protected static final int fsm_textColour = 0xffffff;
     
-    private static final int fsm_textBGColor = 0x7ebdff;
-    private static final int fsm_focusBGColor = 0x478dd7;
+    protected static final int fsm_textBGColor = 0x7ebdff;
+    protected static final int fsm_focusBGColor = 0x478dd7;
     
-    private static final int fsm_borderColor = 0x3c7cbf;
+    protected static final int fsm_borderColor = 0x3c7cbf;
     
-    private static final int fsm_borderArc = 5;
+    protected static final int fsm_borderArc = 5;
     
     public  static final int fsm_borderWidth = 2;
 
-    String 	m_text = "";
+    protected String 	m_text = "";
     
-    ImageUnit	m_image = null;
-    ImageUnit	m_image_focus = null;
-    ImageSets	m_imageSets = null;
+    protected ImageUnit	m_image = null;
+    protected ImageUnit	m_image_focus = null;
+    protected ImageSets	m_imageSets = null;
 
     public ImageButton( String text,ImageUnit _image,ImageUnit _image_focus,ImageSets _imageSets){
         this( text,_image,_image_focus,_imageSets,0);
@@ -38,6 +38,11 @@ public class ImageButton extends Field
         m_image_focus = _image_focus;
         m_imageSets = _imageSets;
     }
+    
+    public ImageUnit getImage(){return m_image;}
+    public ImageUnit getFocusImage(){return m_image_focus;}
+    
+    public ImageSets getImageSets(){return m_imageSets;}
     
     public int getImageWidth(){
     	return m_image.getWidth();
@@ -63,7 +68,7 @@ public class ImageButton extends Field
     	focusPaint(g,isFocus());
     }
     
-    private void focusPaint(Graphics g,boolean focus){
+    protected void focusPaint(Graphics g,boolean focus){
     	int oldColour = g.getColor();
     	Font oldFont	= g.getFont();
     	try{

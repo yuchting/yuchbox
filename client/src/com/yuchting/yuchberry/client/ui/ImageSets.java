@@ -1,6 +1,6 @@
 package com.yuchting.yuchberry.client.ui;
 
-import java.util.Hashtable;
+import java.util.Vector;
 
 import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.system.Bitmap;
@@ -8,7 +8,7 @@ import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.XYDimension;
-import net.rim.device.api.xml.jaxp.RIMSAXParser;
+import net.rim.device.api.xml.jaxp.XMLParser;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
@@ -17,14 +17,14 @@ import com.yuchting.yuchberry.client.recvMain;
 
 public class ImageSets {
 
-	Hashtable	m_mapImageUnits = new Hashtable();
+	Vector		m_imageUnits = new Vector();
 	
 	String		m_name		= "";
 	Bitmap		m_fullImage = null;
 	
 	public ImageSets(final String _imageSets)throws Exception{
 		
-		RIMSAXParser t_xml = new RIMSAXParser();
+		XMLParser t_xml = new XMLParser();
 		t_xml.parse(UiApplication.getUiApplication().getClass().getResourceAsStream(_imageSets),new DefaultHandler(){
 			 public void startElement(String uri, String localName, String qName, Attributes  attributes){
 				 
@@ -44,39 +44,53 @@ public class ImageSets {
 					
 					 ImageUnit t_unit = new ImageUnit();
 					 
+					 t_unit.m_name = attributes.getValue("Name");
 					 t_unit.m_x = Integer.valueOf(attributes.getValue("XPos")).intValue();
 					 t_unit.m_y = Integer.valueOf(attributes.getValue("YPos")).intValue();
 					 t_unit.m_width = Integer.valueOf(attributes.getValue("Width")).intValue();
 					 t_unit.m_height = Integer.valueOf(attributes.getValue("Height")).intValue();
 					 
-					 m_mapImageUnits.put(attributes.getValue("Name"),t_unit);
+					 m_imageUnits.addElement(t_unit);
 				 }							 
 			 }
 		});
 	}
 	
+	public Vector getImageList()	{
+		return m_imageUnits;
+	}
+	
 	public XYDimension getImageSize(String _name){
-		ImageUnit t_unit = (ImageUnit)m_mapImageUnits.get(_name);
-		if(t_unit != null){
-			return new XYDimension(t_unit.m_width,t_unit.m_height);
+		for(int i = 0;i < m_imageUnits.size();i++){
+			ImageUnit t_unit = (ImageUnit)m_imageUnits.elementAt(i);
+			if(t_unit.getName().equals(_name)){
+				return new XYDimension(t_unit.m_width,t_unit.m_height);
+			}
 		}
 		
 		return null;
 	}
 	
 	public ImageUnit getImageUnit(String _name){
-		return (ImageUnit)m_mapImageUnits.get(_name);
+		for(int i = 0;i < m_imageUnits.size();i++){
+			ImageUnit t_unit = (ImageUnit)m_imageUnits.elementAt(i);
+			if(t_unit.getName().equals(_name)){
+				return t_unit;
+			}
+		}
+		
+		return null;
 	}
 	
 	public void drawImage(Graphics _g,String _name,int _x,int _y){
-		ImageUnit t_unit = (ImageUnit)m_mapImageUnits.get(_name);
+		ImageUnit t_unit = (ImageUnit)getImageUnit(_name);
 		if(t_unit != null){
 			_g.drawBitmap(_x,_y,t_unit.m_width,t_unit.m_height,m_fullImage,t_unit.m_x,t_unit.m_y);
 		}
 	}
 	
 	public void drawImage(Graphics _g,String _name,int _x,int _y,int _width,int _height){
-		ImageUnit t_unit = (ImageUnit)m_mapImageUnits.get(_name);
+		ImageUnit t_unit = (ImageUnit)getImageUnit(_name);
 		if(t_unit != null){
 			if(_width > t_unit.m_width){
 				_width = t_unit.m_width;

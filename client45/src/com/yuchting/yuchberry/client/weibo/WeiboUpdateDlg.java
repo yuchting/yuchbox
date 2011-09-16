@@ -515,9 +515,12 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
 				
 				if (entryPath != null && m_imagePath == null){
 					
-					if(entryPath.endsWith(".png") && entryPath.indexOf(recvMain.fsm_weiboImageDir) != -1){
+					if(entryPath.endsWith(".png") 
+					&& (entryPath.indexOf(recvMain.fsm_weiboImageDir) != -1 
+						|| entryPath.indexOf(recvMain.fsm_IMImageDir) != -1)){
+						
 						// is not photo
-						// is weibo head image
+						// is weibo/IM head image
 						//
 						continue;
 					}

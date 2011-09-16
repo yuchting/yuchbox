@@ -12,7 +12,6 @@ import javax.microedition.io.SocketConnection;
 import javax.microedition.io.file.FileConnection;
 
 import local.localResource;
-import net.rim.blackberry.api.homescreen.HomeScreen;
 import net.rim.blackberry.api.mail.Address;
 import net.rim.blackberry.api.mail.AttachmentHandler;
 import net.rim.blackberry.api.mail.AttachmentHandlerManager;
@@ -36,11 +35,13 @@ import net.rim.blackberry.api.mail.event.ViewListener;
 import net.rim.blackberry.api.mail.event.ViewListenerExtended;
 import net.rim.device.api.io.Base64OutputStream;
 import net.rim.device.api.system.ApplicationDescriptor;
-import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.util.Arrays;
 
+import com.yuchting.yuchberry.client.screen.IUploadFileScreenCallback;
+import com.yuchting.yuchberry.client.screen.uploadFileScreen;
+import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 import com.yuchting.yuchberry.client.weibo.fetchWeiboUser;
 
@@ -49,16 +50,17 @@ public class connectDeamon extends Thread implements SendListener,
 												FolderListener,
 												AttachmentHandler,
 												ViewListener,
-												ViewListenerExtended{
+												ViewListenerExtended,
+												IUploadFileScreenCallback{
 		
-	final static int	fsm_clientVer = 12;
+	final static int	fsm_clientVer = 14;
 	 
-	sendReceive		m_connect = null;
+	public sendReceive		m_connect = null;
 		
 	 
 	FileConnection		m_keyfile;
 	 
-	SocketConnection	m_conn 					= null;
+	public SocketConnection m_conn 					= null;
 	 
 	Vector				m_sendingMailAttachment = new Vector();
 	
@@ -96,11 +98,11 @@ public class connectDeamon extends Thread implements SendListener,
 	private String			m_htmlTextContain 	= "";
 	private String			m_htmlTextContain_type 	= "";
 	 
-	final class ComposingAttachment{
-		String m_filename;
-		int	m_fileSize;
+	public final class ComposingAttachment{
+		public String m_filename;
+		public int	m_fileSize;
 		 
-		ComposingAttachment(String _filename,int _size){
+		public ComposingAttachment(String _filename,int _size){
 			m_filename = _filename;
 			m_fileSize = _size;
 		}
@@ -114,9 +116,9 @@ public class connectDeamon extends Thread implements SendListener,
 	Vector				m_composingAttachment 	= new Vector();
 	 
 	String				m_currStateString 		= new String();
-	recvMain			m_mainApp 				= null;
-	 
-	boolean			m_sendAuthMsg			= false;
+	
+	public recvMain		m_mainApp 				= null; 
+	public boolean		m_sendAuthMsg			= false;
 	 
 	 
 	int				m_ipConnectCounter 		= 0;
@@ -149,10 +151,10 @@ public class connectDeamon extends Thread implements SendListener,
 	final class SendingQueue extends Thread{
 		
 		final class SendingQueueData{
-			public byte msgType;
+			public int msgType;
 			public byte[] msgData;
 			
-			public SendingQueueData(byte _type,byte[] _data){
+			public SendingQueueData(int _type,byte[] _data){
 				msgType = _type;
 				msgData = _data;
 			}
@@ -160,25 +162,25 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		Vector	m_sendingData = new Vector();
 		
-		
-		
-		public void addSendingData(byte _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
+		public boolean addSendingData(int _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
 			
 			if(!isDisconnectState()){
 				m_connect.SendBufferToSvr(_data, false, false);
 			}else{
-				synchronized (this) {
+				synchronized (m_sendingData) {
 					if(_exceptSame){
 						for(int i = 0 ;i < m_sendingData.size();i++){
 							SendingQueueData t_data = (SendingQueueData)m_sendingData.elementAt(i);
 							if(t_data.msgType == _msgType && Arrays.equals(t_data.msgData,_data)){
-								return;
+								return false;
 							}
 						}
 					}
 					m_sendingData.addElement(new SendingQueueData(_msgType,_data));
 				}				
-			}			
+			}
+			
+			return true;
 		}
 				
 		public void run(){
@@ -192,7 +194,7 @@ public class connectDeamon extends Thread implements SendListener,
 						}catch(Exception e){}
 					}
 					
-					synchronized (this) {
+					synchronized (m_sendingData) {
 						for(int i = 0 ;i < m_sendingData.size();i++){
 							SendingQueueData t_data = (SendingQueueData)m_sendingData.elementAt(i);
 							m_connect.SendBufferToSvr(t_data.msgData, false, false);
@@ -210,8 +212,8 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	SendingQueue	 m_sendingQueue = new SendingQueue();
 	
-	public void addSendingData(byte _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
-		m_sendingQueue.addSendingData(_msgType, _data, _exceptSame);
+	public boolean addSendingData(int _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
+		return m_sendingQueue.addSendingData(_msgType, _data, _exceptSame);
 	}
 	
 	public boolean isDisconnectState(){
@@ -294,7 +296,7 @@ public class connectDeamon extends Thread implements SendListener,
 		try{
 			
 			for(int i = 0;i < m_sendingMailAttachment.size();i++){
-				sendMailAttachmentDeamon t_mail = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
+				SendMailDeamon t_mail = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
 				
 				if(t_mail.m_sendMail.GetSendDate().equals(t_msg.getSentDate())){
 					
@@ -318,7 +320,65 @@ public class connectDeamon extends Thread implements SendListener,
 			if(m_sendStyle != fetchMail.NOTHING_STYLE && m_forwordReplyMail != null){
 									
 				t_forwardReplyMail = new fetchMail();
-				ImportMail(m_forwordReplyMail,t_forwardReplyMail);
+				
+				Folder t_folder = m_forwordReplyMail.getFolder();
+				if(t_folder != null && t_folder.getType() == Folder.SENT){
+					
+					// if reply/forward the message of OUTBOX
+					//
+					Message t_original = FindOrgMessage(m_forwordReplyMail);
+					
+					if(t_original != null && m_sendStyle == fetchMail.REPLY_STYLE){
+						
+						fetchMail t_originalMail = new fetchMail();
+						ImportMail(m_forwordReplyMail, t_originalMail);
+						
+						m_forwordReplyMail = t_original;
+						ImportMail(m_forwordReplyMail,t_forwardReplyMail);
+						
+						// append the original message text 
+						//
+						StringBuffer t_contain = new StringBuffer(t_originalMail.GetContain());
+						t_contain.append("\r\n\r\n\r\n---\r\n\r\n");
+						t_contain.append(t_forwardReplyMail.GetContain());
+						
+						t_forwardReplyMail.SetContain(t_contain.toString());
+						
+					}else{
+					
+						ImportMail(m_forwordReplyMail,t_forwardReplyMail);
+						t_forwardReplyMail.GetSendToVect().removeAllElements();
+						
+						if(t_original != null){
+						
+							// change the forward mail account of server 
+							//
+							Address[] a;
+							
+							if((a = t_original.getRecipients(Message.RecipientType.TO)) != null) {
+								
+							    for (int j = 0; j < a.length; j++) {
+							    	t_forwardReplyMail.GetSendToVect().addElement(composeAddress(a[j]));
+							    }
+							}
+									
+							// append the original message text 
+							//
+							fetchMail t_originalMail = new fetchMail();
+							ImportMail(t_original, t_originalMail);
+							
+							StringBuffer t_contain = new StringBuffer(t_forwardReplyMail.GetContain());
+							t_contain.append("\r\n\r\n\r\n---\r\n\r\n");
+							t_contain.append(t_originalMail.GetContain());
+							
+							t_forwardReplyMail.SetContain(t_contain.toString());
+						}
+					}				
+					
+				}else{
+					ImportMail(m_forwordReplyMail,t_forwardReplyMail);
+				}			
+				
 				
 				if(m_sendStyle == fetchMail.REPLY_STYLE && m_mainApp.m_discardOrgText){
 					// discard the org text when reply
@@ -327,6 +387,21 @@ public class connectDeamon extends Thread implements SendListener,
 				}
 				
 				m_mainApp.SetErrorString("origMsg:"+ t_forwardReplyMail.GetSubject());
+			}else{
+				
+				// select sending from mail address
+				//
+				if(!m_mainApp.m_sendMailAccountList.isEmpty() 
+				&& m_mainApp.m_defaultSendMailAccountIndex < m_mainApp.m_sendMailAccountList.size()
+				&& m_mainApp.m_defaultSendMailAccountIndex >= 0){
+					
+					String t_defaultAcc = (String)m_mainApp.m_sendMailAccountList.elementAt(m_mainApp.m_defaultSendMailAccountIndex);
+					
+					t_mail.GetFromVect().removeAllElements();
+					t_mail.GetFromVect().addElement(t_defaultAcc);
+					
+					m_mainApp.SetErrorString("from:"+t_defaultAcc);
+				}
 			}
 			
 			m_mainApp.SetErrorString("sendMsg:" + t_msg.getSubject());
@@ -337,8 +412,12 @@ public class connectDeamon extends Thread implements SendListener,
 		}catch(Exception _e){
 			m_mainApp.SetErrorString("sMsg: " + _e.getMessage() + " " + _e.getClass().getName());
 		}
-				
-		return true;
+		
+		
+		// return false to forbidden system to delivery this mail
+		// and let the YB set header sign of mail immediately
+		//
+		return false;
 	}
 	
 	 
@@ -432,18 +511,16 @@ public class connectDeamon extends Thread implements SendListener,
 					m_mainApp.PushViewFileScreen(t_filename);
 					
 				}else{
-					
-					m_mainApp.PopupDownloadFileDlg(t_realName);
-					
+									
 					// fetch from the server 
 					//
 					for(int i = 0;i < m_vectReceiveAttach.size();i++){
 						FetchAttachment t_att = (FetchAttachment)m_vectReceiveAttach.elementAt(i);
 												
 						if(t_att.m_messageHashCode == t_messageCode){
-							// found...
-							//
-							m_mainApp.m_downloadDlg.RefreshProgress(t_att);
+							
+							m_mainApp.refreshDownloadFileDlg(t_att);
+							
 							return;
 						}
 					}				
@@ -460,6 +537,8 @@ public class connectDeamon extends Thread implements SendListener,
 					SendFetchAttachmentFile(t_att);
 					
 					m_vectReceiveAttach.addElement(t_att);
+					
+					m_mainApp.PopupDownloadFileDlg(t_att);
 				}
 				
 				t_file.close();
@@ -479,6 +558,33 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	public boolean supports(String contentType){
 		return true;
+	}
+	
+	public void cancelDownloadAtt(FetchAttachment _att){
+		
+		for(int i = 0;i < m_vectReceiveAttach.size();i++){
+			FetchAttachment t_att = (FetchAttachment)m_vectReceiveAttach.elementAt(i);
+									
+			if(t_att == _att){
+				m_vectReceiveAttach.removeElementAt(i);
+				
+				try{
+					ByteArrayOutputStream os = new ByteArrayOutputStream();
+					os.write(msg_head.msgMailAttCancel);
+					sendReceive.WriteInt(os,_att.m_mailIndex);
+					
+					addSendingData(msg_head.msgMailAttCancel, os.toByteArray(), true);
+					
+				}catch(Exception e){
+					m_mainApp.SetErrorString("CDA:"+e.getMessage() + e.getClass().getName());
+				}
+				
+				
+				break;
+			}
+		}
+		
+		
 	}
 	//@}
 	
@@ -506,7 +612,7 @@ public class connectDeamon extends Thread implements SendListener,
 		m_composingMail = e.getMessage();
 		m_composingAttachment.removeAllElements();
 		
-		m_forwordReplyMail = FindOrgMessage(e.getMessage(),fetchMail.FORWORD_STYLE);
+		m_forwordReplyMail = FindOrgMessage(e.getMessage());
 		
 		m_sendStyle = fetchMail.FORWORD_STYLE;
 	}
@@ -521,7 +627,7 @@ public class connectDeamon extends Thread implements SendListener,
 		m_composingMail = e.getMessage();
 		m_composingAttachment.removeAllElements();
 		
-		m_forwordReplyMail = FindOrgMessage(e.getMessage(),fetchMail.REPLY_STYLE);
+		m_forwordReplyMail = FindOrgMessage(e.getMessage());
 		
 		m_sendStyle = fetchMail.REPLY_STYLE;
 	}
@@ -529,7 +635,7 @@ public class connectDeamon extends Thread implements SendListener,
 			
 	static final String fsm_origMsgFindTag = "Message-ID:";
 	
-	public Message FindOrgMessage(Message _message,int _style){
+	public Message FindOrgMessage(Message _message){
 		
 		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 		try {
@@ -565,116 +671,12 @@ public class connectDeamon extends Thread implements SendListener,
 				}
 			}
 			
-		} catch (Exception e1) {
+		}catch (Exception e1) {
 			e1.printStackTrace();
 		}
 		
 		return null;
 		
-//		Message t_org = null;
-//		Store store = Session.getDefaultInstance().getStore();
-//		try{
-//			String t_messageSub = _message.getSubject();			
-//			String t_trimString = null;
-//			if(_style == fetchMail.REPLY_STYLE){
-//				
-//				if(t_messageSub.indexOf("：") != -1){
-//					
-//					for(int i = 0;i< fsm_findPrefix.length;i++){
-//						if(t_messageSub.startsWith(fsm_findPrefix[i])){
-//							t_trimString = fsm_findPrefix[i];
-//							break;
-//						}
-//					}
-//					
-//				}else{
-//
-//					for(int i = 0;i< fsm_replacePrefix.length;i++){
-//						if(t_messageSub.startsWith(fsm_replacePrefix[i])){
-//							t_trimString = fsm_replacePrefix[i];
-//							break;
-//						}
-//					}
-//				}			
-//				
-//				final int t_prefixIndex = t_messageSub.indexOf(t_trimString);
-//				if(t_prefixIndex != -1){
-//					t_messageSub = t_messageSub.substring(t_prefixIndex + t_trimString.length());
-//				}
-//							
-//			}else{
-//				t_trimString = _message.forward().getSubject();
-//								
-//				if(t_trimString.equals(t_messageSub)){
-//					
-//					// it will equal in OS6
-//					// find the prefix
-//					//
-//					for(int i = 0;i < fsm_findPrefix.length;i++){
-//						if(t_messageSub.startsWith(fsm_findPrefix[i])){
-//							t_messageSub = t_messageSub.substring(fsm_findPrefix[i].length());
-//							break;
-//						}
-//					}
-//					
-//					
-//				}else{
-//					
-//					final int t_start = t_trimString.indexOf(t_messageSub);
-//					
-//					if(t_start != -1){
-//						t_trimString = t_trimString.substring(0,t_start);
-//						t_messageSub = t_messageSub.substring(t_trimString.length());
-//					}	
-//				}
-//				
-//			}			
-//			
-//			Folder[] t_folders = store.list();
-//			
-//			find_lab:
-//			for(int i = 0 ;i < t_folders.length;i++){
-//				Message[] t_messages = t_folders[i].getMessages();
-//				
-//				// backword search the message
-//				for(int j = t_messages.length - 1;j >= 0 ;j--){
-//					
-//					final String t_sub = t_messages[j].getSubject();
-//					if(t_sub.startsWith(t_messageSub)){
-//						
-//						if(_style == fetchMail.REPLY_STYLE){
-//							// the original reply to
-//							//
-//							Address[] t_replyTo = t_messages[j].getReplyTo();
-//							
-//							// the message to reply to
-//							//
-//							Address[] t_replyTo1 = _message.getRecipients(Message.RecipientType.TO);
-//														
-//							for(int index = 0;index < t_replyTo.length;index++){
-//								
-//								for(int index1 = 0;index1 < t_replyTo1.length;index1++){
-//									if(t_replyTo[index].getAddr().equalsIgnoreCase(t_replyTo1[index1].getAddr())){
-//										t_org = t_messages[j];
-//										break find_lab;
-//									}
-//								}
-//								
-//							}																				
-//						}else{
-//							t_org = t_messages[j];
-//							break find_lab;
-//						}
-//						
-//					}
-//				}
-//			}
-//			
-//		}catch(Exception e){
-//			m_mainApp.SetErrorString("F:" + e.getMessage() + " " + e.getClass().getName());
-//		}
-//		
-//		return t_org;
 	}
 	
 	public void SendFetchAttachmentFile(FetchAttachment _att)throws Exception{
@@ -686,6 +688,14 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		m_connect.SendBufferToSvr(t_os.toByteArray(), true,false);
 			
+	}
+	
+	public boolean clickOK(String _filename,int _size){
+		AddAttachmentFile(_filename,_size);
+		return true;
+	}
+	public void clickDel(String _filename){
+		DelAttachmentFile(_filename);
 	}
 	
 	//! the attachment file selection screen(uploadFileScreen) will call
@@ -812,6 +822,7 @@ public class connectDeamon extends Thread implements SendListener,
 				sendReceive.WriteString(t_os,recvMain.fsm_OS_version);
 				int t_size = (recvMain.fsm_display_width << 16) | recvMain.fsm_display_height;
 				sendReceive.WriteInt(t_os,t_size);
+				sendReceive.WriteBoolean(t_os,m_mainApp.m_enableIMModule);
 				
 				m_connect.SendBufferToSvr(t_os.toByteArray(), true,false);
 				
@@ -820,24 +831,14 @@ public class connectDeamon extends Thread implements SendListener,
 				synchronized (this) {
 					m_ipConnectCounter = 0;
 				}
-				
-				
+								
 				// set the text connect
 				//
 				m_mainApp.SetConnectState(recvMain.CONNECTED_STATE);
-				
 				m_mainApp.StopDisconnectNotification();
 				
-				if(m_mainApp.m_hasNewWeibo){
-					HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_new.png"));
-				}else{
-					HomeScreen.updateIcon(Bitmap.getBitmapResource("Main.png"));
-				}
-				
-				if(m_mainApp.m_weiboTimeLineScreen != null){
-					m_mainApp.m_weiboTimeLineScreen.SetOnlineState(true);
-				}				
-				
+				m_mainApp.SetModuleOnlineState(true);
+								
 				while(true){
 					ProcessMsg(m_connect.RecvBufferFromSvr());
 				}
@@ -851,17 +852,7 @@ public class connectDeamon extends Thread implements SendListener,
 					}catch(Exception e){}	
 				}							
 			}		
-			
-			if(m_mainApp.m_weiboTimeLineScreen != null){
-				m_mainApp.m_weiboTimeLineScreen.SetOnlineState(false);
-			}
-			
-			if(m_mainApp.m_hasNewWeibo){
-				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline_new.png"));
-			}else{
-				HomeScreen.updateIcon(Bitmap.getBitmapResource("Main_offline.png"));
-			}
-			
+					
 			if(!m_mainApp.isForeground() && m_ipConnectCounter >= 5){
 				m_ipConnectCounter = 0;
 				m_mainApp.TriggerDisconnectNotification();
@@ -882,7 +873,9 @@ public class connectDeamon extends Thread implements SendListener,
 					m_connect = null;
 					m_conn = null;
 				}
-			}			
+			}
+			
+			m_mainApp.SetModuleOnlineState(false);									
 		}
 		
 	 }
@@ -927,14 +920,10 @@ public class connectDeamon extends Thread implements SendListener,
 			 }			
 			 
 			 for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
-				 sendMailAttachmentDeamon send = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
-				 if(send.isAlive()){
-	
-					 send.m_closeState = true;
-					 if(send.isAlive()){
-						 send.interrupt();
-					 }
-				 }				 
+				 SendMailDeamon send = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
+				 	
+				 send.m_closeState = true; 
+				 send.inter(); 
 			 }
 			 
 			 m_sendingMailAttachment.removeAllElements();
@@ -1076,6 +1065,9 @@ public class connectDeamon extends Thread implements SendListener,
 		 	case msg_head.msgMailAttach:
 		 		ProcessMailAttach(in);
 		 		break;
+		 	case msg_head.msgFileAttach:
+		 		ProcessFileAttach(in);
+		 		break;
 		 	case msg_head.msgSponsorList:
 		 		m_mainApp.SetAboutInfo(sendReceive.ReadString(in));
 		 		m_recvAboutText = true;
@@ -1085,7 +1077,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 		if(!m_currentVersion.equals(t_latestVersion)){
 		 			m_currentVersion = t_latestVersion;
 		 			m_mainApp.SetReportLatestVersion(t_latestVersion);
-		 		}		 		 			
+		 		}
 		 		break;
 		 	case msg_head.msgWeibo:
 		 		ProcessWeibo(in);
@@ -1106,6 +1098,11 @@ public class connectDeamon extends Thread implements SendListener,
 		 			m_mainApp.m_weiboTimeLineScreen.displayWeiboUser(t_user);
 		 		}
 		 		break;
+		 	case msg_head.msgWeiboConfirm:
+				if(m_mainApp.m_weiboTimeLineScreen != null){
+					m_mainApp.m_weiboTimeLineScreen.weiboSendFileConfirm(sendReceive.ReadInt(in),0);
+				}
+		 		break;
 		 	case msg_head.msgDeviceInfo:
 		 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		 		os.write(msg_head.msgDeviceInfo);
@@ -1113,19 +1110,66 @@ public class connectDeamon extends Thread implements SendListener,
 		 		sendReceive.WriteString(os,recvMain.fsm_IMEI);
 		 		addSendingData(msg_head.msgDeviceInfo, os.toByteArray(), true);
 		 		break;
+		 	case msg_head.msgMailAccountList:
+		 		sendReceive.ReadStringVector(in, m_mainApp.m_sendMailAccountList);
+		 		if(m_mainApp.m_settingScreen != null){
+		 			m_mainApp.m_settingScreen.refreshMailAccountList();
+		 		}
+		 		break;
+		 	case msg_head.msgChat:
+		 		if(m_mainApp.m_mainIMScreen != null){
+		 			m_mainApp.m_mainIMScreen.processChatMsg(in);
+		 		}
+		 		break;
+		 	case msg_head.msgChatRosterList:
+		 		if(m_mainApp.m_mainIMScreen != null){
+		 			m_mainApp.m_mainIMScreen.processChatRosterList(in);
+		 		}
+		 		break;
+		 	case msg_head.msgChatConfirm:
+		 		if(m_mainApp.m_mainIMScreen != null){
+		 			m_mainApp.m_mainIMScreen.processChatConfirm(in);
+		 		}
+		 		break;
+		 	case msg_head.msgChatState:
+		 		if(m_mainApp.m_mainIMScreen != null){
+		 			m_mainApp.m_mainIMScreen.processChatState(in);
+		 		}
+		 		break;
+		 	case msg_head.msgChatHeadImage:
+		 		ProcessChatHeadImage(in);
+		 		break;
+		 	case msg_head.msgChatPresence:
+		 		if(m_mainApp.m_mainIMScreen != null){
+		 			m_mainApp.m_mainIMScreen.processChatPresence(in);
+		 		}
+		 		break;
+		 	case msg_head.msgChatRead:
+		 		if(m_mainApp.m_mainIMScreen != null){
+		 			m_mainApp.m_mainIMScreen.processChatRead(in);
+		 		}
+		 		break;
 		 }
 	 }
 	
+	public void sendRequestMailAccountMsg(){
+		try{
+			addSendingData(msg_head.msgMailAccountList, new byte[]{msg_head.msgMailAccountList}, true);
+		}catch(Exception e){
+			m_mainApp.SetErrorString("SRMAM:"+e.getMessage()+ e.getClass().getName());
+		}
+		
+	}
 	private Folder GetDefaultFolder()throws Exception{
 		
 		Store store = Session.waitForDefaultSession().getStore();
 		Folder folder = null; 
 		Folder[] t_folders = store.list();
 		for(int i = 0;i < t_folders.length;i++){
-			String t_name = t_folders[i].toString();
-			if((t_name.indexOf("Inbox") != -1 || t_name.indexOf("收件") != -1) //收件匣 收件箱
-			&& (t_name.indexOf("no service book") == -1)){
-				
+			
+			int t_type = t_folders[i].getType();
+			
+			if(t_type == Folder.INBOX){
 				folder = t_folders[i];
 				break;
 			}
@@ -1136,8 +1180,7 @@ public class connectDeamon extends Thread implements SendListener,
 			for(int i = 0;i < t_folders.length;i++){
 				m_mainApp.SetErrorString( t_folders[i].toString());
 			}
-			
-			folder = store.getFolder(Folder.OUTBOX);
+			folder = store.getFolder(Folder.INBOX);
 		}
 		
 		if(folder == null){
@@ -1154,10 +1197,10 @@ public class connectDeamon extends Thread implements SendListener,
 		Folder folder = null; 
 		Folder[] t_folders = store.list();
 		for(int i = 0;i < t_folders.length;i++){
-			String t_name = t_folders[i].toString();
-			if((t_name.indexOf("Outbox") != -1 || t_name.indexOf("发件箱") != -1 || t_name.indexOf("寄件匣") != -1) 
-			&& (t_name.indexOf("no service book") == -1)){
-				
+		
+			int t_type = t_folders[i].getType();
+			
+			if(t_type == Folder.SENT){
 				folder = t_folders[i];
 				break;
 			}
@@ -1168,7 +1211,7 @@ public class connectDeamon extends Thread implements SendListener,
 			for(int i = 0;i < t_folders.length;i++){
 				m_mainApp.SetErrorString( t_folders[i].toString());
 			}
-			folder = store.getFolder(Folder.OUTBOX);
+			folder = store.getFolder(Folder.SENT);
 		}
 		
 		if(folder == null){
@@ -1204,12 +1247,12 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				SendMailConfirmMsg(t_hashcode);
 				
-				m_mainApp.SetErrorString("" + t_hashcode + " Mail has been added!");
+				m_mainApp.SetErrorString("" + t_hashcode + " Mail has been added! ");
 				
 				return;
 			}
 		}
-		
+				
 		if(m_recvMailSimpleHashCodeSet.size() > 256){
 			m_recvMailSimpleHashCodeSet.removeElementAt(0);
 		}
@@ -1223,9 +1266,13 @@ public class connectDeamon extends Thread implements SendListener,
 			}
 		}
 		
+		if(m_mainApp.m_sendMailAccountList.isEmpty()){
+			sendRequestMailAccountMsg();
+		}
+
 		try{
 			
-			final Message m = new Message();
+			Message m = new Message();
 			
 			ComposeMessage(m,t_mail,m_mainApp.m_discardOrgText);
 			
@@ -1267,7 +1314,7 @@ public class connectDeamon extends Thread implements SendListener,
 		// delete the fetchMail send deamon thread
 		//
 		for(int i = 0;i < m_sendingMailAttachment.size();i++){
-			sendMailAttachmentDeamon t_deamon = (sendMailAttachmentDeamon)m_sendingMailAttachment.elementAt(i);
+			SendMailDeamon t_deamon = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
 			
 			if(t_deamon.m_sendMail.GetSendDate().getTime() == t_time){
 			
@@ -1286,9 +1333,8 @@ public class connectDeamon extends Thread implements SendListener,
 				}
 				
 				t_deamon.m_closeState = true;
-				if(t_deamon.isAlive()){
-					t_deamon.interrupt();
-				}				
+				t_deamon.inter();
+							
 				
 				m_sendingMailAttachment.removeElement(t_deamon);
 				
@@ -1356,7 +1402,7 @@ public class connectDeamon extends Thread implements SendListener,
 			ComposeMessageContent(msg, _mail,true);
 		}
 		
-		if(m_mainApp.m_useLocationInfo){
+		if(m_mainApp.m_useLocationInfo && m_mainApp.m_mailUseLocation){
 			_mail.SetLocationInfo(m_mainApp.m_gpsInfo);
 		}
 	
@@ -1366,8 +1412,8 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				try{
 					
-					sendMailAttachmentDeamon t_mailDeamon = new sendMailAttachmentDeamon(connectDeamon.this, 
-							_mail, t_vfileReader,_forwardReply,_sendStyle);
+					SendMailDeamon t_mailDeamon = new SendMailDeamon(connectDeamon.this, 
+													_mail, t_vfileReader,_forwardReply,_sendStyle);
 					
 					m_sendingMailAttachment.addElement(t_mailDeamon);
 					
@@ -1434,6 +1480,29 @@ public class connectDeamon extends Thread implements SendListener,
 				break;
 			}
 		}
+	}
+	
+	public void ProcessFileAttach(InputStream in)throws Exception{
+		
+		int t_hashCode = sendReceive.ReadInt(in);
+		int t_attachIndex = sendReceive.ReadInt(in);
+		
+		for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
+			SendMailDeamon t_mail = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
+			if(t_mail.m_sendMail.GetSimpleHashCode() == t_hashCode){
+				
+				t_mail.m_sendFileDaemon.sendNextFile(t_attachIndex);
+								
+				return;
+			}
+		}
+		
+		// TODO weibo process....
+		//
+		if(m_mainApp.m_weiboTimeLineScreen != null){
+			m_mainApp.m_weiboTimeLineScreen.weiboSendFileConfirm(t_hashCode,t_attachIndex);
+		}
+		
 	}
 		
 	public boolean AddMarkReadOrDelMail(Message m,final boolean _del){
@@ -1890,57 +1959,93 @@ public class connectDeamon extends Thread implements SendListener,
 				t_id = Long.toString(sendReceive.ReadLong(in));
 			}
 			
-			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
-			try{
-				int t_data = -1;
-				while((t_data = in.read()) != -1){
-					t_os.write(t_data);
-				}
-				
-				byte[] t_dataArray = t_os.toByteArray();
-				
-				m_mainApp.m_weiboTimeLineScreen.AddWeiboHeadImage(t_style,t_id,t_dataArray);
-				m_mainApp.ChangeWeiboHeadImageHash(t_id, t_style, t_dataArray.length);
-				
-				String t_imageFilename = null;
-				
-				if(t_largeSize){
-					t_imageFilename = m_mainApp.GetWeiboHeadImageDir(t_style) + t_id + "_l.png";
-				}else{
-					t_imageFilename = m_mainApp.GetWeiboHeadImageDir(t_style) + t_id + ".png";
-				}
-				
-				FileConnection t_fc = (FileConnection)Connector.open(t_imageFilename,Connector.READ_WRITE);
-				try{
-					if(t_fc.exists()){
-						t_fc.delete();
-					}
-					
-					t_fc.create();
-					
-					OutputStream t_fileOS = t_fc.openOutputStream();
-					try{
-						t_fileOS.write(t_dataArray);
-					}finally{
-						t_fileOS.flush();
-						t_fileOS.close();
-						t_fileOS = null;
-					}
-				}finally{
-					t_fc.close();
-					t_fc = null;
-				}
-				
-				
-			}finally{
-				t_os.close();
-				t_os = null;
-			}
+			StoreHeadImage(m_mainApp.m_weiboTimeLineScreen.m_headImageList,
+							true,t_largeSize,t_style,t_id,in);
 			
 		}catch(Exception e){
 			m_mainApp.SetErrorString("PWHI:" + e.getMessage() + e.getClass().getName());
 		}
 	}
-	 
+	
+	private void ProcessChatHeadImage(InputStream in){
+		
+		if(m_mainApp.m_mainIMScreen == null){
+			m_mainApp.SetErrorString("recevive chat IM message,but haven't enable IM module");
+			return;
+		}
+		
+		try{
+			int t_style = in.read();
+			boolean t_largeSize = sendReceive.ReadBoolean(in);
+			
+			String t_id = sendReceive.ReadString(in);
+						
+			StoreHeadImage(m_mainApp.m_mainIMScreen.m_headImageList,
+							false,t_largeSize,t_style,t_id,in);
+			
+		}catch(Exception e){
+			m_mainApp.SetErrorString("PCHI:" + e.getMessage() + e.getClass().getName());
+		}
+	}
+	
+	private void StoreHeadImage(Vector _imageList,boolean _isWeiboOrIM,boolean _largeSize,
+							int _style,String _imageId,InputStream in)throws Exception{
+		
+		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+		try{
+			int t_data = -1;
+			while((t_data = in.read()) != -1){
+				t_os.write(t_data);
+			}
+			
+			byte[] t_dataArray = t_os.toByteArray();
+			
+
+			WeiboHeadImage.AddWeiboHeadImage(_imageList,_style,_imageId,t_dataArray);
+			
+			m_mainApp.ChangeHeadImageHash(_isWeiboOrIM,_imageId, _style, t_dataArray.length);
+			
+			String t_imageFilename = null;
+			
+			if(_largeSize){
+				if(_isWeiboOrIM){
+					t_imageFilename = m_mainApp.GetWeiboHeadImageDir(_style) + _imageId + "_l.png";
+				}else{
+					t_imageFilename = m_mainApp.GetIMHeadImageDir(_style) + _imageId + "_l.png";
+				}
+				
+			}else{
+				if(_isWeiboOrIM){
+					t_imageFilename = m_mainApp.GetWeiboHeadImageDir(_style) + _imageId + ".png";
+				}else{
+					t_imageFilename = m_mainApp.GetIMHeadImageDir(_style) + _imageId + ".png";
+				}
+			}
+			
+			FileConnection t_fc = (FileConnection)Connector.open(t_imageFilename,Connector.READ_WRITE);
+			try{
+				if(t_fc.exists()){
+					t_fc.delete();
+				}
+				
+				t_fc.create();
+				
+				OutputStream t_fileOS = t_fc.openOutputStream();
+				try{
+					t_fileOS.write(t_dataArray);
+				}finally{
+					t_fileOS.flush();
+					t_fileOS.close();
+					t_fileOS = null;
+				}
+			}finally{
+				t_fc.close();
+				t_fc = null;
+			}
+		}finally{
+			t_os.close();
+			t_os = null;
+		}
+	}	 
 }
  

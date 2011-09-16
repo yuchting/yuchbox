@@ -17,7 +17,6 @@ final public class msg_head {
 	
 	final public static byte msgSponsorList		= 9;
 	
-	
 	final public static byte msgWeibo			= 10;
 	final public static byte msgWeiboConfirm		= 11;
 	final public static byte msgWeiboHeadImage	= 12;
@@ -37,5 +36,19 @@ final public class msg_head {
 	final public static byte msgWeiboUser		= 21;
 	
 	final public static byte	msgDeviceInfo		= 22;
+	
+	final public static byte msgFileAttach		= 23;
+	final public static byte msgFileAttachSeg	= 24;
 			
+	final public static byte msgMailAccountList	= 25;
+	final public static byte msgMailAttCancel	= 26;
+	
+	final public static byte msgChat				= 27;
+	final public static byte msgChatEnable		= 28;
+	final public static byte msgChatHeadImage	= 29;
+	final public static byte msgChatRosterList	= 30;
+	final public static byte msgChatConfirm		= 31;
+	final public static byte msgChatState		= 32;
+	final public static byte msgChatPresence		= 33;
+	final public static byte msgChatRead			= 34;
 }
