@@ -122,6 +122,9 @@ class BberEmailPanel extends FlowPanel{
 	commonConfig				m_qqEnterprise = 
 		new commonConfig("@qq.com,imap,imap.exmail.qq.com,143,smtp.exmail.qq.com,25,1");
 	
+	commonConfig				m_163Enterprise = 
+		new commonConfig("@163.com,imap,imap.qiye.163.com,143,smtp.qiye.163.com,25,1");
+	
 	public BberEmailPanel(){
 				
 		m_account.addValueChangeHandler(new ValueChangeHandler<String>() {
@@ -161,6 +164,7 @@ class BberEmailPanel extends FlowPanel{
 		m_reminderBox.addItem("一般（填写通用邮件地址时自动填写）");
 		m_reminderBox.addItem("Google App 企业邮箱");
 		m_reminderBox.addItem("腾讯企业邮箱");
+		m_reminderBox.addItem("网易企业邮箱");
 		for(commonConfig cfg:m_commonConfigList){
 			m_reminderBox.addItem(cfg.m_name);
 		}
@@ -180,10 +184,13 @@ class BberEmailPanel extends FlowPanel{
 				case 2:
 					m_qqEnterprise.SetConfig(BberEmailPanel.this);
 					break;
+				case 3:
+					m_163Enterprise.SetConfig(BberEmailPanel.this);
+					break;
 				}
 				
-				if(t_selectIndex >= 3){
-					t_selectIndex -= 3;
+				if(t_selectIndex >= 4){
+					t_selectIndex -= 4;
 					if(t_selectIndex < m_commonConfigList.length ){
 						m_commonConfigList[t_selectIndex].SetConfig(BberEmailPanel.this);
 					}				

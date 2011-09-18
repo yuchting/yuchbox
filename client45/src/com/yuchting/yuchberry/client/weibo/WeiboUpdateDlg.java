@@ -1,22 +1,11 @@
 package com.yuchting.yuchberry.client.weibo;
 
 
-import java.io.InputStream;
-
-import javax.microedition.io.Connector;
-import javax.microedition.io.file.FileConnection;
-
 import local.localResource;
 import net.rim.blackberry.api.invoke.CameraArguments;
 import net.rim.blackberry.api.invoke.Invoke;
-import net.rim.device.api.io.file.FileSystemJournal;
-import net.rim.device.api.io.file.FileSystemJournalEntry;
-import net.rim.device.api.io.file.FileSystemJournalListener;
-import net.rim.device.api.math.Fixed32;
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.system.DeviceInfo;
-import net.rim.device.api.system.EncodedImage;
-import net.rim.device.api.system.JPEGEncodedImage;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -27,13 +16,11 @@ import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
-import net.rim.device.api.ui.XYPoint;
 import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
 import com.yuchting.yuchberry.client.recvMain;
-import com.yuchting.yuchberry.client.sendReceive;
 import com.yuchting.yuchberry.client.screen.CameraScreen;
 import com.yuchting.yuchberry.client.screen.ICameraScreenCallback;
 import com.yuchting.yuchberry.client.screen.IUploadFileScreenCallback;
@@ -41,6 +28,7 @@ import com.yuchting.yuchberry.client.screen.imageViewScreen;
 import com.yuchting.yuchberry.client.screen.uploadFileScreen;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ButtonSegImage;
+import com.yuchting.yuchberry.client.ui.CameraFileOP;
 import com.yuchting.yuchberry.client.ui.ImageButton;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
@@ -168,7 +156,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		}else if(field == m_phizButton){
 			m_timelineScreen.m_currUpdateDlg.m_phizItem.run();
 		}else if(field == m_photoButton){
-			if(m_timelineScreen.m_currUpdateDlg.m_snapshotAvailible){
+			if(recvMain.fsm_snapshotAvailible){
 				m_timelineScreen.m_currUpdateDlg.m_snapItem.run();
 			}else{
 				m_timelineScreen.m_currUpdateDlg.m_cameraItem.run();
@@ -217,66 +205,18 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		
 	public void sendUpdate(){
 		if(m_editTextArea.getText().length() != 0){
-						
+			
 			byte[] t_content = null;
 			
-			if(m_timelineScreen.m_currUpdateDlg.m_imagePath != null){
-				
-				try{
-					FileConnection t_file = (FileConnection)Connector.open(m_timelineScreen.m_currUpdateDlg.m_imagePath,
-																			Connector.READ_WRITE);
-					
-					if(t_file.exists()){
-						try{
-							InputStream t_fileIn = t_file.openInputStream();
-							try{
-								
-								byte[] t_buffer = new byte[(int)t_file.fileSize()];
-								sendReceive.ForceReadByte(t_fileIn, t_buffer, t_buffer.length);
-								
-								EncodedImage t_origImage = EncodedImage.createEncodedImage(t_buffer, 0, t_buffer.length);
-								
-								int t_origWidth = t_origImage.getWidth();
-								int t_origHeight = t_origImage.getHeight();
-								
-								XYPoint t_scaleSize = m_timelineScreen.m_mainApp.getWeiboUploadSize();
-								
-								try{
-									if(t_scaleSize != null && t_origWidth > t_scaleSize.x && t_origHeight > t_scaleSize.y){
-										
-										int scaleX = Fixed32.div(Fixed32.toFP(t_origWidth), Fixed32.toFP(t_scaleSize.x));
-										int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(t_scaleSize.y));
-																			
-										JPEGEncodedImage finalJPEG = JPEGEncodedImage.encode(t_origImage.scaleImage32(scaleX, scaleY).getBitmap(), 80);
-										
-										t_content = finalJPEG.getData();
-										
-									}else{
-										t_content = t_buffer;
-									}
-																		
-								}finally{
-									t_origImage = null;
-									t_buffer = null;
-								}
-																
-							}finally{
-								t_fileIn.close();
-								t_fileIn = null;
-							}
-							
-							
-						}finally{
-							t_file.close();
-							t_file = null;
-						}
-					}											
-					
-				}catch(Exception e){
-					m_timelineScreen.m_mainApp.DialogAlert("camera file process error:"+ e.getMessage()+ e.getClass());
-					m_timelineScreen.m_mainApp.SetErrorString("su:"+ e.getMessage()+ e.getClass());
-				}
-			}else{
+			try{
+				t_content = CameraFileOP.resizePicFile(m_timelineScreen.m_currUpdateDlg.m_imagePath,
+						m_timelineScreen.m_mainApp.getWeiboUploadSize());
+			}catch(Exception e){
+				m_timelineScreen.m_mainApp.DialogAlert("camera file process error:"+ e.getMessage()+ e.getClass());
+				m_timelineScreen.m_mainApp.SetErrorString("su:"+ e.getMessage()+ e.getClass());
+			}
+						
+			if(t_content == null){
 				t_content = m_timelineScreen.m_currUpdateDlg.m_snapBuffer;				
 			}
 			
@@ -340,8 +280,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	
 }
 
-public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
-															IUploadFileScreenCallback{
+public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 	
 	public final static int			fsm_width = recvMain.fsm_display_width - 20;
 	public final static int			fsm_height = (recvMain.fsm_display_height - 30 > 300?300:(recvMain.fsm_display_height - 30));
@@ -428,7 +367,7 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
     		
 	WeiboUpdateManager		m_updateManager = null;
 	CameraScreen			m_cameraScreen = null;
-	private long 			m_lastUSN;
+	
 	
 	String					m_imagePath = null;
 	int						m_imageType = 0;
@@ -436,18 +375,31 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
 	byte[]					m_snapBuffer = null;
 	
 	recvMain				m_mainApp	= null;
-	boolean				m_snapshotAvailible = false;
 	
 	ImageUnit				m_hasImageSign	= null;
+	
+	CameraFileOP			m_fileSystem = new CameraFileOP() {
+		
+		public void onAddUploadingPic(String _file, int _type) {
+			
+			m_imagePath = _file;
+			m_snapBuffer = null;
+			m_imageType = _type;
+			
+			invalidate();
+		}
+		
+		public boolean canAdded(){
+			return m_imagePath == null;
+		}
+	};
 	
 	public WeiboUpdateDlg(weiboTimeLineScreen _screen){
 		super(new WeiboUpdateManager(_screen),Screen.DEFAULT_MENU | Manager.NO_VERTICAL_SCROLL);
 		m_updateManager = (WeiboUpdateManager)getDelegate();
 		
 		m_mainApp = _screen.m_mainApp;
-		m_mainApp.addFileSystemJournalListener(this);
-		
-		m_snapshotAvailible = Float.valueOf(recvMain.fsm_OS_version.substring(0,3)).floatValue() > 4.5f;
+		m_mainApp.addFileSystemJournalListener(m_fileSystem);
 		
 		m_hasImageSign = recvMain.sm_weiboUIImage.getImageUnit("picSign");
 	}
@@ -482,7 +434,7 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
 		_menu.add(m_phizItem);
 		
 		if(DeviceInfo.hasCamera()){
-			if(m_snapshotAvailible){
+			if(recvMain.fsm_snapshotAvailible){
 				_menu.add(m_snapItem);
 			}			
 			_menu.add(m_cameraItem);
@@ -498,68 +450,8 @@ public class WeiboUpdateDlg extends Screen implements FileSystemJournalListener,
 		super.makeMenu(_menu,instance);
 	}
 	
-	public void fileJournalChanged() {
-		
-		long nextUSN = FileSystemJournal.getNextUSN();
-		
-		for (long lookUSN = nextUSN - 1; lookUSN >= m_lastUSN ; --lookUSN) {
-			
-			FileSystemJournalEntry entry = FileSystemJournal.getEntry(lookUSN);
-			if (entry == null) {
-			    break; 
-			}
-			
-			if(entry.getEvent() == FileSystemJournalEntry.FILE_ADDED){
-				
-				String entryPath = entry.getPath();
-				
-				if (entryPath != null && m_imagePath == null){
-					
-					if(entryPath.endsWith(".png") 
-					&& (entryPath.indexOf(recvMain.fsm_weiboImageDir) != -1 
-						|| entryPath.indexOf(recvMain.fsm_IMImageDir) != -1)){
-						
-						// is not photo
-						// is weibo/IM head image
-						//
-						continue;
-					}
-					
-					if(addUploadingPic("file://" + entryPath)){
-						break;
-					}					
-				}
-			}
-		}
-	}
-	
-	private boolean addUploadingPic(String _file){
-			
-		String t_path = _file.toLowerCase();
-		
-		if(t_path.endsWith("png")){
-			m_imageType = fetchWeibo.IMAGE_TYPE_PNG;
-		}else if(t_path.endsWith("jpg")){
-			m_imageType = fetchWeibo.IMAGE_TYPE_JPG;
-		}else if(t_path.endsWith("bmp")){
-			m_imageType = fetchWeibo.IMAGE_TYPE_BMP;
-		}else if(t_path.endsWith("gif")){
-			m_imageType = fetchWeibo.IMAGE_TYPE_GIF;
-		}else{
-			return false;
-		}
-		
-		m_imagePath = _file;
-		m_snapBuffer = null;
-		
-		invalidate();
-		
-		return true;
-	
-	}
-
 	public boolean clickOK(String _filename,int _size){
-		if(!addUploadingPic(_filename)){
+		if(!m_fileSystem.addUploadingPic(_filename)){
 			m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.WEIBO_ADD_ATTACH_PROMPT));
 			return false;
 		}

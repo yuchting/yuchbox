@@ -60,7 +60,7 @@ public class IMOptionScreen extends MainScreen {
 		
 		add(m_imPopupPrompt);
 		
-		m_imChatMsgHistory		= new ObjectChoiceField(recvMain.sm_local.getString(localResource.WEIBO_OPTION_REFRESH_INTERVAL),
+		m_imChatMsgHistory		= new ObjectChoiceField(recvMain.sm_local.getString(localResource.IM_OPTION_CHAT_HISTORY_NUM),
 									recvMain.fsm_imChatMsgHistoryList,m_mainScreen.m_mainApp.m_imChatMsgHistory);
 		
 		add(m_imChatMsgHistory);

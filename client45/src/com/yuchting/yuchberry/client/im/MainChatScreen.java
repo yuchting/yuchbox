@@ -5,7 +5,10 @@ import java.util.Date;
 import java.util.Vector;
 
 import local.localResource;
+import net.rim.blackberry.api.invoke.CameraArguments;
+import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.device.api.system.Backlight;
+import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -15,19 +18,26 @@ import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
+import com.yuchting.yuchberry.client.ObjectAllocator;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
+import com.yuchting.yuchberry.client.screen.CameraScreen;
+import com.yuchting.yuchberry.client.screen.ICameraScreenCallback;
+import com.yuchting.yuchberry.client.screen.imageViewScreen;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ButtonSegImage;
+import com.yuchting.yuchberry.client.ui.CameraFileOP;
 import com.yuchting.yuchberry.client.ui.ImageButton;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
+import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 
 final class InputManager extends Manager implements FieldChangeListener{
 	
@@ -313,12 +323,25 @@ final class MiddleMgr extends VerticalFieldManager{
 	}
 	
 	public synchronized void prepareChatScreen(RosterChatData _chatData){
+		
+		int t_num = m_chatMsgMgr.getFieldCount();
+		for(int i = 0;i < t_num;i++){
+			MainChatScreen.sm_chatFieldAllocator.release(m_chatMsgMgr.getField(i));
+		}
+		
 		m_chatMsgMgr.deleteAll();
 		
 		ChatField t_field = null;
 		for(int i = 0 ;i < _chatData.m_chatMsgList.size();i++){
 			fetchChatMsg msg = (fetchChatMsg)_chatData.m_chatMsgList.elementAt(i);
-			t_field = new ChatField(msg);
+			try{
+				t_field = (ChatField)MainChatScreen.sm_chatFieldAllocator.alloc();
+			}catch(Exception e){
+				t_field = new ChatField();
+				m_chatScreen.m_mainApp.SetErrorString("PCS:"+e.getMessage()+e.getClass().getName());
+			}
+			
+			t_field.Init(msg);
 			
 			m_chatMsgMgr.add(t_field);
 			
@@ -384,7 +407,15 @@ final class MiddleMgr extends VerticalFieldManager{
 	}
 	
 	public synchronized void addChatMsg(fetchChatMsg _msg){
-		ChatField t_field = new ChatField(_msg);
+		ChatField t_field = null;
+		
+		try{
+			t_field = (ChatField)MainChatScreen.sm_chatFieldAllocator.alloc();
+		}catch(Exception e){
+			t_field = new ChatField();
+			m_chatScreen.m_mainApp.SetErrorString("ACS:"+e.getMessage()+e.getClass().getName());
+		}
+		t_field.Init(_msg);
 		m_chatMsgMgr.add(t_field);
 		
 		// scroll to bottom
@@ -453,6 +484,59 @@ public class MainChatScreen extends MainScreen{
 													m_middleMgr.m_inputMgr.m_editTextArea));
 		}
 	};
+	 MenuItem m_snapItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPEN_CAMERA_SNAP),m_menu_op++,0){
+	    	public void run(){
+	    		try{
+	    			m_cameraScreen = new CameraScreen(new ICameraScreenCallback(){
+	        			public void snapOK(byte[] _buffer){
+	        				m_snapBuffer = _buffer;
+	        				m_imageType	= fetchWeibo.IMAGE_TYPE_JPG;
+	        				
+	        				m_imagePath = null;
+	        				
+	        				invalidate();
+	        			}
+	        		},m_mainApp.getWeiboUploadSize().x);
+	        		
+	        		m_mainApp.pushScreen(m_cameraScreen);	
+	    		}catch(Exception e){
+	    			
+	    			m_mainApp.SetErrorString("MCS:" + e.getMessage());
+	    			m_cameraMenu.run();
+	    		}    		
+	    	}
+	    };
+	    
+	MenuItem m_cameraMenu = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPEN_CAMERA),m_menu_op++,0){
+		public void run(){
+			Invoke.invokeApplication(Invoke.APP_TYPE_CAMERA, new CameraArguments());
+		}
+	};
+	
+	MenuItem m_checkPic		= new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_CHECK_UPLOADING_IMAGE),m_menu_op++,0){
+    	public void run(){
+    		try{
+    			if(m_imagePath != null){
+    				
+    				if(!m_mainApp.CheckMediaNativeApps(m_imagePath)){
+    					m_mainApp.pushGlobalScreen(new imageViewScreen(m_imagePath,m_mainApp),0,UiEngine.GLOBAL_MODAL);
+    				}
+        			
+        		}else{
+        			m_mainApp.pushGlobalScreen(new imageViewScreen(m_snapBuffer,m_mainApp),0,UiEngine.GLOBAL_MODAL);
+        		}	
+    		}catch(Exception e){
+    			m_mainApp.SetErrorString("WCP:"+e.getMessage()+e.getClass().getName());
+    		}
+    		    		
+    	}
+    };
+    
+    MenuItem m_deletePic	= new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_DELETE_PIC_MENU_LABEL),m_menu_op++,0){
+    	public void run(){
+    		clearAttachment();
+    	}
+    };
 	
 	MenuItem m_resendMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_RESEND_MSG_MENU_LABEL),m_menu_op++,0){
 		public void run(){
@@ -551,6 +635,8 @@ public class MainChatScreen extends MainScreen{
 	
 	public final static int		fsm_titleBottomBorder = recvMain.fsm_OS_version.startsWith("6")?0:4;
 	
+	public static ObjectAllocator	sm_chatFieldAllocator = new ObjectAllocator(ChatField.class.getName());
+	
 	RosterChatData	m_currRoster 	= null;
 		
 	recvMain		m_mainApp 		= null;
@@ -560,6 +646,40 @@ public class MainChatScreen extends MainScreen{
 	ChatScreenHeader m_header 		= null;
 	
 	MiddleMgr		m_middleMgr		= new MiddleMgr(this);
+	
+	String					m_imagePath = null;
+	int						m_imageType = 0;
+	
+	byte[]					m_snapBuffer = null;
+	
+	ImageUnit				m_hasImageSign	= null;
+	
+	CameraScreen			m_cameraScreen = null;
+	
+	CameraFileOP			m_camerFileOp = new CameraFileOP() {
+		
+		public void onAddUploadingPic(String file, int type) {
+			m_imagePath = file;
+			m_imageType = type;
+			
+			m_snapBuffer = null;
+			
+			invalidate();
+		}
+		
+		public boolean canAdded() {
+			return m_imagePath == null;
+		}
+	};
+	
+	public void clearAttachment(){
+		m_imagePath = null;
+		m_imageType = 0;
+		
+		m_snapBuffer = null;
+		
+		invalidate();;
+	}
 			
 	public MainChatScreen(recvMain _mainApp,MainIMScreen _mainScreen){
 		super(Manager.NO_VERTICAL_SCROLL);
@@ -579,8 +699,10 @@ public class MainChatScreen extends MainScreen{
 					recvMain.sm_weiboUIImage);
 		}
 		
+		m_mainApp.addFileSystemJournalListener(m_camerFileOp);
 		
 		m_header = new ChatScreenHeader();
+		m_hasImageSign = recvMain.sm_weiboUIImage.getImageUnit("picSign");
 		
 		setTitle(m_header);
 		
@@ -590,9 +712,17 @@ public class MainChatScreen extends MainScreen{
 	protected void makeMenu(Menu _menu,int instance){
 		_menu.add(m_sendMenu);
 		_menu.add(m_phizMenu);
+		if(DeviceInfo.hasCamera()){
+			if(recvMain.fsm_snapshotAvailible){
+				_menu.add(m_snapItem);
+			}
+			_menu.add(m_cameraMenu);
+		}
+		
 		if(getResendField() != null){
 			_menu.add(m_resendMenu);
 		}
+		
 		
 		if(recvMain.sm_imDisplayTime){
 			_menu.add(m_hideTimeMenu);
@@ -661,6 +791,27 @@ public class MainChatScreen extends MainScreen{
 		t_msg.setStyle(m_currRoster.m_roster.getStyle());
 		t_msg.setIsOwnMsg(true);
 		
+		byte[] t_content = null;
+		if(m_imagePath != null){
+			try{
+				t_content = CameraFileOP.resizePicFile(m_imagePath, m_mainApp.getIMSendImageQuality());
+			}catch(Exception e){
+				m_mainApp.SetErrorString("SCM:"+e.getMessage()+e.getClass());
+			}	
+		}
+		
+		if(t_content == null){
+			t_content = m_snapBuffer;
+		}
+		
+		t_msg.setFileContent(t_content, m_imageType);
+		
+		// clear the file sign
+		//
+		m_imagePath = null;
+		m_snapBuffer = null;
+		invalidate();
+		
 		m_currRoster.m_chatMsgList.addElement(t_msg);
 		m_middleMgr.addChatMsg(t_msg);
 		
@@ -688,6 +839,16 @@ public class MainChatScreen extends MainScreen{
 		}catch(Exception e){
 			m_mainApp.SetErrorString("SCCS:"+e.getMessage()+e.getClass().getName());
 		}
+	}
+	
+	protected void paint(Graphics g){
+		super.paint(g);
 		
+		if(m_imagePath != null || m_snapBuffer != null){
+			int t_y = recvMain.fsm_display_height - m_middleMgr.m_inputMgr.getPreferredHeight() - m_hasImageSign.getHeight();
+			int t_x = recvMain.fsm_display_width - m_hasImageSign.getWidth();
+			
+			recvMain.sm_weiboUIImage.drawImage(g, m_hasImageSign, t_x, t_y);
+		}
 	}
 }

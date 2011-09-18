@@ -76,6 +76,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public final static long		fsm_PIN					= DeviceInfo.getDeviceId();
 	public final static String	fsm_IMEI				= "bb";
 	
+	public final static boolean  fsm_snapshotAvailible = Float.valueOf(recvMain.fsm_OS_version.substring(0,3)).floatValue() > 4.5f;
+	
 	public static int				fsm_delayLoadingTime	= 500;
 	static{
 		if(fsm_OS_version.startsWith("7.")){
@@ -2423,6 +2425,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public static final int[]		fsm_imChatMsgHistory		= {32,64,128,256};
 	public int						m_imChatMsgHistory 			= 0;
 	
+	public int						m_imSendImageQuality		= 0;	
 	
 	
 	MainIMScreen				m_mainIMScreen = null;
@@ -2436,6 +2439,17 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				m_mainIMScreen = new MainIMScreen(this);
 			}			
 		}
+	}
+	
+	public XYPoint getIMSendImageQuality(){
+
+		if(m_imSendImageQuality >= 0 && m_imSendImageQuality < fsm_weiboUploadImageSize_size.length){
+			return fsm_weiboUploadImageSize_size[m_imSendImageQuality];
+		}else{
+			m_imSendImageQuality = 0;
+		}
+		
+		return null;
 	}
 	
 	public int getIMChatMsgHistory(){

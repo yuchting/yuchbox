@@ -204,7 +204,7 @@ public final class yuchbber {
 									append("\" lev=\"").append(m_bberLev).
 									append("\" sync=\"").append(m_latestSyncTime).
 									append("\" invite=\"").append(m_inviteCode).
-									append("\" inviteNum=\"").append(m_inviteNum.intValue()).
+									append("\" inviteNum=\"").append(getInviteNum()).
 									append("\">\n");
 				
 		for(yuchEmail email : m_emailList){

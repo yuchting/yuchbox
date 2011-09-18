@@ -620,7 +620,7 @@ public class fetchMgr{
 		
 		switch(t_msg_head){			
 			case msg_head.msgKeepLive:
-				m_logger.LogOut("pulse!");				
+				m_logger.LogOut("pulse!");	
 				break;
 			case msg_head.msgSponsorList:
 				ProcessSponsorList(in);

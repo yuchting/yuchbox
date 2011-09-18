@@ -44,6 +44,7 @@ IM_HIDE_UNVAIL_ROSTER_MENU_LABEL#0="Hide Unavailable Friends";
 IM_HISTORY_MENU_LABEL#0="Recently Chat(H\u0332)";
 IM_MENU_LABEL#0="IM\u0332 Chat";
 IM_MODIFY_STATUS#0="Modify Status";
+IM_OPTION_CHAT_HISTORY_NUM#0="Max history chat message number:";
 IM_OPTION_DISPLAY_LABEL#0="IM Display/Prompt:";
 IM_OPTION_ENABLE_CHAT_STATE#0="Send 'Composing' state to friends";
 IM_OPTION_ENABLE_CHECKED#0="Send has read msg to friends(both a YuchBerry client)";

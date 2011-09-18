@@ -8,7 +8,6 @@ import java.util.Vector;
 
 import local.localResource;
 import net.rim.device.api.system.Backlight;
-import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Keypad;
@@ -21,6 +20,7 @@ import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
+import com.yuchting.yuchberry.client.ObjectAllocator;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
@@ -226,7 +226,9 @@ public class MainIMScreen extends MainScreen{
 	
 	public final static String	fsm_YuchBerrySource		= "YuchBerry.info";
 	public final static Font		fsm_boldFont			= fsm_defaultFont.derive(fsm_defaultFont.getStyle() | Font.BOLD);
-		
+	
+	public static ObjectAllocator	sm_chatMsgAllocator		= new ObjectAllocator(fetchChatMsg.class.getName()); 
+			
 	public Vector					m_headImageList = new Vector();
 
 	MainIMScreenHeader		m_header = null;
@@ -571,21 +573,37 @@ public class MainIMScreen extends MainScreen{
 		}	
 	}
 	
-	public void processChatMsg(InputStream in)throws Exception{
-		final fetchChatMsg t_msg = new fetchChatMsg();
-		t_msg.Import(in);
+	public void processChatMsg(final InputStream in)throws Exception{
 		
-		sendChatConfirmMsg(t_msg);
-	
 		m_mainApp.invokeLater(new Runnable() {
 			public void run() {
-				addChatMsg(t_msg);
+				try{
+					
+					fetchChatMsg t_msg = null;
+					try{
+						t_msg = (fetchChatMsg)sm_chatMsgAllocator.alloc();
+					}catch(Exception e){
+						t_msg = new fetchChatMsg();
+						m_mainApp.SetErrorString("PCM_0:"+e.getMessage()+e.getClass().getName());
+					}
+					
+					t_msg.Import(in);
+					
+					sendChatConfirmMsg(t_msg);
+					
+					addChatMsg(t_msg);
+					
+				}catch(Exception e){
+					m_mainApp.SetErrorString("PCM_1:"+e.getMessage()+e.getClass().getName());
+				}
 			}
 		});
 	}
 	
 	private void addChatMsg(fetchChatMsg _msg){
-				
+		
+		boolean t_notify = !Backlight.isEnabled() || !m_mainApp.isForeground();
+		
 		synchronized (m_rosterChatDataList) {
 			for(int i = 0;i < m_rosterChatDataList.size();i++){
 				RosterChatData data = (RosterChatData)m_rosterChatDataList.elementAt(i);
@@ -611,6 +629,8 @@ public class MainIMScreen extends MainScreen{
 					// remove the history chat record
 					//
 					while(data.m_chatMsgList.size() > m_mainApp.getIMChatMsgHistory()){
+						sm_chatMsgAllocator.release(data.m_chatMsgList.elementAt(0));
+						
 						data.m_chatMsgList.removeElementAt(0);
 					}
 					
@@ -643,6 +663,11 @@ public class MainIMScreen extends MainScreen{
 										// the same roster
 										//
 										m_promptDlg.setRosterChatData(data,_msg.getMsg());
+										
+										// stop the notify
+										//
+										t_notify = false;
+										
 									}else{
 										m_promptQueue.addElement(data);
 									}								
@@ -651,8 +676,16 @@ public class MainIMScreen extends MainScreen{
 								m_promptDlg.setRosterChatData(data,_msg.getMsg());
 								m_mainApp.pushGlobalScreen(m_promptDlg, 0, UiEngine.GLOBAL_QUEUE);
 							}						
+						}else{
+							if(m_hasNewChatMsg){
+								// has new chat msg 
+								//
+								t_notify = false;
+							}
 						}
-					}					
+					}else{
+						t_notify = false;
+					}
 					
 					if(m_chatScreen.getUiEngine() != null
 						&& m_chatScreen.m_currRoster == data){
@@ -660,7 +693,7 @@ public class MainIMScreen extends MainScreen{
 						//
 						m_chatScreen.m_middleMgr.addChatMsg(_msg);
 						m_chatScreen.m_header.invalidate();
-						
+												
 					}else{
 						
 						m_hasNewChatMsg = true;
@@ -672,7 +705,7 @@ public class MainIMScreen extends MainScreen{
 			}	
 		}
 		
-		if(!Backlight.isEnabled() || !m_mainApp.isForeground()){
+		if(t_notify){
 			m_mainApp.TriggerIMNotification();
 		}
 	}

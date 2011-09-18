@@ -54,9 +54,11 @@ public class ChatField extends Manager{
 			}
 		}catch(Exception e){}
 	}
-	
-	public ChatField(fetchChatMsg _msg){
+	public ChatField(){
 		super(Field.FOCUSABLE | Manager.NO_VERTICAL_SCROLL);
+	}
+	
+	public void Init(fetchChatMsg _msg){		
 		m_msg = _msg;
 				
 		String t_converText = WeiboTextField.getConvertString(_msg.getMsg());

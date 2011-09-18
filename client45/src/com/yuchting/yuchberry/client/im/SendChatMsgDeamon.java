@@ -27,7 +27,18 @@ public class SendChatMsgDeamon extends Thread implements ISendAttachmentCallback
 		m_connect		= _chatScreen.m_mainApp.m_connectDeamon;
 		m_sendTo		= _sendTo;
 		
-		start();
+//		if(m_sendMsg.getFileContent() != null){
+//			try{
+//				m_sendFileDaemon = new SendAttachmentDeamon(_chatScreen.m_mainApp.m_connectDeamon, 
+//						m_sendMsg.getFileContent(), (int)(m_sendMsg.getSendTime() / 1000), this);
+//			}catch(Exception e){
+//				m_chatScreen.m_mainApp.SetErrorString("SCMD:"+e.getMessage()+e.getClass());
+//			}
+//			
+//		}else{
+			start();
+		//}
+		
 	}
 	
 	public void inter(){
@@ -101,7 +112,13 @@ public class SendChatMsgDeamon extends Thread implements ISendAttachmentCallback
 			
 			// file length
 			//
-			sendReceive.WriteInt(t_os,0);
+			if(m_sendMsg.getFileContent() != null){
+				sendReceive.WriteInt(t_os,m_sendMsg.getFileContent().length);
+				t_os.write(m_sendMsg.getFileContentType());
+				t_os.write(m_sendMsg.getFileContent());
+			}else{
+				sendReceive.WriteInt(t_os,0);
+			}			
 			
 			m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), false,false);
 					

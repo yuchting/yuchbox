@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
@@ -26,6 +27,11 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smackx.filetransfer.FileTransferListener;
+import org.jivesoftware.smackx.filetransfer.FileTransferManager;
+import org.jivesoftware.smackx.filetransfer.FileTransferRequest;
+import org.jivesoftware.smackx.filetransfer.IncomingFileTransfer;
+import org.jivesoftware.smackx.filetransfer.OutgoingFileTransfer;
 import org.jivesoftware.smackx.packet.VCard;
 
 import twitter4j.internal.org.json.JSONObject;
@@ -111,7 +117,8 @@ final class ChatReadMessage extends Packet{
 
 public class fetchGTalk extends fetchAccount implements RosterListener,
 															ChatManagerListener,
-															MessageListener{
+															MessageListener,
+															FileTransferListener{
 		
 	public final static String[] fsm_gtalkPhiz = 
 	{
@@ -212,6 +219,8 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	};
 	
 	public final static String fsm_ybReadProperty = "YuchBerryRead";
+	public final static String fsm_ybFile 		= "YuchBerryFile";
+	public final static String fsm_ybFileType 	= "YuchBerryType";
 	public final static String fsm_ybClientSource = "YuchBerry.info";
 	public final static String fsm_chatStateNamespace = "http://jabber.org/protocol/chatstates";
 	
@@ -226,6 +235,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	
 	Roster		m_roster		= null;
 	ChatManager	m_chatManager	= null;
+	FileTransferManager m_fileManager = null;
 	
 	Vector<fetchChatRoster>		m_chatRosterList = new Vector<fetchChatRoster>();
 	
@@ -321,6 +331,9 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		}	
 		
 		m_mainConnection.login(t_account,m_password,fsm_ybClientSource + "-" + (new Random()).nextInt(1000));
+		
+		m_fileManager = new FileTransferManager(m_mainConnection);
+		m_fileManager.addFileTransferListener(this);
 		
 		m_chatManager = m_mainConnection.getChatManager();
 		m_chatManager.addChatListener(this);
@@ -432,6 +445,26 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     	}
     }
     
+    public void fileTransferRequest(FileTransferRequest request) {
+        // Check to see if the request should be accepted
+        if(request.getFileName().endsWith(".satt")) {
+              // Accept it
+              IncomingFileTransfer transfer = request.accept();
+              try{
+            	  transfer.recieveFile(new File(request.getFileName()));
+            	  
+            	  m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " recv file:" + request.getFileName());
+            	  
+              }catch(Exception e){
+            	  m_mainMgr.m_logger.PrinterException(e);
+              }
+              
+        }else{
+              // Reject it
+              request.reject();
+        }
+    }
+        
     public void entriesUpdated(Collection<String> addresses){
     	
     }
@@ -595,6 +628,11 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     	Object t_read = message.getProperty(fsm_ybReadProperty);
     	if(t_read != null && t_read instanceof Integer){
     		t_msg.setReadHashCode(((Integer)t_read).intValue());
+    	}
+    	
+    	Object t_file = message.getProperty(fsm_ybFile);
+    	if(t_file != null){
+    		
     	}
     	
     	return t_msg;
@@ -1033,17 +1071,23 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				int		hashcode = sendReceive.ReadInt(in);
 				
 				int t_filelen = sendReceive.ReadInt(in);
+				byte[] t_fileContent = null;
+				int t_type = 0;
 				if(t_filelen != 0){
-					int t_type = in.read();
-					
-					//TODO read from local to uploading file
-					//
+					t_type = in.read();
+					t_fileContent = new byte[t_filelen];
+					sendReceive.ForceReadByte(in, t_fileContent, t_fileContent.length);
 				}
 				
 				String convertText = convertPhiz(message,false);
 				Message t_message = new Message();
 				t_message.setBody(convertText);
 				t_message.setProperty(fsm_ybReadProperty, hashcode);
+				
+				if(t_fileContent != null){
+					t_message.setProperty(fsm_ybFile, t_fileContent);
+					t_message.setProperty(fsm_ybFileType, t_type);
+				}
 					
 				boolean found = false;
 				synchronized (m_chatList){

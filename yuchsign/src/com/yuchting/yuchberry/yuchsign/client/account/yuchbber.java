@@ -149,7 +149,7 @@ public final class yuchbber {
 									append("\" lev=\"").append(m_bberLev).
 									append("\" sync=\"").append(m_latestSyncTime).
 									append("\" invite=\"").append(m_inviteCode).
-									append("\" inviteNum=\"").append(getInviteCode()).
+									append("\" inviteNum=\"").append(getInviteNum()).
 									append("\">\n");
 				
 		for(yuchEmail email : m_emailList){
