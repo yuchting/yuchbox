@@ -9,6 +9,7 @@ import java.util.Vector;
 import local.localResource;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
@@ -27,8 +28,6 @@ import com.yuchting.yuchberry.client.sendReceive;
 import com.yuchting.yuchberry.client.ui.BubbleTextField;
 import com.yuchting.yuchberry.client.ui.SliderHeader;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
-
-
 final class RosterChatData{
 	
 	public fetchChatRoster		m_roster;
@@ -50,7 +49,7 @@ final class RosterChatData{
 	}
 }
 
-public class MainIMScreen extends MainScreen{
+public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
 	int m_menu_label = 0;
 	
@@ -227,7 +226,7 @@ public class MainIMScreen extends MainScreen{
 	public final static String	fsm_YuchBerrySource		= "YuchBerry.info";
 	public final static Font		fsm_boldFont			= fsm_defaultFont.derive(fsm_defaultFont.getStyle() | Font.BOLD);
 	
-	public static ObjectAllocator	sm_chatMsgAllocator		= new ObjectAllocator(fetchChatMsg.class.getName()); 
+	public ObjectAllocator			m_chatMsgAllocator		= new ObjectAllocator("com.yuchting.yuchberry.client.im.fetchChatMsg"); 
 			
 	public Vector					m_headImageList = new Vector();
 
@@ -490,25 +489,20 @@ public class MainIMScreen extends MainScreen{
 					return true;					
 				}
 			}
-			
-		}else{
-			
-			int t_fieldCount = m_currMgr.getFieldCount();
-			for(int i = 0 ;i < t_fieldCount;i++){
-				RosterItemField field = (RosterItemField)m_currMgr.getField(i);
-				if(field.isFocus()){
-								
-					m_chatScreen.m_currRoster = field.m_currRoster;
-					m_mainApp.pushScreen(m_chatScreen);
-					
-					return true;
-					
-				}
-			}	
-		}
-		
+		}		
 		
 		return false;
+	}
+	
+	public void fieldChanged(Field field,int context){
+		if(context != FieldChangeListener.PROGRAMMATIC){
+			RosterItemField t_field = (RosterItemField)field;
+			
+			m_chatScreen.m_currRoster = t_field.m_currRoster;
+			m_mainApp.pushScreen(m_chatScreen);
+			
+			m_chatScreen.clearAttachment();
+		}
 	}
 	
 	public void clearNewChatSign(){
@@ -573,31 +567,53 @@ public class MainIMScreen extends MainScreen{
 		}	
 	}
 	
+	Vector m_delayLoadChatMsg = new Vector();
+	int	   m_delayLoadChatMsgTimer = -1;
+	
 	public void processChatMsg(final InputStream in)throws Exception{
 		
-		m_mainApp.invokeLater(new Runnable() {
-			public void run() {
-				try{
+		fetchChatMsg t_msg = null;
+		try{
+			t_msg = (fetchChatMsg)m_chatMsgAllocator.alloc();
+			
+		}catch(Exception e){
+			t_msg = new fetchChatMsg();
+			m_mainApp.SetErrorString("PCM_0:"+e.getMessage()+e.getClass().getName());
+		}
+		
+		t_msg.Import(in);
+		
+		synchronized (m_delayLoadChatMsg) {
+			
+			m_delayLoadChatMsg.addElement(t_msg);
+			
+			if(m_delayLoadChatMsgTimer == -1){
+				
+				m_delayLoadChatMsgTimer = m_mainApp.invokeLater(new Runnable() {
 					
-					fetchChatMsg t_msg = null;
-					try{
-						t_msg = (fetchChatMsg)sm_chatMsgAllocator.alloc();
-					}catch(Exception e){
-						t_msg = new fetchChatMsg();
-						m_mainApp.SetErrorString("PCM_0:"+e.getMessage()+e.getClass().getName());
+					public void run() {
+						
+						if(m_delayLoadChatMsg.isEmpty()){
+							synchronized (m_delayLoadChatMsg) {
+								m_mainApp.cancelInvokeLater(m_delayLoadChatMsgTimer);
+								m_delayLoadChatMsgTimer = -1; 
+								return;
+							}
+						}
+						
+						fetchChatMsg msg = null; 
+							
+						synchronized (m_delayLoadChatMsg) {
+							msg = (fetchChatMsg)m_delayLoadChatMsg.elementAt(0);
+							m_delayLoadChatMsg.removeElementAt(0);	
+						}
+						
+						sendChatConfirmMsg(msg);
+						addChatMsg(msg);
 					}
-					
-					t_msg.Import(in);
-					
-					sendChatConfirmMsg(t_msg);
-					
-					addChatMsg(t_msg);
-					
-				}catch(Exception e){
-					m_mainApp.SetErrorString("PCM_1:"+e.getMessage()+e.getClass().getName());
-				}
+				}, 100, true);
 			}
-		});
+		}
 	}
 	
 	private void addChatMsg(fetchChatMsg _msg){
@@ -629,8 +645,7 @@ public class MainIMScreen extends MainScreen{
 					// remove the history chat record
 					//
 					while(data.m_chatMsgList.size() > m_mainApp.getIMChatMsgHistory()){
-						sm_chatMsgAllocator.release(data.m_chatMsgList.elementAt(0));
-						
+						m_chatMsgAllocator.release(data.m_chatMsgList.elementAt(0));						
 						data.m_chatMsgList.removeElementAt(0);
 					}
 					
@@ -757,111 +772,127 @@ public class MainIMScreen extends MainScreen{
 		}
 	}
 	
+	int m_delayLoadChatRosterTimer = -1;
+	Vector m_delayLoadChatRosterList = new Vector();
+	
 	public void processChatRosterList(final InputStream in){
 		
-		m_mainApp.invokeLater(new Runnable() {
-			
-			public void run() {
-				try{
-					int t_type = in.read();
-					switch(t_type){
-					case 0:
-						m_isRequestRoster = true;
-						
-						// all list
-						//
-						boolean t_found = false;
-						
-						Vector t_tmpRosterList = new Vector();
-						
-						int t_num = sendReceive.ReadInt(in);
-						
-						m_mainApp.SetErrorString("PCRL: recv " + t_num + " roster");
-						
-						for(int i = 0 ;i < t_num;i++){
-							fetchChatRoster t_roster = new fetchChatRoster();
-							t_roster.Import(in);
-							
-							t_found = false;
-							
-							synchronized(m_rosterChatDataList){
-								for(int j = 0;j < m_rosterChatDataList.size();j++){
-									RosterChatData t_data = (RosterChatData)m_rosterChatDataList.elementAt(j);
-									
-									if(t_data.m_roster.getAccount().equals(t_roster.getAccount())){
-										t_data.copyFrom(t_roster);
-										t_tmpRosterList.addElement(t_data);
-										
-										t_found = true;
-										break;
-									}
-								}
-							}
-							
-							if(!t_found){				
-								RosterChatData t_data = new RosterChatData(t_roster);
-								t_tmpRosterList.addElement(t_data);
-							}
-						}
-						synchronized (m_rosterChatDataList) {
-							m_rosterChatDataList.removeAllElements();
-							
-							for(int i = 0;i < t_tmpRosterList.size();i++){
-								RosterChatData t_data = (RosterChatData)t_tmpRosterList.elementAt(i);
-								m_rosterChatDataList.addElement(t_data);								
-							}
-						}
-						
-												
-						refreshRosterList();
-												
-						break;
-					case 1:
-						fetchChatRoster t_roster = new fetchChatRoster();
-						t_roster.Import(in);
-						
-						boolean t_modified = false;
-						
-						synchronized (m_rosterChatDataList) {
-							for(int i = 0 ;i < m_rosterChatDataList.size();i++){
-								RosterChatData data = (RosterChatData)m_rosterChatDataList.elementAt(i);
-								
-								if(data.m_roster.equals(t_roster)){
-									
-									data.copyFrom(t_roster);
-																		
-									t_modified = true;
-									
-									rangeRosterItemField(data);
-									
-									if(m_mainApp.getActiveScreen() == m_chatScreen
-									&& m_chatScreen.m_currRoster == data){
-										m_chatScreen.m_header.invalidate();
-									}
-									
-									m_currMgr.invalidate();
-									
-									break;
-								}
-							}	
-						}						
-						
-						if(!t_modified){
-							
-							synchronized (m_rosterChatDataList) {
-								m_rosterChatDataList.addElement(new RosterChatData(t_roster));
-							}
-							
-							refreshRosterList();
-						}
-						break;
-					}
-				}catch(Exception e){
-					m_mainApp.SetErrorString("PCRL:"+e.getMessage()+e.getClass().getName());
-				}
+		try{
+			int t_type = in.read();
+			switch(t_type){
+			case 0:
+				m_isRequestRoster = true;
 				
+				// all list
+				//
+				boolean t_found = false;
+				
+				Vector t_tmpRosterList = new Vector();
+				
+				int t_num = sendReceive.ReadInt(in);
+				
+				m_mainApp.SetErrorString("PCRL: recv " + t_num + " roster");
+				
+				for(int i = 0 ;i < t_num;i++){
+					fetchChatRoster t_roster = new fetchChatRoster();
+					t_roster.Import(in);
+					
+					t_found = false;
+					
+					synchronized(m_rosterChatDataList){
+						for(int j = 0;j < m_rosterChatDataList.size();j++){
+							RosterChatData t_data = (RosterChatData)m_rosterChatDataList.elementAt(j);
+							
+							if(t_data.m_roster.getAccount().equals(t_roster.getAccount())){
+								t_data.copyFrom(t_roster);
+								t_tmpRosterList.addElement(t_data);
+								
+								t_found = true;
+								break;
+							}
+						}
+					}
+					
+					if(!t_found){				
+						RosterChatData t_data = new RosterChatData(t_roster);
+						t_tmpRosterList.addElement(t_data);
+					}
+				}
+				synchronized (m_rosterChatDataList) {
+					m_rosterChatDataList.removeAllElements();
+					
+					for(int i = 0;i < t_tmpRosterList.size();i++){
+						RosterChatData t_data = (RosterChatData)t_tmpRosterList.elementAt(i);
+						m_rosterChatDataList.addElement(t_data);								
+					}
+				}				
+										
+				refreshRosterList();
+										
+				break;
+			case 1:
+				fetchChatRoster t_roster = new fetchChatRoster();
+				t_roster.Import(in);
+				
+				boolean t_modified = false;
+				
+				synchronized (m_rosterChatDataList) {
+					for(int i = 0 ;i < m_rosterChatDataList.size();i++){
+						RosterChatData data = (RosterChatData)m_rosterChatDataList.elementAt(i);
+						
+						if(data.m_roster.equals(t_roster)){
+							
+							data.copyFrom(t_roster);
+																
+							t_modified = true;
+							
+							m_delayLoadChatRosterList.addElement(data);
+							
+							if(m_delayLoadChatRosterTimer == -1){
+								
+								m_delayLoadChatRosterTimer = m_mainApp.invokeLater(new Runnable() {
+									public void run() {
+										synchronized (m_delayLoadChatRosterList) {
+											if(m_delayLoadChatRosterList.isEmpty()){
+												m_mainApp.cancelInvokeLater(m_delayLoadChatRosterTimer);
+												m_delayLoadChatRosterTimer = -1;
+												return;
+											}
+											
+											RosterChatData data = (RosterChatData)m_delayLoadChatRosterList.elementAt(0);
+											m_delayLoadChatRosterList.removeElementAt(0);
+											rangeRosterItemField(data);
+										}
+									}
+								}, 200, true);
+							}							
+							
+							if(m_mainApp.getActiveScreen() == m_chatScreen
+							&& m_chatScreen.m_currRoster == data){
+								m_chatScreen.m_header.invalidate();
+							}
+							
+							m_currMgr.invalidate();
+							
+							break;
+						}
+					}	
+				}						
+				
+				if(!t_modified){
+					
+					synchronized (m_rosterChatDataList) {
+						m_rosterChatDataList.addElement(new RosterChatData(t_roster));
+					}
+					
+					refreshRosterList();
+				}
+				break;
 			}
-		});
+		}catch(Exception e){
+			m_mainApp.SetErrorString("PCRL:"+e.getMessage()+e.getClass().getName());
+		}
+				
 	}
 	
 	private void rangeRosterItemField(RosterChatData _rosterData){
@@ -894,7 +925,7 @@ public class MainIMScreen extends MainScreen{
 											(byte)_rosterData.m_roster.getStyle(),
 											_rosterData.m_roster.getHeadImageHashCode(), false);
 								
-				insertRosterItemField(new RosterItemField(_rosterData,t_image,false));	
+				insertRosterItemField(new RosterItemField(_rosterData,t_image,false,this));	
 				
 			}catch(Exception e){
 				m_mainApp.SetErrorString("RRIF:"+e.getMessage()+e.getClass().getName());
@@ -943,65 +974,73 @@ public class MainIMScreen extends MainScreen{
 		
 	private void refreshRosterList()throws Exception{
 		
-		synchronized(m_delayRefreshRosterListList){
+		m_mainApp.invokeLater(new Runnable() {
 			
-			m_rosterListMgr.deleteAll();
-			m_delayRefreshRosterListList.removeAllElements();
-			m_currFocusRosterItemField = null;
-			
-			addRosterListByPresence(fetchChatRoster.PRESENCE_AVAIL);
-			addRosterListByPresence(fetchChatRoster.PRESENCE_AWAY);
-			addRosterListByPresence(fetchChatRoster.PRESENCE_BUSY);
-			addRosterListByPresence(fetchChatRoster.PRESENCE_FAR_AWAY);
-			
-			if(!m_mainApp.m_hideUnvailiableRoster){
-				addRosterListByPresence(fetchChatRoster.PRESENCE_UNAVAIL);
-			}
-		
-			if(m_delayRefreshRosterListTimerID == -1){
+			public void run() {
 				
-				m_delayRefreshRosterListTimerID = m_mainApp.invokeLater(new Runnable() {
-					public void run() {
-						
-						synchronized (m_delayRefreshRosterListList){
-							
-							if(m_delayRefreshRosterListList.isEmpty()){
-								m_mainApp.cancelInvokeLater(m_delayRefreshRosterListTimerID);
-								m_delayRefreshRosterListTimerID = -1;
-								return ;
-							}
-							
-							if(m_mainApp.m_weiboTimeLineScreen != null
-								&& m_mainApp.m_weiboTimeLineScreen.isAddingWeibo()){
-								return;
-							}
-							
-							RosterChatData t_rosterData = (RosterChatData)m_delayRefreshRosterListList.elementAt(0);
-							try{
-								WeiboHeadImage t_image = WeiboHeadImage.SearchHeadImage(m_headImageList, t_rosterData.m_roster.getAccount(), 
-														(byte)t_rosterData.m_roster.getStyle(), 
-														t_rosterData.m_roster.getHeadImageHashCode(), false);
-
-								m_rosterListMgr.add(new RosterItemField(t_rosterData, t_image, false));
-
-							}catch(Exception e){
-								m_mainApp.SetErrorString("RRL:"+e.getMessage()+e.getClass().getName());
-							}
-							
-							m_delayRefreshRosterListList.removeElementAt(0);
-							
-							if(m_delayRefreshRosterListList.isEmpty()){
-								m_mainApp.cancelInvokeLater(m_delayRefreshRosterListTimerID);
-								m_delayRefreshRosterListTimerID = -1;
-							}
-						}
-					}
+				synchronized(m_delayRefreshRosterListList){
 					
-				},recvMain.fsm_delayLoadingTime,true);
-			}			
-			
-		}
-		
+					m_rosterListMgr.deleteAll();
+					m_delayRefreshRosterListList.removeAllElements();
+					m_currFocusRosterItemField = null;
+					
+					try{
+						addRosterListByPresence(fetchChatRoster.PRESENCE_AVAIL);
+						addRosterListByPresence(fetchChatRoster.PRESENCE_AWAY);
+						addRosterListByPresence(fetchChatRoster.PRESENCE_BUSY);
+						addRosterListByPresence(fetchChatRoster.PRESENCE_FAR_AWAY);
+						
+						if(!m_mainApp.m_hideUnvailiableRoster){
+							addRosterListByPresence(fetchChatRoster.PRESENCE_UNAVAIL);
+						}	
+					}catch(Exception e){
+						m_mainApp.SetErrorString("RRL:"+e.getMessage()+e.getClass().getName());
+					}					
+				
+					if(m_delayRefreshRosterListTimerID == -1){
+						
+						m_delayRefreshRosterListTimerID = m_mainApp.invokeLater(new Runnable() {
+							public void run() {
+								
+								synchronized (m_delayRefreshRosterListList){
+									
+									if(m_delayRefreshRosterListList.isEmpty()){
+										m_mainApp.cancelInvokeLater(m_delayRefreshRosterListTimerID);
+										m_delayRefreshRosterListTimerID = -1;
+										return ;
+									}
+									
+									if(m_mainApp.m_weiboTimeLineScreen != null
+										&& m_mainApp.m_weiboTimeLineScreen.isAddingWeibo()){
+										return;
+									}
+									
+									RosterChatData t_rosterData = (RosterChatData)m_delayRefreshRosterListList.elementAt(0);
+									try{
+										WeiboHeadImage t_image = WeiboHeadImage.SearchHeadImage(m_headImageList, t_rosterData.m_roster.getAccount(), 
+																(byte)t_rosterData.m_roster.getStyle(), 
+																t_rosterData.m_roster.getHeadImageHashCode(), false);
+
+										m_rosterListMgr.add(new RosterItemField(t_rosterData, t_image, false,MainIMScreen.this));
+
+									}catch(Exception e){
+										m_mainApp.SetErrorString("RRL:"+e.getMessage()+e.getClass().getName());
+									}
+									
+									m_delayRefreshRosterListList.removeElementAt(0);
+									
+									if(m_delayRefreshRosterListList.isEmpty()){
+										m_mainApp.cancelInvokeLater(m_delayRefreshRosterListTimerID);
+										m_delayRefreshRosterListTimerID = -1;
+									}
+								}
+							}
+							
+						},recvMain.fsm_delayLoadingTime,true);
+					}
+				}
+			}
+		});		
 	}
 	
 	private void addRosterListByPresence(int _presence)throws Exception{
@@ -1192,7 +1231,7 @@ public class MainIMScreen extends MainScreen{
 							(byte)_rosterData.m_roster.getStyle(), 
 							_rosterData.m_roster.getHeadImageHashCode(), false);
 
-					m_historyChatMgr.insert(new RosterItemField(_rosterData,t_image,true),0);
+					m_historyChatMgr.insert(new RosterItemField(_rosterData,t_image,true,this),0);
 					
 				}catch(Exception e){
 					m_mainApp.SetErrorString("ASCM:"+e.getMessage()+e.getClass().getName());

@@ -34,9 +34,7 @@ public class sendReceive extends Thread{
 	int					m_storeByteTimer		= 0;
 	
 	boolean			m_waitMoment			= false;
-	
-	ByteArrayOutputStream m_zipos = new ByteArrayOutputStream();
-	
+		
 	static byte[]		sm_keepliveMsg 			= {1,0,0,0,msg_head.msgKeepLive};
 	
 	IStoreUpDownloadByte	m_storeInterface	= null;
@@ -146,13 +144,14 @@ public class sendReceive extends Thread{
 		}		
 		
 		OutputStream os = m_socketOutputStream;
-		m_zipos.reset();
 		
-		GZIPOutputStream zo = new GZIPOutputStream(m_zipos,6);
+		ByteArrayOutputStream zos = new ByteArrayOutputStream();
+		
+		GZIPOutputStream zo = new GZIPOutputStream(zos,6);
 		zo.write(_write);
 		zo.close();	
 		
-		byte[] t_zipData = m_zipos.toByteArray();
+		byte[] t_zipData = zos.toByteArray();
 		
 		if(t_zipData.length > _write.length){
 			// if the ZIP data is large than original length

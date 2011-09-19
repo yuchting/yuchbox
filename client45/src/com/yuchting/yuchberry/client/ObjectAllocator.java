@@ -13,8 +13,7 @@ public class ObjectAllocator {
 	
 	public Object alloc()throws Exception{
 		if(m_releaseList.isEmpty()){
-			Class t_class = Class.forName(m_objectName);
-			return t_class.newInstance();
+			return newInstance();
 		}
 				
 		Object t_ret = m_releaseList.elementAt(0);
@@ -25,5 +24,10 @@ public class ObjectAllocator {
 	
 	public void release(Object _obj){
 		m_releaseList.addElement(_obj);
+	}
+	
+	protected Object newInstance()throws Exception{
+		Class t_class = Class.forName(m_objectName);
+		return t_class.newInstance();
 	}
 }

@@ -8,10 +8,16 @@ import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 
+import com.yuchting.yuchberry.client.ObjectAllocator;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
+import com.yuchting.yuchberry.client.ui.ImageButton;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.WeiboTextField;
+
+interface IChatFieldOpen{
+	public void open(fetchChatMsg msg);
+}
 
 public class ChatField extends Manager{
 		
@@ -19,18 +25,30 @@ public class ChatField extends Manager{
 	public final static int	fsm_bubblePointWidth = 8;
 	public final static int	fsm_border		= 6;
 	
-	public final static int	fsm_minTextWidth	= fsm_offsetWidth + fsm_bubblePointWidth;  
-	public final static int	fsm_maxTextWidth 	= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth;
+	public final static int	fsm_minTextWidth		= fsm_offsetWidth + fsm_bubblePointWidth;
+	public final static int	fsm_maxTextWidth 		= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth;
 	
 	public final static int	fsm_ownChatTextBGColor		= 0xd8d8d8;
 	public final static int	fsm_otherChatTextBGColor	= 0xadadad;
 	public final static int	fsm_timeTextBGColor			= 0xffffcc;
 	public final static int	fsm_timeTextBorderColor		= 0xc0c0c0;
-		
+	
+	private static ObjectAllocator sm_textFieldAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.ui.WeiboTextField"){
+		protected Object newInstance()throws Exception{
+			return new WeiboTextField(0,0);
+		}
+	};
+	
+	private static ObjectAllocator sm_imageFieldAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.im.ChatImageField");
+	private static ObjectAllocator sm_voiceFieldAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.im.ChatVoiceField");
+			
 	fetchChatMsg			m_msg 			= null;
 	int						m_msgTextHeight = 0;
 	int						m_msgTextWidth	= 0;
 	WeiboTextField			m_textfield 	= null;
+	ChatImageField			m_imagefield 	= null;
+	ChatVoiceField			m_voiceField	= null;
+	
 	String					m_timeText		= null; 
 	
 	final static Calendar 	fsm_calendar 	= Calendar.getInstance();
@@ -58,9 +76,29 @@ public class ChatField extends Manager{
 		super(Field.FOCUSABLE | Manager.NO_VERTICAL_SCROLL);
 	}
 	
-	public void Init(fetchChatMsg _msg){		
+	public void destory(){
+		int t_num = getFieldCount();
+		for(int i = 0 ;i < t_num;i++){
+			Field field = getField(i);
+			if(field instanceof WeiboTextField){
+				sm_textFieldAllocator.release(field);
+			}else if(field instanceof ChatImageField){
+				sm_imageFieldAllocator.release(field);
+			}
+		}
+		
+		deleteAll();
+		
+		m_imagefield = null;
+	}
+	
+	public void init(fetchChatMsg _msg,IChatFieldOpen _open){
+		destory();
+		
 		m_msg = _msg;
-				
+		
+		// text 
+		//
 		String t_converText = WeiboTextField.getConvertString(_msg.getMsg());
 		m_msgTextWidth = MainIMScreen.fsm_defaultFont.getAdvance(t_converText);
 		
@@ -71,20 +109,68 @@ public class ChatField extends Manager{
 		if(m_msgTextWidth > fsm_maxTextWidth){
 			m_msgTextWidth = fsm_maxTextWidth;
 		}
+		
+		// set the image 
+		//
+		if(_msg.getFileContent() != null){
+			
+			if(_msg.getFileContentType() == fetchChatMsg.FILE_TYPE_IMG){
 				
+				try{
+					m_imagefield = (ChatImageField)sm_imageFieldAllocator.alloc();
+				}catch(Exception e){
+					m_imagefield = new ChatImageField();
+				}
+				m_imagefield.init(_msg,_open);
+				
+				if(m_msgTextWidth < m_imagefield.getPreferredWidth()){
+					m_msgTextWidth = m_imagefield.getPreferredWidth();
+				}
+				
+			}else{
+				
+				try{
+					m_voiceField = (ChatVoiceField)sm_voiceFieldAllocator.alloc();
+				}catch(Exception e){
+					m_voiceField = new ChatVoiceField();
+				}
+				m_voiceField.init(_msg,_open);
+				
+				if(m_msgTextWidth < m_voiceField.getImageWidth()){
+					m_msgTextWidth = m_voiceField.getImageWidth();
+				}	
+			}
+		}
+		
+		// set the text field
+		//
 		MainIMScreen.fsm_testTextArea.setPreferredWidth(m_msgTextWidth);
 		
 		MainIMScreen.fsm_testTextArea.setText(t_converText);
 		m_msgTextHeight = MainIMScreen.fsm_testTextArea.getHeight();
-						
-		if(_msg.isOwnMsg()){
+	
+		try{
+			m_textfield = (WeiboTextField)sm_textFieldAllocator.alloc();	
+		}catch(Exception e){
 			m_textfield = new WeiboTextField(0,fsm_ownChatTextBGColor);
+		}
+		
+		if(_msg.isOwnMsg()){
+			m_textfield.setColor(0,fsm_ownChatTextBGColor);
 		}else{
-			m_textfield = new WeiboTextField(0,fsm_otherChatTextBGColor);
+			m_textfield.setColor(0,fsm_otherChatTextBGColor);
 		}
 		
 		m_textfield.setText(_msg.getMsg());
 		add(m_textfield);
+		
+		if(m_imagefield != null){
+			add(m_imagefield);
+		}
+		
+		if(m_voiceField != null){
+			add(m_voiceField);
+		}
 		
 		// generate the time string
 		//
@@ -102,7 +188,6 @@ public class ChatField extends Manager{
 	public void setSendState(int _state){
 		if(_state >= 0 && _state <= fetchChatMsg.SEND_STATE_READ){
 			m_msg.setSendState(_state);
-			
 			invalidate();
 		}
 	}
@@ -111,7 +196,13 @@ public class ChatField extends Manager{
 	}
 	
 	public int getPreferredHeight(){
-		return m_msgTextHeight + fsm_border * 2;
+		int extra = 0;
+		if(m_imagefield != null){
+			extra = m_imagefield.getPreferredHeight();
+		}else if(m_voiceField != null){
+			extra = m_voiceField.getImageHeight();
+		}
+		return m_msgTextHeight + fsm_border * 2 + extra;
 	}
 	
 	protected void sublayout(int _width, int _height){
@@ -126,7 +217,15 @@ public class ChatField extends Manager{
 		
 		setPositionChild(m_textfield,t_x,fsm_border);
 		layoutChild(m_textfield,m_msgTextWidth,m_msgTextHeight);
-
+		
+		if(m_imagefield != null){
+			setPositionChild(m_imagefield,t_x, m_msgTextHeight + fsm_border);
+			layoutChild(m_imagefield,m_imagefield.getPreferredWidth(),m_imagefield.getPreferredHeight());	
+		}else if(m_voiceField != null){
+			setPositionChild(m_voiceField,t_x, m_msgTextHeight + fsm_border);
+			layoutChild(m_voiceField,m_voiceField.getPreferredWidth(),m_voiceField.getPreferredHeight());
+		}
+		
 		setExtent(recvMain.fsm_display_width,getPreferredHeight());
 	}
 	
@@ -179,13 +278,11 @@ public class ChatField extends Manager{
 				
 				_g.setColor(fsm_timeTextBorderColor);
 				_g.drawRoundRect(t_time_x,t_time_y, t_time_width, fsm_timeFont.getHeight(), 5, 5);
-				
-				
-					_g.setColor(0);
-					
-					_g.setFont(fsm_timeFont);
-					_g.drawText(m_timeText,t_time_x,t_time_y);
 						
+				_g.setColor(0);
+				
+				_g.setFont(fsm_timeFont);
+				_g.drawText(m_timeText,t_time_x,t_time_y);						
 				
 			}finally{
 				_g.setFont(t_font);

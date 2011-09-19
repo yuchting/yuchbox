@@ -18,7 +18,6 @@ import com.yuchting.yuchberry.client.recvMain;
 
 public class IMStatusAddScreen extends PopupScreen implements FieldChangeListener{
 	
-	
 	RadioButtonGroup		m_presenceGroup	= new RadioButtonGroup();
 	RadioButtonField[]		m_presenceBut = 
 	{

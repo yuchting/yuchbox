@@ -21,7 +21,7 @@ public class fetchChatMsg{
 	public final static byte 		CHAT_STATE_COMPOSING = 1;
 	
 	public final static byte			FILE_TYPE_IMG = 0;
-	public final static byte			FILE_TYPE_SOUND = 0;
+	public final static byte			FILE_TYPE_SOUND = 1;
 	
 	
 	int			m_style			= STYLE_GTALK;
@@ -41,7 +41,7 @@ public class fetchChatMsg{
 	boolean	m_sendReadMsg	= false;
 		
 	public fetchChatMsg(){}
-	
+		
 	public int getFileContentType(){return m_contentType;}
 	public byte[] getFileContent(){return m_fileContent;}
 	
@@ -98,6 +98,8 @@ public class fetchChatMsg{
 
 			m_fileContent = new byte[t_content];
 			sendReceive.ForceReadByte(in, m_fileContent, t_content);
+		}else{
+			m_fileContent = null;
 		}
 	}
 	

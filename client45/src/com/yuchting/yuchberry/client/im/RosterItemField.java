@@ -1,6 +1,8 @@
 package com.yuchting.yuchberry.client.im;
 
+import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 
@@ -24,14 +26,17 @@ public class RosterItemField extends Field{
 	
 	MainIMScreen					m_mainScreen;	
 	boolean						m_isChatHistoryItem = false;
-	
-	public RosterItemField(RosterChatData _roster,WeiboHeadImage _head,boolean _isChatHistroyItem){
+		
+	public RosterItemField(RosterChatData _roster,WeiboHeadImage _head,
+							boolean _isChatHistroyItem,FieldChangeListener _changedListener){
 		super(Field.FOCUSABLE);
 		
 		m_currRoster = _roster;
 		m_headImage	= _head; 
 		
 		m_isChatHistoryItem = _isChatHistroyItem;
+		
+		setChangeListener(_changedListener);
 	}
 
 	public int getPreferredWidth() {
@@ -210,4 +215,16 @@ public class RosterItemField extends Field{
 		return _x + sm_rosterState[0].getWidth(); 
 	}
 	
+	protected boolean keyChar( char character, int status, int time ){
+        if( character == Characters.ENTER ) {
+            fieldChangeNotify( 0 );
+            return true;
+        }
+        return super.keyChar( character, status, time );
+    }
+
+    protected boolean navigationClick( int status, int time ) {        
+        keyChar(Characters.ENTER, status, time );            
+        return true;
+    }
 }

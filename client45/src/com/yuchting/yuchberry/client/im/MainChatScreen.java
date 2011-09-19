@@ -1,8 +1,12 @@
 package com.yuchting.yuchberry.client.im;
 
 import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.util.Date;
 import java.util.Vector;
+
+import javax.microedition.io.Connector;
+import javax.microedition.io.file.FileConnection;
 
 import local.localResource;
 import net.rim.blackberry.api.invoke.CameraArguments;
@@ -30,6 +34,8 @@ import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
 import com.yuchting.yuchberry.client.screen.CameraScreen;
 import com.yuchting.yuchberry.client.screen.ICameraScreenCallback;
+import com.yuchting.yuchberry.client.screen.IRecordAudioScreenCallback;
+import com.yuchting.yuchberry.client.screen.RecordAudioScreen;
 import com.yuchting.yuchberry.client.screen.imageViewScreen;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ButtonSegImage;
@@ -37,7 +43,6 @@ import com.yuchting.yuchberry.client.ui.CameraFileOP;
 import com.yuchting.yuchberry.client.ui.ImageButton;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
-import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 
 final class InputManager extends Manager implements FieldChangeListener{
 	
@@ -234,9 +239,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 					m_middleMgr.m_chatScreen.m_mainScreen.sendChatReadMsg(msg);
 				}			
 			}
-		}
-		
-		
+		}		
 		
 		final int key = Keypad.key(keycode);
 		if(key == 10){
@@ -244,7 +247,9 @@ final class InputManager extends Manager implements FieldChangeListener{
 			boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
 			boolean t_returnSend = m_middleMgr.m_chatScreen.m_mainApp.m_imReturnSend;
 			
-    		if(m_editTextArea.getText().length() != 0 
+    		if((m_editTextArea.getText().length() != 0 
+    			|| m_middleMgr.m_chatScreen.m_imagePath != null 
+    			|| m_middleMgr.m_chatScreen.m_snapBuffer != null )  
     		&& ( (t_returnSend && !t_shiftDown) || (!t_returnSend && t_shiftDown))){
     			
     			send();
@@ -261,6 +266,9 @@ final class InputManager extends Manager implements FieldChangeListener{
 			if((Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0){
 				m_middleMgr.m_chatScreen.m_phizMenu.run();
 				return true;
+			}else if((Keypad.status(keycode) & KeypadListener.STATUS_ALT) != 0){
+				m_middleMgr.m_chatScreen.m_recordMenu.run();
+				return true;
 			}
 		}
 		
@@ -269,7 +277,11 @@ final class InputManager extends Manager implements FieldChangeListener{
 	
 	public void send(){
 		String text = m_editTextArea.getText();
-		if(text.length() != 0){
+		
+		if(text.length() != 0 
+		|| m_middleMgr.m_chatScreen.m_imagePath != null 
+    	|| m_middleMgr.m_chatScreen.m_snapBuffer != null ){
+			
 			m_middleMgr.m_chatScreen.sendChatMsg(text);
 			m_editTextArea.setText("");
 			
@@ -326,7 +338,7 @@ final class MiddleMgr extends VerticalFieldManager{
 		
 		int t_num = m_chatMsgMgr.getFieldCount();
 		for(int i = 0;i < t_num;i++){
-			MainChatScreen.sm_chatFieldAllocator.release(m_chatMsgMgr.getField(i));
+			m_chatScreen.m_chatFieldAllocator.release(m_chatMsgMgr.getField(i));
 		}
 		
 		m_chatMsgMgr.deleteAll();
@@ -335,14 +347,13 @@ final class MiddleMgr extends VerticalFieldManager{
 		for(int i = 0 ;i < _chatData.m_chatMsgList.size();i++){
 			fetchChatMsg msg = (fetchChatMsg)_chatData.m_chatMsgList.elementAt(i);
 			try{
-				t_field = (ChatField)MainChatScreen.sm_chatFieldAllocator.alloc();
+				t_field = (ChatField)m_chatScreen.m_chatFieldAllocator.alloc();
 			}catch(Exception e){
 				t_field = new ChatField();
 				m_chatScreen.m_mainApp.SetErrorString("PCS:"+e.getMessage()+e.getClass().getName());
 			}
 			
-			t_field.Init(msg);
-			
+			t_field.init(msg,m_chatScreen);
 			m_chatMsgMgr.add(t_field);
 			
 			if(_chatData.m_isYuch){
@@ -410,12 +421,12 @@ final class MiddleMgr extends VerticalFieldManager{
 		ChatField t_field = null;
 		
 		try{
-			t_field = (ChatField)MainChatScreen.sm_chatFieldAllocator.alloc();
+			t_field = (ChatField)m_chatScreen.m_chatFieldAllocator.alloc();
 		}catch(Exception e){
 			t_field = new ChatField();
 			m_chatScreen.m_mainApp.SetErrorString("ACS:"+e.getMessage()+e.getClass().getName());
 		}
-		t_field.Init(_msg);
+		t_field.init(_msg,m_chatScreen);
 		m_chatMsgMgr.add(t_field);
 		
 		// scroll to bottom
@@ -466,9 +477,11 @@ final class MiddleMgr extends VerticalFieldManager{
 		
 		return null;
 	}
+	
+	
 }
 
-public class MainChatScreen extends MainScreen{
+public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 	
 	int m_menu_op = 0;
 	MenuItem m_sendMenu = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_SEND_LABEL),m_menu_op++,0){
@@ -489,12 +502,10 @@ public class MainChatScreen extends MainScreen{
 	    		try{
 	    			m_cameraScreen = new CameraScreen(new ICameraScreenCallback(){
 	        			public void snapOK(byte[] _buffer){
+	        				clearAttachment();
+	        				
 	        				m_snapBuffer = _buffer;
-	        				m_imageType	= fetchWeibo.IMAGE_TYPE_JPG;
-	        				
-	        				m_imagePath = null;
-	        				
-	        				invalidate();
+	        				m_imageType	= fetchChatMsg.FILE_TYPE_IMG;
 	        			}
 	        		},m_mainApp.getWeiboUploadSize().x);
 	        		
@@ -510,6 +521,12 @@ public class MainChatScreen extends MainScreen{
 	MenuItem m_cameraMenu = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPEN_CAMERA),m_menu_op++,0){
 		public void run(){
 			Invoke.invokeApplication(Invoke.APP_TYPE_CAMERA, new CameraArguments());
+		}
+	};
+	
+	MenuItem m_recordMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_RECORD_AUDIO_MENU_LABEL),m_menu_op++,0){
+		public void run(){
+			m_mainApp.pushScreen(m_recordScreen);
 		}
 	};
 	
@@ -635,7 +652,7 @@ public class MainChatScreen extends MainScreen{
 	
 	public final static int		fsm_titleBottomBorder = recvMain.fsm_OS_version.startsWith("6")?0:4;
 	
-	public static ObjectAllocator	sm_chatFieldAllocator = new ObjectAllocator(ChatField.class.getName());
+	public ObjectAllocator			m_chatFieldAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.im.ChatField");
 	
 	RosterChatData	m_currRoster 	= null;
 		
@@ -653,18 +670,17 @@ public class MainChatScreen extends MainScreen{
 	byte[]					m_snapBuffer = null;
 	
 	ImageUnit				m_hasImageSign	= null;
+	ImageUnit				m_hasVoiceSign	= null;
 	
 	CameraScreen			m_cameraScreen = null;
 	
 	CameraFileOP			m_camerFileOp = new CameraFileOP() {
 		
 		public void onAddUploadingPic(String file, int type) {
+			clearAttachment();
+			
 			m_imagePath = file;
-			m_imageType = type;
-			
-			m_snapBuffer = null;
-			
-			invalidate();
+			m_imageType = fetchChatMsg.FILE_TYPE_IMG;
 		}
 		
 		public boolean canAdded() {
@@ -672,10 +688,14 @@ public class MainChatScreen extends MainScreen{
 		}
 	};
 	
+	RecordAudioScreen		m_recordScreen = null;
+	byte[]					m_recordBuffer = null;
+	
 	public void clearAttachment(){
 		m_imagePath = null;
 		m_imageType = 0;
 		
+		m_recordBuffer = null;
 		m_snapBuffer = null;
 		
 		invalidate();;
@@ -703,10 +723,20 @@ public class MainChatScreen extends MainScreen{
 		
 		m_header = new ChatScreenHeader();
 		m_hasImageSign = recvMain.sm_weiboUIImage.getImageUnit("picSign");
-		
+		m_hasVoiceSign = recvMain.sm_weiboUIImage.getImageUnit("commentSign");
+				
 		setTitle(m_header);
 		
 		add(m_middleMgr);
+		
+		m_recordScreen = new RecordAudioScreen(m_mainApp, new IRecordAudioScreenCallback(){
+			public void recordDone(byte[] _buffer){
+				clearAttachment();
+				
+				m_recordBuffer = _buffer;
+				m_imageType = fetchChatMsg.FILE_TYPE_SOUND;
+			}
+		});
 		
 	}
 	protected void makeMenu(Menu _menu,int instance){
@@ -718,6 +748,7 @@ public class MainChatScreen extends MainScreen{
 			}
 			_menu.add(m_cameraMenu);
 		}
+		_menu.add(m_recordMenu);
 		
 		if(getResendField() != null){
 			_menu.add(m_resendMenu);
@@ -741,7 +772,6 @@ public class MainChatScreen extends MainScreen{
 		}
 
 		m_mainApp.StopIMNotification();
-		
 		m_mainScreen.clearNewChatSign();
 	}
 	
@@ -784,7 +814,14 @@ public class MainChatScreen extends MainScreen{
 	public void sendChatMsg(String _text){
 		// add UI
 		//
-		fetchChatMsg t_msg = new fetchChatMsg();
+		fetchChatMsg t_msg = null;
+		try{
+			t_msg = (fetchChatMsg)m_mainScreen.m_chatMsgAllocator.alloc();
+		}catch(Exception e){
+			t_msg = new fetchChatMsg();
+			m_mainApp.SetErrorString("SCM_0:"+e.getMessage()+e.getClass().getName());
+		}
+		
 		t_msg.setOwner(m_currRoster.m_roster.getOwnAccount());
 		t_msg.setSendTime((new Date()).getTime());
 		t_msg.setMsg(_text);
@@ -804,12 +841,15 @@ public class MainChatScreen extends MainScreen{
 			t_content = m_snapBuffer;
 		}
 		
+		if(m_recordBuffer != null){
+			t_content = m_recordBuffer;
+		}
+		
 		t_msg.setFileContent(t_content, m_imageType);
 		
 		// clear the file sign
 		//
-		m_imagePath = null;
-		m_snapBuffer = null;
+		clearAttachment();
 		invalidate();
 		
 		m_currRoster.m_chatMsgList.addElement(t_msg);
@@ -818,8 +858,7 @@ public class MainChatScreen extends MainScreen{
 		// add send daemon
 		//
 		m_mainScreen.addSendChatMsg(t_msg,m_currRoster);
-	}
-	
+	}	
 	
 	public void sendChatComposeState(byte _state){
 		
@@ -844,11 +883,57 @@ public class MainChatScreen extends MainScreen{
 	protected void paint(Graphics g){
 		super.paint(g);
 		
-		if(m_imagePath != null || m_snapBuffer != null){
+		if(m_imagePath != null || m_snapBuffer != null || m_recordBuffer != null){
 			int t_y = recvMain.fsm_display_height - m_middleMgr.m_inputMgr.getPreferredHeight() - m_hasImageSign.getHeight();
 			int t_x = recvMain.fsm_display_width - m_hasImageSign.getWidth();
 			
-			recvMain.sm_weiboUIImage.drawImage(g, m_hasImageSign, t_x, t_y);
+			if(m_recordBuffer != null){
+				recvMain.sm_weiboUIImage.drawImage(g, m_hasVoiceSign, t_x, t_y);
+			}else{
+				recvMain.sm_weiboUIImage.drawImage(g, m_hasImageSign, t_x, t_y);
+			}
 		}
+	}
+	
+	public void open(fetchChatMsg msg){
+
+		if(msg.getFileContent() != null){
+			
+			try{
+				switch(msg.getFileContentType()){
+				case fetchChatMsg.FILE_TYPE_IMG:
+					String t_file = m_mainApp.GetIMHeadImageDir(msg.getStyle()) + msg.hashCode() + ".jpg";
+					FileConnection t_fc = (FileConnection)Connector.open(t_file,Connector.READ_WRITE);
+					try{
+						if(!t_fc.exists()){
+							t_fc.create();
+							
+							OutputStream t_fileos = t_fc.openOutputStream();
+							try{
+								t_fileos.write(msg.getFileContent());										
+							}finally{
+								t_fileos.flush();
+								t_fileos = null;
+							}
+						}
+						
+					}finally{
+						t_fc.close();
+						t_fc = null;
+					}
+					
+					if(!m_mainApp.CheckMediaNativeApps(t_file)){
+						m_mainApp.pushGlobalScreen(new imageViewScreen(msg.getFileContent(),m_mainApp)
+															,0,UiEngine.GLOBAL_MODAL);
+					}
+					
+					break;
+				case fetchChatMsg.FILE_TYPE_SOUND:
+					break;
+				}
+			}catch(Exception e){
+				m_mainApp.SetErrorString("MCS-O:"+e.getMessage()+e.getClass().getName());
+			}
+		}	
 	}
 }

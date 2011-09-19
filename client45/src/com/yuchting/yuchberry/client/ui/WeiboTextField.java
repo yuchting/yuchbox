@@ -52,9 +52,7 @@ public class WeiboTextField extends ActiveRichTextField{
 	
 	public WeiboTextField(int _foreground,int _background){
 		super("",Field.READONLY | Field.FOCUSABLE | SCANFLAG_THREAD_ON_CREATE);
-		
-		m_foreground[0] = _foreground;
-		Arrays.fill(m_background,_background);
+		setColor(_foreground,_background);
 		
 		if(sm_fontList[0] == null){
 			
@@ -69,11 +67,12 @@ public class WeiboTextField extends ActiveRichTextField{
 			
 			sm_replacePhiz_x_offset = (t_width - Phiz.fsm_phizSize) / 2;
 		}
-		
-		
 	}
 	
-	
+	public void setColor(int _foreground,int _background){
+		m_foreground[0] = _foreground;
+		Arrays.fill(m_background,_background);
+	}
 	
 	public static String getTag(ReadText _text){
 		
