@@ -78,6 +78,8 @@ public class fetchChatMsg{
 			
 			m_fileContent = new byte[t_content];
 			sendReceive.ForceReadByte(in, m_fileContent, t_content);
+		}else{
+			m_fileContent = null;
 		}
 	}
 	

@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
@@ -27,11 +26,6 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smackx.filetransfer.FileTransferListener;
-import org.jivesoftware.smackx.filetransfer.FileTransferManager;
-import org.jivesoftware.smackx.filetransfer.FileTransferRequest;
-import org.jivesoftware.smackx.filetransfer.IncomingFileTransfer;
-import org.jivesoftware.smackx.filetransfer.OutgoingFileTransfer;
 import org.jivesoftware.smackx.packet.VCard;
 
 import twitter4j.internal.org.json.JSONObject;
@@ -117,8 +111,7 @@ final class ChatReadMessage extends Packet{
 
 public class fetchGTalk extends fetchAccount implements RosterListener,
 															ChatManagerListener,
-															MessageListener,
-															FileTransferListener{
+															MessageListener{
 		
 	public final static String[] fsm_gtalkPhiz = 
 	{
@@ -235,7 +228,6 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	
 	Roster		m_roster		= null;
 	ChatManager	m_chatManager	= null;
-	FileTransferManager m_fileManager = null;
 	
 	Vector<fetchChatRoster>		m_chatRosterList = new Vector<fetchChatRoster>();
 	
@@ -331,9 +323,6 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		}	
 		
 		m_mainConnection.login(t_account,m_password,fsm_ybClientSource + "-" + (new Random()).nextInt(1000));
-		
-		m_fileManager = new FileTransferManager(m_mainConnection);
-		m_fileManager.addFileTransferListener(this);
 		
 		m_chatManager = m_mainConnection.getChatManager();
 		m_chatManager.addChatListener(this);
@@ -445,25 +434,6 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     	}
     }
     
-    public void fileTransferRequest(FileTransferRequest request) {
-        // Check to see if the request should be accepted
-        if(request.getFileName().endsWith(".satt")) {
-              // Accept it
-              IncomingFileTransfer transfer = request.accept();
-              try{
-            	  transfer.recieveFile(new File(request.getFileName()));
-            	  
-            	  m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " recv file:" + request.getFileName());
-            	  
-              }catch(Exception e){
-            	  m_mainMgr.m_logger.PrinterException(e);
-              }
-              
-        }else{
-              // Reject it
-              request.reject();
-        }
-    }
         
     public void entriesUpdated(Collection<String> addresses){
     	
@@ -540,6 +510,8 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     public void processMessage(Chat chat, Message message){
         
     	int t_state = -1;
+    	
+    	
     	
 		if(message.getBody() == null){
 
@@ -632,7 +604,8 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     	
     	Object t_file = message.getProperty(fsm_ybFile);
     	if(t_file != null){
-    		
+    		int t_type = ((Integer)message.getProperty(fsm_ybFileType)).intValue();
+    		t_msg.setFileContent((byte[])t_file, t_type);
     	}
     	
     	return t_msg;
@@ -1196,7 +1169,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 					continue;
 				}
 				
-				if(Math.abs(msg.m_sendTime - t_currTime) > 2 * 60000) {
+				if(Math.abs(msg.getSendTime() - t_currTime) > 2 * 60000) {
 					
 					if(sendClientChatMsg(msg,false)){
 						
