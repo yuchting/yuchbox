@@ -30,7 +30,7 @@ public class RecordAudioScreen extends PopupScreen{
 	    public void run() {
 	        try{
 	            // Create a Player that records live audio.
-	            _player = javax.microedition.media.Manager.createPlayer("capture://audio");
+	            _player = javax.microedition.media.Manager.createPlayer("capture://audio?encoding=audio/amr");
 	            _player.realize();
 
 	            // Get the RecordControl, configure the record stream,
@@ -96,6 +96,7 @@ public class RecordAudioScreen extends PopupScreen{
 		m_recordThread.start();
 		
 		m_remainTimer = fsm_maxRecordingTime;
+		m_remain.setText(Integer.toString(m_remainTimer));
 		
 		m_remainTimerID = m_mainApp.invokeLater(new Runnable(){
 			public void run(){

@@ -16,7 +16,7 @@ public class audioViewScreen extends fileViewScreen{
 		String t_type = null;
 		if(_filename.indexOf(".mp3") != -1){
 			t_type = "audio/mpeg";
-		}else if(_filename.indexOf(".mp3") != -1){
+		}else if(_filename.indexOf(".wav") != -1){
 			t_type = "audio/wav";
 		}else if(_filename.indexOf(".mid") != -1){
 			t_type = "audio/midi";

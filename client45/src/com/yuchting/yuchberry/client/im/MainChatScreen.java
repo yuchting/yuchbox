@@ -1,5 +1,6 @@
 package com.yuchting.yuchberry.client.im;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.Date;
@@ -895,7 +896,9 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		}
 	}
 	
-	public void open(fetchChatMsg msg){
+	Thread m_currPlayVoiceThread = null;
+	
+	public void open(final fetchChatMsg msg){
 
 		if(msg.getFileContent() != null){
 			
@@ -929,6 +932,33 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 					
 					break;
 				case fetchChatMsg.FILE_TYPE_SOUND:
+					
+					if(m_currPlayVoiceThread == null){
+						m_currPlayVoiceThread = new Thread(){
+							
+							public void run(){
+								try{
+									javax.microedition.media.Player p = 
+										javax.microedition.media.Manager.createPlayer(
+												new ByteArrayInputStream(msg.getFileContent()),"audio/amr");
+									
+						            p.realize();
+						            p.prefetch();
+						            p.start();
+						            
+						            sleep(2000);
+							        
+								}catch(Exception e){
+									m_mainApp.SetErrorString("OPENA:"+e.getMessage()+e.getClass().getName());
+								}
+					            
+					            m_currPlayVoiceThread = null;
+							}
+						};
+						
+						m_currPlayVoiceThread.start();
+					}
+		            
 					break;
 				}
 			}catch(Exception e){
