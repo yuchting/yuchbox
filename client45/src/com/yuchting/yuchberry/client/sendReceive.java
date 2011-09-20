@@ -57,7 +57,7 @@ public class sendReceive extends Thread{
 	}
 	
 	//! send buffer
-	public synchronized void SendBufferToSvr(byte[] _write,boolean _sendImm,boolean _wait)throws Exception{	
+	public void SendBufferToSvr(byte[] _write,boolean _sendImm,boolean _wait)throws Exception{	
 		m_unsendedPackage.addElement(_write);
 		
 		if(_sendImm){
@@ -76,11 +76,10 @@ public class sendReceive extends Thread{
 		}
 	}
 	
-	public void StoreUpDownloadByteImm(boolean _force){
+	public synchronized void StoreUpDownloadByteImm(boolean _force){
 		if(m_storeInterface != null){
 			if(m_storeByteTimer++ > 5 || _force){
 				m_storeByteTimer = 0;
-				
 				m_storeInterface.Store(m_uploadByte,m_downloadByte);
 				m_uploadByte = 0;
 				m_downloadByte = 0;				
@@ -115,35 +114,36 @@ public class sendReceive extends Thread{
 		}		
 	}
 	
-	private synchronized byte[] PrepareOutputData()throws Exception{
+	private byte[] PrepareOutputData()throws Exception{
 		
 		if(m_unsendedPackage.isEmpty()){
 			return null;
 		}
 		
 		ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
+	
+		synchronized (m_unsendedPackage) {
+			for(int i = 0;i < m_unsendedPackage.size();i++){
+				byte[] t_package = (byte[])m_unsendedPackage.elementAt(i);	
 				
-		for(int i = 0;i < m_unsendedPackage.size();i++){
-			byte[] t_package = (byte[])m_unsendedPackage.elementAt(i);	
+				WriteInt(t_stream, t_package.length);
+							
+				t_stream.write(t_package);
+			}
 			
-			WriteInt(t_stream, t_package.length);
-						
-			t_stream.write(t_package);
+			m_unsendedPackage.removeAllElements();
 		}
 		
-		m_unsendedPackage.removeAllElements();
 		
 		return t_stream.toByteArray();
 	}
 
 	//! send buffer implement
-	synchronized private void SendBufferToSvr_imple(byte[] _write)throws Exception{
+	private  void SendBufferToSvr_imple(byte[] _write)throws Exception{
 		
 		if(_write == null){
 			return;
-		}		
-		
-		OutputStream os = m_socketOutputStream;
+		}	
 		
 		ByteArrayOutputStream zos = new ByteArrayOutputStream();
 		
@@ -157,22 +157,26 @@ public class sendReceive extends Thread{
 			// if the ZIP data is large than original length
 			// NOT convert
 			//
-			WriteInt(os,(_write.length << 16) & 0xffff0000);
-			os.write(_write);
-			os.flush();
+			synchronized(this){
+				WriteInt(m_socketOutputStream,(_write.length << 16) & 0xffff0000);
+				m_socketOutputStream.write(_write);
+				m_socketOutputStream.flush();
+				
+				// 20 is TCP pack head length			
+				m_uploadByte += _write.length + 4 + 20;
+			}
 			
-			// 20 is TCP pack head length			
-			m_uploadByte += _write.length + 4 + 20;
 			
 		}else{
-			WriteInt(os,((_write.length << 16) & 0xffff0000) | t_zipData.length);
-			os.write(t_zipData);
-			os.flush();
-			
-			// 20 is TCP pack head length
-			m_uploadByte += t_zipData.length + 4 + 20;
-		}
+			synchronized(this){
+				WriteInt(m_socketOutputStream,((_write.length << 16) & 0xffff0000) | t_zipData.length);
+				m_socketOutputStream.write(t_zipData);
+				m_socketOutputStream.flush();
 				
+				// 20 is TCP pack head length
+				m_uploadByte += t_zipData.length + 4 + 20;
+			}
+		}	
 	}
 	
 	public void run(){
