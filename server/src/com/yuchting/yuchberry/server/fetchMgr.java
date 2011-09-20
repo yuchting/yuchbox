@@ -369,14 +369,13 @@ public class fetchMgr{
 			ByteArrayInputStream in = new ByteArrayInputStream(t_tmp.RecvBufferFromSvr());
 									
 			int t_msg_head = in.read();
-						
 			int passlen = sendReceive.ReadInt(in);
 						
 			if(passlen > 100 || passlen < 0){
 				throw new Exception("Watch Out! User pass is too long! val:" + passlen);
 			}
 			
-			m_logger.LogOut("ValidateClient 0");
+			//m_logger.LogOut("ValidateClient 0");
 						
 			byte[] t_buffer = new byte[passlen];
 			sendReceive.ForceReadByte(in,t_buffer,passlen);
@@ -390,7 +389,7 @@ public class fetchMgr{
 				throw new Exception("illeagel client<"+ _s.getInetAddress().getHostAddress() +"> sent Pass<"+t_sendPass+"> connected.");			
 			}
 
-			m_logger.LogOut("ValidateClient 1");
+			//m_logger.LogOut("ValidateClient 1");
 			
 			if((m_clientVer = sendReceive.ReadInt(in)) < 2){
 				throw new Exception("error version client<"+ _s.getInetAddress().getHostAddress() +"> connected.");
@@ -411,7 +410,7 @@ public class fetchMgr{
 				}
 			}
 			
-			m_logger.LogOut("ValidateClient 2");
+			//m_logger.LogOut("ValidateClient 2");
 			
 			if(m_clientVer >= 5){
 				m_passwordKey = sendReceive.ReadString(in);
@@ -429,7 +428,7 @@ public class fetchMgr{
 			}
 			
 			
-			m_logger.LogOut("ValidateClient 3");
+			//m_logger.LogOut("ValidateClient 3");
 			
 			
 			if(m_clientVer >= 12 && (m_pin == -1)){
@@ -440,7 +439,7 @@ public class fetchMgr{
 				m_isIMEnabled = sendReceive.ReadBoolean(in);
 			}
 
-			m_logger.LogOut("ValidateClient 4");
+			//m_logger.LogOut("ValidateClient 4");
 			
 			_s.setSoTimeout(0);
 									
@@ -494,8 +493,10 @@ public class fetchMgr{
 									m_logger.LogOut("StartListening -1");
 									
 									if(m_currConnect.m_socket != null && !m_currConnect.m_socket.isClosed()){
+										
+										m_logger.LogOut("StartListening -2");
+										
 										m_currConnect.m_socket.close();
-																			
 									}									
 									m_currConnect.m_socket = null;
 								}		
@@ -735,6 +736,7 @@ public class fetchMgr{
 			}
 		}
 	}
+	
 	public void CheckAccountFolders(){
 				
 		for(fetchAccount account :m_fetchAccount){			
@@ -776,6 +778,19 @@ public class fetchMgr{
 				m_logger.PrinterException(e);
 			}			
 		}
+	}
+	
+	public void sendMsgNote(String _note){
+		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+		t_os.write(msg_head.msgNote);
+		
+		try{
+			sendReceive.WriteString(t_os,_note,false);
+			
+			if(isClientConnected()){
+				SendData(t_os, false);
+			}
+		}catch(Exception e){}	
 	}
 		
 	private void ProcessSponsorList(ByteArrayInputStream _in){

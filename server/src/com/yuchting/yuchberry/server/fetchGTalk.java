@@ -680,7 +680,9 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     
 	private fetchChatRoster convertRoster(RosterEntry _entry){
 		
-		fetchChatRoster roster = new fetchChatRoster();
+		fetchChatRoster roster = new fetchChatRoster();		
+		
+		roster.m_smackRoster = _entry;
 		
 		roster.setStyle(fetchChatMsg.STYLE_GTALK);
 		roster.setAccount(_entry.getUser().toLowerCase());
@@ -840,11 +842,104 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			case msg_head.msgChatRead:
 				t_processed = ProcessChatRead(in);
 				break;
+			case msg_head.msgChatAddRoster:
+				t_processed = ProcessChatAddRoster(in);
+				break;
+			case msg_head.msgChatDelRoster:
+				t_processed = ProcessChatDelRoster(in);
+				break;
 		}
 		
 		return t_processed;
 	}
 	
+	private boolean ProcessChatDelRoster(InputStream in)throws Exception{
+		int t_style = in.read();
+		if(t_style == getCurrChatStyle()){
+			String t_ownAcccount = sendReceive.ReadString(in);
+						
+			if(t_ownAcccount.equals(GetAccountName())){
+								
+				String t_account = sendReceive.ReadString(in);
+				
+				m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " remove roster:" + t_account);
+				
+				synchronized (m_chatRosterList) {
+					for(fetchChatRoster roster : m_chatRosterList){
+						if(roster.getAccount().equals(t_account)){
+							
+							try{
+								Roster	t_delRoster = m_mainConnection.getRoster();
+								t_delRoster.removeEntry(roster.m_smackRoster);
+							}catch(Exception e){
+								m_mainMgr.m_logger.PrinterException(e);
+							}
+							
+							m_chatRosterList.remove(roster);
+							
+							break;
+						}
+					}
+				}
+				
+				synchronized (m_changeChatRosterList) {
+					
+					for(fetchChatRoster roster : m_changeChatRosterList){
+						
+						if(roster.getAccount().equals(t_account)){
+							
+							m_changeChatRosterList.remove(roster);
+							
+							break;
+						}
+					}
+				}
+				
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean ProcessChatAddRoster(InputStream in)throws Exception{
+		int t_style = in.read();
+		
+		if(t_style == getCurrChatStyle()){
+			
+			String t_addr = sendReceive.ReadString(in).toLowerCase().replace("＠", "@");
+			String t_name = sendReceive.ReadString(in);
+			String t_group = sendReceive.ReadString(in);
+			
+			m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " add roster:" + t_addr);
+			
+			try{
+				Roster	t_newRoster = m_mainConnection.getRoster();
+				t_newRoster.createEntry(t_addr, t_name,new String[]{ t_group});
+
+				StringBuffer ret = new StringBuffer();
+				switch (m_mainMgr.GetClientLanguage()) {
+				case 0:
+					ret.append("添加好友 ").append(t_name).append(" ").append(t_addr).append("成功！请等待他人同意之后自动刷新好友列表。");
+					break;
+				case 1:
+					ret.append("添加好友 ").append(t_name).append(" ").append(t_addr).append("成功！請等待他人同意之後自動刷新好友列表。");
+					break;
+				default:
+					ret.append("Add friend ").append(t_name).append(" ").append(t_addr).append("successfully! please wait the other agree and auto-refresh friend list.");
+					break;
+				}
+				
+				m_mainMgr.sendMsgNote(ret.toString());
+				
+			}catch(Exception e){
+				m_mainMgr.m_logger.PrinterException(e);
+			}			
+			
+			return true;
+		}
+		
+		return false;
+	}
 	private boolean ProcessChatRead(InputStream in)throws Exception{
 	
 		int t_style = in.read();
@@ -1196,37 +1291,6 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		}
 	}
 	
-	static boolean echo = false;
-	public static void main(String[] _arg)throws Exception{
-		try{
-			echo = true;
-			
-			Connection.DEBUG_ENABLED = true;
-			
-			fetchMgr t_manger = new fetchMgr();
-			Logger t_logger = new Logger("");
-			
-			t_logger.EnabelSystemOut(true);
-			t_manger.InitConnect("",t_logger);
-			
-			fetchGTalk t_talk = new fetchGTalk(t_manger);
-			
-			t_talk.m_accountName = "yuchdroid@gmail.com";
-			t_talk.m_password = "hF8IBrCmBDQsKaWa";
-
-			t_talk.m_cryptPassword = "";
-			
-			t_talk.ResetSession(true);
-			
-			System.out.println("OK");
-			
-			Thread.sleep(500000);
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
 	// statistics
 	//
 	int		m_stat_IMSend = 0;
@@ -1248,5 +1312,40 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			m_stat_IMRecvB = 0;
 		}	
 	}
+	
+	
+	static boolean echo = false;
+	public static void main(String[] _arg)throws Exception{
+		try{
+			echo = true;
+			
+			//Connection.DEBUG_ENABLED = true;
+			
+			fetchMgr t_manger = new fetchMgr();
+			Logger t_logger = new Logger("");
+			
+			t_logger.EnabelSystemOut(true);
+			t_manger.InitConnect("",t_logger);
+			
+			fetchGTalk t_talk = new fetchGTalk(t_manger);
+			
+			t_talk.m_accountName = "yuchdroid@gmail.com";
+			t_talk.m_password = "hF8IBrCmBDQsKaWa";
+
+			t_talk.m_cryptPassword = "";
+						
+			t_talk.ResetSession(true);
+			t_talk.ResetSession(true);
+			
+			System.out.println("OK");
+			
+			Thread.sleep(500000);
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
 		
 }

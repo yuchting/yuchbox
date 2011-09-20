@@ -270,7 +270,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		
 		t_weibo.setName(t_user.getName());
 		t_weibo.setScreenName(t_user.getScreenName());
-		t_weibo.setHeadImage(DownloadHeadImage(new URL(t_user.getHeadImageURL()),t_user.getName()));
+		t_weibo.setHeadImage(DownloadHeadImage(new URL(t_user.getHeadImageURL()),t_user.getScreenName()));
 		t_weibo.setDesc(t_user.getIntroduction());
 		t_weibo.setCity(t_user.getLocation());
 		t_weibo.setVerified(t_user.isVerified());

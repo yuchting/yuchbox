@@ -3,6 +3,8 @@ package com.yuchting.yuchberry.server;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.jivesoftware.smack.RosterEntry;
+
 public class fetchChatRoster {
 	
 	public final static int	PRESENCE_AVAIL = 0;
@@ -22,6 +24,10 @@ public class fetchChatRoster {
 	String m_source 	= "";
 			
 	String m_ownAccount = "";
+	
+	// server using data
+	//
+	RosterEntry	m_smackRoster = null;
 	
 	public fetchChatRoster(){}
 	

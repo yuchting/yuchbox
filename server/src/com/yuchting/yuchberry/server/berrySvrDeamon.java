@@ -36,7 +36,12 @@ class berrySvrPush extends Thread{
 				
 				m_serverDeamon.m_fetchMgr.Push(m_sendReceive);				
 				
-				sleep(m_serverDeamon.m_fetchMgr.GetPushInterval() * 1000);				
+				sleep(m_serverDeamon.m_fetchMgr.GetPushInterval() * 1000);
+				
+				if(!m_serverDeamon.m_fetchMgr.isClientConnected()){
+					m_serverDeamon.m_fetchMgr.m_logger.LogOut("client closed! break berrySvrPush");
+					break;
+				}
 							
 			}catch(Exception _e){
 				m_serverDeamon.m_fetchMgr.m_logger.PrinterException(_e);

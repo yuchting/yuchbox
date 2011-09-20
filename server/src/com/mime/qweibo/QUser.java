@@ -83,6 +83,9 @@ public class QUser{
 		m_id	= _json.getLong("uid");
 		
 		m_headImageURL	= _json.getString("head");
+		if(m_headImageURL.endsWith("/")){
+			m_headImageURL = m_headImageURL + "/";
+		}
 		m_location 		= _json.getString("location");
 		
 		// json format? oh my qq...
