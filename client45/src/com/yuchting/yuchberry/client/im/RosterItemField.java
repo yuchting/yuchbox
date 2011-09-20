@@ -27,10 +27,13 @@ public class RosterItemField extends Field{
 	MainIMScreen					m_mainScreen;	
 	boolean						m_isChatHistoryItem = false;
 		
-	public RosterItemField(RosterChatData _roster,WeiboHeadImage _head,
-							boolean _isChatHistroyItem,FieldChangeListener _changedListener){
+	public RosterItemField(MainIMScreen _mainScreen,
+							RosterChatData _roster,WeiboHeadImage _head,
+							boolean _isChatHistroyItem,
+							FieldChangeListener _changedListener){
 		super(Field.FOCUSABLE);
 		
+		m_mainScreen = _mainScreen;
 		m_currRoster = _roster;
 		m_headImage	= _head; 
 		
@@ -61,7 +64,14 @@ public class RosterItemField extends Field{
 	}
 	
 	protected void drawFocus(Graphics _g,boolean _on){
-		
+		if(_on){
+			if(m_isChatHistoryItem){
+				m_mainScreen.m_currFocusHistoryRosterItemField = this;
+			}else{
+				m_mainScreen.m_currFocusRosterItemField = this;
+			}			
+		}
+				
 		// fill the IM field BG
 		//
 		fillIMFieldBG(_g,0,0,getPreferredWidth(),getPreferredHeight());

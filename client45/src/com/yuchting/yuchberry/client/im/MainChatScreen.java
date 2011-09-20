@@ -654,6 +654,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 	public final static int		fsm_titleBottomBorder = recvMain.fsm_OS_version.startsWith("6")?0:4;
 	
 	public ObjectAllocator			m_chatFieldAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.im.ChatField");
+	public boolean					m_isPrompted = false;
 	
 	RosterChatData	m_currRoster 	= null;
 		
@@ -698,6 +699,8 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		
 		m_recordBuffer = null;
 		m_snapBuffer = null;
+		
+		m_isPrompted = false;
 		
 		invalidate();;
 	}
@@ -774,6 +777,8 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 
 		m_mainApp.StopIMNotification();
 		m_mainScreen.clearNewChatSign();
+		
+		m_isPrompted = false;
 	}
 	
 	public ChatField getResendField(){
@@ -894,6 +899,17 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 				recvMain.sm_weiboUIImage.drawImage(g, m_hasImageSign, t_x, t_y);
 			}
 		}
+	}
+	
+	protected boolean keyDown(int keycode,int time){
+		
+		if(m_isPrompted){
+			m_mainApp.StopIMNotification();
+		}
+		
+		m_isPrompted = false;
+		
+		return super.keyDown(keycode,time);		
 	}
 	
 	Thread m_currPlayVoiceThread = null;

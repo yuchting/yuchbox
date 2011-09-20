@@ -89,6 +89,7 @@ public class ChatField extends Manager{
 		deleteAll();
 		
 		m_imagefield = null;
+		m_voiceField = null;
 	}
 	
 	public void init(fetchChatMsg _msg,IChatFieldOpen _open){

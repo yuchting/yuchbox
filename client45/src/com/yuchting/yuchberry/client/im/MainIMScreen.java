@@ -96,6 +96,36 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	
+	public IMAddRosterDlg		m_addRosterDlg = null;
+	MenuItem	m_addRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_ADD_ROSTER_MENU_LABEL),m_menu_op++,0){
+		public void run(){
+			if(m_addRosterDlg == null){
+				m_addRosterDlg = new IMAddRosterDlg(MainIMScreen.this);
+			}
+			
+			m_mainApp.pushScreen(m_addRosterDlg);
+		}
+	};
+	
+	MenuItem	m_delRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_DEL_ROSTER_MENU_LABEL),m_menu_op++,0){
+		public void run(){
+			if(m_currFocusRosterItemField != null && m_currMgr == m_rosterListMgr){
+			
+				fetchChatRoster t_roster = ((RosterItemField)m_currFocusRosterItemField).m_currRoster.m_roster;
+				
+				String t_prompt = recvMain.sm_local.getString(localResource.IM_DEL_ROSTER_PROMPT) 
+										+ t_roster.getName() + " " + t_roster.getAccount();
+				
+				if(Dialog.ask(Dialog.D_YES_NO,t_prompt,Dialog.NO) != Dialog.YES){
+					return;
+				}
+				
+				delRoster(t_roster);
+			}
+			
+		}
+	};
+	
 	MenuItem	m_hideUnvailRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_HIDE_UNVAIL_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			m_mainApp.m_hideUnvailiableRoster = true;
@@ -398,6 +428,13 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			}else{
 				_menu.add(m_hideUnvailRosterMenu);
 			}
+			
+			_menu.add(m_addRosterMenu);
+			
+			if(m_currFocusRosterItemField != null){
+				_menu.add(m_delRosterMenu);
+			}
+			
 		}else if(m_currMgr == m_statusListMgr){
 			_menu.add(m_addStatusMenu);
 			_menu.add(m_modifyStatusMenu);
@@ -708,6 +745,12 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 						//
 						m_chatScreen.m_middleMgr.addChatMsg(_msg);
 						m_chatScreen.m_header.invalidate();
+						
+						if(!m_chatScreen.m_isPrompted){
+							m_chatScreen.m_isPrompted = true;
+						}else{
+							t_notify = false;
+						}
 												
 					}else{
 						
@@ -723,6 +766,67 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		if(t_notify){
 			m_mainApp.TriggerIMNotification();
 		}
+	}
+	
+	private void delRoster(fetchChatRoster _roster){
+		synchronized (m_rosterChatDataList) {
+			for(int i = 0 ;i < m_rosterChatDataList.size();i++){
+				RosterChatData data = (RosterChatData)m_rosterChatDataList.elementAt(i);
+				if(data.m_roster == _roster){
+					
+					for(int j = 0;j < data.m_chatMsgList.size();j++){
+						m_chatMsgAllocator.release(data.m_chatMsgList.elementAt(j));
+					}
+					
+					m_rosterChatDataList.removeElementAt(i);
+					
+					break;
+				}
+			}
+		}
+		
+		synchronized (m_rosterListMgr) {
+			int t_count = m_rosterListMgr.getFieldCount();
+			for(int i = 0; i < t_count;i++){
+				RosterItemField field = (RosterItemField)m_rosterListMgr.getField(i);
+				if(field.m_currRoster.m_roster == _roster){
+					
+					m_rosterListMgr.delete(field);
+					
+					break;				
+				}			
+			}
+		}
+		
+				
+		synchronized (m_historyChatMgr) {
+
+			int t_count = m_historyChatMgr.getFieldCount();
+			for(int i = 0; i < t_count;i++){
+				RosterItemField field = (RosterItemField)m_historyChatMgr.getField(i);
+				if(field.m_currRoster.m_roster == _roster){
+					
+					m_historyChatMgr.delete(field);
+					
+					break;				
+				}			
+			}	
+		}	
+		
+		// send to server to delete roster
+		//
+		try{
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			os.write(msg_head.msgChatDelRoster);
+			os.write(_roster.getStyle());
+			sendReceive.WriteString(os,_roster.getOwnAccount());
+			sendReceive.WriteString(os,_roster.getAccount());
+			
+			m_mainApp.m_connectDeamon.addSendingData(msg_head.msgChatDelRoster, os.toByteArray(), true);	
+		}catch(Exception e){
+			m_mainApp.SetErrorString("DR:"+e.getMessage()+e.getClass().getName());
+		}
+		
 	}
 	
 	private void sendChatConfirmMsg(fetchChatMsg _msg){
@@ -925,7 +1029,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 											(byte)_rosterData.m_roster.getStyle(),
 											_rosterData.m_roster.getHeadImageHashCode(), false);
 								
-				insertRosterItemField(new RosterItemField(_rosterData,t_image,false,this));	
+				insertRosterItemField(new RosterItemField(this,_rosterData,t_image,false,this));	
 				
 			}catch(Exception e){
 				m_mainApp.SetErrorString("RRIF:"+e.getMessage()+e.getClass().getName());
@@ -1021,7 +1125,8 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 																(byte)t_rosterData.m_roster.getStyle(), 
 																t_rosterData.m_roster.getHeadImageHashCode(), false);
 
-										m_rosterListMgr.add(new RosterItemField(t_rosterData, t_image, false,MainIMScreen.this));
+										m_rosterListMgr.add(new RosterItemField(MainIMScreen.this,t_rosterData, 
+															t_image, false,MainIMScreen.this));
 
 									}catch(Exception e){
 										m_mainApp.SetErrorString("RRL:"+e.getMessage()+e.getClass().getName());
@@ -1178,7 +1283,25 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	}
 	
-	public synchronized void sendUseStatus(IMStatus _status){
+	public void sendAddRosterMsg(int _style,String _addr,String _name,String _group){
+		try{
+			
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			os.write(msg_head.msgChatAddRoster);
+			os.write(_style);
+			
+			sendReceive.WriteString(os,_addr);
+			sendReceive.WriteString(os,_name);
+			sendReceive.WriteString(os,_group);
+			
+			m_mainApp.m_connectDeamon.addSendingData(msg_head.msgChatAddRoster, os.toByteArray(), true);
+			
+		}catch(Exception e){
+			m_mainApp.SetErrorString("SUP:"+e.getMessage()+e.getClass().getName());
+		}
+	}
+	
+	public void sendUseStatus(IMStatus _status){
 		
 		try{
 				
@@ -1231,7 +1354,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 							(byte)_rosterData.m_roster.getStyle(), 
 							_rosterData.m_roster.getHeadImageHashCode(), false);
 
-					m_historyChatMgr.insert(new RosterItemField(_rosterData,t_image,true,this),0);
+					m_historyChatMgr.insert(new RosterItemField(this,_rosterData,t_image,true,this),0);
 					
 				}catch(Exception e){
 					m_mainApp.SetErrorString("ASCM:"+e.getMessage()+e.getClass().getName());

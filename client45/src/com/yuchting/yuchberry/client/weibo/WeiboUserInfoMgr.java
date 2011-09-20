@@ -210,7 +210,9 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 			m_weiboUser = _weiboUser;
 			
 			if(m_weiboUser != null){
-							
+				
+				m_headImage = null;
+				
 				if(m_weiboUser.getHeadImage() != null){					
 					try{
 						m_headImage = EncodedImage.createEncodedImage(m_weiboUser.getHeadImage(), 0, m_weiboUser.getHeadImage().length).getBitmap();
@@ -221,7 +223,7 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 				
 				if(m_headImage == null){
 					try{
-						byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass().getResourceAsStream("/weibo/defaultHeadImage_l.png"));		
+						byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass().getResourceAsStream("/defaultHeadImage_l.png"));		
 						m_headImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
 					}catch(Exception e){
 						m_mainApp.SetErrorString("SWU2:"+e.getMessage() + e.getClass().getName());

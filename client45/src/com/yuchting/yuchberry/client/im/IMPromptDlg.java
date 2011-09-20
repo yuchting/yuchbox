@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.client.im;
 import local.localResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.LabelField;
@@ -114,7 +115,21 @@ public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 		}
 	
 		return false;
+	}
+	
+	protected boolean keyDown(int keycode,int time){
 		
+		final int key = Keypad.key(keycode);
+		switch(key){
+		case 'R':
+			fieldChanged(m_replyBut,~FieldChangeListener.PROGRAMMATIC);
+			return true;
+		case 'L':
+			fieldChanged(m_laterBut,~FieldChangeListener.PROGRAMMATIC);
+			return true;
+		}
+		
+		return super.keyDown(keycode,time);
 	}
 
 }
