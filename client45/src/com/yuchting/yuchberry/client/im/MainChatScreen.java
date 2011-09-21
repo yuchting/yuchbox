@@ -58,9 +58,9 @@ final class InputManager extends Manager implements FieldChangeListener{
 	
 	int					m_textWidth	= 0;
 	
-	BubbleImage			m_inputBackground = null;
-	ImageUnit			m_background	= null;
-	ImageUnit			m_background_line = null;
+	public static BubbleImage	sm_inputBackground = null;
+	public static ImageUnit	sm_background		= null;
+	public static ImageUnit	sm_background_line = null;
 	
 	int					m_currHeight	= fsm_minHeight;
 	
@@ -111,33 +111,50 @@ final class InputManager extends Manager implements FieldChangeListener{
 		
 		m_textWidth = getPreferredWidth() - m_phizButton.getImageWidth() - (fsm_textBorder + fsm_inputBubbleBorder)* 2;
 		
-		m_inputBackground = new BubbleImage(
-				recvMain.sm_weiboUIImage.getImageUnit("input_top_left"),
-				recvMain.sm_weiboUIImage.getImageUnit("input_top"),
-				recvMain.sm_weiboUIImage.getImageUnit("input_top_right"),
-				recvMain.sm_weiboUIImage.getImageUnit("input_right"),
-				
-				recvMain.sm_weiboUIImage.getImageUnit("input_bottom_right"),
-				recvMain.sm_weiboUIImage.getImageUnit("input_bottom"),
-				recvMain.sm_weiboUIImage.getImageUnit("input_bottom_left"),
-				recvMain.sm_weiboUIImage.getImageUnit("input_left"),
-				
-				recvMain.sm_weiboUIImage.getImageUnit("input_inner_block"),
-				new ImageUnit[]{
-					recvMain.sm_weiboUIImage.getImageUnit("bubble_left_point"),
-					recvMain.sm_weiboUIImage.getImageUnit("bubble_top_point"),
-					recvMain.sm_weiboUIImage.getImageUnit("bubble_right_point"),
-					recvMain.sm_weiboUIImage.getImageUnit("bubble_bottom_point"),
-				},
-				recvMain.sm_weiboUIImage);
-		
-		m_background = recvMain.sm_weiboUIImage.getImageUnit("weibo_bg");
-		m_background_line = recvMain.sm_weiboUIImage.getImageUnit("space_line");
+		initInputBackground();		
 		
 		m_editTextArea.setChangeListener(this);
 		m_inputManager.add(m_editTextArea);
 		add(m_inputManager);
 		add(m_phizButton);
+	}
+	
+	public static void initInputBackground(){
+		if(sm_inputBackground == null){
+			sm_inputBackground = new BubbleImage(
+					recvMain.sm_weiboUIImage.getImageUnit("input_top_left"),
+					recvMain.sm_weiboUIImage.getImageUnit("input_top"),
+					recvMain.sm_weiboUIImage.getImageUnit("input_top_right"),
+					recvMain.sm_weiboUIImage.getImageUnit("input_right"),
+					
+					recvMain.sm_weiboUIImage.getImageUnit("input_bottom_right"),
+					recvMain.sm_weiboUIImage.getImageUnit("input_bottom"),
+					recvMain.sm_weiboUIImage.getImageUnit("input_bottom_left"),
+					recvMain.sm_weiboUIImage.getImageUnit("input_left"),
+					
+					recvMain.sm_weiboUIImage.getImageUnit("input_inner_block"),
+					new ImageUnit[]{
+						recvMain.sm_weiboUIImage.getImageUnit("bubble_left_point"),
+						recvMain.sm_weiboUIImage.getImageUnit("bubble_top_point"),
+						recvMain.sm_weiboUIImage.getImageUnit("bubble_right_point"),
+						recvMain.sm_weiboUIImage.getImageUnit("bubble_bottom_point"),
+					},
+					recvMain.sm_weiboUIImage);
+			
+			sm_background = recvMain.sm_weiboUIImage.getImageUnit("weibo_bg");
+			sm_background_line = recvMain.sm_weiboUIImage.getImageUnit("space_line");
+		}
+	}
+	
+	public static void drawInputBackground(Graphics _g,int _textWidth,int _preferredWidth,int _preferredHeight){
+		
+		recvMain.sm_weiboUIImage.fillImageBlock(_g, sm_background, 0, 0, _preferredWidth,_preferredHeight);
+		recvMain.sm_weiboUIImage.drawBitmapLine(_g, sm_background_line, 0, 0, _preferredWidth);
+		
+		sm_inputBackground.draw(_g, fsm_inputBubbleBorder, fsm_inputBubbleBorder, 
+								_textWidth + fsm_textBorder * 2,
+								_preferredHeight - fsm_inputBubbleBorder * 2,
+								BubbleImage.NO_POINT_STYLE);
 	}
 	
 	public int getPreferredWidth(){
@@ -163,13 +180,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 	
 	protected void subpaint(Graphics _g){
 		
-		recvMain.sm_weiboUIImage.fillImageBlock(_g, m_background, 0, 0, getPreferredWidth(),getPreferredHeight());
-		recvMain.sm_weiboUIImage.drawBitmapLine(_g, m_background_line, 0, 0, getPreferredWidth());
-		
-		m_inputBackground.draw(_g, fsm_inputBubbleBorder, fsm_inputBubbleBorder, 
-								m_textWidth + fsm_textBorder * 2,
-								getPreferredHeight() - fsm_inputBubbleBorder * 2,
-								BubbleImage.NO_POINT_STYLE);
+		drawInputBackground(_g,m_textWidth,getPreferredWidth(),getPreferredHeight());
 		
 		super.subpaint(_g);
 	}
@@ -375,8 +386,7 @@ final class MiddleMgr extends VerticalFieldManager{
 	}
 	
 	public int getPreferredHeight(){
-		return recvMain.fsm_display_height - 
-			m_chatScreen.m_title.getImageHeight() - MainChatScreen.fsm_titleBottomBorder;
+		return recvMain.fsm_display_height - m_chatScreen.m_title.getImageHeight();
 	}
 	
 	public void sublayout(int _width,int _height){
@@ -637,8 +647,6 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		}
 	}
 	
-	public final static int		fsm_titleBottomBorder = recvMain.fsm_OS_version.startsWith("6")?0:4;
-	
 	public ObjectAllocator			m_chatFieldAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.im.ChatField");
 	public boolean					m_isPrompted = false;
 	
@@ -715,7 +723,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		m_hasImageSign = recvMain.sm_weiboUIImage.getImageUnit("picSign");
 		m_hasVoiceSign = recvMain.sm_weiboUIImage.getImageUnit("commentSign");
 				
-		setTitle(m_header);
+		setBanner(m_header);
 		
 		add(m_middleMgr);
 		

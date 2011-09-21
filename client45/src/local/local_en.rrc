@@ -69,6 +69,7 @@ IM_REFRESH_MIN_TIME_PROMPT#0="Please don't refresh quickly, the min interval is 
 IM_REFRESH_ROSTER_MENU_LABEL#0="Refresh friends' info";
 IM_RESEND_MSG_MENU_LABEL#0="Resend";
 IM_ROSTER_LIST_MENU_LABEL#0="Friends List(J\u0332)";
+IM_SEARCH_ROSTER_MENU_LABEL#0="F\u0332ind";
 IM_SHOW_UNVAIL_ROSTER_MENU_LABEL#0="Show Unavailable Friends";
 IM_STATUS_DEFAULT_AVAIL#0="I'm online!";
 IM_STATUS_DEFAULT_AWAY#0="I'm away...";

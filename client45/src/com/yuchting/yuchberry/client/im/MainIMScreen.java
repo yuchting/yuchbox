@@ -126,6 +126,17 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	
+	MenuItem	m_searchRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_SEARCH_ROSTER_MENU_LABEL),m_menu_op++,0){
+		public void run(){
+			if(m_searchStatus == null){
+				m_searchStatus = new SearchStatus(MainIMScreen.this);
+			}
+			
+			setTitle(m_searchStatus);
+			m_searchStatus.m_editTextArea.setFocus();
+		}
+	};
+	
 	MenuItem	m_hideUnvailRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_HIDE_UNVAIL_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			m_mainApp.m_hideUnvailiableRoster = true;
@@ -288,6 +299,8 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	public	Field	m_currFocusHistoryRosterItemField = null;
 	public Field	m_currFocusStatusField = null;
 	
+	SearchStatus			m_searchStatus	= null;
+	
 		
 	public MainIMScreen(recvMain _mainApp){
 		super(Manager.VERTICAL_SCROLL);
@@ -297,14 +310,13 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		m_chatScreen = new MainChatScreen(_mainApp,this);
 		
 		add(m_historyChatMgr);
-		setTitle(m_header);
+		setBanner(m_header);
 		
 		m_historyChatMgr.setFocus();
 		m_currMgr = m_historyChatMgr;
 		
 		refreshStatusList();
 	}
-	
 	 
 	public SliderHeader getHeader(){
 		return m_header;
@@ -312,6 +324,13 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
 	public boolean onClose(){
 		
+		if(m_searchStatus != null){
+			setTitle((Field)null);
+			
+			m_searchStatus = null;
+			return false;
+		}
+				
 		if(m_mainApp.m_connectDeamon.IsConnectState()){
     		
 			m_mainApp.requestBackground();
@@ -435,6 +454,10 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				_menu.add(m_delRosterMenu);
 			}
 			
+			if(m_searchStatus == null){
+				_menu.add(m_searchRosterMenu);
+			}
+			
 		}else if(m_currMgr == m_statusListMgr){
 			_menu.add(m_addStatusMenu);
 			_menu.add(m_modifyStatusMenu);
@@ -455,6 +478,11 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
 	protected boolean navigationMovement(int dx,int dy,int status,int time){
 		if(dx != 0){
+			
+			if(m_searchStatus != null){
+				return true;
+			}
+			
 			m_header.setCurrState(m_header.getCurrState() + dx);
 			refreshHeader();
 			return true;
@@ -469,13 +497,29 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		if(click()){
 			return true;
 		}
-		
 		return super.navigationClick(status, time);
+	}
+	
+	protected boolean keyChar(char c,int status,int time){
+		if(m_searchStatus != null){
+			return m_searchStatus.m_editTextArea.keyChar(c,status,time);
+		}
+		return super.keyChar(c,status,time);
 	}
 	
 	protected boolean keyDown(int keycode,int time){
 		
 		final int key = Keypad.key(keycode);
+		
+		if(m_searchStatus != null){
+			if(key == 10){
+				m_searchStatus.searchNext();
+				return true;
+			}
+			
+			return m_searchStatus.m_editTextArea.keyDown(keycode, time);
+		}
+		
 		switch(key){
 		case 'H':
 			m_historyChatMenu.run();
@@ -495,6 +539,9 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				return true;
 			}
 			break;
+		case 'F':
+			m_searchRosterMenu.run();
+			return true;
 		}
 		
 		if(key == 10 && click()){
@@ -1364,6 +1411,33 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 					m_mainApp.SetErrorString("ASCM:"+e.getMessage()+e.getClass().getName());
 				}
 			}
+		}
+	}
+	
+	public boolean selectedByKeyword(String _keyword,int _index){
+		
+		synchronized (m_rosterListMgr){
+			
+			_keyword = _keyword.toLowerCase();
+			
+			int t_addIndex = 0;
+			
+			int num = m_rosterListMgr.getFieldCount();
+			for(int i = 0 ;i < num;i++){
+				RosterItemField t_field = (RosterItemField)m_rosterListMgr.getField(i);
+				
+				if(t_field.m_currRoster.m_roster.getName().indexOf(_keyword) != -1
+					|| t_field.m_currRoster.m_roster.getAccount().indexOf(_keyword) != -1){
+										
+					if(t_addIndex++ == _index){
+						t_field.setFocus();
+						
+						return true;
+					}
+				}
+			}
+			
+			return false;			
 		}
 	}
 }

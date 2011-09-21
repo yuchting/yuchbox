@@ -180,7 +180,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		m_currMgr = m_mainMgr;
 		
-		setTitle(m_weiboHeader);
+		setBanner(m_weiboHeader);
 		
 		m_currMgr.setFocus();	
 	}
@@ -194,12 +194,12 @@ public class weiboTimeLineScreen extends MainScreen{
 			if(_enable){
 				if(!m_weiboHeaderShow){
 					m_weiboHeaderShow = true;
-					setTitle(m_weiboHeader);
+					setBanner(m_weiboHeader);
 				}				
 			}else{
 				if(m_weiboHeaderShow){
 					m_weiboHeaderShow = false;
-					setTitle((Field)null);
+					setBanner((Field)null);
 				}
 			}
 		}else{
@@ -207,7 +207,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			//
 			if(!m_weiboHeaderShow){
 				m_weiboHeaderShow = true;
-				setTitle(m_weiboHeader);
+				setBanner(m_weiboHeader);
 			}
 		}
 	}
