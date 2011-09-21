@@ -1991,6 +1991,10 @@ public class connectDeamon extends Thread implements SendListener,
 	private void StoreHeadImage(Vector _imageList,boolean _isWeiboOrIM,boolean _largeSize,
 							int _style,String _imageId,InputStream in)throws Exception{
 		
+		if(!m_mainApp.isSDCardAvaible()){
+			return;
+		}
+		
 		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 		try{
 			int t_data = -1;

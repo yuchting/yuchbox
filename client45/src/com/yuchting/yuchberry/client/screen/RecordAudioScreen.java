@@ -30,7 +30,15 @@ public class RecordAudioScreen extends PopupScreen{
 	    public void run() {
 	        try{
 	            // Create a Player that records live audio.
-	            _player = javax.microedition.media.Manager.createPlayer("capture://audio?encoding=audio/amr");
+	        	//_player = javax.microedition.media.Manager.createPlayer("capture://audio"); // 30KB/20sec same as audio/amr
+	            _player = javax.microedition.media.Manager.createPlayer("capture://audio?encoding=audio/amr"); // 30KB/20sec
+	            //_player = javax.microedition.media.Manager.createPlayer("capture://audio?encoding=audio/x-tone-seq"); // unsupported
+	            //_player = javax.microedition.media.Manager.createPlayer("capture://audio?encoding=audio/mpeg"); // unsupported
+	            //_player = javax.microedition.media.Manager.createPlayer("capture://audio?encoding=audio/x-wav");  // unsupported
+	            //_player = javax.microedition.media.Manager.createPlayer("capture://audio?encoding=audio/pcm"); // unsupported
+	            //_player = javax.microedition.media.Manager.createPlayer("capture://audio?encoding=audio/basic"); // 300KB/20sec (wav file)
+	            
+	            
 	            _player.realize();
 
 	            // Get the RecordControl, configure the record stream,
@@ -117,8 +125,9 @@ public class RecordAudioScreen extends PopupScreen{
 		
 		if(m_recordThread != null){
 			m_recordThread.stop();
-			
 			m_callback.recordDone(m_recordThread.getAudioBuffer());
+			
+			m_recordThread = null;
 		}
 		
 		if(m_remainTimerID != -1){

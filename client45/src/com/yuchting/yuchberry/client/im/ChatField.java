@@ -44,9 +44,9 @@ public class ChatField extends Manager{
 	fetchChatMsg			m_msg 			= null;
 	int						m_msgTextHeight = 0;
 	int						m_msgTextWidth	= 0;
-	WeiboTextField			m_textfield 	= null;
-	ChatImageField			m_imagefield 	= null;
-	ChatVoiceField			m_voiceField	= null;
+	private WeiboTextField			m_textfield 	= null;
+	private ChatImageField			m_imagefield 	= null;
+	private ChatVoiceField			m_voiceField	= null;
 	
 	String					m_timeText		= null; 
 	
@@ -83,13 +83,31 @@ public class ChatField extends Manager{
 				sm_textFieldAllocator.release(field);
 			}else if(field instanceof ChatImageField){
 				sm_imageFieldAllocator.release(field);
+			}else if(field instanceof ChatVoiceField){
+				sm_voiceFieldAllocator.release(field);
 			}
 		}
 		
 		deleteAll();
 		
+		m_textfield	= null;
 		m_imagefield = null;
-		m_voiceField = null;
+		m_voiceField = null;		
+		
+		m_msgTextWidth = fsm_minTextWidth;
+	}
+	
+	public void setFocus(){
+		super.setFocus();
+		
+		if(m_imagefield != null){			
+			m_imagefield.setFocus();
+		}else if(m_voiceField != null){
+			m_voiceField.setFocus();
+		}else if(m_textfield != null){
+			m_textfield.setFocus();
+			m_textfield.setCursorPosition(m_textfield.getTextLength());
+		}
 	}
 	
 	public void init(fetchChatMsg _msg,IChatFieldOpen _open){
@@ -99,16 +117,21 @@ public class ChatField extends Manager{
 		
 		// text 
 		//
-		String t_converText = WeiboTextField.getConvertString(_msg.getMsg());
-		m_msgTextWidth = MainIMScreen.fsm_defaultFont.getAdvance(t_converText);
+		String t_converText = null;
 		
-		if(m_msgTextWidth < fsm_minTextWidth){
-			m_msgTextWidth = fsm_minTextWidth;
+		if(_msg.getMsg().length() != 0){
+			t_converText = WeiboTextField.getConvertString(_msg.getMsg());
+			m_msgTextWidth = MainIMScreen.fsm_defaultFont.getAdvance(t_converText);
+			
+			if(m_msgTextWidth < fsm_minTextWidth){
+				m_msgTextWidth = fsm_minTextWidth;
+			}
+			
+			if(m_msgTextWidth > fsm_maxTextWidth){
+				m_msgTextWidth = fsm_maxTextWidth;
+			}
 		}
 		
-		if(m_msgTextWidth > fsm_maxTextWidth){
-			m_msgTextWidth = fsm_maxTextWidth;
-		}
 		
 		// set the image 
 		//
@@ -142,27 +165,30 @@ public class ChatField extends Manager{
 			}
 		}
 		
-		// set the text field
-		//
-		MainIMScreen.fsm_testTextArea.setPreferredWidth(m_msgTextWidth);
+		if(t_converText != null){
+			// set the text field
+			//
+			MainIMScreen.fsm_testTextArea.setPreferredWidth(m_msgTextWidth);
+			
+			MainIMScreen.fsm_testTextArea.setText(t_converText);
+			m_msgTextHeight = MainIMScreen.fsm_testTextArea.getHeight();
 		
-		MainIMScreen.fsm_testTextArea.setText(t_converText);
-		m_msgTextHeight = MainIMScreen.fsm_testTextArea.getHeight();
-	
-		try{
-			m_textfield = (WeiboTextField)sm_textFieldAllocator.alloc();	
-		}catch(Exception e){
-			m_textfield = new WeiboTextField(0,fsm_ownChatTextBGColor);
+			try{
+				m_textfield = (WeiboTextField)sm_textFieldAllocator.alloc();	
+			}catch(Exception e){
+				m_textfield = new WeiboTextField(0,fsm_ownChatTextBGColor);
+			}
+			
+			if(_msg.isOwnMsg()){
+				m_textfield.setColor(0,fsm_ownChatTextBGColor);
+			}else{
+				m_textfield.setColor(0,fsm_otherChatTextBGColor);
+			}
+			
+			m_textfield.setText(_msg.getMsg());
+			add(m_textfield);
 		}
 		
-		if(_msg.isOwnMsg()){
-			m_textfield.setColor(0,fsm_ownChatTextBGColor);
-		}else{
-			m_textfield.setColor(0,fsm_otherChatTextBGColor);
-		}
-		
-		m_textfield.setText(_msg.getMsg());
-		add(m_textfield);
 		
 		if(m_imagefield != null){
 			add(m_imagefield);
@@ -215,8 +241,11 @@ public class ChatField extends Manager{
 			t_x = fsm_border + fsm_bubblePointWidth;
 		}
 		
-		setPositionChild(m_textfield,t_x,fsm_border);
-		layoutChild(m_textfield,m_msgTextWidth,m_msgTextHeight);
+		if(m_textfield != null){
+			setPositionChild(m_textfield,t_x,fsm_border);
+			layoutChild(m_textfield,m_msgTextWidth,m_msgTextHeight);
+		}
+		
 		
 		if(m_imagefield != null){
 			setPositionChild(m_imagefield,t_x, m_msgTextHeight + fsm_border);

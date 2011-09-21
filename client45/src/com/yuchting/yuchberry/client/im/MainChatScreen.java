@@ -400,13 +400,7 @@ final class MiddleMgr extends VerticalFieldManager{
 		int t_chatNum = m_chatMsgMgr.getFieldCount();
 		if(t_chatNum > 0){
 			ChatField t_field = (ChatField)m_chatMsgMgr.getField(t_chatNum - 1);
-			
 			t_field.setFocus();
-			
-			int t_length = t_field.m_textfield.getTextLength();
-			if(t_length != 0){
-				t_field.m_textfield.setCursorPosition(t_length);
-			}
 		}
 		
 		m_inputMgr.m_editTextArea.setFocus();
@@ -433,10 +427,6 @@ final class MiddleMgr extends VerticalFieldManager{
 		// scroll to bottom
 		//
 		t_field.setFocus();
-		int t_length = t_field.m_textfield.getTextLength();
-		if(t_length != 0){
-			t_field.m_textfield.setCursorPosition(t_length);
-		}		
 		
 		// set the focus back
 		//
@@ -453,13 +443,7 @@ final class MiddleMgr extends VerticalFieldManager{
 	
 	public synchronized void addChatMsg(ChatField _field){
 		m_chatMsgMgr.add(_field);
-		
-		// scroll to bottom
-		//
-		int t_length = _field.m_textfield.getTextLength();
-		if(t_length != 0){
-			_field.m_textfield.setCursorPosition(t_length);
-		}		
+		_field.setFocus();	
 		
 		// set the focus back
 		//
@@ -540,9 +524,11 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
     					m_mainApp.pushGlobalScreen(new imageViewScreen(m_imagePath,m_mainApp),0,UiEngine.GLOBAL_MODAL);
     				}
         			
-        		}else{
+        		}else if(m_snapBuffer != null){
         			m_mainApp.pushGlobalScreen(new imageViewScreen(m_snapBuffer,m_mainApp),0,UiEngine.GLOBAL_MODAL);
-        		}	
+        		}else if(m_recordBuffer != null){
+        			playAudio(m_recordBuffer);
+        		}
     		}catch(Exception e){
     			m_mainApp.SetErrorString("WCP:"+e.getMessage()+e.getClass().getName());
     		}
@@ -723,7 +709,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 					recvMain.sm_weiboUIImage);
 		}
 		
-		m_mainApp.addFileSystemJournalListener(m_camerFileOp);
+		
 		
 		m_header = new ChatScreenHeader();
 		m_hasImageSign = recvMain.sm_weiboUIImage.getImageUnit("picSign");
@@ -754,10 +740,13 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		}
 		_menu.add(m_recordMenu);
 		
-		if(getResendField() != null){
-			_menu.add(m_resendMenu);
+		if(m_imagePath != null || m_snapBuffer != null || m_recordBuffer != null){
+			_menu.add(m_checkPic);
 		}
 		
+		if(getResendField() != null){
+			_menu.add(m_resendMenu);
+		}		
 		
 		if(recvMain.sm_imDisplayTime){
 			_menu.add(m_hideTimeMenu);
@@ -779,6 +768,8 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		m_mainScreen.clearNewChatSign();
 		
 		m_isPrompted = false;
+		
+		m_mainApp.addFileSystemJournalListener(m_camerFileOp);
 	}
 	
 	public ChatField getResendField(){
@@ -948,38 +939,41 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 					
 					break;
 				case fetchChatMsg.FILE_TYPE_SOUND:
-					
-					if(m_currPlayVoiceThread == null){
-						m_currPlayVoiceThread = new Thread(){
-							
-							public void run(){
-								try{
-									javax.microedition.media.Player p = 
-										javax.microedition.media.Manager.createPlayer(
-												new ByteArrayInputStream(msg.getFileContent()),"audio/amr");
-									
-						            p.realize();
-						            p.prefetch();
-						            p.start();
-						            
-						            sleep(2000);
-							        
-								}catch(Exception e){
-									m_mainApp.SetErrorString("OPENA:"+e.getMessage()+e.getClass().getName());
-								}
-					            
-					            m_currPlayVoiceThread = null;
-							}
-						};
-						
-						m_currPlayVoiceThread.start();
-					}
-		            
+					playAudio(msg.getFileContent());		            
 					break;
 				}
 			}catch(Exception e){
 				m_mainApp.SetErrorString("MCS-O:"+e.getMessage()+e.getClass().getName());
 			}
 		}	
+	}
+	
+	private void playAudio(final byte[] _audioBuffer){
+		if(m_currPlayVoiceThread == null){
+			
+			m_currPlayVoiceThread = new Thread(){
+				
+				public void run(){
+					try{
+						javax.microedition.media.Player p = 
+							javax.microedition.media.Manager.createPlayer(
+									new ByteArrayInputStream(_audioBuffer),"audio/amr");
+						
+			            p.realize();
+			            p.prefetch();
+			            p.start();
+			            
+			            sleep(2000);
+				        
+					}catch(Exception e){
+						m_mainApp.SetErrorString("OPENA:"+e.getMessage()+e.getClass().getName());
+					}
+		            
+		            m_currPlayVoiceThread = null;
+				}
+			};
+			
+			m_currPlayVoiceThread.start();
+		}
 	}
 }

@@ -50,6 +50,12 @@ public class fetchChatMsg{
 		m_contentType = _type;
 	}
 	
+	public void destory(){
+		m_isOwnMsg = false;
+		m_sendState = SEND_STATE_PADDING;
+		m_sendReadMsg = false;
+	}
+	
 	public int hashCode(){
 		return (getOwner() + getStyle() + getSendTime()).hashCode();
 	}

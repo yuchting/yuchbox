@@ -612,13 +612,14 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		fetchChatMsg t_msg = null;
 		try{
 			t_msg = (fetchChatMsg)m_chatMsgAllocator.alloc();
-			
 		}catch(Exception e){
 			t_msg = new fetchChatMsg();
 			m_mainApp.SetErrorString("PCM_0:"+e.getMessage()+e.getClass().getName());
 		}
 		
 		t_msg.Import(in);
+		
+		sendChatConfirmMsg(t_msg);
 		
 		synchronized (m_delayLoadChatMsg) {
 			
@@ -645,7 +646,6 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 							m_delayLoadChatMsg.removeElementAt(0);	
 						}
 						
-						sendChatConfirmMsg(msg);
 						addChatMsg(msg);
 					}
 				}, 100, true);
@@ -682,7 +682,9 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 					// remove the history chat record
 					//
 					while(data.m_chatMsgList.size() > m_mainApp.getIMChatMsgHistory()){
-						m_chatMsgAllocator.release(data.m_chatMsgList.elementAt(0));						
+						fetchChatMsg msg = (fetchChatMsg)data.m_chatMsgList.elementAt(0);
+						msg.destory();
+						m_chatMsgAllocator.release(msg);						
 						data.m_chatMsgList.removeElementAt(0);
 					}
 					
@@ -775,6 +777,8 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				if(data.m_roster == _roster){
 					
 					for(int j = 0;j < data.m_chatMsgList.size();j++){
+						fetchChatMsg msg = (fetchChatMsg)data.m_chatMsgList.elementAt(j);
+						msg.destory();
 						m_chatMsgAllocator.release(data.m_chatMsgList.elementAt(j));
 					}
 					
@@ -924,7 +928,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				}
 				synchronized (m_rosterChatDataList) {
 					m_rosterChatDataList.removeAllElements();
-					
+
 					for(int i = 0;i < t_tmpRosterList.size();i++){
 						RosterChatData t_data = (RosterChatData)t_tmpRosterList.elementAt(i);
 						m_rosterChatDataList.addElement(t_data);								

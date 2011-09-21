@@ -398,9 +398,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		super(new WeiboUpdateManager(_screen),Screen.DEFAULT_MENU | Manager.NO_VERTICAL_SCROLL);
 		m_updateManager = (WeiboUpdateManager)getDelegate();
 		
-		m_mainApp = _screen.m_mainApp;
-		m_mainApp.addFileSystemJournalListener(m_fileSystem);
-		
+		m_mainApp = _screen.m_mainApp;		
 		m_hasImageSign = recvMain.sm_weiboUIImage.getImageUnit("picSign");
 	}
 	
@@ -471,7 +469,9 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		if(m_updateManager.m_editTextArea.getTextLength() != 0){
 			m_updateManager.m_editTextArea.setCursorPosition(m_updateManager.m_editTextArea.getTextLength());
 		}
-		m_updateManager.m_editTextArea.setFocus();		
+		m_updateManager.m_editTextArea.setFocus();
+		
+		m_mainApp.addFileSystemJournalListener(m_fileSystem);
 	}
 	
 	protected void paint(Graphics _g){		

@@ -10,7 +10,9 @@ import net.rim.device.api.ui.Graphics;
 
 public class ChatImageField extends Field{
 	
-	public final static int  fsm_imageSize = 80;
+	public final static int  fsm_imageWidth = 80;
+	public final static int  fsm_imageHeight = 60;
+	
 	
 	Bitmap	m_imageBitmap	= null;
 	IChatFieldOpen	m_open	= null;
@@ -21,6 +23,7 @@ public class ChatImageField extends Field{
 		super(Field.FOCUSABLE);
 	}
 	
+
 	public void init(fetchChatMsg _msg,IChatFieldOpen _open){
 		m_msg = _msg;
 		m_open = _open;
@@ -32,8 +35,8 @@ public class ChatImageField extends Field{
 		int t_origWidth = t_origImage.getWidth();
 		int t_origHeight = t_origImage.getHeight();
 		
-		int scaleX = Fixed32.div(Fixed32.toFP(t_origWidth), Fixed32.toFP(fsm_imageSize));
-		int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(fsm_imageSize));
+		int scaleX = Fixed32.div(Fixed32.toFP(t_origWidth), Fixed32.toFP(getPreferredWidth()));
+		int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(getPreferredHeight()));
 											
 		JPEGEncodedImage finalJPEG = JPEGEncodedImage.encode(t_origImage.scaleImage32(scaleX, scaleY).getBitmap(), 80);
 		
@@ -43,11 +46,11 @@ public class ChatImageField extends Field{
 	}
 	
 	public int getPreferredWidth(){
-		return fsm_imageSize;
+		return fsm_imageWidth;
 	}
 	
 	public int getPreferredHeight(){
-		return fsm_imageSize;
+		return fsm_imageHeight;
 	}
 	
 	protected void layout(int width,int height){
