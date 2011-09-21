@@ -21,6 +21,26 @@
 	/-->
 	
 	<!--EmailAccount
+		account="yuchting@gmail.com"
+		password=""
+		cryptPassword="396bc581a6277f66ca6d40eb5fd98d38ef8857158d44258d"
+		sendName="tzz"
+		
+		useFullNameSignIn="0"
+		
+		protocol="imaps"
+		host="imap.gmail.com"
+		port="993"
+		
+		protocol_send="smtp"
+		host_send="smtp.gmail.com"
+		port_send="587"
+		
+		appendHTML="1"
+		pushHistoryMsg="1"
+	/-->
+	
+	<!--EmailAccount
 		account="yuchberry@gmail.com"
 		password=""
 		cryptPassword="7b371a95bc2d7a9b9d7c68d2cca46d98ef8857158d44258d"
@@ -85,7 +105,7 @@
 		commentSum="5"
 	/-->
 		
-	<!--WeiboAccount
+	<WeiboAccount
 		type="sina"
 		account="yuchberry"
 		accessToken="1eef9899c847f1cd0735c6775fdcc576"
@@ -96,7 +116,7 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/-->
+	/>
 		
 	<!--WeiboAccount
 		type="qq"
@@ -123,18 +143,18 @@
 		password=""
 		cryptPassword="7b371a95bc2d7a9b9d7c68d2cca46d98ef8857158d44258d"
 	/-->
-	<!--IMAccount
+	<IMAccount
 		type="gtalk"
 		account="yuchting@gmail.com"
 		password=""
 		cryptPassword="396bc581a6277f66ca6d40eb5fd98d38ef8857158d44258d"
-	/-->
+	/>
 	
-	<IMAccount
+	<!--IMAccount
 		type="gtalk"
 		account="yuchdroid@gmail.com"
 		password="hF8IBrCmBDQsKaWa"
 		cryptPassword=""
-	/>
+	/-->
 	
 </Yuchberry>

@@ -384,6 +384,11 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			Presence t_presence = new Presence(Presence.Type.available);
 			t_presence.setMode(Presence.Mode.xa);
 			
+			if(m_connectStatus != null){
+				t_presence.setStatus(m_connectStatus);
+			}
+			
+			
 			try{	
 				m_mainConnection.sendPacket(t_presence);
 			}catch(Exception e){
@@ -595,7 +600,9 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     	t_msg.setMsg(convertPhiz(message.getBody(),true));
     	t_msg.setSendTo(GetAccountName());
     	t_msg.setOwner(ChatData.convertAccount(_chat.getParticipant()));
-    	t_msg.setSendTime((new Date()).getTime());  
+    	t_msg.setSendTime((new Date()).getTime());
+    	
+    	t_msg.m_svrSentTime = t_msg.getSendTime();
     	
     	Object t_read = message.getProperty(fsm_ybReadProperty);
     	if(t_read != null && t_read instanceof Integer){
@@ -1208,7 +1215,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			return;
 		}
 		
-		if(!m_mainConnection.isConnected()){
+		if(!m_mainConnection.isConnected() || !m_mainConnection.isAuthenticated()){
 			
 			m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " disconnected reset it.");
 			
@@ -1255,7 +1262,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			for(int i = 0 ;i < m_pushedChatMsgList.size();i++){
 				fetchChatMsg msg = m_pushedChatMsgList.elementAt(i);
 				
-				if(msg.m_sentTimes >= 2){
+				if(msg.m_svrSentTimes >= 2){
 					
 					m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " sent msg 5 times give up!" + msg.hashCode());
 					m_pushedChatMsgList.remove(i);
@@ -1264,13 +1271,15 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 					continue;
 				}
 				
-				if(Math.abs(msg.getSendTime() - t_currTime) > 2 * 60000) {
+				if(Math.abs(msg.m_svrSentTime - t_currTime) > 2 * 60000) {
 					
 					if(sendClientChatMsg(msg,false)){
 						
+						msg.m_svrSentTime = t_currTime;
+						
 						m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " sent msg again..." + msg.hashCode());
 						
-						msg.m_sentTimes++;
+						msg.m_svrSentTimes++;
 					}
 				}
 			}

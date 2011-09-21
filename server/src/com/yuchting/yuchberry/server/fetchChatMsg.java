@@ -27,7 +27,9 @@ public class fetchChatMsg{
 	
 
 	// server send counter
-	public		int m_sentTimes		= 0;
+	//
+	public		int m_svrSentTimes		= 0;
+	public		long m_svrSentTime		= 0;
 	
 	public fetchChatMsg(){}
 	
