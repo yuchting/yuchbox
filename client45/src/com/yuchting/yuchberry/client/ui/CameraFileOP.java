@@ -19,12 +19,12 @@ import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 
 public abstract class CameraFileOP implements FileSystemJournalListener{
 	
-	private long 			m_lastUSN;
+	static private long 			sm_lastUSN = 0;
 
 	public void fileJournalChanged() {
 		long nextUSN = FileSystemJournal.getNextUSN();
 		
-		for (long lookUSN = nextUSN - 1; lookUSN >= m_lastUSN ; --lookUSN) {
+		for(long lookUSN = nextUSN - 1; lookUSN >= sm_lastUSN ; --lookUSN) {
 			
 			FileSystemJournalEntry entry = FileSystemJournal.getEntry(lookUSN);
 			if (entry == null) {
@@ -37,9 +37,9 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 				
 				if (entryPath != null && canAdded()){
 					
-					if(entryPath.endsWith(".png") 
-					&& (entryPath.indexOf(recvMain.fsm_weiboImageDir) != -1 
-						|| entryPath.indexOf(recvMain.fsm_IMImageDir) != -1)){
+					if(entryPath.indexOf(recvMain.fsm_mailAttachDir) != -1
+						|| entryPath.indexOf(recvMain.fsm_weiboImageDir) != -1 
+						|| entryPath.indexOf(recvMain.fsm_IMImageDir) != -1){
 						
 						// is not photo
 						// is weibo/IM head image
@@ -47,7 +47,9 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 						continue;
 					}
 					
+					
 					if(addUploadingPic("file://" + entryPath)){
+						sm_lastUSN = lookUSN + 1;
 						break;
 					}					
 				}

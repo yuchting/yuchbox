@@ -132,7 +132,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				m_searchStatus = new SearchStatus(MainIMScreen.this);
 			}
 			
-			setTitle(m_searchStatus);
+			UiApplication.getUiApplication().pushScreen(m_searchStatus);
 			m_searchStatus.m_editTextArea.setFocus();
 		}
 	};
@@ -248,7 +248,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
     MenuItem m_weiboScreenItem = new MenuItem(recvMain.sm_local.getString(localResource.YB_WEIBO_MENU_LABEL),101,0){
         public void run() {
         	        	
-        	if(m_mainApp.m_enableIMModule){
+        	if(m_mainApp.m_enableWeiboModule){
         		
         		recvMain t_recv = (recvMain)UiApplication.getUiApplication();
             	t_recv.popScreen(MainIMScreen.this);
@@ -299,7 +299,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	public	Field	m_currFocusHistoryRosterItemField = null;
 	public Field	m_currFocusStatusField = null;
 	
-	SearchStatus			m_searchStatus	= null;
+	public SearchStatus		m_searchStatus	= null;
 	
 		
 	public MainIMScreen(recvMain _mainApp){
@@ -323,13 +323,6 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	}
 	
 	public boolean onClose(){
-		
-		if(m_searchStatus != null){
-			setTitle((Field)null);
-			
-			m_searchStatus = null;
-			return false;
-		}
 				
 		if(m_mainApp.m_connectDeamon.IsConnectState()){
     		
@@ -500,26 +493,10 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		return super.navigationClick(status, time);
 	}
 	
-	protected boolean keyChar(char c,int status,int time){
-		if(m_searchStatus != null){
-			return m_searchStatus.m_editTextArea.keyChar(c,status,time);
-		}
-		return super.keyChar(c,status,time);
-	}
-	
 	protected boolean keyDown(int keycode,int time){
 		
 		final int key = Keypad.key(keycode);
-		
-		if(m_searchStatus != null){
-			if(key == 10){
-				m_searchStatus.searchNext();
-				return true;
-			}
-			
-			return m_searchStatus.m_editTextArea.keyDown(keycode, time);
-		}
-		
+				
 		switch(key){
 		case 'H':
 			m_historyChatMenu.run();
@@ -534,7 +511,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			m_stateMenu.run();
 			return true;
 		case 'W':
-			if(m_mainApp.m_enableIMModule){
+			if(m_mainApp.m_enableWeiboModule){
 				m_weiboScreenItem.run();
 				return true;
 			}

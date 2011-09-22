@@ -1,80 +1,34 @@
 package com.yuchting.yuchberry.client.im;
 
+import local.localResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
-import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.AutoTextEditField;
+import net.rim.device.api.ui.component.LabelField;
+import net.rim.device.api.ui.container.PopupScreen;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 
 import com.yuchting.yuchberry.client.recvMain;
-import com.yuchting.yuchberry.client.ui.ImageButton;
 
-public class SearchStatus extends Manager implements FieldChangeListener{
-
-	public final class SearchEditText extends AutoTextEditField{
-		public void setText(String _text){
-			super.setText(_text);
-			this.layout(m_textWidth,1000);
-		}
-		
-		public int getPreferredWidth(){
-			return m_textWidth;
-		}
-		
-		public boolean keyDown(int keycode,int time){
-			this.layout(m_textWidth,1000);
-			return super.keyDown(keycode,time);
-		}
-		
-		public boolean keyChar(char c,int status,int time){
-			return super.keyChar(c,status,time);
-		}
-	}
+public class SearchStatus extends PopupScreen implements FieldChangeListener{
 	
-	SearchEditText		m_editTextArea = new SearchEditText();
-	
-	int					m_textWidth		= 0;
+	AutoTextEditField	m_editTextArea = new AutoTextEditField();
 	
 	int					m_currSelected	= 0;
-	
 	MainIMScreen		m_mainScreen = null;
 	
 	public SearchStatus(MainIMScreen _screen){
-		super(Manager.VERTICAL_SCROLL);
+		super(new VerticalFieldManager(Manager.VERTICAL_SCROLL));
 		m_mainScreen = _screen;
-		
-		m_textWidth = getPreferredWidth() - (InputManager.fsm_textBorder + InputManager.fsm_inputBubbleBorder)* 2;
-		
-		add(m_editTextArea);
+	
+		add(m_editTextArea);	
+		add(new LabelField(recvMain.sm_local.getString(localResource.IM_SEARCH_PROMPT_LABEL)));
 
 		m_editTextArea.setChangeListener(this);
+	}
 		
-		InputManager.initInputBackground();
-	}
-	
-	public int getPreferredWidth(){
-		return recvMain.fsm_display_width;
-	}
-	
-	public int getPreferredHeight(){
-		return InputManager.fsm_minHeight;
-	}
-	
-	protected void sublayout(int _width,int _height){
-		setPositionChild(m_editTextArea,InputManager.fsm_textBorder + InputManager.fsm_inputBubbleBorder,
-						InputManager.fsm_textBorder + InputManager.fsm_inputBubbleBorder);		
-		layoutChild(m_editTextArea,m_editTextArea.getPreferredWidth(),m_editTextArea.getPreferredHeight());
-						
-		setExtent(getPreferredWidth(), getPreferredHeight());
-	}
-	
-	protected void subpaint(Graphics _g){
-		
-		InputManager.drawInputBackground(_g, m_textWidth, getPreferredWidth(), getPreferredHeight());
-		
-		super.subpaint(_g);
-	}
-	
 	public void fieldChanged(Field field,int _context){
 		
 		if(_context != FieldChangeListener.PROGRAMMATIC){
@@ -84,6 +38,16 @@ public class SearchStatus extends Manager implements FieldChangeListener{
 				m_mainScreen.selectedByKeyword(t_keyword,m_currSelected);
 			}		
 		}
+	}
+	
+	public boolean onClose(){
+		close();
+		return true;
+	}
+	
+	public void close(){
+		m_mainScreen.m_searchStatus = null;
+		super.close();
 	}
 	
 	public void searchNext(){
@@ -99,5 +63,17 @@ public class SearchStatus extends Manager implements FieldChangeListener{
 				m_mainScreen.selectedByKeyword(t_keyword,m_currSelected);
 			}
 		}	
+	}
+	
+	protected boolean keyDown(int keycode,int time){
+		final int key = Keypad.key(keycode);
+		
+		if(key == 10){
+			searchNext();
+			return true;
+		}
+		
+		return super.keyDown(keycode,time);
+		
 	}
 }

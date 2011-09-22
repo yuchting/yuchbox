@@ -409,6 +409,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	private void mkHeadImageDir(String _prefix,String[] dir,boolean _init)throws Exception{
 
+		if(!isSDCardAvaible()){
+			throw new Exception("Can't use the sd card to store weibo head image.");
+		}
+		
 		// connect the string of head image directory
 		//
 		if(!_init){
@@ -416,35 +420,31 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         		dir[i] = _prefix + dir[i];
         	}
     	}
-		
-		if(!isSDCardAvaible()){
-			throw new Exception("Can't use the sd card to store weibo head image.");
-		}
-		
+			
 		// create the sdcard path 
 		//
     	FileConnection fc = (FileConnection) Connector.open(_prefix,Connector.READ_WRITE);
     	try{
     		if(!fc.exists()){
         		fc.mkdir();
-        		
-        		// attempt create the head image directory
-        		//
-        		for(int i = 0;i < dir.length;i++){
-        			FileConnection tfc = (FileConnection) Connector.open(dir[i],Connector.READ_WRITE);
-                	try{
-                		if(!tfc.exists()){
-                			tfc.mkdir();
-                    	}	
-                	}finally{
-                		tfc.close();
-                		tfc = null;
-                	}
-            	}
         	}
-    	}finally{
+       	}finally{
     		fc.close();
     		fc = null;
+    	}
+    	
+    	// attempt create the head image directory
+		//
+		for(int i = 0;i < dir.length;i++){
+			FileConnection tfc = (FileConnection) Connector.open(dir[i],Connector.READ_WRITE);
+        	try{
+        		if(!tfc.exists()){
+        			tfc.mkdir();
+            	}	
+        	}finally{
+        		tfc.close();
+        		tfc = null;
+        	}
     	}
     	    	
     	dir = null;
@@ -471,9 +471,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return t_SDCardUse;
 	}
 	
+	public final static String fsm_mailAttachDir = "YuchBerry/AttDir/";
+	
 	public String GetAttachmentDir(){
 		
-		String t_attDir = (isSDCardAvaible()?uploadFileScreen.fsm_rootPath_default:uploadFileScreen.fsm_rootPath_back) + "YuchBerry/AttDir/";
+		String t_attDir = (isSDCardAvaible()?uploadFileScreen.fsm_rootPath_default:uploadFileScreen.fsm_rootPath_back) + fsm_mailAttachDir;
 		
 		try{
 			FileConnection fc = (FileConnection) Connector.open(t_attDir,Connector.READ_WRITE);
@@ -1425,8 +1427,24 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					m_mainIMScreen.m_addRosterDlg.close();
 					popScreen(m_mainIMScreen);
 					
-				}else if(getActiveScreen() == m_mainIMScreen){
+				}else if(getActiveScreen() == m_mainIMScreen.m_searchStatus
+						&& m_mainIMScreen.m_searchStatus != null){
 					
+					m_isWeiboOrIMScreen = false;
+					
+					m_mainIMScreen.m_searchStatus.close();
+					popScreen(m_mainIMScreen);
+					
+				}else if(getActiveScreen() == m_mainIMScreen.m_chatScreen.m_recordScreen
+						&& m_mainIMScreen.m_chatScreen.m_recordScreen != null){
+					
+					m_isWeiboOrIMScreen = false;
+					
+					m_mainIMScreen.m_chatScreen.m_recordScreen.close();
+					popScreen(m_mainIMScreen.m_chatScreen);
+					popScreen(m_mainIMScreen);
+					
+				}else if(getActiveScreen() == m_mainIMScreen){	
 					m_isWeiboOrIMScreen = false;
 					popScreen(m_mainIMScreen);
 				}

@@ -41,7 +41,7 @@ public class RosterItemField extends Field{
 		
 		setChangeListener(_changedListener);
 	}
-
+	
 	public int getPreferredWidth() {
 		return fsm_rosterItemFieldWidth;
 	}

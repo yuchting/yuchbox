@@ -27,17 +27,9 @@ public class SendChatMsgDeamon extends Thread implements ISendAttachmentCallback
 		m_connect		= _chatScreen.m_mainApp.m_connectDeamon;
 		m_sendTo		= _sendTo;
 		
-//		if(m_sendMsg.getFileContent() != null){
-//			try{
-//				m_sendFileDaemon = new SendAttachmentDeamon(_chatScreen.m_mainApp.m_connectDeamon, 
-//						m_sendMsg.getFileContent(), (int)(m_sendMsg.getSendTime() / 1000), this);
-//			}catch(Exception e){
-//				m_chatScreen.m_mainApp.SetErrorString("SCMD:"+e.getMessage()+e.getClass());
-//			}
-//			
-//		}else{
-			start();
-		//}
+
+		start();
+		
 		
 	}
 	
@@ -166,7 +158,13 @@ public class SendChatMsgDeamon extends Thread implements ISendAttachmentCallback
 					// except mail with attachment
 					//
 					if(t_resend_time++ < 3){
-						sleep(2 * 60000);
+						
+						if(m_sendMsg.getFileContent() != null){
+							sleep(3*60000);
+						}else{
+							sleep(30000);
+						}
+						
 					}else{
 						sendError();
 						m_connect.m_mainApp.SetErrorString("SC:resend 3 time,give up.");

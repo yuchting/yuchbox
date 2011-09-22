@@ -684,7 +684,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		}
 	};
 	
-	RecordAudioScreen		m_recordScreen = null;
+	public RecordAudioScreen	m_recordScreen = null;
 	byte[]					m_recordBuffer = null;
 	
 	public void clearAttachment(){
@@ -716,9 +716,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 					recvMain.sm_weiboUIImage.getImageUnit("nav_bar_right"),
 					recvMain.sm_weiboUIImage);
 		}
-		
-		
-		
+				
 		m_header = new ChatScreenHeader();
 		m_hasImageSign = recvMain.sm_weiboUIImage.getImageUnit("picSign");
 		m_hasVoiceSign = recvMain.sm_weiboUIImage.getImageUnit("commentSign");
@@ -750,6 +748,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		
 		if(m_imagePath != null || m_snapBuffer != null || m_recordBuffer != null){
 			_menu.add(m_checkPic);
+			_menu.add(m_deletePic);
 		}
 		
 		if(getResendField() != null){
@@ -920,7 +919,13 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 			try{
 				switch(msg.getFileContentType()){
 				case fetchChatMsg.FILE_TYPE_IMG:
-					String t_file = m_mainApp.GetIMHeadImageDir(msg.getStyle()) + msg.hashCode() + ".jpg";
+					String t_file = null;
+					if(msg.isOwnMsg()){
+						t_file = m_mainApp.GetIMHeadImageDir(msg.getStyle()) + "tmp.jpg";
+					}else{
+						t_file = m_mainApp.GetIMHeadImageDir(msg.getStyle()) + Math.abs(msg.hashCode()) +".jpg";
+					}
+					
 					FileConnection t_fc = (FileConnection)Connector.open(t_file,Connector.READ_WRITE);
 					try{
 						if(!t_fc.exists()){

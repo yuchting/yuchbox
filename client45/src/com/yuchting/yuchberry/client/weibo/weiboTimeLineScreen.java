@@ -1026,8 +1026,11 @@ public class weiboTimeLineScreen extends MainScreen{
 	    		m_deleteItem.run();
 	    		return true;
 	    	case 'M':
-	    		m_imScreenItem.run();
-	    		return true;
+	    		if(m_mainApp.m_enableIMModule){
+	    			m_imScreenItem.run();
+		    		return true;
+	    		}
+	    		break;	    		
 			}
 			
 			if(m_currMgr.getCurrExtendedItem() != null && m_currMgr != m_mainDMMgr){
