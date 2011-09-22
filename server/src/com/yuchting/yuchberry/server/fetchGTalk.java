@@ -778,8 +778,13 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			|| !t_headImageFile.exists()
 			|| Math.abs(t_currentTime - t_headImageFile_l.lastModified()) > 5 * 24 * 3600000){
 			
+			
 			VCard vCard = new VCard();
 			try{
+				
+				if(!m_mainConnection.isAuthenticated()){
+					ResetSession(true);
+				}
 				
 				vCard.load(m_mainConnection, _roster.getSource());
 				
