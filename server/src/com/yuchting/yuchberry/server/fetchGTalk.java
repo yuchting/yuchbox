@@ -768,7 +768,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	}
 	
 	private void storeHeadImage(fetchChatRoster _roster){
-		
+				
 		File t_headImageFile_l = new File(m_headImageDir + _roster.getAccount() + "_l.jpg");
 		File t_headImageFile = new File(m_headImageDir + _roster.getAccount() + ".jpg");
 		
