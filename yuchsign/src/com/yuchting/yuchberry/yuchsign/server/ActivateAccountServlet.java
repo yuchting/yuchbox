@@ -84,7 +84,7 @@ public class ActivateAccountServlet extends HttpServlet {
 										out.println("你是受" + t_bber.getInviter() + "之邀，<b>第"+t_inviterNum+"个</b>注册激活语盒账户的，" +
 													"所以你和他两人都会获得<b>"+ FieldVerifier.fsm_inviteDays + "天的免费使用时间</b>。" +
 													"<br />可能需要退出一下账户重新登录一下才能看见。" +
-													"<br /><br />语盒开发者们感谢你们的支持！");
+													"<br /><br />语盒开发者们感谢你们的支持！遇到任何问题可以回复本邮件，我们会在第一时间为你解答。");
 										
 										PayServiceImpl.RecalculateTime(t_pm,t_inviterbber,FieldVerifier.fsm_inviteDays * 24,t_inviterbber.GetLevel());										
 									}									

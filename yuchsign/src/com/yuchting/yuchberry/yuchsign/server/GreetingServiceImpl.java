@@ -1148,6 +1148,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 			int t_syncNum = 0;
 			int t_payNum = 0;
 			
+			int t_inviteNum = 0;
+			
 			int t_totalPayNum = 0;
 						
 			int[] t_accNum = new int[yuchbber.fsm_weekMoney.length];
@@ -1180,6 +1182,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 					if(bber.GetConnectHost() != null && bber.GetConnectHost().length() > 0){
 						t_syncNum++;
 					}
+					
+					if(bber.getInviter() != null && !bber.getInviter().isEmpty()){
+						t_inviteNum++;
+					}
+										
 					if(_withPushNum){
 						
 						int t_accNumIndex = bber.GetEmailList().size();
@@ -1195,7 +1202,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 								t_accPayNum[t_accNumIndex]++;
 							}
 							
-						}else{	
+						}else{
 							System.err.println(bber.GetSigninName() + "!!!!! t_accNumInfo :" + t_accNumIndex );
 						}	
 					}
@@ -1249,7 +1256,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						
 			StringBuffer t_result = new StringBuffer();
 			t_result.append("<table border=\"1\">");	
-			t_result.append("<tr><td>时间</td><td>激活用户</td><td>同步用户</td><td>付费用户</td><td>收入</td></tr>");
+			t_result.append("<tr><td>时间</td><td>激活/被邀请用户</td><td>同步用户</td><td>付费用户</td><td>收入</td></tr>");
 
 			SimpleDateFormat t_timeFormat = new SimpleDateFormat("yyyy-MM-dd");
 		
@@ -1281,10 +1288,15 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				int syncNum = 0;
 				int payNum = 0;
 				int fee = 0;
+				int inviteNum = 0;
 				
 				for(yuchbber bber:list.m_userList){
 					if(bber.GetConnectHost() != null && bber.GetConnectHost().length() > 0){
 						syncNum++;
+					}
+					
+					if(bber.getInviter() != null && !bber.getInviter().isEmpty()){
+						inviteNum++;
 					}
 				}
 				
@@ -1306,7 +1318,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 				
 				t_result.append("<tr><td>")
 						.append(t_timeFormat.format(time.longValue())).append("</td><td>")
-						.append(list.m_userList.size()).append("</td><td>")
+						.append(Integer.toString(list.m_userList.size())).append("/").append(inviteNum).append("</td><td>")
 						.append(syncNum).append("</td><td>")
 						.append(payNum).append("</td><td>")
 						.append(fee).append("</td><tr>");
@@ -1318,7 +1330,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 						
 			t_result.append("<tr><td>")
 					.append("总计").append("</td><td>")
-					.append(t_activateNum).append("</td><td>")
+					.append(t_activateNum).append("/").append(t_inviteNum).append("</td><td>")
 					.append(t_syncNum).append("</td><td>")
 					.append(t_payNum).append("</td><td>")
 					.append(t_totalPayNum).append("</td><tr>");
