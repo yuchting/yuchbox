@@ -22,6 +22,8 @@ public class sendReceive extends Thread{
 	private Vector		m_unsendedPackage 		= new Vector();
 	private Vector		m_unprocessedPackage 	= new Vector();
 	
+	int					m_sendBufferLen 		= 0;
+	
 	boolean			m_closed				= false;
 	
 	int					m_keepliveCounter		= 0;
@@ -57,7 +59,16 @@ public class sendReceive extends Thread{
 	}
 	
 	//! send buffer
-	public void SendBufferToSvr(byte[] _write,boolean _sendImm,boolean _wait)throws Exception{	
+	public void SendBufferToSvr(byte[] _write,boolean _sendImm,boolean _wait)throws Exception{
+		
+		synchronized (this) {
+			m_sendBufferLen += _write.length;
+		}
+		
+		if(m_sendBufferLen >= 65000){
+			SendBufferToSvr_imple(PrepareOutputData());
+		}
+		
 		m_unsendedPackage.addElement(_write);
 		
 		if(_sendImm){
@@ -66,7 +77,6 @@ public class sendReceive extends Thread{
 			synchronized (this) {
 				m_keepliveCounter = 0;
 			}
-			
 		}
 		
 		if(_wait){
@@ -132,6 +142,10 @@ public class sendReceive extends Thread{
 			}
 			
 			m_unsendedPackage.removeAllElements();
+		}
+		
+		synchronized (this) {
+			m_sendBufferLen = 0;
 		}
 		
 		

@@ -710,6 +710,13 @@ public class weiboTimeLineScreen extends MainScreen{
     
     MenuItem m_refreshItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_REFRESH_MENU_LABEL),m_menuIndex_op++,0){
         public void run() {
+        	
+        	if(m_mainMgr.getField(0) == m_mainMgr.m_updateWeiboField){
+        		// refresh the home remain weibo items first   
+        		//
+        		m_mainMgr.clickUpdateField();
+        	}
+        	
         	SendRefreshMsg();
         }
     };    
@@ -1050,7 +1057,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			    		m_stateItem.run();
 			    		return true;
 			    	case 'R':
-			    		SendRefreshMsg();
+			    		m_refreshItem.run();
 			    		return true;
 			    	case 10: // enter key
 			    	case ' ':

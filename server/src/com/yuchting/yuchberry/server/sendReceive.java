@@ -13,6 +13,7 @@ class sendReceive extends Thread{
 	OutputStream		m_socketOutputStream = null;
 	InputStream			m_socketInputStream = null;
 	
+	int					m_sendBufferLen 		= 0;
 	
 	private Vector		m_unsendedPackage 		= new Vector();
 	private Vector		m_unprocessedPackage 	= new Vector();
@@ -28,10 +29,16 @@ class sendReceive extends Thread{
 		
 	//! send buffer
 	public synchronized void SendBufferToSvr(byte[] _write,boolean _sendImm)throws Exception{	
+		
+		m_sendBufferLen += _write.length;
+		if(m_sendBufferLen >= 65000){
+			SendBufferToSvr_imple(PrepareOutputData());
+		}
+		
 		m_unsendedPackage.addElement(_write);
 		
 		if(_sendImm){
-			SendBufferToSvr_imple(PrepareOutputData());
+			SendBufferToSvr_imple(PrepareOutputData());	
 		}
 	}
 	
@@ -79,6 +86,7 @@ class sendReceive extends Thread{
 		}
 		
 		m_unsendedPackage.removeAllElements();
+		m_sendBufferLen = 0;
 		
 		return t_stream.toByteArray();
 	}
@@ -111,7 +119,6 @@ class sendReceive extends Thread{
 			WriteInt(os,((_write.length << 16) & 0xffff0000) | t_zipData.length);
 			os.write(t_zipData);
 			os.flush();
-			
 		}
 				
 	}

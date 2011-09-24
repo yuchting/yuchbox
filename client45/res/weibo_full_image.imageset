@@ -54,7 +54,7 @@
 	
 	<Image Name="picSign" XPos="0" YPos="353" Width="16" Height="16" />
 	<Image Name="commentSign" XPos="16" YPos="353" Width="16" Height="16" />
-	<Image Name="compose" XPos="32" YPos="353" Width="24" Height="24" /> 
+	<Image Name="refresh" XPos="32" YPos="353" Width="24" Height="24" /> 
 	
 	<Image Name="bubble_top_left" XPos="0" YPos="377" Width="16" Height="16" />
 	<Image Name="bubble_top" XPos="16" YPos="377" Width="16" Height="16" />

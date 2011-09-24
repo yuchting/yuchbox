@@ -22,7 +22,7 @@ public class WeiboUpdateField extends Field{
 		super(Field.FOCUSABLE);
 		
 		m_parentManager = _mainManager;		
-		m_updateBitmap = recvMain.sm_weiboUIImage.getImageUnit("compose");
+		m_updateBitmap = recvMain.sm_weiboUIImage.getImageUnit("refresh");
 		
 	}
 	

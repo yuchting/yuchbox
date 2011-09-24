@@ -452,9 +452,16 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     	
     	String account = ChatData.convertAccount(presence.getFrom());
     	    	
-    	synchronized (m_chatRosterList) {
-    		
-    		for(fetchChatRoster roster : m_chatRosterList){
+    	//synchronized (m_chatRosterList) {
+    		// don't sync m_chatRosterList because ResetSession->XMPPConnection.disconnect->...->presenceChanged
+    		// CAN BE make DEAD-LOCK
+    		//
+    		//for(fetchChatRoster roster : m_chatRosterList){
+    		//
+    		//
+    		for(int i = 0;i < m_chatRosterList.size();i++){
+    			fetchChatRoster roster = (fetchChatRoster)m_chatRosterList.elementAt(i);
+    			
     			if(roster.getAccount().toLowerCase().equals(account)){
     				boolean changed = setPresence(roster,presence);
     				
@@ -484,7 +491,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     				break;
     			}
     		}
-    	}
+    	//}
     }
     
    
@@ -782,8 +789,11 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			VCard vCard = new VCard();
 			try{
 				
-				if(!m_mainConnection.isAuthenticated()){
-					ResetSession(true);
+				if(!m_mainConnection.isConnected() || !m_mainConnection.isAuthenticated()){
+					return ;
+					// CAN NOT reset session because some dead locked bug
+					//
+					//ResetSession(true);
 				}
 				
 				vCard.load(m_mainConnection, _roster.getSource());

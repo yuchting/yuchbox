@@ -1,11 +1,19 @@
 # 这个文件是签名
-#
-# $time$ 是一个变量，可以被替换成如下模样
+# 
+# 1、$time$ 是一个变量，可以被替换成如下模样
 # 2011-04-05 12：20
 # 可以去掉
+#
+# 2、$contain$ 是可以替换成邮件正文的变量，可以把这个签名文件当成发信模板使用。例如
+#
+#   尊敬的客户：
 # 
-# 详细请见 
-# http://code.google.com/p/yuchberry/issues/detail?id=104&colspec=ID%20Type%20Status%20Priority%20Stars%20Summary#makechanges
+#   $contain$
+#
+#   致
+#     敬！   xxx销售员
+#
+# 在每次发送邮件的时候，$contain$ 就会被替换成邮件正文的内容，也可以去掉
 #
 --
 使用语盒发送 @$time$ 

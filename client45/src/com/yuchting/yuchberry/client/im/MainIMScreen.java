@@ -7,6 +7,10 @@ import java.util.Date;
 import java.util.Vector;
 
 import local.localResource;
+import net.rim.blackberry.api.invoke.Invoke;
+import net.rim.blackberry.api.invoke.MessageArguments;
+import net.rim.blackberry.api.mail.Address;
+import net.rim.blackberry.api.mail.Message;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -96,6 +100,18 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	
+
+	MenuItem	m_searchRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_SEARCH_ROSTER_MENU_LABEL),m_menu_op++,0){
+		public void run(){
+			if(m_searchStatus == null){
+				m_searchStatus = new SearchStatus(MainIMScreen.this);
+			}
+			
+			UiApplication.getUiApplication().pushScreen(m_searchStatus);
+			m_searchStatus.m_editTextArea.setFocus();
+		}
+	};
+	
 	public IMAddRosterDlg		m_addRosterDlg = null;
 	MenuItem	m_addRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_ADD_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
@@ -104,6 +120,24 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			}
 			
 			m_mainApp.pushScreen(m_addRosterDlg);
+		}
+	};
+	
+
+	public RosterInfoScreen m_checkRosterInfoScreen = null;
+	MenuItem	m_checkRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_CHECK_ROSTER_MENU_LABEL),m_menu_op++,0){
+		public void run(){
+			
+			RosterChatData t_data = getCurrFocusRosterData();
+			
+			if(t_data != null){
+
+				if(m_checkRosterInfoScreen == null){
+					m_checkRosterInfoScreen = new RosterInfoScreen(MainIMScreen.this,((RosterItemField)m_currFocusRosterItemField).m_currRoster);
+				}
+				
+				UiApplication.getUiApplication().pushScreen(m_checkRosterInfoScreen);	
+			}
 		}
 	};
 	
@@ -124,16 +158,27 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			}
 			
 		}
-	};
+	};	
 	
-	MenuItem	m_searchRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_SEARCH_ROSTER_MENU_LABEL),m_menu_op++,0){
+	
+	MenuItem		m_sendEmailMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_SEND_EMAIL),m_menu_op++,0){
 		public void run(){
-			if(m_searchStatus == null){
-				m_searchStatus = new SearchStatus(MainIMScreen.this);
-			}
+			RosterChatData t_data = getCurrFocusRosterData();
 			
-			UiApplication.getUiApplication().pushScreen(m_searchStatus);
-			m_searchStatus.m_editTextArea.setFocus();
+			if(t_data != null){
+				Message msg = new Message();
+				
+				try{
+					msg.addRecipients(Message.RecipientType.TO,
+							new Address[]{new Address(t_data.m_roster.getName(),t_data.m_roster.getAccount())});
+											
+					Invoke.invokeApplication(Invoke.APP_TYPE_MESSAGES, new MessageArguments(msg));
+					
+				}catch(Exception e){
+					m_mainApp.SetErrorString("SEM:"+e.getMessage()+e.getClass().getName());
+				}
+				
+			}
 		}
 	};
 	
@@ -426,6 +471,18 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		m_mainApp.WriteReadIni(false);
 	}
 	
+	private RosterChatData getCurrFocusRosterData(){
+		RosterChatData t_data = null;
+		
+		if(m_currMgr == m_rosterListMgr && m_currFocusRosterItemField != null){
+			t_data = ((RosterItemField)m_currFocusRosterItemField).m_currRoster;
+		}else if(m_currMgr == m_historyChatMgr && m_currFocusHistoryRosterItemField != null){
+			t_data = ((RosterItemField)m_currFocusHistoryRosterItemField).m_currRoster;
+		}
+		
+		return t_data;
+	}
+	
 	protected void makeMenu(Menu _menu,int instance){
 		_menu.add(m_historyChatMenu);
 		_menu.add(m_rosterListMenu);
@@ -446,15 +503,20 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			if(m_currFocusRosterItemField != null){
 				_menu.add(m_delRosterMenu);
 			}
-			
-			if(m_searchStatus == null){
-				_menu.add(m_searchRosterMenu);
-			}
-			
 		}else if(m_currMgr == m_statusListMgr){
 			_menu.add(m_addStatusMenu);
 			_menu.add(m_modifyStatusMenu);
 			_menu.add(m_delStatusMenu);
+		}
+		
+		if(m_currMgr == m_rosterListMgr || m_currMgr == m_historyChatMgr){
+			_menu.add(m_searchRosterMenu);
+			
+			if(getCurrFocusRosterData() != null){
+				_menu.add(m_checkRosterMenu);
+				_menu.add(m_sendEmailMenu);
+			}
+			
 		}
 		
 		_menu.add(m_optionMenu);
@@ -559,10 +621,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		if(context != FieldChangeListener.PROGRAMMATIC){
 			RosterItemField t_field = (RosterItemField)field;
 			
-			m_chatScreen.m_currRoster = t_field.m_currRoster;
-			m_mainApp.pushScreen(m_chatScreen);
-			
-			m_chatScreen.clearAttachment();
+			m_chatScreen.popup(t_field.m_currRoster);
 		}
 	}
 	
@@ -672,7 +731,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 						
 						addChatMsg(msg);
 					}
-				}, 100, true);
+				}, recvMain.fsm_delayLoadingTime / 2, true);
 			}
 		}
 	}
@@ -996,7 +1055,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 											rangeRosterItemField(data);
 										}
 									}
-								}, 200, true);
+								}, recvMain.fsm_delayLoadingTime, true);
 							}							
 							
 							if(m_mainApp.getActiveScreen() == m_chatScreen

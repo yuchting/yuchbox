@@ -187,6 +187,8 @@ public class ChatField extends Manager{
 			
 			m_textfield.setText(_msg.getMsg());
 			add(m_textfield);
+		}else{
+			m_msgTextHeight = 0;
 		}
 		
 		

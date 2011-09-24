@@ -97,6 +97,16 @@ final class InputManager extends Manager implements FieldChangeListener{
 		}
 	};
 	
+	public void enableVoiceMode(boolean _enable){
+		if(_enable){
+			m_editTextArea.setText(recvMain.sm_local.getString(localResource.IM_VOICE_MODE_PROMPT));			
+			m_editTextArea.setEditable(false);
+		}else{
+			m_editTextArea.setEditable(true);
+			m_editTextArea.setText(m_middleMgr.m_chatScreen.m_currRoster.m_lastChatText);
+		}
+	}
+	
 	public InputManager(MiddleMgr _mainScreen){
 		super(Manager.NO_VERTICAL_SCROLL);
 		
@@ -225,7 +235,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 									}
 								}								
 							}
-						}, 3000, true);
+						}, 5000, true);
 						
 						m_middleMgr.m_chatScreen.sendChatComposeState(fetchChatMsg.CHAT_STATE_COMPOSING);
 					}
@@ -237,6 +247,11 @@ final class InputManager extends Manager implements FieldChangeListener{
 					PhizSelectedScreen.getPhizScreen(m_middleMgr.m_chatScreen.m_mainApp, m_editTextArea));
 		}
 	}	
+	
+	protected boolean keyUp(int keycode,int time){
+		return super.keyUp(keycode,time);
+	}
+	
 	protected boolean keyDown(int keycode,int time){
 		
 		if(m_middleMgr.m_chatScreen.m_currRoster.m_isYuch
@@ -253,40 +268,52 @@ final class InputManager extends Manager implements FieldChangeListener{
 			}
 		}		
 		
-		final int key = Keypad.key(keycode);
-		if(key == 10){
-			
-			boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
-			boolean t_returnSend = m_middleMgr.m_chatScreen.m_mainApp.m_imReturnSend;
-			
-    		if((m_editTextArea.getText().length() != 0 
-    			|| m_middleMgr.m_chatScreen.m_imagePath != null 
-    			|| m_middleMgr.m_chatScreen.m_snapBuffer != null )  
-    		&& ( (t_returnSend && !t_shiftDown) || (!t_returnSend && t_shiftDown))){
-    			
-    			send();
-    			
-    			return true;
-    			
-    		}else{
-    			if(!m_middleMgr.m_chatScreen.m_mainApp.m_imChatScreenReceiveReturn){
-    				return true;
-    			}
-    		}
-		}else if(key ==' '){
-			
-			if((Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0){
-				m_middleMgr.m_chatScreen.m_phizMenu.run();
-				return true;
-			}else if((Keypad.status(keycode) & KeypadListener.STATUS_ALT) != 0){
+		int key = Keypad.key(keycode);
+		
+		if(m_middleMgr.m_chatScreen.m_mainApp.m_imVoiceImmMode){
+			if(key == ' '){
 				m_middleMgr.m_chatScreen.m_recordMenu.run();
 				return true;
 			}
+		}else{
+			if(key == 10){
+				
+				boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
+				boolean t_returnSend = m_middleMgr.m_chatScreen.m_mainApp.m_imReturnSend;
+				
+	    		if((m_editTextArea.getText().length() != 0 
+	    			|| m_middleMgr.m_chatScreen.m_imagePath != null 
+	    			|| m_middleMgr.m_chatScreen.m_snapBuffer != null )  
+	    		&& ( (t_returnSend && !t_shiftDown) || (!t_returnSend && t_shiftDown))){
+	    			
+	    			send();
+	    			
+	    			return true;
+	    			
+	    		}else{
+	    			if(!m_middleMgr.m_chatScreen.m_mainApp.m_imChatScreenReceiveReturn){
+	    				return true;
+	    			}
+	    		}
+			}else if(key ==' '){
+				
+				if((Keypad.status(keycode) & KeypadListener.STATUS_ALT) != 0){
+					m_middleMgr.m_chatScreen.m_recordMenu.run();
+					return true;
+				}
+			}else if(key == '0'){
+				
+				if((Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0){
+					m_middleMgr.m_chatScreen.m_phizMenu.run();
+					return true;
+				}
+			}
 		}
+		
 		
 		return super.keyDown(keycode,time);
 	}
-	
+		
 	public void send(){
 		String text = m_editTextArea.getText();
 		
@@ -340,10 +367,18 @@ final class MiddleMgr extends VerticalFieldManager{
 		
 		m_chatMsgMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL);
 		m_chatMsgMiddleMgr.add(m_chatMsgMgr);
-		add(m_chatMsgMiddleMgr);
+		
 		
 		m_inputMgr = new InputManager(this);
-		add(m_inputMgr);
+		
+		if(m_chatScreen.m_mainApp.m_imChatScreenReverse){
+			add(m_inputMgr);
+			add(m_chatMsgMiddleMgr);			
+		}else{
+			add(m_chatMsgMiddleMgr);
+			add(m_inputMgr);
+		}
+		
 	}
 	
 	public synchronized void prepareChatScreen(RosterChatData _chatData){
@@ -366,7 +401,8 @@ final class MiddleMgr extends VerticalFieldManager{
 			}
 			
 			t_field.init(msg,m_chatScreen);
-			m_chatMsgMgr.add(t_field);
+			
+			addChatField(t_field);
 			
 			if(_chatData.m_isYuch){
 				m_chatScreen.m_mainScreen.sendChatReadMsg(msg);
@@ -378,7 +414,7 @@ final class MiddleMgr extends VerticalFieldManager{
 			t_field.setFocus();
 		}
 		
-		m_inputMgr.m_editTextArea.setText(_chatData.m_lastChatText);
+		m_inputMgr.enableVoiceMode(m_chatScreen.m_mainApp.m_imVoiceImmMode);
 	}
 	
 	public int getPreferredWidth(){
@@ -391,13 +427,26 @@ final class MiddleMgr extends VerticalFieldManager{
 	
 	public void sublayout(int _width,int _height){
 		
-		setPositionChild(m_chatMsgMiddleMgr,0,0);		
-		layoutChild(m_chatMsgMiddleMgr,m_chatMsgMiddleMgr.getPreferredWidth(),m_chatMsgMiddleMgr.getPreferredHeight());
-		
-		int t_y = getPreferredHeight() - m_inputMgr.getPreferredHeight();
-		
-		setPositionChild(m_inputMgr,0,t_y);
-		layoutChild(m_inputMgr,m_inputMgr.getPreferredWidth(),m_inputMgr.getPreferredHeight());	
+		if(m_chatScreen.m_mainApp.m_imChatScreenReverse){
+
+			setPositionChild(m_inputMgr,0,0);		
+			layoutChild(m_inputMgr,m_inputMgr.getPreferredWidth(),m_inputMgr.getPreferredHeight());
+			
+			int t_y = m_inputMgr.getPreferredHeight();
+			
+			setPositionChild(m_chatMsgMiddleMgr,0,t_y);
+			layoutChild(m_chatMsgMiddleMgr,m_chatMsgMiddleMgr.getPreferredWidth(),m_chatMsgMiddleMgr.getPreferredHeight());
+			
+		}else{
+
+			setPositionChild(m_chatMsgMiddleMgr,0,0);		
+			layoutChild(m_chatMsgMiddleMgr,m_chatMsgMiddleMgr.getPreferredWidth(),m_chatMsgMiddleMgr.getPreferredHeight());
+			
+			int t_y = getPreferredHeight() - m_inputMgr.getPreferredHeight();
+			
+			setPositionChild(m_inputMgr,0,t_y);
+			layoutChild(m_inputMgr,m_inputMgr.getPreferredWidth(),m_inputMgr.getPreferredHeight());
+		}	
 		
 		setExtent(recvMain.fsm_display_width,getPreferredHeight());
 	}
@@ -432,7 +481,9 @@ final class MiddleMgr extends VerticalFieldManager{
 			m_chatScreen.m_mainApp.SetErrorString("ACS:"+e.getMessage()+e.getClass().getName());
 		}
 		t_field.init(_msg,m_chatScreen);
-		m_chatMsgMgr.add(t_field);
+		
+		addChatField(t_field);
+		
 		
 		// scroll to bottom
 		//
@@ -446,13 +497,17 @@ final class MiddleMgr extends VerticalFieldManager{
 		&& Backlight.isEnabled() 
 		&& m_chatScreen.m_mainApp.isForeground() 
 		&& m_chatScreen.m_mainApp.getActiveScreen() == m_chatScreen){
-			
 			m_chatScreen.m_mainScreen.sendChatReadMsg(_msg);
+		}
+		
+		if(m_chatScreen.m_mainApp.m_imVoiceImmMode
+			&& _msg.getFileContent() != null && _msg.getFileContentType() == fetchChatMsg.FILE_TYPE_SOUND){
+			m_chatScreen.open(_msg);
 		}
 	}
 	
-	public synchronized void addChatMsg(ChatField _field){
-		m_chatMsgMgr.add(_field);
+	public synchronized void addChatMsg(ChatField _field){	
+		addChatField(_field);
 		_field.setFocus();	
 		
 		// set the focus back
@@ -474,6 +529,13 @@ final class MiddleMgr extends VerticalFieldManager{
 	}
 	
 	
+	private void addChatField(ChatField _field){
+		if(m_chatScreen.m_mainApp.m_imChatScreenReverse){
+			m_chatMsgMgr.insert(_field,0);
+		}else{
+			m_chatMsgMgr.add(_field);
+		}
+	}
 }
 
 public class MainChatScreen extends MainScreen implements IChatFieldOpen{
@@ -595,6 +657,26 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		}
 	};
 	
+	MenuItem m_enableVoiceModeMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_ENABLE_VOICE_MODE),m_menu_op++,0){
+		public void run(){
+			m_mainApp.m_imVoiceImmMode = true;
+			
+			m_middleMgr.m_inputMgr.enableVoiceMode(true);
+			
+			m_mainApp.enableKeyUpEvents(true);
+		}
+	};
+	
+	MenuItem m_disableVoiceModeMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_DISABLE_VOICE_MODE),m_menu_op++,0){
+		public void run(){
+			m_mainApp.m_imVoiceImmMode = false;
+			
+			m_middleMgr.m_inputMgr.enableVoiceMode(false);
+			
+			m_mainApp.enableKeyUpEvents(false);
+		}
+	};
+	
 	
 	static ImageUnit sm_composing = null;
 	static {
@@ -658,7 +740,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 	ButtonSegImage	m_title			= null;
 	ChatScreenHeader m_header 		= null;
 	
-	MiddleMgr		m_middleMgr		= new MiddleMgr(this);
+	MiddleMgr		m_middleMgr		= null;
 	
 	String					m_imagePath = null;
 	int						m_imageType = 0;
@@ -702,8 +784,10 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 	public MainChatScreen(recvMain _mainApp,MainIMScreen _mainScreen){
 		super(Manager.NO_VERTICAL_SCROLL);
 		
-		m_mainApp 	= _mainApp;
-		m_mainScreen = _mainScreen;
+		m_mainApp 		= _mainApp;
+		m_mainScreen	= _mainScreen;
+		
+		m_middleMgr		= new MiddleMgr(this);
 
 		if(recvMain.fsm_display_height <= 240){
 			m_title = new ButtonSegImage(recvMain.sm_weiboUIImage.getImageUnit("composeTitle_left"),
@@ -727,10 +811,22 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		
 		m_recordScreen = new RecordAudioScreen(m_mainApp, new IRecordAudioScreenCallback(){
 			public void recordDone(byte[] _buffer){
-				clearAttachment();
 				
-				m_recordBuffer = _buffer;
-				m_imageType = fetchChatMsg.FILE_TYPE_SOUND;
+				if(_buffer.length > 512){
+
+					clearAttachment();
+					
+					m_recordBuffer = _buffer;
+					m_imageType = fetchChatMsg.FILE_TYPE_SOUND;
+					
+					if(m_mainApp.m_imVoiceImmMode){
+						sendChatMsg("");
+					}	
+				}
+			}
+			
+			public boolean isSpaceKeyUpRecord(){
+				return m_mainApp.m_imVoiceImmMode;
 			}
 		});
 		
@@ -761,7 +857,21 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 			_menu.add(m_displayTimeMenu);
 		}
 		
+		if(m_mainApp.m_imVoiceImmMode){
+			_menu.add(m_disableVoiceModeMenu);
+		}else{
+			_menu.add(m_enableVoiceModeMenu);
+		}
+		
 		super.makeMenu(_menu,instance);
+	}
+	
+	public void popup(RosterChatData _roster){
+		m_currRoster = _roster;
+		
+		clearAttachment();
+		
+		m_mainApp.pushScreen(this);
 	}
 	
 	protected void onDisplay(){
@@ -888,7 +998,10 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		super.paint(g);
 		
 		if(m_imagePath != null || m_snapBuffer != null || m_recordBuffer != null){
-			int t_y = recvMain.fsm_display_height - m_middleMgr.m_inputMgr.getPreferredHeight() - m_hasImageSign.getHeight();
+			
+			int t_y = m_mainApp.m_imChatScreenReverse?m_middleMgr.m_inputMgr.getPreferredHeight():
+					recvMain.fsm_display_height - m_middleMgr.m_inputMgr.getPreferredHeight() - m_hasImageSign.getHeight();
+			
 			int t_x = recvMain.fsm_display_width - m_hasImageSign.getWidth();
 			
 			if(m_recordBuffer != null){
@@ -919,12 +1032,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 			try{
 				switch(msg.getFileContentType()){
 				case fetchChatMsg.FILE_TYPE_IMG:
-					String t_file = null;
-					if(msg.isOwnMsg()){
-						t_file = m_mainApp.GetIMHeadImageDir(msg.getStyle()) + "tmp.jpg";
-					}else{
-						t_file = m_mainApp.GetIMHeadImageDir(msg.getStyle()) + Math.abs(msg.hashCode()) +".jpg";
-					}
+					String t_file = m_mainApp.GetIMHeadImageDir(msg.getStyle()) + Math.abs(msg.hashCode()) +".jpg";
 					
 					FileConnection t_fc = (FileConnection)Connector.open(t_file,Connector.READ_WRITE);
 					try{

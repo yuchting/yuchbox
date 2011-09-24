@@ -1,16 +1,17 @@
 package com.yuchting.yuchberry.client.screen;
 
 import java.io.ByteArrayOutputStream;
+
 import javax.microedition.media.Player;
 import javax.microedition.media.control.RecordControl;
 
+import local.localResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
-import local.localResource;
 import com.yuchting.yuchberry.client.recvMain;
     
 public class RecordAudioScreen extends PopupScreen{
@@ -92,8 +93,11 @@ public class RecordAudioScreen extends PopupScreen{
 		
 		m_remain = new LabelField(Integer.toString(fsm_maxRecordingTime),Field.FIELD_HCENTER);
 		add(m_remain);
-	}
+		
+		
 	
+	}
+		
 	protected void onDisplay(){
 		super.onDisplay();
 		if(m_recordThread != null){
@@ -114,6 +118,7 @@ public class RecordAudioScreen extends PopupScreen{
 				}
 			}
 		}, 1000, true);
+		
 	}
 	
 	public boolean onClose(){
@@ -137,6 +142,4 @@ public class RecordAudioScreen extends PopupScreen{
 				
 		super.close();		
 	}
-	
-	
 }

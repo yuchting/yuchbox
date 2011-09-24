@@ -11,6 +11,7 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Screen;
@@ -256,6 +257,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	}
 	
 	public boolean keyChar(char c,int status,int time){
+				
 		if(c == Characters.ESCAPE){
 			getScreen().close();
 		}else if(c == Characters.ENTER){
@@ -265,7 +267,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			// consum the Enter key
 			//
 			return true;
-		}else if(c == Characters.SPACE){
+		}else if(c == '0'){
 			if((status & KeypadListener.STATUS_SHIFT) != 0){
 				((WeiboUpdateDlg)getScreen()).m_phizItem.run();
 				return true;
@@ -277,7 +279,6 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 				
 		return super.keyChar(c,status,time);
 	}
-	
 }
 
 public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{

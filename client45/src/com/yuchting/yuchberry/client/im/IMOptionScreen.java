@@ -19,8 +19,11 @@ public class IMOptionScreen extends MainScreen {
 	CheckboxField			m_imReturnSend		= null;	
 	CheckboxField			m_imChatScreenReceiveReturn = null;
 	
+	CheckboxField			m_imChatScreenReverse	= null;
+	
 	CheckboxField			m_imPopupPrompt		= null;
 	ObjectChoiceField		m_imChatMsgHistory	= null;
+	ObjectChoiceField		m_imSendImageQuality	= null;
 	
 	public IMOptionScreen(MainIMScreen _mainScreen){
 		m_mainScreen = _mainScreen;
@@ -60,33 +63,40 @@ public class IMOptionScreen extends MainScreen {
 		
 		add(m_imPopupPrompt);
 		
+		m_imChatScreenReverse = new CheckboxField(recvMain.sm_local.getString(localResource.IM_OPTION_CHAT_SCREEN_REV),
+									m_mainScreen.m_mainApp.m_imChatScreenReverse);
+		add(m_imChatScreenReverse);
+		
 		m_imChatMsgHistory		= new ObjectChoiceField(recvMain.sm_local.getString(localResource.IM_OPTION_CHAT_HISTORY_NUM),
 									recvMain.fsm_imChatMsgHistoryList,m_mainScreen.m_mainApp.m_imChatMsgHistory);
-		
 		add(m_imChatMsgHistory);
 		
+		m_imSendImageQuality	= new ObjectChoiceField(recvMain.sm_local.getString(localResource.IM_OPTION_IMAGE_QUALITY),
+										recvMain.fsm_imUploadImageSizeList,m_mainScreen.m_mainApp.m_imSendImageQuality);
+		add(m_imSendImageQuality);
 		//@}
 		
 		
 		setTitle(recvMain.sm_local.getString(localResource.IM_OPTION_SCREEN));
 	}
 
-	 protected boolean onSave(){
-		 boolean t_ret = super.onSave();
-		 if(t_ret){
+	protected boolean onSave(){
+		boolean t_ret = super.onSave();
+		if(t_ret){
 			 m_mainScreen.m_mainApp.m_enableChatChecked = m_enableChatChecked.getChecked();
 			 m_mainScreen.m_mainApp.m_enableChatState 	= m_enableChatState.getChecked();
 			 m_mainScreen.m_mainApp.m_imReturnSend 	= m_imReturnSend.getChecked();
 			 
 			 m_mainScreen.m_mainApp.m_imChatScreenReceiveReturn = m_imChatScreenReceiveReturn.getChecked();
 			 m_mainScreen.m_mainApp.m_imPopupPrompt = m_imPopupPrompt.getChecked();
+			 m_mainScreen.m_mainApp.m_imChatScreenReverse = m_imChatScreenReverse.getChecked();
 			 
 			 m_mainScreen.m_mainApp.m_imChatMsgHistory = m_imChatMsgHistory.getSelectedIndex();
-			 
+			 m_mainScreen.m_mainApp.m_imSendImageQuality = m_imSendImageQuality.getSelectedIndex();
 			 m_mainScreen.m_mainApp.WriteReadIni(false);
-		 }
-		 return t_ret;
-	 }
+		}
+		return t_ret;
+	}
 	 
 	public void close(){
 		m_mainScreen.m_optionScreen = null;

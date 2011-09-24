@@ -83,14 +83,13 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		if(fsm_OS_version.startsWith("7.")){
 			fsm_delayLoadingTime = 200;
 		}else if(fsm_OS_version.startsWith("6.")){
-			fsm_delayLoadingTime = 300;
+			fsm_delayLoadingTime = 340;
 		}else if(fsm_OS_version.startsWith("5.")){
 			fsm_delayLoadingTime = 500;
 		}else{
-			fsm_delayLoadingTime = 800;
+			fsm_delayLoadingTime = 1000;
 		}		
 	}
-	
 	
 	public static ResourceBundle sm_local = ResourceBundle.getBundle(localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
 	
@@ -825,7 +824,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 32;
+	final static int		fsm_clientVersion = 34;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -1028,6 +1027,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_autoLoadNewTimelineWeibo = sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
+				    		if(t_currVer >= 33){
+				    			m_imChatScreenReverse	= sendReceive.ReadBoolean(t_readFile);
+				    			m_imVoiceImmMode		= sendReceive.ReadBoolean(t_readFile);			    			
+				    		}
+				    		
+				    		if(t_currVer >= 34){
+				    			m_imSendImageQuality	= sendReceive.ReadInt(t_readFile);
+				    		}
+				    		
 			    		}finally{
 			    			t_readFile.close();
 			    			t_readFile = null;
@@ -1136,6 +1144,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		    			sendReceive.WriteBoolean(t_writeFile, m_imPopupPrompt);
 		    			
 		    			sendReceive.WriteBoolean(t_writeFile,m_autoLoadNewTimelineWeibo);
+		    			
+		    			sendReceive.WriteBoolean(t_writeFile,m_imChatScreenReverse);
+		    			sendReceive.WriteBoolean(t_writeFile,m_imVoiceImmMode);
+		    			
+		    			sendReceive.WriteInt(t_writeFile,m_imSendImageQuality);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1444,7 +1457,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					popScreen(m_mainIMScreen.m_chatScreen);
 					popScreen(m_mainIMScreen);
 					
-				}else if(getActiveScreen() == m_mainIMScreen){	
+				}else if(getActiveScreen() == m_mainIMScreen.m_checkRosterInfoScreen
+						&& m_mainIMScreen.m_checkRosterInfoScreen != null){
+					
+					m_isWeiboOrIMScreen = false;
+					m_mainIMScreen.m_checkRosterInfoScreen.close();
+					popScreen(m_mainIMScreen);
+					
+				}else if(getActiveScreen() == m_mainIMScreen){
 					m_isWeiboOrIMScreen = false;
 					popScreen(m_mainIMScreen);
 				}
@@ -2435,6 +2455,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public boolean 			m_imChatScreenReceiveReturn = false;
 	
 	public static boolean		sm_imDisplayTime		= true;
+	public boolean				m_imChatScreenReverse	= false;
+	public boolean				m_imVoiceImmMode		= false;
 	
 	public boolean				m_imReturnSend	= false;
 	public boolean				m_imPopupPrompt	= true;
@@ -2451,8 +2473,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public static final int[]		fsm_imChatMsgHistory		= {32,64,128,256};
 	public int						m_imChatMsgHistory 			= 0;
 	
-	public int						m_imSendImageQuality		= 0;	
-	
+	public static final String[]	fsm_imUploadImageSizeList = {"320×240","640×480"};
+	public static final XYPoint[]	fsm_imUploadImageSize_size		= 
+	{
+		new XYPoint(320,240),
+		new XYPoint(640,480),
+		null,
+	};
+	public int					m_imSendImageQuality		= 0;	
 	
 	MainIMScreen				m_mainIMScreen = null;
 	
@@ -2469,8 +2497,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public XYPoint getIMSendImageQuality(){
 
-		if(m_imSendImageQuality >= 0 && m_imSendImageQuality < fsm_weiboUploadImageSize_size.length){
-			return fsm_weiboUploadImageSize_size[m_imSendImageQuality];
+		if(m_imSendImageQuality >= 0 && m_imSendImageQuality < fsm_imUploadImageSize_size.length){
+			return fsm_imUploadImageSize_size[m_imSendImageQuality];
 		}else{
 			m_imSendImageQuality = 0;
 		}

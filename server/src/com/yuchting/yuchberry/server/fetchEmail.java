@@ -173,10 +173,15 @@ class RecvMailAttach{
 		assert m_sendMail != null;
 		
 		StringBuffer t_string = new StringBuffer();
-		t_string.append(m_sendMail.GetContain());
 		
-		_signature = _signature.replace("$time$", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(m_sendMail.GetSendDate()));
-		t_string.append("\n\n" + _signature);
+		if(_signature.indexOf("$contain$") != -1){
+			_signature = _signature.replace("$time$", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(m_sendMail.GetSendDate()));
+			t_string.append(_signature.replace("$contain$",m_sendMail.GetContain()));
+		}else{
+			t_string.append(m_sendMail.GetContain());
+			_signature = _signature.replace("$time$", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(m_sendMail.GetSendDate()));
+			t_string.append("\n\n" + _signature);
+		}
 		
 		String t_originalMsgLine;
 		String t_forwordErrorMsg;

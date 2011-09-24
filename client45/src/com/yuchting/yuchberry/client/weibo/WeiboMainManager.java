@@ -362,34 +362,21 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 							m_updateWeiboField.invalidate();
 						}
 					}else{
-						m_parentScreen.m_mainApp.invokeLater(new Runnable(){
-							public void run() {
-								if(getField(0) == m_updateWeiboFieldNull){
-									replace(m_updateWeiboFieldNull,m_updateWeiboField);
-									
-									if(!_weibo.IsOwnWeibo()){
-										m_mainApp.TriggerWeiboHomeNotification();
-									}
-								}
+						
+						if(getField(0) == m_updateWeiboFieldNull){
+							replace(m_updateWeiboFieldNull,m_updateWeiboField);
+							
+							if(!_weibo.IsOwnWeibo()){
+								m_mainApp.TriggerWeiboHomeNotification();
 							}
-						});
+						}
 					}
 				}
 				
 			}
 								
 		}else{
-			
-			if(m_parentScreen.m_mainApp.hasEventThread()){
-				AddWeibo_impl(_weibo, _image);
-			}else{
-				m_parentScreen.m_mainApp.invokeLater(new Runnable(){
-					public void run(){
-						AddWeibo_impl(_weibo, _image);
-					}
-				});
-			}
-			
+			AddWeibo_impl(_weibo, _image);
 		}
 
 		if(!_initAdd && !_weibo.IsOwnWeibo()){				
@@ -503,7 +490,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 							}
 							
 						}
-					}, 500, true);
+					}, recvMain.fsm_delayLoadingTime, true);
 				}
 			}
 		}

@@ -272,12 +272,8 @@ public class connectDeamon extends Thread implements SendListener,
 	       
         }        
 	}
-	 
-	 
-	//! SendListener
-	public boolean sendMessage(Message message){
-    	
-		final Message t_msg = message;
+	
+	private void gainMessagingApp(){
 		
 		try{
 			Class msgClass = Class.forName("net.rim.device.apps.internal.messaging.MessagingApp");
@@ -289,7 +285,15 @@ public class connectDeamon extends Thread implements SendListener,
 		}catch(Exception e){
 			m_mainApp.SetErrorString("sMClass:" + e.getMessage() + e.getClass().getName());
 			m_mainApp.m_messageApplication = UiApplication.getUiApplication();
-		}		
+		}
+	}
+	 
+	//! SendListener
+	public boolean sendMessage(Message message){
+    	
+		gainMessagingApp();
+		
+		final Message t_msg = message;
 		
 		// invokeLater maybe rise some exception in function ImportMail 
 		//
@@ -423,6 +427,8 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	//@{ MessageListener
 	public void changed(MessageEvent e){
+		
+		gainMessagingApp();
 		
 		if(e.getMessageChangeType() == MessageEvent.UPDATED
 		|| e.getMessageChangeType() == MessageEvent.OPENED){
