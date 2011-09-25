@@ -869,6 +869,8 @@ public class fetchEmail extends fetchAccount{
 						t_mail.SetContain("YuchBerry Prompt: Set signature OK!"+(t_overMaxlength?("Over Max Length:" + t_maxSignatureLength):"")+"\n\n" + t_mail.GetContain());
 						break;
 					}
+				}else{
+					return false;
 				}
 			}
 		}

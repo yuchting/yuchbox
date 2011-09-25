@@ -118,7 +118,9 @@ final class PhizMgr extends Manager{
 	public void resetSelected(){
 		m_move_x = m_move_y = 0;
 		if(getFieldCount() > 0){
-			getField(0).setFocus();
+			Phiz t_phiz = (Phiz)getField(0);			
+			t_phiz.setFocus();
+			((PhizSelectedScreen)getScreen()).setPromptLabel(t_phiz.getPhizName());
 		}		
 	}
 	
@@ -151,13 +153,17 @@ final class PhizMgr extends Manager{
 		int t_index = m_move_y * m_maxRowNum + m_move_x;
 		int t_fieldNum = getFieldCount();
 		
+		Phiz t_phiz = null;
 		if(t_index < t_fieldNum){
-			getField(t_index).setFocus();
+			t_phiz = (Phiz)getField(t_index);
 		}else{
-			getField(t_fieldNum - 1).setFocus();
+			t_phiz = (Phiz)getField(t_fieldNum - 1);
 			m_move_x = t_fieldNum % m_maxRowNum - 1;
 			m_move_y = m_maxColNum - 1;
 		}
+		
+		t_phiz.setFocus();
+		((PhizSelectedScreen)getScreen()).setPromptLabel(t_phiz.getPhizName());
 		
 		return true;
 	}
@@ -193,12 +199,11 @@ public class PhizSelectedScreen extends MainScreen{
 	};
 	
 	PhizMgr		m_phizMgr;
+	String		m_promptString = recvMain.sm_local.getString(localResource.WEIBO_PHIZ_SCREEN_PROMPT);
+	LabelField	m_promptLabel = new LabelField(m_promptString,Field.NON_FOCUSABLE);
 	
 	public PhizSelectedScreen(recvMain _mainApp,Vector _phizList){
-		
-		LabelField		t_prompt = new LabelField(recvMain.sm_local.getString(localResource.WEIBO_PHIZ_SCREEN_PROMPT),Field.NON_FOCUSABLE);
-		
-		add(t_prompt);
+		add(m_promptLabel);
 		add(new SeparatorField());
 				
 		m_phizMgr = new PhizMgr(_phizList);
@@ -209,6 +214,10 @@ public class PhizSelectedScreen extends MainScreen{
 		super.onDisplay();
 		
 		m_phizMgr.resetSelected();
+	}
+	
+	public void setPromptLabel(String _phizName){
+		m_promptLabel.setText(m_promptString + _phizName);
 	}
 	
 	public void close(){

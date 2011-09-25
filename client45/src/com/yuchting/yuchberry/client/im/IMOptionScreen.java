@@ -89,11 +89,17 @@ public class IMOptionScreen extends MainScreen {
 			 
 			 m_mainScreen.m_mainApp.m_imChatScreenReceiveReturn = m_imChatScreenReceiveReturn.getChecked();
 			 m_mainScreen.m_mainApp.m_imPopupPrompt = m_imPopupPrompt.getChecked();
+			 
+			 boolean t_formerReverse  = m_mainScreen.m_mainApp.m_imChatScreenReverse;
 			 m_mainScreen.m_mainApp.m_imChatScreenReverse = m_imChatScreenReverse.getChecked();
 			 
 			 m_mainScreen.m_mainApp.m_imChatMsgHistory = m_imChatMsgHistory.getSelectedIndex();
 			 m_mainScreen.m_mainApp.m_imSendImageQuality = m_imSendImageQuality.getSelectedIndex();
 			 m_mainScreen.m_mainApp.WriteReadIni(false);
+			 
+			 if(t_formerReverse != m_mainScreen.m_mainApp.m_imChatScreenReverse){
+				 m_mainScreen.m_chatScreen.m_middleMgr.readdControl();
+			 }
 		}
 		return t_ret;
 	}

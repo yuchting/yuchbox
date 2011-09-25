@@ -1448,15 +1448,6 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					m_mainIMScreen.m_searchStatus.close();
 					popScreen(m_mainIMScreen);
 					
-				}else if(getActiveScreen() == m_mainIMScreen.m_chatScreen.m_recordScreen
-						&& m_mainIMScreen.m_chatScreen.m_recordScreen != null){
-					
-					m_isWeiboOrIMScreen = false;
-					
-					m_mainIMScreen.m_chatScreen.m_recordScreen.close();
-					popScreen(m_mainIMScreen.m_chatScreen);
-					popScreen(m_mainIMScreen);
-					
 				}else if(getActiveScreen() == m_mainIMScreen.m_checkRosterInfoScreen
 						&& m_mainIMScreen.m_checkRosterInfoScreen != null){
 					

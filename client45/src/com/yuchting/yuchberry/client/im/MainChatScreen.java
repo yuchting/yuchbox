@@ -25,6 +25,7 @@ import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.AutoTextEditField;
+import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
@@ -196,10 +197,12 @@ final class InputManager extends Manager implements FieldChangeListener{
 	}
 	
 	public void fieldChanged(Field field, int context) {
-		
+				
 		if(field == m_editTextArea){
-
-			m_middleMgr.m_chatScreen.m_currRoster.m_lastChatText = m_editTextArea.getText();
+			
+			if(!m_middleMgr.m_chatScreen.m_mainApp.m_imVoiceImmMode){
+				m_middleMgr.m_chatScreen.m_currRoster.m_lastChatText = m_editTextArea.getText();
+			}	
 			
 			m_currHeight = m_editTextArea.getHeight() + (fsm_textBorder + fsm_inputBubbleBorder) * 2;
 			
@@ -248,8 +251,20 @@ final class InputManager extends Manager implements FieldChangeListener{
 		}
 	}	
 	
-	protected boolean keyUp(int keycode,int time){
-		return super.keyUp(keycode,time);
+	protected boolean keyChar(char c,int status,int time){
+		
+		if(m_middleMgr.m_chatScreen.m_mainApp.m_imVoiceImmMode){
+			return true;
+		}
+		
+		if(c == '0'){
+			if((status & KeypadListener.STATUS_SHIFT) != 0){
+				m_middleMgr.m_chatScreen.m_phizMenu.run();
+				return true;
+			}
+		}
+		
+		return super.keyChar(c,status,time);
 	}
 	
 	protected boolean keyDown(int keycode,int time){
@@ -301,19 +316,13 @@ final class InputManager extends Manager implements FieldChangeListener{
 					m_middleMgr.m_chatScreen.m_recordMenu.run();
 					return true;
 				}
-			}else if(key == '0'){
-				
-				if((Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0){
-					m_middleMgr.m_chatScreen.m_phizMenu.run();
-					return true;
-				}
 			}
 		}
 		
 		
 		return super.keyDown(keycode,time);
 	}
-		
+	
 	public void send(){
 		String text = m_editTextArea.getText();
 		
@@ -371,6 +380,12 @@ final class MiddleMgr extends VerticalFieldManager{
 		
 		m_inputMgr = new InputManager(this);
 		
+		readdControl();
+	}
+	
+	public void readdControl(){
+		deleteAll();
+		
 		if(m_chatScreen.m_mainApp.m_imChatScreenReverse){
 			add(m_inputMgr);
 			add(m_chatMsgMiddleMgr);			
@@ -378,17 +393,18 @@ final class MiddleMgr extends VerticalFieldManager{
 			add(m_chatMsgMiddleMgr);
 			add(m_inputMgr);
 		}
-		
 	}
-	
-	public synchronized void prepareChatScreen(RosterChatData _chatData){
-		
+	public synchronized void deleteChat(){
 		int t_num = m_chatMsgMgr.getFieldCount();
 		for(int i = 0;i < t_num;i++){
 			m_chatScreen.m_chatFieldAllocator.release(m_chatMsgMgr.getField(i));
 		}
 		
 		m_chatMsgMgr.deleteAll();
+	}
+	public synchronized void prepareChatScreen(RosterChatData _chatData){
+		
+		deleteChat();
 		
 		ChatField t_field = null;
 		for(int i = 0 ;i < _chatData.m_chatMsgList.size();i++){
@@ -426,10 +442,19 @@ final class MiddleMgr extends VerticalFieldManager{
 	}
 	
 	public void sublayout(int _width,int _height){
+	
+		if(getFieldCount() != 2){
+			// readdControl->deleteAll->sublayout
+			// readdControl->add->sublayout
+			//
+			// will make exception
+			//
+			return ;
+		}
 		
 		if(m_chatScreen.m_mainApp.m_imChatScreenReverse){
 
-			setPositionChild(m_inputMgr,0,0);		
+			setPositionChild(m_inputMgr,0,0);
 			layoutChild(m_inputMgr,m_inputMgr.getPreferredWidth(),m_inputMgr.getPreferredHeight());
 			
 			int t_y = m_inputMgr.getPreferredHeight();
@@ -583,7 +608,22 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 	
 	MenuItem m_recordMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_RECORD_AUDIO_MENU_LABEL),m_menu_op++,0){
 		public void run(){
-			m_mainApp.pushScreen(m_recordScreen);
+			m_recordScreen.onDisplay();
+			m_isRecording = true;
+			
+			invalidate();
+		}
+	};
+	
+	MenuItem m_deleteChatMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_DELETE_HISTORY_CHAT),m_menu_op++,0){
+		public void run(){
+			if(Dialog.ask(Dialog.D_YES_NO,
+				recvMain.sm_local.getString(localResource.IM_DELETE_HISTORY_CHAT_PROMPT),
+				Dialog.NO) == Dialog.YES){
+				
+				m_currRoster.m_chatMsgList.removeAllElements();
+				m_middleMgr.deleteChat();
+			}
 		}
 	};
 	
@@ -603,8 +643,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
         		}
     		}catch(Exception e){
     			m_mainApp.SetErrorString("WCP:"+e.getMessage()+e.getClass().getName());
-    		}
-    		    		
+    		}  		
     	}
     };
     
@@ -660,9 +699,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 	MenuItem m_enableVoiceModeMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_ENABLE_VOICE_MODE),m_menu_op++,0){
 		public void run(){
 			m_mainApp.m_imVoiceImmMode = true;
-			
 			m_middleMgr.m_inputMgr.enableVoiceMode(true);
-			
 			m_mainApp.enableKeyUpEvents(true);
 		}
 	};
@@ -670,9 +707,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 	MenuItem m_disableVoiceModeMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_DISABLE_VOICE_MODE),m_menu_op++,0){
 		public void run(){
 			m_mainApp.m_imVoiceImmMode = false;
-			
 			m_middleMgr.m_inputMgr.enableVoiceMode(false);
-			
 			m_mainApp.enableKeyUpEvents(false);
 		}
 	};
@@ -766,8 +801,9 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		}
 	};
 	
-	public RecordAudioScreen	m_recordScreen = null;
-	byte[]					m_recordBuffer = null;
+	boolean m_isRecording		= false;
+	RecordAudioScreen	m_recordScreen = null;
+	byte[]						m_recordBuffer = null;
 	
 	public void clearAttachment(){
 		m_imagePath = null;
@@ -783,6 +819,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 			
 	public MainChatScreen(recvMain _mainApp,MainIMScreen _mainScreen){
 		super(Manager.NO_VERTICAL_SCROLL);
+		
 		
 		m_mainApp 		= _mainApp;
 		m_mainScreen	= _mainScreen;
@@ -809,7 +846,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		
 		add(m_middleMgr);
 		
-		m_recordScreen = new RecordAudioScreen(m_mainApp, new IRecordAudioScreenCallback(){
+		m_recordScreen = new RecordAudioScreen(m_mainApp, this,new IRecordAudioScreenCallback(){
 			public void recordDone(byte[] _buffer){
 				
 				if(_buffer.length > 512){
@@ -824,14 +861,14 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 					}	
 				}
 			}
-			
-			public boolean isSpaceKeyUpRecord(){
-				return m_mainApp.m_imVoiceImmMode;
-			}
-		});
-		
+		});		
 	}
 	protected void makeMenu(Menu _menu,int instance){
+		
+		if(m_isRecording){
+			return;
+		}
+		
 		_menu.add(m_sendMenu);
 		_menu.add(m_phizMenu);
 		if(DeviceInfo.hasCamera()){
@@ -841,6 +878,10 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 			_menu.add(m_cameraMenu);
 		}
 		_menu.add(m_recordMenu);
+		
+		if(!m_currRoster.m_chatMsgList.isEmpty()){
+			_menu.add(m_deleteChatMenu);
+		}
 		
 		if(m_imagePath != null || m_snapBuffer != null || m_recordBuffer != null){
 			_menu.add(m_checkPic);
@@ -905,8 +946,18 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		
 		return null;
 	}
-	
+	private void closeRecordScreen(){
+		if(m_isRecording){
+			m_recordScreen.close();
+			m_isRecording = false;
+		}
+	}
 	public boolean onClose(){
+		if(m_isRecording){
+			closeRecordScreen();
+			return false;
+		}
+		
 		m_mainApp.m_isChatScreen = false;
 		
 		close();		
@@ -923,6 +974,8 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		}else{
 			super.close();
 		}
+		
+		closeRecordScreen();
 	}
 	
 	public void sendChatMsg(String _text){
@@ -1010,6 +1063,19 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 				recvMain.sm_weiboUIImage.drawImage(g, m_hasImageSign, t_x, t_y);
 			}
 		}
+		
+		if(m_isRecording){
+			m_recordScreen.paint(g);
+		}
+	}
+	
+	protected boolean keyUp(int keycode,int time){
+		if(m_isRecording){
+			closeRecordScreen();
+			return true;
+		}
+		
+		return super.keyUp(keycode,time);
 	}
 	
 	protected boolean keyDown(int keycode,int time){

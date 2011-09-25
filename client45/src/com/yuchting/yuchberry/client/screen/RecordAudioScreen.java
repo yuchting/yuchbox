@@ -6,15 +6,13 @@ import javax.microedition.media.Player;
 import javax.microedition.media.control.RecordControl;
 
 import local.localResource;
-import net.rim.device.api.ui.Field;
-import net.rim.device.api.ui.Manager;
-import net.rim.device.api.ui.component.LabelField;
-import net.rim.device.api.ui.container.PopupScreen;
-import net.rim.device.api.ui.container.VerticalFieldManager;
+import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Screen;
 
 import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.ui.ImageUnit;
     
-public class RecordAudioScreen extends PopupScreen{
+public class RecordAudioScreen{
 	
 	final class AudioRecorderThread extends Thread {
 		
@@ -56,18 +54,23 @@ public class RecordAudioScreen extends PopupScreen{
 	    }
 
 	    public void stop() {
-	        try{
-	            //Stop recording, record data from the OutputStream,
+	    	
+        	if(_player != null){
+        		//Stop recording, record data from the OutputStream,
 	            //close the OutputStream and player.
 	        	//
-	            _rcontrol.commit();
-	            _data = _output.toByteArray();
-	            _output.close();
-	            _player.close();
+        		try{
+		            _rcontrol.commit();
+		            _data = _output.toByteArray();
+		            _output.close();
+		            _player.close();
+		            
+		            _player = null;
 	            
-	        }catch(Exception e){
-	        	m_mainApp.SetErrorString("RAS-ARTS:"+e.getMessage()+e.getClass().getName());
-		    } 
+    	        }catch(Exception e){
+    	        	m_mainApp.SetErrorString("RAS-ARTS:"+e.getMessage()+e.getClass().getName());
+    		    } 
+        	}
 		}
 	}
 	    
@@ -76,30 +79,31 @@ public class RecordAudioScreen extends PopupScreen{
 	AudioRecorderThread m_recordThread = null;
 	IRecordAudioScreenCallback m_callback = null;
 	
-	LabelField m_remain = null;
+	String m_remain = null;
 	
 	recvMain m_mainApp = null;
+	Screen m_parentScreen = null;
 	
 	int m_remainTimer = fsm_maxRecordingTime;
 	int m_remainTimerID = -1;
 	
-	public RecordAudioScreen(recvMain _mainApp,IRecordAudioScreenCallback _callback){
-		super(new VerticalFieldManager(Manager.VERTICAL_SCROLL));
+	ImageUnit	m_microphone = null;
+	
+	public RecordAudioScreen(recvMain _mainApp,Screen _parentScreen,IRecordAudioScreenCallback _callback){
 		m_mainApp = _mainApp;
+		m_parentScreen = _parentScreen;
 		m_callback = _callback;
 		
-		LabelField t_recording = new LabelField(recvMain.sm_local.getString(localResource.RECORDING_LABEL));
-		add(t_recording);
+		//LabelField t_recording = new LabelField(recvMain.sm_local.getString(localResource.RECORDING_LABEL));
+		//add(t_recording);
 		
-		m_remain = new LabelField(Integer.toString(fsm_maxRecordingTime),Field.FIELD_HCENTER);
-		add(m_remain);
+		//m_remain = new LabelField(Integer.toString(fsm_maxRecordingTime),Field.FIELD_HCENTER);
+		//add(m_remain);
 		
-		
-	
+		m_microphone = recvMain.sm_weiboUIImage.getImageUnit("microphone");
 	}
 		
-	protected void onDisplay(){
-		super.onDisplay();
+	public void onDisplay(){
 		if(m_recordThread != null){
 			m_recordThread.stop();
 		}
@@ -108,22 +112,20 @@ public class RecordAudioScreen extends PopupScreen{
 		m_recordThread.start();
 		
 		m_remainTimer = fsm_maxRecordingTime;
-		m_remain.setText(Integer.toString(m_remainTimer));
+		m_remain = recvMain.sm_local.getString(localResource.RECORDING_REMAIN_LABEL) + Integer.toString(m_remainTimer);
 		
 		m_remainTimerID = m_mainApp.invokeLater(new Runnable(){
 			public void run(){
-				m_remain.setText(Integer.toString(--m_remainTimer));
+				m_remain = recvMain.sm_local.getString(localResource.RECORDING_REMAIN_LABEL) + 
+								Integer.toString(--m_remainTimer);
 				if(m_remainTimer <= 0){
 					close();
+				}else{
+					m_parentScreen.invalidate();
 				}
 			}
 		}, 1000, true);
 		
-	}
-	
-	public boolean onClose(){
-		close();
-		return true;
 	}
 	
 	public void close(){
@@ -131,7 +133,6 @@ public class RecordAudioScreen extends PopupScreen{
 		if(m_recordThread != null){
 			m_recordThread.stop();
 			m_callback.recordDone(m_recordThread.getAudioBuffer());
-			
 			m_recordThread = null;
 		}
 		
@@ -139,7 +140,23 @@ public class RecordAudioScreen extends PopupScreen{
 			m_mainApp.cancelInvokeLater(m_remainTimerID);
 			m_remainTimerID = -1;	
 		}
-				
-		super.close();		
+		
+		m_parentScreen.invalidate();
+	}
+	
+	public void paint(Graphics _g){
+		int x = (recvMain.fsm_display_width - m_microphone.getWidth()) / 2;
+		int y = (recvMain.fsm_display_height - m_microphone.getHeight()) / 2;
+		
+		recvMain.sm_weiboUIImage.drawImage(_g, m_microphone, x, y);
+
+		// render the remain time label 
+		//
+		int t_length = m_parentScreen.getFont().getAdvance(m_remain);
+		
+		x = (recvMain.fsm_display_width - t_length) / 2;
+		y = y + m_microphone.getHeight();
+		
+		_g.drawText(m_remain,x,y);
 	}
 }
