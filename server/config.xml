@@ -118,7 +118,7 @@
 		commentSum="5"
 	/-->
 		
-	<!--WeiboAccount
+	<WeiboAccount
 		type="qq"
 		account="yuchberry"
 		accessToken="d7804a95bde0436ca9f0b62ef84de787"
@@ -129,7 +129,7 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/-->
+	/>
 	
 	<!--IMAccount
 		type="gtalk"
@@ -143,12 +143,12 @@
 		password=""
 		cryptPassword="7b371a95bc2d7a9b9d7c68d2cca46d98ef8857158d44258d"
 	/-->
-	<IMAccount
+	<!--IMAccount
 		type="gtalk"
 		account="yuchting@gmail.com"
 		password=""
 		cryptPassword="396bc581a6277f66ca6d40eb5fd98d38ef8857158d44258d"
-	/>
+	/-->
 	
 	<!--IMAccount
 		type="gtalk"
