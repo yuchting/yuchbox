@@ -185,17 +185,14 @@ public class RosterItemField extends Field{
 	}
 	
 	private static ImageUnit sm_imFieldBG = null;
-	private static ImageUnit sm_imFieldBG_spaceLine = null;
 		
 	public static void fillIMFieldBG(Graphics _g,int _x,int _y,int _width,int _height){
 		
 		if(sm_imFieldBG == null){
 			sm_imFieldBG = recvMain.sm_weiboUIImage.getImageUnit("weibo_bg");
-			sm_imFieldBG_spaceLine = recvMain.sm_weiboUIImage.getImageUnit("space_line");
 		}
 		
 		recvMain.sm_weiboUIImage.fillImageBlock(_g, sm_imFieldBG, _x, _y, _width, _height);
-		recvMain.sm_weiboUIImage.drawBitmapLine(_g, sm_imFieldBG_spaceLine, _x, _y, _width);
 	}
 	
 	private static ImageUnit[] sm_rosterState = 

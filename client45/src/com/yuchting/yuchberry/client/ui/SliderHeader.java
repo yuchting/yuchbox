@@ -59,8 +59,16 @@ public abstract class SliderHeader extends Field{
 
 	}
 	
+	public int getPreferredWidth(){
+		return recvMain.fsm_display_width;
+	}
+	
+	public int getPreferredHeight(){
+		return fsm_headHeight;
+	}
+	
 	protected void layout(int _width,int _height){
-        setExtent(recvMain.fsm_display_width,fsm_headHeight);
+        setExtent(getPreferredWidth(),getPreferredHeight());
     }
 	
 	public void invalidate(){
@@ -153,7 +161,7 @@ public abstract class SliderHeader extends Field{
 			recvMain.sm_weiboUIImage.drawBitmapLine(g, sm_navigateBlockBitmap_offline, m_curr_x, 0, fsm_blockWidth);
 		}
 		t_x = m_curr_x + (fsm_blockWidth - sm_navigatePointBitmap.getWidth()) / 2;
-		recvMain.sm_weiboUIImage.drawImage(g, sm_navigatePointBitmap, t_x, fsm_headHeight - sm_navigatePointBitmap.getHeight()); 
+		recvMain.sm_weiboUIImage.drawImage(g, sm_navigatePointBitmap, t_x, getPreferredHeight() - sm_navigatePointBitmap.getHeight()); 
 		
 		t_x = (fsm_blockWidth - fsm_stateBitmapSize)/2;
 		

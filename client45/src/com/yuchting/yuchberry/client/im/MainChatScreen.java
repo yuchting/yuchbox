@@ -153,14 +153,12 @@ final class InputManager extends Manager implements FieldChangeListener{
 					recvMain.sm_weiboUIImage);
 			
 			sm_background = recvMain.sm_weiboUIImage.getImageUnit("weibo_bg");
-			sm_background_line = recvMain.sm_weiboUIImage.getImageUnit("space_line");
 		}
 	}
 	
 	public static void drawInputBackground(Graphics _g,int _textWidth,int _preferredWidth,int _preferredHeight){
 		
 		recvMain.sm_weiboUIImage.fillImageBlock(_g, sm_background, 0, 0, _preferredWidth,_preferredHeight);
-		recvMain.sm_weiboUIImage.drawBitmapLine(_g, sm_background_line, 0, 0, _preferredWidth);
 		
 		sm_inputBackground.draw(_g, fsm_inputBubbleBorder, fsm_inputBubbleBorder, 
 								_textWidth + fsm_textBorder * 2,
@@ -358,6 +356,10 @@ final class MiddleMgr extends VerticalFieldManager{
 		
 		public int getPreferredHeight(){
 			return MiddleMgr.this.getPreferredHeight() - m_inputMgr.getPreferredHeight();
+		}
+		
+		public int getPreferredWidth(){
+			return recvMain.fsm_display_width;
 		}
 		
 		protected void sublayout(int _width,int _height){
@@ -1048,6 +1050,19 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 	}
 	
 	protected void paint(Graphics g){
+		
+		int t_color = g.getColor();
+		try{
+			g.setColor(MainIMScreen.fsm_backgroundColor);
+//			g.fillRect(0,m_header.getPreferredHeight(),
+//					recvMain.fsm_display_width,recvMain.fsm_display_height - m_header.getPreferredHeight());
+			
+			g.fillRect(0,0,100,100);
+			
+		}finally{
+			g.setColor(t_color);
+		}
+			
 		super.paint(g);
 		
 		if(m_imagePath != null || m_snapBuffer != null || m_recordBuffer != null){

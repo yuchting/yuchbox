@@ -2502,10 +2502,55 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	MainIMScreen				m_mainIMScreen = null;
 	
+	public static BubbleImage 			sm_otherChatBubble = null;
+	public static BubbleImage 			sm_ownChatBubble = null;
+	
 	public void initIMModule(){
 		
 		if(m_enableIMModule){
 			loadImageSets();
+			
+			if(sm_otherChatBubble == null){
+				sm_otherChatBubble = new BubbleImage(
+						sm_weiboUIImage.getImageUnit("other_top_left"),
+						sm_weiboUIImage.getImageUnit("other_top"),
+						sm_weiboUIImage.getImageUnit("other_top_right"),
+						sm_weiboUIImage.getImageUnit("other_right"),
+						
+						sm_weiboUIImage.getImageUnit("other_bottom_right"),
+						sm_weiboUIImage.getImageUnit("other_bottom"),
+						sm_weiboUIImage.getImageUnit("other_bottom_left"),
+						sm_weiboUIImage.getImageUnit("other_left"),
+						
+						sm_weiboUIImage.getImageUnit("other_inner_block"),
+						new ImageUnit[]{
+							sm_weiboUIImage.getImageUnit("other_point"),
+							null,
+							null,
+							null,
+						},
+						sm_weiboUIImage);
+				
+				sm_ownChatBubble = new BubbleImage(
+						sm_weiboUIImage.getImageUnit("own_top_left"),
+						sm_weiboUIImage.getImageUnit("own_top"),
+						sm_weiboUIImage.getImageUnit("own_top_right"),
+						sm_weiboUIImage.getImageUnit("own_right"),
+						
+						sm_weiboUIImage.getImageUnit("own_bottom_right"),
+						sm_weiboUIImage.getImageUnit("own_bottom"),
+						sm_weiboUIImage.getImageUnit("own_bottom_left"),
+						sm_weiboUIImage.getImageUnit("own_left"),
+						
+						sm_weiboUIImage.getImageUnit("own_inner_block"),
+						new ImageUnit[]{
+							null,
+							null,
+							sm_weiboUIImage.getImageUnit("own_point"),
+							null,
+						},
+						sm_weiboUIImage);
+			}
 			
 			if(m_mainIMScreen == null){
 				m_mainIMScreen = new MainIMScreen(this);

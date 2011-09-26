@@ -150,11 +150,11 @@
 		cryptPassword="396bc581a6277f66ca6d40eb5fd98d38ef8857158d44258d"
 	/-->
 	
-	<!--IMAccount
+	<IMAccount
 		type="gtalk"
 		account="yuchdroid@gmail.com"
 		password="hF8IBrCmBDQsKaWa"
 		cryptPassword=""
-	/-->
+	/>
 	
 </Yuchberry>

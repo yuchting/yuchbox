@@ -15,6 +15,7 @@ import net.rim.device.api.system.Backlight;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
+import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
@@ -54,6 +55,8 @@ final class RosterChatData{
 }
 
 public class MainIMScreen extends MainScreen implements FieldChangeListener{
+	
+	public final static int fsm_backgroundColor = 0x2b3d4d;
 	
 	int m_menu_label = 0;
 	
@@ -588,6 +591,22 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 		
 		return super.keyDown(keycode,time);
+	}
+	
+	protected void paint(Graphics _g){
+		int t_color = _g.getColor();
+		try{
+			_g.setColor(fsm_backgroundColor);
+//			_g.fillRect(0,m_header.getPreferredHeight(),recvMain.fsm_display_width,
+//							recvMain.fsm_display_height - m_header.getPreferredHeight());
+			
+			_g.fillRect(0,0,100,100);
+			
+		}finally{
+			_g.setColor(t_color);
+		}
+		
+		super.paint(_g);
 	}
 	
 	private boolean click(){

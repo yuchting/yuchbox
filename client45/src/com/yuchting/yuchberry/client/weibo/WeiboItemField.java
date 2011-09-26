@@ -68,14 +68,14 @@ public class WeiboItemField extends Manager{
 	public final static int		fsm_selectedColor			= 0x00a7e6;
 	
 	public final static int		fsm_timeTextColor			= recvMain.sm_standardUI?0xfb9620:0x8bc5f8;
-	public final static int		fsm_extendTextColor			= recvMain.sm_standardUI?0:0xffffff;
+	public final static int		fsm_extendTextColor			= recvMain.sm_standardUI?0:0xd0d0d0;
 	public final static int		fsm_extendBGColor			= recvMain.sm_standardUI?0xc0deed:0x1f2d39;
 	public final static int		fsm_absTextColor			= recvMain.sm_standardUI?0x586061:0xbbc1c6;
 	
 	public final static int		fsm_weiboNameTextColor		= recvMain.sm_standardUI?0:0xe5e3cf;
 
-	public final static int		fsm_weiboCommentFGColor		= recvMain.sm_standardUI?0x6d6f6f:0x6f6f6f;
-	public final static int		fsm_weiboCommentBGColor		= recvMain.sm_standardUI?0xecf6fb:0xd8d8d8;
+	public final static int		fsm_weiboCommentFGColor		= recvMain.sm_standardUI?0x6d6f6f:0x84c3fa;
+	public final static int		fsm_weiboCommentBGColor		= recvMain.sm_standardUI?0xecf6fb:0x2b3d4d;
 	
 	
 	// BasicEditField for 4.2os
@@ -608,7 +608,6 @@ public class WeiboItemField extends Manager{
 				
 				// draw text
 				//
-				_g.setColor(fsm_extendTextColor);
 				paintChild(_g,m_parentManager.m_textArea);	
 				
 				if(!recvMain.sm_simpleMode){
@@ -632,7 +631,6 @@ public class WeiboItemField extends Manager{
 							fsm_commentTextWidth + fsm_headImageTextInterval * 2, m_commentText_height + 5,
 							recvMain.sm_commentFirst?BubbleImage.BOTTOM_POINT_STYLE:BubbleImage.TOP_POINT_STYLE);
 					
-					_g.setColor(fsm_weiboCommentFGColor);
 					paintChild(_g,m_parentManager.m_commentTextArea);
 										
 					//_g.setColor(fsm_spaceLineColor);

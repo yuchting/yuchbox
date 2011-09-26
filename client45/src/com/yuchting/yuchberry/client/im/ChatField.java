@@ -27,8 +27,12 @@ public class ChatField extends Manager{
 	public final static int	fsm_minTextWidth		= fsm_offsetWidth + fsm_bubblePointWidth;
 	public final static int	fsm_maxTextWidth 		= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth;
 	
-	public final static int	fsm_ownChatTextBGColor		= 0xd8d8d8;
-	public final static int	fsm_otherChatTextBGColor	= 0xadadad;
+	public final static int	fsm_ownChatTextBGColor		= 0x96bc1c;
+	public final static int	fsm_otherChatTextBGColor	= 0xd5d5d5;
+	
+	public final static int	fsm_ownChatTextFGColor		= 0x233c01;
+	public final static int	fsm_otherChatTextFGColor	= 0x565656;
+	
 	public final static int	fsm_timeTextBGColor			= 0xffffcc;
 	public final static int	fsm_timeTextBorderColor		= 0xc0c0c0;
 	
@@ -180,9 +184,9 @@ public class ChatField extends Manager{
 			}
 			
 			if(_msg.isOwnMsg()){
-				m_textfield.setColor(0,fsm_ownChatTextBGColor);
+				m_textfield.setColor(fsm_ownChatTextFGColor,fsm_ownChatTextBGColor);
 			}else{
-				m_textfield.setColor(0,fsm_otherChatTextBGColor);
+				m_textfield.setColor(fsm_otherChatTextFGColor,fsm_otherChatTextBGColor);
 			}
 			
 			m_textfield.setText(_msg.getMsg());
@@ -274,7 +278,7 @@ public class ChatField extends Manager{
 			
 			t_x = recvMain.fsm_display_width - t_bubbleWidth - fsm_bubblePointWidth;
 			
-			recvMain.sm_bubbleImage.draw(_g, t_x, 0, t_bubbleWidth, getPreferredHeight(), 
+			recvMain.sm_ownChatBubble.draw(_g, t_x, 0, t_bubbleWidth, getPreferredHeight(), 
 					BubbleImage.RIGHT_POINT_STYLE);
 			
 			t_time_x = t_x - t_time_width + 5;
@@ -283,7 +287,7 @@ public class ChatField extends Manager{
 			
 			t_x = fsm_bubblePointWidth;
 			
-			recvMain.sm_bubbleImage_black.draw(_g,t_x, 0, t_bubbleWidth, getPreferredHeight(), 
+			recvMain.sm_otherChatBubble.draw(_g,t_x, 0, t_bubbleWidth, getPreferredHeight(), 
 					BubbleImage.LEFT_POINT_STYLE);
 			
 			t_time_x = t_x + t_bubbleWidth - 5;

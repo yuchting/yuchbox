@@ -230,9 +230,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	ChatManager	m_chatManager	= null;
 	
 	Vector<fetchChatRoster>		m_chatRosterList = new Vector<fetchChatRoster>();
-	
 	Vector<fetchChatRoster>		m_changeChatRosterList = new Vector<fetchChatRoster>();
-		
 	Vector<ChatData>			m_chatList = new Vector<ChatData>();
 	
 	Vector<fetchChatMsg>		m_pushedChatMsgList = new Vector<fetchChatMsg>();
@@ -285,23 +283,22 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		
 		DestroySession();
 		
-		if(m_mainConnection == null){
-			String t_domain = "gmail.com";
-			int t_index = 0;
-			if((t_index = m_accountName.toLowerCase().indexOf("@")) != -1){
-				t_domain = m_accountName.substring(t_index + 1);
-			}
-			
-			// Create a connection to the jabber.org server on a specific port.
-			//
-			ConnectionConfiguration t_config = new ConnectionConfiguration("talk.google.com",5222,t_domain);
-			
-			if(t_domain.equals("gmail.com")){
-				t_config.setSASLAuthenticationEnabled(false);
-			}			
-			
-			m_mainConnection = new XMPPConnection(t_config);
+		String t_domain = "gmail.com";
+		int t_index = 0;
+		if((t_index = m_accountName.toLowerCase().indexOf("@")) != -1){
+			t_domain = m_accountName.substring(t_index + 1);
 		}
+		
+		// Create a connection to the jabber.org server on a specific port.
+		//
+		ConnectionConfiguration t_config = new ConnectionConfiguration("talk.google.com",5222,t_domain);
+		
+		if(t_domain.equals("gmail.com")){
+			t_config.setSASLAuthenticationEnabled(false);
+		}			
+		
+		m_mainConnection = new XMPPConnection(t_config);
+		
 		
 		String decryptPass = decryptPassword(m_cryptPassword,m_password);
 		if(decryptPass != null){
@@ -315,7 +312,6 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		m_mainConnection.connect();
 				
 		String t_account = null;
-		int t_index;
 		if((t_index = m_accountName.toLowerCase().indexOf("@gmail.com")) != -1){
 			t_account = m_accountName.substring(0,t_index);
 		}else{
@@ -387,8 +383,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			if(m_connectStatus != null){
 				t_presence.setStatus(m_connectStatus);
 			}
-			
-			
+						
 			try{	
 				m_mainConnection.sendPacket(t_presence);
 			}catch(Exception e){
@@ -521,9 +516,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     
     public void processMessage(Chat chat, Message message){
         
-    	int t_state = -1;
-    	
-    	
+    	int t_state = -1;   	
     	
 		if(message.getBody() == null){
 
@@ -820,7 +813,13 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	public void DestroySession(){
 		if(m_mainConnection != null && m_mainConnection.isConnected()){
 			m_mainConnection.disconnect();
+			m_mainConnection = null;
 		}
+		
+		m_chatRosterList.removeAllElements();
+		m_chatList.removeAllElements();
+		m_changeChatRosterList.removeAllElements();
+		
 	}
 	
 	public boolean ProcessNetworkPackage(byte[] _package)throws Exception{
@@ -1237,17 +1236,17 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			ResetSession(true);
 			
 			ClientConnected();
-			
-			if(m_connectPresence == -1 || m_connectStatus == null){
-				m_mainMgr.SendData(new byte[]{msg_head.msgChatPresence}, false);
-			}
-		}
+		}		
 	}
 	
 	public void PushMsg(sendReceive _sendReceive)throws Exception{
 
-		if(!m_mainMgr.isIMEnabled()){
+		if(!m_mainMgr.isIMEnabled() || !m_mainMgr.isClientConnected()){
 			return;
+		}
+		
+		if(m_connectPresence == -1 || m_connectStatus == null){
+			m_mainMgr.SendData(new byte[]{msg_head.msgChatPresence}, false);
 		}
 		
 		long t_currTime = (new Date()).getTime();

@@ -60,6 +60,10 @@ public class WeiboTextField extends ActiveRichTextField{
 				sm_fontList[i] = getFont();
 			}
 			
+			// weibo name is bold
+			//
+			sm_fontList[1] = sm_fontList[0].derive(sm_fontList[0].getStyle() | Font.BOLD);
+			
 			int t_width = 0;
 			while((t_width = sm_fontList[0].getAdvance(sm_replacePhizText)) < Phiz.fsm_phizSize){
 				sm_replacePhizText = sm_replacePhizText + " ";
