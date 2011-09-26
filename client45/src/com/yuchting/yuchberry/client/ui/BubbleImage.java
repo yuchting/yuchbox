@@ -109,24 +109,26 @@ public class BubbleImage {
 		
 		// draw the point 
 		//
-		switch(_pointStyle){
-		case LEFT_POINT_STYLE:
-			m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width / 2,
-					_y + m_top_left.m_height / 2);
-			break;
-		case TOP_POINT_STYLE:
-			m_parentSets.drawImage(_g,m_point[TOP_POINT_STYLE],_x + m_top_left.m_width ,
-					_y - m_point[TOP_POINT_STYLE].m_height / 2);
-			break;
-		case RIGHT_POINT_STYLE:
-			m_parentSets.drawImage(_g,m_point[RIGHT_POINT_STYLE],_x + _width - m_point[RIGHT_POINT_STYLE].m_width / 2,
-					_y + m_top_right.m_height / 2);
-			break;
-		case BOTTOM_POINT_STYLE:
-			m_parentSets.drawImage(_g,m_point[BOTTOM_POINT_STYLE],_x + m_bottom_left.m_width * 2, 
-					_y + _height - m_point[BOTTOM_POINT_STYLE].m_height / 2);
-			break;
-		}
+		if(m_point != null){
+			switch(_pointStyle){
+			case LEFT_POINT_STYLE:
+				m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width / 2,
+						_y + m_top_left.m_height / 2);
+				break;
+			case TOP_POINT_STYLE:
+				m_parentSets.drawImage(_g,m_point[TOP_POINT_STYLE],_x + m_top_left.m_width ,
+						_y - m_point[TOP_POINT_STYLE].m_height / 2);
+				break;
+			case RIGHT_POINT_STYLE:
+				m_parentSets.drawImage(_g,m_point[RIGHT_POINT_STYLE],_x + _width - m_point[RIGHT_POINT_STYLE].m_width / 2,
+						_y + m_top_right.m_height / 2);
+				break;
+			case BOTTOM_POINT_STYLE:
+				m_parentSets.drawImage(_g,m_point[BOTTOM_POINT_STYLE],_x + m_bottom_left.m_width * 2, 
+						_y + _height - m_point[BOTTOM_POINT_STYLE].m_height / 2);
+				break;
+			}
+		}		
 		
 		// fill the inner rectangle
 		//

@@ -1221,14 +1221,23 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 	static public ImageUnit getWeiboPicSignImage(){
 		if(sm_weiboPicSignImage == null){
-			sm_weiboPicSignImage = recvMain.sm_weiboUIImage.getImageUnit("picSign");
+			if(recvMain.sm_standardUI){
+				sm_weiboPicSignImage = recvMain.sm_weiboUIImage.getImageUnit("picSign_1");
+			}else{
+				sm_weiboPicSignImage = recvMain.sm_weiboUIImage.getImageUnit("picSign");
+			}			
 		}
 		
 		return sm_weiboPicSignImage;
 	}
 	static public ImageUnit getWeiboCommentSignImage(){
 		if(sm_weiboCommentSignImage == null){
-			sm_weiboCommentSignImage = recvMain.sm_weiboUIImage.getImageUnit("commentSign");
+			if(recvMain.sm_standardUI){
+				sm_weiboCommentSignImage = recvMain.sm_weiboUIImage.getImageUnit("commentSign_1");
+			}else{
+				sm_weiboCommentSignImage = recvMain.sm_weiboUIImage.getImageUnit("commentSign");
+			}
+			
 		}
 		
 		return sm_weiboCommentSignImage;

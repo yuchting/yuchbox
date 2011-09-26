@@ -1034,6 +1034,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    		
 				    		if(t_currVer >= 34){
 				    			m_imSendImageQuality	= sendReceive.ReadInt(t_readFile);
+				    			sm_standardUI			= sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
 			    		}finally{
@@ -1149,6 +1150,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		    			sendReceive.WriteBoolean(t_writeFile,m_imVoiceImmMode);
 		    			
 		    			sendReceive.WriteInt(t_writeFile,m_imSendImageQuality);
+		    			sendReceive.WriteBoolean(t_writeFile,sm_standardUI);
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1994,6 +1996,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public static	boolean		sm_displayHeadImage	= true;
 	public static boolean			sm_simpleMode		= false;
 	public static boolean			sm_showAllInList	= false;
+	public static boolean			sm_standardUI		= true;
 	
 				
 	public weiboTimeLineScreen	m_weiboTimeLineScreen = null;
@@ -2085,25 +2088,49 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 			if(sm_bubbleImage == null){
 				
-				sm_bubbleImage = new BubbleImage(
-						sm_weiboUIImage.getImageUnit("bubble_top_left"),
-						sm_weiboUIImage.getImageUnit("bubble_top"),
-						sm_weiboUIImage.getImageUnit("bubble_top_right"),
-						sm_weiboUIImage.getImageUnit("bubble_right"),
-						
-						sm_weiboUIImage.getImageUnit("bubble_bottom_right"),
-						sm_weiboUIImage.getImageUnit("bubble_bottom"),
-						sm_weiboUIImage.getImageUnit("bubble_bottom_left"),
-						sm_weiboUIImage.getImageUnit("bubble_left"),
-						
-						sm_weiboUIImage.getImageUnit("bubble_inner_block"),
-						new ImageUnit[]{
-							sm_weiboUIImage.getImageUnit("bubble_left_point"),
-							sm_weiboUIImage.getImageUnit("bubble_top_point"),
-							sm_weiboUIImage.getImageUnit("bubble_right_point"),
-							sm_weiboUIImage.getImageUnit("bubble_bottom_point"),
-						},
-						sm_weiboUIImage);
+				if(recvMain.sm_standardUI){
+					sm_bubbleImage = new BubbleImage(
+							sm_weiboUIImage.getImageUnit("bubble_top_left_1"),
+							sm_weiboUIImage.getImageUnit("bubble_top_1"),
+							sm_weiboUIImage.getImageUnit("bubble_top_right_1"),
+							sm_weiboUIImage.getImageUnit("bubble_right_1"),
+							
+							sm_weiboUIImage.getImageUnit("bubble_bottom_right_1"),
+							sm_weiboUIImage.getImageUnit("bubble_bottom_1"),
+							sm_weiboUIImage.getImageUnit("bubble_bottom_left_1"),
+							sm_weiboUIImage.getImageUnit("bubble_left_1"),
+							
+							sm_weiboUIImage.getImageUnit("bubble_inner_block_1"),
+							new ImageUnit[]{
+								sm_weiboUIImage.getImageUnit("bubble_left_point_1"),
+								sm_weiboUIImage.getImageUnit("bubble_top_point_1"),
+								sm_weiboUIImage.getImageUnit("bubble_right_point_1"),
+								sm_weiboUIImage.getImageUnit("bubble_bottom_point_1"),
+							},
+							sm_weiboUIImage);
+					
+				}else{
+					sm_bubbleImage = new BubbleImage(
+							sm_weiboUIImage.getImageUnit("bubble_top_left"),
+							sm_weiboUIImage.getImageUnit("bubble_top"),
+							sm_weiboUIImage.getImageUnit("bubble_top_right"),
+							sm_weiboUIImage.getImageUnit("bubble_right"),
+							
+							sm_weiboUIImage.getImageUnit("bubble_bottom_right"),
+							sm_weiboUIImage.getImageUnit("bubble_bottom"),
+							sm_weiboUIImage.getImageUnit("bubble_bottom_left"),
+							sm_weiboUIImage.getImageUnit("bubble_left"),
+							
+							sm_weiboUIImage.getImageUnit("bubble_inner_block"),
+							new ImageUnit[]{
+								sm_weiboUIImage.getImageUnit("bubble_left_point"),
+								sm_weiboUIImage.getImageUnit("bubble_top_point"),
+								sm_weiboUIImage.getImageUnit("bubble_right_point"),
+								sm_weiboUIImage.getImageUnit("bubble_bottom_point"),
+							},
+							sm_weiboUIImage);
+				}
+				
 				
 				sm_bubbleImage_black = new BubbleImage(
 						sm_weiboUIImage.getImageUnit("bubble_black_top_left"),

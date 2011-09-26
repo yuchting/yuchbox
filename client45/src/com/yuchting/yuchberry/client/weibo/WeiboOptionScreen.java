@@ -37,6 +37,9 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 	 private RadioButtonField m_spaceDown	= new RadioButtonField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SPACE_DOWN),m_shortkeyTypeGroup,true);
 	 private RadioButtonField m_spaceUp	= new RadioButtonField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SPACE_UP),m_shortkeyTypeGroup,false);
 	
+	 private RadioButtonGroup m_uiGroup = new RadioButtonGroup();
+	 private RadioButtonField m_uiStandard	= new RadioButtonField(recvMain.sm_local.getString(localResource.WEIBO_OPTION_STANDARD_UI),m_uiGroup,true);
+	 private RadioButtonField m_uiBlack	= new RadioButtonField(recvMain.sm_local.getString(localResource.WEIBO_OPTION_BLACK_UI),m_uiGroup,false);
 	
 	 recvMain			m_mainApp = null;
 	 
@@ -125,6 +128,15 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 				 				m_mainApp.m_autoLoadNewTimelineWeibo);
 		 
 		 add(m_autoLoadNewTimelineWeibo);
+		 
+		 add(m_uiStandard);
+		 add(m_uiBlack);
+		 m_uiStandard.setChangeListener(this);
+		 m_uiBlack.setChangeListener(this);
+		 
+		 if(!recvMain.sm_standardUI){
+			 m_uiBlack.setSelected(true);
+		 }
 		 //@} 
 		 
 		 
@@ -142,6 +154,8 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 			 }else if(field == m_clearCheckImageSetting){
 				 m_mainApp.m_hasPromptToCheckImg = true;
 				 m_mainApp.DialogAlert("Clear OK!");
+			 }else if(field == m_uiStandard || field == m_uiBlack){
+				 m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.WEIBO_OPTION_UI_CHANGE_PROMPT));
 			 }
 		 }	
 	 }
@@ -170,6 +184,9 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 			 m_mainApp.m_autoLoadNewTimelineWeibo = m_autoLoadNewTimelineWeibo.getChecked();
 			 
 			 m_mainApp.m_spaceDownWeiboShortcutKey  = m_spaceDown.isSelected();
+			 
+			
+			 recvMain.sm_standardUI = m_uiStandard.isSelected();
 			
 			 m_mainApp.WriteReadIni(false);
 		 }

@@ -35,7 +35,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	public ImageButton	 m_picBut				= null; 
 		
 
-	public WeiboTextField 	m_textArea				= new WeiboTextField(0,WeiboItemField.fsm_darkColor);
+	public WeiboTextField 	m_textArea				= new WeiboTextField(0,WeiboItemField.fsm_extendBGColor);
 	public WeiboTextField	m_commentTextArea		= new WeiboTextField(WeiboItemField.fsm_weiboCommentFGColor,WeiboItemField.fsm_weiboCommentBGColor);
 	
 	public int					m_currentSendType		= 0;
