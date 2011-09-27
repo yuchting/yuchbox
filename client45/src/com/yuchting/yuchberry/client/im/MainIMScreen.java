@@ -594,19 +594,21 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	}
 	
 	protected void paint(Graphics _g){
-		int t_color = _g.getColor();
-		try{
-			_g.setColor(fsm_backgroundColor);
-//			_g.fillRect(0,m_header.getPreferredHeight(),recvMain.fsm_display_width,
-//							recvMain.fsm_display_height - m_header.getPreferredHeight());
-			
-			_g.fillRect(0,0,100,100);
-			
-		}finally{
-			_g.setColor(t_color);
-		}
-		
 		super.paint(_g);
+		
+		int t_currMgrHeight = m_currMgr.getExtent().height;
+		int t_height = recvMain.fsm_display_height - m_header.getPreferredHeight() - t_currMgrHeight;
+		if(t_height > 0){
+			int t_color = _g.getColor();
+			try{
+				_g.setColor(fsm_backgroundColor);
+				_g.fillRect(0,m_header.getPreferredHeight() + t_currMgrHeight,
+								recvMain.fsm_display_width,t_height);
+				
+			}finally{
+				_g.setColor(t_color);
+			}
+		}		
 	}
 	
 	private boolean click(){

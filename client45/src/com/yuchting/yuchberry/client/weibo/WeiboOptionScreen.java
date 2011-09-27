@@ -128,7 +128,9 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 				 				m_mainApp.m_autoLoadNewTimelineWeibo);
 		 
 		 add(m_autoLoadNewTimelineWeibo);
-		 
+		 		 
+		 t_label = new LabelField(recvMain.sm_local.getString(localResource.WEIBO_OPTION_THEME_LABEL));
+		 add(t_label);
 		 add(m_uiStandard);
 		 add(m_uiBlack);
 		 m_uiStandard.setChangeListener(this);
@@ -155,7 +157,9 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 				 m_mainApp.m_hasPromptToCheckImg = true;
 				 m_mainApp.DialogAlert("Clear OK!");
 			 }else if(field == m_uiStandard || field == m_uiBlack){
-				 m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.WEIBO_OPTION_UI_CHANGE_PROMPT));
+				 if(((RadioButtonField)field).isSelected()){
+					 m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.WEIBO_OPTION_UI_CHANGE_PROMPT));
+				 }				 
 			 }
 		 }	
 	 }
