@@ -13,9 +13,9 @@ public class MainIMScreenHeader extends SliderHeader{
 			
 	private final static String[] fsm_stateBitmapString = 
 	{
-		"commentMe_1",
-		"weiboUser_1",
-		"statusIM",
+		"history_chat",
+		"friend_list",
+		"own_status",
 	};	
 	
 	MainIMScreen	m_parentScreen = null;

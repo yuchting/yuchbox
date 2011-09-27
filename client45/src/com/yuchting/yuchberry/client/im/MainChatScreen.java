@@ -201,7 +201,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 			if(!m_middleMgr.m_chatScreen.m_mainApp.m_imVoiceImmMode){
 				m_middleMgr.m_chatScreen.m_currRoster.m_lastChatText = m_editTextArea.getText();
 			}	
-			
+			int t_formerHeight = m_currHeight;
 			m_currHeight = m_editTextArea.getHeight() + (fsm_textBorder + fsm_inputBubbleBorder) * 2;
 			
 			if(m_currHeight < fsm_minHeight){
@@ -211,9 +211,11 @@ final class InputManager extends Manager implements FieldChangeListener{
 			if(m_currHeight > fsm_maxHeight){
 				m_currHeight = fsm_maxHeight;
 			}
-								
-			m_middleMgr.invalidate();
-			m_middleMgr.sublayout(0, 0);
+			
+			if(t_formerHeight != m_currHeight){
+				m_middleMgr.invalidate();
+				m_middleMgr.sublayout(0, 0);
+			}	
 			
 			if(m_middleMgr.m_chatScreen.m_mainApp.m_enableChatState
 				&& context != FieldChangeListener.PROGRAMMATIC){
@@ -378,8 +380,7 @@ final class MiddleMgr extends VerticalFieldManager{
 		
 		m_chatMsgMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL);
 		m_chatMsgMiddleMgr.add(m_chatMsgMgr);
-		
-		
+				
 		m_inputMgr = new InputManager(this);
 		
 		readdControl();
@@ -440,7 +441,7 @@ final class MiddleMgr extends VerticalFieldManager{
 	}
 	
 	public int getPreferredHeight(){
-		return recvMain.fsm_display_height - m_chatScreen.m_title.getImageHeight();
+		return recvMain.fsm_display_height - MainChatScreen.ChatScreenHeader.fsm_chatScreenHeaderHeight;
 	}
 	
 	public void sublayout(int _width,int _height){
@@ -478,7 +479,21 @@ final class MiddleMgr extends VerticalFieldManager{
 		setExtent(recvMain.fsm_display_width,getPreferredHeight());
 	}
 	
-	
+	protected void subpaint(Graphics g){
+		
+		int t_color = g.getColor();
+		try{
+			g.setColor(MainIMScreen.fsm_backgroundColor);
+			g.fillRect(0,0,getPreferredWidth(),getPreferredHeight());
+			
+			g.fillRect(0,0,100,100);
+			
+		}finally{
+			g.setColor(t_color);
+		}
+		
+		super.subpaint(g);
+	}
 	
 	public void onDisplay(){
 		super.onDisplay();
@@ -581,26 +596,26 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 													m_middleMgr.m_inputMgr.m_editTextArea));
 		}
 	};
-	 MenuItem m_snapItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPEN_CAMERA_SNAP),m_menu_op++,0){
-	    	public void run(){
-	    		try{
-	    			m_cameraScreen = new CameraScreen(new ICameraScreenCallback(){
-	        			public void snapOK(byte[] _buffer){
-	        				clearAttachment();
-	        				
-	        				m_snapBuffer = _buffer;
-	        				m_imageType	= fetchChatMsg.FILE_TYPE_IMG;
-	        			}
-	        		},m_mainApp.getWeiboUploadSize().x);
-	        		
-	        		m_mainApp.pushScreen(m_cameraScreen);	
-	    		}catch(Exception e){
-	    			
-	    			m_mainApp.SetErrorString("MCS:" + e.getMessage());
-	    			m_cameraMenu.run();
-	    		}    		
-	    	}
-	    };
+	MenuItem m_snapItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPEN_CAMERA_SNAP),m_menu_op++,0){
+    	public void run(){
+    		try{
+    			m_cameraScreen = new CameraScreen(new ICameraScreenCallback(){
+        			public void snapOK(byte[] _buffer){
+        				clearAttachment();
+        				
+        				m_snapBuffer = _buffer;
+        				m_imageType	= fetchChatMsg.FILE_TYPE_IMG;
+        			}
+        		},m_mainApp.getWeiboUploadSize().x);
+        		
+        		m_mainApp.pushScreen(m_cameraScreen);	
+    		}catch(Exception e){
+    			
+    			m_mainApp.SetErrorString("MCS:" + e.getMessage());
+    			m_cameraMenu.run();
+    		}    		
+    	}
+    };
 	    
 	MenuItem m_cameraMenu = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPEN_CAMERA),m_menu_op++,0){
 		public void run(){
@@ -722,23 +737,25 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 	
 	final class ChatScreenHeader extends Field{
 		
+		public final static int fsm_chatScreenHeaderHeight = 30;
+		
 		public int getPreferredWidth() {
 			return recvMain.fsm_display_width;
 		}
 		
 		public int getPreferredHeight() {
-			return m_title.getImageHeight();
+			return fsm_chatScreenHeaderHeight;
 		}
 		
 		public void invalidate(){
 			super.invalidate();
 		}
 		protected void layout(int _width,int _height){
-			setExtent(recvMain.fsm_display_width,m_title.getImageHeight());
+			setExtent(recvMain.fsm_display_width,fsm_chatScreenHeaderHeight);
 		}
 		
 		protected void paint(Graphics _g){
-			m_title.draw(_g,0,0,getPreferredWidth());
+			recvMain.sm_weiboUIImage.drawBitmapLine(_g, m_title, 0, 0, getPreferredWidth());
 			
 			// draw roster state
 			//
@@ -774,7 +791,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 	recvMain		m_mainApp 		= null;
 	MainIMScreen	m_mainScreen 	= null;
 	
-	ButtonSegImage	m_title			= null;
+	ImageUnit		m_title			= null;
 	ChatScreenHeader m_header 		= null;
 	
 	MiddleMgr		m_middleMgr		= null;
@@ -827,22 +844,10 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		m_mainScreen	= _mainScreen;
 		
 		m_middleMgr		= new MiddleMgr(this);
-
-		if(recvMain.fsm_display_height <= 240){
-			m_title = new ButtonSegImage(recvMain.sm_weiboUIImage.getImageUnit("composeTitle_left"),
-					recvMain.sm_weiboUIImage.getImageUnit("composeTitle_mid"),
-					recvMain.sm_weiboUIImage.getImageUnit("composeTitle_right"),
-					recvMain.sm_weiboUIImage);
-		}else{
-			m_title = new ButtonSegImage(recvMain.sm_weiboUIImage.getImageUnit("nav_bar_left"),
-					recvMain.sm_weiboUIImage.getImageUnit("nav_bar_mid"),
-					recvMain.sm_weiboUIImage.getImageUnit("nav_bar_right"),
-					recvMain.sm_weiboUIImage);
-		}
-				
-		m_header = new ChatScreenHeader();
-		m_hasImageSign = recvMain.sm_weiboUIImage.getImageUnit("picSign");
-		m_hasVoiceSign = recvMain.sm_weiboUIImage.getImageUnit("commentSign");
+		m_title 		= recvMain.sm_weiboUIImage.getImageUnit("nav_bar");		
+		m_header 		= new ChatScreenHeader();
+		m_hasImageSign	= recvMain.sm_weiboUIImage.getImageUnit("picSign");
+		m_hasVoiceSign	= recvMain.sm_weiboUIImage.getImageUnit("commentSign");
 				
 		setBanner(m_header);
 		
@@ -1049,20 +1054,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		}
 	}
 	
-	protected void paint(Graphics g){
-		
-		int t_color = g.getColor();
-		try{
-			g.setColor(MainIMScreen.fsm_backgroundColor);
-//			g.fillRect(0,m_header.getPreferredHeight(),
-//					recvMain.fsm_display_width,recvMain.fsm_display_height - m_header.getPreferredHeight());
-			
-			g.fillRect(0,0,100,100);
-			
-		}finally{
-			g.setColor(t_color);
-		}
-			
+	protected void paint(Graphics g){			
 		super.paint(g);
 		
 		if(m_imagePath != null || m_snapBuffer != null || m_recordBuffer != null){

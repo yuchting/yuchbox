@@ -11,7 +11,6 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
-import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Screen;
@@ -28,13 +27,13 @@ import com.yuchting.yuchberry.client.screen.IUploadFileScreenCallback;
 import com.yuchting.yuchberry.client.screen.imageViewScreen;
 import com.yuchting.yuchberry.client.screen.uploadFileScreen;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
-import com.yuchting.yuchberry.client.ui.ButtonSegImage;
 import com.yuchting.yuchberry.client.ui.CameraFileOP;
 import com.yuchting.yuchberry.client.ui.ImageButton;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
 
 final class WeiboUpdateManager extends Manager implements FieldChangeListener{
+	
 	
 	public AutoTextEditField 	m_editTextArea	= new AutoTextEditField();
 	
@@ -48,7 +47,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
     
 	ImageButton				m_sendButton	= null;
 	
-	ButtonSegImage			m_updateTitle		= null;
+	ImageUnit				m_updateTitle		= null;
 	BubbleImage				m_editBubbleImage = null;
 		
 	public VerticalFieldManager m_editTextManager = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
@@ -67,6 +66,25 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			layoutChild(m_editTextArea,getPreferredWidth(),999);
 			
 			setExtent(getPreferredWidth(),getPreferredHeight());
+		}
+		
+		protected void subpaint(Graphics _g){
+			int t_num = getFieldCount();
+			for(int i = 0;i < t_num;i++){
+				Field field = getField(i);
+				
+				if(field == m_editTextArea){
+					int t_color = _g.getColor();
+					try{
+						_g.setColor(WeiboItemField.fsm_weiboCommentFGColor);
+						paintChild(_g, field);
+					}finally{
+						_g.setColor(t_color);
+					}
+				}else{
+					paintChild(_g, field);
+				}
+			}
 		}
 	};
 	
@@ -102,13 +120,14 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 				recvMain.sm_weiboUIImage.getImageUnit("attach_button_focus"),
 				recvMain.sm_weiboUIImage,Field.FIELD_LEFT);
 		
-		m_updateTitle = new ButtonSegImage(
-				recvMain.sm_weiboUIImage.getImageUnit("composeTitle_left"),
-				recvMain.sm_weiboUIImage.getImageUnit("composeTitle_mid"),
-				recvMain.sm_weiboUIImage.getImageUnit("composeTitle_right"),
-				recvMain.sm_weiboUIImage);
+		if(recvMain.sm_standardUI){
+			m_updateTitle = recvMain.sm_weiboUIImage.getImageUnit("compose_nav_bar");
+		}else{
+			m_updateTitle = recvMain.sm_weiboUIImage.getImageUnit("nav_bar");
+		}
 		
-		m_editBubbleImage = recvMain.sm_bubbleImage;
+		
+		m_editBubbleImage = WeiboItemField.sm_bubbleImage;
 		m_timelineScreen = _timeline;
 
 		m_editTextArea.setMaxSize(WeiboItemField.fsm_maxWeiboTextLength);
@@ -129,13 +148,9 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		
 		add(m_sendButton);
 				
-		m_titleHeight = m_updateTitle.getImageHeight() + 2;
+		m_titleHeight = WeiboUpdateDlg.fsm_updateDlgHeaderHeight + 2;
 		m_separateLine_y = m_titleHeight + m_editTextManager.getPreferredHeight();
-		
-		
 	}
-	
-	
 	
 	public int getPreferredHeight(){
 		return WeiboUpdateDlg.fsm_height;
@@ -232,14 +247,18 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	}
 	
 	public void subpaint(Graphics _g){
-		m_updateTitle.draw(_g,1,1,getPreferredWidth() - 2);
+		
+		recvMain.sm_weiboUIImage.drawBitmapLine(_g, m_updateTitle, 1, 1, 
+				getPreferredWidth() - 2,WeiboUpdateDlg.fsm_updateDlgHeaderHeight);
 		
 		m_editBubbleImage.draw(_g, 1, m_titleHeight,getPreferredWidth() - 3,
 				m_editTextManager.getPreferredHeight() + 2,BubbleImage.NO_POINT_STYLE);
 		
 		int oldColor = _g.getColor();
 		Font oldFont = _g.getFont();
+		
 		try{
+			
 			_g.setFont(WeiboItemField.sm_boldFont);
 			_g.setColor(0xffffff);
 			String t_str = recvMain.sm_local.getString(localResource.WEIBO_UPDATE_DIALOG_TITLE) 
@@ -254,6 +273,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		}
 		
 		super.subpaint(_g);
+		
 	}
 	
 	public boolean keyChar(char c,int status,int time){
@@ -282,6 +302,8 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 }
 
 public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
+	
+	public final static int			fsm_updateDlgHeaderHeight = 30;
 	
 	public final static int			fsm_width = recvMain.fsm_display_width - 20;
 	public final static int			fsm_height = (recvMain.fsm_display_height - 30 > 300?300:(recvMain.fsm_display_height - 30));
@@ -480,7 +502,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		int color = _g.getColor();
 		try{
 
-			_g.setColor(0x737373);
+			_g.setColor(WeiboItemField.fsm_extendBGColor);
 			_g.fillRect(0,0,getPreferredWidth(),getPreferredHeight());
 						
 			_g.setColor(0);

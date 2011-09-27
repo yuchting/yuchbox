@@ -26,6 +26,8 @@ public class BubbleImage {
 	
 	private ImageSets		m_parentSets;
 	
+	private boolean 		m_point_down = false;
+	
 	public BubbleImage(ImageUnit _top_left,ImageUnit _top,
 						ImageUnit _top_right,ImageUnit _right,
 						ImageUnit _bottom_right,ImageUnit _bottom,
@@ -46,6 +48,10 @@ public class BubbleImage {
 		m_innerBlock	= _innerBlock;
 		m_parentSets	= _parentSets;
 		m_point			= _point;
+	}
+	
+	public void setPointDown(boolean _down){
+		m_point_down = _down;
 	}
 	
 	public int getInnerBlockSize(){
@@ -113,8 +119,13 @@ public class BubbleImage {
 			switch(_pointStyle){
 			case LEFT_POINT_STYLE:
 				if(m_point[LEFT_POINT_STYLE] != null){
-					m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width,
-							_y + _height - (m_point[LEFT_POINT_STYLE].getHeight() * 3 / 2) );
+					if(m_point_down){
+						m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width,
+								_y + _height - (m_point[LEFT_POINT_STYLE].getHeight() * 3 / 2) );
+					}else{
+						m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width,
+								_y + (m_point[LEFT_POINT_STYLE].getHeight() / 2) );
+					}					
 				}				
 				break;
 			case TOP_POINT_STYLE:
@@ -126,16 +137,21 @@ public class BubbleImage {
 				break;
 			case RIGHT_POINT_STYLE:
 				if(m_point[RIGHT_POINT_STYLE] != null){
-					m_parentSets.drawImage(_g,m_point[RIGHT_POINT_STYLE],_x + _width - m_point[RIGHT_POINT_STYLE].m_width / 2,
-							_y + _height - (m_point[RIGHT_POINT_STYLE].getHeight() * 3 / 2));
+					if(m_point_down){
+						m_parentSets.drawImage(_g,m_point[RIGHT_POINT_STYLE],_x + _width - m_point[RIGHT_POINT_STYLE].m_width / 2,
+								_y + _height - (m_point[RIGHT_POINT_STYLE].getHeight() * 3 / 2));
+					}else{
+						m_parentSets.drawImage(_g,m_point[RIGHT_POINT_STYLE],_x + _width - m_point[RIGHT_POINT_STYLE].m_width / 2,
+								_y + (m_point[RIGHT_POINT_STYLE].getHeight() / 2));
+					}
+					
 				}				
 				break;
 			case BOTTOM_POINT_STYLE:
 				if(m_point[BOTTOM_POINT_STYLE] != null){
 					m_parentSets.drawImage(_g,m_point[BOTTOM_POINT_STYLE],_x + m_bottom_left.m_width * 2, 
 							_y + _height - m_point[BOTTOM_POINT_STYLE].m_height / 2);
-				}
-				
+				}				
 				break;
 			}
 		}		

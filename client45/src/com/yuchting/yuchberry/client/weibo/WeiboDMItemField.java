@@ -330,8 +330,7 @@ public class WeiboDMItemField extends WeiboItemField{
 				WeiboHeadImage.displayHeadImage(_g,t_sign_x,
 						m_textHeight + fsm_weiboSignImageSize + fsm_headImageTextInterval,data.m_headImage);
 				
-				recvMain.sm_bubbleImage.draw(
-							_g,t_text_x,m_textHeight-2,fms_msgTextWidth,data.m_dataItemHeight + 6 ,
+				WeiboItemField.sm_bubbleImage.draw(_g,t_text_x,m_textHeight-2,fms_msgTextWidth,data.m_dataItemHeight + 6 ,
 							data.m_weibo.IsOwnWeibo()?BubbleImage.RIGHT_POINT_STYLE:BubbleImage.LEFT_POINT_STYLE);
 											
 				

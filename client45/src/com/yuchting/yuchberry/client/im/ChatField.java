@@ -27,8 +27,8 @@ public class ChatField extends Manager{
 	public final static int	fsm_minTextWidth		= fsm_offsetWidth + fsm_bubblePointWidth;
 	public final static int	fsm_maxTextWidth 		= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth;
 	
-	public final static int	fsm_ownChatTextBGColor		= 0x96bc1c;
-	public final static int	fsm_otherChatTextBGColor	= 0xd5d5d5;
+	public final static int	fsm_ownChatTextBGColor		= 0x95be0d;
+	public final static int	fsm_otherChatTextBGColor	= 0xd0d1d3;
 	
 	public final static int	fsm_ownChatTextFGColor		= 0x233c01;
 	public final static int	fsm_otherChatTextFGColor	= 0x565656;
@@ -75,6 +75,52 @@ public class ChatField extends Manager{
 			}
 		}catch(Exception e){}
 	}
+	
+	public static BubbleImage sm_otherChatBubble = new BubbleImage(
+			recvMain.sm_weiboUIImage.getImageUnit("other_top_left"),
+			recvMain.sm_weiboUIImage.getImageUnit("other_top"),
+			recvMain.sm_weiboUIImage.getImageUnit("other_top_right"),
+			recvMain.sm_weiboUIImage.getImageUnit("other_right"),
+			
+			recvMain.sm_weiboUIImage.getImageUnit("other_bottom_right"),
+			recvMain.sm_weiboUIImage.getImageUnit("other_bottom"),
+			recvMain.sm_weiboUIImage.getImageUnit("other_bottom_left"),
+			recvMain.sm_weiboUIImage.getImageUnit("other_left"),
+			
+			recvMain.sm_weiboUIImage.getImageUnit("other_inner_block"),
+			new ImageUnit[]{
+				recvMain.sm_weiboUIImage.getImageUnit("other_point"),
+				null,
+				null,
+				null,
+			},
+			recvMain.sm_weiboUIImage);
+	
+	public static BubbleImage sm_ownChatBubble = new BubbleImage(
+			recvMain.sm_weiboUIImage.getImageUnit("own_top_left"),
+			recvMain.sm_weiboUIImage.getImageUnit("own_top"),
+			recvMain.sm_weiboUIImage.getImageUnit("own_top_right"),
+			recvMain.sm_weiboUIImage.getImageUnit("own_right"),
+			
+			recvMain.sm_weiboUIImage.getImageUnit("own_bottom_right"),
+			recvMain.sm_weiboUIImage.getImageUnit("own_bottom"),
+			recvMain.sm_weiboUIImage.getImageUnit("own_bottom_left"),
+			recvMain.sm_weiboUIImage.getImageUnit("own_left"),
+			
+			recvMain.sm_weiboUIImage.getImageUnit("own_inner_block"),
+			new ImageUnit[]{
+				null,
+				null,
+				recvMain.sm_weiboUIImage.getImageUnit("own_point"),
+				null,
+			},
+			recvMain.sm_weiboUIImage);
+	
+	static{
+		sm_otherChatBubble.setPointDown(true);
+		sm_ownChatBubble.setPointDown(true);
+	}
+	
 	public ChatField(){
 		super(Field.FOCUSABLE | Manager.NO_VERTICAL_SCROLL);
 	}
@@ -278,7 +324,7 @@ public class ChatField extends Manager{
 			
 			t_x = recvMain.fsm_display_width - t_bubbleWidth - fsm_bubblePointWidth;
 			
-			recvMain.sm_ownChatBubble.draw(_g, t_x, 0, t_bubbleWidth, getPreferredHeight(), 
+			sm_ownChatBubble.draw(_g, t_x, 0, t_bubbleWidth, getPreferredHeight(), 
 					BubbleImage.RIGHT_POINT_STYLE);
 			
 			t_time_x = t_x - t_time_width + 5;
@@ -287,7 +333,7 @@ public class ChatField extends Manager{
 			
 			t_x = fsm_bubblePointWidth;
 			
-			recvMain.sm_otherChatBubble.draw(_g,t_x, 0, t_bubbleWidth, getPreferredHeight(), 
+			sm_otherChatBubble.draw(_g,t_x, 0, t_bubbleWidth, getPreferredHeight(), 
 					BubbleImage.LEFT_POINT_STYLE);
 			
 			t_time_x = t_x + t_bubbleWidth - 5;

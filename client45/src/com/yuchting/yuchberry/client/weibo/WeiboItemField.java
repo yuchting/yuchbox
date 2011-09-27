@@ -15,6 +15,7 @@ import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.SliderHeader;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
+import com.yuchting.yuchberry.client.ui.WeiboTextField;
 
 class ContentTextField extends TextField{
 	
@@ -79,14 +80,14 @@ public class WeiboItemField extends Manager{
 	
 	
 	// BasicEditField for 4.2os
-	public static TextField 	sm_testTextArea	= new TextField(Field.READONLY){
+	public static WeiboTextField 	sm_testTextArea	= new WeiboTextField(0,0){
 		public void setText(String _text){
 			super.setText(_text);
 			layout(WeiboItemField.fsm_textWidth,1000);
 		}
 	};	
 	
-	public static TextField 	sm_testCommentTextArea	= new TextField(Field.READONLY){
+	public static WeiboTextField 	sm_testCommentTextArea	= new WeiboTextField(0,0){
 		public void setText(String _text){
 			super.setText(_text);
 			layout(WeiboItemField.fsm_commentTextWidth,1000);
@@ -134,7 +135,7 @@ public class WeiboItemField extends Manager{
 	int						m_commentText_height= sm_fontHeight;
 	int						m_textHeight		= sm_fontHeight;
 	int						m_absTextHeight		= sm_fontHeight;
-	
+		
 	WeiboMainManager		m_parentManager		= null;
 	
 	WeiboHeadImage			m_headImage = null;
@@ -144,7 +145,7 @@ public class WeiboItemField extends Manager{
 	ContentTextField 		m_absTextArea	= null;
 	boolean				m_absTextAreaAdded = false;
 	
-	static BubbleImage		sm_selectedBackgroud = new BubbleImage(
+	public static BubbleImage		sm_selectedBackgroud = new BubbleImage(
 										recvMain.sm_weiboUIImage.getImageUnit("selected_top_left"),
 										recvMain.sm_weiboUIImage.getImageUnit("selected_top"),
 										recvMain.sm_weiboUIImage.getImageUnit("selected_top_right"),
@@ -158,6 +159,55 @@ public class WeiboItemField extends Manager{
 										recvMain.sm_weiboUIImage.getImageUnit("selected_inner_block"),
 										null,
 										recvMain.sm_weiboUIImage);
+	
+	public static BubbleImage 			sm_bubbleImage = null;
+	public static ImageUnit 			sm_bubbleSelected = null;
+	static{
+		if(recvMain.sm_standardUI){
+			sm_bubbleImage = new BubbleImage(
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_top_left_1"),
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_top_1"),
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_top_right_1"),
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_right_1"),
+					
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_bottom_right_1"),
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_bottom_1"),
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_bottom_left_1"),
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_left_1"),
+					
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_inner_block_1"),
+					new ImageUnit[]{
+						recvMain.sm_weiboUIImage.getImageUnit("bubble_left_point_1"),
+						recvMain.sm_weiboUIImage.getImageUnit("bubble_top_point_1"),
+						recvMain.sm_weiboUIImage.getImageUnit("bubble_right_point_1"),
+						recvMain.sm_weiboUIImage.getImageUnit("bubble_bottom_point_1"),
+					},
+					recvMain.sm_weiboUIImage);
+			
+		}else{
+			sm_bubbleImage = new BubbleImage(
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_top_left"),
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_top"),
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_top_right"),
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_right"),
+					
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_bottom_right"),
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_bottom"),
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_bottom_left"),
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_left"),
+					
+					recvMain.sm_weiboUIImage.getImageUnit("bubble_inner_block"),
+					new ImageUnit[]{
+						recvMain.sm_weiboUIImage.getImageUnit("bubble_left_point"),
+						recvMain.sm_weiboUIImage.getImageUnit("bubble_top_point"),
+						recvMain.sm_weiboUIImage.getImageUnit("bubble_right_point"),
+						recvMain.sm_weiboUIImage.getImageUnit("bubble_bottom_point"),
+					},
+					recvMain.sm_weiboUIImage);
+		}
+		
+		sm_bubbleSelected = recvMain.sm_weiboUIImage.getImageUnit("weibo_vert_sel");
+	}
 	
 	public WeiboItemFocusField getFocusField(){
 		return m_focusField;
@@ -568,9 +618,13 @@ public class WeiboItemField extends Manager{
 			
 			int color		= _g.getColor();
 			try{
-								
-				_g.setColor(fsm_extendBGColor);
-				_g.fillRect(0,0,fsm_weiboItemFieldWidth,m_extendHeight);				
+				
+				if(recvMain.sm_standardUI){
+					sm_selectedBackgroud.draw(_g, 0, 0, fsm_weiboItemFieldWidth, m_extendHeight, BubbleImage.NO_POINT_STYLE);
+				}else{
+					_g.setColor(fsm_extendBGColor);
+					_g.fillRect(0,0,fsm_weiboItemFieldWidth,m_extendHeight);
+				}								
 							
 				int t_textStart_y = recvMain.sm_commentFirst?m_commentText_height : 1;
 				
@@ -627,7 +681,7 @@ public class WeiboItemField extends Manager{
 					// comment area
 					//
 					// draw a bubble
-					recvMain.sm_bubbleImage.draw(_g, 0, t_commentText_y - fsm_headImageTextInterval,
+					sm_bubbleImage.draw(_g, 0, t_commentText_y - fsm_headImageTextInterval,
 							fsm_commentTextWidth + fsm_headImageTextInterval * 2, m_commentText_height + 5,
 							recvMain.sm_commentFirst?BubbleImage.BOTTOM_POINT_STYLE:BubbleImage.TOP_POINT_STYLE);
 					
@@ -673,6 +727,13 @@ public class WeiboItemField extends Manager{
 				recvMain.sm_weiboUIImage.drawImage(
 						_g,weiboTimeLineScreen.GetWeiboSign(m_weibo.GetWeiboStyle()),t_leadingSpace, 0);
 				
+				// name VIP sign
+				//
+				if(m_weibo.IsSinaVIP()){
+					recvMain.sm_weiboUIImage.drawImage(_g,weiboTimeLineScreen.GetVIPSignBitmap(m_weibo.GetWeiboStyle()),
+														fsm_weiboSignImageSize ,0);
+				}
+				
 				// time string
 				//
 				drawWeiboTime(_g,t_firstLineHeight,true);				
@@ -681,12 +742,13 @@ public class WeiboItemField extends Manager{
 				// draw the bubble
 				//
 				if(_on){
-					recvMain.sm_bubbleImage.draw(_g,getAbsTextPosX() - 4,t_firstLineHeight - 1,
-							m_absTextArea.getTextWidth() + 4,m_absTextHeight + 5,BubbleImage.LEFT_POINT_STYLE);
-				}else{
-					recvMain.sm_bubbleImage_black.draw(_g,getAbsTextPosX() - 4,t_firstLineHeight - 1,
-							m_absTextArea.getTextWidth() + 4,m_absTextHeight + 5,BubbleImage.LEFT_POINT_STYLE);	
+					recvMain.sm_weiboUIImage.drawBitmapLine(_g, sm_bubbleSelected, 
+							0, getPreferredHeight() - sm_bubbleSelected.getHeight(), getPreferredWidth());
 				}
+				
+				sm_bubbleImage.draw(_g,getAbsTextPosX() - 4,t_firstLineHeight - 1,
+						m_absTextArea.getTextWidth() + 4,m_absTextHeight + 5,BubbleImage.LEFT_POINT_STYLE);
+				
 				
 				paintChild(_g,m_absTextArea);
 								
@@ -695,21 +757,11 @@ public class WeiboItemField extends Manager{
 				WeiboHeadImage.displayHeadImage(_g,t_leadingSpace,t_firstLineHeight,m_headImage);
 				t_firstLineHeight += WeiboHeadImage.fsm_headImageWidth + fsm_headImageTextInterval;
 				
-				// name VIP sign
-				//
-				if(m_weibo.IsSinaVIP()){
-					recvMain.sm_weiboUIImage.drawImage(
-							_g,weiboTimeLineScreen.GetVIPSignBitmap(m_weibo.GetWeiboStyle()),
-							fsm_weiboSignImageSize + t_leadingSpace ,t_firstLineHeight);
-				}	
-				
 			}else{
-				
-				
+								
 				//draw the background
 				//
-				fillWeiboFieldBG(_g,0,0,getPreferredWidth(),getPreferredHeight(),true);
-								
+				fillWeiboFieldBG(_g,0,0,getPreferredWidth(),getPreferredHeight(),true);	
 				
 				if(_on){
 					if(recvMain.sm_standardUI){
