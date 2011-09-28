@@ -10,6 +10,7 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Screen;
 
 import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
     
 public class RecordAudioScreen{
@@ -76,6 +77,9 @@ public class RecordAudioScreen{
 	    
 	public final static int		fsm_maxRecordingTime = 20;
 	
+	public final static int		fsm_screenWidth 	= 200;
+	public final static int		fsm_screenHeight 	= 150;
+	
 	AudioRecorderThread m_recordThread = null;
 	IRecordAudioScreenCallback m_callback = null;
 	
@@ -87,20 +91,26 @@ public class RecordAudioScreen{
 	int m_remainTimer = fsm_maxRecordingTime;
 	int m_remainTimerID = -1;
 	
-	ImageUnit	m_microphone = null;
+	static ImageUnit	sm_microphone = recvMain.sm_weiboUIImage.getImageUnit("microphone");
+	static BubbleImage	sm_microphone_block = new BubbleImage(
+													recvMain.sm_weiboUIImage.getImageUnit("microphone_top_left"),
+													recvMain.sm_weiboUIImage.getImageUnit("microphone_top"),
+													recvMain.sm_weiboUIImage.getImageUnit("microphone_top_right"),
+													recvMain.sm_weiboUIImage.getImageUnit("microphone_right"),
+													
+													recvMain.sm_weiboUIImage.getImageUnit("microphone_bottom_right"),
+													recvMain.sm_weiboUIImage.getImageUnit("microphone_bottom"),
+													recvMain.sm_weiboUIImage.getImageUnit("microphone_bottom_left"),
+													recvMain.sm_weiboUIImage.getImageUnit("microphone_left"),
+													
+													recvMain.sm_weiboUIImage.getImageUnit("microphone_inner_block"),
+													new ImageUnit[]{null,null,null,null,},
+													recvMain.sm_weiboUIImage);
 	
 	public RecordAudioScreen(recvMain _mainApp,Screen _parentScreen,IRecordAudioScreenCallback _callback){
 		m_mainApp = _mainApp;
 		m_parentScreen = _parentScreen;
 		m_callback = _callback;
-		
-		//LabelField t_recording = new LabelField(recvMain.sm_local.getString(localResource.RECORDING_LABEL));
-		//add(t_recording);
-		
-		//m_remain = new LabelField(Integer.toString(fsm_maxRecordingTime),Field.FIELD_HCENTER);
-		//add(m_remain);
-		
-		m_microphone = recvMain.sm_weiboUIImage.getImageUnit("microphone");
 	}
 		
 	public void onDisplay(){
@@ -125,7 +135,6 @@ public class RecordAudioScreen{
 				}
 			}
 		}, 1000, true);
-		
 	}
 	
 	public void close(){
@@ -138,25 +147,38 @@ public class RecordAudioScreen{
 		
 		if(m_remainTimerID != -1){
 			m_mainApp.cancelInvokeLater(m_remainTimerID);
-			m_remainTimerID = -1;	
+			m_remainTimerID = -1;
 		}
 		
 		m_parentScreen.invalidate();
 	}
 	
 	public void paint(Graphics _g){
-		int x = (recvMain.fsm_display_width - m_microphone.getWidth()) / 2;
-		int y = (recvMain.fsm_display_height - m_microphone.getHeight()) / 2;
+		int gb_x = (recvMain.fsm_display_width - fsm_screenWidth) / 2;
+		int gb_y = (recvMain.fsm_display_height - fsm_screenHeight) / 2;
 		
-		recvMain.sm_weiboUIImage.drawImage(_g, m_microphone, x, y);
+		sm_microphone_block.draw(_g, gb_x, gb_y, fsm_screenWidth, fsm_screenHeight, BubbleImage.NO_POINT_STYLE);
+		
+		int x = gb_x + (fsm_screenWidth - sm_microphone.getWidth()) / 2;
+		int y = gb_y + (fsm_screenHeight - sm_microphone.getHeight()) / 2;
+		
+		recvMain.sm_weiboUIImage.drawImage(_g, sm_microphone, x, y);
 
 		// render the remain time label 
 		//
-		int t_length = m_parentScreen.getFont().getAdvance(m_remain);
-		
-		x = (recvMain.fsm_display_width - t_length) / 2;
-		y = y + m_microphone.getHeight();
-		
-		_g.drawText(m_remain,x,y);
+		int t_color = _g.getColor();
+		try{
+			_g.setColor(0xd0d0d0);
+			
+			int t_length = m_parentScreen.getFont().getAdvance(m_remain);
+			
+			x = gb_x + (fsm_screenWidth - t_length) / 2;
+			y = y + sm_microphone.getHeight();
+			
+			_g.drawText(m_remain,x,y);
+			
+		}finally{
+			_g.setColor(t_color);
+		}
 	}
 }

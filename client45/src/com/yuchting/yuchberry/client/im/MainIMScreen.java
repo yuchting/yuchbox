@@ -56,7 +56,7 @@ final class RosterChatData{
 
 public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
-	public final static int fsm_backgroundColor = 0x2b3d4d;
+	public final static int fsm_backgroundColor = 0x1f2d39;
 	
 	int m_menu_label = 0;
 	
@@ -307,7 +307,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
     };
 
 	// BasicEditField for 4.2os
-	public final static BubbleTextField 	fsm_testTextArea	= new BubbleTextField(Field.READONLY);
+	public final static BubbleTextField 	fsm_testTextArea	= new BubbleTextField();
 	
 	public final static Font		fsm_defaultFont			= fsm_testTextArea.getFont();
 	public final static int		fsm_defaultFontHeight	= fsm_defaultFont.getHeight();

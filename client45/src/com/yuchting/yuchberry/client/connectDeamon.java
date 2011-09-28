@@ -267,9 +267,7 @@ public class connectDeamon extends Thread implements SendListener,
 			 
 			Session.removeViewListener(this);
 					         
-	        AttachmentHandlerManager.getInstance().removeAttachmentHandler(this);
-        
-	       
+	        AttachmentHandlerManager.getInstance().removeAttachmentHandler(this);	       
         }        
 	}
 	
@@ -292,6 +290,10 @@ public class connectDeamon extends Thread implements SendListener,
 	public boolean sendMessage(Message message){
     	
 		gainMessagingApp();
+		
+		if(m_mainApp.m_closeMailSendModule){
+    		return true;
+    	}
 		
 		final Message t_msg = message;
 		

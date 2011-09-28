@@ -203,5 +203,22 @@ public class ImageSets {
 			drawImage(_g,_unit,_x + t_horz_num * _unit.m_width, _y, 
 					t_horz_remain_width, _height);
 		}
-	}	
+	}
+	
+	public void drawBitmapLine_vert(Graphics _g,ImageUnit _unit,int _x,int _y,int _height){
+		if(_height <= 0){
+			return ;
+		}
+		
+		int t_vert_num = _height / _unit.m_height;
+		for(int i = 0 ;i < t_vert_num;i++){
+			drawImage(_g,_unit,_x, _y + i * _unit.m_height,_unit.m_width,_unit.m_height);
+		}
+		
+		int t_vert_remain_height = _height % _unit.m_height;
+		if(t_vert_remain_height > 0){
+			drawImage(_g,_unit,_x , _y + t_vert_num * _unit.m_height, 
+					_unit.m_width, t_vert_remain_height);
+		}
+	}
 }

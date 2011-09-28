@@ -5,13 +5,18 @@ import java.io.InputStream;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
+import local.localResource;
+
 import net.rim.device.api.io.file.FileSystemJournal;
 import net.rim.device.api.io.file.FileSystemJournalEntry;
 import net.rim.device.api.io.file.FileSystemJournalListener;
 import net.rim.device.api.math.Fixed32;
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.system.JPEGEncodedImage;
+import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.XYPoint;
+import net.rim.device.api.ui.component.Dialog;
 
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
@@ -78,7 +83,6 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 		
 		return true;
 	}
-	
 	static public byte[] resizePicFile(String _imageFile,XYPoint _point)throws Exception{
 		
 		if(_imageFile != null){

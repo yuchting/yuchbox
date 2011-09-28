@@ -844,12 +844,14 @@ public class WeiboItemField extends Manager{
 		}
 	}
 	
+	
 	private void drawWeiboTime(Graphics _g,int _y,boolean _drawSign){
 		
 		int color = _g.getColor();
 		
 		try{
 			_g.setColor(fsm_timeTextColor);
+			
 			
 			// draw time string
 			//
@@ -862,7 +864,9 @@ public class WeiboItemField extends Manager{
 	    		return;
 	    	}
 	    	
-	    	t_time_x = fsm_weiboItemFieldWidth - t_time_x;
+	    	final int t_interval = 3;
+	    	
+	    	t_time_x = fsm_weiboItemFieldWidth - t_time_x - t_interval;
 	    	
 	    	// draw weibo picture or comment sign
 	    	//
@@ -871,7 +875,7 @@ public class WeiboItemField extends Manager{
 	    		
 	    		recvMain.sm_weiboUIImage.drawImage(_g,weiboTimeLineScreen.getWeiboPicSignImage(),t_time_x, _y);
 	    		
-	    		t_time_x -= 3;
+	    		t_time_x -= t_interval;
 			}
 	    	
 	    	if(m_commentText != null){

@@ -146,7 +146,6 @@
 	<Image Name="error_chat" XPos="246" YPos="345" Width="16" Height="16" />
 	
 	
-	
 	<Image Name="composing_chat_state" XPos="224" YPos="345" Width="22" Height="22" />
 	
 	<Image Name="input_top_left" XPos="144" YPos="345" Width="16" Height="10" />
@@ -161,6 +160,8 @@
 	<Image Name="input_bottom_right" XPos="176" YPos="365" Width="16" Height="10" />
 	
 	<Image Name="input_inner_block" XPos="160" YPos="355" Width="16" Height="12" />
+	
+	<Image Name="input_phiz" XPos="214" YPos="377" Width="18" Height="18" />
 		
 	
 	<Image Name="other_top_left" XPos="162" YPos="320" Width="8" Height="6" />
@@ -194,10 +195,24 @@
 	<Image Name="own_point" XPos="256" YPos="331" Width="12" Height="14" />
 	
 	
-	<Image Name="voice_button_focus" XPos="190" YPos="179" Width="40" Height="24" />
-	<Image Name="voice_button" XPos="190" YPos="203" Width="40" Height="24" />
+	<Image Name="voice_button" XPos="190" YPos="226" Width="30" Height="24" />
+	<Image Name="voice_button_focus" XPos="190" YPos="250" Width="30" Height="24" />
 	
-	<Image Name="microphone" XPos="246" YPos="360" Width="40" Height="64" />
+	<Image Name="microphone" XPos="226" YPos="234" Width="46" Height="86" />
+	<Image Name="microphone_top_left" XPos="166" YPos="377" Width="16" Height="16" />
+	<Image Name="microphone_top" XPos="178" YPos="377" Width="16" Height="16" />
+	<Image Name="microphone_top_right" XPos="198" YPos="377" Width="16" Height="16" />
+	
+	<Image Name="microphone_left" XPos="166" YPos="393" Width="16" Height="16" />
+	<Image Name="microphone_bottom_left" XPos="166" YPos="409" Width="16" Height="16" />
+	<Image Name="microphone_bottom" XPos="178" YPos="409" Width="16" Height="16" />
+	
+	<Image Name="microphone_right" XPos="198" YPos="393" Width="16" Height="16" />
+	<Image Name="microphone_bottom_right" XPos="198" YPos="409" Width="16" Height="16" />
+	
+	<Image Name="microphone_inner_block" XPos="178" YPos="393" Width="16" Height="16" />
+	
+	<Image Name="voice_sign" XPos="32" YPos="426" Width="16" Height="16" />
 	
 	<!-- phiz -->
 	<Image Name="[呵呵]" XPos="84" YPos="0" Width="22" Height="22" />

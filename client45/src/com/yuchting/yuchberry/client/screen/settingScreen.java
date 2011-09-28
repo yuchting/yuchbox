@@ -69,6 +69,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 CheckboxField		m_copyToSentFolder = null;
 	 CheckboxField		m_mailUseLocation = null;
 	 ObjectChoiceField	m_recvMsgTextLength	= null;
+	 CheckboxField		m_closeMailSendModule = null;
 	 ButtonField		m_changeSignature = new ButtonField(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_BUTTON_TEXT),
 			 										Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	 
@@ -145,7 +146,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 
 		 add(new SeparatorField());
 		 
-		 //@{
+		 //@{ mail operation
 		 t_title = new LabelField(recvMain.sm_local.getString(localResource.SETTING_MAIL_OP));
 		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
 		 add(t_title);
@@ -161,6 +162,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 
 		 m_mailUseLocation = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_MAIL_USER_LOCATION),m_mainApp.m_mailUseLocation);
 		 add(m_mailUseLocation);
+		 
+		 m_closeMailSendModule = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_CLOSE_SEND_MAIL),m_mainApp.m_closeMailSendModule);
+		 add(m_closeMailSendModule);
 		 
 		 m_recvMsgTextLength = new ObjectChoiceField(recvMain.sm_local.getString(localResource.MESSAGE_CONTAIN_MAX_LENGTH),
 				 					recvMain.fsm_recvMaxTextLenghtString,m_mainApp.m_recvMsgTextLengthIndex);
@@ -414,6 +418,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		m_mainApp.m_recvMsgTextLengthIndex = m_recvMsgTextLength.getSelectedIndex();
 		m_mainApp.m_copyMailToSentFolder = m_copyToSentFolder.getChecked();
 		m_mainApp.m_mailUseLocation = m_mailUseLocation.getChecked();
+		
+		m_mainApp.m_closeMailSendModule = m_closeMailSendModule.getChecked();
 		
 		// set the default mail
 		//

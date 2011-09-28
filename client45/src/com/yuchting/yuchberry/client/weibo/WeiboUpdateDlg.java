@@ -303,7 +303,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 
 public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 	
-	public final static int			fsm_updateDlgHeaderHeight = 30;
+	public final static int			fsm_updateDlgHeaderHeight = 32;
 	
 	public final static int			fsm_width = recvMain.fsm_display_width - 20;
 	public final static int			fsm_height = (recvMain.fsm_display_height - 30 > 300?300:(recvMain.fsm_display_height - 30));

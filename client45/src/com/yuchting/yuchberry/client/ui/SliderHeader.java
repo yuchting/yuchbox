@@ -152,19 +152,27 @@ public abstract class SliderHeader extends Field{
 	
 	protected void paint( Graphics g ){
 
+		// background and segments
+		//
 		recvMain.sm_weiboUIImage.drawBitmapLine(g, sm_navigateBitmap, 0, 0, recvMain.fsm_display_width);
-		
+		for(int i = 0 ;i < m_stateBitmap.length;i++){	
+			recvMain.sm_weiboUIImage.drawImage(g, sm_navigateSegBitmap, (i + 1) * fsm_blockWidth - sm_navigateSegBitmap.getWidth(), 0);
+		}
+
+		// selected background
+		//
 		int t_x = 0;
 		if(!m_mainApp.m_connectDeamon.isDisconnectState()){
-			recvMain.sm_weiboUIImage.drawBitmapLine(g, sm_navigateBlockBitmap, m_curr_x, 0, fsm_blockWidth);
+			recvMain.sm_weiboUIImage.drawBitmapLine(g, sm_navigateBlockBitmap, m_curr_x, 0, fsm_blockWidth - sm_navigateSegBitmap.getWidth());
 		}else{
-			recvMain.sm_weiboUIImage.drawBitmapLine(g, sm_navigateBlockBitmap_offline, m_curr_x, 0, fsm_blockWidth);
+			recvMain.sm_weiboUIImage.drawBitmapLine(g, sm_navigateBlockBitmap_offline, m_curr_x, 0, fsm_blockWidth - sm_navigateSegBitmap.getWidth());
 		}
 		t_x = m_curr_x + (fsm_blockWidth - sm_navigatePointBitmap.getWidth()) / 2;
 		recvMain.sm_weiboUIImage.drawImage(g, sm_navigatePointBitmap, t_x, getPreferredHeight() - sm_navigatePointBitmap.getHeight()); 
 		
+		// state image
+		//
 		t_x = (fsm_blockWidth - fsm_stateBitmapSize)/2;
-		
 		for(int i = 0 ;i < m_stateBitmap.length;i++){
 			
 			if(m_currState == i){
@@ -178,10 +186,7 @@ public abstract class SliderHeader extends Field{
 			}				
 							
 			t_x += fsm_blockWidth;
-			
-			recvMain.sm_weiboUIImage.drawImage(g, sm_navigateSegBitmap, (i + 1) * fsm_blockWidth - sm_navigateSegBitmap.getWidth(), 0);
-		}
-		
+		}		
     }
 	
 }
