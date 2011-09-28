@@ -229,12 +229,29 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	Roster		m_roster		= null;
 	ChatManager	m_chatManager	= null;
 	
-	Vector<fetchChatRoster>		m_chatRosterList = new Vector<fetchChatRoster>();
-	Vector<fetchChatRoster>		m_changeChatRosterList = new Vector<fetchChatRoster>();
-	Vector<ChatData>			m_chatList = new Vector<ChatData>();
+	Vector<fetchChatRoster>		m_chatRosterList 		= new Vector<fetchChatRoster>();
+	Vector<fetchChatRoster>		m_changeChatRosterList 	= new Vector<fetchChatRoster>();
+	Vector<ChatData>			m_chatList 				= new Vector<ChatData>();
 	
-	Vector<fetchChatMsg>		m_pushedChatMsgList = new Vector<fetchChatMsg>();
-	Vector<fetchChatMsg>		m_markReadChatMsgList = new Vector<fetchChatMsg>();
+	Vector<fetchChatMsg>		m_pushedChatMsgList 	= new Vector<fetchChatMsg>();
+	Vector<fetchChatMsg>		m_markReadChatMsgList 	= new Vector<fetchChatMsg>();
+	
+	int[]						m_sentChatMsgList 		= new int[256];
+	int							m_sentChatMsgListIdx 	= 0;
+	
+	private boolean findSentChatMsg(int _hashcode){
+		for(int i = 0;i < m_sentChatMsgList.length;i++){
+			if(m_sentChatMsgList[i] == _hashcode){
+				return true;
+			}
+		}
+		
+		m_sentChatMsgList[m_sentChatMsgListIdx++] = _hashcode;
+		if(m_sentChatMsgListIdx >= m_sentChatMsgList.length){
+			m_sentChatMsgListIdx = 0;
+		}
+		return false;
+	}
 	
 	int		m_connectPresence	= -1;
 	String	m_connectStatus		= null;
@@ -264,6 +281,24 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		if(!t_file.exists() || !t_file.isDirectory()){
 			t_file.mkdir();
 		}
+		
+		// create the XMPP connection
+		//
+		String t_domain = "gmail.com";
+		int t_index = 0;
+		if((t_index = m_accountName.toLowerCase().indexOf("@")) != -1){
+			t_domain = m_accountName.substring(t_index + 1);
+		}
+		
+		// Create a connection to the jabber.org server on a specific port.
+		//
+		ConnectionConfiguration t_config = new ConnectionConfiguration("talk.google.com",5222,t_domain);
+		
+		if(t_domain.equals("gmail.com")){
+			t_config.setSASLAuthenticationEnabled(false);
+		}			
+		
+		m_mainConnection = new XMPPConnection(t_config);
 	}
 	
 	public String GetAccountName(){
@@ -282,24 +317,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	public void ResetSession(boolean _fullTest)throws Exception{
 		
 		DestroySession();
-		
-		String t_domain = "gmail.com";
-		int t_index = 0;
-		if((t_index = m_accountName.toLowerCase().indexOf("@")) != -1){
-			t_domain = m_accountName.substring(t_index + 1);
-		}
-		
-		// Create a connection to the jabber.org server on a specific port.
-		//
-		ConnectionConfiguration t_config = new ConnectionConfiguration("talk.google.com",5222,t_domain);
-		
-		if(t_domain.equals("gmail.com")){
-			t_config.setSASLAuthenticationEnabled(false);
-		}			
-		
-		m_mainConnection = new XMPPConnection(t_config);
-		
-		
+				
 		String decryptPass = decryptPassword(m_cryptPassword,m_password);
 		if(decryptPass != null){
 			m_password = decryptPass;
@@ -312,6 +330,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		m_mainConnection.connect();
 				
 		String t_account = null;
+		int t_index = 0;
 		if((t_index = m_accountName.toLowerCase().indexOf("@gmail.com")) != -1){
 			t_account = m_accountName.substring(0,t_index);
 		}else{
@@ -813,7 +832,6 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	public void DestroySession(){
 		if(m_mainConnection != null && m_mainConnection.isConnected()){
 			m_mainConnection.disconnect();
-			m_mainConnection = null;
 		}
 		
 		m_chatRosterList.removeAllElements();
@@ -1158,6 +1176,11 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				String	to = sendReceive.ReadString(in);
 				String	message = sendReceive.ReadString(in);
 				int		hashcode = sendReceive.ReadInt(in);
+				
+				if(findSentChatMsg(hashcode)){
+					m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " sent chat Msg :" + hashcode);
+					return true;
+				}
 				
 				int t_filelen = sendReceive.ReadInt(in);
 				byte[] t_fileContent = null;
