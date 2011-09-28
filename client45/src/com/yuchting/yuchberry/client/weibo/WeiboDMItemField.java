@@ -77,10 +77,9 @@ public class WeiboDMItemField extends WeiboItemField{
 	int					m_pageIndex = 0;
 	int					m_pageNum = 1;
 	
-	
-	
 	public WeiboDMItemField(fetchWeibo _weibo,WeiboHeadImage _headImage,WeiboMainManager _manager){
-		super(_weibo,_headImage,_manager);		
+		super();
+		init(_weibo,_headImage,_manager);
 		m_DMList.addElement(new WeiboDMData(_weibo,_headImage));
 	}
 	

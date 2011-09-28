@@ -224,7 +224,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	String m_password			= null;
 	String m_cryptPassword		= null;
 	
-	Connection	m_mainConnection = null;
+	XMPPConnection	m_mainConnection = null;
 	
 	Roster		m_roster		= null;
 	ChatManager	m_chatManager	= null;
@@ -314,6 +314,16 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		return fetchChatMsg.STYLE_GTALK;
 	}
 	
+	public void DestroySession(){
+		if(m_mainConnection != null){
+			m_mainConnection.disconnect();
+		}
+		
+		m_chatRosterList.removeAllElements();
+		m_chatList.removeAllElements();
+		m_changeChatRosterList.removeAllElements();
+	}
+	
 	public void ResetSession(boolean _fullTest)throws Exception{
 		
 		DestroySession();
@@ -355,8 +365,6 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				m_chatRosterList.add(convertRoster(entry));
 			}
 		}
-		
-		
 		
 		m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " prepare OK! load " + m_chatRosterList.size() + " roster");
 		
@@ -828,18 +836,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			_roster.setHeadImageHashCode((int)t_headImageFile_l.length());
 		}
 	}
-	
-	public void DestroySession(){
-		if(m_mainConnection != null && m_mainConnection.isConnected()){
-			m_mainConnection.disconnect();
-		}
 		
-		m_chatRosterList.removeAllElements();
-		m_chatList.removeAllElements();
-		m_changeChatRosterList.removeAllElements();
-		
-	}
-	
 	public boolean ProcessNetworkPackage(byte[] _package)throws Exception{
 		
 		ByteArrayInputStream in = new ByteArrayInputStream(_package);

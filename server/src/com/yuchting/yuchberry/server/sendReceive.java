@@ -27,13 +27,16 @@ class sendReceive extends Thread{
 		start();
 	}
 		
+	static final int	fsm_packageHeadLength = 4;
+	
 	//! send buffer
 	public synchronized void SendBufferToSvr(byte[] _write,boolean _sendImm)throws Exception{	
 		
-		m_sendBufferLen += _write.length;
-		if(m_sendBufferLen >= 65000){
+		if(m_sendBufferLen + _write.length + fsm_packageHeadLength >= 65535){
 			SendBufferToSvr_imple(PrepareOutputData());
 		}
+		
+		m_sendBufferLen += _write.length + fsm_packageHeadLength;
 		
 		m_unsendedPackage.addElement(_write);
 		

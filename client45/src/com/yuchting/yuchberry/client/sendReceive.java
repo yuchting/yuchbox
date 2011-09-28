@@ -58,31 +58,26 @@ public class sendReceive extends Thread{
 		m_storeInterface = _interface;
 	}
 	
+	static final int	fsm_packageHeadLength = 4;
+	
 	//! send buffer
-	public void SendBufferToSvr(byte[] _write,boolean _sendImm,boolean _wait)throws Exception{
+	public synchronized void SendBufferToSvr(byte[] _write,boolean _sendImm,
+													boolean _wait)throws Exception{
 		
-		synchronized (this) {
-			m_sendBufferLen += _write.length;
-		}
-		
-		if(m_sendBufferLen >= 65000){
+		if(m_sendBufferLen + _write.length + fsm_packageHeadLength >= 65535){
 			SendBufferToSvr_imple(PrepareOutputData());
-		}
-		
+		}		
+		m_sendBufferLen += _write.length + fsm_packageHeadLength;
+
 		m_unsendedPackage.addElement(_write);
 		
 		if(_sendImm){
 			SendBufferToSvr_imple(PrepareOutputData());
-			
-			synchronized (this) {
-				m_keepliveCounter = 0;
-			}
+			m_keepliveCounter = 0;
 		}
 		
 		if(_wait){
-			synchronized (this) {
-				m_waitMoment = true;
-			}
+			m_waitMoment = true;
 		}
 	}
 	
@@ -124,7 +119,7 @@ public class sendReceive extends Thread{
 		}		
 	}
 	
-	private byte[] PrepareOutputData()throws Exception{
+	private synchronized byte[] PrepareOutputData()throws Exception{
 		
 		if(m_unsendedPackage.isEmpty()){
 			return null;
@@ -132,28 +127,23 @@ public class sendReceive extends Thread{
 		
 		ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
 	
-		synchronized (m_unsendedPackage) {
-			for(int i = 0;i < m_unsendedPackage.size();i++){
-				byte[] t_package = (byte[])m_unsendedPackage.elementAt(i);	
-				
-				WriteInt(t_stream, t_package.length);
-							
-				t_stream.write(t_package);
-			}
+		for(int i = 0;i < m_unsendedPackage.size();i++){
+			byte[] t_package = (byte[])m_unsendedPackage.elementAt(i);	
 			
-			m_unsendedPackage.removeAllElements();
+			WriteInt(t_stream, t_package.length);
+						
+			t_stream.write(t_package);
 		}
 		
-		synchronized (this) {
-			m_sendBufferLen = 0;
-		}
-		
+		m_unsendedPackage.removeAllElements();
+
+		m_sendBufferLen = 0;	
 		
 		return t_stream.toByteArray();
 	}
 
 	//! send buffer implement
-	private  void SendBufferToSvr_imple(byte[] _write)throws Exception{
+	private  synchronized void SendBufferToSvr_imple(byte[] _write)throws Exception{
 		
 		if(_write == null){
 			return;
@@ -171,25 +161,22 @@ public class sendReceive extends Thread{
 			// if the ZIP data is large than original length
 			// NOT convert
 			//
-			synchronized(this){
-				WriteInt(m_socketOutputStream,(_write.length << 16) & 0xffff0000);
-				m_socketOutputStream.write(_write);
-				m_socketOutputStream.flush();
-				
-				// 20 is TCP pack head length			
-				m_uploadByte += _write.length + 4 + 20;
-			}
 			
+			WriteInt(m_socketOutputStream,(_write.length << 16) & 0xffff0000);
+			m_socketOutputStream.write(_write);
+			m_socketOutputStream.flush();
 			
+			// 20 is TCP pack head length			
+			m_uploadByte += _write.length + 4 + 20;
+	
 		}else{
-			synchronized(this){
-				WriteInt(m_socketOutputStream,((_write.length << 16) & 0xffff0000) | t_zipData.length);
-				m_socketOutputStream.write(t_zipData);
-				m_socketOutputStream.flush();
+			WriteInt(m_socketOutputStream,((_write.length << 16) & 0xffff0000) | t_zipData.length);
+			m_socketOutputStream.write(t_zipData);
+			m_socketOutputStream.flush();
 				
-				// 20 is TCP pack head length
-				m_uploadByte += t_zipData.length + 4 + 20;
-			}
+			// 20 is TCP pack head length
+			m_uploadByte += t_zipData.length + 4 + 20;
+			
 		}	
 	}
 	
@@ -269,8 +256,10 @@ public class sendReceive extends Thread{
 			
 			ForceReadByte(in, t_orgdata, t_orglen);
 			
-			// 20 is TCP pack head length
-			m_downloadByte += t_orglen + 4 + 20;
+			synchronized (this) {
+				// 20 is TCP pack head length
+				m_downloadByte += t_orglen + 4 + 20;
+			}
 			
 		}else{
 			
@@ -278,8 +267,10 @@ public class sendReceive extends Thread{
 			
 			ForceReadByte(in, t_zipdata, t_ziplen);
 			
-			// 20 is TCP pack head length
-			m_downloadByte += t_ziplen + 4 + 20;
+			synchronized (this) {
+				// 20 is TCP pack head length
+				m_downloadByte += t_ziplen + 4 + 20;
+			}
 			
 			GZIPInputStream zi	= new GZIPInputStream(new ByteArrayInputStream(t_zipdata));
 

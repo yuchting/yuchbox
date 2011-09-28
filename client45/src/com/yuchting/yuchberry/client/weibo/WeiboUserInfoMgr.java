@@ -70,7 +70,7 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 			if(m_weiboUser == null){
 				return ;
 			}
-			
+						
 			final int ft_interval = 5;
 			
 			int t_start_x = ft_interval;
@@ -78,7 +78,7 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 			
 			int t_color = _g.getColor();
 			try{
-				_g.setColor(0xf0f0f0);
+				_g.setColor(WeiboItemField.fsm_extendBGColor);
 				_g.fillRect(0, 0, getPreferredWidth(),getPreferredHeight());
 				
 				recvMain.sm_weiboUIImage.drawImage(
@@ -112,7 +112,7 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 				t_start_x += ft_interval;
 				t_start_y += 2;
 				
-				_g.setColor(0x606060);
+				_g.setColor(WeiboItemField.fsm_extendTextColor);
 				
 				if(m_weiboUser.getName().equals(m_weiboUser.getScreenName())){
 					_g.drawText(m_weiboUser.getName() , t_start_x,t_start_y);

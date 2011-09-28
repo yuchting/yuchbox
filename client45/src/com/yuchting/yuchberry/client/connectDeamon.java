@@ -1935,7 +1935,13 @@ public class connectDeamon extends Thread implements SendListener,
 			return;
 		}
 		
-		fetchWeibo t_weibo = new fetchWeibo();
+		fetchWeibo t_weibo = null;
+		try{
+			t_weibo = (fetchWeibo)m_mainApp.m_weiboAllocator.alloc();
+		}catch(Exception e){
+			t_weibo = new fetchWeibo();
+			m_mainApp.SetErrorString("PW_0:"+ e.getMessage() + e.getClass().getName());
+		}
 	
 		try{
 			t_weibo.InputWeibo(in);

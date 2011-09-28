@@ -2070,6 +2070,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public static ImageSets			sm_weiboUIImage = null;	
 	public static Vector				sm_phizImageList = new Vector();
 	
+	public ObjectAllocator				m_weiboAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.weibo.fetchWeibo");
+	
 	public void loadImageSets(){
 		
 		if(sm_weiboUIImage == null){
@@ -2222,6 +2224,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					
 					if(t_delWeibo.GetWeiboClass() == _weibo.GetWeiboClass()){
 						
+						m_weiboAllocator.release(t_delWeibo);
 						m_receivedWeiboList.removeElementAt(i);
 						
 						m_weiboTimeLineScreen.DelWeibo(t_delWeibo);

@@ -4,12 +4,13 @@ import java.util.Calendar;
 import java.util.Date;
 
 import local.localResource;
-import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.TextField;
+import net.rim.device.api.util.Arrays;
 
+import com.yuchting.yuchberry.client.ObjectAllocator;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
@@ -17,31 +18,6 @@ import com.yuchting.yuchberry.client.ui.SliderHeader;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 import com.yuchting.yuchberry.client.ui.WeiboTextField;
 
-class ContentTextField extends TextField{
-	
-	int		m_textWidth;
-	
-	public ContentTextField(){
-		super(TextField.READONLY);
-	}
-	
-	public void setTextWidth(int _width){
-		m_textWidth = _width;
-	}
-	
-	public int getTextWidth(){
-		return m_textWidth;
-	}
-	
-	public void setText(String _text){
-		super.setText(_text);
-		layout(m_textWidth,1000);
-	}
-	
-	public void paint(Graphics _g){
-		super.paint(_g);
-	}
-};
 
 public class WeiboItemField extends Manager{
 	
@@ -145,6 +121,8 @@ public class WeiboItemField extends Manager{
 	ContentTextField 		m_absTextArea	= null;
 	boolean				m_absTextAreaAdded = false;
 	
+	static ObjectAllocator	sm_absTextAreaAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.weibo.ContentTextField");
+	
 	public static BubbleImage		sm_selectedBackgroud = new BubbleImage(
 										recvMain.sm_weiboUIImage.getImageUnit("selected_top_left"),
 										recvMain.sm_weiboUIImage.getImageUnit("selected_top"),
@@ -209,23 +187,36 @@ public class WeiboItemField extends Manager{
 		sm_bubbleSelected = recvMain.sm_weiboUIImage.getImageUnit("weibo_vert_sel");
 	}
 	
-	public WeiboItemFocusField getFocusField(){
-		return m_focusField;
+	public WeiboItemField(){
+		super(Manager.NO_VERTICAL_SCROLL);
 	}
 	
-	public WeiboItemField(WeiboMainManager _manager){
-		super(Manager.NO_VERTICAL_SCROLL );
+	public void destroy(){
+		for(int i = 0;i < m_hasControlField.length;i++){
+			m_hasControlField[i] = false;
+		}
 		
-		m_parentManager = _manager;
+		m_absTextAreaAdded = false;
+		if(m_absTextArea != null){
+			sm_absTextAreaAllocator.release(m_absTextArea);
+			m_absTextArea = null;	
+		}
+		
+		m_simpleAbstract = null;
+		m_weiboText		= null;
+		m_commentText	= null;
+		
+		m_weiboPic		= null;		
 	}
-
-	public WeiboItemField(fetchWeibo _weibo,WeiboHeadImage _headImage,WeiboMainManager _manager){
-		super(Manager.NO_VERTICAL_SCROLL);
+	
+	public void init(fetchWeibo _weibo,WeiboHeadImage _headImage,WeiboMainManager _manager){
+		
+		destroy();
 		
 		m_weibo 		= _weibo;
 		m_headImage 	= _headImage;
 		m_parentManager = _manager;
-		
+				
 		StringBuffer t_weiboTextBuffer = new StringBuffer();
 		
 		t_weiboTextBuffer.append("@").append(m_weibo.GetUserScreenName()).append(" :").append(m_weibo.GetText());
@@ -275,7 +266,6 @@ public class WeiboItemField extends Manager{
 			}
 			
 		}else{
-			
 			m_commentText_height = 0;
 			if(m_weibo.GetOriginalPic().length() != 0){
 				m_weiboPic = m_weibo.GetOriginalPic(); 
@@ -295,9 +285,13 @@ public class WeiboItemField extends Manager{
 			m_absTextAreaAdded = true;
 			
 			initAbsTextArea();			
-			add(m_absTextArea);			
+			add(m_absTextArea);
 		}
 	}
+
+	public WeiboItemFocusField getFocusField(){
+		return m_focusField;
+	}	
 	
 	public static String getSimpleAbstract(fetchWeibo _weibo){
 		if(_weibo != null){
@@ -338,11 +332,16 @@ public class WeiboItemField extends Manager{
 	private void initAbsTextArea(){
 		
 		if(m_absTextArea == null){
-			m_absTextArea = new ContentTextField();
-			m_absTextArea.setTextWidth(recvMain.fsm_display_width - getAbsTextPosX() - WeiboMainManager.fsm_scrollbarSize - 1);		
-			m_absTextArea.setText(m_weiboText);
-			m_absTextHeight = m_absTextArea.getHeight();
+			try{
+				m_absTextArea = (ContentTextField)sm_absTextAreaAllocator.alloc();
+			}catch(Exception e){
+				m_absTextArea = new ContentTextField();
+			}
 		}
+		
+		m_absTextArea.setTextWidth(recvMain.fsm_display_width - getAbsTextPosX() - WeiboMainManager.fsm_scrollbarSize - 1);		
+		m_absTextArea.setText(m_weiboText);
+		m_absTextHeight = m_absTextArea.getHeight();
 	}
 	
 	public void AddDelControlField(boolean _add){

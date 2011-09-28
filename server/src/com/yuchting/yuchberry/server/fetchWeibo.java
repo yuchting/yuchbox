@@ -5,7 +5,7 @@ import java.io.OutputStream;
 
 public class fetchWeibo {
 	
-	final static int	VERSION = 2;
+	final static int	VERSION = 3;
 
 	final public static byte	SINA_WEIBO_STYLE 		= 0;
 	final public static byte	TWITTER_WEIBO_STYLE 	= 1;
@@ -185,11 +185,7 @@ public class fetchWeibo {
 		
 		sendReceive.WriteInt(_stream,m_forwardWeiboNum);
 		sendReceive.WriteInt(_stream,m_commentWeiboNum);
-		
-		if(m_hasLocationInfo){
-			m_gpsInfo.OutputData(_stream);
-		}
-		
+			
 		if(m_commentWeiboId != -1){
 			_stream.write(m_commentWeibo != null?1:0);
 			if(m_commentWeibo != null){				
@@ -206,6 +202,10 @@ public class fetchWeibo {
 		}
 		
 		sendReceive.WriteString(_stream,m_replyName,false);
+		sendReceive.WriteBoolean(_stream,m_hasLocationInfo);
+		if(m_hasLocationInfo){
+			m_gpsInfo.OutputData(_stream);
+		}
 	}
 	
 	public void InputWeibo(InputStream _stream)throws Exception{
@@ -215,10 +215,10 @@ public class fetchWeibo {
 		m_WeiboStyle= (byte)_stream.read();
 		m_WeiboClass= (byte)_stream.read();
 		
-		m_isOwnWeibo= _stream.read() == 1?true:false;
+		m_isOwnWeibo= sendReceive.ReadBoolean(_stream);
 		
-		m_isSinaVIP = _stream.read() == 1?true:false;
-		m_isBBer	= _stream.read() == 1?true:false;
+		m_isSinaVIP = sendReceive.ReadBoolean(_stream);
+		m_isBBer	= sendReceive.ReadBoolean(_stream);
 		
 		m_id		= sendReceive.ReadLong(_stream);
 		m_userId	= sendReceive.ReadLong(_stream);
@@ -236,11 +236,7 @@ public class fetchWeibo {
 		
 		m_forwardWeiboNum		= sendReceive.ReadInt(_stream);
 		m_commentWeiboNum		= sendReceive.ReadInt(_stream);
-		
-		if(m_hasLocationInfo){
-			m_gpsInfo.InputData(_stream);
-		}
-				
+						
 		if(m_commentWeiboId != -1){
 			if(_stream.read() == 1){
 				m_commentWeibo = new fetchWeibo(m_convertoSimpleChar);
@@ -258,6 +254,13 @@ public class fetchWeibo {
 		
 		if(t_version >= 2){
 			m_replyName = sendReceive.ReadString(_stream);
+		}
+		
+		if(t_version >= 3){
+			m_hasLocationInfo = sendReceive.ReadBoolean(_stream);
+			if(m_hasLocationInfo){
+				m_gpsInfo.InputData(_stream);
+			}
 		}
 	}
 }
