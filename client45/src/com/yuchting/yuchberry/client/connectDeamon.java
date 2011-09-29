@@ -165,7 +165,7 @@ public class connectDeamon extends Thread implements SendListener,
 		public boolean addSendingData(int _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
 			
 			if(!isDisconnectState()){
-				m_connect.SendBufferToSvr(_data, false, false);
+				m_connect.SendBufferToSvr(_data, false, true);
 			}else{
 				synchronized (m_sendingData) {
 					if(_exceptSame){

@@ -25,7 +25,7 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 	
 	String		m_directMsgName = null; 
 	
-	int			m_hashCode		= (int)(((new Date()).getTime()) / 1000);
+	int			m_hashCode		= (int)((System.currentTimeMillis()) / 1000);
 	
 	public  boolean	m_closeState	= false;
 	

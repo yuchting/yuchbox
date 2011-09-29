@@ -1274,7 +1274,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
 	private void sendRequestRosterListMsg(){
 		
-		long t_currTime = (new Date()).getTime();
+		final long t_currTime = System.currentTimeMillis();
 		if(Math.abs(m_refreshRosterTimer - t_currTime) < 5 * 6000){
 			m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.IM_REFRESH_MIN_TIME_PROMPT));
 			return;

@@ -106,7 +106,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 	int					m_currHeight	= fsm_minHeight;
 	
 	int					m_inputInvokeID	= -1;
-	long				m_inputTimer	= (new Date()).getTime();
+	long				m_inputTimer	= System.currentTimeMillis();
 	
 	VerticalFieldManager m_inputManager = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
 		public int getPreferredWidth(){
@@ -1032,7 +1032,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		}
 		
 		t_msg.setOwner(m_currRoster.m_roster.getOwnAccount());
-		t_msg.setSendTime((new Date()).getTime());
+		t_msg.setSendTime(System.currentTimeMillis());
 		t_msg.setMsg(_text);
 		t_msg.setStyle(m_currRoster.m_roster.getStyle());
 		t_msg.setIsOwnMsg(true);

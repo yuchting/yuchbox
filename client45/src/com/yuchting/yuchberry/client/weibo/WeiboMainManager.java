@@ -250,7 +250,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	
 	protected void sublayout(int width, int height){
 		
-		WeiboItemField.sm_currTime = (new Date()).getTime();
+		WeiboItemField.sm_currTime = System.currentTimeMillis();
 		
 		m_bufferedTotalHeight = 0;
 				
@@ -366,7 +366,6 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 					
 					m_updateWeiboField.invalidate();
 				}
-				
 			}
 								
 		}else{

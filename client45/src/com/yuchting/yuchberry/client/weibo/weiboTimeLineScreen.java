@@ -397,7 +397,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 			if(!_initAdd && !_weibo.IsOwnWeibo()){
 				
-				m_weiboHeader.invalidate();				
+				m_weiboHeader.invalidate();
 				
 				if(_weibo.GetWeiboClass() != fetchWeibo.TIMELINE_CLASS){
 					m_mainApp.TriggerWeiboNotification();

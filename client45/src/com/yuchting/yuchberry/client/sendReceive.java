@@ -199,7 +199,7 @@ public class sendReceive extends Thread{
 						m_waitMoment = false;
 					}
 					
-					sleep(2000);
+					sleep(1000);
 				}				
 				
 				synchronized (this){
