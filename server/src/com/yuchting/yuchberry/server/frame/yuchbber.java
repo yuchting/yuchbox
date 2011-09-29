@@ -46,7 +46,7 @@ public final class yuchbber {
 		m_signinName	= _name;
 		m_password		= _pass;
 		
-		m_createTime 	= (new Date()).getTime();
+		m_createTime 	= System.currentTimeMillis();
 	}
 	public yuchbber(){}
 	

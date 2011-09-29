@@ -9,7 +9,7 @@ public class ClearAccount {
 	
 	Logger m_logger = new Logger("");	
 	
-	long m_dataTime = (new Date()).getTime();
+	long m_dataTime = System.currentTimeMillis();
 	
 	public ClearAccount(){
 		

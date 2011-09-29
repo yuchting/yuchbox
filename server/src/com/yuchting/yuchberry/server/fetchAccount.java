@@ -177,7 +177,7 @@ abstract public class fetchAccount {
 	static public void writeHeadImage(BufferedImage bsrc,String _convertType,
 										File _headImage_l,File _headImage)throws Exception {
 		
-		long t_currentTime = (new Date()).getTime();
+		long t_currentTime = System.currentTimeMillis();
 		
 		if(bsrc.getWidth() != fetchWeibo.fsm_headImageSize_l){
         	// store the large file

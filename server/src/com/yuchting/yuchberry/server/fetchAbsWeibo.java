@@ -255,7 +255,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		
 		boolean t_repush = true;
 		
-		long t_currTime = (new Date()).getTime();
+		long t_currTime = System.currentTimeMillis();
 		
 		for(int i = 0;i < _weiboList.m_WeiboComfirm.size();i++){
 			
@@ -314,7 +314,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		
 		ByteArrayOutputStream t_output = new ByteArrayOutputStream();
 		
-		long t_currTime = (new Date()).getTime();
+		long t_currTime = System.currentTimeMillis();
 		
 		if(_weiboList.m_counter == -1 // client send the refresh cmd to refresh or the first call
 		|| (_weiboList.m_weiboList.size() + _weiboList.m_counter >= _weiboList.m_sum) ){
@@ -930,7 +930,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	}
 	protected int StoreHeadImage(URL _url,String _id){
 		
-		long t_currentTime = (new Date()).getTime();
+		long t_currentTime = System.currentTimeMillis();
 		
 		final String t_filename 		= GetHeadImageFilename(_id);
 		final String t_filename_l		= GetHeadImageFilename_l(_id);

@@ -1067,7 +1067,7 @@ public class fetchMgr{
 
 	
 	public void addGPSInfo(GPSInfo _info){
-		_info.m_time = (new Date()).getTime();
+		_info.m_time = System.currentTimeMillis();
 		m_stat_clientGEO.add(_info);
 	}
 		
@@ -1079,7 +1079,7 @@ public class fetchMgr{
 		try{
 			JSONObject t_json = new JSONObject();
 			t_json.put("ID","" + m_IMEI + "-" + m_pin);
-			t_json.put("Time",(new Date()).getTime() / 1000);
+			t_json.put("Time",System.currentTimeMillis() / 1000);
 			
 			JSONArray t_geoList = new JSONArray();
 			

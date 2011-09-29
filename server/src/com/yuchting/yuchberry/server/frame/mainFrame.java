@@ -522,7 +522,7 @@ public class mainFrame extends JFrame implements ActionListener{
 							public void actionPerformed(ActionEvent arg0) {
 								if(!t_time.getText().isEmpty()){
 									t_thread.m_usingHours = Integer.valueOf(t_time.getText()).longValue();
-									t_thread.m_formerTimer = (new Date()).getTime();
+									t_thread.m_formerTimer = System.currentTimeMillis();
 									
 									t_dlg.setVisible(false);
 									t_dlg.dispose();
@@ -804,7 +804,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 		m_checkFolderStateThread.removeAllElements();
 				
-		final long t_currTime = (new Date()).getTime();
+		final long t_currTime = System.currentTimeMillis();
 		
 		Vector<fetchThread> t_deadPool = new Vector<fetchThread>();
 		
@@ -1052,7 +1052,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 		yuchbber	m_currbber		= null;
 		
-		long		m_requestTime	= (new Date()).getTime();
+		long		m_requestTime	= System.currentTimeMillis();
 		int			m_serverPort	= 0;
 		
 		String		m_prefix		= null;
@@ -1340,7 +1340,7 @@ public class mainFrame extends JFrame implements ActionListener{
 									.append(m_currConnectAccount).append("/").append(m_currUsingAccount)
 									.append("/").append(m_accountList.size()).append("\n");
 				
-				long t_currTime = (new Date()).getTime();
+				long t_currTime = System.currentTimeMillis();
 				
 				if(!m_accountList.isEmpty()){
 					

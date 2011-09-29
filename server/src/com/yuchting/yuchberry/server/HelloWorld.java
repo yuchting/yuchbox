@@ -90,7 +90,12 @@ public class HelloWorld {
 	 *  @param arg  parameters
 	 */
 	public static void main(String arg[])throws Exception{
+		long t_log = System.currentTimeMillis();
+		long t_long = (new Date()).getTime();
 		
+		if(t_long == t_log){
+			System.out.println("shit");
+		}
 		berryRecvTest();
 	}
 	

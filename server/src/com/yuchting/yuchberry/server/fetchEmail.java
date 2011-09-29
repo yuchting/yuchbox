@@ -815,25 +815,7 @@ public class fetchEmail extends fetchAccount{
 			
 		}else{
 			
-			if(!t_mail.GetFromVect().isEmpty()){
-				
-				String t_from = (String)t_mail.GetFromVect().elementAt(0);
-								
-				if(!t_from.equalsIgnoreCase(GetAccountName())){
-					
-					for(fetchAccount acc:m_mainMgr.m_fetchAccount){
-						if(acc != this && acc instanceof fetchEmail){
-							if(t_from.equalsIgnoreCase(((fetchEmail)acc).GetAccountName())){
-								
-								// another email account is found
-								//
-								return false;
-							}
-						}
-					}
-				}				
-				
-			}else if(t_mail.GetSubject().startsWith("设置签名") 
+			 if(t_mail.GetSubject().startsWith("设置签名") 
 				|| t_mail.GetSubject().toLowerCase().startsWith("set signature")
 				|| t_mail.GetSubject().startsWith("設置簽名") ){
 				
@@ -871,6 +853,24 @@ public class fetchEmail extends fetchAccount{
 					}
 				}else{
 					return false;
+				}
+				
+			}else if(!t_mail.GetFromVect().isEmpty()){
+				
+				String t_from = (String)t_mail.GetFromVect().elementAt(0);
+								
+				if(!t_from.equalsIgnoreCase(GetAccountName())){
+					
+					for(fetchAccount acc:m_mainMgr.m_fetchAccount){
+						if(acc != this && acc instanceof fetchEmail){
+							if(t_from.equalsIgnoreCase(((fetchEmail)acc).GetAccountName())){
+								
+								// another email account is found
+								//
+								return false;
+							}
+						}
+					}
 				}
 			}
 		}
@@ -1411,7 +1411,7 @@ public class fetchEmail extends fetchAccount{
 			
 	public void PushMsg(sendReceive _sendReceive)throws Exception{
 			
-		final long t_currTime = (new Date()).getTime();
+		final long t_currTime = System.currentTimeMillis();
 		
 		synchronized(m_unreadMailVector_confirm) {
 
@@ -1457,7 +1457,7 @@ public class fetchEmail extends fetchAccount{
 				m_mainMgr.SendData(t_output,false);
 				
 				m_unreadMailVector.remove(0);
-				t_mail.m_sendConfirmTime = (new Date()).getTime();
+				t_mail.m_sendConfirmTime = System.currentTimeMillis();
 				
 				synchronized(m_unreadMailVector_confirm){
 					m_unreadMailVector_confirm.addElement(t_mail);

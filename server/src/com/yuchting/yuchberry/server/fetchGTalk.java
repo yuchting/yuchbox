@@ -530,13 +530,13 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				
 				if(data.m_accountName.equals(t_acc)){
 					
-					data.m_lastActiveTime = (new Date()).getTime();
+					data.m_lastActiveTime = System.currentTimeMillis();
 					
 					return;
 				}
 			}
 			
-			m_chatList.add(new ChatData(chat, (new Date()).getTime()));
+			m_chatList.add(new ChatData(chat, System.currentTimeMillis()));
 		}            
         
     }
@@ -579,9 +579,11 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			
 		}else{
 			
-			fetchChatMsg msg = convertChat(chat, message);
-			sendClientChatMsg(msg,true);
+			m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " recv message:" + message.getBody());
 			
+			fetchChatMsg msg = convertChat(chat, message);
+			sendClientChatMsg(msg,true);			
+						
 			synchronized (m_pushedChatMsgList) {
 				while(m_pushedChatMsgList.size() > 64){
 					m_pushedChatMsgList.remove(0);
@@ -607,7 +609,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				if(data.m_accountName.equals(t_acc)){
 					
 					data.m_isYBClient = chat.getParticipant().indexOf(fsm_ybClientSource) != -1;					
-					data.m_lastActiveTime = (new Date()).getTime();
+					data.m_lastActiveTime = System.currentTimeMillis();
 					
 					if(t_state != -1){
 						data.m_chatState = t_state;
@@ -627,7 +629,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     	t_msg.setMsg(convertPhiz(message.getBody(),true));
     	t_msg.setSendTo(GetAccountName());
     	t_msg.setOwner(ChatData.convertAccount(_chat.getParticipant()));
-    	t_msg.setSendTime((new Date()).getTime());
+    	t_msg.setSendTime(System.currentTimeMillis());
     	
     	t_msg.m_svrSentTime = t_msg.getSendTime();
     	
@@ -799,7 +801,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		File t_headImageFile_l = new File(m_headImageDir + _roster.getAccount() + "_l.jpg");
 		File t_headImageFile = new File(m_headImageDir + _roster.getAccount() + ".jpg");
 		
-		long t_currentTime = (new Date()).getTime();
+		long t_currentTime = System.currentTimeMillis();
 		
 		if(!t_headImageFile_l.exists() 
 			|| !t_headImageFile.exists()
@@ -997,7 +999,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 										t_msg.setProperty(fsm_ybReadProperty,t_hashCode);
 										
 										data.m_chatData.sendMessage(t_msg);
-										data.m_lastActiveTime = (new Date()).getTime();
+										data.m_lastActiveTime = System.currentTimeMillis();
 										
 										break;
 									}
@@ -1090,7 +1092,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 							
 							m_mainConnection.sendPacket(t_msg);
 							
-							data.m_lastActiveTime = (new Date()).getTime();
+							data.m_lastActiveTime = System.currentTimeMillis();
 							
 							break;
 						}
@@ -1205,7 +1207,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 						if(data.m_accountName.equals(to)){
 							
 							data.m_chatData.sendMessage(t_message);
-							data.m_lastActiveTime = (new Date()).getTime();
+							data.m_lastActiveTime = System.currentTimeMillis();
 
 							found = true;
 							
@@ -1269,7 +1271,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			m_mainMgr.SendData(new byte[]{msg_head.msgChatPresence}, false);
 		}
 		
-		long t_currTime = (new Date()).getTime();
+		long t_currTime = System.currentTimeMillis();
 		
 		synchronized(m_chatList){
          	
