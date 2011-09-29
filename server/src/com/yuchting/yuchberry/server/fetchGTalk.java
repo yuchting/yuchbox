@@ -281,24 +281,6 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		if(!t_file.exists() || !t_file.isDirectory()){
 			t_file.mkdir();
 		}
-		
-		// create the XMPP connection
-		//
-		String t_domain = "gmail.com";
-		int t_index = 0;
-		if((t_index = m_accountName.toLowerCase().indexOf("@")) != -1){
-			t_domain = m_accountName.substring(t_index + 1);
-		}
-		
-		// Create a connection to the jabber.org server on a specific port.
-		//
-		ConnectionConfiguration t_config = new ConnectionConfiguration("talk.google.com",5222,t_domain);
-		
-		if(t_domain.equals("gmail.com")){
-			t_config.setSASLAuthenticationEnabled(false);
-		}			
-		
-		m_mainConnection = new XMPPConnection(t_config);
 	}
 	
 	public String GetAccountName(){
@@ -327,6 +309,26 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	public void ResetSession(boolean _fullTest)throws Exception{
 		
 		DestroySession();
+		
+		if(m_mainConnection == null){
+			// create the XMPP connection
+			//
+			String t_domain = "gmail.com";
+			int t_index = 0;
+			if((t_index = m_accountName.toLowerCase().indexOf("@")) != -1){
+				t_domain = m_accountName.substring(t_index + 1);
+			}
+			
+			// Create a connection to the jabber.org server on a specific port.
+			//
+			ConnectionConfiguration t_config = new ConnectionConfiguration("talk.google.com",5222,t_domain);
+			
+			if(t_domain.equals("gmail.com")){
+				t_config.setSASLAuthenticationEnabled(false);
+			}			
+			
+			m_mainConnection = new XMPPConnection(t_config);
+		}		
 				
 		String decryptPass = decryptPassword(m_cryptPassword,m_password);
 		if(decryptPass != null){
@@ -349,22 +351,24 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		
 		m_mainConnection.login(t_account,m_password,fsm_ybClientSource + "-" + (new Random()).nextInt(1000));
 		
-		m_chatManager = m_mainConnection.getChatManager();
-		m_chatManager.addChatListener(this);
-		
-		m_roster = m_mainConnection.getRoster();
-		m_roster.addRosterListener(this);
-		
-		synchronized (m_chatRosterList) {
+		if(m_chatManager == null){
+			m_chatManager = m_mainConnection.getChatManager();
+			m_chatManager.addChatListener(this);
+			
+			m_roster = m_mainConnection.getRoster();
+			m_roster.addRosterListener(this);
+			
+			synchronized (m_chatRosterList) {
 
-			m_chatRosterList.removeAllElements();
-			
-			Collection<RosterEntry> t_rosterList = m_roster.getEntries();
-			
-			for(RosterEntry entry:t_rosterList){
-				m_chatRosterList.add(convertRoster(entry));
+				m_chatRosterList.removeAllElements();
+				
+				Collection<RosterEntry> t_rosterList = m_roster.getEntries();
+				
+				for(RosterEntry entry:t_rosterList){
+					m_chatRosterList.add(convertRoster(entry));
+				}
 			}
-		}
+		}	
 		
 		m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " prepare OK! load " + m_chatRosterList.size() + " roster");
 		
@@ -578,9 +582,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			}
 			
 		}else{
-			
-			m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " recv message:" + message.getBody());
-			
+						
 			fetchChatMsg msg = convertChat(chat, message);
 			sendClientChatMsg(msg,true);			
 						
