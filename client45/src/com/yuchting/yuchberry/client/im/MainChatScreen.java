@@ -3,7 +3,6 @@ package com.yuchting.yuchberry.client.im;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.util.Date;
 import java.util.Vector;
 
 import javax.microedition.io.Connector;

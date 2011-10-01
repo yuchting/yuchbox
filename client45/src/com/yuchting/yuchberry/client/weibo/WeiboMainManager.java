@@ -368,7 +368,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				}
 			}
 								
-		}else{
+		}else{		
 			AddWeibo_impl(_weibo, _image);
 		}
 

@@ -62,12 +62,7 @@ public class WeiboDMManager extends WeiboMainManager{
 				
 				if(t_managerField.delWeibo(_weibo) && t_managerField.isEmptyPost()){
 					
-					m_mainApp.invokeLater(new Runnable() {
-						
-						public void run() {
-							delete(t_focusField);
-						}
-					});
+					delete(t_focusField);
 					
 					return true;
 				}
@@ -78,16 +73,11 @@ public class WeiboDMManager extends WeiboMainManager{
 				
 				if(t_managerField.delWeibo(_weibo) && t_managerField.isEmptyPost()){
 					
-					m_mainApp.invokeLater(new Runnable() {
-						
-						public void run() {
-				
-							WeiboDMManager.this.EscapeKey(); //escape edit field 
-							WeiboDMManager.this.EscapeKey(); //escape control field
-							
-							delete(t_managerField.getFocusField());
-						}
-					});
+					WeiboDMManager.this.EscapeKey(); //escape edit field 
+					WeiboDMManager.this.EscapeKey(); //escape control field
+					
+					delete(t_managerField.getFocusField());
+			
 					
 					return true;
 				}

@@ -1,0 +1,58 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html">
+</head>
+<body bgcolor="#FFFFFF">
+This package defines API modeled after
+<a href="http://www.w3.org/TR/xml-infoset/">XML Information Set</a>
+for building incrmentally XML trees
+from events streamed from pull parser
+(user can start navigating tree before whole XML input was parsed!)
+and has an unique ability to bypass tree building for selected sub trees
+to work directly with underlying event stream.
+This coupled with ability to create XML tree that can mix in any
+Java Object allows to represent objects derived from XML (databinding)
+in the XML tree.
+
+
+<h2>Features</h2>
+<ul>
+<li><b>unique ability</b> to achieve high performance that is common in streaming parsers
+and ease of use associated with tree approaches in the same API
+by provising very precise control over XML tree creation and access
+to underlying streaming parser <strong>during</strong> tree creation
+(API users needs to do it if and only if they do want to bypass default tree
+creation and replace it with their customized object tree, work directly with XML
+events or just skip unneded parts of XML that do not need to be in XML node tree).
+
+<li><b>easy to use</b>: modeled after <a href="http://www.w3.org/TR/xml-infoset/">XML
+Information Set</a>
+to build on well established abstract model to represent XML
+<li><b>small</b>: only few classes and interfaces
+<li><b>fast</b>: builds on the most powerful XmlPull API that makes possible to create
+high perfromance parser implemntations
+
+<li><b>flexible: based on the state of the art interface-implementation approach
+allowing anybody to modify and extend easily API
+</ul>
+
+<h2>Overview</h2>
+
+<p>API is directly modeled on <a href="http://www.w3.org/TR/xml-infoset/">XML Information Set</a>
+with few minor exceptions but expands on it to provide additional functions to create
+and manipulate XML Information Set (essentially providing
+<a href="http://www.w3.org/TR/xml-infoset/#intro.synthetic">Synthetic Infoset</a>).
+
+<h3>TODO:</h3>
+<ul>
+<li>when generics are supported in JDK upgrade API to use Iterator&lt;T> instead of Enumeration ...
+<p>
+    <br>
+    <address><a href="http://www.extreme.indiana.edu/~aslom/">Aleksander Slominski</a></address>
+    <br>
+        <font size="-2">Last modified: $Id: package.html,v 1.1 2003/04/13 00:59:23 aslom Exp $</font>
+
+</body>
+</html>
+

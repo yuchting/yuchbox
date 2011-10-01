@@ -3,7 +3,6 @@ package com.yuchting.yuchberry.client.im;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.Date;
 import java.util.Vector;
 
 import local.localResource;
@@ -136,7 +135,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			if(t_data != null){
 
 				if(m_checkRosterInfoScreen == null){
-					m_checkRosterInfoScreen = new RosterInfoScreen(MainIMScreen.this,((RosterItemField)m_currFocusRosterItemField).m_currRoster);
+					m_checkRosterInfoScreen = new RosterInfoScreen(MainIMScreen.this,t_data);
 				}
 				
 				UiApplication.getUiApplication().pushScreen(m_checkRosterInfoScreen);	

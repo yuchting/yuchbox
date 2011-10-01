@@ -376,9 +376,11 @@ public class weiboTimeLineScreen extends MainScreen{
 	private void AddWeibo_imple(fetchWeibo _weibo,boolean _initAdd){
 		
 		try{
-						
+			
+			m_mainApp.SetErrorString(" A0:"+System.currentTimeMillis());
 			WeiboHeadImage t_headImage = WeiboHeadImage.SearchHeadImage(m_headImageList,
 					_weibo.GetHeadImageId(),_weibo.GetWeiboStyle(),_weibo.GetUserHeadImageHashCode(),true);
+			m_mainApp.SetErrorString(" A1:"+System.currentTimeMillis());
 			
 			switch(_weibo.GetWeiboClass()){
 			case fetchWeibo.TIMELINE_CLASS:
@@ -430,45 +432,50 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	public void AddWeibo(fetchWeibo _weibo,boolean _initAdd){
 		
-		synchronized (m_delayWeiboAddList) {
+		m_delayWeiboAddList.addElement(new DelayAddWeiboData(_weibo,_initAdd));
+		
+		if(m_delayWeiboAddRunnableID == -1){
 			
-			m_delayWeiboAddList.addElement(new DelayAddWeiboData(_weibo,_initAdd));
-			
-			if(m_delayWeiboAddRunnableID == -1){
+			Runnable t_later = new Runnable() {
 				
-				m_delayWeiboAddRunnableID = m_mainApp.invokeLater(new Runnable() {
+				public void run() {
+		
 					
-					public void run() {
+					if(!m_delayWeiboAddList.isEmpty()){
 						
-						synchronized (m_delayWeiboAddList){
-							
-							if(!m_delayWeiboAddList.isEmpty()){
-								
-								DelayAddWeiboData t_data = (DelayAddWeiboData)m_delayWeiboAddList.elementAt(0);
-								if(t_data.m_initAdd && m_mainApp.m_connectDeamon.CanNotConnectSvr()){
-									// initAdd is system starting run, it must wait data service is available
-									//
-									return;
-								}
-								
-								AddWeibo_imple(t_data.m_weibo,t_data.m_initAdd);
-								m_delayWeiboAddList.removeElementAt(0);	
-							}								
-							
-							if(m_delayWeiboAddList.isEmpty()){
-								m_mainApp.cancelInvokeLater(m_delayWeiboAddRunnableID);
-								m_delayWeiboAddRunnableID = -1;
-							}
+						DelayAddWeiboData t_data = (DelayAddWeiboData)m_delayWeiboAddList.elementAt(0);
+						if(t_data.m_initAdd && m_mainApp.m_connectDeamon.CanNotConnectSvr()){
+							// initAdd is system starting run, it must wait data service is available
+							//
+							return;
+						}
+						
+						AddWeibo_imple(t_data.m_weibo,t_data.m_initAdd);
+						
+						m_delayWeiboAddList.removeElementAt(0);	
+					}
+					
+					if(m_delayWeiboAddList.isEmpty()){
+						m_mainApp.cancelInvokeLater(m_delayWeiboAddRunnableID);
+						
+						synchronized (weiboTimeLineScreen.this){
+							m_delayWeiboAddRunnableID = -1;
 						}
 					}
 					
-				},recvMain.fsm_delayLoadingTime, true);
+					
+				}
+			};
+			
+			synchronized (weiboTimeLineScreen.this) {
+				m_delayWeiboAddRunnableID = m_mainApp.invokeLater(t_later,recvMain.fsm_delayLoadingTime, true);
 			}
 		}
+		
 	}
 	
 	public void DelWeibo(fetchWeibo _weibo){
-		
+
 		synchronized (m_delayWeiboAddList) {
 			// first check in the delay add list
 			//
@@ -482,52 +489,51 @@ public class weiboTimeLineScreen extends MainScreen{
 			}
 		}
 		
-		synchronized(m_delayWeiboDelList){
+		m_delayWeiboDelList.addElement(_weibo);
+		
+		if(m_delayWeiboDelRunnableID == -1){
 			
-			m_delayWeiboDelList.addElement(_weibo);
-			
-			if(m_delayWeiboDelRunnableID == -1){
-				
-				m_delayWeiboDelRunnableID = m_mainApp.invokeLater(new Runnable() {
+			Runnable t_later = new Runnable(){
 					
-					public void run() {
-						synchronized (m_delayWeiboDelList) {
-														
-							if(!m_delayWeiboDelList.isEmpty()){
-								fetchWeibo t_delWeibo = (fetchWeibo)m_delayWeiboDelList.elementAt(0);
-															
-								if(m_currMgr.getCurrExtendedItem() != null 
-								&& m_currMgr.getCurrExtendedItem().hasTheWeibo(t_delWeibo)){
-									// if the user is reading this extend item
-									//
-									return ;
-								}
-								
-								m_delayWeiboDelList.removeElementAt(0);
-								
-								for(int i = 0;i < m_refMainManager.length;i++){
-									if(m_refMainManager[i].DelWeibo(t_delWeibo)){
-										break;
-									}
-								}
-								
-								WeiboHeadImage.DelWeiboHeadImage(m_headImageList,t_delWeibo.GetWeiboStyle(),Long.toString(t_delWeibo.GetId()));
-							}
-							
-							if(m_delayWeiboDelList.isEmpty()){
-								m_mainApp.cancelInvokeLater(m_delayWeiboDelRunnableID);
-								m_delayWeiboDelRunnableID = -1;
-							}
-							
+				public void run() {								
+					if(!m_delayWeiboDelList.isEmpty()){
+						fetchWeibo t_delWeibo = (fetchWeibo)m_delayWeiboDelList.elementAt(0);
+													
+						if(m_currMgr.getCurrExtendedItem() != null 
+						&& m_currMgr.getCurrExtendedItem().hasTheWeibo(t_delWeibo)){
+							// if the user is reading this extend item
+							//
+							return ;
 						}
+						
+						m_delayWeiboDelList.removeElementAt(0);
+						
+						for(int i = 0;i < m_refMainManager.length;i++){
+							if(m_refMainManager[i].DelWeibo(t_delWeibo)){
+								break;
+							}
+						}
+						
+						WeiboHeadImage.DelWeiboHeadImage(m_headImageList,t_delWeibo.GetWeiboStyle(),Long.toString(t_delWeibo.GetId()));
 					}
 					
-				}, 200, true);
+					if(m_delayWeiboDelList.isEmpty()){
+						m_mainApp.cancelInvokeLater(m_delayWeiboDelRunnableID);
+						
+						synchronized (weiboTimeLineScreen.this) {
+							m_delayWeiboDelRunnableID = -1;
+						}
+					}
+				}
+			};
+	
+			synchronized (this) {
+				m_delayWeiboDelRunnableID = m_mainApp.invokeLater(t_later,recvMain.fsm_delayLoadingTime / 2, true);
 			}
+			
 		}
+	
 	}
-	
-	
 	
 	public void weiboSendFileConfirm(int _hashCode,int _index){
 		

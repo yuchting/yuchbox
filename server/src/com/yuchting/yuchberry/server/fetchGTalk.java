@@ -354,21 +354,25 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		if(m_chatManager == null){
 			m_chatManager = m_mainConnection.getChatManager();
 			m_chatManager.addChatListener(this);
-			
-			m_roster = m_mainConnection.getRoster();
-			m_roster.addRosterListener(this);
-			
-			synchronized (m_chatRosterList) {
+		}
 
-				m_chatRosterList.removeAllElements();
+		// retreive the new roster data
+		// don't remain the former Roster(it will re-allocate by XMPPConnection.login)
+		// please CAUTION!
+		//
+		m_roster = m_mainConnection.getRoster();
+		m_roster.addRosterListener(this);
 				
-				Collection<RosterEntry> t_rosterList = m_roster.getEntries();
-				
-				for(RosterEntry entry:t_rosterList){
-					m_chatRosterList.add(convertRoster(entry));
-				}
+		synchronized (m_chatRosterList) {
+
+			m_chatRosterList.removeAllElements();
+			
+			Collection<RosterEntry> t_rosterList = m_roster.getEntries();
+			
+			for(RosterEntry entry:t_rosterList){
+				m_chatRosterList.add(convertRoster(entry));
 			}
-		}	
+		}
 		
 		m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " prepare OK! load " + m_chatRosterList.size() + " roster");
 		
@@ -875,8 +879,8 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				m_mainMgr.setIMEnabled(sendReceive.ReadBoolean(in));
 				m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " client disable :"+m_mainMgr.isIMEnabled());
 				
-				if(!m_mainMgr.isIMEnabled() && m_mainConnection.isConnected()){
-					m_mainConnection.disconnect();
+				if(!m_mainMgr.isIMEnabled()){
+					DestroySession();
 				}
 				break;
 			case msg_head.msgChatRead:

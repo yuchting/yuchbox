@@ -4,12 +4,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Vector;
 
 import javax.microedition.content.Invocation;
 import javax.microedition.content.Registry;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
+import javax.microedition.io.file.FileSystemListener;
+import javax.microedition.io.file.FileSystemRegistry;
 import javax.microedition.location.Criteria;
 import javax.microedition.location.Location;
 import javax.microedition.location.LocationListener;
@@ -56,7 +59,6 @@ import com.yuchting.yuchberry.client.screen.stateScreen;
 import com.yuchting.yuchberry.client.screen.textViewScreen;
 import com.yuchting.yuchberry.client.screen.uploadFileScreen;
 import com.yuchting.yuchberry.client.screen.videoViewScreen;
-import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.Phiz;
@@ -78,17 +80,18 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public final static boolean  fsm_snapshotAvailible = Float.valueOf(recvMain.fsm_OS_version.substring(0,3)).floatValue() > 4.5f;
 	
-	public static int				fsm_delayLoadingTime	= 500;
+	public static int				fsm_delayLoadingTime	= 600;
 	static{
+		
 		if(fsm_OS_version.startsWith("7.")){
-			fsm_delayLoadingTime = 200;
+			fsm_delayLoadingTime = 300;
 		}else if(fsm_OS_version.startsWith("6.")){
-			fsm_delayLoadingTime = 340;
+			fsm_delayLoadingTime = 600;
 		}else if(fsm_OS_version.startsWith("5.")){
-			fsm_delayLoadingTime = 500;
+			fsm_delayLoadingTime = 800;
 		}else{
 			fsm_delayLoadingTime = 1000;
-		}		
+		}
 	}
 	
 	public static ResourceBundle sm_local = ResourceBundle.getBundle(localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
@@ -362,6 +365,28 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	}      	
         }
         
+        addFileSystemListener(new FileSystemListener(){
+        	public void rootChanged(int state,String rootName) {
+        		if( state == ROOT_ADDED ) {
+        			if(rootName.equalsIgnoreCase("sdcard/") ) {
+        				//microSD card inserted
+        				synchronized (recvMain.this) {
+							m_isSDCardAvailable = true;
+						}
+        			}
+        		}else if(state == ROOT_REMOVED) {
+        			if(rootName.equalsIgnoreCase("sdcard/") ) {
+        				//microSD card inserted
+        				synchronized (recvMain.this) {
+							m_isSDCardAvailable = false;
+						}
+        			}
+		        }
+        	}
+        });
+        
+        isSDCardAvailable(true);
+        
         // for the add-on
         //
         WeiboHeadImage.sm_mainApp = this;
@@ -409,74 +434,80 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	
 	private void mkHeadImageDir(String _prefix,String[] dir,boolean _init)throws Exception{
-
-		if(!isSDCardAvaible()){
+		
+		if(!isSDCardAvailable(false)){
 			throw new Exception("Can't use the sd card to store weibo head image.");
 		}
 		
 		// connect the string of head image directory
 		//
 		if(!_init){
+			
         	for(int i = 0;i < dir.length;i++){
         		dir[i] = _prefix + dir[i];
         	}
-    	}
-			
-		// create the sdcard path 
-		//
-    	FileConnection fc = (FileConnection) Connector.open(_prefix,Connector.READ_WRITE);
-    	try{
-    		if(!fc.exists()){
-        		fc.mkdir();
-        	}
-       	}finally{
-    		fc.close();
-    		fc = null;
-    	}
-    	
-    	// attempt create the head image directory
-		//
-		for(int i = 0;i < dir.length;i++){
-			FileConnection tfc = (FileConnection) Connector.open(dir[i],Connector.READ_WRITE);
+        	        	
+    		// create the sdcard path 
+    		//
+        	FileConnection fc = (FileConnection) Connector.open(_prefix,Connector.READ_WRITE);
         	try{
-        		if(!tfc.exists()){
-        			tfc.mkdir();
-            	}	
-        	}finally{
-        		tfc.close();
-        		tfc = null;
+        		if(!fc.exists()){
+            		fc.mkdir();
+            	}
+           	}finally{
+        		fc.close();
+        		fc = null;
         	}
-    	}
-    	    	
-    	dir = null;
+        	
+        	// attempt create the head image directory
+    		//
+    		for(int i = 0;i < dir.length;i++){
+    			FileConnection tfc = (FileConnection) Connector.open(dir[i],Connector.READ_WRITE);
+            	try{
+            		if(!tfc.exists()){
+            			tfc.mkdir();
+                	}	
+            	}finally{
+            		tfc.close();
+            		tfc = null;
+            	}
+        	}
+    		
+        	dir = null;
+    	}		
 	}
 	
-	public boolean isSDCardAvaible(){
-		boolean t_SDCardUse = false;
-		
-		try{
-			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/",Connector.READ_WRITE);
-			try{
-				if(!fc.exists()){
-					fc.mkdir();
-				}	
-			}finally{
-				fc.close();
-				fc = null;
-			}			
-			t_SDCardUse = true;
-		}catch(Exception e){
-			SetErrorString("SDCard can't be used :(");
+	boolean m_isSDCardAvailable = false;
+	
+	public boolean isSDCardAvailable(boolean _force){
+				
+		if(_force){
+			
+			synchronized (this) {
+				m_isSDCardAvailable = false;
+			}
+			
+			String root = null;
+			Enumeration e = FileSystemRegistry.listRoots();
+			while (e.hasMoreElements()) {
+			     root = (String) e.nextElement();
+			     if( root.equalsIgnoreCase("sdcard/") ) {
+			    	 synchronized (this) {
+			    		 m_isSDCardAvailable = true;	
+			    	 }
+			    	 break;
+			     }
+			}
 		}
 		
-		return t_SDCardUse;
+		return m_isSDCardAvailable;
 	}
 	
 	public final static String fsm_mailAttachDir = "YuchBerry/AttDir/";
 	
 	public String GetAttachmentDir(){
 		
-		String t_attDir = (isSDCardAvaible()?uploadFileScreen.fsm_rootPath_default:uploadFileScreen.fsm_rootPath_back) + fsm_mailAttachDir;
+		String t_attDir = (isSDCardAvailable(false)?uploadFileScreen.fsm_rootPath_default:uploadFileScreen.fsm_rootPath_back) + fsm_mailAttachDir;
 		
 		try{
 			FileConnection fc = (FileConnection) Connector.open(t_attDir,Connector.READ_WRITE);
@@ -583,6 +614,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}		
 		
 		return "";
+	}
+	
+	public static boolean isSDCardSupport(){
+		String modelNum = DeviceInfo.getDeviceName();
+		if ((modelNum.startsWith("8") && !modelNum.startsWith("87")) || modelNum.startsWith("9")) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public boolean UseWifiConnection(){
