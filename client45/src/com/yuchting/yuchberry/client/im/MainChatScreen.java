@@ -261,23 +261,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 					PhizSelectedScreen.getPhizScreen(m_middleMgr.m_chatScreen.m_mainApp, m_editTextArea));
 		}
 	}	
-	
-	protected boolean keyChar(char c,int status,int time){
 		
-		if(m_middleMgr.m_chatScreen.m_mainApp.m_imVoiceImmMode){
-			return true;
-		}
-		
-		if(c == '0'){
-			if((status & KeypadListener.STATUS_SHIFT) != 0){
-				m_middleMgr.m_chatScreen.m_phizMenu.run();
-				return true;
-			}
-		}
-		
-		return super.keyChar(c,status,time);
-	}
-	
 	protected boolean keyDown(int keycode,int time){
 		
 		if(m_middleMgr.m_chatScreen.m_currRoster.m_isYuch
@@ -302,9 +286,22 @@ final class InputManager extends Manager implements FieldChangeListener{
 				return true;
 			}
 		}else{
-			if(key == 10){
+			
+		}
+		
+		
+		return super.keyDown(keycode,time);
+	}
+	
+	protected boolean keyChar(char c,int status,int time){
+		
+		if(m_middleMgr.m_chatScreen.m_mainApp.m_imVoiceImmMode){
+			return true;
+		}else{
+			
+			if(c == 10){
 				
-				boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
+				boolean t_shiftDown = (status & KeypadListener.STATUS_SHIFT) != 0;
 				boolean t_returnSend = m_middleMgr.m_chatScreen.m_mainApp.m_imReturnSend;
 				
 	    		if((m_editTextArea.getText().length() != 0 
@@ -322,17 +319,21 @@ final class InputManager extends Manager implements FieldChangeListener{
 	    				return true;
 	    			}
 	    		}
-			}else if(key ==' '){
+			}else if(c ==' '){
 				
-				if((Keypad.status(keycode) & KeypadListener.STATUS_ALT) != 0){
+				if((status & KeypadListener.STATUS_ALT) != 0){
 					m_middleMgr.m_chatScreen.m_recordMenu.run();
+					return true;
+				}
+			}else if(c == '0'){
+				if((status & KeypadListener.STATUS_SHIFT) != 0){
+					m_middleMgr.m_chatScreen.m_phizMenu.run();
 					return true;
 				}
 			}
 		}
-		
-		
-		return super.keyDown(keycode,time);
+
+		return super.keyChar(c,status,time);
 	}
 	
 	public void send(){

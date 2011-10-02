@@ -756,6 +756,24 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	}
 	
+	public static String fsm_chatMsgPrompt_image = recvMain.sm_local.getString(localResource.IM_CHAT_MSG_IMAGE_PROMPT);
+	public static String fsm_chatMsgPrompt_voice = recvMain.sm_local.getString(localResource.IM_CHAT_MSG_VOICE_PROMPT);
+	
+	public static String getChatMsgAbsText(fetchChatMsg _msg){
+		
+		String t_text = _msg.getMsg().length() == 0?"":_msg.getMsg();
+		
+		if(_msg.getFileContent() != null){
+			if(_msg.getFileContentType() == fetchChatMsg.FILE_TYPE_IMG){
+				t_text = t_text + fsm_chatMsgPrompt_image;
+			}else{
+				t_text = t_text + fsm_chatMsgPrompt_voice;
+			}
+		}
+		
+		return t_text;
+	}
+	
 	private void addChatMsg(fetchChatMsg _msg){
 		
 		boolean t_notify = !Backlight.isEnabled() || !m_mainApp.isForeground();
@@ -819,7 +837,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 									if(m_promptDlg.m_openData == data){
 										// the same roster
 										//
-										m_promptDlg.setRosterChatData(data,_msg.getMsg());
+										m_promptDlg.setRosterChatData(data,getChatMsgAbsText(_msg));
 										
 										// stop the notify
 										//
@@ -830,7 +848,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 									}								
 								}
 							}else{
-								m_promptDlg.setRosterChatData(data,_msg.getMsg());
+								m_promptDlg.setRosterChatData(data,getChatMsgAbsText(_msg));
 								m_mainApp.pushGlobalScreen(m_promptDlg, 0, UiEngine.GLOBAL_QUEUE);
 							}						
 						}else{

@@ -57,6 +57,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	WeiboItemField		m_extendedItem = null;
 	WeiboItemField		m_editItem	= null;
 	
+	public int			m_editTextAreaHeight = 0;
+	
 	recvMain			m_mainApp;
 	boolean			m_timelineManager;
 	
@@ -215,10 +217,12 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			ForwardWeibo(getCurrExtendedItem());
 		}else if(m_editTextArea == field){
 			
-			RefreshEditTextAreHeight();
-			
-			invalidate();
-			sublayout(0, 0);		
+			if(m_editTextAreaHeight != m_editTextArea.getHeight()){
+				RefreshEditTextAreHeight();
+				
+				invalidate();
+				sublayout(0, 0);
+			}
 			
 			m_parentScreen.setInputPromptText(Integer.toString(m_editTextArea.getText().length()) + 
 					"/" + m_editTextArea.getMaxSize());
@@ -773,8 +777,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	}
 	
 	public int RefreshEditTextAreHeight(){
-		WeiboItemField.sm_editTextAreaHeight = m_editTextArea.getHeight() + WeiboItemField.fsm_headImageTextInterval;
-		return WeiboItemField.sm_editTextAreaHeight;
+		m_editTextAreaHeight = m_editTextArea.getHeight() /*+ WeiboItemField.fsm_headImageTextInterval*/;
+		return m_editTextAreaHeight;
 	}
 	
 	public void ForwardWeibo(WeiboItemField _item){

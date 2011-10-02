@@ -7,8 +7,6 @@ import local.localResource;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
-import net.rim.device.api.ui.component.TextField;
-import net.rim.device.api.util.Arrays;
 
 import com.yuchting.yuchberry.client.ObjectAllocator;
 import com.yuchting.yuchberry.client.recvMain;
@@ -74,9 +72,7 @@ public class WeiboItemField extends Manager{
 	public static Font		sm_timeFont					= sm_testTextArea.getFont().derive(sm_defaultFont.getStyle(),16);
 	public static Font		sm_boldFont					= sm_testTextArea.getFont().derive(sm_defaultFont.getStyle() | Font.BOLD,sm_defaultFont.getHeight());
 	public static int		sm_fontHeight				= sm_defaultFont.getHeight() + 2;
-	
-	public static int		sm_editTextAreaHeight		= 0;
-	
+		
 	public static int		sm_imageAreaMinHeight		= fsm_weiboSignImageSize + WeiboHeadImage.fsm_headImageWidth + fsm_headImageTextInterval;
 	
 	public final static int	fsm_closeHeight			= sm_fontHeight * 2 + 1;
@@ -471,7 +467,7 @@ public class WeiboItemField extends Manager{
 		}else{
 			
 			m_parentManager.setCurrEditItem(null);
-			WeiboItemField.sm_editTextAreaHeight = 0;
+			m_parentManager.m_editTextAreaHeight = 0;
 			
 			if(m_hasControlField[fsm_controlField_editText]){
 				m_hasControlField[fsm_controlField_editText] = false;
@@ -488,7 +484,7 @@ public class WeiboItemField extends Manager{
 		if(m_parentManager.getCurrExtendedItem() == this){
 			
 			if(m_parentManager.getCurrEditItem() == this){
-				return m_extendHeight + sm_editTextAreaHeight;
+				return m_extendHeight + m_parentManager.m_editTextAreaHeight;
 			}
 			
 			return m_extendHeight;
@@ -554,9 +550,9 @@ public class WeiboItemField extends Manager{
 			if(m_parentManager.getCurrEditItem() == this){
 				
 				setPositionChild(m_parentManager.m_editTextArea,0,m_extendHeight);				
-				layoutChild(m_parentManager.m_editTextArea,fsm_weiboItemFieldWidth,sm_editTextAreaHeight);
+				layoutChild(m_parentManager.m_editTextArea,fsm_weiboItemFieldWidth,m_parentManager.m_editTextAreaHeight);
 				
-				height = m_extendHeight + sm_editTextAreaHeight;
+				height = m_extendHeight + m_parentManager.m_editTextAreaHeight;
 				
 			}else{
 				height = m_extendHeight;

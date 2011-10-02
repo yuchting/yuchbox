@@ -249,6 +249,8 @@ public class fetchWeibo {
 				m_commentWeibo = new fetchWeibo();
 				m_commentWeibo.InputWeibo(_stream);
 			}			
+		}else{
+			m_commentWeibo = null;
 		}
 		
 		m_replyWeiboId	= sendReceive.ReadLong(_stream);
@@ -257,6 +259,8 @@ public class fetchWeibo {
 				m_replyWeibo = new fetchWeibo();
 				m_replyWeibo.InputWeibo(_stream);
 			}			
+		}else{
+			m_replyWeibo = null;
 		}
 		
 		if(t_version >= 2){

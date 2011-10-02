@@ -107,7 +107,7 @@ public class RosterItemField extends Field{
 				//
 				fetchChatMsg t_msg = (fetchChatMsg)m_currRoster.m_chatMsgList.elementAt(m_currRoster.m_chatMsgList.size() - 1);
 				
-				String t_textMsg = t_msg.getMsg();
+				String t_textMsg = MainIMScreen.getChatMsgAbsText(t_msg);
 				
 				if(t_textMsg.length() > 30){
 					t_textMsg = t_textMsg.substring(0,30);

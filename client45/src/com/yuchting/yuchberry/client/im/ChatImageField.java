@@ -38,11 +38,7 @@ public class ChatImageField extends Field{
 		int scaleX = Fixed32.div(Fixed32.toFP(t_origWidth), Fixed32.toFP(getPreferredWidth()));
 		int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(getPreferredHeight()));
 											
-		JPEGEncodedImage finalJPEG = JPEGEncodedImage.encode(t_origImage.scaleImage32(scaleX, scaleY).getBitmap(), 80);
-		
-		t_buffer = finalJPEG.getData();
-		
-		m_imageBitmap = EncodedImage.createEncodedImage(t_buffer,0,t_buffer.length).getBitmap();
+		m_imageBitmap = t_origImage.scaleImage32(scaleX, scaleY).getBitmap();
 	}
 	
 	public int getPreferredWidth(){

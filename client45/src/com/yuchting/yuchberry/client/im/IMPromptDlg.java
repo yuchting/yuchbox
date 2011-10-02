@@ -108,7 +108,7 @@ public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 			if(t_num > 0){
 				fetchChatMsg msg = (fetchChatMsg)t_promptData.m_chatMsgList.elementAt(t_num - 1);
 				
-				setRosterChatData(t_promptData, msg.getMsg());
+				setRosterChatData(t_promptData, MainIMScreen.getChatMsgAbsText(msg));
 				
 				return true;
 			}			

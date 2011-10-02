@@ -377,10 +377,8 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		try{
 			
-			m_mainApp.SetErrorString(" A0:"+System.currentTimeMillis());
 			WeiboHeadImage t_headImage = WeiboHeadImage.SearchHeadImage(m_headImageList,
 					_weibo.GetHeadImageId(),_weibo.GetWeiboStyle(),_weibo.GetUserHeadImageHashCode(),true);
-			m_mainApp.SetErrorString(" A1:"+System.currentTimeMillis());
 			
 			switch(_weibo.GetWeiboClass()){
 			case fetchWeibo.TIMELINE_CLASS:
@@ -1087,9 +1085,18 @@ public class weiboTimeLineScreen extends MainScreen{
 	    			m_sendItem.run();
 	    			return true;
 	    		}			
-			}else if(key == '0'){
+			}
+		}
+				
+		return super.keyDown(keycode,time);   	
+	}
+	
+	protected boolean keyChar(char c,int status,int time){
+		
+		if(m_currMgr.getCurrEditItem() != null){
+			if(c == '0'){
 							
-				boolean t_shiftDown = (Keypad.status(keycode) & KeypadListener.STATUS_SHIFT) != 0;
+				boolean t_shiftDown = (status & KeypadListener.STATUS_SHIFT) != 0;
 				
 	    		if(t_shiftDown ){
 	    			m_phizItem.run();    			
@@ -1097,8 +1104,8 @@ public class weiboTimeLineScreen extends MainScreen{
 	    		}
 			}
 		}
-				
-		return super.keyDown(keycode,time);   	
+		
+		return super.keyChar(c,status,time);
 	}
 		 
 	public boolean onClose(){

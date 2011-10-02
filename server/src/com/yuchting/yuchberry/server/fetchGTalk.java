@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Random;
 import java.util.Vector;
 
@@ -16,7 +15,6 @@ import org.dom4j.Element;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ChatManagerListener;
-import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.Roster;
@@ -246,11 +244,18 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			}
 		}
 		
+		return false;
+	}
+	
+	private void  appendSentChatMsg(int _hashcode) {
+		if(findSentChatMsg(_hashcode)){
+			return ;
+		}
+		
 		m_sentChatMsgList[m_sentChatMsgListIdx++] = _hashcode;
 		if(m_sentChatMsgListIdx >= m_sentChatMsgList.length){
 			m_sentChatMsgListIdx = 0;
-		}
-		return false;
+		}		
 	}
 	
 	int		m_connectPresence	= -1;
@@ -1167,6 +1172,15 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		return false;
 	}
 	
+	private void sendMsgChatSentConfirm(long _sendTime)throws Exception{
+
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgChatConfirm);
+		sendReceive.WriteLong(os,_sendTime);
+		
+		m_mainMgr.SendData(os, true);
+	}
+	
 	private boolean ProcessMsgChat(InputStream in)throws Exception{
 		int t_byte = in.available();
 		int t_style = in.read();
@@ -1183,6 +1197,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				int		hashcode = sendReceive.ReadInt(in);
 				
 				if(findSentChatMsg(hashcode)){
+					sendMsgChatSentConfirm(t_sendTime);
 					m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " sent chat Msg :" + hashcode);
 					return true;
 				}
@@ -1216,9 +1231,6 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 							data.m_lastActiveTime = System.currentTimeMillis();
 
 							found = true;
-							
-							
-							
 							break;
 						}
 					}
@@ -1231,11 +1243,9 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 					t_newChat.sendMessage(t_message);
 				}
 				
-				ByteArrayOutputStream os = new ByteArrayOutputStream();
-				os.write(msg_head.msgChatConfirm);
-				sendReceive.WriteLong(os,t_sendTime);
+				sendMsgChatSentConfirm(t_sendTime);
 				
-				m_mainMgr.SendData(os, true);
+				appendSentChatMsg(hashcode);
 				
 				//statistics
 				//
