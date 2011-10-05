@@ -24,7 +24,6 @@ import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
@@ -184,34 +183,34 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 	static public void main(String _arg[])throws Exception{
 				
-		if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("cryptTool")){
-			if(_arg.length == 2 && _arg[1].equalsIgnoreCase("console")){
-				new cryptPassTool_c();
-			}else{
-				new cryptPassTool();
-			}
-			
-		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("weiboReq")){
-			if(_arg.length >= 2){
-				if(_arg[1].equalsIgnoreCase("sina")){
-					(new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE)).startAuth();
-				}else if(_arg[1].equalsIgnoreCase("tw")){
-					(new weiboRequestTool(fetchWeibo.TWITTER_WEIBO_STYLE)).startAuth();
-				}else if(_arg[1].equalsIgnoreCase("qq")){
-					(new weiboRequestTool(fetchWeibo.QQ_WEIBO_STYLE)).startAuth();
-				}
-			}else{
-				new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
-			}
-			
-		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("frame")){
+//		if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("cryptTool")){
+//			if(_arg.length == 2 && _arg[1].equalsIgnoreCase("console")){
+//				new cryptPassTool_c();
+//			}else{
+//				new cryptPassTool();
+//			}
+//			
+//		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("weiboReq")){
+//			if(_arg.length >= 2){
+//				if(_arg[1].equalsIgnoreCase("sina")){
+//					(new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE)).startAuth();
+//				}else if(_arg[1].equalsIgnoreCase("tw")){
+//					(new weiboRequestTool(fetchWeibo.TWITTER_WEIBO_STYLE)).startAuth();
+//				}else if(_arg[1].equalsIgnoreCase("qq")){
+//					(new weiboRequestTool(fetchWeibo.QQ_WEIBO_STYLE)).startAuth();
+//				}
+//			}else{
+//				new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE);
+//			}
+//			
+//		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("frame")){
 			new fakeMDSSvr();
 			new mainFrame(_arg);
-		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("clear")){
-			new ClearAccount();			
-		}else{
-			new fetchMain();
-		}
+//		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("clear")){
+//			new ClearAccount();			
+//		}else{
+//			new fetchMain();
+//		}
 	}	
 	
 	public mainFrame(String _arg[]){
@@ -1091,7 +1090,8 @@ public class mainFrame extends JFrame implements ActionListener{
 			}
 						
 			if(m_currbber.GetEmailList().isEmpty()
-			&& m_currbber.GetWeiboList().isEmpty()){
+			&& m_currbber.GetWeiboList().isEmpty()
+			&& m_currbber.GetIMList().isEmpty()){
 				m_result = "<Error>没有账户信息</Error>";
 			}else{
 				start();
@@ -1147,6 +1147,14 @@ public class mainFrame extends JFrame implements ActionListener{
 										.append("\" />\n");
 					}
 					
+					for(yuchIM im:m_currbber.GetIMList()){
+						t_configBuffer.append("<IMAccount type=\"").append(im.m_typeName)
+														.append("\" account=\"").append(im.m_accoutName)
+														.append("\" password=\"").append(im.m_password)
+														.append("\" cryptPassword=\"")
+										.append("\" />\n");
+					}
+					
 					t_configBuffer.append("</Yuchberry>");
 					t_config_file.write(t_configBuffer.toString().getBytes("UTF-8"));
 					
@@ -1198,11 +1206,11 @@ public class mainFrame extends JFrame implements ActionListener{
 							File t_accountFolder = new File(t_copyPrefix);
 							if(!t_accountFolder.exists()){
 								t_accountFolder.mkdir();
-							}
-							
-							createDialog.CopyFile(m_prefix + fetchMgr.fsm_configFilename,
-									t_copyPrefix + fetchMgr.fsm_configFilename);
-						}					
+							}							
+						}
+						
+						createDialog.CopyFile(m_prefix + fetchMgr.fsm_configFilename,
+								t_copyPrefix + fetchMgr.fsm_configFilename);
 												
 						createDialog.WriteSignatureAndGooglePos(t_copyPrefix, m_currbber.GetSignature());
 												

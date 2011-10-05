@@ -1,7 +1,6 @@
 package com.yuchting.yuchberry.server.frame;
 
 import java.io.StringReader;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -9,8 +8,6 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.xml.sax.InputSource;
-
-
 
 public final class yuchbber {
 	
@@ -41,6 +38,8 @@ public final class yuchbber {
 	private Vector<yuchEmail>	m_emailList = new Vector<yuchEmail>();
 	
 	private Vector<yuchWeibo>	m_weiboList = new Vector<yuchWeibo>();
+	
+	private Vector<yuchIM>		m_imList	= new Vector<yuchIM>();
 	
 	public yuchbber(final String _name,final String _pass){
 		m_signinName	= _name;
@@ -85,6 +84,7 @@ public final class yuchbber {
 	
 	public Vector<yuchEmail> GetEmailList(){return m_emailList;}
 	public Vector<yuchWeibo> GetWeiboList(){return m_weiboList;}
+	public Vector<yuchIM> GetIMList(){return m_imList;}
 	
 	public String GetSignature(){return m_signature;}
 	public void SetSignature(final String _signature){m_signature = _signature;}
@@ -119,6 +119,10 @@ public final class yuchbber {
 		
 		for(yuchWeibo weibo : m_weiboList){
 			weibo.OuputXMLData(t_output);
+		}
+		
+		for(yuchIM im:m_imList){
+			im.OuputXMLData(t_output);
 		}
 		
 		t_output.append("</yuchbber>");
@@ -165,6 +169,7 @@ public final class yuchbber {
 		
 		m_emailList.removeAllElements();
 		m_weiboList.removeAllElements();
+		m_imList.removeAllElements();
 		
 		for( Iterator i = t_elem.elementIterator("email"); i.hasNext();){
             Element element = (Element) i.next();
@@ -182,6 +187,15 @@ public final class yuchbber {
             t_weibo.InputXMLData(element);
 			
 			m_weiboList.add(t_weibo);
+        }
+		
+		for( Iterator i = t_elem.elementIterator("IMAccount"); i.hasNext();){
+            Element element = (Element) i.next();
+            yuchIM t_im = new yuchIM();
+			
+            t_im.InputXMLData(element);
+			
+			m_imList.add(t_im);
         }
 			
 	}
