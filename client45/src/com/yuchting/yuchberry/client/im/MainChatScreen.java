@@ -164,7 +164,18 @@ final class InputManager extends Manager implements FieldChangeListener{
 		
 	public static void drawInputBackground(Graphics _g,int _textWidth,int _preferredWidth,int _preferredHeight){
 		
-		recvMain.sm_weiboUIImage.fillImageBlock(_g, sm_background, 0, 0, _preferredWidth,_preferredHeight);
+		recvMain.sm_weiboUIImage.drawBitmapLine(_g, sm_background, 0, 0, _preferredWidth);
+		
+		if(_preferredHeight > sm_background.getHeight()){
+			int t_color = _g.getColor();
+			try{
+				_g.setColor(0);
+				_g.fillRect(0, sm_background.getHeight(), 
+						_preferredWidth, _preferredHeight - sm_background.getHeight());
+			}finally{
+				_g.setColor(t_color);
+			}
+		}
 		
 		sm_inputBackground.draw(_g, fsm_inputBubbleBorder, fsm_inputBubbleBorder, 
 								_textWidth + fsm_textBorder * 2,
@@ -223,7 +234,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 				m_currHeight = fsm_maxHeight;
 			}
 			
-			if(t_formerHeight != m_currHeight){
+			if(Math.abs(t_formerHeight - m_currHeight) >= 5){
 				m_middleMgr.invalidate();
 				m_middleMgr.sublayout(0, 0);
 			}	
@@ -539,16 +550,11 @@ final class MiddleMgr extends VerticalFieldManager{
 		t_field.init(_msg,m_chatScreen);
 		
 		addChatField(t_field);
-		
-		
+				
 		// scroll to bottom
 		//
 		t_field.setFocus();
-		
-		// set the focus back
-		//
-		m_inputMgr.m_editTextArea.setFocus();
-		
+				
 		if(m_chatScreen.m_currRoster.m_isYuch
 		&& Backlight.isEnabled() 
 		&& m_chatScreen.m_mainApp.isForeground() 
@@ -561,6 +567,10 @@ final class MiddleMgr extends VerticalFieldManager{
 			&& _msg.getFileContent() != null && _msg.getFileContentType() == fetchChatMsg.FILE_TYPE_SOUND){
 			m_chatScreen.open(_msg);
 		}
+		
+		// set the focus back
+		//
+		m_inputMgr.m_editTextArea.setFocus();
 	}
 	
 	public synchronized void addChatMsg(ChatField _field){	
@@ -850,7 +860,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		
 		m_isPrompted = false;
 		
-		invalidate();;
+		invalidate();
 	}
 			
 	public MainChatScreen(recvMain _mainApp,MainIMScreen _mainScreen){

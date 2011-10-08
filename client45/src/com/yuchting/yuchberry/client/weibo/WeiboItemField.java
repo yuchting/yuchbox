@@ -934,7 +934,8 @@ public class WeiboItemField extends Manager{
 	// weibo field backgroud
 	//
 	private static ImageUnit sm_weiboFieldBG = null;
-	private static ImageUnit sm_weiboFieldBG_spaceLine_1 = null;
+	private static ImageUnit sm_weiboFieldBG_disable = null;
+	private static ImageUnit sm_weiboFieldBG_spaceLine_1 = null;	
 	
 	public void fillWeiboFieldBG(Graphics _g,int _x,int _y,int _width,int _height,boolean _topLine){
 		
@@ -945,7 +946,14 @@ public class WeiboItemField extends Manager{
 			
 			int t_color = _g.getColor();
 			try{
-				_g.setColor(0xdaeaeb);
+				int t_fillColor = 0xdaeaeb;
+				
+				if(m_parentManager.getCurrExtendedItem() != null 
+				&& m_parentManager.getCurrExtendedItem() != this){
+					t_fillColor = 0xb3c8c9;
+				}
+				
+				_g.setColor(t_fillColor);
 				_g.fillRect(_x, _x, _width, _height);
 			}finally{
 				_g.setColor(t_color);
@@ -961,7 +969,17 @@ public class WeiboItemField extends Manager{
 				sm_weiboFieldBG = recvMain.sm_weiboUIImage.getImageUnit("weibo_bg");
 			}
 			
-			recvMain.sm_weiboUIImage.drawBitmapLine(_g, sm_weiboFieldBG, _x, _y, _width);	
+			if(sm_weiboFieldBG_disable == null){
+				sm_weiboFieldBG_disable = recvMain.sm_weiboUIImage.getImageUnit("weibo_bg_disable");
+			}
+			
+			if(m_parentManager.getCurrExtendedItem() != null 
+				&& m_parentManager.getCurrExtendedItem() != this){
+				recvMain.sm_weiboUIImage.drawBitmapLine(_g, sm_weiboFieldBG_disable, _x, _y, _width);
+			}else{
+				recvMain.sm_weiboUIImage.drawBitmapLine(_g, sm_weiboFieldBG, _x, _y, _width);
+			}
+				
 		}
 	}
 

@@ -505,6 +505,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		}
 		
 	}
+	
 	public boolean Clicked(int status, int time){
 		
 		if(m_timelineManager 
@@ -547,6 +548,12 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	    		m_mainApp.StopWeiboHomeNotification();
 							
 				return true;
+				
+			}else{
+				
+				if(getFieldWithFocus() != getCurrSelectedItem()){
+					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.WEIBO_EXTENDED_CLICK_PROMPT));
+				}				
 			}
 	
 		}

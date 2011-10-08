@@ -83,15 +83,20 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public static int				fsm_delayLoadingTime	= 600;
 	static{
 		
-		if(fsm_OS_version.startsWith("7.")){
-			fsm_delayLoadingTime = 300;
-		}else if(fsm_OS_version.startsWith("6.")){
-			fsm_delayLoadingTime = 600;
-		}else if(fsm_OS_version.startsWith("5.")){
-			fsm_delayLoadingTime = 800;
+		if(DeviceInfo.isSimulator()){
+			fsm_delayLoadingTime = 100;
 		}else{
-			fsm_delayLoadingTime = 1000;
+			if(fsm_OS_version.startsWith("7.")){
+				fsm_delayLoadingTime = 300;
+			}else if(fsm_OS_version.startsWith("6.")){
+				fsm_delayLoadingTime = 600;
+			}else if(fsm_OS_version.startsWith("5.")){
+				fsm_delayLoadingTime = 800;
+			}else{
+				fsm_delayLoadingTime = 1000;
+			}
 		}
+		
 	}
 	
 	public static ResourceBundle sm_local = ResourceBundle.getBundle(localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
@@ -205,13 +210,33 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	
 	public static final String[]	fsm_recvMaxTextLenghtString = {"∞","1KB","5KB","10KB","50KB"};
-	public static final int[]	fsm_recvMaxTextLenght		= {0,1024,1024*5,1024*10,1024*50};
+	public static final int[]		fsm_recvMaxTextLenght		= {0,1024,1024*5,1024*10,1024*50};
 	public int						m_recvMsgTextLengthIndex = 0;
 	
 	
 	public static final String[]	fsm_pulseIntervalString = {"1","3","5","10","30"};
-	public static final int[]	fsm_pulseInterval		= {1,3,5,10,30};
+	public static final int[]		fsm_pulseInterval		= {1,3,5,10,30};
 	public int						m_pulseIntervalIndex = 2;
+	
+	public static final String[] fsm_apnListString = 
+	{
+		sm_local.getString(localResource.APN_LIST_NULL),
+		sm_local.getString(localResource.APN_LIST_CMNET) 	+ " cmnet",
+		sm_local.getString(localResource.APN_LIST_UNINET) 	+ " uninet",
+		sm_local.getString(localResource.APN_LIST_3GNET) 	+ " 3gnet",
+		sm_local.getString(localResource.APN_LIST_CTNET) 	+ " ctnet",
+	};
+	
+	public static final String[]		fsm_apnString		= 
+	{
+		"",
+		"cmnet",
+		"uninet",
+		"3gnet",
+		"ctnet",
+	};
+	
+	public int						m_apnStringIndex = 0;
 	
 	public boolean			m_fulldayPrompt		= true;
 	public int				m_startPromptHour	= 8;

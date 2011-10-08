@@ -96,7 +96,8 @@
 	<Image Name="bubble_bottom_point_1" XPos="338" YPos="393" Width="16" Height="16" />
 	<Image Name="bubble_left_point_1" XPos="354" YPos="393" Width="16" Height="16" />
 	
-	<Image Name="weibo_bg" XPos="80" YPos="377" Width="16" Height="64" />
+	<Image Name="weibo_bg" XPos="80" YPos="377" Width="8" Height="64" />
+	<Image Name="weibo_bg_disable" XPos="88" YPos="377" Width="8" Height="64" />
 
 	<Image Name="space_line_1" XPos="110" YPos="379" Width="8" Height="2" />
 	

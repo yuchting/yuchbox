@@ -346,6 +346,11 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	public	Field	m_currFocusHistoryRosterItemField = null;
 	public Field	m_currFocusStatusField = null;
 	
+
+	public	Field	m_currFocusRosterItemField_scrollBackup = null;
+	public	Field	m_currFocusHistoryRosterItemField_scrollBackup = null;
+	public Field	m_currFocusStatusField_scrollBackup = null;
+	
 	public SearchStatus		m_searchStatus	= null;
 	
 		
@@ -655,16 +660,25 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	private void refreshHeader(){
 		
 		if(m_currMgr == m_historyChatMgr){
-			m_currFocusHistoryRosterItemField = m_currMgr.getFieldWithFocus();
+			m_currFocusHistoryRosterItemField_scrollBackup = m_currMgr.getFieldWithFocus();
 		}else if(m_currMgr == m_rosterListMgr){
-			m_currFocusRosterItemField = m_currMgr.getFieldWithFocus();
+			m_currFocusRosterItemField_scrollBackup = m_currMgr.getFieldWithFocus();
 		}else if(m_currMgr == m_statusListMgr){
-			m_currFocusStatusField = m_currMgr.getFieldWithFocus();
+			m_currFocusStatusField_scrollBackup  = m_currMgr.getFieldWithFocus();
 		}		
 		
 		switch(m_header.getCurrState()){
 		case MainIMScreenHeader.STATE_HISTORY_CHAT:
 			if(m_currMgr != m_historyChatMgr){
+				
+				// the replace function will make RosterItemField.drawFocus to modify
+				//
+				// m_currFocusHistoryRosterItemField
+				// m_currFocusRosterItemField
+				// m_currFocusStatusField
+				//
+				// so use the special variables for backup/restore selected item
+				//
 				replace(m_currMgr,m_historyChatMgr);
 				m_currMgr = m_historyChatMgr;
 				
@@ -675,6 +689,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			break;
 		case MainIMScreenHeader.STATE_ROSTER_LIST:
 			if(m_currMgr != m_rosterListMgr){
+		
 				replace(m_currMgr,m_rosterListMgr);
 				m_currMgr = m_rosterListMgr;
 				
@@ -689,6 +704,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			break;
 		case MainIMScreenHeader.STATE_STATUS_LIST:
 			if(m_currMgr != m_statusListMgr){
+				
 				replace(m_currMgr,m_statusListMgr);
 				m_currMgr = m_statusListMgr;
 			}else{
@@ -698,12 +714,12 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			
 		}
 		
-		if(m_currMgr == m_historyChatMgr && m_currFocusHistoryRosterItemField != null){
-			m_currFocusHistoryRosterItemField.setFocus();
-		}else if(m_currMgr == m_rosterListMgr && m_currFocusRosterItemField != null){
-			m_currFocusRosterItemField.setFocus();
-		}else if(m_currMgr == m_statusListMgr && m_currFocusStatusField != null){
-			m_currFocusStatusField.setFocus();
+		if(m_currMgr == m_historyChatMgr && m_currFocusHistoryRosterItemField_scrollBackup != null){
+			m_currFocusHistoryRosterItemField_scrollBackup.setFocus();
+		}else if(m_currMgr == m_rosterListMgr && m_currFocusRosterItemField_scrollBackup != null){
+			m_currFocusRosterItemField_scrollBackup.setFocus();
+		}else if(m_currMgr == m_statusListMgr && m_currFocusStatusField_scrollBackup != null){
+			m_currFocusStatusField_scrollBackup.setFocus();
 		}	
 	}
 	
