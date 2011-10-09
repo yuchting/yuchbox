@@ -285,8 +285,16 @@ public class WeiboDMItemField extends WeiboItemField{
 		m_parentManager.RefreshEditTextAreHeight();
 		
 		if(_g != null){
-			fillWeiboFieldBG(_g,0,m_parentManager.m_editTextAreaHeight,
-						fsm_weiboItemFieldWidth,m_textHeight + m_parentManager.m_editTextAreaHeight + fsm_headImageTextInterval,true);
+//			fillWeiboFieldBG(_g,0,m_parentManager.m_editTextAreaHeight,
+//						fsm_weiboItemFieldWidth,m_textHeight + m_parentManager.m_editTextAreaHeight + fsm_headImageTextInterval,true);
+			int oldColor = _g.getColor();
+			try{
+				_g.setColor(fsm_extendBGColor);
+				_g.fillRect(0,m_parentManager.m_editTextAreaHeight,fsm_weiboItemFieldWidth,
+						m_textHeight + m_parentManager.m_editTextAreaHeight + fsm_headImageTextInterval);
+			}finally{
+				_g.setColor(oldColor);
+			}
 		}		
 		
 		m_textHeight = m_parentManager.m_editTextAreaHeight + fsm_headImageTextInterval;
