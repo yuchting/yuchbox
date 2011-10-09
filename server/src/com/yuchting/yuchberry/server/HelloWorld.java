@@ -16,6 +16,8 @@ import java.security.KeyStore;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -89,14 +91,27 @@ public class HelloWorld {
 	 *  @brief main function
 	 *  @param arg  parameters
 	 */
+	private static abstract class TaskTest<Params, Result> implements Callable<Result> {
+        Params[] mParams;
+    }
+	
 	public static void main(String arg[])throws Exception{
-		long t_log = System.currentTimeMillis();
-		long t_long = (new Date()).getTime();
+		TaskTest<Void,Integer> t_task = new TaskTest<Void, Integer>() {
+			public Integer call() throws Exception {
+				
+				Thread.sleep(2000);
+				return 0;
+            }
+		};
 		
-		if(t_long == t_log){
-			System.out.println("shit");
-		}
-		berryRecvTest();
+		FutureTask<Integer> t_sumTask = new FutureTask<Integer>(t_task);		
+		Thread th = new Thread(t_sumTask);
+		
+		th.start();
+		
+		System.out.print(t_sumTask.get());
+		
+		
 	}
 	
 	
