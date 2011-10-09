@@ -16,9 +16,7 @@ public class Yuchdroid16Activity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-        Log.i(TAG,"onCreate " + this);
-        
+                
         setContentView(R.layout.main);
         
         initButtons();
