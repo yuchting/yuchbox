@@ -1199,18 +1199,24 @@ public class mainFrame extends JFrame implements ActionListener{
 								DelDirectory(t_copyPrefix);
 							}
 							
-							t_tmpFolder.renameTo(t_copyDir);
+							if(!t_tmpFolder.renameTo(t_copyDir)){
+								// if rename failed(the original directory can't be deleted) 
+								// then write the config.xml to that directory 
+								//
+								createDialog.CopyFile(m_prefix + fetchMgr.fsm_configFilename,
+										t_copyPrefix + fetchMgr.fsm_configFilename);
+							}
 							
 						}else{
 							
 							File t_accountFolder = new File(t_copyPrefix);
 							if(!t_accountFolder.exists()){
 								t_accountFolder.mkdir();
-							}							
+							}
+							
+							createDialog.CopyFile(m_prefix + fetchMgr.fsm_configFilename,
+									t_copyPrefix + fetchMgr.fsm_configFilename);
 						}
-						
-						createDialog.CopyFile(m_prefix + fetchMgr.fsm_configFilename,
-								t_copyPrefix + fetchMgr.fsm_configFilename);
 												
 						createDialog.WriteSignatureAndGooglePos(t_copyPrefix, m_currbber.GetSignature());
 												
