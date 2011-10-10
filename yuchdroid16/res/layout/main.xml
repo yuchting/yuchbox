@@ -3,9 +3,20 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:weightSum="1" android:orientation="vertical">
-    <TextView android:text="TextView" android:id="@+id/textView1" android:layout_width="302dp" android:layout_height="wrap_content"></TextView>
-    <LinearLayout android:layout_height="wrap_content" android:layout_width="fill_parent" android:id="@+id/linearLayout1">
-        <Button android:text="@string/start_svr_but" android:id="@+id/start_svr" android:layout_height="wrap_content" android:layout_width="112dp"></Button>
-        <Button android:text="@string/stop_svr_but" android:id="@+id/stop_svr" android:layout_height="wrap_content" android:layout_width="107dp"></Button>
+    <TextView android:text="TextView" 
+    			android:id="@+id/textView1" 
+    			android:layout_width="302dp" 
+    			android:layout_height="wrap_content" />
+    <LinearLayout android:layout_height="wrap_content" 
+    			android:layout_width="fill_parent" 
+    			android:id="@+id/linearLayout1">
+        <Button android:text="@string/start_svr_but" 
+        		android:id="@+id/start_svr" 
+        		android:layout_height="wrap_content" 
+        		android:layout_width="112dp" />
+        <Button android:text="@string/stop_svr_but" 
+        		android:id="@+id/stop_svr" 
+        		android:layout_height="wrap_content" 
+        		android:layout_width="107dp" />
     </LinearLayout>
 </LinearLayout>

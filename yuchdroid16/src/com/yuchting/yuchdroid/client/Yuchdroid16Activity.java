@@ -1,12 +1,17 @@
 package com.yuchting.yuchdroid.client;
 
+import java.util.Date;
+import java.util.Random;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class Yuchdroid16Activity extends Activity {
 	
@@ -16,26 +21,41 @@ public class Yuchdroid16Activity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-                
-        setContentView(R.layout.main);
+        
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(R.layout.main);       
         
         initButtons();
     }
     
     private void initButtons() { 
-
     	
         Button buttonStart = (Button) findViewById(R.id.start_svr);  
         buttonStart.setOnClickListener(new OnClickListener() {  
             public void onClick(View arg0) {  
-                startService();  
+            	MailListActivity.show(Yuchdroid16Activity.this);
             }  
         });  
   
         Button buttonStop = (Button) findViewById(R.id.stop_svr);  
         buttonStop.setOnClickListener(new OnClickListener() {  
             public void onClick(View arg0) {
-                stopService();  
+            	// add a test mail
+            	//
+            	Random t_rand = new Random();
+            	fetchMail t_newMail = new fetchMail();
+            	t_newMail.SetContain("This is a test mail + "+t_rand.nextInt());
+            	t_newMail.SetSubject("Subject " + t_rand.nextInt());
+            	t_newMail.SetFromVect(new String[]{"From@gmail.com"});
+            	t_newMail.SetSendToVect(new String[]{"SendTo@gmail.com"});
+            	t_newMail.SetSendDate(new Date());
+            	
+            	MailDbAdapter t_ad = new MailDbAdapter(Yuchdroid16Activity.this);
+            	t_ad.open();
+            	t_ad.createMail(t_newMail);
+            	
+            	Toast.makeText(getApplicationContext(), t_newMail.GetSubject() + " add OK!",
+            	          Toast.LENGTH_SHORT).show();
             }  
         });  
    

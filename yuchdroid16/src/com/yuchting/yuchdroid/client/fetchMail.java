@@ -1,12 +1,9 @@
-package com.yuchting.yuchberry.client;
+package com.yuchting.yuchdroid.client;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Vector;
-
-import net.rim.blackberry.api.mail.Address;
-import net.rim.blackberry.api.mail.Message;
 
 class MailAttachment{
 	int 		m_size;
@@ -33,12 +30,12 @@ public class  fetchMail{
 	
 	private int 		m_mailIndex = 0;
 	
-	private Vector		m_vectFrom 		= new Vector();
-	private Vector		m_vectReplyTo	= new Vector();
-	private Vector		m_vectCCTo		= new Vector();
-	private Vector		m_vectBCCTo		= new Vector();
-	private Vector		m_vectTo		= new Vector();
-	private Vector		m_vectGroup		= new Vector();
+	private Vector<String>			m_vectFrom 		= new Vector<String>();
+	private Vector<String>			m_vectReplyTo	= new Vector<String>();
+	private Vector<String>			m_vectCCTo		= new Vector<String>();
+	private Vector<String>			m_vectBCCTo		= new Vector<String>();
+	private Vector<String>			m_vectTo		= new Vector<String>();
+	private Vector<String>			m_vectGroup		= new Vector<String>();
 	
 	private String			m_subject 		= "";
 	private Date			m_sendDate 		= new Date();
@@ -49,10 +46,7 @@ public class  fetchMail{
 	private String			m_contain_html	= "";
 	private String			m_contain_html_type	= "";
 			
-	private Vector	m_vectAttachment	 	= new Vector();
-	
-	private Message m_attachMessage		= null;
-	
+	private Vector<MailAttachment>	m_vectAttachment	 	= new Vector<MailAttachment>();	
 	
 	// location information
 	boolean m_hasLocationInfo		= false;
@@ -73,44 +67,44 @@ public class  fetchMail{
 		return (GetSubject() + GetSendDate().getTime()).hashCode();
 	}
 	
-	public void SetAttchMessage(Message m){ m_attachMessage = m;}
-	public Message GetAttachMessage(){return m_attachMessage;}
-		
-	public static Address[] parseAddressList(Vector _list)throws Exception{
-		Address[] 	t_addressList = new Address[_list.size()];
-		
-		for(int i = 0;i < _list.size();i++){
-			String fullAdd = (String)_list.elementAt(i);
-			String add;
-			String t_name = null;
-			
-			final int t_start = fullAdd.indexOf('<');
-			final int t_end = fullAdd.indexOf('>');
-			
-			final int t_start_quotation = fullAdd.indexOf('"');
-			final int t_end_quotation = fullAdd.indexOf('"',t_start_quotation + 1);
-			
-			if(t_start_quotation != -1 && t_end_quotation != -1 ){			
-				t_name = fullAdd.substring(t_start_quotation + 1, t_end_quotation);
-			}else{
-				if(t_start != -1 && t_start > 0){
-					t_name = fullAdd.substring(0,t_start);
-				}else{
-					t_name = "";
-				}				
-			}
-			
-			if(t_start != -1 && t_end != -1 ){			
-				add = fullAdd.substring(t_start + 1, t_end);
-			}else{
-				add = fullAdd;
-			}
-			
-			t_addressList[i] = new Address(add,t_name);
-		}
-		
-		return t_addressList;
-	}
+//	public void SetAttchMessage(Message m){ m_attachMessage = m;}
+//	public Message GetAttachMessage(){return m_attachMessage;}
+//		
+//	public static Address[] parseAddressList(Vector _list)throws Exception{
+//		Address[] 	t_addressList = new Address[_list.size()];
+//		
+//		for(int i = 0;i < _list.size();i++){
+//			String fullAdd = (String)_list.elementAt(i);
+//			String add;
+//			String t_name = null;
+//			
+//			final int t_start = fullAdd.indexOf('<');
+//			final int t_end = fullAdd.indexOf('>');
+//			
+//			final int t_start_quotation = fullAdd.indexOf('"');
+//			final int t_end_quotation = fullAdd.indexOf('"',t_start_quotation + 1);
+//			
+//			if(t_start_quotation != -1 && t_end_quotation != -1 ){			
+//				t_name = fullAdd.substring(t_start_quotation + 1, t_end_quotation);
+//			}else{
+//				if(t_start != -1 && t_start > 0){
+//					t_name = fullAdd.substring(0,t_start);
+//				}else{
+//					t_name = "";
+//				}				
+//			}
+//			
+//			if(t_start != -1 && t_end != -1 ){			
+//				add = fullAdd.substring(t_start + 1, t_end);
+//			}else{
+//				add = fullAdd;
+//			}
+//			
+//			t_addressList[i] = new Address(add,t_name);
+//		}
+//		
+//		return t_addressList;
+//	}
 	
 	
 	public void OutputMail(OutputStream _stream)throws Exception{
@@ -233,7 +227,18 @@ public class  fetchMail{
 			m_vectTo.addElement(_to[i]);
 		}		
 	}
-	public Vector GetSendToVect(){return m_vectTo;}
+	
+	private static String getVectorString(Vector<String> _vector){
+		StringBuffer t_result = new StringBuffer();
+		for(String str:_vector){
+			t_result.append(str).append(",");
+		}
+		
+		return t_result.toString();
+	}
+	
+	public Vector<String> GetSendToVect(){return m_vectTo;}
+	public String getSendToString(){return getVectorString(m_vectTo);}
 	
 	public void SetReplyToVect(String[] _replyTo){
 		m_vectReplyTo.removeAllElements();
@@ -241,7 +246,8 @@ public class  fetchMail{
 			m_vectReplyTo.addElement(_replyTo[i]);
 		}		
 	}
-	public Vector GetReplyToVect(){return m_vectReplyTo;}
+	public Vector<String> GetReplyToVect(){return m_vectReplyTo;}
+	public String getReplyString(){return getVectorString(m_vectReplyTo);}
 	
 	public void SetCCToVect(String[] _CCTo){
 		m_vectCCTo.removeAllElements();
@@ -249,7 +255,8 @@ public class  fetchMail{
 			m_vectCCTo.addElement(_CCTo[i]);
 		}		
 	}
-	public Vector GetCCToVect(){return m_vectCCTo;}
+	public Vector<String> GetCCToVect(){return m_vectCCTo;}
+	public String getCCToString(){return getVectorString(m_vectCCTo);}
 	
 	public void SetBCCToVect(String[] _BCCTo){
 		m_vectBCCTo.removeAllElements();
@@ -257,10 +264,11 @@ public class  fetchMail{
 			m_vectBCCTo.addElement(_BCCTo[i]);
 		}		
 	}
-	public Vector GetBCCToVect(){return m_vectBCCTo;}
+	public Vector<String> GetBCCToVect(){return m_vectBCCTo;}
+	public String getBCCToString(){return getVectorString(m_vectBCCTo);}
 	
-	
-	public Vector GetFromVect(){return m_vectFrom;}
+	public Vector<String> GetFromVect(){return m_vectFrom;}
+	public String GetFromString(){return getVectorString(m_vectFrom);}
 	public void SetFromVect(String[] _from){
 		m_vectFrom.removeAllElements();
 		for(int i = 0;i < _from.length;i++){
@@ -268,7 +276,9 @@ public class  fetchMail{
 		}		
 	}
 	
-	public Vector GetGroupVect(){return m_vectGroup;}
+	
+	public Vector<String> GetGroupVect(){return m_vectGroup;}
+	public String getGroupString(){return getVectorString(m_vectGroup);}
 	public void SetGroupVect(String[] _group){
 		m_vectGroup.removeAllElements();
 		for(int i = 0;i < _group.length;i++){
@@ -293,7 +303,7 @@ public class  fetchMail{
 		m_vectAttachment.removeAllElements();
 	}
 	
-	public Vector GetAttachment(){
+	public Vector<MailAttachment> GetAttachment(){
 		return m_vectAttachment;
 	}
 	
