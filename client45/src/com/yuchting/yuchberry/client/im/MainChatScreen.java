@@ -336,7 +336,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 					m_middleMgr.m_chatScreen.m_recordMenu.run();
 					return true;
 				}
-			}else if(c == '0'){
+			}else if(c == ' '){
 				if((status & KeypadListener.STATUS_SHIFT) != 0){
 					m_middleMgr.m_chatScreen.m_phizMenu.run();
 					return true;

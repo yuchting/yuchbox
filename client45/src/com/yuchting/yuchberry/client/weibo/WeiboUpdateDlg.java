@@ -287,7 +287,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			// consum the Enter key
 			//
 			return true;
-		}else if(c == '0'){
+		}else if(c == ' '){
 			if((status & KeypadListener.STATUS_SHIFT) != 0){
 				((WeiboUpdateDlg)getScreen()).m_phizItem.run();
 				return true;
