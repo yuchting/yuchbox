@@ -186,10 +186,10 @@ public class MailDbAdapter {
                     + newVersion + ", which will destroy all old data");
             
         	if(m_group_data){
-            	db.execSQL("DROP INDEX IF EXISTS " + DATABASE_TABLE_GROUP_SUB_INDEX + " ON " + DATABASE_TABLE_GROUP);
+            	db.execSQL("drop index if exists " + DATABASE_TABLE_GROUP_SUB_INDEX + " on " + DATABASE_TABLE_GROUP);
             }
         	
-            db.execSQL("DROP TABLE IF EXISTS " + (m_group_data?DATABASE_TABLE_GROUP:DATABASE_TABLE));
+            db.execSQL("drop table if exists " + (m_group_data?DATABASE_TABLE_GROUP:DATABASE_TABLE));
             
             onCreate(db);
         }
@@ -261,6 +261,18 @@ public class MailDbAdapter {
     	return _orgSub;
     }
     
+    private static String getDisplayMailBody(fetchMail _mail){
+    	if(_mail.GetContain().length() == 0){
+    		if(_mail.GetContain_html().length() != 0){
+    			return "HTML";
+    		}else{
+    			return "";
+    		}
+    	}else{
+    		return _mail.GetContain();
+    	}
+    }
+    
     public long createMail(fetchMail _mail,Long _replyGroupId){
         
     	if(mDbHelper == null){
@@ -299,11 +311,12 @@ public class MailDbAdapter {
     		
     		t_mailID = mDb.insert(DATABASE_TABLE, null, values);
     		
-    		//TODO: update the former group
+    		// update the former group
 			//
     		Cursor t_cursor = mDb_group.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns,KEY_ID + "=" + _replyGroupId + "",
-										null,null,null,null);
+    											null,null,null,null);
     		
+    		updateGroup(t_cursor,_mail,true,t_mailID);
     		
     		return _replyGroupId;
     		
@@ -318,22 +331,53 @@ public class MailDbAdapter {
     		
     		if(t_cursor != null && t_cursor.getCount() == 0){
 
-    			//TODO: update the former group
+    			// update the former group
     			//
+    			updateGroup(t_cursor,_mail,false,t_mailID);
     			
     			return t_cursor.getInt(0); 
     			
     		}else{
+    			
     			// can't find the old group
     			// create a insert one
     			//    			
-    			return insertGroup(t_subject,t_mailID,_mail);
+    			return insertGroup(t_subject,t_mailID,_mail,false);
     		}
     	}
     }
     
-    private boolean updateGroup(Cursor _groupCursor,fetchMail _mail){
-    	long t_id = _groupCursor.getLong(0);
+    private boolean updateGroup(Cursor _groupCursor,fetchMail _mail,boolean _read,long _mailIndex){
+    	
+    	long t_id 			= _groupCursor.getLong(0);
+    	
+    	int t_read 			= _read?1:0;
+    	
+    	int t_mark 			= _groupCursor.getInt(2);
+    	String t_sub 		= _groupCursor.getString(3);
+    	
+    	String t_body 		= getDisplayMailBody(_mail);
+    	
+    	String t_time 		= Long.toString(_mail.GetSendDate().getTime());
+    	String t_addr_list	= _groupCursor.getString(6) + _mail.GetFromString();
+    	String t_group 		= _groupCursor.getString(7);
+    	
+    	String t_index		= _groupCursor.getString(8) + ";" + _mailIndex;
+    	
+    	ContentValues group = new ContentValues();
+    	
+		group.put(GROUP_ATTR_READ,t_read);
+		group.put(GROUP_ATTR_MARK,t_mark);
+		
+		group.put(GROUP_ATTR_SUBJECT,t_sub);
+		group.put(GROUP_ATTR_LEATEST_BODY,t_body);
+		
+		group.put(GROUP_ATTR_LEATEST_TIME,t_time);
+		group.put(GROUP_ATTR_ADDR_LIST,t_addr_list);
+		group.put(GROUP_ATTR_GROUP,t_group); 
+		group.put(GROUP_ATTR_MAIL_INDEX,t_index);
+		
+		return mDb_group.update(DATABASE_TABLE_GROUP, group, KEY_ID + "=" + t_id, null) > 0;
     }
     
     /**
@@ -343,18 +387,14 @@ public class MailDbAdapter {
      * @param _mail mail data
      * @return new group inserted _id
      */
-    private long insertGroup(String _subject,long _mailID,fetchMail _mail){
+    private long insertGroup(String _subject,long _mailID,fetchMail _mail,boolean _read){
     	
 		ContentValues group = new ContentValues();
 		group.put(GROUP_ATTR_READ,0);
 		group.put(GROUP_ATTR_MARK,0);
 		
 		group.put(GROUP_ATTR_SUBJECT,_subject);
-		if(_mail.GetContain().length() != 0){
-			group.put(GROUP_ATTR_LEATEST_BODY,_mail.GetContain());
-		}else{
-			group.put(GROUP_ATTR_LEATEST_BODY,"HTML");
-		}
+		group.put(GROUP_ATTR_LEATEST_BODY,getDisplayMailBody(_mail));
 		
 		group.put(GROUP_ATTR_LEATEST_TIME,Long.toString(_mail.GetSendDate().getTime()));
 		group.put(GROUP_ATTR_ADDR_LIST,_mail.GetFromString());
@@ -368,10 +408,9 @@ public class MailDbAdapter {
     	if(mDbHelper == null){
     		open();
     	}
+
         return mDb.delete(DATABASE_TABLE, ATTR_ID + "=" + id, null) > 0;
     }
-	
-    
             
     public Cursor fetchAllNotes() {
     	if(mDbHelper == null){

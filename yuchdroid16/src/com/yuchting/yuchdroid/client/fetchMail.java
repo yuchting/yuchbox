@@ -231,7 +231,7 @@ public class  fetchMail{
 	private static String getVectorString(Vector<String> _vector){
 		StringBuffer t_result = new StringBuffer();
 		for(String str:_vector){
-			t_result.append(str).append(",");
+			t_result.append(str).append(";");
 		}
 		
 		return t_result.toString();
