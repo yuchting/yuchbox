@@ -14,13 +14,15 @@ public final class R {
         public static final int icon=0x7f020000;
     }
     public static final class id {
-        public static final int icon=0x7f050000;
-        public static final int linearLayout1=0x7f050004;
-        public static final int mail_content=0x7f050002;
+        public static final int linearLayout1=0x7f050006;
+        public static final int mail_body=0x7f050002;
+        public static final int mail_check_btn=0x7f050000;
+        public static final int mail_from_to=0x7f050004;
+        public static final int mail_mark_btn=0x7f050003;
         public static final int mail_subject=0x7f050001;
-        public static final int start_svr=0x7f050005;
-        public static final int stop_svr=0x7f050006;
-        public static final int textView1=0x7f050003;
+        public static final int start_svr=0x7f050007;
+        public static final int stop_svr=0x7f050008;
+        public static final int textView1=0x7f050005;
     }
     public static final class layout {
         public static final int mail_list=0x7f030000;

@@ -5,8 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Window;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
 public class MailListActivity extends ListActivity {
 	
@@ -33,36 +35,46 @@ public class MailListActivity extends ListActivity {
         registerForContextMenu(getListView());
     }
     
+    private static final String[] fsm_fromCursor = 
+    {
+    	MailDbAdapter.KEY_SUBJECT,
+    	MailDbAdapter.KEY_BODY
+    };
+    
+    private static final int[] fsm_toCursor = 
+    {
+    	R.id.mail_subject,
+    	R.id.mail_body,
+    };
+    
     public void fillMail(){
     	 // Get all of the rows from the database and create the item list
     	m_mailCursor = m_mailDbAdapter.fetchAllNotes();
         startManagingCursor(m_mailCursor);
 
-        // Create an array to specify the fields we want to display in the list (only TITLE)
-        String[] from = new String[]
-        {
-        	MailDbAdapter.KEY_SUBJECT,
-        	MailDbAdapter.KEY_BODY
-        };
-
-        // and an array of the fields we want to bind those fields to (in this case just text1)
-        int[] to = new int[]
-        {
-        	R.id.mail_subject,
-        	R.id.mail_content,
-        };
 
         // Now create a simple cursor adapter and set it to display
         SimpleCursorAdapter notes = 
             new SimpleCursorAdapter(this, 
             						R.layout.mail_list_item,
-            						m_mailCursor, from, to){
-        	
-        	public CharSequence convertToString (Cursor cursor){
-        		CharSequence t_set = super.convertToString(cursor);
-        		return t_set;
+            						m_mailCursor, fsm_fromCursor, fsm_toCursor);
+        
+        notes.setViewBinder(new SimpleCursorAdapter.ViewBinder(){
+        	public boolean setViewValue(View view, Cursor cursor, int columnIndex){
+        		// custom the value to display
+        		//
+        		switch(columnIndex){
+        		case 0:
+        			String t_value = cursor.getString(columnIndex);
+            		((TextView)view).setText(t_value);
+        			break;
+        		case 1:
+        		}
+        		
+        		
+        		return true;
         	}
-        };
+        });
         
         setListAdapter(notes);
     }
