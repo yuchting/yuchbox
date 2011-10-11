@@ -450,7 +450,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     			m_chatRosterList.add(t_roster);
     			
     			m_changeChatRosterList.add(t_roster);    			
-    			m_mainMgr.m_logger.LogOut(GetAccountName() + " entriesAdded:" + acc);
+    			m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " entriesAdded:" + acc);
     		}
     	}
     }
@@ -464,7 +464,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     					
 	    				m_chatRosterList.remove(roster);
 	    				
-	    				m_mainMgr.m_logger.LogOut(GetAccountName() + " entriesDeleted:" + acc);
+	    				m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " entriesDeleted:" + acc);
 	    				
 	    				break;
 	    			}
@@ -504,7 +504,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
    				
     				if(changed){
     					
-//    					m_mainMgr.m_logger.LogOut(GetAccountName() + 
+//    					m_mainMgr.m_logger.LogOut(GetAccountPrefix() + 
 //								" presenceChanged:" + account + " Presence:" + presence);
     					
     					boolean t_hasBeenAdded = false;        				
@@ -839,7 +839,11 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				}		
 				
 			}catch(Exception e){
-				m_mainMgr.m_logger.PrinterException(e);	
+
+				// many exception in this
+				//
+				
+				//m_mainMgr.m_logger.PrinterException(e);	
 			}
 		}
 		
@@ -1220,39 +1224,54 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 					t_message.setProperty(fsm_ybFile, t_fileContent);
 					t_message.setProperty(fsm_ybFileType, t_type);
 				}
+				
+				
+				try{
 					
-				boolean found = false;
-				synchronized (m_chatList){
+					// check server whether is connect to GTalk server 
+					// if NOT, reset to connect it
+					//
+					CheckFolder();
 					
-					for(ChatData data:m_chatList){
-						if(data.m_accountName.equals(to)){
-							
-							data.m_chatData.sendMessage(t_message);
-							data.m_lastActiveTime = System.currentTimeMillis();
+					boolean found = false;
+					synchronized (m_chatList){
+						
+						for(ChatData data:m_chatList){
+							if(data.m_accountName.equals(to)){
+								
+								data.m_chatData.sendMessage(t_message);
+								data.m_lastActiveTime = System.currentTimeMillis();
 
-							found = true;
-							break;
+								found = true;
+								break;
+							}
 						}
 					}
-				}
-				
-				if(!found){
-					// the fetchGTalk.chatCreated will add it to m_chatList
+					
+					if(!found){
+						// the fetchGTalk.chatCreated will add it to m_chatList
+						//
+						Chat t_newChat = m_chatManager.createChat(to, this);
+						t_newChat.sendMessage(t_message);
+					}
+					
+					sendMsgChatSentConfirm(t_sendTime);
+					
+					appendSentChatMsg(hashcode);
+					
+					//statistics
 					//
-					Chat t_newChat = m_chatManager.createChat(to, this);
-					t_newChat.sendMessage(t_message);
-				}
-				
-				sendMsgChatSentConfirm(t_sendTime);
-				
-				appendSentChatMsg(hashcode);
-				
-				//statistics
-				//
-				synchronized (this) {
-					m_stat_IMSend++;
-					m_stat_IMSendB += t_byte;
-				}				
+					synchronized (this) {
+						m_stat_IMSend++;
+						m_stat_IMSendB += t_byte;
+					}	
+					
+				}catch(Exception e){
+					// send failed check the reason
+					// don't throw the exception to close the connection 
+					//
+					m_mainMgr.m_logger.PrinterException(e);
+				}							
 				
 				return true;
 			}
