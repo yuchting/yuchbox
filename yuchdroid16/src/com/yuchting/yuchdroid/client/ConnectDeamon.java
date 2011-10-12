@@ -43,6 +43,7 @@ public class ConnectDeamon extends Service{
 	private int	m_connectCounter 		= 0;
 	
 	private boolean m_recvAboutText		= false;
+	private String m_latestVersion			= "";
 	
 	private String m_host					= null;
 	private int m_port						= 0;

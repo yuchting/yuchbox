@@ -6,6 +6,7 @@ import javax.microedition.media.Player;
 import javax.microedition.media.control.RecordControl;
 
 import local.localResource;
+import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Screen;
 
@@ -77,7 +78,7 @@ public class RecordAudioScreen{
 	    
 	public final static int		fsm_maxRecordingTime = 20;
 	
-	public final static int		fsm_screenWidth 	= 200;
+	public static int				fsm_screenWidth 	= 200;
 	public final static int		fsm_screenHeight 	= 150;
 	
 	AudioRecorderThread m_recordThread = null;
@@ -111,6 +112,9 @@ public class RecordAudioScreen{
 		m_mainApp = _mainApp;
 		m_parentScreen = _parentScreen;
 		m_callback = _callback;
+		
+		// get the length
+		fsm_screenWidth = Font.getDefault().getAdvance(recvMain.sm_local.getString(localResource.RECORDING_REMAIN_LABEL) + "00") + 10;
 	}
 		
 	public void onDisplay(){

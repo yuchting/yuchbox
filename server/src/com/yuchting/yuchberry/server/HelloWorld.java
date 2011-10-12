@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
+import java.util.zip.GZIPOutputStream;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -96,20 +97,18 @@ public class HelloWorld {
     }
 	
 	public static void main(String arg[])throws Exception{
-		TaskTest<Void,Integer> t_task = new TaskTest<Void, Integer>() {
-			public Integer call() throws Exception {
-				
-				Thread.sleep(2000);
-				return 0;
-            }
-		};
+		String str = "ABCDEFG";
 		
-		FutureTask<Integer> t_sumTask = new FutureTask<Integer>(t_task);		
-		Thread th = new Thread(t_sumTask);
+		ByteArrayOutputStream zos = new ByteArrayOutputStream();
+		GZIPOutputStream zo = new GZIPOutputStream(zos,6);
+		zo.write(str.getBytes("UTF-8"));
+		zo.close();	
 		
-		th.start();
+		byte[] t_zipData = zos.toByteArray();
 		
-		System.out.print(t_sumTask.get());
+		for (int i = 0; i < t_zipData.length; i ++) {
+            System.out.printf("%02X ", t_zipData[i]);
+        }
 		
 		
 	}
