@@ -2,21 +2,80 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:weightSum="1" android:orientation="vertical">
+    android:weightSum="1" 
+    android:orientation="vertical">
+    
+    <ImageView
+    	android:layout_height="100dp"
+    	android:layout_width="wrap_content"
+    	android:layout_gravity="center_horizontal"
+    	android:layout_centerHorizontal="true"
+    	android:src="@drawable/big_logo"
+    />
+    
+    <LinearLayout 
+    	android:layout_height="wrap_content" 
+    	android:layout_width="fill_parent"
+    	android:orientation="horizontal">
+    	<TextView
+    		android:text="@string/login_host"
+    		android:layout_height="fill_parent" 
+    		android:layout_width="wrap_content"
+    		android:layout_weight="0.08"
+    		android:gravity="center_vertical" 
+    	/>
+    	<EditText
+    		android:id="@+id/login_host"
+    		android:layout_height="fill_parent" 
+    		android:layout_width="wrap_content"
+    		android:layout_weight="1"
+    	/>
+    </LinearLayout>
+    <LinearLayout 
+    	android:layout_height="wrap_content" 
+    	android:layout_width="fill_parent"
+    	android:orientation="horizontal">
+    	<TextView
+    		android:text="@string/login_port"
+    		android:layout_height="fill_parent" 
+    		android:layout_width="wrap_content"
+    		android:layout_weight="0.08"
+    		android:gravity="center_vertical" 
+    	/>
+    	<EditText
+    		android:id="@+id/login_port"
+    		android:layout_height="fill_parent" 
+    		android:layout_width="wrap_content"
+    		android:layout_weight="1"
+    		android:numeric="integer"
+    	/>
+    </LinearLayout>
+    <LinearLayout 
+    	android:layout_height="wrap_content" 
+    	android:layout_width="fill_parent"
+    	android:orientation="horizontal">
+    	<TextView
+    		android:text="@string/login_user_pass"
+    		android:layout_height="fill_parent" 
+    		android:layout_width="wrap_content"
+    		android:layout_weight="0.08"
+    		android:gravity="center_vertical" 
+    	/>
+    	<EditText
+    		android:id="@+id/login_user_pass"
+    		android:layout_height="fill_parent" 
+    		android:layout_width="wrap_content"
+    		android:layout_weight="1"
+    		android:numeric="integer"
+    	/>
+    </LinearLayout>
+    <Button android:text="@string/start_svr_but" 
+        		android:id="@+id/start_svr" 
+        		android:layout_height="wrap_content" 
+        		android:layout_width="112dp" />
+        		
     <TextView android:text="TextView" 
     			android:id="@+id/textView1" 
     			android:layout_width="302dp" 
     			android:layout_height="wrap_content" />
-    <LinearLayout android:layout_height="wrap_content" 
-    			android:layout_width="fill_parent" 
-    			android:id="@+id/linearLayout1">
-        <Button android:text="@string/start_svr_but" 
-        		android:id="@+id/start_svr" 
-        		android:layout_height="wrap_content" 
-        		android:layout_width="112dp" />
-        <Button android:text="@string/stop_svr_but" 
-        		android:id="@+id/stop_svr" 
-        		android:layout_height="wrap_content" 
-        		android:layout_width="107dp" />
-    </LinearLayout>
 </LinearLayout>

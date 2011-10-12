@@ -27,7 +27,7 @@ public class MailDbAdapter {
 	
 	public final static String GROUP_ATTR_SUBJECT				= "group_subject";
 	public final static String GROUP_ATTR_LEATEST_BODY			= "group_body";
-	public final static String GROUP_ATTR_LEATEST_TIME			= "group_body";
+	public final static String GROUP_ATTR_LEATEST_TIME			= "group_time";
 	public final static String GROUP_ATTR_ADDR_LIST			= "group_addr";
 	public final static String GROUP_ATTR_GROUP				= "group_group"; // reverse attribute 
 	public final static String GROUP_ATTR_MAIL_INDEX			= "group_mail";
@@ -99,82 +99,69 @@ public class MailDbAdapter {
         ATTR_FLAG,   
     };
 	
-	private static String getCreateTable(boolean _group){
+	private final static String fsm_createTable_group = 
+							"create table " + DATABASE_TABLE_GROUP + 
+						    " ("+KEY_ID+" integer primary key, " +
+						    
+						    GROUP_ATTR_READ + " smallint," +
+						    GROUP_ATTR_MARK + " smallint," +
+						    
+						    GROUP_ATTR_SUBJECT + " text, " +
+						    
+						    GROUP_ATTR_LEATEST_BODY + " text, " +
+						    GROUP_ATTR_LEATEST_TIME +  " integer(64), " +
+						    
+						    GROUP_ATTR_ADDR_LIST + " text, " +
+						    GROUP_ATTR_GROUP + " text, " +
+						    GROUP_ATTR_MAIL_INDEX + " text )";
+	
+	private final static String fsm_createTable = 
 		
-		if(_group){
-
-			return "create table " + DATABASE_TABLE_GROUP + 
-			        " ("+KEY_ID+" integer primary key, " +
-			        
-			        GROUP_ATTR_READ + " smallint," +
-			        GROUP_ATTR_MARK + " smallint," +
-			        
-			        GROUP_ATTR_SUBJECT + " text, " +
-			        
-			        GROUP_ATTR_LEATEST_BODY + " text, " +
-			        GROUP_ATTR_LEATEST_TIME +  " text, " +
-			        
-			        GROUP_ATTR_ADDR_LIST + " text, " +
-			        GROUP_ATTR_GROUP + " text, " +
-			        GROUP_ATTR_MAIL_INDEX + " text )";
-			
-		}else{
-			
-			return "create table " + DATABASE_TABLE + 
-			        " ("+KEY_ID+" integer primary key, " +
-			        
-			        ATTR_READ + " smallint," +
-			        ATTR_MARK + " smallint," +
-			        
-			        ATTR_INDEX + " integer, " +
-			        
-			        ATTR_SUBJECT + " text, " +
-			        ATTR_BODY +  " text, " +
-			        ATTR_BODY_HTML + " text, " + 
-			        ATTR_BODY_HTML_TYPE + " text, " + 
-			        
-			        ATTR_TO + " text not null, " + 
-			        ATTR_CC + " text, " +
-			        ATTR_BCC + " text, " +
-			        ATTR_FROM + " text not null, " + 
-			        ATTR_REPLY + " text, " +
-			        ATTR_GROUP + " text, " +
-			        
-			        ATTR_DATE + " text, " +
-			        ATTR_MAIL_GROUP_INDEX + " integer, " + 
-			        ATTR_FLAG + " integer )" ;
-		}
-		
-	}
+							"create table " + DATABASE_TABLE + 
+					        " ("+KEY_ID+" integer primary key, " +
+					        
+					        ATTR_READ + " smallint," +
+					        ATTR_MARK + " smallint," +
+					        
+					        ATTR_INDEX + " integer, " +
+					        
+					        ATTR_SUBJECT + " text, " +
+					        ATTR_BODY +  " text, " +
+					        ATTR_BODY_HTML + " text, " + 
+					        ATTR_BODY_HTML_TYPE + " text, " + 
+					        
+					        ATTR_TO + " text not null, " + 
+					        ATTR_CC + " text, " +
+					        ATTR_BCC + " text, " +
+					        ATTR_FROM + " text not null, " + 
+					        ATTR_REPLY + " text, " +
+					        ATTR_GROUP + " text, " +
+					        
+					        ATTR_DATE + " integer(64), " +
+					        ATTR_MAIL_GROUP_INDEX + " integer, " + 
+					        ATTR_FLAG + " integer )" ;	
 	
+	private DatabaseHelper mDbHelper = null;
+	private SQLiteDatabase mDb = null;
 	
-	private DatabaseHelper mDbHelper;
-	private SQLiteDatabase mDb;
-	
-	private DatabaseHelper mDbHelper_group;
-	private SQLiteDatabase mDb_group;
-
 	private final Context mCtx;
 
 	private static class DatabaseHelper extends SQLiteOpenHelper {
 
-		boolean m_group_data = false;
-		
         DatabaseHelper(Context context,boolean _groupData) {
             super(context,DATABASE_NAME, null, DATABASE_VERSION);
-            
-            m_group_data = _groupData;
         }
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            db.execSQL(getCreateTable(m_group_data));
+        	db.execSQL(fsm_createTable);
+            db.execSQL(fsm_createTable_group);
+                        
             
-            if(m_group_data){
-            	// create the index by subject
-            	//
-            	db.execSQL("create index " + DATABASE_TABLE_GROUP_SUB_INDEX + " on " + DATABASE_TABLE_GROUP + " (" + GROUP_ATTR_SUBJECT + ")");
-            }
+        	// create the index by subject
+        	//
+        	db.execSQL("create index " + DATABASE_TABLE_GROUP_SUB_INDEX + " on " + DATABASE_TABLE_GROUP + " (" + GROUP_ATTR_SUBJECT + ")");
+            
         }
 
         @Override
@@ -185,11 +172,10 @@ public class MailDbAdapter {
         	Log.w(TAG, "Upgrading database from version " + oldVersion + " to "
                     + newVersion + ", which will destroy all old data");
             
-        	if(m_group_data){
-            	db.execSQL("drop index if exists " + DATABASE_TABLE_GROUP_SUB_INDEX + " on " + DATABASE_TABLE_GROUP);
-            }
-        	
-            db.execSQL("drop table if exists " + (m_group_data?DATABASE_TABLE_GROUP:DATABASE_TABLE));
+            db.execSQL("drop index if exists " + DATABASE_TABLE_GROUP_SUB_INDEX + " on " + DATABASE_TABLE_GROUP);
+            db.execSQL("drop table if exists " + DATABASE_TABLE_GROUP);
+            
+            db.execSQL("drop table if exists " + DATABASE_TABLE);
             
             onCreate(db);
         }
@@ -209,11 +195,10 @@ public class MailDbAdapter {
     	if(mDbHelper != null){
     		close();
     	}
+    	
         mDbHelper = new DatabaseHelper(mCtx,false);
         mDb = mDbHelper.getWritableDatabase();
         
-        mDbHelper_group = new DatabaseHelper(mCtx,true);
-        mDb_group = mDbHelper_group.getWritableDatabase();
         
         return this;
     }
@@ -223,12 +208,6 @@ public class MailDbAdapter {
     		mDbHelper.close();
             mDbHelper = null;
             mDb = null;
-    	}
-    	
-    	if(mDbHelper_group != null){
-    		mDbHelper_group.close();
-    		mDbHelper_group = null;
-    		mDb_group = null;
     	}
     }
 
@@ -299,7 +278,7 @@ public class MailDbAdapter {
         values.put(ATTR_REPLY,_mail.getReplyString());
         values.put(ATTR_GROUP,_mail.getGroupString());
         
-        values.put(ATTR_DATE,Long.toString(_mail.GetSendDate().getTime()));
+        values.put(ATTR_DATE,_mail.GetSendDate().getTime());
         values.put(ATTR_FLAG,_mail.GetFlags());
 
         long t_mailID;
@@ -313,7 +292,7 @@ public class MailDbAdapter {
     		
     		// update the former group
 			//
-    		Cursor t_cursor = mDb_group.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns,KEY_ID + "=" + _replyGroupId + "",
+    		Cursor t_cursor = mDb.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns,KEY_ID + "=" + _replyGroupId + "",
     											null,null,null,null);
     		
     		updateGroup(t_cursor,_mail,true,t_mailID);
@@ -326,10 +305,10 @@ public class MailDbAdapter {
     		
     		String t_subject = groupSubject(_mail.GetSubject());
     		
-    		Cursor t_cursor = mDb_group.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns,GROUP_ATTR_SUBJECT + "='" + t_subject + "'",
+    		Cursor t_cursor = mDb.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns,GROUP_ATTR_SUBJECT + "='" + t_subject + "'",
     											null,null,null,null);
     		
-    		if(t_cursor != null && t_cursor.getCount() == 0){
+    		if(t_cursor != null && t_cursor.getCount() != 0){
 
     			// update the former group
     			//
@@ -347,6 +326,22 @@ public class MailDbAdapter {
     	}
     }
     
+    private static String reRangeAddrList(String _addrList,String _addAddr){
+    	
+    	String[] t_list 	= _addrList.split(fetchMail.fsm_vectStringSpliter);
+    	
+    	StringBuffer t_ret = new StringBuffer();
+    	for(String addr:t_list){
+    		if(!addr.equalsIgnoreCase(_addAddr)){
+    			t_ret.append(addr).append(fetchMail.fsm_vectStringSpliter);
+    		}
+    	}
+    	
+    	t_ret.append(_addAddr).append(fetchMail.fsm_vectStringSpliter);
+    	
+    	return t_ret.toString();
+    }
+    
     private boolean updateGroup(Cursor _groupCursor,fetchMail _mail,boolean _read,long _mailIndex){
     	
     	long t_id 			= _groupCursor.getLong(0);
@@ -358,11 +353,17 @@ public class MailDbAdapter {
     	
     	String t_body 		= getDisplayMailBody(_mail);
     	
-    	String t_time 		= Long.toString(_mail.GetSendDate().getTime());
-    	String t_addr_list	= _groupCursor.getString(6) + _mail.GetFromString();
+    	long t_time 		= _mail.GetSendDate().getTime();
+    	String t_addr_list;
+    	if(_mail.GetFromVect().isEmpty()){
+    		t_addr_list = reRangeAddrList(_groupCursor.getString(6),mCtx.getString(R.string.mail_me_address));
+    	}else{
+    		t_addr_list = reRangeAddrList(_groupCursor.getString(6),_mail.GetFromVect().get(0));
+    	}
+    	
     	String t_group 		= _groupCursor.getString(7);
     	
-    	String t_index		= _groupCursor.getString(8) + ";" + _mailIndex;
+    	String t_index		= _groupCursor.getString(8) + fetchMail.fsm_vectStringSpliter + _mailIndex;
     	
     	ContentValues group = new ContentValues();
     	
@@ -377,7 +378,7 @@ public class MailDbAdapter {
 		group.put(GROUP_ATTR_GROUP,t_group); 
 		group.put(GROUP_ATTR_MAIL_INDEX,t_index);
 		
-		return mDb_group.update(DATABASE_TABLE_GROUP, group, KEY_ID + "=" + t_id, null) > 0;
+		return mDb.update(DATABASE_TABLE_GROUP, group, KEY_ID + "=" + t_id, null) > 0;
     }
     
     /**
@@ -396,37 +397,45 @@ public class MailDbAdapter {
 		group.put(GROUP_ATTR_SUBJECT,_subject);
 		group.put(GROUP_ATTR_LEATEST_BODY,getDisplayMailBody(_mail));
 		
-		group.put(GROUP_ATTR_LEATEST_TIME,Long.toString(_mail.GetSendDate().getTime()));
+		group.put(GROUP_ATTR_LEATEST_TIME,_mail.GetSendDate().getTime());
 		group.put(GROUP_ATTR_ADDR_LIST,_mail.GetFromString());
 		group.put(GROUP_ATTR_GROUP,""); // reverse attribute
-		group.put(GROUP_ATTR_MAIL_INDEX,Long.toString(_mailID) + ",");    			
+		group.put(GROUP_ATTR_MAIL_INDEX,Long.toString(_mailID) + fetchMail.fsm_vectStringSpliter);    			
 		
-		return mDb_group.insert(DATABASE_TABLE_GROUP, null, group);
+		return mDb.insert(DATABASE_TABLE_GROUP, null, group);
     }
 
+    public boolean deleteGroup(long _groupID){
+    	if(mDbHelper == null){
+    		open();
+    	}
+
+        return mDb.delete(DATABASE_TABLE_GROUP, KEY_ID + "=" + _groupID, null) > 0;
+    }
+    
     public boolean deleteMail(long id) {
     	if(mDbHelper == null){
     		open();
     	}
 
-        return mDb.delete(DATABASE_TABLE, ATTR_ID + "=" + id, null) > 0;
+        return mDb.delete(DATABASE_TABLE, KEY_ID + "=" + id, null) > 0;
     }
             
-    public Cursor fetchAllNotes() {
+    public Cursor fetchAllGroup(){
     	if(mDbHelper == null){
     		open();
     	}
     	
-        return mDb.query(DATABASE_TABLE,fsm_fullColoumns, null, null, null, null, null);
+        return mDb.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns, null, null, null, null, null);
     }
 
-    public Cursor fetchNote(long rowId) throws SQLException {
+    public Cursor fetchGroup(long _groupId) throws SQLException {
 
     	if(mDbHelper == null){
     		open();
     	}
     	
-        Cursor mCursor = mDb.query(true, DATABASE_TABLE, fsm_fullColoumns, ATTR_ID + "=" + rowId, null,
+        Cursor mCursor = mDb.query(true, DATABASE_TABLE_GROUP, fsm_groupfullColoumns, KEY_ID + "=" + _groupId, null,
                     				null, null, null, null);
         if (mCursor != null) {
             mCursor.moveToFirst();

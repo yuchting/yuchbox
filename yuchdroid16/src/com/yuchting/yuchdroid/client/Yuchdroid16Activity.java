@@ -4,9 +4,13 @@ import java.util.Date;
 import java.util.Random;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
@@ -17,10 +21,14 @@ public class Yuchdroid16Activity extends Activity {
 	
 	public final static String TAG = "Yuchdroid16Activity";
 	
+	
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+               
+        ConnectDeamon.fsm_clientVersion = getVersionName(this,Yuchdroid16Activity.class);
         
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main);       
@@ -28,9 +36,19 @@ public class Yuchdroid16Activity extends Activity {
         initButtons();
     }
     
+    public static String getVersionName(Context context, Class cls){
+		try{
+			ComponentName comp = new ComponentName(context, cls);
+			PackageInfo pinfo = context.getPackageManager().getPackageInfo(comp.getPackageName(), 0);
+			return pinfo.versionName;
+		}catch(android.content.pm.PackageManager.NameNotFoundException e) {
+			return "1.0";
+		}
+	}	
+    
     private void initButtons() { 
     	
-        Button buttonStart = (Button) findViewById(R.id.start_svr);  
+        Button buttonStart = (Button) findViewById(R.id.start_svr);
         buttonStart.setOnClickListener(new OnClickListener() {  
             public void onClick(View arg0) {  
             	MailListActivity.show(Yuchdroid16Activity.this);
@@ -52,7 +70,7 @@ public class Yuchdroid16Activity extends Activity {
             	
             	MailDbAdapter t_ad = new MailDbAdapter(Yuchdroid16Activity.this);
             	t_ad.open();
-            	t_ad.createMail(t_newMail);
+            	t_ad.createMail(t_newMail,null);
             	
             	Toast.makeText(getApplicationContext(), t_newMail.GetSubject() + " add OK!",
             	          Toast.LENGTH_SHORT).show();

@@ -11,9 +11,23 @@ class MailAttachment{
 	String		m_type;
 }
 
+final class Address{
+	String m_name;
+	String m_addr;
+	
+	public Address(String _name,String _addr){
+		m_name = _name;
+		m_addr = _addr;
+	}
+};
+
+
 public class  fetchMail{
 	
+	
 	final static int	VERSION = 2;
+	
+	public final static String	fsm_vectStringSpliter = ";";
 	
 	public final static String	fsm_noSubjectTile = "No Subject";
 	    	
@@ -66,45 +80,42 @@ public class  fetchMail{
 	public int GetSimpleHashCode(){
 		return (GetSubject() + GetSendDate().getTime()).hashCode();
 	}
-	
-//	public void SetAttchMessage(Message m){ m_attachMessage = m;}
-//	public Message GetAttachMessage(){return m_attachMessage;}
-//		
-//	public static Address[] parseAddressList(Vector _list)throws Exception{
-//		Address[] 	t_addressList = new Address[_list.size()];
-//		
-//		for(int i = 0;i < _list.size();i++){
-//			String fullAdd = (String)_list.elementAt(i);
-//			String add;
-//			String t_name = null;
-//			
-//			final int t_start = fullAdd.indexOf('<');
-//			final int t_end = fullAdd.indexOf('>');
-//			
-//			final int t_start_quotation = fullAdd.indexOf('"');
-//			final int t_end_quotation = fullAdd.indexOf('"',t_start_quotation + 1);
-//			
-//			if(t_start_quotation != -1 && t_end_quotation != -1 ){			
-//				t_name = fullAdd.substring(t_start_quotation + 1, t_end_quotation);
-//			}else{
-//				if(t_start != -1 && t_start > 0){
-//					t_name = fullAdd.substring(0,t_start);
-//				}else{
-//					t_name = "";
-//				}				
-//			}
-//			
-//			if(t_start != -1 && t_end != -1 ){			
-//				add = fullAdd.substring(t_start + 1, t_end);
-//			}else{
-//				add = fullAdd;
-//			}
-//			
-//			t_addressList[i] = new Address(add,t_name);
-//		}
-//		
-//		return t_addressList;
-//	}
+		
+	public static Address[] parseAddressList(String[] _list){
+		Address[] 	t_addressList = new Address[_list.length];
+		
+		int i = 0;
+		for(String fullAdd:_list){
+			String add;
+			String t_name = null;
+			
+			final int t_start = fullAdd.indexOf('<');
+			final int t_end = fullAdd.indexOf('>');
+			
+			final int t_start_quotation = fullAdd.indexOf('"');
+			final int t_end_quotation = fullAdd.indexOf('"',t_start_quotation + 1);
+			
+			if(t_start_quotation != -1 && t_end_quotation != -1 ){			
+				t_name = fullAdd.substring(t_start_quotation + 1, t_end_quotation);
+			}else{
+				if(t_start != -1 && t_start > 0){
+					t_name = fullAdd.substring(0,t_start);
+				}else{
+					t_name = "";
+				}				
+			}
+			
+			if(t_start != -1 && t_end != -1 ){			
+				add = fullAdd.substring(t_start + 1, t_end);
+			}else{
+				add = fullAdd;
+			}
+			
+			t_addressList[i++] = new Address(add,t_name);
+		}
+		
+		return t_addressList;
+	}
 	
 	
 	public void OutputMail(OutputStream _stream)throws Exception{
@@ -231,7 +242,7 @@ public class  fetchMail{
 	private static String getVectorString(Vector<String> _vector){
 		StringBuffer t_result = new StringBuffer();
 		for(String str:_vector){
-			t_result.append(str).append(";");
+			t_result.append(str).append(fsm_vectStringSpliter);
 		}
 		
 		return t_result.toString();
