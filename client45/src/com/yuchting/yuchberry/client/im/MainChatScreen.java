@@ -296,8 +296,6 @@ final class InputManager extends Manager implements FieldChangeListener{
 				m_middleMgr.m_chatScreen.m_recordMenu.run();
 				return true;
 			}
-		}else{
-			
 		}
 		
 		
@@ -326,7 +324,8 @@ final class InputManager extends Manager implements FieldChangeListener{
 	    			return true;
 	    			
 	    		}else{
-	    			if(!m_middleMgr.m_chatScreen.m_mainApp.m_imChatScreenReceiveReturn){
+	    			if(!m_middleMgr.m_chatScreen.m_mainApp.m_imChatScreenReceiveReturn
+	    				&& m_editTextArea.isFocus()){
 	    				return true;
 	    			}
 	    		}
