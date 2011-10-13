@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.net.ConnectivityManager;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Display;
@@ -99,6 +100,14 @@ public class ConnectDeamon extends Service{
 	
 	public final static String fsm_shareData_deamon_is_run = "deamon_run";
 	
+	// proxy thread
+	//
+	private Thread m_proxyThread = new Thread(){
+		public void run(){
+			ConnectDeamon.this.run();
+		}
+	};
+	
 	public void onCreate() {
 		Log.d(TAG,"onCreate");
 				
@@ -125,11 +134,7 @@ public class ConnectDeamon extends Service{
 				
 		// start the connect run thread
 		//
-		(new Thread(){
-			public void run(){
-				ConnectDeamon.this.run();
-			}
-		}).start();
+		m_proxyThread.start();
 	}
 	
 	
@@ -197,11 +202,14 @@ public class ConnectDeamon extends Service{
 			
 		}else{
 			
-			m_host = _intent.getExtras().getString("login_host");
-			m_port = (Integer)_intent.getExtras().getInt("login_port");
-			m_userPass = _intent.getExtras().getString("login_pass");
+			Bundle bundle = _intent.getExtras();
+			
+			m_host = bundle.getString("login_host");
+			m_port = (Integer)bundle.getInt("login_port");
+			m_userPass = bundle.getString("login_pass");
 			
 			m_disconnect = t_disconnect;
+			m_proxyThread.interrupt();
 		}
 		
 		
@@ -236,7 +244,7 @@ public class ConnectDeamon extends Service{
 	
 	private boolean CanNotConnectSvr(){
 		ConnectivityManager t_connect = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-		return t_connect.getActiveNetworkInfo().isAvailable();
+		return !t_connect.getActiveNetworkInfo().isAvailable();
 	}
 	
 	public static int GetClientLanguage(){
@@ -373,13 +381,18 @@ public class ConnectDeamon extends Service{
 		// first use IP address to decrease the DNS message  
 		//
 		try{
-			
+			Socket t_ret;
 			if(_ssl){
 				SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();  
-	            return (SSLSocket) sslsocketfactory.createSocket(m_host, m_port); 
+				t_ret = (SSLSocket) sslsocketfactory.createSocket(m_host, m_port); 
 			}else{
-				return new Socket(m_host,m_port);
-			}			
+				t_ret = new Socket(m_host,m_port);
+			}
+			
+			t_ret.setSoTimeout(0);
+			t_ret.setKeepAlive(true);
+			
+			return t_ret;
 			 
 		}catch(Exception _e){
 	

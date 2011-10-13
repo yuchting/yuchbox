@@ -20,15 +20,13 @@
     	<TextView
     		android:text="@string/login_host"
     		android:layout_height="fill_parent" 
-    		android:layout_width="wrap_content"
-    		android:layout_weight="0.08"
+    		android:layout_width="70dp"
     		android:gravity="center_vertical" 
     	/>
     	<EditText
     		android:id="@+id/login_host"
     		android:layout_height="fill_parent" 
-    		android:layout_width="wrap_content"
-    		android:layout_weight="1"
+    		android:layout_width="250dp"
     		android:singleLine="true"
     	/>
     </LinearLayout>
@@ -39,15 +37,13 @@
     	<TextView
     		android:text="@string/login_port"
     		android:layout_height="fill_parent" 
-    		android:layout_width="wrap_content"
-    		android:layout_weight="0.08"
+    		android:layout_width="70dp"
     		android:gravity="center_vertical" 
     	/>
     	<EditText
     		android:id="@+id/login_port"
     		android:layout_height="fill_parent" 
-    		android:layout_width="wrap_content"
-    		android:layout_weight="1"
+    		android:layout_width="250dp"
     		android:numeric="integer"
     		android:maxLength="5"
     		android:singleLine="true"
@@ -60,26 +56,29 @@
     	<TextView
     		android:text="@string/login_user_pass"
     		android:layout_height="fill_parent" 
-    		android:layout_width="wrap_content"
-    		android:layout_weight="0.08"
+    		android:layout_width="70dp"
     		android:gravity="center_vertical" 
     	/>
     	<EditText
     		android:id="@+id/login_user_pass"
     		android:layout_height="fill_parent" 
-    		android:layout_width="wrap_content"
-    		android:layout_weight="1"
+    		android:layout_width="250dp"
+    		android:text="user passworduser passworduser passworduser passworduser passworduser password"
     		android:maxLength="120"
     		android:singleLine="true"
+    		android:password="true"
     	/>
     </LinearLayout>
     <Button android:text="@string/start_svr_but" 
-        		android:id="@+id/start_svr" 
-        		android:layout_height="wrap_content" 
-        		android:layout_width="112dp" />
+       		android:id="@+id/start_svr" 
+       		android:layout_height="wrap_content" 
+       		android:layout_width="wrap_content"
+       		android:gravity="center_vertical"
+    />
         		
     <TextView android:text="TextView" 
-    			android:id="@+id/textView1" 
-    			android:layout_width="302dp" 
-    			android:layout_height="wrap_content" />
+   			android:id="@+id/textView1" 
+   			android:layout_width="fill_parent" 
+   			android:layout_height="wrap_content" 
+   	/>
 </LinearLayout>

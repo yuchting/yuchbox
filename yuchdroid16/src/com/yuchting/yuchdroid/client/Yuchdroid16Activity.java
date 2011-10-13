@@ -46,7 +46,7 @@ public class Yuchdroid16Activity extends Activity {
                 }else{
 
                 	String t_host = m_host.getText().toString();
-                	int t_port = Integer.valueOf(m_port.getText().toString()).intValue();
+                	String t_port = m_port.getText().toString();
                 	String t_pass = m_userPass.getText().toString();
                 	 
                 	if(validateHost(t_host,t_port,t_pass)){
@@ -57,8 +57,8 @@ public class Yuchdroid16Activity extends Activity {
         }); 
         
         m_host = (EditText)findViewById(R.id.login_host);
-        m_port = (EditText)findViewById(R.id.login_host);
-        m_userPass = (EditText)findViewById(R.id.login_host);
+        m_port = (EditText)findViewById(R.id.login_port);
+        m_userPass = (EditText)findViewById(R.id.login_user_pass);
   
 //        Button buttonStop = (Button) findViewById(R.id.stop_svr);  
 //        buttonStop.setOnClickListener(new OnClickListener() {  
@@ -84,7 +84,7 @@ public class Yuchdroid16Activity extends Activity {
    
     }
     
-    private boolean validateHost(String _host,int _port,String _userPass){
+    private boolean validateHost(String _host,String _port,String _userPass){
     	
     	if(!_host.matches("([\\w-]+\\.)+[\\w-]+(/[\\w- ./?%%&=]*)?") 
     	&& !_host.matches("/(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)/g")){
@@ -92,7 +92,7 @@ public class Yuchdroid16Activity extends Activity {
     		return false;
     	}
     	
-    	if(_port > 65535 || _port <= 0){
+    	if(_port.length() == 0 || Integer.valueOf(_port).intValue() > 65535){
     		Toast.makeText(this, R.string.login_port_error_prompt, Toast.LENGTH_SHORT).show();
     		return false;
     	}
@@ -105,13 +105,17 @@ public class Yuchdroid16Activity extends Activity {
     	return true;
     }
     
-    private void startConnectDeamon(String _host,int _port,String _userPass){
+    private void startConnectDeamon(String _host,String _port,String _userPass){
     	
     	Intent intent = new Intent(this,ConnectDeamon.class);
 	
-    	intent.getExtras().putString("login_host",_host);
-    	intent.getExtras().putInt("login_port",_port);
-    	intent.getExtras().putString("login_pass",_userPass);
+    	Bundle bundle = new Bundle();
+    	
+    	bundle.putString("login_host",_host);
+    	bundle.putInt("login_port",Integer.valueOf(_port).intValue());
+    	bundle.putString("login_pass",_userPass);
+    	
+    	intent.putExtras(bundle);
     	
         startService(intent);
     }  
