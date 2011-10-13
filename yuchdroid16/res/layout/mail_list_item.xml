@@ -10,8 +10,8 @@
         android:id="@+id/mail_check_btn"
         android:layout_width="16dp"
         android:layout_height="16dp"
-		android:button="@drawable/checkbox_no"
-		android:checked="@drawable/checkbox_yes" 
+		android:button="@drawable/ic_checkbox_no"
+		android:checked="@drawable/ic_checkbox_yes" 
 		android:layout_marginLeft="2dp"
 		android:layout_marginTop="7dp"/>
 

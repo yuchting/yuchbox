@@ -18,7 +18,7 @@ public class MailListActivity extends ListActivity {
 	private MailDbAdapter 	m_mailDbAdapter = new MailDbAdapter(this);
 	private Cursor			m_groupCursor = null;
 	
-	
+	// shwo the mail list activity directly
 	public static void show(Context ctx){
 		Intent t_in = new Intent().setClass(ctx, MailListActivity.class);
 		ctx.startActivity(t_in);
@@ -36,6 +36,8 @@ public class MailListActivity extends ListActivity {
         fillMail();
         
         registerForContextMenu(getListView());
+        
+        ConnectDeamon.StopMailNotification(this);
     }
     
     private static final String[] fsm_fromCursor = 

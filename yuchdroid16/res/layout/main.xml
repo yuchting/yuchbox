@@ -29,6 +29,7 @@
     		android:layout_height="fill_parent" 
     		android:layout_width="wrap_content"
     		android:layout_weight="1"
+    		android:singleLine="true"
     	/>
     </LinearLayout>
     <LinearLayout 
@@ -48,6 +49,8 @@
     		android:layout_width="wrap_content"
     		android:layout_weight="1"
     		android:numeric="integer"
+    		android:maxLength="5"
+    		android:singleLine="true"
     	/>
     </LinearLayout>
     <LinearLayout 
@@ -66,7 +69,8 @@
     		android:layout_height="fill_parent" 
     		android:layout_width="wrap_content"
     		android:layout_weight="1"
-    		android:numeric="integer"
+    		android:maxLength="120"
+    		android:singleLine="true"
     	/>
     </LinearLayout>
     <Button android:text="@string/start_svr_but" 

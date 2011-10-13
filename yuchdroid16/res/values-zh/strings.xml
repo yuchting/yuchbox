@@ -3,9 +3,22 @@
     <string name="app_name">语盒</string>
     <string name="start_svr_but">启动服务</string>
     <string name="stop_svr_but">停止服务</string>
+    
+    <!-- login activity -->
     <string name="login_host">服务主机:</string>
+    <string name="login_host_error_prompt">请输入正确的服务主机地址（域名或者IP地址）</string>
     <string name="login_port">主机端口:</string>
+    <string name="login_port_error_prompt">请输入正确的主机端口(1-65535)</string>
     <string name="login_user_pass">用户密码:</string>
+    <string name="login_user_pass_error_prompt">请输入用户密码</string>
+    
+    <!-- mail activity -->
     <string name="no_mail">没有内容，请等待推送</string>
     <string name="mail_me_address">我</string>
+    <string name="mail_over_max_length_prompt">--语盒提示\n邮件的长度超过最大设置长度。</string>
+    <string name="mail_notification_ticker">新邮件到达！</string>
+    
+    <!-- dialog relation -->
+    <string name="dlg_info_title">语盒提示：</string>
+    <string name="dlg_info_confirm">我知道了</string>
 </resources>

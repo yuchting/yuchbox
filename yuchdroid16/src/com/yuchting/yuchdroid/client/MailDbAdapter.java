@@ -240,7 +240,7 @@ public class MailDbAdapter {
     	return _orgSub;
     }
     
-    private static String getDisplayMailBody(fetchMail _mail){
+    public static String getDisplayMailBody(fetchMail _mail){
     	if(_mail.GetContain().length() == 0){
     		if(_mail.GetContain_html().length() != 0){
     			return "HTML";
@@ -251,6 +251,7 @@ public class MailDbAdapter {
     		return _mail.GetContain();
     	}
     }
+    
     
     public long createMail(fetchMail _mail,Long _replyGroupId){
         
@@ -297,8 +298,6 @@ public class MailDbAdapter {
     		
     		updateGroup(t_cursor,_mail,true,t_mailID);
     		
-    		return _replyGroupId;
-    		
     	}else{
     		  
     		t_mailID = mDb.insert(DATABASE_TABLE, null, values);
@@ -313,17 +312,17 @@ public class MailDbAdapter {
     			// update the former group
     			//
     			updateGroup(t_cursor,_mail,false,t_mailID);
-    			
-    			return t_cursor.getInt(0); 
-    			
+    			    			
     		}else{
     			
     			// can't find the old group
     			// create a insert one
     			//    			
-    			return insertGroup(t_subject,t_mailID,_mail,false);
+    			insertGroup(t_subject,t_mailID,_mail,false);
     		}
     	}
+    	
+    	return t_mailID;
     }
     
     private static String reRangeAddrList(String _addrList,String _addAddr){

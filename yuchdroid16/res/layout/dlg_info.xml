@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:id="@+id/dlg_info_root">
+  
+	<LinearLayout
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content" 
+		android:orientation="horizontal"
+		android:padding="2dp"
+	>
+		<ImageView
+	    	android:layout_width="wrap_content"
+	    	android:layout_height="wrap_content"
+	    	android:src="@drawable/icon"
+		/>
+		<TextView
+			android:textColor="#fff"
+			android:textSize="20dp"
+			android:text="@string/dlg_info_title"
+			android:layout_gravity="center_vertical"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+		/>
+	</LinearLayout>
+	
+	<View
+	 	android:layout_width="fill_parent"
+	    android:layout_height="1dp"
+	    android:background="@drawable/divider"
+	/>
+	<TextView
+		android:id="@+id/dlg_info_text"
+		android:textColor="#fff"
+		android:maxHeight="300dp"
+		android:scrollbars="vertical"
+		android:text="this is prompt text"
+		android:layout_gravity="center_vertical"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:padding="5dp"
+		android:textSize="17dp"
+	/>
+	<View
+	 	android:layout_width="fill_parent"
+	    android:layout_height="1dp"
+	    android:background="@drawable/divider"
+	/>
+	<LinearLayout 
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:orientation="vertical">
+		<Button
+			android:id="@+id/dlg_info_confirm"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center_horizontal"
+			android:text="@string/dlg_info_confirm"
+			android:layout_marginTop="5dp"
+		/>
+	</LinearLayout>
+	
+	
+    
+</LinearLayout>
