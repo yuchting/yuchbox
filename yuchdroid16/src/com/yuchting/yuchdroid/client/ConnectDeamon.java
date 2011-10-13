@@ -197,9 +197,9 @@ public class ConnectDeamon extends Service{
 			
 		}else{
 			
-			m_host = _intent.getExtras().get("login_host").toString();
-			m_port = (Integer)_intent.getExtras().get("login_port");
-			m_userPass = _intent.getExtras().get("login_pass").toString();
+			m_host = _intent.getExtras().getString("login_host");
+			m_port = (Integer)_intent.getExtras().getInt("login_port");
+			m_userPass = _intent.getExtras().getString("login_pass");
 			
 			m_disconnect = t_disconnect;
 		}
@@ -725,7 +725,7 @@ public class ConnectDeamon extends Service{
 			TriggerMailNotification(this,t_mail);
 							
 		}catch(Exception _e){
-			SetErrorString("C ",e);
+			SetErrorString("C ",_e);
 		}
 	}
 

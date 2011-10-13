@@ -53,9 +53,6 @@ public class Yuchdroid16Activity extends Activity {
                 		startConnectDeamon(t_host,t_port,t_pass);
                 	}	
                 }
-            	 
-            	
-            	
             }
         }); 
         
@@ -108,8 +105,14 @@ public class Yuchdroid16Activity extends Activity {
     	return true;
     }
     
-    private void startConnectDeamon(){
+    private void startConnectDeamon(String _host,int _port,String _userPass){
+    	
     	Intent intent = new Intent(this,ConnectDeamon.class);
+	
+    	intent.getExtras().putString("login_host",_host);
+    	intent.getExtras().putInt("login_port",_port);
+    	intent.getExtras().putString("login_pass",_userPass);
+    	
         startService(intent);
     }  
   
