@@ -1,9 +1,12 @@
-package com.yuchting.yuchdroid.client;
+package com.yuchting.yuchdroid.client.mail;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Vector;
+
+import com.yuchting.yuchdroid.client.GPSInfo;
+import com.yuchting.yuchdroid.client.sendReceive;
 
 class MailAttachment{
 	int 		m_size;

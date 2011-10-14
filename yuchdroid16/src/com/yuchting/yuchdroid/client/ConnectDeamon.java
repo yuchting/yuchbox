@@ -3,6 +3,7 @@ package com.yuchting.yuchdroid.client;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.List;
 import java.util.Locale;
@@ -29,6 +30,11 @@ import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
+import com.yuchting.yuchdroid.client.mail.MailDbAdapter;
+import com.yuchting.yuchdroid.client.mail.MailListActivity;
+import com.yuchting.yuchdroid.client.mail.SendMailDeamon;
+import com.yuchting.yuchdroid.client.mail.fetchMail;
+
 public class ConnectDeamon extends Service{
 	
 	
@@ -44,12 +50,12 @@ public class ConnectDeamon extends Service{
 	
 	final static int	fsm_clientVer = 14;
 	
-	private boolean m_sendAuthMsg 		= false;
+	public boolean m_sendAuthMsg 			= false;
 	private boolean m_destroy				= false;
 	
 	private boolean m_disconnect 			= true;
 	private int	m_ipConnectCounter 		= 0;
-	private int	m_connectCounter 		= 0;
+	private int	m_connectCounter 		= -1;
 	
 	private boolean m_recvAboutText		= false;
 	private String m_latestVersion			= "";
@@ -92,6 +98,10 @@ public class ConnectDeamon extends Service{
 	private Vector<Integer>	m_recvMailSimpleHashCodeSet = new Vector<Integer>();
 	private Vector<String>		m_sendMailAccountList = new Vector<String>();
 	private int				m_defaultSendMailAccountIndex = 0;
+	
+	private Vector<SendMailDeamon>		m_sendingMailAttachment = new Vector<SendMailDeamon>();
+	public boolean				m_copyMailToSentFolder = false;
+	
 	
 	// share preference data
 	//
@@ -175,7 +185,8 @@ public class ConnectDeamon extends Service{
 	}
 	
 	public void SetErrorString(String _error){
-		//TODO add debug erro
+		//TODO add debug error
+		Log.e(TAG,_error);
 	}
 	
 	public void SetErrorString(String _error,Exception e){
@@ -185,34 +196,27 @@ public class ConnectDeamon extends Service{
 	private void onStart_impl(Intent _intent){
 		//TODO start connect 
 		//
-		boolean t_disconnect = !m_disconnect;
-		m_shareData.edit().putBoolean(fsm_shareData_deamon_is_run,!t_disconnect);
-		
-		if(t_disconnect){
-			
-			m_disconnect = t_disconnect;
-			
-			if(m_conn != null){
-				try{
-					m_conn.close();
-				}catch(Exception e){
-					SetErrorString("onStrat_impl",e);
-				}
+		try{
+			if(IsConnectState()){
+				
+				Disconnect();
+				
+			}else{
+				
+				Bundle bundle = _intent.getExtras();
+				
+				m_host = bundle.getString("login_host");
+				m_port = (Integer)bundle.getInt("login_port");
+				m_userPass = bundle.getString("login_pass");
+							
+				Connect();
 			}
 			
-		}else{
+			m_shareData.edit().putBoolean(fsm_shareData_deamon_is_run,!m_disconnect);
 			
-			Bundle bundle = _intent.getExtras();
-			
-			m_host = bundle.getString("login_host");
-			m_port = (Integer)bundle.getInt("login_port");
-			m_userPass = bundle.getString("login_pass");
-			
-			m_disconnect = t_disconnect;
-			m_proxyThread.interrupt();
+		}catch(Exception e){
+			SetErrorString("onStart_impl", e);
 		}
-		
-		
 	}
 
 	public IBinder onBind(Intent intent) {
@@ -244,7 +248,7 @@ public class ConnectDeamon extends Service{
 	
 	private boolean CanNotConnectSvr(){
 		ConnectivityManager t_connect = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-		return !t_connect.getActiveNetworkInfo().isAvailable();
+		return !t_connect.getActiveNetworkInfo().isConnected();
 	}
 	
 	public static int GetClientLanguage(){
@@ -381,19 +385,21 @@ public class ConnectDeamon extends Service{
 		// first use IP address to decrease the DNS message  
 		//
 		try{
-			Socket t_ret;
+			
 			if(_ssl){
 				SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();  
-				t_ret = (SSLSocket) sslsocketfactory.createSocket(m_host, m_port); 
+				m_conn = (SSLSocket) sslsocketfactory.createSocket(); 
 			}else{
-				t_ret = new Socket(m_host,m_port);
+				m_conn = new Socket();
 			}
 			
-			t_ret.setSoTimeout(0);
-			t_ret.setKeepAlive(true);
+			m_conn.connect(new InetSocketAddress(m_host, m_port),5000);
 			
-			return t_ret;
-			 
+			m_conn.setSoTimeout(0);
+			m_conn.setKeepAlive(true);
+			
+			return m_conn;
+			
 		}catch(Exception _e){
 	
 			String message = _e.getMessage();
@@ -533,25 +539,74 @@ public class ConnectDeamon extends Service{
 				TriggerDisconnectNotification();
 			}			
 			
-			synchronized (this) {
-				try{
-					if(m_connect != null){
-						m_connect.CloseSendReceive();
-					}	
-					
-					if(m_conn != null){
-						m_conn.close();
-					}					
-					
-				}catch(Exception _e){
-				}finally{
-					m_connect = null;
-					m_conn = null;
-				}
-			}
+			closeConnect();
 			
 			SetModuleOnlineState(false);									
 		}
+	}
+	
+	public boolean IsConnectState(){
+		return !m_disconnect;
+	}
+	
+	public synchronized void Connect()throws Exception{
+		 
+		 Disconnect();
+		 
+		 SetConnectState(CONNECTING_STATE);
+		 m_disconnect = false;
+	 }
+	
+	public void Disconnect()throws Exception{
+		 
+		m_disconnect = true;
+		StopDisconnectNotification();
+		 
+		m_proxyThread.interrupt();	 
+		 
+		m_connectCounter = -1;
+				 	
+		synchronized (this) {
+			 
+			m_ipConnectCounter = 0;
+			
+			closeConnect();		
+			 
+			for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
+				SendMailDeamon send = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
+				 	
+				send.m_closeState = true; 
+				send.inter(); 
+			}
+			 
+			m_sendingMailAttachment.removeAllElements();
+		}
+	}
+	
+	private synchronized void closeConnect(){
+		
+		try{
+			
+			if(m_connect != null){
+				m_connect.CloseSendReceive();
+			}	
+		}catch(Exception _e){
+			SetErrorString("closeConnect", _e);
+		}	
+		
+		try{
+			if(m_conn != null && !m_conn.isClosed()){
+				m_conn.shutdownInput();
+				m_conn.shutdownOutput();
+				m_conn.close();
+			}
+		}catch(Exception _e){
+			SetErrorString("closeConnect1", _e);
+		}
+
+		m_connect = null;
+		m_conn = null;
+		
 	}
 	
 	private synchronized void ProcessMsg(byte[] _package)throws Exception{

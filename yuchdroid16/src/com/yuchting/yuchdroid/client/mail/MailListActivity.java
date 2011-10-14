@@ -1,4 +1,4 @@
-package com.yuchting.yuchdroid.client;
+package com.yuchting.yuchdroid.client.mail;
 
 import java.util.Date;
 
@@ -12,6 +12,9 @@ import android.view.Window;
 import android.widget.CheckBox;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+
+import com.yuchting.yuchdroid.client.ConnectDeamon;
+import com.yuchting.yuchdroid.client.R;
 
 public class MailListActivity extends ListActivity {
 	
@@ -38,6 +41,16 @@ public class MailListActivity extends ListActivity {
         registerForContextMenu(getListView());
         
         ConnectDeamon.StopMailNotification(this);
+    }
+    
+    @Override
+    protected void onDestroy(){
+    	super.onDestroy();
+    	
+    	// close the cuar
+    	//
+    	m_groupCursor.close();
+    	m_mailDbAdapter.close();
     }
     
     private static final String[] fsm_fromCursor = 

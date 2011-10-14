@@ -63,7 +63,6 @@
     		android:id="@+id/login_user_pass"
     		android:layout_height="fill_parent" 
     		android:layout_width="250dp"
-    		android:text="user passworduser passworduser passworduser passworduser passworduser password"
     		android:maxLength="120"
     		android:singleLine="true"
     		android:password="true"

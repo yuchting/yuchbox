@@ -1,4 +1,7 @@
-package com.yuchting.yuchdroid.client;
+package com.yuchting.yuchdroid.client.mail;
+
+import com.yuchting.yuchdroid.client.R;
+import com.yuchting.yuchdroid.client.R.string;
 
 import android.content.ContentValues;
 import android.content.Context;
