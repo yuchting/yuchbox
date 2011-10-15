@@ -8,7 +8,7 @@ import com.yuchting.yuchberry.client.sendReceive;
 
 public class fetchWeibo {
 	
-	final static int	VERSION = 2;
+	final static int	VERSION = 3;
 	
 	final public static byte	SINA_WEIBO_STYLE 		= 0;
 	final public static byte	TWITTER_WEIBO_STYLE 	= 1;
@@ -195,10 +195,6 @@ public class fetchWeibo {
 		sendReceive.WriteInt(_stream,m_forwardWeiboNum);
 		sendReceive.WriteInt(_stream,m_commentWeiboNum);
 		
-		if(m_hasLocationInfo){
-			m_gpsInfo.OutputData(_stream);
-		}
-		
 		if(m_commentWeiboId != -1){
 			_stream.write(m_commentWeibo != null?1:0);
 			if(m_commentWeibo != null){				
@@ -215,6 +211,10 @@ public class fetchWeibo {
 		}
 		
 		sendReceive.WriteString(_stream,m_replyName);
+		sendReceive.WriteBoolean(_stream, m_hasLocationInfo);
+		if(m_hasLocationInfo){
+			m_gpsInfo.OutputData(_stream);
+		}
 	}
 	
 	public void InputWeibo(InputStream _stream)throws Exception{
@@ -243,16 +243,14 @@ public class fetchWeibo {
 		
 		m_forwardWeiboNum		= sendReceive.ReadInt(_stream);
 		m_commentWeiboNum		= sendReceive.ReadInt(_stream);
-		
-		if(m_hasLocationInfo){
-			m_gpsInfo.InputData(_stream);
-		}
-		
+				
 		if(m_commentWeiboId != -1){
 			if(sendReceive.ReadBoolean(_stream)){
 				m_commentWeibo = new fetchWeibo();
 				m_commentWeibo.InputWeibo(_stream);
 			}			
+		}else{
+			m_commentWeibo = null;
 		}
 		
 		m_replyWeiboId	= sendReceive.ReadLong(_stream);
@@ -261,11 +259,21 @@ public class fetchWeibo {
 				m_replyWeibo = new fetchWeibo();
 				m_replyWeibo.InputWeibo(_stream);
 			}			
+		}else{
+			m_replyWeibo = null;
 		}
 		
 		if(t_version >= 2){
 			m_replyName = sendReceive.ReadString(_stream);
 		}
+		
+		if(t_version >= 3){
+			m_hasLocationInfo = sendReceive.ReadBoolean(_stream);
+			if(m_hasLocationInfo){
+				m_gpsInfo.InputData(_stream);
+			}
+		}
+		
 	}
 	
 	public String getForwardPrefix(){

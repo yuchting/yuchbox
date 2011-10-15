@@ -25,15 +25,19 @@ public final class WeiboHeadImage {
 	public Bitmap	m_headImage;
 	public int		m_dataHash;
 	
+	public boolean m_isWeiboOrIM = true;
+	
 	public final static boolean	fsm_largeHeadImage			= recvMain.fsm_display_width > 320;	
 	public final static int		fsm_headImageWidth 			= recvMain.fsm_display_width>320?fetchWeibo.fsm_headImageSize_l:fetchWeibo.fsm_headImageSize;
 
-	
 	public static ImageUnit	sm_headImageMask = null;
 	public static Bitmap 		sm_defaultHeadImage = null;
 	public static int			sm_defaultHeadImageHashCode = 0;
 	public static recvMain 	sm_mainApp;
 		
+	private static Vector		sm_loadImageQueue = new Vector();
+	private static Thread		sm_loadImageThread = null;
+	
 	public static void AddWeiboHeadImage(Vector _imageList,int _style,String _id,byte[] _dataArray){
 		
 		synchronized (_imageList) {
@@ -81,7 +85,7 @@ public final class WeiboHeadImage {
 			return ;
 		}
 		
-		if(!sm_mainApp.isSDCardAvaible()){
+		if(!recvMain.isSDCardSupport() || !sm_mainApp.isSDCardAvailable(false)){
 			return ;
 		}
 		
@@ -121,10 +125,10 @@ public final class WeiboHeadImage {
 	}
 	
 	
+	
 	public static WeiboHeadImage SearchHeadImage(Vector _imageList,String _imageID,
 													byte _style,int _hashCode,
 													boolean _isWeiboOrIM)throws Exception{
-		
 		synchronized (_imageList) {
 			
 			for(int i = 0 ;i < _imageList.size();i++){
@@ -133,7 +137,7 @@ public final class WeiboHeadImage {
 				if(_style == t_image.m_weiboStyle 
 					&& t_image.m_userID.equals(_imageID) ){
 					
-					if((t_image.m_dataHash != _hashCode && _hashCode != 0)
+					if((t_image.m_dataHash != _hashCode && _hashCode != 0 && t_image.m_dataHash != 0)
 						|| t_image.m_headImage == getDefaultHeadImage()){
 						
 						SendHeadImageQueryMsg(_imageID,_style,_isWeiboOrIM);
@@ -143,80 +147,134 @@ public final class WeiboHeadImage {
 				}
 			}
 			
-			// find/load from the local FileStore
-			//
-			WeiboHeadImage t_image = LoadWeiboImage(_imageID,_style,_isWeiboOrIM);
-			if(t_image != null){
-				if(t_image.m_dataHash != _hashCode && _hashCode != 0){					
-					SendHeadImageQueryMsg(_imageID,_style,_isWeiboOrIM);
+			WeiboHeadImage t_image = new WeiboHeadImage();
+			
+			t_image.m_isWeiboOrIM 	= _isWeiboOrIM;
+			t_image.m_userID 		= _imageID;
+			t_image.m_headImage 	= getDefaultHeadImage();
+			t_image.m_dataHash 		= _hashCode;
+			t_image.m_weiboStyle 	= _style;
+	
+			_imageList.addElement(t_image);		
+			
+			if(recvMain.isSDCardSupport()){
+				
+				if(sm_loadImageThread == null){
+					
+					sm_loadImageThread = new Thread(){
+						
+						public void run(){
+							
+							while(true){
+								
+								try{
+									synchronized (sm_loadImageQueue) {
+										while(sm_loadImageQueue.isEmpty()){
+											try{
+												sm_loadImageQueue.wait();
+											}catch(Exception e){}
+										}
+									}
+									
+									
+									WeiboHeadImage t_image = (WeiboHeadImage)sm_loadImageQueue.elementAt(0);
+									
+									if(!LoadWeiboImage(t_image)){
+										SendHeadImageQueryMsg(t_image.m_userID,t_image.m_weiboStyle,t_image.m_isWeiboOrIM);
+									}
+									
+									sm_loadImageQueue.removeElementAt(0);
+									
+								}catch (Exception e){}
+							}
+						}
+					};
+					
+					sm_loadImageThread.start();
 				}
 				
-				_imageList.addElement(t_image);
-				return t_image;
+				
+				synchronized (sm_loadImageQueue) {
+					sm_loadImageQueue.addElement(t_image);
+					
+					
+					try{
+						sm_loadImageQueue.notify();
+					}catch(Exception e){
+						System.out.println("Error notify");
+					}
+				}			
 			}
 			
-			// load the default image and send head image query message
+			// find/load from the local FileStore
 			//
-			SendHeadImageQueryMsg(_imageID,_style,_isWeiboOrIM);			
-			
-			t_image = new WeiboHeadImage();
-			
-			t_image.m_userID = _imageID;
-			t_image.m_headImage = getDefaultHeadImage();
-			t_image.m_dataHash = _hashCode;
-			t_image.m_weiboStyle = _style;
-			
-			_imageList.addElement(t_image);
+//			WeiboHeadImage t_image = LoadWeiboImage(_imageID,_style,_isWeiboOrIM);
+//			if(t_image != null){
+//				if(t_image.m_dataHash != _hashCode && _hashCode != 0 && t_image.m_dataHash != 0){					
+//					SendHeadImageQueryMsg(_imageID,_style,_isWeiboOrIM);
+//				}
+//				
+//				_imageList.addElement(t_image);
+//				return t_image;
+//			}
+//			
+//			// load the default image and send head image query message
+//			//
+//			SendHeadImageQueryMsg(_imageID,_style,_isWeiboOrIM);			
+//			
+//			t_image = new WeiboHeadImage();
+//			
+//			t_image.m_userID = _imageID;
+//			t_image.m_headImage = getDefaultHeadImage();
+//			t_image.m_dataHash = _hashCode;
+//			t_image.m_weiboStyle = _style;
+//			
+//			_imageList.addElement(t_image);
 			
 			return t_image;
 		}		
 	}
 	
-	private static WeiboHeadImage LoadWeiboImage(String _imageID,byte _style,boolean _isWeiboOrIM)throws Exception{
-		
-		WeiboHeadImage t_image = null;
+	
+	private static boolean LoadWeiboImage(WeiboHeadImage _image){
 		
 		try{
 
 			String t_imageFilename = null;
 
 			if(fsm_largeHeadImage){
-				if(_isWeiboOrIM){
-					t_imageFilename = sm_mainApp.GetWeiboHeadImageDir(_style) + _imageID + "_l.png";
+				if(_image.m_isWeiboOrIM){
+					t_imageFilename = sm_mainApp.GetWeiboHeadImageDir(_image.m_weiboStyle) + _image.m_userID + "_l.png";
 				}else{
-					t_imageFilename = sm_mainApp.GetIMHeadImageDir(_style) + _imageID + "_l.png";
+					t_imageFilename = sm_mainApp.GetIMHeadImageDir(_image.m_weiboStyle) + _image.m_userID + "_l.png";
 				}
 				
 			}else{
-				if(_isWeiboOrIM){
-					t_imageFilename = sm_mainApp.GetWeiboHeadImageDir(_style) + _imageID + ".png";
+				if(_image.m_isWeiboOrIM){
+					t_imageFilename = sm_mainApp.GetWeiboHeadImageDir(_image.m_weiboStyle) + _image.m_userID + ".png";
 				}else{
-					t_imageFilename = sm_mainApp.GetIMHeadImageDir(_style) + _imageID + ".png";
+					t_imageFilename = sm_mainApp.GetIMHeadImageDir(_image.m_weiboStyle) + _image.m_userID + ".png";
 				}
 			}
-			
+
 			FileConnection t_fc = (FileConnection)Connector.open(t_imageFilename,Connector.READ_WRITE);
 			try{
 				if(t_fc.exists()){
 					InputStream t_fileIn = t_fc.openInputStream();
 					try{
-																	
+						
 						byte[] t_data = new byte[(int)t_fc.fileSize()];
-						
 						sendReceive.ForceReadByte(t_fileIn, t_data, t_data.length);
-					
-						t_image = new WeiboHeadImage();
-						
-						t_image.m_userID 		= _imageID;
-						t_image.m_weiboStyle 	= _style;
-						
-						t_image.m_headImage		=  EncodedImage.createEncodedImage(t_data, 0, t_data.length).getBitmap();
-						t_image.m_dataHash 		= t_data.length;
+															
+						_image.m_headImage		= EncodedImage.createEncodedImage(t_data, 0, t_data.length).getBitmap();
+						_image.m_dataHash 		= t_data.length;
 						
 					}finally{
 						t_fileIn.close();
 						t_fileIn = null;
 					}
+					
+					return true;
 				}
 				
 			}finally{
@@ -224,11 +282,10 @@ public final class WeiboHeadImage {
 				t_fc = null;
 			}	
 		}catch(Exception e){
-			t_image = null;
 			sm_mainApp.SetErrorString("LWI:"+ e.getMessage() + e.getClass().getName());
 		}
 		
-		return t_image;
+		return false;
 	}
 		
 	static public int displayHeadImage(Graphics _g,int _x,int _y,WeiboHeadImage _image){

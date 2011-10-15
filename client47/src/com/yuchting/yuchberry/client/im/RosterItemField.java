@@ -1,6 +1,8 @@
 package com.yuchting.yuchberry.client.im;
 
+import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 
@@ -24,16 +26,22 @@ public class RosterItemField extends Field{
 	
 	MainIMScreen					m_mainScreen;	
 	boolean						m_isChatHistoryItem = false;
-	
-	public RosterItemField(RosterChatData _roster,WeiboHeadImage _head,boolean _isChatHistroyItem){
+		
+	public RosterItemField(MainIMScreen _mainScreen,
+							RosterChatData _roster,WeiboHeadImage _head,
+							boolean _isChatHistroyItem,
+							FieldChangeListener _changedListener){
 		super(Field.FOCUSABLE);
 		
+		m_mainScreen = _mainScreen;
 		m_currRoster = _roster;
 		m_headImage	= _head; 
 		
 		m_isChatHistoryItem = _isChatHistroyItem;
+		
+		setChangeListener(_changedListener);
 	}
-
+	
 	public int getPreferredWidth() {
 		return fsm_rosterItemFieldWidth;
 	}
@@ -56,7 +64,14 @@ public class RosterItemField extends Field{
 	}
 	
 	protected void drawFocus(Graphics _g,boolean _on){
-		
+		if(_on){
+			if(m_isChatHistoryItem){
+				m_mainScreen.m_currFocusHistoryRosterItemField = this;
+			}else{
+				m_mainScreen.m_currFocusRosterItemField = this;
+			}			
+		}
+				
 		// fill the IM field BG
 		//
 		fillIMFieldBG(_g,0,0,getPreferredWidth(),getPreferredHeight());
@@ -92,7 +107,7 @@ public class RosterItemField extends Field{
 				//
 				fetchChatMsg t_msg = (fetchChatMsg)m_currRoster.m_chatMsgList.elementAt(m_currRoster.m_chatMsgList.size() - 1);
 				
-				String t_textMsg = t_msg.getMsg();
+				String t_textMsg = MainIMScreen.getChatMsgAbsText(t_msg);
 				
 				if(t_textMsg.length() > 30){
 					t_textMsg = t_textMsg.substring(0,30);
@@ -170,17 +185,14 @@ public class RosterItemField extends Field{
 	}
 	
 	private static ImageUnit sm_imFieldBG = null;
-	private static ImageUnit sm_imFieldBG_spaceLine = null;
 		
 	public static void fillIMFieldBG(Graphics _g,int _x,int _y,int _width,int _height){
 		
 		if(sm_imFieldBG == null){
 			sm_imFieldBG = recvMain.sm_weiboUIImage.getImageUnit("weibo_bg");
-			sm_imFieldBG_spaceLine = recvMain.sm_weiboUIImage.getImageUnit("space_line");
 		}
 		
 		recvMain.sm_weiboUIImage.fillImageBlock(_g, sm_imFieldBG, _x, _y, _width, _height);
-		recvMain.sm_weiboUIImage.drawBitmapLine(_g, sm_imFieldBG_spaceLine, _x, _y, _width);
 	}
 	
 	private static ImageUnit[] sm_rosterState = 
@@ -210,4 +222,16 @@ public class RosterItemField extends Field{
 		return _x + sm_rosterState[0].getWidth(); 
 	}
 	
+	protected boolean keyChar( char character, int status, int time ){
+        if( character == Characters.ENTER ) {
+            fieldChangeNotify( 0 );
+            return true;
+        }
+        return super.keyChar( character, status, time );
+    }
+
+    protected boolean navigationClick( int status, int time ) {        
+        keyChar(Characters.ENTER, status, time );            
+        return true;
+    }
 }

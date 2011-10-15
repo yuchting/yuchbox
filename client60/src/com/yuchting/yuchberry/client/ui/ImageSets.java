@@ -185,20 +185,40 @@ public class ImageSets {
 	}
 	
 	public void drawBitmapLine(Graphics _g,ImageUnit _unit,int _x,int _y,int _width){
+		drawBitmapLine(_g,_unit,_x,_y,_width,_unit.m_height);
+	}
+	
+	public void drawBitmapLine(Graphics _g,ImageUnit _unit,int _x,int _y,int _width,int _height){
 		if(_width <= 0){
 			return ;
 		}
 		
 		int t_horz_num = _width / _unit.m_width;
 		for(int i = 0 ;i < t_horz_num;i++){
-			drawImage(_g,_unit,_x + i * _unit.m_width, _y);
+			drawImage(_g,_unit,_x + i * _unit.m_width, _y,_unit.m_width,_height);
 		}
 		
 		int t_horz_remain_width = _width % _unit.m_width;
 		if(t_horz_remain_width > 0){
 			drawImage(_g,_unit,_x + t_horz_num * _unit.m_width, _y, 
-					t_horz_remain_width, _unit.m_height);
-		}	
+					t_horz_remain_width, _height);
+		}
 	}
 	
+	public void drawBitmapLine_vert(Graphics _g,ImageUnit _unit,int _x,int _y,int _height){
+		if(_height <= 0){
+			return ;
+		}
+		
+		int t_vert_num = _height / _unit.m_height;
+		for(int i = 0 ;i < t_vert_num;i++){
+			drawImage(_g,_unit,_x, _y + i * _unit.m_height,_unit.m_width,_unit.m_height);
+		}
+		
+		int t_vert_remain_height = _height % _unit.m_height;
+		if(t_vert_remain_height > 0){
+			drawImage(_g,_unit,_x , _y + t_vert_num * _unit.m_height, 
+					_unit.m_width, t_vert_remain_height);
+		}
+	}
 }

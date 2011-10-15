@@ -6,7 +6,7 @@ import java.util.Vector;
 import net.rim.blackberry.api.mail.Message;
 
 
-class SendMailDeamon extends Thread implements ISendAttachmentCallback{
+public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	
 	connectDeamon		m_connect 	= null;
 	fetchMail			m_sendMail 	= null;

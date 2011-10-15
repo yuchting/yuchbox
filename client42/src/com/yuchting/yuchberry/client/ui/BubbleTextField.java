@@ -1,14 +1,13 @@
 package com.yuchting.yuchberry.client.ui;
 
-import net.rim.device.api.ui.component.BasicEditField;
 
 //BasicEditField for 4.2os
-public class BubbleTextField extends BasicEditField{
+public class BubbleTextField extends WeiboTextField{
 
 	int m_textWidth = 0;
 	
-	public BubbleTextField(long _style){
-		super(_style);
+	public BubbleTextField(){
+		super(0,0);
 	}
 	
 	public void setText(String _text){

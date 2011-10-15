@@ -17,6 +17,7 @@ import net.rim.device.api.ui.component.NullField;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
+import com.yuchting.yuchberry.client.ObjectAllocator;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.ImageButton;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
@@ -35,7 +36,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	public ImageButton	 m_picBut				= null; 
 		
 
-	public WeiboTextField 	m_textArea				= new WeiboTextField(0,WeiboItemField.fsm_darkColor);
+	public WeiboTextField 	m_textArea				= new WeiboTextField(WeiboItemField.fsm_extendTextColor,WeiboItemField.fsm_extendBGColor);
 	public WeiboTextField	m_commentTextArea		= new WeiboTextField(WeiboItemField.fsm_weiboCommentFGColor,WeiboItemField.fsm_weiboCommentBGColor);
 	
 	public int					m_currentSendType		= 0;
@@ -50,10 +51,13 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	public final static int		fsm_scrollbarSize	= 3;	
 	public final static int		fsm_maxItemInOneScreen = recvMain.fsm_display_height / WeiboItemField.fsm_closeHeight;
 	
+	static ObjectAllocator		sm_weiboItemFieldAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.weibo.WeiboItemField");
 	
 	WeiboItemField		m_selectedItem = null;
 	WeiboItemField		m_extendedItem = null;
 	WeiboItemField		m_editItem	= null;
+	
+	public int			m_editTextAreaHeight = 0;
 	
 	recvMain			m_mainApp;
 	boolean			m_timelineManager;
@@ -213,10 +217,12 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			ForwardWeibo(getCurrExtendedItem());
 		}else if(m_editTextArea == field){
 			
-			RefreshEditTextAreHeight();
-			
-			invalidate();
-			sublayout(0, 0);		
+			if(m_editTextAreaHeight != m_editTextArea.getHeight()){
+				RefreshEditTextAreHeight();
+				
+				invalidate();
+				sublayout(0, 0);
+			}
 			
 			m_parentScreen.setInputPromptText(Integer.toString(m_editTextArea.getText().length()) + 
 					"/" + m_editTextArea.getMaxSize());
@@ -248,7 +254,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	
 	protected void sublayout(int width, int height){
 		
-		WeiboItemField.sm_currTime = (new Date()).getTime();
+		WeiboItemField.sm_currTime = System.currentTimeMillis();
 		
 		m_bufferedTotalHeight = 0;
 				
@@ -353,43 +359,21 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 					clickUpdateField();
 					
 				}else{
-					// if load buffer invodeLater is NOT work
-					//
-					if(m_parentScreen.m_mainApp.hasEventThread()){
-						if(getField(0) == m_updateWeiboFieldNull){
-							replace(m_updateWeiboFieldNull,m_updateWeiboField);
-						}else{
-							m_updateWeiboField.invalidate();
+
+					if(getField(0) == m_updateWeiboFieldNull){
+						replace(m_updateWeiboFieldNull,m_updateWeiboField);
+						
+						if(!_weibo.IsOwnWeibo()){
+							m_mainApp.TriggerWeiboHomeNotification();
 						}
-					}else{
-						m_parentScreen.m_mainApp.invokeLater(new Runnable(){
-							public void run() {
-								if(getField(0) == m_updateWeiboFieldNull){
-									replace(m_updateWeiboFieldNull,m_updateWeiboField);
-									
-									if(!_weibo.IsOwnWeibo()){
-										m_mainApp.TriggerWeiboHomeNotification();
-									}
-								}
-							}
-						});
 					}
+					
+					m_updateWeiboField.invalidate();
 				}
-				
 			}
 								
-		}else{
-			
-			if(m_parentScreen.m_mainApp.hasEventThread()){
-				AddWeibo_impl(_weibo, _image);
-			}else{
-				m_parentScreen.m_mainApp.invokeLater(new Runnable(){
-					public void run(){
-						AddWeibo_impl(_weibo, _image);
-					}
-				});
-			}
-			
+		}else{		
+			AddWeibo_impl(_weibo, _image);
 		}
 
 		if(!_initAdd && !_weibo.IsOwnWeibo()){				
@@ -398,7 +382,16 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	}
 	
 	protected void AddWeibo_impl(fetchWeibo _weibo,WeiboHeadImage _image){
-		WeiboItemField t_field = new WeiboItemField(_weibo,_image,this);
+		WeiboItemField t_field = null;
+		
+		try{
+			t_field = (WeiboItemField)sm_weiboItemFieldAllocator.alloc();
+		}catch(Exception e){
+			t_field = new WeiboItemField();
+			m_mainApp.SetErrorString("AW_I:"+e.getMessage()+e.getClass().getName());
+		}
+		
+		t_field.init(_weibo,_image,this);
 		
 		if(m_timelineManager){
 			insert(t_field.getFocusField(),1);
@@ -424,6 +417,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 						
 						public void run() {
 							delete(t_focusField);
+							sm_weiboItemFieldAllocator.release(t_focusField.m_itemField);
 						}
 					});
 					
@@ -444,6 +438,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 							WeiboMainManager.this.EscapeKey(); //escape control field					
 							
 							delete(t_weiboField.getFocusField());
+							
+							sm_weiboItemFieldAllocator.release(t_weiboField);
 						}
 					});
 					
@@ -503,12 +499,13 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 							}
 							
 						}
-					}, 500, true);
+					}, recvMain.fsm_delayLoadingTime, true);
 				}
 			}
 		}
 		
 	}
+	
 	public boolean Clicked(int status, int time){
 		
 		if(m_timelineManager 
@@ -551,6 +548,12 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	    		m_mainApp.StopWeiboHomeNotification();
 							
 				return true;
+				
+			}else{
+				
+				if(getFieldWithFocus() != getCurrSelectedItem()){
+					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.WEIBO_EXTENDED_CLICK_PROMPT));
+				}				
 			}
 	
 		}
@@ -781,8 +784,8 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	}
 	
 	public int RefreshEditTextAreHeight(){
-		WeiboItemField.sm_editTextAreaHeight = m_editTextArea.getHeight() + WeiboItemField.fsm_headImageTextInterval;
-		return WeiboItemField.sm_editTextAreaHeight;
+		m_editTextAreaHeight = m_editTextArea.getHeight() /*+ WeiboItemField.fsm_headImageTextInterval*/;
+		return m_editTextAreaHeight;
 	}
 	
 	public void ForwardWeibo(WeiboItemField _item){

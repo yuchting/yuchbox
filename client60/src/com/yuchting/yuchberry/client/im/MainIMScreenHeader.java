@@ -13,27 +13,14 @@ public class MainIMScreenHeader extends SliderHeader{
 			
 	private final static String[] fsm_stateBitmapString = 
 	{
-		"commentMe",
-		"weiboUser",
-		"statusIM",
-	};
-	
-	private final static String[] fsm_stateBitmapString_hover = 
-	{
-		"commentMe_hover",
-		"weiboUser_hover",
-		"statusIM_hover",
-	};
+		"history_chat",
+		"friend_list",
+		"own_status",
+	};	
 	
 	MainIMScreen	m_parentScreen = null;
 	public MainIMScreenHeader(MainIMScreen _parentScreen){
-		super(_parentScreen.m_mainApp,fsm_stateBitmapString,fsm_stateBitmapString_hover,
-				new int[][]
-			    {
-					{0x59,0x00,0xb0},
-					{0xea,0x94,0x39},
-					{0xfb,0xf2,0x39},
-				});
+		super(_parentScreen.m_mainApp,fsm_stateBitmapString);
 		
 		m_parentScreen = _parentScreen;
 	}
@@ -45,7 +32,7 @@ public class MainIMScreenHeader extends SliderHeader{
 			
 			// draw a new message sign
 			//
-			recvMain.sm_weiboUIImage.drawImage(g,GetBBerSignBitmap(),fsm_linkedStateSize,fsm_stateBitmapTop);
+			recvMain.sm_weiboUIImage.drawImage(g,GetBBerSignBitmap(),0,fsm_stateBitmapTop);
 		}
     }
 }

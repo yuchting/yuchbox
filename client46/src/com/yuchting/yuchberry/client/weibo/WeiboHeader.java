@@ -15,32 +15,18 @@ public class WeiboHeader extends SliderHeader{
 		
 	private final static String[] fsm_stateBitmapString = 
 	{
-		"home",
-		"atMe",
-		"commentMe",
-		"directMsg",
-		"weiboUser",
+		"home_1",
+		"atMe_1",
+		"commentMe_1",
+		"directMsg_1",
+		"weiboUser_1",
 	};
 	
-	private final static String[] fsm_stateBitmapString_hover = 
-	{
-		"home_hover",
-		"atMe_hover",
-		"commentMe_hover",
-		"directMsg_hover",
-		"weiboUser_hover",
-	};
 	
 	weiboTimeLineScreen m_parentScreen;	
 	
 	public WeiboHeader(weiboTimeLineScreen _screen){
-		super(_screen.m_mainApp,fsm_stateBitmapString,fsm_stateBitmapString_hover,
-			new int[][]
-		    {
-				{0x68,0xff,0x59,0xff,0x00},
-				{0xd7,0xa8,0xea,0xe4,0x94},
-				{0x03,0x06,0xfb,0x00,0xf2},
-			});
+		super(_screen.m_mainApp,fsm_stateBitmapString);
 		
 		m_parentScreen = _screen;
 	}	
@@ -49,7 +35,7 @@ public class WeiboHeader extends SliderHeader{
 	protected void paint( Graphics g ){
 		super.paint(g);
 			
-		int t_x = fsm_linkedStateSize;
+		int t_x = 0;
 		boolean t_drawNewMsgSign = false;
 		
 		for(int i = 0 ;i < fsm_stateBitmapString.length;i++){
@@ -79,7 +65,7 @@ public class WeiboHeader extends SliderHeader{
 				recvMain.sm_weiboUIImage.drawImage(g,GetBBerSignBitmap(),t_x,fsm_stateBitmapTop);
 			}
 			
-			t_x += recvMain.fsm_display_width / m_stateBitmap.length;
+			t_x += fsm_blockWidth;
 		}
     }
 }

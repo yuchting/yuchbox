@@ -13,44 +13,39 @@ public class WeiboDMManager extends WeiboMainManager{
 	
 	public void AddWeibo(final fetchWeibo _weibo,final WeiboHeadImage _image,
 							final boolean _initAdd){
-		
-		m_mainApp.invokeLater(new Runnable() {
-			
-			public void run() {
-				
-				if(!_initAdd){
-					m_hasNewWeibo = true;
-				}
-				
-				int t_num = getFieldCount();
-				for(int i = 0 ;i < t_num;i++){
-					Field field = getField(i);
-					WeiboDMItemField t_dmField;
-					
-					if(field instanceof WeiboItemFocusField){
-						t_dmField = (WeiboDMItemField)((WeiboItemFocusField)field).m_itemField;
-					}else{
-						t_dmField = (WeiboDMItemField)(field);
-					}
-					
-					if(t_dmField.AddSameSender(_weibo,_image)){
-						
-						if(i != 0){
-							delete(field);
-							insert(field,0);
-						}else{
-							invalidate();
-						}					
-						
-						return;
-					}
-				}
-				
-				WeiboDMItemField t_field = new WeiboDMItemField(_weibo,_image,WeiboDMManager.this);
 	
-				insert(t_field.m_focusField,0);	
+		if(!_initAdd){
+			m_hasNewWeibo = true;
+		}
+		
+		int t_num = getFieldCount();
+		for(int i = 0 ;i < t_num;i++){
+			Field field = getField(i);
+			WeiboDMItemField t_dmField;
+			
+			if(field instanceof WeiboItemFocusField){
+				t_dmField = (WeiboDMItemField)((WeiboItemFocusField)field).m_itemField;
+			}else{
+				t_dmField = (WeiboDMItemField)(field);
 			}
-		});					
+			
+			if(t_dmField.AddSameSender(_weibo,_image)){
+				
+				if(i != 0){
+					delete(field);
+					insert(field,0);
+				}else{
+					invalidate();
+				}					
+				
+				return;
+			}
+		}
+		
+		WeiboDMItemField t_field = new WeiboDMItemField(_weibo,_image,WeiboDMManager.this);
+
+		insert(t_field.m_focusField,0);	
+								
 	}
 	
 	public boolean DelWeibo(final fetchWeibo _weibo){
@@ -67,12 +62,7 @@ public class WeiboDMManager extends WeiboMainManager{
 				
 				if(t_managerField.delWeibo(_weibo) && t_managerField.isEmptyPost()){
 					
-					m_mainApp.invokeLater(new Runnable() {
-						
-						public void run() {
-							delete(t_focusField);
-						}
-					});
+					delete(t_focusField);
 					
 					return true;
 				}
@@ -83,16 +73,11 @@ public class WeiboDMManager extends WeiboMainManager{
 				
 				if(t_managerField.delWeibo(_weibo) && t_managerField.isEmptyPost()){
 					
-					m_mainApp.invokeLater(new Runnable() {
-						
-						public void run() {
-				
-							WeiboDMManager.this.EscapeKey(); //escape edit field 
-							WeiboDMManager.this.EscapeKey(); //escape control field
-							
-							delete(t_managerField.getFocusField());
-						}
-					});
+					WeiboDMManager.this.EscapeKey(); //escape edit field 
+					WeiboDMManager.this.EscapeKey(); //escape control field
+					
+					delete(t_managerField.getFocusField());
+			
 					
 					return true;
 				}

@@ -163,7 +163,7 @@ public class connectDeamon extends Thread implements SendListener,
 		public boolean addSendingData(int _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
 			
 			if(!isDisconnectState()){
-				m_connect.SendBufferToSvr(_data, false, false);
+				m_connect.SendBufferToSvr(_data, false, true);
 			}else{
 				synchronized (m_sendingData) {
 					if(_exceptSame){
@@ -265,17 +265,11 @@ public class connectDeamon extends Thread implements SendListener,
 			 
 			Session.removeViewListener(this);
 					         
-	        AttachmentHandlerManager.getInstance().removeAttachmentHandler(this);
-        
-	       
+	        AttachmentHandlerManager.getInstance().removeAttachmentHandler(this);	       
         }        
 	}
-	 
-	 
-	//! SendListener
-	public boolean sendMessage(Message message){
-    	
-		final Message t_msg = message;
+	
+	private void gainMessagingApp(){
 		
 		try{
 			Class msgClass = Class.forName("net.rim.device.apps.internal.messaging.MessagingApp");
@@ -287,7 +281,19 @@ public class connectDeamon extends Thread implements SendListener,
 		}catch(Exception e){
 			m_mainApp.SetErrorString("sMClass:" + e.getMessage() + e.getClass().getName());
 			m_mainApp.m_messageApplication = UiApplication.getUiApplication();
-		}		
+		}
+	}
+	 
+	//! SendListener
+	public boolean sendMessage(Message message){
+    	
+		gainMessagingApp();
+		
+		if(m_mainApp.m_closeMailSendModule){
+    		return true;
+    	}
+		
+		final Message t_msg = message;
 		
 		// invokeLater maybe rise some exception in function ImportMail 
 		//
@@ -421,6 +427,8 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	//@{ MessageListener
 	public void changed(MessageEvent e){
+		
+		gainMessagingApp();
 		
 		if(e.getMessageChangeType() == MessageEvent.UPDATED
 		|| e.getMessageChangeType() == MessageEvent.OPENED){
@@ -1925,7 +1933,13 @@ public class connectDeamon extends Thread implements SendListener,
 			return;
 		}
 		
-		fetchWeibo t_weibo = new fetchWeibo();
+		fetchWeibo t_weibo = null;
+		try{
+			t_weibo = (fetchWeibo)m_mainApp.m_weiboAllocator.alloc();
+		}catch(Exception e){
+			t_weibo = new fetchWeibo();
+			m_mainApp.SetErrorString("PW_0:"+ e.getMessage() + e.getClass().getName());
+		}
 	
 		try{
 			t_weibo.InputWeibo(in);
@@ -1988,6 +2002,10 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	private void StoreHeadImage(Vector _imageList,boolean _isWeiboOrIM,boolean _largeSize,
 							int _style,String _imageId,InputStream in)throws Exception{
+		
+		if(!m_mainApp.isSDCardAvailable(false)){
+			return;
+		}
 		
 		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 		try{

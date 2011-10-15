@@ -26,8 +26,8 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 	
 	Bitmap				m_headImage = null;
 	
-	final class DescBasicEditField extends BasicEditField{
-		public DescBasicEditField(){
+	final class DescTextField extends BasicEditField{
+		public DescTextField(){
 			super(Field.READONLY);
 		}
 		
@@ -70,7 +70,7 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 			if(m_weiboUser == null){
 				return ;
 			}
-			
+						
 			final int ft_interval = 5;
 			
 			int t_start_x = ft_interval;
@@ -78,7 +78,7 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 			
 			int t_color = _g.getColor();
 			try{
-				_g.setColor(0xf0f0f0);
+				_g.setColor(WeiboItemField.fsm_extendBGColor);
 				_g.fillRect(0, 0, getPreferredWidth(),getPreferredHeight());
 				
 				recvMain.sm_weiboUIImage.drawImage(
@@ -106,13 +106,13 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 				//
 				t_start_x += ft_interval;
 				t_start_y -= ft_interval;
-				recvMain.sm_bubbleImage.draw(_g,t_start_x,t_start_y,recvMain.fsm_display_width - t_start_x,
+				WeiboItemField.sm_bubbleImage.draw(_g,t_start_x,t_start_y,recvMain.fsm_display_width - t_start_x,
 						WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
 				
 				t_start_x += ft_interval;
 				t_start_y += 2;
 				
-				_g.setColor(0x606060);
+				_g.setColor(WeiboItemField.fsm_extendTextColor);
 				
 				if(m_weiboUser.getName().equals(m_weiboUser.getScreenName())){
 					_g.drawText(m_weiboUser.getName() , t_start_x,t_start_y);
@@ -132,7 +132,7 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 				int t_desc_width = recvMain.fsm_display_width - ft_interval * 2;
 				int t_desc_height = m_descText.getHeight() + ft_interval * 2;
 				
-				recvMain.sm_bubbleImage.draw(_g,t_start_x,t_start_y,t_desc_width + ft_interval,
+				WeiboItemField.sm_bubbleImage.draw(_g,t_start_x,t_start_y,t_desc_width + ft_interval,
 						t_desc_height,BubbleImage.TOP_POINT_STYLE);
 				
 				boolean notEmpty = _g.pushContext( t_start_x + ft_interval ,t_start_y + ft_interval ,
@@ -168,10 +168,10 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 				int t_fans_num_x	= t_fans_x + (t_infoWidth - WeiboItemField.sm_defaultFont.getAdvance(t_fans_num)) / 2;
 				int t_weibo_num_x	= t_weibo_x + (t_infoWidth - WeiboItemField.sm_defaultFont.getAdvance(t_weibo_num)) / 2;
 				
-				recvMain.sm_bubbleImage.draw(_g,t_follow_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
-				recvMain.sm_bubbleImage.draw(_g,t_follow_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
-				recvMain.sm_bubbleImage.draw(_g,t_fans_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
-				recvMain.sm_bubbleImage.draw(_g,t_weibo_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
+				WeiboItemField.sm_bubbleImage.draw(_g,t_follow_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
+				WeiboItemField.sm_bubbleImage.draw(_g,t_follow_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
+				WeiboItemField.sm_bubbleImage.draw(_g,t_fans_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
+				WeiboItemField.sm_bubbleImage.draw(_g,t_weibo_x,t_start_y,t_infoWidth,WeiboItemField.sm_fontHeight * 2 + ft_interval * 2,BubbleImage.NO_POINT_STYLE);
 				
 				t_start_y += ft_interval;
 				
@@ -191,7 +191,7 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 		}
 	}
 	
-	DescBasicEditField		m_descText = new DescBasicEditField();
+	DescTextField		m_descText = new DescTextField();
 	InfoField			m_infoField = new InfoField();
 	
 	public WeiboUserInfoMgr(recvMain _mainApp,weiboTimeLineScreen _screen){
@@ -210,7 +210,9 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 			m_weiboUser = _weiboUser;
 			
 			if(m_weiboUser != null){
-							
+				
+				m_headImage = null;
+				
 				if(m_weiboUser.getHeadImage() != null){					
 					try{
 						m_headImage = EncodedImage.createEncodedImage(m_weiboUser.getHeadImage(), 0, m_weiboUser.getHeadImage().length).getBitmap();
@@ -221,7 +223,7 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 				
 				if(m_headImage == null){
 					try{
-						byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass().getResourceAsStream("/weibo/defaultHeadImage_l.png"));		
+						byte[] bytes = IOUtilities.streamToBytes(m_mainApp.getClass().getResourceAsStream("/defaultHeadImage_l.png"));		
 						m_headImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
 					}catch(Exception e){
 						m_mainApp.SetErrorString("SWU2:"+e.getMessage() + e.getClass().getName());

@@ -12,18 +12,12 @@
 	<Image Name="qqVIP" XPos="60" YPos="99" Width="12" Height="12" />
 	<Image Name="sinaVIP" XPos="48" YPos="99" Width="12" Height="12" />	
 	
-	<Image Name="atMe" XPos="0" YPos="50" Width="32" Height="32" />
-	<Image Name="atMe_hover" XPos="32" YPos="50" Width="32" Height="32" />
-	<Image Name="home" XPos="64" YPos="50" Width="32" Height="32" />
-	<Image Name="home_hover" XPos="96" YPos="50" Width="32" Height="32" />
-	<Image Name="commentMe" XPos="128" YPos="50" Width="32" Height="32" />
-	<Image Name="commentMe_hover" XPos="160" YPos="50" Width="32" Height="32" />
-	<Image Name="directMsg" XPos="192" YPos="50" Width="32" Height="32" />
-	<Image Name="directMsg_hover" XPos="224" YPos="50" Width="32" Height="32" />
-	<Image Name="weiboUser" XPos="76" YPos="83" Width="32" Height="32" />
-	<Image Name="weiboUser_hover" XPos="108" YPos="83" Width="32" Height="32" />
 	<Image Name="statusIM" XPos="262" YPos="110" Width="32" Height="32" />
-	<Image Name="statusIM_hover" XPos="230" YPos="110" Width="32" Height="32" />
+	<Image Name="atMe_1" XPos="230" YPos="110" Width="32" Height="32" />
+	<Image Name="home_1" XPos="230" YPos="142" Width="32" Height="32" />
+	<Image Name="commentMe_1" XPos="262" YPos="142" Width="32" Height="32" />
+	<Image Name="directMsg_1" XPos="262" YPos="174" Width="32" Height="32" />
+	<Image Name="weiboUser_1" XPos="230" YPos="174" Width="32" Height="32" />	
 		
 	<Image Name="headImageMask_l" XPos="0" YPos="0" Width="50" Height="50" />
 	<Image Name="headImageMask" XPos="50" YPos="0" Width="32" Height="32" />
@@ -45,6 +39,7 @@
 	<Image Name="update_button_en" XPos="150" YPos="115" Width="75" Height="32" />
 	<Image Name="update_button_focus_en" XPos="150" YPos="147" Width="75" Height="32" />
 	
+	
 	<Image Name="phiz_button_focus" XPos="150" YPos="179" Width="40" Height="24" />
 	<Image Name="phiz_button" XPos="150" YPos="203" Width="40" Height="24" />
 	<Image Name="photo_button_focus" XPos="150" YPos="227" Width="40" Height="24" />
@@ -54,7 +49,16 @@
 	
 	<Image Name="picSign" XPos="0" YPos="353" Width="16" Height="16" />
 	<Image Name="commentSign" XPos="16" YPos="353" Width="16" Height="16" />
-	<Image Name="compose" XPos="32" YPos="353" Width="24" Height="24" /> 
+	<Image Name="picSign_1" XPos="0" YPos="426" Width="16" Height="16" />
+	<Image Name="commentSign_1" XPos="16" YPos="426" Width="16" Height="16" />
+	
+	<Image Name="refresh" XPos="32" YPos="353" Width="24" Height="24" />
+	<Image Name="refresh_back" XPos="210" YPos="277" Width="8" Height="32" />
+	<Image Name="refresh_selected" XPos="202" YPos="277" Width="8" Height="32" />
+	
+	<Image Name="refresh_1" XPos="48" YPos="409" Width="24" Height="24" /> 
+	<Image Name="refresh_back_1" XPos="218" YPos="277" Width="8" Height="32" />
+	<Image Name="refresh_selected_1" XPos="218" YPos="277" Width="8" Height="32" />
 	
 	<Image Name="bubble_top_left" XPos="0" YPos="377" Width="16" Height="16" />
 	<Image Name="bubble_top" XPos="16" YPos="377" Width="16" Height="16" />
@@ -74,42 +78,61 @@
 	<Image Name="bubble_bottom_point" XPos="48" YPos="393" Width="16" Height="16" />
 	<Image Name="bubble_left_point" XPos="64" YPos="393" Width="16" Height="16" />
 	
-	<Image Name="weibo_bg" XPos="80" YPos="377" Width="30" Height="30" />
-	<Image Name="weibo_bg_own" XPos="80" YPos="407" Width="30" Height="30" />
-	<Image Name="space_line" XPos="110" YPos="377" Width="8" Height="2" />
+	<Image Name="bubble_top_left_1" XPos="290" YPos="377" Width="16" Height="16" />
+	<Image Name="bubble_top_1" XPos="306" YPos="377" Width="16" Height="16" />
+	<Image Name="bubble_top_right_1" XPos="322" YPos="377" Width="16" Height="16" />
 	
-	<Image Name="nav_bar_left" XPos="118" YPos="377" Width="8" Height="45" />
-	<Image Name="nav_bar_mid" XPos="126" YPos="377" Width="32" Height="45" />
-	<Image Name="nav_bar_right" XPos="158" YPos="377" Width="8" Height="45" />
+	<Image Name="bubble_left_1" XPos="290" YPos="393" Width="16" Height="16" />
+	<Image Name="bubble_bottom_left_1" XPos="290" YPos="409" Width="16" Height="16" />
+	<Image Name="bubble_bottom_1" XPos="306" YPos="409" Width="16" Height="16" />
 	
-	<Image Name="bubble_black_top_left" XPos="166" YPos="377" Width="16" Height="16" />
-	<Image Name="bubble_black_top" XPos="178" YPos="377" Width="16" Height="16" />
-	<Image Name="bubble_black_top_right" XPos="198" YPos="377" Width="16" Height="16" />
+	<Image Name="bubble_right_1" XPos="322" YPos="393" Width="16" Height="16" />
+	<Image Name="bubble_bottom_right_1" XPos="322" YPos="409" Width="16" Height="16" />
 	
-	<Image Name="bubble_black_left" XPos="166" YPos="393" Width="16" Height="16" />
-	<Image Name="bubble_black_bottom_left" XPos="166" YPos="409" Width="16" Height="16" />
-	<Image Name="bubble_black_bottom" XPos="178" YPos="409" Width="16" Height="16" />
+	<Image Name="bubble_inner_block_1" XPos="306" YPos="393" Width="16" Height="16" />
 	
-	<Image Name="bubble_black_right" XPos="198" YPos="393" Width="16" Height="16" />
-	<Image Name="bubble_black_bottom_right" XPos="198" YPos="409" Width="16" Height="16" />
+	<Image Name="bubble_top_point_1" XPos="338" YPos="377" Width="16" Height="16" />
+	<Image Name="bubble_right_point_1" XPos="354" YPos="377" Width="16" Height="16" />
+	<Image Name="bubble_bottom_point_1" XPos="338" YPos="393" Width="16" Height="16" />
+	<Image Name="bubble_left_point_1" XPos="354" YPos="393" Width="16" Height="16" />
 	
-	<Image Name="bubble_black_inner_block" XPos="178" YPos="393" Width="16" Height="16" />
+	<Image Name="weibo_bg" XPos="80" YPos="377" Width="8" Height="64" />
+	<Image Name="weibo_bg_disable" XPos="88" YPos="377" Width="8" Height="64" />
+
+	<Image Name="space_line_1" XPos="110" YPos="379" Width="8" Height="2" />
 	
-	<Image Name="bubble_black_top_point" XPos="214" YPos="377" Width="16" Height="16" />
-	<Image Name="bubble_black_right_point" XPos="230" YPos="377" Width="16" Height="16" />
-	<Image Name="bubble_black_bottom_point" XPos="214" YPos="393" Width="16" Height="16" />
-	<Image Name="bubble_black_left_point" XPos="230" YPos="393" Width="16" Height="16" />
+	<Image Name="nav_bar" XPos="118" YPos="377" Width="48" Height="45" />
+	<Image Name="nav_bar_block" XPos="150" YPos="277" Width="25" Height="43" />
+	<Image Name="nav_bar_block_offline" XPos="175" YPos="277" Width="25" Height="43" />
+	<Image Name="nav_bar_seg" XPos="200" YPos="277" Width="2" Height="43" />
+	<Image Name="nav_bar_point" XPos="150" YPos="322" Width="12" Height="8" />
 	
+	<Image Name="compose_nav_bar" XPos="110" YPos="381" Width="8" Height="32" />
+		
 	<Image Name="weibo_sel" XPos="0" YPos="452" Width="480" Height="60" />
+	<Image Name="weibo_vert_sel" XPos="96" YPos="377" Width="14" Height="64" />
+		
+	<Image Name="selected_top_left" XPos="246" YPos="361" Width="10" Height="10" />
+	<Image Name="selected_top" XPos="256" YPos="361" Width="24" Height="10" />
+	<Image Name="selected_top_right" XPos="280" YPos="361" Width="10" Height="10" />
 	
-	<Image Name="composeTitle_left" XPos="56" YPos="349" Width="4" Height="28" />
-	<Image Name="composeTitle_mid" XPos="60" YPos="349" Width="16" Height="28" />
-	<Image Name="composeTitle_right" XPos="76" YPos="349" Width="4" Height="28" />
+	<Image Name="selected_left" XPos="246" YPos="371" Width="10" Height="24" />
+	<Image Name="selected_bottom_left" XPos="246" YPos="395" Width="10" Height="10" />
+	<Image Name="selected_bottom" XPos="256" YPos="395" Width="24" Height="10" />
+	
+	<Image Name="selected_right" XPos="280" YPos="371" Width="10" Height="24" />
+	<Image Name="selected_bottom_right" XPos="280" YPos="395" Width="10" Height="10" />
+	
+	<Image Name="selected_inner_block" XPos="256" YPos="371" Width="24" Height="24" />
 	
 	<!-- im -->
 	<Image Name="gtalk_sign" XPos="80" YPos="345" Width="16" Height="16" />
 	<Image Name="msn_sign" XPos="80" YPos="361" Width="16" Height="16" />
 	<Image Name="yuch_sign" XPos="128" YPos="361" Width="16" Height="16" />
+	
+	<Image Name="history_chat" XPos="0" YPos="50" Width="32" Height="32" />
+	<Image Name="friend_list" XPos="32" YPos="50" Width="32" Height="32" />
+	<Image Name="own_status" XPos="64" YPos="50" Width="32" Height="32" />
 	
 	<Image Name="away_state" XPos="96" YPos="345" Width="16" Height="16" />
 	<Image Name="busy_state" XPos="112" YPos="345" Width="16" Height="16" />
@@ -122,6 +145,7 @@
 	<Image Name="sent_chat" XPos="192" YPos="345" Width="16" Height="16" />
 	<Image Name="read_chat" XPos="208" YPos="361" Width="16" Height="16" />
 	<Image Name="error_chat" XPos="246" YPos="345" Width="16" Height="16" />
+	
 	
 	<Image Name="composing_chat_state" XPos="224" YPos="345" Width="22" Height="22" />
 	
@@ -137,6 +161,59 @@
 	<Image Name="input_bottom_right" XPos="176" YPos="365" Width="16" Height="10" />
 	
 	<Image Name="input_inner_block" XPos="160" YPos="355" Width="16" Height="12" />
+	
+	<Image Name="input_phiz" XPos="214" YPos="377" Width="18" Height="18" />
+		
+	
+	<Image Name="other_top_left" XPos="162" YPos="320" Width="8" Height="6" />
+	<Image Name="other_top" XPos="170" YPos="320" Width="30" Height="6" />
+	<Image Name="other_top_right" XPos="202" YPos="320" Width="8" Height="6" />
+	
+	<Image Name="other_left" XPos="162" YPos="326" Width="8" Height="12" />
+	<Image Name="other_bottom_left" XPos="162" YPos="338" Width="8" Height="7" />
+	<Image Name="other_bottom" XPos="170" YPos="338" Width="30" Height="7" />
+	
+	<Image Name="other_right" XPos="202" YPos="326" Width="8" Height="12" />
+	<Image Name="other_bottom_right" XPos="202" YPos="338" Width="8" Height="7" />
+	
+	<Image Name="other_inner_block" XPos="170" YPos="326" Width="32" Height="12" />
+	
+	<Image Name="other_point" XPos="150" YPos="331" Width="12" Height="14" />
+	
+	<Image Name="own_top_left" XPos="210" YPos="320" Width="8" Height="6" />
+	<Image Name="own_top" XPos="218" YPos="320" Width="30" Height="6" />
+	<Image Name="own_top_right" XPos="248" YPos="320" Width="8" Height="6" />
+	
+	<Image Name="own_left" XPos="210" YPos="326" Width="8" Height="12" />
+	<Image Name="own_bottom_left" XPos="210" YPos="338" Width="8" Height="7" />
+	<Image Name="own_bottom" XPos="218" YPos="338" Width="30" Height="7" />
+	
+	<Image Name="own_right" XPos="248" YPos="326" Width="8" Height="12" />
+	<Image Name="own_bottom_right" XPos="248" YPos="338" Width="8" Height="7" />
+	
+	<Image Name="own_inner_block" XPos="218" YPos="326" Width="30" Height="12" />
+	
+	<Image Name="own_point" XPos="256" YPos="331" Width="12" Height="14" />
+	
+	
+	<Image Name="voice_button" XPos="190" YPos="227" Width="30" Height="24" />
+	<Image Name="voice_button_focus" XPos="190" YPos="251" Width="30" Height="24" />
+	
+	<Image Name="microphone" XPos="226" YPos="234" Width="46" Height="86" />
+	<Image Name="microphone_top_left" XPos="166" YPos="377" Width="16" Height="16" />
+	<Image Name="microphone_top" XPos="178" YPos="377" Width="16" Height="16" />
+	<Image Name="microphone_top_right" XPos="198" YPos="377" Width="16" Height="16" />
+	
+	<Image Name="microphone_left" XPos="166" YPos="393" Width="16" Height="16" />
+	<Image Name="microphone_bottom_left" XPos="166" YPos="409" Width="16" Height="16" />
+	<Image Name="microphone_bottom" XPos="178" YPos="409" Width="16" Height="16" />
+	
+	<Image Name="microphone_right" XPos="198" YPos="393" Width="16" Height="16" />
+	<Image Name="microphone_bottom_right" XPos="198" YPos="409" Width="16" Height="16" />
+	
+	<Image Name="microphone_inner_block" XPos="178" YPos="393" Width="16" Height="16" />
+	
+	<Image Name="voice_sign" XPos="32" YPos="426" Width="16" Height="16" />
 	
 	<!-- phiz -->
 	<Image Name="[呵呵]" XPos="84" YPos="0" Width="22" Height="22" />

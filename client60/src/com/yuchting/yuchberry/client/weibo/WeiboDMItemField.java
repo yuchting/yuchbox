@@ -77,10 +77,9 @@ public class WeiboDMItemField extends WeiboItemField{
 	int					m_pageIndex = 0;
 	int					m_pageNum = 1;
 	
-	
-	
 	public WeiboDMItemField(fetchWeibo _weibo,WeiboHeadImage _headImage,WeiboMainManager _manager){
-		super(_weibo,_headImage,_manager);		
+		super();
+		init(_weibo,_headImage,_manager);
 		m_DMList.addElement(new WeiboDMData(_weibo,_headImage));
 	}
 	
@@ -174,7 +173,7 @@ public class WeiboDMItemField extends WeiboItemField{
 			// edit text
 			//
 			setPositionChild(m_parentManager.m_editTextArea,0,0);
-			layoutChild(m_parentManager.m_editTextArea,fsm_weiboItemFieldWidth,sm_editTextAreaHeight);
+			layoutChild(m_parentManager.m_editTextArea,fsm_weiboItemFieldWidth,m_parentManager.m_editTextAreaHeight);
 			
 			height =  recalculateHeight(false,false,true,null);						
 			
@@ -286,11 +285,19 @@ public class WeiboDMItemField extends WeiboItemField{
 		m_parentManager.RefreshEditTextAreHeight();
 		
 		if(_g != null){
-			fillWeiboFieldBG(_g,0,sm_editTextAreaHeight,
-						fsm_weiboItemFieldWidth,m_textHeight + sm_editTextAreaHeight + fsm_headImageTextInterval,true);
+//			fillWeiboFieldBG(_g,0,m_parentManager.m_editTextAreaHeight,
+//						fsm_weiboItemFieldWidth,m_textHeight + m_parentManager.m_editTextAreaHeight + fsm_headImageTextInterval,true);
+			int oldColor = _g.getColor();
+			try{
+				_g.setColor(fsm_extendBGColor);
+				_g.fillRect(0,m_parentManager.m_editTextAreaHeight,fsm_weiboItemFieldWidth,
+						m_textHeight + m_parentManager.m_editTextAreaHeight + fsm_headImageTextInterval);
+			}finally{
+				_g.setColor(oldColor);
+			}
 		}		
 		
-		m_textHeight = sm_editTextAreaHeight + fsm_headImageTextInterval;
+		m_textHeight = m_parentManager.m_editTextAreaHeight + fsm_headImageTextInterval;
 		
 		for(int i = m_pageIndex * fsm_numberOfPage;i < t_endNum;i++,t_messageFieldIndex++){
 			
@@ -330,8 +337,7 @@ public class WeiboDMItemField extends WeiboItemField{
 				WeiboHeadImage.displayHeadImage(_g,t_sign_x,
 						m_textHeight + fsm_weiboSignImageSize + fsm_headImageTextInterval,data.m_headImage);
 				
-				recvMain.sm_bubbleImage.draw(
-							_g,t_text_x,m_textHeight-2,fms_msgTextWidth,data.m_dataItemHeight + 6 ,
+				WeiboItemField.sm_bubbleImage.draw(_g,t_text_x,m_textHeight-2,fms_msgTextWidth,data.m_dataItemHeight + 6 ,
 							data.m_weibo.IsOwnWeibo()?BubbleImage.RIGHT_POINT_STYLE:BubbleImage.LEFT_POINT_STYLE);
 											
 				

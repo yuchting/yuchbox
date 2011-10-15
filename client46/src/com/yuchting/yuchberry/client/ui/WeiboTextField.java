@@ -34,8 +34,8 @@ public class WeiboTextField extends ActiveRichTextField{
 	int[]		m_foreground = 
 	{
 		0,
-		0x012a93,
-		0x012a93,
+		0x1355a6,
+		0x1355a6,
 	};
 		
 	static Font[]		sm_fontList = 
@@ -52,15 +52,17 @@ public class WeiboTextField extends ActiveRichTextField{
 	
 	public WeiboTextField(int _foreground,int _background){
 		super("",Field.READONLY | Field.FOCUSABLE | SCANFLAG_THREAD_ON_CREATE);
-		
-		m_foreground[0] = _foreground;
-		Arrays.fill(m_background,_background);
+		setColor(_foreground,_background);
 		
 		if(sm_fontList[0] == null){
 			
 			for(int i = 0;i < sm_fontList.length;i++){
 				sm_fontList[i] = getFont();
 			}
+			
+			// weibo name is bold
+			//
+			sm_fontList[1] = sm_fontList[0].derive(sm_fontList[0].getStyle() | Font.BOLD);
 			
 			int t_width = 0;
 			while((t_width = sm_fontList[0].getAdvance(sm_replacePhizText)) < Phiz.fsm_phizSize){
@@ -69,12 +71,13 @@ public class WeiboTextField extends ActiveRichTextField{
 			
 			sm_replacePhiz_x_offset = (t_width - Phiz.fsm_phizSize) / 2;
 		}
-		
-		
 	}
 	
-	
-	
+	public void setColor(int _foreground,int _background){
+		m_foreground[0] = _foreground;
+		Arrays.fill(m_background,_background);
+	}
+		
 	public static String getTag(ReadText _text){
 		
 		if(_text.m_index >= _text.m_originalText.length()){

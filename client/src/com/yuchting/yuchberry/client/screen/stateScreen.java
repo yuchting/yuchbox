@@ -466,7 +466,8 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
             if(m_mainApp.m_hostname.length() != 0){
             	m_connectBut.setFocus();            	
             }
-        }         
+        }
+        
     }
     
     public void setConnectButState(int _state,recvMain _mainApp){
@@ -570,7 +571,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 			// Perform action if user changed field. 
 			//
 			if(field == m_connectBut){
-				
+			        
 				if(m_hostName.getText().length() == 0 
 					|| m_userPassword.getText().length() == 0
 					|| m_hostport.getText().length() == 0){

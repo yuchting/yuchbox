@@ -1479,16 +1479,13 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 									
 					popScreen(m_mainIMScreen.m_chatScreen);
 					
-					if(getScreenCount() != 0){
+					while(getScreenCount() != 0){
 						// is NOT IM prompt dialog popup and MainChatScreen.close()
 						// ( called mainApp.requestBackground ) 
 						//
 						m_isChatScreen = true;
-						popScreen(m_mainIMScreen);
-					}else{
-						m_isChatScreen = false;
-					}
-					
+						popScreen(getActiveScreen());
+					}		
 					
 				}else if(getActiveScreen() == m_mainIMScreen.m_statusAddScreen
 						&& m_mainIMScreen.m_statusAddScreen != null){

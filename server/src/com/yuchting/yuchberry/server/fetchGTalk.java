@@ -886,7 +886,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			case msg_head.msgChatEnable:
 				
 				m_mainMgr.setIMEnabled(sendReceive.ReadBoolean(in));
-				m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " client disable :"+m_mainMgr.isIMEnabled());
+				m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " client enable :"+m_mainMgr.isIMEnabled());
 				
 				if(!m_mainMgr.isIMEnabled()){
 					DestroySession();

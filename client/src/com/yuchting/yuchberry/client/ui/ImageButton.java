@@ -54,8 +54,8 @@ public class ImageButton extends Field{
             
     protected void layout(int width,int height){
     	if(m_image != null && m_image_focus != null){
-    		width = m_image.getWidth();
-    		height= m_image.getHeight();
+    		width = getImageWidth();
+    		height= getImageHeight();
     	}else{
     		width = getFont().getAdvance(m_text) + fsm_borderWidth * 2;
     		height = getFont().getHeight() + fsm_borderWidth;
@@ -74,10 +74,14 @@ public class ImageButton extends Field{
     	try{
   	
     		if(m_image != null && m_image_focus != null){
-    			if(focus){
-    				m_imageSets.drawImage(g,m_image_focus,0,0);
+    			
+    			int x = (getImageWidth() - m_image_focus.getWidth()) / 2;
+				int y = (getImageHeight() - m_image_focus.getHeight()) / 2;
+				
+    			if(focus){	
+    				m_imageSets.drawImage(g,m_image_focus,x,y);
     			}else{
-    				m_imageSets.drawImage(g,m_image,0,0);
+    				m_imageSets.drawImage(g,m_image,x,y);
     			}   			
     			
     		}else{

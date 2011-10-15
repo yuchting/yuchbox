@@ -25,7 +25,7 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 	
 	String		m_directMsgName = null; 
 	
-	int			m_hashCode		= (int)(((new Date()).getTime()) / 1000);
+	int			m_hashCode		= (int)((System.currentTimeMillis()) / 1000);
 	
 	public  boolean	m_closeState	= false;
 	
@@ -116,6 +116,23 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 		
 		int t_time = 0;
 		while(!m_closeState){
+			
+			while(m_mainApp.m_connectDeamon.m_conn == null 
+				|| !m_mainApp.m_connectDeamon.m_sendAuthMsg){
+				
+				if(!m_mainApp.m_connectDeamon.IsConnectState()){
+					sendError();
+					return;
+				}else{
+					sendPause();
+				}
+				
+				try{
+					sleep(10000);
+				}catch(Exception _e){
+					break;
+				}
+			}
 			
 			if(t_time++ > 3){
 				if(m_mainApp.m_weiboTimeLineScreen != null){

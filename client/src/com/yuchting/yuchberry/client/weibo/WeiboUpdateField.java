@@ -9,21 +9,33 @@ import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 
 public class WeiboUpdateField extends Field{
-	
+
+	private final static int		fsm_textColor = recvMain.sm_standardUI?0x757575:0xffffff;
 	private ImageUnit m_updateBitmap = null;
 		
 	private String m_updatePromptText = recvMain.sm_local.getString(localResource.WEIBO_UPDATE_WEIBO_LABEL);
 	
 	String m_sendUpdateText = "";
 	
-	WeiboMainManager		m_parentManager = null;
+	WeiboMainManager	m_parentManager = null;
+	
+	private ImageUnit	m_standardUI_selected = null;
+	private ImageUnit	m_standardUI_background = null;
 	
 	public WeiboUpdateField(WeiboMainManager _mainManager){
 		super(Field.FOCUSABLE);
 		
-		m_parentManager = _mainManager;		
-		m_updateBitmap = recvMain.sm_weiboUIImage.getImageUnit("compose");
+		m_parentManager = _mainManager;
 		
+		if(recvMain.sm_standardUI){
+			m_standardUI_selected 	= recvMain.sm_weiboUIImage.getImageUnit("refresh_selected_1");
+			m_standardUI_background = recvMain.sm_weiboUIImage.getImageUnit("refresh_back_1");
+			m_updateBitmap 			= recvMain.sm_weiboUIImage.getImageUnit("refresh_1");
+		}else{
+			m_standardUI_selected 	= recvMain.sm_weiboUIImage.getImageUnit("refresh_selected");
+			m_standardUI_background = recvMain.sm_weiboUIImage.getImageUnit("refresh_back");
+			m_updateBitmap 			= recvMain.sm_weiboUIImage.getImageUnit("refresh");
+		}		
 	}
 	
 	public int getPreferredHeight() {
@@ -49,20 +61,17 @@ public class WeiboUpdateField extends Field{
 		
         try{
 			
-			if(_on){
-			
-				_g.setColor(WeiboItemField.fsm_selectedColor);
-				_g.fillRect(1,1,getPreferredWidth() - 2,getPreferredHeight());
-				
+			if(_on){	
+				recvMain.sm_weiboUIImage.drawBitmapLine(_g, m_standardUI_selected, 0, 0, getPreferredWidth());			
 			}else{
-				
-				_g.setColor(WeiboItemField.fsm_darkColor);
-				_g.fillRect(0,0, getPreferredWidth(),getPreferredHeight());			
+				if(!recvMain.sm_standardUI){
+					recvMain.sm_weiboUIImage.drawBitmapLine(_g, m_standardUI_background, 0, 0, getPreferredWidth());
+				}							
 			}	
         	
 			recvMain.sm_weiboUIImage.drawImage(_g,m_updateBitmap,2,0);
         	
-			_g.setColor(0x757575);
+			_g.setColor(fsm_textColor);
 			_g.setFont(WeiboItemField.sm_boldFont);
         	_g.drawText(m_updatePromptText + m_parentManager.m_bufferedWeiboList.size() + " Weibo",
         			m_updateBitmap.getWidth() + 2,2,Graphics.ELLIPSIS);

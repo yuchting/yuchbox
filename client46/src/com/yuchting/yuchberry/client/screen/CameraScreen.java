@@ -77,7 +77,7 @@ public class CameraScreen extends MainScreen
     		
     		String t_encoder = t_encodeList.substring(t_start,t_end);
     		int t_widthIndex = 0;
-    		if((t_widthIndex = t_encoder.indexOf("width=")) != -1 && t_encoder.indexOf("quality=fine") != -1){
+    		if((t_widthIndex = t_encoder.indexOf("width=")) != -1){
     			int t_widthEndIndex = t_encoder.indexOf('&',t_widthIndex);
     			String t_width = t_encoder.substring(t_widthIndex + 6,t_widthEndIndex);
 
