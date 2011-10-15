@@ -135,7 +135,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 						
 			try{
 													
-				while(m_connect.m_conn == null || !m_connect.m_sendAuthMsg){
+				while(!m_connect.m_sendAuthMsg){
 					
 					if(!m_connect.IsConnectState()){
 						sendError();

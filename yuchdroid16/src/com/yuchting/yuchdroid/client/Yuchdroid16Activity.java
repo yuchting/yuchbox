@@ -1,5 +1,8 @@
 package com.yuchting.yuchdroid.client;
 
+import java.util.Date;
+import java.util.Random;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,6 +14,9 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.yuchting.yuchdroid.client.mail.MailDbAdapter;
+import com.yuchting.yuchdroid.client.mail.fetchMail;
 
 public class Yuchdroid16Activity extends Activity {
 	

@@ -301,6 +301,8 @@ public class MailDbAdapter {
     		
     		updateGroup(t_cursor,_mail,true,t_mailID);
     		
+    		t_cursor.close();
+    		
     	}else{
     		  
     		t_mailID = mDb.insert(DATABASE_TABLE, null, values);
@@ -323,6 +325,8 @@ public class MailDbAdapter {
     			//    			
     			insertGroup(t_subject,t_mailID,_mail,false);
     		}
+    		
+    		t_cursor.close();
     	}
     	
     	return t_mailID;
@@ -345,27 +349,36 @@ public class MailDbAdapter {
     }
     
     private boolean updateGroup(Cursor _groupCursor,fetchMail _mail,boolean _read,long _mailIndex){
+
+    	if(!_groupCursor.moveToFirst()){
+    		// move to the frist and retrieve the data correctly 
+			//
+    		return false;
+    	}
     	
-    	long t_id 			= _groupCursor.getLong(0);
+    	long t_id 			= _groupCursor.getLong(_groupCursor.getColumnIndex(KEY_ID));
     	
     	int t_read 			= _read?1:0;
     	
-    	int t_mark 			= _groupCursor.getInt(2);
-    	String t_sub 		= _groupCursor.getString(3);
+    	int t_mark 			= _groupCursor.getInt(_groupCursor.getColumnIndex(GROUP_ATTR_MARK));
+    	String t_sub 		= _groupCursor.getString(_groupCursor.getColumnIndex(GROUP_ATTR_SUBJECT));
     	
     	String t_body 		= getDisplayMailBody(_mail);
     	
     	long t_time 		= _mail.GetSendDate().getTime();
     	String t_addr_list;
     	if(_mail.GetFromVect().isEmpty()){
-    		t_addr_list = reRangeAddrList(_groupCursor.getString(6),mCtx.getString(R.string.mail_me_address));
+    		t_addr_list = reRangeAddrList(_groupCursor.getString(_groupCursor.getColumnIndex(GROUP_ATTR_ADDR_LIST)),
+    								mCtx.getString(R.string.mail_me_address));
     	}else{
-    		t_addr_list = reRangeAddrList(_groupCursor.getString(6),_mail.GetFromVect().get(0));
+    		t_addr_list = reRangeAddrList(_groupCursor.getString(_groupCursor.getColumnIndex(GROUP_ATTR_ADDR_LIST)),
+    								_mail.GetFromVect().get(0));
     	}
     	
-    	String t_group 		= _groupCursor.getString(7);
+    	String t_group 		= _groupCursor.getString(_groupCursor.getColumnIndex(GROUP_ATTR_GROUP)); // reverse data
     	
-    	String t_index		= _groupCursor.getString(8) + fetchMail.fsm_vectStringSpliter + _mailIndex;
+    	String t_index		= _groupCursor.getString(_groupCursor.getColumnIndex(GROUP_ATTR_MAIL_INDEX)) + 
+    								fetchMail.fsm_vectStringSpliter + _mailIndex;
     	
     	ContentValues group = new ContentValues();
     	

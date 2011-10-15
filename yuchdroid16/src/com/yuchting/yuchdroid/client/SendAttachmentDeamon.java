@@ -257,7 +257,7 @@ public class SendAttachmentDeamon extends Thread{
 				break;
 			}
 			
-			while(m_connect.m_conn == null || !m_connect.m_sendAuthMsg){
+			while(!m_connect.m_sendAuthMsg){
 				
 				if(!m_connect.IsConnectState()){
 					ReleaseAttachFile();

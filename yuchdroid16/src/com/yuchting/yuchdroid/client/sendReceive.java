@@ -4,10 +4,17 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ConnectException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.SocketChannel;
+import java.nio.channels.spi.SelectorProvider;
+import java.util.Iterator;
 import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
 
 public class sendReceive extends Thread{
 	
@@ -15,11 +22,11 @@ public class sendReceive extends Thread{
 		void Store(long _uploadByte,long _downloadByte);
 	}
 	
-	OutputStream		m_socketOutputStream = null;
-	InputStream			m_socketInputStream = null;
-	
-	private Vector		m_unsendedPackage 		= new Vector();
-	private Vector		m_unprocessedPackage 	= new Vector();
+	private Selector	m_selector				= null;
+	private SocketChannel m_socketChn			= null;
+			
+	private Vector<byte[]>		m_unsendedPackage 		= new Vector<byte[]>();
+	private Vector<byte[]>		m_unprocessedPackage 	= new Vector<byte[]>();
 	
 	int					m_sendBufferLen 		= 0;
 	
@@ -39,20 +46,41 @@ public class sendReceive extends Thread{
 	static byte[]		sm_keepliveMsg 			= {1,0,0,0,msg_head.msgKeepLive};
 	
 	IStoreUpDownloadByte	m_storeInterface	= null;
+	
+	private Vector<ByteBuffer>					m_sendBufferVect = new Vector<ByteBuffer>();
+			
+	public sendReceive(String _ip,int _port,boolean _ssl)throws Exception{
+
+		if(_ssl){
+			throw new IllegalArgumentException("Current YuchDroid can't support !");
+		}
 		
-	public sendReceive(OutputStream _socketOut,InputStream _socketIn){
-		m_socketOutputStream = _socketOut;
-		m_socketInputStream = _socketIn;
+		m_selector = SelectorProvider.provider().openSelector();
+		m_socketChn = SocketChannel.open();
+		
+		m_socketChn.configureBlocking(false);
+		m_socketChn.register(m_selector, SelectionKey.OP_CONNECT);
+		
+		m_socketChn.connect(new InetSocketAddress(_ip, _port));
+		m_selector.select(5000);
+								
+		if(!m_socketChn.finishConnect()){
+			throw new ConnectException("client socket connect time out!");
+		}
+		
+		// register the selector 
+		//
+		m_socketChn.register(m_selector,SelectionKey.OP_READ);
 		
 		start();
 	}
-	
+		
 	public void SetKeepliveInterval(int _minutes){
 		if(_minutes >= 0){
 			m_keepliveInterval = _minutes * 60;
 		}
 	}
-		
+			
 	public void RegisterStoreUpDownloadByte(IStoreUpDownloadByte _interface){
 		m_storeInterface = _interface;
 	}
@@ -103,13 +131,7 @@ public class sendReceive extends Thread{
 			m_unprocessedPackage.removeAllElements();
 			
 			interrupt();
-			
-			try{
-				m_socketOutputStream.close();
-				m_socketInputStream.close();
-			}catch(Exception _e){}
-			
-	
+				
 			while(isAlive()){
 				try{
 					sleep(10);
@@ -140,13 +162,105 @@ public class sendReceive extends Thread{
 		
 		return t_stream.toByteArray();
 	}
+	
+	private void sendDataByChn(byte[] _data){
+		
+		ByteBuffer t_buffer = ByteBuffer.allocate(_data.length);
+		t_buffer.put(_data);
+		t_buffer.flip();
+		
+		m_sendBufferVect.add(t_buffer);
+		
+		m_selector.wakeup();
+	}
+	
+	private byte[] readDataByChn()throws Exception{
+		
+		ByteArrayOutputStream t_package = new ByteArrayOutputStream();
+		
+		while(true){
+			
+			m_selector.select();
+			
+			Iterator<SelectionKey> it = m_selector.selectedKeys().iterator();
+			while(it.hasNext()){
+				
+				SelectionKey key = it.next();
+				it.remove();
+				
+				if(key.isValid()){
+					
+					if(key.isReadable()){
+						
+						SocketChannel t_chn = (SocketChannel)key.channel();
+						ByteBuffer t_header = ByteBuffer.allocate(4);
+						
+						while(t_header.){
+							
+						}
+						if(-1 == t_chn.read(t_header)){
+							throw new Exception("Client read -1 to closed!"); 
+						}
+						
+						t_header.flip();
+						InputStream in = new ByteArrayInputStream(t_header.array());
+						
+						final int t_len = ReadInt(in);
+						if(t_len == -1){
+							throw new Exception("socket ReadInt failed.");
+						}
+						
+						final int t_ziplen = t_len & 0x0000ffff;
+						final int t_orglen = t_len >>> 16;
+								
+						byte[] t_orgdata = new byte[t_orglen];
+								
+						if(t_ziplen == 0){
+							
+							ForceReadByte(in, t_orgdata, t_orglen);
+							
+							synchronized (this) {
+								// 20 is TCP pack head length
+								m_downloadByte += t_orglen + 4 + 20;
+							}
+							
+						}else{
+							
+							byte[] t_zipdata = new byte[t_ziplen];
+							
+							ForceReadByte(in, t_zipdata, t_ziplen);
+							
+							synchronized (this) {
+								// 20 is TCP pack head length
+								m_downloadByte += t_ziplen + 4 + 20;
+							}
+							
+							GZIPInputStream zi	= new GZIPInputStream(new ByteArrayInputStream(t_zipdata));
+
+							ForceReadByte(zi,t_orgdata,t_orglen);
+							
+							zi.close();
+						}
+						
+						byte[] t_ret = ParsePackage(t_orgdata);
+						t_orgdata = null;
+								
+						
+						return t_ret;
+					}
+				}
+			}
+		}
+	}
 
 	//! send buffer implement
 	private  synchronized void SendBufferToSvr_imple(byte[] _write)throws Exception{
 		
 		if(_write == null){
 			return;
-		}	
+		}
+				
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		
 		ByteArrayOutputStream zos = new ByteArrayOutputStream();
 		
@@ -161,22 +275,26 @@ public class sendReceive extends Thread{
 			// NOT convert
 			//
 			
-			WriteInt(m_socketOutputStream,(_write.length << 16) & 0xffff0000);
-			m_socketOutputStream.write(_write);
-			m_socketOutputStream.flush();
+			WriteInt(os,(_write.length << 16) & 0xffff0000);
+			os.write(_write);
+			os.flush();
 			
 			// 20 is TCP pack head length			
 			m_uploadByte += _write.length + 4 + 20;
 	
 		}else{
-			WriteInt(m_socketOutputStream,((_write.length << 16) & 0xffff0000) | t_zipData.length);
-			m_socketOutputStream.write(t_zipData);
-			m_socketOutputStream.flush();
+			
+			WriteInt(os,((_write.length << 16) & 0xffff0000) | t_zipData.length);
+			os.write(t_zipData);
+			os.flush();
 				
 			// 20 is TCP pack head length
 			m_uploadByte += t_zipData.length + 4 + 20;
-			
-		}	
+		}
+		
+		// send the buffer to blocking SocketChannel 
+		//
+		sendDataByChn(os.toByteArray());
 	}
 	
 	public void run(){
@@ -218,13 +336,10 @@ public class sendReceive extends Thread{
 			}
 			
 		}catch(Exception _e){
-			try{
-				m_socketOutputStream.close();
-				m_socketInputStream.close();	
-			}catch(Exception e){}
+			CloseSendReceive();	
 		}
 	}
-
+	
 	//! recv buffer
 	public byte[] RecvBufferFromSvr()throws Exception{
 		
@@ -239,7 +354,7 @@ public class sendReceive extends Thread{
 			m_keepliveCounter = 0;
 		}
 		
-		InputStream in = m_socketInputStream;
+		InputStream in = new ByteArrayInputStream(readDataByChn());
 
 		final int t_len = ReadInt(in);
 		if(t_len == -1){
@@ -311,7 +426,7 @@ public class sendReceive extends Thread{
 	}
 	// static function to input and output integer
 	//
-	static public void WriteStringVector(OutputStream _stream,Vector _vect)throws Exception{
+	static public void WriteStringVector(OutputStream _stream,Vector<String> _vect)throws Exception{
 		
 		final int t_size = _vect.size();
 		WriteInt(_stream,t_size);
@@ -411,7 +526,7 @@ public class sendReceive extends Thread{
 		return t_val == 1;		
 	}
 		
-	static public void ReadStringVector(InputStream _stream,Vector _vect)throws Exception{
+	static public void ReadStringVector(InputStream _stream,Vector<String> _vect)throws Exception{
 		
 		_vect.removeAllElements();
 		

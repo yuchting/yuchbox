@@ -4,13 +4,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.SocketChannel;
+import java.nio.channels.spi.SelectorProvider;
 import java.util.List;
 import java.util.Locale;
 import java.util.Vector;
-
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 
 import android.app.ActivityManager;
 import android.app.Notification;
@@ -66,9 +66,7 @@ public class ConnectDeamon extends Service{
 	private String m_passwordKey			= "";
 		
 	private SendingQueue	m_sendingQueue	= null;
-	
-	public Socket m_conn 					= null;
-	
+		
 	public sendReceive	m_connect			= null;
 	
 	private MailDbAdapter	m_dba			= new MailDbAdapter(this);
@@ -190,7 +188,8 @@ public class ConnectDeamon extends Service{
 	}
 	
 	public void SetErrorString(String _error,Exception e){
-		SetErrorString(_error+" m:"+e.getMessage()+" c:"+e.getClass().getName());
+		SetErrorString(_error+" msg:"+e.getMessage()+" cls:"+e.getClass().getName());
+		e.printStackTrace();
 	}
 	
 	private void onStart_impl(Intent _intent){
@@ -226,21 +225,15 @@ public class ConnectDeamon extends Service{
 	public void onDestroy(){
 		Log.d(TAG,"onDestory");
 		
-		synchronized (this) {
-			if(m_conn != null){
-				m_destroy = true;
-				try{
-					m_conn.close();
-				}catch(Exception e){
-					SetErrorString("onDestory",e);
-				}
-			}
-			
-			if(m_sendingQueue != null){
-				m_sendingQueue.destory();
-				m_sendingQueue = null;
-			}
+		m_destroy = true;
+		
+		closeConnect();
+	
+		if(m_sendingQueue != null){
+			m_sendingQueue.destory();
+			m_sendingQueue = null;
 		}
+	
 		
 		m_dba.close();
 		m_shareData.edit().putBoolean(fsm_shareData_deamon_is_run, false);
@@ -280,7 +273,7 @@ public class ConnectDeamon extends Service{
 		return 5;
 	}
 	
-	private int GetConnectInterval(){
+	private synchronized int GetConnectInterval(){
 		 
 		if(m_connectCounter++ == -1){
 			return 0;
@@ -371,7 +364,7 @@ public class ConnectDeamon extends Service{
 	}
 	
 	
-	private Socket GetConnection(boolean _ssl)throws Exception{
+	private sendReceive GetConnection(boolean _ssl)throws Exception{
 		 
 		final int t_sleep = GetConnectInterval();
 		if(t_sleep != 0){
@@ -381,37 +374,18 @@ public class ConnectDeamon extends Service{
 		if(m_disconnect == true){
 			throw new Exception("user closed");
 		}
-	
-		// first use IP address to decrease the DNS message  
-		//
+
 		try{
 			
-			if(_ssl){
-				SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();  
-				m_conn = (SSLSocket) sslsocketfactory.createSocket(); 
-			}else{
-				m_conn = new Socket();
-			}
+			return new sendReceive(m_host,m_port,_ssl);
 			
-			m_conn.connect(new InetSocketAddress(m_host, m_port),5000);
+		}catch(java.net.ConnectException e){
+			// connection time out exception
+			//
+			m_connectCounter = 100;
 			
-			m_conn.setSoTimeout(0);
-			m_conn.setKeepAlive(true);
-			
-			return m_conn;
-			
-		}catch(Exception _e){
-	
-			String message = _e.getMessage();
-
-			if(message != null){
-				if(message.indexOf("Peer") != -1){
-					m_connectCounter = 1000;
-				}
-			}
-			 
-			throw _e;
-		} 
+			throw e;
+		}				
 	}
 	
 	
@@ -452,6 +426,61 @@ public class ConnectDeamon extends Service{
 		//TODO popup the about activity 
 	}
 	
+	public boolean IsConnectState(){
+		return !m_disconnect;
+	}
+	
+	public synchronized void Connect()throws Exception{
+		 
+		Disconnect();
+		 
+		SetConnectState(CONNECTING_STATE);
+		m_disconnect = false;
+		 
+		m_proxyThread.interrupt();
+	}
+	
+	public void Disconnect()throws Exception{
+		 
+		m_disconnect = true;
+		StopDisconnectNotification();
+		
+		m_proxyThread.interrupt();
+		
+				 	
+		synchronized (this) {
+			
+			m_connectCounter = -1;
+			 
+			m_ipConnectCounter = 0;
+			
+			closeConnect();		
+			 
+			for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
+				SendMailDeamon send = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
+				 	
+				send.m_closeState = true; 
+				send.inter(); 
+			}
+			 
+			m_sendingMailAttachment.removeAllElements();
+		}
+	}
+	
+	private synchronized void closeConnect(){
+		
+		try{
+			
+			if(m_connect != null){
+				m_connect.CloseSendReceive();
+			}	
+		}catch(Exception _e){
+			SetErrorString("closeConnect", _e);
+		}	
+				
+		m_connect = null;
+	}
+	
 	public void run(){
 		
 		while(!m_destroy){
@@ -475,13 +504,16 @@ public class ConnectDeamon extends Service{
 					m_ipConnectCounter++;
 				}				
 				
-				m_conn = GetConnection(IsUseSSL());
+				SelectorChannel t_selChn = GetConnection(IsUseSSL());
+				
+				m_selector		= t_selChn.selector;
+				m_connChannel	= t_selChn.channel;
 				
 				// TCP connect flowing bytes statistics 
 				//
 				StoreUpDownloadByte(72,40,false);
 								
-				m_connect = new sendReceive(m_conn.getOutputStream(),m_conn.getInputStream());
+				m_connect = new sendReceive(t_selChn);
 				m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
 				
 				m_connect.RegisterStoreUpDownloadByte(new sendReceive.IStoreUpDownloadByte() {
@@ -530,7 +562,7 @@ public class ConnectDeamon extends Service{
 					try{
 						SetConnectState(CONNECTING_STATE);
 						SetErrorString("M ",_e);
-					}catch(Exception e){}	
+					}catch(Exception e){}
 				}							
 			}		
 					
@@ -545,69 +577,7 @@ public class ConnectDeamon extends Service{
 		}
 	}
 	
-	public boolean IsConnectState(){
-		return !m_disconnect;
-	}
 	
-	public synchronized void Connect()throws Exception{
-		 
-		 Disconnect();
-		 
-		 SetConnectState(CONNECTING_STATE);
-		 m_disconnect = false;
-	 }
-	
-	public void Disconnect()throws Exception{
-		 
-		m_disconnect = true;
-		StopDisconnectNotification();
-		 
-		m_proxyThread.interrupt();	 
-		 
-		m_connectCounter = -1;
-				 	
-		synchronized (this) {
-			 
-			m_ipConnectCounter = 0;
-			
-			closeConnect();		
-			 
-			for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
-				SendMailDeamon send = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
-				 	
-				send.m_closeState = true; 
-				send.inter(); 
-			}
-			 
-			m_sendingMailAttachment.removeAllElements();
-		}
-	}
-	
-	private synchronized void closeConnect(){
-		
-		try{
-			
-			if(m_connect != null){
-				m_connect.CloseSendReceive();
-			}	
-		}catch(Exception _e){
-			SetErrorString("closeConnect", _e);
-		}	
-		
-		try{
-			if(m_conn != null && !m_conn.isClosed()){
-				m_conn.shutdownInput();
-				m_conn.shutdownOutput();
-				m_conn.close();
-			}
-		}catch(Exception _e){
-			SetErrorString("closeConnect1", _e);
-		}
-
-		m_connect = null;
-		m_conn = null;
-		
-	}
 	
 	private synchronized void ProcessMsg(byte[] _package)throws Exception{
 		 ByteArrayInputStream in  = new ByteArrayInputStream(_package);
