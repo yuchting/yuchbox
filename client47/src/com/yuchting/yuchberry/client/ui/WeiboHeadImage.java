@@ -11,6 +11,7 @@ import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.UiApplication;
 
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
@@ -33,7 +34,7 @@ public final class WeiboHeadImage {
 	public static ImageUnit	sm_headImageMask = null;
 	public static Bitmap 		sm_defaultHeadImage = null;
 	public static int			sm_defaultHeadImageHashCode = 0;
-	public static recvMain 	sm_mainApp;
+	public static recvMain 	sm_mainApp = null;
 		
 	private static Vector		sm_loadImageQueue = new Vector();
 	private static Thread		sm_loadImageThread = null;
@@ -115,6 +116,11 @@ public final class WeiboHeadImage {
 	private static Bitmap getDefaultHeadImage()throws Exception{
 		
 		if(sm_defaultHeadImage == null){
+			
+			if(sm_mainApp == null && UiApplication.getUiApplication() instanceof recvMain){
+				sm_mainApp = (recvMain)UiApplication.getUiApplication();
+			}
+
 			byte[] bytes = IOUtilities.streamToBytes(sm_mainApp.getClass()
 					.getResourceAsStream(fsm_largeHeadImage?"/defaultHeadImage_l.png":"/defaultHeadImage.png"));		
 			sm_defaultHeadImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
@@ -205,32 +211,7 @@ public final class WeiboHeadImage {
 					}
 				}			
 			}
-			
-			// find/load from the local FileStore
-			//
-//			WeiboHeadImage t_image = LoadWeiboImage(_imageID,_style,_isWeiboOrIM);
-//			if(t_image != null){
-//				if(t_image.m_dataHash != _hashCode && _hashCode != 0 && t_image.m_dataHash != 0){					
-//					SendHeadImageQueryMsg(_imageID,_style,_isWeiboOrIM);
-//				}
-//				
-//				_imageList.addElement(t_image);
-//				return t_image;
-//			}
-//			
-//			// load the default image and send head image query message
-//			//
-//			SendHeadImageQueryMsg(_imageID,_style,_isWeiboOrIM);			
-//			
-//			t_image = new WeiboHeadImage();
-//			
-//			t_image.m_userID = _imageID;
-//			t_image.m_headImage = getDefaultHeadImage();
-//			t_image.m_dataHash = _hashCode;
-//			t_image.m_weiboStyle = _style;
-//			
-//			_imageList.addElement(t_image);
-			
+						
 			return t_image;
 		}		
 	}

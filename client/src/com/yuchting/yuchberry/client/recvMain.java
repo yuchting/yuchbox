@@ -324,6 +324,18 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		return fsm_maxWeiboNum[0];
 	}
 	
+	private void makeDir(String _path)throws Exception{
+		FileConnection fc = (FileConnection) Connector.open(_path,Connector.READ_WRITE);
+		try{
+			if(!fc.exists()){
+				fc.mkdir();
+			}
+		}finally{
+			fc.close();
+			fc = null;
+		}
+	}
+	
 	public recvMain(boolean _systemRun){
 		
 		try{
@@ -334,20 +346,19 @@ public class recvMain extends UiApplication implements localResource,LocationLis
     	}
     	
 		try{
-			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/",Connector.READ_WRITE);
-			try{
-				if(!fc.exists()){
-					fc.mkdir();
-				}
-			}finally{
-				fc.close();
-				fc = null;
-			}			
+			makeDir(uploadFileScreen.fsm_rootPath_back + "YuchBerry/");			
 		}catch (Exception _e) {
 			DialogAlertAndExit("can't use the dev ROM to store config file!");
         	return;
 		}
-						
+		
+		try{
+			makeDir(uploadFileScreen.fsm_rootPath_default + "YuchBerry/");				
+		}catch (Exception _e) {
+			DialogAlertAndExit("can't use the SDCard to store file!");
+        	return;
+		}
+		
 		GetAttachmentDir();
 		        
         Criteria t_criteria = new Criteria();
@@ -474,31 +485,13 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	        	
     		// create the sdcard path 
     		//
-        	FileConnection fc = (FileConnection) Connector.open(_prefix,Connector.READ_WRITE);
-        	try{
-        		if(!fc.exists()){
-            		fc.mkdir();
-            	}
-           	}finally{
-        		fc.close();
-        		fc = null;
-        	}
+        	makeDir(_prefix);
         	
         	// attempt create the head image directory
     		//
     		for(int i = 0;i < dir.length;i++){
-    			FileConnection tfc = (FileConnection) Connector.open(dir[i],Connector.READ_WRITE);
-            	try{
-            		if(!tfc.exists()){
-            			tfc.mkdir();
-                	}	
-            	}finally{
-            		tfc.close();
-            		tfc = null;
-            	}
+    			makeDir(dir[i]);
         	}
-    		
-        	dir = null;
     	}		
 	}
 	
@@ -535,15 +528,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		String t_attDir = (isSDCardAvailable(false)?uploadFileScreen.fsm_rootPath_default:uploadFileScreen.fsm_rootPath_back) + fsm_mailAttachDir;
 		
 		try{
-			FileConnection fc = (FileConnection) Connector.open(t_attDir,Connector.READ_WRITE);
-	    	try{
-	        	if(!fc.exists()){
-	        		fc.mkdir();
-	        	}	
-	    	}finally{
-	    		fc.close();
-	    		fc = null;
-	    	}
+			makeDir(t_attDir);
 		}catch(Exception e){
 			DialogAlertAndExit("create AttDir failed: " + t_attDir);
 			t_attDir = "";
