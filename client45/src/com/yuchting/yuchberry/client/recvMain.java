@@ -352,12 +352,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
         	return;
 		}
 		
-		try{
-			makeDir(uploadFileScreen.fsm_rootPath_default + "YuchBerry/");				
-		}catch (Exception _e) {
-			DialogAlertAndExit("can't use the SDCard to store file!");
-        	return;
+		if(!_systemRun){
+			try{
+				makeDir(uploadFileScreen.fsm_rootPath_default + "YuchBerry/");				
+			}catch (Exception _e) {
+				// if in system run, the SDCard is never used
+				// or without SDCard
+			}
 		}
+		
 		
 		GetAttachmentDir();
 		        
@@ -471,13 +474,19 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	private void mkHeadImageDir(String _prefix,String[] dir,boolean _init)throws Exception{
 		
-		if(!isSDCardAvailable(false)){
+		boolean t_sdCard = isSDCardAvailable(false);
+		
+		if(!t_sdCard){
 			throw new Exception("Can't use the sd card to store weibo head image.");
 		}
 		
 		// connect the string of head image directory
 		//
 		if(!_init){
+			
+			if(t_sdCard){
+				makeDir(uploadFileScreen.fsm_rootPath_default + "YuchBerry/");
+			}			
 			
         	for(int i = 0;i < dir.length;i++){
         		dir[i] = _prefix + dir[i];
@@ -525,10 +534,16 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public String GetAttachmentDir(){
 		
-		String t_attDir = (isSDCardAvailable(false)?uploadFileScreen.fsm_rootPath_default:uploadFileScreen.fsm_rootPath_back) + fsm_mailAttachDir;
+		boolean t_sdCard = isSDCardAvailable(false);
 		
+		String t_attDir = (t_sdCard?uploadFileScreen.fsm_rootPath_default:uploadFileScreen.fsm_rootPath_back) + fsm_mailAttachDir;
 		try{
+			if(t_sdCard){
+				makeDir(uploadFileScreen.fsm_rootPath_default + "YuchBerry/");
+			}
+			
 			makeDir(t_attDir);
+			
 		}catch(Exception e){
 			DialogAlertAndExit("create AttDir failed: " + t_attDir);
 			t_attDir = "";
@@ -2115,7 +2130,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	
 	public static ImageSets			sm_weiboUIImage = null;	
-	public static Vector				sm_phizImageList = new Vector();
+	public Vector						m_phizImageList = new Vector();
+	public static Vector				sm_phizImageList = null;		
 	
 	public ObjectAllocator				m_weiboAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.weibo.fetchWeibo");
 	
@@ -2134,9 +2150,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			    ImageUnit t_unit = (ImageUnit)t_imageList.elementAt(i);
 			    
 			    if(t_unit.getName().charAt(0) == '['){
-			    	sm_phizImageList.addElement(new Phiz(t_unit,sm_weiboUIImage));
+			    	m_phizImageList.addElement(new Phiz(t_unit,sm_weiboUIImage));
 			    }
 			}
+			
+			sm_phizImageList = m_phizImageList;
 		}
 	}
 	
@@ -2464,6 +2482,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public boolean				m_imReturnSend	= false;
 	public boolean				m_imPopupPrompt	= true;
+	
+	public boolean				m_imStoreImageVoice		= false;
 		
 	public int					m_imCurrUseStatusIndex	= 0;
 	public static Vector		sm_imStatusList			= new Vector();
@@ -2515,6 +2535,21 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}
 		
 		return fsm_imChatMsgHistory[m_imChatMsgHistory];
+	}
+	
+	final static String fsm_imStoreImageVoiceDir = uploadFileScreen.fsm_rootPath_default + "YuchBerry/ChatHistory/";
+	boolean m_imStoreImageDirInit = false;
+	public String getIMStoreImageVoicePath()throws Exception{
+		
+		if(!m_imStoreImageDirInit){
+			makeDir(uploadFileScreen.fsm_rootPath_default + "YuchBerry/");
+			makeDir(fsm_imStoreImageVoiceDir);
+			
+			m_imStoreImageDirInit = true;
+		}
+		
+		return fsm_imStoreImageVoiceDir;
+		
 	}
 	
 }
