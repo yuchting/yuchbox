@@ -1082,6 +1082,10 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 			m_waitDlg.close();
 			m_waitDlg = null;
 		}
+		
+		// prepare store this msg;
+		//
+		m_mainScreen.storefetchMsg(t_msg);
 	}
 	
 	public void sendChatComposeState(byte _state){

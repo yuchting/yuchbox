@@ -90,7 +90,7 @@ public class RecordAudioScreen{
 	Screen m_parentScreen = null;
 	
 	int m_remainTimer = fsm_maxRecordingTime;
-	int m_remainTimerID = -1;
+	Thread m_remainTimerTheard = null;
 	
 	static ImageUnit	sm_microphone = recvMain.sm_weiboUIImage.getImageUnit("microphone");
 	static BubbleImage	sm_microphone_block = new BubbleImage(
@@ -116,8 +116,9 @@ public class RecordAudioScreen{
 		// get the length
 		fsm_screenWidth = Font.getDefault().getAdvance(recvMain.sm_local.getString(localResource.RECORDING_REMAIN_LABEL) + "00") + 10;
 	}
+	
+	public void startRecord(){
 		
-	public void onDisplay(){
 		if(m_recordThread != null){
 			m_recordThread.stop();
 		}
@@ -128,18 +129,32 @@ public class RecordAudioScreen{
 		m_remainTimer = fsm_maxRecordingTime;
 		m_remain = recvMain.sm_local.getString(localResource.RECORDING_REMAIN_LABEL) + Integer.toString(m_remainTimer);
 		
-		m_remainTimerID = m_mainApp.invokeLater(new Runnable(){
+		m_remainTimerTheard = new Thread(){
 			public void run(){
-				m_remain = recvMain.sm_local.getString(localResource.RECORDING_REMAIN_LABEL) + 
-								Integer.toString(--m_remainTimer);
-				if(m_remainTimer <= 0){
-					close();
-				}else{
-					m_parentScreen.invalidate();
-				}
+				while(true){
+
+					try{
+						sleep(1000);
+					}catch(Exception e){
+						break;
+					}
+			
+					m_remain = recvMain.sm_local.getString(localResource.RECORDING_REMAIN_LABEL) + 
+									Integer.toString(--m_remainTimer);
+					if(m_remainTimer <= 0){
+						close();
+						
+						break;
+					}else{
+						m_parentScreen.invalidate();
+					}
+				}					
 			}
-		}, 1000, true);
+		};
+		
+		m_remainTimerTheard.start();
 	}
+	
 	
 	public void close(){
 		
@@ -149,9 +164,11 @@ public class RecordAudioScreen{
 			m_recordThread = null;
 		}
 		
-		if(m_remainTimerID != -1){
-			m_mainApp.cancelInvokeLater(m_remainTimerID);
-			m_remainTimerID = -1;
+		if(m_remainTimerTheard != null){
+			if(m_remainTimerTheard.isAlive()){
+				m_remainTimerTheard.interrupt();
+			}
+			m_remainTimerTheard = null;			
 		}
 		
 		m_parentScreen.invalidate();

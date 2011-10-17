@@ -30,6 +30,8 @@ public class CameraScreen extends MainScreen
 
     /** The field containing the feed from the camera. */
     private Field m_videoField;
+    
+    private Player m_player;
             
     private static String fsm_encoding_800 = null;
     private static String fsm_encoding_1024 = null;
@@ -77,7 +79,7 @@ public class CameraScreen extends MainScreen
     		
     		String t_encoder = t_encodeList.substring(t_start,t_end);
     		int t_widthIndex = 0;
-    		if((t_widthIndex = t_encoder.indexOf("width=")) != -1 && t_encoder.indexOf("quality=fine") != -1){
+    		if((t_widthIndex = t_encoder.indexOf("width=")) != -1){
     			int t_widthEndIndex = t_encoder.indexOf('&',t_widthIndex);
     			String t_width = t_encoder.substring(t_widthIndex + 6,t_widthEndIndex);
 
@@ -136,13 +138,13 @@ public class CameraScreen extends MainScreen
         try{
         	
             //Create a player for the Blackberry's camera.
-            Player player = javax.microedition.media.Manager.createPlayer( "capture://video" );
+        	m_player = javax.microedition.media.Manager.createPlayer( "capture://video" );
 
             //Set the player to the REALIZED state (see Player docs.)
-            player.realize();
+        	m_player.realize();
 
             //Grab the video control and set it to the current display.
-            m_videoControl = (VideoControl)player.getControl( "VideoControl" );   
+            m_videoControl = (VideoControl)m_player.getControl( "VideoControl" );   
             
             if(m_videoControl != null){
                 //Create the video field as a GUI primitive (as opposed to a
@@ -158,7 +160,7 @@ public class CameraScreen extends MainScreen
             }
 
             //Set the player to the STARTED state (see Player docs.)
-            player.start();
+            m_player.start();
             
             if(m_videoField != null){
             	add(m_videoField);
@@ -191,11 +193,9 @@ public class CameraScreen extends MainScreen
                     createImageScreen( m_videoControl.getSnapshot( getEncodeSize() ) );
             	}
                 
-                
             }catch(Throwable e){
                 Dialog.alert( "ERROR " + e.getClass() + ":  " + e.getMessage() );
             }
-
         }    
     };
     
@@ -218,13 +218,24 @@ public class CameraScreen extends MainScreen
         //System.out.println("Input" + c + ":" + Keypad.getKeyCode(c, status));
         switch (c) {
             case Characters.ESCAPE:
-                this.close();
+                close();
                 return true;
             default:
                 return super.keyChar(c, status, time);
         }
     }
 
+    public void close(){
+    	if(m_player != null){
+    		try{
+    			m_player.stop();
+    		}catch(Exception e){}
+    		
+    		m_player.close();
+    	}
+    	    	
+    	super.close();
+    }
     /**
      * Handle trackball click events.
      * @see net.rim.device.api.ui.Screen#invokeAction(int)

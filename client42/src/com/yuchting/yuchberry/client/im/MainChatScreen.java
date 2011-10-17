@@ -269,7 +269,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 							
 		}else if(field == m_phizButton){
 			UiApplication.getUiApplication().pushScreen(
-					PhizSelectedScreen.getPhizScreen(m_middleMgr.m_chatScreen.m_mainApp, m_editTextArea));
+					PhizSelectedScreen.getPhizScreen(m_editTextArea));
 		}
 	}	
 		
@@ -457,6 +457,8 @@ final class MiddleMgr extends VerticalFieldManager{
 			t_field.setFocus();
 		}
 		
+		m_inputMgr.m_editTextArea.setFocus();
+		
 		m_inputMgr.enableVoiceMode(m_chatScreen.m_mainApp.m_imVoiceImmMode);
 	}
 	
@@ -618,8 +620,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 	MenuItem m_phizMenu = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_PHIZ_LABEL),m_menu_op++,0){
 		public void run(){
 			UiApplication.getUiApplication().pushScreen(
-					PhizSelectedScreen.getPhizScreen(m_middleMgr.m_chatScreen.m_mainApp, 
-													m_middleMgr.m_inputMgr.m_editTextArea));
+					PhizSelectedScreen.getPhizScreen(m_middleMgr.m_inputMgr.m_editTextArea));
 		}
 	};
 	MenuItem m_snapItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPEN_CAMERA_SNAP),m_menu_op++,0){
@@ -651,7 +652,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 	
 	MenuItem m_recordMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_RECORD_AUDIO_MENU_LABEL),m_menu_op++,0){
 		public void run(){
-			m_recordScreen.onDisplay();
+			m_recordScreen.startRecord();
 			m_isRecording = true;
 			
 			invalidate();
@@ -1081,6 +1082,10 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 			m_waitDlg.close();
 			m_waitDlg = null;
 		}
+		
+		// prepare store this msg;
+		//
+		m_mainScreen.storefetchMsg(t_msg);
 	}
 	
 	public void sendChatComposeState(byte _state){
@@ -1141,6 +1146,12 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		}
 		
 		m_isPrompted = false;
+		
+		int key = Keypad.key(keycode);
+		if(key == 'R' && !m_middleMgr.m_inputMgr.m_editTextArea.isFocus()){
+			m_middleMgr.m_inputMgr.m_editTextArea.setFocus();
+			return true;
+		}
 		
 		return super.keyDown(keycode,time);		
 	}

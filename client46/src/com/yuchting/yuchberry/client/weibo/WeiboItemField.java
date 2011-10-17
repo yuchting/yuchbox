@@ -43,8 +43,10 @@ public class WeiboItemField extends Manager{
 	public final static int		fsm_selectedColor			= 0x00a7e6;
 	
 	public final static int		fsm_timeTextColor			= recvMain.sm_standardUI?0xfb9620:0x8bc5f8;
+	
 	public final static int		fsm_extendTextColor			= recvMain.sm_standardUI?0:0xd0d0d0;
 	public final static int		fsm_extendBGColor			= recvMain.sm_standardUI?0xc0deed:0x1f2d39;
+		
 	public final static int		fsm_absTextColor			= recvMain.sm_standardUI?0x586061:0xbbc1c6;
 	
 	public final static int		fsm_weiboNameTextColor		= recvMain.sm_standardUI?0:0xe5e3cf;
@@ -492,7 +494,7 @@ public class WeiboItemField extends Manager{
 		}else{
 			
 			if(m_absTextArea != null && recvMain.sm_showAllInList){
-				return Math.max(m_absTextHeight + 5 + sm_timeFont.getHeight() + fsm_headImageTextInterval,
+				return Math.max(m_absTextHeight + 5 + sm_timeFont.getHeight() + fsm_headImageTextInterval * 2,
 									fsm_weiboSignImageSize + WeiboHeadImage.fsm_headImageWidth + 10);
 			}else{
 				return sm_fontHeight * 2 + 1;
@@ -720,13 +722,13 @@ public class WeiboItemField extends Manager{
 				// draw the weibo style
 				//
 				recvMain.sm_weiboUIImage.drawImage(
-						_g,weiboTimeLineScreen.GetWeiboSign(m_weibo.GetWeiboStyle()),t_leadingSpace, 0);
+						_g,weiboTimeLineScreen.GetWeiboSign(m_weibo.GetWeiboStyle()),t_leadingSpace, fsm_headImageTextInterval);
 				
 				// name VIP sign
 				//
 				if(m_weibo.IsSinaVIP()){
 					recvMain.sm_weiboUIImage.drawImage(_g,weiboTimeLineScreen.GetVIPSignBitmap(m_weibo.GetWeiboStyle()),
-														fsm_weiboSignImageSize ,0);
+														fsm_weiboSignImageSize ,fsm_headImageTextInterval);
 				}
 				
 				// time string
@@ -978,6 +980,24 @@ public class WeiboItemField extends Manager{
 				recvMain.sm_weiboUIImage.drawBitmapLine(_g, sm_weiboFieldBG_disable, _x, _y, _width);
 			}else{
 				recvMain.sm_weiboUIImage.drawBitmapLine(_g, sm_weiboFieldBG, _x, _y, _width);
+			}
+			
+			if(recvMain.sm_showAllInList){
+				int t_color = _g.getColor();
+				try{
+					
+					int t_fillColor = 0x2b3d4d;
+					
+					if(m_parentManager.getCurrExtendedItem() != null 
+					&& m_parentManager.getCurrExtendedItem() != this){
+						t_fillColor = 0x141c23;
+					}
+					
+					_g.setColor(t_fillColor);
+					_g.fillRect(0,sm_weiboFieldBG.getHeight(),getPreferredWidth(),getPreferredHeight() - sm_weiboFieldBG.getHeight());
+				}finally{
+					_g.setColor(t_color);
+				}
 			}
 				
 		}

@@ -3,7 +3,13 @@ package com.yuchting.yuchberry.client.im;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Vector;
+
+import javax.microedition.io.Connector;
+import javax.microedition.io.file.FileConnection;
 
 import local.localResource;
 import net.rim.blackberry.api.invoke.Invoke;
@@ -160,7 +166,30 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			}
 			
 		}
-	};	
+	};
+	
+	MenuItem m_delHistoryRoster = new MenuItem(recvMain.sm_local.getString(localResource.IM_DEL_HISTORY_ROSTER_MENU_LABEL),m_menu_op++,0){
+		public void run(){
+			
+			if(m_currMgr == m_historyChatMgr){
+				RosterChatData t_data = getCurrFocusRosterData();
+				if(t_data != null){
+					
+					fetchChatRoster t_roster = t_data.m_roster;
+					
+					String t_prompt = recvMain.sm_local.getString(localResource.IM_DEL_HISTORY_ROSTER_PROMPT) 
+											+ t_roster.getName() + " " + t_roster.getAccount();
+					
+					if(Dialog.ask(Dialog.D_YES_NO,t_prompt,Dialog.NO) != Dialog.YES){
+						return;
+					}
+					
+					delHistoryRoster(t_roster);
+				}
+			}
+			
+		}
+	};
 	
 	
 	MenuItem		m_sendEmailMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_SEND_EMAIL),m_menu_op++,0){
@@ -514,6 +543,8 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			_menu.add(m_addStatusMenu);
 			_menu.add(m_modifyStatusMenu);
 			_menu.add(m_delStatusMenu);
+		}else if(m_currMgr == m_historyChatMgr){
+			_menu.add(m_delHistoryRoster);
 		}
 		
 		if(m_currMgr == m_rosterListMgr || m_currMgr == m_historyChatMgr){
@@ -810,7 +841,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 						if(msg.getMsg().equals(_msg.getMsg())
 							&& msg.getSendTime() == _msg.getSendTime()){
 			
-							// ignore it
+							// repeat message, ignore it
 							//
 							return ;
 						}
@@ -827,6 +858,8 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 					
 					data.m_chatMsgList.addElement(_msg);
 					data.m_currChatState = fetchChatMsg.CHAT_STATE_COMMON;
+					
+					storefetchMsg(_msg);
 					
 					addHistroyChatMgr(data);
 										
@@ -907,6 +940,55 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	}
 	
+	static Calendar sm_calendar = Calendar.getInstance();
+	static Date		sm_timeDate = new Date();
+
+	public  void storefetchMsg(fetchChatMsg _msg){
+		
+		if(!m_mainApp.m_imStoreImageVoice){
+			return;
+		}
+		
+		if(_msg.getFileContent() == null){
+			return;
+		}
+		
+		try{
+			
+			sm_timeDate.setTime(_msg.getSendTime());
+			sm_calendar.setTime(sm_timeDate);
+			
+			StringBuffer t_filename = new StringBuffer();
+			t_filename.append(m_mainApp.getIMStoreImageVoicePath()).append(_msg.getOwner()).append("_2_").append(_msg.getSendTo())
+						.append("_").append(sm_calendar.get(Calendar.YEAR)).append("-").append(sm_calendar.get(Calendar.MONTH))
+						.append("-").append(sm_calendar.get(Calendar.DAY_OF_MONTH))
+						.append("-").append(sm_calendar.get(Calendar.HOUR_OF_DAY)).append("h")
+						.append(sm_calendar.get(Calendar.MINUTE)).append("m").append(sm_calendar.get(Calendar.SECOND)).append("s")
+						.append(_msg.hashCode()).append(_msg.getFileContentType() == fetchChatMsg.FILE_TYPE_IMG?".ipg":".amr");
+			
+			FileConnection t_file = (FileConnection)Connector.open(t_filename.toString(),Connector.READ_WRITE);
+			try{
+				if(!t_file.exists()){
+					t_file.create();
+				}
+				
+				OutputStream os = t_file.openOutputStream();
+				try{
+					os.write(_msg.getFileContent());
+				}finally{
+					os.close();
+				}
+				
+			}finally{
+				t_file.close();
+			}
+			
+		}catch(Exception e){
+			m_mainApp.SetErrorString("SFM:"+e.getMessage()+e.getClass().getName());
+		}
+		
+	}
+	
 	private void delRoster(fetchChatRoster _roster){
 		synchronized (m_rosterChatDataList) {
 			for(int i = 0 ;i < m_rosterChatDataList.size();i++){
@@ -967,7 +1049,25 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}catch(Exception e){
 			m_mainApp.SetErrorString("DR:"+e.getMessage()+e.getClass().getName());
 		}
+	}
+	
+	private void delHistoryRoster(fetchChatRoster _roster){
 		
+		synchronized (m_historyChatMgr) {
+
+			int t_count = m_historyChatMgr.getFieldCount();
+			for(int i = 0; i < t_count;i++){
+				RosterItemField field = (RosterItemField)m_historyChatMgr.getField(i);
+				if(field.m_currRoster.m_roster == _roster){
+					
+					field.m_currRoster.m_chatMsgList.removeAllElements();
+					
+					m_historyChatMgr.delete(field);
+					
+					break;				
+				}			
+			}	
+		}	
 	}
 	
 	private void sendChatConfirmMsg(fetchChatMsg _msg){

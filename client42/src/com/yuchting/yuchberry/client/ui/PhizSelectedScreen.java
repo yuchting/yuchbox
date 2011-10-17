@@ -3,6 +3,7 @@ package com.yuchting.yuchberry.client.ui;
 import java.util.Vector;
 
 import local.localResource;
+import net.rim.device.api.system.Display;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Keypad;
@@ -27,6 +28,8 @@ final class PhizMgr extends Manager{
 	int					m_maxRowNum = 0;
 	int					m_maxColNum = 0;
 	
+	int					m_phizSize = 0;
+	
 	public PhizMgr(Vector _phizList){
 		super(Manager.VERTICAL_SCROLL);
 				
@@ -36,14 +39,20 @@ final class PhizMgr extends Manager{
 			Phiz t_phiz = (Phiz)m_phizList.elementAt(i);
 			add(t_phiz);
 		}
+		
+		m_phizSize = Phiz.fsm_phizSize;
 	}
 	
 	protected void sublayout(int width,int _height){
-				
+		
+		if(m_phizList.isEmpty()){
+			return ;
+		}
+		
 		int t_x = 0;
 		int t_y = 0;
 		
-		m_maxRowNum = recvMain.fsm_display_width / (Phiz.fsm_phizSize + fsm_phizInterval);
+		m_maxRowNum = Display.getWidth() / (m_phizSize + fsm_phizInterval);
 		m_maxColNum = m_phizList.size() / m_maxRowNum + 1;
 		
 		if(m_phizList.size() % m_maxRowNum == 0){
@@ -54,16 +63,16 @@ final class PhizMgr extends Manager{
 			Phiz t_phiz = (Phiz)m_phizList.elementAt(i);
 			
 			setPositionChild(t_phiz,t_x,t_y);		
-			layoutChild(t_phiz,Phiz.fsm_phizSize,Phiz.fsm_phizSize);
+			layoutChild(t_phiz,m_phizSize,m_phizSize);
 			
 			t_x += Phiz.fsm_phizSize + fsm_phizInterval; 
-			if(t_x + Phiz.fsm_phizSize + fsm_phizInterval>= recvMain.fsm_display_width){				
+			if(t_x + Phiz.fsm_phizSize + fsm_phizInterval>= Display.getWidth()){				
 				t_x = 0;
 				t_y += Phiz.fsm_phizSize + fsm_phizInterval;
 			}
 		}
 		
-		setExtent(recvMain.fsm_display_width, recvMain.fsm_display_height - 1 - getFont().getHeight());
+		setExtent(Display.getWidth(), Display.getHeight() - 1 - getFont().getHeight());
 	}
 	
 	public boolean fieldClicked(int status) {
@@ -126,6 +135,10 @@ final class PhizMgr extends Manager{
 	
 	protected boolean navigationMovement(int dx,int dy,int status,int time){
 		
+		if(m_phizList.isEmpty()){
+			return false;
+		}
+		
 		m_move_x += dx;
 		if(m_move_x >= m_maxRowNum){
 			m_move_x = 0;
@@ -174,15 +187,15 @@ public class PhizSelectedScreen extends MainScreen{
 
 	public static PhizSelectedScreen	sm_phizScreen 	= null;
 	
-	static private AutoTextEditField	sm_phizSelectingText = null;
+	private AutoTextEditField	m_phizSelectingText = null;
     
-    static private IPhizSelected		sm_phizSelected 	= new IPhizSelected() {
+    private IPhizSelected		m_phizSelected 	= new IPhizSelected() {
 		
 		public void phizSelected(String phizName) {
-			if(sm_phizSelectingText != null){
-				int t_position = sm_phizSelectingText.getCursorPosition();
+			if(m_phizSelectingText != null){
+				int t_position = m_phizSelectingText.getCursorPosition();
 				
-				String t_text = sm_phizSelectingText.getText();
+				String t_text = m_phizSelectingText.getText();
 				
 				StringBuffer t_final = new StringBuffer();
 				if(t_position != 0){
@@ -192,8 +205,8 @@ public class PhizSelectedScreen extends MainScreen{
 				
 				t_final.append(t_text.substring(t_position,t_text.length()));
 				
-				sm_phizSelectingText.setText(t_final.toString());
-				sm_phizSelectingText.setCursorPosition(t_position + phizName.length());
+				m_phizSelectingText.setText(t_final.toString());
+				m_phizSelectingText.setCursorPosition(t_position + phizName.length());
 			}			
 		}
 	};
@@ -202,7 +215,7 @@ public class PhizSelectedScreen extends MainScreen{
 	String		m_promptString = recvMain.sm_local.getString(localResource.WEIBO_PHIZ_SCREEN_PROMPT);
 	LabelField	m_promptLabel = new LabelField(m_promptString,Field.NON_FOCUSABLE);
 	
-	public PhizSelectedScreen(recvMain _mainApp,Vector _phizList){
+	public PhizSelectedScreen(Vector _phizList){
 		add(m_promptLabel);
 		add(new SeparatorField());
 				
@@ -221,8 +234,8 @@ public class PhizSelectedScreen extends MainScreen{
 	}
 	
 	public void close(){
-		if(sm_phizSelectingText != null){
-			sm_phizSelectingText.setFocus();
+		if(m_phizSelectingText != null){
+			m_phizSelectingText.setFocus();
 		}
 		
 		super.close();
@@ -233,15 +246,19 @@ public class PhizSelectedScreen extends MainScreen{
 		return m_phizMgr.navigationMovement(dx, dy, status, time);
 	}
 	
-	static public PhizSelectedScreen getPhizScreen(recvMain _mainApp,AutoTextEditField _insertEdit){
+	static public PhizSelectedScreen getPhizScreen(AutoTextEditField _insertEdit){
 		
 		if(sm_phizScreen == null){
-			sm_phizScreen = new PhizSelectedScreen(_mainApp, recvMain.sm_phizImageList);
+			sm_phizScreen = new PhizSelectedScreen(recvMain.sm_phizImageList);
 		}
 		
-		sm_phizSelectingText = _insertEdit;
-		sm_phizScreen.m_phizMgr.setSelectedCallback(sm_phizSelected);
+		sm_phizScreen.preparePhizScreen(_insertEdit);
 		
 		return sm_phizScreen;
+	}
+	
+	public void preparePhizScreen(AutoTextEditField _insertEdit){
+		m_phizSelectingText = _insertEdit;
+		m_phizMgr.setSelectedCallback(m_phizSelected);
 	}
 }

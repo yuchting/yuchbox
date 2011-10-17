@@ -161,7 +161,7 @@ public class weiboTimeLineScreen extends MainScreen{
 		m_weiboUIImage	= recvMain.sm_weiboUIImage;
 		m_weiboHeader = new WeiboHeader(this);
 				
-		m_currUpdateDlg = new WeiboUpdateDlg(weiboTimeLineScreen.this);
+		m_currUpdateDlg = new WeiboUpdateDlg(this);
 		
 		m_mainMgr = new WeiboMainManager(_mainApp,this,true);
 		add(m_mainMgr);
@@ -691,9 +691,6 @@ public class weiboTimeLineScreen extends MainScreen{
     public boolean m_pushUpdateDlg = false;
     public MenuItem m_updateItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_UPDATE_DLG),m_menuIndex_op++,0){
         public void run() {
-        	if(m_currUpdateDlg == null){
-        		m_currUpdateDlg = new WeiboUpdateDlg(weiboTimeLineScreen.this);
-        	}
         	m_pushUpdateDlg = true;
         	m_currUpdateDlg.clearAttachment();
         	UiApplication.getUiApplication().pushScreen(m_currUpdateDlg);
@@ -708,7 +705,8 @@ public class weiboTimeLineScreen extends MainScreen{
     
     MenuItem m_phizItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_PHIZ_LABEL),m_menuIndex_op++,0){
         public void run() {
-        	UiApplication.getUiApplication().pushScreen(PhizSelectedScreen.getPhizScreen(m_mainApp, m_currMgr.m_editTextArea));
+        	UiApplication.getUiApplication().pushScreen(
+        			PhizSelectedScreen.getPhizScreen(m_currMgr.m_editTextArea));
         }
     };
     

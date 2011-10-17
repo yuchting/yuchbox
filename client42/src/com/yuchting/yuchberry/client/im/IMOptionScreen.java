@@ -20,7 +20,7 @@ public class IMOptionScreen extends MainScreen {
 	CheckboxField			m_imChatScreenReceiveReturn = null;
 	
 	CheckboxField			m_imChatScreenReverse	= null;
-	
+	CheckboxField			m_imStoreImageVoice		= null;
 	CheckboxField			m_imPopupPrompt		= null;
 	ObjectChoiceField		m_imChatMsgHistory	= null;
 	ObjectChoiceField		m_imSendImageQuality	= null;
@@ -48,6 +48,11 @@ public class IMOptionScreen extends MainScreen {
 		m_imChatScreenReceiveReturn	= new CheckboxField(recvMain.sm_local.getString(localResource.IM_OPTION_RETURN_RECV),
 											m_mainScreen.m_mainApp.m_imChatScreenReceiveReturn);
 		add(m_imChatScreenReceiveReturn);
+		
+		m_imStoreImageVoice = new CheckboxField(recvMain.sm_local.getString(localResource.IM_OPTION_STORE_IMAGE_VOICE),
+				m_mainScreen.m_mainApp.m_imStoreImageVoice);
+		
+		add(m_imStoreImageVoice);
 			
 		//@}
 		
@@ -96,6 +101,8 @@ public class IMOptionScreen extends MainScreen {
 			 m_mainScreen.m_mainApp.m_imChatMsgHistory = m_imChatMsgHistory.getSelectedIndex();
 			 m_mainScreen.m_mainApp.m_imSendImageQuality = m_imSendImageQuality.getSelectedIndex();
 			 m_mainScreen.m_mainApp.WriteReadIni(false);
+			 
+			 m_mainScreen.m_mainApp.m_imStoreImageVoice = m_imStoreImageVoice.getChecked();
 			 
 			 if(t_formerReverse != m_mainScreen.m_mainApp.m_imChatScreenReverse){
 				 m_mainScreen.m_chatScreen.m_middleMgr.readdControl();

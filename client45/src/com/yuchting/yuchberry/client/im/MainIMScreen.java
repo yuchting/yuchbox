@@ -943,7 +943,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	static Calendar sm_calendar = Calendar.getInstance();
 	static Date		sm_timeDate = new Date();
 
-	private void storefetchMsg(fetchChatMsg _msg){
+	public  void storefetchMsg(fetchChatMsg _msg){
 		
 		if(!m_mainApp.m_imStoreImageVoice){
 			return;
@@ -959,11 +959,12 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			sm_calendar.setTime(sm_timeDate);
 			
 			StringBuffer t_filename = new StringBuffer();
-			t_filename.append(m_mainApp.getIMStoreImageVoicePath()).append(_msg.getOwner()).append(sm_calendar.get(Calendar.YEAR))
-						.append("-").append(sm_calendar.get(Calendar.MONTH)).append("-").append(sm_calendar.get(Calendar.DAY_OF_MONTH))
-						.append(sm_calendar.get(Calendar.HOUR_OF_DAY)).append("h").append(sm_calendar.get(Calendar.MINUTE)).append("m")
-						.append(sm_calendar.get(Calendar.SECOND)).append("s").append(_msg.hashCode())
-						.append(_msg.getFileContentType() == fetchChatMsg.FILE_TYPE_IMG?".ipg":".amr");
+			t_filename.append(m_mainApp.getIMStoreImageVoicePath()).append(_msg.getOwner()).append("_2_").append(_msg.getSendTo())
+						.append("_").append(sm_calendar.get(Calendar.YEAR)).append("-").append(sm_calendar.get(Calendar.MONTH))
+						.append("-").append(sm_calendar.get(Calendar.DAY_OF_MONTH))
+						.append("-").append(sm_calendar.get(Calendar.HOUR_OF_DAY)).append("h")
+						.append(sm_calendar.get(Calendar.MINUTE)).append("m").append(sm_calendar.get(Calendar.SECOND)).append("s")
+						.append(_msg.hashCode()).append(_msg.getFileContentType() == fetchChatMsg.FILE_TYPE_IMG?".ipg":".amr");
 			
 			FileConnection t_file = (FileConnection)Connector.open(t_filename.toString(),Connector.READ_WRITE);
 			try{
