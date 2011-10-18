@@ -1,10 +1,10 @@
 package com.yuchting.yuchdroid.client;
 
-import java.util.Date;
-import java.util.Random;
-
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,9 +15,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.yuchting.yuchdroid.client.mail.MailDbAdapter;
-import com.yuchting.yuchdroid.client.mail.fetchMail;
-
 public class Yuchdroid16Activity extends Activity {
 	
 	public final static String TAG = "Yuchdroid16Activity";
@@ -25,8 +22,10 @@ public class Yuchdroid16Activity extends Activity {
 	EditText	m_host	= null;
 	EditText	m_port	= null;
 	EditText	m_userPass = null;
-	
+		
 	SharedPreferences m_shareDataName = null;
+	
+	private ConfigInit		m_config = new ConfigInit(this);
 	
     /** Called when the activity is first created. */
     @Override
@@ -35,6 +34,8 @@ public class Yuchdroid16Activity extends Activity {
                
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main);       
+        
+        m_config.WriteReadIni(false);
         
         initButtons();
         
@@ -53,11 +54,28 @@ public class Yuchdroid16Activity extends Activity {
 
                 	String t_host = m_host.getText().toString();
                 	String t_port = m_port.getText().toString();
-                	String t_pass = m_userPass.getText().toString();
-                	 
+                	String t_pass = m_userPass.getText().toString();                	
+                	
                 	if(validateHost(t_host,t_port,t_pass)){
-                		startConnectDeamon(t_host,t_port,t_pass);
-                	}	
+                		
+                		boolean t_readConfig = false;
+                		
+                    	if(!t_host.equals(m_config.m_host) 
+                    	|| !t_port.equals(m_config.m_port) 
+                    	|| !t_pass.equals(m_config.m_userPass)){
+                    		t_readConfig = true;
+                    		
+                    		m_config.m_host = t_host;
+                    		m_config.m_port = Integer.valueOf(t_port).intValue();
+                    		m_config.m_userPass = t_pass;
+                    		
+                    		m_config.WriteReadIni(true);
+                    	}
+                    	
+                		startConnectDeamon(t_readConfig);
+                	}
+                	
+                	
                 }
             }
         }); 
@@ -65,6 +83,10 @@ public class Yuchdroid16Activity extends Activity {
         m_host = (EditText)findViewById(R.id.login_host);
         m_port = (EditText)findViewById(R.id.login_port);
         m_userPass = (EditText)findViewById(R.id.login_user_pass);
+        
+        m_host.setText(m_config.m_host);
+        m_port.setText(Integer.toString(m_config.m_port));
+        m_userPass.setText(m_config.m_userPass);
   
 //        Button buttonStop = (Button) findViewById(R.id.stop_svr);  
 //        buttonStop.setOnClickListener(new OnClickListener() {  
@@ -111,15 +133,12 @@ public class Yuchdroid16Activity extends Activity {
     	return true;
     }
     
-    private void startConnectDeamon(String _host,String _port,String _userPass){
+    private void startConnectDeamon(boolean _readConfig){
     	
     	Intent intent = new Intent(this,ConnectDeamon.class);
 	
     	Bundle bundle = new Bundle();
-    	
-    	bundle.putString("login_host",_host);
-    	bundle.putInt("login_port",Integer.valueOf(_port).intValue());
-    	bundle.putString("login_pass",_userPass);
+    	bundle.putBoolean("read_config",_readConfig);
     	
     	intent.putExtras(bundle);
     	
@@ -138,11 +157,18 @@ public class Yuchdroid16Activity extends Activity {
         Log.i(TAG,"onStart " + this);
     }
     
+    BroadcastReceiver	m_intentRecv = new BroadcastReceiver(){
+		public void onReceive(Context context, Intent intent){
+			
+		}
+	};
+	
     @Override
     protected void onResume() {
         super.onResume();
-        // The activity has become visible (it is now "resumed").
-        Log.i(TAG,"onResume " + this);
+   
+        registerReceiver(m_intentRecv, new IntentFilter());
+   
     }
     @Override
     protected void onPause() {

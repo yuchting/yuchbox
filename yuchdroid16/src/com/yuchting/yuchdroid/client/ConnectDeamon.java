@@ -3,11 +3,6 @@ package com.yuchting.yuchdroid.client;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.net.InetSocketAddress;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
-import java.nio.channels.spi.SelectorProvider;
 import java.util.List;
 import java.util.Locale;
 import java.util.Vector;
@@ -37,7 +32,6 @@ import com.yuchting.yuchdroid.client.mail.fetchMail;
 
 public class ConnectDeamon extends Service{
 	
-	
 	public static String fsm_clientVersion;
 	
 	public static int fsm_display_width = 320;
@@ -57,33 +51,22 @@ public class ConnectDeamon extends Service{
 	private int	m_ipConnectCounter 		= 0;
 	private int	m_connectCounter 		= -1;
 	
-	private boolean m_recvAboutText		= false;
-	private String m_latestVersion			= "";
-	
-	private String m_host					= null;
-	private int m_port						= 0;
-	private String m_userPass				= null;
-	private String m_passwordKey			= "";
-		
+	private String m_latestVersion			= "";	
+			
 	private SendingQueue	m_sendingQueue	= null;
 		
 	public sendReceive	m_connect			= null;
 	
 	private MailDbAdapter	m_dba			= new MailDbAdapter(this);
 	
-	private int m_uploadByte 				= 0;
-	private int m_downloadByte				= 0;
+	public final static	String	FILTER_CONNECT_STATE = TAG + "_CS";
 	
-		
 	public final static	int				DISCONNECT_STATE = 0;
 	public final static	int				CONNECTING_STATE = 1;
 	public final static	int				CONNECTED_STATE = 2;
 	
 	private int m_connectState				= DISCONNECT_STATE;
-	
-	private boolean m_enableWeiboModule	= false;
-	private boolean m_enableIMModule		= false;
-	
+		
 	// notification system varaibles
 	//
 	public final static	int				YUCH_NOTIFICATION_MAIL			= 0;
@@ -93,13 +76,10 @@ public class ConnectDeamon extends Service{
 	
 	// mail system variables
 	//
-	private Vector<Integer>	m_recvMailSimpleHashCodeSet = new Vector<Integer>();
-	private Vector<String>		m_sendMailAccountList = new Vector<String>();
-	private int				m_defaultSendMailAccountIndex = 0;
-	
+	private Vector<Integer>	m_recvMailSimpleHashCodeSet = new Vector<Integer>();		
 	private Vector<SendMailDeamon>		m_sendingMailAttachment = new Vector<SendMailDeamon>();
-	public boolean				m_copyMailToSentFolder = false;
 	
+	private ConfigInit		m_config = new ConfigInit(this);
 	
 	// share preference data
 	//
@@ -118,6 +98,8 @@ public class ConnectDeamon extends Service{
 	
 	public void onCreate() {
 		Log.d(TAG,"onCreate");
+		
+		m_config.WriteReadIni(false);
 				
 		// initialize the sending queue class
 		//
@@ -197,20 +179,14 @@ public class ConnectDeamon extends Service{
 		//
 		try{
 			if(IsConnectState()){
-				
 				Disconnect();
-				
 			}else{
-				
-				Bundle bundle = _intent.getExtras();
-				
-				m_host = bundle.getString("login_host");
-				m_port = (Integer)bundle.getInt("login_port");
-				m_userPass = bundle.getString("login_pass");
-							
+				Bundle bundle = new Bundle();
+				if(bundle.getBoolean("read_config")){
+					m_config.WriteReadIni(false);
+				}
 				Connect();
-			}
-			
+			}			
 			m_shareData.edit().putBoolean(fsm_shareData_deamon_is_run,!m_disconnect);
 			
 		}catch(Exception e){
@@ -233,7 +209,6 @@ public class ConnectDeamon extends Service{
 			m_sendingQueue.destory();
 			m_sendingQueue = null;
 		}
-	
 		
 		m_dba.close();
 		m_shareData.edit().putBoolean(fsm_shareData_deamon_is_run, false);
@@ -263,14 +238,11 @@ public class ConnectDeamon extends Service{
 	}
 	
 	private boolean IsUseSSL(){
-		//TODO read from internal file
-		//
-		return false;
+		return m_config.m_useSSL;
 	}
 	
 	private int GetPulseIntervalMinutes(){
-		//TODO read from the file
-		return 5;
+		return m_config.getPulseInterval();
 	}
 	
 	private synchronized int GetConnectInterval(){
@@ -288,20 +260,15 @@ public class ConnectDeamon extends Service{
 	}
 	
 	public synchronized void StoreUpDownloadByte(long _uploadByte,long _downloadByte,boolean _writeIni){
-		m_uploadByte += _uploadByte;
-		m_downloadByte += _downloadByte;	
+		m_config.m_uploadByte += _uploadByte;
+		m_config.m_downloadByte += _downloadByte;	
 				
 		if(_writeIni){
-			WriteReadIni(false);
+			m_config.WriteReadIni(false);
 		}
 	}
 	
-	public void WriteReadIni(boolean _read){
-		//TODO write and read from the internal file 
-		//
 		
-	}
-	
 	public void SetConnectState(int _state){
 		m_connectState = _state;
 
@@ -377,7 +344,7 @@ public class ConnectDeamon extends Service{
 
 		try{
 			
-			return new sendReceive(m_host,m_port,_ssl);
+			return new sendReceive(m_config.m_host,m_config.m_port,_ssl);
 			
 		}catch(java.net.ConnectException e){
 			// connection time out exception
@@ -412,12 +379,7 @@ public class ConnectDeamon extends Service{
 		//TODO set the status bar connected state
 		//
 	}
-	
-	private int GetRecvMsgMaxLength(){
-		//TODO get the receive mail max length
-		return 0;
-	}
-	
+		
 	private void DialogAlert(String _text){
 		GlobalDialog.showInfo(_text, this);
 	}
@@ -504,16 +466,12 @@ public class ConnectDeamon extends Service{
 					m_ipConnectCounter++;
 				}				
 				
-				SelectorChannel t_selChn = GetConnection(IsUseSSL());
-				
-				m_selector		= t_selChn.selector;
-				m_connChannel	= t_selChn.channel;
-				
+				m_connect = GetConnection(IsUseSSL());
+								
 				// TCP connect flowing bytes statistics 
 				//
-				StoreUpDownloadByte(72,40,false);
-								
-				m_connect = new sendReceive(t_selChn);
+				StoreUpDownloadByte(72,40,false);								
+				
 				m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
 				
 				m_connect.RegisterStoreUpDownloadByte(new sendReceive.IStoreUpDownloadByte() {
@@ -526,16 +484,16 @@ public class ConnectDeamon extends Service{
 				//
 				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 				t_os.write(msg_head.msgConfirm);
-				sendReceive.WriteString(t_os, m_userPass);
+				sendReceive.WriteString(t_os, m_config.m_userPass);
 				sendReceive.WriteInt(t_os,fsm_clientVer);
 				t_os.write(GetClientLanguage());
 				sendReceive.WriteString(t_os,fsm_clientVersion);
-				sendReceive.WriteString(t_os,m_passwordKey);
-				sendReceive.WriteBoolean(t_os,m_enableWeiboModule);
+				sendReceive.WriteString(t_os,m_config.m_passwordKey);
+				sendReceive.WriteBoolean(t_os,m_config.m_enableWeiboModule);
 				sendReceive.WriteString(t_os,"6.0"); // adapt blackberry
 				int t_size = (fsm_display_width << 16) | fsm_display_height;
 				sendReceive.WriteInt(t_os,t_size);
-				sendReceive.WriteBoolean(t_os,m_enableIMModule);
+				sendReceive.WriteBoolean(t_os,m_config.m_enableIMModule);
 				
 				m_connect.SendBufferToSvr(t_os.toByteArray(), true,false);
 				
@@ -599,12 +557,7 @@ public class ConnectDeamon extends Service{
 		 	
 		 	case msg_head.msgFileAttach:
 		 		ProcessFileAttach(in);
-		 		break;
-		 	case msg_head.msgSponsorList:
-		 		SetAboutInfo(sendReceive.ReadString(in));
-		 		m_recvAboutText = true;
-		 		break;
-		 		
+		 		break;	 		
 		 	case msg_head.msgLatestVersion:
 		 		String t_latestVersion = sendReceive.ReadString(in);
 		 		if(!fsm_clientVersion.equals(t_latestVersion)){
@@ -704,14 +657,6 @@ public class ConnectDeamon extends Service{
 		}
 	}
 	
-	private int GetRecvMailNum(){
-		//TODO get the received mail
-		return 0;
-	}
-	private void SetRecvMailNum(int _num){
-		//TODO set the received mail
-	}
-	
 	private void ProcessRecvMail(InputStream in)throws Exception{
 		
 		fetchMail t_mail = new fetchMail();
@@ -736,15 +681,8 @@ public class ConnectDeamon extends Service{
 		}
 		
 		m_recvMailSimpleHashCodeSet.addElement(new Integer(t_mail.GetSimpleHashCode()));
-		
-		if(GetRecvMsgMaxLength() != 0){
-			if(t_mail.GetContain().length() > GetRecvMsgMaxLength()){
-				t_mail.SetContain(t_mail.GetContain().substring(0,GetRecvMsgMaxLength() - 1) + 
-									"\n.....\n\n" + getString(R.string.mail_over_max_length_prompt));
-			}
-		}
-		
-		if(m_sendMailAccountList.isEmpty()){
+				
+		if(m_config.m_sendMailAccountList.isEmpty()){
 			sendRequestMailAccountMsg();
 		}
 
@@ -754,7 +692,7 @@ public class ConnectDeamon extends Service{
 			
 			// increase the receive mail quantity
 			//
-			SetRecvMailNum(GetRecvMailNum() + 1);			
+			m_config.m_recvMailNum++;			
 			
 			SendMailConfirmMsg(t_hashcode);
 			
