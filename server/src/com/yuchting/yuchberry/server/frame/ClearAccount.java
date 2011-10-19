@@ -1,7 +1,6 @@
 package com.yuchting.yuchberry.server.frame;
 
 import java.io.File;
-import java.util.Date;
 
 import com.yuchting.yuchberry.server.Logger;
 
@@ -45,6 +44,12 @@ public class ClearAccount {
 			if(push.isDirectory()){
 				
 				ProcessAccountPushFile(push);
+			}else{
+				if(push.isFile() && push.getName().endsWith(".satt")){
+					// delete the send attachment
+					//
+					push.delete();
+				}
 			}
 		}
 	}

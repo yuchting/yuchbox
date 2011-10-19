@@ -64,13 +64,16 @@ class checkStateThread extends Thread{
 	
 	public void run(){
 		
-		int t_counter = -1;
+		int t_versionDetectCounter = -1;
+		int t_backupCounter = 0;
 		
 		Vector<fetchMgr> t_mgrList = new Vector<fetchMgr>();
 		
 		final int t_sleepInterval = 240000;
 		
 		final int t_versionDetect = 12 * 3600000 / t_sleepInterval;
+		
+		final int t_backupInterval = 48 * 3600000 / t_sleepInterval;
 		
 		while(true){
 			
@@ -82,7 +85,7 @@ class checkStateThread extends Thread{
 				
 				m_mainFrame.RefreshState();
 				
-				if(t_counter == -1 ||  t_counter > t_versionDetect ){
+				if(t_versionDetectCounter == -1 ||  t_versionDetectCounter > t_versionDetect ){
 									
 					URL is_gd = new URL("http://yuchberry.googlecode.com/files/latest_version?a="+(new Random()).nextInt());
 					
@@ -106,19 +109,24 @@ class checkStateThread extends Thread{
 			        for(fetchMgr mgr:t_mgrList){
 			        	mgr.SetLatestVersion(t_version);
 			        	
-			        	if(t_counter != -1){
+			        	if(t_versionDetectCounter != -1){
 			        		mgr.sendStatictiscInfo();
 			        	}			        	
-			        }
-			        
-			        
-			        t_counter = 0;
+			        }   
+			        t_versionDetectCounter = 0;
+				}
+								
+				t_versionDetectCounter++;
+				
+				if(m_mainFrame.m_needbackup && t_backupCounter > t_backupInterval){
+					t_backupCounter = 0;
+					Runtime.getRuntime().exec("cmd.exe /c start backup.bat");
 				}
 				
-				t_counter++;
+				t_backupCounter++;
 				
 			}catch(Exception ex){}
-		}		
+		}	
 		
 	}
 }
@@ -208,6 +216,8 @@ public class mainFrame extends JFrame implements ActionListener{
 			new mainFrame(_arg);
 		}else if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("clear")){
 			new ClearAccount();			
+		}else if(_arg.length >= 2 && _arg[0].equalsIgnoreCase("backup")){
+			new BackupAccount(_arg[1]);
 		}else{
 			new fetchMain();
 		}
@@ -1272,7 +1282,6 @@ public class mainFrame extends JFrame implements ActionListener{
 			
 			m_logger.LogOut(m_currbber.GetSigninName() + " 同步结果: " + m_result);
 		}
-		
 	}
 	
 	/*
@@ -1282,6 +1291,8 @@ public class mainFrame extends JFrame implements ActionListener{
 	
 	String 		m_yuchsignFramePass = null;
 	int 	  	m_yuchsignMaxBber = 0;
+	
+	public boolean m_needbackup = false;		
 	
 	private void LoadYuchsign(){
 		
@@ -1298,6 +1309,8 @@ public class mainFrame extends JFrame implements ActionListener{
 				if(m_yuchsignFramePass == null || m_yuchsignFramePass.isEmpty()){
 					return ;
 				}
+				
+				m_needbackup = true;
 				
 				m_httpd = new NanoHTTPD(Integer.valueOf(t_port).intValue()){
 					public Response serve( String uri, String method, Properties header, Properties parms, Properties files ){
@@ -1329,7 +1342,6 @@ public class mainFrame extends JFrame implements ActionListener{
 						}finally{
 							m_logger.LogOut("end serve");
 						}
-						
 					}
 				};
 				

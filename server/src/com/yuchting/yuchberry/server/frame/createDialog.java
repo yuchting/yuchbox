@@ -996,7 +996,7 @@ public class createDialog extends JDialog implements DocumentListener,
 	
 	static public void CopyFile(String sourceFile,String targetFile) throws IOException{
 
-		FileInputStream input = new FileInputStream(sourceFile); 
+		FileInputStream input = new FileInputStream(sourceFile);
 		BufferedInputStream inBuff=new BufferedInputStream(input); 
 		 
 		FileOutputStream output = new FileOutputStream(targetFile); 
@@ -1004,7 +1004,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 		byte[] b = new byte[1024 * 5]; 
 		int len; 
-		while ((len =inBuff.read(b)) != -1) { 
+		while ((len = inBuff.read(b)) != -1) {
 		    outBuff.write(b, 0, len); 
 		}
 		

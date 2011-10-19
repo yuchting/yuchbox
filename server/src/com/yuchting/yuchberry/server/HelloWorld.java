@@ -7,6 +7,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -17,8 +19,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
-import java.util.zip.GZIPOutputStream;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -97,19 +97,21 @@ public class HelloWorld {
     }
 	
 	public static void main(String arg[])throws Exception{
-		String str = "ABCDEFG";
 		
-		ByteArrayOutputStream zos = new ByteArrayOutputStream();
-		GZIPOutputStream zo = new GZIPOutputStream(zos,6);
-		zo.write(str.getBytes("UTF-8"));
-		zo.close();	
+		String host = "45562.yuchberry.info";
+		int port	= 19781;
+		byte[] bytes = {0x10,0x08,0,0,0,0,0,0,0,0,0,0,0,0,0};
 		
-		byte[] t_zipData = zos.toByteArray();
+		DatagramSocket ds = new DatagramSocket();
+		DatagramPacket dp = new DatagramPacket(bytes, bytes.length, InetAddress
+                .getByName(host), port);
+		ds.send(dp);
 		
-		for (int i = 0; i < t_zipData.length; i ++) {
-            System.out.printf("%02X ", t_zipData[i]);
-        }
+		bytes = new byte[64];
+		dp = new DatagramPacket(bytes, bytes.length);
+		ds.receive(dp);
 		
+		System.out.print(bytes);
 		
 	}
 	
