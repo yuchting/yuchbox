@@ -1,15 +1,9 @@
-package com.yuchting.yuchberry.client.im;
+package com.yuchting.yuchdroid.client.im;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import net.rim.device.api.ui.Field;
-import net.rim.device.api.ui.Font;
-import net.rim.device.api.ui.Graphics;
-
-import com.yuchting.yuchberry.client.recvMain;
-import com.yuchting.yuchberry.client.sendReceive;
-import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
+import com.yuchting.yuchdroid.client.sendReceive;
 
 public final class IMStatus{
 	
@@ -40,67 +34,3 @@ public final class IMStatus{
 	}
 }
 
-final class IMStatusField extends Field{
-	public IMStatus		m_status;
-				
-	public IMStatusField(IMStatus _status){
-		super(Field.FOCUSABLE);
-		m_status = _status;
-	}
-	
-	public int getPreferredWidth() {
-		return recvMain.fsm_display_width;
-	}
-	
-	public int getPreferredHeight() {
-		return MainIMScreen.fsm_defaultFontHeight;
-	}
-	
-	public void invalidate(){
-		super.invalidate();
-	}
-	protected void layout(int _width,int _height){
-		setExtent(getPreferredWidth(),getPreferredHeight());
-	}
-	
-	protected void onUnfocus(){
-	    super.onUnfocus();
-	    invalidate();
-	}
-	
-	protected void paint(Graphics _g){
-		drawFocus(_g, isFocus());
-	}
-	
-	
-	protected void drawFocus(Graphics _g,boolean _on){
-		// fill the IM field BG
-		//
-		RosterItemField.fillIMFieldBG(_g,0,0,getPreferredWidth(),getPreferredHeight());
-		
-		if(_on){
-			// draw selected backgroud
-			//
-			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight());
-		}
-		
-		// draw roster state
-		//
-		int t_x = RosterItemField.drawRosterState(_g,1,2,m_status.m_presence);
-		Font font = _g.getFont();
-		int color = _g.getColor();
-		
-		try{
-			if(IMStatus.sm_currUseStatus == m_status){
-				_g.setFont(MainIMScreen.fsm_boldFont);
-			}
-			
-			_g.setColor(RosterItemField.fsm_nameTextColor);
-			_g.drawText(m_status.m_status,t_x,2);
-			
-		}finally{
-			_g.setFont(font);
-			_g.setColor(color);
-		}
-	}
-}

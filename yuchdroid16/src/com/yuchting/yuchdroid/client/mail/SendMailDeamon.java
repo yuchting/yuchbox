@@ -92,7 +92,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 			
 			// does want to copy tu sent folder?
 			//
-			sendReceive.WriteBoolean(t_os,m_connect.m_copyMailToSentFolder);
+			sendReceive.WriteBoolean(t_os,m_connect.m_config.m_copyMailToSentFolder);
 			
 			m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), false,false);
 					

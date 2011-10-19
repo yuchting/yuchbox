@@ -11,6 +11,9 @@
     <string name="login_port_error_prompt">请输入正确的主机端口(1-65535)</string>
     <string name="login_user_pass">用户密码:</string>
     <string name="login_user_pass_error_prompt">请输入用户密码</string>
+    <string name="login_state_disconnect">断开连接</string>
+    <string name="login_state_connecting">连接中...</string>
+    <string name="login_state_connected">连接成功</string>
     
     <!-- mail activity -->
     <string name="no_mail">没有内容，请等待推送</string>

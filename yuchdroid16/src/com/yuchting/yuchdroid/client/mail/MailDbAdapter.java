@@ -42,6 +42,7 @@ public class MailDbAdapter {
 	public final static String ATTR_MARK			= "mail_mark";
 	
 	public final static String ATTR_INDEX			= "mail_index";
+	public final static String ATTR_HASH_CODE		= "mail_hash";
 		
 	public final static String ATTR_SUBJECT 		= "mail_sub";  
 	public final static String ATTR_BODY 			= "mail_body";
@@ -85,6 +86,7 @@ public class MailDbAdapter {
 		ATTR_MARK,
 		
 		ATTR_INDEX,
+		ATTR_HASH_CODE,
 		ATTR_SUBJECT,
         ATTR_BODY,
         ATTR_BODY_HTML,
@@ -127,6 +129,7 @@ public class MailDbAdapter {
 					        ATTR_MARK + " smallint," +
 					        
 					        ATTR_INDEX + " integer, " +
+					        ATTR_HASH_CODE + " integer, " +
 					        
 					        ATTR_SUBJECT + " text, " +
 					        ATTR_BODY +  " text, " +
@@ -270,6 +273,7 @@ public class MailDbAdapter {
     	values.put(ATTR_MARK,0);
     	
     	values.put(ATTR_INDEX,_mail.GetMailIndex());
+    	values.put(ATTR_HASH_CODE,_mail.GetSimpleHashCode());
         values.put(ATTR_SUBJECT,_mail.GetSubject());
         values.put(ATTR_BODY,_mail.GetContain());
         values.put(ATTR_BODY_HTML,_mail.GetContain_html());
@@ -298,35 +302,51 @@ public class MailDbAdapter {
 			//
     		Cursor t_cursor = mDb.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns,KEY_ID + "=" + _replyGroupId + "",
     											null,null,null,null);
-    		
-    		updateGroup(t_cursor,_mail,true,t_mailID);
-    		
-    		t_cursor.close();
+    		try{
+        		updateGroup(t_cursor,_mail,true,t_mailID);
+    		}finally{
+    			t_cursor.close();
+    		}
     		
     	}else{
+    		
+    		// receive mail
+    		// 
+    		Cursor t_cursor = mDb.query(DATABASE_TABLE,fsm_mailfullColoumns,ATTR_HASH_CODE + "='" + _mail.GetSimpleHashCode() + "'",
+					null,null,null,null);
+    		try{
+    			if(t_cursor.getCount() != 0){
+        			// repeat mail
+        			//
+        			return -1;
+        		}
+    		}finally{
+    			t_cursor.close();
+    		} 		
     		  
     		t_mailID = mDb.insert(DATABASE_TABLE, null, values);
     		
     		String t_subject = groupSubject(_mail.GetSubject());
     		
-    		Cursor t_cursor = mDb.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns,GROUP_ATTR_SUBJECT + "='" + t_subject + "'",
+    		t_cursor = mDb.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns,GROUP_ATTR_SUBJECT + "='" + t_subject + "'",
     											null,null,null,null);
-    		
-    		if(t_cursor != null && t_cursor.getCount() != 0){
+    		try{
+    			if(t_cursor.getCount() != 0){
 
-    			// update the former group
-    			//
-    			updateGroup(t_cursor,_mail,false,t_mailID);
-    			    			
-    		}else{
-    			
-    			// can't find the old group
-    			// create a insert one
-    			//    			
-    			insertGroup(t_subject,t_mailID,_mail,false);
+        			// update the former group
+        			//
+        			updateGroup(t_cursor,_mail,false,t_mailID);
+        			    			
+        		}else{
+        			
+        			// can't find the old group
+        			// create a insert one
+        			//    			
+        			insertGroup(t_subject,t_mailID,_mail,false);
+        		}
+    		}finally{
+    			t_cursor.close();
     		}
-    		
-    		t_cursor.close();
     	}
     	
     	return t_mailID;

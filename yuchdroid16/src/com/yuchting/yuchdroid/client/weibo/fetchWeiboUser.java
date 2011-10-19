@@ -1,10 +1,10 @@
-package com.yuchting.yuchberry.client.weibo;
+package com.yuchting.yuchdroid.client.weibo;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Vector;
 
-import com.yuchting.yuchberry.client.sendReceive;
+import com.yuchting.yuchdroid.client.sendReceive;
 
 public class fetchWeiboUser {
 	
@@ -30,7 +30,7 @@ public class fetchWeiboUser {
 	int m_weiboNum = 0;	
 	
 	byte[] m_headImage = null;
-	Vector	m_updateWeibo = new Vector();
+	Vector<fetchWeibo>	m_updateWeibo = new Vector<fetchWeibo>();
 	
 	public long getId(){return m_id;}
 	public void setId(long _id){m_id = _id;}
@@ -77,7 +77,7 @@ public class fetchWeiboUser {
 	public int getWeiboNum(){return m_weiboNum;}
 	public void setWeiboNum(int _num){m_weiboNum = _num;}
 	
-	public Vector getUpdatedWeibo(){return m_updateWeibo;}
+	public Vector<fetchWeibo> getUpdatedWeibo(){return m_updateWeibo;}
 	
 	public void InputData(InputStream in)throws Exception{
 		int t_version = in.read();

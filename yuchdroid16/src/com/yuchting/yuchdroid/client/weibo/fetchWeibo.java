@@ -1,10 +1,10 @@
-package com.yuchting.yuchberry.client.weibo;
+package com.yuchting.yuchdroid.client.weibo;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.yuchting.yuchberry.client.GPSInfo;
-import com.yuchting.yuchberry.client.sendReceive;
+import com.yuchting.yuchdroid.client.GPSInfo;
+import com.yuchting.yuchdroid.client.sendReceive;
 
 public class fetchWeibo {
 	

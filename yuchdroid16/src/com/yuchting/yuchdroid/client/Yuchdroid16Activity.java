@@ -13,6 +13,7 @@ import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class Yuchdroid16Activity extends Activity {
@@ -22,8 +23,10 @@ public class Yuchdroid16Activity extends Activity {
 	EditText	m_host	= null;
 	EditText	m_port	= null;
 	EditText	m_userPass = null;
+	
+	TextView	m_connectStateView = null;
 		
-	SharedPreferences m_shareDataName = null;
+	SharedPreferences m_shareData = null;
 	
 	private ConfigInit		m_config = new ConfigInit(this);
 	
@@ -34,21 +37,20 @@ public class Yuchdroid16Activity extends Activity {
                
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main);       
-        
-        m_config.WriteReadIni(false);
-        
-        initButtons();
-        
-        m_shareDataName = getSharedPreferences(ConnectDeamon.fsm_shareData_name,MODE_PRIVATE);
+         
+        initLoginLayout();
     }  
     
-    private void initButtons() { 
+    private void initLoginLayout() { 
     	
-        Button buttonStart = (Button) findViewById(R.id.start_svr);
+    	m_config.WriteReadIni(true);
+        m_shareData = getSharedPreferences(ConnectDeamon.fsm_shareData_name,MODE_PRIVATE);
+         
+        Button buttonStart = (Button) findViewById(R.id.login_start_svr);
         buttonStart.setOnClickListener(new OnClickListener() {  
             public void onClick(View arg0){
 
-            	if(m_shareDataName.getBoolean(ConnectDeamon.fsm_shareData_deamon_is_run, false)){
+            	if(m_shareData.getBoolean(ConnectDeamon.SHAREDATA_DEAMON_IS_RUN, false)){
             		stopConnectDeamon();
                 }else{
 
@@ -69,24 +71,27 @@ public class Yuchdroid16Activity extends Activity {
                     		m_config.m_port = Integer.valueOf(t_port).intValue();
                     		m_config.m_userPass = t_pass;
                     		
-                    		m_config.WriteReadIni(true);
+                    		m_config.WriteReadIni(false);
                     	}
                     	
                 		startConnectDeamon(t_readConfig);
                 	}
-                	
-                	
                 }
             }
-        }); 
+        });
+        
+        m_connectStateView = (TextView)findViewById(R.id.login_connect_text);
         
         m_host = (EditText)findViewById(R.id.login_host);
         m_port = (EditText)findViewById(R.id.login_port);
         m_userPass = (EditText)findViewById(R.id.login_user_pass);
         
         m_host.setText(m_config.m_host);
-        m_port.setText(Integer.toString(m_config.m_port));
-        m_userPass.setText(m_config.m_userPass);
+        m_port.setText(m_config.m_port == 0?"":Integer.toString(m_config.m_port));
+        m_userPass.setText(m_config.m_userPass);        
+        
+        setConnectState(m_shareData.getInt(ConnectDeamon.SHAREDATA_CONNECT_STATE,ConnectDeamon.STATE_DISCONNECT));
+        
   
 //        Button buttonStop = (Button) findViewById(R.id.stop_svr);  
 //        buttonStop.setOnClickListener(new OnClickListener() {  
@@ -159,22 +164,36 @@ public class Yuchdroid16Activity extends Activity {
     
     BroadcastReceiver	m_intentRecv = new BroadcastReceiver(){
 		public void onReceive(Context context, Intent intent){
-			
+			setConnectState(intent.getExtras().getInt("state"));
 		}
 	};
+	
+	private void setConnectState(int _state){
+		switch(_state){
+		case ConnectDeamon.STATE_CONNECTED:
+			m_connectStateView.setText(getString(R.string.login_state_connected));
+			break;
+		case ConnectDeamon.STATE_CONNECTING:
+			m_connectStateView.setText(getString(R.string.login_state_connecting));
+			break;
+		case ConnectDeamon.STATE_DISCONNECT:
+			m_connectStateView.setText(getString(R.string.login_state_disconnect));
+			break;
+		}
+	}
 	
     @Override
     protected void onResume() {
         super.onResume();
-   
-        registerReceiver(m_intentRecv, new IntentFilter());
-   
+        registerReceiver(m_intentRecv, new IntentFilter(ConnectDeamon.FILTER_CONNECT_STATE));
     }
     @Override
     protected void onPause() {
         super.onPause();
         // Another activity is taking focus (this activity is about to be "paused").
         Log.i(TAG,"onPause " + this);
+        
+        unregisterReceiver(m_intentRecv);
     }
     @Override
     protected void onStop() {

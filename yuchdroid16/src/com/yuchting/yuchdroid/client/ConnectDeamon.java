@@ -61,12 +61,12 @@ public class ConnectDeamon extends Service{
 	
 	public final static	String	FILTER_CONNECT_STATE = TAG + "_CS";
 	
-	public final static	int				DISCONNECT_STATE = 0;
-	public final static	int				CONNECTING_STATE = 1;
-	public final static	int				CONNECTED_STATE = 2;
-	
-	private int m_connectState				= DISCONNECT_STATE;
-		
+	// connect state
+	//
+	public final static	int				STATE_DISCONNECT	= 0;
+	public final static	int				STATE_CONNECTING	= 1;
+	public final static	int				STATE_CONNECTED		= 2;
+			
 	// notification system varaibles
 	//
 	public final static	int				YUCH_NOTIFICATION_MAIL			= 0;
@@ -79,14 +79,15 @@ public class ConnectDeamon extends Service{
 	private Vector<Integer>	m_recvMailSimpleHashCodeSet = new Vector<Integer>();		
 	private Vector<SendMailDeamon>		m_sendingMailAttachment = new Vector<SendMailDeamon>();
 	
-	private ConfigInit		m_config = new ConfigInit(this);
+	public ConfigInit		m_config = new ConfigInit(this);
 	
 	// share preference data
 	//
 	public final static String fsm_shareData_name = "YuchDroid_share_data";
 	private SharedPreferences m_shareData = null;
 	
-	public final static String fsm_shareData_deamon_is_run = "deamon_run";
+	public final static String SHAREDATA_DEAMON_IS_RUN = "deamon_run";
+	public final static String SHAREDATA_CONNECT_STATE = "deamon_connect_state";
 	
 	// proxy thread
 	//
@@ -99,7 +100,7 @@ public class ConnectDeamon extends Service{
 	public void onCreate() {
 		Log.d(TAG,"onCreate");
 		
-		m_config.WriteReadIni(false);
+		m_config.WriteReadIni(true);
 				
 		// initialize the sending queue class
 		//
@@ -121,6 +122,7 @@ public class ConnectDeamon extends Service{
 		m_dba.open();
 		
 		m_shareData = getSharedPreferences(fsm_shareData_name,MODE_PRIVATE);
+		m_shareData.edit().putInt(SHAREDATA_CONNECT_STATE,STATE_DISCONNECT);
 				
 		// start the connect run thread
 		//
@@ -183,11 +185,11 @@ public class ConnectDeamon extends Service{
 			}else{
 				Bundle bundle = new Bundle();
 				if(bundle.getBoolean("read_config")){
-					m_config.WriteReadIni(false);
+					m_config.WriteReadIni(true);
 				}
 				Connect();
 			}			
-			m_shareData.edit().putBoolean(fsm_shareData_deamon_is_run,!m_disconnect);
+			m_shareData.edit().putBoolean(SHAREDATA_DEAMON_IS_RUN,!m_disconnect);
 			
 		}catch(Exception e){
 			SetErrorString("onStart_impl", e);
@@ -211,7 +213,7 @@ public class ConnectDeamon extends Service{
 		}
 		
 		m_dba.close();
-		m_shareData.edit().putBoolean(fsm_shareData_deamon_is_run, false);
+		m_shareData.edit().putBoolean(SHAREDATA_DEAMON_IS_RUN, false);
 	}
 	
 	private boolean CanNotConnectSvr(){
@@ -270,10 +272,14 @@ public class ConnectDeamon extends Service{
 	
 		
 	public void SetConnectState(int _state){
-		m_connectState = _state;
-
-		//TODO set the state of activity
-		//
+		m_shareData.edit().putInt(SHAREDATA_CONNECT_STATE,_state);
+		
+		Intent t_intent = new Intent(FILTER_CONNECT_STATE);
+//		Bundle t_extra = new Bundle();
+//		t_extra.putInt(_state);
+		t_intent.putExtra("state", _state);
+		
+		sendBroadcast(t_intent);
 	}
 	
 	/**
@@ -396,7 +402,7 @@ public class ConnectDeamon extends Service{
 		 
 		Disconnect();
 		 
-		SetConnectState(CONNECTING_STATE);
+		SetConnectState(STATE_CONNECTING);
 		m_disconnect = false;
 		 
 		m_proxyThread.interrupt();
@@ -408,8 +414,7 @@ public class ConnectDeamon extends Service{
 		StopDisconnectNotification();
 		
 		m_proxyThread.interrupt();
-		
-				 	
+						 	
 		synchronized (this) {
 			
 			m_connectCounter = -1;
@@ -427,6 +432,8 @@ public class ConnectDeamon extends Service{
 			 
 			m_sendingMailAttachment.removeAllElements();
 		}
+		
+		SetConnectState(STATE_DISCONNECT);
 	}
 	
 	private synchronized void closeConnect(){
@@ -441,6 +448,7 @@ public class ConnectDeamon extends Service{
 		}	
 				
 		m_connect = null;
+		
 	}
 	
 	public void run(){
@@ -518,7 +526,7 @@ public class ConnectDeamon extends Service{
 				
 				if(m_disconnect != true){
 					try{
-						SetConnectState(CONNECTING_STATE);
+						SetConnectState(STATE_CONNECTING);
 						SetErrorString("M ",_e);
 					}catch(Exception e){}
 				}							

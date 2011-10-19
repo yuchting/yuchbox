@@ -1,9 +1,9 @@
-package com.yuchting.yuchberry.client.im;
+package com.yuchting.yuchdroid.client.im;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.yuchting.yuchberry.client.sendReceive;
+import com.yuchting.yuchdroid.client.sendReceive;
 
 public class fetchChatMsg{
 	

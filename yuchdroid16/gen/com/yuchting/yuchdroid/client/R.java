@@ -22,8 +22,10 @@ public final class R {
         public static final int dlg_info_confirm=0x7f060002;
         public static final int dlg_info_root=0x7f060000;
         public static final int dlg_info_text=0x7f060001;
+        public static final int login_connect_text=0x7f06000e;
         public static final int login_host=0x7f06000a;
         public static final int login_port=0x7f06000b;
+        public static final int login_start_svr=0x7f06000d;
         public static final int login_user_pass=0x7f06000c;
         public static final int mail_body=0x7f060006;
         public static final int mail_check_btn=0x7f060004;
@@ -32,8 +34,6 @@ public final class R {
         public static final int mail_mark_btn=0x7f060007;
         public static final int mail_subject=0x7f060005;
         public static final int mail_time=0x7f060009;
-        public static final int start_svr=0x7f06000d;
-        public static final int textView1=0x7f06000e;
     }
     public static final class layout {
         public static final int dlg_info=0x7f030000;
@@ -43,11 +43,11 @@ public final class R {
     }
     public static final class string {
         public static final int app_name=0x7f040000;
-        public static final int dlg_info_confirm=0x7f04000e;
+        public static final int dlg_info_confirm=0x7f040011;
         /**  dialog relation 
  dialog relation 
          */
-        public static final int dlg_info_title=0x7f04000d;
+        public static final int dlg_info_title=0x7f040010;
         /**  login activity 
  login activity 
          */
@@ -55,15 +55,18 @@ public final class R {
         public static final int login_host_error_prompt=0x7f040004;
         public static final int login_port=0x7f040005;
         public static final int login_port_error_prompt=0x7f040006;
+        public static final int login_state_connected=0x7f04000b;
+        public static final int login_state_connecting=0x7f04000a;
+        public static final int login_state_disconnect=0x7f040009;
         public static final int login_user_pass=0x7f040007;
         public static final int login_user_pass_error_prompt=0x7f040008;
-        public static final int mail_me_address=0x7f04000a;
-        public static final int mail_notification_ticker=0x7f04000c;
-        public static final int mail_over_max_length_prompt=0x7f04000b;
+        public static final int mail_me_address=0x7f04000d;
+        public static final int mail_notification_ticker=0x7f04000f;
+        public static final int mail_over_max_length_prompt=0x7f04000e;
         /**  mail activity 
  mail activity 
          */
-        public static final int no_mail=0x7f040009;
+        public static final int no_mail=0x7f04000c;
         public static final int start_svr_but=0x7f040001;
         public static final int stop_svr_but=0x7f040002;
     }
