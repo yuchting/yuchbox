@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">YuchDroid</string>
+    <string name="title_debug_info">Debug Information</string>
+    <string name="title_mail">Mail</string>
+    
+    <string name="debug_info_no_info">Opps! No debug information.</string>
+    <string name="debug_info_menu_clear">Clear</string>
+    <string name="debug_info_menu_copy">Copy To Clipbroad</string>
+    <string name="debug_info_menu_copy_ok">Copy To Clipbroad OK!</string>
+    <string name="debug_info_menu_help">Help</string>
+        
     <string name="start_svr_but">Start Service</string>
     <string name="stop_svr_but">Stop Service</string>
     
@@ -14,6 +23,9 @@
     <string name="login_state_disconnect">Disconnect.</string>
     <string name="login_state_connecting">Connecting...</string>
     <string name="login_state_connected">Connected.</string>
+    
+    
+    
     
     <!-- mail activity -->
     <string name="no_mail">no mail, please wait refresh...</string>

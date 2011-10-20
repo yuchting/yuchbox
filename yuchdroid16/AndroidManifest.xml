@@ -4,17 +4,29 @@
       android:versionCode="1" android:versionName="1.6.1201">
     <uses-sdk android:minSdkVersion="4" />
 
-    <application android:icon="@drawable/icon" android:label="@string/app_name">
-        <service android:name=".ConnectDeamon"></service><activity android:name=".Yuchdroid16Activity"
-                  android:label="@string/app_name">
+    <application android:icon="@drawable/icon" 
+    	android:label="@string/app_name"
+        android:name=".YuchDroidApp">
+        			
+        <service android:name=".ConnectDeamon"/>
+        
+        <activity android:name=".Yuchdroid16Activity"
+			android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".mail.MailListActivity"></activity>
+        
+        <activity android:name=".mail.MailListActivity" 
+        	android:label="@string/title_mail"/>
+        	
+        <activity android:name=".DebugInfoActivity" 
+        	android:label="@string/title_debug_info" />
+        	
         <activity android:name=".GlobalDialog"
-        android:label="@string/app_name" android:theme="@style/Theme.Transparent"></activity>
+        	android:label="@string/app_name" 
+        	android:theme="@style/Theme.Transparent"/>
         
 
     </application>

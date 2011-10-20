@@ -15,11 +15,14 @@ import android.widget.TextView;
 
 import com.yuchting.yuchdroid.client.ConnectDeamon;
 import com.yuchting.yuchdroid.client.R;
+import com.yuchting.yuchdroid.client.YuchDroidApp;
 
 public class MailListActivity extends ListActivity {
 	
-	private MailDbAdapter 	m_mailDbAdapter = new MailDbAdapter(this);
+	private MailDbAdapter 	m_mailDbAdapter;
 	private Cursor			m_groupCursor = null;
+	
+	public YuchDroidApp		m_mainApp;
 	
 	// shwo the mail list activity directly
 	public static void show(Context ctx){
@@ -31,11 +34,12 @@ public class MailListActivity extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.mail_list);
         
-        m_mailDbAdapter.open();
+        m_mainApp = (YuchDroidApp)getApplicationContext();
+        m_mailDbAdapter = m_mainApp.m_dba;
+        
         fillMail();
         
         registerForContextMenu(getListView());

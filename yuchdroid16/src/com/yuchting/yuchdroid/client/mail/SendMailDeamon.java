@@ -92,14 +92,14 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 			
 			// does want to copy tu sent folder?
 			//
-			sendReceive.WriteBoolean(t_os,m_connect.m_config.m_copyMailToSentFolder);
+			sendReceive.WriteBoolean(t_os,m_connect.m_mainApp.m_config.m_copyMailToSentFolder);
 			
 			m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), false,false);
 					
 			t_os.close();
 						
 		}catch(Exception e){
-			m_connect.SetErrorString("SSF:" + e.getMessage() + e.getClass().getName());
+			m_connect.m_mainApp.setErrorString("SSF:" + e.getMessage() + e.getClass().getName());
 		}
 	}
 	
@@ -137,7 +137,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 													
 				while(!m_connect.m_sendAuthMsg){
 					
-					if(!m_connect.IsConnectState()){
+					if(m_connect.m_destroy){
 						sendError();
 						return;
 					}else{
@@ -163,7 +163,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 						sleep(2 * 60000);
 					}else{
 						sendError();
-						m_connect.SetErrorString("S:resend 3 time,give up.");
+						m_connect.m_mainApp.setErrorString("S:resend 3 time,give up.");
 						break;
 					}
 
@@ -175,7 +175,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 				
 				sendError();
 				
-				m_connect.SetErrorString("S: " + _e.getMessage() + " " + _e.getClass().getName());
+				m_connect.m_mainApp.setErrorString("S: " + _e.getMessage() + " " + _e.getClass().getName());
 				
 				//TODO set uploading describe
 				//m_connect.SetUploadingDesc(m_sendMail,-1,0,0);				

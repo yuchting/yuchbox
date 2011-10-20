@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/debug_item_text"
+  android:textSize="10dp"
+  android:minHeight="25dp"
+  android:maxHeight="50dp"
+  android:gravity="center_vertical"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent">
+</TextView>

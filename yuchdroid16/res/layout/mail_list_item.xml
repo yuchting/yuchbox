@@ -11,7 +11,7 @@
         android:layout_width="16dp"
         android:layout_height="16dp"
 		android:button="@drawable/ic_checkbox_no"
-		android:checked="@drawable/ic_checkbox_yes" 
+		android:checked="@drawable/ic_checkbox_yes"
 		android:layout_marginLeft="2dp"
 		android:layout_marginTop="7dp"/>
 

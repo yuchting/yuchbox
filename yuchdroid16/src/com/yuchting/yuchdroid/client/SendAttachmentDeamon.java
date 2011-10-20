@@ -110,7 +110,7 @@ public class SendAttachmentDeamon extends Thread{
 			}catch(Exception _e){
 				try{
 					sleep(5000);
-					m_connect.SetErrorString("SA: read file fail" + _e.getMessage() + _e.getClass().getName());
+					m_connect.m_mainApp.setErrorString("SA: read file fail" + _e.getMessage() + _e.getClass().getName());
 				}catch(Exception ex){}
 				
 				m_fileIn.close();
@@ -200,19 +200,17 @@ public class SendAttachmentDeamon extends Thread{
 						m_fileIn = new FileInputStream(m_fileConnection);
 					}
 				}	
-			}else{
-				
+			}else{	
 				m_sendCallback.sendFinish();
 				m_closeState = true;
-			}
-					
+			}					
 			
 			if(isAlive()){
 				interrupt();
 			}
 			
 		}catch(Exception _e){
-			m_connect.SetErrorString("SA: sendNexFile " + _e.getMessage() + _e.getClass().getName());
+			m_connect.m_mainApp.setErrorString("SA: sendNexFile " + _e.getMessage() + _e.getClass().getName());
 		}		
 		
 	}
@@ -259,7 +257,7 @@ public class SendAttachmentDeamon extends Thread{
 			
 			while(!m_connect.m_sendAuthMsg){
 				
-				if(!m_connect.IsConnectState()){
+				if(m_connect.m_destroy){
 					ReleaseAttachFile();
 					
 					m_sendCallback.sendError();
@@ -322,12 +320,12 @@ public class SendAttachmentDeamon extends Thread{
 						t_sendFileCreate = false;
 						
 					}catch(Exception e){
-						m_connect.SetErrorString("SA: OK " + e.getMessage() +  e.getClass().getName());			
+						m_connect.m_mainApp.setErrorString("SA: OK " + e.getMessage() +  e.getClass().getName());			
 					}
 				}										
 				
 			}catch(Exception _e){
-				m_connect.SetErrorString("SA: " + _e.getMessage() + _e.getClass().getName());		
+				m_connect.m_mainApp.setErrorString("SA: " + _e.getMessage() + _e.getClass().getName());		
 			}		
 		}
 		

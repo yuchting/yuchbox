@@ -1,8 +1,5 @@
 package com.yuchting.yuchdroid.client.mail;
 
-import com.yuchting.yuchdroid.client.R;
-import com.yuchting.yuchdroid.client.R.string;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -10,6 +7,9 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+
+import com.yuchting.yuchdroid.client.R;
+import com.yuchting.yuchdroid.client.YuchDroidApp;
 
 public class MailDbAdapter {
 	
@@ -150,7 +150,7 @@ public class MailDbAdapter {
 	private DatabaseHelper mDbHelper = null;
 	private SQLiteDatabase mDb = null;
 	
-	private final Context mCtx;
+	private YuchDroidApp m_mainApp;
 
 	private static class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -193,8 +193,8 @@ public class MailDbAdapter {
      * 
      * @param ctx the Context within which to work
      */
-    public MailDbAdapter(Context ctx) {
-        this.mCtx = ctx;
+    public MailDbAdapter(YuchDroidApp _mainApp) {
+    	m_mainApp = _mainApp;
     }
 
     public MailDbAdapter open() throws SQLException {
@@ -202,7 +202,7 @@ public class MailDbAdapter {
     		close();
     	}
     	
-        mDbHelper = new DatabaseHelper(mCtx,false);
+        mDbHelper = new DatabaseHelper(m_mainApp,false);
         mDb = mDbHelper.getWritableDatabase();
         
         
@@ -389,7 +389,7 @@ public class MailDbAdapter {
     	String t_addr_list;
     	if(_mail.GetFromVect().isEmpty()){
     		t_addr_list = reRangeAddrList(_groupCursor.getString(_groupCursor.getColumnIndex(GROUP_ATTR_ADDR_LIST)),
-    								mCtx.getString(R.string.mail_me_address));
+    										m_mainApp.getString(R.string.mail_me_address));
     	}else{
     		t_addr_list = reRangeAddrList(_groupCursor.getString(_groupCursor.getColumnIndex(GROUP_ATTR_ADDR_LIST)),
     								_mail.GetFromVect().get(0));

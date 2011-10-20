@@ -45,28 +45,30 @@ public class ConnectDeamon extends Service{
 	final static int	fsm_clientVer = 14;
 	
 	public boolean m_sendAuthMsg 			= false;
-	private boolean m_destroy				= false;
+	public boolean m_destroy				= false;
 	
-	private boolean m_disconnect 			= true;
 	private int	m_ipConnectCounter 		= 0;
 	private int	m_connectCounter 		= -1;
 	
-	private String m_latestVersion			= "";	
-			
+	private String m_latestVersion			= "";
+				
 	private SendingQueue	m_sendingQueue	= null;
 		
 	public sendReceive	m_connect			= null;
 	
-	private MailDbAdapter	m_dba			= new MailDbAdapter(this);
-	
+	public YuchDroidApp m_mainApp; 
+			
+	// send broadcast intent filter
+	//
 	public final static	String	FILTER_CONNECT_STATE = TAG + "_CS";
+	public final static	String	FILTER_DEBUG_INFO = "YuchDroidApp" + "_DI";
 	
 	// connect state
 	//
 	public final static	int				STATE_DISCONNECT	= 0;
 	public final static	int				STATE_CONNECTING	= 1;
 	public final static	int				STATE_CONNECTED		= 2;
-			
+				
 	// notification system varaibles
 	//
 	public final static	int				YUCH_NOTIFICATION_MAIL			= 0;
@@ -79,16 +81,6 @@ public class ConnectDeamon extends Service{
 	private Vector<Integer>	m_recvMailSimpleHashCodeSet = new Vector<Integer>();		
 	private Vector<SendMailDeamon>		m_sendingMailAttachment = new Vector<SendMailDeamon>();
 	
-	public ConfigInit		m_config = new ConfigInit(this);
-	
-	// share preference data
-	//
-	public final static String fsm_shareData_name = "YuchDroid_share_data";
-	private SharedPreferences m_shareData = null;
-	
-	public final static String SHAREDATA_DEAMON_IS_RUN = "deamon_run";
-	public final static String SHAREDATA_CONNECT_STATE = "deamon_connect_state";
-	
 	// proxy thread
 	//
 	private Thread m_proxyThread = new Thread(){
@@ -98,10 +90,8 @@ public class ConnectDeamon extends Service{
 	};
 	
 	public void onCreate() {
-		Log.d(TAG,"onCreate");
-		
-		m_config.WriteReadIni(true);
-				
+		m_mainApp = (YuchDroidApp)getApplicationContext();
+						
 		// initialize the sending queue class
 		//
 		m_sendingQueue = new SendingQueue(this);
@@ -118,11 +108,7 @@ public class ConnectDeamon extends Service{
 		
 		fsm_display_width = display.getWidth();
 		fsm_display_height = display.getHeight();
-		
-		m_dba.open();
-		
-		m_shareData = getSharedPreferences(fsm_shareData_name,MODE_PRIVATE);
-		m_shareData.edit().putInt(SHAREDATA_CONNECT_STATE,STATE_DISCONNECT);
+				
 				
 		// start the connect run thread
 		//
@@ -165,34 +151,15 @@ public class ConnectDeamon extends Service{
 	    // stopped, so return sticky.
 	    return 0;
 	}
-	
-	public void SetErrorString(String _error){
-		//TODO add debug error
-		Log.e(TAG,_error);
-	}
-	
-	public void SetErrorString(String _error,Exception e){
-		SetErrorString(_error+" msg:"+e.getMessage()+" cls:"+e.getClass().getName());
-		e.printStackTrace();
-	}
-	
+		
 	private void onStart_impl(Intent _intent){
-		//TODO start connect 
-		//
+		
+		m_mainApp.m_connectDeamonRun = true;
+		
 		try{
-			if(IsConnectState()){
-				Disconnect();
-			}else{
-				Bundle bundle = new Bundle();
-				if(bundle.getBoolean("read_config")){
-					m_config.WriteReadIni(true);
-				}
-				Connect();
-			}			
-			m_shareData.edit().putBoolean(SHAREDATA_DEAMON_IS_RUN,!m_disconnect);
-			
+			Connect();			
 		}catch(Exception e){
-			SetErrorString("onStart_impl", e);
+			m_mainApp.setErrorString("onStart_impl", e);
 		}
 	}
 
@@ -204,6 +171,7 @@ public class ConnectDeamon extends Service{
 		Log.d(TAG,"onDestory");
 		
 		m_destroy = true;
+		m_mainApp.m_connectDeamonRun = false;
 		
 		closeConnect();
 	
@@ -212,8 +180,7 @@ public class ConnectDeamon extends Service{
 			m_sendingQueue = null;
 		}
 		
-		m_dba.close();
-		m_shareData.edit().putBoolean(SHAREDATA_DEAMON_IS_RUN, false);
+		m_mainApp.m_connectDeamonRun = false;
 	}
 	
 	private boolean CanNotConnectSvr(){
@@ -236,15 +203,15 @@ public class ConnectDeamon extends Service{
 	}
 	
 	public boolean isDisconnectState(){
-		return m_disconnect || m_connect == null || !m_sendAuthMsg;
+		return m_connect == null || !m_sendAuthMsg;
 	}
 	
 	private boolean IsUseSSL(){
-		return m_config.m_useSSL;
+		return m_mainApp.m_config.m_useSSL;
 	}
 	
 	private int GetPulseIntervalMinutes(){
-		return m_config.getPulseInterval();
+		return m_mainApp.m_config.getPulseInterval();
 	}
 	
 	private synchronized int GetConnectInterval(){
@@ -262,23 +229,19 @@ public class ConnectDeamon extends Service{
 	}
 	
 	public synchronized void StoreUpDownloadByte(long _uploadByte,long _downloadByte,boolean _writeIni){
-		m_config.m_uploadByte += _uploadByte;
-		m_config.m_downloadByte += _downloadByte;	
+		m_mainApp.m_config.m_uploadByte += _uploadByte;
+		m_mainApp.m_config.m_downloadByte += _downloadByte;	
 				
 		if(_writeIni){
-			m_config.WriteReadIni(false);
+			m_mainApp.m_config.WriteReadIni(false);
 		}
 	}
 	
 		
 	public void SetConnectState(int _state){
-		m_shareData.edit().putInt(SHAREDATA_CONNECT_STATE,_state);
+		m_mainApp.m_connectState = _state;
 		
-		Intent t_intent = new Intent(FILTER_CONNECT_STATE);
-//		Bundle t_extra = new Bundle();
-//		t_extra.putInt(_state);
-		t_intent.putExtra("state", _state);
-		
+		Intent t_intent = new Intent(FILTER_CONNECT_STATE);	
 		sendBroadcast(t_intent);
 	}
 	
@@ -344,13 +307,13 @@ public class ConnectDeamon extends Service{
 			Thread.sleep(t_sleep);
 		}
 		 
-		if(m_disconnect == true){
+		if(m_destroy){
 			throw new Exception("user closed");
 		}
 
 		try{
 			
-			return new sendReceive(m_config.m_host,m_config.m_port,_ssl);
+			return new sendReceive(m_mainApp.m_config.m_host,m_mainApp.m_config.m_port,_ssl);
 			
 		}catch(java.net.ConnectException e){
 			// connection time out exception
@@ -393,24 +356,17 @@ public class ConnectDeamon extends Service{
 	private void SetAboutInfo(String _aboutInfo){
 		//TODO popup the about activity 
 	}
-	
-	public boolean IsConnectState(){
-		return !m_disconnect;
-	}
-	
+		
 	public synchronized void Connect()throws Exception{
 		 
 		Disconnect();
-		 
 		SetConnectState(STATE_CONNECTING);
-		m_disconnect = false;
 		 
 		m_proxyThread.interrupt();
 	}
 	
 	public void Disconnect()throws Exception{
-		 
-		m_disconnect = true;
+		
 		StopDisconnectNotification();
 		
 		m_proxyThread.interrupt();
@@ -444,7 +400,7 @@ public class ConnectDeamon extends Service{
 				m_connect.CloseSendReceive();
 			}	
 		}catch(Exception _e){
-			SetErrorString("closeConnect", _e);
+			m_mainApp.setErrorString("closeConnect", _e);
 		}	
 				
 		m_connect = null;
@@ -457,7 +413,7 @@ public class ConnectDeamon extends Service{
 	
 			m_sendAuthMsg = false;
 						
-			while(CanNotConnectSvr() || m_disconnect == true ){
+			while(CanNotConnectSvr()){
 	
 				if(m_destroy){
 					return ;
@@ -492,16 +448,16 @@ public class ConnectDeamon extends Service{
 				//
 				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 				t_os.write(msg_head.msgConfirm);
-				sendReceive.WriteString(t_os, m_config.m_userPass);
+				sendReceive.WriteString(t_os, m_mainApp.m_config.m_userPass);
 				sendReceive.WriteInt(t_os,fsm_clientVer);
 				t_os.write(GetClientLanguage());
 				sendReceive.WriteString(t_os,fsm_clientVersion);
-				sendReceive.WriteString(t_os,m_config.m_passwordKey);
-				sendReceive.WriteBoolean(t_os,m_config.m_enableWeiboModule);
+				sendReceive.WriteString(t_os,m_mainApp.m_config.m_passwordKey);
+				sendReceive.WriteBoolean(t_os,m_mainApp.m_config.m_enableWeiboModule);
 				sendReceive.WriteString(t_os,"6.0"); // adapt blackberry
 				int t_size = (fsm_display_width << 16) | fsm_display_height;
 				sendReceive.WriteInt(t_os,t_size);
-				sendReceive.WriteBoolean(t_os,m_config.m_enableIMModule);
+				sendReceive.WriteBoolean(t_os,m_mainApp.m_config.m_enableIMModule);
 				
 				m_connect.SendBufferToSvr(t_os.toByteArray(), true,false);
 				
@@ -524,12 +480,12 @@ public class ConnectDeamon extends Service{
 				
 			}catch(Exception _e){
 				
-				if(m_disconnect != true){
+				if(!m_destroy){
 					try{
 						SetConnectState(STATE_CONNECTING);
-						SetErrorString("M ",_e);
+						m_mainApp.setErrorString("M ",_e);
 					}catch(Exception e){}
-				}							
+				}															
 			}		
 					
 			if(!isAppOnForeground() && m_ipConnectCounter >= 5){
@@ -560,7 +516,7 @@ public class ConnectDeamon extends Service{
 		 	case msg_head.msgNote:
 		 		String t_string = sendReceive.ReadString(in);
 		 		DialogAlert("YuchBerry svr: " + t_string);
-		 		SetErrorString(t_string);
+		 		m_mainApp.setErrorString(t_string);
 		 		break;
 		 	
 		 	case msg_head.msgFileAttach:
@@ -661,7 +617,7 @@ public class ConnectDeamon extends Service{
 		try{
 			addSendingData(msg_head.msgMailAccountList, new byte[]{msg_head.msgMailAccountList}, true);
 		}catch(Exception e){
-			SetErrorString("SRMAM ",e);
+			m_mainApp.setErrorString("SRMAM ",e);
 		}
 	}
 	
@@ -678,7 +634,7 @@ public class ConnectDeamon extends Service{
 				
 				SendMailConfirmMsg(t_hashcode);
 				
-				SetErrorString("" + t_hashcode + " Mail has been added! ");
+				m_mainApp.setErrorString("" + t_hashcode + " Mail has been added! ");
 				
 				return;
 			}
@@ -690,26 +646,26 @@ public class ConnectDeamon extends Service{
 		
 		m_recvMailSimpleHashCodeSet.addElement(new Integer(t_mail.GetSimpleHashCode()));
 				
-		if(m_config.m_sendMailAccountList.isEmpty()){
+		if(m_mainApp.m_config.m_sendMailAccountList.isEmpty()){
 			sendRequestMailAccountMsg();
 		}
 
 		try{
 						
-			m_dba.createMail(t_mail, null);
+			m_mainApp.m_dba.createMail(t_mail, null);
 			
 			// increase the receive mail quantity
 			//
-			m_config.m_recvMailNum++;			
+			m_mainApp.m_config.m_recvMailNum++;			
 			
 			SendMailConfirmMsg(t_hashcode);
 			
-			SetErrorString("" + t_hashcode + ":" + t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime());
+			m_mainApp.setErrorString("" + t_hashcode + ":" + t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime());
 									
 			TriggerMailNotification(this,t_mail);
 							
 		}catch(Exception _e){
-			SetErrorString("C ",_e);
+			m_mainApp.setErrorString("C ",_e);
 		}
 	}
 

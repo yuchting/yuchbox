@@ -82,7 +82,7 @@ public class SendingQueue extends Thread{
 				}
 				
 			}catch(Exception e){
-				m_mainDeamon.SetErrorString("SQ:"+ e.getMessage() + " " + e.getClass().getName());
+				m_mainDeamon.m_mainApp.setErrorString("SQ:"+ e.getMessage() + " " + e.getClass().getName());
 			}
 		}
 	}

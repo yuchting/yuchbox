@@ -5,11 +5,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,38 +20,38 @@ import android.widget.Toast;
 public class Yuchdroid16Activity extends Activity {
 	
 	public final static String TAG = "Yuchdroid16Activity";
-	
+		
 	EditText	m_host	= null;
 	EditText	m_port	= null;
 	EditText	m_userPass = null;
 	
 	TextView	m_connectStateView = null;
+	
+	YuchDroidApp m_mainApp;
+	
+	ConfigInit m_config;	
 		
-	SharedPreferences m_shareData = null;
-	
-	private ConfigInit		m_config = new ConfigInit(this);
-	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-               
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.main);       
-         
+        
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(R.layout.main);
+        
+        m_mainApp = (YuchDroidApp)getApplicationContext();
+        m_config = m_mainApp.m_config;
+        
         initLoginLayout();
     }  
     
     private void initLoginLayout() { 
-    	
-    	m_config.WriteReadIni(true);
-        m_shareData = getSharedPreferences(ConnectDeamon.fsm_shareData_name,MODE_PRIVATE);
          
         Button buttonStart = (Button) findViewById(R.id.login_start_svr);
         buttonStart.setOnClickListener(new OnClickListener() {  
             public void onClick(View arg0){
 
-            	if(m_shareData.getBoolean(ConnectDeamon.SHAREDATA_DEAMON_IS_RUN, false)){
+            	if(m_mainApp.m_connectDeamonRun){
             		stopConnectDeamon();
                 }else{
 
@@ -62,9 +63,9 @@ public class Yuchdroid16Activity extends Activity {
                 		
                 		boolean t_readConfig = false;
                 		
-                    	if(!t_host.equals(m_config.m_host) 
-                    	|| !t_port.equals(m_config.m_port) 
-                    	|| !t_pass.equals(m_config.m_userPass)){
+                    	if(!t_host.equals(m_mainApp.m_config.m_host) 
+                    	|| !t_port.equals(m_mainApp.m_config.m_port) 
+                    	|| !t_pass.equals(m_mainApp.m_config.m_userPass)){
                     		t_readConfig = true;
                     		
                     		m_config.m_host = t_host;
@@ -90,7 +91,7 @@ public class Yuchdroid16Activity extends Activity {
         m_port.setText(m_config.m_port == 0?"":Integer.toString(m_config.m_port));
         m_userPass.setText(m_config.m_userPass);        
         
-        setConnectState(m_shareData.getInt(ConnectDeamon.SHAREDATA_CONNECT_STATE,ConnectDeamon.STATE_DISCONNECT));
+        setConnectState(m_mainApp.m_connectState);
         
   
 //        Button buttonStop = (Button) findViewById(R.id.stop_svr);  
@@ -139,20 +140,16 @@ public class Yuchdroid16Activity extends Activity {
     }
     
     private void startConnectDeamon(boolean _readConfig){
-    	
-    	Intent intent = new Intent(this,ConnectDeamon.class);
-	
-    	Bundle bundle = new Bundle();
-    	bundle.putBoolean("read_config",_readConfig);
-    	
-    	intent.putExtras(bundle);
-    	
+    	Intent intent = new Intent(this,ConnectDeamon.class);    	
         startService(intent);
     }  
   
     private void stopConnectDeamon(){  
     	Intent intent = new Intent(this,ConnectDeamon.class);
         stopService(intent);
+        
+        // set the text
+        setConnectState(ConnectDeamon.STATE_DISCONNECT);
     }
     
     @Override
@@ -164,11 +161,11 @@ public class Yuchdroid16Activity extends Activity {
     
     BroadcastReceiver	m_intentRecv = new BroadcastReceiver(){
 		public void onReceive(Context context, Intent intent){
-			setConnectState(intent.getExtras().getInt("state"));
+			setConnectState(m_mainApp.m_connectState);
 		}
 	};
 	
-	private void setConnectState(int _state){
+	private synchronized void setConnectState(int _state){
 		switch(_state){
 		case ConnectDeamon.STATE_CONNECTED:
 			m_connectStateView.setText(getString(R.string.login_state_connected));
@@ -181,6 +178,25 @@ public class Yuchdroid16Activity extends Activity {
 			break;
 		}
 	}
+	
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.login_menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        switch(item.getItemId()) {
+            case R.id.login_menu_debug_info:
+            	startActivity(new Intent(this,DebugInfoActivity.class));
+                return true;
+        }
+
+        return super.onMenuItemSelected(featureId, item);
+    }
 	
     @Override
     protected void onResume() {
