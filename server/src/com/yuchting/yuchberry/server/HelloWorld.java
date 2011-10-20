@@ -98,6 +98,11 @@ public class HelloWorld {
 	
 	public static void main(String arg[])throws Exception{
 		
+	
+		
+	}
+	
+	static public void testMDS()throws Exception{
 		String host = "45562.yuchberry.info";
 		int port	= 19781;
 		byte[] bytes = {0x10,0x08,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -112,9 +117,7 @@ public class HelloWorld {
 		ds.receive(dp);
 		
 		System.out.print(bytes);
-		
 	}
-	
 	
 	static public void qgetOAuthRequest(){
 
