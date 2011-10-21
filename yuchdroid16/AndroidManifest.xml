@@ -18,7 +18,7 @@
             </intent-filter>
         </activity>
         
-        <activity android:name=".mail.MailListActivity" 
+        <activity android:name=".HomeActivity" 
         	android:label="@string/title_mail"/>
         	
         <activity android:name=".DebugInfoActivity" 

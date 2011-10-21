@@ -24,7 +24,7 @@ public class GlobalDialog extends Activity implements DialogInterface.OnCancelLi
 		Dialog dialog;
 		switch(id) {
 		case STYLE_INFO:
-			String prompt = getIntent().getExtras().getString("info");
+			final String prompt = getIntent().getExtras().getString("info");
 
 			AlertDialog.Builder builder;
 
@@ -40,14 +40,24 @@ public class GlobalDialog extends Activity implements DialogInterface.OnCancelLi
 			builder.setView(layout);
 			dialog = builder.create();
 			
-			Button t_confirm = (Button)layout.findViewById(R.id.dlg_info_confirm);
-			t_confirm.setOnClickListener(new View.OnClickListener(){
+			Button t_but = (Button)layout.findViewById(R.id.dlg_info_confirm);
+			t_but.setOnClickListener(new View.OnClickListener(){
 				
 				@Override
 				public void onClick(View v) {
 					GlobalDialog.this.onCancel(null);					
 				}
 			});
+			
+			t_but = (Button)layout.findViewById(R.id.dlg_info_copy);
+			t_but.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					YuchDroidApp.copyTextToClipboard(GlobalDialog.this, prompt);
+				}
+			});
+			
 						
 			break;
 		default:

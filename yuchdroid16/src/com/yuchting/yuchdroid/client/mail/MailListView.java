@@ -2,54 +2,33 @@ package com.yuchting.yuchdroid.client.mail;
 
 import java.util.Date;
 
-import android.app.ListActivity;
-import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
-import android.os.Bundle;
 import android.view.View;
-import android.view.Window;
 import android.widget.CheckBox;
+import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
-import com.yuchting.yuchdroid.client.ConnectDeamon;
+import com.yuchting.yuchdroid.client.HomeActivity;
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
 
-public class MailListActivity extends ListActivity {
+public class MailListView extends ListView {
 	
 	private MailDbAdapter 	m_mailDbAdapter;
 	private Cursor			m_groupCursor = null;
 	
 	public YuchDroidApp		m_mainApp;
-	
-	// shwo the mail list activity directly
-	public static void show(Context ctx){
-		Intent t_in = new Intent().setClass(ctx, MailListActivity.class);
-		ctx.startActivity(t_in);
+	public HomeActivity		m_homeActivity;
+		
+	public MailListView(HomeActivity _home){
+		super(_home);
+		
+		m_homeActivity = _home;
+		
 	}
-	
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        
-        //requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.mail_list);
-        
-        m_mainApp = (YuchDroidApp)getApplicationContext();
-        m_mailDbAdapter = m_mainApp.m_dba;
-        
-        fillMail();
-        
-        registerForContextMenu(getListView());
-        
-        ConnectDeamon.StopMailNotification(this);
-    }
-    
-    @Override
-    protected void onDestroy(){
-    	super.onDestroy();
+	    
+    public void destroy(){
     	
     	// close the cuar
     	//
@@ -61,6 +40,8 @@ public class MailListActivity extends ListActivity {
     {
     	MailDbAdapter.GROUP_ATTR_READ,
     	MailDbAdapter.GROUP_ATTR_MARK,
+    	
+    	MailDbAdapter.GROUP_ATTR_HAS_ATTACH,
     	
     	MailDbAdapter.GROUP_ATTR_SUBJECT,
     	MailDbAdapter.GROUP_ATTR_LEATEST_BODY,
@@ -74,6 +55,8 @@ public class MailListActivity extends ListActivity {
     	R.id.mail_item,
     	R.id.mail_mark_btn,
     	
+    	R.id.mail_attach_pic,
+    	
     	R.id.mail_subject,
     	R.id.mail_body,
     	
@@ -83,16 +66,12 @@ public class MailListActivity extends ListActivity {
     
     public void fillMail(){
     	
-    	 // Get all of the rows from the database and create the item list
     	m_groupCursor = m_mailDbAdapter.fetchAllGroup();
-        startManagingCursor(m_groupCursor);
-
-
+    	
         // Now create a simple cursor adapter and set it to display
-        SimpleCursorAdapter notes = 
-            new SimpleCursorAdapter(this, 
-            						R.layout.mail_list_item,
-            						m_groupCursor, fsm_fromCursor, fsm_toCursor);
+        SimpleCursorAdapter notes = new SimpleCursorAdapter(m_homeActivity, 
+		            						R.layout.mail_list_item,
+		            						m_groupCursor, fsm_fromCursor, fsm_toCursor);
         
         notes.setViewBinder(new SimpleCursorAdapter.ViewBinder(){
         	
@@ -115,6 +94,9 @@ public class MailListActivity extends ListActivity {
         			}else{
         				((CheckBox)view).setSelected(false);
         			}
+        			break;
+        		case R.id.mail_attach_pic:
+        			view.setVisibility(cursor.getInt(columnIndex) == 1?View.VISIBLE:View.INVISIBLE);
         			break;
         		case R.id.mail_subject:
         		case R.id.mail_body:
@@ -157,6 +139,6 @@ public class MailListActivity extends ListActivity {
         	}
         });
         
-        setListAdapter(notes);
+        setAdapter(notes);
     }
 }

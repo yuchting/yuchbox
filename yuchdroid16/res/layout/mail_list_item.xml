@@ -6,15 +6,28 @@
     android:background="#ffffff" 
     android:orientation="horizontal" >
     
-    <CheckBox
-        android:id="@+id/mail_check_btn"
-        android:layout_width="16dp"
-        android:layout_height="16dp"
-		android:button="@drawable/ic_checkbox_no"
-		android:checked="@drawable/ic_checkbox_yes"
-		android:layout_marginLeft="2dp"
-		android:layout_marginTop="7dp"/>
-
+    <LinearLayout 
+    	android:layout_width="wrap_content"
+    	android:layout_height="fill_parent"
+    	android:orientation="vertical">
+    	<CheckBox
+			android:id="@+id/mail_check_btn"
+			android:layout_width="16dp"
+			android:layout_height="16dp"
+			android:button="@drawable/mail_checkbox"
+			android:layout_marginLeft="2dp"
+			android:layout_marginTop="7dp"/>
+			
+		<ImageView
+			android:id="@+id/mail_attach_pic"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/mail_item_attach_pic"
+			android:layout_marginTop="6dp"
+		/>
+		   	
+    </LinearLayout>
+    
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" 
@@ -56,8 +69,7 @@
 	        	android:id="@+id/mail_mark_btn"
 	        	android:layout_width="wrap_content"
         		android:layout_height="fill_parent"
-        		android:button="@android:drawable/star_off"
-        		android:checked="@android:drawable/star_on"
+        		android:button="@drawable/mail_item_marked"
         		android:gravity="right"/>
  		</LinearLayout>
         

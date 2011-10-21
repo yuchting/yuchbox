@@ -13,7 +13,10 @@ import android.text.ClipboardManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class DebugInfoActivity extends ListActivity{
@@ -53,7 +56,7 @@ public class DebugInfoActivity extends ListActivity{
 			public void onReceive(Context paramContext, Intent paramIntent) {
 				fillInfo();				
 			}
-		}, new IntentFilter(ConnectDeamon.FILTER_DEBUG_INFO));
+		}, new IntentFilter(YuchDroidApp.FILTER_DEBUG_INFO));
 	}
 	
 	private void fillInfo(){
@@ -85,10 +88,7 @@ public class DebugInfoActivity extends ListActivity{
             	m_mainApp.clearAllErrorString();
                 return true;
             case R.id.debug_info_menu_copy:
-            	ClipboardManager clipboard = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
-            	clipboard.setText(m_mainApp.getErrorString());
-            	
-            	Toast.makeText(this, getString(R.string.debug_info_menu_copy_ok),Toast.LENGTH_SHORT);
+            	YuchDroidApp.copyTextToClipboard(this, m_mainApp.getErrorString());
             	return true;
             case R.id.debug_info_menu_help:
             	Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://code.google.com/p/yuchberry/wiki/Connect_Error_info"));
@@ -97,6 +97,13 @@ public class DebugInfoActivity extends ListActivity{
         }
 
         return super.onMenuItemSelected(featureId, item);
+    }
+    
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+    	super.onListItemClick(l, v, position, id);
+
+        GlobalDialog.showInfo(((TextView)v).getText().toString(),this); 
     }
 	
 }

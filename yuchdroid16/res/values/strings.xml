@@ -6,8 +6,8 @@
     
     <string name="debug_info_no_info">Opps! No debug information.</string>
     <string name="debug_info_menu_clear">Clear</string>
-    <string name="debug_info_menu_copy">Copy To Clipbroad</string>
-    <string name="debug_info_menu_copy_ok">Copy To Clipbroad OK!</string>
+    <string name="debug_info_menu_copy">Copy To Clipboard</string>
+    <string name="debug_info_menu_copy_ok">Copy To Clipboard OK!</string>
     <string name="debug_info_menu_help">Help</string>
         
     <string name="start_svr_but">Start Service</string>
@@ -24,10 +24,10 @@
     <string name="login_state_connecting">Connecting...</string>
     <string name="login_state_connected">Connected.</string>
     
+    <!-- home activity -->
+    <string name="login_menu_home">Home</string>
     
-    
-    
-    <!-- mail activity -->
+    <!-- mail list view -->
     <string name="no_mail">no mail, please wait refresh...</string>
     <string name="mail_me_address">Me</string>
     <string name="mail_over_max_length_prompt">--YuchDroid Prompt\nMail content is over the max length</string>
@@ -36,5 +36,7 @@
     <!-- dialog relation -->
     <string name="dlg_info_title">YuchDroid Prompt:</string>
     <string name="dlg_info_confirm">I know it</string>
+    <string name="dlg_info_copy">Copy To Clipboard</string>
+    
     
 </resources>

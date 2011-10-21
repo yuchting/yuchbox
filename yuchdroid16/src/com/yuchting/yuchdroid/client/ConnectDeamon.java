@@ -8,25 +8,18 @@ import java.util.Locale;
 import java.util.Vector;
 
 import android.app.ActivityManager;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.net.ConnectivityManager;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
-import com.yuchting.yuchdroid.client.mail.MailDbAdapter;
-import com.yuchting.yuchdroid.client.mail.MailListActivity;
 import com.yuchting.yuchdroid.client.mail.SendMailDeamon;
 import com.yuchting.yuchdroid.client.mail.fetchMail;
 
@@ -57,28 +50,10 @@ public class ConnectDeamon extends Service{
 	public sendReceive	m_connect			= null;
 	
 	public YuchDroidApp m_mainApp; 
-			
-	// send broadcast intent filter
-	//
-	public final static	String	FILTER_CONNECT_STATE = TAG + "_CS";
-	public final static	String	FILTER_DEBUG_INFO = "YuchDroidApp" + "_DI";
-	
-	// connect state
-	//
-	public final static	int				STATE_DISCONNECT	= 0;
-	public final static	int				STATE_CONNECTING	= 1;
-	public final static	int				STATE_CONNECTED		= 2;
-				
-	// notification system varaibles
-	//
-	public final static	int				YUCH_NOTIFICATION_MAIL			= 0;
-	public final static	int				YUCH_NOTIFICATION_WEIBO			= 1;
-	public final static	int				YUCH_NOTIFICATION_WEIBO_HOME	= 2;
-	public final static	int				YUCH_NOTIFICATION_DISCONNECT	= 3;	
-	
+		
 	// mail system variables
 	//
-	private Vector<Integer>	m_recvMailSimpleHashCodeSet = new Vector<Integer>();		
+	private Vector<Integer>			m_recvMailSimpleHashCodeSet = new Vector<Integer>();		
 	private Vector<SendMailDeamon>		m_sendingMailAttachment = new Vector<SendMailDeamon>();
 	
 	// proxy thread
@@ -236,64 +211,8 @@ public class ConnectDeamon extends Service{
 			m_mainApp.m_config.WriteReadIni(false);
 		}
 	}
+		
 	
-		
-	public void SetConnectState(int _state){
-		m_mainApp.m_connectState = _state;
-		
-		Intent t_intent = new Intent(FILTER_CONNECT_STATE);	
-		sendBroadcast(t_intent);
-	}
-	
-	/**
-	 * trigger mail notification to the user
-	 * @param _ctx		notification context
-	 * @param _mail		notification mail (set the notification's text)
-	 */
-	public static void TriggerMailNotification(Context _ctx,fetchMail _mail){
-		
-		NotificationManager t_mgr = (NotificationManager)_ctx.getSystemService(Context.NOTIFICATION_SERVICE);
-		
-		int icon = R.drawable.ic_notification_mail;        
-		
-		CharSequence tickerText = _ctx.getString(R.string.mail_notification_ticker);
-		
-		long when = System.currentTimeMillis();         
-
-		CharSequence contentTitle = _mail.GetSubject(); 
-		CharSequence contentText = MailDbAdapter.getDisplayMailBody(_mail);
-
-		Intent notificationIntent = new Intent(_ctx,MailListActivity.class);
-		PendingIntent contentIntent = PendingIntent.getActivity(_ctx, 0, notificationIntent, 0);
-
-		// the next two lines initialize the Notification, using the configurations above
-		Notification notification = new Notification(icon, tickerText, when);
-		notification.setLatestEventInfo(_ctx, contentTitle, contentText, contentIntent);
-		
-		//TODO trigger mail received notification
-		//
-		// sound & vibrate & LED 
-		//
-		notification.defaults |= Notification.DEFAULT_SOUND;
-		
-		
-		t_mgr.notify(YUCH_NOTIFICATION_MAIL, notification);		
-	}
-	
-	public static void StopMailNotification(Context _ctx){
-		NotificationManager t_mgr = (NotificationManager)_ctx.getSystemService(Context.NOTIFICATION_SERVICE);
-		t_mgr.cancel(YUCH_NOTIFICATION_MAIL);		
-	}
-
-	public void TriggerDisconnectNotification(){
-		//TODO trigger disconnect notification if sets
-		//
-	}
-	
-	public void StopDisconnectNotification(){
-		//TODO stop disconnect notification if sets
-		//
-	}
 	
 	public void SetReportLatestVersion(String _latestVersion){
 		//TODO popup dialog to prompt 
@@ -360,14 +279,14 @@ public class ConnectDeamon extends Service{
 	public synchronized void Connect()throws Exception{
 		 
 		Disconnect();
-		SetConnectState(STATE_CONNECTING);
+		m_mainApp.setConnectState(YuchDroidApp.STATE_CONNECTING);
 		 
 		m_proxyThread.interrupt();
 	}
 	
 	public void Disconnect()throws Exception{
 		
-		StopDisconnectNotification();
+		m_mainApp.StopDisconnectNotification();
 		
 		m_proxyThread.interrupt();
 						 	
@@ -389,7 +308,7 @@ public class ConnectDeamon extends Service{
 			m_sendingMailAttachment.removeAllElements();
 		}
 		
-		SetConnectState(STATE_DISCONNECT);
+		m_mainApp.setConnectState(YuchDroidApp.STATE_DISCONNECT);
 	}
 	
 	private synchronized void closeConnect(){
@@ -469,8 +388,8 @@ public class ConnectDeamon extends Service{
 								
 				// set the text connect
 				//
-				//m_mainApp.SetConnectState(recvMain.CONNECTED_STATE);
-				//m_mainApp.StopDisconnectNotification();
+				m_mainApp.setConnectState(YuchDroidApp.STATE_CONNECTED);
+				m_mainApp.StopDisconnectNotification();
 				
 				SetModuleOnlineState(true);
 								
@@ -482,7 +401,7 @@ public class ConnectDeamon extends Service{
 				
 				if(!m_destroy){
 					try{
-						SetConnectState(STATE_CONNECTING);
+						m_mainApp.setConnectState(YuchDroidApp.STATE_CONNECTING);
 						m_mainApp.setErrorString("M ",_e);
 					}catch(Exception e){}
 				}															
@@ -490,7 +409,7 @@ public class ConnectDeamon extends Service{
 					
 			if(!isAppOnForeground() && m_ipConnectCounter >= 5){
 				m_ipConnectCounter = 0;
-				TriggerDisconnectNotification();
+				m_mainApp.TriggerDisconnectNotification();
 			}			
 			
 			closeConnect();
@@ -662,7 +581,7 @@ public class ConnectDeamon extends Service{
 			
 			m_mainApp.setErrorString("" + t_hashcode + ":" + t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime());
 									
-			TriggerMailNotification(this,t_mail);
+			m_mainApp.TriggerMailNotification(t_mail);
 							
 		}catch(Exception _e){
 			m_mainApp.setErrorString("C ",_e);

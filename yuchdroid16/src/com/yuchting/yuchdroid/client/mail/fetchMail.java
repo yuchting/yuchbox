@@ -31,6 +31,7 @@ public class  fetchMail{
 	final static int	VERSION = 2;
 	
 	public final static String	fsm_vectStringSpliter = ";";
+	public final static String	fsm_vectStringSpliter_sub = "@#&";
 	
 	public final static String	fsm_noSubjectTile = "No Subject";
 	    	
@@ -62,6 +63,8 @@ public class  fetchMail{
 	private String			m_contain		= "";
 	private String			m_contain_html	= "";
 	private String			m_contain_html_type	= "";
+	
+	private int			m_sentFlag		= 0;
 			
 	private Vector<MailAttachment>	m_vectAttachment	 	= new Vector<MailAttachment>();	
 	
@@ -214,6 +217,9 @@ public class  fetchMail{
 	public String GetSubject(){	return m_subject;}
 	public void SetSubject(String _subject){m_subject = _subject;}
 	
+	public void setSentFlag(int _flag){m_sentFlag = _flag;}
+	public int getSentFlag(){return m_sentFlag;}
+	
 	public String GetContain(){return m_contain;}
 	public void SetContain(String _contain){m_contain = _contain;}
 	
@@ -310,11 +316,22 @@ public class  fetchMail{
 		t_attach.m_size = _size;
 		t_attach.m_type = _type;
 		
-		m_vectAttachment.addElement(t_attach);
-		
+		m_vectAttachment.addElement(t_attach);	
 	}
+	
 	public void ClearAttachment(){
 		m_vectAttachment.removeAllElements();
+	}
+	
+	public String getAttachmentString(){
+		StringBuffer t_string = new StringBuffer(); 
+		for(MailAttachment att:m_vectAttachment){
+			t_string.append(att.m_name).append(fsm_vectStringSpliter_sub)
+					.append(att.m_size).append(fsm_vectStringSpliter_sub)
+					.append(att.m_type).append(fsm_vectStringSpliter);
+		}
+		
+		return t_string.toString();
 	}
 	
 	public Vector<MailAttachment> GetAttachment(){

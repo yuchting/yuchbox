@@ -46,7 +46,7 @@ public class Yuchdroid16Activity extends Activity {
     }  
     
     private void initLoginLayout() { 
-         
+        
         Button buttonStart = (Button) findViewById(R.id.login_start_svr);
         buttonStart.setOnClickListener(new OnClickListener() {  
             public void onClick(View arg0){
@@ -149,7 +149,7 @@ public class Yuchdroid16Activity extends Activity {
         stopService(intent);
         
         // set the text
-        setConnectState(ConnectDeamon.STATE_DISCONNECT);
+        setConnectState(YuchDroidApp.STATE_DISCONNECT);
     }
     
     @Override
@@ -167,13 +167,13 @@ public class Yuchdroid16Activity extends Activity {
 	
 	private synchronized void setConnectState(int _state){
 		switch(_state){
-		case ConnectDeamon.STATE_CONNECTED:
+		case YuchDroidApp.STATE_CONNECTED:
 			m_connectStateView.setText(getString(R.string.login_state_connected));
 			break;
-		case ConnectDeamon.STATE_CONNECTING:
+		case YuchDroidApp.STATE_CONNECTING:
 			m_connectStateView.setText(getString(R.string.login_state_connecting));
 			break;
-		case ConnectDeamon.STATE_DISCONNECT:
+		case YuchDroidApp.STATE_DISCONNECT:
 			m_connectStateView.setText(getString(R.string.login_state_disconnect));
 			break;
 		}
@@ -193,6 +193,9 @@ public class Yuchdroid16Activity extends Activity {
             case R.id.login_menu_debug_info:
             	startActivity(new Intent(this,DebugInfoActivity.class));
                 return true;
+            case R.id.login_menu_home:
+            	startActivity(new Intent(this,HomeActivity.class));
+            	return true;
         }
 
         return super.onMenuItemSelected(featureId, item);
@@ -201,7 +204,7 @@ public class Yuchdroid16Activity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(m_intentRecv, new IntentFilter(ConnectDeamon.FILTER_CONNECT_STATE));
+        registerReceiver(m_intentRecv, new IntentFilter(YuchDroidApp.FILTER_CONNECT_STATE));
     }
     @Override
     protected void onPause() {

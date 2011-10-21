@@ -1,19 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:background="#ffffff">
-        
-    <ListView android:id="@+id/android:list"
-          	android:layout_width="fill_parent"
-        	android:layout_height="fill_parent"
-        	android:divider="#ddd"
-        	android:dividerHeight="1dp"
-        	android:headerDividersEnabled="false"
-        	android:footerDividersEnabled="true" />
+<ListView android:id="@+id/android:list"
+      	android:layout_width="fill_parent"
+    	android:layout_height="fill_parent"
+    	android:divider="#ddd"
+    	android:dividerHeight="1dp"
+    	android:headerDividersEnabled="false"
+    	android:footerDividersEnabled="true" />
         	
-  	<TextView android:id="@+id/android:empty"
-        	android:layout_width="wrap_content"
-        	android:layout_height="wrap_content"
-        	android:text="@string/no_mail"/>
-</LinearLayout>

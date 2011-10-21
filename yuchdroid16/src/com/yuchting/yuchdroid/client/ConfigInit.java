@@ -25,7 +25,7 @@ public final class ConfigInit {
 	
 	public static final String[]	fsm_pulseIntervalString = {"1","3","5","10","30"};
 	public static final int[]		fsm_pulseInterval		= {1,3,5,10,30};
-	public int	m_pulseIntervalIndex	= 5;
+	public int	m_pulseIntervalIndex	= 2;
 	
 	public boolean m_fulldayPrompt		= true;
 	public int	m_startPromptHour		= 8;

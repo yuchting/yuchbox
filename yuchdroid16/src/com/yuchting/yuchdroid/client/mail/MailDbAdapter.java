@@ -19,6 +19,13 @@ public class MailDbAdapter {
 	private final static String DATABASE_TABLE_GROUP	= "yuch_mail_group";
 	private final static String DATABASE_TABLE_GROUP_SUB_INDEX	= "yuch_mail_group_sub_index";
 	
+	// mail sent flag
+	//	
+	public final static int	MAIL_SENT_FLAG_ERROR	= 0x0001;
+	public final static int	MAIL_SENT_FLAG_PADDING	= 0x0002;
+	public final static int	MAIL_SENT_FLAG_SENDING	= 0x0004;
+	public final static int	MAIL_SENT_FLAG_OK		= 0x0008;
+	
 	private static final int DATABASE_VERSION 		= 1;
 	
 	public final static String KEY_ID		 			= "_id";
@@ -27,6 +34,10 @@ public class MailDbAdapter {
 	//
 	public final static String GROUP_ATTR_READ			= "group_read";
 	public final static String GROUP_ATTR_MARK			= "group_mark";
+	
+	public final static String GROUP_ATTR_HAS_ATTACH			= "group_attach";
+	
+	public final static String GROUP_ATTR_SENT_FLAG		= "group_sent_flag";
 	
 	public final static String GROUP_ATTR_SUBJECT				= "group_subject";
 	public final static String GROUP_ATTR_LEATEST_BODY			= "group_body";
@@ -41,8 +52,9 @@ public class MailDbAdapter {
 	public final static String ATTR_READ			= "mail_read";
 	public final static String ATTR_MARK			= "mail_mark";
 	
+	public final static String ATTR_SENT_FLAG		= "mail_sent_flag";
+	
 	public final static String ATTR_INDEX			= "mail_index";
-	public final static String ATTR_HASH_CODE		= "mail_hash";
 		
 	public final static String ATTR_SUBJECT 		= "mail_sub";  
 	public final static String ATTR_BODY 			= "mail_body";
@@ -59,6 +71,8 @@ public class MailDbAdapter {
 	public final static String ATTR_DATE			= "mail_date";
 	public final static String ATTR_FLAG			= "mail_flag";
 	
+	public final static String ATTR_ATTACHMENT	= "mail_attach";
+	
 	public final static String ATTR_MAIL_GROUP_INDEX	= "mail_group_index";
 	
 	private static final String TAG 				= "MailDbAdapter";
@@ -70,12 +84,18 @@ public class MailDbAdapter {
 		GROUP_ATTR_READ,
 		GROUP_ATTR_MARK,
 		
+		GROUP_ATTR_HAS_ATTACH,
+		
+		GROUP_ATTR_SENT_FLAG,
+		
 		GROUP_ATTR_SUBJECT,
 		GROUP_ATTR_LEATEST_BODY,
 		GROUP_ATTR_LEATEST_TIME,
 		GROUP_ATTR_ADDR_LIST,
 		GROUP_ATTR_GROUP,
+		
 		GROUP_ATTR_MAIL_INDEX,
+		
     };
 	
 	public static final String[] fsm_mailfullColoumns = 
@@ -85,8 +105,9 @@ public class MailDbAdapter {
 		ATTR_READ,
 		ATTR_MARK,
 		
+		ATTR_SENT_FLAG,
+		
 		ATTR_INDEX,
-		ATTR_HASH_CODE,
 		ATTR_SUBJECT,
         ATTR_BODY,
         ATTR_BODY_HTML,
@@ -101,7 +122,8 @@ public class MailDbAdapter {
         
         ATTR_DATE,
         ATTR_MAIL_GROUP_INDEX,
-        ATTR_FLAG,   
+        ATTR_ATTACHMENT,
+        ATTR_FLAG,
     };
 	
 	private final static String fsm_createTable_group = 
@@ -110,6 +132,10 @@ public class MailDbAdapter {
 						    
 						    GROUP_ATTR_READ + " smallint," +
 						    GROUP_ATTR_MARK + " smallint," +
+						    
+						    GROUP_ATTR_HAS_ATTACH + " smallint," +
+						    
+						    GROUP_ATTR_SENT_FLAG + " integer," +
 						    
 						    GROUP_ATTR_SUBJECT + " text, " +
 						    
@@ -128,23 +154,25 @@ public class MailDbAdapter {
 					        ATTR_READ + " smallint," +
 					        ATTR_MARK + " smallint," +
 					        
+					        ATTR_SENT_FLAG + " integer," +
+					        
 					        ATTR_INDEX + " integer, " +
-					        ATTR_HASH_CODE + " integer, " +
 					        
 					        ATTR_SUBJECT + " text, " +
 					        ATTR_BODY +  " text, " +
 					        ATTR_BODY_HTML + " text, " + 
 					        ATTR_BODY_HTML_TYPE + " text, " + 
 					        
-					        ATTR_TO + " text not null, " + 
+					        ATTR_TO + " text, " + 
 					        ATTR_CC + " text, " +
 					        ATTR_BCC + " text, " +
-					        ATTR_FROM + " text not null, " + 
+					        ATTR_FROM + " text, " + 
 					        ATTR_REPLY + " text, " +
 					        ATTR_GROUP + " text, " +
 					        
 					        ATTR_DATE + " integer(64), " +
-					        ATTR_MAIL_GROUP_INDEX + " integer, " + 
+					        ATTR_MAIL_GROUP_INDEX + " integer, " +
+					        ATTR_ATTACHMENT + " text, " + 
 					        ATTR_FLAG + " integer )" ;	
 	
 	private DatabaseHelper mDbHelper = null;
@@ -167,7 +195,6 @@ public class MailDbAdapter {
         	// create the index by subject
         	//
         	db.execSQL("create index " + DATABASE_TABLE_GROUP_SUB_INDEX + " on " + DATABASE_TABLE_GROUP + " (" + GROUP_ATTR_SUBJECT + ")");
-            
         }
 
         @Override
@@ -272,8 +299,9 @@ public class MailDbAdapter {
     	values.put(ATTR_READ,0);
     	values.put(ATTR_MARK,0);
     	
+    	values.put(ATTR_SENT_FLAG,_mail.getSentFlag());
+    	    	
     	values.put(ATTR_INDEX,_mail.GetMailIndex());
-    	values.put(ATTR_HASH_CODE,_mail.GetSimpleHashCode());
         values.put(ATTR_SUBJECT,_mail.GetSubject());
         values.put(ATTR_BODY,_mail.GetContain());
         values.put(ATTR_BODY_HTML,_mail.GetContain_html());
@@ -288,7 +316,8 @@ public class MailDbAdapter {
         
         values.put(ATTR_DATE,_mail.GetSendDate().getTime());
         values.put(ATTR_FLAG,_mail.GetFlags());
-
+        values.put(ATTR_ATTACHMENT,_mail.getAttachmentString());
+        
         long t_mailID;
         
     	if(_replyGroupId != null){
@@ -311,24 +340,12 @@ public class MailDbAdapter {
     	}else{
     		
     		// receive mail
-    		// 
-    		Cursor t_cursor = mDb.query(DATABASE_TABLE,fsm_mailfullColoumns,ATTR_HASH_CODE + "='" + _mail.GetSimpleHashCode() + "'",
-					null,null,null,null);
-    		try{
-    			if(t_cursor.getCount() != 0){
-        			// repeat mail
-        			//
-        			return -1;
-        		}
-    		}finally{
-    			t_cursor.close();
-    		} 		
-    		  
+    		//    		  
     		t_mailID = mDb.insert(DATABASE_TABLE, null, values);
     		
     		String t_subject = groupSubject(_mail.GetSubject());
     		
-    		t_cursor = mDb.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns,GROUP_ATTR_SUBJECT + "='" + t_subject + "'",
+    		Cursor t_cursor = mDb.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns,GROUP_ATTR_SUBJECT + "='" + t_subject + "'",
     											null,null,null,null);
     		try{
     			if(t_cursor.getCount() != 0){
@@ -405,6 +422,9 @@ public class MailDbAdapter {
 		group.put(GROUP_ATTR_READ,t_read);
 		group.put(GROUP_ATTR_MARK,t_mark);
 		
+		group.put(GROUP_ATTR_HAS_ATTACH,_mail.GetAttachment().isEmpty()?0:1);
+		group.put(GROUP_ATTR_SENT_FLAG,_mail.getSentFlag());
+				
 		group.put(GROUP_ATTR_SUBJECT,t_sub);
 		group.put(GROUP_ATTR_LEATEST_BODY,t_body);
 		
@@ -428,6 +448,8 @@ public class MailDbAdapter {
 		ContentValues group = new ContentValues();
 		group.put(GROUP_ATTR_READ,0);
 		group.put(GROUP_ATTR_MARK,0);
+		
+		group.put(GROUP_ATTR_HAS_ATTACH,_mail.GetAttachment().isEmpty()?0:1);
 		
 		group.put(GROUP_ATTR_SUBJECT,_subject);
 		group.put(GROUP_ATTR_LEATEST_BODY,getDisplayMailBody(_mail));
