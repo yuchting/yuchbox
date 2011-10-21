@@ -85,7 +85,7 @@ class EmailSendAttachment extends Thread{
 		sendReceive.WriteInt(m_os,m_attachIndex);
 		sendReceive.WriteInt(m_os,m_startIndex);
 		sendReceive.WriteInt(m_os,t_size);
-		m_os.write(m_buffer);
+		m_os.write(m_buffer,0,t_size);
 		
 		m_mainMgr.m_logger.LogOut("send msgMailAttach mailIndex:" + m_mailIndex + " attachIndex:" + m_attachIndex + " startIndex:" +
 									m_startIndex + " size:" + t_size + " first:" + (int)m_buffer[0]);
