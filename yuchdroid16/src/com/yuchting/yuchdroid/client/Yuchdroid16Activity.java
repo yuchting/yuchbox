@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Debug;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -57,7 +58,7 @@ public class Yuchdroid16Activity extends Activity {
 
                 	String t_host = m_host.getText().toString();
                 	String t_port = m_port.getText().toString();
-                	String t_pass = m_userPass.getText().toString();                	
+                	String t_pass = m_userPass.getText().toString();        	
                 	
                 	if(validateHost(t_host,t_port,t_pass)){
                 		
@@ -92,29 +93,7 @@ public class Yuchdroid16Activity extends Activity {
         m_userPass.setText(m_config.m_userPass);        
         
         setConnectState(m_mainApp.m_connectState);
-        
-  
-//        Button buttonStop = (Button) findViewById(R.id.stop_svr);  
-//        buttonStop.setOnClickListener(new OnClickListener() {  
-//            public void onClick(View arg0) {
-//            	// add a test mail
-//            	//
-//            	Random t_rand = new Random();
-//            	fetchMail t_newMail = new fetchMail();
-//            	t_newMail.SetContain("This is a test mail + "+t_rand.nextInt());
-//            	t_newMail.SetSubject("Subject " + t_rand.nextInt());
-//            	t_newMail.SetFromVect(new String[]{"From@gmail.com"});
-//            	t_newMail.SetSendToVect(new String[]{"SendTo@gmail.com"});
-//            	t_newMail.SetSendDate(new Date());
-//            	
-//            	MailDbAdapter t_ad = new MailDbAdapter(Yuchdroid16Activity.this);
-//            	t_ad.open();
-//            	t_ad.createMail(t_newMail,null);
-//            	
-//            	Toast.makeText(getApplicationContext(), t_newMail.GetSubject() + " add OK!",
-//            	          Toast.LENGTH_SHORT).show();
-//            }  
-//        });  
+
    
     }
     

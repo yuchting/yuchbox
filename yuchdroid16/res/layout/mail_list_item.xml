@@ -1,105 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@+id/mail_item"
     android:layout_width="fill_parent"
     android:layout_height="50dp"
-    android:background="#ffffff" 
+	android:minHeight="50dp"
+    android:background="#fff" 
     android:orientation="horizontal" >
+   	<CheckBox
+		android:id="@+id/mail_check_btn"
+		android:layout_width="20dp"
+		android:layout_height="20dp"
+		android:button="@drawable/mail_checkbox"
+		android:layout_marginLeft="2dp"
+		android:layout_marginTop="5dp"/>
+		
+	<ImageView
+		android:id="@+id/mail_attach_pic"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:src="@drawable/mail_item_attach_pic"
+		android:layout_alignParentBottom="true"/>    
     
-    <LinearLayout 
-    	android:layout_width="wrap_content"
-    	android:layout_height="fill_parent"
-    	android:orientation="vertical">
-    	<CheckBox
-			android:id="@+id/mail_check_btn"
-			android:layout_width="16dp"
-			android:layout_height="16dp"
-			android:button="@drawable/mail_checkbox"
-			android:layout_marginLeft="2dp"
-			android:layout_marginTop="7dp"/>
-			
-		<ImageView
-			android:id="@+id/mail_attach_pic"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:src="@drawable/mail_item_attach_pic"
-			android:layout_marginTop="6dp"
-		/>
-		   	
-    </LinearLayout>
-    
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent" 
-        android:layout_weight="1"        
-        android:orientation="vertical">
+	<TextView
+       	android:id="@+id/mail_subject"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+       	android:layout_toRightOf="@id/mail_check_btn"
+        android:maxWidth="150dp"
+        android:textSize="20dp"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textColor="#000"
+        android:gravity="center_vertical"
+        android:text="mail subject"/>
+     
+    <TextView
+       	android:id="@+id/mail_body"
+       	android:textSize="20dp"
+       	android:maxWidth="180dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="3dp"
+        android:textColor="#888"
+        android:layout_toRightOf="@id/mail_subject"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:text="mail body"/>
+           
+	<CheckBox
+       	android:id="@+id/mail_mark_btn"
+       	android:layout_width="wrap_content"
+  		android:layout_height="wrap_content"
+  		android:layout_alignParentRight="true"
+  		android:button="@drawable/mail_item_marked"
+  		android:gravity="right"/>
+	
+   	<TextView  
+		android:id="@+id/mail_from_to"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_toRightOf="@id/mail_attach_pic"
+		android:layout_alignParentBottom="true"
+		android:maxWidth="150dp"
+		android:textSize="16dp"
+		android:textColor="#000"
+		android:singleLine="true"
+		android:text="mail address list"/>
+		
+    <TextView  
+		android:id="@+id/mail_time"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:maxWidth="80dp"
+		android:layout_alignParentBottom="true"
+		android:layout_alignParentRight="true"			
+		android:textSize="16dp"
+		android:textColor="#000"
+		android:text="mail time"/>
 
- 		<LinearLayout
- 		 	android:orientation="horizontal"
-	        android:layout_width="fill_parent"
-	        android:layout_height="fill_parent"
-	        android:layout_weight="1">
- 			<TextView
-	        	android:id="@+id/mail_subject"
-	        	android:layout_weight="1"
-	            android:layout_width="wrap_content"
-	            android:layout_height="fill_parent"
-	            android:maxWidth="150dp"
-	            android:textSize="20dp"
-	            android:singleLine="true"
-	            android:ellipsize="end"
-	            android:textColor="#000"
-	            android:gravity="center_vertical"
-	            android:text="subject"/>
-	            
-            <TextView
-	        	android:id="@+id/mail_body"
-	        	android:layout_weight="1"
-	        	android:textSize="20dp"
-	        	android:maxWidth="180dp"
-	            android:layout_width="wrap_content"
-	            android:layout_height="fill_parent"
-	            android:textColor="#888"
-	            android:layout_marginLeft="3dp"
-	            android:singleLine="true"
-	            android:gravity="center_vertical"
-	            android:text="body"/>
-	            
-	        <CheckBox
-	        	android:id="@+id/mail_mark_btn"
-	        	android:layout_width="wrap_content"
-        		android:layout_height="fill_parent"
-        		android:button="@drawable/mail_item_marked"
-        		android:gravity="right"/>
- 		</LinearLayout>
-        
-        <LinearLayout
- 		 	android:orientation="horizontal"
- 		 	android:layout_weight="1.2"
-	        android:layout_width="fill_parent"	        
-	        android:layout_height="fill_parent">
-	       <TextView  
-				android:id="@+id/mail_from_to"
-				android:layout_weight="1"
-				android:layout_width="wrap_content"
-				android:layout_height="fill_parent"
-				android:maxWidth="150dp"
-				android:textSize="16dp"
-				android:textColor="#000"
-				android:singleLine="true"
-				android:text="mail address "/>
-	       <TextView  
-				android:id="@+id/mail_time"
-				android:layout_weight="0.2"
-				android:layout_width="wrap_content"
-				android:layout_height="fill_parent"
-				android:maxWidth="60dp"				
-				android:textSize="16dp"
-				android:textColor="#000"
-				android:gravity="right"
-				android:text="mail time"/>
-        </LinearLayout>
-    </LinearLayout>
-
-</LinearLayout>
-
+</RelativeLayout>

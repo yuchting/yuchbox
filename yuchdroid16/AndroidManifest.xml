@@ -19,8 +19,9 @@
         </activity>
         
         <activity android:name=".HomeActivity" 
-        	android:label="@string/title_mail"/>
-        	
+        	android:label="@string/title_mail"
+        	android:theme="@style/NoBackgroundTheme" />
+        	        	
         <activity android:name=".DebugInfoActivity" 
         	android:label="@string/title_debug_info" />
         	

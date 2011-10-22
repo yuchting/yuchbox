@@ -35,7 +35,7 @@ public final class R {
         public static final int dlg_info_copy=0x7f070004;
         public static final int dlg_info_root=0x7f070001;
         public static final int dlg_info_text=0x7f070002;
-        public static final int home_content_view=0x7f070005;
+        public static final int home_activity=0x7f070005;
         public static final int home_status_bar=0x7f070006;
         public static final int home_status_bar_im=0x7f070009;
         public static final int home_status_bar_mail=0x7f070007;
@@ -61,9 +61,8 @@ public final class R {
         public static final int debug_list_item=0x7f030001;
         public static final int dlg_info=0x7f030002;
         public static final int home=0x7f030003;
-        public static final int mail_list=0x7f030004;
-        public static final int mail_list_item=0x7f030005;
-        public static final int main=0x7f030006;
+        public static final int mail_list_item=0x7f030004;
+        public static final int main=0x7f030005;
     }
     public static final class menu {
         public static final int debug_info_menu=0x7f060000;
@@ -111,6 +110,7 @@ public final class R {
         public static final int title_mail=0x7f040002;
     }
     public static final class style {
+        public static final int NoBackgroundTheme=0x7f050001;
         public static final int Theme_Transparent=0x7f050000;
     }
 }

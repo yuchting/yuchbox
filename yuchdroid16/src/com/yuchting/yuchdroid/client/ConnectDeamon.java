@@ -156,6 +156,7 @@ public class ConnectDeamon extends Service{
 		}
 		
 		m_mainApp.m_connectDeamonRun = false;
+		m_mainApp.m_connectState = YuchDroidApp.STATE_DISCONNECT;
 	}
 	
 	private boolean CanNotConnectSvr(){

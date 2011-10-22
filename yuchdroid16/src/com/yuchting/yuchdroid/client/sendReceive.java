@@ -175,14 +175,11 @@ public class sendReceive extends Thread{
 		m_writeOp = true;
 		m_selector.wakeup();
 	}
-	
-	
-	private ByteBuffer 	m_headerBuffer 			= ByteBuffer.allocate(4);
-	
-	private SelectionKey	m_writeSelectionKey		= null;
+		
 	private boolean 		m_writeOp 				= false;
-	
-	private byte[] readDataByChn()throws Exception{
+		
+	private byte[] readData(int _len)throws Exception{
+		ByteBuffer t_retBuf = ByteBuffer.allocate(_len);
 		
 		while(true){
 			
@@ -207,13 +204,33 @@ public class sendReceive extends Thread{
 				
 				if(key.isValid()){
 					if(key.isReadable()){
-						return readDataByChn_impl(key);
+						SocketChannel t_chn = (SocketChannel)key.channel();						
+						
+						int t_readLen = 0;
+						
+						while(true){
+							int len = t_chn.read(t_retBuf);
+							
+							if(len == -1){
+								throw new Exception("Client read -1 to closed!"); 
+							}
+							
+							t_readLen += len;
+							if(t_readLen >= _len){
+								break;
+							}
+						}
+						
+						t_retBuf.flip();
+						
+						return t_retBuf.array();
+						
 					}else if(key.isWritable()){
 						sendDataByChn_impl(key);
 					}
 				}
 			}
-		}			
+		}
 	}
 	
 	private void sendDataByChn_impl(SelectionKey _key)throws Exception{
@@ -239,19 +256,11 @@ public class sendReceive extends Thread{
 		  
 	}
 	
-	private byte[] readDataByChn_impl(SelectionKey _key)throws Exception{
+	private byte[] readDataByChn_impl()throws Exception{
 		
-		SocketChannel t_chn = (SocketChannel)_key.channel();
-		m_headerBuffer.clear();
+		InputStream in = new ByteArrayInputStream(readData(4));
 		
-		if(-1 == t_chn.read(m_headerBuffer)){								
-			throw new Exception("Client read -1 to closed!"); 
-		}
-		
-		m_headerBuffer.flip();
-		InputStream in = new ByteArrayInputStream(m_headerBuffer.array());
-		
-		final int t_len = ReadInt(in);
+		int t_len = ReadInt(in);
 		if(t_len == -1){
 			throw new Exception("socket ReadInt failed.");
 		}
@@ -263,13 +272,7 @@ public class sendReceive extends Thread{
 				
 		if(t_ziplen == 0){
 		
-			ByteBuffer t_readBuffer = ByteBuffer.allocate(t_orglen);
-			
-			if(t_chn.read(t_readBuffer) == -1){
-				throw new Exception("Client read -1 to closed!");
-			}
-			
-			t_orgdata = t_readBuffer.array();
+			t_orgdata = readData(t_orglen);
 																		
 			synchronized (this) {
 				// 20 is TCP pack head length
@@ -277,13 +280,7 @@ public class sendReceive extends Thread{
 			}
 			
 		}else{
-			
-			ByteBuffer t_zipBuffer = ByteBuffer.allocate(t_ziplen);
-			
-			if(t_chn.read(t_zipBuffer) == -1){
-				throw new Exception("Client read -1 to closed!");
-			}
-			
+						
 			synchronized (this) {
 				// 20 is TCP pack head length
 				m_downloadByte += t_ziplen + 4 + 20;
@@ -291,7 +288,7 @@ public class sendReceive extends Thread{
 			
 			t_orgdata = new byte[t_orglen];
 			
-			GZIPInputStream zi	= new GZIPInputStream(new ByteArrayInputStream(t_zipBuffer.array()));
+			GZIPInputStream zi	= new GZIPInputStream(new ByteArrayInputStream(readData(t_ziplen)));
 
 			ForceReadByte(zi,t_orgdata,t_orglen);
 			
@@ -405,7 +402,7 @@ public class sendReceive extends Thread{
 			m_keepliveCounter = 0;
 		}
 		
-		return readDataByChn();
+		return readDataByChn_impl();
 	}
 	
 	private byte[] ParsePackage(byte[] _wholePackage)throws Exception{
