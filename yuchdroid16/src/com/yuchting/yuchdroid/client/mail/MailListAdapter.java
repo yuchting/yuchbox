@@ -1,5 +1,7 @@
 package com.yuchting.yuchdroid.client.mail;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import android.content.Context;
@@ -10,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.yuchting.yuchdroid.client.R;
@@ -36,10 +39,19 @@ public class MailListAdapter extends BaseAdapter{
 	
 	private LayoutInflater m_inflater;   	
 	private Cursor			m_mainCursor;
+	private Context		m_ctx;
+	
+	final Calendar 	m_calendar 	= Calendar.getInstance();
+	final Date		m_timeDate 	= new Date();
+	
+	SimpleDateFormat m_yearMonthDayFormat = null;
+	SimpleDateFormat m_monthDayHourFormat = null;
+	
 	
 	public MailListAdapter(Context context,Cursor _cursor){
-		m_inflater = LayoutInflater.from(context);
-		m_mainCursor = _cursor;
+		m_ctx 			= context;
+		m_inflater		= LayoutInflater.from(context);
+		m_mainCursor	= _cursor;
 		
 		m_cursorBackgroundIndex = m_mainCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_READ);
 		m_cursorMarkIndex		= m_mainCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_MARK);
@@ -48,7 +60,17 @@ public class MailListAdapter extends BaseAdapter{
 		m_cursorBodyIndex		= m_mainCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_LEATEST_BODY);
 		m_cursorMailAddrIndex	= m_mainCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_ADDR_LIST);
 		m_cursorlatestTimeIndex	= m_mainCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_LEATEST_TIME);
-    }
+
+		
+		m_yearMonthDayFormat = new SimpleDateFormat("yyyy"+context.getString(R.string.mail_time_year)+
+													"MM"+context.getString(R.string.mail_time_month)+
+													"dd" + context.getString(R.string.mail_time_day));
+		
+		m_monthDayHourFormat = new SimpleDateFormat("MM"+context.getString(R.string.mail_time_month)+
+													"dd" + context.getString(R.string.mail_time_day) +
+													" HH:mm");
+	}
+	
 
     public int getCount() {
         return m_mainCursor.getCount();
@@ -61,14 +83,18 @@ public class MailListAdapter extends BaseAdapter{
     public long getItemId(int position) {
         return position;
     }
+    
+    
+	
+	
 
     public View getView(int position, View convertView, ViewGroup parent) {
 
     	ItemHolder holder;
     	
         if(convertView == null) {
-            convertView = m_inflater.inflate(R.layout.mail_list_item, null);
-
+            convertView = m_inflater.inflate(R.layout.mail_list_item,new LinearLayout(m_ctx));
+            
             holder = new ItemHolder();
             holder.background	= convertView.findViewById(R.id.mail_item);
             holder.markBut		= (CheckBox)convertView.findViewById(R.id.mail_mark_btn);
@@ -107,17 +133,20 @@ public class MailListAdapter extends BaseAdapter{
 		//
 		// mail least time
 		//
-		Date t_current = new Date();
-		Date t_leastDate = new Date(m_mainCursor.getLong(m_cursorlatestTimeIndex));
+		m_calendar.setTimeInMillis(System.currentTimeMillis());
+		final int t_currYear 		= m_calendar.get(Calendar.YEAR);
+
+		
+		final long t_latestTime = m_mainCursor.getLong(m_cursorlatestTimeIndex);
+		m_calendar.setTimeInMillis(t_latestTime);
+		final int t_year 		= m_calendar.get(Calendar.YEAR);
+
+		
 		String t_time;
-		if(t_leastDate.getYear() == t_current.getYear()
-		&& t_leastDate.getMonth() == t_current.getMonth()
-		&& t_leastDate.getDay() == t_current.getDay()){
-			t_time = t_leastDate.getHours() + ":" + t_leastDate.getMinutes();
-		}else if(t_leastDate.getYear() == t_current.getYear()){
-			t_time = t_leastDate.getMonth() + "-" + t_leastDate.getDay();
-		}else {
-			t_time = t_leastDate.getYear() + "-" + t_leastDate.getMonth() + "-" + t_leastDate.getDay();
+		if(t_year == t_currYear){
+			t_time = m_monthDayHourFormat.format(new Date(t_latestTime));
+		}else{
+			t_time = m_yearMonthDayFormat.format(new Date(t_latestTime));
 		}
 		
 		holder.latestTime.setText(t_time);

@@ -117,7 +117,7 @@ public class  fetchMail{
 				add = fullAdd;
 			}
 			
-			t_addressList[i++] = new Address(add,t_name);
+			t_addressList[i++] = new Address(t_name,add);
 		}
 		
 		return t_addressList;

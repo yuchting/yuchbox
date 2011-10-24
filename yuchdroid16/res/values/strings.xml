@@ -32,11 +32,20 @@
     <string name="mail_me_address">Me</string>
     <string name="mail_over_max_length_prompt">--YuchDroid Prompt\nMail content is over the max length</string>
     <string name="mail_notification_ticker">New Mail Coming!</string>
-    
+    <string name="mail_time_year">/</string>
+    <string name="mail_time_month">/</string>
+    <string name="mail_time_day"></string>
+        
     <!-- dialog relation -->
     <string name="dlg_info_title">YuchDroid Prompt:</string>
     <string name="dlg_info_confirm">I know it</string>
     <string name="dlg_info_copy">Copy To Clipboard</string>
+    
+    
+    <!-- mail open view -->
+    <string name="mail_open_reply_btn">Reply</string>
+    <string name="mail_open_reply_all_btn">Reply All</string>
+    <string name="mail_open_delete_btn">Delete</string>
     
     
 </resources>

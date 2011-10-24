@@ -173,6 +173,7 @@ public class Yuchdroid16Activity extends Activity {
             	startActivity(new Intent(this,DebugInfoActivity.class));
                 return true;
             case R.id.login_menu_home:
+            	//Debug.startMethodTracing("mail_list_trace");
             	startActivity(new Intent(this,HomeActivity.class));
             	return true;
         }
@@ -199,6 +200,8 @@ public class Yuchdroid16Activity extends Activity {
         // The activity is no longer visible (it is now "stopped")
         
         Log.i(TAG,"onStop " + this);
+        
+       // Debug.stopMethodTracing();
     }
     @Override
     protected void onDestroy() {

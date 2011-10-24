@@ -31,10 +31,18 @@
     <string name="mail_me_address">我</string>
     <string name="mail_over_max_length_prompt">--语盒提示\n邮件的长度超过最大设置长度。</string>
     <string name="mail_notification_ticker">新邮件到达！</string>
+    <string name="mail_time_year">年</string>
+    <string name="mail_time_month">月</string>
+    <string name="mail_time_day">日</string>
     
     <!-- dialog relation -->
     <string name="dlg_info_title">语盒提示：</string>
     <string name="dlg_info_confirm">我知道了</string>
     <string name="dlg_info_copy">拷贝到剪切板</string>
+    
+        <!-- mail open view -->
+    <string name="mail_open_reply_btn">回复</string>
+    <string name="mail_open_reply_all_btn">回复所有</string>
+    <string name="mail_open_delete_btn">删除</string>
     
 </resources>

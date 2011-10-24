@@ -13,6 +13,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.text.ClipboardManager;
+import android.view.Display;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.yuchting.yuchdroid.client.mail.MailDbAdapter;
@@ -43,6 +45,9 @@ public class YuchDroidApp extends Application {
 	//
 	public final static String			YUCH_NOTIFICATION_STATUS		= "status";
 	
+	public static int sm_displyWidth		= 0;
+	public static int sm_displyHeight		= 0;
+	
 	
 	public Vector<String>	m_errorList = new Vector<String>();
 	
@@ -58,6 +63,10 @@ public class YuchDroidApp extends Application {
 		
 		m_dba.open();
 		m_config.WriteReadIni(true);
+		
+		Display display = ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+		sm_displyWidth = display.getWidth();
+		sm_displyHeight = display.getHeight();
 	}
 	
 	@Override

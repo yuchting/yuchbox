@@ -17,8 +17,8 @@ public class HomeActivity extends Activity {
 	public final static int	STATUS_BAR_WEIBO	= 1;
 	public final static int	STATUS_BAR_IM		= 2;
 	
-	private YuchDroidApp		m_mainApp;
-	private MailListView		m_mailListView;
+	private YuchDroidApp	m_mainApp;
+	private MailListView	m_mailListView;
 	
 	private RadioButton[]	m_statusBarBut = {null,null,null};
 	private RadioGroup		m_statusBarGroup;
@@ -29,8 +29,6 @@ public class HomeActivity extends Activity {
                 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.home);
-        
-        getWindow().setBackgroundDrawable(null);
                 
         m_mainApp = (YuchDroidApp)getApplicationContext();
         
@@ -61,7 +59,7 @@ public class HomeActivity extends Activity {
 			}
 		});
 	}
-	
+		
 	private void initModuleView(){
 		m_mailListView = new MailListView(this,m_mainApp);
 		
