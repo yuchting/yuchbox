@@ -96,10 +96,17 @@ public class HelloWorld {
         Params[] mParams;
     }
 	
-	public static void main(String arg[])throws Exception{
-		
+	public final static String	fsm_vectStringSpliter = "<>";
+	public final static String	fsm_vectStringSpliter_sub = "@#&";
 	
+	public static void main(String arg[])throws Exception{
+	
+		String t_string = "6" + fsm_vectStringSpliter;
+
 		
+		String[] t_list = t_string.split(fsm_vectStringSpliter);
+		
+		System.out.println();
 	}
 	
 	static public void testMDS()throws Exception{
