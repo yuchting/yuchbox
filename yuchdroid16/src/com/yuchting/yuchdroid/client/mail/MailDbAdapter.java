@@ -1,5 +1,7 @@
 package com.yuchting.yuchdroid.client.mail;
 
+import java.util.Date;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -303,7 +305,7 @@ public class MailDbAdapter {
     	    	
     	values.put(ATTR_INDEX,_mail.GetMailIndex());
         values.put(ATTR_SUBJECT,_mail.GetSubject());
-        values.put(ATTR_BODY,_mail.GetContain());
+        values.put(ATTR_BODY,_mail.GetContain().replaceAll("\r\n", "\n"));
         values.put(ATTR_BODY_HTML,_mail.GetContain_html());
         values.put(ATTR_BODY_HTML_TYPE,_mail.GetContain_html_type());
         
@@ -493,14 +495,54 @@ public class MailDbAdapter {
     		open();
     	}
     	
-        Cursor mCursor = mDb.query(true, DATABASE_TABLE_GROUP, fsm_groupfullColoumns, KEY_ID + "=" + _groupId, null,
+        Cursor t_cursor = mDb.query(true, DATABASE_TABLE_GROUP, fsm_groupfullColoumns, KEY_ID + "=" + _groupId, null,
                     				null, null, null, null);
-        if (mCursor != null) {
-            mCursor.moveToFirst();
+        if (t_cursor != null) {
+        	t_cursor.moveToFirst();
         }
         
-        return mCursor;
-
+        return t_cursor;
+    }
+    
+    public Cursor fetchMail(long _mailId)throws SQLException{
+    	if(mDbHelper == null){
+    		open();
+    	}
+    	
+    	Cursor t_cursor = mDb.query(true, DATABASE_TABLE, fsm_mailfullColoumns, KEY_ID + "=" + _mailId, null,
+										null, null, null, null);
+		if (t_cursor != null) {
+			t_cursor.moveToFirst();
+		}
+		
+		return t_cursor;
+    }
+    
+    public fetchMail convertMail(Cursor _mailCursor)throws Exception{
+    	_mailCursor.moveToFirst();
+    	
+    	fetchMail t_mail = new fetchMail();
+    	        
+    	t_mail.SetMailIndex(_mailCursor.getInt(_mailCursor.getColumnIndex(ATTR_INDEX)));
+    	t_mail.setSentFlag(_mailCursor.getInt(_mailCursor.getColumnIndex(ATTR_SENT_FLAG)));
+    	t_mail.SetFlags(_mailCursor.getInt(_mailCursor.getColumnIndex(ATTR_FLAG)));
+    	
+    	t_mail.SetSubject(_mailCursor.getString(_mailCursor.getColumnIndex(ATTR_SUBJECT)));
+    	t_mail.SetContain(_mailCursor.getString(_mailCursor.getColumnIndex(ATTR_BODY)));
+    	t_mail.SetContain_html(_mailCursor.getString(_mailCursor.getColumnIndex(ATTR_BODY_HTML)),
+    			_mailCursor.getString(_mailCursor.getColumnIndex(ATTR_BODY_HTML_TYPE)));
+    	
+    	t_mail.SetSendDate(new Date(_mailCursor.getLong(_mailCursor.getColumnIndex(ATTR_DATE))));
+    	
+    	t_mail.SetSendToVect(_mailCursor.getString(_mailCursor.getColumnIndex(ATTR_TO)).split(fetchMail.fsm_vectStringSpliter));
+    	t_mail.SetCCToVect(_mailCursor.getString(_mailCursor.getColumnIndex(ATTR_CC)).split(fetchMail.fsm_vectStringSpliter));
+    	t_mail.SetBCCToVect(_mailCursor.getString(_mailCursor.getColumnIndex(ATTR_BCC)).split(fetchMail.fsm_vectStringSpliter));
+    	t_mail.SetFromVect(_mailCursor.getString(_mailCursor.getColumnIndex(ATTR_FROM)).split(fetchMail.fsm_vectStringSpliter));
+    	t_mail.SetReplyToVect(_mailCursor.getString(_mailCursor.getColumnIndex(ATTR_REPLY)).split(fetchMail.fsm_vectStringSpliter));
+    	t_mail.SetGroupVect(_mailCursor.getString(_mailCursor.getColumnIndex(ATTR_GROUP)).split(fetchMail.fsm_vectStringSpliter));
+    	t_mail.setAttachmentByString(_mailCursor.getString(_mailCursor.getColumnIndex(ATTR_ATTACHMENT)).split(fetchMail.fsm_vectStringSpliter));
+    
+    	return t_mail;
     }
 
 }

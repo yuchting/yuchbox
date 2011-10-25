@@ -192,7 +192,7 @@ public class Yuchdroid16Activity extends Activity {
         // Another activity is taking focus (this activity is about to be "paused").
         Log.i(TAG,"onPause " + this);
         
-        unregisterReceiver(m_intentRecv);
+        
     }
     @Override
     protected void onStop() {
@@ -209,5 +209,7 @@ public class Yuchdroid16Activity extends Activity {
         // The activity is about to be destroyed.
         
         Log.i(TAG,"onDestroy " + this);
+        
+        unregisterReceiver(m_intentRecv);
     }
 }

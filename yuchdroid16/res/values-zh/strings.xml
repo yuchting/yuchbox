@@ -44,5 +44,8 @@
     <string name="mail_open_reply_btn">回复</string>
     <string name="mail_open_reply_all_btn">回复所有</string>
     <string name="mail_open_delete_btn">删除</string>
+    <string name="mail_open_forward_btn">转发</string>
+    <string name="mail_open_recipient_addr_prefix">收件人：</string>
+    <string name="mail_open_html_switch">触摸显示HTML部分</string>
     
 </resources>

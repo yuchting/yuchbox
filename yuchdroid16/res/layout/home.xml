@@ -18,20 +18,20 @@
 		android:background="#888">
 		<RadioButton
 			android:id="@+id/home_status_bar_mail"
-			android:layout_width="0"
+			android:layout_width="0dp"
 			android:layout_weight="1"
 			android:layout_height="fill_parent"
 			android:button="@drawable/home_status_ic_mail"
 			android:checked="true"/>
 		<RadioButton
 			android:id="@+id/home_status_bar_weibo"
-			android:layout_width="0"
+			android:layout_width="0dp"
 			android:layout_weight="1"
 			android:layout_height="fill_parent"
 			android:text="Weibo"/>
 		<RadioButton
 			android:id="@+id/home_status_bar_im"
-			android:layout_width="0"
+			android:layout_width="0dp"
 			android:layout_weight="1"
 			android:layout_height="fill_parent"
 			android:text="IM"/>

@@ -19,7 +19,7 @@ import com.yuchting.yuchdroid.client.R;
 
 public class MailListAdapter extends BaseAdapter{
 	
-	private class ItemHolder{
+	public class ItemHolder{
         View 		background;
         CheckBox	markBut;
         ImageView	attachPic;
@@ -27,8 +27,13 @@ public class MailListAdapter extends BaseAdapter{
         TextView	body;
         TextView	mailAddr;
         TextView	latestTime;
+        
+        int			preGroupId = -1;
+        int			groupId;
+        int			nextGroupId = -1;
     }
 	
+	private int m_cursorIDIndex;
 	private int m_cursorBackgroundIndex;
     private int m_cursorMarkIndex;
     private int m_cursorAttachIndex;
@@ -53,6 +58,7 @@ public class MailListAdapter extends BaseAdapter{
 		m_inflater		= LayoutInflater.from(context);
 		m_mainCursor	= _cursor;
 		
+		m_cursorIDIndex			= m_mainCursor.getColumnIndex(MailDbAdapter.KEY_ID);
 		m_cursorBackgroundIndex = m_mainCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_READ);
 		m_cursorMarkIndex		= m_mainCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_MARK);
 		m_cursorAttachIndex		= m_mainCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_HAS_ATTACH);
@@ -84,10 +90,6 @@ public class MailListAdapter extends BaseAdapter{
         return position;
     }
     
-    
-	
-	
-
     public View getView(int position, View convertView, ViewGroup parent) {
 
     	ItemHolder holder;
@@ -97,7 +99,7 @@ public class MailListAdapter extends BaseAdapter{
             
             holder = new ItemHolder();
             holder.background	= convertView.findViewById(R.id.mail_item);
-            holder.markBut		= (CheckBox)convertView.findViewById(R.id.mail_mark_btn);
+           // holder.markBut		= (CheckBox)convertView.findViewById(R.id.mail_mark_btn);
             holder.attachPic	= (ImageView)convertView.findViewById(R.id.mail_attach_pic);
             holder.subject		= (TextView)convertView.findViewById(R.id.mail_subject);
             holder.body			= (TextView)convertView.findViewById(R.id.mail_body);
@@ -108,26 +110,39 @@ public class MailListAdapter extends BaseAdapter{
             
         }else{
             holder = (ItemHolder) convertView.getTag();
+            
+            holder.preGroupId = -1;
+            holder.nextGroupId = -1;            
         }
         
+        // fill the group data
+        //
         m_mainCursor.moveToPosition(position);
-
+        holder.groupId = m_mainCursor.getInt(m_cursorIDIndex);
+        if(position != 0){
+        	m_mainCursor.moveToPosition(position - 1);
+        	holder.nextGroupId = m_mainCursor.getInt(m_cursorIDIndex);
+        }
+        
+        if(position < m_mainCursor.getCount() - 1){
+        	m_mainCursor.moveToPosition(position + 1);
+        	holder.preGroupId = m_mainCursor.getInt(m_cursorIDIndex);
+        }
+        
+        // fill the mail text
+        //
+        m_mainCursor.moveToPosition(position);
+        
         holder.background.setBackgroundColor(m_mainCursor.getInt(m_cursorBackgroundIndex) == 1?0xf0f0f0:0xffffff);
-        holder.markBut.setSelected(m_mainCursor.getInt(m_cursorMarkIndex) == 1?true:false);
+       // holder.markBut.setSelected(m_mainCursor.getInt(m_cursorMarkIndex) == 1?true:false);
         holder.attachPic.setVisibility(m_mainCursor.getInt(m_cursorAttachIndex) == 1?View.VISIBLE:View.INVISIBLE);
         holder.subject.setText(m_mainCursor.getString(m_cursorSubjectIndex));
         holder.body.setText(m_mainCursor.getString(m_cursorBodyIndex));
         
     	// address
 		//
-		Address[] t_addr = fetchMail.parseAddressList(m_mainCursor.getString(m_cursorMailAddrIndex).split(";"));
-		StringBuffer t_display = new StringBuffer();
-		int t_num = 0;
-		for(int i = t_addr.length - 1;i >= 0 && t_num < 3;i--,t_num++){
-			t_display.append(t_addr[i].m_name).append(fetchMail.fsm_vectStringSpliter);
-		}
-		t_display.append("(").append(t_addr.length).append(")");
-		holder.mailAddr.setText(t_display.toString());
+		holder.mailAddr.setText(getShortAddrList(
+							fetchMail.parseAddressList(m_mainCursor.getString(m_cursorMailAddrIndex).split(";"))));
 		
 		// time
 		//
@@ -135,7 +150,6 @@ public class MailListAdapter extends BaseAdapter{
 		//
 		m_calendar.setTimeInMillis(System.currentTimeMillis());
 		final int t_currYear 		= m_calendar.get(Calendar.YEAR);
-
 		
 		final long t_latestTime = m_mainCursor.getLong(m_cursorlatestTimeIndex);
 		m_calendar.setTimeInMillis(t_latestTime);
@@ -152,6 +166,18 @@ public class MailListAdapter extends BaseAdapter{
 		holder.latestTime.setText(t_time);
 		
         return convertView;
+    }
+    
+    public static String getShortAddrList(Address[] _list){
+    	
+    	StringBuffer t_display = new StringBuffer();
+		int t_num = 0;
+		for(int i = _list.length - 1;i >= 0 && t_num < 3;i--,t_num++){
+			t_display.append(_list[i].m_name).append(fetchMail.fsm_vectStringSpliter);
+		}
+		t_display.append("(").append(_list.length).append(")");
+		
+		return t_display.toString();
     }
 }
 

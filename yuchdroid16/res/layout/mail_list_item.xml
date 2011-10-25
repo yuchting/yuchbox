@@ -4,26 +4,20 @@
     android:layout_width="fill_parent"
     android:layout_height="50dp"
     android:background="#fff">
-   	<CheckBox
-		android:id="@+id/mail_check_btn"
-		android:layout_width="20dp"
-		android:layout_height="20dp"
-		android:button="@drawable/mail_checkbox"
-		android:layout_marginLeft="2dp"
-		android:layout_marginTop="5dp"/>
 		
 	<ImageView
 		android:id="@+id/mail_attach_pic"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:src="@drawable/mail_item_attach_pic"
-		android:layout_alignParentBottom="true"/>    
+		android:layout_alignParentBottom="true"
+		android:visibility="gone"/>    
     
 	<TextView
        	android:id="@+id/mail_subject"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-       	android:layout_toRightOf="@id/mail_check_btn"
+       	android:layout_alignParentLeft="true"
         android:maxWidth="150dp"
         android:textSize="20dp"
         android:singleLine="true"
@@ -45,15 +39,7 @@
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:text="mail body mail body mail body"/>
-           
-	<CheckBox
-       	android:id="@+id/mail_mark_btn"
-       	android:layout_width="wrap_content"
-  		android:layout_height="wrap_content"
-  		android:layout_alignParentRight="true"
-  		android:button="@drawable/mail_item_marked"
-  		android:gravity="right"/>
-	
+        	
    	<TextView  
 		android:id="@+id/mail_from_to"
 		android:layout_width="wrap_content"

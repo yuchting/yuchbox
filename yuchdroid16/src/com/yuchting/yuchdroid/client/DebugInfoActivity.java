@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.ClipboardManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -17,7 +16,6 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class DebugInfoActivity extends ListActivity{
 
@@ -47,16 +45,24 @@ public class DebugInfoActivity extends ListActivity{
 		fillInfo();
 	}
 	
+	BroadcastReceiver m_debugRecv = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context paramContext, Intent paramIntent) {
+			fillInfo();				
+		}
+	};
+	
 	protected void onResume(){
 		super.onResume();
 		
-		registerReceiver(new BroadcastReceiver() {
-			
-			@Override
-			public void onReceive(Context paramContext, Intent paramIntent) {
-				fillInfo();				
-			}
-		}, new IntentFilter(YuchDroidApp.FILTER_DEBUG_INFO));
+		registerReceiver(m_debugRecv,new IntentFilter(YuchDroidApp.FILTER_DEBUG_INFO));
+	}
+	
+	protected void onDestroy(){
+		super.onDestroy();
+		
+		unregisterReceiver(m_debugRecv);
 	}
 	
 	private void fillInfo(){

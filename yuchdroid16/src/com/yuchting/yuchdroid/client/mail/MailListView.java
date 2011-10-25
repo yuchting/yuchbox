@@ -1,6 +1,9 @@
 package com.yuchting.yuchdroid.client.mail;
 
+import android.content.Intent;
 import android.database.Cursor;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.yuchting.yuchdroid.client.HomeActivity;
@@ -24,21 +27,35 @@ public class MailListView extends ListView {
 		
 		setCacheColorHint(0);
 		setBackgroundColor(0xffffff);
-		
+				
 		m_mainApp = _mainApp;
 		m_homeActivity = _home;
 		
 		m_groupCursor = m_mainApp.m_dba.fetchAllGroup();
 		m_mailListAd = new MailListAdapter(m_homeActivity, m_groupCursor);
-		
         setAdapter(m_mailListAd);
+        
+        setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
+        	public void onItemClick(AdapterView<?> parent, View view, int position, long id){
+        		MailListAdapter.ItemHolder t_holder = (MailListAdapter.ItemHolder)view.getTag();
+        		
+        		if(t_holder != null){
+        			Intent in = new Intent(m_homeActivity,MailOpenActivity.class);
+        			in.putExtra(MailOpenActivity.INTENT_CURRENT_MAIL_GROUP, t_holder.groupId);
+        			in.putExtra(MailOpenActivity.INTENT_PRE_MAIL_GROUP_INDEX, t_holder.preGroupId);
+        			in.putExtra(MailOpenActivity.INTENT_NEXT_MAIL_GROUP_INDEX, t_holder.nextGroupId);
+        			
+        			m_homeActivity.startActivity(in);
+        		}
+        	}
+		});
 	}
 	    
     public void destroy(){
     	
-    	// close the cuar
+    	// close the cursor
     	//
     	m_groupCursor.close();
-    	
     }
+    
 }

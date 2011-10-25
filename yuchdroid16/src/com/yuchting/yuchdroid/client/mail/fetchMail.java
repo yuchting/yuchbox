@@ -30,7 +30,7 @@ public class  fetchMail{
 	
 	final static int	VERSION = 2;
 	
-	public final static String	fsm_vectStringSpliter = ";";
+	public final static String	fsm_vectStringSpliter = "<>";
 	public final static String	fsm_vectStringSpliter_sub = "@#&";
 	
 	public final static String	fsm_noSubjectTile = "No Subject";
@@ -86,7 +86,15 @@ public class  fetchMail{
 	public int GetSimpleHashCode(){
 		return (GetSubject() + GetSendDate().getTime()).hashCode();
 	}
-		
+	
+	public static Address[] parseAddressList(Vector<String> _list){
+		String[] t_arrayList = new String[_list.size()];
+		for(int i = 0 ;i < _list.size();i++){
+			t_arrayList[i] = _list.get(i);
+		}
+		return parseAddressList(t_arrayList);
+	}
+	
 	public static Address[] parseAddressList(String[] _list){
 		Address[] 	t_addressList = new Address[_list.length];
 		
@@ -332,6 +340,24 @@ public class  fetchMail{
 		}
 		
 		return t_string.toString();
+	}
+	
+	public void setAttachmentByString(String _attList[]){
+		m_vectAttachment.clear();
+		
+		for(String attStr:_attList){
+			
+			if(attStr.length() != 0){
+				
+				String[] t_list = attStr.split(fsm_vectStringSpliter_sub);
+				MailAttachment att = new MailAttachment();
+				att.m_name = t_list[0];
+				att.m_size = Integer.valueOf(t_list[1]).intValue();
+				att.m_type = t_list[2];
+				
+				m_vectAttachment.add(att);
+			}			
+		}
 	}
 	
 	public Vector<MailAttachment> GetAttachment(){

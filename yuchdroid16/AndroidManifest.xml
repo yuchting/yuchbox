@@ -28,6 +28,9 @@
         <activity android:name=".GlobalDialog"
         	android:label="@string/app_name" 
         	android:theme="@style/Theme.Transparent"/>
+        	
+        <activity android:name=".mail.MailOpenActivity"
+        	android:label="Mail Subject"/>
         
 
     </application>

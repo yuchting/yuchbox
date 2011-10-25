@@ -46,6 +46,10 @@
     <string name="mail_open_reply_btn">Reply</string>
     <string name="mail_open_reply_all_btn">Reply All</string>
     <string name="mail_open_delete_btn">Delete</string>
+    <string name="mail_open_forward_btn">Forward</string>
+    <string name="mail_open_recipient_addr_prefix">Recipient:</string>
+    <string name="mail_open_html_switch">Touch To Show HTML Part</string>
+    
     
     
 </resources>
