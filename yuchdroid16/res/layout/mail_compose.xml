@@ -14,7 +14,8 @@
   			android:id="@+id/mail_compose_main_view"
   			android:layout_width="fill_parent"
   			android:layout_height="wrap_content"
-  			android:orientation="vertical" >
+  			android:orientation="vertical" 
+  			android:layout_marginRight="5dp">
   			<AutoCompleteTextView
 				android:id="@+id/mail_compose_to"
 				android:layout_width="fill_parent"

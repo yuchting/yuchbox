@@ -1,6 +1,9 @@
 package com.yuchting.yuchdroid.client.mail;
 
+import java.util.Vector;
+
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
@@ -14,24 +17,27 @@ import com.yuchting.yuchdroid.client.YuchDroidApp;
 
 public class MailComposeActivity extends Activity implements View.OnClickListener{
 
-	AutoCompleteTextView	m_to;
-	AutoCompleteTextView	m_cc;
-	AutoCompleteTextView	m_bcc;
+	public final static String	COMPOSE_MAIL_STYLE = "style";
 	
-	EditText	m_subject;
-	EditText	m_body;
+	AutoCompleteTextView	m_to	= null;
+	AutoCompleteTextView	m_cc	= null;
+	AutoCompleteTextView	m_bcc	= null;
 	
-	TextView	m_discardRefView;
+	EditText	m_subject			= null;
+	EditText	m_body				= null;
 	
-	Button		m_sendBtn;
-	Button		m_saveBtn;
-	Button		m_discardBtn;
+	TextView	m_discardRefView	= null;
 	
-	LinearLayout	m_mainView;
+	Button		m_sendBtn			= null;
+	Button		m_saveBtn			= null;
+	Button		m_discardBtn		= null;
 	
-		
-	MailOpenActivity.Envelope	m_referenceMail;
-	YuchDroidApp	m_mainApp;
+	LinearLayout	m_mainView		= null;
+	
+	MailOpenActivity.Envelope	m_referenceMail	= null;
+	YuchDroidApp	m_mainApp		= null;
+	
+	int			m_referenceMailStyle = fetchMail.NOTHING_STYLE;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,10 +66,14 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		
 		m_discardBtn = (Button)findViewById(R.id.mail_compose_discard_btn);
 		m_discardBtn.setOnClickListener(this);
-		
+				
 		// fetch the reference mail
 		//
 		if(m_mainApp.m_composeRefMail != null){
+			
+			Intent in = getIntent();
+			m_referenceMailStyle = in.getExtras().getInt(COMPOSE_MAIL_STYLE);
+			
 			m_discardRefView.setVisibility(View.VISIBLE);
 			m_referenceMail = MailOpenActivity.getEnvelope(m_mainApp.m_composeRefMail, this);
 			m_mainApp.m_composeRefMail = null;
@@ -72,12 +82,51 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			//
 			m_referenceMail.setBody();
 			m_mainView.addView(m_referenceMail.m_mainView);
+			
+			// set the title and subject
+			//
+			String t_sub;
+			if(m_referenceMailStyle == fetchMail.REPLY_STYLE
+			|| m_referenceMailStyle == fetchMail.REPLY_ALL_STYLE){
+				
+				t_sub = MailDbAdapter.getReplySubject(m_referenceMail.m_mail.GetSubject(), getString(R.string.mail_compose_reply_prefix));
+				
+				Vector<String> t_toVect = m_referenceMail.m_mail.GetReplyToVect().isEmpty()?
+												m_referenceMail.m_mail.GetFromVect():
+												m_referenceMail.m_mail.GetReplyToVect();
+												
+				if(m_referenceMailStyle == fetchMail.REPLY_ALL_STYLE){
+					StringBuffer t_to = new StringBuffer();
+					for(String addr:t_toVect){
+						t_to.append(addr).append(",");
+					}
+					m_to.setText(t_to.toString());
+				}else{
+					m_to.setText(t_toVect.get(0));
+				}
+				
+			}else{
+				t_sub = getString(R.string.mail_compose_forward_prefix) + m_referenceMail.m_mail.GetSubject();
+			}
+			
+			setTitle(t_sub);
+			
+			m_subject.setText(t_sub);
+			
+			m_body.requestFocus();
+		}else{
+			m_discardRefView.setVisibility(View.GONE);
+			m_to.requestFocus();
 		}
 		
 	}
 	
 	public void onClick(View v){
 		if(v == m_discardRefView){
+			m_discardRefView.setVisibility(View.GONE);
+			m_mainView.removeView(m_referenceMail.m_mainView);
+			m_referenceMail = null;
+		}else if(v == m_sendBtn){
 			
 		}
 	}

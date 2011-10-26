@@ -30,6 +30,12 @@
     <!-- home activity -->
     <string name="login_menu_home">Home</string>
     
+    <!-- dialog relation -->
+    <string name="dlg_info_title">YuchDroid Prompt:</string>
+    <string name="dlg_info_confirm">I know it</string>
+    <string name="dlg_info_copy">Copy To Clipboard</string>
+    
+    
     <!-- mail list view -->
     <string name="no_mail">no mail, please wait refresh...</string>
     <string name="mail_me_address">Me</string>
@@ -38,13 +44,8 @@
     <string name="mail_time_year">/</string>
     <string name="mail_time_month">/</string>
     <string name="mail_time_day"></string>
-        
-    <!-- dialog relation -->
-    <string name="dlg_info_title">YuchDroid Prompt:</string>
-    <string name="dlg_info_confirm">I know it</string>
-    <string name="dlg_info_copy">Copy To Clipboard</string>
-    
-    
+    <string name="mail_list_compose_new_mail">Compose</string>
+       
     <!-- mail open view -->
     <string name="mail_open_reply_btn">Reply</string>
     <string name="mail_open_reply_all_btn">Reply All</string>
@@ -65,6 +66,9 @@
     <string name="mail_compose_save_btn">SaveAsDraft</string>
     <string name="mail_compose_discard_btn">Discard</string>
     <string name="mail_compose_ref_lable">Reference Mail (touch to discard reference):</string>
+    <string name="mail_compose_reply_prefix">Re: </string>
+    <string name="mail_compose_forward_prefix">Forward: </string>
+    
     
     
 </resources>

@@ -29,6 +29,12 @@
     <!-- home activity -->
     <string name="login_menu_home">内容主界面</string>
     
+    <!-- dialog relation -->
+    <string name="dlg_info_title">语盒提示：</string>
+    <string name="dlg_info_confirm">我知道了</string>
+    <string name="dlg_info_copy">拷贝到剪切板</string>
+    
+    
     <!-- mail list view -->
     <string name="no_mail">没有内容，请等待推送</string>
     <string name="mail_me_address">我</string>
@@ -37,12 +43,8 @@
     <string name="mail_time_year">年</string>
     <string name="mail_time_month">月</string>
     <string name="mail_time_day">日</string>
-    
-    <!-- dialog relation -->
-    <string name="dlg_info_title">语盒提示：</string>
-    <string name="dlg_info_confirm">我知道了</string>
-    <string name="dlg_info_copy">拷贝到剪切板</string>
-    
+    <string name="mail_list_compose_new_mail">新建</string>
+        
     <!-- mail open view -->
     <string name="mail_open_reply_btn">回复</string>
     <string name="mail_open_reply_all_btn">回复所有</string>
@@ -62,6 +64,8 @@
     <string name="mail_compose_send_btn">发送</string>
     <string name="mail_compose_save_btn">存成草稿</string>
     <string name="mail_compose_discard_btn">丢弃</string>
-    <string name="mail_compose_ref_lable">引用邮件 (触摸丢弃引用):</string>	
+    <string name="mail_compose_ref_lable">引用邮件 (触摸丢弃引用):</string>
+    <string name="mail_compose_reply_prefix">回复： </string>
+    <string name="mail_compose_forward_prefix">转发：  </string>
     
 </resources>

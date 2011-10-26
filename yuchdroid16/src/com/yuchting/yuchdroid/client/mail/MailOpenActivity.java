@@ -11,12 +11,14 @@ import android.os.Bundle;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.yuchting.yuchdroid.client.HomeActivity;
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
 
@@ -77,6 +79,10 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	ImageView				m_preGroupBtn;
 	ImageView				m_nextGroupBtn;
 	
+	Button					m_replyBtn;
+	Button					m_forwardBtn;
+	Button					m_deleteBtn;
+	
 	int						m_currGroupIdx = -1;
 	int						m_preGroupIdx = -1;
 	int						m_nextGroupIdx = -1;
@@ -108,6 +114,15 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         //
         m_touchTop = (TextView)findViewById(R.id.mail_open_scroll_top);
         m_touchTop.setOnClickListener(this);
+        
+        m_replyBtn	= (Button)findViewById(R.id.mail_open_mail_reply_btn);
+        m_replyBtn.setOnClickListener(this);
+        
+        m_forwardBtn = (Button)findViewById(R.id.mail_open_mail_forward_btn);
+        m_forwardBtn.setOnClickListener(this);
+        
+        m_deleteBtn	= (Button)findViewById(R.id.mail_open_mail_delete_btn);
+        m_deleteBtn.setOnClickListener(this);
         
     	Intent in = getIntent();
         if(in == null || in.getExtras() == null){
@@ -234,6 +249,12 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			}catch(Exception e){
 				m_mainApp.setErrorString("nextGroupBtn",e);
 			}	
+		}else if(v == m_replyBtn){
+			Intent in = new Intent(this,MailComposeActivity.class);
+			in.putExtra(MailComposeActivity.COMPOSE_MAIL_STYLE, fetchMail.REPLY_STYLE);
+			m_mainApp.m_composeRefMail = m_currMailList.get(m_currMailList.size() -1).m_mail;
+			
+			startActivity(in);
 		}
 	}
 	

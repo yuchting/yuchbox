@@ -45,6 +45,7 @@ public class  fetchMail{
 	public final static int	NOTHING_STYLE = 0;
 	public final static int	FORWORD_STYLE = 1;
 	public final static int	REPLY_STYLE = 2;
+	public final static int	REPLY_ALL_STYLE = 2;
 	
 	private int 		m_mailIndex = 0;
 	

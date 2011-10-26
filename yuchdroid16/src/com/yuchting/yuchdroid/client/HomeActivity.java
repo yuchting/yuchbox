@@ -3,13 +3,18 @@ package com.yuchting.yuchdroid.client;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 
+import com.yuchting.yuchdroid.client.mail.MailComposeActivity;
 import com.yuchting.yuchdroid.client.mail.MailListView;
+import com.yuchting.yuchdroid.client.mail.fetchMail;
 
 public class HomeActivity extends Activity {
 	
@@ -91,4 +96,27 @@ public class HomeActivity extends Activity {
 		}
 	}
 		
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.mail_list_menu,menu);
+        return true;
+    }
+	
+	@Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        switch(item.getItemId()) {
+            case R.id.mail_list_compose_new_mail:
+            	Intent in = new Intent(this,MailComposeActivity.class);
+            	in.putExtra(MailComposeActivity.COMPOSE_MAIL_STYLE, fetchMail.NOTHING_STYLE);
+            	m_mainApp.m_composeRefMail = null;
+            	
+            	startActivity(in);
+                return true;
+           
+        }
+
+        return super.onMenuItemSelected(featureId, item);
+	}
 }

@@ -246,7 +246,7 @@ public class MailDbAdapter {
     	}
     }
 
-    private final static String[] fsm_groupSubjectPrefix = 
+    public final static String[] fsm_groupSubjectPrefix = 
     {
     	"Re: ",
     	"Re： ",
@@ -273,6 +273,16 @@ public class MailDbAdapter {
     	}
     	
     	return _orgSub;
+    }
+    
+    public static String getReplySubject(String _orgSub,String _prefix){
+    	for(String pre:fsm_groupSubjectPrefix){
+    		if(_orgSub.startsWith(pre)){
+    			return _orgSub;
+    		}
+    	}
+    	
+    	return _prefix + _orgSub;
     }
     
     public static String getDisplayMailBody(fetchMail _mail){
