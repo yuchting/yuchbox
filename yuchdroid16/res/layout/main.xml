@@ -27,6 +27,7 @@
     		android:layout_height="fill_parent" 
     		android:layout_width="250dp"
     		android:singleLine="true"
+    		android:hint="@string/login_host_hint"
     	/>
     </LinearLayout>
     <LinearLayout 
@@ -46,6 +47,7 @@
     		android:numeric="integer"
     		android:maxLength="5"
     		android:singleLine="true"
+    		android:hint="@string/login_port_hint"
     	/>
     </LinearLayout>
     <LinearLayout 
@@ -65,6 +67,7 @@
     		android:maxLength="120"
     		android:singleLine="true"
     		android:password="true"
+    		android:hint="@string/login_user_pass_hint"
     	/>
     </LinearLayout>
     <Button android:text="@string/start_svr_but" 

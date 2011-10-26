@@ -1,105 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+
+<RelativeLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
 	android:layout_width="fill_parent"
-	android:layout_height="wrap_content"
-	android:layout_weight="10"
+	android:layout_height="fill_parent"
 	android:background="#FFF">
 	<RelativeLayout
-		xmlns:android="http://schemas.android.com/apk/res/android"
-		android:orientation="vertical"
+		android:id="@+id/mail_open_envelope"
 		android:layout_width="fill_parent"
-		android:layout_height="fill_parent"
-		android:background="#FFF">
-		<RelativeLayout
-			android:id="@+id/mail_open_envelope"
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:layout_alignParentTop="true"
-			android:layout_alignParentLeft="true"
-			android:background="@drawable/mail_open_envelope_bg"
-			android:paddingTop="5dp"
-			android:paddingBottom="5dp">
-			<TextView
-				android:id="@+id/mail_open_from_addr"
-				android:layout_alignParentTop="true"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:textColor="#000"
-				android:textSize="18dp"
-				android:text="Mail From Address"
-			/>
-			<TextView
-				android:id="@+id/mail_open_date"
-				android:layout_alignParentRight="true"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:textColor="#000"
-				android:textSize="14dp"
-				android:layout_marginTop="3dp"
-				android:text="Mail Date"
-			/>
-			<TextView
-				android:id="@+id/mail_open_recv_addr"
-				android:layout_below="@id/mail_open_from_addr"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:textColor="#000"
-				android:textSize="14dp"
-				android:text="Mail Recv Addr"
-			/>
-			<TextView 
-				android:id="@+id/mail_open_time"
-				android:layout_below="@id/mail_open_date"
-				android:layout_alignParentRight="true"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:textColor="#000"
-				android:textSize="14dp"
-				android:layout_marginTop="3dp"
-				android:text="Mail Time"
-			/>
-			<TextView
-				android:id="@+id/mail_open_subject"
-				android:layout_below="@id/mail_open_recv_addr"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:textColor="#000"
-				android:textSize="16dp"
-				android:text="Mail Subject"
-			/>
-		</RelativeLayout>
-		
+		android:layout_height="wrap_content"
+		android:layout_alignParentTop="true"
+		android:layout_alignParentLeft="true"
+		android:background="@drawable/mail_open_envelope_bg"
+		android:paddingTop="5dp"
+		android:paddingBottom="5dp">
 		<TextView
-			android:id="@+id/mail_open_body"
-			android:layout_below="@id/mail_open_envelope"
-			android:layout_width="fill_parent"
+			android:id="@+id/mail_open_from_addr"
+			android:layout_alignParentTop="true"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="#000"
+			android:textSize="18dp"
+			android:text="Mail From Address"
+		/>
+		<TextView
+			android:id="@+id/mail_open_date"
+			android:layout_alignParentRight="true"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="#000"
+			android:textSize="14dp"
+			android:layout_marginTop="3dp"
+			android:layout_marginRight="5dp"
+			android:text="Mail Date"
+		/>
+		<TextView
+			android:id="@+id/mail_open_recv_addr"
+			android:layout_below="@id/mail_open_from_addr"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="#000"
+			android:textSize="14dp"
+			android:text="Mail Recv Addr"
+		/>
+		<TextView 
+			android:id="@+id/mail_open_time"
+			android:layout_below="@id/mail_open_date"
+			android:layout_alignParentRight="true"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="#000"
+			android:textSize="14dp"
+			android:layout_marginTop="3dp"
+			android:layout_marginRight="5dp"
+			android:text="Mail Time"
+		/>
+		<TextView
+			android:id="@+id/mail_open_subject"
+			android:layout_below="@id/mail_open_recv_addr"
+			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:textColor="#000"
 			android:textSize="16dp"
-			android:autoLink="all"
-			android:text="Mail Body: this is a mail."
+			android:text="Mail Subject"
 		/>
-		
-		<TextView
-			android:id="@+id/mail_open_html"
-			android:layout_below="@id/mail_open_body"
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:text="Mail HTML this is a HTML."
-			android:visibility="gone"
-		/>
-		
-		<TextView 
-			android:id="@+id/mail_open_html_switch"
-			android:layout_below="@id/mail_open_html"
-			android:layout_width="fill_parent"
-			android:layout_height="40dp"
-			android:background="#aaa"
-			android:textColor="#000"
-			android:gravity="center"
-			android:textSize="20dp"
-			android:text="@string/mail_open_html_switch"
-			android:visibility="gone"/>			
 	</RelativeLayout>
-</ScrollView>
+	
+	<TextView
+		android:id="@+id/mail_open_body"
+		android:layout_below="@id/mail_open_envelope"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:textColor="#000"
+		android:textSize="16dp"
+		android:autoLink="all"
+		android:text="Mail Body: this is a mail."
+		android:visibility="gone"
+	/>
+	
+	<TextView
+		android:id="@+id/mail_open_html"
+		android:layout_below="@id/mail_open_body"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="Mail HTML this is a HTML."
+		android:visibility="gone"
+	/>
+	
+	<TextView 
+		android:id="@+id/mail_open_html_switch"
+		android:layout_below="@id/mail_open_html"
+		android:layout_width="fill_parent"
+		android:layout_height="40dp"
+		android:background="#aaa"
+		android:textColor="#000"
+		android:gravity="center"
+		android:textSize="20dp"
+		android:text="@string/mail_open_html_switch"
+		android:visibility="gone"/>			
+</RelativeLayout>
+

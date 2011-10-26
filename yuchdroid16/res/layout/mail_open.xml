@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout 
 	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/mail_open_main"
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
 	android:orientation="vertical"
@@ -12,28 +11,49 @@
 		android:layout_height="wrap_content"
 		android:orientation="horizontal">
 		<ImageView 
-			android:id="@+id/mail_open_pre_btn"
+			android:id="@+id/mail_open_next_btn"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:src="@drawable/mail_open_pre_btn"/>
-			
+		<TextView 
+			android:id="@+id/mail_open_scroll_top"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/mail_open_scroll_top"
+			android:layout_centerInParent="true"/>
 		<ImageView 
-			android:id="@+id/mail_open_next_btn"
+			android:id="@+id/mail_open_pre_btn"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:src="@drawable/mail_open_next_btn" 
 			android:layout_alignParentRight="true"/>
 	</RelativeLayout>
-	
-	<TextView 
-		android:id="@+id/mail_open_open_former_envelope"
-	 	android:layout_width="fill_parent"
-	 	android:layout_height="30dp"
-	 	android:text="Touch to Open Fromer Mail (10)"
-	 	android:background="#ddd"
-	 	android:textColor="#000"
-	 	android:gravity="center"/>
-	
+	<ScrollView
+		android:id="@+id/mail_open_envelope_scroll_view"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_weight="10"
+		android:background="#FFF">
+		
+		<!-- the scroll view can only add one child -->
+		<LinearLayout 
+			android:id="@+id/mail_open_envelope_view"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:orientation="vertical"
+			android:background="#FFF">
+			<TextView 
+				android:id="@+id/mail_open_open_former_envelope"
+			 	android:layout_width="fill_parent"
+			 	android:layout_height="30dp"
+			 	android:textSize="18dp"
+			 	android:text="Touch to Open Fromer Mail (10)"
+			 	android:background="#ddd"
+			 	android:textColor="#888"
+			 	android:gravity="center"/>
+		</LinearLayout>
+		
+	</ScrollView>	
 	<LinearLayout 
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
@@ -45,16 +65,14 @@
 			android:layout_width="0dp"
 			android:layout_height="fill_parent"
 			android:layout_weight="1"
-			android:text="@string/mail_open_reply_btn"
-			android:drawableLeft="@drawable/mail_open_reply"/>
+			android:text="@string/mail_open_reply_btn"/>
 			
 		<Button 
 			android:id="@+id/mail_open_mail_forward_btn"
 			android:layout_width="0dp"
 			android:layout_height="fill_parent"
 			android:layout_weight="1"
-			android:text="@string/mail_open_forward_btn"
-			android:drawableLeft="@drawable/mail_open_forward"/>
+			android:text="@string/mail_open_forward_btn"/>
 			
 		<Button 
 			android:id="@+id/mail_open_mail_delete_btn"
@@ -62,7 +80,6 @@
 			android:layout_height="fill_parent"
 			android:layout_weight="1"
 			android:text="@string/mail_open_delete_btn"
-			android:drawableLeft="@drawable/mail_open_delete"
 			android:paddingRight="5dp"/>
 	</LinearLayout>
 </LinearLayout>

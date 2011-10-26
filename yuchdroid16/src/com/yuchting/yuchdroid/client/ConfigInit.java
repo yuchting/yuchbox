@@ -365,9 +365,17 @@ public final class ConfigInit {
 	    			
 	    			sendReceive.WriteInt(t_writeFile,m_imSendImageQuality);
 	    			sendReceive.WriteBoolean(t_writeFile,m_standardUI);
-										
+					
 				}finally{
 					t_writeFile.close();
+				}
+				
+
+    			// delete backup ~init.data 
+    			//
+    			File t_backIni = m_ctx.getFileStreamPath(fsm_initFilename_back_init_data);
+				if(t_backIni.exists()){
+					t_backIni.delete();
 				}
 			}
 			

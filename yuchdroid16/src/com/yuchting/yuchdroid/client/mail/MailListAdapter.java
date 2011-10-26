@@ -31,6 +31,8 @@ public class MailListAdapter extends BaseAdapter{
         int			preGroupId = -1;
         int			groupId;
         int			nextGroupId = -1;
+        
+        int			cursorPos;
     }
 	
 	private int m_cursorIDIndex;
@@ -110,7 +112,7 @@ public class MailListAdapter extends BaseAdapter{
             
         }else{
             holder = (ItemHolder) convertView.getTag();
-            
+      
             holder.preGroupId = -1;
             holder.nextGroupId = -1;            
         }
@@ -133,6 +135,7 @@ public class MailListAdapter extends BaseAdapter{
         //
         m_mainCursor.moveToPosition(position);
         
+        holder.cursorPos = position;
         holder.background.setBackgroundColor(m_mainCursor.getInt(m_cursorBackgroundIndex) == 1?0xf0f0f0:0xffffff);
        // holder.markBut.setSelected(m_mainCursor.getInt(m_cursorMarkIndex) == 1?true:false);
         holder.attachPic.setVisibility(m_mainCursor.getInt(m_cursorAttachIndex) == 1?View.VISIBLE:View.INVISIBLE);

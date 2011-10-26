@@ -31,6 +31,9 @@
         	
         <activity android:name=".mail.MailOpenActivity"
         	android:label="Mail Subject"/>
+        	
+        <activity android:name=".mail.MailComposeActivity"
+        	android:label="Mail Compose"/>
         
 
     </application>

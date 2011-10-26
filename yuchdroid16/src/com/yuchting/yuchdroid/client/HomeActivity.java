@@ -45,19 +45,19 @@ public class HomeActivity extends Activity {
 	
 	private void initHomeStatusBar(){
 		
-		m_statusBarBut[STATUS_BAR_MAIL] 	= (RadioButton)findViewById(R.id.home_status_bar_mail);
-		m_statusBarBut[STATUS_BAR_WEIBO] 	= (RadioButton)findViewById(R.id.home_status_bar_weibo);
-		m_statusBarBut[STATUS_BAR_IM] 		= (RadioButton)findViewById(R.id.home_status_bar_im);
-		
-		m_statusBarGroup 					= (RadioGroup)findViewById(R.id.home_status_bar);
-		
-		m_statusBarGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-			
-			@Override
-			public void onCheckedChanged(RadioGroup paramRadioGroup, int paramInt) {
-				setMainListView(paramInt);
-			}
-		});
+//		m_statusBarBut[STATUS_BAR_MAIL] 	= (RadioButton)findViewById(R.id.home_status_bar_mail);
+//		m_statusBarBut[STATUS_BAR_WEIBO] 	= (RadioButton)findViewById(R.id.home_status_bar_weibo);
+//		m_statusBarBut[STATUS_BAR_IM] 		= (RadioButton)findViewById(R.id.home_status_bar_im);
+//		
+//		m_statusBarGroup 					= (RadioGroup)findViewById(R.id.home_status_bar);
+//		
+//		m_statusBarGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+//			
+//			@Override
+//			public void onCheckedChanged(RadioGroup paramRadioGroup, int paramInt) {
+//				setMainListView(paramInt);
+//			}
+//		});
 	}
 		
 	private void initModuleView(){
@@ -91,11 +91,4 @@ public class HomeActivity extends Activity {
 		}
 	}
 		
-	@Override
-	protected void onDestroy(){
-		m_mailListView.destroy();
-		
-		super.onDestroy();				
-	}
-
 }

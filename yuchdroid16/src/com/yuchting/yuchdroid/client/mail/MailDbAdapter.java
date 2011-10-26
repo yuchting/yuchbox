@@ -417,7 +417,7 @@ public class MailDbAdapter {
     	String t_group 		= _groupCursor.getString(_groupCursor.getColumnIndex(GROUP_ATTR_GROUP)); // reverse data
     	
     	String t_index		= _groupCursor.getString(_groupCursor.getColumnIndex(GROUP_ATTR_MAIL_INDEX)) + 
-    								fetchMail.fsm_vectStringSpliter + _mailIndex;
+    									_mailIndex + fetchMail.fsm_vectStringSpliter;
     	
     	ContentValues group = new ContentValues();
     	

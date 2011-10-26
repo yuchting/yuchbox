@@ -12,6 +12,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.text.ClipboardManager;
 import android.view.Display;
 import android.view.WindowManager;
@@ -56,6 +57,15 @@ public class YuchDroidApp extends Application {
 	
 	public boolean			m_connectDeamonRun = false;
 	public int				m_connectState	= STATE_DISCONNECT;
+	
+	// the cursor will use by MailListView and MailOpenActivity;
+	// it will be closed by MailListView;
+	//
+	public Cursor			m_currMailGroupCursor = null;
+	
+	// reference fetch Mail
+	//
+	public fetchMail		m_composeRefMail;
 	
 	@Override
 	public void onCreate (){

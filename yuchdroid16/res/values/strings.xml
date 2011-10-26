@@ -15,10 +15,13 @@
     
     <!-- login activity -->
     <string name="login_host">Host:</string>
+    <string name="login_host_hint">Domain or IP address</string>
     <string name="login_host_error_prompt">Please input right Host (Domain or IP address)</string>
     <string name="login_port">Port:</string>
+    <string name="login_port_hint">Connect port(100-65535) </string>
     <string name="login_port_error_prompt">Please input right Port (1-65535)</string>
     <string name="login_user_pass">UserPass:</string>
+    <string name="login_user_pass_hint">User define password</string>
     <string name="login_user_pass_error_prompt">Please input UserPass</string>
     <string name="login_state_disconnect">Disconnect.</string>
     <string name="login_state_connecting">Connecting...</string>
@@ -49,7 +52,19 @@
     <string name="mail_open_forward_btn">Forward</string>
     <string name="mail_open_recipient_addr_prefix">Recipient:</string>
     <string name="mail_open_html_switch">Touch To Show HTML Part</string>
+    <string name="mail_open_show_former_mail">Touch To Show Former Mail</string>
+    <string name="mail_open_scroll_top">Touch To Scroll Top</string>
     
+    <!-- mail compose view -->
+    <string name="mail_compose_to">To</string>
+    <string name="mail_compose_cc">Cc</string>
+    <string name="mail_compose_bcc">Bcc</string>
+    <string name="mail_compose_subject">Subject</string>
+    <string name="mail_compose_body">Mail Compose</string>
+    <string name="mail_compose_send_btn">Send</string>
+    <string name="mail_compose_save_btn">SaveAsDraft</string>
+    <string name="mail_compose_discard_btn">Discard</string>
+    <string name="mail_compose_ref_lable">Reference Mail (touch to discard reference):</string>
     
     
 </resources>

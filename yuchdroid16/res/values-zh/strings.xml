@@ -14,10 +14,13 @@
     
     <!-- login activity -->
     <string name="login_host">服务主机:</string>
+    <string name="login_host_hint">填写域名或者IP地址</string>
     <string name="login_host_error_prompt">请输入正确的服务主机地址（域名或者IP地址）</string>
     <string name="login_port">主机端口:</string>
-    <string name="login_port_error_prompt">请输入正确的主机端口(1-65535)</string>
+    <string name="login_port_hint">连接端口(100-65535)</string>
+    <string name="login_port_error_prompt">请输入正确的主机端口(100-65535)</string>
     <string name="login_user_pass">用户密码:</string>
+    <string name="login_user_pass_hint">用户定义的密码</string>
     <string name="login_user_pass_error_prompt">请输入用户密码</string>
     <string name="login_state_disconnect">断开连接</string>
     <string name="login_state_connecting">连接中...</string>
@@ -40,12 +43,25 @@
     <string name="dlg_info_confirm">我知道了</string>
     <string name="dlg_info_copy">拷贝到剪切板</string>
     
-        <!-- mail open view -->
+    <!-- mail open view -->
     <string name="mail_open_reply_btn">回复</string>
     <string name="mail_open_reply_all_btn">回复所有</string>
     <string name="mail_open_delete_btn">删除</string>
     <string name="mail_open_forward_btn">转发</string>
     <string name="mail_open_recipient_addr_prefix">收件人：</string>
     <string name="mail_open_html_switch">触摸显示HTML部分</string>
+    <string name="mail_open_show_former_mail">触摸显示之前的邮件</string>
+    <string name="mail_open_scroll_top">触摸返回顶部</string>
+    
+    <!-- mail compose view -->
+    <string name="mail_compose_to">收件人</string>
+    <string name="mail_compose_cc">抄送</string>
+    <string name="mail_compose_bcc">密送</string>
+    <string name="mail_compose_subject">标题</string>
+    <string name="mail_compose_body">内容</string>
+    <string name="mail_compose_send_btn">发送</string>
+    <string name="mail_compose_save_btn">存成草稿</string>
+    <string name="mail_compose_discard_btn">丢弃</string>
+    <string name="mail_compose_ref_lable">引用邮件 (触摸丢弃引用):</string>	
     
 </resources>
