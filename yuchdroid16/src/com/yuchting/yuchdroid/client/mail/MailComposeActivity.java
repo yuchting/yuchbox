@@ -70,6 +70,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			
 			// add to main view
 			//
+			m_referenceMail.setBody();
 			m_mainView.addView(m_referenceMail.m_mainView);
 		}
 		
