@@ -50,7 +50,7 @@ public class HomeActivity extends Activity {
 	
 	private void initHomeStatusBar(){
 		
-//		m_statusBarBut[STATUS_BAR_MAIL] 	= (RadioButton)findViewById(R.id.home_status_bar_mail);
+//		m_statusBarBut[S TATUS_BAR_MAIL] 	= (RadioButton)findViewById(R.id.home_status_bar_mail);
 //		m_statusBarBut[STATUS_BAR_WEIBO] 	= (RadioButton)findViewById(R.id.home_status_bar_weibo);
 //		m_statusBarBut[STATUS_BAR_IM] 		= (RadioButton)findViewById(R.id.home_status_bar_im);
 //		

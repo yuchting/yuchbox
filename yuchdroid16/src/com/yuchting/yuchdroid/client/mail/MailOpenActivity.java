@@ -2,6 +2,7 @@ package com.yuchting.yuchdroid.client.mail;
 
 import java.text.SimpleDateFormat;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicReference;
 
 import android.app.Activity;
 import android.content.Context;
@@ -40,7 +41,11 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		TextView		m_bodyText;
 		TextView		m_htmlText;
 		
+		ImageView		m_mailFlag;
+		
 		TextView		m_touchHTML;
+		
+		boolean		m_initOpen = false;
 		
 		public void setBody(){
 			if(m_mail.GetContain().length() != 0){
@@ -164,41 +169,87 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         
         // fetch Mail data from the group list
         //
+        StringBuffer t_markReadMailString = new StringBuffer();
+        boolean t_hasUnreadMail = false;
         m_currMailList.clear();
         for(String id:t_mailList){
-        	t_mailCursor = m_mainApp.m_dba.fetchMail(Integer.valueOf(id).intValue());
-        	m_currMailList.add(getEnvelope(m_mainApp.m_dba.convertMail(t_mailCursor),this));
+        	int t_id = Integer.valueOf(id).intValue();
+        	t_mailCursor = m_mainApp.m_dba.fetchMail(t_id);
+        	
+        	fetchMail t_mail = m_mainApp.m_dba.convertMail(t_mailCursor);
+        	Envelope en = getEnvelope(t_mail, this);
+        	
+        	AtomicReference<Integer> t_flag = new AtomicReference<Integer>(t_mail.getGroupFlag());
+        	if(MailDbAdapter.modifiedUnreadFlag(t_flag)){
+        		t_hasUnreadMail = true;
+        		en.m_initOpen = true;
+        	
+        		// mark the mail as read
+        		//
+        		m_mainApp.m_dba.markMailRead(t_id);
+        		
+        		t_markReadMailString.append(t_id).append(fetchMail.fsm_vectStringSpliter);
+        	}
+        	
+        	m_currMailList.add(en);
         	t_mailCursor.close();
         }
-               
-        // set the former mail view touch  
+        
+        if(t_hasUnreadMail){
+        	// mark the unread group mail as read (database)
+        	//
+        	m_mainApp.m_dba.markGroupRead(m_currGroupIdx);
+        	
+        	// TODO send the boardcast to ConnectDeamon and MailListView (MailListActivity)
+        	//
+        	Intent t_intent = new Intent(YuchDroidApp.FILTER_MARK_MAIL_READ);
+        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_GROUPID,m_currGroupIdx);
+        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_markReadMailString.toString());
+    		sendBroadcast(t_intent);
+        }
+                
+        // remove all envelope
         //
-        if(m_currMailList.size() > 1){
+        while(m_mainMailView.getChildCount() > fsm_insertEnvelopeIndex){
+        	m_mainMailView.removeViewAt(fsm_insertEnvelopeIndex);
+        }
+        
+        int t_formerMailView = 0;
+        boolean t_showTouchFormerMailView = false;
+        for(int i = 0;i < m_currMailList.size();i++){
+        	Envelope en = m_currMailList.get(i);
+        	if(en.m_initOpen || i == m_currMailList.size() - 1){        		
+        		en.setBody();
+        		m_mainMailView.addView(en.m_mainView);       
+        	}else{
+        		t_formerMailView++;
+        		t_showTouchFormerMailView = true;
+        	}
+        }
+        
+        if(t_showTouchFormerMailView){
+
+            // set the former mail view touch 
+            //
         	m_formerMailView.setVisibility(View.VISIBLE);
-        	m_formerMailView.setText(getString(R.string.mail_open_show_former_mail) + " (" + (m_currMailList.size() - 1) + ")");
+            m_formerMailView.setText(getString(R.string.mail_open_show_former_mail) + " (" + t_formerMailView + ")");    
         }else{
         	m_formerMailView.setVisibility(View.GONE);
         }
         
-        while(m_mainMailView.getChildCount() > fsm_insertEnvelopeIndex){
-        	m_mainMailView.removeViewAt(fsm_insertEnvelopeIndex);
-        }        
-        
-        // set the current
-        //
-        Envelope t_currEnvelope = m_currMailList.get(m_currMailList.size() -1);
-        t_currEnvelope.setBody();
-        m_mainMailView.addView(t_currEnvelope.m_mainView,fsm_insertEnvelopeIndex);        
 	}
 	
 	public void onClick(View v) {
 		if(v == m_formerMailView){
 			m_formerMailView.setVisibility(View.GONE);
 			
-			for(int i = m_currMailList.size() - 2 ;i >= 0;i--){
-				Envelope en = m_currMailList.get(i);
-				m_mainMailView.addView(en.m_mainView,fsm_insertEnvelopeIndex);
+			for(Envelope en:m_currMailList){
+				if(!en.m_initOpen){
+					en.m_initOpen = true;
+					m_mainMailView.addView(en.m_mainView,fsm_insertEnvelopeIndex);
+				}				
 			}
+			
 		}else if(v == m_touchTop){
 			
 			m_envelopeScrollView.fullScroll(ScrollView.FOCUS_UP);
@@ -273,7 +324,8 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         TextView t_time		= (TextView)t_envelope.m_mainView.findViewById(R.id.mail_open_time);
         TextView t_toAddr	= (TextView)t_envelope.m_mainView.findViewById(R.id.mail_open_recv_addr);        
         TextView t_subject	= (TextView)t_envelope.m_mainView.findViewById(R.id.mail_open_subject);
-                
+        
+        t_envelope.m_mailFlag	= (ImageView)t_envelope.m_mainView.findViewById(R.id.mail_open_flag);
         t_envelope.m_bodyText	= (TextView)t_envelope.m_mainView.findViewById(R.id.mail_open_body);
         t_envelope.m_htmlText	= (TextView)t_envelope.m_mainView.findViewById(R.id.mail_open_html);
         t_envelope.m_touchHTML	= (TextView)t_envelope.m_mainView.findViewById(R.id.mail_open_html_switch);
@@ -294,6 +346,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         
         t_toAddr.setText(_ctx.getString(R.string.mail_open_recipient_addr_prefix) + MailListAdapter.getShortAddrList(t_toAddrList));
         t_subject.setText(_mail.GetSubject());
+        t_envelope.m_mailFlag.setImageResource(MailListAdapter.getMailFlagImageId(_mail.getGroupFlag()));
         
         return t_envelope;
 	}

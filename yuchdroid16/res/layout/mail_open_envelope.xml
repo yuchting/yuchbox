@@ -15,9 +15,17 @@
 		android:background="@drawable/mail_open_envelope_bg"
 		android:paddingTop="5dp"
 		android:paddingBottom="5dp">
+		<ImageView
+			android:id="@+id/mail_open_flag"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/mail_list_flag_recv"
+			android:layout_marginLeft="2dp"
+			android:layout_alignParentTop="true"/>
+			 
 		<TextView
 			android:id="@+id/mail_open_from_addr"
-			android:layout_alignParentTop="true"
+			android:layout_toRightOf="@id/mail_open_flag"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:textColor="#000"

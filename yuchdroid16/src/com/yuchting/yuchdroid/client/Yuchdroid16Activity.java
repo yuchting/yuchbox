@@ -44,6 +44,8 @@ public class Yuchdroid16Activity extends Activity {
         m_config = m_mainApp.m_config;
         
         initLoginLayout();
+        
+        registerReceiver(m_intentRecv, new IntentFilter(YuchDroidApp.FILTER_CONNECT_STATE));
     }  
     
     private void initLoginLayout() { 
@@ -92,9 +94,7 @@ public class Yuchdroid16Activity extends Activity {
         m_port.setText(m_config.m_port == 0?"":Integer.toString(m_config.m_port));
         m_userPass.setText(m_config.m_userPass);        
         
-        setConnectState(m_mainApp.m_connectState);
-
-   
+        setConnectState(m_mainApp.m_connectState);   
     }
     
     private boolean validateHost(String _host,String _port,String _userPass){
@@ -184,16 +184,17 @@ public class Yuchdroid16Activity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(m_intentRecv, new IntentFilter(YuchDroidApp.FILTER_CONNECT_STATE));
+        
+        Log.i(TAG,"onResume " + this);
     }
+    
     @Override
     protected void onPause() {
         super.onPause();
         // Another activity is taking focus (this activity is about to be "paused").
-        Log.i(TAG,"onPause " + this);
-        
-        
+        Log.i(TAG,"onPause " + this);       
     }
+    
     @Override
     protected void onStop() {
         super.onStop();
@@ -203,6 +204,7 @@ public class Yuchdroid16Activity extends Activity {
         
        // Debug.stopMethodTracing();
     }
+    
     @Override
     protected void onDestroy() {
         super.onDestroy();

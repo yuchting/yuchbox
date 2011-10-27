@@ -65,7 +65,21 @@ public class  fetchMail{
 	private String			m_contain_html	= "";
 	private String			m_contain_html_type	= "";
 	
-	private int			m_sentFlag		= 0;
+	// group flag to display to the user 
+	//
+	public static final int		GROUP_FLAG_RECV					= 0;
+	public static final int		GROUP_FLAG_RECV_READ			= 1;
+	public static final int		GROUP_FLAG_RECV_ATTACH			= 2;
+	public static final int		GROUP_FLAG_RECV_READ_ATTACH		= 3;
+	
+	public static final int		GROUP_FLAG_SEND_PADDING			= 4;
+	public static final int		GROUP_FLAG_SEND_SENDING			= 5;
+	public static final int		GROUP_FLAG_SEND_SENT			= 6;
+	public static final int		GROUP_FLAG_SEND_ERROR			= 7;
+
+	public static final int		GROUP_FLAG_SEND_DRAFT			= 8;
+	
+	private int					m_groupFlag		= 0;
 			
 	private Vector<MailAttachment>	m_vectAttachment	 	= new Vector<MailAttachment>();	
 	
@@ -217,6 +231,12 @@ public class  fetchMail{
 		if(t_version >= 2){
 			m_contain_html_type = sendReceive.ReadString(_stream);
 		}
+		
+		if(m_vectAttachment.isEmpty()){
+			setGroupFlag(GROUP_FLAG_RECV);
+		}else{
+			setGroupFlag(GROUP_FLAG_RECV_ATTACH);
+		}		
 	}
 	
 	
@@ -226,8 +246,8 @@ public class  fetchMail{
 	public String GetSubject(){	return m_subject;}
 	public void SetSubject(String _subject){m_subject = _subject;}
 	
-	public void setSentFlag(int _flag){m_sentFlag = _flag;}
-	public int getSentFlag(){return m_sentFlag;}
+	public void setGroupFlag(int _flag){m_groupFlag = _flag;}
+	public int getGroupFlag(){return m_groupFlag;}
 	
 	public String GetContain(){return m_contain;}
 	public void SetContain(String _contain){m_contain = _contain;}

@@ -19,6 +19,7 @@ public class GlobalDialog extends Activity implements DialogInterface.OnCancelLi
 	// information prompt dialog
 	public final static int STYLE_INFO		= 0;
 	
+	
 	//Now edit this function
     protected Dialog onCreateDialog(int id) {
 		Dialog dialog;
@@ -97,5 +98,11 @@ public class GlobalDialog extends Activity implements DialogInterface.OnCancelLi
     	myIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     	
     	_ctx.startActivity(myIntent);
+	}
+	
+	public static void showYesNoDialog(String _promptInfo,Context _ctx,DialogInterface.OnClickListener _listener){
+		AlertDialog.Builder builder = new AlertDialog.Builder(_ctx);
+		builder.setMessage(_promptInfo).setPositiveButton("Yes", _listener)
+		    .setNegativeButton("No", _listener).show();
 	}
 }

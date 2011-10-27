@@ -6,18 +6,19 @@
     android:background="#fff">
 		
 	<ImageView
-		android:id="@+id/mail_attach_pic"
+		android:id="@+id/mail_group_flag"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:src="@drawable/mail_item_attach_pic"
-		android:layout_alignParentBottom="true"
-		android:visibility="gone"/>    
+		android:src="@drawable/mail_list_flag_recv"
+		android:layout_marginLeft="2dp"
+		android:layout_marginTop="3dp"
+		android:layout_alignParentTop="true"/>    
     
 	<TextView
        	android:id="@+id/mail_subject"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-       	android:layout_alignParentLeft="true"
+       	android:layout_toRightOf="@id/mail_group_flag"
        	android:layout_marginTop="3dp"
         android:maxWidth="150dp"
         android:textSize="18dp"
@@ -46,7 +47,7 @@
 		android:id="@+id/mail_from_to"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_toRightOf="@id/mail_attach_pic"
+		android:layout_alignLeft="@id/mail_subject"
 		android:layout_alignParentBottom="true"
 		android:layout_marginBottom="3dp"
 		android:maxWidth="200dp"

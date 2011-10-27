@@ -1,6 +1,7 @@
 package com.yuchting.yuchdroid.client.mail;
 
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicReference;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -34,61 +35,54 @@ public class MailDbAdapter {
 
 	// mail group attribute
 	//
-	public final static String GROUP_ATTR_READ			= "group_read";
 	public final static String GROUP_ATTR_MARK			= "group_mark";
+		
+	public final static String GROUP_ATTR_GROUP_FLAG		= "group_flag";
 	
-	public final static String GROUP_ATTR_HAS_ATTACH			= "group_attach";
-	
-	public final static String GROUP_ATTR_SENT_FLAG		= "group_sent_flag";
-	
-	public final static String GROUP_ATTR_SUBJECT				= "group_subject";
-	public final static String GROUP_ATTR_LEATEST_BODY			= "group_body";
-	public final static String GROUP_ATTR_LEATEST_TIME			= "group_time";
-	public final static String GROUP_ATTR_ADDR_LIST			= "group_addr";
-	public final static String GROUP_ATTR_GROUP				= "group_group"; // reverse attribute 
-	public final static String GROUP_ATTR_MAIL_INDEX			= "group_mail";
+	public final static String GROUP_ATTR_SUBJECT			= "group_subject";
+	public final static String GROUP_ATTR_LEATEST_BODY	= "group_body";
+	public final static String GROUP_ATTR_LEATEST_TIME	= "group_time";
+	public final static String GROUP_ATTR_ADDR_LIST		= "group_addr";
+	public final static String GROUP_ATTR_GROUP			= "group_group"; // reverse attribute 
+	public final static String GROUP_ATTR_MAIL_INDEX		= "group_mail";
 		
 	
 	// mail entry attribute
 	//
-	public final static String ATTR_READ			= "mail_read";
-	public final static String ATTR_MARK			= "mail_mark";
+	public final static String ATTR_MARK				= "mail_mark";
 	
-	public final static String ATTR_SENT_FLAG		= "mail_sent_flag";
+	public final static String ATTR_GROUP_FLAG		= "mail_group_flag";
 	
-	public final static String ATTR_INDEX			= "mail_index";
+	public final static String ATTR_INDEX				= "mail_index";
 		
-	public final static String ATTR_SUBJECT 		= "mail_sub";  
-	public final static String ATTR_BODY 			= "mail_body";
+	public final static String ATTR_SUBJECT 			= "mail_sub";  
+	public final static String ATTR_BODY 				= "mail_body";
 	public final static String ATTR_BODY_HTML 		= "mail_body_html";
 	public final static String ATTR_BODY_HTML_TYPE	= "mail_body_html_type";
 	
 	public final static String ATTR_TO				= "mail_to";
 	public final static String ATTR_CC				= "mail_cc";
-	public final static String ATTR_BCC			= "mail_bcc";
-	public final static String ATTR_FROM			= "mail_from";
-	public final static String ATTR_REPLY			= "mail_reply";
-	public final static String ATTR_GROUP			= "mail_group";
+	public final static String ATTR_BCC				= "mail_bcc";
+	public final static String ATTR_FROM				= "mail_from";
+	public final static String ATTR_REPLY				= "mail_reply";
+	public final static String ATTR_GROUP				= "mail_group";
 	
-	public final static String ATTR_DATE			= "mail_date";
-	public final static String ATTR_FLAG			= "mail_flag";
+	public final static String ATTR_DATE				= "mail_date";
+	public final static String ATTR_FLAG				= "mail_flag";
 	
-	public final static String ATTR_ATTACHMENT	= "mail_attach";
+	public final static String ATTR_ATTACHMENT		= "mail_attach";
 	
 	public final static String ATTR_MAIL_GROUP_INDEX	= "mail_group_index";
 	
-	private static final String TAG 				= "MailDbAdapter";
+	private static final String TAG 					= "MailDbAdapter";
 	
 	public static final String[] fsm_groupfullColoumns = 
     {
 		KEY_ID, 
 		
-		GROUP_ATTR_READ,
 		GROUP_ATTR_MARK,
-		
-		GROUP_ATTR_HAS_ATTACH,
-		
-		GROUP_ATTR_SENT_FLAG,
+				
+		GROUP_ATTR_GROUP_FLAG,
 		
 		GROUP_ATTR_SUBJECT,
 		GROUP_ATTR_LEATEST_BODY,
@@ -104,10 +98,9 @@ public class MailDbAdapter {
     {
 		KEY_ID, 
 		
-		ATTR_READ,
 		ATTR_MARK,
 		
-		ATTR_SENT_FLAG,
+		ATTR_GROUP_FLAG,
 		
 		ATTR_INDEX,
 		ATTR_SUBJECT,
@@ -132,12 +125,9 @@ public class MailDbAdapter {
 							"create table " + DATABASE_TABLE_GROUP + 
 						    " ("+KEY_ID+" integer primary key, " +
 						    
-						    GROUP_ATTR_READ + " smallint," +
 						    GROUP_ATTR_MARK + " smallint," +
 						    
-						    GROUP_ATTR_HAS_ATTACH + " smallint," +
-						    
-						    GROUP_ATTR_SENT_FLAG + " integer," +
+						    GROUP_ATTR_GROUP_FLAG + " integer," +
 						    
 						    GROUP_ATTR_SUBJECT + " text, " +
 						    
@@ -153,10 +143,9 @@ public class MailDbAdapter {
 							"create table " + DATABASE_TABLE + 
 					        " ("+KEY_ID+" integer primary key, " +
 					        
-					        ATTR_READ + " smallint," +
 					        ATTR_MARK + " smallint," +
 					        
-					        ATTR_SENT_FLAG + " integer," +
+					        ATTR_GROUP_FLAG + " smallint," +
 					        
 					        ATTR_INDEX + " integer, " +
 					        
@@ -308,10 +297,9 @@ public class MailDbAdapter {
     	//
     	ContentValues values = new ContentValues();
         
-    	values.put(ATTR_READ,0);
     	values.put(ATTR_MARK,0);
     	
-    	values.put(ATTR_SENT_FLAG,_mail.getSentFlag());
+    	values.put(ATTR_GROUP_FLAG,_mail.getGroupFlag());
     	    	
     	values.put(ATTR_INDEX,_mail.GetMailIndex());
         values.put(ATTR_SUBJECT,_mail.GetSubject());
@@ -333,9 +321,6 @@ public class MailDbAdapter {
         long t_mailID;
         
     	if(_replyGroupId != null){
-    		// is sent mail 
-    		//
-    		values.put(ATTR_READ,1);
     		
     		t_mailID = mDb.insert(DATABASE_TABLE, null, values);
     		
@@ -344,7 +329,7 @@ public class MailDbAdapter {
     		Cursor t_cursor = mDb.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns,KEY_ID + "=" + _replyGroupId + "",
     											null,null,null,null);
     		try{
-        		updateGroup(t_cursor,_mail,true,t_mailID);
+        		updateGroup(t_cursor,_mail,t_mailID);
     		}finally{
     			t_cursor.close();
     		}
@@ -364,14 +349,14 @@ public class MailDbAdapter {
 
         			// update the former group
         			//
-        			updateGroup(t_cursor,_mail,false,t_mailID);
+        			updateGroup(t_cursor,_mail,t_mailID);
         			    			
         		}else{
         			
         			// can't find the old group
         			// create a insert one
         			//    			
-        			insertGroup(t_subject,t_mailID,_mail,false);
+        			insertGroup(t_subject,t_mailID,_mail);
         		}
     		}finally{
     			t_cursor.close();
@@ -397,7 +382,7 @@ public class MailDbAdapter {
     	return t_ret.toString();
     }
     
-    private boolean updateGroup(Cursor _groupCursor,fetchMail _mail,boolean _read,long _mailIndex){
+    private boolean updateGroup(Cursor _groupCursor,fetchMail _mail,long _mailIndex){
 
     	if(!_groupCursor.moveToFirst()){
     		// move to the frist and retrieve the data correctly 
@@ -407,7 +392,6 @@ public class MailDbAdapter {
     	
     	long t_id 			= _groupCursor.getLong(_groupCursor.getColumnIndex(KEY_ID));
     	
-    	int t_read 			= _read?1:0;
     	
     	int t_mark 			= _groupCursor.getInt(_groupCursor.getColumnIndex(GROUP_ATTR_MARK));
     	String t_sub 		= _groupCursor.getString(_groupCursor.getColumnIndex(GROUP_ATTR_SUBJECT));
@@ -431,11 +415,8 @@ public class MailDbAdapter {
     	
     	ContentValues group = new ContentValues();
     	
-		group.put(GROUP_ATTR_READ,t_read);
 		group.put(GROUP_ATTR_MARK,t_mark);
-		
-		group.put(GROUP_ATTR_HAS_ATTACH,_mail.GetAttachment().isEmpty()?0:1);
-		group.put(GROUP_ATTR_SENT_FLAG,_mail.getSentFlag());
+		group.put(GROUP_ATTR_GROUP_FLAG,_mail.getGroupFlag());
 				
 		group.put(GROUP_ATTR_SUBJECT,t_sub);
 		group.put(GROUP_ATTR_LEATEST_BODY,t_body);
@@ -455,13 +436,12 @@ public class MailDbAdapter {
      * @param _mail mail data
      * @return new group inserted _id
      */
-    private long insertGroup(String _subject,long _mailID,fetchMail _mail,boolean _read){
+    private long insertGroup(String _subject,long _mailID,fetchMail _mail){
     	
 		ContentValues group = new ContentValues();
-		group.put(GROUP_ATTR_READ,0);
 		group.put(GROUP_ATTR_MARK,0);
 		
-		group.put(GROUP_ATTR_HAS_ATTACH,_mail.GetAttachment().isEmpty()?0:1);
+		group.put(GROUP_ATTR_GROUP_FLAG,_mail.getGroupFlag());
 		
 		group.put(GROUP_ATTR_SUBJECT,_subject);
 		group.put(GROUP_ATTR_LEATEST_BODY,getDisplayMailBody(_mail));
@@ -528,13 +508,70 @@ public class MailDbAdapter {
 		return t_cursor;
     }
     
+    public static boolean modifiedUnreadFlag(AtomicReference<Integer> _flag){
+    	
+    	if(_flag.get() == fetchMail.GROUP_FLAG_RECV){
+    		_flag.set(fetchMail.GROUP_FLAG_RECV_READ);
+    		return true;
+    	}else if(_flag.get() == fetchMail.GROUP_FLAG_RECV_ATTACH){
+    		_flag.set(fetchMail.GROUP_FLAG_RECV_READ_ATTACH);
+    		return true;
+    	}
+    	
+    	return false;
+    }
+    
+    public void markGroupRead(long _groupId){
+    	
+    	Cursor t_cursor = fetchGroup(_groupId);
+    	
+    	if(t_cursor != null){
+    		t_cursor.moveToFirst();
+    	}else{
+    		return;
+    	}
+    	
+    	AtomicReference<Integer> t_flag = new AtomicReference<Integer>(t_cursor.getInt(t_cursor.getColumnIndex(GROUP_ATTR_GROUP_FLAG)));
+    	
+    	t_cursor.close();
+    	
+    	if(modifiedUnreadFlag(t_flag)){
+    		ContentValues values = new ContentValues();    		
+    		values.put(GROUP_ATTR_GROUP_FLAG,t_flag.get());
+    		
+    		mDb.update(DATABASE_TABLE_GROUP, values, KEY_ID + "=" + _groupId, new String[]{GROUP_ATTR_GROUP_FLAG});
+    	}
+    	
+    }
+    
+    public void markMailRead(long _mailId){
+    	
+    	Cursor t_cursor = fetchMail(_mailId);
+    	
+    	if(t_cursor != null){
+    		t_cursor.moveToFirst();
+    	}else{
+    		return;
+    	}
+    	
+    	AtomicReference<Integer> t_flag = new AtomicReference<Integer>(t_cursor.getInt(t_cursor.getColumnIndex(ATTR_GROUP_FLAG)));
+    	t_cursor.close();
+    	
+    	if(modifiedUnreadFlag(t_flag)){
+    		ContentValues values = new ContentValues();    		
+    		values.put(ATTR_GROUP_FLAG,t_flag.get());
+    		
+    		mDb.update(DATABASE_TABLE, values, KEY_ID + "=" + _mailId, new String[]{ATTR_GROUP_FLAG});
+    	}
+    }
+    
     public fetchMail convertMail(Cursor _mailCursor)throws Exception{
     	_mailCursor.moveToFirst();
     	
     	fetchMail t_mail = new fetchMail();
     	        
     	t_mail.SetMailIndex(_mailCursor.getInt(_mailCursor.getColumnIndex(ATTR_INDEX)));
-    	t_mail.setSentFlag(_mailCursor.getInt(_mailCursor.getColumnIndex(ATTR_SENT_FLAG)));
+    	t_mail.setGroupFlag(_mailCursor.getInt(_mailCursor.getColumnIndex(ATTR_GROUP_FLAG)));
     	t_mail.SetFlags(_mailCursor.getInt(_mailCursor.getColumnIndex(ATTR_FLAG)));
     	
     	t_mail.SetSubject(_mailCursor.getString(_mailCursor.getColumnIndex(ATTR_SUBJECT)));

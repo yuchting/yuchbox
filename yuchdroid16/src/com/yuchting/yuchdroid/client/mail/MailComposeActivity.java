@@ -3,8 +3,12 @@ package com.yuchting.yuchdroid.client.mail;
 import java.util.Vector;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -12,6 +16,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.yuchting.yuchdroid.client.GlobalDialog;
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
 
@@ -33,6 +38,8 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	Button		m_discardBtn		= null;
 	
 	LinearLayout	m_mainView		= null;
+	
+	boolean		m_modified		= false;
 	
 	MailOpenActivity.Envelope	m_referenceMail	= null;
 	YuchDroidApp	m_mainApp		= null;
@@ -63,10 +70,11 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		
 		m_saveBtn	= (Button)findViewById(R.id.mail_compose_save_btn);
 		m_saveBtn.setOnClickListener(this);
+		m_saveBtn.setEnabled(false);
 		
 		m_discardBtn = (Button)findViewById(R.id.mail_compose_discard_btn);
 		m_discardBtn.setOnClickListener(this);
-				
+						
 		// fetch the reference mail
 		//
 		if(m_mainApp.m_composeRefMail != null){
@@ -119,15 +127,71 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			m_to.requestFocus();
 		}
 		
+		// set the modified flag
+		//
+		TextWatcher t_watcher = new TextWatcher(){
+			public void afterTextChanged (Editable s){}
+			public void beforeTextChanged (CharSequence s, int start, int count, int after){}
+			public void onTextChanged(CharSequence s, int start, int before, int count){
+				m_modified = true;
+				m_saveBtn.setEnabled(true);
+			}
+		};
+		m_body.addTextChangedListener(t_watcher);
+		m_to.addTextChangedListener(t_watcher);
+		m_subject.addTextChangedListener(t_watcher);
+		m_bcc.addTextChangedListener(t_watcher);
+		m_cc.addTextChangedListener(t_watcher);
+		
 	}
 	
 	public void onClick(View v){
 		if(v == m_discardRefView){
-			m_discardRefView.setVisibility(View.GONE);
-			m_mainView.removeView(m_referenceMail.m_mainView);
-			m_referenceMail = null;
+			
+			GlobalDialog.showYesNoDialog(getString(R.string.mail_compose_delete_ref_mail), this, 
+			new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					if(which == DialogInterface.BUTTON_POSITIVE){
+						m_discardRefView.setVisibility(View.GONE);
+						m_mainView.removeView(m_referenceMail.m_mainView);
+						m_referenceMail = null;
+					}					
+				}
+			});
+			
 		}else if(v == m_sendBtn){
 			
+		}else if(v == m_saveBtn){
+			
+		}else if(v == m_discardBtn){
+			onClose();		
 		}
+	}
+	
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+	    if((keyCode == KeyEvent.KEYCODE_BACK)) {
+	    	onClose();
+	        return true;
+	    }
+	    return super.onKeyDown(keyCode, event);
+	}
+	
+	private void onClose(){
+		if(!m_modified){
+			finish();
+		}
+		
+		GlobalDialog.showYesNoDialog(getString(R.string.mail_compose_discard_mail), this, 
+		new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				if(which == DialogInterface.BUTTON_POSITIVE){
+					finish();
+				}					
+			}
+		});
 	}
 }

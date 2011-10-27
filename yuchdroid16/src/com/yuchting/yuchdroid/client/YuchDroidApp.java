@@ -26,8 +26,14 @@ public class YuchDroidApp extends Application {
 	public final static String	TAG = "YuchDroidApp";
 	// send broadcast intent filter
 	//
-	public final static	String	FILTER_CONNECT_STATE = TAG + "_CS";
-	public final static	String	FILTER_DEBUG_INFO = TAG + "_DI";
+	public final static	String	FILTER_CONNECT_STATE 	= TAG + "_CS";
+	public final static	String	FILTER_DEBUG_INFO 		= TAG + "_DI";
+	public final static	String	FILTER_MARK_MAIL_READ	= TAG + "_MMR";
+	
+	// FILTER_MARK_MAIL_READ broadcast parameters data
+	//
+	public final static	String	DATA_FILTER_MARK_MAIL_READ_GROUPID	= "groupId";
+	public final static	String	DATA_FILTER_MARK_MAIL_READ_MAILID	= "mailId";
 	
 	// connect state
 	//

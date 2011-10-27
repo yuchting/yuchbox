@@ -67,5 +67,7 @@
     <string name="mail_compose_ref_lable">引用邮件 (触摸丢弃引用):</string>
     <string name="mail_compose_reply_prefix">回复： </string>
     <string name="mail_compose_forward_prefix">转发：  </string>
+    <string name="mail_compose_delete_ref_mail">你真的要删除这封引用邮件么？</string>
+    <string name="mail_compose_discard_mail">你真的要丢弃这封邮件么？</string>
     
 </resources>
