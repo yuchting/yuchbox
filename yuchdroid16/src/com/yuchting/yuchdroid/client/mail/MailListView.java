@@ -14,7 +14,7 @@ public class MailListView extends ListView {
 	public YuchDroidApp		m_mainApp;
 	public HomeActivity		m_homeActivity;
 	
-	private MailListAdapter m_mailListAd;
+	public MailListAdapter m_mailListAd;
 			
 	public MailListView(HomeActivity _home,YuchDroidApp _mainApp){
 		super(_home);
@@ -33,7 +33,7 @@ public class MailListView extends ListView {
 		}
 		
 		m_mainApp.m_currMailGroupCursor = m_mainApp.m_dba.fetchAllGroup();
-		m_mailListAd = new MailListAdapter(m_homeActivity, m_mainApp.m_currMailGroupCursor);
+		m_mailListAd = new MailListAdapter(_home,m_mainApp);
         setAdapter(m_mailListAd);
         
         setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {

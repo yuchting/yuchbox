@@ -532,16 +532,14 @@ public class MailDbAdapter {
     	}
     	
     	AtomicReference<Integer> t_flag = new AtomicReference<Integer>(t_cursor.getInt(t_cursor.getColumnIndex(GROUP_ATTR_GROUP_FLAG)));
-    	
     	t_cursor.close();
     	
     	if(modifiedUnreadFlag(t_flag)){
     		ContentValues values = new ContentValues();    		
     		values.put(GROUP_ATTR_GROUP_FLAG,t_flag.get());
     		
-    		mDb.update(DATABASE_TABLE_GROUP, values, KEY_ID + "=" + _groupId, new String[]{GROUP_ATTR_GROUP_FLAG});
+    		mDb.update(DATABASE_TABLE_GROUP, values, KEY_ID + "=" + _groupId, null);
     	}
-    	
     }
     
     public void markMailRead(long _mailId){
@@ -561,7 +559,7 @@ public class MailDbAdapter {
     		ContentValues values = new ContentValues();    		
     		values.put(ATTR_GROUP_FLAG,t_flag.get());
     		
-    		mDb.update(DATABASE_TABLE, values, KEY_ID + "=" + _mailId, new String[]{ATTR_GROUP_FLAG});
+    		mDb.update(DATABASE_TABLE, values, KEY_ID + "=" + _mailId,null);
     	}
     }
     

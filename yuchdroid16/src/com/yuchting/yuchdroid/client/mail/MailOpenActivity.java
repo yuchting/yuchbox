@@ -177,12 +177,13 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         	t_mailCursor = m_mainApp.m_dba.fetchMail(t_id);
         	
         	fetchMail t_mail = m_mainApp.m_dba.convertMail(t_mailCursor);
-        	Envelope en = getEnvelope(t_mail, this);
         	
+        	boolean t_initOpen = false;
         	AtomicReference<Integer> t_flag = new AtomicReference<Integer>(t_mail.getGroupFlag());
         	if(MailDbAdapter.modifiedUnreadFlag(t_flag)){
+        		t_mail.setGroupFlag(t_flag.get());
         		t_hasUnreadMail = true;
-        		en.m_initOpen = true;
+        		t_initOpen = true;
         	
         		// mark the mail as read
         		//
@@ -191,16 +192,20 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         		t_markReadMailString.append(t_id).append(fetchMail.fsm_vectStringSpliter);
         	}
         	
+        	Envelope en = getEnvelope(t_mail, this);
+        	en.m_initOpen = t_initOpen;
+        	
         	m_currMailList.add(en);
         	t_mailCursor.close();
         }
-        
+          	
         if(t_hasUnreadMail){
-        	// mark the unread group mail as read (database)
+        	
+        	 // mark the unread group mail as read (database)
         	//
         	m_mainApp.m_dba.markGroupRead(m_currGroupIdx);
         	
-        	// TODO send the boardcast to ConnectDeamon and MailListView (MailListActivity)
+        	// TODO send the broadcast to ConnectDeamon and MailListView (MailListActivity)
         	//
         	Intent t_intent = new Intent(YuchDroidApp.FILTER_MARK_MAIL_READ);
         	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_GROUPID,m_currGroupIdx);

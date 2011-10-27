@@ -1,7 +1,10 @@
 package com.yuchting.yuchdroid.client;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,11 +30,24 @@ public class HomeActivity extends Activity {
 	
 	private RadioButton[]	m_statusBarBut = {null,null,null};
 	private RadioGroup		m_statusBarGroup;
+	
+	BroadcastReceiver m_markReadRecv = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context paramContext, Intent paramIntent) {
+			if(m_mainApp.m_currMailGroupCursor != null){
+				m_mainApp.m_currMailGroupCursor.close();	
+			}
+			
+			m_mainApp.m_currMailGroupCursor = m_mainApp.m_dba.fetchAllGroup();
+			m_mailListView.m_mailListAd.notifyDataSetChanged();
+		}
+	};
 				
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-                
+
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.home);
                 
@@ -46,7 +62,15 @@ public class HomeActivity extends Activity {
         initModuleView();
         
         m_mainApp.StopMailNotification();
+        
+        registerReceiver(m_markReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
     }
+	
+	public void onDestroy(){
+		super.onDestroy();
+		
+		unregisterReceiver(m_markReadRecv);
+	}
 	
 	private void initHomeStatusBar(){
 		

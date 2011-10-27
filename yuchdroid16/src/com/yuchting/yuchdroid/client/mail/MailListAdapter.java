@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.yuchting.yuchdroid.client.R;
+import com.yuchting.yuchdroid.client.YuchDroidApp;
 
 public class MailListAdapter extends BaseAdapter{
 	
@@ -112,8 +113,8 @@ public class MailListAdapter extends BaseAdapter{
     private int m_cursorlatestTimeIndex;
 	
 	private LayoutInflater m_inflater;   	
-	private Cursor			m_mainCursor;
-	private Context		m_ctx;
+	private YuchDroidApp	m_mainApp;
+	private Context		m_context;
 	
 	final static Calendar 	sm_calendar 	= Calendar.getInstance();
 	final static Date		sm_timeDate 	= new Date();
@@ -121,27 +122,27 @@ public class MailListAdapter extends BaseAdapter{
     static SimpleDateFormat sm_yearMonthDayFormat = null;
 	static SimpleDateFormat sm_monthDayHourFormat = null;
 	
-	public MailListAdapter(Context context,Cursor _cursor){
-		m_ctx 			= context;
-		m_inflater		= LayoutInflater.from(context);
-		m_mainCursor	= _cursor;
+	public MailListAdapter(Context _ctx,YuchDroidApp _mainApp){
+		m_context		= _ctx;
+		m_mainApp 		= _mainApp;
+		m_inflater		= LayoutInflater.from(m_context);
 		
-		m_cursorIDIndex			= m_mainCursor.getColumnIndex(MailDbAdapter.KEY_ID);
-		m_cursorMarkIndex		= m_mainCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_MARK);
-		m_cursorGroupFlagIndex	= m_mainCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_GROUP_FLAG);
-		m_cursorSubjectIndex	= m_mainCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_SUBJECT);
-		m_cursorBodyIndex		= m_mainCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_LEATEST_BODY);
-		m_cursorMailAddrIndex	= m_mainCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_ADDR_LIST);
-		m_cursorlatestTimeIndex	= m_mainCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_LEATEST_TIME);
+		m_cursorIDIndex			= m_mainApp.m_currMailGroupCursor.getColumnIndex(MailDbAdapter.KEY_ID);
+		m_cursorMarkIndex		= m_mainApp.m_currMailGroupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_MARK);
+		m_cursorGroupFlagIndex	= m_mainApp.m_currMailGroupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_GROUP_FLAG);
+		m_cursorSubjectIndex	= m_mainApp.m_currMailGroupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_SUBJECT);
+		m_cursorBodyIndex		= m_mainApp.m_currMailGroupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_LEATEST_BODY);
+		m_cursorMailAddrIndex	= m_mainApp.m_currMailGroupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_ADDR_LIST);
+		m_cursorlatestTimeIndex	= m_mainApp.m_currMailGroupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_LEATEST_TIME);
 
 		
 		if(sm_yearMonthDayFormat == null){
-			sm_yearMonthDayFormat = new SimpleDateFormat("yyyy"+context.getString(R.string.mail_time_year)+
-											"MM"+context.getString(R.string.mail_time_month)+
-											"dd" + context.getString(R.string.mail_time_day));
+			sm_yearMonthDayFormat = new SimpleDateFormat("yyyy"+_ctx.getString(R.string.mail_time_year)+
+											"MM"+_ctx.getString(R.string.mail_time_month)+
+											"dd" + _ctx.getString(R.string.mail_time_day));
 
-			sm_monthDayHourFormat = new SimpleDateFormat("MM"+context.getString(R.string.mail_time_month)+
-											"dd" + context.getString(R.string.mail_time_day) +
+			sm_monthDayHourFormat = new SimpleDateFormat("MM"+_ctx.getString(R.string.mail_time_month)+
+											"dd" + _ctx.getString(R.string.mail_time_day) +
 											" HH:mm");	
 		}
 		
@@ -149,7 +150,7 @@ public class MailListAdapter extends BaseAdapter{
 	
 
     public int getCount() {
-        return m_mainCursor.getCount();
+        return m_mainApp.m_currMailGroupCursor.getCount();
     }
 
     public Object getItem(int position) {
@@ -162,10 +163,12 @@ public class MailListAdapter extends BaseAdapter{
     
     public View getView(int position, View convertView, ViewGroup parent) {
 
+    	Cursor t_groupCursor = m_mainApp.m_currMailGroupCursor;
+    	
     	ItemHolder holder;
     	
         if(convertView == null) {
-            convertView = m_inflater.inflate(R.layout.mail_list_item,new LinearLayout(m_ctx));
+            convertView = m_inflater.inflate(R.layout.mail_list_item,new LinearLayout(m_context));
             
             holder = new ItemHolder();
             holder.background	= convertView.findViewById(R.id.mail_item);
@@ -186,28 +189,28 @@ public class MailListAdapter extends BaseAdapter{
         
         // fill the group data
         //
-        m_mainCursor.moveToPosition(position);
-        holder.groupId = m_mainCursor.getInt(m_cursorIDIndex);
+        t_groupCursor.moveToPosition(position);
+        holder.groupId = t_groupCursor.getInt(m_cursorIDIndex);
         if(position != 0){
-        	m_mainCursor.moveToPosition(position - 1);
-        	holder.nextGroupId = m_mainCursor.getInt(m_cursorIDIndex);
+        	t_groupCursor.moveToPosition(position - 1);
+        	holder.nextGroupId = t_groupCursor.getInt(m_cursorIDIndex);
         }
         
-        if(position < m_mainCursor.getCount() - 1){
-        	m_mainCursor.moveToPosition(position + 1);
-        	holder.preGroupId = m_mainCursor.getInt(m_cursorIDIndex);
+        if(position < t_groupCursor.getCount() - 1){
+        	t_groupCursor.moveToPosition(position + 1);
+        	holder.preGroupId = t_groupCursor.getInt(m_cursorIDIndex);
         }
         
         // fill the mail text
         //
-        m_mainCursor.moveToPosition(position);
+        t_groupCursor.moveToPosition(position);
         
         holder.cursorPos = position;        
-        holder.updateView(m_mainCursor.getInt(m_cursorGroupFlagIndex),
-        				m_mainCursor.getString(m_cursorSubjectIndex), 
-        				getShortAddrList(fetchMail.parseAddressList(m_mainCursor.getString(m_cursorMailAddrIndex).split(fetchMail.fsm_vectStringSpliter))), 
-        				m_mainCursor.getString(m_cursorBodyIndex),
-        				m_mainCursor.getLong(m_cursorlatestTimeIndex));
+        holder.updateView(t_groupCursor.getInt(m_cursorGroupFlagIndex),
+        				t_groupCursor.getString(m_cursorSubjectIndex), 
+        				getShortAddrList(fetchMail.parseAddressList(t_groupCursor.getString(m_cursorMailAddrIndex).split(fetchMail.fsm_vectStringSpliter))), 
+        				t_groupCursor.getString(m_cursorBodyIndex),
+        				t_groupCursor.getLong(m_cursorlatestTimeIndex));
 		
         return convertView;
     }

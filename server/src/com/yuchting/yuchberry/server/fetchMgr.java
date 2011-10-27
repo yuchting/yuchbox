@@ -503,7 +503,8 @@ public class fetchMgr{
 								m_logger.LogOut("StartListening 0");
 								
 								// wait	quit
-								while(!m_currConnect.m_quit){
+								int t_counter = 200;
+								while(!m_currConnect.m_quit && t_counter-- > 0){
 									Thread.sleep(50);
 								}
 								m_logger.LogOut("StartListening 1");
