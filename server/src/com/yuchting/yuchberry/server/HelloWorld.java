@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -100,11 +101,9 @@ public class HelloWorld {
 	public final static String	fsm_vectStringSpliter_sub = "@#&";
 	
 	public static void main(String arg[])throws Exception{
-	
-		String t_string = "6" + fsm_vectStringSpliter;
-
+		AtomicReference<Integer> t_ref = new AtomicReference<Integer>(new Integer(1));
+		t_ref.set(2);
 		
-		String[] t_list = t_string.split(fsm_vectStringSpliter);
 		
 		System.out.println();
 	}
