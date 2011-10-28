@@ -23,7 +23,6 @@ import android.widget.TextView;
 
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
-import com.yuchting.yuchdroid.client.Yuchdroid16Activity;
 
 public class MailOpenActivity extends Activity implements View.OnClickListener{
 
@@ -51,6 +50,8 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		boolean		m_initOpen = false;
 		
 		public void setBody(){
+			m_initOpen = true;
+			
 			if(m_mail.GetContain().length() != 0){
 				m_bodyText.setVisibility(View.VISIBLE);
 				m_bodyText.setText(m_mail.GetContain());        	
@@ -101,6 +102,39 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		
 		@Override
 		public void onReceive(Context context, Intent intent) {
+
+			int t_groupIndex 	= intent.getIntExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_VIEW_GROUP_ID, -1);
+			int t_mailIndex 	= intent.getIntExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_VIEW_MAIL_ID, -1);
+			int t_flag			= intent.getIntExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_VIEW_GROUP_FLAG, -1);
+						
+			if(t_groupIndex == m_currGroupIdx){
+				boolean t_envelopeAdded = false;
+				for(Envelope en:m_currMailList){
+					if(en.m_mail.getDbIndex() == t_mailIndex){
+						t_envelopeAdded = true;
+						
+						en.m_mailFlag.setImageResource(MailListAdapter.getMailFlagImageId(t_flag));
+						break;
+					}
+				}
+				
+				if(!t_envelopeAdded){
+					Cursor t_mailCursor = m_mainApp.m_dba.fetchMail(t_mailIndex);
+					try{
+						fetchMail t_mail = m_mainApp.m_dba.convertMail(t_mailCursor);
+												
+						Envelope en = getEnvelope(t_mail, m_composeActivity);
+						en.setBody();
+						m_mainMailView.addView(en.m_mainView);
+						m_currMailList.add(en);
+						
+					}catch(Exception e){
+						m_mainApp.setErrorString(TAG+" sendMailRecv",e);
+					}finally{
+						t_mailCursor.close();
+					}
+				}
+			}
 			
 		}
 	};
@@ -163,7 +197,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         	finish();
         }
         
-        registerReceiver(m_sendMailRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL));
+        registerReceiver(m_sendMailRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL_VIEW));
     }
 	
 	public void onDestroy(){

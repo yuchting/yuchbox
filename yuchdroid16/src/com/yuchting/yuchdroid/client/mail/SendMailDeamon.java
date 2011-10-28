@@ -108,7 +108,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	private void RefreshMessageStatus(int _flag){
 		
 		m_sendMail.setGroupFlag(_flag);
-		
+		m_connect.m_mainApp.m_dba.setMailGroupFlag(m_sendMail.getDbIndex(), m_sendMail.getGroupIndex(), _flag);
 		
 		// check the MailComposeActivity.send() for progress detail
 		//

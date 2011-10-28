@@ -10,7 +10,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
@@ -34,14 +33,27 @@ public class HomeActivity extends Activity {
 		
 		@Override
 		public void onReceive(Context paramContext, Intent paramIntent) {
-			if(m_mainApp.m_currMailGroupCursor != null){
-				m_mainApp.m_currMailGroupCursor.close();	
-			}
-			
-			m_mainApp.m_currMailGroupCursor = m_mainApp.m_dba.fetchAllGroup();
-			m_mailListView.m_mailListAd.notifyDataSetChanged();
+			refreshList();
 		}
 	};
+	
+	BroadcastReceiver m_sendMailRecv = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			refreshList();
+		}
+	};
+	
+	private void refreshList(){
+		if(m_mainApp.m_currMailGroupCursor != null){
+			m_mainApp.m_currMailGroupCursor.close();	
+		}
+		
+		m_mainApp.m_currMailGroupCursor = m_mainApp.m_dba.fetchAllGroup();
+		m_mailListView.m_mailListAd.notifyDataSetChanged();
+
+	}
 				
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -61,12 +73,14 @@ public class HomeActivity extends Activity {
         m_mainApp.StopMailNotification();
         
         registerReceiver(m_markReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
+        registerReceiver(m_sendMailRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL_VIEW));
     }
 	
 	public void onDestroy(){
 		super.onDestroy();
 		
 		unregisterReceiver(m_markReadRecv);
+		unregisterReceiver(m_sendMailRecv);
 	}
 	
 	private void initHomeStatusBar(){

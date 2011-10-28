@@ -152,6 +152,7 @@ public class ConnectDeamon extends Service{
 		m_proxyThread.start();
 		
 		registerReceiver(m_mailMarkReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
+		registerReceiver(m_mailSendRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL_VIEW));
 	}
 	
 	
@@ -223,6 +224,7 @@ public class ConnectDeamon extends Service{
 		m_mainApp.m_connectState = YuchDroidApp.STATE_DISCONNECT;
 		
 		unregisterReceiver(m_mailMarkReadRecv);
+		unregisterReceiver(m_mailSendRecv);
 	}
 	
 	private boolean CanNotConnectSvr(){

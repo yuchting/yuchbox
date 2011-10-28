@@ -69,7 +69,7 @@
     <string name="mail_compose_delete_ref_mail">Are you sure delete this reference mail?</string>
     <string name="mail_compose_discard_mail">Are you sure discard this mail?</string>
     <string name="mail_compose_send_without_modified">Do you want send without changed?</string>
-    <string name="mail_compose_address_error">Send address' format is error!</string>
+    <string name="mail_compose_address_error">Send address\' format is error!</string>
     <string name="mail_compose_empty_body_question">Are you sure send mail without body?</string>
     
     

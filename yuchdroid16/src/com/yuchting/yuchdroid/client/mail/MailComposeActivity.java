@@ -111,7 +111,9 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 				if(m_referenceMailStyle == fetchMail.REPLY_ALL_STYLE){
 					StringBuffer t_to = new StringBuffer();
 					for(String addr:t_toVect){
-						t_to.append(addr).append(",");
+						// get rid of comma with blank
+						//
+						t_to.append(addr.replace(',', ' ')).append(",");
 					}
 					m_to.setText(t_to.toString());
 				}else{
@@ -295,6 +297,10 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		in.putExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_STYLE, m_referenceMailStyle);
 		
 		sendBroadcast(in);
+		
+		// close the activity
+		//
+		finish();
 	}
 	
 	private boolean checkSendToAddr(String[] _toAddrList){
@@ -305,7 +311,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		for(String addr:_toAddrList){
 			if(addr.length() != 0){
 				if(!addr.matches("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$")
-				&& !addr.matches("(.[^,])*<\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*>")){
+				&& !addr.matches("(.)*<\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*>")){
 					return false;
 				}
 			}

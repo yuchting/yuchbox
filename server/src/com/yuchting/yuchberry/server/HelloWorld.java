@@ -102,10 +102,11 @@ public class HelloWorld {
 	
 	public static void main(String arg[])throws Exception{
 
-		String addr = "\"aa,\"<yuchberr@gmail.com>";
+		String addr = "YuchTing <yuchting@gmail.com>";
+		int t_d = addr.indexOf(',');
 
 		if(!addr.matches("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$")
-		&& !addr.matches("(.[^,])*<\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*>")){
+		&& !addr.matches("(.)*<\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*>")){
 			System.out.println();
 		}
 		

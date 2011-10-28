@@ -524,7 +524,7 @@ public class MailDbAdapter {
     	
     	Cursor t_cursor = fetchGroup(_groupId);
     	
-    	if(t_cursor != null){
+    	if(t_cursor != null && t_cursor.getCount() > 0){
     		t_cursor.moveToFirst();
     	}else{
     		return;
@@ -545,7 +545,7 @@ public class MailDbAdapter {
     	
     	Cursor t_cursor = fetchMail(_mailId);
     	
-    	if(t_cursor != null){
+    	if(t_cursor != null && t_cursor.getCount() > 0){
     		t_cursor.moveToFirst();
     	}else{
     		return;
@@ -563,6 +563,32 @@ public class MailDbAdapter {
     }
     
     public void setMailGroupFlag(long _mailId,long _groupId,int _flag){
+    	
+    	ContentValues values = new ContentValues();    		
+		values.put(ATTR_GROUP_FLAG,_flag);
+		mDb.update(DATABASE_TABLE, values, KEY_ID + "=" + _mailId,null);
+		
+		// fetch the group and change the flag if the latest mail is that mailId
+		//
+		Cursor t_cursor = fetchGroup(_groupId);
+    	if(t_cursor != null && t_cursor.getCount() > 0){
+    		t_cursor.moveToFirst();
+    	}else{
+    		return;
+    	}
+    	
+    	String t_mailIndex = t_cursor.getString(t_cursor.getColumnIndex(GROUP_ATTR_MAIL_INDEX));
+    	String[] t_mailIndexList = t_mailIndex.split(fetchMail.fsm_vectStringSpliter);
+    	
+    	t_cursor.close();
+    	
+    	if(t_mailIndexList.length != 0 
+    	&& Integer.valueOf(t_mailIndexList[t_mailIndexList.length - 1]).intValue() == _mailId){
+    		ContentValues v = new ContentValues();    		
+    		v.put(GROUP_ATTR_GROUP_FLAG,_flag);
+    		
+    		mDb.update(DATABASE_TABLE_GROUP, v, KEY_ID + "=" + _groupId, null);
+    	}
     	
     }
     

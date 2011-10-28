@@ -92,9 +92,6 @@ public class  fetchMail{
 	GPSInfo	m_gpsInfo 				= new GPSInfo();			
 	
 	public void SetMailIndex(int _index)throws Exception{
-		if(_index <= 0){
-			throw new Exception("SetMailIndex Negative");
-		}
 		m_mailIndex =_index;		
 	}
 	
