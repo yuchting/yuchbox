@@ -101,11 +101,16 @@ public class HelloWorld {
 	public final static String	fsm_vectStringSpliter_sub = "@#&";
 	
 	public static void main(String arg[])throws Exception{
-		AtomicReference<Integer> t_ref = new AtomicReference<Integer>(new Integer(1));
-		t_ref.set(2);
-		
+
+		String addr = "\"aa,\"<yuchberr@gmail.com>";
+
+		if(!addr.matches("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$")
+		&& !addr.matches("(.[^,])*<\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*>")){
+			System.out.println();
+		}
 		
 		System.out.println();
+		
 	}
 	
 	static public void testMDS()throws Exception{
