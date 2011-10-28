@@ -10,9 +10,11 @@ import java.util.Vector;
 import android.app.ActivityManager;
 import android.app.Service;
 import android.app.ActivityManager.RunningAppProcessInfo;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.net.ConnectivityManager;
 import android.os.IBinder;
@@ -64,6 +66,31 @@ public class ConnectDeamon extends Service{
 		}
 	};
 	
+	BroadcastReceiver m_mailMarkReadRecv = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String t_mailHashcode = intent.getExtras().getString(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID);
+			String[] t_mailHashList = t_mailHashcode.split(fetchMail.fsm_vectStringSpliter);
+						
+			for(String id : t_mailHashList){
+				
+				int t_hash = Integer.valueOf(id);
+				
+				try{
+					ByteArrayOutputStream os  = new ByteArrayOutputStream();			
+					os.write(msg_head.msgBeenRead);
+					sendReceive.WriteInt(os, t_hash);
+					
+					m_sendingQueue.addSendingData(msg_head.msgBeenRead, os.toByteArray(), true);
+				}catch(Exception e){
+					m_mainApp.setErrorString("ConnectDeamon MailMarkReadRecv", e);
+				}
+				
+			}
+		}
+	};
+	
 	public void onCreate() {
 		m_mainApp = (YuchDroidApp)getApplicationContext();
 						
@@ -88,6 +115,8 @@ public class ConnectDeamon extends Service{
 		// start the connect run thread
 		//
 		m_proxyThread.start();
+		
+		registerReceiver(m_mailMarkReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
 	}
 	
 	
@@ -157,6 +186,8 @@ public class ConnectDeamon extends Service{
 		
 		m_mainApp.m_connectDeamonRun = false;
 		m_mainApp.m_connectState = YuchDroidApp.STATE_DISCONNECT;
+		
+		unregisterReceiver(m_mailMarkReadRecv);
 	}
 	
 	private boolean CanNotConnectSvr(){

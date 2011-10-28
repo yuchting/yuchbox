@@ -202,4 +202,16 @@ public class YuchDroidApp extends Application {
 		
 		return t_ret.toString();
 	}
+	
+	 // utility function
+    //
+    public static String GetByteStr(int _byte){
+    	if(_byte < 1000){
+			return "" + _byte + "B";
+		}else if(_byte >= 1000 && _byte < 1000000){
+			return "" + (_byte / 1000) + "." + (_byte % 1000 / 100)+ "KB";
+		}else{
+			return "" + (_byte / (1000000)) + "." + ((_byte / 1000) % 1000 / 100) + "MB";
+		}
+    }
 }

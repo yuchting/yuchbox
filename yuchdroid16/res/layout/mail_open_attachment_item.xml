@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:padding="5dp"
+	android:background="@drawable/mail_open_attachment_item_bg">
+	
+	<ImageView 
+		android:id="@+id/mail_open_attach_item_icon"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:src="@drawable/mail_open_attachment_item_icon" />
+	
+	<TextView
+		android:id="@+id/mail_open_attachment_item_filename"
+		android:layout_toRightOf="@id/mail_open_attach_item_icon"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:gravity="center"
+		android:textColor="#777"
+		android:textSize="16dp"
+		android:layout_centerInParent="true"
+		android:text="this is a attachment filename.txt (1.2M)"/>
+    
+</RelativeLayout>

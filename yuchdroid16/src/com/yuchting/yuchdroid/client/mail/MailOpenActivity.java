@@ -19,7 +19,6 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.yuchting.yuchdroid.client.HomeActivity;
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
 
@@ -44,7 +43,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		ImageView		m_mailFlag;
 		
 		TextView		m_touchHTML;
-		
+				
 		boolean		m_initOpen = false;
 		
 		public void setBody(){
@@ -189,7 +188,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         		//
         		m_mainApp.m_dba.markMailRead(t_id);
         		
-        		t_markReadMailString.append(t_id).append(fetchMail.fsm_vectStringSpliter);
+        		t_markReadMailString.append(t_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
         	}
         	
         	Envelope en = getEnvelope(t_mail, this);
@@ -201,11 +200,11 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
           	
         if(t_hasUnreadMail){
         	
-        	 // mark the unread group mail as read (database)
+        	// mark the unread group mail as read (database)
         	//
         	m_mainApp.m_dba.markGroupRead(m_currGroupIdx);
         	
-        	// TODO send the broadcast to ConnectDeamon and MailListView (MailListActivity)
+        	// send the broadcast to ConnectDeamon and MailListView (MailListActivity)
         	//
         	Intent t_intent = new Intent(YuchDroidApp.FILTER_MARK_MAIL_READ);
         	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_GROUPID,m_currGroupIdx);
@@ -352,6 +351,23 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         t_toAddr.setText(_ctx.getString(R.string.mail_open_recipient_addr_prefix) + MailListAdapter.getShortAddrList(t_toAddrList));
         t_subject.setText(_mail.GetSubject());
         t_envelope.m_mailFlag.setImageResource(MailListAdapter.getMailFlagImageId(_mail.getGroupFlag()));
+        
+        // set the attachment file
+        //
+        if(!_mail.GetAttachment().isEmpty()){
+        	for(final MailAttachment att:_mail.GetAttachment()){
+        		View attachView = t_inflater.inflate(R.layout.mail_open_attachment_item,null);
+        		TextView filename = (TextView)attachView.findViewById(R.id.mail_open_attachment_item_filename);
+        		filename.setText(att.m_name + " ("+YuchDroidApp.GetByteStr(att.m_size) + ")");
+        		
+        		
+        		RelativeLayout.LayoutParams t_lp = new RelativeLayout.LayoutParams(
+        		        RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        		t_lp.addRule(RelativeLayout.BELOW, t_envelope.m_touchHTML.getId());
+        		t_envelope.m_mainView.addView(attachView,t_lp);
+        	}
+        	
+        }
         
         return t_envelope;
 	}
