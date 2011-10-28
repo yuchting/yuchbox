@@ -1,5 +1,6 @@
 package com.yuchting.yuchdroid.client.mail;
 
+import java.util.Date;
 import java.util.Vector;
 
 import android.app.Activity;
@@ -15,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.yuchting.yuchdroid.client.GlobalDialog;
 import com.yuchting.yuchdroid.client.R;
@@ -23,6 +25,7 @@ import com.yuchting.yuchdroid.client.YuchDroidApp;
 public class MailComposeActivity extends Activity implements View.OnClickListener{
 
 	public final static String	COMPOSE_MAIL_STYLE = "style";
+	public final static String	COMPOSE_MAIL_GROUP_ID = "groupId";
 	
 	AutoCompleteTextView	m_to	= null;
 	AutoCompleteTextView	m_cc	= null;
@@ -45,6 +48,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	YuchDroidApp	m_mainApp		= null;
 	
 	int			m_referenceMailStyle = fetchMail.NOTHING_STYLE;
+	int			m_referenceGroupId 	= -1;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -80,7 +84,8 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		if(m_mainApp.m_composeRefMail != null){
 			
 			Intent in = getIntent();
-			m_referenceMailStyle = in.getExtras().getInt(COMPOSE_MAIL_STYLE);
+			m_referenceMailStyle 	= in.getExtras().getInt(COMPOSE_MAIL_STYLE);
+			m_referenceGroupId		= in.getExtras().getInt(COMPOSE_MAIL_GROUP_ID);
 			
 			m_discardRefView.setVisibility(View.VISIBLE);
 			m_referenceMail = MailOpenActivity.getEnvelope(m_mainApp.m_composeRefMail, this);
@@ -113,15 +118,16 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 					m_to.setText(t_toVect.get(0));
 				}
 				
+				m_body.requestFocus();
 			}else{
+				// forward style
+				//
 				t_sub = getString(R.string.mail_compose_forward_prefix) + m_referenceMail.m_mail.GetSubject();
+				m_to.requestFocus();
 			}
 			
 			setTitle(t_sub);
-			
-			m_subject.setText(t_sub);
-			
-			m_body.requestFocus();
+			m_subject.setText(t_sub);						
 		}else{
 			m_discardRefView.setVisibility(View.GONE);
 			m_to.requestFocus();
@@ -162,6 +168,40 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			});
 			
 		}else if(v == m_sendBtn){
+			if(!m_modified){
+				// without modified confirm
+				//
+				GlobalDialog.showYesNoDialog(getString(R.string.mail_compose_send_without_modified), this, 
+				new DialogInterface.OnClickListener(){
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						if(which == DialogInterface.BUTTON_POSITIVE){
+							send();
+						}					
+					}
+				});
+				
+			}else{
+				
+				if(m_body.getText().length() == 0){
+					// body is empty confirm
+					//
+					GlobalDialog.showYesNoDialog(getString(R.string.mail_compose_empty_body_question), this, 
+					new DialogInterface.OnClickListener(){
+						
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							if(which == DialogInterface.BUTTON_POSITIVE){
+								send();
+							}					
+						}
+					});
+				}else{
+					send();
+				}
+				
+			}
 			
 		}else if(v == m_saveBtn){
 			
@@ -181,6 +221,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	private void onClose(){
 		if(!m_modified){
 			finish();
+			return;
 		}
 		
 		GlobalDialog.showYesNoDialog(getString(R.string.mail_compose_discard_mail), this, 
@@ -193,5 +234,83 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 				}					
 			}
 		});
+	}
+	
+	private void send(){
+		
+		// send progress:
+		//
+		//    MailComposeActivity.send()
+		//			|
+		//		write database (fetchMail)
+		//			|
+		//			| Broadcast( YuchDroidApp.FILTER_SEND_MAIL )
+		//			|
+		//		ConnectDeamon  ----> SendMailDeamon
+		//									|
+		//								write database (fetchMail's group flag)
+		//									|
+		//									| Broadcast (YuchDroidApp.FILTER_SEND_MAIL_VIEW)
+		//									|
+		//							-----------------
+		//							|				|
+		//						MailListView	MailOpenActivity
+		//
+		
+		String[] t_toAddrList 	= m_to.getText().toString().replaceAll("\n", ",").split(",");
+		String[] t_ccAddrList 	= m_cc.getText().toString().replaceAll("\n", ",").split(",");
+		String[] t_bccAddrList	= m_bcc.getText().toString().replaceAll("\n", ",").split(",");
+		
+		// check the address
+		//
+		if(!checkSendToAddr(t_toAddrList)
+		|| !checkSendToAddr(t_ccAddrList)
+		|| !checkSendToAddr(t_bccAddrList)){
+			Toast.makeText(this, getString(R.string.mail_compose_address_error), Toast.LENGTH_SHORT).show();
+			return;
+		}		
+		
+		fetchMail t_sendMail = new fetchMail();
+		
+		t_sendMail.setGroupIndex(m_referenceGroupId);
+		t_sendMail.setGroupFlag(fetchMail.GROUP_FLAG_SEND_PADDING);
+		t_sendMail.SetSendToVect(t_toAddrList);
+		t_sendMail.SetCCToVect(t_ccAddrList);
+		t_sendMail.SetBCCToVect(t_bccAddrList);
+		t_sendMail.SetSendDate(new Date());
+		t_sendMail.SetSubject(m_subject.getText().toString());
+		t_sendMail.SetContain(m_body.getText().toString());
+		
+		int t_id = (int)m_mainApp.m_dba.createMail(t_sendMail,m_referenceGroupId == -1?null:new Long(m_referenceGroupId));
+		t_sendMail.setDbIndex(t_id);
+		
+		m_mainApp.m_composeRefMail 		= t_sendMail;
+		if(m_referenceMail != null){
+			m_mainApp.m_composeStyleRefMail = m_referenceMail.m_mail;
+		}		
+		
+		// broadcast to ConnectDeamon
+		//
+		Intent in = new Intent(YuchDroidApp.FILTER_SEND_MAIL);
+		in.putExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_STYLE, m_referenceMailStyle);
+		
+		sendBroadcast(in);
+	}
+	
+	private boolean checkSendToAddr(String[] _toAddrList){
+		if(_toAddrList.length == 0){
+			return false;
+		}
+		
+		for(String addr:_toAddrList){
+			if(addr.length() != 0){
+				if(!addr.matches("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$")
+				&& !addr.matches("(.[^,])*<\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*>")){
+					return false;
+				}
+			}
+		}
+		
+		return true;
 	}
 }

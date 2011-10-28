@@ -4,18 +4,21 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Vector;
 
+import android.content.Intent;
+
 import com.yuchting.yuchdroid.client.ConnectDeamon;
 import com.yuchting.yuchdroid.client.ISendAttachmentCallback;
 import com.yuchting.yuchdroid.client.SendAttachmentDeamon;
+import com.yuchting.yuchdroid.client.YuchDroidApp;
 import com.yuchting.yuchdroid.client.msg_head;
 import com.yuchting.yuchdroid.client.sendReceive;
 
 
 public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	
-	ConnectDeamon		m_connect 	= null;
-	fetchMail			m_sendMail 	= null;
-	fetchMail			m_forwardReply 	= null;
+	ConnectDeamon				m_connect 	= null;
+	public fetchMail			m_sendMail 	= null;
+	public fetchMail			m_forwardReply 	= null;
 
 	int					m_sendStyle = fetchMail.NOTHING_STYLE;	
 	public	boolean	m_closeState = false;
@@ -31,8 +34,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 		m_forwardReply	= _forwardReply;
 		m_sendStyle = _sendStyle;
 
-
-		if(!_vFileConnection.isEmpty()){
+		if(_vFileConnection != null && !_vFileConnection.isEmpty()){
 			m_sendFileDaemon = new SendAttachmentDeamon(_connect, _vFileConnection, 
 														m_sendMail.GetSimpleHashCode(), this);
 		}else{
@@ -56,7 +58,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	}
 		
 	public void sendStart(){
-//		RefreshMessageStatus(Message.Status.TX_SENDING);
+		RefreshMessageStatus(fetchMail.GROUP_FLAG_SEND_SENDING);
 	}
 	
 	public void sendProgress(int _fileIndex,int _uploaded,int _totalSize){
@@ -65,11 +67,11 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	}
 	
 	public void sendPause(){
-//		RefreshMessageStatus(Message.Status.TX_PENDING);
+		RefreshMessageStatus(fetchMail.GROUP_FLAG_SEND_PADDING);
 	}
 	
 	public void sendError(){
-//		RefreshMessageStatus(Message.Status.TX_ERROR);
+		RefreshMessageStatus(fetchMail.GROUP_FLAG_SEND_ERROR);
 	}
 	
 	public void sendFinish(){
@@ -103,24 +105,19 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 		}
 	}
 	
-	private void RefreshMessageStatus(int t_style){
-							
+	private void RefreshMessageStatus(int _flag){
 		
-//		try{
-//			
-//			// sleep little to wait system set the mail status error
-//			// and set it back
-//			//
-//			// CAN NOT BE LESS THAN 500 !!!
-//			//
-//			//sleep(200);
-//			
-//			m_connect.m_mainApp.UpdateMessageStatus(m_sendMail.GetAttachMessage(),t_style);
-//			
-//		}catch(Exception _e){
-//			m_connect.m_mainApp.SetErrorString("S: Status " + _e.getMessage() + " "+ _e.getClass().getName());
-//		}		
-
+		m_sendMail.setGroupFlag(_flag);
+		
+		
+		// check the MailComposeActivity.send() for progress detail
+		//
+		Intent in = new Intent(YuchDroidApp.FILTER_SEND_MAIL_VIEW);
+		in.putExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_VIEW_GROUP_ID,m_sendMail.getGroupIndex());
+		in.putExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_VIEW_MAIL_ID,m_sendMail.getDbIndex());
+		in.putExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_VIEW_GROUP_FLAG,m_sendMail.getGroupFlag());
+		
+		m_connect.sendBroadcast(in);
 	}
 		
 	public void run(){		

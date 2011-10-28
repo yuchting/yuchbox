@@ -5,8 +5,10 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Html;
@@ -21,6 +23,7 @@ import android.widget.TextView;
 
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
+import com.yuchting.yuchdroid.client.Yuchdroid16Activity;
 
 public class MailOpenActivity extends Activity implements View.OnClickListener{
 
@@ -41,8 +44,9 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		TextView		m_htmlText;
 		
 		ImageView		m_mailFlag;
-		
 		TextView		m_touchHTML;
+		
+		int				m_mailDbIdx;
 				
 		boolean		m_initOpen = false;
 		
@@ -91,6 +95,15 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	int						m_preGroupIdx = -1;
 	int						m_nextGroupIdx = -1;
 	int						m_cursorPosition;
+	
+	final MailOpenActivity	m_composeActivity = this;
+	BroadcastReceiver		m_sendMailRecv = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			
+		}
+	};
 	
 	// the first child of Envelope holder View group is "Touch to Show former mail" TextView
     //
@@ -148,8 +161,16 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         }catch(Exception e){
         	m_mainApp.setErrorString(TAG, e);
         	finish();
-        }        
+        }
+        
+        registerReceiver(m_sendMailRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL));
     }
+	
+	public void onDestroy(){
+		super.onDestroy();
+		
+		unregisterReceiver(m_sendMailRecv);
+	}
 	
 	private void fillMailContent()throws Exception{   
 
@@ -176,6 +197,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         	t_mailCursor = m_mainApp.m_dba.fetchMail(t_id);
         	
         	fetchMail t_mail = m_mainApp.m_dba.convertMail(t_mailCursor);
+        	t_mail.setGroupIndex(m_currGroupIdx);
         	
         	boolean t_initOpen = false;
         	AtomicReference<Integer> t_flag = new AtomicReference<Integer>(t_mail.getGroupFlag());
@@ -305,12 +327,19 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 				m_mainApp.setErrorString("nextGroupBtn",e);
 			}	
 		}else if(v == m_replyBtn){
-			Intent in = new Intent(this,MailComposeActivity.class);
-			in.putExtra(MailComposeActivity.COMPOSE_MAIL_STYLE, fetchMail.REPLY_STYLE);
-			m_mainApp.m_composeRefMail = m_currMailList.get(m_currMailList.size() -1).m_mail;
-			
-			startActivity(in);
+			startComposeMail(fetchMail.REPLY_STYLE);
+		}else if(v == m_forwardBtn){
+			startComposeMail(fetchMail.FORWORD_STYLE);
 		}
+	}
+	
+	private void startComposeMail(int _referenceStyle){
+		Intent in = new Intent(this,MailComposeActivity.class);
+		in.putExtra(MailComposeActivity.COMPOSE_MAIL_STYLE, _referenceStyle);
+		in.putExtra(MailComposeActivity.COMPOSE_MAIL_GROUP_ID,m_currGroupIdx);
+		
+		m_mainApp.m_composeRefMail = m_currMailList.get(m_currMailList.size() -1).m_mail;	
+		startActivity(in);
 	}
 	
 	public static Envelope getEnvelope(fetchMail _mail,Context _ctx){
@@ -364,9 +393,9 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         		RelativeLayout.LayoutParams t_lp = new RelativeLayout.LayoutParams(
         		        RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         		t_lp.addRule(RelativeLayout.BELOW, t_envelope.m_touchHTML.getId());
+        		
         		t_envelope.m_mainView.addView(attachView,t_lp);
         	}
-        	
         }
         
         return t_envelope;

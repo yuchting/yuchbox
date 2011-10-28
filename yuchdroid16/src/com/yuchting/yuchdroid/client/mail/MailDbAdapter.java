@@ -390,8 +390,7 @@ public class MailDbAdapter {
     		return false;
     	}
     	
-    	long t_id 			= _groupCursor.getLong(_groupCursor.getColumnIndex(KEY_ID));
-    	
+    	long t_id 			= _groupCursor.getLong(_groupCursor.getColumnIndex(KEY_ID));    	
     	
     	int t_mark 			= _groupCursor.getInt(_groupCursor.getColumnIndex(GROUP_ATTR_MARK));
     	String t_sub 		= _groupCursor.getString(_groupCursor.getColumnIndex(GROUP_ATTR_SUBJECT));
@@ -563,11 +562,16 @@ public class MailDbAdapter {
     	}
     }
     
+    public void setMailGroupFlag(long _mailId,long _groupId,int _flag){
+    	
+    }
+    
     public fetchMail convertMail(Cursor _mailCursor)throws Exception{
     	_mailCursor.moveToFirst();
     	
     	fetchMail t_mail = new fetchMail();
     	        
+    	t_mail.setDbIndex(_mailCursor.getInt(_mailCursor.getColumnIndex(KEY_ID)));
     	t_mail.SetMailIndex(_mailCursor.getInt(_mailCursor.getColumnIndex(ATTR_INDEX)));
     	t_mail.setGroupFlag(_mailCursor.getInt(_mailCursor.getColumnIndex(ATTR_GROUP_FLAG)));
     	t_mail.SetFlags(_mailCursor.getInt(_mailCursor.getColumnIndex(ATTR_FLAG)));

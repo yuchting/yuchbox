@@ -1,5 +1,7 @@
 package com.yuchting.yuchdroid.client;
 
+import com.yuchting.yuchdroid.client.mail.HomeActivity;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;

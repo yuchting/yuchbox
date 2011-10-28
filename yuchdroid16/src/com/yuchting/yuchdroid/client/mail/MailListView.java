@@ -5,7 +5,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.yuchting.yuchdroid.client.HomeActivity;
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
 

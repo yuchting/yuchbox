@@ -18,9 +18,14 @@
             </intent-filter>
         </activity>
         
-        <activity android:name=".HomeActivity" 
-        	android:label="@string/title_mail"
-        	android:theme="@style/NoBackgroundTheme" />
+        <activity android:name=".mail.HomeActivity" 
+        	android:label="@string/title_mail" 
+        	android:icon="@drawable/mail_open_attachment_item_icon">
+        	<intent-filter>
+        		<action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         	        	
         <activity android:name=".DebugInfoActivity" 
         	android:label="@string/title_debug_info" />

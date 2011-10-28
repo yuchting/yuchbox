@@ -69,7 +69,7 @@ public class ConnectDeamon extends Service{
 	BroadcastReceiver m_mailMarkReadRecv = new BroadcastReceiver() {
 		
 		@Override
-		public void onReceive(Context context, Intent intent) {
+		public void onReceive(Context context, Intent intent){
 			String t_mailHashcode = intent.getExtras().getString(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID);
 			String[] t_mailHashList = t_mailHashcode.split(fetchMail.fsm_vectStringSpliter);
 						
@@ -88,6 +88,41 @@ public class ConnectDeamon extends Service{
 				}
 				
 			}
+		}
+	};
+	
+	BroadcastReceiver m_mailSendRecv = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if(m_mainApp.m_composeRefMail != null){
+				
+				// please check MailComposeActivity.send() for detail
+				//				
+				fetchMail t_sendMail 		= m_mainApp.m_composeRefMail;
+				fetchMail t_referenceMail	= m_mainApp.m_composeStyleRefMail;
+				
+				m_mainApp.m_composeRefMail = null;
+								
+				int t_style 	= intent.getExtras().getInt(YuchDroidApp.DATA_FILTER_SEND_MAIL_STYLE);
+				
+				synchronized(m_sendingMailAttachment) {
+					for(SendMailDeamon send:m_sendingMailAttachment){
+						if(send.m_sendMail.GetSimpleHashCode() == t_sendMail.GetSimpleHashCode()){
+							// has been added
+							//
+							return;
+						}
+					}
+				}
+				
+				try{
+					m_sendingMailAttachment.add(new SendMailDeamon(ConnectDeamon.this, t_sendMail, null, t_referenceMail,t_style));
+				}catch(Exception e){
+					m_mainApp.setErrorString(TAG+" MailSendRecv", e);
+				}
+				
+			}			
 		}
 	};
 	

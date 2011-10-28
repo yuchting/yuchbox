@@ -1,4 +1,4 @@
-package com.yuchting.yuchdroid.client;
+package com.yuchting.yuchdroid.client.mail;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -15,9 +15,8 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 
-import com.yuchting.yuchdroid.client.mail.MailComposeActivity;
-import com.yuchting.yuchdroid.client.mail.MailListView;
-import com.yuchting.yuchdroid.client.mail.fetchMail;
+import com.yuchting.yuchdroid.client.R;
+import com.yuchting.yuchdroid.client.YuchDroidApp;
 
 public class HomeActivity extends Activity {
 	
@@ -47,8 +46,6 @@ public class HomeActivity extends Activity {
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.home);
                 
         m_mainApp = (YuchDroidApp)getApplicationContext();

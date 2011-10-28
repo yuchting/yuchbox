@@ -65,7 +65,10 @@ public class  fetchMail{
 	private String			m_contain_html	= "";
 	private String			m_contain_html_type	= "";
 	
+	private Vector<MailAttachment>	m_vectAttachment	 	= new Vector<MailAttachment>();
+	
 	// group flag to display to the user 
+	// used by client
 	//
 	public static final int		GROUP_FLAG_RECV					= 0;
 	public static final int		GROUP_FLAG_RECV_READ			= 1;
@@ -80,8 +83,9 @@ public class  fetchMail{
 	public static final int		GROUP_FLAG_SEND_DRAFT			= 8;
 	
 	private int					m_groupFlag		= 0;
-			
-	private Vector<MailAttachment>	m_vectAttachment	 	= new Vector<MailAttachment>();	
+	private int					m_dbIndex		= -1;
+	private int					m_groupId		= -1;
+		
 	
 	// location information
 	boolean m_hasLocationInfo		= false;
@@ -248,6 +252,12 @@ public class  fetchMail{
 	
 	public void setGroupFlag(int _flag){m_groupFlag = _flag;}
 	public int getGroupFlag(){return m_groupFlag;}
+	
+	public void setDbIndex(int _id){m_dbIndex = _id;}
+	public int getDbIndex(){return m_dbIndex;}
+	
+	public void setGroupIndex(int _id){m_groupId = _id;}
+	public int getGroupIndex(){return m_groupId;}
 	
 	public String GetContain(){return m_contain;}
 	public void SetContain(String _contain){m_contain = _contain;}

@@ -18,6 +18,7 @@ import android.view.Display;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.yuchting.yuchdroid.client.mail.HomeActivity;
 import com.yuchting.yuchdroid.client.mail.MailDbAdapter;
 import com.yuchting.yuchdroid.client.mail.fetchMail;
 
@@ -29,11 +30,25 @@ public class YuchDroidApp extends Application {
 	public final static	String	FILTER_CONNECT_STATE 	= TAG + "_CS";
 	public final static	String	FILTER_DEBUG_INFO 		= TAG + "_DI";
 	public final static	String	FILTER_MARK_MAIL_READ	= TAG + "_MMR";
+	public final static	String	FILTER_SEND_MAIL		= TAG + "_SM";
+	public final static	String	FILTER_SEND_MAIL_VIEW	= TAG + "_SMV";
+	
 	
 	// FILTER_MARK_MAIL_READ broadcast parameters data
 	//
 	public final static	String	DATA_FILTER_MARK_MAIL_READ_GROUPID	= "groupId";
 	public final static	String	DATA_FILTER_MARK_MAIL_READ_MAILID	= "mailId";
+	
+	// FILTER_SEND_MAIL broadcast parameters data
+	//
+	public final static	String	DATA_FILTER_SEND_MAIL_STYLE			= "style";
+	
+	// FILTER_SEND_MAIL_VIEW broadcast parameters data
+	//
+	public final static	String	DATA_FILTER_SEND_MAIL_VIEW_GROUP_ID	= "groupId";
+	public final static	String	DATA_FILTER_SEND_MAIL_VIEW_MAIL_ID	= "mailId";
+	public final static	String	DATA_FILTER_SEND_MAIL_VIEW_GROUP_FLAG= "groupFlag";
+	
 	
 	// connect state
 	//
@@ -72,6 +87,7 @@ public class YuchDroidApp extends Application {
 	// reference fetch Mail
 	//
 	public fetchMail		m_composeRefMail;
+	public fetchMail		m_composeStyleRefMail;
 	
 	@Override
 	public void onCreate (){

@@ -2,10 +2,9 @@
 <resources>
     <string name="app_name">语盒</string>
     <string name="title_debug_info">诊断信息</string>
-    <string name="title_mail">邮件</string>
-    <string name="start_svr_but">启动服务</string>
-    <string name="stop_svr_but">停止服务</string>
-    
+    <string name="title_mail">语盒邮件</string>
+
+    <!-- debug activity -->
     <string name="debug_info_no_info">呀！没有调试信息</string>
     <string name="debug_info_menu_clear">清除</string>
     <string name="debug_info_menu_copy">拷贝到剪切版</string>
@@ -13,6 +12,8 @@
     <string name="debug_info_menu_help">帮助</string>
     
     <!-- login activity -->
+    <string name="start_svr_but">启动服务</string>
+    <string name="stop_svr_but">停止服务</string>
     <string name="login_host">服务主机:</string>
     <string name="login_host_hint">填写域名或者IP地址</string>
     <string name="login_host_error_prompt">请输入正确的服务主机地址（域名或者IP地址）</string>
@@ -69,5 +70,8 @@
     <string name="mail_compose_forward_prefix">转发：  </string>
     <string name="mail_compose_delete_ref_mail">你真的要删除这封引用邮件么？</string>
     <string name="mail_compose_discard_mail">你真的要丢弃这封邮件么？</string>
+    <string name="mail_compose_send_without_modified">你没有更改过邮件，真的要发送么？</string>
+    <string name="mail_compose_address_error">邮件发送地址格式错误！</string>
+    <string name="mail_compose_empty_body_question">你确认要发送没有正文的邮件么？</string>
     
 </resources>
