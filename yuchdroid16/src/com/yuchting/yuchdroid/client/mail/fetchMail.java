@@ -256,6 +256,14 @@ public class  fetchMail{
 	public void setGroupIndex(int _id){m_groupId = _id;}
 	public int getGroupIndex(){return m_groupId;}
 	
+	public boolean isOwnSendMail(){
+		
+		return m_groupFlag == GROUP_FLAG_SEND_PADDING
+			|| m_groupFlag == GROUP_FLAG_SEND_SENDING
+			|| m_groupFlag == GROUP_FLAG_SEND_SENT
+			|| m_groupFlag == GROUP_FLAG_SEND_ERROR
+			|| m_groupFlag == GROUP_FLAG_SEND_DRAFT;
+	}
 	public String GetContain(){return m_contain;}
 	public void SetContain(String _contain){m_contain = _contain;}
 	

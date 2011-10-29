@@ -71,6 +71,8 @@
     <string name="mail_compose_send_without_modified">Do you want send without changed?</string>
     <string name="mail_compose_address_error">Send address\' format is error!</string>
     <string name="mail_compose_empty_body_question">Are you sure send mail without body?</string>
+    <string name="mail_compose_connectdeamon_not_run">The Connect Service is not run, can\'t send mail!</string>
+    
     
     
     

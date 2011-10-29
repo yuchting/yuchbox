@@ -16,25 +16,29 @@
   			android:layout_height="wrap_content"
   			android:orientation="vertical" 
   			android:layout_marginRight="5dp">
+  			
   			<AutoCompleteTextView
 				android:id="@+id/mail_compose_to"
 				android:layout_width="fill_parent"
 				android:layout_height="wrap_content"
-				android:hint="@string/mail_compose_to"/>
+				android:hint="@string/mail_compose_to"
+				android:inputType="textEmailAddress"/>
 		  	
 			<AutoCompleteTextView
 				android:id="@+id/mail_compose_cc"
 				android:layout_width="fill_parent"
 				android:layout_height="wrap_content"
 				android:hint="@string/mail_compose_cc"
-				android:visibility="gone"/>
+				android:visibility="gone"
+				android:inputType="textEmailAddress"/>
 				
 			<AutoCompleteTextView
 				android:id="@+id/mail_compose_bcc"
 				android:layout_width="fill_parent"
 				android:layout_height="wrap_content"
 				android:hint="@string/mail_compose_bcc"
-				android:visibility="gone"/>
+				android:visibility="gone"
+				android:inputType="textEmailAddress"/>
 				
 			<EditText
 				android:id="@+id/mail_compose_subject"
@@ -49,6 +53,8 @@
 				android:minHeight="200dp"
 				android:hint="@string/mail_compose_body"
 				android:gravity="top" />
+			
+			</EditText>
 			<TextView 
 				android:id="@+id/mail_compose_ref_label"
 				android:layout_width="fill_parent"

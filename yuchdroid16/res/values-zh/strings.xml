@@ -73,5 +73,6 @@
     <string name="mail_compose_send_without_modified">你没有更改过邮件，真的要发送么？</string>
     <string name="mail_compose_address_error">邮件发送地址格式错误！</string>
     <string name="mail_compose_empty_body_question">你确认要发送没有正文的邮件么？</string>
+    <string name="mail_compose_connectdeamon_not_run">没有开启连接服务，无法发送邮件！</string>
     
 </resources>

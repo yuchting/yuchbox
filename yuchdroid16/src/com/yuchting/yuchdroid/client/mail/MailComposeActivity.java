@@ -104,9 +104,15 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 				
 				t_sub = MailDbAdapter.getReplySubject(m_referenceMail.m_mail.GetSubject(), getString(R.string.mail_compose_reply_prefix));
 				
-				Vector<String> t_toVect = m_referenceMail.m_mail.GetReplyToVect().isEmpty()?
-												m_referenceMail.m_mail.GetFromVect():
-												m_referenceMail.m_mail.GetReplyToVect();
+				Vector<String> t_toVect;
+				if(m_referenceMail.m_mail.isOwnSendMail()){
+					t_toVect = m_referenceMail.m_mail.GetSendToVect();
+				}else{
+					t_toVect = m_referenceMail.m_mail.GetReplyToVect().isEmpty()?
+									m_referenceMail.m_mail.GetFromVect():
+									m_referenceMail.m_mail.GetReplyToVect();
+				}
+				 
 												
 				if(m_referenceMailStyle == fetchMail.REPLY_ALL_STYLE){
 					StringBuffer t_to = new StringBuffer();
@@ -117,7 +123,9 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 					}
 					m_to.setText(t_to.toString());
 				}else{
-					m_to.setText(t_toVect.get(0));
+					if(!t_toVect.isEmpty()){
+						m_to.setText(t_toVect.get(0));
+					}					
 				}
 				
 				m_body.requestFocus();
@@ -240,6 +248,11 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	
 	private void send(){
 		
+		if(!m_mainApp.m_connectDeamonRun){
+			Toast.makeText(this, getString(R.string.mail_compose_connectdeamon_not_run), Toast.LENGTH_SHORT).show();
+			return ;
+		}
+		
 		// send progress:
 		//
 		//    MailComposeActivity.send()
@@ -249,10 +262,10 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		//			| Broadcast( YuchDroidApp.FILTER_SEND_MAIL )
 		//			|
 		//		ConnectDeamon  ----> SendMailDeamon
-		//									|
-		//								write database (fetchMail's group flag)
-		//									|
-		//									| Broadcast (YuchDroidApp.FILTER_SEND_MAIL_VIEW)
+		//									|																	
+		//								write database (fetchMail's group flag)									
+		//									|																	
+		//									| Broadcast (YuchDroidApp.FILTER_SEND_MAIL_VIEW)				
 		//									|
 		//							-----------------
 		//							|				|

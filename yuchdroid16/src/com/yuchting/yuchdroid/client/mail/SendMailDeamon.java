@@ -74,6 +74,10 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 		RefreshMessageStatus(fetchMail.GROUP_FLAG_SEND_ERROR);
 	}
 	
+	public void sendSucc(){
+		RefreshMessageStatus(fetchMail.GROUP_FLAG_SEND_SENT);
+	}
+	
 	public void sendFinish(){
 		
 		try{

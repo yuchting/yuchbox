@@ -219,10 +219,31 @@ public class MailListAdapter extends BaseAdapter{
     	
     	StringBuffer t_display = new StringBuffer();
 		int t_num = 0;
-		for(int i = _list.length - 1;i >= 0 && t_num < 3;i--,t_num++){
-			t_display.append(_list[i].m_name).append(fetchMail.fsm_vectStringSpliter);
+		
+		boolean t_remain = false;
+		while(t_num < _list.length){
+			
+			t_display.append(_list[t_num].m_name.length() == 0?_list[t_num].m_addr:_list[t_num].m_name);
+			t_num++;
+			
+			if(t_num >= 3){
+				if(t_num < _list.length){
+					t_remain = true;
+					t_display.append("...");
+				}				
+				break;
+			}else{
+				
+				if(t_num < _list.length){
+					t_display.append(",");
+				}				
+			}
 		}
-		t_display.append("(").append(_list.length).append(")");
+		
+		if(t_remain){
+			t_display.append("(").append(_list.length).append(")");
+		}
+		
 		
 		return t_display.toString();
     }

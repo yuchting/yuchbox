@@ -152,7 +152,7 @@ public class ConnectDeamon extends Service{
 		m_proxyThread.start();
 		
 		registerReceiver(m_mailMarkReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
-		registerReceiver(m_mailSendRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL_VIEW));
+		registerReceiver(m_mailSendRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL));
 	}
 	
 	
@@ -659,7 +659,46 @@ public class ConnectDeamon extends Service{
 
 	
 	private void ProcessSentMail(InputStream in)throws Exception{
-		//TODO sent mail confirm
+		
+		boolean t_succ = sendReceive.ReadBoolean(in);
+		final long t_time = sendReceive.ReadLong(in);
+		
+		// delete the fetchMail send deamon thread
+		//
+		for(int i = 0;i < m_sendingMailAttachment.size();i++){
+			SendMailDeamon t_deamon = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
+			
+			if(t_deamon.m_sendMail.GetSendDate().getTime() == t_time){		
+				if(t_succ){
+					t_deamon.sendSucc();
+					
+					// increase the send mail quantity
+					//
+					m_mainApp.m_config.m_sendMailNum++;
+					
+				}else{
+					t_deamon.sendError();
+				}			
+				
+				t_deamon.m_closeState = true;
+				t_deamon.inter();							
+				
+				m_sendingMailAttachment.removeElement(t_deamon);
+				
+				// TODO delete the uploading desc string of main application
+				//
+//				for(int j = 0 ;j < m_mainApp.m_uploadingDesc.size();j++){
+//					recvMain.UploadingDesc t_desc = (recvMain.UploadingDesc)m_mainApp.m_uploadingDesc.elementAt(j);
+//					if(t_desc.m_mail == t_deamon.m_sendMail){
+//					
+//						m_mainApp.m_uploadingDesc.removeElementAt(j);
+//						break;
+//					}
+//				}
+								
+				break;
+			}
+		}
 	}
 	
 	private void ProcessFileAttach(InputStream in)throws Exception{
