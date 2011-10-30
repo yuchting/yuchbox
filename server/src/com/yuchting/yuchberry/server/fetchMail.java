@@ -19,7 +19,7 @@ final class MailAttachment{
 
 public class  fetchMail{
 	
-	final static int	VERSION = 2;
+	final static int	VERSION = 3;
 	
 	public final static String	fsm_noSubjectTile = "No Subject";
 	    	
@@ -51,6 +51,8 @@ public class  fetchMail{
 	private String			m_contain		= "";
 	private String			m_contain_html	= "";
 	private String			m_contain_html_type	= "";
+	
+	private String			m_ownAccount	= "";
 	
 	// location information
 	boolean m_hasLocationInfo		= false;
@@ -161,6 +163,7 @@ public class  fetchMail{
 		}
 		
 		sendReceive.WriteString(_stream,m_contain_html_type,m_convertoSimpleChar);
+		sendReceive.WriteString(_stream,m_ownAccount,false);
 	}
 		
 	public void InputMail(InputStream _stream)throws Exception{
@@ -204,11 +207,20 @@ public class  fetchMail{
 		
 		if(t_version >= 2){
 			m_contain_html_type = sendReceive.ReadString(_stream);
-		}		
+		}
+		
+		if(t_version >= 3){
+			m_ownAccount = sendReceive.ReadString(_stream);
+		}
 	}
+	
+	
 	
 	//set and gets function
 	//
+	public String getOwnAccount(){return m_ownAccount;}
+	public void setOwnAccount(String _acc){m_ownAccount = _acc;}
+	
 	public String GetSubject(){	return m_subject;}
 	public void SetSubject(String _subject){
 		if(m_convertoSimpleChar){

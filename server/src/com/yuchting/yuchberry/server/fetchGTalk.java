@@ -274,7 +274,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		
 		m_cryptPassword	= fetchAccount.ReadStringAttr(_elem,"cryptPassword");
 		
-		m_prefix				= m_accountName + "[GTalk]/";
+		m_prefix				= m_mainMgr.GetPrefixString() + m_accountName + "[GTalk]/";
 		m_headImageDir			= m_mainMgr.GetPrefixString() + m_prefix;
 		
 		File t_file  = new File(GetAccountPrefix());

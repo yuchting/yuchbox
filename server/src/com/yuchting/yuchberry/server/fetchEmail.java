@@ -1120,6 +1120,7 @@ public class fetchEmail extends fetchAccount{
 		while(t_tryTime++ < 5){
 			try{
 				
+				
 				if(m_useFullNameSignIn){
 					m_sendTransport.connect(m_host_send,m_port_send,m_strUserNameFull,m_password);
 				}else{
@@ -1685,7 +1686,7 @@ public class fetchEmail extends fetchAccount{
 		if (hdrs != null){
 			_mail.SetXMailer(hdrs[0]);
 	    }
-		
+		_mail.setOwnAccount(m_strUserNameFull);
 		_mail.ClearAttachment();
 
 		ImportPart(m,_mail);
