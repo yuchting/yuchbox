@@ -26,13 +26,8 @@ public class MailListView extends ListView {
 				
 		m_mainApp = _mainApp;
 		m_homeActivity = _home;
-		
-		if(m_mainApp.m_currMailGroupCursor != null){
-			m_mainApp.m_currMailGroupCursor.close();
-		}
-		
-		m_mainApp.m_currMailGroupCursor = m_mainApp.m_dba.fetchAllGroup();
-		m_mailListAd = new MailListAdapter(_home,m_mainApp);
+
+		m_mailListAd = new MailListAdapter(_home);
         setAdapter(m_mailListAd);
         
         setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {

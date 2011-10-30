@@ -79,7 +79,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	}
 	
 	public void sendFinish(){
-		
+				
 		try{
 			// send mail once if has not attachment 
 			//

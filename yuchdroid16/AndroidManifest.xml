@@ -20,7 +20,8 @@
         
         <activity android:name=".mail.HomeActivity" 
         	android:label="@string/title_mail" 
-        	android:icon="@drawable/mail_open_attachment_item_icon">
+        	android:icon="@drawable/mail_open_attachment_item_icon"
+        	android:launchMode="singleTop">
         	<intent-filter>
         		<action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

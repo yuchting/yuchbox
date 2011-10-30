@@ -27,11 +27,12 @@ public class YuchDroidApp extends Application {
 	public final static String	TAG = "YuchDroidApp";
 	// send broadcast intent filter
 	//
-	public final static	String	FILTER_CONNECT_STATE 	= TAG + "_CS";
-	public final static	String	FILTER_DEBUG_INFO 		= TAG + "_DI";
-	public final static	String	FILTER_MARK_MAIL_READ	= TAG + "_MMR";
-	public final static	String	FILTER_SEND_MAIL		= TAG + "_SM";
-	public final static	String	FILTER_SEND_MAIL_VIEW	= TAG + "_SMV";
+	public final static	String	FILTER_CONNECT_STATE 	= TAG + "_FILTER_CS";
+	public final static	String	FILTER_DEBUG_INFO 		= TAG + "_FILTER_DI";
+	public final static	String	FILTER_MARK_MAIL_READ	= TAG + "_FILTER_MMR";
+	public final static	String	FILTER_SEND_MAIL		= TAG + "_FILTER_SM";
+	public final static	String	FILTER_SEND_MAIL_VIEW	= TAG + "_FILTER_SMV";
+	public final static	String	FILTER_RECV_MAIL		= TAG + "_FILTER_RM";
 	
 	
 	// FILTER_MARK_MAIL_READ broadcast parameters data
@@ -67,6 +68,8 @@ public class YuchDroidApp extends Application {
 	//
 	public final static String			YUCH_NOTIFICATION_STATUS		= "status";
 	
+	private int m_mailNotificationNum		= 0;
+	
 	public static int sm_displyWidth		= 0;
 	public static int sm_displyHeight		= 0;
 	
@@ -79,15 +82,12 @@ public class YuchDroidApp extends Application {
 	public boolean			m_connectDeamonRun = false;
 	public int				m_connectState	= STATE_DISCONNECT;
 	
-	// the cursor will use by MailListView and MailOpenActivity;
-	// it will be closed by MailListView;
-	//
-	public Cursor			m_currMailGroupCursor = null;
 	
 	// reference fetch Mail
 	//
 	public fetchMail		m_composeRefMail;
 	public fetchMail		m_composeStyleRefMail;
+	
 	
 	@Override
 	public void onCreate (){
@@ -127,33 +127,59 @@ public class YuchDroidApp extends Application {
 		int icon = R.drawable.ic_notification_mail;        
 		
 		CharSequence tickerText = getString(R.string.mail_notification_ticker);
-		
-		long when = System.currentTimeMillis();         
-
 		CharSequence contentTitle = _mail.GetSubject(); 
 		CharSequence contentText = MailDbAdapter.getDisplayMailBody(_mail);
 
-		Intent notificationIntent = new Intent(this,HomeActivity.class);
+		Intent notificationIntent = new Intent(Intent.ACTION_MAIN);
+		notificationIntent.setClass(this, HomeActivity.class);		
 		notificationIntent.putExtra(YUCH_NOTIFICATION_STATUS, 0);
-		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
+				PendingIntent.FLAG_UPDATE_CURRENT | Notification.FLAG_ONLY_ALERT_ONCE | Notification.FLAG_AUTO_CANCEL);
 
 		// the next two lines initialize the Notification, using the configurations above
-		Notification notification = new Notification(icon, tickerText, when);
+		Notification notification = new Notification(icon, tickerText, System.currentTimeMillis());
 		notification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
+		
+		notification.number = ++m_mailNotificationNum;
 		
 		//TODO trigger mail received notification
 		//
 		// sound & vibrate & LED 
 		//
 		notification.defaults |= Notification.DEFAULT_SOUND;
+				
+		t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL, notification);
 		
-		
-		t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL, notification);		
+		// send broadcast
+		//
+		Intent intent = new Intent(YuchDroidApp.FILTER_RECV_MAIL);
+		sendBroadcast(intent);
 	}
 	
 	public void StopMailNotification(){
 		NotificationManager t_mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
-		t_mgr.cancel(YUCH_NOTIFICATION_MAIL);		
+		t_mgr.cancel(YUCH_NOTIFICATION_MAIL);
+		
+		m_mailNotificationNum = 0;
+	}
+	
+	public void sendMail(fetchMail _mail,fetchMail _refMail,int _refStyle){
+		// check the MailComposeActivity.send for detail
+		
+		assert _mail != null;
+		assert _refMail != null || _refStyle == fetchMail.NOTHING_STYLE;
+		
+		// prepare the temporary data
+		//
+		m_composeRefMail 		= _mail;
+		m_composeStyleRefMail 	= _refMail;
+		
+		// broadcast to ConnectDeamon
+		//
+		Intent in = new Intent(YuchDroidApp.FILTER_SEND_MAIL);
+		in.putExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_STYLE, _refStyle);
+		
+		sendBroadcast(in);
 	}
 	
 	public static void copyTextToClipboard(Context _ctx,String _text){

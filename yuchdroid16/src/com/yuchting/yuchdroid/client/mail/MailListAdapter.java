@@ -4,8 +4,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +16,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.yuchting.yuchdroid.client.R;
-import com.yuchting.yuchdroid.client.YuchDroidApp;
 
 public class MailListAdapter extends BaseAdapter{
 	
@@ -29,9 +28,9 @@ public class MailListAdapter extends BaseAdapter{
         TextView	mailAddr;
         TextView	latestTime;
         
-        int			preGroupId = -1;
-        int			groupId;
-        int			nextGroupId = -1;
+        long		preGroupId = -1;
+        long		groupId;
+        long		nextGroupId = -1;
         
         int			cursorPos; 
         
@@ -40,7 +39,7 @@ public class MailListAdapter extends BaseAdapter{
         	setGroupFlag(_groupFlag);
             
             subject.setText(_subject);
-            body.setText(_body);             
+            body.setText("-" + _body);             
      		mailAddr.setText(_mailAddr);
      		
      		// time
@@ -63,10 +62,10 @@ public class MailListAdapter extends BaseAdapter{
         
         public void setGroupFlag(int _groupFlag){
         	
-        	int t_backgroud = 0xf0f0f0;
+        	int t_backgroud = 0xd0ededed;
         	if(_groupFlag == fetchMail.GROUP_FLAG_RECV_ATTACH
         		|| _groupFlag == fetchMail.GROUP_FLAG_RECV){
-        		t_backgroud = 0xffffff;
+        		t_backgroud = 0xd0ffffff;
         	}
         	background.setBackgroundColor(t_backgroud);
         	groupFlag.setImageResource(getMailFlagImageId(_groupFlag));
@@ -113,8 +112,8 @@ public class MailListAdapter extends BaseAdapter{
     private int m_cursorlatestTimeIndex;
 	
 	private LayoutInflater m_inflater;   	
-	private YuchDroidApp	m_mainApp;
-	private Context		m_context;
+	private HomeActivity	m_context;
+	private Cursor			m_groupCursor;
 	
 	final static Calendar 	sm_calendar 	= Calendar.getInstance();
 	final static Date		sm_timeDate 	= new Date();
@@ -122,18 +121,17 @@ public class MailListAdapter extends BaseAdapter{
     static SimpleDateFormat sm_yearMonthDayFormat = null;
 	static SimpleDateFormat sm_monthDayHourFormat = null;
 	
-	public MailListAdapter(Context _ctx,YuchDroidApp _mainApp){
+	public MailListAdapter(HomeActivity _ctx){
 		m_context		= _ctx;
-		m_mainApp 		= _mainApp;
 		m_inflater		= LayoutInflater.from(m_context);
 		
-		m_cursorIDIndex			= m_mainApp.m_currMailGroupCursor.getColumnIndex(MailDbAdapter.KEY_ID);
-		m_cursorMarkIndex		= m_mainApp.m_currMailGroupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_MARK);
-		m_cursorGroupFlagIndex	= m_mainApp.m_currMailGroupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_GROUP_FLAG);
-		m_cursorSubjectIndex	= m_mainApp.m_currMailGroupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_SUBJECT);
-		m_cursorBodyIndex		= m_mainApp.m_currMailGroupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_LEATEST_BODY);
-		m_cursorMailAddrIndex	= m_mainApp.m_currMailGroupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_ADDR_LIST);
-		m_cursorlatestTimeIndex	= m_mainApp.m_currMailGroupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_LEATEST_TIME);
+		m_cursorIDIndex			= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.KEY_ID);
+		m_cursorMarkIndex		= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_MARK);
+		m_cursorGroupFlagIndex	= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_GROUP_FLAG);
+		m_cursorSubjectIndex	= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_SUBJECT);
+		m_cursorBodyIndex		= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_LEATEST_BODY);
+		m_cursorMailAddrIndex	= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_ADDR_LIST);
+		m_cursorlatestTimeIndex	= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_LEATEST_TIME);
 
 		
 		if(sm_yearMonthDayFormat == null){
@@ -150,7 +148,7 @@ public class MailListAdapter extends BaseAdapter{
 	
 
     public int getCount() {
-        return m_mainApp.m_currMailGroupCursor.getCount();
+        return m_context.m_groupCursor.getCount();
     }
 
     public Object getItem(int position) {
@@ -163,7 +161,7 @@ public class MailListAdapter extends BaseAdapter{
     
     public View getView(int position, View convertView, ViewGroup parent) {
 
-    	Cursor t_groupCursor = m_mainApp.m_currMailGroupCursor;
+    	Cursor t_groupCursor = m_context.m_groupCursor;
     	
     	ItemHolder holder;
     	

@@ -5,13 +5,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 
 import com.yuchting.yuchdroid.client.R;
@@ -26,14 +25,19 @@ public class HomeActivity extends Activity {
 	private YuchDroidApp	m_mainApp;
 	private MailListView	m_mailListView;
 	
-	private RadioButton[]	m_statusBarBut = {null,null,null};
-	private RadioGroup		m_statusBarGroup;
-	
+	public Cursor			m_groupCursor;
+		
+	BroadcastReceiver m_recvMailRecv = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			refreshGroupCursor();
+		}
+	};
 	BroadcastReceiver m_markReadRecv = new BroadcastReceiver() {
 		
 		@Override
 		public void onReceive(Context paramContext, Intent paramIntent) {
-			refreshList();
+			refreshGroupCursor();
 		}
 	};
 	
@@ -41,18 +45,14 @@ public class HomeActivity extends Activity {
 		
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			refreshList();
+			refreshGroupCursor();
 		}
 	};
 	
-	private void refreshList(){
-		if(m_mainApp.m_currMailGroupCursor != null){
-			m_mainApp.m_currMailGroupCursor.close();	
-		}
-		
-		m_mainApp.m_currMailGroupCursor = m_mainApp.m_dba.fetchAllGroup();
+	private void refreshGroupCursor(){
+		m_groupCursor.close();
+		m_groupCursor = m_mainApp.m_dba.fetchAllGroup();
 		m_mailListView.m_mailListAd.notifyDataSetChanged();
-
 	}
 				
 	@Override
@@ -61,43 +61,31 @@ public class HomeActivity extends Activity {
         setContentView(R.layout.home);
                 
         m_mainApp = (YuchDroidApp)getApplicationContext();
-        
-        // initialize home status bar 
-        //
-        initHomeStatusBar();
-                        
+        m_groupCursor = m_mainApp.m_dba.fetchAllGroup();
+                                
         // initialize module view
         //
         initModuleView();
-        
-        m_mainApp.StopMailNotification();
-        
+                
+        registerReceiver(m_recvMailRecv, new IntentFilter(YuchDroidApp.FILTER_RECV_MAIL));
         registerReceiver(m_markReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
         registerReceiver(m_sendMailRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL_VIEW));
     }
 	
+	public void onResume(){
+		super.onResume();
+		
+		m_mainApp.StopMailNotification();
+	}
+	
 	public void onDestroy(){
 		super.onDestroy();
 		
+		m_groupCursor.close();
+		
+		unregisterReceiver(m_recvMailRecv);
 		unregisterReceiver(m_markReadRecv);
 		unregisterReceiver(m_sendMailRecv);
-	}
-	
-	private void initHomeStatusBar(){
-		
-//		m_statusBarBut[S TATUS_BAR_MAIL] 	= (RadioButton)findViewById(R.id.home_status_bar_mail);
-//		m_statusBarBut[STATUS_BAR_WEIBO] 	= (RadioButton)findViewById(R.id.home_status_bar_weibo);
-//		m_statusBarBut[STATUS_BAR_IM] 		= (RadioButton)findViewById(R.id.home_status_bar_im);
-//		
-//		m_statusBarGroup 					= (RadioGroup)findViewById(R.id.home_status_bar);
-//		
-//		m_statusBarGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-//			
-//			@Override
-//			public void onCheckedChanged(RadioGroup paramRadioGroup, int paramInt) {
-//				setMainListView(paramInt);
-//			}
-//		});
 	}
 		
 	private void initModuleView(){

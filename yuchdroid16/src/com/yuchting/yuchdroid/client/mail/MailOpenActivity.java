@@ -14,12 +14,14 @@ import android.os.Bundle;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
@@ -36,21 +38,31 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	
 	public static final class Envelope{
 		
-		fetchMail		m_mail;
+		fetchMail		m_mail		= null;
 		
-		RelativeLayout	m_mainView;
-		TextView		m_bodyText;
-		TextView		m_htmlText;
+		Context			m_loadCtx	= null;
 		
-		ImageView		m_mailFlag;
-		TextView		m_touchHTML;
+		RelativeLayout	m_mainView	= null;
+		TextView		m_bodyText	= null;
+		TextView		m_htmlText	= null;
 		
-		int				m_mailDbIdx;
-				
+		ImageView		m_mailFlag	= null;
+		TextView		m_touchHTML	= null;
+		
+		Button			m_resendBtn	= null;
+		
+		int				m_mailDbIdx;				
 		boolean		m_initOpen = false;
 		
-		public void setBody(){
+		public Envelope(fetchMail _mail,Context _ctx){
+			m_mail		= _mail;
+			m_loadCtx	= _ctx;
+		}
+		
+		public void openBody(){
 			m_initOpen = true;
+			
+			init();
 			
 			if(m_mail.GetContain().length() != 0){
 				m_bodyText.setVisibility(View.VISIBLE);
@@ -73,9 +85,94 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
     			});
             }
 		}
+		
+		public void init(){
+			if(m_mainView != null){
+				return;
+			}
+			
+			LayoutInflater t_inflater = LayoutInflater.from(m_loadCtx);
+			m_mainView = (RelativeLayout)t_inflater.inflate(R.layout.mail_open_envelope, null);
+			
+	        // fill mail data
+	        //
+	        TextView t_fromAddr = (TextView)m_mainView.findViewById(R.id.mail_open_from_addr);
+	        TextView t_date		= (TextView)m_mainView.findViewById(R.id.mail_open_date);
+	        TextView t_time		= (TextView)m_mainView.findViewById(R.id.mail_open_time);
+	        TextView t_toAddr	= (TextView)m_mainView.findViewById(R.id.mail_open_recv_addr);        
+	        TextView t_subject	= (TextView)m_mainView.findViewById(R.id.mail_open_subject);
+	        
+	        m_mailFlag	= (ImageView)m_mainView.findViewById(R.id.mail_open_flag);
+	        m_bodyText	= (TextView)m_mainView.findViewById(R.id.mail_open_body);
+	        m_htmlText	= (TextView)m_mainView.findViewById(R.id.mail_open_html);
+	        m_touchHTML	= (TextView)m_mainView.findViewById(R.id.mail_open_html_switch);
+	        m_resendBtn = (Button)m_mainView.findViewById(R.id.mail_open_resend_btn);
+	        
+	        Address[] t_fromAddrList 	= fetchMail.parseAddressList(m_mail.GetFromVect());
+	        Address[] t_toAddrList		= fetchMail.parseAddressList(m_mail.GetSendToVect());
+	        
+	        t_fromAddr.setText(t_fromAddrList[0].m_name);
+	        
+	        SimpleDateFormat t_format = new SimpleDateFormat("yyyy"+m_loadCtx.getString(R.string.mail_time_year)+
+															"MM"+m_loadCtx.getString(R.string.mail_time_month)+
+															"dd" + m_loadCtx.getString(R.string.mail_time_day));
+	        
+	        t_date.setText(t_format.format(m_mail.GetSendDate()));
+	        
+	        t_format = new SimpleDateFormat("HH:mm");
+	        t_time.setText(t_format.format(m_mail.GetSendDate()));
+	        
+	        t_toAddr.setText(m_loadCtx.getString(R.string.mail_open_recipient_addr_prefix) + MailListAdapter.getShortAddrList(t_toAddrList));
+	        t_subject.setText(m_mail.GetSubject());
+	        m_mailFlag.setImageResource(MailListAdapter.getMailFlagImageId(m_mail.getGroupFlag()));
+	        
+	        // set the attachment file
+	        //
+	        if(!m_mail.GetAttachment().isEmpty()){
+	        	for(final MailAttachment att:m_mail.GetAttachment()){
+	        		View attachView = t_inflater.inflate(R.layout.mail_open_attachment_item,null);
+	        		TextView filename = (TextView)attachView.findViewById(R.id.mail_open_attachment_item_filename);
+	        		filename.setText(att.m_name + " ("+YuchDroidApp.GetByteStr(att.m_size) + ")");
+	        		
+	        		
+	        		RelativeLayout.LayoutParams t_lp = new RelativeLayout.LayoutParams(
+	        		        RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+	        		t_lp.addRule(RelativeLayout.BELOW, m_touchHTML.getId());
+	        		
+	        		m_mainView.addView(attachView,t_lp);
+	        	}
+	        }
+		}
+		
+		public void setOnClickOpenBodyEvent(){
+			init();
+			if(!m_initOpen){
+				m_mainView.setOnClickListener(new View.OnClickListener() {
+					
+					@Override
+					public void onClick(View v) {
+						openBody();
+						m_mainView.setOnClickListener(null);
+					}
+				});
+			}
+		}
+		
+		public void openResendBtn(View.OnClickListener _l){
+			init();
+			m_resendBtn.setVisibility(View.VISIBLE);
+			m_resendBtn.setOnClickListener(_l);
+		}
+		
+		public void hideResendBtn(){
+			init();
+			m_resendBtn.setVisibility(View.GONE);
+			m_resendBtn.setOnClickListener(null);
+		}
 	}	
 	
 	YuchDroidApp			m_mainApp;
+	Cursor					m_groupCursor;
 		
 	Vector<Envelope>		m_currMailList = new Vector<Envelope>();
 	
@@ -85,6 +182,9 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	
 	TextView				m_touchTop;
 	
+	TextView				m_titleSubject;
+	TextView				m_titleOwnAccount;
+	
 	ImageView				m_preGroupBtn;
 	ImageView				m_nextGroupBtn;
 	
@@ -92,9 +192,9 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	Button					m_forwardBtn;
 	Button					m_deleteBtn;
 	
-	int						m_currGroupIdx = -1;
-	int						m_preGroupIdx = -1;
-	int						m_nextGroupIdx = -1;
+	long					m_currGroupIdx = -1;
+	long					m_preGroupIdx = -1;
+	long					m_nextGroupIdx = -1;
 	int						m_cursorPosition;
 	
 	final MailOpenActivity	m_composeActivity = this;
@@ -103,8 +203,8 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		@Override
 		public void onReceive(Context context, Intent intent) {
 
-			int t_groupIndex 	= intent.getIntExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_VIEW_GROUP_ID, -1);
-			int t_mailIndex 	= intent.getIntExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_VIEW_MAIL_ID, -1);
+			long t_groupIndex 	= intent.getLongExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_VIEW_GROUP_ID, -1);
+			long t_mailIndex 	= intent.getLongExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_VIEW_MAIL_ID, -1);
 			int t_flag			= intent.getIntExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_VIEW_GROUP_FLAG, -1);
 						
 			if(t_groupIndex == m_currGroupIdx){
@@ -114,6 +214,11 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 						t_envelopeAdded = true;
 						
 						en.m_mailFlag.setImageResource(MailListAdapter.getMailFlagImageId(t_flag));
+						
+						if(t_flag == fetchMail.GROUP_FLAG_SEND_ERROR){
+							en.openResendBtn(m_resendListener);
+						}
+						
 						break;
 					}
 				}
@@ -123,8 +228,9 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 					try{
 						fetchMail t_mail = m_mainApp.m_dba.convertMail(t_mailCursor);
 												
-						Envelope en = getEnvelope(t_mail, m_composeActivity);
-						en.setBody();
+						Envelope en = new Envelope(t_mail, m_composeActivity);
+						en.openBody();
+						
 						m_mainMailView.addView(en.m_mainView);
 						m_currMailList.add(en);
 						
@@ -139,6 +245,39 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		}
 	};
 	
+	View.OnClickListener	m_resendListener = new View.OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			if(!m_mainApp.m_connectDeamonRun){
+				Toast.makeText(MailOpenActivity.this, 
+						getString(R.string.mail_open_resend_need_connectDeamon_prompt), 
+						Toast.LENGTH_SHORT).show();
+				
+				return;
+			}
+			
+			for(Envelope en:m_currMailList){
+				if(en.m_resendBtn == v){
+					en.hideResendBtn();
+					
+					fetchMail t_refMail = null;
+					if(en.m_mail.getSendRefMailIndex() != -1){
+						Cursor c = m_mainApp.m_dba.fetchMail(en.m_mail.getSendRefMailIndex());
+						if(c.getCount() != 0){
+							t_refMail = m_mainApp.m_dba.convertMail(c);
+						}
+						c.close();						
+					}
+					
+					m_mainApp.sendMail(en.m_mail, t_refMail, en.m_mail.getSendRefMailStyle());
+					
+					break;
+				}
+			}			
+		}
+	};
+	
 	// the first child of Envelope holder View group is "Touch to Show former mail" TextView
     //
     final static int fsm_insertEnvelopeIndex = 1;
@@ -146,9 +285,15 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
         setContentView(R.layout.mail_open);
+        getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.mail_open_title);
+        
+        m_titleSubject			= (TextView)findViewById(R.id.mail_open_title_subject);
+        m_titleOwnAccount		= (TextView)findViewById(R.id.mail_open_title_own_account);
         
         m_mainApp 				= (YuchDroidApp)getApplicationContext();
+        m_groupCursor			= m_mainApp.m_dba.fetchAllGroup();
         m_formerMailView 		= (TextView)findViewById(R.id.mail_open_open_former_envelope);
         m_mainMailView 			= (LinearLayout)findViewById(R.id.mail_open_envelope_view);
         m_envelopeScrollView 	= (ScrollView)findViewById(R.id.mail_open_envelope_scroll_view);
@@ -182,13 +327,13 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         
         // prepare the nav
         //
-        m_preGroupIdx 	= in.getExtras().getInt(INTENT_PRE_MAIL_GROUP_INDEX);
-        m_nextGroupIdx	= in.getExtras().getInt(INTENT_NEXT_MAIL_GROUP_INDEX);
+        m_preGroupIdx 	= in.getExtras().getLong(INTENT_PRE_MAIL_GROUP_INDEX);
+        m_nextGroupIdx	= in.getExtras().getLong(INTENT_NEXT_MAIL_GROUP_INDEX);
         m_cursorPosition = in.getExtras().getInt(INTENT_NEXT_MAIL_CURSOR_POS);
         
         // prepare the mail data
         //
-        m_currGroupIdx = in.getExtras().getInt(INTENT_CURRENT_MAIL_GROUP);    
+        m_currGroupIdx = in.getExtras().getLong(INTENT_CURRENT_MAIL_GROUP);    
         
         try{
         	fillMailContent();
@@ -198,11 +343,14 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         }
         
         registerReceiver(m_sendMailRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL_VIEW));
+        
+        
     }
 	
 	public void onDestroy(){
 		super.onDestroy();
 		
+		m_groupCursor.close();
 		unregisterReceiver(m_sendMailRecv);
 	}
 	
@@ -214,7 +362,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         Cursor t_mailCursor		= m_mainApp.m_dba.fetchGroup(m_currGroupIdx);
         
         String t_title = t_mailCursor.getString(t_mailCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_SUBJECT));
-        setTitle(t_title);
+        m_titleSubject.setText(t_title);
 
         String t_mailIndexList	= t_mailCursor.getString(t_mailCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_MAIL_INDEX));
         String[] t_mailList 	= t_mailIndexList.split(fetchMail.fsm_vectStringSpliter);
@@ -227,29 +375,29 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         boolean t_hasUnreadMail = false;
         m_currMailList.clear();
         for(String id:t_mailList){
-        	int t_id = Integer.valueOf(id).intValue();
-        	t_mailCursor = m_mainApp.m_dba.fetchMail(t_id);
         	
-        	fetchMail t_mail = m_mainApp.m_dba.convertMail(t_mailCursor);
+        	int t_id = Integer.valueOf(id).intValue();
+        	
+        	t_mailCursor 		= m_mainApp.m_dba.fetchMail(t_id);
+        	fetchMail t_mail	= m_mainApp.m_dba.convertMail(t_mailCursor);
         	t_mail.setGroupIndex(m_currGroupIdx);
         	
-        	boolean t_initOpen = false;
+        	Envelope en = new Envelope(t_mail,this);
+        	
         	AtomicReference<Integer> t_flag = new AtomicReference<Integer>(t_mail.getGroupFlag());
         	if(MailDbAdapter.modifiedUnreadFlag(t_flag)){
         		t_mail.setGroupFlag(t_flag.get());
         		t_hasUnreadMail = true;
-        		t_initOpen = true;
-        	
+        		
+        		en.openBody();
+        		
         		// mark the mail as read
         		//
         		m_mainApp.m_dba.markMailRead(t_id);
         		
         		t_markReadMailString.append(t_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
         	}
-        	
-        	Envelope en = getEnvelope(t_mail, this);
-        	en.m_initOpen = t_initOpen;
-        	
+     	
         	m_currMailList.add(en);
         	t_mailCursor.close();
         }
@@ -279,8 +427,15 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         for(int i = 0;i < m_currMailList.size();i++){
         	Envelope en = m_currMailList.get(i);
         	if(en.m_initOpen || i == m_currMailList.size() - 1){        		
-        		en.setBody();
-        		m_mainMailView.addView(en.m_mainView);       
+        		
+        		en.openBody();
+        		
+        		if(en.m_mail.getGroupFlag() == fetchMail.GROUP_FLAG_SEND_ERROR){
+        			en.openResendBtn(m_resendListener);
+        		}
+        		
+        		m_mainMailView.addView(en.m_mainView);
+        		m_titleOwnAccount.setText(en.m_mail.getOwnAccount());
         	}else{
         		t_formerMailView++;
         		t_showTouchFormerMailView = true;
@@ -305,7 +460,14 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			
 			for(Envelope en:m_currMailList){
 				if(!en.m_initOpen){
-					en.m_initOpen = true;
+					
+					en.init();
+					en.setOnClickOpenBodyEvent();
+					
+					if(en.m_mail.getGroupFlag() == fetchMail.GROUP_FLAG_SEND_ERROR){
+	        			en.openResendBtn(m_resendListener);
+	        		}
+					
 					m_mainMailView.addView(en.m_mainView,fsm_insertEnvelopeIndex);
 				}				
 			}
@@ -317,7 +479,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		}else if(v == m_preGroupBtn){	
 			
 			try{
-				int t_groupCount = m_mainApp.m_currMailGroupCursor.getCount();
+				int t_groupCount = m_groupCursor.getCount();
 				
 				m_nextGroupIdx = m_currGroupIdx;
 				m_currGroupIdx = m_preGroupIdx;
@@ -325,9 +487,8 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 				m_cursorPosition++;
 				if(m_cursorPosition < t_groupCount - 1){
 					
-					m_mainApp.m_currMailGroupCursor.moveToPosition(m_cursorPosition + 1);
-					m_preGroupIdx = m_mainApp.m_currMailGroupCursor.getInt(
-											m_mainApp.m_currMailGroupCursor.getColumnIndex(MailDbAdapter.KEY_ID));
+					m_groupCursor.moveToPosition(m_cursorPosition + 1);
+					m_preGroupIdx = m_groupCursor.getInt(m_groupCursor.getColumnIndex(MailDbAdapter.KEY_ID));
 				}else{
 					m_preGroupIdx = -1;					
 				}
@@ -348,9 +509,8 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 				
 				m_cursorPosition--;
 				if(m_cursorPosition > 0){
-					m_mainApp.m_currMailGroupCursor.moveToPosition(m_cursorPosition - 1);
-					m_nextGroupIdx = m_mainApp.m_currMailGroupCursor.getInt(
-											m_mainApp.m_currMailGroupCursor.getColumnIndex(MailDbAdapter.KEY_ID));
+					m_groupCursor.moveToPosition(m_cursorPosition - 1);
+					m_nextGroupIdx = m_groupCursor.getInt(m_groupCursor.getColumnIndex(MailDbAdapter.KEY_ID));
 				}else{
 					m_nextGroupIdx = -1;
 				}
@@ -374,67 +534,5 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		
 		m_mainApp.m_composeRefMail = m_currMailList.get(m_currMailList.size() -1).m_mail;	
 		startActivity(in);
-	}
-	
-	public static Envelope getEnvelope(fetchMail _mail,Context _ctx){
-		
-		Envelope t_envelope = new Envelope();
-		t_envelope.m_mail 	= _mail;
-		
-		LayoutInflater t_inflater = LayoutInflater.from(_ctx);
-		t_envelope.m_mainView = (RelativeLayout)t_inflater.inflate(R.layout.mail_open_envelope, null);
-		
-        // fill mail data
-        //
-        TextView t_fromAddr = (TextView)t_envelope.m_mainView.findViewById(R.id.mail_open_from_addr);
-        TextView t_date		= (TextView)t_envelope.m_mainView.findViewById(R.id.mail_open_date);
-        TextView t_time		= (TextView)t_envelope.m_mainView.findViewById(R.id.mail_open_time);
-        TextView t_toAddr	= (TextView)t_envelope.m_mainView.findViewById(R.id.mail_open_recv_addr);        
-        TextView t_subject	= (TextView)t_envelope.m_mainView.findViewById(R.id.mail_open_subject);
-        
-        t_envelope.m_mailFlag	= (ImageView)t_envelope.m_mainView.findViewById(R.id.mail_open_flag);
-        t_envelope.m_bodyText	= (TextView)t_envelope.m_mainView.findViewById(R.id.mail_open_body);
-        t_envelope.m_htmlText	= (TextView)t_envelope.m_mainView.findViewById(R.id.mail_open_html);
-        t_envelope.m_touchHTML	= (TextView)t_envelope.m_mainView.findViewById(R.id.mail_open_html_switch);
-        
-        Address[] t_fromAddrList 	= fetchMail.parseAddressList(_mail.GetFromVect());
-        Address[] t_toAddrList		= fetchMail.parseAddressList(_mail.GetSendToVect());
-        
-        t_fromAddr.setText(t_fromAddrList[0].m_name);
-        
-        SimpleDateFormat t_format = new SimpleDateFormat("yyyy"+_ctx.getString(R.string.mail_time_year)+
-														"MM"+_ctx.getString(R.string.mail_time_month)+
-														"dd" + _ctx.getString(R.string.mail_time_day));
-        
-        t_date.setText(t_format.format(_mail.GetSendDate()));
-        
-        t_format = new SimpleDateFormat("HH:mm");
-        t_time.setText(t_format.format(_mail.GetSendDate()));
-        
-        t_toAddr.setText(_ctx.getString(R.string.mail_open_recipient_addr_prefix) + MailListAdapter.getShortAddrList(t_toAddrList));
-        t_subject.setText(_mail.GetSubject());
-        t_envelope.m_mailFlag.setImageResource(MailListAdapter.getMailFlagImageId(_mail.getGroupFlag()));
-        
-        // set the attachment file
-        //
-        if(!_mail.GetAttachment().isEmpty()){
-        	for(final MailAttachment att:_mail.GetAttachment()){
-        		View attachView = t_inflater.inflate(R.layout.mail_open_attachment_item,null);
-        		TextView filename = (TextView)attachView.findViewById(R.id.mail_open_attachment_item_filename);
-        		filename.setText(att.m_name + " ("+YuchDroidApp.GetByteStr(att.m_size) + ")");
-        		
-        		
-        		RelativeLayout.LayoutParams t_lp = new RelativeLayout.LayoutParams(
-        		        RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        		t_lp.addRule(RelativeLayout.BELOW, t_envelope.m_touchHTML.getId());
-        		
-        		t_envelope.m_mainView.addView(attachView,t_lp);
-        	}
-        }
-        
-        return t_envelope;
-	}
-	
-	
-	
+	}	
 }

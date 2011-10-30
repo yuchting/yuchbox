@@ -55,6 +55,8 @@
     <string name="mail_open_html_switch">触摸显示HTML部分</string>
     <string name="mail_open_show_former_mail">触摸显示之前的邮件</string>
     <string name="mail_open_scroll_top">触摸返回顶部</string>
+    <string name="mail_open_resend_btn">重新发送</string>
+    <string name="mail_open_resend_need_connectDeamon_prompt">没有开启连接，无法发送邮件。</string>
     
     <!-- mail compose view -->
     <string name="mail_compose_to">收件人</string>
@@ -66,8 +68,8 @@
     <string name="mail_compose_save_btn">存成草稿</string>
     <string name="mail_compose_discard_btn">丢弃</string>
     <string name="mail_compose_ref_lable">引用邮件 (触摸丢弃引用):</string>
-    <string name="mail_compose_reply_prefix">回复： </string>
-    <string name="mail_compose_forward_prefix">转发：  </string>
+    <string name="mail_compose_reply_prefix">回复：\u0020</string>
+    <string name="mail_compose_forward_prefix">转发： \u0020</string>
     <string name="mail_compose_delete_ref_mail">你真的要删除这封引用邮件么？</string>
     <string name="mail_compose_discard_mail">你真的要丢弃这封邮件么？</string>
     <string name="mail_compose_send_without_modified">你没有更改过邮件，真的要发送么？</string>

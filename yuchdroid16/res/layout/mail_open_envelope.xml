@@ -70,9 +70,16 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:textColor="#000"
-			android:textSize="16dp"
+			android:textSize="18dp"
 			android:text="Mail Subject"
 		/>
+		<Button android:id="@+id/mail_open_resend_btn"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentRight="true" 
+			android:layout_below="@id/mail_open_subject"
+			android:text="@string/mail_open_resend_btn"
+			android:visibility="gone"/>
 	</RelativeLayout>
 	
 	<TextView
@@ -106,6 +113,8 @@
 		android:gravity="center"
 		android:textSize="20dp"
 		android:text="@string/mail_open_html_switch"
-		android:visibility="gone"/>			
+		android:visibility="gone"/>
+	
+	
 </RelativeLayout>
 

@@ -28,7 +28,7 @@ final class Address{
 public class  fetchMail{
 	
 	
-	final static int	VERSION = 2;
+	final static int	VERSION = 3;
 	
 	public final static String	fsm_vectStringSpliter = "<>";
 	public final static String	fsm_vectStringSpliter_sub = "@#&";
@@ -67,6 +67,8 @@ public class  fetchMail{
 	
 	private Vector<MailAttachment>	m_vectAttachment	 	= new Vector<MailAttachment>();
 	
+	private String			m_ownAccount	= "";
+	
 	// group flag to display to the user 
 	// used by client
 	//
@@ -83,15 +85,19 @@ public class  fetchMail{
 	public static final int		GROUP_FLAG_SEND_DRAFT			= 8;
 	
 	private int					m_groupFlag		= 0;
-	private int					m_dbIndex		= -1;
-	private int					m_groupId		= -1;
+	private long					m_dbIndex		= -1;
+	private long					m_groupId		= -1;
+	
+	
+	private long					m_sendRefMailId		= -1;
+	private int					m_sendRefMailStyle	= NOTHING_STYLE;
 		
 	
 	// location information
 	boolean m_hasLocationInfo		= false;
 	GPSInfo	m_gpsInfo 				= new GPSInfo();			
 	
-	public void SetMailIndex(int _index)throws Exception{
+	public void SetMailIndex(int _index){
 		m_mailIndex =_index;		
 	}
 	
@@ -186,7 +192,7 @@ public class  fetchMail{
 		}
 		
 		sendReceive.WriteString(_stream,m_contain_html_type);
-		
+		sendReceive.WriteString(_stream,m_ownAccount);
 	}
 		
 	public void InputMail(InputStream _stream)throws Exception{
@@ -233,28 +239,41 @@ public class  fetchMail{
 			m_contain_html_type = sendReceive.ReadString(_stream);
 		}
 		
+		if(t_version >= 3){
+			m_ownAccount = sendReceive.ReadString(_stream);
+		}
+		
 		if(m_vectAttachment.isEmpty()){
 			setGroupFlag(GROUP_FLAG_RECV);
 		}else{
 			setGroupFlag(GROUP_FLAG_RECV_ATTACH);
-		}		
+		}	
 	}
 	
 	
 	
 	//set and gets function
 	//
+	public String getOwnAccount(){return m_ownAccount;}
+	public void setOwnAccount(String _acc){m_ownAccount = _acc;}
+	
 	public String GetSubject(){	return m_subject;}
 	public void SetSubject(String _subject){m_subject = _subject;}
 	
 	public void setGroupFlag(int _flag){m_groupFlag = _flag;}
 	public int getGroupFlag(){return m_groupFlag;}
 	
-	public void setDbIndex(int _id){m_dbIndex = _id;}
-	public int getDbIndex(){return m_dbIndex;}
+	public void setDbIndex(long _id){m_dbIndex = _id;}
+	public long getDbIndex(){return m_dbIndex;}
 	
-	public void setGroupIndex(int _id){m_groupId = _id;}
-	public int getGroupIndex(){return m_groupId;}
+	public void setGroupIndex(long _id){m_groupId = _id;}
+	public long getGroupIndex(){return m_groupId;}
+	
+	public void setSendRefMailIndex(long _id){m_sendRefMailId = _id;}
+	public long getSendRefMailIndex(){return m_sendRefMailId;}
+	
+	public void setSendRefMailStyle(int _style){m_sendRefMailStyle = _style;}
+	public int getSendRefMailStyle(){return m_sendRefMailStyle;}
 	
 	public boolean isOwnSendMail(){
 		
@@ -285,11 +304,16 @@ public class  fetchMail{
 	
 	public GPSInfo GetGPSInfo(){return m_gpsInfo;}
 	
+	private static void setVectorArray(Vector<String> _vect,String[] _arr){
+		_vect.removeAllElements();
+		for(int i = 0;i < _arr.length;i++){
+			if(_arr[i].length() != 0){
+				_vect.addElement(_arr[i]);
+			}
+		}
+	}
 	public void SetSendToVect(String[] _to){
-		m_vectTo.removeAllElements();
-		for(int i = 0;i < _to.length;i++){
-			m_vectTo.addElement(_to[i]);
-		}		
+		setVectorArray(m_vectTo,_to);	
 	}
 	
 	private static String getVectorString(Vector<String> _vector){
@@ -305,28 +329,19 @@ public class  fetchMail{
 	public String getSendToString(){return getVectorString(m_vectTo);}
 	
 	public void SetReplyToVect(String[] _replyTo){
-		m_vectReplyTo.removeAllElements();
-		for(int i = 0;i < _replyTo.length;i++){
-			m_vectReplyTo.addElement(_replyTo[i]);
-		}		
+		setVectorArray(m_vectReplyTo, _replyTo);
 	}
 	public Vector<String> GetReplyToVect(){return m_vectReplyTo;}
 	public String getReplyString(){return getVectorString(m_vectReplyTo);}
 	
 	public void SetCCToVect(String[] _CCTo){
-		m_vectCCTo.removeAllElements();
-		for(int i = 0;i < _CCTo.length;i++){
-			m_vectCCTo.addElement(_CCTo[i]);
-		}		
+		setVectorArray(m_vectCCTo, _CCTo);
 	}
 	public Vector<String> GetCCToVect(){return m_vectCCTo;}
 	public String getCCToString(){return getVectorString(m_vectCCTo);}
 	
 	public void SetBCCToVect(String[] _BCCTo){
-		m_vectBCCTo.removeAllElements();
-		for(int i = 0;i < _BCCTo.length;i++){
-			m_vectBCCTo.addElement(_BCCTo[i]);
-		}		
+		setVectorArray(m_vectBCCTo,_BCCTo);
 	}
 	public Vector<String> GetBCCToVect(){return m_vectBCCTo;}
 	public String getBCCToString(){return getVectorString(m_vectBCCTo);}
@@ -334,20 +349,14 @@ public class  fetchMail{
 	public Vector<String> GetFromVect(){return m_vectFrom;}
 	public String GetFromString(){return getVectorString(m_vectFrom);}
 	public void SetFromVect(String[] _from){
-		m_vectFrom.removeAllElements();
-		for(int i = 0;i < _from.length;i++){
-			m_vectFrom.addElement(_from[i]);
-		}		
+		setVectorArray(m_vectFrom,_from);
 	}
 	
 	
 	public Vector<String> GetGroupVect(){return m_vectGroup;}
 	public String getGroupString(){return getVectorString(m_vectGroup);}
 	public void SetGroupVect(String[] _group){
-		m_vectGroup.removeAllElements();
-		for(int i = 0;i < _group.length;i++){
-			m_vectGroup.addElement(_group[i]);
-		}
+		setVectorArray(m_vectGroup, _group);
 	}
 	
 	public void AddAttachment(String _name,String _type,int _size)throws Exception{

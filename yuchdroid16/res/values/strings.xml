@@ -53,6 +53,9 @@
     <string name="mail_open_html_switch">Touch To Show HTML Part</string>
     <string name="mail_open_show_former_mail">Touch To Show Former Mail</string>
     <string name="mail_open_scroll_top">Touch To Scroll Top</string>
+    <string name="mail_open_resend_btn">Resend</string>
+    <string name="mail_open_resend_need_connectDeamon_prompt">Can\'t resend without start connect.</string>
+    
     
     <!-- mail compose view -->
     <string name="mail_compose_to">To</string>
@@ -64,8 +67,8 @@
     <string name="mail_compose_save_btn">SaveAsDraft</string>
     <string name="mail_compose_discard_btn">Discard</string>
     <string name="mail_compose_ref_lable">Reference Mail (touch to discard reference):</string>
-    <string name="mail_compose_reply_prefix">Re: </string>
-    <string name="mail_compose_forward_prefix">Forward: </string>
+    <string name="mail_compose_reply_prefix" >Re:\u0020</string>
+    <string name="mail_compose_forward_prefix">Forward:\u0020</string>
     <string name="mail_compose_delete_ref_mail">Are you sure delete this reference mail?</string>
     <string name="mail_compose_discard_mail">Are you sure discard this mail?</string>
     <string name="mail_compose_send_without_modified">Do you want send without changed?</string>

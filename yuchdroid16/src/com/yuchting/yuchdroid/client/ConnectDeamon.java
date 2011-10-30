@@ -109,15 +109,23 @@ public class ConnectDeamon extends Service{
 				synchronized(m_sendingMailAttachment) {
 					for(SendMailDeamon send:m_sendingMailAttachment){
 						if(send.m_sendMail.GetSimpleHashCode() == t_sendMail.GetSimpleHashCode()){
-							// has been added
-							//
-							return;
+							
+							if(send.isAlive()){
+								// has been added
+								//
+								return;
+							}else{
+								m_sendingMailAttachment.remove(send);
+								
+								break;
+							}
 						}
 					}
 				}
 				
 				try{
-					m_sendingMailAttachment.add(new SendMailDeamon(ConnectDeamon.this, t_sendMail, null, t_referenceMail,t_style));
+					m_sendingMailAttachment.add(new SendMailDeamon(ConnectDeamon.this, 
+													t_sendMail, null, t_referenceMail,t_style));
 				}catch(Exception e){
 					m_mainApp.setErrorString(TAG+" MailSendRecv", e);
 				}
@@ -219,9 +227,16 @@ public class ConnectDeamon extends Service{
 			m_sendingQueue.destory();
 			m_sendingQueue = null;
 		}
-		
+				
 		m_mainApp.m_connectDeamonRun = false;
 		m_mainApp.m_connectState = YuchDroidApp.STATE_DISCONNECT;
+		
+		// destroy the all sendingMailDeamon
+		//
+		for(SendMailDeamon de:m_sendingMailAttachment){
+			de.inter();		
+		}
+		m_sendingMailAttachment.clear();
 		
 		unregisterReceiver(m_mailMarkReadRecv);
 		unregisterReceiver(m_mailSendRecv);
@@ -640,7 +655,7 @@ public class ConnectDeamon extends Service{
 
 		try{
 						
-			m_mainApp.m_dba.createMail(t_mail, null);
+			m_mainApp.m_dba.createMail(t_mail,-1,false);
 			
 			// increase the receive mail quantity
 			//

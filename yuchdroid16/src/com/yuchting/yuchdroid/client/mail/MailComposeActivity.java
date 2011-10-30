@@ -48,7 +48,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	YuchDroidApp	m_mainApp		= null;
 	
 	int			m_referenceMailStyle = fetchMail.NOTHING_STYLE;
-	int			m_referenceGroupId 	= -1;
+	long		m_referenceGroupId 	= -1;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -85,15 +85,15 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			
 			Intent in = getIntent();
 			m_referenceMailStyle 	= in.getExtras().getInt(COMPOSE_MAIL_STYLE);
-			m_referenceGroupId		= in.getExtras().getInt(COMPOSE_MAIL_GROUP_ID);
+			m_referenceGroupId		= in.getExtras().getLong(COMPOSE_MAIL_GROUP_ID);
 			
 			m_discardRefView.setVisibility(View.VISIBLE);
-			m_referenceMail = MailOpenActivity.getEnvelope(m_mainApp.m_composeRefMail, this);
+			m_referenceMail = new MailOpenActivity.Envelope(m_mainApp.m_composeRefMail, this);
 			m_mainApp.m_composeRefMail = null;
 			
 			// add to main view
 			//
-			m_referenceMail.setBody();
+			m_referenceMail.openBody();
 			m_mainView.addView(m_referenceMail.m_mainView);
 			
 			// set the title and subject
@@ -296,20 +296,26 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		t_sendMail.SetSubject(m_subject.getText().toString());
 		t_sendMail.SetContain(m_body.getText().toString());
 		
-		int t_id = (int)m_mainApp.m_dba.createMail(t_sendMail,m_referenceGroupId == -1?null:new Long(m_referenceGroupId));
+		if(m_referenceGroupId != -1 && m_referenceMail != null){
+			t_sendMail.SetFromVect(new String[]
+            {
+				"\"" + getString(R.string.mail_me_address) + "\" " + m_referenceMail.m_mail.getOwnAccount()
+			});
+		}
+		
+		t_sendMail.setSendRefMailStyle(m_referenceMailStyle);
+		if(m_referenceMail != null){
+			t_sendMail.setSendRefMailIndex(m_referenceMail.m_mail.getDbIndex());
+		}	
+		
+		int t_id = (int)m_mainApp.m_dba.createMail(t_sendMail,m_referenceGroupId,true);
 		t_sendMail.setDbIndex(t_id);
 		
-		m_mainApp.m_composeRefMail 		= t_sendMail;
-		if(m_referenceMail != null){
-			m_mainApp.m_composeStyleRefMail = m_referenceMail.m_mail;
-		}		
-		
-		// broadcast to ConnectDeamon
+		// send mail
 		//
-		Intent in = new Intent(YuchDroidApp.FILTER_SEND_MAIL);
-		in.putExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_STYLE, m_referenceMailStyle);
-		
-		sendBroadcast(in);
+		m_mainApp.sendMail(t_sendMail,
+				m_referenceMail != null?m_referenceMail.m_mail:null,
+				m_referenceMailStyle);
 		
 		// close the activity
 		//
