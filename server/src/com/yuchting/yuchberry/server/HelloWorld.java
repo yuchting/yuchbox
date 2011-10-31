@@ -19,7 +19,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -101,18 +100,24 @@ public class HelloWorld {
 	public final static String	fsm_vectStringSpliter_sub = "@#&";
 	
 	public static void main(String arg[])throws Exception{
-
-		String addr = "YuchTing <yuchting@gmail.com>";
-		int t_d = addr.indexOf(',');
-
-		if(!addr.matches("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$")
-		&& !addr.matches("(.)*<\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*>")){
-			System.out.println();
-		}
-		
-		System.out.println();
-		
+		System.out.println(reRangeAddrList("yyy@gmai.com<>Me","Me"));
 	}
+	
+	private static String reRangeAddrList(String _addrList,String _addAddr){
+    	
+    	String[] t_list 	= _addrList.split(fsm_vectStringSpliter);
+    	
+    	StringBuffer t_ret = new StringBuffer();
+    	for(String addr:t_list){
+    		if(!addr.equalsIgnoreCase(_addAddr)){
+    			t_ret.append(addr).append(fsm_vectStringSpliter);
+    		}
+    	}
+    	
+    	t_ret.append(_addAddr).append(fsm_vectStringSpliter);
+    	
+    	return t_ret.toString();
+    }
 	
 	static public void testMDS()throws Exception{
 		String host = "45562.yuchberry.info";
