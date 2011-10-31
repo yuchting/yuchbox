@@ -385,8 +385,9 @@ public class ConnectDeamon extends Service{
 			for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
 				SendMailDeamon send = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
 				 	
-				send.m_closeState = true; 
+				send.m_closeState = true;
 				send.inter(); 
+				send.sendError();
 			}
 			 
 			m_sendingMailAttachment.removeAllElements();

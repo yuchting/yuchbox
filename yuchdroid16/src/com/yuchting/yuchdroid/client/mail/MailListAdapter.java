@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import android.database.Cursor;
+import android.database.sqlite.SQLiteCursor;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;

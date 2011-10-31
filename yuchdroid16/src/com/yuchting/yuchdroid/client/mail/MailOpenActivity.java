@@ -15,6 +15,7 @@ import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -50,7 +51,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		
 		RelativeLayout	m_mainView	= null;
 		TextView		m_bodyText	= null;
-		TextView		m_htmlText	= null;
+		WebView			m_htmlText	= null;
 		
 		LinearLayout	m_attchView	= null;
 		
@@ -88,7 +89,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
     				public void onClick(View paramView){
     					m_touchHTML.setVisibility(View.GONE);
     					m_htmlText.setVisibility(View.VISIBLE);
-    					m_htmlText.setText(Html.fromHtml(m_mail.GetContain_html()));
+    					m_htmlText.loadDataWithBaseURL("",m_mail.GetContain_html(),"text/html","utf-8","");
     				}
     			});
             }else{
@@ -131,7 +132,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	        
 	        m_mailFlag	= (ImageView)m_mainView.findViewById(R.id.mail_open_flag);
 	        m_bodyText	= (TextView)m_mainView.findViewById(R.id.mail_open_body);
-	        m_htmlText	= (TextView)m_mainView.findViewById(R.id.mail_open_html);
+	        m_htmlText	= (WebView)m_mainView.findViewById(R.id.mail_open_html);
 	        m_touchHTML	= (TextView)m_mainView.findViewById(R.id.mail_open_html_switch);
 	        m_resendBtn = (Button)m_mainView.findViewById(R.id.mail_open_resend_btn);
 	        
@@ -146,7 +147,9 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			Address[] t_fromAddrList 	= fetchMail.parseAddressList(m_mail.GetFromVect());
 	        Address[] t_toAddrList		= fetchMail.parseAddressList(m_mail.GetSendToVect());
 	        
-	        m_fromAddr.setText(t_fromAddrList[0].m_name);
+	        if(t_fromAddrList.length != 0){
+	        	m_fromAddr.setText(t_fromAddrList[0].m_name);
+	        }
 	        
 	        SimpleDateFormat t_format = new SimpleDateFormat("yyyy"+m_loadCtx.getString(R.string.mail_time_year)+
 															"MM"+m_loadCtx.getString(R.string.mail_time_month)+

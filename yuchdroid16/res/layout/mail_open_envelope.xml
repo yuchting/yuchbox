@@ -94,7 +94,7 @@
 		android:visibility="gone"
 	/>
 	
-	<TextView
+	<WebView
 		android:id="@+id/mail_open_html"
 		android:layout_below="@id/mail_open_body"
 		android:layout_width="fill_parent"
