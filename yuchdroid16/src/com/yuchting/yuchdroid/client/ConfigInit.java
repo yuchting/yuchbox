@@ -50,7 +50,7 @@ public final class ConfigInit {
 		
 	// weibo system
 	//
-	public boolean m_enableWeiboModule	= true;
+	public boolean m_enableWeiboModule	= false;
 	
 	public boolean m_updateOwnListWhenFw = true;
 	public boolean m_updateOwnListWhenRe = false;
@@ -80,7 +80,7 @@ public final class ConfigInit {
 	
 	// IM system
 	//
-	public boolean m_enableIMModule		= true;
+	public boolean m_enableIMModule		= false;
 	public boolean m_enableChatChecked	= true;
 	public boolean m_enableChatState		= true;
 	public boolean m_hideUnvailiableRoster = true;

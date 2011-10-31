@@ -2,6 +2,7 @@ package com.yuchting.yuchdroid.client.mail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.Date;
 import java.util.Vector;
 
 import android.content.Intent;
@@ -33,7 +34,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 		m_sendMail	= _mail;
 		m_forwardReply	= _forwardReply;
 		m_sendStyle = _sendStyle;
-
+		
 		if(_vFileConnection != null && !_vFileConnection.isEmpty()){
 			m_sendFileDaemon = new SendAttachmentDeamon(_connect, _vFileConnection, 
 														m_sendMail.GetSimpleHashCode(), this);
@@ -81,6 +82,8 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	public void sendFinish(){
 				
 		try{
+			
+			
 			// send mail once if has not attachment 
 			//
 			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
@@ -111,17 +114,12 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	
 	private void RefreshMessageStatus(int _flag){
 		
+		// check the MailComposeActivity.send() for progress detail
+		//
 		m_sendMail.setGroupFlag(_flag);
 		m_connect.m_mainApp.m_dba.setMailGroupFlag(m_sendMail.getDbIndex(), m_sendMail.getGroupIndex(), _flag);
 		
-		// check the MailComposeActivity.send() for progress detail
-		//
-		Intent in = new Intent(YuchDroidApp.FILTER_SEND_MAIL_VIEW);
-		in.putExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_VIEW_GROUP_ID,m_sendMail.getGroupIndex());
-		in.putExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_VIEW_MAIL_ID,m_sendMail.getDbIndex());
-		in.putExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_VIEW_GROUP_FLAG,m_sendMail.getGroupFlag());
-		
-		m_connect.sendBroadcast(in);
+		m_connect.m_mainApp.sendBroadcastUpdateFlag(m_sendMail,false	);
 	}
 		
 	public void run(){		

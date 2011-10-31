@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.drawable.Drawable.ConstantState;
 import android.util.Log;
 
 import com.yuchting.yuchdroid.client.R;
@@ -306,31 +307,7 @@ public class MailDbAdapter {
     	
     	// create the values data of this mail
     	//
-    	ContentValues values = new ContentValues();
-        
-    	values.put(ATTR_MARK,0);
-    	
-    	values.put(ATTR_GROUP_FLAG,_mail.getGroupFlag());
-    	    	
-    	values.put(ATTR_INDEX,_mail.GetMailIndex());
-        values.put(ATTR_SUBJECT,_mail.GetSubject());
-        values.put(ATTR_BODY,_mail.GetContain().replaceAll("\r\n", "\n"));
-        values.put(ATTR_BODY_HTML,_mail.GetContain_html());
-        values.put(ATTR_BODY_HTML_TYPE,_mail.GetContain_html_type());
-        
-        values.put(ATTR_TO,_mail.getSendToString());
-        values.put(ATTR_CC,_mail.getCCToString());
-        values.put(ATTR_BCC,_mail.getBCCToString());
-        values.put(ATTR_FROM,_mail.GetFromString());
-        values.put(ATTR_REPLY,_mail.getReplyString());
-        values.put(ATTR_GROUP,_mail.getGroupString());
-        
-        values.put(ATTR_DATE,_mail.GetSendDate().getTime());
-        values.put(ATTR_FLAG,_mail.GetFlags());
-        values.put(ATTR_ATTACHMENT,_mail.getAttachmentString());
-        values.put(ATTR_MAIL_OWN_ACCOUNT,_mail.getOwnAccount());
-        values.put(ATTR_MAIL_SEND_REF_MAIL_ID,_mail.getSendRefMailIndex());
-        values.put(ATTR_MAIL_SEND_REF_MAIL_STYLE,_mail.getSendRefMailStyle());
+    	ContentValues values = getMailContentValues(_mail);
         
         long t_mailID;
         
@@ -526,7 +503,7 @@ public class MailDbAdapter {
         return t_cursor;
     }
     
-    public Cursor fetchMail(long _mailId)throws SQLException{
+    public Cursor fetchMailCursor(long _mailId)throws SQLException{
     	if(mDbHelper == null){
     		open();
     	}
@@ -540,6 +517,54 @@ public class MailDbAdapter {
 		return t_cursor;
     }
     
+    public fetchMail fetchMail(long _mailId)throws SQLException{
+    	Cursor c = fetchMailCursor(_mailId);
+		try{
+			if(c.getCount() != 0){
+				return convertMail(c);
+			}else{
+				return null;
+			}
+		}finally{
+			c.close();
+		}
+    }
+    
+    public void updateMail(fetchMail _mail){
+    	ContentValues values = getMailContentValues(_mail);
+    	
+    	mDb.update(DATABASE_TABLE,values,KEY_ID + "=" + _mail.getDbIndex(),null);
+    }
+    
+    private ContentValues getMailContentValues(fetchMail _mail){
+    	ContentValues values = new ContentValues();
+        
+    	values.put(ATTR_MARK,0);
+    	
+    	values.put(ATTR_GROUP_FLAG,_mail.getGroupFlag());
+    	    	
+    	values.put(ATTR_INDEX,_mail.GetMailIndex());
+        values.put(ATTR_SUBJECT,_mail.GetSubject());
+        values.put(ATTR_BODY,_mail.GetContain().replaceAll("\r\n", "\n"));
+        values.put(ATTR_BODY_HTML,_mail.GetContain_html());
+        values.put(ATTR_BODY_HTML_TYPE,_mail.GetContain_html_type());
+        
+        values.put(ATTR_TO,_mail.getSendToString());
+        values.put(ATTR_CC,_mail.getCCToString());
+        values.put(ATTR_BCC,_mail.getBCCToString());
+        values.put(ATTR_FROM,_mail.GetFromString());
+        values.put(ATTR_REPLY,_mail.getReplyString());
+        values.put(ATTR_GROUP,_mail.getGroupString());
+        
+        values.put(ATTR_DATE,_mail.GetSendDate().getTime());
+        values.put(ATTR_FLAG,_mail.GetFlags());
+        values.put(ATTR_ATTACHMENT,_mail.getAttachmentString());
+        values.put(ATTR_MAIL_OWN_ACCOUNT,_mail.getOwnAccount());
+        values.put(ATTR_MAIL_SEND_REF_MAIL_ID,_mail.getSendRefMailIndex());
+        values.put(ATTR_MAIL_SEND_REF_MAIL_STYLE,_mail.getSendRefMailStyle());
+        
+        return values;
+    }
     public static boolean modifiedUnreadFlag(AtomicReference<Integer> _flag){
     	
     	if(_flag.get() == fetchMail.GROUP_FLAG_RECV){
@@ -577,7 +602,7 @@ public class MailDbAdapter {
     
     public void markMailRead(long _mailId){
     	
-    	Cursor t_cursor = fetchMail(_mailId);
+    	Cursor t_cursor = fetchMailCursor(_mailId);
     	
     	if(t_cursor != null && t_cursor.getCount() > 0){
     		t_cursor.moveToFirst();

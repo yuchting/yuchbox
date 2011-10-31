@@ -114,6 +114,14 @@
 		android:textSize="20dp"
 		android:text="@string/mail_open_html_switch"
 		android:visibility="gone"/>
+		
+	<LinearLayout 
+		android:id="@+id/mail_open_attachment_view"
+		android:layout_below="@id/mail_open_html_switch"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:orientation="vertical"
+		android:visibility="gone"></LinearLayout>
 	
 	
 </RelativeLayout>

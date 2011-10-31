@@ -31,7 +31,7 @@ public class YuchDroidApp extends Application {
 	public final static	String	FILTER_DEBUG_INFO 		= TAG + "_FILTER_DI";
 	public final static	String	FILTER_MARK_MAIL_READ	= TAG + "_FILTER_MMR";
 	public final static	String	FILTER_SEND_MAIL		= TAG + "_FILTER_SM";
-	public final static	String	FILTER_SEND_MAIL_VIEW	= TAG + "_FILTER_SMV";
+	public final static	String	FILTER_MAIL_GROUP_FLAG	= TAG + "_FILTER_MGF";
 	public final static	String	FILTER_RECV_MAIL		= TAG + "_FILTER_RM";
 	
 	
@@ -44,11 +44,12 @@ public class YuchDroidApp extends Application {
 	//
 	public final static	String	DATA_FILTER_SEND_MAIL_STYLE			= "style";
 	
-	// FILTER_SEND_MAIL_VIEW broadcast parameters data
+	// FILTER_MAIL_GROUP_FLAG broadcast parameters data
 	//
-	public final static	String	DATA_FILTER_SEND_MAIL_VIEW_GROUP_ID	= "groupId";
-	public final static	String	DATA_FILTER_SEND_MAIL_VIEW_MAIL_ID	= "mailId";
-	public final static	String	DATA_FILTER_SEND_MAIL_VIEW_GROUP_FLAG= "groupFlag";
+	public final static	String	DATA_FILTER_MAIL_GROUP_FLAG_GROUP_ID	= "groupId";
+	public final static	String	DATA_FILTER_MAIL_GROUP_FLAG_MAIL_ID		= "mailId";
+	public final static	String	DATA_FILTER_MAIL_GROUP_FLAG_GROUP_FLAG	= "groupFlag";
+	public final static	String	DATA_FILTER_MAIL_GROUP_FLAG_REFRESH_BODY= "refreshBody";
 	
 	
 	// connect state
@@ -178,6 +179,18 @@ public class YuchDroidApp extends Application {
 		//
 		Intent in = new Intent(YuchDroidApp.FILTER_SEND_MAIL);
 		in.putExtra(YuchDroidApp.DATA_FILTER_SEND_MAIL_STYLE, _refStyle);
+		
+		sendBroadcast(in);
+	}
+	
+	public void sendBroadcastUpdateFlag(fetchMail _mail,boolean _refreshBody){
+		// send the broadcast to notify MailListView and MailOpenActivity to update flag
+		//
+		Intent in = new Intent(YuchDroidApp.FILTER_MAIL_GROUP_FLAG);
+		in.putExtra(DATA_FILTER_MAIL_GROUP_FLAG_GROUP_ID,_mail.getGroupIndex());
+		in.putExtra(DATA_FILTER_MAIL_GROUP_FLAG_MAIL_ID,_mail.getDbIndex());
+		in.putExtra(DATA_FILTER_MAIL_GROUP_FLAG_GROUP_FLAG,_mail.getGroupFlag());
+		in.putExtra(DATA_FILTER_MAIL_GROUP_FLAG_REFRESH_BODY,_refreshBody);
 		
 		sendBroadcast(in);
 	}

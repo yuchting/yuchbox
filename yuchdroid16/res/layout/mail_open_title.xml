@@ -4,21 +4,7 @@
 	android:orientation="vertical"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content">
-	<TextView 
-		android:id="@+id/mail_open_title_subject"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:maxWidth="140dp"
-		android:layout_alignParentLeft="true"
-		android:singleLine="true"
-		android:textColor="#FFF"
-		android:shadowColor="#000"
-		android:shadowDx="1"
-		android:shadowDy="1"
-		android:shadowRadius="1"
-		android:text="Mail tile subject Mail tile subject"
-		android:textSize="14dp"/>
-		
+
 	<TextView 
 		android:id="@+id/mail_open_title_own_account"
 		android:layout_width="wrap_content"
@@ -31,6 +17,21 @@
 		android:shadowDy="1"
 		android:shadowRadius="1"
 		android:text="MailAccount@YuchDroid.com"
+		android:textSize="14dp"/>
+		
+	<TextView 
+		android:id="@+id/mail_open_title_subject"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_toLeftOf="@id/mail_open_title_own_account"
+		android:layout_alignParentLeft="true"
+		android:singleLine="true"
+		android:textColor="#FFF"
+		android:shadowColor="#000"
+		android:shadowDx="1"
+		android:shadowDy="1"
+		android:shadowRadius="1"
+		android:text="Mail tile subject Mail tile subject"
 		android:textSize="14dp"/>
     
 </RelativeLayout>
