@@ -2,15 +2,12 @@ package com.yuchting.yuchdroid.client.mail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.util.Date;
 import java.util.Vector;
-
-import android.content.Intent;
+import java.util.concurrent.TimeUnit;
 
 import com.yuchting.yuchdroid.client.ConnectDeamon;
 import com.yuchting.yuchdroid.client.ISendAttachmentCallback;
 import com.yuchting.yuchdroid.client.SendAttachmentDeamon;
-import com.yuchting.yuchdroid.client.YuchDroidApp;
 import com.yuchting.yuchdroid.client.msg_head;
 import com.yuchting.yuchdroid.client.sendReceive;
 
@@ -160,7 +157,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 					// except mail with attachment
 					//
 					if(t_resend_time++ < 3){
-						sleep(2 * 60000);
+						TimeUnit.SECONDS.sleep(2 * 60);
 					}else{
 						sendError();
 						m_connect.m_mainApp.setErrorString("S:resend 3 time,give up.");

@@ -1,19 +1,10 @@
 package com.yuchting.yuchdroid.client;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileWriter;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.lang.Thread.UncaughtExceptionHandler;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 import java.util.Vector;
 
 import android.app.ActivityManager;
@@ -476,12 +467,11 @@ public class ConnectDeamon extends Service{
 			}catch(Exception _e){
 				
 				if(!m_destroy){
-					try{
-						m_mainApp.setConnectState(YuchDroidApp.STATE_CONNECTING);
-						m_mainApp.setErrorString("M ",_e);
-					}catch(Exception e){}
-				}															
-			}		
+					m_mainApp.setConnectState(YuchDroidApp.STATE_CONNECTING);		
+				}
+				
+				m_mainApp.setErrorString("M ",_e);
+			}
 					
 			if(!isAppOnForeground() && m_ipConnectCounter >= 5){
 				m_ipConnectCounter = 0;
