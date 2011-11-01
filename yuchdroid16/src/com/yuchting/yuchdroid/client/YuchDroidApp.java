@@ -1,6 +1,10 @@
 package com.yuchting.yuchdroid.client;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -10,9 +14,10 @@ import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
+import android.content.pm.PackageInfo;
 import android.text.ClipboardManager;
 import android.view.Display;
 import android.view.WindowManager;
@@ -25,6 +30,13 @@ import com.yuchting.yuchdroid.client.mail.fetchMail;
 public class YuchDroidApp extends Application {
 	
 	public final static String	TAG = "YuchDroidApp";
+	
+	public 	static String fsm_PIN			= "";
+	public static String fsm_IMEI			= "ad";
+	public static String fsm_android_ver	= "1.6";
+	public static String fsm_phone_model 	= "unknown";
+	public static String fsm_appVersion 	= "unknown";
+		
 	// send broadcast intent filter
 	//
 	public final static	String	FILTER_CONNECT_STATE 	= TAG + "_FILTER_CS";
@@ -51,7 +63,6 @@ public class YuchDroidApp extends Application {
 	public final static	String	DATA_FILTER_MAIL_GROUP_FLAG_GROUP_FLAG	= "groupFlag";
 	public final static	String	DATA_FILTER_MAIL_GROUP_FLAG_REFRESH_BODY= "refreshBody";
 	
-	
 	// connect state
 	//
 	public final static	int				STATE_DISCONNECT	= 0;
@@ -71,10 +82,10 @@ public class YuchDroidApp extends Application {
 	
 	private int m_mailNotificationNum		= 0;
 	
-	public static int sm_displyWidth		= 0;
-	public static int sm_displyHeight		= 0;
+	public static int sm_displyWidth		= 320;
+	public static int sm_displyHeight		= 480;
 	
-	
+	public boolean			m_hasUnhandledException = false;
 	public Vector<String>	m_errorList = new Vector<String>();
 	
 	public MailDbAdapter	m_dba		= new MailDbAdapter(this);
@@ -90,9 +101,26 @@ public class YuchDroidApp extends Application {
 	public fetchMail		m_composeStyleRefMail;
 	
 	
+	
+	
 	@Override
 	public void onCreate (){
 		super.onCreate();
+		
+		// get the PIN string (android id)
+		//
+		fsm_PIN = android.provider.Settings.System.getString(getContentResolver(), "android_id");
+		if(fsm_PIN == null){fsm_PIN = "unknown";}
+		
+		fsm_phone_model = android.os.Build.MODEL;
+		if(fsm_phone_model == null){fsm_phone_model = "unknown";}
+		
+		fsm_android_ver = android.os.Build.VERSION.RELEASE;
+		if(fsm_android_ver == null){fsm_android_ver = "unknown";}
+		
+		// the app version
+		//
+		fsm_appVersion = getVersionName(this,ConnectDeamon.class);
 		
 		m_dba.open();
 		m_config.WriteReadIni(true);
@@ -100,6 +128,59 @@ public class YuchDroidApp extends Application {
 		Display display = ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 		sm_displyWidth = display.getWidth();
 		sm_displyHeight = display.getHeight();
+		
+		// start own unhandled exception handler
+		//
+		ExceptionHandler.registerHandler(this);
+		
+		// check the former unhandled file
+		//
+		checkFormerUnhandleFiles();
+	}
+	
+	private void checkFormerUnhandleFiles(){
+
+        // Filter for ".stacktrace" files
+		//
+        FilenameFilter t_filter = new FilenameFilter() { 
+                public boolean accept(File dir, String name) {
+                        return name.endsWith(ExceptionHandler.fsm_stackstraceSuffix); 
+                } 
+        };
+        
+        String[] t_files = getFileStreamPath(".").list(t_filter);
+        if(t_files != null && t_files.length != 0){
+        	for(String file:t_files){
+        		File f = getFileStreamPath(file);
+        		if(f.exists()){
+        			try{
+        				FileInputStream in = openFileInput(file);
+        				
+        				byte[] t_readBuffer = new byte[(int)f.length()];
+        				sendReceive.ForceReadByte(in, t_readBuffer, t_readBuffer.length);
+        				
+        				setErrorString(new String(t_readBuffer));
+        				in.close();
+        				
+        				m_hasUnhandledException = true;
+        				
+        			}catch(Exception e){
+        				setErrorString("checkFormerUnhandleFiles",e);
+        			}        			
+        		}
+        	}
+        }       
+	}
+	
+
+	public static String getVersionName(Context context, Class<ConnectDeamon> cls){
+		try{
+			ComponentName comp = new ComponentName(context, cls);
+			PackageInfo pinfo = context.getPackageManager().getPackageInfo(comp.getPackageName(), 0);
+			return pinfo.versionName;
+		}catch(android.content.pm.PackageManager.NameNotFoundException e) {
+			return "1.0";
+		}
 	}
 	
 	@Override
@@ -217,7 +298,7 @@ public class YuchDroidApp extends Application {
 		String t_out = m_errorTimeformat.format(new Date()) + ": " + _error;
 		m_errorList.add(t_out);
 
-		Intent t_intent = new Intent(FILTER_DEBUG_INFO);	
+		Intent t_intent = new Intent(FILTER_DEBUG_INFO);
 		sendBroadcast(t_intent);
 	}
 	

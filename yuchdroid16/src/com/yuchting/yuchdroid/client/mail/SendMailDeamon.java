@@ -83,6 +83,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 				
 		try{
 			
+			m_connect.m_mainApp.setErrorString("sendMsg:" + m_sendMail.GetSubject());
 			
 			// send mail once if has not attachment 
 			//
@@ -119,7 +120,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 		m_sendMail.setGroupFlag(_flag);
 		m_connect.m_mainApp.m_dba.setMailGroupFlag(m_sendMail.getDbIndex(), m_sendMail.getGroupIndex(), _flag);
 		
-		m_connect.m_mainApp.sendBroadcastUpdateFlag(m_sendMail,false	);
+		m_connect.m_mainApp.sendBroadcastUpdateFlag(m_sendMail,false);
 	}
 		
 	public void run(){		

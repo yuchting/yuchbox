@@ -26,9 +26,9 @@
     <string name="login_state_disconnect">断开连接</string>
     <string name="login_state_connecting">连接中...</string>
     <string name="login_state_connected">连接成功</string>
-    
-    <!-- home activity -->
+    <string name="login_menu_setting">连接设置</string>
     <string name="login_menu_home">内容主界面</string>
+       
     
     <!-- dialog relation -->
     <string name="dlg_info_title">语盒提示：</string>
@@ -76,5 +76,6 @@
     <string name="mail_compose_address_error">邮件发送地址格式错误！</string>
     <string name="mail_compose_empty_body_question">你确认要发送没有正文的邮件么？</string>
     <string name="mail_compose_connectdeamon_not_run">没有开启连接服务，无法发送邮件！</string>
+    <string name="mail_compose_own_account_prompt">请选择想要从哪个信箱发出</string>
     
 </resources>

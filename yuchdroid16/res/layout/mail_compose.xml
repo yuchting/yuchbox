@@ -16,7 +16,14 @@
   			android:layout_height="wrap_content"
   			android:orientation="vertical" 
   			android:layout_marginRight="5dp">
-  			
+  			<Spinner 
+  				android:layout_height="wrap_content" 
+  				android:layout_width="fill_parent" 
+  				android:layout_marginTop="3dp"
+  				android:id="@+id/mail_compose_own_account"
+  				android:prompt="@string/mail_compose_own_account_prompt"
+  				android:visibility="gone" />
+  				
   			<AutoCompleteTextView
 				android:id="@+id/mail_compose_to"
 				android:layout_width="fill_parent"
@@ -53,6 +60,7 @@
 				android:minHeight="200dp"
 				android:hint="@string/mail_compose_body"
 				android:gravity="top" />
+			
 			
 			<TextView 
 				android:id="@+id/mail_compose_ref_label"

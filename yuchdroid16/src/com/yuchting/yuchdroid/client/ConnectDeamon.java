@@ -1,43 +1,41 @@
 package com.yuchting.yuchdroid.client;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileWriter;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.lang.Thread.UncaughtExceptionHandler;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.Vector;
 
 import android.app.ActivityManager;
 import android.app.Service;
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageInfo;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.IBinder;
 import android.util.Log;
-import android.view.Display;
-import android.view.WindowManager;
 
 import com.yuchting.yuchdroid.client.mail.SendMailDeamon;
 import com.yuchting.yuchdroid.client.mail.fetchMail;
 
 public class ConnectDeamon extends Service{
 	
-	public static String fsm_clientVersion;
-	
-	public static int fsm_display_width = 320;
-	public static int fsm_display_height = 480;
-	
-	public static String fsm_PIN	= "";
-	public static String fsm_IMEI	= "ad";
-	
 	public final static String TAG = "ConnectDeamon";
 	
-	final static int	fsm_clientVer = 14;
+	final static int	fsm_clientVer = 15;
 	
 	public boolean m_sendAuthMsg 			= false;
 	public boolean m_destroy				= false;
@@ -140,20 +138,8 @@ public class ConnectDeamon extends Service{
 		// initialize the sending queue class
 		//
 		m_sendingQueue = new SendingQueue(this);
-	
-		// get the PIN string (android id)
-		//
-		fsm_PIN = android.provider.Settings.System.getString(getContentResolver(), "android_id");
 		
-		fsm_clientVersion = getVersionName(this,ConnectDeamon.class);
-				
-		// get the display screen size
-		//
-		Display display = ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 		
-		fsm_display_width = display.getWidth();
-		fsm_display_height = display.getHeight();
-				
 				
 		// start the connect run thread
 		//
@@ -161,18 +147,13 @@ public class ConnectDeamon extends Service{
 		
 		registerReceiver(m_mailMarkReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
 		registerReceiver(m_mailSendRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL));
+		
+		m_mainApp.m_connectDeamonRun = true;
+		
+		m_mainApp.setErrorString("ConnectDeamon onCreate");
 	}
 	
-	
-	public static String getVersionName(Context context, Class<ConnectDeamon> cls){
-		try{
-			ComponentName comp = new ComponentName(context, cls);
-			PackageInfo pinfo = context.getPackageManager().getPackageInfo(comp.getPackageName(), 0);
-			return pinfo.versionName;
-		}catch(android.content.pm.PackageManager.NameNotFoundException e) {
-			return "1.0";
-		}
-	}	
+		
 	
 	public boolean addSendingData(int _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
 		return m_sendingQueue.addSendingData(_msgType, _data, _exceptSame);
@@ -201,9 +182,7 @@ public class ConnectDeamon extends Service{
 	}
 		
 	private void onStart_impl(Intent _intent){
-		
-		m_mainApp.m_connectDeamonRun = true;
-		
+				
 		try{
 			Connect();			
 		}catch(Exception e){
@@ -216,10 +195,9 @@ public class ConnectDeamon extends Service{
 	}
 		
 	public void onDestroy(){
-		Log.d(TAG,"onDestory");
+		m_mainApp.setErrorString("ConnectDeamon onDestroy");
 		
 		m_destroy = true;
-		m_mainApp.m_connectDeamonRun = false;
 		
 		closeConnect();
 	
@@ -234,7 +212,9 @@ public class ConnectDeamon extends Service{
 		// destroy the all sendingMailDeamon
 		//
 		for(SendMailDeamon de:m_sendingMailAttachment){
-			de.inter();		
+			de.m_closeState = true;
+			de.inter();
+			de.sendError();
 		}
 		m_sendingMailAttachment.clear();
 		
@@ -244,7 +224,17 @@ public class ConnectDeamon extends Service{
 	
 	private boolean CanNotConnectSvr(){
 		ConnectivityManager t_connect = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-		return !t_connect.getActiveNetworkInfo().isConnected();
+		
+		if(t_connect == null){
+			return true;
+		}
+		
+		NetworkInfo info = t_connect.getActiveNetworkInfo();
+		if(info == null){
+			return true;
+		}
+		
+		return !info.isConnected();
 	}
 	
 	public static int GetClientLanguage(){
@@ -259,6 +249,7 @@ public class ConnectDeamon extends Service{
 		}else{
 			return 2;
 		}
+		
 	}
 	
 	public boolean isDisconnectState(){
@@ -455,11 +446,11 @@ public class ConnectDeamon extends Service{
 				sendReceive.WriteString(t_os, m_mainApp.m_config.m_userPass);
 				sendReceive.WriteInt(t_os,fsm_clientVer);
 				t_os.write(GetClientLanguage());
-				sendReceive.WriteString(t_os,fsm_clientVersion);
+				sendReceive.WriteString(t_os,YuchDroidApp.fsm_appVersion);
 				sendReceive.WriteString(t_os,m_mainApp.m_config.m_passwordKey);
 				sendReceive.WriteBoolean(t_os,m_mainApp.m_config.m_enableWeiboModule);
 				sendReceive.WriteString(t_os,"6.0"); // adapt blackberry
-				int t_size = (fsm_display_width << 16) | fsm_display_height;
+				int t_size = (YuchDroidApp.sm_displyWidth << 16) | YuchDroidApp.sm_displyHeight;
 				sendReceive.WriteInt(t_os,t_size);
 				sendReceive.WriteBoolean(t_os,m_mainApp.m_config.m_enableIMModule);
 				
@@ -528,11 +519,23 @@ public class ConnectDeamon extends Service{
 		 		break;	 		
 		 	case msg_head.msgLatestVersion:
 		 		String t_latestVersion = sendReceive.ReadString(in);
-		 		if(!fsm_clientVersion.equals(t_latestVersion)){
-		 			fsm_clientVersion = t_latestVersion;
+		 		if(!YuchDroidApp.fsm_appVersion.equals(t_latestVersion)){
+		 			YuchDroidApp.fsm_appVersion = t_latestVersion;
 		 			SetReportLatestVersion(t_latestVersion);
 		 		}
 		 		break;
+		 	case msg_head.msgDeviceInfo:
+		 		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		 		os.write(msg_head.msgDeviceInfo);
+		 		sendReceive.WriteString(os, YuchDroidApp.fsm_PIN);
+		 		sendReceive.WriteString(os,YuchDroidApp.fsm_IMEI);
+		 		addSendingData(msg_head.msgDeviceInfo, os.toByteArray(), true);
+		 		break;
+		 	case msg_head.msgMailAccountList:
+		 		sendReceive.ReadStringVector(in, m_mainApp.m_config.m_sendMailAccountList);
+		 		m_mainApp.m_config.WriteReadIni(false);
+		 		break;
+		 		
 //		 	case msg_head.msgWeibo:
 //		 		ProcessWeibo(in);
 //		 		break;
@@ -556,19 +559,6 @@ public class ConnectDeamon extends Service{
 //				if(m_mainApp.m_weiboTimeLineScreen != null){
 //					m_mainApp.m_weiboTimeLineScreen.weiboSendFileConfirm(sendReceive.ReadInt(in),0);
 //				}
-//		 		break;
-//		 	case msg_head.msgDeviceInfo:
-//		 		ByteArrayOutputStream os = new ByteArrayOutputStream();
-//		 		os.write(msg_head.msgDeviceInfo);
-//		 		sendReceive.WriteLong(os, recvMain.fsm_PIN);
-//		 		sendReceive.WriteString(os,recvMain.fsm_IMEI);
-//		 		addSendingData(msg_head.msgDeviceInfo, os.toByteArray(), true);
-//		 		break;
-//		 	case msg_head.msgMailAccountList:
-//		 		sendReceive.ReadStringVector(in, m_mainApp.m_sendMailAccountList);
-//		 		if(m_mainApp.m_settingScreen != null){
-//		 			m_mainApp.m_settingScreen.refreshMailAccountList();
-//		 		}
 //		 		break;
 //		 	case msg_head.msgChat:
 //		 		if(m_mainApp.m_mainIMScreen != null){

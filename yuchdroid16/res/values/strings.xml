@@ -25,8 +25,7 @@
     <string name="login_state_disconnect">Disconnect.</string>
     <string name="login_state_connecting">Connecting...</string>
     <string name="login_state_connected">Connected.</string>
-    
-    <!-- home activity -->
+    <string name="login_menu_setting">Settings</string>
     <string name="login_menu_home">Home</string>
     
     <!-- dialog relation -->
@@ -54,7 +53,7 @@
     <string name="mail_open_show_former_mail">Touch To Show Former Mail</string>
     <string name="mail_open_scroll_top">Touch To Scroll Top</string>
     <string name="mail_open_resend_btn">Resend</string>
-    <string name="mail_open_resend_need_connectDeamon_prompt">Can\'t resend without start connect.</string>
+    <string name="mail_open_resend_need_connectDeamon_prompt">Can\'t resend until start connect with server.</string>
     
     
     <!-- mail compose view -->
@@ -75,9 +74,6 @@
     <string name="mail_compose_address_error">Send address\' format is error!</string>
     <string name="mail_compose_empty_body_question">Are you sure send mail without body?</string>
     <string name="mail_compose_connectdeamon_not_run">The Connect Service is not run, can\'t send mail!</string>
-    
-    
-    
-    
+    <string name="mail_compose_own_account_prompt">Select send from:</string>
     
 </resources>

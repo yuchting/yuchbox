@@ -6,4 +6,7 @@
     <item android:id="@+id/login_menu_home"
           android:icon="@drawable/login_menu_ic_home"
           android:title="@string/login_menu_home" />
+    <item android:id="@+id/login_menu_setting"
+          android:icon="@drawable/login_menu_ic_setting"
+          android:title="@string/login_menu_setting" />
 </menu>

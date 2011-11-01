@@ -11,12 +11,16 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemSelectedListener;
 
 import com.yuchting.yuchdroid.client.GlobalDialog;
 import com.yuchting.yuchdroid.client.R;
@@ -40,6 +44,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	Button		m_sendBtn			= null;
 	Button		m_saveBtn			= null;
 	Button		m_discardBtn		= null;
+	Spinner		m_ownAccountSpinner	= null;
 	
 	LinearLayout	m_mainView		= null;
 	
@@ -81,6 +86,8 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		
 		m_discardBtn = (Button)findViewById(R.id.mail_compose_discard_btn);
 		m_discardBtn.setOnClickListener(this);
+		
+		
 						
 		// fetch the reference mail
 		//
@@ -99,7 +106,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 						m_referenceMail = new MailOpenActivity.Envelope(t_mail, this);
 					}
 				}
-				
+								
 			}else{
 				m_referenceMail = new MailOpenActivity.Envelope(m_mainApp.m_composeRefMail, this);
 			}
@@ -122,27 +129,29 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			if(m_referenceMailStyle == fetchMail.REPLY_STYLE
 			|| m_referenceMailStyle == fetchMail.REPLY_ALL_STYLE){
 				
-				// draft
-				//
-				if(t_draft){
+				Vector<String> t_toVect = null;
+				if(t_draft && m_draftMail != null){
+					// draft
+					//
 					t_sub = m_draftMail.GetSubject();
 					m_body.setText(m_draftMail.GetContain());
-				}else{
-					t_sub = MailDbAdapter.getReplySubject(m_referenceMail.m_mail.GetSubject(), getString(R.string.mail_compose_reply_prefix));
-				}
-				
-				Vector<String> t_toVect = null;
-				
-				if(m_draftMail != null){
+					// draft
+					//
 					t_toVect = m_draftMail.GetSendToVect();
-				}else if(m_referenceMail != null){
+				}else{
+					// reply/forward 
+					//
+					t_sub = MailDbAdapter.getReplySubject(m_referenceMail.m_mail.GetSubject(), getString(R.string.mail_compose_reply_prefix));
+					
+					if(m_referenceMail != null){
 
-					if(m_referenceMail.m_mail.isOwnSendMail()){
-						t_toVect = m_referenceMail.m_mail.GetSendToVect();
-					}else{
-						t_toVect = m_referenceMail.m_mail.GetReplyToVect().isEmpty()?
-										m_referenceMail.m_mail.GetFromVect():
-										m_referenceMail.m_mail.GetReplyToVect();
+						if(m_referenceMail.m_mail.isOwnSendMail()){
+							t_toVect = m_referenceMail.m_mail.GetSendToVect();
+						}else{
+							t_toVect = m_referenceMail.m_mail.GetReplyToVect().isEmpty()?
+											m_referenceMail.m_mail.GetFromVect():
+											m_referenceMail.m_mail.GetReplyToVect();
+						}
 					}
 				}
 								 
@@ -175,8 +184,43 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			setTitle(t_sub);
 			m_subject.setText(t_sub);						
 		}else{
+			// compose a new mail
+			//
 			m_discardRefView.setVisibility(View.GONE);
 			m_to.requestFocus();
+			
+			if(!m_mainApp.m_config.m_sendMailAccountList.isEmpty()){
+			
+				// load the spinner widget 
+				//
+				m_ownAccountSpinner = (Spinner)findViewById(R.id.mail_compose_own_account);
+				m_ownAccountSpinner.setOnItemSelectedListener(new OnItemSelectedListener(){
+					public void onItemSelected(AdapterView<?> parent,View view, int pos, long id) {
+						m_modified = true;
+						m_saveBtn.setEnabled(true);
+				    }
+
+				    public void onNothingSelected(AdapterView<?> parent){}
+				});
+				m_ownAccountSpinner.setVisibility(View.VISIBLE);
+				
+				// load the sender Mail account list
+				//
+				String[] t_ownAccountList = new String[m_mainApp.m_config.m_sendMailAccountList.size()];
+				for(int i = 0;i < m_mainApp.m_config.m_sendMailAccountList.size();i++){
+					t_ownAccountList[i] = m_mainApp.m_config.m_sendMailAccountList.get(i);
+				}				
+				ArrayAdapter<String> adapter = 
+					new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,
+							t_ownAccountList);
+				adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+				m_ownAccountSpinner.setAdapter(adapter);
+				
+				if(m_mainApp.m_config.m_defaultSendMailAccountIndex >= m_mainApp.m_config.m_sendMailAccountList.size()){
+					m_mainApp.m_config.m_defaultSendMailAccountIndex = 0;
+				}
+				m_ownAccountSpinner.setSelection(m_mainApp.m_config.m_defaultSendMailAccountIndex);
+			}
 		}
 		
 		// set the modified flag
@@ -311,7 +355,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		//						MailListView	MailOpenActivity
 		//
 		
-		fetchMail t_mail = storeDB(fetchMail.GROUP_FLAG_SEND_PADDING);
+		fetchMail t_mail = m_draftMail != null?m_draftMail:storeDB(fetchMail.GROUP_FLAG_SEND_PADDING);
 		if(t_mail != null){
 
 			// send mail
@@ -355,6 +399,9 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	private void saveDraft(){		
 		if(m_draftMail == null){
 			m_draftMail = storeDB(fetchMail.GROUP_FLAG_SEND_DRAFT);
+			if(m_draftMail == null){
+				return;
+			}
 		}else{
 			updateMail(m_draftMail,fetchMail.GROUP_FLAG_SEND_DRAFT);			
 			m_mainApp.m_dba.updateMail(m_draftMail);
@@ -388,6 +435,24 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			});
 			
 			_mail.setOwnAccount(m_referenceMail.m_mail.getOwnAccount());
+		}else if(m_ownAccountSpinner != null){
+			
+			// compose a new mail and get the own account
+			//
+			int t_select = (int)m_ownAccountSpinner.getSelectedItemId();
+			
+			if(t_select < 0 || t_select >= m_mainApp.m_config.m_sendMailAccountList.size()){
+				t_select = 0;
+			}
+			
+			m_mainApp.m_config.m_defaultSendMailAccountIndex = t_select;
+			_mail.setOwnAccount(m_mainApp.m_config.m_sendMailAccountList.get(
+								m_mainApp.m_config.m_defaultSendMailAccountIndex));
+			
+			_mail.SetFromVect(new String[]
+            {
+ 				"\"" + getString(R.string.mail_me_address) + "\" <" + _mail.getOwnAccount() + ">"
+ 			});
 		}
 		
 		_mail.setSendRefMailStyle(m_referenceMailStyle);
