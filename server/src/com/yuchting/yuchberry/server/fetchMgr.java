@@ -84,7 +84,7 @@ public class fetchMgr{
     int				m_clientDisplayWidth = 0;
     int				m_clientDisplayHeight = 0;
     
-    long			m_pin				= -1;
+    String			m_pin				= "";
     String			m_IMEI				= null;    
     
     
@@ -137,8 +137,8 @@ public class fetchMgr{
     	return m_clientOSVersion;
     }
     
-    public void setClientPIN(long _pin){m_pin = _pin;}
-    public long getClientPIN(){return m_pin;}
+    public void setClientPIN(String _pin){m_pin = _pin;}
+    public String getClientPIN(){return m_pin;}
     
     public void setClientIMEI(String _imei){m_IMEI = _imei;}
     public String getClientIMEI(){return m_IMEI;}
@@ -430,7 +430,7 @@ public class fetchMgr{
 			//m_logger.LogOut("ValidateClient 3");
 			
 			
-			if(m_clientVer >= 12 && (m_pin == -1)){
+			if(m_clientVer >= 12 && (m_pin.isEmpty())){
 				t_tmp.SendBufferToSvr(new byte[]{msg_head.msgDeviceInfo}, false);
 			}
 			
@@ -631,7 +631,11 @@ public class fetchMgr{
 				m_logger.LogOut("client " + (m_isWeiboEnabled?"Enable":"Disable") + " Weibo Module");
 				break;
 			case msg_head.msgDeviceInfo:
-				m_pin = sendReceive.ReadLong(in);
+				if(m_clientVer >= 15){
+					m_pin = sendReceive.ReadString(in);
+				}else{
+					m_pin = Long.toString(sendReceive.ReadLong(in));
+				}			
 				m_IMEI = sendReceive.ReadString(in);
 				break;
 			case msg_head.msgFileAttach:
@@ -645,7 +649,7 @@ public class fetchMgr{
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
 				os.write(msg_head.msgMailAccountList);
 				
-				Vector t_list = new Vector();
+				Vector<String> t_list = new Vector<String>();
 				for(fetchAccount acc : m_fetchAccount){
 					if(acc instanceof fetchEmail){
 						t_list.add(((fetchEmail)acc).GetAccountName());

@@ -857,13 +857,13 @@ public class fetchEmail extends fetchAccount{
 				
 			}else if(!t_mail.GetFromVect().isEmpty()){
 				
-				String t_from = (String)t_mail.GetFromVect().elementAt(0);
+				String t_from = ((String)t_mail.GetFromVect().elementAt(0)).toLowerCase();
 								
-				if(!t_from.equalsIgnoreCase(GetAccountName())){
+				if(t_from.indexOf(GetAccountName()) != -1){
 					
 					for(fetchAccount acc:m_mainMgr.m_fetchAccount){
 						if(acc != this && acc instanceof fetchEmail){
-							if(t_from.equalsIgnoreCase(((fetchEmail)acc).GetAccountName())){
+							if(t_from.indexOf(((fetchEmail)acc).GetAccountName()) != -1){
 								
 								// another email account is found
 								//
