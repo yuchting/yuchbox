@@ -1045,7 +1045,7 @@ public class connectDeamon extends Thread implements SendListener,
 			 return 0;
 		 }
 		 
-		 if(m_connectCounter++ > 6){
+		 if(m_connectCounter >= 4){
 			 m_connectCounter = 0;		 
 			 return m_mainApp.GetPulseIntervalMinutes() * 60 * 1000;
 		 }
