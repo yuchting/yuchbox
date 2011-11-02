@@ -40,6 +40,9 @@
         	
         <activity android:name=".mail.MailComposeActivity"
         	android:label="Mail Compose"/>
+        	
+        <activity android:name=".ConnectPrefActivity"
+        	android:label="@string/login_pref_title"/>
         
 
     </application>

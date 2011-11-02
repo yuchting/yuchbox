@@ -154,7 +154,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 						}
 					}
 				}
-								 
+				
 				if(t_toVect != null){
 					if(m_referenceMailStyle == fetchMail.REPLY_ALL_STYLE){
 						StringBuffer t_to = new StringBuffer();
@@ -177,12 +177,18 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			}else{
 				// forward style
 				//
-				t_sub = getString(R.string.mail_compose_forward_prefix) + m_referenceMail.m_mail.GetSubject();
+				if(m_draftMail != null){
+					t_sub = m_draftMail.GetSubject();
+				}else if(m_referenceMail != null){
+					t_sub = getString(R.string.mail_compose_forward_prefix) + m_referenceMail.m_mail.GetSubject();
+				}else{
+					t_sub = getString(R.string.mail_compose_forward_prefix);
+				}
 				m_to.requestFocus();
 			}
 			
 			setTitle(t_sub);
-			m_subject.setText(t_sub);						
+			m_subject.setText(t_sub);
 		}else{
 			// compose a new mail
 			//

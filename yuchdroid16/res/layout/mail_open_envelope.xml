@@ -31,12 +31,14 @@
 			android:textColor="#000"
 			android:textSize="18dp"
 			android:text="Mail From Address"
+			android:singleLine="true"
 		/>
 		<TextView
 			android:id="@+id/mail_open_date"
 			android:layout_alignParentRight="true"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
+			android:singleLine="true"
 			android:textColor="#000"
 			android:textSize="14dp"
 			android:layout_marginTop="3dp"

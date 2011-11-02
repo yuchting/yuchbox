@@ -1,7 +1,5 @@
 package com.yuchting.yuchdroid.client;
 
-import com.yuchting.yuchdroid.client.mail.HomeActivity;
-
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -18,6 +16,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.yuchting.yuchdroid.client.mail.HomeActivity;
 
 public class Yuchdroid16Activity extends Activity {
 	
@@ -176,6 +176,9 @@ public class Yuchdroid16Activity extends Activity {
             case R.id.login_menu_home:
             	//Debug.startMethodTracing("mail_list_trace");
             	startActivity(new Intent(this,HomeActivity.class));
+            	return true;
+            case R.id.login_menu_setting:
+            	startActivity(new Intent(this,ConnectPrefActivity.class));
             	return true;
         }
 

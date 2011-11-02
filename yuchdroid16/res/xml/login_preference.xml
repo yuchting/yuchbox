@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	
+	<PreferenceCategory
+		android:title="@string/login_pref_connect_category">
+		<CheckBoxPreference
+			android:key="config_use_ssl"
+			android:title="@string/login_pref_use_ssl"
+			android:summary="@string/login_pref_use_ssl_sum" />
+		<CheckBoxPreference
+			android:key="config_auto_run"
+			android:title="@string/login_pref_auto_run"
+			android:summary="@string/login_pref_auto_run_sum" />
+		<ListPreference
+			android:key="config_pulse_interval"
+			android:title="@string/login_pref_pulse_interval"
+			android:summary="@string/login_pref_pulse_interval_sum" />
+	</PreferenceCategory>
+	<Preference 
+		android:title="@string/login_pref_prompt_category">
+		
+	</Preference>
+</PreferenceScreen>

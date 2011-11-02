@@ -28,6 +28,18 @@
     <string name="login_menu_setting">Settings</string>
     <string name="login_menu_home">Home</string>
     
+    <!-- login preference activity -->
+    <string name="login_pref_title">General Preference</string>
+    <string name="login_pref_connect_category">Connect</string>
+    <string name="login_pref_use_ssl">Use SSL to connect Server</string>
+    <string name="login_pref_use_ssl_sum">Must generate a SSL cert file and load in server.</string>
+    <string name="login_pref_auto_run">Automatic Run Start</string>
+    <string name="login_pref_auto_run_sum">Automatic run and connect to server when system start</string>
+    <string name="login_pref_pulse_interval">Pulse Interval</string>
+    <string name="login_pref_pulse_interval_sum">Maintain the network connection (the shorter the more power, better connection quality))</string>    
+    
+    
+    
     <!-- dialog relation -->
     <string name="dlg_info_title">YuchDroid Prompt:</string>
     <string name="dlg_info_confirm">I know it</string>

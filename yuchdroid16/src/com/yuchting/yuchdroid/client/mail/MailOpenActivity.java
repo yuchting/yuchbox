@@ -147,7 +147,8 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	        Address[] t_toAddrList		= fetchMail.parseAddressList(m_mail.GetSendToVect());
 	        
 	        if(t_fromAddrList.length != 0){
-	        	m_fromAddr.setText(t_fromAddrList[0].m_name);
+	        	m_fromAddr.setText(t_fromAddrList[0].m_name.length() != 0?t_fromAddrList[0].m_name:
+	        						t_fromAddrList[0].m_addr);
 	        }
 	        
 	        SimpleDateFormat t_format = new SimpleDateFormat("yyyy"+m_loadCtx.getString(R.string.mail_time_year)+
@@ -402,8 +403,8 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	
 	private void fillMailContent()throws Exception{   
 
-        m_preGroupBtn.setVisibility(m_preGroupIdx != -1?View.VISIBLE:View.GONE);
-        m_nextGroupBtn.setVisibility(m_nextGroupIdx != -1?View.VISIBLE:View.GONE);     
+        m_preGroupBtn.setVisibility(m_preGroupIdx != -1?View.VISIBLE:View.INVISIBLE);
+        m_nextGroupBtn.setVisibility(m_nextGroupIdx != -1?View.VISIBLE:View.INVISIBLE);   
     
         Cursor t_mailCursor		= m_mainApp.m_dba.fetchGroup(m_currGroupIdx);
         

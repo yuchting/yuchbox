@@ -1,6 +1,5 @@
 package com.yuchting.yuchdroid.client;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -100,13 +99,11 @@ public class YuchDroidApp extends Application {
 	public fetchMail		m_composeRefMail;
 	public fetchMail		m_composeStyleRefMail;
 	
-	
-	
-	
+		
 	@Override
 	public void onCreate (){
 		super.onCreate();
-		
+				
 		// get the PIN string (android id)
 		//
 		fsm_PIN = android.provider.Settings.System.getString(getContentResolver(), "android_id");
@@ -135,7 +132,7 @@ public class YuchDroidApp extends Application {
 		
 		// check the former unhandled file
 		//
-		checkFormerUnhandleFiles();
+		checkFormerUnhandleFiles();		
 	}
 	
 	private void checkFormerUnhandleFiles(){
@@ -143,9 +140,9 @@ public class YuchDroidApp extends Application {
         // Filter for ".stacktrace" files
 		//
         FilenameFilter t_filter = new FilenameFilter() { 
-                public boolean accept(File dir, String name) {
-                        return name.endsWith(ExceptionHandler.fsm_stackstraceSuffix); 
-                } 
+            public boolean accept(File dir, String name) {
+                return name.endsWith(ExceptionHandler.fsm_stackstraceSuffix); 
+            } 
         };
         
         String[] t_files = getFileStreamPath(".").list(t_filter);

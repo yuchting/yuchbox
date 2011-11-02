@@ -33,10 +33,16 @@ public class SendingQueue extends Thread{
 		}
 	}
 	
+	public void connectNotify(){
+		synchronized (m_sendingData) {
+			m_sendingData.notify();
+		}		
+	}
+	
 	public boolean addSendingData(int _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
 		
 		if(!m_mainDeamon.isDisconnectState()){
-			m_mainDeamon.m_connect.SendBufferToSvr(_data, false, true);
+			m_mainDeamon.m_connect.SendBufferToSvr(_data,false);
 		}else{
 			synchronized (m_sendingData) {
 				if(_exceptSame){
@@ -49,7 +55,8 @@ public class SendingQueue extends Thread{
 				}
 				m_sendingData.addElement(new SendingQueueData(_msgType,_data));
 				
-			}				
+				m_sendingData.notify();
+			}		
 		}
 		
 		return true;
@@ -60,22 +67,17 @@ public class SendingQueue extends Thread{
 		while(!m_destory){
 			
 			try{
-
-				while(m_mainDeamon.isDisconnectState() || m_sendingData.isEmpty()){
-					
-					if(m_destory){
-						return ;
-					}
-					
-					try{
-						sleep(5000);
-					}catch(Exception e){}
-				}
-				
 				synchronized (m_sendingData) {
+					
+					m_sendingData.wait();
+					
+					if(m_mainDeamon.isDisconnectState()){
+						continue;
+					}
+
 					for(int i = 0 ;i < m_sendingData.size();i++){
 						SendingQueueData t_data = (SendingQueueData)m_sendingData.elementAt(i);
-						m_mainDeamon.m_connect.SendBufferToSvr(t_data.msgData, false, false);
+						m_mainDeamon.m_connect.SendBufferToSvr(t_data.msgData,false);
 					}
 					
 					m_sendingData.removeAllElements();

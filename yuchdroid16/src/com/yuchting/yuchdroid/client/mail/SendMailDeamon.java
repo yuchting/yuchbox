@@ -2,8 +2,9 @@ package com.yuchting.yuchdroid.client.mail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.nio.channels.Selector;
+import java.nio.channels.spi.SelectorProvider;
 import java.util.Vector;
-import java.util.concurrent.TimeUnit;
 
 import com.yuchting.yuchdroid.client.ConnectDeamon;
 import com.yuchting.yuchdroid.client.ISendAttachmentCallback;
@@ -14,6 +15,8 @@ import com.yuchting.yuchdroid.client.sendReceive;
 
 public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	
+	public static String		TAG			= SendMailDeamon.class.getName();
+	
 	ConnectDeamon				m_connect 	= null;
 	public fetchMail			m_sendMail 	= null;
 	public fetchMail			m_forwardReply 	= null;
@@ -22,6 +25,14 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	public	boolean	m_closeState = false;
 	
 	public SendAttachmentDeamon m_sendFileDaemon = null;
+	
+	// the Thread.sleep will not be risen by system when android's state is depth-sleep-state
+	// please check the follow URL for detail:
+	// http://stackoverflow.com/questions/5546926/how-does-the-android-system-behave-with-threads-that-sleep-for-too-long
+	//
+	// so we choose the selector for the timer  
+	//
+	private Selector			m_sleepSelector = null;
 		
 	public SendMailDeamon(ConnectDeamon _connect,
 									fetchMail _mail,
@@ -36,6 +47,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 			m_sendFileDaemon = new SendAttachmentDeamon(_connect, _vFileConnection, 
 														m_sendMail.GetSimpleHashCode(), this);
 		}else{
+			m_sleepSelector = SelectorProvider.provider().openSelector();
 			start();
 		}		
 	}
@@ -43,15 +55,17 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	public void inter(){
 		
 		if(isAlive()){
-			super.interrupt();
+			if(m_sleepSelector != null){
+				try{
+					m_sleepSelector.close();
+				}catch(Exception e){}
+				m_sleepSelector = null;
+			}			
 		}
 		
 		if(m_sendFileDaemon != null ){
-			m_sendFileDaemon.m_closeState = true;
-			if(m_sendFileDaemon.isAlive()){
-				m_sendFileDaemon.interrupt();
-			}
-			
+			m_sendFileDaemon.inter();
+			m_sendFileDaemon = null;
 		}
 	}
 		
@@ -101,7 +115,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 			//
 			sendReceive.WriteBoolean(t_os,m_connect.m_mainApp.m_config.m_copyMailToSentFolder);
 			
-			m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), false,false);
+			m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), false);
 					
 			t_os.close();
 						
@@ -129,7 +143,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 			if(m_closeState){
 				break;
 			}
-						
+			
 			try{
 													
 				while(!m_connect.m_sendAuthMsg){
@@ -141,11 +155,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 						sendPause();
 					}
 					
-					try{
-						sleep(10000);
-					}catch(Exception _e){
-						break;
-					}
+					m_sleepSelector.select(10000);
 				}
 				
 				sendStart();
@@ -157,7 +167,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 					// except mail with attachment
 					//
 					if(t_resend_time++ < 3){
-						TimeUnit.SECONDS.sleep(2 * 60);
+						m_sleepSelector.select(2 * 60000);
 					}else{
 						sendError();
 						m_connect.m_mainApp.setErrorString("S:resend 3 time,give up.");

@@ -28,7 +28,22 @@
     <string name="login_state_connected">连接成功</string>
     <string name="login_menu_setting">连接设置</string>
     <string name="login_menu_home">内容主界面</string>
-       
+    
+    <!-- login preference activity -->
+    <string name="login_pref_title">通用选项</string>
+    <string name="login_pref_connect_category">连接</string>
+    <string name="login_pref_use_ssl">使用SSL连接语盒服务</string>
+    <string name="login_pref_use_ssl_sum">必须手动生成私有证书，并在服务器上加载</string>
+    <string name="login_pref_auto_run">开机自动运行</string>
+    <string name="login_pref_auto_run_sum">开机时自动启动并连接服务器</string>
+    <string name="login_pref_pulse_interval">心跳包间隔</string>
+    <string name="login_pref_pulse_interval_sum">维持网络连接的心跳包（越短越耗电，连接质量也越好）</string>    
+    <string name="login_pref_prompt_category">提醒</string>
+    <string name="login_pref_whole_day">全天提醒</string>
+    <string name="login_pref_whole_day_sum">只要连接正常，全天都会收到提醒</string>
+    <string name="login_pref_whole_day_sum_off">收到信息后，不发触发提醒</string>
+    <string name="login_pref_start_prompt">提醒开始时间</string>
+    <string name="login_pref_start_prompt_sum">一天开始</string>
     
     <!-- dialog relation -->
     <string name="dlg_info_title">语盒提示：</string>

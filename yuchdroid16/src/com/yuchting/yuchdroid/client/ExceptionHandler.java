@@ -36,21 +36,23 @@ public class ExceptionHandler implements UncaughtExceptionHandler{
             final Writer result = new StringWriter();
             final PrintWriter printWriter = new PrintWriter(result);
             e.printStackTrace(printWriter);
-            Log.d(TAG, result.toString());
+            
+            String t_resultStr = result.toString();
+            System.err.println(TAG + t_resultStr);
             
             // Random number to avoid duplicate files
         	//
         	SimpleDateFormat t_timeformat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss_");
             String filename = t_timeformat.format(new Date()) + YuchDroidApp.fsm_appVersion ;
             
-            Log.d(TAG, "Writing unhandled exception to: " + STORE_FILES_PATH + "/"+ filename + fsm_stackstraceSuffix);
+            System.err.println(TAG+"Writing unhandled exception to: " + STORE_FILES_PATH + "/"+ filename + fsm_stackstraceSuffix);
             
             // Write the stacktrace to disk
             //
             BufferedWriter bos = new BufferedWriter(new FileWriter(STORE_FILES_PATH+"/" + filename + fsm_stackstraceSuffix));
             try{
             	bos.write(filename + ":\n");
-	            bos.write(result.toString());
+	            bos.write(t_resultStr);
                 bos.flush();
             }finally{
             	bos.close();

@@ -3,6 +3,8 @@ package com.yuchting.yuchdroid.client;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.channels.Selector;
+import java.nio.channels.spi.SelectorProvider;
 import java.util.List;
 import java.util.Locale;
 import java.util.Vector;
@@ -22,7 +24,7 @@ import android.util.Log;
 import com.yuchting.yuchdroid.client.mail.SendMailDeamon;
 import com.yuchting.yuchdroid.client.mail.fetchMail;
 
-public class ConnectDeamon extends Service{
+public class ConnectDeamon extends Service implements Runnable{
 	
 	public final static String TAG = "ConnectDeamon";
 	
@@ -46,14 +48,14 @@ public class ConnectDeamon extends Service{
 	//
 	private Vector<Integer>			m_recvMailSimpleHashCodeSet = new Vector<Integer>();		
 	private Vector<SendMailDeamon>		m_sendingMailAttachment = new Vector<SendMailDeamon>();
-	
-	// proxy thread
+		
+	// the Thread.sleep will not be risen by system when android's state is depth-sleep-state
+	// please check the follow URL for detail:
+	// http://stackoverflow.com/questions/5546926/how-does-the-android-system-behave-with-threads-that-sleep-for-too-long
 	//
-	private Thread m_proxyThread = new Thread(){
-		public void run(){
-			ConnectDeamon.this.run();
-		}
-	};
+	// so we choose the selector for the timer  
+	//
+	private Selector			m_sleepSelector = null;
 	
 	BroadcastReceiver m_mailMarkReadRecv = new BroadcastReceiver() {
 		
@@ -130,18 +132,26 @@ public class ConnectDeamon extends Service{
 		//
 		m_sendingQueue = new SendingQueue(this);
 		
-		
-				
-		// start the connect run thread
-		//
-		m_proxyThread.start();
-		
 		registerReceiver(m_mailMarkReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
 		registerReceiver(m_mailSendRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL));
 		
 		m_mainApp.m_connectDeamonRun = true;
-		
 		m_mainApp.setErrorString("ConnectDeamon onCreate");
+		
+		try{
+			m_sleepSelector = SelectorProvider.provider().openSelector();
+		}catch(Exception e){
+			m_mainApp.setErrorString(TAG, e);
+			
+			GlobalDialog.showInfo("can't open the selector for sleep please check debug info", this);
+			stopSelf();
+			
+			return;
+		}
+		
+		// start the connect run thread
+		//
+		(new Thread(this)).start();
 	}
 	
 		
@@ -191,6 +201,10 @@ public class ConnectDeamon extends Service{
 		m_destroy = true;
 		
 		closeConnect();
+		try{
+			m_sleepSelector.close();
+		}catch(Exception e){}
+		
 	
 		if(m_sendingQueue != null){
 			m_sendingQueue.destory();
@@ -260,8 +274,8 @@ public class ConnectDeamon extends Service{
 		if(m_connectCounter++ == -1){
 			return 0;
 		}
-		 
-		if(m_connectCounter++ > 6){
+		
+		if(m_connectCounter >= 4){
 			m_connectCounter = 0;		 
 			return GetPulseIntervalMinutes() * 60 * 1000;
 		}
@@ -285,11 +299,21 @@ public class ConnectDeamon extends Service{
 	}
 	
 	
+	sendReceive.IStoreUpDownloadByte m_upDownloadByteInterface = new sendReceive.IStoreUpDownloadByte(){
+		public void store(long uploadByte, long downloadByte) {
+			StoreUpDownloadByte(uploadByte,downloadByte,true);
+		}
+		
+		public int getPushInterval(){
+			return GetPulseIntervalMinutes();
+		}
+	};
+	
 	private sendReceive GetConnection(boolean _ssl)throws Exception{
 		 
 		final int t_sleep = GetConnectInterval();
 		if(t_sleep != 0){
-			Thread.sleep(t_sleep);
+			m_sleepSelector.select(t_sleep);
 		}
 		 
 		if(m_destroy){
@@ -298,13 +322,13 @@ public class ConnectDeamon extends Service{
 
 		try{
 			
-			return new sendReceive(m_mainApp.m_config.m_host,m_mainApp.m_config.m_port,_ssl);
+			return new sendReceive(m_mainApp.m_config.m_host,m_mainApp.m_config.m_port,_ssl,
+									m_upDownloadByteInterface);
 			
 		}catch(java.net.ConnectException e){
 			// connection time out exception
 			//
-			m_connectCounter = 100;
-			
+			m_connectCounter = 100;		
 			throw e;
 		}				
 	}
@@ -346,15 +370,15 @@ public class ConnectDeamon extends Service{
 		 
 		Disconnect();
 		m_mainApp.setConnectState(YuchDroidApp.STATE_CONNECTING);
-		 
-		m_proxyThread.interrupt();
+		
+		m_sleepSelector.wakeup();
 	}
 	
 	public void Disconnect()throws Exception{
 		
 		m_mainApp.StopDisconnectNotification();
 		
-		m_proxyThread.interrupt();
+		m_sleepSelector.wakeup();
 						 	
 		synchronized (this) {
 			
@@ -400,14 +424,15 @@ public class ConnectDeamon extends Service{
 			m_sendAuthMsg = false;
 						
 			while(CanNotConnectSvr()){
-	
+				
+				try{
+					m_sleepSelector.select(15000);
+				}catch(Exception _e){}
+				
+
 				if(m_destroy){
 					return ;
 				}
-				
-				try{
-					Thread.sleep(15000);
-				}catch(Exception _e){}	
 			}
 			
 			try{
@@ -421,15 +446,7 @@ public class ConnectDeamon extends Service{
 				// TCP connect flowing bytes statistics 
 				//
 				StoreUpDownloadByte(72,40,false);								
-				
-				m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
-				
-				m_connect.RegisterStoreUpDownloadByte(new sendReceive.IStoreUpDownloadByte() {
-					public void Store(long uploadByte, long downloadByte) {
-						StoreUpDownloadByte(uploadByte,downloadByte,true);
-					}
-				});
-							
+											
 				// send the Auth info
 				//
 				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
@@ -445,7 +462,7 @@ public class ConnectDeamon extends Service{
 				sendReceive.WriteInt(t_os,t_size);
 				sendReceive.WriteBoolean(t_os,m_mainApp.m_config.m_enableIMModule);
 				
-				m_connect.SendBufferToSvr(t_os.toByteArray(), true,false);
+				m_connect.SendBufferToSvr(t_os.toByteArray(), true);
 				
 				m_sendAuthMsg = true;
 				
@@ -457,6 +474,7 @@ public class ConnectDeamon extends Service{
 				//
 				m_mainApp.setConnectState(YuchDroidApp.STATE_CONNECTED);
 				m_mainApp.StopDisconnectNotification();
+				m_sendingQueue.connectNotify();
 				
 				SetModuleOnlineState(true);
 								
@@ -480,7 +498,7 @@ public class ConnectDeamon extends Service{
 			
 			closeConnect();
 			
-			SetModuleOnlineState(false);									
+			SetModuleOnlineState(false);								
 		}
 	}
 	

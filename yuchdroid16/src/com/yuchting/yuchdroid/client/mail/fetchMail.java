@@ -26,8 +26,7 @@ final class Address{
 
 
 public class  fetchMail{
-	
-	
+		
 	final static int	VERSION = 3;
 	
 	public final static String	fsm_vectStringSpliter = "<>";
@@ -91,6 +90,8 @@ public class  fetchMail{
 	
 	private long					m_sendRefMailId		= -1;
 	private int					m_sendRefMailStyle	= NOTHING_STYLE;
+	
+	private long					m_recvMailTime	= System.currentTimeMillis();
 		
 	
 	// location information
@@ -247,7 +248,9 @@ public class  fetchMail{
 			setGroupFlag(GROUP_FLAG_RECV);
 		}else{
 			setGroupFlag(GROUP_FLAG_RECV_ATTACH);
-		}	
+		}
+		
+		m_recvMailTime = System.currentTimeMillis();
 	}
 	
 	
@@ -274,6 +277,9 @@ public class  fetchMail{
 	
 	public void setSendRefMailStyle(int _style){m_sendRefMailStyle = _style;}
 	public int getSendRefMailStyle(){return m_sendRefMailStyle;}
+	
+	public void setRecvMailTime(long _time){m_recvMailTime = _time;}
+	public long getRecvMailTime(){return m_recvMailTime;}
 	
 	public boolean isOwnSendMail(){
 		

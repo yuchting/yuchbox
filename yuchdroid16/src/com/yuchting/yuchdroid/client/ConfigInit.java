@@ -19,11 +19,11 @@ public final class ConfigInit {
 	public String m_host					= null;
 	public int m_port						= 0;
 	public String m_userPass				= null;
+	
 	public String m_passwordKey				= "";
 	public boolean m_useSSL				= false;
 	public boolean m_autoRun				= false;
 	
-	public static final String[]	fsm_pulseIntervalString = {"1","3","5","10","30"};
 	public static final int[]		fsm_pulseInterval		= {1,3,5,10,30};
 	public int	m_pulseIntervalIndex	= 2;
 	

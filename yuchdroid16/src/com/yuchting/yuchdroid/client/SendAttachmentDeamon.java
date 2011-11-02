@@ -4,10 +4,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.channels.Selector;
+import java.nio.channels.spi.SelectorProvider;
 import java.util.Vector;
 
 
 public class SendAttachmentDeamon extends Thread{
+	
+	public static String		TAG			= SendAttachmentDeamon.class.getName();
 	
 	ConnectDeamon		m_connect 	= null;
 	int					m_sendHashCode = 0;
@@ -32,6 +36,14 @@ public class SendAttachmentDeamon extends Thread{
 	byte[] 				m_bufferBytes 		= new byte[fsm_segmentSize];
 	
 	public	boolean	m_closeState = false;
+	
+	// the Thread.sleep will not be risen by system when android's state is depth-sleep-state
+	// please check the follow URL for detail:
+	// http://stackoverflow.com/questions/5546926/how-does-the-android-system-behave-with-threads-that-sleep-for-too-long
+	//
+	// so we choose the selector for the timer  
+	//
+	private Selector			m_sleepSelector = null;
 		
 	public SendAttachmentDeamon(ConnectDeamon _connect,
 								Vector<File> _vFileConnection,int _sendHashCode,
@@ -52,8 +64,23 @@ public class SendAttachmentDeamon extends Thread{
 						
 		m_fileConnection = (File)m_vFileConnection.elementAt(m_attachmentIndex);
 		m_fileIn = new FileInputStream(m_fileConnection);
-										
+				
+		m_sleepSelector	= SelectorProvider.provider().openSelector();
 		start();
+	}
+	
+	public void inter(){
+		
+		if(!m_closeState){
+			m_closeState = true;
+			
+			if(m_sleepSelector != null){
+				try{
+					m_sleepSelector.close();
+				}catch(Exception e){}
+				m_sleepSelector = null;
+			}			
+		}
 	}
 	
 	public SendAttachmentDeamon(ConnectDeamon _connect,
@@ -109,7 +136,7 @@ public class SendAttachmentDeamon extends Thread{
 				
 			}catch(Exception _e){
 				try{
-					sleep(5000);
+					m_sleepSelector.select(5000);
 					m_connect.m_mainApp.setErrorString("SA: read file fail" + _e.getMessage() + _e.getClass().getName());
 				}catch(Exception ex){}
 				
@@ -144,7 +171,7 @@ public class SendAttachmentDeamon extends Thread{
 		sendReceive.WriteInt(t_os, t_size);
 		t_os.write(m_bufferBytes,0,t_size);
 				
-		m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), _send,false);
+		m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), _send);
 		
 		//System.out.println("send msgMailAttach time:"+ m_sendHashCode + " attIdx<" +m_attachmentIndex + "> beginIndex<" + m_beginIndex + "> size:" + t_size);
 		
@@ -206,7 +233,7 @@ public class SendAttachmentDeamon extends Thread{
 			}					
 			
 			if(isAlive()){
-				interrupt();
+				m_sleepSelector.wakeup();
 			}
 			
 		}catch(Exception _e){
@@ -232,7 +259,7 @@ public class SendAttachmentDeamon extends Thread{
 				sendReceive.WriteInt(os, t_fileSize);			
 			}
 			
-			m_connect.m_connect.SendBufferToSvr(os.toByteArray(), true, false);
+			m_connect.m_connect.SendBufferToSvr(os.toByteArray(), true);
 		}else{
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			os.write(msg_head.msgFileAttach);
@@ -240,7 +267,7 @@ public class SendAttachmentDeamon extends Thread{
 			sendReceive.WriteInt(os,1);
 			sendReceive.WriteInt(os, m_uploadingBuffer.length);			
 			
-			m_connect.m_connect.SendBufferToSvr(os.toByteArray(), true, false);
+			m_connect.m_connect.SendBufferToSvr(os.toByteArray(), true);
 		}	
 	}
 	
@@ -249,43 +276,28 @@ public class SendAttachmentDeamon extends Thread{
 		boolean t_setPaddingState = false;
 		boolean t_sendFileCreate = false;
 		
-		while(true){
-			
-			if(m_closeState){
-				break;
-			}
-			
-			while(!m_connect.m_sendAuthMsg){
-				
-				if(m_connect.m_destroy){
-					ReleaseAttachFile();
-					
-					m_sendCallback.sendError();
-										
-					return;
-				}else{
-				
-					if(!t_setPaddingState){
-						t_setPaddingState = true;
-						m_sendCallback.sendPause();
-					}
-				}
-				
-				try{
-					sleep(10000);
-				}catch(Exception _e){
-					break;
-				}
-			}
-			
-			
-			
-			
-			if(m_closeState){
-				break;
-			}
+		while(!m_closeState){
 			
 			try{
+				
+				while(!m_connect.m_sendAuthMsg){
+					
+					if(m_connect.m_destroy){
+						
+						ReleaseAttachFile();
+						m_sendCallback.sendError();
+											
+						return;
+					}else{
+					
+						if(!t_setPaddingState){
+							t_setPaddingState = true;
+							m_sendCallback.sendPause();
+						}
+					}
+					
+					m_sleepSelector.select(10000);
+				}
 
 				if(!t_sendFileCreate){
 					t_sendFileCreate = true;
@@ -308,15 +320,11 @@ public class SendAttachmentDeamon extends Thread{
 				if(!t_sendOver && SendFileSegment(true)){
 					t_sendOver = true;
 				}
-				
-				if(m_closeState){
-					break;
-				}
-								
+												
 				if(t_sendOver){
 					try{
-						sleep(90 * 1000);
 						
+						m_sleepSelector.select(90 * 1000);				
 						t_sendFileCreate = false;
 						
 					}catch(Exception e){
