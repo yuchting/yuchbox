@@ -54,32 +54,36 @@ public class Yuchdroid16Activity extends Activity {
         Button buttonStart = (Button) findViewById(R.id.login_start_svr);
         buttonStart.setOnClickListener(new OnClickListener() {  
             public void onClick(View arg0){
-
-            	if(m_mainApp.m_connectDeamonRun){
-            		stopConnectDeamon();
+            	
+            	boolean t_readConfig = false;
+            	
+            	String t_host = m_host.getText().toString();
+            	String t_port = m_port.getText().toString();
+            	String t_pass = m_userPass.getText().toString();        	
+            	
+            	if(validateHost(t_host,t_port,t_pass)){	
+                	if(!t_host.equals(m_mainApp.m_config.m_host) 
+                	|| !t_port.equals(m_mainApp.m_config.m_port) 
+                	|| !t_pass.equals(m_mainApp.m_config.m_userPass)){
+                		t_readConfig = true;
+                		
+                		m_config.m_host = t_host;
+                		m_config.m_port = Integer.valueOf(t_port).intValue();
+                		m_config.m_userPass = t_pass;
+                		
+                		m_config.WriteReadIni(false);
+                	}            		
+            	}
+            	
+            	if(!m_mainApp.m_connectDeamonRun){
+            		startConnectDeamon(t_readConfig);                	
                 }else{
-
-                	String t_host = m_host.getText().toString();
-                	String t_port = m_port.getText().toString();
-                	String t_pass = m_userPass.getText().toString();        	
-                	
-                	if(validateHost(t_host,t_port,t_pass)){
-                		
-                		boolean t_readConfig = false;
-                		
-                    	if(!t_host.equals(m_mainApp.m_config.m_host) 
-                    	|| !t_port.equals(m_mainApp.m_config.m_port) 
-                    	|| !t_pass.equals(m_mainApp.m_config.m_userPass)){
-                    		t_readConfig = true;
-                    		
-                    		m_config.m_host = t_host;
-                    		m_config.m_port = Integer.valueOf(t_port).intValue();
-                    		m_config.m_userPass = t_pass;
-                    		
-                    		m_config.WriteReadIni(false);
-                    	}
-                    	
-                		startConnectDeamon(t_readConfig);
+                	if(m_mainApp.m_connectState == YuchDroidApp.STATE_DISCONNECT){
+                		Intent t_intent = new Intent(YuchDroidApp.FILTER_CONNECT);	
+                		sendBroadcast(t_intent);
+                	}else{
+                		Intent t_intent = new Intent(YuchDroidApp.FILTER_DISCONNECT);	
+                		sendBroadcast(t_intent);
                 	}
                 }
             }

@@ -3,7 +3,11 @@ package com.yuchting.yuchdroid.client;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.net.ConnectException;
+import java.net.InetSocketAddress;
+import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.List;
 import java.util.Locale;
@@ -31,6 +35,7 @@ public class ConnectDeamon extends Service implements Runnable{
 	final static int	fsm_clientVer = 15;
 	
 	public boolean m_sendAuthMsg 			= false;
+	public boolean m_connectState			= true;
 	public boolean m_destroy				= false;
 	
 	private int	m_ipConnectCounter 		= 0;
@@ -41,7 +46,7 @@ public class ConnectDeamon extends Service implements Runnable{
 	private SendingQueue	m_sendingQueue	= null;
 		
 	public sendReceive	m_connect			= null;
-	
+	public Selector		m_tmpConnectSelector = null;
 	public YuchDroidApp m_mainApp; 
 		
 	// mail system variables
@@ -77,7 +82,6 @@ public class ConnectDeamon extends Service implements Runnable{
 				}catch(Exception e){
 					m_mainApp.setErrorString("ConnectDeamon MailMarkReadRecv", e);
 				}
-				
 			}
 		}
 	};
@@ -125,6 +129,30 @@ public class ConnectDeamon extends Service implements Runnable{
 		}
 	};
 	
+	BroadcastReceiver m_connectRecv = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			try{
+				Connect();
+			}catch(Exception e){
+				m_mainApp.setErrorString("m_connectRecv", e);
+			}						
+		}
+	};
+	
+	BroadcastReceiver m_disconnectRecv = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			try{
+				Disconnect();
+			}catch(Exception e){
+				m_mainApp.setErrorString("m_disconnectRecv", e);
+			}			
+		}
+	};
+	
 	public void onCreate() {
 		m_mainApp = (YuchDroidApp)getApplicationContext();
 						
@@ -134,6 +162,8 @@ public class ConnectDeamon extends Service implements Runnable{
 		
 		registerReceiver(m_mailMarkReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
 		registerReceiver(m_mailSendRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL));
+		registerReceiver(m_connectRecv,new IntentFilter(YuchDroidApp.FILTER_CONNECT));
+		registerReceiver(m_disconnectRecv,new IntentFilter(YuchDroidApp.FILTER_DISCONNECT));
 		
 		m_mainApp.m_connectDeamonRun = true;
 		m_mainApp.setErrorString("ConnectDeamon onCreate");
@@ -198,6 +228,7 @@ public class ConnectDeamon extends Service implements Runnable{
 	public void onDestroy(){
 		m_mainApp.setErrorString("ConnectDeamon onDestroy");
 		
+		m_connectState = false;
 		m_destroy = true;
 		
 		closeConnect();
@@ -205,6 +236,9 @@ public class ConnectDeamon extends Service implements Runnable{
 			m_sleepSelector.close();
 		}catch(Exception e){}
 		
+		if(m_tmpConnectSelector != null){
+			m_tmpConnectSelector.wakeup();
+		}		
 	
 		if(m_sendingQueue != null){
 			m_sendingQueue.destory();
@@ -212,7 +246,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		}
 				
 		m_mainApp.m_connectDeamonRun = false;
-		m_mainApp.m_connectState = YuchDroidApp.STATE_DISCONNECT;
+		m_mainApp.setConnectState(YuchDroidApp.STATE_DISCONNECT);
 		
 		// destroy the all sendingMailDeamon
 		//
@@ -225,6 +259,8 @@ public class ConnectDeamon extends Service implements Runnable{
 		
 		unregisterReceiver(m_mailMarkReadRecv);
 		unregisterReceiver(m_mailSendRecv);
+		unregisterReceiver(m_connectRecv);
+		unregisterReceiver(m_disconnectRecv);
 	}
 	
 	private boolean CanNotConnectSvr(){
@@ -290,50 +326,13 @@ public class ConnectDeamon extends Service implements Runnable{
 		if(_writeIni){
 			m_mainApp.m_config.WriteReadIni(false);
 		}
-	}
-		
+	}		
 	
 	
 	public void SetReportLatestVersion(String _latestVersion){
 		//TODO popup dialog to prompt 
 	}
-	
-	
-	sendReceive.IStoreUpDownloadByte m_upDownloadByteInterface = new sendReceive.IStoreUpDownloadByte(){
-		public void store(long uploadByte, long downloadByte) {
-			StoreUpDownloadByte(uploadByte,downloadByte,true);
-		}
-		
-		public int getPushInterval(){
-			return GetPulseIntervalMinutes();
-		}
-	};
-	
-	private sendReceive GetConnection(boolean _ssl)throws Exception{
-		 
-		final int t_sleep = GetConnectInterval();
-		if(t_sleep != 0){
-			m_sleepSelector.select(t_sleep);
-		}
-		 
-		if(m_destroy){
-			throw new Exception("user closed");
-		}
 
-		try{
-			
-			return new sendReceive(m_mainApp.m_config.m_host,m_mainApp.m_config.m_port,_ssl,
-									m_upDownloadByteInterface);
-			
-		}catch(java.net.ConnectException e){
-			// connection time out exception
-			//
-			m_connectCounter = 100;		
-			throw e;
-		}				
-	}
-	
-	
 	private boolean isAppOnForeground(){
 		
 	    ActivityManager activityManager = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
@@ -365,41 +364,110 @@ public class ConnectDeamon extends Service implements Runnable{
 	private void SetAboutInfo(String _aboutInfo){
 		//TODO popup the about activity 
 	}
+	
+	sendReceive.IStoreUpDownloadByte m_upDownloadByteInterface = new sendReceive.IStoreUpDownloadByte(){
+		public void store(long uploadByte, long downloadByte) {
+			StoreUpDownloadByte(uploadByte,downloadByte,true);
+		}
 		
-	public synchronized void Connect()throws Exception{
+		public int getPushInterval(){
+			return GetPulseIntervalMinutes();
+		}
+	};
+	
+	private sendReceive GetConnection(boolean _ssl)throws Exception{
+		 
+		final int t_sleep = GetConnectInterval();
+		if(t_sleep != 0){
+			m_sleepSelector.select(t_sleep);
+		}
+		 
+		if(m_destroy){
+			throw new Exception("user destroy");
+		}
+		
+		if(!m_connectState){
+			throw new Exception("user reset connect");
+		}
+		
+		if(_ssl){
+			throw new IllegalArgumentException("Current YuchDroid can't support !");
+		}
+
+		try{
+			
+			m_tmpConnectSelector = SelectorProvider.provider().openSelector();
+			try{
+				SocketChannel t_chn = SocketChannel.open();
+				
+				t_chn.configureBlocking(false);
+				t_chn.register(m_tmpConnectSelector, SelectionKey.OP_CONNECT);
+				
+				t_chn.connect(new InetSocketAddress(m_mainApp.m_config.m_host, m_mainApp.m_config.m_port));
+				m_tmpConnectSelector.select(5000);
+										
+				if(!t_chn.finishConnect() || !m_connectState){
+					
+					m_tmpConnectSelector.close();
+					t_chn.close();
+					
+					if(!m_connectState){
+						throw new Exception("user close connect");
+					}else{
+						throw new ConnectException("client socket connect time out!");
+					}				
+				}
+				
+				return new sendReceive(m_tmpConnectSelector,t_chn,_ssl,
+										m_upDownloadByteInterface);
+				
+			}finally{
+				m_tmpConnectSelector = null;
+			}			
+			
+		}catch(java.net.ConnectException e){
+			// connection time out exception
+			//
+			m_connectCounter = 100;		
+			throw e;
+		}				
+	}
+		
+	public void Connect()throws Exception{
 		 
 		Disconnect();
+		
 		m_mainApp.setConnectState(YuchDroidApp.STATE_CONNECTING);
 		
+		m_connectState = true;		
 		m_sleepSelector.wakeup();
 	}
 	
 	public void Disconnect()throws Exception{
-		
-		m_mainApp.StopDisconnectNotification();
+			
+		m_connectState = false;	
+		m_connectCounter = -1;
+		m_ipConnectCounter = 0;
 		
 		m_sleepSelector.wakeup();
-						 	
-		synchronized (this) {
-			
-			m_connectCounter = -1;
-			 
-			m_ipConnectCounter = 0;
-			
-			closeConnect();		
-			 
-			for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
-				SendMailDeamon send = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
-				 	
-				send.m_closeState = true;
-				send.inter(); 
-				send.sendError();
-			}
-			 
-			m_sendingMailAttachment.removeAllElements();
-		}
 		
+		closeConnect();
+		
+		for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
+			SendMailDeamon send = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
+			 	
+			send.m_closeState = true;
+			send.inter(); 
+			send.sendError();
+		}
+		 
+		m_sendingMailAttachment.removeAllElements();
 		m_mainApp.setConnectState(YuchDroidApp.STATE_DISCONNECT);
+		m_mainApp.StopDisconnectNotification();
+		
+		if(m_tmpConnectSelector != null){
+			m_tmpConnectSelector.wakeup();
+		}		
 	}
 	
 	private synchronized void closeConnect(){
@@ -423,12 +491,11 @@ public class ConnectDeamon extends Service implements Runnable{
 	
 			m_sendAuthMsg = false;
 						
-			while(CanNotConnectSvr()){
+			while(CanNotConnectSvr() || !m_connectState){
 				
 				try{
 					m_sleepSelector.select(15000);
-				}catch(Exception _e){}
-				
+				}catch(Exception _e){}				
 
 				if(m_destroy){
 					return ;
@@ -484,8 +551,10 @@ public class ConnectDeamon extends Service implements Runnable{
 				
 			}catch(Exception _e){
 				
-				if(!m_destroy){
+				if(m_connectState){
 					m_mainApp.setConnectState(YuchDroidApp.STATE_CONNECTING);		
+				}else{
+					m_mainApp.setConnectState(YuchDroidApp.STATE_DISCONNECT);
 				}
 				
 				m_mainApp.setErrorString("M ",_e);

@@ -22,6 +22,8 @@ public class sendReceive{
 		void store(long _uploadByte,long _downloadByte);
 		int getPushInterval();
 	}
+	
+	public static String TAG = sendReceive.class.getName();
 	static final int		fsm_packageHeadLength 	= 4;
 	static final byte[] 	fsm_keepliveMsg 		= {1,0,0,0,msg_head.msgKeepLive};
 	
@@ -44,24 +46,14 @@ public class sendReceive{
 	
 	private Vector<ByteBuffer>					m_sendBufferVect = new Vector<ByteBuffer>();
 			
-	public sendReceive(String _ip,int _port,boolean _ssl,IStoreUpDownloadByte _callback)throws Exception{
+	public sendReceive(Selector _selector,SocketChannel _chn,boolean _ssl,IStoreUpDownloadByte _callback)throws Exception{
 
 		if(_ssl){
-			throw new IllegalArgumentException("Current YuchDroid can't support !");
+			throw new IllegalArgumentException(TAG + " Current YuchDroid can't support !");
 		}
 		
-		m_selector = SelectorProvider.provider().openSelector();
-		m_socketChn = SocketChannel.open();
-		
-		m_socketChn.configureBlocking(false);
-		m_socketChn.register(m_selector, SelectionKey.OP_CONNECT);
-		
-		m_socketChn.connect(new InetSocketAddress(_ip, _port));
-		m_selector.select(5000);
-								
-		if(!m_socketChn.finishConnect()){
-			throw new ConnectException("client socket connect time out!");
-		}
+		m_selector = _selector;
+		m_socketChn = _chn;		
 		
 		m_storeInterface = _callback;
 		
@@ -158,7 +150,7 @@ public class sendReceive{
 			if(m_closed){
 				m_socketChn.close();
 				m_selector.close();				
-				throw new Exception("Client own closed!");
+				throw new Exception(TAG + " Client own closed!");
 			}
 			
 			Iterator<SelectionKey> it = m_selector.selectedKeys().iterator();
@@ -176,12 +168,12 @@ public class sendReceive{
 							int len = t_chn.read(t_retBuf);
 							
 							if(len == -1){
-								throw new Exception("Client read -1 to closed!"); 
+								throw new Exception(TAG + " Client read -1 to closed!"); 
 							}
 							
 							t_readLen += len;
 							if(t_readLen < _len){
-								break;
+								continue;
 							}
 							
 							t_retBuf.flip(); 
@@ -194,10 +186,15 @@ public class sendReceive{
 				}
 				
 			}else{
-				// send the keeplive message
-				//
-				SendBufferToSvr_imple(fsm_keepliveMsg);
-				m_socketChn.keyFor(m_selector).interestOps(SelectionKey.OP_WRITE);
+				
+				if(!m_socketChn.isConnected()){
+					throw new Exception(TAG + " Socket chn is not connected!");
+				}else{
+					// send the keeplive message
+					//
+					SendBufferToSvr_imple(fsm_keepliveMsg);
+					m_socketChn.keyFor(m_selector).interestOps(SelectionKey.OP_WRITE);
+				}
 			}
 			
 		}
