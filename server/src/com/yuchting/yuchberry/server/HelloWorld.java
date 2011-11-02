@@ -100,25 +100,9 @@ public class HelloWorld {
 	public final static String	fsm_vectStringSpliter_sub = "@#&";
 	
 	public static void main(String arg[])throws Exception{
-		System.out.println(reRangeAddrList("yyy@gmai.com<>Me","Me"));
+		
 	}
-	
-	private static String reRangeAddrList(String _addrList,String _addAddr){
-    	
-    	String[] t_list 	= _addrList.split(fsm_vectStringSpliter);
-    	
-    	StringBuffer t_ret = new StringBuffer();
-    	for(String addr:t_list){
-    		if(!addr.equalsIgnoreCase(_addAddr)){
-    			t_ret.append(addr).append(fsm_vectStringSpliter);
-    		}
-    	}
-    	
-    	t_ret.append(_addAddr).append(fsm_vectStringSpliter);
-    	
-    	return t_ret.toString();
-    }
-	
+		
 	static public void testMDS()throws Exception{
 		String host = "45562.yuchberry.info";
 		int port	= 19781;
