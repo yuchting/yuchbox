@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">YuchDroid</string>
-    <string name="title_debug_info">Debug Information</string>
+    <string name="title_debug_info">Debug Info</string>
     <string name="title_mail">YuchDroid Mail</string>
     
     <string name="debug_info_no_info">Opps! No debug information.</string>
@@ -27,18 +27,37 @@
     <string name="login_state_connected">Connected.</string>
     <string name="login_menu_setting">Settings</string>
     <string name="login_menu_home">Home</string>
+    <string name="login_menu_about">About</string>
+    
     
     <!-- login preference activity -->
     <string name="login_pref_title">General Preference</string>
     <string name="login_pref_connect_category">Connect</string>
-    <string name="login_pref_use_ssl">Use SSL to connect Server</string>
+    <string name="login_pref_use_ssl">Use SSL</string>
     <string name="login_pref_use_ssl_sum">Must generate a SSL cert file and load in server.</string>
+    <string name="login_pref_pass_key">Crypt Key</string>
+    <string name="login_pref_pass_key_sum">Send to server to encrypt password which has been crypt</string>
     <string name="login_pref_auto_run">Automatic Run Start</string>
     <string name="login_pref_auto_run_sum">Automatic run and connect to server when system start</string>
     <string name="login_pref_pulse_interval">Pulse Interval</string>
     <string name="login_pref_pulse_interval_sum">Maintain the network connection (the shorter the more power, better connection quality))</string>    
-    
-    
+	<string name="login_pref_prompt_category">Prompt</string>
+    <string name="login_pref_whole_day">Prompt Whole Day</string>
+    <string name="login_pref_whole_day_sum">As long as the connection is normal, will prompt whole day</string>
+    <string name="login_pref_whole_day_sum_off">Will not prompt if receive message</string>
+    <string name="login_pref_start_prompt">Prompt Start Time</string>
+    <string name="login_pref_start_prompt_sum">This time of day from the beginning to prompt</string>
+    <string name="login_pref_end_prompt">Prompt End Time</string>
+    <string name="login_pref_end_prompt_sum">Will not prompt after this time</string>
+	<string name="login_pref_prompt_disconnect">Prompt After Disconnect</string>
+    <string name="login_pref_prompt_disconnect_sum">Notify user if connect server failed 5 times</string>
+	<string name="login_pref_statistics_category">Statistics</string>
+	<string name="login_pref_statistics">Network Traffic Statistics</string>
+    <string name="login_pref_statistics_up">Upload:</string>
+    <string name="login_pref_statistics_down">Download:</string>
+    <string name="login_pref_statistics_total">Total:</string>
+    <string name="login_pref_statistics_clear_prompt">Are you sure to clear this statistics?</string> 
+
     
     <!-- dialog relation -->
     <string name="dlg_info_title">YuchDroid Prompt:</string>

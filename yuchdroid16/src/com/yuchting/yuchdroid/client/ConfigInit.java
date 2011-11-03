@@ -6,14 +6,14 @@ import java.io.FileOutputStream;
 import java.util.Vector;
 
 import android.content.Context;
-import android.content.ContextWrapper;
+import android.content.res.Resources;
 import android.util.Log;
 
 import com.yuchting.yuchdroid.client.im.IMStatus;
 
 public final class ConfigInit {
 	
-	public ContextWrapper	m_ctx			= null;
+	public Context	m_ctx			= null;
 	public final static String TAG = "ConfigInit";
 	
 	public String m_host					= null;
@@ -24,7 +24,7 @@ public final class ConfigInit {
 	public boolean m_useSSL				= false;
 	public boolean m_autoRun				= false;
 	
-	public static final int[]		fsm_pulseInterval		= {1,3,5,10,30};
+	public int[]	m_pulseIntervalValues	= {1,3,5,10,30};
 	public int	m_pulseIntervalIndex	= 2;
 	
 	public boolean m_fulldayPrompt		= true;
@@ -33,8 +33,7 @@ public final class ConfigInit {
 	public boolean m_connectDisconnectPrompt = false;
 					
 	public long m_uploadByte 				= 0;
-	public long m_downloadByte				= 0;
-	
+	public long m_downloadByte				= 0;	
 		
 	// mail system variables
 	//
@@ -104,17 +103,23 @@ public final class ConfigInit {
 	public boolean m_standardUI	= false;
 	public boolean m_imVoiceImmMode = false;
 	
-	public ConfigInit(ContextWrapper _ctx){
+	public ConfigInit(Context _ctx){
 		m_ctx = _ctx;
+		
+		String[] t_str = _ctx.getResources().getStringArray(R.array.login_pref_pulse_values);		
+		m_pulseIntervalValues = new int[t_str.length];
+		for(int i = 0;i < m_pulseIntervalValues.length;i++){
+			m_pulseIntervalValues[i] = Integer.valueOf(t_str[i]).intValue();
+		}	
 	}
 	
 	public int getPulseInterval(){
-		if(m_pulseIntervalIndex < fsm_pulseInterval.length
+		if(m_pulseIntervalIndex < m_pulseIntervalValues.length
 			&& m_pulseIntervalIndex >= 0){
-			return fsm_pulseInterval[m_pulseIntervalIndex];
+			return m_pulseIntervalValues[m_pulseIntervalIndex];
 		}
 		
-		return fsm_pulseInterval[0];
+		return m_pulseIntervalValues[0];
 	}
 	
 	public void SetErrorString(String _error){

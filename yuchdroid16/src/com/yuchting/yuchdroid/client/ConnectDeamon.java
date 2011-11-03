@@ -23,6 +23,7 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.util.Log;
 
 import com.yuchting.yuchdroid.client.mail.SendMailDeamon;
@@ -54,13 +55,9 @@ public class ConnectDeamon extends Service implements Runnable{
 	private Vector<Integer>			m_recvMailSimpleHashCodeSet = new Vector<Integer>();		
 	private Vector<SendMailDeamon>		m_sendingMailAttachment = new Vector<SendMailDeamon>();
 		
-	// the Thread.sleep will not be risen by system when android's state is depth-sleep-state
-	// please check the follow URL for detail:
-	// http://stackoverflow.com/questions/5546926/how-does-the-android-system-behave-with-threads-that-sleep-for-too-long
-	//
-	// so we choose the selector for the timer  
-	//
-	private Selector			m_sleepSelector = null;
+	private Thread m_agentThread		= new Thread(this);
+	
+	private PowerManager.WakeLock m_powerWakeLock	= null;
 	
 	BroadcastReceiver m_mailMarkReadRecv = new BroadcastReceiver() {
 		
@@ -134,6 +131,9 @@ public class ConnectDeamon extends Service implements Runnable{
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			try{
+				if(!m_powerWakeLock.isHeld()){
+					m_powerWakeLock.acquire();
+				}
 				Connect();
 			}catch(Exception e){
 				m_mainApp.setErrorString("m_connectRecv", e);
@@ -146,6 +146,9 @@ public class ConnectDeamon extends Service implements Runnable{
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			try{
+				if(m_powerWakeLock.isHeld()){
+					m_powerWakeLock.release();
+				}
 				Disconnect();
 			}catch(Exception e){
 				m_mainApp.setErrorString("m_disconnectRecv", e);
@@ -168,20 +171,12 @@ public class ConnectDeamon extends Service implements Runnable{
 		m_mainApp.m_connectDeamonRun = true;
 		m_mainApp.setErrorString("ConnectDeamon onCreate");
 		
-		try{
-			m_sleepSelector = SelectorProvider.provider().openSelector();
-		}catch(Exception e){
-			m_mainApp.setErrorString(TAG, e);
-			
-			GlobalDialog.showInfo("can't open the selector for sleep please check debug info", this);
-			stopSelf();
-			
-			return;
-		}
+		m_powerWakeLock = ((PowerManager)getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+		m_powerWakeLock.acquire();
 		
 		// start the connect run thread
 		//
-		(new Thread(this)).start();
+		m_agentThread.start();
 	}
 	
 		
@@ -232,9 +227,6 @@ public class ConnectDeamon extends Service implements Runnable{
 		m_destroy = true;
 		
 		closeConnect();
-		try{
-			m_sleepSelector.close();
-		}catch(Exception e){}
 		
 		if(m_tmpConnectSelector != null){
 			m_tmpConnectSelector.wakeup();
@@ -256,6 +248,10 @@ public class ConnectDeamon extends Service implements Runnable{
 			de.sendError();
 		}
 		m_sendingMailAttachment.clear();
+		
+		if(m_powerWakeLock.isHeld()){
+			m_powerWakeLock.release();
+		}
 		
 		unregisterReceiver(m_mailMarkReadRecv);
 		unregisterReceiver(m_mailSendRecv);
@@ -370,7 +366,7 @@ public class ConnectDeamon extends Service implements Runnable{
 			StoreUpDownloadByte(uploadByte,downloadByte,true);
 		}
 		
-		public int getPushInterval(){
+		public int getPushIntervalMinutes(){
 			return GetPulseIntervalMinutes();
 		}
 	};
@@ -379,7 +375,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		 
 		final int t_sleep = GetConnectInterval();
 		if(t_sleep != 0){
-			m_sleepSelector.select(t_sleep);
+			Thread.sleep(t_sleep);
 		}
 		 
 		if(m_destroy){
@@ -434,13 +430,17 @@ public class ConnectDeamon extends Service implements Runnable{
 	}
 		
 	public void Connect()throws Exception{
-		 
+		
 		Disconnect();
 		
-		m_mainApp.setConnectState(YuchDroidApp.STATE_CONNECTING);
+
 		
+		m_mainApp.setConnectState(YuchDroidApp.STATE_CONNECTING);
+				
 		m_connectState = true;		
-		m_sleepSelector.wakeup();
+		if(m_agentThread.isAlive()){
+			m_agentThread.interrupt();
+		}
 	}
 	
 	public void Disconnect()throws Exception{
@@ -449,7 +449,9 @@ public class ConnectDeamon extends Service implements Runnable{
 		m_connectCounter = -1;
 		m_ipConnectCounter = 0;
 		
-		m_sleepSelector.wakeup();
+		if(m_agentThread.isAlive()){
+			m_agentThread.interrupt();
+		}
 		
 		closeConnect();
 		
@@ -494,7 +496,7 @@ public class ConnectDeamon extends Service implements Runnable{
 			while(CanNotConnectSvr() || !m_connectState){
 				
 				try{
-					m_sleepSelector.select(15000);
+					Thread.sleep(15000);
 				}catch(Exception _e){}				
 
 				if(m_destroy){

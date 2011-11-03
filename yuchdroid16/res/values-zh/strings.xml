@@ -28,12 +28,15 @@
     <string name="login_state_connected">连接成功</string>
     <string name="login_menu_setting">连接设置</string>
     <string name="login_menu_home">内容主界面</string>
+    <string name="login_menu_about">关于</string>
     
     <!-- login preference activity -->
     <string name="login_pref_title">通用选项</string>
     <string name="login_pref_connect_category">连接</string>
     <string name="login_pref_use_ssl">使用SSL连接语盒服务</string>
     <string name="login_pref_use_ssl_sum">必须手动生成私有证书，并在服务器上加载</string>
+    <string name="login_pref_pass_key">加密算子</string>
+    <string name="login_pref_pass_key_sum">发送给服务器用于解密服务器上面的加密密码</string>    
     <string name="login_pref_auto_run">开机自动运行</string>
     <string name="login_pref_auto_run_sum">开机时自动启动并连接服务器</string>
     <string name="login_pref_pulse_interval">心跳包间隔</string>
@@ -43,7 +46,18 @@
     <string name="login_pref_whole_day_sum">只要连接正常，全天都会收到提醒</string>
     <string name="login_pref_whole_day_sum_off">收到信息后，不发触发提醒</string>
     <string name="login_pref_start_prompt">提醒开始时间</string>
-    <string name="login_pref_start_prompt_sum">一天开始</string>
+    <string name="login_pref_start_prompt_sum">一天从这个时间开始提醒</string>
+    <string name="login_pref_end_prompt">提醒结束时间</string>
+    <string name="login_pref_end_prompt_sum">这个时间之后不提醒</string>
+    <string name="login_pref_prompt_disconnect">断开后提醒</string>
+    <string name="login_pref_prompt_disconnect_sum">断开后连接五次连不上服务器，就提醒用户</string>
+    <string name="login_pref_statistics_category">流量统计</string>
+    <string name="login_pref_statistics">网络流量</string>
+	<string name="login_pref_statistics_up">上传：</string>
+    <string name="login_pref_statistics_down">下载：</string>
+    <string name="login_pref_statistics_total">总计：</string>  
+    <string name="login_pref_statistics_clear_prompt">你真的想要清除统计么？</string>
+    
     
     <!-- dialog relation -->
     <string name="dlg_info_title">语盒提示：</string>

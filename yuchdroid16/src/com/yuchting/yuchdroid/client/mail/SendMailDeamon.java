@@ -25,15 +25,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	public	boolean	m_closeState = false;
 	
 	public SendAttachmentDeamon m_sendFileDaemon = null;
-	
-	// the Thread.sleep will not be risen by system when android's state is depth-sleep-state
-	// please check the follow URL for detail:
-	// http://stackoverflow.com/questions/5546926/how-does-the-android-system-behave-with-threads-that-sleep-for-too-long
-	//
-	// so we choose the selector for the timer  
-	//
-	private Selector			m_sleepSelector = null;
-		
+
 	public SendMailDeamon(ConnectDeamon _connect,
 									fetchMail _mail,
 									Vector<File> _vFileConnection,
@@ -47,7 +39,6 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 			m_sendFileDaemon = new SendAttachmentDeamon(_connect, _vFileConnection, 
 														m_sendMail.GetSimpleHashCode(), this);
 		}else{
-			m_sleepSelector = SelectorProvider.provider().openSelector();
 			start();
 		}		
 	}
@@ -55,12 +46,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	public void inter(){
 		
 		if(isAlive()){
-			if(m_sleepSelector != null){
-				try{
-					m_sleepSelector.close();
-				}catch(Exception e){}
-				m_sleepSelector = null;
-			}			
+			interrupt();			
 		}
 		
 		if(m_sendFileDaemon != null ){
@@ -155,7 +141,9 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 						sendPause();
 					}
 					
-					m_sleepSelector.select(10000);
+					try{
+						sleep(10000);
+					}catch(Exception e){}
 				}
 				
 				sendStart();
@@ -167,7 +155,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 					// except mail with attachment
 					//
 					if(t_resend_time++ < 3){
-						m_sleepSelector.select(2 * 60000);
+						sleep(2 * 60000);
 					}else{
 						sendError();
 						m_connect.m_mainApp.setErrorString("S:resend 3 time,give up.");

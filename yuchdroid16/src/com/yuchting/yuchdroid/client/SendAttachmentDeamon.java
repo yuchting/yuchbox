@@ -4,8 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.channels.Selector;
-import java.nio.channels.spi.SelectorProvider;
 import java.util.Vector;
 
 
@@ -37,13 +35,6 @@ public class SendAttachmentDeamon extends Thread{
 	
 	public	boolean	m_closeState = false;
 	
-	// the Thread.sleep will not be risen by system when android's state is depth-sleep-state
-	// please check the follow URL for detail:
-	// http://stackoverflow.com/questions/5546926/how-does-the-android-system-behave-with-threads-that-sleep-for-too-long
-	//
-	// so we choose the selector for the timer  
-	//
-	private Selector			m_sleepSelector = null;
 		
 	public SendAttachmentDeamon(ConnectDeamon _connect,
 								Vector<File> _vFileConnection,int _sendHashCode,
@@ -65,7 +56,6 @@ public class SendAttachmentDeamon extends Thread{
 		m_fileConnection = (File)m_vFileConnection.elementAt(m_attachmentIndex);
 		m_fileIn = new FileInputStream(m_fileConnection);
 				
-		m_sleepSelector	= SelectorProvider.provider().openSelector();
 		start();
 	}
 	
@@ -74,11 +64,8 @@ public class SendAttachmentDeamon extends Thread{
 		if(!m_closeState){
 			m_closeState = true;
 			
-			if(m_sleepSelector != null){
-				try{
-					m_sleepSelector.close();
-				}catch(Exception e){}
-				m_sleepSelector = null;
+			if(isAlive()){
+				interrupt();				
 			}			
 		}
 	}
@@ -136,7 +123,7 @@ public class SendAttachmentDeamon extends Thread{
 				
 			}catch(Exception _e){
 				try{
-					m_sleepSelector.select(5000);
+					sleep(5000);
 					m_connect.m_mainApp.setErrorString("SA: read file fail" + _e.getMessage() + _e.getClass().getName());
 				}catch(Exception ex){}
 				
@@ -233,7 +220,7 @@ public class SendAttachmentDeamon extends Thread{
 			}					
 			
 			if(isAlive()){
-				m_sleepSelector.wakeup();
+				interrupt();
 			}
 			
 		}catch(Exception _e){
@@ -296,14 +283,16 @@ public class SendAttachmentDeamon extends Thread{
 						}
 					}
 					
-					m_sleepSelector.select(10000);
+					try{
+						sleep(10000);
+					}catch(Exception e){}
+					
 				}
 
 				if(!t_sendFileCreate){
 					t_sendFileCreate = true;
 					sendFileCreateMsg();
-				}
-				
+				}				
 				
 				m_sendCallback.sendStart();
 				
@@ -324,7 +313,7 @@ public class SendAttachmentDeamon extends Thread{
 				if(t_sendOver){
 					try{
 						
-						m_sleepSelector.select(90 * 1000);				
+						sleep(90000);				
 						t_sendFileCreate = false;
 						
 					}catch(Exception e){

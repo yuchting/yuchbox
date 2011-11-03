@@ -90,21 +90,21 @@ public class YuchDroidApp extends Application {
 	public Vector<String>	m_errorList = new Vector<String>();
 	
 	public MailDbAdapter	m_dba		= new MailDbAdapter(this);
-	public ConfigInit		m_config 	= new ConfigInit(this);
+	public ConfigInit		m_config 	= null;
 	
 	public boolean			m_connectDeamonRun	= false;
-	public int				m_connectState		= STATE_DISCONNECT;
-	
+	public int				m_connectState		= STATE_DISCONNECT;	
 	
 	// reference fetch Mail
 	//
 	public fetchMail		m_composeRefMail;
-	public fetchMail		m_composeStyleRefMail;
-	
+	public fetchMail		m_composeStyleRefMail;	
 		
 	@Override
 	public void onCreate (){
 		super.onCreate();
+		
+		m_config = new ConfigInit(this);
 				
 		// get the PIN string (android id)
 		//
@@ -171,7 +171,6 @@ public class YuchDroidApp extends Application {
         }       
 	}
 	
-
 	public static String getVersionName(Context context, Class<ConnectDeamon> cls){
 		try{
 			ComponentName comp = new ComponentName(context, cls);
@@ -340,7 +339,7 @@ public class YuchDroidApp extends Application {
 	
 	 // utility function
     //
-    public static String GetByteStr(int _byte){
+    public static String GetByteStr(long _byte){
     	if(_byte < 1000){
 			return "" + _byte + "B";
 		}else if(_byte >= 1000 && _byte < 1000000){

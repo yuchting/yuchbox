@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -131,9 +132,6 @@ public class Yuchdroid16Activity extends Activity {
     private void stopConnectDeamon(){  
     	Intent intent = new Intent(this,ConnectDeamon.class);
         stopService(intent);
-        
-        // set the text
-        setConnectState(YuchDroidApp.STATE_DISCONNECT);
     }
     
     @Override
@@ -183,6 +181,10 @@ public class Yuchdroid16Activity extends Activity {
             	return true;
             case R.id.login_menu_setting:
             	startActivity(new Intent(this,ConnectPrefActivity.class));
+            	return true;
+            case R.id.login_menu_about:
+            	Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://code.google.com/p/yuchberry/wiki/Thanks_sheet"));
+            	startActivity(browserIntent);
             	return true;
         }
 

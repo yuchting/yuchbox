@@ -4,13 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.ConnectException;
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.spi.SelectorProvider;
 import java.util.Iterator;
 import java.util.Vector;
 import java.util.zip.GZIPInputStream;
@@ -20,7 +17,7 @@ public class sendReceive{
 	
 	public static interface IStoreUpDownloadByte{
 		void store(long _uploadByte,long _downloadByte);
-		int getPushInterval();
+		int getPushIntervalMinutes();
 	}
 	
 	public static String TAG = sendReceive.class.getName();
@@ -43,7 +40,7 @@ public class sendReceive{
 	int					m_storeByteTimer		= 0;
 	
 	IStoreUpDownloadByte	m_storeInterface	= null;
-	
+		
 	private Vector<ByteBuffer>					m_sendBufferVect = new Vector<ByteBuffer>();
 			
 	public sendReceive(Selector _selector,SocketChannel _chn,boolean _ssl,IStoreUpDownloadByte _callback)throws Exception{
@@ -53,8 +50,8 @@ public class sendReceive{
 		}
 		
 		m_selector = _selector;
-		m_socketChn = _chn;		
-		
+		m_socketChn = _chn;
+						
 		m_storeInterface = _callback;
 		
 		// register the selector 
@@ -77,8 +74,8 @@ public class sendReceive{
 
 			m_unsendedPackage.addElement(_write);
 		}
-		
-		m_selector.wakeup();		
+			
+		m_selector.wakeup();			
 	}
 	
 	public void StoreUpDownloadByteImm(boolean _force){
@@ -140,17 +137,18 @@ public class sendReceive{
 		
 		while(true){
 			
-			if(!m_unsendedPackage.isEmpty()){
-				SendBufferToSvr_imple(PrepareOutputData());				
-				m_socketChn.keyFor(m_selector).interestOps(SelectionKey.OP_WRITE);
-			}
-
-			m_selector.select(m_storeInterface.getPushInterval() * 60000);
+			m_selector.select(m_storeInterface.getPushIntervalMinutes() * 60000);
 			
 			if(m_closed){
 				m_socketChn.close();
 				m_selector.close();				
 				throw new Exception(TAG + " Client own closed!");
+			}
+			
+			if(!m_unsendedPackage.isEmpty()){
+				SendBufferToSvr_imple(PrepareOutputData());				
+				m_socketChn.keyFor(m_selector).interestOps(SelectionKey.OP_WRITE);
+				continue;
 			}
 			
 			Iterator<SelectionKey> it = m_selector.selectedKeys().iterator();
