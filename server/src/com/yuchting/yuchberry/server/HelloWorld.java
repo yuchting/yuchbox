@@ -100,7 +100,13 @@ public class HelloWorld {
 	public final static String	fsm_vectStringSpliter_sub = "@#&";
 	
 	public static void main(String arg[])throws Exception{
-		
+		testBoolean(true);
+	}
+	
+	static public void testBoolean(Object bool){
+		if(((Boolean)bool).booleanValue()){
+			System.out.print("aa");
+		}
 	}
 		
 	static public void testMDS()throws Exception{
