@@ -14,6 +14,8 @@ import java.util.Locale;
 import java.util.Vector;
 
 import android.app.ActivityManager;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.content.BroadcastReceiver;
@@ -56,6 +58,7 @@ public class ConnectDeamon extends Service implements Runnable{
 	private Vector<SendMailDeamon>		m_sendingMailAttachment = new Vector<SendMailDeamon>();
 		
 	private Thread m_agentThread		= new Thread(this);
+	private PendingIntent	m_pulseAlerm = null;
 	
 	private PowerManager.WakeLock m_powerWakeLock	= null;
 	
@@ -148,14 +151,14 @@ public class ConnectDeamon extends Service implements Runnable{
 			try{
 				if(m_powerWakeLock.isHeld()){
 					m_powerWakeLock.release();
-				}
+				}								
 				Disconnect();
 			}catch(Exception e){
 				m_mainApp.setErrorString("m_disconnectRecv", e);
 			}			
 		}
 	};
-	
+		
 	public void onCreate() {
 		m_mainApp = (YuchDroidApp)getApplicationContext();
 						
@@ -371,7 +374,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		}
 	};
 	
-	private sendReceive GetConnection(boolean _ssl)throws Exception{
+	private sendReceive getConnection(boolean _ssl)throws Exception{
 		 
 		final int t_sleep = GetConnectInterval();
 		if(t_sleep != 0){
@@ -414,6 +417,8 @@ public class ConnectDeamon extends Service implements Runnable{
 					}				
 				}
 				
+				startAlarmForPulse();
+				
 				return new sendReceive(m_tmpConnectSelector,t_chn,_ssl,
 										m_upDownloadByteInterface);
 				
@@ -428,13 +433,37 @@ public class ConnectDeamon extends Service implements Runnable{
 			throw e;
 		}				
 	}
+	
+	private synchronized void closeConnect(){
+		
+		try{
+			if(m_connect != null){
+				m_connect.CloseSendReceive();
+			}	
+		}catch(Exception _e){
+			m_mainApp.setErrorString("closeConnect", _e);
+		}
+		
+		stopAlarmForPulse();
+				
+		m_connect = null;
+	}
+	
+	public void startAlarmForPulse(){
+		if(m_pulseAlerm == null){
+			
+		}
+	}
+	
+	public void stopAlarmForPulse(){
+		if(m_pulseAlerm != null){
+			AlarmManager t_msg = (AlarmManager)getSystemService(Context.ALARM_SERVICE); 
+		}
+	}
 		
 	public void Connect()throws Exception{
 		
-		Disconnect();
-		
-
-		
+		Disconnect();	
 		m_mainApp.setConnectState(YuchDroidApp.STATE_CONNECTING);
 				
 		m_connectState = true;		
@@ -472,20 +501,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		}		
 	}
 	
-	private synchronized void closeConnect(){
-		
-		try{
-			
-			if(m_connect != null){
-				m_connect.CloseSendReceive();
-			}	
-		}catch(Exception _e){
-			m_mainApp.setErrorString("closeConnect", _e);
-		}	
-				
-		m_connect = null;
-		
-	}
+	
 	
 	public void run(){
 		
@@ -494,7 +510,7 @@ public class ConnectDeamon extends Service implements Runnable{
 			m_sendAuthMsg = false;
 						
 			while(CanNotConnectSvr() || !m_connectState){
-				
+							
 				try{
 					Thread.sleep(15000);
 				}catch(Exception _e){}				
@@ -510,7 +526,7 @@ public class ConnectDeamon extends Service implements Runnable{
 					m_ipConnectCounter++;
 				}				
 				
-				m_connect = GetConnection(IsUseSSL());
+				m_connect = getConnection(IsUseSSL());
 								
 				// TCP connect flowing bytes statistics 
 				//
@@ -544,9 +560,9 @@ public class ConnectDeamon extends Service implements Runnable{
 				m_mainApp.setConnectState(YuchDroidApp.STATE_CONNECTED);
 				m_mainApp.StopDisconnectNotification();
 				m_sendingQueue.connectNotify();
-				
-				SetModuleOnlineState(true);
 								
+				SetModuleOnlineState(true);
+																
 				while(true){
 					ProcessMsg(m_connect.RecvBufferFromSvr());
 				}

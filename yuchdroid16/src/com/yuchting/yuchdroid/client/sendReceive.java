@@ -135,9 +135,10 @@ public class sendReceive{
 		ByteBuffer t_retBuf = ByteBuffer.allocate(_len);
 		int t_readLen = 0;
 		
+		int t_selectkey = 0;
 		while(true){
 			
-			m_selector.select(m_storeInterface.getPushIntervalMinutes() * 60000);
+			t_selectkey = m_selector.select(m_storeInterface.getPushIntervalMinutes() * 60000);
 			
 			if(m_closed){
 				m_socketChn.close();
@@ -148,13 +149,15 @@ public class sendReceive{
 			if(!m_unsendedPackage.isEmpty()){
 				SendBufferToSvr_imple(PrepareOutputData());				
 				m_socketChn.keyFor(m_selector).interestOps(SelectionKey.OP_WRITE);
+				
+				// the next select will hold the write op
+				//
 				continue;
 			}
-			
-			Iterator<SelectionKey> it = m_selector.selectedKeys().iterator();
 				
-			if(it.hasNext()){
+			if(t_selectkey != 0){
 				
+				Iterator<SelectionKey> it = m_selector.selectedKeys().iterator();
 				while(it.hasNext()){
 					SelectionKey key = it.next();
 					it.remove();
@@ -193,8 +196,7 @@ public class sendReceive{
 					SendBufferToSvr_imple(fsm_keepliveMsg);
 					m_socketChn.keyFor(m_selector).interestOps(SelectionKey.OP_WRITE);
 				}
-			}
-			
+			}			
 		}
 	}
 	
