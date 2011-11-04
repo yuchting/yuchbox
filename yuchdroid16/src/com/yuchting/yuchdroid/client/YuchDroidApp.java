@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.PrintStream;
+import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Vector;
@@ -17,7 +18,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.Contacts;
+import android.provider.Contacts.People;
 import android.text.ClipboardManager;
+import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -93,16 +99,28 @@ public class YuchDroidApp extends Application {
 	public ConfigInit		m_config 	= null;
 	
 	public boolean			m_connectDeamonRun	= false;
-	public int				m_connectState		= STATE_DISCONNECT;	
+	public int				m_connectState		= STATE_DISCONNECT;
 	
+	public String[]			m_mailAddressList	= new String[]{""};
+	private Vector<String>	m_mailAddrSearch	= new Vector<String>();
+		
 	// reference fetch Mail
 	//
 	public fetchMail		m_composeRefMail;
-	public fetchMail		m_composeStyleRefMail;	
+	public fetchMail		m_composeStyleRefMail;
 		
 	@Override
 	public void onCreate (){
 		super.onCreate();
+		
+		// start own unhandled exception handler
+		//
+		ExceptionHandler.registerHandler(this);
+		
+		// check the former unhandled file
+		//
+		checkFormerUnhandleFiles();
+		
 		
 		m_config = new ConfigInit(this);
 				
@@ -127,14 +145,135 @@ public class YuchDroidApp extends Application {
 		Display display = ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 		sm_displyWidth = display.getWidth();
 		sm_displyHeight = display.getHeight();
-		
-		// start own unhandled exception handler
+				
+		// construct mail address list
 		//
-		ExceptionHandler.registerHandler(this);
+		constructMailAddrList();
 		
-		// check the former unhandled file
-		//
-		checkFormerUnhandleFiles();		
+	}
+	
+	
+	private  void constructMailAddrList(){
+		(new Thread(){
+			public void run(){
+				
+				synchronized (m_mailAddrSearch){
+					
+					m_mailAddrSearch.clear();
+					
+					// first search from database
+					//
+					Cursor c = m_dba.fetchAllGroupAddrList();
+					try{
+																	
+						if(c != null && c.getCount() > 0){
+							
+							int t_count = c.getCount();
+							int t_index = c.getColumnIndex(MailDbAdapter.GROUP_ATTR_ADDR_LIST);
+							
+							for(int i = 0;i < t_count;i++){
+								c.moveToPosition(i);
+								String[] t_list = c.getString(t_index).split(fetchMail.fsm_vectStringSpliter);
+								
+								for(String addr : t_list){
+									for(String has:m_mailAddrSearch){
+										if(!has.equals(addr)){
+											m_mailAddrSearch.add(addr);
+										}
+									}
+								}
+							}
+						}
+						
+					}finally{
+						c.close();
+					}
+					// second search from the contact
+					// the People class is Deprecated after 2.1
+					//
+					
+					int sdk = new Integer(android.os.Build.VERSION.SDK).intValue();  
+			        if(sdk >= 5){  
+			            try {  
+			                Class<?> clazz = Class.forName("android.provider.ContactsContract$Contacts");  
+			                Uri CONTENT_URI = (Uri) clazz.getField("CONTENT_URI").get(clazz);
+			                
+			                // find the magic string from the source of android 2.1 OS
+			                // http://618119.com/archives/2011/01/01/201.html
+			                //
+			                String Contacts_ID = "_id";
+			                String Contacts_NAME = "display_name";
+			                
+			                c = getContentResolver().query(CONTENT_URI,new String[]{Contacts_ID,Contacts_NAME},null,null,null);
+			                try{
+			                	
+			                	clazz = Class.forName("android.provider.ContactsContract$CommonDataKinds$Email");  
+				                CONTENT_URI = (Uri) clazz.getField("CONTENT_URI").get(clazz);
+				                
+				                String Contact_ID = "contact_id";
+				                String Email_DATA = "data1"; 
+				                String id;
+				                String name;
+				                Cursor emailCur;
+				                String email;
+				                while(c.moveToNext()){  
+				                    id = c.getString(c.getColumnIndex(Contacts_ID));
+				                    name = c.getString(c.getColumnIndex(Contacts_NAME));
+				                    
+				                    emailCur = getContentResolver().query(CONTENT_URI,  
+				                            null, Contact_ID+ " = ?", new String[] { id }, null);
+				                    
+				                    try{
+				                    	while(emailCur.moveToNext()){
+				                    		email = emailCur.getString(emailCur.getColumnIndex(Email_DATA));
+				                    		
+				                    		if(email != null && name != null && email.length() > 0){
+
+					                    		String t_final = name + " <"+ email+">";				                    		
+					                    		
+												for(String has:m_mailAddrSearch){
+													if(!has.equals(t_final)){
+														m_mailAddrSearch.add(t_final);
+													}
+												}	
+				                    		}											
+					                    }
+				                    	
+				                    }finally{
+				                    	emailCur.close();
+				                    }
+				                }
+			                }finally{
+			                	c.close();
+			                }
+			                
+			            }catch(Throwable t){  
+			                Log.e(TAG, "Exception when determining CONTENT_URI", t); 
+			            }
+			             
+			        } else {  
+			        	
+			            c = getContentResolver().query(Contacts.People.CONTENT_URI, new String[]{People.NAME,People.PRIMARY_EMAIL_ID},
+			            						null,null,null);
+						try{
+							String t_name;
+							while(c.moveToNext()){
+								t_name = c.getString(c.getColumnIndex(People.NAME));  
+							}
+						}finally{
+							c.close();
+						}
+			            
+			        } 
+			
+					m_mailAddressList = new String[m_mailAddrSearch.size()];
+					int t_count = m_mailAddrSearch.size();
+					for(int i = 0;i < t_count;i++){
+						m_mailAddressList[i] = m_mailAddrSearch.get(i);
+					}
+				}				
+			}
+		}).start();
 	}
 	
 	private void checkFormerUnhandleFiles(){
@@ -347,5 +486,42 @@ public class YuchDroidApp extends Application {
 		}else{
 			return "" + (_byte / (1000000)) + "." + ((_byte / 1000) % 1000 / 100) + "MB";
 		}
+    }
+    
+    public static String md5(String _org){
+		
+		byte[] bytes = null;
+		try{
+			bytes = _org.getBytes("UTF-8");
+		}catch(Exception e){
+			bytes = _org.getBytes();
+		}
+		try{
+			MessageDigest digest = MessageDigest.getInstance("MD5");
+			digest.reset();
+			digest.update(bytes, 0, bytes.length);
+
+			return convertToHex(digest.digest());
+			
+		}catch(Exception e){
+			Log.e(TAG,e.getMessage());
+			return "";
+		}		
+	}
+	
+	public static String convertToHex(byte[] data) {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < data.length; i++) {
+            int halfbyte = (data[i] >>> 4) & 0x0F;
+            int two_halfs = 0;
+            do {
+                if ((0 <= halfbyte) && (halfbyte <= 9))
+                    buf.append((char) ('0' + halfbyte));
+                else
+                    buf.append((char) ('a' + (halfbyte - 10)));
+                halfbyte = data[i] & 0x0F;
+            } while(two_halfs++ < 1);
+        }
+        return buf.toString();
     }
 }

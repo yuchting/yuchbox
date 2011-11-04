@@ -8,6 +8,8 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.method.PasswordTransformationMethod;
 
 import com.yuchting.yuchdroid.client.ui.TimePickerPreference;
@@ -30,6 +32,8 @@ public class ConnectPrefActivity extends PreferenceActivity {
 	
 	ConfigInit			m_config		= null;
 	
+	boolean			m_cryptKeyChanged = false;
+	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -51,6 +55,17 @@ public class ConnectPrefActivity extends PreferenceActivity {
 		
 		m_statistics			= m_prefMgr.findPreference("config_network_stat");
 		
+		updateData(true);
+		
+		m_cryptKey.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+			
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				m_cryptKeyChanged = true;
+				return true;
+			}
+		});
+				
 		m_promptWholeDay.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
 			
 			@Override
@@ -88,7 +103,7 @@ public class ConnectPrefActivity extends PreferenceActivity {
 			}
 		});
 		
-		updateData(true);
+		
 	}
 	
 	private void updateData(boolean _getOrSet){
@@ -98,7 +113,13 @@ public class ConnectPrefActivity extends PreferenceActivity {
 			//
 			m_useSSL.setChecked(m_config.m_useSSL);
 			m_autoRun.setChecked(m_config.m_autoRun);
-			m_cryptKey.getEditText().setText(m_config.m_passwordKey);
+			
+			if(m_config.m_passwordKey.length() != 0){
+				m_cryptKey.setText("000");
+			}else{
+				m_cryptKey.setText("");
+			}			
+						
 			m_pushInterval.setValueIndex(m_config.m_pulseIntervalIndex);
 			
 			m_promptWholeDay.setChecked(m_config.m_fulldayPrompt);
@@ -116,9 +137,13 @@ public class ConnectPrefActivity extends PreferenceActivity {
 			m_statistics.setSummary(t_statString.toString());
 			
 		}else{
+			
 			m_config.m_useSSL 		= m_useSSL.isChecked();
 			m_config.m_autoRun		= m_autoRun.isChecked();
-			m_config.m_passwordKey	= m_cryptKey.getEditor().toString();
+			if(m_cryptKeyChanged){
+				m_config.m_passwordKey	= YuchDroidApp.md5(m_cryptKey.getText());
+				m_cryptKeyChanged = false;
+			}			
 			m_config.m_pulseIntervalIndex = m_pushInterval.findIndexOfValue(m_pushInterval.getValue());
 			
 			m_config.m_fulldayPrompt	= m_promptWholeDay.isChecked();

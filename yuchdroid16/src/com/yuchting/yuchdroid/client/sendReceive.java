@@ -13,11 +13,19 @@ import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.SystemClock;
+
 public class sendReceive{
 	
 	public static interface IStoreUpDownloadByte{
 		void store(long _uploadByte,long _downloadByte);
-		int getPushIntervalMinutes();
+		int getPushInterval();
 	}
 	
 	public static String TAG = sendReceive.class.getName();
@@ -40,16 +48,24 @@ public class sendReceive{
 	int					m_storeByteTimer		= 0;
 	
 	IStoreUpDownloadByte	m_storeInterface	= null;
-		
+	
+	private final static String FILTER_PULSE	= TAG+"_FP";
+	private PendingIntent	m_pulseAlarm = null;
+	private BroadcastReceiver m_pulseAlarmRecv = null;
+	private Context		m_context	= null;
+	private int			m_formerPulseInterval = 0;
+	
+	private long		m_pulseTime				= SystemClock.elapsedRealtime();		
 	private Vector<ByteBuffer>					m_sendBufferVect = new Vector<ByteBuffer>();
 			
-	public sendReceive(Selector _selector,SocketChannel _chn,boolean _ssl,IStoreUpDownloadByte _callback)throws Exception{
+	public sendReceive(Context _ctx,Selector _selector,SocketChannel _chn,boolean _ssl,IStoreUpDownloadByte _callback)throws Exception{
 
 		if(_ssl){
 			throw new IllegalArgumentException(TAG + " Current YuchDroid can't support !");
 		}
 		
-		m_selector = _selector;
+		m_context	= _ctx;
+		m_selector	= _selector;
 		m_socketChn = _chn;
 						
 		m_storeInterface = _callback;
@@ -57,6 +73,8 @@ public class sendReceive{
 		// register the selector 
 		//
 		m_socketChn.register(m_selector,SelectionKey.OP_WRITE);
+		
+		startAlarmForPulse();
 	}
 					
 	public void RegisterStoreUpDownloadByte(IStoreUpDownloadByte _interface){
@@ -103,9 +121,55 @@ public class sendReceive{
 			try{
 				m_selector.wakeup();
 			}catch(Exception e){}
-		}		
+		}
+		
+		stopAlarmForPulse();
 	}
 	
+	private void startAlarmForPulse(){
+		if(m_pulseAlarm == null){
+			
+			m_formerPulseInterval = m_storeInterface.getPushInterval();
+			
+			AlarmManager t_msg = (AlarmManager)m_context.getSystemService(Context.ALARM_SERVICE);
+			Intent notificationIntent = new Intent(FILTER_PULSE);
+			m_pulseAlarm = PendingIntent.getBroadcast(m_context, 0, notificationIntent,0);
+			t_msg.setRepeating(AlarmManager.RTC_WAKEUP, 
+							System.currentTimeMillis() + m_formerPulseInterval, 
+							m_formerPulseInterval, /* a bit less*/ 
+							m_pulseAlarm);
+			
+			if(m_pulseAlarmRecv == null){
+				m_pulseAlarmRecv = new BroadcastReceiver() {
+					
+					@Override
+					public void onReceive(Context context, Intent intent){						
+						try{
+							m_selector.wakeup();
+						}catch(Exception e){}
+						
+						if(m_formerPulseInterval != m_storeInterface.getPushInterval()){
+							m_formerPulseInterval = m_storeInterface.getPushInterval();
+							stopAlarmForPulse();
+							startAlarmForPulse();
+						}
+					}
+				};
+			}
+			
+			m_context.registerReceiver(m_pulseAlarmRecv, new IntentFilter(FILTER_PULSE));
+		}
+	}
+	
+	private void stopAlarmForPulse(){
+		if(m_pulseAlarm != null){
+			m_pulseAlarm.cancel();
+			m_pulseAlarm = null;
+			
+			m_context.unregisterReceiver(m_pulseAlarmRecv);
+		}
+	}
+		
 	private byte[] PrepareOutputData()throws Exception{
 		
 		if(m_unsendedPackage.isEmpty()){
@@ -138,7 +202,7 @@ public class sendReceive{
 		int t_selectkey = 0;
 		while(true){
 			
-			t_selectkey = m_selector.select(m_storeInterface.getPushIntervalMinutes() * 60000);
+			t_selectkey = m_selector.select();
 			
 			if(m_closed){
 				m_socketChn.close();
@@ -163,6 +227,9 @@ public class sendReceive{
 					it.remove();
 					
 					if(key.isValid()){
+						
+						m_pulseTime = SystemClock.elapsedRealtime();;
+						
 						if(key.isReadable()){
 							SocketChannel t_chn = (SocketChannel)key.channel();						
 							
@@ -191,10 +258,17 @@ public class sendReceive{
 				if(!m_socketChn.isConnected()){
 					throw new Exception(TAG + " Socket chn is not connected!");
 				}else{
-					// send the keeplive message
-					//
-					SendBufferToSvr_imple(fsm_keepliveMsg);
-					m_socketChn.keyFor(m_selector).interestOps(SelectionKey.OP_WRITE);
+					long t_formerTimer = SystemClock.elapsedRealtime();
+					
+					if(Math.abs(t_formerTimer - m_pulseTime) >= m_formerPulseInterval - 200){
+						
+						m_pulseTime = t_formerTimer;
+						
+						// send the keeplive message
+						//
+						SendBufferToSvr_imple(fsm_keepliveMsg);
+						m_socketChn.keyFor(m_selector).interestOps(SelectionKey.OP_WRITE);
+					}					
 				}
 			}			
 		}

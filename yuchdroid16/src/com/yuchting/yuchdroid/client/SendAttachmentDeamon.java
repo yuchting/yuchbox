@@ -260,72 +260,82 @@ public class SendAttachmentDeamon extends Thread{
 	
 	public void run(){		
 
-		boolean t_setPaddingState = false;
-		boolean t_sendFileCreate = false;
+		m_connect.acquireWakeLock();
 		
-		while(!m_closeState){
+		try{
 			
-			try{
+			boolean t_setPaddingState = false;
+			boolean t_sendFileCreate = false;
+			
+			while(!m_closeState){
 				
-				while(!m_connect.m_sendAuthMsg){
+				try{
 					
-					if(m_connect.m_destroy){
+					while(!m_connect.m_sendAuthMsg){
 						
-						ReleaseAttachFile();
-						m_sendCallback.sendError();
-											
-						return;
-					}else{
-					
-						if(!t_setPaddingState){
-							t_setPaddingState = true;
-							m_sendCallback.sendPause();
-						}
-					}
-					
-					try{
-						sleep(10000);
-					}catch(Exception e){}
-					
-				}
-
-				if(!t_sendFileCreate){
-					t_sendFileCreate = true;
-					sendFileCreateMsg();
-				}				
-				
-				m_sendCallback.sendStart();
-				
-				boolean t_sendOver = false;
-				int t_sendSegmentNum = 0;
-				while(t_sendSegmentNum++ < 6){
-					
-					if(SendFileSegment(false)){
-						t_sendOver = true;
-						break;
-					}					
-				}
-				
-				if(!t_sendOver && SendFileSegment(true)){
-					t_sendOver = true;
-				}
+						if(m_connect.m_destroy){
+							
+							ReleaseAttachFile();
+							m_sendCallback.sendError();
 												
-				if(t_sendOver){
-					try{
+							return;
+						}else{
 						
-						sleep(90000);				
-						t_sendFileCreate = false;
+							if(!t_setPaddingState){
+								t_setPaddingState = true;
+								m_sendCallback.sendPause();
+							}
+						}
 						
-					}catch(Exception e){
-						m_connect.m_mainApp.setErrorString("SA: OK " + e.getMessage() +  e.getClass().getName());			
+						try{
+							sleep(10000);
+						}catch(Exception e){}
+						
 					}
-				}										
-				
-			}catch(Exception _e){
-				m_connect.m_mainApp.setErrorString("SA: " + _e.getMessage() + _e.getClass().getName());		
-			}		
+
+					if(!t_sendFileCreate){
+						t_sendFileCreate = true;
+						sendFileCreateMsg();
+					}				
+					
+					m_sendCallback.sendStart();
+					
+					boolean t_sendOver = false;
+					int t_sendSegmentNum = 0;
+					while(t_sendSegmentNum++ < 6){
+						
+						if(SendFileSegment(false)){
+							t_sendOver = true;
+							break;
+						}					
+					}
+					
+					if(!t_sendOver && SendFileSegment(true)){
+						t_sendOver = true;
+					}
+													
+					if(t_sendOver){
+						try{
+							
+							sleep(90000);				
+							t_sendFileCreate = false;
+							
+						}catch(Exception e){
+							m_connect.m_mainApp.setErrorString("SA: OK " + e.getMessage() +  e.getClass().getName());			
+						}
+					}										
+					
+				}catch(Exception _e){
+					m_connect.m_mainApp.setErrorString("SA: " + _e.getMessage() + _e.getClass().getName());		
+				}		
+			}
+			
+			ReleaseAttachFile();
+			
+		}finally{
+			
+			m_connect.releaseWakeLock();
 		}
 		
-		ReleaseAttachFile();
 	}	
 }

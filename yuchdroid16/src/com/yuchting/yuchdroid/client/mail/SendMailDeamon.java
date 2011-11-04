@@ -2,8 +2,6 @@ package com.yuchting.yuchdroid.client.mail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.nio.channels.Selector;
-import java.nio.channels.spi.SelectorProvider;
 import java.util.Vector;
 
 import com.yuchting.yuchdroid.client.ConnectDeamon;
@@ -121,60 +119,64 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	}
 		
 	public void run(){		
-		
-		int t_resend_time = 0;
-		
-		while(true){
+		m_connect.acquireWakeLock();
+		try{
+			int t_resend_time = 0;
 			
-			if(m_closeState){
-				break;
-			}
-			
-			try{
-													
-				while(!m_connect.m_sendAuthMsg){
-					
-					if(m_connect.m_destroy){
-						sendError();
-						return;
-					}else{
-						sendPause();
-					}
-					
-					try{
-						sleep(10000);
-					}catch(Exception e){}
+			while(true){
+				
+				if(m_closeState){
+					break;
 				}
 				
-				sendStart();
-				sendFinish();
-				
 				try{
-
-					// waiting for the server to confirm 
-					// except mail with attachment
-					//
-					if(t_resend_time++ < 3){
-						sleep(2 * 60000);
-					}else{
-						sendError();
-						m_connect.m_mainApp.setErrorString("S:resend 3 time,give up.");
-						break;
+														
+					while(!m_connect.m_sendAuthMsg){
+						
+						if(m_connect.m_destroy){
+							sendError();
+							return;
+						}else{
+							sendPause();
+						}
+						
+						try{
+							sleep(10000);
+						}catch(Exception e){}
 					}
+					
+					sendStart();
+					sendFinish();
+					
+					try{
 
+						// waiting for the server to confirm 
+						// except mail with attachment
+						//
+						if(t_resend_time++ < 3){
+							sleep(2 * 60000);
+						}else{
+							sendError();
+							m_connect.m_mainApp.setErrorString("S:resend 3 time,give up.");
+							break;
+						}
+
+					}catch(Exception _e){
+						break;
+					}				
+					
 				}catch(Exception _e){
-					break;
-				}				
-				
-			}catch(Exception _e){
-				
-				sendError();
-				
-				m_connect.m_mainApp.setErrorString("S: " + _e.getMessage() + " " + _e.getClass().getName());
-				
-				//TODO set uploading describe
-				//m_connect.SetUploadingDesc(m_sendMail,-1,0,0);				
-			}		
+					
+					sendError();
+					m_connect.m_mainApp.setErrorString("S: " + _e.getMessage() + " " + _e.getClass().getName());
+					
+					//TODO set uploading describe
+					//m_connect.SetUploadingDesc(m_sendMail,-1,0,0);				
+				}		
+			}
+		}finally{
+			m_connect.releaseWakeLock();
 		}
+		
 	}	
 }

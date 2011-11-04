@@ -483,7 +483,16 @@ public class MailDbAdapter {
         return mDb.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns, 
         					null, null, null, null, GROUP_ATTR_LEATEST_TIME + " DESC");
     }
-
+    
+    public Cursor fetchAllGroupAddrList(){
+    	if(mDbHelper == null){
+    		open();
+    	}
+    	
+        return mDb.query(DATABASE_TABLE_GROUP,new String[]{GROUP_ATTR_ADDR_LIST}, 
+        					null, null, null, null, GROUP_ATTR_LEATEST_TIME + " DESC");
+    }
+    
     public Cursor fetchGroup(long _groupId) throws SQLException {
 
     	if(mDbHelper == null){

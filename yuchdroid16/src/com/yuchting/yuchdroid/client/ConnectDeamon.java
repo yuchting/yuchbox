@@ -15,6 +15,7 @@ import java.util.Vector;
 
 import android.app.ActivityManager;
 import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.app.ActivityManager.RunningAppProcessInfo;
@@ -33,7 +34,7 @@ import com.yuchting.yuchdroid.client.mail.fetchMail;
 
 public class ConnectDeamon extends Service implements Runnable{
 	
-	public final static String TAG = "ConnectDeamon";
+	public final static String TAG = ConnectDeamon.class.getName();
 	
 	final static int	fsm_clientVer = 15;
 	
@@ -58,7 +59,7 @@ public class ConnectDeamon extends Service implements Runnable{
 	private Vector<SendMailDeamon>		m_sendingMailAttachment = new Vector<SendMailDeamon>();
 		
 	private Thread m_agentThread		= new Thread(this);
-	private PendingIntent	m_pulseAlerm = null;
+
 	
 	private PowerManager.WakeLock m_powerWakeLock	= null;
 	
@@ -134,9 +135,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			try{
-				if(!m_powerWakeLock.isHeld()){
-					m_powerWakeLock.acquire();
-				}
+				acquireWakeLock();
 				Connect();
 			}catch(Exception e){
 				m_mainApp.setErrorString("m_connectRecv", e);
@@ -149,16 +148,14 @@ public class ConnectDeamon extends Service implements Runnable{
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			try{
-				if(m_powerWakeLock.isHeld()){
-					m_powerWakeLock.release();
-				}								
+				releaseWakeLock();								
 				Disconnect();
 			}catch(Exception e){
 				m_mainApp.setErrorString("m_disconnectRecv", e);
 			}			
 		}
 	};
-		
+			
 	public void onCreate() {
 		m_mainApp = (YuchDroidApp)getApplicationContext();
 						
@@ -175,14 +172,22 @@ public class ConnectDeamon extends Service implements Runnable{
 		m_mainApp.setErrorString("ConnectDeamon onCreate");
 		
 		m_powerWakeLock = ((PowerManager)getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
-		m_powerWakeLock.acquire();
 		
 		// start the connect run thread
 		//
 		m_agentThread.start();
 	}
 	
-		
+	public void acquireWakeLock(){
+		if(!m_powerWakeLock.isHeld()){
+			m_powerWakeLock.acquire();
+		}
+	}
+	public void releaseWakeLock(){
+		if(m_powerWakeLock.isHeld()){
+			m_powerWakeLock.release();
+		}	
+	}
 	
 	public boolean addSendingData(int _msgType ,byte[] _data,boolean _exceptSame)throws Exception{
 		return m_sendingQueue.addSendingData(_msgType, _data, _exceptSame);
@@ -213,7 +218,8 @@ public class ConnectDeamon extends Service implements Runnable{
 	private void onStart_impl(Intent _intent){
 				
 		try{
-			Connect();			
+			acquireWakeLock();
+			Connect();
 		}catch(Exception e){
 			m_mainApp.setErrorString("onStart_impl", e);
 		}
@@ -221,6 +227,19 @@ public class ConnectDeamon extends Service implements Runnable{
 
 	public IBinder onBind(Intent intent) {
 		return null;
+	}
+	
+	private void clearSendingAttachment(){
+		// destroy the all sendingMailDeamon
+		//
+		synchronized (m_sendingMailAttachment) {
+			for(SendMailDeamon de:m_sendingMailAttachment){
+				de.m_closeState = true;
+				de.inter();
+				de.sendError();
+			}
+			m_sendingMailAttachment.clear();	
+		}
 	}
 		
 	public void onDestroy(){
@@ -243,18 +262,9 @@ public class ConnectDeamon extends Service implements Runnable{
 		m_mainApp.m_connectDeamonRun = false;
 		m_mainApp.setConnectState(YuchDroidApp.STATE_DISCONNECT);
 		
-		// destroy the all sendingMailDeamon
-		//
-		for(SendMailDeamon de:m_sendingMailAttachment){
-			de.m_closeState = true;
-			de.inter();
-			de.sendError();
-		}
-		m_sendingMailAttachment.clear();
+		clearSendingAttachment();
 		
-		if(m_powerWakeLock.isHeld()){
-			m_powerWakeLock.release();
-		}
+		releaseWakeLock();
 		
 		unregisterReceiver(m_mailMarkReadRecv);
 		unregisterReceiver(m_mailSendRecv);
@@ -299,11 +309,7 @@ public class ConnectDeamon extends Service implements Runnable{
 	private boolean IsUseSSL(){
 		return m_mainApp.m_config.m_useSSL;
 	}
-	
-	private int GetPulseIntervalMinutes(){
-		return m_mainApp.m_config.getPulseInterval();
-	}
-	
+		
 	private synchronized int GetConnectInterval(){
 		 
 		if(m_connectCounter++ == -1){
@@ -312,7 +318,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		
 		if(m_connectCounter >= 4){
 			m_connectCounter = 0;		 
-			return GetPulseIntervalMinutes() * 60 * 1000;
+			return m_mainApp.m_config.getPulseInterval();
 		}
 		 
 		return 10000;
@@ -369,8 +375,8 @@ public class ConnectDeamon extends Service implements Runnable{
 			StoreUpDownloadByte(uploadByte,downloadByte,true);
 		}
 		
-		public int getPushIntervalMinutes(){
-			return GetPulseIntervalMinutes();
+		public int getPushInterval(){
+			return m_mainApp.m_config.getPulseInterval();
 		}
 	};
 	
@@ -417,9 +423,9 @@ public class ConnectDeamon extends Service implements Runnable{
 					}				
 				}
 				
-				startAlarmForPulse();
+				releaseWakeLock();
 				
-				return new sendReceive(m_tmpConnectSelector,t_chn,_ssl,
+				return new sendReceive(this,m_tmpConnectSelector,t_chn,_ssl,
 										m_upDownloadByteInterface);
 				
 			}finally{
@@ -443,23 +449,11 @@ public class ConnectDeamon extends Service implements Runnable{
 		}catch(Exception _e){
 			m_mainApp.setErrorString("closeConnect", _e);
 		}
-		
-		stopAlarmForPulse();
-				
+						
 		m_connect = null;
 	}
 	
-	public void startAlarmForPulse(){
-		if(m_pulseAlerm == null){
-			
-		}
-	}
 	
-	public void stopAlarmForPulse(){
-		if(m_pulseAlerm != null){
-			AlarmManager t_msg = (AlarmManager)getSystemService(Context.ALARM_SERVICE); 
-		}
-	}
 		
 	public void Connect()throws Exception{
 		
@@ -483,16 +477,8 @@ public class ConnectDeamon extends Service implements Runnable{
 		}
 		
 		closeConnect();
+		clearSendingAttachment();
 		
-		for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
-			SendMailDeamon send = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
-			 	
-			send.m_closeState = true;
-			send.inter(); 
-			send.sendError();
-		}
-		 
-		m_sendingMailAttachment.removeAllElements();
 		m_mainApp.setConnectState(YuchDroidApp.STATE_DISCONNECT);
 		m_mainApp.StopDisconnectNotification();
 		
@@ -506,7 +492,7 @@ public class ConnectDeamon extends Service implements Runnable{
 	public void run(){
 		
 		while(!m_destroy){
-	
+				
 			m_sendAuthMsg = false;
 						
 			while(CanNotConnectSvr() || !m_connectState){
@@ -734,11 +720,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		}
 		
 		m_recvMailSimpleHashCodeSet.addElement(new Integer(t_mail.GetSimpleHashCode()));
-				
-		if(m_mainApp.m_config.m_sendMailAccountList.isEmpty()){
-			sendRequestMailAccountMsg();
-		}
-
+		
 		try{
 						
 			m_mainApp.m_dba.createMail(t_mail,-1,false);
@@ -756,6 +738,24 @@ public class ConnectDeamon extends Service implements Runnable{
 		}catch(Exception _e){
 			m_mainApp.setErrorString("C ",_e);
 		}
+		
+		// check the default account
+		//
+		boolean t_send = true;
+		for(String str:m_mainApp.m_config.m_sendMailAccountList){
+			if(str.equals(t_mail.getOwnAccount())
+			// the low version can't send the own account 
+			//
+			|| t_mail.getOwnAccount().length() == 0){
+				
+				t_send = false;
+				break;
+			}
+		}
+		
+		if(t_send){
+			sendRequestMailAccountMsg();
+		}
 	}
 
 	
@@ -766,40 +766,42 @@ public class ConnectDeamon extends Service implements Runnable{
 		
 		// delete the fetchMail send deamon thread
 		//
-		for(int i = 0;i < m_sendingMailAttachment.size();i++){
-			SendMailDeamon t_deamon = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
-			
-			if(t_deamon.m_sendMail.GetSendDate().getTime() == t_time){		
-				if(t_succ){
-					t_deamon.sendSucc();
-					
-					// increase the send mail quantity
-					//
-					m_mainApp.m_config.m_sendMailNum++;
-					
-				}else{
-					t_deamon.sendError();
-				}			
-				
-				t_deamon.m_closeState = true;
-				t_deamon.inter();							
-				
-				m_sendingMailAttachment.removeElement(t_deamon);
-				
-				// TODO delete the uploading desc string of main application
-				//
-//				for(int j = 0 ;j < m_mainApp.m_uploadingDesc.size();j++){
-//					recvMain.UploadingDesc t_desc = (recvMain.UploadingDesc)m_mainApp.m_uploadingDesc.elementAt(j);
-//					if(t_desc.m_mail == t_deamon.m_sendMail){
-//					
-//						m_mainApp.m_uploadingDesc.removeElementAt(j);
-//						break;
-//					}
-//				}
+		synchronized (m_sendingMailAttachment) {
+			for(SendMailDeamon t_deamon : m_sendingMailAttachment){
 								
-				break;
+				if(t_deamon.m_sendMail.GetSendDate().getTime() == t_time){		
+					if(t_succ){
+						t_deamon.sendSucc();
+						
+						// increase the send mail quantity
+						//
+						m_mainApp.m_config.m_sendMailNum++;
+						
+					}else{
+						t_deamon.sendError();
+					}			
+					
+					t_deamon.m_closeState = true;
+					t_deamon.inter();							
+					
+					m_sendingMailAttachment.removeElement(t_deamon);
+					
+					// TODO delete the uploading desc string of main application
+					//
+//					for(int j = 0 ;j < m_mainApp.m_uploadingDesc.size();j++){
+//						recvMain.UploadingDesc t_desc = (recvMain.UploadingDesc)m_mainApp.m_uploadingDesc.elementAt(j);
+//						if(t_desc.m_mail == t_deamon.m_sendMail){
+//						
+//							m_mainApp.m_uploadingDesc.removeElementAt(j);
+//							break;
+//						}
+//					}
+									
+					break;
+				}
 			}
 		}
+		
 	}
 	
 	private void ProcessFileAttach(InputStream in)throws Exception{

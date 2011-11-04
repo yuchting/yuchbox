@@ -24,7 +24,7 @@ public final class ConfigInit {
 	public boolean m_useSSL				= false;
 	public boolean m_autoRun				= false;
 	
-	public int[]	m_pulseIntervalValues	= {1,3,5,10,30};
+	public int[]	m_pulseIntervalValues	= {1 * 60000,3 * 60000,5 * 60000,10 * 60000,30 * 60000};
 	public int	m_pulseIntervalIndex	= 2;
 	
 	public boolean m_fulldayPrompt		= true;
@@ -109,7 +109,7 @@ public final class ConfigInit {
 		String[] t_str = _ctx.getResources().getStringArray(R.array.login_pref_pulse_values);		
 		m_pulseIntervalValues = new int[t_str.length];
 		for(int i = 0;i < m_pulseIntervalValues.length;i++){
-			m_pulseIntervalValues[i] = Integer.valueOf(t_str[i]).intValue();
+			m_pulseIntervalValues[i] = Integer.valueOf(t_str[i]).intValue() * 60000;
 		}	
 	}
 	
