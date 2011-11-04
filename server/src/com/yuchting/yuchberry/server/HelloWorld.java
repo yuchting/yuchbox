@@ -100,7 +100,13 @@ public class HelloWorld {
 	public final static String	fsm_vectStringSpliter_sub = "@#&";
 	
 	public static void main(String arg[])throws Exception{
-		testBoolean(true);
+		try{
+			cryptPassword t_crypt = new cryptPassword("111");
+			System.out.println(t_crypt.decrypt("396bc581a6277f66ca6d40eb5fd98d38ef8857158d44258d"));
+			
+		}catch(Exception e){
+			return ;
+		}
 	}
 	
 	static public void testBoolean(Object bool){

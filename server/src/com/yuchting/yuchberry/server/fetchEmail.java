@@ -859,8 +859,9 @@ public class fetchEmail extends fetchAccount{
 				
 				String t_from = ((String)t_mail.GetFromVect().elementAt(0)).toLowerCase();
 								
-				if(t_from.indexOf(GetAccountName()) != -1){
-					
+				if(t_from.indexOf(GetAccountName()) == -1){
+					// find whether has other fetchEmail to send this Email
+					//
 					for(fetchAccount acc:m_mainMgr.m_fetchAccount){
 						if(acc != this && acc instanceof fetchEmail){
 							if(t_from.indexOf(((fetchEmail)acc).GetAccountName()) != -1){
