@@ -1311,6 +1311,25 @@ public class connectDeamon extends Thread implements SendListener,
 		}catch(Exception _e){
 			m_mainApp.SetErrorString("C:" + _e.getMessage() + " " + _e.getClass().getName());
 		}
+		
+		// check the default account
+		//
+		boolean t_send = true;
+		for(int i = 0;i < m_mainApp.m_sendMailAccountList.size();i++){
+			String str = (String)m_mainApp.m_sendMailAccountList.elementAt(i);
+			if(str.equals(t_mail.getOwnAccount()) 
+			// the low version can't send the own account 
+			//
+			|| t_mail.getOwnAccount().length() == 0){
+				
+				t_send = false;
+				break;
+			}
+		}
+		
+		if(t_send){
+			sendRequestMailAccountMsg();
+		}
 	}
 	
 	public synchronized void ProcessSentMail(ByteArrayInputStream in)throws Exception{
