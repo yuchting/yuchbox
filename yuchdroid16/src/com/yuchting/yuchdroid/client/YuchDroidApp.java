@@ -148,132 +148,187 @@ public class YuchDroidApp extends Application {
 				
 		// construct mail address list
 		//
-		constructMailAddrList();
+		(new Thread(){
+			public void run(){
+				try{
+					constructMailAddrList();
+				}catch(Exception e){
+					setErrorString(TAG, e);
+				}
+			}
+		}).start();
 		
 	}
 	
 	
 	private  void constructMailAddrList(){
-		(new Thread(){
-			public void run(){
+	
+		m_mailAddrSearch.clear();
+		
+		// first search from database
+		//
+		Cursor c = m_dba.fetchAllGroupAddrList();
+		try{
+														
+			if(c != null && c.getCount() > 0){
 				
-				synchronized (m_mailAddrSearch){
+				int t_index = c.getColumnIndex(MailDbAdapter.GROUP_ATTR_ADDR_LIST);
+				while(c.moveToNext()){
+					String[] t_list = c.getString(t_index).split(fetchMail.fsm_vectStringSpliter);
 					
-					m_mailAddrSearch.clear();
-					
-					// first search from database
-					//
-					Cursor c = m_dba.fetchAllGroupAddrList();
-					try{
-																	
-						if(c != null && c.getCount() > 0){
-							
-							int t_count = c.getCount();
-							int t_index = c.getColumnIndex(MailDbAdapter.GROUP_ATTR_ADDR_LIST);
-							
-							for(int i = 0;i < t_count;i++){
-								c.moveToPosition(i);
-								String[] t_list = c.getString(t_index).split(fetchMail.fsm_vectStringSpliter);
-								
-								for(String addr : t_list){
-									for(String has:m_mailAddrSearch){
-										if(!has.equals(addr)){
-											m_mailAddrSearch.add(addr);
-										}
-									}
-								}
-							}
-						}
-						
-					}finally{
-						c.close();
+					for(String addr : t_list){
+						addMailAddrSearch(addr);									
 					}
-					// second search from the contact
-					// the People class is Deprecated after 2.1
-					//
-					
-					int sdk = new Integer(android.os.Build.VERSION.SDK).intValue();  
-			        if(sdk >= 5){  
-			            try {  
-			                Class<?> clazz = Class.forName("android.provider.ContactsContract$Contacts");  
-			                Uri CONTENT_URI = (Uri) clazz.getField("CONTENT_URI").get(clazz);
-			                
-			                // find the magic string from the source of android 2.1 OS
-			                // http://618119.com/archives/2011/01/01/201.html
-			                //
-			                String Contacts_ID = "_id";
-			                String Contacts_NAME = "display_name";
-			                
-			                c = getContentResolver().query(CONTENT_URI,new String[]{Contacts_ID,Contacts_NAME},null,null,null);
-			                try{
-			                	
-			                	clazz = Class.forName("android.provider.ContactsContract$CommonDataKinds$Email");  
-				                CONTENT_URI = (Uri) clazz.getField("CONTENT_URI").get(clazz);
-				                
-				                String Contact_ID = "contact_id";
-				                String Email_DATA = "data1"; 
-				                String id;
-				                String name;
-				                Cursor emailCur;
-				                String email;
-				                while(c.moveToNext()){  
-				                    id = c.getString(c.getColumnIndex(Contacts_ID));
-				                    name = c.getString(c.getColumnIndex(Contacts_NAME));
-				                    
-				                    emailCur = getContentResolver().query(CONTENT_URI,  
-				                            null, Contact_ID+ " = ?", new String[] { id }, null);
-				                    
-				                    try{
-				                    	while(emailCur.moveToNext()){
-				                    		email = emailCur.getString(emailCur.getColumnIndex(Email_DATA));
-				                    		
-				                    		if(email != null && name != null && email.length() > 0){
-
-					                    		String t_final = name + " <"+ email+">";				                    		
-					                    		
-												for(String has:m_mailAddrSearch){
-													if(!has.equals(t_final)){
-														m_mailAddrSearch.add(t_final);
-													}
-												}	
-				                    		}											
-					                    }
-				                    	
-				                    }finally{
-				                    	emailCur.close();
-				                    }
-				                }
-			                }finally{
-			                	c.close();
-			                }
-			                
-			            }catch(Throwable t){  
-			                Log.e(TAG, "Exception when determining CONTENT_URI", t); 
-			            }
-			             
-			        } else {  
-			        	
-			            c = getContentResolver().query(Contacts.People.CONTENT_URI, new String[]{People.NAME,People.PRIMARY_EMAIL_ID},
-			            						null,null,null);
-						try{
-							String t_name;
-							while(c.moveToNext()){
-								t_name = c.getString(c.getColumnIndex(People.NAME));  
-							}
-						}finally{
-							c.close();
-						}
-			            
-			        } 
-			
-					m_mailAddressList = new String[m_mailAddrSearch.size()];
-					int t_count = m_mailAddrSearch.size();
-					for(int i = 0;i < t_count;i++){
-						m_mailAddressList[i] = m_mailAddrSearch.get(i);
-					}
-				}				
+				}
 			}
-		}).start();
+			
+		}finally{
+			c.close();
+		}
+		
+		// second search from the contact
+		// the People class is Deprecated after 2.1
+		//
+		// check follow website for detail
+		// http://www.coderanch.com/t/512048/Android/Mobile/Contact-API
+		//
+		
+		int sdk = new Integer(android.os.Build.VERSION.SDK).intValue();  
+        if(sdk >= 5){  
+            try {  
+                Class<?> clazz = Class.forName("android.provider.ContactsContract$Contacts");  
+                Uri CONTENT_URI = (Uri) clazz.getField("CONTENT_URI").get(clazz);
+                
+                // find the magic string from the source of android 2.1 OS
+                // http://618119.com/archives/2011/01/01/201.html
+                //
+                String Contacts_ID = "_id";
+                String Contacts_NAME = "display_name";
+                
+                c = getContentResolver().query(CONTENT_URI,new String[]{Contacts_ID,Contacts_NAME},null,null,null);
+                try{
+                	
+                	clazz = Class.forName("android.provider.ContactsContract$CommonDataKinds$Email");  
+	                CONTENT_URI = (Uri) clazz.getField("CONTENT_URI").get(clazz);
+	                
+	                String Contact_ID = "contact_id";
+	                String Email_DATA = "data1"; 
+	                String id;
+	                String name;
+	                Cursor emailCur;
+	                String email;
+	                while(c.moveToNext()){  
+	                    id = c.getString(c.getColumnIndex(Contacts_ID));
+	                    name = c.getString(c.getColumnIndex(Contacts_NAME));
+	                    
+	                    emailCur = getContentResolver().query(CONTENT_URI,  
+	                            null, Contact_ID+ " = ?", new String[] { id }, null);
+	                    if(emailCur != null){
+		                    try{
+		                    	while(emailCur.moveToNext()){
+		                    		email = emailCur.getString(emailCur.getColumnIndex(Email_DATA));
+		                    		addMailAddrSearch(name,email);				                    													
+			                    }
+		                    	
+		                    }finally{
+		                    	emailCur.close();
+		                    }	
+	                    }
+	                }
+                }finally{
+                	c.close();
+                }
+                
+            }catch(Throwable t){  
+                Log.e(TAG, "Exception when determining CONTENT_URI", t); 
+            }
+             
+        } else {  
+        	
+            c = getContentResolver().query(Contacts.People.CONTENT_URI, new String[]{People.NAME,People.PRIMARY_EMAIL_ID},
+            						null,null,null);
+			try{
+				String name;
+				String emailId;
+				String email;
+				Cursor emailCur;
+				while(c.moveToNext()){
+					name = c.getString(c.getColumnIndex(People.NAME));
+					emailId = c.getString(c.getColumnIndex(People.PRIMARY_EMAIL_ID));
+					
+					if (emailId != null) {  
+		                emailCur = getContentResolver().query(Contacts.ContactMethods.CONTENT_EMAIL_URI, null,  
+		                        							People.PRIMARY_EMAIL_ID + " = ?",new String[] { emailId }, null);
+		                if(emailCur != null){
+		                	try{
+			                	while(emailCur.moveToNext()){  
+			                		email = emailCur.getString(emailCur.getColumnIndex(Contacts.ContactMethods.DATA));
+			                		addMailAddrSearch(name,email);
+			                	}
+			                }finally{
+			                	emailCur.close();
+			                }
+		                }
+		               
+		            } 
+				}
+			}finally{
+				c.close();
+			}
+            
+        } 
+
+        if(m_mailAddrSearch.isEmpty()){
+        	m_mailAddressList = new String[]{};
+        }else{
+        	
+        	synchronized (m_mailAddrSearch) {
+	        	m_mailAddressList = new String[m_mailAddrSearch.size()];
+				int t_count = m_mailAddrSearch.size();
+				for(int i = 0;i < t_count;i++){
+					m_mailAddressList[i] = m_mailAddrSearch.get(i);
+				}
+			}
+        }
+	}
+	
+	
+	
+	private void addMailAddrSearch(String name, String email){
+		
+		String t_final = null;
+		if(email != null && email.length() != 0){
+			if(name == null || name.length() == 0){
+				t_final = email;
+    		}else{
+    			t_final = name + " <"+ email+">";
+    		}					                			
+		}
+		
+		addMailAddrSearch(t_final);
+	}
+	
+	private void addMailAddrSearch(String _final){
+		
+		if(_final == null || _final.length() == 0){
+			return ;
+		}
+		
+		_final += ",";
+		
+		boolean t_add = true;
+		synchronized (m_mailAddrSearch) {
+			for(String has:m_mailAddrSearch){
+				if(has.equals(_final)){
+					t_add = false;
+					break;
+				}
+			}
+		}
+			
+		if(t_add){
+			m_mailAddrSearch.add(_final);
+		}		
 	}
 	
 	private void checkFormerUnhandleFiles(){

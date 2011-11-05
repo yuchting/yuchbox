@@ -123,11 +123,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 		try{
 			int t_resend_time = 0;
 			
-			while(true){
-				
-				if(m_closeState){
-					break;
-				}
+			while(!m_closeState){
 				
 				try{
 														
@@ -145,16 +141,18 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 						}catch(Exception e){}
 					}
 					
-					sendStart();
-					sendFinish();
-					
 					try{
 
 						// waiting for the server to confirm 
 						// except mail with attachment
 						//
 						if(t_resend_time++ < 3){
+							
+							sendStart();
+							sendFinish();
+							
 							sleep(2 * 60000);
+							
 						}else{
 							sendError();
 							m_connect.m_mainApp.setErrorString("S:resend 3 time,give up.");

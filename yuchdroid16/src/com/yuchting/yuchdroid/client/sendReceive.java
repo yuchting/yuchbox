@@ -26,6 +26,9 @@ public class sendReceive{
 	public static interface IStoreUpDownloadByte{
 		void store(long _uploadByte,long _downloadByte);
 		int getPushInterval();
+		void logOut(String _log);
+		void acquireCPUWakeLock();
+		void releaseCPUWakeLock();
 	}
 	
 	public static String TAG = sendReceive.class.getName();
@@ -52,7 +55,7 @@ public class sendReceive{
 	private final static String FILTER_PULSE	= TAG+"_FP";
 	private PendingIntent	m_pulseAlarm = null;
 	private BroadcastReceiver m_pulseAlarmRecv = null;
-	private Context		m_context	= null;
+	private Context	m_context	= null;
 	private int			m_formerPulseInterval = 0;
 	
 	private long		m_pulseTime				= SystemClock.elapsedRealtime();		
@@ -143,9 +146,19 @@ public class sendReceive{
 				m_pulseAlarmRecv = new BroadcastReceiver() {
 					
 					@Override
-					public void onReceive(Context context, Intent intent){						
+					public void onReceive(Context context, Intent intent){
+						// acquire the cpu wake lock 
+						// the Selector.wakeup function is not wakeup Selector.select in deep sleep CPU state     - -! 
+						//
+						m_storeInterface.acquireCPUWakeLock();
+												
 						try{
+							// sleep 100 millisecond to wait CPU to wake up... 
+							//
+							SystemClock.sleep(100);
+							
 							m_selector.wakeup();
+							m_storeInterface.logOut("keeplive wakeup");
 						}catch(Exception e){}
 						
 						if(m_formerPulseInterval != m_storeInterface.getPushInterval()){
@@ -193,7 +206,8 @@ public class sendReceive{
 		
 		return t_stream.toByteArray();
 	}
-					
+	
+	boolean m_writekeeplive = false;
 	private byte[] readData(int _len)throws Exception{
 		
 		ByteBuffer t_retBuf = ByteBuffer.allocate(_len);
@@ -247,8 +261,21 @@ public class sendReceive{
 							t_retBuf.flip(); 
 							return t_retBuf.array();
 							
-						}else if(key.isWritable()){
+						}else if(key.isWritable()){	
+							
 							sendDataByChn_impl(key);
+							
+							if(m_writekeeplive){
+								m_writekeeplive = false;
+								m_storeInterface.logOut("keeplive write!!");
+								
+								// release CPU wake lock to let CPU to deep sleep 
+								// after sending keeplive packet over 
+								//
+								m_storeInterface.releaseCPUWakeLock();
+							}
+						}else{
+							m_storeInterface.logOut("valid key (!isWritable && !isReadable)");
 						}
 					}
 				}
@@ -268,7 +295,10 @@ public class sendReceive{
 						//
 						SendBufferToSvr_imple(fsm_keepliveMsg);
 						m_socketChn.keyFor(m_selector).interestOps(SelectionKey.OP_WRITE);
-					}					
+						
+						m_storeInterface.logOut("keeplive OR_WRITE");
+						m_writekeeplive = true;
+					}
 				}
 			}			
 		}

@@ -14,9 +14,6 @@ import java.util.Locale;
 import java.util.Vector;
 
 import android.app.ActivityManager;
-import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.content.BroadcastReceiver;
@@ -378,6 +375,17 @@ public class ConnectDeamon extends Service implements Runnable{
 		public int getPushInterval(){
 			return m_mainApp.m_config.getPulseInterval();
 		}
+		
+		public void logOut(String _log){
+			m_mainApp.setErrorString(_log);
+		}
+		
+		public void acquireCPUWakeLock(){
+			acquireWakeLock();
+		}
+		public void releaseCPUWakeLock(){
+			releaseWakeLock();
+		}
 	};
 	
 	private sendReceive getConnection(boolean _ssl)throws Exception{
@@ -423,7 +431,11 @@ public class ConnectDeamon extends Service implements Runnable{
 					}				
 				}
 				
-				releaseWakeLock();
+				if(m_sendingMailAttachment.isEmpty()){
+					//TODO im and weibo send too
+					//
+					releaseWakeLock();
+				}			
 				
 				return new sendReceive(this,m_tmpConnectSelector,t_chn,_ssl,
 										m_upDownloadByteInterface);

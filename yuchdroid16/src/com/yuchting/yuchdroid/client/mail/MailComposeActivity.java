@@ -1,21 +1,29 @@
 package com.yuchting.yuchdroid.client.mail;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Vector;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -85,9 +93,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		m_saveBtn.setEnabled(false);
 		
 		m_discardBtn = (Button)findViewById(R.id.mail_compose_discard_btn);
-		m_discardBtn.setOnClickListener(this);
-		
-		
+		m_discardBtn.setOnClickListener(this);	
 						
 		// fetch the reference mail
 		//
@@ -190,6 +196,18 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			setTitle(t_sub);
 			m_subject.setText(t_sub);
 		}else{
+			
+			Intent in = getIntent();
+			if(in.getAction().equals(Intent.ACTION_SEND)){
+				final String t_to = in.getStringExtra(Intent.EXTRA_EMAIL);
+				final String t_cc = in.getStringExtra(Intent.EXTRA_CC);
+				final String t_bcc = in.getStringExtra(Intent.EXTRA_BCC);
+				final String t_subject = in.getStringExtra(Intent.EXTRA_SUBJECT);
+				
+				if(t_to != null){m_to.setText(t_to);}
+				if(t_cc != null){m_cc.setText(t_cc);}
+				
+			}
 			// compose a new mail
 			//
 			m_discardRefView.setVisibility(View.GONE);
@@ -239,11 +257,183 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 				m_saveBtn.setEnabled(true);
 			}
 		};
-		m_body.addTextChangedListener(t_watcher);
 		m_to.addTextChangedListener(t_watcher);
-		m_subject.addTextChangedListener(t_watcher);
 		m_bcc.addTextChangedListener(t_watcher);
 		m_cc.addTextChangedListener(t_watcher);
+		m_body.addTextChangedListener(t_watcher);
+		m_subject.addTextChangedListener(t_watcher);
+
+		setAutoCompleteEditText(m_cc);
+		setAutoCompleteEditText(m_bcc);
+		setAutoCompleteEditText(m_to);		
+	}
+	
+	final class EmailAddrAdapter extends BaseAdapter implements Filterable {
+
+		private LayoutInflater mInflater;
+		private String[]			m_addrList;
+		private ArrayList<String> m_displayList;
+		
+		public EmailAddrAdapter(Context _ctx,String[] _addrList){
+			mInflater = LayoutInflater.from(_ctx);
+			m_addrList = _addrList;
+			
+			m_displayList = new ArrayList<String>(_addrList.length);
+			for(String addr:_addrList){
+				m_displayList.add(addr);
+			}
+		}
+		
+		@Override
+		public int getCount() {
+			return m_displayList.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			return m_displayList.get(position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return position;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			return createViewFromResource(position,convertView,parent,android.R.layout.simple_dropdown_item_1line);
+		}
+		
+		// copy from the android source code
+		//
+		private View createViewFromResource(int position, View convertView, ViewGroup parent,
+	            int resource) {
+	        View view;
+	        TextView text;
+
+	        if (convertView == null) {
+	            view = mInflater.inflate(resource, parent, false);
+	        }else{
+	            view = convertView;
+	        }
+
+	        try{
+	        	text = (TextView) view;
+	        	text.setText((String)getItem(position));
+	        }catch(ClassCastException e) {
+	            Log.e("ArrayAdapter", "You must supply a resource ID for a TextView");
+	            throw new IllegalStateException(
+	                    "ArrayAdapter requires the resource ID to be a TextView", e);
+	        }           
+
+	        return view;
+	    }
+		
+		Filter 	m_filter = null;
+		public Filter getFilter(){
+			if(m_filter == null){
+				m_filter = new Filter(){
+					@Override
+			        protected FilterResults performFiltering(CharSequence prefix) {
+			            FilterResults results = new FilterResults();
+
+
+			            if(prefix == null || prefix.length() == 0) {
+ 
+		                    ArrayList<String> list = new ArrayList<String>(m_addrList.length);
+		                    for(int i = 0;i < m_addrList.length;i++){
+		                    	list.add(m_addrList[i]);
+		                    }
+		                    
+		                    results.values = list;
+		                    results.count = list.size();
+			                
+			            }else{
+			                String prefixString = prefix.toString().toLowerCase();
+			                
+			                int t_lastComma = prefixString.lastIndexOf(',');
+			                if(t_lastComma != -1){
+			                	prefixString = prefixString.substring(t_lastComma + 1);
+			                }
+			                
+			                final ArrayList<String> newValues = new ArrayList<String>(m_addrList.length);
+
+			                String t_textValue;
+			                String t_lowTextValue;
+			                
+			                for (int i = 0; i < m_addrList.length; i++) {
+
+			                	t_textValue		= m_addrList[i];
+			                	t_lowTextValue	= m_addrList[i].toLowerCase();
+
+			                    // First match against the whole, non-splitted value
+			                    if (t_lowTextValue.startsWith(prefixString)) {
+			                        newValues.add(t_textValue);
+			                    }else{			                    	
+			                    	final String[] words = t_lowTextValue.split(" ");
+			                        final int wordCount = words.length;
+
+			                        for (int k = 0; k < wordCount; k++) {
+			                            if (words[k].startsWith(prefixString)) {
+			                                newValues.add(t_textValue);
+			                                break;
+			                            }
+			                        }
+			                    }
+			                }
+			                
+			                for (int i = 0; i < m_addrList.length; i++) {
+
+			                	t_textValue		= m_addrList[i];
+			                	t_lowTextValue	= m_addrList[i].toLowerCase();
+
+			                    // First match against the whole, non-splitted value
+			                    if (t_lowTextValue.indexOf(prefixString) != -1) {
+			                        newValues.add(t_textValue);
+			                    }else{			                    	
+			                    	final String[] words = t_lowTextValue.split(" ");
+			                        final int wordCount = words.length;
+
+			                        for (int k = 0; k < wordCount; k++) {
+			                            if (words[k].indexOf(prefixString) != -1) {
+			                                newValues.add(t_textValue);
+			                                break;
+			                            }
+			                        }
+			                    }
+			                }
+
+			                results.values = newValues;
+			                results.count = newValues.size();
+			            }
+
+			            return results;
+			        }
+
+			        @Override
+			        protected void publishResults(CharSequence constraint, FilterResults results) {
+			            //noinspection unchecked
+			        	m_displayList = (ArrayList<String>)results.values;
+			            if (results.count > 0) {
+			                notifyDataSetChanged();
+			            } else {
+			                notifyDataSetInvalidated();
+			            }
+			        }
+				};
+			}
+			
+			return m_filter;
+		}
+	}
+	private EmailAddrAdapter m_emailAdapter;
+	private void setAutoCompleteEditText(AutoCompleteTextView _edit){
+		if(m_emailAdapter == null){
+			m_emailAdapter = new EmailAddrAdapter(this,m_mainApp.m_mailAddressList);
+		}
+		        
+		_edit.setThreshold(1);
+		_edit.setAdapter(m_emailAdapter);
 	}
 	
 	public void onClick(View v){
@@ -308,7 +498,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			onClose();		
 		}
 	}
-	
+		
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 	    if((keyCode == KeyEvent.KEYCODE_BACK)) {
 	    	onClose();
