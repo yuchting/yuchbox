@@ -794,20 +794,26 @@ public class fetchEmail extends fetchAccount{
 
 				boolean t_found = false;
 				
-				for(int i= 0 ;i < t_replyAddr.size();i++){
-					String t_addr = (String)t_replyAddr.elementAt(i);
-																	
-					if(t_addr.toLowerCase().indexOf(GetAccountName().toLowerCase()) != -1){
+				if(!t_mail.getOwnAccount().isEmpty()){
+					if(t_mail.getOwnAccount().equals(GetAccountName())){
 						t_found = true;
-						break;
 					}
-				}
+				}else{
+					for(int i= 0 ;i < t_replyAddr.size();i++){
+						String t_addr = (String)t_replyAddr.elementAt(i);
+																		
+						if(t_addr.toLowerCase().indexOf(GetAccountName().toLowerCase()) != -1){
+							t_found = true;
+							break;
+						}
+					}
+				}				
 				
 				if(!t_found){
 					// if forward it's own sent email
 					// will using the default account to send
 					//
-					if(t_style != fetchMail.FORWORD_STYLE){
+					if(t_style != fetchMail.FORWORD_STYLE){				
 						return false;
 					}					
 				}

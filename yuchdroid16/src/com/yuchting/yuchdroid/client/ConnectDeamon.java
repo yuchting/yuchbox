@@ -417,7 +417,7 @@ public class ConnectDeamon extends Service implements Runnable{
 				t_chn.register(m_tmpConnectSelector, SelectionKey.OP_CONNECT);
 				
 				t_chn.connect(new InetSocketAddress(m_mainApp.m_config.m_host, m_mainApp.m_config.m_port));
-				m_tmpConnectSelector.select(5000);
+				m_tmpConnectSelector.select(10000);
 										
 				if(!t_chn.finishConnect() || !m_connectState){
 					

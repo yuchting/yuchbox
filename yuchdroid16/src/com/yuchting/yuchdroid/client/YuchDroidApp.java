@@ -524,7 +524,7 @@ public class YuchDroidApp extends Application {
 		StringBuffer t_ret = new StringBuffer();
 		synchronized (m_errorList) {
 			for(String str:m_errorList){
-				t_ret.append(str);
+				t_ret.append(str).append("\n");
 			}
 		}
 		

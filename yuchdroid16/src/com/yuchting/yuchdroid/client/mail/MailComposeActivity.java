@@ -197,17 +197,17 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			m_subject.setText(t_sub);
 		}else{
 			
-			Intent in = getIntent();
-			if(in.getAction().equals(Intent.ACTION_SEND)){
-				final String t_to = in.getStringExtra(Intent.EXTRA_EMAIL);
-				final String t_cc = in.getStringExtra(Intent.EXTRA_CC);
-				final String t_bcc = in.getStringExtra(Intent.EXTRA_BCC);
-				final String t_subject = in.getStringExtra(Intent.EXTRA_SUBJECT);
-				
-				if(t_to != null){m_to.setText(t_to);}
-				if(t_cc != null){m_cc.setText(t_cc);}
-				
-			}
+//			Intent in = getIntent();
+//			if(in.getAction().equals(Intent.ACTION_SEND)){
+//				final String t_to = in.getStringExtra(Intent.EXTRA_EMAIL);
+//				final String t_cc = in.getStringExtra(Intent.EXTRA_CC);
+//				final String t_bcc = in.getStringExtra(Intent.EXTRA_BCC);
+//				final String t_subject = in.getStringExtra(Intent.EXTRA_SUBJECT);
+//				
+//				if(t_to != null){m_to.setText(t_to);}
+//				if(t_cc != null){m_cc.setText(t_cc);}
+//				
+//			}
 			// compose a new mail
 			//
 			m_discardRefView.setVisibility(View.GONE);

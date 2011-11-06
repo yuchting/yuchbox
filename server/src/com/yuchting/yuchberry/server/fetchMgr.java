@@ -85,7 +85,7 @@ public class fetchMgr{
     int				m_clientDisplayHeight = 0;
     
     String			m_pin				= "";
-    String			m_IMEI				= null;    
+    String			m_IMEI				= "";    
     
     
     public void SetLatestVersion(String _version){
@@ -613,6 +613,7 @@ public class fetchMgr{
 		return m_prefix;
 	}
 	
+	
 	public void ProcessPackage(byte[] _package)throws Exception{
 		
 		ByteArrayInputStream in = new ByteArrayInputStream(_package);
@@ -621,7 +622,12 @@ public class fetchMgr{
 		
 		switch(t_msg_head){			
 			case msg_head.msgKeepLive:
-				m_logger.LogOut("pulse!");	
+				m_logger.LogOut("pulse!");
+				if(m_IMEI.startsWith("ad")){
+					// android client send back 
+					//
+					SendData(new byte[]{msg_head.msgKeepLive}, false);
+				}
 				break;
 			case msg_head.msgSponsorList:
 				ProcessSponsorList(in);

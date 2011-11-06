@@ -27,8 +27,6 @@ public class sendReceive{
 		void store(long _uploadByte,long _downloadByte);
 		int getPushInterval();
 		void logOut(String _log);
-		void acquireCPUWakeLock();
-		void releaseCPUWakeLock();
 	}
 	
 	public static String TAG = sendReceive.class.getName();
@@ -60,6 +58,10 @@ public class sendReceive{
 	
 	private long		m_pulseTime				= SystemClock.elapsedRealtime();		
 	private Vector<ByteBuffer>					m_sendBufferVect = new Vector<ByteBuffer>();
+	
+	// android client need server send keeplive back
+	//
+	private boolean		m_keeplive			= true;
 			
 	public sendReceive(Context _ctx,Selector _selector,SocketChannel _chn,boolean _ssl,IStoreUpDownloadByte _callback)throws Exception{
 
@@ -147,25 +149,24 @@ public class sendReceive{
 					
 					@Override
 					public void onReceive(Context context, Intent intent){
-						// acquire the cpu wake lock 
-						// the Selector.wakeup function is not wakeup Selector.select in deep sleep CPU state     - -! 
-						//
-						m_storeInterface.acquireCPUWakeLock();
-												
-						try{
-							// sleep 100 millisecond to wait CPU to wake up... 
-							//
-							SystemClock.sleep(100);
-							
+
+						if(!m_keeplive){
+							m_closed = true;
+							m_storeInterface.logOut("keeplive NOT send back,closed!");
+						}else{
+							if(m_formerPulseInterval != m_storeInterface.getPushInterval()){
+								m_formerPulseInterval = m_storeInterface.getPushInterval();
+								stopAlarmForPulse();
+								startAlarmForPulse();
+							}
+						}
+											
+						try{						
 							m_selector.wakeup();
 							m_storeInterface.logOut("keeplive wakeup");
 						}catch(Exception e){}
 						
-						if(m_formerPulseInterval != m_storeInterface.getPushInterval()){
-							m_formerPulseInterval = m_storeInterface.getPushInterval();
-							stopAlarmForPulse();
-							startAlarmForPulse();
-						}
+						
 					}
 				};
 			}
@@ -245,6 +246,7 @@ public class sendReceive{
 						m_pulseTime = SystemClock.elapsedRealtime();;
 						
 						if(key.isReadable()){
+							
 							SocketChannel t_chn = (SocketChannel)key.channel();						
 							
 							int len = t_chn.read(t_retBuf);
@@ -258,6 +260,8 @@ public class sendReceive{
 								continue;
 							}
 							
+							m_keeplive = true;
+							
 							t_retBuf.flip(); 
 							return t_retBuf.array();
 							
@@ -268,11 +272,6 @@ public class sendReceive{
 							if(m_writekeeplive){
 								m_writekeeplive = false;
 								m_storeInterface.logOut("keeplive write!!");
-								
-								// release CPU wake lock to let CPU to deep sleep 
-								// after sending keeplive packet over 
-								//
-								m_storeInterface.releaseCPUWakeLock();
 							}
 						}else{
 							m_storeInterface.logOut("valid key (!isWritable && !isReadable)");
@@ -287,7 +286,7 @@ public class sendReceive{
 				}else{
 					long t_formerTimer = SystemClock.elapsedRealtime();
 					
-					if(Math.abs(t_formerTimer - m_pulseTime) >= m_formerPulseInterval - 200){
+					if(Math.abs(t_formerTimer - m_pulseTime) >= m_formerPulseInterval - 10000){
 						
 						m_pulseTime = t_formerTimer;
 						
@@ -298,6 +297,7 @@ public class sendReceive{
 						
 						m_storeInterface.logOut("keeplive OR_WRITE");
 						m_writekeeplive = true;
+						m_keeplive = false;
 					}
 				}
 			}			
