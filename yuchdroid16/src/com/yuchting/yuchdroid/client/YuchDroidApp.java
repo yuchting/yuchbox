@@ -78,15 +78,9 @@ public class YuchDroidApp extends Application {
 				
 	// notification system varaibles
 	//
-	public final static	int				YUCH_NOTIFICATION_MAIL			= 0;
-	public final static	int				YUCH_NOTIFICATION_WEIBO			= 1;
-	public final static	int				YUCH_NOTIFICATION_WEIBO_HOME	= 2;
-	public final static	int				YUCH_NOTIFICATION_DISCONNECT	= 3;
-	
-	// notifcation intent status
-	//
-	public final static String			YUCH_NOTIFICATION_STATUS		= "status";
-	
+	public final static	int				YUCH_NOTIFICATION_CONNECT_STATE	= 0;
+	public final static	int				YUCH_NOTIFICATION_MAIL			= 1;	
+		
 	private int m_mailNotificationNum		= 0;
 	
 	public static int sm_displyWidth		= 320;
@@ -383,10 +377,50 @@ public class YuchDroidApp extends Application {
 	}
 	
 	public void setConnectState(int _state){
-		m_connectState = _state;
+		if(m_connectState != _state){
+			m_connectState = _state;
+			
+			Intent t_intent = new Intent(FILTER_CONNECT_STATE);	
+			sendBroadcast(t_intent);
+			
+			startConnectNotification(_state);
+		}
+	}
+	
+	public void startConnectNotification(int _state){
+		NotificationManager t_mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 		
-		Intent t_intent = new Intent(FILTER_CONNECT_STATE);	
-		sendBroadcast(t_intent);
+		int icon;
+		int t_titleId;
+		if(_state == STATE_CONNECTED){
+			t_titleId = R.string.login_connect_deamon_state_connect;
+			icon = R.drawable.notification_connect_state_on;        
+		}else{
+			icon = R.drawable.notification_connect_state_off;
+			if(_state == STATE_CONNECTING){
+				t_titleId = R.string.login_connect_deamon_state_connecting;
+			}else{
+				t_titleId = R.string.login_connect_deamon_state_disconnect;
+			}	
+		}
+		CharSequence tickerText = getString(R.string.login_connect_deamon_state);
+		CharSequence contentTitle = getString(t_titleId); 
+		
+		Intent notificationIntent = new Intent(Intent.ACTION_MAIN);
+		notificationIntent.setClass(this, Yuchdroid16Activity.class);
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
+				PendingIntent.FLAG_UPDATE_CURRENT | Notification.FLAG_NO_CLEAR );
+
+		// the next two lines initialize the Notification, using the configurations above
+		Notification notification = new Notification(icon, tickerText, System.currentTimeMillis());
+		notification.setLatestEventInfo(this, contentTitle, null, contentIntent);
+						
+		t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_CONNECT_STATE, notification);
+	}
+	
+	public void stopConnectNotification(){
+		NotificationManager t_mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+		t_mgr.cancel(YUCH_NOTIFICATION_CONNECT_STATE);
 	}
 	
 	/**
@@ -406,7 +440,6 @@ public class YuchDroidApp extends Application {
 
 		Intent notificationIntent = new Intent(Intent.ACTION_MAIN);
 		notificationIntent.setClass(this, HomeActivity.class);		
-		notificationIntent.putExtra(YUCH_NOTIFICATION_STATUS, 0);
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
 				PendingIntent.FLAG_UPDATE_CURRENT | Notification.FLAG_ONLY_ALERT_ONCE | Notification.FLAG_AUTO_CANCEL);
 

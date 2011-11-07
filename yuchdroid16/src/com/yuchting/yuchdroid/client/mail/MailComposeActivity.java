@@ -14,6 +14,9 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -65,7 +68,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	
 	int			m_referenceMailStyle = fetchMail.NOTHING_STYLE;
 	long		m_referenceGroupId 	= -1;
-	
+		
 	@Override
     public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -197,35 +200,45 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			m_subject.setText(t_sub);
 		}else{
 			
-//			Intent in = getIntent();
-//			if(in.getAction().equals(Intent.ACTION_SEND)){
-//				final String t_to = in.getStringExtra(Intent.EXTRA_EMAIL);
-//				final String t_cc = in.getStringExtra(Intent.EXTRA_CC);
-//				final String t_bcc = in.getStringExtra(Intent.EXTRA_BCC);
-//				final String t_subject = in.getStringExtra(Intent.EXTRA_SUBJECT);
-//				
-//				if(t_to != null){m_to.setText(t_to);}
-//				if(t_cc != null){m_cc.setText(t_cc);}
-//				
-//			}
 			// compose a new mail
 			//
 			m_discardRefView.setVisibility(View.GONE);
 			m_to.requestFocus();
+			
+			Intent in = getIntent();
+			if(in.getAction() != null && in.getAction().equals(Intent.ACTION_SEND)){
+				
+				setEmailAddr(m_to,in.getStringArrayExtra(Intent.EXTRA_EMAIL));
+				
+				boolean t_cc_bcc = setEmailAddr(m_cc,in.getStringArrayExtra(Intent.EXTRA_CC));
+				t_cc_bcc = t_cc_bcc || setEmailAddr(m_bcc,in.getStringArrayExtra(Intent.EXTRA_BCC));
+				
+				if(t_cc_bcc){
+					showCc_Bcc();
+				}
+				
+				String t_subject = in.getStringExtra(Intent.EXTRA_SUBJECT);
+				if(t_subject != null){
+					m_subject.setText(t_subject);
+				}else{
+					m_subject.requestFocus();
+				}
+				
+				String t_body = in.getStringExtra(Intent.EXTRA_TEXT);
+				if(t_body != null){
+					m_body.setText(t_body);
+				}else{
+					if(t_subject != null){
+						m_body.requestFocus();
+					}
+				}
+			}		
 			
 			if(!m_mainApp.m_config.m_sendMailAccountList.isEmpty()){
 			
 				// load the spinner widget 
 				//
 				m_ownAccountSpinner = (Spinner)findViewById(R.id.mail_compose_own_account);
-				m_ownAccountSpinner.setOnItemSelectedListener(new OnItemSelectedListener(){
-					public void onItemSelected(AdapterView<?> parent,View view, int pos, long id) {
-						m_modified = true;
-						m_saveBtn.setEnabled(true);
-				    }
-
-				    public void onNothingSelected(AdapterView<?> parent){}
-				});
 				m_ownAccountSpinner.setVisibility(View.VISIBLE);
 				
 				// load the sender Mail account list
@@ -244,6 +257,17 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 					m_mainApp.m_config.m_defaultSendMailAccountIndex = 0;
 				}
 				m_ownAccountSpinner.setSelection(m_mainApp.m_config.m_defaultSendMailAccountIndex);
+				
+				// set the listener
+				//
+				m_ownAccountSpinner.setOnItemSelectedListener(new OnItemSelectedListener(){
+					public void onItemSelected(AdapterView<?> parent,View view, int pos, long id) {
+						m_modified = true;
+						m_saveBtn.setEnabled(true);
+				    }
+
+				    public void onNothingSelected(AdapterView<?> parent){}
+				});
 			}
 		}
 		
@@ -656,6 +680,19 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			_mail.setSendRefMailIndex(m_referenceMail.m_mail.getDbIndex());
 		}
 	}
+	
+	private static boolean setEmailAddr(AutoCompleteTextView _view,String[] _addr){
+		if(_addr != null){
+			StringBuffer t_toString = new StringBuffer();
+			for(String to:_addr){
+				t_toString.append(to).append(",");
+			}
+			_view.setText(t_toString.toString());
+			
+			return _addr.length > 0;
+		}		
+		return false;
+	}
 		
 	private boolean checkSendToAddr(String[] _toAddrList){
 		if(_toAddrList.length == 0){
@@ -672,5 +709,32 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		}
 		
 		return true;
+	}
+	
+	private void showCc_Bcc(){
+		m_cc.setVisibility(View.VISIBLE);
+		m_bcc.setVisibility(View.VISIBLE);
+	}
+	
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.mail_compose_menu,menu);
+        return true;
+    }
+	
+	@Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        switch(item.getItemId()) {
+            case R.id.mail_compose_add_cc_bcc:
+            	showCc_Bcc();
+                return true;
+            case R.id.mail_compose_attachment:
+            	return true;
+           
+        }
+
+        return super.onMenuItemSelected(featureId, item);
 	}
 }

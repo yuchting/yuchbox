@@ -11,7 +11,8 @@
         <service android:name=".ConnectDeamon"/>
         
         <activity android:name=".Yuchdroid16Activity"
-			android:label="@string/app_name">
+			android:label="@string/app_name"
+			android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -39,9 +40,24 @@
         	android:label="Mail Subject"/>
         	
         <activity android:name=".mail.MailComposeActivity"
-        	android:label="Mail Compose">        	
+        	android:label="@string/mail_compose_title">
+        	<intent-filter>
+	            <action android:name="android.intent.action.SEND" />
+	            <category android:name="android.intent.category.DEFAULT" />
+	            <data android:mimeType="text/*" />
+         	</intent-filter>
         </activity>
-        	
+        
+        <activity android:name=".mail.MailComposeActivity"
+        	android:label="@string/mail_compose_title"
+        	android:icon="@drawable/mail_open_attachment_item_icon">
+        	<intent-filter>
+	            <action android:name="android.intent.action.CHOOSER" />
+	            <category android:name="android.intent.category.DEFAULT" />
+	            <data android:mimeType="text/*" />
+         	</intent-filter>
+        </activity>
+
         <activity android:name=".ConnectPrefActivity"
         	android:label="@string/login_pref_title"/>
         	

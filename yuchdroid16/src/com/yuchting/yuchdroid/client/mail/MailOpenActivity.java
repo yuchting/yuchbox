@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
@@ -23,6 +24,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.yuchting.yuchdroid.client.GlobalDialog;
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
 
@@ -80,17 +82,25 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
             }
                 		
             if(m_mail.GetContain_html().length() != 0){
-            	m_touchHTML.setVisibility(View.VISIBLE);     	
+            	if(m_mail.GetContain().length() != 0){
+            		
+            		m_touchHTML.setVisibility(View.VISIBLE);
+                	m_touchHTML.setOnClickListener(new View.OnClickListener() {
+        				
+        				@Override
+        				public void onClick(View paramView){
+        					m_touchHTML.setVisibility(View.GONE);
+        					m_htmlText.setVisibility(View.VISIBLE);
+        					m_htmlText.loadDataWithBaseURL("",m_mail.GetContain_html(),"text/html","utf-8","");
+        				}
+        			});
+                	
+            	}else{
+            		m_touchHTML.setVisibility(View.GONE);
+					m_htmlText.setVisibility(View.VISIBLE);
+					m_htmlText.loadDataWithBaseURL("",m_mail.GetContain_html(),"text/html","utf-8","");
+            	}         	     	
             	
-            	m_touchHTML.setOnClickListener(new View.OnClickListener() {
-    				
-    				@Override
-    				public void onClick(View paramView){
-    					m_touchHTML.setVisibility(View.GONE);
-    					m_htmlText.setVisibility(View.VISIBLE);
-    					m_htmlText.loadDataWithBaseURL("",m_mail.GetContain_html(),"text/html","utf-8","");
-    				}
-    			});
             }else{
             	m_touchHTML.setVisibility(View.GONE);
             }
@@ -570,6 +580,26 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			startComposeMail(fetchMail.REPLY_STYLE);
 		}else if(v == m_forwardBtn){
 			startComposeMail(fetchMail.FORWORD_STYLE);
+		}else if(v == m_deleteBtn){
+			if(m_currGroupIdx != -1){
+
+				GlobalDialog.showYesNoDialog(getString(R.string.mail_open_delete_prompt), this, 
+					new DialogInterface.OnClickListener() {
+						
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							if(which == DialogInterface.BUTTON_POSITIVE){	
+
+								m_mainApp.m_dba.deleteGroup(m_currGroupIdx);
+								
+								Intent in = new Intent(YuchDroidApp.FILTER_MAIL_GROUP_FLAG);
+								sendBroadcast(in);
+								
+								finish();
+							}						
+						}
+					});	
+			}
 		}
 	}
 	

@@ -19,7 +19,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.SystemClock;
 
 public class sendReceive{
 	
@@ -56,12 +55,12 @@ public class sendReceive{
 	private Context	m_context	= null;
 	private int			m_formerPulseInterval = 0;
 	
-	private long		m_pulseTime				= SystemClock.elapsedRealtime();		
 	private Vector<ByteBuffer>					m_sendBufferVect = new Vector<ByteBuffer>();
 	
 	// android client need server send keeplive back
 	//
 	private boolean		m_keeplive			= true;
+	private boolean 		m_keepliveClose		= false;
 			
 	public sendReceive(Context _ctx,Selector _selector,SocketChannel _chn,boolean _ssl,IStoreUpDownloadByte _callback)throws Exception{
 
@@ -151,8 +150,7 @@ public class sendReceive{
 					public void onReceive(Context context, Intent intent){
 
 						if(!m_keeplive){
-							m_closed = true;
-							m_storeInterface.logOut("keeplive NOT send back,closed!");
+							m_keepliveClose = true;
 						}else{
 							if(m_formerPulseInterval != m_storeInterface.getPushInterval()){
 								m_formerPulseInterval = m_storeInterface.getPushInterval();
@@ -163,10 +161,7 @@ public class sendReceive{
 											
 						try{						
 							m_selector.wakeup();
-							m_storeInterface.logOut("keeplive wakeup");
 						}catch(Exception e){}
-						
-						
 					}
 				};
 			}
@@ -208,7 +203,6 @@ public class sendReceive{
 		return t_stream.toByteArray();
 	}
 	
-	boolean m_writekeeplive = false;
 	private byte[] readData(int _len)throws Exception{
 		
 		ByteBuffer t_retBuf = ByteBuffer.allocate(_len);
@@ -233,6 +227,10 @@ public class sendReceive{
 				//
 				continue;
 			}
+			
+			if(m_keepliveClose){
+				throw new Exception(TAG + " keeplive can't sendback!");
+			}
 				
 			if(t_selectkey != 0){
 				
@@ -242,9 +240,7 @@ public class sendReceive{
 					it.remove();
 					
 					if(key.isValid()){
-						
-						m_pulseTime = SystemClock.elapsedRealtime();;
-						
+												
 						if(key.isReadable()){
 							
 							SocketChannel t_chn = (SocketChannel)key.channel();						
@@ -252,7 +248,7 @@ public class sendReceive{
 							int len = t_chn.read(t_retBuf);
 							
 							if(len == -1){
-								throw new Exception(TAG + " Client read -1 to closed!"); 
+								throw new Exception(TAG + " Client read -1 to closed!");
 							}
 							
 							t_readLen += len;
@@ -266,13 +262,7 @@ public class sendReceive{
 							return t_retBuf.array();
 							
 						}else if(key.isWritable()){	
-							
 							sendDataByChn_impl(key);
-							
-							if(m_writekeeplive){
-								m_writekeeplive = false;
-								m_storeInterface.logOut("keeplive write!!");
-							}
 						}else{
 							m_storeInterface.logOut("valid key (!isWritable && !isReadable)");
 						}
@@ -284,21 +274,11 @@ public class sendReceive{
 				if(!m_socketChn.isConnected()){
 					throw new Exception(TAG + " Socket chn is not connected!");
 				}else{
-					long t_formerTimer = SystemClock.elapsedRealtime();
-					
-					if(Math.abs(t_formerTimer - m_pulseTime) >= m_formerPulseInterval - 10000){
-						
-						m_pulseTime = t_formerTimer;
-						
-						// send the keeplive message
-						//
-						SendBufferToSvr_imple(fsm_keepliveMsg);
-						m_socketChn.keyFor(m_selector).interestOps(SelectionKey.OP_WRITE);
-						
-						m_storeInterface.logOut("keeplive OR_WRITE");
-						m_writekeeplive = true;
-						m_keeplive = false;
-					}
+					// send the keeplive message
+					//
+					SendBufferToSvr_imple(fsm_keepliveMsg);
+					m_socketChn.keyFor(m_selector).interestOps(SelectionKey.OP_WRITE);
+					m_keeplive = false;
 				}
 			}			
 		}

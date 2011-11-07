@@ -55,9 +55,7 @@ public class ConnectDeamon extends Service implements Runnable{
 	private Vector<Integer>			m_recvMailSimpleHashCodeSet = new Vector<Integer>();		
 	private Vector<SendMailDeamon>		m_sendingMailAttachment = new Vector<SendMailDeamon>();
 		
-	private Thread m_agentThread		= new Thread(this);
-
-	
+	private Thread m_agentThread		= new Thread(this);	
 	private PowerManager.WakeLock m_powerWakeLock	= null;
 	
 	BroadcastReceiver m_mailMarkReadRecv = new BroadcastReceiver() {
@@ -152,6 +150,14 @@ public class ConnectDeamon extends Service implements Runnable{
 			}			
 		}
 	};
+	
+	BroadcastReceiver m_tmpRecv = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			System.out.println();
+		}
+	}; 
 			
 	public void onCreate() {
 		m_mainApp = (YuchDroidApp)getApplicationContext();
@@ -164,6 +170,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		registerReceiver(m_mailSendRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL));
 		registerReceiver(m_connectRecv,new IntentFilter(YuchDroidApp.FILTER_CONNECT));
 		registerReceiver(m_disconnectRecv,new IntentFilter(YuchDroidApp.FILTER_DISCONNECT));
+		registerReceiver(m_tmpRecv, new IntentFilter(Intent.ACTION_SEND));
 		
 		m_mainApp.m_connectDeamonRun = true;
 		m_mainApp.setErrorString("ConnectDeamon onCreate");
@@ -173,6 +180,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		// start the connect run thread
 		//
 		m_agentThread.start();
+		
 	}
 	
 	public void acquireWakeLock(){
@@ -258,6 +266,7 @@ public class ConnectDeamon extends Service implements Runnable{
 				
 		m_mainApp.m_connectDeamonRun = false;
 		m_mainApp.setConnectState(YuchDroidApp.STATE_DISCONNECT);
+		m_mainApp.stopConnectNotification();
 		
 		clearSendingAttachment();
 		
@@ -267,6 +276,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		unregisterReceiver(m_mailSendRecv);
 		unregisterReceiver(m_connectRecv);
 		unregisterReceiver(m_disconnectRecv);
+		unregisterReceiver(m_tmpRecv);
 	}
 	
 	private boolean CanNotConnectSvr(){
@@ -353,18 +363,9 @@ public class ConnectDeamon extends Service implements Runnable{
 	    }
 	    return false;
 	}
-	
-	private void SetModuleOnlineState(boolean _online){
-		//TODO set the status bar connected state
-		//
-	}
 		
 	private void DialogAlert(String _text){
 		GlobalDialog.showInfo(_text, this);
-	}
-	
-	private void SetAboutInfo(String _aboutInfo){
-		//TODO popup the about activity 
 	}
 	
 	sendReceive.IStoreUpDownloadByte m_upDownloadByteInterface = new sendReceive.IStoreUpDownloadByte(){
@@ -378,13 +379,6 @@ public class ConnectDeamon extends Service implements Runnable{
 		
 		public void logOut(String _log){
 			m_mainApp.setErrorString(_log);
-		}
-		
-		public void acquireCPUWakeLock(){
-			acquireWakeLock();
-		}
-		public void releaseCPUWakeLock(){
-			releaseWakeLock();
 		}
 	};
 	
@@ -457,6 +451,8 @@ public class ConnectDeamon extends Service implements Runnable{
 		try{
 			if(m_connect != null){
 				m_connect.CloseSendReceive();
+				
+				acquireWakeLock();
 			}	
 		}catch(Exception _e){
 			m_mainApp.setErrorString("closeConnect", _e);
@@ -558,8 +554,6 @@ public class ConnectDeamon extends Service implements Runnable{
 				m_mainApp.setConnectState(YuchDroidApp.STATE_CONNECTED);
 				m_mainApp.StopDisconnectNotification();
 				m_sendingQueue.connectNotify();
-								
-				SetModuleOnlineState(true);
 																
 				while(true){
 					ProcessMsg(m_connect.RecvBufferFromSvr());
@@ -582,8 +576,6 @@ public class ConnectDeamon extends Service implements Runnable{
 			}			
 			
 			closeConnect();
-			
-			SetModuleOnlineState(false);								
 		}
 	}
 	
@@ -595,6 +587,9 @@ public class ConnectDeamon extends Service implements Runnable{
 		 final int t_msg_head = in.read();
 		 
 		 switch(t_msg_head){
+		 	case msg_head.msgKeepLive:
+		 		m_mainApp.setErrorString("back pulse!");
+		 		break;
 		 	case msg_head.msgMail:
 				ProcessRecvMail(in);	 		
 		 		break;
@@ -628,6 +623,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		 		sendReceive.ReadStringVector(in, m_mainApp.m_config.m_sendMailAccountList);
 		 		m_mainApp.m_config.WriteReadIni(false);
 		 		break;
+		 	
 		 		
 //		 	case msg_head.msgWeibo:
 //		 		ProcessWeibo(in);

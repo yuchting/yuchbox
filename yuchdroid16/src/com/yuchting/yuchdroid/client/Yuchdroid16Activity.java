@@ -55,7 +55,7 @@ public class Yuchdroid16Activity extends Activity {
         Button buttonStart = (Button) findViewById(R.id.login_start_svr);
         buttonStart.setOnClickListener(new OnClickListener() {  
             public void onClick(View arg0){
-            	
+            	            	
             	boolean t_readConfig = false;
             	
             	String t_host = m_host.getText().toString();

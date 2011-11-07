@@ -459,12 +459,32 @@ public class MailDbAdapter {
 		return mDb.insert(DATABASE_TABLE_GROUP, null, group);
     }
 
-    public boolean deleteGroup(long _groupID){
+    public boolean deleteGroup(long _groupId){
     	if(mDbHelper == null){
     		open();
     	}
+    	
+    	Cursor c = fetchGroup(_groupId); 
+    	try{
+    		if(c.getCount() > 0){
+        		String mailListIndex = c.getString(c.getColumnIndex(GROUP_ATTR_MAIL_INDEX));
+        		final String[] list = mailListIndex.split(fetchMail.fsm_vectStringSpliter);
+        		if(list.length >= 0){
 
-        return mDb.delete(DATABASE_TABLE_GROUP, KEY_ID + "=" + _groupID, null) > 0;
+            		new Thread(){
+            			public void run(){
+            				for(String id:list){
+            					deleteMail(Long.valueOf(id).longValue());
+            				}
+            			}
+            		}.start();
+        		}
+        	}
+    	}finally{
+    		c.close();
+    	}  	
+
+        return mDb.delete(DATABASE_TABLE_GROUP, KEY_ID + "=" + _groupId, null) > 0;
     }
     
     public boolean deleteMail(long id) {
@@ -493,7 +513,7 @@ public class MailDbAdapter {
         					null, null, null, null, GROUP_ATTR_LEATEST_TIME + " DESC");
     }
     
-    public Cursor fetchGroup(long _groupId) throws SQLException {
+    public Cursor fetchGroup(long _groupId) throws SQLException{
 
     	if(mDbHelper == null){
     		open();
