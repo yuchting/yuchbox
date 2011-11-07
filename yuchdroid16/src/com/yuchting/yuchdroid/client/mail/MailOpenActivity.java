@@ -515,6 +515,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		if(v == m_formerMailView){
 			m_formerMailView.setVisibility(View.GONE);
 			
+			int t_startIdx = fsm_insertEnvelopeIndex;
 			for(Envelope en:m_currMailList){
 				if(!en.m_opened){
 					
@@ -524,7 +525,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	        			en.openResendBtn(m_resendListener);
 	        		}
 					
-					m_mainMailView.addView(en.m_mainView,fsm_insertEnvelopeIndex);
+					m_mainMailView.addView(en.m_mainView,t_startIdx++);
 				}				
 			}
 			

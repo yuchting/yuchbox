@@ -56,6 +56,10 @@
     <string name="login_pref_end_prompt_sum">这个时间之后不提醒</string>
     <string name="login_pref_prompt_disconnect">断开后提醒</string>
     <string name="login_pref_prompt_disconnect_sum">断开后连接五次连不上服务器，就提醒用户</string>
+    <string name="login_pref_prompt_disconnect_vibrate">断开震动</string>
+    <string name="login_pref_prompt_disconnect_vibrate_sum">与服务器断开之后震动</string>
+    <string name="login_pref_prompt_disconnect_sound">断开提示音</string>
+    <string name="login_pref_prompt_disconnect_sound_sum">与服务器断开之后的提示音</string>    
     <string name="login_pref_statistics_category">流量统计</string>
     <string name="login_pref_statistics">网络流量</string>
 	<string name="login_pref_statistics_up">上传：</string>

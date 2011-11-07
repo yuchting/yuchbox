@@ -1,6 +1,7 @@
 package com.yuchting.yuchdroid.client;
 
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
@@ -8,8 +9,7 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.preference.RingtonePreference;
 import android.text.method.PasswordTransformationMethod;
 
 import com.yuchting.yuchdroid.client.ui.TimePickerPreference;
@@ -27,6 +27,9 @@ public class ConnectPrefActivity extends PreferenceActivity {
 	TimePickerPreference m_promptStart	= null;
 	TimePickerPreference m_promptEnd	= null;
 	CheckBoxPreference	m_promptWhenDisconnect = null;
+	
+	CheckBoxPreference	m_promptWhenDisconnect_vibrate = null;
+	RingtonePreference	m_promptWhenDisconnect_sound = null;
 	
 	Preference			m_statistics	= null;
 	
@@ -52,6 +55,9 @@ public class ConnectPrefActivity extends PreferenceActivity {
 		m_promptStart			= (TimePickerPreference)m_prefMgr.findPreference("config_prompt_start");
 		m_promptEnd				= (TimePickerPreference)m_prefMgr.findPreference("config_prompt_end");
 		m_promptWhenDisconnect	= (CheckBoxPreference)m_prefMgr.findPreference("config_prompt_disconnect");
+		
+		m_promptWhenDisconnect_vibrate	= (CheckBoxPreference)m_prefMgr.findPreference("config_prompt_disconnect_vibrate");
+		m_promptWhenDisconnect_sound	= (RingtonePreference)m_prefMgr.findPreference("config_prompt_disconnect_sound");
 		
 		m_statistics			= m_prefMgr.findPreference("config_network_stat");
 		
@@ -103,6 +109,18 @@ public class ConnectPrefActivity extends PreferenceActivity {
 			}
 		});
 		
+		m_promptWhenDisconnect.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+			
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				
+				m_promptWhenDisconnect_vibrate.setEnabled(((Boolean)newValue).booleanValue());
+				m_promptWhenDisconnect_sound.setEnabled(((Boolean)newValue).booleanValue());
+				
+				return true;
+			}
+		});
+		
 		
 	}
 	
@@ -129,6 +147,12 @@ public class ConnectPrefActivity extends PreferenceActivity {
 			m_promptEnd.setEnabled(!m_config.m_fulldayPrompt);
 			
 			m_promptWhenDisconnect.setChecked(m_config.m_connectDisconnectPrompt);
+						
+			m_promptWhenDisconnect_vibrate.setChecked(m_config.m_connectDisconnectPrompt_vibrate);
+			m_promptWhenDisconnect_sound.setDefaultValue(m_config.m_connectDisconnectPrompt_sound);
+			
+			m_promptWhenDisconnect_vibrate.setEnabled(m_config.m_connectDisconnectPrompt);
+			m_promptWhenDisconnect_sound.setEnabled(m_config.m_connectDisconnectPrompt);
 			
 			StringBuffer t_statString = new StringBuffer();
 			t_statString.append(getString(R.string.login_pref_statistics_up)).append(YuchDroidApp.GetByteStr(m_config.m_uploadByte)).append(" ")
@@ -150,6 +174,11 @@ public class ConnectPrefActivity extends PreferenceActivity {
 			m_config.m_startPromptHour	= m_promptStart.getHour() | (m_promptStart.getMinute() << 16);
 			m_config.m_endPromptHour	= m_promptEnd.getHour() | (m_promptEnd.getMinute() << 16);
 			m_config.m_connectDisconnectPrompt = m_promptWhenDisconnect.isChecked();
+			m_config.m_connectDisconnectPrompt_vibrate = m_promptWhenDisconnect_vibrate.isChecked();
+			
+			SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
+			String sound = prefs.getString(m_promptWhenDisconnect_sound.getKey(), ""); 
+			m_config.m_connectDisconnectPrompt_sound = sound != null?sound:"";
 			
 			m_config.WriteReadIni(false);
 		}

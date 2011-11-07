@@ -46,6 +46,15 @@
 			android:key="config_prompt_disconnect"
 			android:title="@string/login_pref_prompt_disconnect"
 			android:summary="@string/login_pref_prompt_disconnect_sum"/>
+		<CheckBoxPreference 
+			android:key="config_prompt_disconnect_vibrate"
+			android:title="@string/login_pref_prompt_disconnect_vibrate"
+			android:summary="@string/login_pref_prompt_disconnect_vibrate_sum"/>
+		<RingtonePreference
+			android:key="config_prompt_disconnect_sound"
+			android:title="@string/login_pref_prompt_disconnect_sound"
+			android:summary="@string/login_pref_prompt_disconnect_sound_sum"
+			android:ringtoneType="all" />
 	</PreferenceCategory>
 	<PreferenceCategory
 		android:title="@string/login_pref_statistics_category">

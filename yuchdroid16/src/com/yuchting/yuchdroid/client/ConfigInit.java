@@ -3,10 +3,11 @@ package com.yuchting.yuchdroid.client;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Vector;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.util.Log;
 
 import com.yuchting.yuchdroid.client.im.IMStatus;
@@ -31,6 +32,8 @@ public final class ConfigInit {
 	public int	m_startPromptHour		= 8;
 	public int	m_endPromptHour			= 22;
 	public boolean m_connectDisconnectPrompt = false;
+	public boolean m_connectDisconnectPrompt_vibrate = true;
+	public String	m_connectDisconnectPrompt_sound = "";
 					
 	public long m_uploadByte 				= 0;
 	public long m_downloadByte				= 0;	
@@ -46,6 +49,9 @@ public final class ConfigInit {
 	public int	m_recvMailNum			= 0;
 	public boolean m_discardOrgText		= false;
 	public boolean m_delRemoteMail		= false;
+	
+	public boolean m_mailPrompt_vibrate = false;
+	public String	m_mailPrompt_sound = "";
 		
 	// weibo system
 	//
@@ -77,6 +83,9 @@ public final class ConfigInit {
 	
 	public int m_weiboUploadImageSizeIndex	= 0;
 	
+	public boolean m_weiboPrompt_vibrate = false;
+	public String	m_weiboPrompt_sound = "";
+	
 	// IM system
 	//
 	public boolean m_enableIMModule		= false;
@@ -103,6 +112,9 @@ public final class ConfigInit {
 	public boolean m_standardUI	= false;
 	public boolean m_imVoiceImmMode = false;
 	
+	public boolean m_imPrompt_vibrate = false;
+	public String	m_imPrompt_sound = "";
+	
 	public ConfigInit(Context _ctx){
 		m_ctx = _ctx;
 		
@@ -120,6 +132,33 @@ public final class ConfigInit {
 		}
 		
 		return m_pulseIntervalValues[0];
+	}
+	static Calendar sm_calendar = Calendar.getInstance();
+	static Date		sm_timeDate = new Date();
+	
+	public boolean isPromptTime(){
+		if(m_fulldayPrompt){
+			return true;
+		}
+		
+		int t_startHour		= m_startPromptHour & 0x0000ffff;
+		int t_startMinutes	= m_startPromptHour  >>> 16;
+		
+		int t_endHour		= m_endPromptHour & 0x0000ffff;
+		int t_endMinutes	= m_endPromptHour >>> 16;
+		
+		sm_timeDate.setTime(System.currentTimeMillis());
+		sm_calendar.setTime(sm_timeDate);
+		
+		int t_hour = sm_calendar.get(Calendar.HOUR_OF_DAY);
+		int t_minutes = sm_calendar.get(Calendar.MINUTE);
+		
+		if( ( (t_startHour == t_hour && t_startMinutes <= t_minutes) || t_startHour < t_hour )
+		&& ((t_endHour == t_hour && t_endMinutes > t_minutes) ||  t_endHour > t_hour)){
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public void SetErrorString(String _error){
@@ -167,7 +206,7 @@ public final class ConfigInit {
 		}
 	}
 	
-	final static int		fsm_configVersion = 0;
+	final static int		fsm_configVersion = 1;
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
 	
@@ -272,6 +311,21 @@ public final class ConfigInit {
 		    			m_imSendImageQuality		= sendReceive.ReadInt(t_readFile);
 		    			
 		    			m_standardUI				= sendReceive.ReadBoolean(t_readFile);
+		    			
+		    			if(t_version >= 1){
+		    				m_connectDisconnectPrompt_vibrate = sendReceive.ReadBoolean(t_readFile);
+		    				m_connectDisconnectPrompt_sound	= sendReceive.ReadString(t_readFile);
+		    				
+		    				m_mailPrompt_vibrate			= sendReceive.ReadBoolean(t_readFile);
+		    				m_mailPrompt_sound				= sendReceive.ReadString(t_readFile);
+		    				
+		    				m_weiboPrompt_vibrate			= sendReceive.ReadBoolean(t_readFile);
+		    				m_weiboPrompt_sound				= sendReceive.ReadString(t_readFile);
+		    				
+		    				m_imPrompt_vibrate				= sendReceive.ReadBoolean(t_readFile);
+		    				m_imPrompt_sound				= sendReceive.ReadString(t_readFile);
+		    			}
+		    			
 					}finally{
 						t_readFile.close();
 					}
@@ -370,6 +424,19 @@ public final class ConfigInit {
 	    			
 	    			sendReceive.WriteInt(t_writeFile,m_imSendImageQuality);
 	    			sendReceive.WriteBoolean(t_writeFile,m_standardUI);
+	    			
+	    			// version 1
+	    			sendReceive.WriteBoolean(t_writeFile,m_connectDisconnectPrompt_vibrate);
+	    			sendReceive.WriteString(t_writeFile,m_connectDisconnectPrompt_sound);
+    				
+    				sendReceive.WriteBoolean(t_writeFile,m_mailPrompt_vibrate);
+    				sendReceive.WriteString(t_writeFile,m_mailPrompt_sound);
+    				
+    				sendReceive.WriteBoolean(t_writeFile,m_weiboPrompt_vibrate);
+    				sendReceive.WriteString(t_writeFile,m_weiboPrompt_sound);
+    				
+    				sendReceive.WriteBoolean(t_writeFile,m_imPrompt_vibrate);
+    				sendReceive.WriteString(t_writeFile,m_imPrompt_sound);
 					
 				}finally{
 					t_writeFile.close();

@@ -142,9 +142,9 @@ public class ConnectDeamon extends Service implements Runnable{
 		
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			try{
-				releaseWakeLock();								
+			try{		
 				Disconnect();
+				releaseWakeLock();
 			}catch(Exception e){
 				m_mainApp.setErrorString("m_disconnectRecv", e);
 			}			

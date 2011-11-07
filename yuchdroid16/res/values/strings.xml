@@ -55,12 +55,18 @@
     <string name="login_pref_end_prompt_sum">Will not prompt after this time</string>
 	<string name="login_pref_prompt_disconnect">Prompt After Disconnect</string>
     <string name="login_pref_prompt_disconnect_sum">Notify user if connect server failed 5 times</string>
+    <string name="login_pref_prompt_disconnect_vibrate">Disconnect Vibrate</string>
+    <string name="login_pref_prompt_disconnect_vibrate_sum">Vibrate when connection is disconnect</string>
+    <string name="login_pref_prompt_disconnect_sound">Disconnect Sound</string>
+    <string name="login_pref_prompt_disconnect_sound_sum">Prompt sound when Connection is disconnect</string>
 	<string name="login_pref_statistics_category">Statistics</string>
 	<string name="login_pref_statistics">Network Traffic Statistics</string>
     <string name="login_pref_statistics_up">Upload:</string>
     <string name="login_pref_statistics_down">Download:</string>
     <string name="login_pref_statistics_total">Total:</string>
-    <string name="login_pref_statistics_clear_prompt">Are you sure to clear this statistics?</string> 
+    <string name="login_pref_statistics_clear_prompt">Are you sure to clear this statistics?</string>
+    
+    
 
     
     <!-- dialog relation -->

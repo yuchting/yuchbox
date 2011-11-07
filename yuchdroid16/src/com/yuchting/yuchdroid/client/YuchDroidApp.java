@@ -383,11 +383,15 @@ public class YuchDroidApp extends Application {
 			Intent t_intent = new Intent(FILTER_CONNECT_STATE);	
 			sendBroadcast(t_intent);
 			
-			startConnectNotification(_state);
+			startConnectNotification(_state,false);
 		}
 	}
 	
-	public void startConnectNotification(int _state){
+	public int getConnectState(){
+		return m_connectState;
+	}
+	
+	public void startConnectNotification(int _state,boolean _soundAndLight){
 		NotificationManager t_mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 		
 		int icon;
@@ -403,8 +407,9 @@ public class YuchDroidApp extends Application {
 				t_titleId = R.string.login_connect_deamon_state_disconnect;
 			}	
 		}
+		
 		CharSequence tickerText = getString(R.string.login_connect_deamon_state);
-		CharSequence contentTitle = getString(t_titleId); 
+		CharSequence contentTitle = getString(t_titleId);
 		
 		Intent notificationIntent = new Intent(Intent.ACTION_MAIN);
 		notificationIntent.setClass(this, Yuchdroid16Activity.class);
@@ -414,6 +419,10 @@ public class YuchDroidApp extends Application {
 		// the next two lines initialize the Notification, using the configurations above
 		Notification notification = new Notification(icon, tickerText, System.currentTimeMillis());
 		notification.setLatestEventInfo(this, contentTitle, null, contentIntent);
+		
+		if(_soundAndLight){
+			notification.defaults |= Notification.DEFAULT_ALL;
+		}
 						
 		t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_CONNECT_STATE, notification);
 	}
@@ -453,7 +462,9 @@ public class YuchDroidApp extends Application {
 		//
 		// sound & vibrate & LED 
 		//
-		notification.defaults |= Notification.DEFAULT_SOUND;
+		if(m_config.isPromptTime()){
+			notification.defaults |= Notification.DEFAULT_SOUND | Notification.DEFAULT_LIGHTS;
+		}		
 				
 		t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL, notification);
 		
@@ -509,13 +520,13 @@ public class YuchDroidApp extends Application {
 	}
 
 	public void TriggerDisconnectNotification(){
-		//TODO trigger disconnect notification if sets
-		//
+		if(m_config.m_connectDisconnectPrompt){
+			startConnectNotification(getConnectState(),true);
+		}		
 	}
 	
 	public void StopDisconnectNotification(){
-		//TODO stop disconnect notification if sets
-		//
+		// do nothing
 	}
 		
 	SimpleDateFormat m_errorTimeformat = new SimpleDateFormat("MM-dd HH:mm:ss");
