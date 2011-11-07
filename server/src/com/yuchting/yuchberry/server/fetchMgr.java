@@ -622,11 +622,14 @@ public class fetchMgr{
 		
 		switch(t_msg_head){			
 			case msg_head.msgKeepLive:
-				m_logger.LogOut("pulse!");
+				
 				if(m_IMEI.startsWith("ad")){
 					// android client send back 
 					//
 					SendData(new byte[]{msg_head.msgKeepLive}, false);
+					m_logger.LogOut("pulse! and send back!");
+				}else{
+					m_logger.LogOut("pulse!");
 				}
 				break;
 			case msg_head.msgSponsorList:
