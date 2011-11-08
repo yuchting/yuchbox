@@ -22,6 +22,8 @@ public class MailDbAdapter {
 	private final static String DATABASE_TABLE_GROUP	= "yuch_mail_group";
 	private final static String DATABASE_TABLE_GROUP_SUB_INDEX	= "yuch_mail_group_sub_index";
 	
+	public static final int	MAX_GROUP_FATCH_NUM		= 20;
+	
 	// mail sent flag
 	//	
 	public final static int	MAIL_SENT_FLAG_ERROR	= 0x0001;
@@ -183,7 +185,8 @@ public class MailDbAdapter {
 	private SQLiteDatabase mDb = null;
 	
 	private YuchDroidApp m_mainApp;
-
+	
+	
 	private static class DatabaseHelper extends SQLiteOpenHelper {
 
         DatabaseHelper(Context context,boolean _groupData) {
@@ -501,7 +504,7 @@ public class MailDbAdapter {
     	}
     	
         return mDb.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns, 
-        					null, null, null, null, GROUP_ATTR_LEATEST_TIME + " DESC");
+        					null, null, null, null, GROUP_ATTR_LEATEST_TIME + " DESC",Integer.toString(MAX_GROUP_FATCH_NUM));
     }
     
     public Cursor fetchAllGroupAddrList(){

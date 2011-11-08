@@ -8,10 +8,11 @@ import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.yuchting.yuchdroid.client.R;
@@ -19,7 +20,7 @@ import com.yuchting.yuchdroid.client.R;
 public class MailListAdapter extends BaseAdapter{
 	
 	public static class ItemHolder{
-        View 		background;
+		ViewGroup	background;
         CheckBox	markBut;
         ImageView	groupFlag;
         TextView	subject;
@@ -60,12 +61,13 @@ public class MailListAdapter extends BaseAdapter{
         }
         
         public void setGroupFlag(int _groupFlag){
-        	
-        	int t_backgroud = 0xd0ededed;
+
+    		int t_backgroud = 0xd0ededed;
         	if(_groupFlag == fetchMail.GROUP_FLAG_RECV_ATTACH
         		|| _groupFlag == fetchMail.GROUP_FLAG_RECV){
         		t_backgroud = 0xd0ffffff;
         	}
+        	
         	background.setBackgroundColor(t_backgroud);
         	groupFlag.setImageResource(getMailFlagImageId(_groupFlag));
         }
@@ -165,10 +167,18 @@ public class MailListAdapter extends BaseAdapter{
     	ItemHolder holder;
     	
         if(convertView == null) {
-            convertView = m_inflater.inflate(R.layout.mail_list_item,new LinearLayout(m_context));
+        	holder = new ItemHolder();
+        	
+            convertView = m_inflater.inflate(R.layout.mail_list_item,null);
             
-            holder = new ItemHolder();
-            holder.background	= convertView.findViewById(R.id.mail_item);
+            // this is a bug of RelativeLayout
+            // can't set the height in layout xml file
+            //
+            // please check the android.widget.ListView.setupChild line.1688
+            //
+            convertView.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.FILL_PARENT, 50));
+            
+            holder.background 	= (ViewGroup)convertView.findViewById(R.id.mail_item);
             holder.groupFlag	= (ImageView)convertView.findViewById(R.id.mail_group_flag);
             holder.subject		= (TextView)convertView.findViewById(R.id.mail_subject);
             holder.body			= (TextView)convertView.findViewById(R.id.mail_body);

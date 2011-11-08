@@ -55,7 +55,7 @@
     <string name="login_pref_end_prompt">提醒结束时间</string>
     <string name="login_pref_end_prompt_sum">这个时间之后不提醒</string>
     <string name="login_pref_prompt_disconnect">断开后提醒</string>
-    <string name="login_pref_prompt_disconnect_sum">断开后连接五次连不上服务器，就提醒用户</string>
+    <string name="login_pref_prompt_disconnect_sum">断开后连接2次连不上服务器，就提醒用户</string>
     <string name="login_pref_prompt_disconnect_vibrate">断开震动</string>
     <string name="login_pref_prompt_disconnect_vibrate_sum">与服务器断开之后震动</string>
     <string name="login_pref_prompt_disconnect_sound">断开提示音</string>
@@ -83,6 +83,8 @@
     <string name="mail_time_month">月</string>
     <string name="mail_time_day">日</string>
     <string name="mail_list_compose_new_mail">新建</string>
+    <string name="mail_home_load_former_group">点击加载之前更多邮件组</string>
+    <string name="mail_home_empty_group">天哪，还没有任何邮件...</string>
         
     <!-- mail open view -->
     <string name="mail_open_reply_btn">回复</string>

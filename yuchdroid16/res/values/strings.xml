@@ -54,7 +54,7 @@
     <string name="login_pref_end_prompt">Prompt End Time</string>
     <string name="login_pref_end_prompt_sum">Will not prompt after this time</string>
 	<string name="login_pref_prompt_disconnect">Prompt After Disconnect</string>
-    <string name="login_pref_prompt_disconnect_sum">Notify user if connect server failed 5 times</string>
+    <string name="login_pref_prompt_disconnect_sum">Notify user if connect server failed 2 times</string>
     <string name="login_pref_prompt_disconnect_vibrate">Disconnect Vibrate</string>
     <string name="login_pref_prompt_disconnect_vibrate_sum">Vibrate when connection is disconnect</string>
     <string name="login_pref_prompt_disconnect_sound">Disconnect Sound</string>
@@ -83,6 +83,9 @@
     <string name="mail_time_month">/</string>
     <string name="mail_time_day"></string>
     <string name="mail_list_compose_new_mail">Compose</string>
+    <string name="mail_home_load_former_group">Touch To Load Former Groups</string>
+    <string name="mail_home_empty_group">Opps, there is not any mail...</string>
+    
        
     <!-- mail open view -->
     <string name="mail_open_reply_btn">Reply</string>

@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
 
@@ -17,11 +18,7 @@ import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
 
 public class HomeActivity extends Activity {
-	
-	public final static int	STATUS_BAR_MAIL		= 0;
-	public final static int	STATUS_BAR_WEIBO	= 1;
-	public final static int	STATUS_BAR_IM		= 2;
-	
+		
 	private YuchDroidApp	m_mainApp;
 	private MailListView	m_mailListView;
 	
@@ -62,10 +59,9 @@ public class HomeActivity extends Activity {
                 
         m_mainApp = (YuchDroidApp)getApplicationContext();
         m_groupCursor = m_mainApp.m_dba.fetchAllGroup();
-                                
-        // initialize module view
-        //
-        initModuleView();
+        
+        m_mailListView = new MailListView(this,m_mainApp);
+		((RelativeLayout)findViewById(R.id.home_activity)).addView(m_mailListView,0);
                 
         registerReceiver(m_recvMailRecv, new IntentFilter(YuchDroidApp.FILTER_RECV_MAIL));
         registerReceiver(m_markReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
@@ -78,6 +74,14 @@ public class HomeActivity extends Activity {
 		m_mainApp.StopMailNotification();
 	}
 	
+//	public boolean onTrackballEvent(MotionEvent event){
+//		View v = m_mailListView.getFocusedChild();
+//		if(v != null){
+//			v.invalidate();
+//		}		
+//		return super.onTrackballEvent(event);
+//	}
+	
 	public void onDestroy(){
 		super.onDestroy();
 		
@@ -86,37 +90,6 @@ public class HomeActivity extends Activity {
 		unregisterReceiver(m_recvMailRecv);
 		unregisterReceiver(m_markReadRecv);
 		unregisterReceiver(m_sendMailRecv);
-	}
-		
-	private void initModuleView(){
-		m_mailListView = new MailListView(this,m_mainApp);
-		
-		// set the status bar select
-		//
-		int status = 0;
-		Intent t_intent = getIntent();		
-		if(t_intent != null && t_intent.getExtras() != null){
-			t_intent.getExtras().getInt("status",0);
-		}
-	
-		((RelativeLayout)findViewById(R.id.home_activity)).addView(m_mailListView,0);
-		m_mailListView.setVisibility(View.GONE);
-		
-		setMainListView(status);
-	}
-	
-	private void setMainListView(int _status){
-		switch (_status) {
-		case STATUS_BAR_MAIL:			
-			m_mailListView.setVisibility(View.VISIBLE);
-			break;
-		case STATUS_BAR_WEIBO:
-			break;
-		case STATUS_BAR_IM:
-			break;
-		default:
-			break;
-		}
 	}
 		
 	@Override

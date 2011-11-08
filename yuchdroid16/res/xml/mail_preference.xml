@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	
+	<PreferenceCategory
+		android:title="@string/login_pref_connect_category">
+		<CheckBoxPreference
+			android:key="config_use_ssl"
+			android:title="@string/login_pref_use_ssl"
+			android:summary="@string/login_pref_use_ssl_sum"
+			android:enabled="false"/>
+		<EditTextPreference
+			android:key="config_pass_key"
+			android:title="@string/login_pref_pass_key"
+			android:summary="@string/login_pref_pass_key_sum"/>
+		<CheckBoxPreference
+			android:key="config_auto_run"
+			android:title="@string/login_pref_auto_run"
+			android:summary="@string/login_pref_auto_run_sum" />
+		<ListPreference
+			android:key="config_pulse_interval"
+			android:title="@string/login_pref_pulse_interval"
+			android:summary="@string/login_pref_pulse_interval_sum"
+			android:entries="@array/login_pref_pulse"
+			android:entryValues="@array/login_pref_pulse_values"
+			android:dialogTitle="@string/login_pref_pulse_interval"/>
+	</PreferenceCategory>
+	<PreferenceCategory
+		android:title="@string/login_pref_prompt_category">
+		<CheckBoxPreference
+			android:key="config_prompt_all_day"
+			android:title="@string/login_pref_whole_day"
+			android:summaryOn="@string/login_pref_whole_day_sum"
+			android:summaryOff="@string/login_pref_whole_day_sum_off"/>
+		<com.yuchting.yuchdroid.client.ui.TimePickerPreference
+			android:key="config_prompt_start"
+			android:title="@string/login_pref_start_prompt"
+			android:summary="@string/login_pref_start_prompt_sum"
+		/>
+		<com.yuchting.yuchdroid.client.ui.TimePickerPreference
+			android:key="config_prompt_end"
+			android:title="@string/login_pref_end_prompt"
+			android:summary="@string/login_pref_end_prompt_sum"
+		/>
+		<CheckBoxPreference 
+			android:key="config_prompt_disconnect"
+			android:title="@string/login_pref_prompt_disconnect"
+			android:summary="@string/login_pref_prompt_disconnect_sum"/>
+		<CheckBoxPreference 
+			android:key="config_prompt_disconnect_vibrate"
+			android:title="@string/login_pref_prompt_disconnect_vibrate"
+			android:summary="@string/login_pref_prompt_disconnect_vibrate_sum"/>
+		<RingtonePreference
+			android:key="config_prompt_disconnect_sound"
+			android:title="@string/login_pref_prompt_disconnect_sound"
+			android:summary="@string/login_pref_prompt_disconnect_sound_sum"
+			android:ringtoneType="all" />
+	</PreferenceCategory>
+	<PreferenceCategory
+		android:title="@string/login_pref_statistics_category">
+		<Preference
+			android:key="config_network_stat"
+			android:title="@string/login_pref_statistics"
+			android:enabled="true"/>
+	</PreferenceCategory>
+</PreferenceScreen>

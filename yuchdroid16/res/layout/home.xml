@@ -7,35 +7,5 @@
 	android:background="#FFF"
 	android:id="@+id/home_activity">
 	
-	<!-- remove the radio group button
-	<RadioGroup 
-		android:id="@+id/home_status_bar"
-		android:orientation="horizontal"
-		android:layout_gravity="center"
-		android:gravity="center"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:layout_alignParentBottom="true"
-		android:background="#888">
-		<RadioButton
-			android:id="@+id/home_status_bar_mail"
-			android:layout_width="0dp"
-			android:layout_weight="1"
-			android:layout_height="fill_parent"
-			android:button="@drawable/home_status_ic_mail"
-			android:checked="true"/>
-		<RadioButton
-			android:id="@+id/home_status_bar_weibo"
-			android:layout_width="0dp"
-			android:layout_weight="1"
-			android:layout_height="fill_parent"
-			android:text="Weibo"/>
-		<RadioButton
-			android:id="@+id/home_status_bar_im"
-			android:layout_width="0dp"
-			android:layout_weight="1"
-			android:layout_height="fill_parent"
-			android:text="IM"/>
-	</RadioGroup>  
-	 --> 
+	
 </RelativeLayout>

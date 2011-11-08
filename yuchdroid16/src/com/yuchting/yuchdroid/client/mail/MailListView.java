@@ -22,7 +22,7 @@ public class MailListView extends ListView {
 		setDividerHeight(1);
 		
 		setCacheColorHint(0);
-		setBackgroundColor(0xffffff);
+		//setBackgroundColor(0xffffff);	
 				
 		m_mainApp = _mainApp;
 		m_homeActivity = _home;

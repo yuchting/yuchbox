@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@+id/mail_item"
-    android:layout_width="fill_parent"
-    android:layout_height="50dp"
-    android:background="#fff">
+	android:layout_width="fill_parent"
+	android:layout_height="50dp">
 		
 	<ImageView
 		android:id="@+id/mail_group_flag"

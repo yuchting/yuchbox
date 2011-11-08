@@ -36,13 +36,14 @@
 		<TextView
 			android:id="@+id/mail_open_date"
 			android:layout_alignParentRight="true"
-			android:layout_width="wrap_content"
+			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
-			android:singleLine="true"
+			android:layout_toRightOf="@id/mail_open_from_addr"
 			android:textColor="#000"
 			android:textSize="14dp"
 			android:layout_marginTop="3dp"
 			android:layout_marginRight="5dp"
+			android:gravity="right"
 			android:text="Mail Date"
 		/>
 		<TextView
@@ -58,12 +59,14 @@
 			android:id="@+id/mail_open_time"
 			android:layout_below="@id/mail_open_date"
 			android:layout_alignParentRight="true"
-			android:layout_width="wrap_content"
+			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
 			android:textColor="#000"
 			android:textSize="14dp"
 			android:layout_marginTop="3dp"
 			android:layout_marginRight="5dp"
+			android:layout_toRightOf="@id/mail_open_recv_addr"
+			android:gravity="right"
 			android:text="Mail Time"
 		/>
 		<TextView

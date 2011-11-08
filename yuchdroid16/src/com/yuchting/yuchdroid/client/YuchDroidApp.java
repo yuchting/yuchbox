@@ -414,15 +414,27 @@ public class YuchDroidApp extends Application {
 		Intent notificationIntent = new Intent(Intent.ACTION_MAIN);
 		notificationIntent.setClass(this, Yuchdroid16Activity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
-				PendingIntent.FLAG_UPDATE_CURRENT | Notification.FLAG_NO_CLEAR );
+				PendingIntent.FLAG_UPDATE_CURRENT );
 
 		// the next two lines initialize the Notification, using the configurations above
 		Notification notification = new Notification(icon, tickerText, System.currentTimeMillis());
 		notification.setLatestEventInfo(this, contentTitle, null, contentIntent);
 		
-		if(_soundAndLight){
-			notification.defaults |= Notification.DEFAULT_ALL;
+		if(_soundAndLight && m_config.isPromptTime()){
+			
+			if(m_config.m_connectDisconnectPrompt_sound.length() != 0){
+				notification.sound = Uri.parse(m_config.m_connectDisconnectPrompt_sound);
+			}
+			if(m_config.m_connectDisconnectPrompt_vibrate){
+				notification.defaults |= Notification.DEFAULT_VIBRATE;
+			}
+			
+			notification.defaults |= Notification.DEFAULT_LIGHTS;
 		}
+		
+		// can't not clear
+		//
+		notification.flags |= Notification.FLAG_NO_CLEAR; 
 						
 		t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_CONNECT_STATE, notification);
 	}
@@ -458,12 +470,17 @@ public class YuchDroidApp extends Application {
 		
 		notification.number = ++m_mailNotificationNum;
 		
-		//TODO trigger mail received notification
-		//
 		// sound & vibrate & LED 
 		//
 		if(m_config.isPromptTime()){
-			notification.defaults |= Notification.DEFAULT_SOUND | Notification.DEFAULT_LIGHTS;
+			if(m_config.m_mailPrompt_sound.length() != 0){
+				notification.sound = Uri.parse(m_config.m_mailPrompt_sound);
+			}
+			if(m_config.m_mailPrompt_vibrate){
+				notification.defaults |= Notification.DEFAULT_VIBRATE;
+			}
+			
+			notification.defaults |= Notification.DEFAULT_LIGHTS;
 		}		
 				
 		t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL, notification);

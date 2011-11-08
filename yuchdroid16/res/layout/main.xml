@@ -20,7 +20,7 @@
     		android:text="@string/login_host"
     		android:layout_height="fill_parent" 
     		android:layout_width="70dp"
-    		android:gravity="center_vertical" 
+    		android:gravity="center|right" 
     	/>
     	<EditText
     		android:id="@+id/login_host"
@@ -38,7 +38,7 @@
     		android:text="@string/login_port"
     		android:layout_height="fill_parent" 
     		android:layout_width="70dp"
-    		android:gravity="center_vertical" 
+    		android:gravity="center|right" 
     	/>
     	<EditText
     		android:id="@+id/login_port"
@@ -58,7 +58,7 @@
     		android:text="@string/login_user_pass"
     		android:layout_height="fill_parent" 
     		android:layout_width="70dp"
-    		android:gravity="center_vertical" 
+    		android:gravity="center|right" 
     	/>
     	<EditText
     		android:id="@+id/login_user_pass"
