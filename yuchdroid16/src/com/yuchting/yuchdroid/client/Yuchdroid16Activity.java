@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Debug;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -212,7 +213,7 @@ public class Yuchdroid16Activity extends Activity {
         
         Log.i(TAG,"onStop " + this);
         
-       // Debug.stopMethodTracing();
+        //Debug.stopMethodTracing();
     }
     
     @Override

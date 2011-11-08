@@ -8,7 +8,6 @@ import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
@@ -39,6 +38,9 @@ public class MailListAdapter extends BaseAdapter{
         	setGroupFlag(_groupFlag);
             
             subject.setText(_subject);
+            if(_body.length() > 20){
+            	_body = _body.substring(0,20);
+            }
             body.setText("-" + _body);             
      		mailAddr.setText(_mailAddr);
      		
