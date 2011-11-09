@@ -20,7 +20,7 @@ import com.yuchting.yuchdroid.client.YuchDroidApp;
 
 public class HomeActivity extends ListActivity{
 		
-	public static final int	MAX_GROUP_FATCH_NUM		= 20;
+	public static final int	MAX_GROUP_FATCH_NUM		= 30;
 
 	public Cursor			m_groupCursor;
 	public int 			m_currGroupLimit = MAX_GROUP_FATCH_NUM;

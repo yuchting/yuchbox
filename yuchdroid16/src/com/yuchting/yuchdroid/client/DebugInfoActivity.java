@@ -92,6 +92,7 @@ public class DebugInfoActivity extends ListActivity{
         switch(item.getItemId()) {
             case R.id.debug_info_menu_clear:
             	m_mainApp.clearAllErrorString();
+            	
                 return true;
             case R.id.debug_info_menu_copy:
             	YuchDroidApp.copyTextToClipboard(this, m_mainApp.getErrorString());

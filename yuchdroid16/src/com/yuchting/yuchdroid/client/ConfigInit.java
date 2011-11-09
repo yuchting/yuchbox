@@ -45,6 +45,7 @@ public final class ConfigInit {
 	
 	public boolean				m_copyMailToSentFolder = false;
 	public boolean 			m_enableMailModule	= true;
+	public boolean				m_displayTextWhenHTML = true;
 	
 	public int	m_sendMailNum			= 0;
 	public int	m_recvMailNum			= 0;
@@ -207,7 +208,7 @@ public final class ConfigInit {
 		}
 	}
 	
-	final static int		fsm_configVersion = 1;
+	final static int		fsm_configVersion = 2;
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
 	
@@ -327,6 +328,10 @@ public final class ConfigInit {
 		    				m_imPrompt_sound				= sendReceive.ReadString(t_readFile);
 		    			}
 		    			
+		    			if(t_version >= 2){
+		    				m_displayTextWhenHTML			= sendReceive.ReadBoolean(t_readFile);
+		    			}
+		    			
 					}finally{
 						t_readFile.close();
 					}
@@ -438,6 +443,8 @@ public final class ConfigInit {
     				
     				sendReceive.WriteBoolean(t_writeFile,m_imPrompt_vibrate);
     				sendReceive.WriteString(t_writeFile,m_imPrompt_sound);
+    				
+    				sendReceive.WriteBoolean(t_writeFile,m_displayTextWhenHTML);
 					
 				}finally{
 					t_writeFile.close();

@@ -207,9 +207,15 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 					if(m_referenceMail.m_mail.isOwnSendMail()){
 						t_toVect = m_referenceMail.m_mail.GetSendToVect();
 					}else{
-						t_toVect = m_referenceMail.m_mail.GetReplyToVect().isEmpty()?
-										m_referenceMail.m_mail.GetFromVect():
-										m_referenceMail.m_mail.GetReplyToVect();
+						
+						if(m_referenceMailStyle != fetchMail.FORWORD_STYLE){
+							// if NOT forward style
+							//
+							t_toVect = m_referenceMail.m_mail.GetReplyToVect().isEmpty()?
+									m_referenceMail.m_mail.GetFromVect():
+									m_referenceMail.m_mail.GetReplyToVect();
+						}
+						
 					}
 				}
 			}

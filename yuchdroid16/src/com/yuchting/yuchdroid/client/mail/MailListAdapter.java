@@ -286,7 +286,7 @@ public class MailListAdapter extends BaseAdapter{
                 //
                 // please check the android.widget.ListView.setupChild line.1688
                 //
-        		background.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.FILL_PARENT, MAIL_GROUP_ITEM_HEIGHT + 16));
+        		background.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.FILL_PARENT, MAIL_GROUP_ITEM_HEIGHT + 20));
         		mailDateSpliter.setVisibility(View.VISIBLE);
         		mailDateSpliter.setText(sm_yearMonthDayFormat.format(new Date(_time)));
         	}else{

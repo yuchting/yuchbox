@@ -109,7 +109,7 @@
     <string name="mail_compose_discard_btn">Discard</string>
     <string name="mail_compose_ref_lable">Reference Mail (touch to discard reference):</string>
     <string name="mail_compose_reply_prefix" >Re:\u0020</string>
-    <string name="mail_compose_forward_prefix">Forward:\u0020</string>
+    <string name="mail_compose_forward_prefix">Fwd:\u0020</string>
     <string name="mail_compose_delete_ref_mail">Are you sure delete this reference mail?</string>
     <string name="mail_compose_discard_mail">Are you sure discard this mail?</string>
     <string name="mail_compose_send_without_modified">Do you want send without changed?</string>
@@ -131,6 +131,9 @@
 	<string name="mail_pref_del_remote_mail_sum">Delete remote server mail simultaneously when delete local one</string>
 	<string name="mail_pref_send_to_copy">Send To Copy</string>
 	<string name="mail_pref_send_to_copy_sum">Copy a mail to sent folder when sending(NOT supports POP3)</string>
+	<string name="mail_pref_display_plain_text_when_html">Display Plain Text</string>
+	<string name="mail_pref_display_plain_text_when_html_sumOn">Priority display plain text, load HTML part(image) later</string>
+	<string name="mail_pref_display_plain_text_when_html_sumOff">Auto display HTML part priority, does not display plain text</string>
 	<string name="mail_pref_prompt_category">Notification</string>
 	<string name="mail_pref_vibrate">Vibreate</string>
 	<string name="mail_pref_vibrate_sum">Vibreate when new mail comes</string>
@@ -140,6 +143,9 @@
 	<string name="mail_pref_statistics">Mail Statistics</string>
 	<string name="mail_pref_statistics_send">Mail Send:</string>
 	<string name="mail_pref_statistics_recv">Mail Recv:</string>
+	
+	
+	
 	
     
 </resources>

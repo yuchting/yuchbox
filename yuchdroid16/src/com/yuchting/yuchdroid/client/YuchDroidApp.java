@@ -568,6 +568,22 @@ public class YuchDroidApp extends Application {
 		
 		Intent t_intent = new Intent(FILTER_DEBUG_INFO);	
 		sendBroadcast(t_intent);
+		
+		// clear all unhandle excpetion files 
+		//
+		String[] t_files = (new File(getFilesDir().getAbsolutePath())).list(new FilenameFilter() {
+			
+			@Override
+			public boolean accept(File dir, String filename) {
+				// TODO Auto-generated method stub
+				return filename.endsWith(ExceptionHandler.fsm_stackstraceSuffix);
+			}
+		});
+		
+		for(String f:t_files){
+			File delFile = new File(f);
+			delFile.delete();
+		}
 	}
 	
 	public void copyAllErrorString(Vector<String> _to){

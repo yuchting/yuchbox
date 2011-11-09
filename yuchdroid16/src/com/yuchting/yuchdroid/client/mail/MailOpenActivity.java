@@ -84,7 +84,15 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			
 			m_opened = true;
 			
-			if(m_mail.GetContain().length() != 0){
+			boolean t_displayTextWhenHTML = ((YuchDroidApp)m_loadCtx.getApplicationContext()).m_config.m_displayTextWhenHTML;
+			boolean t_displayText = m_mail.GetContain().length() != 0;
+			
+			if(m_mail.GetContain_html().length() != 0 && !t_displayTextWhenHTML){
+				t_displayText = false;
+			}			
+			
+			if(t_displayText){
+				
 				m_bodyText.setVisibility(View.VISIBLE);
 				CharSequence t_str;
 				if(_simple){
@@ -100,9 +108,10 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
             }else{
             	m_bodyText.setVisibility(View.GONE);
             }
-                		
+			
             if(m_mail.GetContain_html().length() != 0){
-            	if(m_mail.GetContain().length() != 0){
+            	
+            	if(t_displayText){
             		
             		m_touchHTML.setVisibility(View.VISIBLE);
                 	m_touchHTML.setOnClickListener(new View.OnClickListener() {

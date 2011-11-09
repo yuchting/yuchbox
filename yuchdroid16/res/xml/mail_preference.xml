@@ -26,6 +26,12 @@
 			android:key="config_mail_send_to_copy"
 			android:title="@string/mail_pref_send_to_copy"
 			android:summary="@string/mail_pref_send_to_copy_sum"/>
+			
+		<CheckBoxPreference
+			android:key="config_mail_display_plain_text_when_html"
+			android:title="@string/mail_pref_display_plain_text_when_html"
+			android:summaryOn="@string/mail_pref_display_plain_text_when_html_sumOn"
+			android:summaryOff="@string/mail_pref_display_plain_text_when_html_sumOff"/>
 		
 	</PreferenceCategory>
 	<PreferenceCategory

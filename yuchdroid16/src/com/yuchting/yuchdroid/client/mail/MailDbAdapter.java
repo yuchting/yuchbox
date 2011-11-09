@@ -250,13 +250,21 @@ public class MailDbAdapter {
     public final static String[] fsm_groupSubjectPrefix = 
     {
     	"Re: ",
+    	"Re:",
     	"Re： ",
+    	"Re：",
     	"RE: ",
+    	"RE:",
     	"RE： ",
+    	"RE：",
     	"回复: ",
+    	"回复:",
     	"回复： ",
+    	"回复：",
     	"答复: ",
+    	"答复:",
     	"答复： ",
+    	"答复：",
     };
     
     /**
