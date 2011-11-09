@@ -83,7 +83,6 @@
     <string name="mail_time_month">月</string>
     <string name="mail_time_day">日</string>
     <string name="mail_list_compose_new_mail">新建</string>
-    <string name="mail_home_load_former_group">点击加载之前更多邮件组</string>
     <string name="mail_home_empty_group">天哪，还没有任何邮件...</string>
         
     <!-- mail open view -->
@@ -98,6 +97,7 @@
     <string name="mail_open_resend_btn">重新发送</string>
     <string name="mail_open_resend_need_connectDeamon_prompt">没有开启连接，无法发送邮件。</string>
     <string name="mail_open_delete_prompt">你确定要删除这个邮件组？</string>
+    <string name="mail_open_reference_line_replace">点击显示邮件引用部分</string>
     
     
     <!-- mail compose view -->
@@ -122,6 +122,27 @@
     <string name="mail_compose_own_account_prompt">请选择想要从哪个信箱发出</string>
     <string name="mail_compose_add_cc_bcc">添加抄送/密送地址</string>
     <string name="mail_compose_attachment">附件</string>
+    
+    <!-- mail preference activity -->
+	<string name="mail_pref_title">邮件配置</string>
+	<string name="mail_pref_operation_category">操作</string>
+	<string name="mail_pref_own_account">默认账户</string>
+	<string name="mail_pref_own_account_sum">语盒服务器推送账户，设置默认的发送账户</string>
+	<string name="mail_pref_discard_org_mail">丢弃原文</string>
+	<string name="mail_pref_discard_org_mail_sum">在回复邮件的时候自动丢弃原文（节省传输网络流量）</string>
+	<string name="mail_pref_del_remote_mail">同步删除邮件</string>
+	<string name="mail_pref_del_remote_mail_sum">删除本地邮件同步删除邮箱的邮件</string>
+	<string name="mail_pref_send_to_copy">发送保存副本</string>
+	<string name="mail_pref_send_to_copy_sum">发送邮件后，保存到邮箱已发送文件夹（不支持POP3）</string>
+	<string name="mail_pref_prompt_category">提醒</string>
+	<string name="mail_pref_vibrate">震动</string>
+	<string name="mail_pref_vibrate_sum">新邮件到达时震动</string>
+	<string name="mail_pref_sound">提示音</string>
+	<string name="mail_pref_sound_sum">新邮件到达时候的提示音</string>
+	<string name="mail_pref_statistics_category">统计</string>
+	<string name="mail_pref_statistics">邮件统计</string>
+	<string name="mail_pref_statistics_send">发送：</string>
+	<string name="mail_pref_statistics_recv">接收：</string>
     
     
 </resources>

@@ -41,13 +41,14 @@ public final class ConfigInit {
 	// mail system variables
 	//
 	public Vector<String>		m_sendMailAccountList = new Vector<String>();
-	public int				m_defaultSendMailAccountIndex = 0;
-	public boolean				m_copyMailToSentFolder = false;
+	public int					m_defaultSendMailAccountIndex = 0;
 	
-	public boolean m_enableMailModule	= true;
+	public boolean				m_copyMailToSentFolder = false;
+	public boolean 			m_enableMailModule	= true;
+	
 	public int	m_sendMailNum			= 0;
 	public int	m_recvMailNum			= 0;
-	public boolean m_discardOrgText		= false;
+	public boolean m_discardOrgText	= false;
 	public boolean m_delRemoteMail		= false;
 	
 	public boolean m_mailPrompt_vibrate = false;

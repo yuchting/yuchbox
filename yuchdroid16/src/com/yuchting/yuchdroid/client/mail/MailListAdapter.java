@@ -3,6 +3,7 @@ package com.yuchting.yuchdroid.client.mail;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Vector;
 
 import android.database.Cursor;
 import android.view.LayoutInflater;
@@ -18,7 +19,204 @@ import com.yuchting.yuchdroid.client.R;
 
 public class MailListAdapter extends BaseAdapter{
 	
-	public static class ItemHolder{
+	private final static int	MAIL_GROUP_ITEM_HEIGHT = 50;
+	
+	private int m_cursorIDIndex;
+    private int m_cursorMarkIndex;
+    private int m_cursorGroupFlagIndex;
+    private int m_cursorSubjectIndex;
+    private int m_cursorBodyIndex;
+    private int m_cursorMailAddrIndex;
+    private int m_cursorlatestTimeIndex;
+	
+	private LayoutInflater m_inflater;   	
+	private HomeActivity	m_context;
+	private Cursor			m_groupCursor;
+	
+	final static Calendar 	sm_calendar 	= Calendar.getInstance();
+	final static Date		sm_timeDate 	= new Date();
+	
+    static SimpleDateFormat sm_yearMonthDayFormat = null;
+	static SimpleDateFormat sm_monthDayHourFormat = null;
+	
+	private int m_currYear;
+	private int m_currMonth;
+	private int m_currDay;
+	
+	public MailListAdapter(HomeActivity _ctx){
+		m_context		= _ctx;
+		m_inflater		= LayoutInflater.from(m_context);
+
+		m_cursorIDIndex			= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.KEY_ID);
+		m_cursorMarkIndex		= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_MARK);
+		m_cursorGroupFlagIndex	= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_GROUP_FLAG);
+		m_cursorSubjectIndex	= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_SUBJECT);
+		m_cursorBodyIndex		= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_LEATEST_BODY);
+		m_cursorMailAddrIndex	= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_ADDR_LIST);
+		m_cursorlatestTimeIndex	= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_LEATEST_TIME);
+
+		
+		if(sm_yearMonthDayFormat == null){
+			sm_yearMonthDayFormat = new SimpleDateFormat("yyyy"+_ctx.getString(R.string.mail_time_year)+
+											"MM"+_ctx.getString(R.string.mail_time_month)+
+											"dd" + _ctx.getString(R.string.mail_time_day));
+
+			sm_monthDayHourFormat = new SimpleDateFormat("MM"+_ctx.getString(R.string.mail_time_month)+
+											"dd" + _ctx.getString(R.string.mail_time_day) +
+											" HH:mm");	
+		}
+		
+		sm_timeDate.setTime(System.currentTimeMillis());
+		sm_calendar.setTime(sm_timeDate);
+		
+		m_currYear	= sm_calendar.get(Calendar.YEAR);
+		m_currMonth = sm_calendar.get(Calendar.MONTH);
+		m_currDay	= sm_calendar.get(Calendar.DAY_OF_MONTH);
+		
+	}
+	
+
+    public int getCount() {
+        return m_context.m_groupCursor.getCount();
+    }
+
+    public Object getItem(int position) {
+         return position;
+    }
+
+    public long getItemId(int position) {
+        return position;
+    }
+    
+    public View getView(int position, View convertView, ViewGroup parent) {
+    	Cursor t_groupCursor = m_context.m_groupCursor;
+   	
+    	ItemHolder holder;
+    	
+    	if(convertView == null) {       	
+            convertView = inflateMailGroupView();
+    	}
+    	holder = (ItemHolder) convertView.getTag();
+        
+    	int t_cmpYear;
+    	int t_cmpMonth;
+    	int t_cmpDay;
+    	
+        // fill the group data
+        //
+        t_groupCursor.moveToPosition(position);
+        
+        long t_currTime = t_groupCursor.getLong(m_cursorlatestTimeIndex);
+        holder.groupId = t_groupCursor.getInt(m_cursorIDIndex);
+        
+        if(position != 0){
+        	t_groupCursor.moveToPosition(position - 1);
+        	holder.nextGroupId = t_groupCursor.getInt(m_cursorIDIndex);
+        	
+        	long t_time = t_groupCursor.getLong(m_cursorlatestTimeIndex);
+          	sm_timeDate.setTime(t_time);
+    		sm_calendar.setTime(sm_timeDate);
+    		
+    		t_cmpYear 	= sm_calendar.get(Calendar.YEAR);
+    		t_cmpMonth 	= sm_calendar.get(Calendar.MONTH);
+    		t_cmpDay 	= sm_calendar.get(Calendar.DAY_OF_MONTH);
+    		    		
+        }else{
+        	
+        	holder.nextGroupId = -1;
+        	
+        	t_cmpYear	= m_currYear;
+        	t_cmpMonth	= m_currMonth;
+        	t_cmpDay	= m_currDay;
+        }    
+    	
+        //compare the time and adjuge whether show the date spliter
+        //
+      	sm_timeDate.setTime(t_currTime);
+		sm_calendar.setTime(sm_timeDate);
+		
+		if(sm_calendar.get(Calendar.YEAR) != t_cmpYear
+			|| sm_calendar.get(Calendar.MONTH) != t_cmpMonth
+			|| sm_calendar.get(Calendar.DAY_OF_MONTH) != t_cmpDay){
+			holder.showDateSpliter(true, t_currTime);
+		}else{
+			holder.showDateSpliter(false,0);
+		}
+        
+        if(position < t_groupCursor.getCount() - 1){
+        	t_groupCursor.moveToPosition(position + 1);
+        	holder.preGroupId = t_groupCursor.getInt(m_cursorIDIndex);
+        }else{
+        	holder.preGroupId = -1;
+        }
+        
+        // fill the mail text
+        //
+        t_groupCursor.moveToPosition(position);
+        
+        holder.cursorPos = position;        
+        holder.updateView(t_groupCursor.getInt(m_cursorGroupFlagIndex),
+        				t_groupCursor.getString(m_cursorSubjectIndex), 
+        				getShortAddrList(fetchMail.parseAddressList(t_groupCursor.getString(m_cursorMailAddrIndex).split(fetchMail.fsm_vectStringSpliter))), 
+        				t_groupCursor.getString(m_cursorBodyIndex),
+        				t_groupCursor.getLong(m_cursorlatestTimeIndex));
+		
+        return convertView;
+    }
+    
+    private View inflateMailGroupView(){
+    	
+    	ItemHolder holder = new ItemHolder();
+    	
+        View convertView = m_inflater.inflate(R.layout.mail_list_item,null);
+        
+        holder.background 	= (ViewGroup)convertView.findViewById(R.id.mail_item);
+        holder.groupFlag	= (ImageView)convertView.findViewById(R.id.mail_group_flag);
+        holder.subject		= (TextView)convertView.findViewById(R.id.mail_subject);
+        holder.body			= (TextView)convertView.findViewById(R.id.mail_body);
+        holder.mailAddr		= (TextView)convertView.findViewById(R.id.mail_from_to);
+        holder.latestTime	= (TextView)convertView.findViewById(R.id.mail_time);
+        holder.mailDateSpliter	= (TextView)convertView.findViewById(R.id.mail_date_spliter);
+
+        convertView.setTag(holder);
+                
+        return convertView;
+    }
+    
+    public static String getShortAddrList(Address[] _list){
+    	
+    	StringBuffer t_display = new StringBuffer();
+		int t_num = 0;
+		
+		boolean t_remain = false;
+		while(t_num < _list.length){
+			
+			t_display.append(_list[t_num].m_name.length() == 0?_list[t_num].m_addr:_list[t_num].m_name);
+			t_num++;
+			
+			if(t_num >= 3){
+				if(t_num < _list.length){
+					t_remain = true;
+					t_display.append("...");
+				}				
+				break;
+			}else{
+				
+				if(t_num < _list.length){
+					t_display.append(",");
+				}				
+			}
+		}
+		
+		if(t_remain){
+			t_display.append("(").append(_list.length).append(")");
+		}
+		
+		
+		return t_display.toString();
+    }
+    
+    public static class ItemHolder{
 		ViewGroup	background;
         CheckBox	markBut;
         ImageView	groupFlag;
@@ -26,6 +224,7 @@ public class MailListAdapter extends BaseAdapter{
         TextView	body;
         TextView	mailAddr;
         TextView	latestTime;
+        TextView	mailDateSpliter;
         
         long		preGroupId = -1;
         long		groupId;
@@ -73,6 +272,28 @@ public class MailListAdapter extends BaseAdapter{
         	background.setBackgroundColor(t_backgroud);
         	groupFlag.setImageResource(getMailFlagImageId(_groupFlag));
         }
+        
+        public void showDateSpliter(boolean _show,long _time){
+        	
+        	if(background == null){
+        		return;
+        	}
+        	
+        	if(_show){
+                
+                // this is a bug of RelativeLayout
+                // can't set the height in layout xml file
+                //
+                // please check the android.widget.ListView.setupChild line.1688
+                //
+        		background.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.FILL_PARENT, MAIL_GROUP_ITEM_HEIGHT + 16));
+        		mailDateSpliter.setVisibility(View.VISIBLE);
+        		mailDateSpliter.setText(sm_yearMonthDayFormat.format(new Date(_time)));
+        	}else{
+        		background.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.FILL_PARENT, MAIL_GROUP_ITEM_HEIGHT));
+        		mailDateSpliter.setVisibility(View.GONE);
+        	}
+        }
     }
 	
 	public static int getMailFlagImageId(int _groupFlag){
@@ -105,156 +326,5 @@ public class MailListAdapter extends BaseAdapter{
     	}
     	return t_id;
 	}
-	
-	private int m_cursorIDIndex;
-    private int m_cursorMarkIndex;
-    private int m_cursorGroupFlagIndex;
-    private int m_cursorSubjectIndex;
-    private int m_cursorBodyIndex;
-    private int m_cursorMailAddrIndex;
-    private int m_cursorlatestTimeIndex;
-	
-	private LayoutInflater m_inflater;   	
-	private HomeActivity	m_context;
-	private Cursor			m_groupCursor;
-	
-	final static Calendar 	sm_calendar 	= Calendar.getInstance();
-	final static Date		sm_timeDate 	= new Date();
-	
-    static SimpleDateFormat sm_yearMonthDayFormat = null;
-	static SimpleDateFormat sm_monthDayHourFormat = null;
-	
-	public MailListAdapter(HomeActivity _ctx){
-		m_context		= _ctx;
-		m_inflater		= LayoutInflater.from(m_context);
-		
-		m_cursorIDIndex			= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.KEY_ID);
-		m_cursorMarkIndex		= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_MARK);
-		m_cursorGroupFlagIndex	= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_GROUP_FLAG);
-		m_cursorSubjectIndex	= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_SUBJECT);
-		m_cursorBodyIndex		= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_LEATEST_BODY);
-		m_cursorMailAddrIndex	= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_ADDR_LIST);
-		m_cursorlatestTimeIndex	= m_context.m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_LEATEST_TIME);
-
-		
-		if(sm_yearMonthDayFormat == null){
-			sm_yearMonthDayFormat = new SimpleDateFormat("yyyy"+_ctx.getString(R.string.mail_time_year)+
-											"MM"+_ctx.getString(R.string.mail_time_month)+
-											"dd" + _ctx.getString(R.string.mail_time_day));
-
-			sm_monthDayHourFormat = new SimpleDateFormat("MM"+_ctx.getString(R.string.mail_time_month)+
-											"dd" + _ctx.getString(R.string.mail_time_day) +
-											" HH:mm");	
-		}
-		
-	}
-	
-
-    public int getCount() {
-        return m_context.m_groupCursor.getCount();
-    }
-
-    public Object getItem(int position) {
-         return position;
-    }
-
-    public long getItemId(int position) {
-        return position;
-    }
-    
-    public View getView(int position, View convertView, ViewGroup parent) {
-
-    	Cursor t_groupCursor = m_context.m_groupCursor;
-    	
-    	ItemHolder holder;
-    	
-        if(convertView == null) {
-        	holder = new ItemHolder();
-        	
-            convertView = m_inflater.inflate(R.layout.mail_list_item,null);
-            
-            // this is a bug of RelativeLayout
-            // can't set the height in layout xml file
-            //
-            // please check the android.widget.ListView.setupChild line.1688
-            //
-            convertView.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.FILL_PARENT, 50));
-            
-            holder.background 	= (ViewGroup)convertView.findViewById(R.id.mail_item);
-            holder.groupFlag	= (ImageView)convertView.findViewById(R.id.mail_group_flag);
-            holder.subject		= (TextView)convertView.findViewById(R.id.mail_subject);
-            holder.body			= (TextView)convertView.findViewById(R.id.mail_body);
-            holder.mailAddr		= (TextView)convertView.findViewById(R.id.mail_from_to);
-            holder.latestTime	= (TextView)convertView.findViewById(R.id.mail_time);
-
-            convertView.setTag(holder);
-            
-        }else{
-            holder = (ItemHolder) convertView.getTag();
-      
-            holder.preGroupId = -1;
-            holder.nextGroupId = -1;            
-        }
-        
-        // fill the group data
-        //
-        t_groupCursor.moveToPosition(position);
-        holder.groupId = t_groupCursor.getInt(m_cursorIDIndex);
-        if(position != 0){
-        	t_groupCursor.moveToPosition(position - 1);
-        	holder.nextGroupId = t_groupCursor.getInt(m_cursorIDIndex);
-        }
-        
-        if(position < t_groupCursor.getCount() - 1){
-        	t_groupCursor.moveToPosition(position + 1);
-        	holder.preGroupId = t_groupCursor.getInt(m_cursorIDIndex);
-        }
-        
-        // fill the mail text
-        //
-        t_groupCursor.moveToPosition(position);
-        
-        holder.cursorPos = position;        
-        holder.updateView(t_groupCursor.getInt(m_cursorGroupFlagIndex),
-        				t_groupCursor.getString(m_cursorSubjectIndex), 
-        				getShortAddrList(fetchMail.parseAddressList(t_groupCursor.getString(m_cursorMailAddrIndex).split(fetchMail.fsm_vectStringSpliter))), 
-        				t_groupCursor.getString(m_cursorBodyIndex),
-        				t_groupCursor.getLong(m_cursorlatestTimeIndex));
-		
-        return convertView;
-    }
-    
-    public static String getShortAddrList(Address[] _list){
-    	
-    	StringBuffer t_display = new StringBuffer();
-		int t_num = 0;
-		
-		boolean t_remain = false;
-		while(t_num < _list.length){
-			
-			t_display.append(_list[t_num].m_name.length() == 0?_list[t_num].m_addr:_list[t_num].m_name);
-			t_num++;
-			
-			if(t_num >= 3){
-				if(t_num < _list.length){
-					t_remain = true;
-					t_display.append("...");
-				}				
-				break;
-			}else{
-				
-				if(t_num < _list.length){
-					t_display.append(",");
-				}				
-			}
-		}
-		
-		if(t_remain){
-			t_display.append("(").append(_list.length).append(")");
-		}
-		
-		
-		return t_display.toString();
-    }
 }
 

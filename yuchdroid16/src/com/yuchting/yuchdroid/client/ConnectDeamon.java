@@ -36,7 +36,7 @@ public class ConnectDeamon extends Service implements Runnable{
 	public final static String TAG = ConnectDeamon.class.getName();
 	
 	private final static String FILTER_RECONNECT = TAG+"_FILTER_RECONNECT";
-	
+		
 	final static int	fsm_clientVer = 15;
 	
 	public boolean m_sendAuthMsg 			= false;
@@ -64,23 +64,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		
 		@Override
 		public void onReceive(Context context, Intent intent){
-			String t_mailHashcode = intent.getExtras().getString(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID);
-			String[] t_mailHashList = t_mailHashcode.split(fetchMail.fsm_vectStringSpliter);
-						
-			for(String id : t_mailHashList){
-				
-				int t_hash = Integer.valueOf(id);
-				
-				try{
-					ByteArrayOutputStream os  = new ByteArrayOutputStream();			
-					os.write(msg_head.msgBeenRead);
-					sendReceive.WriteInt(os, t_hash);
-					
-					m_sendingQueue.addSendingData(msg_head.msgBeenRead, os.toByteArray(), true);
-				}catch(Exception e){
-					m_mainApp.setErrorString("ConnectDeamon MailMarkReadRecv", e);
-				}
-			}
+			markDelMail(intent,true);
 		}
 	};
 	
@@ -93,7 +77,7 @@ public class ConnectDeamon extends Service implements Runnable{
 				// please check MailComposeActivity.send() for detail
 				//				
 				fetchMail t_sendMail 		= m_mainApp.m_composeRefMail;
-				fetchMail t_referenceMail	= m_mainApp.m_composeStyleRefMail;
+				fetchMail t_referenceMail	= m_mainApp.m_config.m_discardOrgText?null:m_mainApp.m_composeStyleRefMail;
 				
 				m_mainApp.m_composeRefMail = null;
 								
@@ -150,6 +134,14 @@ public class ConnectDeamon extends Service implements Runnable{
 			}			
 		}
 	};
+	
+	BroadcastReceiver m_delMailRecv = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			markDelMail(intent,true);
+		}
+	};
 				
 	public void onCreate() {
 		m_mainApp = (YuchDroidApp)getApplicationContext();
@@ -162,6 +154,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		registerReceiver(m_mailSendRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL));
 		registerReceiver(m_connectRecv,new IntentFilter(YuchDroidApp.FILTER_CONNECT));
 		registerReceiver(m_disconnectRecv,new IntentFilter(YuchDroidApp.FILTER_DISCONNECT));
+		registerReceiver(m_delMailRecv, new IntentFilter(YuchDroidApp.FILTER_DELETE_MAIL));
 		
 		m_mainApp.m_connectDeamonRun = true;
 		m_mainApp.setErrorString("ConnectDeamon onCreate");
@@ -211,6 +204,10 @@ public class ConnectDeamon extends Service implements Runnable{
 	    // stopped, so return sticky.
 	    return 0;
 	}
+	
+	public IBinder onBind(Intent intent) {
+		return null;
+	}
 		
 	private void onStart_impl(Intent _intent){
 				
@@ -220,9 +217,29 @@ public class ConnectDeamon extends Service implements Runnable{
 			m_mainApp.setErrorString("onStart_impl", e);
 		}
 	}
-
-	public IBinder onBind(Intent intent) {
-		return null;
+	
+	private void markDelMail(Intent _intent,boolean _markOrDel){
+		
+		String t_mailHashcode = _intent.getExtras().getString(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID);
+		String[] t_mailHashList = t_mailHashcode.split(fetchMail.fsm_vectStringSpliter);
+		
+		for(String id : t_mailHashList){
+			int t_hash = Integer.valueOf(id);
+			try{
+				ByteArrayOutputStream os  = new ByteArrayOutputStream();	
+				if(_markOrDel){
+					os.write(msg_head.msgBeenRead);
+					sendReceive.WriteInt(os, t_hash);
+				}else{
+					os.write(msg_head.msgMailDel);
+					sendReceive.WriteInt(os, t_hash);
+				}	
+				
+				m_sendingQueue.addSendingData(msg_head.msgBeenRead, os.toByteArray(), true);
+			}catch(Exception e){
+				m_mainApp.setErrorString("ConnectDeamon MailMarkReadRecv", e);
+			}
+		}
 	}
 	
 	private void clearSendingAttachment(){
@@ -263,11 +280,11 @@ public class ConnectDeamon extends Service implements Runnable{
 		clearSendingAttachment();		
 		releaseWakeLock();
 		
-		
 		unregisterReceiver(m_mailMarkReadRecv);
 		unregisterReceiver(m_mailSendRecv);
 		unregisterReceiver(m_connectRecv);
 		unregisterReceiver(m_disconnectRecv);
+		unregisterReceiver(m_delMailRecv);
 	}
 	
 	private boolean CanNotConnectSvr(){
@@ -620,7 +637,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		 
 		 switch(t_msg_head){
 		 	case msg_head.msgKeepLive:
-		 		m_mainApp.setErrorString("back pulse!");
+		 		//m_mainApp.setErrorString("back pulse!");
 		 		break;
 		 	case msg_head.msgMail:
 				ProcessRecvMail(in);	 		

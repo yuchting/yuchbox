@@ -1,66 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
-	xmlns:android="http://schemas.android.com/apk/res/android">
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:title="@string/mail_pref_title">
 	
 	<PreferenceCategory
-		android:title="@string/login_pref_connect_category">
-		<CheckBoxPreference
-			android:key="config_use_ssl"
-			android:title="@string/login_pref_use_ssl"
-			android:summary="@string/login_pref_use_ssl_sum"
-			android:enabled="false"/>
-		<EditTextPreference
-			android:key="config_pass_key"
-			android:title="@string/login_pref_pass_key"
-			android:summary="@string/login_pref_pass_key_sum"/>
-		<CheckBoxPreference
-			android:key="config_auto_run"
-			android:title="@string/login_pref_auto_run"
-			android:summary="@string/login_pref_auto_run_sum" />
+		android:title="@string/mail_pref_operation_category">
 		<ListPreference
-			android:key="config_pulse_interval"
-			android:title="@string/login_pref_pulse_interval"
-			android:summary="@string/login_pref_pulse_interval_sum"
-			android:entries="@array/login_pref_pulse"
-			android:entryValues="@array/login_pref_pulse_values"
-			android:dialogTitle="@string/login_pref_pulse_interval"/>
+			android:key="config_mail_own_account"
+			android:title="@string/mail_pref_own_account"
+			android:entries="@array/mail_pref_default_account"
+			android:entryValues="@array/mail_pref_default_account_values"
+			android:summary="@string/mail_pref_own_account_sum"
+			android:dialogTitle="@string/mail_pref_own_account"/>
+		<CheckBoxPreference
+			android:key="config_mail_discard_org_mail"
+			android:title="@string/mail_pref_discard_org_mail"
+			android:summary="@string/mail_pref_discard_org_mail_sum"/>
+			
+		<CheckBoxPreference
+			android:key="config_mail_del_remote"
+			android:title="@string/mail_pref_del_remote_mail"
+			android:summary="@string/mail_pref_del_remote_mail_sum"/>
+			
+		<CheckBoxPreference
+			android:key="config_mail_send_to_copy"
+			android:title="@string/mail_pref_send_to_copy"
+			android:summary="@string/mail_pref_send_to_copy_sum"/>
+		
 	</PreferenceCategory>
 	<PreferenceCategory
-		android:title="@string/login_pref_prompt_category">
-		<CheckBoxPreference
-			android:key="config_prompt_all_day"
-			android:title="@string/login_pref_whole_day"
-			android:summaryOn="@string/login_pref_whole_day_sum"
-			android:summaryOff="@string/login_pref_whole_day_sum_off"/>
-		<com.yuchting.yuchdroid.client.ui.TimePickerPreference
-			android:key="config_prompt_start"
-			android:title="@string/login_pref_start_prompt"
-			android:summary="@string/login_pref_start_prompt_sum"
-		/>
-		<com.yuchting.yuchdroid.client.ui.TimePickerPreference
-			android:key="config_prompt_end"
-			android:title="@string/login_pref_end_prompt"
-			android:summary="@string/login_pref_end_prompt_sum"
-		/>
+		android:title="@string/mail_pref_prompt_category">
 		<CheckBoxPreference 
-			android:key="config_prompt_disconnect"
-			android:title="@string/login_pref_prompt_disconnect"
-			android:summary="@string/login_pref_prompt_disconnect_sum"/>
-		<CheckBoxPreference 
-			android:key="config_prompt_disconnect_vibrate"
-			android:title="@string/login_pref_prompt_disconnect_vibrate"
-			android:summary="@string/login_pref_prompt_disconnect_vibrate_sum"/>
+			android:key="config_mail_vibrate"
+			android:title="@string/mail_pref_vibrate"
+			android:summary="@string/mail_pref_vibrate_sum"/>
 		<RingtonePreference
-			android:key="config_prompt_disconnect_sound"
-			android:title="@string/login_pref_prompt_disconnect_sound"
-			android:summary="@string/login_pref_prompt_disconnect_sound_sum"
+			android:key="config_mail_sound"
+			android:title="@string/mail_pref_sound"
+			android:summary="@string/mail_pref_sound_sum"
 			android:ringtoneType="all" />
 	</PreferenceCategory>
 	<PreferenceCategory
-		android:title="@string/login_pref_statistics_category">
+		android:title="@string/mail_pref_statistics_category">
 		<Preference
-			android:key="config_network_stat"
-			android:title="@string/login_pref_statistics"
+			android:key="config_mail_statistics"
+			android:title="@string/mail_pref_statistics"
 			android:enabled="true"/>
 	</PreferenceCategory>
 </PreferenceScreen>

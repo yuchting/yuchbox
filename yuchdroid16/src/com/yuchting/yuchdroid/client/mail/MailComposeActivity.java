@@ -93,11 +93,38 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		
 		m_saveBtn	= (Button)findViewById(R.id.mail_compose_save_btn);
 		m_saveBtn.setOnClickListener(this);
-		m_saveBtn.setEnabled(false);
 		
 		m_discardBtn = (Button)findViewById(R.id.mail_compose_discard_btn);
 		m_discardBtn.setOnClickListener(this);	
 						
+		prepareData();
+		
+		// set the modified flag
+		//
+		TextWatcher t_watcher = new TextWatcher(){
+			public void afterTextChanged (Editable s){}
+			public void beforeTextChanged (CharSequence s, int start, int count, int after){}
+			public void onTextChanged(CharSequence s, int start, int before, int count){
+				m_modified = true;
+				m_saveBtn.setEnabled(true);
+			}
+		};
+		m_to.addTextChangedListener(t_watcher);
+		m_bcc.addTextChangedListener(t_watcher);
+		m_cc.addTextChangedListener(t_watcher);
+		m_body.addTextChangedListener(t_watcher);
+		m_subject.addTextChangedListener(t_watcher);
+
+		setAutoCompleteEditText(m_cc);
+		setAutoCompleteEditText(m_bcc);
+		setAutoCompleteEditText(m_to);
+		
+		m_modified = false;
+		m_saveBtn.setEnabled(false);
+		
+	}
+	
+	private void prepareData(){
 		// fetch the reference mail
 		//
 		if(m_mainApp.m_composeRefMail != null){
@@ -110,16 +137,23 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			if(t_draft){
 				m_draftMail = m_mainApp.m_composeRefMail;
 				if(m_draftMail.getSendRefMailIndex() != -1){
+					// has reference mailindex
+					//
 					fetchMail t_mail = m_mainApp.m_dba.fetchMail(m_draftMail.getSendRefMailIndex());
 					if(t_mail != null){
 						m_referenceMail = new MailOpenActivity.Envelope(t_mail, this);
 					}
+				}else{
+					// the new compose mail
+					//
+					loadSendMailAccountList();
 				}
 								
 			}else{
+				
 				m_referenceMail = new MailOpenActivity.Envelope(m_mainApp.m_composeRefMail, this);
-			}
-			
+								
+			}			
 			m_mainApp.m_composeRefMail = null;			
 			
 			// add to main view
@@ -135,69 +169,68 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			// set the title and subject
 			//
 			String t_sub;
-			if(m_referenceMailStyle == fetchMail.REPLY_STYLE
-			|| m_referenceMailStyle == fetchMail.REPLY_ALL_STYLE){
-				
-				Vector<String> t_toVect = null;
-				if(t_draft && m_draftMail != null){
-					// draft
-					//
-					t_sub = m_draftMail.GetSubject();
-					m_body.setText(m_draftMail.GetContain());
-					// draft
-					//
-					t_toVect = m_draftMail.GetSendToVect();
-				}else{
-					// reply/forward 
-					//
-					t_sub = MailDbAdapter.getReplySubject(m_referenceMail.m_mail.GetSubject(), getString(R.string.mail_compose_reply_prefix));
-					
-					if(m_referenceMail != null){
-
-						if(m_referenceMail.m_mail.isOwnSendMail()){
-							t_toVect = m_referenceMail.m_mail.GetSendToVect();
-						}else{
-							t_toVect = m_referenceMail.m_mail.GetReplyToVect().isEmpty()?
-											m_referenceMail.m_mail.GetFromVect():
-											m_referenceMail.m_mail.GetReplyToVect();
-						}
-					}
-				}
-				
-				if(t_toVect != null){
-					if(m_referenceMailStyle == fetchMail.REPLY_ALL_STYLE){
-						StringBuffer t_to = new StringBuffer();
-						for(String addr:t_toVect){
-							// get rid of comma with blank
-							//
-							t_to.append(addr.replace(',', ' ')).append(",");
-						}
-						m_to.setText(t_to.toString());
-					}else{
-						if(!t_toVect.isEmpty()){
-							m_to.setText(t_toVect.get(0));
-						}					
-					}
-					m_body.requestFocus();
-				}else{
-					m_to.requestFocus();
-				}				
-				
-			}else{
-				// forward style
+			Vector<String> t_toVect = null;
+			if(t_draft && m_draftMail != null){
+				// draft
 				//
-				if(m_draftMail != null){
-					t_sub = m_draftMail.GetSubject();
-				}else if(m_referenceMail != null){
-					t_sub = getString(R.string.mail_compose_forward_prefix) + m_referenceMail.m_mail.GetSubject();
+				t_sub = m_draftMail.GetSubject();
+				m_body.setText(m_draftMail.GetContain());
+				// draft
+				//
+				t_toVect = m_draftMail.GetSendToVect();
+			}else{
+				
+				
+				if(m_referenceMailStyle == fetchMail.REPLY_STYLE
+				|| m_referenceMailStyle == fetchMail.REPLY_ALL_STYLE){
+					// reply
+					//
+					if(m_referenceMail != null){
+						t_sub = MailDbAdapter.getReplySubject(m_referenceMail.m_mail.GetSubject(), getString(R.string.mail_compose_reply_prefix));
+					}else{
+						t_sub =getString(R.string.mail_compose_reply_prefix);
+					}
+					
 				}else{
-					t_sub = getString(R.string.mail_compose_forward_prefix);
+					// forward style
+					//
+					if(m_referenceMail != null){
+						t_sub = getString(R.string.mail_compose_forward_prefix) + m_referenceMail.m_mail.GetSubject();
+					}else{
+						t_sub = getString(R.string.mail_compose_forward_prefix);
+					}
 				}
-				m_to.requestFocus();
+				
+				
+				if(m_referenceMail != null){
+
+					if(m_referenceMail.m_mail.isOwnSendMail()){
+						t_toVect = m_referenceMail.m_mail.GetSendToVect();
+					}else{
+						t_toVect = m_referenceMail.m_mail.GetReplyToVect().isEmpty()?
+										m_referenceMail.m_mail.GetFromVect():
+										m_referenceMail.m_mail.GetReplyToVect();
+					}
+				}
 			}
+			
+			if(t_toVect != null){
+				
+				StringBuffer t_to = new StringBuffer();
+				for(String addr:t_toVect){
+					// get rid of comma with blank
+					//
+					t_to.append(addr.replace(',', ' ')).append(",");
+				}
+				m_to.setText(t_to.toString());
+				m_body.requestFocus();
+			}else{
+				m_to.requestFocus();
+			}				
 			
 			setTitle(t_sub);
 			m_subject.setText(t_sub);
+			
 		}else{
 			
 			// compose a new mail
@@ -234,62 +267,46 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 				}
 			}		
 			
-			if(!m_mainApp.m_config.m_sendMailAccountList.isEmpty()){
-			
-				// load the spinner widget 
-				//
-				m_ownAccountSpinner = (Spinner)findViewById(R.id.mail_compose_own_account);
-				m_ownAccountSpinner.setVisibility(View.VISIBLE);
-				
-				// load the sender Mail account list
-				//
-				String[] t_ownAccountList = new String[m_mainApp.m_config.m_sendMailAccountList.size()];
-				for(int i = 0;i < m_mainApp.m_config.m_sendMailAccountList.size();i++){
-					t_ownAccountList[i] = m_mainApp.m_config.m_sendMailAccountList.get(i);
-				}				
-				ArrayAdapter<String> adapter = 
-					new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,
-							t_ownAccountList);
-				adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-				m_ownAccountSpinner.setAdapter(adapter);
-				
-				if(m_mainApp.m_config.m_defaultSendMailAccountIndex >= m_mainApp.m_config.m_sendMailAccountList.size()){
-					m_mainApp.m_config.m_defaultSendMailAccountIndex = 0;
-				}
-				m_ownAccountSpinner.setSelection(m_mainApp.m_config.m_defaultSendMailAccountIndex);
-				
-				// set the listener
-				//
-				m_ownAccountSpinner.setOnItemSelectedListener(new OnItemSelectedListener(){
-					public void onItemSelected(AdapterView<?> parent,View view, int pos, long id) {
-						m_modified = true;
-						m_saveBtn.setEnabled(true);
-				    }
-
-				    public void onNothingSelected(AdapterView<?> parent){}
-				});
-			}
+			loadSendMailAccountList();
 		}
+	}
+	
+	private void loadSendMailAccountList(){
 		
-		// set the modified flag
-		//
-		TextWatcher t_watcher = new TextWatcher(){
-			public void afterTextChanged (Editable s){}
-			public void beforeTextChanged (CharSequence s, int start, int count, int after){}
-			public void onTextChanged(CharSequence s, int start, int before, int count){
-				m_modified = true;
-				m_saveBtn.setEnabled(true);
+		if(!m_mainApp.m_config.m_sendMailAccountList.isEmpty()){
+			
+			// load the spinner widget 
+			//
+			m_ownAccountSpinner = (Spinner)findViewById(R.id.mail_compose_own_account);
+			m_ownAccountSpinner.setVisibility(View.VISIBLE);
+			
+			// load the sender Mail account list
+			//
+			String[] t_ownAccountList = new String[m_mainApp.m_config.m_sendMailAccountList.size()];
+			for(int i = 0;i < m_mainApp.m_config.m_sendMailAccountList.size();i++){
+				t_ownAccountList[i] = m_mainApp.m_config.m_sendMailAccountList.get(i);
 			}
-		};
-		m_to.addTextChangedListener(t_watcher);
-		m_bcc.addTextChangedListener(t_watcher);
-		m_cc.addTextChangedListener(t_watcher);
-		m_body.addTextChangedListener(t_watcher);
-		m_subject.addTextChangedListener(t_watcher);
 
-		setAutoCompleteEditText(m_cc);
-		setAutoCompleteEditText(m_bcc);
-		setAutoCompleteEditText(m_to);		
+			ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,t_ownAccountList);
+			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+			m_ownAccountSpinner.setAdapter(adapter);
+			
+			if(m_mainApp.m_config.m_defaultSendMailAccountIndex >= m_mainApp.m_config.m_sendMailAccountList.size()){
+				m_mainApp.m_config.m_defaultSendMailAccountIndex = 0;
+			}
+			m_ownAccountSpinner.setSelection(m_mainApp.m_config.m_defaultSendMailAccountIndex,true);
+			
+			// set the listener
+			//
+			m_ownAccountSpinner.setOnItemSelectedListener(new OnItemSelectedListener(){
+				public void onItemSelected(AdapterView<?> parent,View view, int pos, long id) {
+					m_modified = true;
+					m_saveBtn.setEnabled(true);
+			    }
+
+			    public void onNothingSelected(AdapterView<?> parent){}
+			});
+		}
 	}
 	
 	final class EmailAddrAdapter extends BaseAdapter implements Filterable {
@@ -469,13 +486,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					if(which == DialogInterface.BUTTON_POSITIVE){
-						m_discardRefView.setVisibility(View.GONE);
-						m_mainView.removeView(m_referenceMail.m_mainView);
-						m_referenceMail = null;
-						
-						if(m_draftMail != null){
-							m_draftMail.setSendRefMailIndex(-1);
-						}
+						discardReferenceMail();
 					}					
 				}
 			});
@@ -531,6 +542,19 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	    return super.onKeyDown(keyCode, event);
 	}
 	
+	private void discardReferenceMail(){
+		
+		if(m_discardRefView.getVisibility() == View.VISIBLE
+		&& m_referenceMail != null){
+			m_discardRefView.setVisibility(View.GONE);
+			m_mainView.removeView(m_referenceMail.m_mainView);
+			m_referenceMail = null;
+			
+			if(m_draftMail != null){
+				m_draftMail.setSendRefMailIndex(-1);
+			}
+		}		
+	}
 	private void onClose(){
 		if(!m_modified){
 			finish();

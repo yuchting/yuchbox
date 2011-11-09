@@ -22,8 +22,6 @@ public class MailDbAdapter {
 	private final static String DATABASE_TABLE_GROUP	= "yuch_mail_group";
 	private final static String DATABASE_TABLE_GROUP_SUB_INDEX	= "yuch_mail_group_sub_index";
 	
-	public static final int	MAX_GROUP_FATCH_NUM		= 20;
-	
 	// mail sent flag
 	//	
 	public final static int	MAIL_SENT_FLAG_ERROR	= 0x0001;
@@ -498,13 +496,13 @@ public class MailDbAdapter {
         return mDb.delete(DATABASE_TABLE, KEY_ID + "=" + id, null) > 0;
     }
             
-    public Cursor fetchAllGroup(){
+    public Cursor fetchAllGroup(int _limit){
     	if(mDbHelper == null){
     		open();
     	}
     	
         return mDb.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns, 
-        					null, null, null, null, GROUP_ATTR_LEATEST_TIME + " DESC",Integer.toString(MAX_GROUP_FATCH_NUM));
+        					null, null, null, null, GROUP_ATTR_LEATEST_TIME + " DESC",Integer.toString(_limit));
     }
     
     public Cursor fetchAllGroupAddrList(){

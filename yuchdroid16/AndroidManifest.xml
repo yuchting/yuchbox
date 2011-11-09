@@ -61,6 +61,9 @@
         <activity android:name=".ConnectPrefActivity"
         	android:label="@string/login_pref_title"/>
         	
+        <activity android:name=".mail.MailPrefActivity"
+        	android:label="@string/mail_pref_title"/>
+        	
         <receiver android:name=".BootConnectRecv">  
 		    <intent-filter>  
 		        <action android:name="android.intent.action.BOOT_COMPLETED" />  

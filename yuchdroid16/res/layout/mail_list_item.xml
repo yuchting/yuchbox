@@ -1,9 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@+id/mail_item"
 	android:layout_width="fill_parent"
-	android:layout_height="50dp">
+	android:layout_height="66dp"
+	android:background="#fff">
+	
+	<TextView 
+		android:id="@+id/mail_date_spliter"
+		android:layout_width="fill_parent"
+		android:layout_height="16dp"
+		android:text="Mail Time"
+		android:textColor="#666"
+		android:textSize="13dp"
+		android:textStyle="bold"
+		android:gravity="center"
+		android:background="#aaa"/>
 		
 	<ImageView
 		android:id="@+id/mail_group_flag"
@@ -12,13 +23,14 @@
 		android:src="@drawable/mail_list_flag_recv"
 		android:layout_marginLeft="2dp"
 		android:layout_marginTop="3dp"
-		android:layout_alignParentTop="true"/>    
+		android:layout_below="@id/mail_date_spliter"/>    
     
 	<TextView
        	android:id="@+id/mail_subject"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
        	android:layout_toRightOf="@id/mail_group_flag"
+       	android:layout_below="@id/mail_date_spliter"
        	android:layout_marginTop="3dp"
         android:maxWidth="150dp"
         android:textSize="18dp"
@@ -26,7 +38,7 @@
         android:ellipsize="end"
         android:textColor="#000"
         android:gravity="center_vertical"
-        android:text="mail subject mail subject mail subject"/>
+        android:text="mail subject "/>
      
     <TextView
        	android:id="@+id/mail_body"
@@ -37,10 +49,11 @@
         android:layout_marginTop="3dp"
         android:textColor="#888"
         android:layout_toRightOf="@id/mail_subject"
+        android:layout_below="@id/mail_date_spliter"
         android:singleLine="true"
         android:ellipsize="end"
         android:gravity="center_vertical"
-        android:text="mail body mail body mail body"/>
+        android:text="mail body "/>
         	
    	<TextView  
 		android:id="@+id/mail_from_to"

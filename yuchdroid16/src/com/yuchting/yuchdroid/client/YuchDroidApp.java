@@ -52,7 +52,7 @@ public class YuchDroidApp extends Application {
 	public final static	String	FILTER_SEND_MAIL		= TAG + "_FILTER_SM";
 	public final static	String	FILTER_MAIL_GROUP_FLAG	= TAG + "_FILTER_MGF";
 	public final static	String	FILTER_RECV_MAIL		= TAG + "_FILTER_RM";
-	
+	public final static	String	FILTER_DELETE_MAIL		= TAG + "_FILTER_DM";
 	
 	// FILTER_MARK_MAIL_READ broadcast parameters data
 	//

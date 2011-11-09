@@ -45,30 +45,27 @@
     <string name="login_pref_auto_run_sum">Automatic run and connect to server when system start</string>
     <string name="login_pref_pulse_interval">Pulse Interval</string>
     <string name="login_pref_pulse_interval_sum">Maintain the network connection (the shorter the more power, better connection quality))</string>    
-	<string name="login_pref_prompt_category">Prompt</string>
-    <string name="login_pref_whole_day">Prompt Whole Day</string>
-    <string name="login_pref_whole_day_sum">As long as the connection is normal, will prompt whole day</string>
-    <string name="login_pref_whole_day_sum_off">Will not prompt if receive message</string>
-    <string name="login_pref_start_prompt">Prompt Start Time</string>
-    <string name="login_pref_start_prompt_sum">This time of day from the beginning to prompt</string>
-    <string name="login_pref_end_prompt">Prompt End Time</string>
-    <string name="login_pref_end_prompt_sum">Will not prompt after this time</string>
-	<string name="login_pref_prompt_disconnect">Prompt After Disconnect</string>
+	<string name="login_pref_prompt_category">Notification</string>
+    <string name="login_pref_whole_day">Notifiy Whole Day</string>
+    <string name="login_pref_whole_day_sum">As long as the connection is normal, will notify whole day</string>
+    <string name="login_pref_whole_day_sum_off">Will not notify if receive message</string>
+    <string name="login_pref_start_prompt">Notify Start Time</string>
+    <string name="login_pref_start_prompt_sum">This time of day from the beginning to notify</string>
+    <string name="login_pref_end_prompt">Notify End Time</string>
+    <string name="login_pref_end_prompt_sum">Will not notify after this time</string>
+	<string name="login_pref_prompt_disconnect">Notify After Disconnect</string>
     <string name="login_pref_prompt_disconnect_sum">Notify user if connect server failed 2 times</string>
     <string name="login_pref_prompt_disconnect_vibrate">Disconnect Vibrate</string>
     <string name="login_pref_prompt_disconnect_vibrate_sum">Vibrate when connection is disconnect</string>
     <string name="login_pref_prompt_disconnect_sound">Disconnect Sound</string>
-    <string name="login_pref_prompt_disconnect_sound_sum">Prompt sound when Connection is disconnect</string>
+    <string name="login_pref_prompt_disconnect_sound_sum">Notification sound when Connection is disconnect</string>
 	<string name="login_pref_statistics_category">Statistics</string>
 	<string name="login_pref_statistics">Network Traffic Statistics</string>
     <string name="login_pref_statistics_up">Upload:</string>
     <string name="login_pref_statistics_down">Download:</string>
     <string name="login_pref_statistics_total">Total:</string>
     <string name="login_pref_statistics_clear_prompt">Are you sure to clear this statistics?</string>
-    
-    
-
-    
+        
     <!-- dialog relation -->
     <string name="dlg_info_title">YuchDroid Prompt:</string>
     <string name="dlg_info_confirm">I know it</string>
@@ -83,7 +80,6 @@
     <string name="mail_time_month">/</string>
     <string name="mail_time_day"></string>
     <string name="mail_list_compose_new_mail">Compose</string>
-    <string name="mail_home_load_former_group">Touch To Load Former Groups</string>
     <string name="mail_home_empty_group">Opps, there is not any mail...</string>
     
        
@@ -99,6 +95,7 @@
     <string name="mail_open_resend_btn">Resend</string>
     <string name="mail_open_resend_need_connectDeamon_prompt">Can\'t resend until start connect with server.</string>
     <string name="mail_open_delete_prompt">Are you sure delete this mail group?</string>
+    <string name="mail_open_reference_line_replace">Click to display original reference part</string>
     
     <!-- mail compose view -->
     <string name="mail_compose_title">YuchDroid Mail Compose</string>
@@ -123,6 +120,26 @@
     <string name="mail_compose_add_cc_bcc">Add Cc/Bcc</string>
     <string name="mail_compose_attachment">Attachment</string>
     
-    
+    <!-- mail preference activity -->
+	<string name="mail_pref_title">Mail Preference</string>
+	<string name="mail_pref_operation_category">Operation</string>
+	<string name="mail_pref_own_account">Default Account</string>
+	<string name="mail_pref_own_account_sum">The account of sending from which been pushed by YuchDroid server</string>
+	<string name="mail_pref_discard_org_mail">Discard Reply Mail</string>
+	<string name="mail_pref_discard_org_mail_sum">Auto-discard original mail text when reply(to save network traffic)</string>
+	<string name="mail_pref_del_remote_mail">Delete Remote Mail</string>
+	<string name="mail_pref_del_remote_mail_sum">Delete remote server mail simultaneously when delete local one</string>
+	<string name="mail_pref_send_to_copy">Send To Copy</string>
+	<string name="mail_pref_send_to_copy_sum">Copy a mail to sent folder when sending(NOT supports POP3)</string>
+	<string name="mail_pref_prompt_category">Notification</string>
+	<string name="mail_pref_vibrate">Vibreate</string>
+	<string name="mail_pref_vibrate_sum">Vibreate when new mail comes</string>
+	<string name="mail_pref_sound">Sound</string>
+	<string name="mail_pref_sound_sum">Sound when new mail comes</string>
+	<string name="mail_pref_statistics_category">Statistics</string>
+	<string name="mail_pref_statistics">Mail Statistics</string>
+	<string name="mail_pref_statistics_send">Mail Send:</string>
+	<string name="mail_pref_statistics_recv">Mail Recv:</string>
+	
     
 </resources>

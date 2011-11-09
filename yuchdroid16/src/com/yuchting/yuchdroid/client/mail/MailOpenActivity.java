@@ -1,5 +1,7 @@
 package com.yuchting.yuchdroid.client.mail;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
 import java.text.SimpleDateFormat;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
@@ -12,6 +14,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -35,6 +40,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	public final static String			INTENT_PRE_MAIL_GROUP_INDEX 	= "pre";
 	public final static String			INTENT_NEXT_MAIL_GROUP_INDEX	= "next";
 	public final static String			INTENT_NEXT_MAIL_CURSOR_POS		= "pos";
+	public final static String			INTENT_CURRENT_GROUP_LIMIT		= "group";
 		
 	public final static String			INTENT_CURRENT_MAIL_GROUP		= "mail";
 	
@@ -70,13 +76,27 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		}
 		
 		public void openBody(){
+			openBody_impl(true);
+		}
+		
+		private void openBody_impl(boolean _simple){
 			init();
-					
+			
 			m_opened = true;
 			
 			if(m_mail.GetContain().length() != 0){
 				m_bodyText.setVisibility(View.VISIBLE);
-				m_bodyText.setText(m_mail.GetContain());
+				CharSequence t_str;
+				if(_simple){
+					try{
+						t_str = getProcessedContain(m_mail.GetContain());
+					}catch (Exception e) {
+						t_str = m_mail.GetContain();
+					}	 
+				}else{
+					t_str = m_mail.GetContain();
+				}
+				m_bodyText.setText(t_str);
             }else{
             	m_bodyText.setVisibility(View.GONE);
             }
@@ -121,6 +141,61 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 					}
 				});
             }
+		}
+		
+		private static class SpanSeg{
+			int start;
+			int end;
+		}
+		
+		
+		private CharSequence getProcessedContain(String _orgContain)throws Exception{
+			
+			// replace the reference mail part with click string
+			// to load former mail 
+			//
+			BufferedReader t_read = new BufferedReader(new StringReader(_orgContain));
+			boolean t_formerRef = false;
+			
+			String t_referenceLine = m_loadCtx.getString(R.string.mail_open_reference_line_replace);						
+			Vector<SpanSeg> t_segList = new Vector<SpanSeg>();
+			
+			StringBuffer t_finalString = new StringBuffer();
+			String line;
+			while((line = t_read.readLine()) != null){
+				if(line.startsWith(">")){
+					// reference line
+					//
+					if(!t_formerRef){
+						t_formerRef = true;
+						
+						t_finalString.append("\n   ");
+						
+						SpanSeg t_seg = new SpanSeg();
+						t_seg.start = t_finalString.length();
+						t_seg.end = t_seg.start + t_referenceLine.length();
+						
+						t_segList.add(t_seg);
+						
+						t_finalString.append(t_referenceLine).append("\n");
+					}
+				}else{
+					t_finalString.append(line).append("\n");
+				}				
+			}
+			
+			SpannableString t_result = new SpannableString(t_finalString.toString());
+			for(SpanSeg seg:t_segList){
+				t_result.setSpan(new ClickableSpan() {
+					
+					@Override
+					public void onClick(View widget) {
+						openBody_impl(false);						
+					}
+				},seg.start, seg.end, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+			}
+			
+			return t_result;
 		}
 		
 		public void init(){
@@ -352,7 +427,6 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         m_titleOwnAccount		= (TextView)findViewById(R.id.mail_open_title_own_account);
         
         m_mainApp 				= (YuchDroidApp)getApplicationContext();
-        m_groupCursor			= m_mainApp.m_dba.fetchAllGroup();
         m_formerMailView 		= (TextView)findViewById(R.id.mail_open_open_former_envelope);
         m_mainMailView 			= (LinearLayout)findViewById(R.id.mail_open_envelope_view);
         m_envelopeScrollView 	= (ScrollView)findViewById(R.id.mail_open_envelope_scroll_view);
@@ -384,6 +458,8 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         	finish();
         }
         
+        m_groupCursor			= m_mainApp.m_dba.fetchAllGroup(in.getIntExtra(INTENT_CURRENT_GROUP_LIMIT, HomeActivity.MAX_GROUP_FATCH_NUM));
+        
         // prepare the nav
         //
         m_preGroupIdx 	= in.getExtras().getLong(INTENT_PRE_MAIL_GROUP_INDEX);
@@ -410,6 +486,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		m_groupCursor.close();
 		unregisterReceiver(m_sendMailRecv);
 	}
+	
 	
 	private void fillMailContent()throws Exception{   
 
@@ -543,7 +620,6 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 				
 				m_cursorPosition++;
 				if(m_cursorPosition < t_groupCount - 1){
-					
 					m_groupCursor.moveToPosition(m_cursorPosition + 1);
 					m_preGroupIdx = m_groupCursor.getInt(m_groupCursor.getColumnIndex(MailDbAdapter.KEY_ID));
 				}else{
@@ -591,12 +667,30 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 						public void onClick(DialogInterface dialog, int which) {
 							if(which == DialogInterface.BUTTON_POSITIVE){	
 
+								if(m_mainApp.m_config.m_delRemoteMail){
+									// send deleting messge to server
+									//
+									StringBuffer t_hashList = new StringBuffer();
+									for(Envelope en:m_currMailList){
+										if(!en.m_mail.isOwnSendMail()){
+											t_hashList.append(en.m_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
+										}
+									}
+									
+									// send broadcast to ConnectDeamon
+									//
+									Intent t_intent = new Intent(YuchDroidApp.FILTER_DELETE_MAIL);
+						        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_hashList.toString());
+						    		sendBroadcast(t_intent);
+								}
+								
 								m_mainApp.m_dba.deleteGroup(m_currGroupIdx);
 								
 								Intent in = new Intent(YuchDroidApp.FILTER_MAIL_GROUP_FLAG);
 								sendBroadcast(in);
 								
 								finish();
+								
 							}						
 						}
 					});	

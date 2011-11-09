@@ -14,4 +14,9 @@
     	<item>10</item>
     	<item>30</item>
     </string-array>
+    
+    <string-array name="mail_pref_default_account">
+    </string-array>
+    <string-array name="mail_pref_default_account_values">
+    </string-array>
 </resources>

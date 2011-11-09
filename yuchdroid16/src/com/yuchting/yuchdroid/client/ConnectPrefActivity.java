@@ -15,8 +15,6 @@ import android.text.method.PasswordTransformationMethod;
 import com.yuchting.yuchdroid.client.ui.TimePickerPreference;
 
 public class ConnectPrefActivity extends PreferenceActivity {
-
-	PreferenceManager 	m_prefMgr		= null;
 	
 	CheckBoxPreference	m_useSSL	= null;
 	CheckBoxPreference	m_autoRun	= null;
@@ -43,23 +41,23 @@ public class ConnectPrefActivity extends PreferenceActivity {
 		addPreferencesFromResource(R.xml.login_preference);
 		
 		m_config	= ((YuchDroidApp)getApplicationContext()).m_config;
-		m_prefMgr = getPreferenceManager();
+		PreferenceManager t_prefMgr = getPreferenceManager();
 		
-		m_useSSL	= (CheckBoxPreference)m_prefMgr.findPreference("config_use_ssl");
-		m_autoRun	= (CheckBoxPreference)m_prefMgr.findPreference("config_auto_run");
-		m_cryptKey	= (EditTextPreference)m_prefMgr.findPreference("config_pass_key");
+		m_useSSL	= (CheckBoxPreference)t_prefMgr.findPreference("config_use_ssl");
+		m_autoRun	= (CheckBoxPreference)t_prefMgr.findPreference("config_auto_run");
+		m_cryptKey	= (EditTextPreference)t_prefMgr.findPreference("config_pass_key");
 		m_cryptKey.getEditText().setTransformationMethod(new PasswordTransformationMethod());
-		m_pushInterval = (ListPreference)m_prefMgr.findPreference("config_pulse_interval");
+		m_pushInterval = (ListPreference)t_prefMgr.findPreference("config_pulse_interval");
 		
-		m_promptWholeDay		= (CheckBoxPreference)m_prefMgr.findPreference("config_prompt_all_day");
-		m_promptStart			= (TimePickerPreference)m_prefMgr.findPreference("config_prompt_start");
-		m_promptEnd				= (TimePickerPreference)m_prefMgr.findPreference("config_prompt_end");
-		m_promptWhenDisconnect	= (CheckBoxPreference)m_prefMgr.findPreference("config_prompt_disconnect");
+		m_promptWholeDay		= (CheckBoxPreference)t_prefMgr.findPreference("config_prompt_all_day");
+		m_promptStart			= (TimePickerPreference)t_prefMgr.findPreference("config_prompt_start");
+		m_promptEnd				= (TimePickerPreference)t_prefMgr.findPreference("config_prompt_end");
+		m_promptWhenDisconnect	= (CheckBoxPreference)t_prefMgr.findPreference("config_prompt_disconnect");
 		
-		m_promptWhenDisconnect_vibrate	= (CheckBoxPreference)m_prefMgr.findPreference("config_prompt_disconnect_vibrate");
-		m_promptWhenDisconnect_sound	= (RingtonePreference)m_prefMgr.findPreference("config_prompt_disconnect_sound");
+		m_promptWhenDisconnect_vibrate	= (CheckBoxPreference)t_prefMgr.findPreference("config_prompt_disconnect_vibrate");
+		m_promptWhenDisconnect_sound	= (RingtonePreference)t_prefMgr.findPreference("config_prompt_disconnect_sound");
 		
-		m_statistics			= m_prefMgr.findPreference("config_network_stat");
+		m_statistics			= t_prefMgr.findPreference("config_network_stat");
 		
 		updateData(true);
 		
@@ -124,9 +122,10 @@ public class ConnectPrefActivity extends PreferenceActivity {
 		
 	}
 	
-	private void updateData(boolean _getOrSet){
+	private void updateData(boolean _setOrGet){
 		
-		if(_getOrSet){
+		if(_setOrGet){
+			
 			// set the values to preference control 
 			//
 			m_useSSL.setChecked(m_config.m_useSSL);

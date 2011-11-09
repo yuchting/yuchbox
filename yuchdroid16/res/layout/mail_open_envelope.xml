@@ -97,6 +97,7 @@
 		android:autoLink="all"
 		android:text="Mail Body: this is a mail."
 		android:visibility="gone"
+		android:paddingRight="5dp"
 	/>
 	
 	<WebView
@@ -106,6 +107,7 @@
 		android:layout_height="wrap_content"
 		android:text="Mail HTML this is a HTML."
 		android:visibility="gone"
+		android:paddingRight="5dp"
 	/>
 	
 	<TextView 
