@@ -585,7 +585,8 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         }else{
         	m_formerMailView.setVisibility(View.GONE);
         }
-        
+		
+		m_envelopeScrollView.fullScroll(ScrollView.FOCUS_UP);        
 	}
 	
 	public void onClick(View v) {
