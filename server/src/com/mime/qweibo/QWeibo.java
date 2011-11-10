@@ -33,12 +33,12 @@ public class QWeibo {
 	private int	m_status;
 	
 	private QWeibo m_sourceWeibo = null;
-		
 	
 	public QWeibo(JSONObject _json)throws Exception{
 		m_text 			= _json.getString("text");
 		m_orgText		= _json.getString("orgtext");
-		m_source 		= _json.getString("fromurl");
+		m_source = "<a href=\""+ _json.getString("fromurl") +"\">" + _json.getString("from") +"</a>";
+		
 		m_forwardCount	= _json.getInt("count");
 		m_commentCount	= _json.getInt("mcount");
 		

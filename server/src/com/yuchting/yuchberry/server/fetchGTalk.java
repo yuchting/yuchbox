@@ -21,9 +21,11 @@ import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.RosterListener;
 import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.RosterPacket;
 import org.jivesoftware.smackx.packet.VCard;
 
 import twitter4j.internal.org.json.JSONObject;
@@ -433,26 +435,33 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	}
 	
 	public void entriesAdded(Collection<String> addresses){
+		
     	synchronized (m_chatRosterList) {
     		
     		addRosterListener_flag:
     		for(String acc:addresses){
-    			
+
     			for(fetchChatRoster roster : m_chatRosterList){
-    				if(roster.getAccount().toLowerCase().equals(acc)){
+    				if(roster.getAccount().toLowerCase().equals(acc.toLowerCase())){
 	    				continue addRosterListener_flag;
 	    			}
 	    		}
     			
-    			RosterEntry t_entry = m_roster.getEntry(acc);
+    			try{
+    				RosterEntry t_entry = m_roster.getEntry(acc);
+        			
+        			fetchChatRoster t_roster = convertRoster(t_entry);
+        			m_chatRosterList.add(t_roster);
+        			
+        			m_changeChatRosterList.add(t_roster);    			
+        			m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " entriesAdded:" + acc);
+    			}catch(Exception e){
+    				m_mainMgr.m_logger.PrinterException(e);
+    			}
     			
-    			fetchChatRoster t_roster = convertRoster(t_entry);
-    			m_chatRosterList.add(t_roster);
-    			
-    			m_changeChatRosterList.add(t_roster);    			
-    			m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " entriesAdded:" + acc);
     		}
     	}
+    	
     }
     public void entriesDeleted(Collection<String> addresses){
     	
@@ -460,10 +469,9 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     		for(String acc:addresses){
     			
     			for(fetchChatRoster roster : m_chatRosterList){
-    				if(roster.getAccount().toLowerCase().equals(acc)){
+    				if(roster.getAccount().toLowerCase().equals(acc.toLowerCase())){
     					
-	    				m_chatRosterList.remove(roster);
-	    				
+	    				m_chatRosterList.remove(roster);	    				
 	    				m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " entriesDeleted:" + acc);
 	    				
 	    				break;
@@ -476,6 +484,30 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     
         
     public void entriesUpdated(Collection<String> addresses){
+    	
+    	synchronized (m_chatRosterList) {
+    		for(String acc:addresses){
+    			
+    			for(fetchChatRoster roster : m_chatRosterList){
+    				if(roster.getAccount().toLowerCase().equals(acc.toLowerCase())){
+    					
+    					try{
+	    					fetchChatRoster t_updateRoster = convertRoster(m_roster.getEntry(acc));
+		    				m_chatRosterList.remove(roster);
+		    				
+		    				m_chatRosterList.add(t_updateRoster);
+		    				m_changeChatRosterList.add(t_updateRoster);
+		    				
+		    				m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " entriesUpdated:" + acc);
+    					}catch(Exception e){
+    						m_mainMgr.m_logger.PrinterException(e);
+    					}
+	    				
+	    				break;
+	    			}
+	    		}
+    		}
+    	}
     	
     }
     
@@ -554,6 +586,9 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
         
     }
     
+    long m_formerMessageTime;
+    String m_formerMessage = "";
+    
     public void processMessage(Chat chat, Message message){
         
     	int t_state = -1;   	
@@ -590,9 +625,22 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				sendChatMsgRead(ChatData.convertAccount(chat.getParticipant()),t_readHashCode.intValue());
 			}
 			
-		}else{
-						
+		}else{			
 			fetchChatMsg msg = convertChat(chat, message);
+			
+			//get ride of duplicate message firstly
+			//
+			if(Math.abs(msg.getSendTime() - m_formerMessageTime) < 1000){
+				if(msg.getMsg().equals(m_formerMessage)){
+					return;
+				}
+			}
+			
+			m_formerMessageTime = msg.getSendTime();
+			m_formerMessage = msg.getMsg();
+						
+			// send to client 
+			//
 			sendClientChatMsg(msg,true);			
 						
 			synchronized (m_pushedChatMsgList) {
@@ -726,6 +774,9 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
     }
     
 	private fetchChatRoster convertRoster(RosterEntry _entry){
+		if(_entry == null){
+			return null;
+		}
 		
 		fetchChatRoster roster = new fetchChatRoster();		
 		
@@ -901,9 +952,45 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			case msg_head.msgChatDelRoster:
 				t_processed = ProcessChatDelRoster(in);
 				break;
+			case msg_head.msgChatAlias:
+				t_processed = ProcessChatAlias(in);
+				break;
 		}
 		
 		return t_processed;
+	}
+	
+	private boolean ProcessChatAlias(InputStream in)throws Exception {
+		int t_style = in.read();
+		if(t_style == getCurrChatStyle()){
+			String t_ownAcccount = sendReceive.ReadString(in);
+			
+			if(t_ownAcccount.equals(GetAccountName())){
+		
+				String t_account = sendReceive.ReadString(in);
+				String t_alias	= sendReceive.ReadString(in);
+				
+				synchronized (m_chatRosterList) {
+					for(fetchChatRoster roster:m_chatRosterList){
+						if(roster.getAccount().equals(t_account)){
+							
+							RosterPacket t_send = new RosterPacket();
+							t_send.addRosterItem(new RosterPacket.Item(t_account,t_alias));
+							t_send.setType(IQ.Type.SET);
+							
+							m_mainConnection.sendPacket(t_send);
+							
+							m_mainMgr.m_logger.LogOut(GetAccountPrefix() + 
+									" change account<"+t_account+"> name<"+roster.getName()+">" + " to<"+t_alias+">");
+							
+							return true;
+						}
+					}		
+				}
+			}
+		}
+		
+		return false;
 	}
 	
 	private boolean ProcessChatDelRoster(InputStream in)throws Exception{

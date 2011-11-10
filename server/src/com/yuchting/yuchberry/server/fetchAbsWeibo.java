@@ -1,7 +1,5 @@
 package com.yuchting.yuchberry.server;
 
-import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -11,7 +9,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Date;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
