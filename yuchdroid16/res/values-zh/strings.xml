@@ -17,8 +17,8 @@
     <string name="login_connect_deamon_state_connecting">连接断开，正在连接...</string>
     <string name="login_connect_deamon_state_disconnect">用户断开连接</string>
     
-    <string name="start_svr_but">启动服务</string>
-    <string name="stop_svr_but">停止服务</string>
+    <string name="start_svr_but">开始连接</string>
+    <string name="stop_svr_but">停止连接</string>
     <string name="login_host">服务主机:</string>
     <string name="login_host_hint">填写域名或者IP地址</string>
     <string name="login_host_error_prompt">请输入正确的服务主机地址（域名或者IP地址）</string>
@@ -84,6 +84,7 @@
     <string name="mail_time_day">日</string>
     <string name="mail_list_compose_new_mail">新建</string>
     <string name="mail_home_empty_group">天哪，还没有任何邮件...</string>
+    <string name="mail_list_menu_connect_state">状态</string>
         
     <!-- mail open view -->
     <string name="mail_open_reply_btn">回复</string>

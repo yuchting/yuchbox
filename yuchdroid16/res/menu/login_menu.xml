@@ -3,9 +3,6 @@
 	<item android:id="@+id/login_menu_debug_info"
           android:icon="@drawable/login_menu_ic_bug"
           android:title="@string/title_debug_info" />
-    <item android:id="@+id/login_menu_home"
-          android:icon="@drawable/login_menu_ic_home"
-          android:title="@string/login_menu_home" />
     <item android:id="@+id/login_menu_setting"
           android:icon="@drawable/login_menu_ic_setting"
           android:title="@string/login_menu_setting" />

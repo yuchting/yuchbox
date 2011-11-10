@@ -224,18 +224,22 @@ public class ConnectDeamon extends Service implements Runnable{
 		String[] t_mailHashList = t_mailHashcode.split(fetchMail.fsm_vectStringSpliter);
 		
 		for(String id : t_mailHashList){
-			int t_hash = Integer.valueOf(id);
-			try{
-				ByteArrayOutputStream os  = new ByteArrayOutputStream();
+			
+			if(id.length() != 0){
 				
-				byte t_type = _markOrDel?msg_head.msgBeenRead:msg_head.msgMailDel;
-				
-				os.write(t_type);
-				sendReceive.WriteInt(os, t_hash);
-				
-				m_sendingQueue.addSendingData(t_type, os.toByteArray(), true);
-			}catch(Exception e){
-				m_mainApp.setErrorString("ConnectDeamon MailMarkReadRecv", e);
+				int t_hash = Integer.valueOf(id).intValue();
+				try{
+					ByteArrayOutputStream os  = new ByteArrayOutputStream();
+					
+					byte t_type = _markOrDel?msg_head.msgBeenRead:msg_head.msgMailDel;
+					
+					os.write(t_type);
+					sendReceive.WriteInt(os, t_hash);
+					
+					m_sendingQueue.addSendingData(t_type, os.toByteArray(), true);
+				}catch(Exception e){
+					m_mainApp.setErrorString("ConnectDeamon MailMarkReadRecv", e);
+				}
 			}
 		}
 	}

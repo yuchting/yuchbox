@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Debug;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,8 +18,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.yuchting.yuchdroid.client.mail.HomeActivity;
-
 public class Yuchdroid16Activity extends Activity {
 	
 	public final static String TAG = "Yuchdroid16Activity";
@@ -28,6 +25,7 @@ public class Yuchdroid16Activity extends Activity {
 	EditText	m_host	= null;
 	EditText	m_port	= null;
 	EditText	m_userPass = null;
+	Button		m_connectBut = null;
 	
 	TextView	m_connectStateView = null;
 	
@@ -53,8 +51,8 @@ public class Yuchdroid16Activity extends Activity {
     
     private void initLoginLayout() { 
         
-        Button buttonStart = (Button) findViewById(R.id.login_start_svr);
-        buttonStart.setOnClickListener(new OnClickListener() {  
+    	m_connectBut = (Button) findViewById(R.id.login_start_svr);
+    	m_connectBut.setOnClickListener(new OnClickListener() {  
             public void onClick(View arg0){
             	            	
             	boolean t_readConfig = false;
@@ -99,8 +97,8 @@ public class Yuchdroid16Activity extends Activity {
         
         m_host.setText(m_config.m_host);
         m_port.setText(m_config.m_port == 0?"":Integer.toString(m_config.m_port));
-        m_userPass.setText(m_config.m_userPass);        
-        
+        m_userPass.setText(m_config.m_userPass); 
+                
         setConnectState(m_mainApp.m_connectState);   
     }
     
@@ -152,12 +150,15 @@ public class Yuchdroid16Activity extends Activity {
 		switch(_state){
 		case YuchDroidApp.STATE_CONNECTED:
 			m_connectStateView.setText(getString(R.string.login_state_connected));
+			m_connectBut.setText(getString(R.string.stop_svr_but));
 			break;
 		case YuchDroidApp.STATE_CONNECTING:
 			m_connectStateView.setText(getString(R.string.login_state_connecting));
+			m_connectBut.setText(getString(R.string.stop_svr_but));
 			break;
 		case YuchDroidApp.STATE_DISCONNECT:
 			m_connectStateView.setText(getString(R.string.login_state_disconnect));
+			m_connectBut.setText(getString(R.string.start_svr_but));
 			break;
 		}
 	}
@@ -176,10 +177,6 @@ public class Yuchdroid16Activity extends Activity {
             case R.id.login_menu_debug_info:
             	startActivity(new Intent(this,DebugInfoActivity.class));
                 return true;
-            case R.id.login_menu_home:
-            	//Debug.startMethodTracing("mail_list_trace");
-            	startActivity(new Intent(this,HomeActivity.class));
-            	return true;
             case R.id.login_menu_setting:
             	startActivity(new Intent(this,ConnectPrefActivity.class));
             	return true;

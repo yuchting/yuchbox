@@ -13,14 +13,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
+import com.yuchting.yuchdroid.client.Yuchdroid16Activity;
 
 public class HomeActivity extends ListActivity{
 		
-	public static final int	MAX_GROUP_FATCH_NUM		= 30;
+	public static final int	MAX_GROUP_FATCH_NUM		= 35;
 
 	public Cursor			m_groupCursor;
 	public int 			m_currGroupLimit = MAX_GROUP_FATCH_NUM;
@@ -63,9 +63,16 @@ public class HomeActivity extends ListActivity{
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.home);
-                
         m_mainApp 			= (YuchDroidApp)getApplicationContext();
+        
+        if(!m_mainApp.m_connectDeamonRun){
+        	// if the connect daemon is NOT run
+        	// start the YuchDroid connect daemon activity
+        	//
+        	startActivity(new Intent(this,Yuchdroid16Activity.class));
+        }
+        
+        setContentView(R.layout.home);
         m_groupCursor 		= m_mainApp.m_dba.fetchAllGroup(m_currGroupLimit);
         
         m_mailListAd		= new MailListAdapter(this);
@@ -145,9 +152,12 @@ public class HomeActivity extends ListActivity{
             	m_mainApp.m_composeRefMail = null;
             	
             	startActivity(in);
-                return true;
+                break;
             case R.id.mail_list_preference:
             	startActivity(new Intent(this,MailPrefActivity.class));
+            	break;
+            case R.id.mail_list_connect_state:
+            	startActivity(new Intent(this,Yuchdroid16Activity.class));
             	break;
            
         }

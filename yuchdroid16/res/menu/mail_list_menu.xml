@@ -4,8 +4,15 @@
     	android:id="@+id/mail_list_compose_new_mail"
     	android:icon="@drawable/mail_list_menu_compose"
     	android:title="@string/mail_list_compose_new_mail"/>
+    	
+    <item 
+    	android:id="@+id/mail_list_connect_state"
+    	android:icon="@drawable/mail_list_menu_connect_state"
+    	android:title="@string/mail_list_menu_connect_state"/>
+    	
    	<item 
     	android:id="@+id/mail_list_preference"
     	android:icon="@drawable/login_menu_ic_setting"
     	android:title="@string/mail_pref_title"/>
+    
 </menu>
