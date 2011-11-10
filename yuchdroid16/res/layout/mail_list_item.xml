@@ -37,6 +37,7 @@
         android:singleLine="true"
         android:ellipsize="end"
         android:textColor="#000"
+        android:textStyle="bold"
         android:gravity="center_vertical"
         android:text="mail subject "/>
      
@@ -63,7 +64,7 @@
 		android:layout_alignParentBottom="true"
 		android:layout_marginBottom="3dp"
 		android:maxWidth="190dp"
-		android:textSize="16dp"
+		android:textSize="14dp"
 		android:textColor="#000"
 		android:singleLine="true"
 		android:text="mail address list mail address list mail address list"/>

@@ -94,7 +94,7 @@ final class IMStatusField extends Field{
 			String t_status = m_status.m_status;
 			if(IMStatus.sm_currUseStatus == m_status){
 				_g.setFont(MainIMScreen.fsm_boldFont);
-				t_status = "-" + t_status;
+				t_status = "+ " + t_status;
 			}
 			
 			_g.setColor(RosterItemField.fsm_nameTextColor);

@@ -259,7 +259,7 @@ class sendReceive extends Thread{
 			return new String(t_buffer,"UTF-8");
 		}
 		
-		return new String("");
+		return "";
 		
 	}
 	

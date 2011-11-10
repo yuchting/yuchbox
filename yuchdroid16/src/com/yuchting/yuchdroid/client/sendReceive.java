@@ -576,7 +576,7 @@ public class sendReceive{
 			
 		}
 		
-		return new String("");
+		return "";
 		
 	}
 	

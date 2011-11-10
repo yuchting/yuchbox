@@ -39,6 +39,7 @@ import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.system.WLANInfo;
 import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.XYPoint;
@@ -1479,7 +1480,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 			if(m_mainIMScreen != null){
 				
-				if(getActiveScreen() == m_mainIMScreen.m_chatScreen
+				Screen t_activeScreen = getActiveScreen();
+				
+				if(t_activeScreen == m_mainIMScreen.m_chatScreen
 					&& m_mainIMScreen.m_chatScreen != null){
 					
 					m_isWeiboOrIMScreen = false;
@@ -1494,48 +1497,33 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						popScreen(getActiveScreen());
 					}		
 					
-				}else if(getActiveScreen() == m_mainIMScreen.m_statusAddScreen
-						&& m_mainIMScreen.m_statusAddScreen != null){
+				}else if(t_activeScreen == m_mainIMScreen){
 					
 					m_isWeiboOrIMScreen = false;
-					
-					m_mainIMScreen.m_statusAddScreen.close();
 					popScreen(m_mainIMScreen);
 					
-				}else if(getActiveScreen() == m_mainIMScreen.m_optionScreen
-						&& m_mainIMScreen.m_optionScreen != null){
+				}else{
+										
+					Screen[] t_screenList = 
+					{
+						m_mainIMScreen.m_statusAddScreen,
+						m_mainIMScreen.m_optionScreen,
+						m_mainIMScreen.m_addRosterDlg,
+						m_mainIMScreen.m_searchStatus,
+						m_mainIMScreen.m_checkRosterInfoScreen,
+						m_mainIMScreen.m_aliasDlg,
+						
+					};
 					
-					m_isWeiboOrIMScreen = false;
 					
-					m_mainIMScreen.m_optionScreen.close();
-					popScreen(m_mainIMScreen);
-					
-				}else if(getActiveScreen() == m_mainIMScreen.m_addRosterDlg
-						&& m_mainIMScreen.m_addRosterDlg != null){
-					
-					m_isWeiboOrIMScreen = false;
-					
-					m_mainIMScreen.m_addRosterDlg.close();
-					popScreen(m_mainIMScreen);
-					
-				}else if(getActiveScreen() == m_mainIMScreen.m_searchStatus
-						&& m_mainIMScreen.m_searchStatus != null){
-					
-					m_isWeiboOrIMScreen = false;
-					
-					m_mainIMScreen.m_searchStatus.close();
-					popScreen(m_mainIMScreen);
-					
-				}else if(getActiveScreen() == m_mainIMScreen.m_checkRosterInfoScreen
-						&& m_mainIMScreen.m_checkRosterInfoScreen != null){
-					
-					m_isWeiboOrIMScreen = false;
-					m_mainIMScreen.m_checkRosterInfoScreen.close();
-					popScreen(m_mainIMScreen);
-					
-				}else if(getActiveScreen() == m_mainIMScreen){
-					m_isWeiboOrIMScreen = false;
-					popScreen(m_mainIMScreen);
+					for(int i = 0;i < t_screenList.length;i++){
+						if(t_activeScreen == t_screenList[i] && t_screenList[i] != null){
+							m_isWeiboOrIMScreen = false;
+							t_screenList[i].close();
+							popScreen(m_mainIMScreen);
+							break;
+						}
+					}
 				}
 			}
 			

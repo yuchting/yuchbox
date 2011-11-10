@@ -4,6 +4,10 @@ import java.io.ByteArrayOutputStream;
 import java.util.Vector;
 
 import local.localResource;
+import net.rim.blackberry.api.invoke.Invoke;
+import net.rim.blackberry.api.invoke.MessageArguments;
+import net.rim.blackberry.api.mail.Address;
+import net.rim.blackberry.api.mail.Message;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
@@ -784,6 +788,28 @@ public class weiboTimeLineScreen extends MainScreen{
         }
     };
     
+    MenuItem m_emailItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_EMAIL_MENU_LABEL),m_menuIndex_op++,0){
+        public void run() {
+        	if(m_currMgr.getCurrSelectedItem() != null 
+        	&& m_currMgr.getCurrSelectedItem().m_weibo != null){
+        		
+        		Message msg = new Message();
+				fetchWeibo t_weibo = m_currMgr.getCurrSelectedItem().m_weibo;
+				
+				try{
+					
+					msg.setSubject(t_weibo.getShareEmailSubject());
+					msg.setContent(t_weibo.getShareEmailContain(""));
+											
+					Invoke.invokeApplication(Invoke.APP_TYPE_MESSAGES, new MessageArguments(msg));
+					
+				}catch(Exception e){
+					m_mainApp.SetErrorString("SEM:"+e.getMessage()+e.getClass().getName());
+				}
+        	}
+        }
+    };
+    
     public WeiboOptionScreen m_optionScreen = null;
     MenuItem m_optionItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPTION_MENU_LABEL),98,0){
     	public void run() {
@@ -875,9 +901,13 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		if(m_currMgr.getCurrSelectedItem() != null				// has selected
 		&& m_currMgr.getCurrSelectedItem().m_weibo != null		// is not update weibo
-		&& m_currMgr.getCurrSelectedItem().m_weibo.IsOwnWeibo()
-		&& m_currMgr != m_mainDMMgr){ // is own weibo
-			_menu.add(m_deleteItem);
+		&& m_currMgr != m_mainDMMgr){ 
+		
+			if(m_currMgr.getCurrSelectedItem().m_weibo.IsOwnWeibo()){ // is own weibo
+				_menu.add(m_deleteItem);
+			}
+			
+			_menu.add(m_emailItem);			
 		}
 		
 		_menu.add(MenuItem.separator(50));

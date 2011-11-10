@@ -168,13 +168,16 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	
+	public IMAliasDlg m_aliasDlg = null;
 	MenuItem	m_aliasRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_ALIAS_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			if(m_currFocusRosterItemField != null){
 			
-				fetchChatRoster t_roster = ((RosterItemField)m_currFocusRosterItemField).m_currRoster.m_roster;
+				if(m_aliasDlg == null){
+					m_aliasDlg = new IMAliasDlg(MainIMScreen.this,(RosterItemField)m_currFocusRosterItemField);
+				}
 				
-				
+				m_mainApp.pushScreen(m_aliasDlg);				
 			}
 			
 		}
@@ -1572,7 +1575,24 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}catch(Exception e){
 			m_mainApp.SetErrorString("SUP:"+e.getMessage()+e.getClass().getName());
 		}
-		
+	}
+	
+
+	public void sendRosterAliasName(RosterChatData _roster,String _aliasName){
+		try{
+			
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			os.write(msg_head.msgChatAlias);
+			os.write(_roster.m_roster.getStyle());
+			sendReceive.WriteString(os, _roster.m_roster.getOwnAccount());
+			sendReceive.WriteString(os, _roster.m_roster.getAccount());
+			sendReceive.WriteString(os,_aliasName);
+			
+			m_mainApp.m_connectDeamon.addSendingData(msg_head.msgChatAlias, os.toByteArray(), true);
+			
+		}catch(Exception e){
+			m_mainApp.SetErrorString("SRAN:"+e.getMessage()+e.getClass().getName());
+		}
 	}
 	
 	public void addSendChatMsg(fetchChatMsg _msg,RosterChatData _sendTo){
