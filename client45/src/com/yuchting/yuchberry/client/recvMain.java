@@ -891,7 +891,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 35;
+	final static int		fsm_clientVersion = 36;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -1108,6 +1108,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_closeMailSendModule = sendReceive.ReadBoolean(t_readFile);				    			
 				    		}
 				    		
+				    		if(t_currVer >= 36){
+				    			m_imStoreImageVoice = sendReceive.ReadBoolean(t_readFile);
+				    		}
+				    		
 			    		}finally{
 			    			t_readFile.close();
 			    			t_readFile = null;
@@ -1223,6 +1227,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		    			sendReceive.WriteInt(t_writeFile,m_imSendImageQuality);
 		    			sendReceive.WriteBoolean(t_writeFile,sm_standardUI);
 		    			sendReceive.WriteBoolean(t_writeFile,m_closeMailSendModule);
+		    			
+		    			sendReceive.WriteBoolean(t_writeFile,m_imStoreImageVoice);
+		    			
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());

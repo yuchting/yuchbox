@@ -1131,8 +1131,18 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 	}
 	
 	protected boolean keyUp(int keycode,int time){
+		
 		if(m_isRecording){
 			closeRecordScreen();
+		}
+		
+		// the VoiceImmMode can callback onClose() method
+		// when enableKeyUpEvents(true) called to dispatch escape key event
+		// so must judge programmly own to close
+		//
+		int key = Keypad.key(keycode);
+		if(key == Keypad.KEY_ESCAPE){
+			onClose();
 			return true;
 		}
 		

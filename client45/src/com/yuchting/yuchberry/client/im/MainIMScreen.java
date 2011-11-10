@@ -168,6 +168,18 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	
+	MenuItem	m_aliasRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_ALIAS_ROSTER_MENU_LABEL),m_menu_op++,0){
+		public void run(){
+			if(m_currFocusRosterItemField != null){
+			
+				fetchChatRoster t_roster = ((RosterItemField)m_currFocusRosterItemField).m_currRoster.m_roster;
+				
+				
+			}
+			
+		}
+	};
+	
 	MenuItem m_delHistoryRoster = new MenuItem(recvMain.sm_local.getString(localResource.IM_DEL_HISTORY_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			
@@ -538,6 +550,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			
 			if(m_currFocusRosterItemField != null){
 				_menu.add(m_delRosterMenu);
+				_menu.add(m_aliasRosterMenu);
 			}
 		}else if(m_currMgr == m_statusListMgr){
 			_menu.add(m_addStatusMenu);
@@ -545,6 +558,9 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			_menu.add(m_delStatusMenu);
 		}else if(m_currMgr == m_historyChatMgr){
 			_menu.add(m_delHistoryRoster);
+			if(m_currFocusRosterItemField != null){
+				_menu.add(m_aliasRosterMenu);
+			}
 		}
 		
 		if(m_currMgr == m_rosterListMgr || m_currMgr == m_historyChatMgr){
@@ -823,7 +839,9 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
 	private void addChatMsg(fetchChatMsg _msg){
 		
-		boolean t_notify = !Backlight.isEnabled() || !m_mainApp.isForeground();
+		boolean t_notify = !Backlight.isEnabled() 
+							|| !m_mainApp.isForeground() 
+							|| getUiEngine() == null;
 		
 		synchronized (m_rosterChatDataList) {
 			for(int i = 0;i < m_rosterChatDataList.size();i++){
@@ -907,8 +925,6 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 								t_notify = false;
 							}
 						}
-					}else{
-						t_notify = false;
 					}
 					
 					if(m_chatScreen.getUiEngine() != null

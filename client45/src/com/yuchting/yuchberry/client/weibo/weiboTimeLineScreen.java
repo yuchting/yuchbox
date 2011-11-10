@@ -577,6 +577,11 @@ public class weiboTimeLineScreen extends MainScreen{
 			fetchWeibo t_weibo = t_field.getReplyWeibo();
 			
 			if(t_weibo != null){
+				
+				// clear the text
+				//
+				m_currMgr.m_editTextArea.setText("");
+				
 				try{
 					m_sendDaemonList.addElement(new WeiboSendDaemon(t_text,t_weibo.GetWeiboStyle(),
 														t_weibo.GetUserScreenName(),m_mainApp));
