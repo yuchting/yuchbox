@@ -100,14 +100,48 @@ public class HelloWorld {
 	public final static String	fsm_vectStringSpliter_sub = "@#&";
 	
 	public static void main(String arg[])throws Exception{
-		try{
-			cryptPassword t_crypt = new cryptPassword("111");
-			System.out.println(t_crypt.decrypt("396bc581a6277f66ca6d40eb5fd98d38ef8857158d44258d"));
-			
-		}catch(Exception e){
-			return ;
-		}
+		System.out.print(groupSubject("Re: 回复： 请教一个问题"));
 	}
+	
+	public final static String[] fsm_groupSubjectPrefix = 
+    {
+    	"Re: ",
+    	"Re:",
+    	"Re： ",
+    	"Re：",
+    	"RE: ",
+    	"RE:",
+    	"RE： ",
+    	"RE：",
+    	"回复: ",
+    	"回复:",
+    	"回复： ",
+    	"回复：",
+    	"答复: ",
+    	"答复:",
+    	"答复： ",
+    	"答复：",
+    };
+	
+	private static String groupSubject(String _orgSub){
+		int t_index = -1;
+    	int t_length = 0;
+    	for(String pre:fsm_groupSubjectPrefix){
+    		int last = _orgSub.lastIndexOf(pre); 
+    		if(last != -1){
+    			if(last > t_index){
+    				t_length = pre.length();
+    				t_index = last;
+    			}
+    		}
+    	}
+    	
+    	if(t_index != -1){
+    		_orgSub = _orgSub.substring(t_index + t_length);
+    	} 	
+    	
+    	return _orgSub.replace('\'', ' ');
+    }
 	
 	static public void testBoolean(Object bool){
 		if(((Boolean)bool).booleanValue()){

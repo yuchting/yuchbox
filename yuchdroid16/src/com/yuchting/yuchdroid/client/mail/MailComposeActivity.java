@@ -1,14 +1,17 @@
 package com.yuchting.yuchdroid.client.mail;
 
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Set;
 import java.util.Vector;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.AssetFileDescriptor;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -40,6 +43,8 @@ import com.yuchting.yuchdroid.client.YuchDroidApp;
 
 public class MailComposeActivity extends Activity implements View.OnClickListener{
 
+	public final static String	TAG = MailComposeActivity.class.getName();
+	
 	public final static String	COMPOSE_MAIL_STYLE = "style";
 	public final static String	COMPOSE_MAIL_GROUP_ID = "groupId";
 	public final static String	COMPOSE_MAIL_DRAFT = "draft";
@@ -245,40 +250,76 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			m_discardRefView.setVisibility(View.GONE);
 			m_to.requestFocus();
 			
-			Intent in = getIntent();
-//			Set<String> t_sets = in.getExtras().keySet();
-//			for(String s:t_sets){
-//				System.out.print(s);
-//			}
-			if(in.getAction() != null && in.getAction().equals(Intent.ACTION_SEND)){
-				
-				setEmailAddr(m_to,in.getStringArrayExtra(Intent.EXTRA_EMAIL));
-				
-				boolean t_cc_bcc = setEmailAddr(m_cc,in.getStringArrayExtra(Intent.EXTRA_CC));
-				t_cc_bcc = t_cc_bcc || setEmailAddr(m_bcc,in.getStringArrayExtra(Intent.EXTRA_BCC));
-				
-				if(t_cc_bcc){
-					showCc_Bcc();
-				}
-				
-				String t_subject = in.getStringExtra(Intent.EXTRA_SUBJECT);
-				if(t_subject != null){
-					m_subject.setText(t_subject);
-				}else{
-					m_subject.requestFocus();
-				}
-				
-				String t_body = in.getStringExtra(Intent.EXTRA_TEXT);
-				if(t_body != null){
-					m_body.setText(t_body);
-				}else{
-					if(t_subject != null){
-						m_body.requestFocus();
-					}
-				}
-			}		
+			loadSendMailIntentData();
 			
 			loadSendMailAccountList();
+		}
+	}
+	
+	
+	private void loadSendMailIntentData(){
+		// load the intent data of android.content.action.ACTION_SEND
+		//
+		Intent in = getIntent();			
+		if(in.getAction() != null 
+			&& in.getAction().equals(Intent.ACTION_SEND)){
+			
+			if(in.getExtras() != null){
+				Object t_streamObject = in.getExtras().get(Intent.EXTRA_STREAM);
+				if(t_streamObject != null && t_streamObject instanceof Uri){
+					Uri t_uri = (Uri)t_streamObject;
+					try{
+							
+						AssetFileDescriptor afd = getContentResolver().openAssetFileDescriptor(t_uri, "r");
+						FileInputStream input = afd.createInputStream();
+						try{
+
+						    int ch;
+						    StringBuffer vcfString = new StringBuffer("");
+						    while ((ch = input.read()) != -1){
+						    	vcfString.append((char) ch);
+						    }
+						    
+						    // the vcfString is vcf file to store the 
+						    // contact information 
+						    // TODO : add attachment file
+						    //
+						    //System.out.println(vcfString.toString());
+						    
+						}finally{
+							input.close();
+						}
+						
+					}catch(Exception e){
+						m_mainApp.setErrorString(TAG,e);
+					}
+				}
+			}
+			
+			setEmailAddr(m_to,in.getStringArrayExtra(Intent.EXTRA_EMAIL));
+			
+			boolean t_cc_bcc = setEmailAddr(m_cc,in.getStringArrayExtra(Intent.EXTRA_CC));
+			t_cc_bcc = t_cc_bcc || setEmailAddr(m_bcc,in.getStringArrayExtra(Intent.EXTRA_BCC));
+			
+			if(t_cc_bcc){
+				showCc_Bcc();
+			}
+			
+			String t_subject = in.getStringExtra(Intent.EXTRA_SUBJECT);
+			if(t_subject != null){
+				m_subject.setText(t_subject);
+			}else{
+				m_subject.requestFocus();
+			}
+			
+			String t_body = in.getStringExtra(Intent.EXTRA_TEXT);
+			if(t_body != null){
+				m_body.setText(t_body);
+			}else{
+				if(t_subject != null){
+					m_body.requestFocus();
+				}
+			}
 		}
 	}
 	

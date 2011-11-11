@@ -273,14 +273,21 @@ public class MailDbAdapter {
      * @return converted subject
      */
     private static String groupSubject(String _orgSub){
-    	int t_index;
+    	int t_index = -1;
+    	int t_length = 0;
     	for(String pre:fsm_groupSubjectPrefix){
-    		t_index = _orgSub.lastIndexOf(pre); 
-    		if(t_index != -1){
-    			_orgSub = _orgSub.substring(t_index + pre.length());
-    			break;
+    		int last = _orgSub.lastIndexOf(pre); 
+    		if(last != -1){
+    			if(last > t_index){
+    				t_length = pre.length();
+    				t_index = last;
+    			}
     		}
     	}
+    	
+    	if(t_index != -1){
+    		_orgSub = _orgSub.substring(t_index + t_length);
+    	} 	
     	
     	return _orgSub.replace('\'', ' ');
     }
