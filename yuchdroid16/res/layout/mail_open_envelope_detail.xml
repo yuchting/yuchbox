@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:minWidth="300dp">
+	<TextView 
+    	android:id="@+id/mail_open_detail_subject"
+    	android:layout_width="fill_parent"
+    	android:layout_height="wrap_content"
+    	android:textSize="18dp"
+   		android:textStyle="bold"
+    	android:text="Subject"/>
+   	<TextView 
+    	android:id="@+id/mail_open_detail_date"
+    	android:layout_width="fill_parent"
+    	android:layout_height="wrap_content"
+    	android:textSize="14dp"
+    	android:gravity="right"
+    	android:text="Mail Date"/>
+   	<ImageView 
+    	android:layout_width="fill_parent"
+    	android:layout_height="wrap_content"
+    	android:src="@drawable/divider"/>
+   	<TextView 
+   		android:layout_width="fill_parent"
+   		android:layout_height="wrap_content"
+   		android:textSize="18dp"
+   		android:textStyle="bold"
+   		android:text="@string/mail_open_detail_from"/>
+   	<TextView 
+   		android:id="@+id/mail_open_detail_from"
+   		android:layout_width="fill_parent"
+   		android:layout_height="wrap_content"
+   		android:text="From Email Adress"
+   		android:padding="10dp"/>
+    <ImageView 
+    	android:layout_width="fill_parent"
+    	android:layout_height="wrap_content"
+    	android:src="@drawable/divider"/>
+   	<TextView 
+   		android:layout_width="wrap_content"
+   		android:layout_height="wrap_content"
+   		android:textSize="18dp"
+   		android:textStyle="bold"
+   		android:text="@string/mail_open_detail_to"/>
+   	<LinearLayout
+   		android:id="@+id/mail_open_detail_to_list"
+    	android:layout_width="fill_parent"
+    	android:layout_height="wrap_content"></LinearLayout>   
+</LinearLayout>

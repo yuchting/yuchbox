@@ -36,6 +36,8 @@ public class ConnectDeamon extends Service implements Runnable{
 	public final static String TAG = ConnectDeamon.class.getName();
 	
 	private final static String FILTER_RECONNECT = TAG+"_FILTER_RECONNECT";
+	
+	public static	ConnectDeamon sm_connectDeamon = null;
 		
 	final static int	fsm_clientVer = 15;
 	
@@ -50,7 +52,9 @@ public class ConnectDeamon extends Service implements Runnable{
 		
 	public sendReceive	m_connect			= null;
 	public Selector		m_tmpConnectSelector = null;
-	public YuchDroidApp m_mainApp; 
+	public YuchDroidApp m_mainApp;
+	
+	
 		
 	// mail system variables
 	//
@@ -110,31 +114,7 @@ public class ConnectDeamon extends Service implements Runnable{
 			}			
 		}
 	};
-	
-	BroadcastReceiver m_connectRecv = new BroadcastReceiver() {
 		
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			try{
-				Connect();
-			}catch(Exception e){
-				m_mainApp.setErrorString("m_connectRecv", e);
-			}						
-		}
-	};
-	
-	BroadcastReceiver m_disconnectRecv = new BroadcastReceiver() {
-		
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			try{		
-				Disconnect();
-			}catch(Exception e){
-				m_mainApp.setErrorString("m_disconnectRecv", e);
-			}			
-		}
-	};
-	
 	BroadcastReceiver m_delMailRecv = new BroadcastReceiver() {
 		
 		@Override
@@ -152,14 +132,14 @@ public class ConnectDeamon extends Service implements Runnable{
 		
 		registerReceiver(m_mailMarkReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
 		registerReceiver(m_mailSendRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL));
-		registerReceiver(m_connectRecv,new IntentFilter(YuchDroidApp.FILTER_CONNECT));
-		registerReceiver(m_disconnectRecv,new IntentFilter(YuchDroidApp.FILTER_DISCONNECT));
 		registerReceiver(m_delMailRecv, new IntentFilter(YuchDroidApp.FILTER_DELETE_MAIL));
 		
 		m_mainApp.m_connectDeamonRun = true;
 		m_mainApp.setErrorString("ConnectDeamon onCreate");
 		
 		m_powerWakeLock = ((PowerManager)getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+		
+		sm_connectDeamon = this;
 		
 		// start the connect run thread
 		//
@@ -212,7 +192,7 @@ public class ConnectDeamon extends Service implements Runnable{
 	private void onStart_impl(Intent _intent){
 				
 		try{
-			Connect();
+			Connect_impl();
 		}catch(Exception e){
 			m_mainApp.setErrorString("onStart_impl", e);
 		}
@@ -258,6 +238,8 @@ public class ConnectDeamon extends Service implements Runnable{
 	}
 		
 	public void onDestroy(){
+		
+		sm_connectDeamon = this;
 		m_mainApp.setErrorString("ConnectDeamon onDestroy");
 		
 		m_connectState = false;
@@ -284,8 +266,6 @@ public class ConnectDeamon extends Service implements Runnable{
 		
 		unregisterReceiver(m_mailMarkReadRecv);
 		unregisterReceiver(m_mailSendRecv);
-		unregisterReceiver(m_connectRecv);
-		unregisterReceiver(m_disconnectRecv);
 		unregisterReceiver(m_delMailRecv);
 	}
 	
@@ -514,18 +494,34 @@ public class ConnectDeamon extends Service implements Runnable{
 	}
 	
 	
+	public static void Connect(){
+		if(sm_connectDeamon != null){
+			try{
+				sm_connectDeamon.Connect_impl();
+			}catch(Exception e){
+				Log.e(TAG,e.getMessage());
+			}
+		}
+	}
+	private synchronized void Connect_impl()throws Exception{
 		
-	public synchronized void Connect()throws Exception{
-		
-		Disconnect();	
+		Disconnect_impl();	
 		m_mainApp.setConnectState(YuchDroidApp.STATE_CONNECTING);
 		m_connectState = true;
 		synchronized (m_reconnectRecv) {
 			m_reconnectRecv.notify();
 		}
 	}
-	
-	public synchronized void Disconnect()throws Exception{
+	public static void Disconnect(){
+		if(sm_connectDeamon != null){
+			try{
+				sm_connectDeamon.Disconnect_impl();
+			}catch(Exception e){
+				Log.e(TAG,e.getMessage());
+			}
+		}
+	}
+	private synchronized void Disconnect_impl()throws Exception{
 			
 		m_connectState = false;		
 		m_reconnectCounter = 0;

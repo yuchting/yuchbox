@@ -79,11 +79,9 @@ public class Yuchdroid16Activity extends Activity {
             		startConnectDeamon(t_readConfig);                	
                 }else{
                 	if(m_mainApp.m_connectState == YuchDroidApp.STATE_DISCONNECT){
-                		Intent t_intent = new Intent(YuchDroidApp.FILTER_CONNECT);	
-                		sendBroadcast(t_intent);
+                		ConnectDeamon.Connect();
                 	}else{
-                		Intent t_intent = new Intent(YuchDroidApp.FILTER_DISCONNECT);	
-                		sendBroadcast(t_intent);
+                		ConnectDeamon.Disconnect();                		
                 	}
                 }
             }

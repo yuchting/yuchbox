@@ -28,9 +28,9 @@
     <string name="login_user_pass">用户密码:</string>
     <string name="login_user_pass_hint">用户定义的密码</string>
     <string name="login_user_pass_error_prompt">请输入用户密码</string>
-    <string name="login_state_disconnect">断开连接</string>
-    <string name="login_state_connecting">连接中...</string>
-    <string name="login_state_connected">连接成功</string>
+    <string name="login_state_disconnect">当前状态：断开连接</string>
+    <string name="login_state_connecting">当前状态：连接中...</string>
+    <string name="login_state_connected">当前状态：连接成功</string>
     <string name="login_menu_setting">连接设置</string>
     <string name="login_menu_home">内容主界面</string>
     <string name="login_menu_about">关于</string>
@@ -99,7 +99,8 @@
     <string name="mail_open_resend_need_connectDeamon_prompt">没有开启连接，无法发送邮件。</string>
     <string name="mail_open_delete_prompt">你确定要删除这个邮件组？</string>
     <string name="mail_open_reference_line_replace">点击显示邮件引用部分</string>
-    
+    <string name="mail_open_detail_from">来自</string>
+    <string name="mail_open_detail_to">收件人</string>
     
     <!-- mail compose view -->
     <string name="mail_compose_title">语盒邮件撰写</string>

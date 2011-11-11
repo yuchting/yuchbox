@@ -71,7 +71,7 @@
 		/>
 		<TextView
 			android:id="@+id/mail_open_subject"
-			android:layout_below="@id/mail_open_recv_addr"
+			android:layout_below="@id/mail_open_time"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:textColor="#000"

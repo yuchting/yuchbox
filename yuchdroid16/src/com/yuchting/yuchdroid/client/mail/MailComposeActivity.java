@@ -2,6 +2,7 @@ package com.yuchting.yuchdroid.client.mail;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Set;
 import java.util.Vector;
 
 import android.app.Activity;
@@ -245,6 +246,10 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			m_to.requestFocus();
 			
 			Intent in = getIntent();
+//			Set<String> t_sets = in.getExtras().keySet();
+//			for(String s:t_sets){
+//				System.out.print(s);
+//			}
 			if(in.getAction() != null && in.getAction().equals(Intent.ACTION_SEND)){
 				
 				setEmailAddr(m_to,in.getStringArrayExtra(Intent.EXTRA_EMAIL));

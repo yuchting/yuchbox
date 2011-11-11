@@ -30,8 +30,7 @@ public class GlobalDialog extends Activity implements DialogInterface.OnCancelLi
 			AlertDialog.Builder builder;
 
 			LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
-			View layout = inflater.inflate(R.layout.dlg_info,
-			                               (ViewGroup) findViewById(R.id.dlg_info_root));
+			View layout = inflater.inflate(R.layout.dlg_info,null);
 
 			TextView text = (TextView) layout.findViewById(R.id.dlg_info_text);
 			text.setMovementMethod(new ScrollingMovementMethod());

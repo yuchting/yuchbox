@@ -44,8 +44,6 @@ public class YuchDroidApp extends Application {
 		
 	// send broadcast intent filter
 	//
-	public final static	String	FILTER_CONNECT			= TAG + "_FILTER_C";
-	public final static	String	FILTER_DISCONNECT		= TAG + "_FILTER_DC";
 	public final static	String	FILTER_CONNECT_STATE 	= TAG + "_FILTER_CS";
 	public final static	String	FILTER_DEBUG_INFO 		= TAG + "_FILTER_DI";
 	public final static	String	FILTER_MARK_MAIL_READ	= TAG + "_FILTER_MMR";
@@ -429,7 +427,10 @@ public class YuchDroidApp extends Application {
 				notification.defaults |= Notification.DEFAULT_VIBRATE;
 			}
 			
-			notification.defaults |= Notification.DEFAULT_LIGHTS;
+			notification.ledARGB = 0xffff0000;
+			notification.ledOnMS = 300;
+			notification.ledOffMS = 3000;
+			notification.flags |= Notification.FLAG_SHOW_LIGHTS;
 		}
 		
 		// can't not clear
@@ -480,7 +481,10 @@ public class YuchDroidApp extends Application {
 				notification.defaults |= Notification.DEFAULT_VIBRATE;
 			}
 			
-			notification.defaults |= Notification.DEFAULT_LIGHTS;
+			notification.ledARGB = 0xff00ff00;
+			notification.ledOnMS = 300;
+			notification.ledOffMS = 5000;
+			notification.flags |= Notification.FLAG_SHOW_LIGHTS;
 		}		
 				
 		t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL, notification);
