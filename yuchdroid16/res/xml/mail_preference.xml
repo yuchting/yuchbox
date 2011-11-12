@@ -47,10 +47,17 @@
 			android:ringtoneType="all" />
 	</PreferenceCategory>
 	<PreferenceCategory
-		android:title="@string/mail_pref_statistics_category">
+		android:title="@string/mail_pref_other_category">
 		<Preference
 			android:key="config_mail_statistics"
 			android:title="@string/mail_pref_statistics"
 			android:enabled="true"/>
+		<ListPreference
+			android:key="config_mail_font_size"
+			android:title="@string/mail_pref_font_size"
+			android:entries="@array/font_size"
+			android:entryValues="@array/font_size_values"
+			android:summary="@string/mail_pref_font_size_sum"
+			android:dialogTitle="@string/mail_pref_font_size"/>
 	</PreferenceCategory>
 </PreferenceScreen>

@@ -19,4 +19,19 @@
     </string-array>
     <string-array name="mail_pref_default_account_values">
     </string-array>
+    
+    <string-array name="font_size">
+    	<item>Small</item>
+    	<item>Middle</item>
+    	<item>Normal</item>
+    	<item>Big</item>
+    	<item>Great</item>
+    </string-array>
+    <string-array name="font_size_values">
+    	<item>14</item>
+    	<item>16</item>
+    	<item>18</item>
+    	<item>20</item>
+    	<item>22</item>
+    </string-array>
 </resources>

@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -88,6 +89,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		
 		m_subject	= (EditText)findViewById(R.id.mail_compose_subject);
 		m_body		= (EditText)findViewById(R.id.mail_compose_body);
+		m_body.setTextSize(TypedValue.COMPLEX_UNIT_DIP, m_mainApp.m_config.getMailFontSize());
 		
 		m_mainView 	= (LinearLayout)findViewById(R.id.mail_compose_main_view);
 		

@@ -36,7 +36,9 @@ public final class ConfigInit {
 	public String	m_connectDisconnectPrompt_sound = "";
 					
 	public long m_uploadByte 				= 0;
-	public long m_downloadByte				= 0;	
+	public long m_downloadByte				= 0;
+	
+	public int[]	m_fontSizeValues		= {14,16,18,20,22};
 		
 	// mail system variables
 	//
@@ -54,6 +56,8 @@ public final class ConfigInit {
 	
 	public boolean m_mailPrompt_vibrate = false;
 	public String	m_mailPrompt_sound = "";
+	
+	public int					m_mailFontSizeIndex = 1;
 		
 	// weibo system
 	//
@@ -87,6 +91,7 @@ public final class ConfigInit {
 	
 	public boolean m_weiboPrompt_vibrate = false;
 	public String	m_weiboPrompt_sound = "";
+	public int		m_weiboFontSizeIndex = 0;
 	
 	// IM system
 	//
@@ -116,15 +121,26 @@ public final class ConfigInit {
 	
 	public boolean m_imPrompt_vibrate = false;
 	public String	m_imPrompt_sound = "";
+	public int		m_imFontSizeIndex = 0;
 	
 	public ConfigInit(Context _ctx){
 		m_ctx = _ctx;
 		
-		String[] t_str = _ctx.getResources().getStringArray(R.array.login_pref_pulse_values);		
+		String[] t_str = _ctx.getResources().getStringArray(R.array.login_pref_pulse_values);
+		assert t_str != null;
 		m_pulseIntervalValues = new int[t_str.length];
 		for(int i = 0;i < m_pulseIntervalValues.length;i++){
 			m_pulseIntervalValues[i] = Integer.valueOf(t_str[i]).intValue() * 60000;
-		}	
+		}
+		
+		t_str = _ctx.getResources().getStringArray(R.array.font_size_values);
+		assert t_str != null;
+		
+		m_fontSizeValues = new int[t_str.length];
+		for(int i = 0;i < m_fontSizeValues.length;i++){
+			m_fontSizeValues[i] = Integer.valueOf(t_str[i]).intValue();
+		}
+	
 	}
 	
 	public int getPulseInterval(){
@@ -132,8 +148,17 @@ public final class ConfigInit {
 			&& m_pulseIntervalIndex >= 0){
 			return m_pulseIntervalValues[m_pulseIntervalIndex];
 		}
-		
+		m_pulseIntervalIndex = 0;
 		return m_pulseIntervalValues[0];
+	}
+	
+	public int getMailFontSize(){
+		if(m_mailFontSizeIndex < m_fontSizeValues.length
+		&& m_mailFontSizeIndex >= 0){
+			return m_fontSizeValues[m_mailFontSizeIndex];
+		}
+		m_mailFontSizeIndex = 0;
+		return m_fontSizeValues[0];
 	}
 	static Calendar sm_calendar = Calendar.getInstance();
 	static Date		sm_timeDate = new Date();
@@ -208,7 +233,7 @@ public final class ConfigInit {
 		}
 	}
 	
-	final static int		fsm_configVersion = 2;
+	final static int		fsm_configVersion = 3;
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
 	
@@ -332,6 +357,12 @@ public final class ConfigInit {
 		    				m_displayTextWhenHTML			= sendReceive.ReadBoolean(t_readFile);
 		    			}
 		    			
+		    			if(t_version >= 3){
+		    				m_mailFontSizeIndex				= t_readFile.read();
+		    				m_weiboFontSizeIndex			= t_readFile.read();
+		    				m_imFontSizeIndex				= t_readFile.read();
+		    			}
+		    			
 					}finally{
 						t_readFile.close();
 					}
@@ -445,6 +476,10 @@ public final class ConfigInit {
     				sendReceive.WriteString(t_writeFile,m_imPrompt_sound);
     				
     				sendReceive.WriteBoolean(t_writeFile,m_displayTextWhenHTML);
+    				
+    				t_writeFile.write(m_mailFontSizeIndex);
+    				t_writeFile.write(m_weiboFontSizeIndex);
+    				t_writeFile.write(m_imFontSizeIndex);
 					
 				}finally{
 					t_writeFile.close();

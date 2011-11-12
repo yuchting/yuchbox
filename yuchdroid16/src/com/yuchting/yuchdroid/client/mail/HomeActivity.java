@@ -57,6 +57,8 @@ public class HomeActivity extends ListActivity{
 		}
 		
 		m_groupCursor = m_mainApp.m_dba.fetchAllGroup(m_currGroupLimit);
+		refershTitle();
+		
 		m_mailListAd.notifyDataSetChanged();
 	}
 				
@@ -74,6 +76,7 @@ public class HomeActivity extends ListActivity{
         
         setContentView(R.layout.home);
         m_groupCursor 		= m_mainApp.m_dba.fetchAllGroup(m_currGroupLimit);
+        refershTitle();
         
         m_mailListAd		= new MailListAdapter(this);
         getListView().setAdapter(m_mailListAd);
@@ -116,6 +119,21 @@ public class HomeActivity extends ListActivity{
 		unregisterReceiver(m_recvMailRecv);
 		unregisterReceiver(m_markReadRecv);
 		unregisterReceiver(m_sendMailRecv);
+	}
+	
+	private void refershTitle(){
+		int t_unread = 0;
+		
+		while(m_groupCursor.moveToNext()){
+			int t_groupFlag = m_groupCursor.getInt(m_groupCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_GROUP_FLAG));
+			if(t_groupFlag == fetchMail.GROUP_FLAG_RECV
+			|| t_groupFlag == fetchMail.GROUP_FLAG_RECV_ATTACH){
+				t_unread++;
+			}
+		}
+		
+		setTitle(getString(R.string.title_mail) + " (" + t_unread + ")");
+		
 	}
 	
 	@Override

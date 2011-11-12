@@ -99,9 +99,10 @@ public class GlobalDialog extends Activity implements DialogInterface.OnCancelLi
     	_ctx.startActivity(myIntent);
 	}
 	
-	public static void showYesNoDialog(String _promptInfo,Context _ctx,DialogInterface.OnClickListener _listener){
+	public static void showYesNoDialog(String _promptInfo,Context _ctx,DialogInterface.OnClickListener _yesNolistener){
 		AlertDialog.Builder builder = new AlertDialog.Builder(_ctx);
-		builder.setMessage(_promptInfo).setPositiveButton("Yes", _listener)
-		    .setNegativeButton("No", _listener).show();
+		builder.setMessage(_promptInfo)
+			.setPositiveButton(R.string.dlg_info_yesno_confirm, _yesNolistener)
+		    .setNegativeButton(R.string.dlg_info_yesno_cancel	, _yesNolistener).show();
 	}
 }

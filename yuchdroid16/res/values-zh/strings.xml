@@ -72,6 +72,8 @@
     <string name="dlg_info_title">语盒提示：</string>
     <string name="dlg_info_confirm">我知道了</string>
     <string name="dlg_info_copy">拷贝到剪切板</string>
+    <string name="dlg_info_yesno_confirm">确认</string>
+    <string name="dlg_info_yesno_cancel">取消</string>
     
     
     <!-- mail list view -->
@@ -101,6 +103,7 @@
     <string name="mail_open_reference_line_replace">点击显示邮件引用部分</string>
     <string name="mail_open_detail_from">来自</string>
     <string name="mail_open_detail_to">收件人</string>
+    <string name="mail_open_detail_email_click_prompt">选择发送程序：</string>
     
     <!-- mail compose view -->
     <string name="mail_compose_title">语盒邮件撰写</string>
@@ -144,10 +147,11 @@
 	<string name="mail_pref_vibrate_sum">新邮件到达时震动</string>
 	<string name="mail_pref_sound">提示音</string>
 	<string name="mail_pref_sound_sum">新邮件到达时候的提示音</string>
-	<string name="mail_pref_statistics_category">统计</string>
+	<string name="mail_pref_other_category">其他</string>
 	<string name="mail_pref_statistics">邮件统计</string>
 	<string name="mail_pref_statistics_send">发送：</string>
 	<string name="mail_pref_statistics_recv">接收：</string>
-    
-    
+	<string name="mail_pref_font_size">字体大小</string>
+	<string name="mail_pref_font_size_sum">邮件显示字体大小</string>
+	
 </resources>

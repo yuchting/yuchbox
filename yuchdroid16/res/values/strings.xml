@@ -69,6 +69,8 @@
     <string name="dlg_info_title">YuchDroid Prompt:</string>
     <string name="dlg_info_confirm">I know it</string>
     <string name="dlg_info_copy">Copy To Clipboard</string>
+    <string name="dlg_info_yesno_confirm">Yes</string>
+    <string name="dlg_info_yesno_cancel">No</string>
         
     <!-- mail list view -->
     <string name="no_mail">no mail, please wait refresh...</string>
@@ -81,8 +83,6 @@
     <string name="mail_list_compose_new_mail">Compose</string>
     <string name="mail_home_empty_group">Opps, there is not any mail...</string>
     <string name="mail_list_menu_connect_state">State</string>
-    
-    
        
     <!-- mail open view -->
     <string name="mail_open_reply_btn">Reply</string>
@@ -99,6 +99,8 @@
     <string name="mail_open_reference_line_replace">Click to display original reference part</string>
     <string name="mail_open_detail_from">From</string>
     <string name="mail_open_detail_to">To</string>
+    <string name="mail_open_detail_email_click_prompt">Choose the sender:</string>
+    
     
     <!-- mail compose view -->
     <string name="mail_compose_title">YuchDroid Mail Compose</string>
@@ -142,13 +144,11 @@
 	<string name="mail_pref_vibrate_sum">Vibreate when new mail comes</string>
 	<string name="mail_pref_sound">Sound</string>
 	<string name="mail_pref_sound_sum">Sound when new mail comes</string>
-	<string name="mail_pref_statistics_category">Statistics</string>
+	<string name="mail_pref_other_category">Other</string>
 	<string name="mail_pref_statistics">Mail Statistics</string>
 	<string name="mail_pref_statistics_send">Mail Send:</string>
 	<string name="mail_pref_statistics_recv">Mail Recv:</string>
-	
-	
-	
-	
+	<string name="mail_pref_font_size">Font Size</string>
+	<string name="mail_pref_font_size_sum">Mail font size to display</string>
     
 </resources>

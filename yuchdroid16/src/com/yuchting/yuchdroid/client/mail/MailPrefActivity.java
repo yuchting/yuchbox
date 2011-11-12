@@ -27,6 +27,7 @@ public class MailPrefActivity extends PreferenceActivity {
 	RingtonePreference		m_sound;
 	
 	Preference				m_statistics;
+	ListPreference			m_mailFontSize;
 			
 	ConfigInit				m_config;
 	
@@ -48,6 +49,7 @@ public class MailPrefActivity extends PreferenceActivity {
 		m_sound				= (RingtonePreference)t_prefMgr.findPreference("config_mail_sound");
 		
 		m_statistics		= t_prefMgr.findPreference("config_mail_statistics");
+		m_mailFontSize		= (ListPreference)t_prefMgr.findPreference("config_mail_font_size");
 		
 		updateData(true);
 		
@@ -102,6 +104,8 @@ public class MailPrefActivity extends PreferenceActivity {
 			
 			m_statistics.setSummary(t_stat.toString());
 			
+			m_mailFontSize.setValueIndex(m_config.m_mailFontSizeIndex);
+			
 		}else{
 			if(!m_config.m_sendMailAccountList.isEmpty()){
 				m_config.m_defaultSendMailAccountIndex = m_defaultAccount.findIndexOfValue(m_defaultAccount.getValue());
@@ -111,6 +115,7 @@ public class MailPrefActivity extends PreferenceActivity {
 			m_config.m_copyMailToSentFolder = m_copyToFolder.isChecked();
 			m_config.m_mailPrompt_vibrate = m_vibrate.isChecked();
 			m_config.m_displayTextWhenHTML = m_displayTextWhenHTML.isChecked();
+			m_config.m_mailFontSizeIndex = m_mailFontSize.findIndexOfValue(m_mailFontSize.getValue());
 			
 			SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
 			String sound = prefs.getString(m_sound.getKey(), ""); 

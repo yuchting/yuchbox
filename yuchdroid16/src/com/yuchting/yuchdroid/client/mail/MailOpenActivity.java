@@ -3,7 +3,6 @@ package com.yuchting.yuchdroid.client.mail;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -20,6 +19,7 @@ import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ClickableSpan;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -32,6 +32,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.yuchting.yuchdroid.client.ConfigInit;
 import com.yuchting.yuchdroid.client.GlobalDialog;
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
@@ -547,7 +548,9 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			
 			m_opened = true;
 			
-			boolean t_displayTextWhenHTML = ((YuchDroidApp)m_loadCtx.getApplicationContext()).m_config.m_displayTextWhenHTML;
+			final ConfigInit t_config = ((YuchDroidApp)m_loadCtx.getApplicationContext()).m_config;
+			
+			boolean t_displayTextWhenHTML = t_config.m_displayTextWhenHTML;
 			boolean t_displayText = m_mail.GetContain().length() != 0;
 			
 			if(m_mail.GetContain_html().length() != 0 && !t_displayTextWhenHTML){
@@ -567,6 +570,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 				}else{
 					t_str = m_mail.GetContain();
 				}
+				m_bodyText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, t_config.getMailFontSize());
 				m_bodyText.setText(t_str);
             }else{
             	m_bodyText.setVisibility(View.GONE);
@@ -583,6 +587,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         				public void onClick(View paramView){
         					m_touchHTML.setVisibility(View.GONE);
         					m_htmlText.setVisibility(View.VISIBLE);
+        					m_htmlText.getSettings().setDefaultFontSize(t_config.getMailFontSize());
         					m_htmlText.loadDataWithBaseURL("",m_mail.GetContain_html(),"text/html","utf-8","");
         				}
         			});
@@ -590,6 +595,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
             	}else{
             		m_touchHTML.setVisibility(View.GONE);
 					m_htmlText.setVisibility(View.VISIBLE);
+					m_htmlText.getSettings().setDefaultFontSize(t_config.getMailFontSize());
 					m_htmlText.loadDataWithBaseURL("",m_mail.GetContain_html(),"text/html","utf-8","");
             	}         	     	
             	
@@ -783,6 +789,18 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		
 		public Dialog getEnvelopeDetailDlg(){
 			
+			View.OnClickListener t_emailClick = new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					String t_to = ((TextView)v).getText().toString();
+					Intent in = new Intent(Intent.ACTION_SEND);
+					in.setType("text/plain");
+					in.putExtra(Intent.EXTRA_EMAIL,new String[]{t_to});
+					m_loadCtx.startActivity(Intent.createChooser(in, m_loadCtx.getString(R.string.mail_open_detail_email_click_prompt)));
+				}
+			};
+			
 			String t_form 		= m_mail.GetFromVect().isEmpty()?"":m_mail.GetFromVect().get(0);
 			String t_subject 	= m_mail.GetSubject();
 
@@ -791,10 +809,12 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			
 			AlertDialog.Builder builder = new AlertDialog.Builder(m_loadCtx);
 			builder.setView(layout);
-			Dialog dialog = builder.create();
+			builder.setPositiveButton(R.string.dlg_info_yesno_confirm, null);
 			
+			final Dialog dialog = builder.create();
 			TextView t_fromView = (TextView)layout.findViewById(R.id.mail_open_detail_from);
 			t_fromView.setText(t_form);
+			t_fromView.setOnClickListener(t_emailClick);
 			
 			LinearLayout t_toLayout = (LinearLayout)layout.findViewById(R.id.mail_open_detail_to_list);
 			for(String to:m_mail.GetSendToVect()){
@@ -804,7 +824,9 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 									LinearLayout.LayoutParams.WRAP_CONTENT));
 				v.setPadding(10, 10, 10, 10);
 				v.setText(to);
+				v.setOnClickListener(t_emailClick);
 				t_toLayout.addView(v);
+				
 			}
 			
 			TextView t_subjectView 	= (TextView)layout.findViewById(R.id.mail_open_detail_subject);
