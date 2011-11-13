@@ -156,28 +156,31 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			}			
 		}
 	};
-	
-	View.OnClickListener m_openEnvelopeListener = new View.OnClickListener() {
 		
-		@Override
-		public void onClick(View v) {
-			for(Envelope en:m_currMailList){
-				if(en.m_mainView == v){
-					en.openBody();
-					en.setOnClickDetailEnvelope(m_detailEnvelopeListener);
-				}				
-			}
-		}
-	};
-	
-	View.OnClickListener m_detailEnvelopeListener = new View.OnClickListener() {
+	View.OnClickListener m_clickEnvelopeListener = new View.OnClickListener() {
 		
 		@Override
 		public void onClick(View v) {
 			for(int i = 0;i < m_currMailList.size();i++){
 				Envelope en = m_currMailList.get(i);
 				if(en.m_mainView == v){
-					showDialog(i);
+					
+					if(!en.m_opened){
+						en.openBody();
+					}else if(en.m_mail.getGroupFlag() == fetchMail.GROUP_FLAG_SEND_DRAFT){
+
+						((YuchDroidApp)getApplicationContext()).m_composeRefMail = en.m_mail;
+						
+						Intent in = new Intent(MailOpenActivity.this,MailComposeActivity.class);
+						in.putExtra(MailComposeActivity.COMPOSE_MAIL_STYLE, en.m_mail.getSendRefMailStyle());
+						in.putExtra(MailComposeActivity.COMPOSE_MAIL_GROUP_ID,en.m_mail.getGroupIndex());		
+						in.putExtra(MailComposeActivity.COMPOSE_MAIL_DRAFT,true);
+						
+						startActivity(in);
+	
+		            }else{
+		            	showDialog(i);
+		            }					
 				}				
 			}
 		}
@@ -270,6 +273,12 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	
 	private void fillMailContent()throws Exception{   
 
+		 // remove all envelope
+        //
+        while(m_mainMailView.getChildCount() > fsm_insertEnvelopeIndex){
+        	m_mainMailView.removeViewAt(fsm_insertEnvelopeIndex);
+        }
+        
         m_preGroupBtn.setVisibility(m_preGroupIdx != -1?View.VISIBLE:View.INVISIBLE);
         m_nextGroupBtn.setVisibility(m_nextGroupIdx != -1?View.VISIBLE:View.INVISIBLE);   
     
@@ -287,10 +296,14 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         //
         StringBuffer t_markReadMailString = new StringBuffer();
         boolean t_hasUnreadMail = false;
+        boolean t_modifiedFlag;
+        long t_id;
+        int t_formerMailView = 0;
+        boolean t_showTouchFormerMailView = false;
+        
         m_currMailList.clear();
-        for(String id:t_mailList){
-        	
-        	long t_id = Long.valueOf(id).longValue();
+        for(int i = 0;i < t_mailList.length;i++){
+        	t_id = Long.valueOf(t_mailList[i]).longValue();
         	
         	fetchMail t_mail	= m_mainApp.m_dba.fetchMail(t_id);
         	t_mail.setGroupIndex(m_currGroupIdx);
@@ -298,18 +311,31 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         	Envelope en = new Envelope(t_mail,this);
         	
         	AtomicReference<Integer> t_flag = new AtomicReference<Integer>(t_mail.getGroupFlag());
-        	if(MailDbAdapter.modifiedUnreadFlag(t_flag) || en.isNeedInitOpen()){
+        	t_modifiedFlag = MailDbAdapter.modifiedUnreadFlag(t_flag);
+        	if(t_modifiedFlag || en.isNeedInitOpen() || i == t_mailList.length - 1){
+        		
         		t_mail.setGroupFlag(t_flag.get());
-        		t_hasUnreadMail = true;
-        		
         		en.openBody();
-        		en.setOnClickDetailEnvelope(m_detailEnvelopeListener);
+        		en.setOnClickEnvelope(m_clickEnvelopeListener);
         		
-        		// mark the mail as read
-        		//
-        		m_mainApp.m_dba.markMailRead(t_id);
+        		if(en.m_mail.getGroupFlag() == fetchMail.GROUP_FLAG_SEND_ERROR){
+        			en.openResendBtn(m_resendListener);
+        		}
         		
-        		t_markReadMailString.append(t_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
+        		m_mainMailView.addView(en.m_mainView);
+        		m_titleOwnAccount.setText(en.m_mail.getOwnAccount());
+        		
+        		if(t_modifiedFlag){
+        			// mark the mail as read
+            		//
+        			t_hasUnreadMail = true;
+            		m_mainApp.m_dba.markMailRead(t_id);
+            		t_markReadMailString.append(t_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
+        		}
+        		
+        	}else{
+        		t_formerMailView++;
+        		t_showTouchFormerMailView = true;
         	}
      	
         	m_currMailList.add(en);
@@ -327,35 +353,6 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_GROUPID,m_currGroupIdx);
         	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_markReadMailString.toString());
     		sendBroadcast(t_intent);
-        }
-                
-        // remove all envelope
-        //
-        while(m_mainMailView.getChildCount() > fsm_insertEnvelopeIndex){
-        	m_mainMailView.removeViewAt(fsm_insertEnvelopeIndex);
-        }
-        
-        int t_formerMailView = 0;
-        boolean t_showTouchFormerMailView = false;
-        for(int i = 0;i < m_currMailList.size();i++){
-        	Envelope en = m_currMailList.get(i);
-        	if(en.m_opened || i == m_currMailList.size() - 1){        		
-        		
-        		if(!en.m_opened){
-        			en.openBody();
-        			en.setOnClickDetailEnvelope(m_detailEnvelopeListener);
-        		}        		
-        		
-        		if(en.m_mail.getGroupFlag() == fetchMail.GROUP_FLAG_SEND_ERROR){
-        			en.openResendBtn(m_resendListener);
-        		}
-        		
-        		m_mainMailView.addView(en.m_mainView);
-        		m_titleOwnAccount.setText(en.m_mail.getOwnAccount());
-        	}else{
-        		t_formerMailView++;
-        		t_showTouchFormerMailView = true;
-        	}
         }
         
         if(t_showTouchFormerMailView){
@@ -382,7 +379,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			for(Envelope en:m_currMailList){
 				
 				if(!en.m_opened){
-					en.setOnClickOpenBodyEvent(m_openEnvelopeListener);
+					en.setOnClickEnvelope(m_clickEnvelopeListener);
 					
 					if(en.m_mail.getGroupFlag() == fetchMail.GROUP_FLAG_SEND_ERROR){
 	        			en.openResendBtn(m_resendListener);
@@ -440,9 +437,9 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 				m_mainApp.setErrorString("nextGroupBtn",e);
 			}	
 		}else if(v == m_replyBtn){
-			startComposeMail(fetchMail.REPLY_STYLE);
+			startReplyForwardMail(fetchMail.REPLY_STYLE);
 		}else if(v == m_forwardBtn){
-			startComposeMail(fetchMail.FORWORD_STYLE);
+			startReplyForwardMail(fetchMail.FORWORD_STYLE);
 		}else if(v == m_deleteBtn){
 			if(m_currGroupIdx != -1){
 
@@ -484,7 +481,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		}
 	}
 	
-	private void startComposeMail(int _referenceStyle){
+	private void startReplyForwardMail(int _referenceStyle){
 		
 		Envelope t_envelope = null;
 		
@@ -603,22 +600,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
             	m_touchHTML.setVisibility(View.GONE);
             }
             
-            if(m_mail.getGroupFlag() == fetchMail.GROUP_FLAG_SEND_DRAFT){
-            	m_mainView.setOnClickListener(new View.OnClickListener() {
-					
-					@Override
-					public void onClick(View v) {
-						((YuchDroidApp)m_loadCtx.getApplicationContext()).m_composeRefMail = m_mail;
-						
-						Intent in = new Intent(m_loadCtx,MailComposeActivity.class);
-						in.putExtra(MailComposeActivity.COMPOSE_MAIL_STYLE, m_mail.getSendRefMailStyle());
-						in.putExtra(MailComposeActivity.COMPOSE_MAIL_GROUP_ID,m_mail.getGroupIndex());		
-						in.putExtra(MailComposeActivity.COMPOSE_MAIL_DRAFT,true);
-						
-						m_loadCtx.startActivity(in);
-					}
-				});
-            }
+            
 		}
 		
 		private static class SpanSeg{
@@ -754,19 +736,10 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	        	}
 	        }	        
 		}
-		
-		public void setOnClickOpenBodyEvent(View.OnClickListener _l){
+				
+		public void setOnClickEnvelope(View.OnClickListener _l){
 			init();
-			if(!m_opened){
-				m_mainView.setOnClickListener(_l);
-			}
-		}
-		
-		public void setOnClickDetailEnvelope(View.OnClickListener _l){
-			init();
-			if(m_opened){
-				m_mainView.setOnClickListener(_l);
-			}
+			m_mainView.setOnClickListener(_l);
 		}
 		
 		public void openResendBtn(View.OnClickListener _l){
