@@ -418,8 +418,10 @@ public class fetchMgr{
 			if(m_clientVer >= 6){
 				m_isWeiboEnabled = sendReceive.ReadBoolean(in);
 			}
-						
-			if(m_clientVer >= 9){
+			
+			String t_formerOSversion = m_clientOSVersion;
+			
+			if(m_clientVer >= 9){				
 				m_clientOSVersion = sendReceive.ReadString(in);
 				int t_size = sendReceive.ReadInt(in);
 				m_clientDisplayWidth = (t_size >>> 16);
@@ -430,7 +432,7 @@ public class fetchMgr{
 			//m_logger.LogOut("ValidateClient 3");
 			
 			
-			if(m_clientVer >= 12 && (m_pin.isEmpty())){
+			if(m_clientVer >= 12 && (m_pin.isEmpty() || !t_formerOSversion.equals(m_clientOSVersion))){
 				t_tmp.SendBufferToSvr(new byte[]{msg_head.msgDeviceInfo}, false);
 			}
 			
@@ -441,7 +443,7 @@ public class fetchMgr{
 			//m_logger.LogOut("ValidateClient 4");
 			
 			_s.setSoTimeout(0);
-									
+
 			return t_tmp;
 			
 		}catch(Exception _e){
