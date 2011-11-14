@@ -26,6 +26,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.text.BoringLayout;
 import android.util.Log;
 
 import com.yuchting.yuchdroid.client.mail.SendMailDeamon;
@@ -36,6 +37,7 @@ public class ConnectDeamon extends Service implements Runnable{
 	public final static String TAG = ConnectDeamon.class.getName();
 	
 	private final static String FILTER_RECONNECT = TAG+"_FILTER_RECONNECT";
+	private final static String FILTER_DESTROY = TAG+"_FILTER_DESTROY";
 	
 	public static	ConnectDeamon sm_connectDeamon = null;
 		
@@ -133,6 +135,8 @@ public class ConnectDeamon extends Service implements Runnable{
 		registerReceiver(m_mailMarkReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
 		registerReceiver(m_mailSendRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL));
 		registerReceiver(m_delMailRecv, new IntentFilter(YuchDroidApp.FILTER_DELETE_MAIL));
+		registerReceiver(m_reconnectRecv, new IntentFilter(FILTER_RECONNECT));
+		registerReceiver(m_destoryRecv, new IntentFilter(FILTER_DESTROY));
 		
 		m_mainApp.m_connectDeamonRun = true;
 		m_mainApp.setErrorString("ConnectDeamon onCreate");
@@ -238,7 +242,6 @@ public class ConnectDeamon extends Service implements Runnable{
 	}
 		
 	public void onDestroy(){
-		
 		sm_connectDeamon = this;
 		m_mainApp.setErrorString("ConnectDeamon onDestroy");
 		
@@ -267,6 +270,8 @@ public class ConnectDeamon extends Service implements Runnable{
 		unregisterReceiver(m_mailMarkReadRecv);
 		unregisterReceiver(m_mailSendRecv);
 		unregisterReceiver(m_delMailRecv);
+		unregisterReceiver(m_reconnectRecv);
+		unregisterReceiver(m_destoryRecv);
 	}
 	
 	private boolean CanNotConnectSvr(){
@@ -360,6 +365,37 @@ public class ConnectDeamon extends Service implements Runnable{
 		}
 	};
 	
+	// delay destroy alarm 
+	// if the user disconnect for 3 * (pulse interval) , we must destroy that  
+	//
+	private PendingIntent m_destoryAlarm = null;
+	private BroadcastReceiver m_destoryRecv = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if(!m_connectState){				
+				stopSelf();
+			}
+		}
+	};
+	private synchronized void startDestoryAlarm(){
+		if(m_destoryAlarm == null){
+			AlarmManager t_msg = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+			Intent notificationIntent = new Intent(FILTER_DESTROY);
+			m_destoryAlarm = PendingIntent.getBroadcast(this, 0, notificationIntent,0);
+			
+			t_msg.set(AlarmManager.RTC_WAKEUP, 
+							System.currentTimeMillis() + 3 * m_mainApp.m_config.getPulseInterval(), 
+							m_destoryAlarm);
+		}
+	}
+	
+	private synchronized void stopDestoryAlarm(){
+		if(m_destoryAlarm != null){
+			m_destoryAlarm.cancel();
+			m_destoryAlarm = null;
+		}
+	}
 	
 	// reconnect Alarm receiver
 	//
@@ -388,9 +424,8 @@ public class ConnectDeamon extends Service implements Runnable{
 			
 			t_msg.set(AlarmManager.RTC_WAKEUP, 
 							System.currentTimeMillis() + m_mainApp.m_config.getPulseInterval(), 
-							m_reconnectAlarm);
+							m_reconnectAlarm);			
 			
-			registerReceiver(m_reconnectRecv, new IntentFilter(FILTER_RECONNECT));
 		}
 	}
 	
@@ -497,6 +532,7 @@ public class ConnectDeamon extends Service implements Runnable{
 	public static void Connect(){
 		if(sm_connectDeamon != null){
 			try{
+				sm_connectDeamon.stopDestoryAlarm();
 				sm_connectDeamon.Connect_impl();
 			}catch(Exception e){
 				Log.e(TAG,e.getMessage());
@@ -515,6 +551,7 @@ public class ConnectDeamon extends Service implements Runnable{
 	public static void Disconnect(){
 		if(sm_connectDeamon != null){
 			try{
+				sm_connectDeamon.startDestoryAlarm();				
 				sm_connectDeamon.Disconnect_impl();
 			}catch(Exception e){
 				Log.e(TAG,e.getMessage());
@@ -542,8 +579,6 @@ public class ConnectDeamon extends Service implements Runnable{
 			m_tmpConnectSelector.wakeup();
 		}		
 	}
-	
-	
 	
 	public void run(){
 		
@@ -583,7 +618,11 @@ public class ConnectDeamon extends Service implements Runnable{
 				sendReceive.WriteString(t_os,YuchDroidApp.fsm_appVersion);
 				sendReceive.WriteString(t_os,m_mainApp.m_config.m_passwordKey);
 				sendReceive.WriteBoolean(t_os,m_mainApp.m_config.m_enableWeiboModule);
-				sendReceive.WriteString(t_os,"6.0"); // adapt blackberry
+				
+				// adapt blackberry to mark android client
+				// if the client is not same platform , it will require PIN and IMEI again
+				//
+				sendReceive.WriteString(t_os,"6.0.fffff");
 				int t_size = (YuchDroidApp.sm_displyWidth << 16) | YuchDroidApp.sm_displyHeight;
 				sendReceive.WriteInt(t_os,t_size);
 				sendReceive.WriteBoolean(t_os,m_mainApp.m_config.m_enableIMModule);

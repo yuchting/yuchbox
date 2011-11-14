@@ -26,9 +26,9 @@
     <string name="login_user_pass">UserPass:</string>
     <string name="login_user_pass_hint">User define password</string>
     <string name="login_user_pass_error_prompt">Please input UserPass</string>
-    <string name="login_state_disconnect">Current State: Disconnect.</string>
-    <string name="login_state_connecting">Current State: Connecting...</string>
-    <string name="login_state_connected">Current State: Connected.</string>
+    <string name="login_state_disconnect">Disconnect.</string>
+    <string name="login_state_connecting">Connecting...</string>
+    <string name="login_state_connected">Connected.</string>
     <string name="login_menu_setting">Settings</string>
     <string name="login_menu_about">About</string>
     
@@ -100,6 +100,8 @@
     <string name="mail_open_detail_from">From</string>
     <string name="mail_open_detail_to">To</string>
     <string name="mail_open_detail_email_click_prompt">Choose the sender:</string>
+    <string name="mail_open_attach_prompt">Attachment operation is not realize this version.</string>
+    
     
     
     <!-- mail compose view -->

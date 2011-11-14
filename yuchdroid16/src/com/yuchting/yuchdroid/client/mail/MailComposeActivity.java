@@ -809,6 +809,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
             	showCc_Bcc();
                 return true;
             case R.id.mail_compose_attachment:
+            	Toast.makeText(this,getString(R.string.mail_open_attach_prompt), Toast.LENGTH_SHORT).show();
             	return true;
            
         }

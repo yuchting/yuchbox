@@ -723,7 +723,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	        	m_attchView.setVisibility(View.VISIBLE);
 	        	
 	        	LayoutInflater t_inflater = LayoutInflater.from(m_loadCtx);
-	        	
+	        	View.OnClickListener t_click = null;
 	        	for(final MailAttachment att:m_mail.GetAttachment()){
 	        		View attachView = t_inflater.inflate(R.layout.mail_open_attachment_item,null);
 	        		TextView filename = (TextView)attachView.findViewById(R.id.mail_open_attachment_item_filename);
@@ -731,6 +731,19 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	        			        		
 	        		LinearLayout.LayoutParams t_lp = new LinearLayout.LayoutParams(
 	        				LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+	        		
+	        		if(t_click == null){
+	        			t_click = new View.OnClickListener() {
+							
+							@Override
+							public void onClick(View v){
+								// TODO load the Attachment
+								//
+								Toast.makeText(m_loadCtx, m_loadCtx.getString(R.string.mail_open_attach_prompt), Toast.LENGTH_SHORT).show();
+							}
+						};
+	        		}
+	        		attachView.setOnClickListener(t_click);
 	        			        		
 	        		m_attchView.addView(attachView,t_lp);
 	        	}

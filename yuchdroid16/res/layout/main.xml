@@ -3,10 +3,11 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:weightSum="1" 
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#eee">
     
     <ImageView
-    	android:layout_height="100dp"
+    	android:layout_height="wrap_content"
     	android:layout_width="wrap_content"
     	android:layout_gravity="center_horizontal"
     	android:layout_centerHorizontal="true"
@@ -20,13 +21,15 @@
     		android:text="@string/login_host"
     		android:layout_height="fill_parent" 
     		android:layout_width="70dp"
-    		android:gravity="center|right" 
+    		android:gravity="center|right"
+    		android:textColor="#000"
     	/>
     	<EditText
     		android:id="@+id/login_host"
     		android:layout_height="fill_parent" 
     		android:layout_width="250dp"
     		android:singleLine="true"
+    		android:background="@drawable/login_edit"
     		android:hint="@string/login_host_hint"
     	/>
     </LinearLayout>
@@ -38,7 +41,8 @@
     		android:text="@string/login_port"
     		android:layout_height="fill_parent" 
     		android:layout_width="70dp"
-    		android:gravity="center|right" 
+    		android:gravity="center|right"
+    		android:textColor="#000" 
     	/>
     	<EditText
     		android:id="@+id/login_port"
@@ -47,6 +51,7 @@
     		android:numeric="integer"
     		android:maxLength="5"
     		android:singleLine="true"
+    		android:background="@drawable/login_edit"
     		android:hint="@string/login_port_hint"
     	/>
     </LinearLayout>
@@ -58,7 +63,8 @@
     		android:text="@string/login_user_pass"
     		android:layout_height="fill_parent" 
     		android:layout_width="70dp"
-    		android:gravity="center|right" 
+    		android:gravity="center|right"
+    		android:textColor="#000" 
     	/>
     	<EditText
     		android:id="@+id/login_user_pass"
@@ -67,20 +73,39 @@
     		android:maxLength="120"
     		android:singleLine="true"
     		android:password="true"
+    		android:background="@drawable/login_edit"
     		android:hint="@string/login_user_pass_hint"
     	/>
     </LinearLayout>
-    <Button android:text="@string/start_svr_but" 
-       		android:id="@+id/login_start_svr" 
-       		android:layout_height="wrap_content" 
-       		android:layout_width="wrap_content"
-       		android:gravity="center_vertical"
-    />
-  	<TextView android:text="TextView" 
+
+	<LinearLayout 
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginTop="10dp"
+		android:orientation="horizontal">
+		<Button android:text="@string/start_svr_but" 
+      		android:id="@+id/login_start_svr" 
+      		android:layout_height="wrap_content" 
+      		android:layout_width="wrap_content"
+      		android:paddingLeft="20dp"
+      		android:paddingRight="20dp"
+      		android:paddingTop="10dp"
+      		android:paddingBottom="10dp"
+      		android:gravity="center"
+      		android:textColor="#fff"
+      		android:textStyle="bold"
+      		android:textSize="18dp"
+      		android:background="@drawable/login_button"
+	    />
+	  	<TextView android:text="TextView" 
   			android:id="@+id/login_connect_text"
   			android:textSize="20dp" 
   			android:layout_width="fill_parent" 
-  			android:layout_height="wrap_content" 
+  			android:layout_height="wrap_content"
+  			android:layout_marginLeft="10dp"
+  			android:textColor="#000" 
   			android:layout_gravity="center_vertical"
-	/>   
+		/> 
+	</LinearLayout>
+      
 </LinearLayout>
