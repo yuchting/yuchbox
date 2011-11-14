@@ -216,7 +216,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				
 				try{
 					msg.addRecipients(Message.RecipientType.TO,
-							new Address[]{new Address(t_data.m_roster.getName(),t_data.m_roster.getAccount())});
+							new Address[]{new Address(t_data.m_roster.getAccount(),t_data.m_roster.getName())});
 											
 					Invoke.invokeApplication(Invoke.APP_TYPE_MESSAGES, new MessageArguments(msg));
 					
