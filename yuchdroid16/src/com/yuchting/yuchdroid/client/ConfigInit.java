@@ -39,6 +39,10 @@ public final class ConfigInit {
 	public long m_downloadByte				= 0;
 	
 	public int[]	m_fontSizeValues		= {14,16,18,20,22};
+	
+	// always display connect state
+	//
+	public boolean m_alwaysDisplayState	= false;
 		
 	// mail system variables
 	//
@@ -47,7 +51,7 @@ public final class ConfigInit {
 	
 	public boolean				m_copyMailToSentFolder = false;
 	public boolean 			m_enableMailModule	= true;
-	public boolean				m_displayTextWhenHTML = true;
+	public boolean				m_displayTextWhenHTML = false;
 	
 	public int	m_sendMailNum			= 0;
 	public int	m_recvMailNum			= 0;
@@ -233,7 +237,8 @@ public final class ConfigInit {
 		}
 	}
 	
-	final static int		fsm_configVersion = 3;
+	final static int		fsm_configVersion = 4;
+	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
 	
@@ -363,6 +368,10 @@ public final class ConfigInit {
 		    				m_imFontSizeIndex				= t_readFile.read();
 		    			}
 		    			
+		    			if(t_version >= 4){
+		    				m_alwaysDisplayState			= sendReceive.ReadBoolean(t_readFile);
+		    			}
+		    			
 					}finally{
 						t_readFile.close();
 					}
@@ -480,6 +489,8 @@ public final class ConfigInit {
     				t_writeFile.write(m_mailFontSizeIndex);
     				t_writeFile.write(m_weiboFontSizeIndex);
     				t_writeFile.write(m_imFontSizeIndex);
+    				
+    				sendReceive.WriteBoolean(t_writeFile,m_alwaysDisplayState);
 					
 				}finally{
 					t_writeFile.close();

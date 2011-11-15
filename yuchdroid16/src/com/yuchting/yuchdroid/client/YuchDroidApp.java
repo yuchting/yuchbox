@@ -390,6 +390,12 @@ public class YuchDroidApp extends Application {
 	}
 	
 	public void startConnectNotification(int _state,boolean _soundAndLight){
+		
+		if(!m_config.m_alwaysDisplayState && _state == STATE_CONNECTED){
+			stopConnectNotification();
+			return;
+		}
+		
 		NotificationManager t_mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 		
 		int icon;
@@ -406,7 +412,6 @@ public class YuchDroidApp extends Application {
 			}	
 		}
 		
-		CharSequence tickerText = getString(R.string.login_connect_deamon_state);
 		CharSequence contentTitle = getString(t_titleId);
 		
 		Intent notificationIntent = new Intent(Intent.ACTION_MAIN);
@@ -415,8 +420,9 @@ public class YuchDroidApp extends Application {
 				PendingIntent.FLAG_UPDATE_CURRENT );
 
 		// the next two lines initialize the Notification, using the configurations above
-		Notification notification = new Notification(icon, tickerText, System.currentTimeMillis());
-		notification.setLatestEventInfo(this, contentTitle, null, contentIntent);
+		//
+		Notification notification = new Notification(icon, getString(R.string.login_connect_deamon_state), System.currentTimeMillis());
+		notification.setLatestEventInfo(this, contentTitle, getString(R.string.login_connect_deamon_state_detail), contentIntent);
 		
 		if(_soundAndLight && m_config.isPromptTime()){
 			

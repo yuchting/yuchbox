@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.Vector;
 
 import android.database.Cursor;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,10 +17,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.yuchting.yuchdroid.client.R;
+import com.yuchting.yuchdroid.client.YuchDroidApp;
 
 public class MailListAdapter extends BaseAdapter{
 	
-	private final static int	MAIL_GROUP_ITEM_HEIGHT = 50;
+	private final static int	MAIL_GROUP_ITEM_HEIGHT = YuchDroidApp.sm_displyHeight >= 800?70:50;
+	private final static int	MAIL_GROUP_ITEM_SPLITER_HEIGHT = YuchDroidApp.sm_displyHeight >= 800?30:20;
 	
 	private int m_cursorIDIndex;
     private int m_cursorMarkIndex;
@@ -285,8 +288,10 @@ public class MailListAdapter extends BaseAdapter{
                 // can't set the height in layout xml file
                 //
                 // please check the android.widget.ListView.setupChild line.1688
-                //
-        		background.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.FILL_PARENT, MAIL_GROUP_ITEM_HEIGHT + 20));
+                //        		
+        		background.setLayoutParams(
+        				new AbsListView.LayoutParams(AbsListView.LayoutParams.FILL_PARENT, MAIL_GROUP_ITEM_HEIGHT + MAIL_GROUP_ITEM_SPLITER_HEIGHT));
+        		
         		mailDateSpliter.setVisibility(View.VISIBLE);
         		mailDateSpliter.setText(sm_yearMonthDayFormat.format(new Date(_time)));
         	}else{

@@ -26,7 +26,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.text.BoringLayout;
 import android.util.Log;
 
 import com.yuchting.yuchdroid.client.mail.SendMailDeamon;
@@ -486,8 +485,17 @@ public class ConnectDeamon extends Service implements Runnable{
 									
 			if(!t_chn.finishConnect() || !m_connectState){
 				
-				m_tmpConnectSelector.close();
-				t_chn.close();
+				try{
+					t_chn.close();
+				}catch(Exception e){
+					m_mainApp.setErrorString("t_chn.close();",e);
+				}
+				
+				try{
+					m_tmpConnectSelector.close();
+				}catch(Exception e){
+					m_mainApp.setErrorString("tmpConnectSelector.close()",e);
+				}
 				
 				if(!m_connectState){
 					throw new Exception("user close connect");

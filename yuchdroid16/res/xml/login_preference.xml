@@ -56,6 +56,12 @@
 			android:title="@string/login_pref_prompt_disconnect_sound"
 			android:summary="@string/login_pref_prompt_disconnect_sound_sum"
 			android:ringtoneType="all" />
+			
+		<CheckBoxPreference 
+			android:key="config_prompt_always_display_state"
+			android:title="@string/login_pref_prompt_always_display_state"
+			android:summaryOn="@string/login_pref_prompt_always_display_state_sum_on"
+			android:summaryOff="@string/login_pref_prompt_always_display_state_sum_off"/>
 	</PreferenceCategory>
 	<PreferenceCategory
 		android:title="@string/login_pref_statistics_category">

@@ -15,11 +15,11 @@
   			android:layout_width="fill_parent"
   			android:layout_height="wrap_content"
   			android:orientation="vertical" 
-  			android:layout_marginRight="5dp">
+  			android:layout_marginRight="5sp">
   			<Spinner 
   				android:layout_height="wrap_content" 
   				android:layout_width="fill_parent" 
-  				android:layout_marginTop="3dp"
+  				android:layout_marginTop="3sp"
   				android:id="@+id/mail_compose_own_account"
   				android:prompt="@string/mail_compose_own_account_prompt"
   				android:visibility="gone" />
@@ -57,7 +57,7 @@
 				android:id="@+id/mail_compose_body"
 				android:layout_width="fill_parent"
 				android:layout_height="wrap_content"
-				android:minHeight="200dp"
+				android:minHeight="200sp"
 				android:hint="@string/mail_compose_body"
 				android:gravity="top" />
 			
@@ -65,9 +65,9 @@
 			<TextView 
 				android:id="@+id/mail_compose_ref_label"
 				android:layout_width="fill_parent"
-				android:layout_height="40dp"
+				android:layout_height="40sp"
 				android:background="#eee"
-				android:textSize="15dp"
+				android:textSize="15sp"
 				android:gravity="center"
 				android:text="@string/mail_compose_ref_lable"
 				android:visibility="visible"/>
@@ -79,27 +79,27 @@
 		android:layout_height="wrap_content"
 		android:orientation="horizontal"
 		android:background="#888"
-		android:paddingTop="3dp">		
+		android:paddingTop="3sp">		
 		<Button 
 			android:id="@+id/mail_compose_send_btn"
-			android:layout_width="0dp"
+			android:layout_width="0sp"
 			android:layout_height="fill_parent"
 			android:layout_weight="1"
 			android:text="@string/mail_compose_send_btn"/>
 			
 		<Button 
 			android:id="@+id/mail_compose_save_btn"
-			android:layout_width="0dp"
+			android:layout_width="0sp"
 			android:layout_height="fill_parent"
 			android:layout_weight="1"
 			android:text="@string/mail_compose_save_btn"/>
 			
 		<Button 
 			android:id="@+id/mail_compose_discard_btn"
-			android:layout_width="0dp"
+			android:layout_width="0sp"
 			android:layout_height="fill_parent"
 			android:layout_weight="1"
 			android:text="@string/mail_compose_discard_btn"
-			android:paddingRight="5dp"/>
+			android:paddingRight="5sp"/>
 	</LinearLayout>
 </LinearLayout>

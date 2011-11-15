@@ -24,14 +24,17 @@ public class ConnectPrefActivity extends PreferenceActivity {
 	CheckBoxPreference	m_promptWholeDay = null;
 	TimePickerPreference m_promptStart	= null;
 	TimePickerPreference m_promptEnd	= null;
-	CheckBoxPreference	m_promptWhenDisconnect = null;
 	
+	CheckBoxPreference	m_promptWhenDisconnect = null;	
 	CheckBoxPreference	m_promptWhenDisconnect_vibrate = null;
 	RingtonePreference	m_promptWhenDisconnect_sound = null;
+	
+	CheckBoxPreference	m_alwaysDisplayState = null;
 	
 	Preference			m_statistics	= null;
 	
 	ConfigInit			m_config		= null;
+	YuchDroidApp		m_mainApp		= null;
 	
 	boolean			m_cryptKeyChanged = false;
 	
@@ -40,7 +43,8 @@ public class ConnectPrefActivity extends PreferenceActivity {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.login_preference);
 		
-		m_config	= ((YuchDroidApp)getApplicationContext()).m_config;
+		m_mainApp	= ((YuchDroidApp)getApplicationContext());
+		m_config	= m_mainApp.m_config;
 		PreferenceManager t_prefMgr = getPreferenceManager();
 		
 		m_useSSL	= (CheckBoxPreference)t_prefMgr.findPreference("config_use_ssl");
@@ -56,6 +60,8 @@ public class ConnectPrefActivity extends PreferenceActivity {
 		
 		m_promptWhenDisconnect_vibrate	= (CheckBoxPreference)t_prefMgr.findPreference("config_prompt_disconnect_vibrate");
 		m_promptWhenDisconnect_sound	= (RingtonePreference)t_prefMgr.findPreference("config_prompt_disconnect_sound");
+		
+		m_alwaysDisplayState	= (CheckBoxPreference)t_prefMgr.findPreference("config_prompt_always_display_state");
 		
 		m_statistics			= t_prefMgr.findPreference("config_network_stat");
 		
@@ -153,6 +159,8 @@ public class ConnectPrefActivity extends PreferenceActivity {
 			m_promptWhenDisconnect_vibrate.setEnabled(m_config.m_connectDisconnectPrompt);
 			m_promptWhenDisconnect_sound.setEnabled(m_config.m_connectDisconnectPrompt);
 			
+			m_alwaysDisplayState.setChecked(m_config.m_alwaysDisplayState);
+			
 			StringBuffer t_statString = new StringBuffer();
 			t_statString.append(getString(R.string.login_pref_statistics_up)).append(YuchDroidApp.GetByteStr(m_config.m_uploadByte)).append(" ")
 						.append(getString(R.string.login_pref_statistics_down)).append(YuchDroidApp.GetByteStr(m_config.m_downloadByte)).append(" ")
@@ -178,6 +186,12 @@ public class ConnectPrefActivity extends PreferenceActivity {
 			SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
 			String sound = prefs.getString(m_promptWhenDisconnect_sound.getKey(), ""); 
 			m_config.m_connectDisconnectPrompt_sound = sound != null?sound:"";
+			
+			boolean t_formerState = m_config.m_alwaysDisplayState;
+			m_config.m_alwaysDisplayState	= m_alwaysDisplayState.isChecked();
+			if(t_formerState != m_config.m_alwaysDisplayState){
+				m_mainApp.startConnectNotification(m_mainApp.getConnectState(),false);
+			}
 			
 			m_config.WriteReadIni(false);
 		}

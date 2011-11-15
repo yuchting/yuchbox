@@ -2,16 +2,16 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@+id/mail_item"
 	android:layout_width="fill_parent"
-	android:layout_height="66dp"
+	android:layout_height="66sp"
 	android:background="#fff">
 	
 	<TextView 
 		android:id="@+id/mail_date_spliter"
 		android:layout_width="fill_parent"
-		android:layout_height="20dp"
+		android:layout_height="20sp"
 		android:text="Mail Time"
 		android:textColor="#666"
-		android:textSize="15dp"
+		android:textSize="15sp"
 		android:textStyle="bold"
 		android:gravity="center"
 		android:background="#aaa"/>
@@ -21,8 +21,8 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:src="@drawable/mail_list_flag_recv"
-		android:layout_marginLeft="2dp"
-		android:layout_marginTop="3dp"
+		android:layout_marginLeft="2sp"
+		android:layout_marginTop="3sp"
 		android:layout_below="@id/mail_date_spliter"/>    
     
 	<TextView
@@ -31,9 +31,9 @@
         android:layout_height="wrap_content"
        	android:layout_toRightOf="@id/mail_group_flag"
        	android:layout_below="@id/mail_date_spliter"
-       	android:layout_marginTop="3dp"
-        android:maxWidth="150dp"
-        android:textSize="18dp"
+       	android:layout_marginTop="3sp"
+        android:maxWidth="150sp"
+        android:textSize="18sp"
         android:singleLine="true"
         android:ellipsize="end"
         android:textColor="#000"
@@ -43,11 +43,11 @@
      
     <TextView
        	android:id="@+id/mail_body"
-       	android:textSize="18dp"
+       	android:textSize="18sp"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="3dp"
-        android:layout_marginTop="3dp"
+        android:layout_marginLeft="3sp"
+        android:layout_marginTop="3sp"
         android:textColor="#888"
         android:layout_toRightOf="@id/mail_subject"
         android:layout_below="@id/mail_date_spliter"
@@ -62,9 +62,9 @@
 		android:layout_height="wrap_content"
 		android:layout_alignLeft="@id/mail_subject"
 		android:layout_alignParentBottom="true"
-		android:layout_marginBottom="3dp"
-		android:maxWidth="190dp"
-		android:textSize="14dp"
+		android:layout_marginBottom="3sp"
+		android:maxWidth="190sp"
+		android:textSize="14sp"
 		android:textColor="#000"
 		android:singleLine="true"
 		android:text="mail address list mail address list mail address list"/>
@@ -73,12 +73,12 @@
 		android:id="@+id/mail_time"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:maxWidth="100dp"
+		android:maxWidth="100sp"
 		android:layout_alignParentBottom="true"
 		android:layout_alignParentRight="true"
-		android:layout_marginBottom="5dp"
-		android:paddingRight="5dp"	
-		android:textSize="12dp"
+		android:layout_marginBottom="5sp"
+		android:paddingRight="5sp"	
+		android:textSize="12sp"
 		android:textColor="#000"
 		android:singleLine="true"
 		android:text="mail time mail time"/>

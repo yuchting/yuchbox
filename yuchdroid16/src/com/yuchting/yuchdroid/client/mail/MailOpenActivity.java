@@ -567,7 +567,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 				}else{
 					t_str = m_mail.GetContain();
 				}
-				m_bodyText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, t_config.getMailFontSize());
+				m_bodyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, t_config.getMailFontSize());
 				m_bodyText.setText(t_str);
             }else{
             	m_bodyText.setVisibility(View.GONE);
