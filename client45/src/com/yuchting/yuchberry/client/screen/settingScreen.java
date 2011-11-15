@@ -419,7 +419,22 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		m_mainApp.m_copyMailToSentFolder = m_copyToSentFolder.getChecked();
 		m_mainApp.m_mailUseLocation = m_mailUseLocation.getChecked();
 		
+		boolean t_formerClose = m_mainApp.m_closeMailSendModule;
 		m_mainApp.m_closeMailSendModule = m_closeMailSendModule.getChecked();
+		if(t_formerClose != m_mainApp.m_closeMailSendModule){
+			
+			try{
+
+				if(m_mainApp.m_closeMailSendModule){
+					m_mainApp.m_connectDeamon.EndListener();
+				}else{
+					m_mainApp.m_connectDeamon.BeginListener();
+				}
+				
+			}catch(Exception e){
+				m_mainApp.DialogAlert("Close Mail Module Exception:"+e.getMessage());
+			}
+		}
 		
 		// set the default mail
 		//

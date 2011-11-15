@@ -983,7 +983,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 						.append("-").append(sm_calendar.get(Calendar.DAY_OF_MONTH))
 						.append("-").append(sm_calendar.get(Calendar.HOUR_OF_DAY)).append("h")
 						.append(sm_calendar.get(Calendar.MINUTE)).append("m").append(sm_calendar.get(Calendar.SECOND)).append("s")
-						.append(_msg.hashCode()).append(_msg.getFileContentType() == fetchChatMsg.FILE_TYPE_IMG?".ipg":".amr");
+						.append(_msg.hashCode()).append(_msg.getFileContentType() == fetchChatMsg.FILE_TYPE_IMG?".jpg":".amr");
 			
 			FileConnection t_file = (FileConnection)Connector.open(t_filename.toString(),Connector.READ_WRITE);
 			try{
