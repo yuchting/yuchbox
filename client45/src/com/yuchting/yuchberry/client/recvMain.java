@@ -892,7 +892,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 36;
+	final static int		fsm_clientVersion = 37;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -1111,7 +1111,12 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    		
 				    		if(t_currVer >= 36){
 				    			m_imStoreImageVoice = sendReceive.ReadBoolean(t_readFile);
+				    		}				    		
+				    		
+				    		if(t_currVer >= 37){
+				    			m_weiboDontReadHistroy = sendReceive.ReadBoolean(t_readFile);
 				    		}
+				    		
 				    		
 			    		}finally{
 			    			t_readFile.close();
@@ -1230,6 +1235,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		    			sendReceive.WriteBoolean(t_writeFile,m_closeMailSendModule);
 		    			
 		    			sendReceive.WriteBoolean(t_writeFile,m_imStoreImageVoice);
+		    			sendReceive.WriteBoolean(t_writeFile,m_weiboDontReadHistroy);
 		    			
 						
 						if(m_connectDeamon.m_connect != null){
@@ -2086,6 +2092,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public boolean				m_weiboUseLocation = false;
 	public boolean				m_autoLoadNewTimelineWeibo = false;
 	
+	public boolean				m_weiboDontReadHistroy = false;
+	
 	public static final String[]	fsm_refreshWeiboIntervalList = {"0","10","20","30","40"};
 	public static final int[]		fsm_refreshWeiboInterval		= {0,10,20,30,40};
 	public int						m_refreshWeiboIntervalIndex = 0;
@@ -2179,8 +2187,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					.addMenuItem(ApplicationMenuItemRepository.MENUITEM_MESSAGE_LIST,m_updateWeiboItem);
 			}
 			
-									
-			ReadWriteWeiboFile(true);
+			if(!m_weiboDontReadHistroy){
+				ReadWriteWeiboFile(true);
+			}
+			
 			
 			m_weiboTimeLineScreen.ClearWeibo();
 			
