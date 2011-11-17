@@ -12,6 +12,8 @@
     <string name="debug_info_menu_help">帮助</string>
     
     <!-- login activity -->
+    <string name="login_title_name">语盒用户状态</string>
+        
     <string name="login_connect_deamon_state">语盒连接服务通知</string>
     <string name="login_connect_deamon_state_detail">显示状态可以在语盒连接界面中配置</string>
     <string name="login_connect_deamon_state_connect">连接正常</string>
@@ -35,6 +37,8 @@
     <string name="login_menu_setting">连接设置</string>
     <string name="login_menu_home">内容主界面</string>
     <string name="login_menu_about">关于</string>
+    <string name="login_beta_prompt"> - 只有使用net网络（cmnet,uninet,ctnet），WIFI网络,才能正常使用语盒，wap网络无法使用。\n\n
+                                      - beta版没有新手指引，详细使用方法请在电脑上访问 www.yuchs.com 注册帐号试用。</string>
     
     <!-- login preference activity -->
     <string name="login_pref_title">通用选项</string>

@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -183,12 +182,9 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 				//
 				t_sub = m_draftMail.GetSubject();
 				m_body.setText(m_draftMail.GetContain());
-				// draft
-				//
 				t_toVect = m_draftMail.GetSendToVect();
 			}else{
-				
-				
+								
 				if(m_referenceMailStyle == fetchMail.REPLY_STYLE
 				|| m_referenceMailStyle == fetchMail.REPLY_ALL_STYLE){
 					// reply
@@ -208,22 +204,17 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 						t_sub = getString(R.string.mail_compose_forward_prefix);
 					}
 				}
-				
-				
-				if(m_referenceMail != null){
+								
+				if(m_referenceMail != null 
+				&& m_referenceMailStyle != fetchMail.FORWORD_STYLE){
 
 					if(m_referenceMail.m_mail.isOwnSendMail()){
 						t_toVect = m_referenceMail.m_mail.GetSendToVect();
 					}else{
 						
-						if(m_referenceMailStyle != fetchMail.FORWORD_STYLE){
-							// if NOT forward style
-							//
-							t_toVect = m_referenceMail.m_mail.GetReplyToVect().isEmpty()?
-									m_referenceMail.m_mail.GetFromVect():
-									m_referenceMail.m_mail.GetReplyToVect();
-						}
-						
+						t_toVect = m_referenceMail.m_mail.GetReplyToVect().isEmpty()?
+								m_referenceMail.m_mail.GetFromVect():
+								m_referenceMail.m_mail.GetReplyToVect();						
 					}
 				}
 			}

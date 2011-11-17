@@ -11,6 +11,7 @@
     <string name="debug_info_menu_help">Help</string>
         
     <!-- login activity -->
+    <string name="login_title_name">YuchDroid User State</string>    
     <string name="login_connect_deamon_state">YuchDroid Connection Notification</string>
     <string name="login_connect_deamon_state_detail">Can set display state in General Preference</string>
     <string name="login_connect_deamon_state_connect">Connection OK!</string>
@@ -33,6 +34,9 @@
     <string name="login_state_connected">Connected.</string>
     <string name="login_menu_setting">Preference</string>
     <string name="login_menu_about">About</string>
+    <string name="login_beta_prompt"> - Only available for NET APN(such as cmnet uninet ctnet) WIFI network. WAP is NOT support.\n\n
+                                      - Because beta version has not user tutorial, please visit www.yuchs.com for using detail.</string>
+    
     
     
     <!-- login preference activity -->
