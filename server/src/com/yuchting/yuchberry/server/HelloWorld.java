@@ -96,12 +96,13 @@ public class HelloWorld {
         Params[] mParams;
     }
 	
-	public final static String	fsm_vectStringSpliter = "<>";
-	public final static String	fsm_vectStringSpliter_sub = "@#&";
 	
 	public static void main(String arg[])throws Exception{
-		System.out.print(groupSubject("Re: 回复： 请教一个问题"));
+		System.out.println(sendReceive.complTosimple("輸入簡體字,點下面繁體字按鈕進行在線轉換."));
 	}
+	
+	public final static String	fsm_vectStringSpliter = "<>";
+	public final static String	fsm_vectStringSpliter_sub = "@#&";
 	
 	public final static String[] fsm_groupSubjectPrefix = 
     {

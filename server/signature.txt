@@ -17,4 +17,4 @@
 #
 --
 使用语盒发送 @$time$ 
-http://www.yuchberry.info
+http://www.yuchs.com
