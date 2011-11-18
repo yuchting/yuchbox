@@ -36,6 +36,7 @@ import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.XYPoint;
@@ -888,7 +889,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 35;
+	final static int		fsm_clientVersion = 37;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -1105,6 +1106,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_closeMailSendModule = sendReceive.ReadBoolean(t_readFile);				    			
 				    		}
 				    		
+				    		if(t_currVer >= 36){
+				    			m_imStoreImageVoice = sendReceive.ReadBoolean(t_readFile);
+				    		}				    		
+				    		
+				    		if(t_currVer >= 37){
+				    			m_weiboDontReadHistroy = sendReceive.ReadBoolean(t_readFile);
+				    		}
+				    		
+				    		
 			    		}finally{
 			    			t_readFile.close();
 			    			t_readFile = null;
@@ -1220,6 +1230,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		    			sendReceive.WriteInt(t_writeFile,m_imSendImageQuality);
 		    			sendReceive.WriteBoolean(t_writeFile,sm_standardUI);
 		    			sendReceive.WriteBoolean(t_writeFile,m_closeMailSendModule);
+		    			
+		    			sendReceive.WriteBoolean(t_writeFile,m_imStoreImageVoice);
+		    			sendReceive.WriteBoolean(t_writeFile,m_weiboDontReadHistroy);
+		    			
 						
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1469,7 +1483,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 			if(m_mainIMScreen != null){
 				
-				if(getActiveScreen() == m_mainIMScreen.m_chatScreen
+				Screen t_activeScreen = getActiveScreen();
+				
+				if(t_activeScreen == m_mainIMScreen.m_chatScreen
 					&& m_mainIMScreen.m_chatScreen != null){
 					
 					m_isWeiboOrIMScreen = false;
@@ -1484,48 +1500,33 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						popScreen(getActiveScreen());
 					}		
 					
-				}else if(getActiveScreen() == m_mainIMScreen.m_statusAddScreen
-						&& m_mainIMScreen.m_statusAddScreen != null){
+				}else if(t_activeScreen == m_mainIMScreen){
 					
 					m_isWeiboOrIMScreen = false;
-					
-					m_mainIMScreen.m_statusAddScreen.close();
 					popScreen(m_mainIMScreen);
 					
-				}else if(getActiveScreen() == m_mainIMScreen.m_optionScreen
-						&& m_mainIMScreen.m_optionScreen != null){
+				}else{
+										
+					Screen[] t_screenList = 
+					{
+						m_mainIMScreen.m_statusAddScreen,
+						m_mainIMScreen.m_optionScreen,
+						m_mainIMScreen.m_addRosterDlg,
+						m_mainIMScreen.m_searchStatus,
+						m_mainIMScreen.m_checkRosterInfoScreen,
+						m_mainIMScreen.m_aliasDlg,
+						
+					};
 					
-					m_isWeiboOrIMScreen = false;
 					
-					m_mainIMScreen.m_optionScreen.close();
-					popScreen(m_mainIMScreen);
-					
-				}else if(getActiveScreen() == m_mainIMScreen.m_addRosterDlg
-						&& m_mainIMScreen.m_addRosterDlg != null){
-					
-					m_isWeiboOrIMScreen = false;
-					
-					m_mainIMScreen.m_addRosterDlg.close();
-					popScreen(m_mainIMScreen);
-					
-				}else if(getActiveScreen() == m_mainIMScreen.m_searchStatus
-						&& m_mainIMScreen.m_searchStatus != null){
-					
-					m_isWeiboOrIMScreen = false;
-					
-					m_mainIMScreen.m_searchStatus.close();
-					popScreen(m_mainIMScreen);
-					
-				}else if(getActiveScreen() == m_mainIMScreen.m_checkRosterInfoScreen
-						&& m_mainIMScreen.m_checkRosterInfoScreen != null){
-					
-					m_isWeiboOrIMScreen = false;
-					m_mainIMScreen.m_checkRosterInfoScreen.close();
-					popScreen(m_mainIMScreen);
-					
-				}else if(getActiveScreen() == m_mainIMScreen){
-					m_isWeiboOrIMScreen = false;
-					popScreen(m_mainIMScreen);
+					for(int i = 0;i < t_screenList.length;i++){
+						if(t_activeScreen == t_screenList[i] && t_screenList[i] != null){
+							m_isWeiboOrIMScreen = false;
+							t_screenList[i].close();
+							popScreen(m_mainIMScreen);
+							break;
+						}
+					}
 				}
 			}
 			
@@ -1757,7 +1758,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	}
 	
 	public boolean CheckMediaNativeApps(String _filename){
-		
+//		
 //		try{
 //			Invocation request = new Invocation(_filename);
 //			Registry registry = Registry.getRegistry("com.yuchting.yuchberry.client.recvMain");
@@ -2088,6 +2089,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public boolean				m_weiboUseLocation = false;
 	public boolean				m_autoLoadNewTimelineWeibo = false;
 	
+	public boolean				m_weiboDontReadHistroy = false;
+	
 	public static final String[]	fsm_refreshWeiboIntervalList = {"0","10","20","30","40"};
 	public static final int[]		fsm_refreshWeiboInterval		= {0,10,20,30,40};
 	public int						m_refreshWeiboIntervalIndex = 0;
@@ -2181,8 +2184,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					.addMenuItem(ApplicationMenuItemRepository.MENUITEM_MESSAGE_LIST,m_updateWeiboItem);
 			}
 			
-									
-			ReadWriteWeiboFile(true);
+			if(!m_weiboDontReadHistroy){
+				ReadWriteWeiboFile(true);
+			}
+			
 			
 			m_weiboTimeLineScreen.ClearWeibo();
 			

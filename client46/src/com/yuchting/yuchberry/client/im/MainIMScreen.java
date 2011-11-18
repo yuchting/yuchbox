@@ -168,6 +168,21 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	
+	public IMAliasDlg m_aliasDlg = null;
+	MenuItem	m_aliasRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_ALIAS_ROSTER_MENU_LABEL),m_menu_op++,0){
+		public void run(){
+			if(m_currFocusRosterItemField != null){
+			
+				if(m_aliasDlg == null){
+					m_aliasDlg = new IMAliasDlg(MainIMScreen.this,(RosterItemField)m_currFocusRosterItemField);
+				}
+				
+				m_mainApp.pushScreen(m_aliasDlg);				
+			}
+			
+		}
+	};
+	
 	MenuItem m_delHistoryRoster = new MenuItem(recvMain.sm_local.getString(localResource.IM_DEL_HISTORY_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			
@@ -201,7 +216,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				
 				try{
 					msg.addRecipients(Message.RecipientType.TO,
-							new Address[]{new Address(t_data.m_roster.getName(),t_data.m_roster.getAccount())});
+							new Address[]{new Address(t_data.m_roster.getAccount(),t_data.m_roster.getName())});
 											
 					Invoke.invokeApplication(Invoke.APP_TYPE_MESSAGES, new MessageArguments(msg));
 					
@@ -538,6 +553,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			
 			if(m_currFocusRosterItemField != null){
 				_menu.add(m_delRosterMenu);
+				_menu.add(m_aliasRosterMenu);
 			}
 		}else if(m_currMgr == m_statusListMgr){
 			_menu.add(m_addStatusMenu);
@@ -545,6 +561,9 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			_menu.add(m_delStatusMenu);
 		}else if(m_currMgr == m_historyChatMgr){
 			_menu.add(m_delHistoryRoster);
+			if(m_currFocusRosterItemField != null){
+				_menu.add(m_aliasRosterMenu);
+			}
 		}
 		
 		if(m_currMgr == m_rosterListMgr || m_currMgr == m_historyChatMgr){
@@ -823,7 +842,9 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
 	private void addChatMsg(fetchChatMsg _msg){
 		
-		boolean t_notify = !Backlight.isEnabled() || !m_mainApp.isForeground();
+		boolean t_notify = !Backlight.isEnabled() 
+							|| !m_mainApp.isForeground() 
+							|| getUiEngine() == null;
 		
 		synchronized (m_rosterChatDataList) {
 			for(int i = 0;i < m_rosterChatDataList.size();i++){
@@ -907,8 +928,6 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 								t_notify = false;
 							}
 						}
-					}else{
-						t_notify = false;
 					}
 					
 					if(m_chatScreen.getUiEngine() != null
@@ -964,7 +983,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 						.append("-").append(sm_calendar.get(Calendar.DAY_OF_MONTH))
 						.append("-").append(sm_calendar.get(Calendar.HOUR_OF_DAY)).append("h")
 						.append(sm_calendar.get(Calendar.MINUTE)).append("m").append(sm_calendar.get(Calendar.SECOND)).append("s")
-						.append(_msg.hashCode()).append(_msg.getFileContentType() == fetchChatMsg.FILE_TYPE_IMG?".ipg":".amr");
+						.append(_msg.hashCode()).append(_msg.getFileContentType() == fetchChatMsg.FILE_TYPE_IMG?".jpg":".amr");
 			
 			FileConnection t_file = (FileConnection)Connector.open(t_filename.toString(),Connector.READ_WRITE);
 			try{
@@ -1556,7 +1575,24 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}catch(Exception e){
 			m_mainApp.SetErrorString("SUP:"+e.getMessage()+e.getClass().getName());
 		}
-		
+	}
+	
+
+	public void sendRosterAliasName(RosterChatData _roster,String _aliasName){
+		try{
+			
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			os.write(msg_head.msgChatAlias);
+			os.write(_roster.m_roster.getStyle());
+			sendReceive.WriteString(os, _roster.m_roster.getOwnAccount());
+			sendReceive.WriteString(os, _roster.m_roster.getAccount());
+			sendReceive.WriteString(os,_aliasName);
+			
+			m_mainApp.m_connectDeamon.addSendingData(msg_head.msgChatAlias, os.toByteArray(), true);
+			
+		}catch(Exception e){
+			m_mainApp.SetErrorString("SRAN:"+e.getMessage()+e.getClass().getName());
+		}
 	}
 	
 	public void addSendChatMsg(fetchChatMsg _msg,RosterChatData _sendTo){

@@ -16,7 +16,7 @@ class MailAttachment{
 
 public class  fetchMail{
 	
-	final static int	VERSION = 2;
+	final static int	VERSION = 3;
 	
 	public final static String	fsm_noSubjectTile = "No Subject";
 	    	
@@ -52,6 +52,8 @@ public class  fetchMail{
 	private Vector	m_vectAttachment	 	= new Vector();
 	
 	private Message m_attachMessage		= null;
+	
+	private String			m_ownAccount	= "";
 	
 	
 	// location information
@@ -151,6 +153,7 @@ public class  fetchMail{
 		}
 		
 		sendReceive.WriteString(_stream,m_contain_html_type);
+		sendReceive.WriteString(_stream,m_ownAccount);
 		
 	}
 		
@@ -197,6 +200,10 @@ public class  fetchMail{
 		if(t_version >= 2){
 			m_contain_html_type = sendReceive.ReadString(_stream);
 		}
+		
+		if(t_version >= 3){
+			m_ownAccount = sendReceive.ReadString(_stream);
+		}
 	}
 	
 	
@@ -215,6 +222,9 @@ public class  fetchMail{
 		m_contain_html_type = _content_type;
 	}
 	public String GetContain_html_type(){return m_contain_html_type;}
+	
+	public String getOwnAccount(){return m_ownAccount;}
+	public void setOwnAccount(String _acc){m_ownAccount = _acc;}
 	
 	public String GetXMailer(){return m_XMailName;}
 	public void SetXMailer(String _str){m_XMailName = _str;}

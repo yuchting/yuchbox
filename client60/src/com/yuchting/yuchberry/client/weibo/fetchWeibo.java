@@ -3,7 +3,10 @@ package com.yuchting.yuchberry.client.weibo;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import local.localResource;
+
 import com.yuchting.yuchberry.client.GPSInfo;
+import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
 
 public class fetchWeibo {
@@ -285,5 +288,56 @@ public class fetchWeibo {
 		}
 		
 		return " // ";
+	}
+	
+	public String getLocalStyleName(){
+		
+		String t_style = "Weibo";
+		
+		switch(GetWeiboStyle()){
+		case fetchWeibo.QQ_WEIBO_STYLE:
+			t_style = recvMain.sm_local.getString(localResource.WEIBO_QQ_STYLE);
+			break;
+		case fetchWeibo.SINA_WEIBO_STYLE:
+			t_style = recvMain.sm_local.getString(localResource.WEIBO_SINA_STYLE);
+			break;
+		case fetchWeibo.TWITTER_WEIBO_STYLE:
+			t_style = recvMain.sm_local.getString(localResource.WEIBO_TWITTER_STYLE);
+			break;
+		}
+		
+		return t_style;
+	}
+	
+	public String getShareEmailContain(String _spaceLine){
+		
+		StringBuffer t_content = new StringBuffer(_spaceLine);
+		String t_name;
+		
+		if(!GetUserScreenName().equals(GetUserName())){
+			t_name = GetUserScreenName() + " [" + GetUserName() + "]";
+		}else{
+			t_name = GetUserScreenName();
+		}
+				
+		t_content.append("@").append(t_name).append(" ").append("(").append(getLocalStyleName()).append(")").append("\n").append(_spaceLine)
+				.append(GetText()).append("\n").append(_spaceLine);
+				
+		if(GetOriginalPic().length() != 0){
+			t_content.append(GetOriginalPic()).append("\n").append(_spaceLine);
+		}
+				
+		t_content.append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
+				.append(GetSource());
+		
+		if(m_commentWeibo != null){
+			t_content.append("\n\n").append(_spaceLine).append(m_commentWeibo.getShareEmailContain(_spaceLine + " "));
+		}
+		
+		return t_content.toString();
+	}
+	
+	public String getShareEmailSubject(){
+		return recvMain.sm_local.getString(localResource.WEIBO_EMAIL_SHARE) + getLocalStyleName();
 	}
 }

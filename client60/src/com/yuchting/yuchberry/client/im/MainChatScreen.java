@@ -376,6 +376,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 
 final class MiddleMgr extends VerticalFieldManager{
 	
+	public final static int	fsm_linespace	= 6;
 	VerticalFieldManager	m_chatMsgMgr = null;
 	
 	VerticalFieldManager	m_chatMsgMiddleMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
@@ -402,7 +403,24 @@ final class MiddleMgr extends VerticalFieldManager{
 		
 		m_chatScreen	= _charScreen;
 		
-		m_chatMsgMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL);
+		m_chatMsgMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
+			protected void sublayout(int _width,int _height){
+				int t_y = 0;
+				int t_num = this.getFieldCount();
+				int t_height = 0;
+				for(int i = 0;i < t_num;i++){
+					Field field = getField(i);
+					t_height = field.getPreferredHeight();
+					
+					setPositionChild(field,0,t_y);
+					layoutChild(field,field.getPreferredWidth(),t_height);
+					
+					t_y += t_height + fsm_linespace;
+				}
+				
+				setExtent(recvMain.fsm_display_width, t_y);
+			}
+		};
 		m_chatMsgMiddleMgr.add(m_chatMsgMgr);
 				
 		m_inputMgr = new InputManager(this);
@@ -1131,8 +1149,18 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 	}
 	
 	protected boolean keyUp(int keycode,int time){
+		
 		if(m_isRecording){
 			closeRecordScreen();
+		}
+		
+		// the VoiceImmMode can callback onClose() method
+		// when enableKeyUpEvents(true) called to dispatch escape key event
+		// so must judge programmly own to close
+		//
+		int key = Keypad.key(keycode);
+		if(key == Keypad.KEY_ESCAPE){
+			onClose();
 			return true;
 		}
 		

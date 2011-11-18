@@ -56,8 +56,8 @@ import com.yuchting.yuchberry.server.Logger;
 import com.yuchting.yuchberry.server.fetchAbsWeibo;
 import com.yuchting.yuchberry.server.fetchAccount;
 import com.yuchting.yuchberry.server.fetchEmail;
+import com.yuchting.yuchberry.server.fetchGTalk;
 import com.yuchting.yuchberry.server.fetchMgr;
-import com.yuchting.yuchberry.server.fetchQWeibo;
 import com.yuchting.yuchberry.server.fetchWeibo;
 
 class NumberMaxMinLimitedDmt extends PlainDocument {
@@ -131,6 +131,15 @@ final class createWeiboData{
 	int		m_commentMeSum = 5;
 	int		m_directMsgSum = 1;
 	
+}
+
+final class createIMData{
+	
+	// account attribute
+	String m_accountName	;
+	String m_type		;
+	String m_pass	;
+	String m_cryptPass;
 }
 
 
@@ -234,7 +243,7 @@ public class createDialog extends JDialog implements DocumentListener,
 	
 	JComboBox	m_commonConfigList = new JComboBox();
 	DefaultComboBoxModel m_commonConfigListModel = new DefaultComboBoxModel();
-	Vector		m_commonConfigData	= new Vector();
+	Vector<commonConfig>		m_commonConfigData	= new Vector<commonConfig>();
 	
 	JTextField 	m_account		= new JTextField();
 	JTextField 	m_password		= new JTextField();
@@ -282,12 +291,26 @@ public class createDialog extends JDialog implements DocumentListener,
 	JButton			m_weiboAuthBut		= new JButton("授权获得访问码");
 	weiboRequestTool m_weiboAuthTool	= null;
 	
+	// IM tab
+	//
+	ButtonGroup m_imTypeGroup = new ButtonGroup();
+	JRadioButton[]	m_imType	= 
+	{
+			new JRadioButton("gtalk"),
+			new JRadioButton("msn"),
+	};
+	
+	JTextField		m_imAccount			= new JTextField();
+	JTextField		m_imPassword		= new JTextField();
+	JTextField		m_imCryptPass		= new JTextField();
+	JButton			m_cryptPasswordHelpBut_im = new JButton("加密密码:");
+	
 	
 	// write xml data
 	Document	m_createConfigDoc	= DocumentFactory.getInstance().createDocument();
 	Element		m_createConfigDoc_root = m_createConfigDoc.addElement("Yuchberry");
 	
-	Vector		m_createAccountList	= new Vector();
+	Vector<fetchAccount>		m_createAccountList	= new Vector<fetchAccount>();
 
 	fetchMgr	m_fetchMgrCreate	= new fetchMgr();
 	
@@ -446,10 +469,10 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 		m_appendHTML.setPreferredSize(new Dimension(fsm_width, 20));
 		t_accountPanel.add(m_appendHTML);
-
 		
 		m_tabbedPane.addTab("邮件",null,t_accountPanel,"添加邮件账户");
 		m_tabbedPane.addTab("Weibo",null,PrepareWeiboDataPanel(),"添加推送微博账户");
+		m_tabbedPane.addTab("IM",null,PrepareIMDataPanel(),"添加IM推送账户");
 		m_tabbedPane.setPreferredSize(new Dimension(300, 330));
 		
 		return m_tabbedPane;
@@ -488,6 +511,38 @@ public class createDialog extends JDialog implements DocumentListener,
 		m_weiboAuthBut.addActionListener(this);
 		
 		return t_accountPanel;
+	}
+	
+	private JComponent PrepareIMDataPanel(){
+		JPanel t_accountPanel = new JPanel();
+		t_accountPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		
+		
+		JPanel t_typePanel = new JPanel();
+		t_typePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		
+		t_typePanel.add(new JLabel("IM类型:"));
+		for(int i = 0;i < m_imType.length;i++){
+			m_imTypeGroup.add(m_imType[i]);
+			t_typePanel.add(m_imType[i]);
+		}
+		m_imType[0].setSelected(true);
+		m_imType[1].setEnabled(false);
+		
+		t_typePanel.setPreferredSize(new Dimension(300, 30));
+		t_accountPanel.add(t_typePanel);
+		
+		AddTextLabel(t_accountPanel,"IM帐户名:",m_imAccount,210,"");
+		AddTextLabel(t_accountPanel, "明文密码:", m_imPassword, 200, "");
+		
+		m_cryptPasswordHelpBut_im.setMargin(new Insets(1, 1, 1, 1));
+		t_accountPanel.add(m_cryptPasswordHelpBut_im);
+		m_imCryptPass.setPreferredSize(new Dimension(216, 25));
+		t_accountPanel.add(m_imCryptPass);
+		
+		m_cryptPasswordHelpBut_im.addActionListener(this);		
+		
+		return t_accountPanel;		
 	}
 	
 	private JComponent PrepareAccountBut(){
@@ -584,7 +639,29 @@ public class createDialog extends JDialog implements DocumentListener,
 				}catch(Exception ex){
 					JOptionPane.showMessageDialog(this, ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
 				}
+			}else if(m_tabbedPane.getSelectedIndex() == 2){
+				createIMData t_im = new createIMData();
+				
+				for(int i = 0;i < m_imType.length;i++){
+					if(m_imType[i].isSelected()){
+						t_im.m_type = m_imType[i].getText();
+						break;
+					}
+				}
+				
+				t_im.m_accountName = m_imAccount.getText();
+				t_im.m_pass			= m_imPassword.getText();
+				t_im.m_cryptPass	= m_imCryptPass.getText();
+				
+				try{
+					
+					CreateAccountAndTest(t_im);
+					
+				}catch(Exception ex){
+					JOptionPane.showMessageDialog(this, ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+				}
 			}
+				 
 						
 			
 		}else if(e.getSource() == m_delAccountBut){
@@ -644,7 +721,8 @@ public class createDialog extends JDialog implements DocumentListener,
 				PromptAndLog(ex);
 			}
 						
-		}else if(e.getSource() == m_cryptPasswordHelpBut){
+		}else if(e.getSource() == m_cryptPasswordHelpBut
+				|| e.getSource() == m_cryptPasswordHelpBut_im){
 			new cryptPassTool();		
 		}else if(e.getSource() == m_weiboAuthBut){
 			for(final JRadioButton but:m_weiboType){
@@ -817,8 +895,33 @@ public class createDialog extends JDialog implements DocumentListener,
 		m_createAccountList.addElement(CheckWeiboConnect(_weibo));
 		
 		RefreshAccountList();
+	}
+	
+	private void CreateAccountAndTest(final createIMData _im)throws Exception{
+		CheckMainAttr();
 		
+		if(_im.m_accountName.isEmpty() || !_im.m_accountName.matches("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$")){
+			throw new Exception("请输入帐号名（必须是邮件地址！）");
+		}
 		
+		if(_im.m_pass.isEmpty() && _im.m_pass.isEmpty()){
+			throw new Exception("必须填入密码，或者加密密码");
+		}
+		
+		if(!m_createAccountList.isEmpty()){
+			
+			for(int i = 0;i < m_createAccountList.size();i++){
+				fetchAccount account = (fetchAccount)m_createAccountList.elementAt(i);
+				if(account instanceof fetchGTalk
+				&& account.GetAccountName().equalsIgnoreCase(_im.m_accountName)){
+					throw new Exception(account.GetAccountName() + " IM账户已经添加");
+				}				
+			}
+		}
+		
+		m_createAccountList.addElement(CheckIMConnect(_im));
+		
+		RefreshAccountList();
 	}
 	
 	private fetchAbsWeibo CheckWeiboConnect(createWeiboData _weibo)throws Exception{
@@ -841,6 +944,24 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 		m_createConfigDoc_root.add((Element)t_elem.clone());
 		return t_weibo;
+	}
+	
+	private fetchAccount CheckIMConnect(createIMData _im)throws Exception{
+		
+		Element t_elem = DocumentFactory.getInstance().createDocument().addElement("IMAccount");
+		
+		t_elem.addAttribute("type", _im.m_type);
+		t_elem.addAttribute("account", _im.m_accountName);
+		t_elem.addAttribute("password", _im.m_pass);
+		t_elem.addAttribute("cryptPassword", _im.m_cryptPass);
+				
+		fetchAccount t_im = fetchMgr.getIMInstance(_im.m_type, m_fetchMgrCreate);
+		t_im.InitAccount(t_elem);
+		t_im.ResetSession(true);
+		t_im.DestroySession();
+		
+		m_createConfigDoc_root.add((Element)t_elem.clone());
+		return t_im;
 	}
 	
 	private void RefreshAccountList(){
@@ -943,7 +1064,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		m_commonConfigListModel.removeAllElements();
 			
 		try{
-			Vector t_lines = new Vector();
+			Vector<String> t_lines = new Vector<String>();
 			fetchMgr.ReadSimpleIniFile("commonMailSvr.ini", "UTF-8", t_lines);
 			
 			for(int i = 0 ;i < t_lines.size();i++){

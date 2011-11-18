@@ -235,7 +235,15 @@ public class PhizSelectedScreen extends MainScreen{
 	
 	public void close(){
 		if(m_phizSelectingText != null){
-			m_phizSelectingText.setFocus();
+			try{
+				// some error cause:
+				// IllegalStateException: setFocus called on a field that is not attached to a screen.
+				//
+				m_phizSelectingText.setFocus();
+			}catch(Exception e){
+				
+			}
+			
 		}
 		
 		super.close();

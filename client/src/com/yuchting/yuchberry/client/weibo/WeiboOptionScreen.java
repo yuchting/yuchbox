@@ -33,6 +33,8 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 	 ObjectChoiceField	m_uploadImageSize	= null;
 	 ButtonField		m_clearCheckImageSetting = null;
 	 
+	 CheckboxField		m_weiboDontReadHistroy = null;
+	 
 	 private RadioButtonGroup m_shortkeyTypeGroup = new RadioButtonGroup();
 	 private RadioButtonField m_spaceDown	= new RadioButtonField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SPACE_DOWN),m_shortkeyTypeGroup,true);
 	 private RadioButtonField m_spaceUp	= new RadioButtonField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SPACE_UP),m_shortkeyTypeGroup,false);
@@ -65,7 +67,10 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 		 add(m_dontDownloadHeadImage);
 		 
 		 m_weiboUseLocation		= new CheckboxField(recvMain.sm_local.getString(localResource.WEIBO_USE_LOCATION_LABEL),m_mainApp.m_weiboUseLocation);
-		 add(m_weiboUseLocation);		 
+		 add(m_weiboUseLocation);
+		 
+		 m_weiboDontReadHistroy		= new CheckboxField(recvMain.sm_local.getString(localResource.WEIBO_READ_HISTROY_LABEL),m_mainApp.m_weiboDontReadHistroy);
+		 add(m_weiboDontReadHistroy);
 		 		 		 
 		 m_maxWeiboNum		= new ObjectChoiceField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_MAX_WEIBO_NUM),
 								recvMain.fsm_maxWeiboNumList,m_mainApp.m_maxWeiboNumIndex);
@@ -82,8 +87,9 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 		 m_clearCheckImageSetting = new ButtonField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_CLEAR_CHECK_IMAGE_PROMPT),
 				 									Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 		 m_clearCheckImageSetting.setChangeListener(this);
-		 
 		 add(m_clearCheckImageSetting);
+		 
+		 
 		 
 		 add(m_spaceDown);
 		 add(m_spaceUp);
@@ -176,7 +182,7 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 			 
 			 m_mainApp.m_refreshWeiboIntervalIndex = m_refreshWeiboInterval.getSelectedIndex();
 			 m_mainApp.m_weiboTimeLineScreen.startAutoRefresh();
-			 
+			 m_mainApp.m_weiboDontReadHistroy = m_weiboDontReadHistroy.getChecked();
 			 m_mainApp.m_hideHeader			= m_hideWeiboHeader.getChecked();
 			 m_mainApp.m_weiboUseLocation	= m_weiboUseLocation.getChecked();
 			

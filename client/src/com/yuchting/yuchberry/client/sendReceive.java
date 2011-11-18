@@ -443,7 +443,7 @@ public class sendReceive extends Thread{
 			
 		}
 		
-		return new String("");
+		return "";
 		
 	}
 	

@@ -81,6 +81,7 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 		m_updateText	= _text;
 		m_weiboStyle	= _weiboStyle;
 		m_directMsgName = _directMsgName;
+		m_sendType		= fetchWeibo.SEND_DIRECT_MSG_TYPE;
 				
 		start();		
 	}

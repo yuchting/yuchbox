@@ -269,15 +269,12 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	
 	public void InitAccount(Element _elem)throws Exception{
 		
-		m_accountName	= fetchAccount.ReadStringAttr(_elem,"account");
-		m_accountName	= m_accountName.toLowerCase();
-		
+		m_accountName	= fetchAccount.ReadStringAttr(_elem,"account").toLowerCase();
 		m_password		= fetchAccount.ReadStringAttr(_elem,"password");
-		
 		m_cryptPassword	= fetchAccount.ReadStringAttr(_elem,"cryptPassword");
 		
 		m_prefix				= m_mainMgr.GetPrefixString() + m_accountName + "[GTalk]/";
-		m_headImageDir			= m_mainMgr.GetPrefixString() + m_prefix;
+		m_headImageDir			= m_prefix;
 		
 		File t_file  = new File(GetAccountPrefix());
 		if(!t_file.exists() || !t_file.isDirectory()){
@@ -288,6 +285,10 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		if(!t_file.exists() || !t_file.isDirectory()){
 			t_file.mkdir();
 		}
+	}
+	
+	public String toString(){
+		return m_accountName + "[gtalk]";
 	}
 	
 	public String GetAccountName(){

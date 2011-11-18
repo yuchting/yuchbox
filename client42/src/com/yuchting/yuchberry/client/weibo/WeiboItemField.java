@@ -188,25 +188,7 @@ public class WeiboItemField extends Manager{
 	public WeiboItemField(){
 		super(Manager.NO_VERTICAL_SCROLL);
 	}
-	
-	public void destroy(){
-		for(int i = 0;i < m_hasControlField.length;i++){
-			m_hasControlField[i] = false;
-		}
 		
-		m_absTextAreaAdded = false;
-		if(m_absTextArea != null){
-			sm_absTextAreaAllocator.release(m_absTextArea);
-			m_absTextArea = null;	
-		}
-		
-		m_simpleAbstract = null;
-		m_weiboText		= null;
-		m_commentText	= null;
-		
-		m_weiboPic		= null;		
-	}
-	
 	public void init(fetchWeibo _weibo,WeiboHeadImage _headImage,WeiboMainManager _manager){
 		
 		destroy();
@@ -285,6 +267,34 @@ public class WeiboItemField extends Manager{
 			initAbsTextArea();			
 			add(m_absTextArea);
 		}
+	}
+	
+	public void destroy(){
+		
+		try{
+			AddDelControlField(false);			
+		}catch(Exception e){}
+		
+		for(int i = 0;i < m_hasControlField.length;i++){
+			m_hasControlField[i] = false;
+		}		
+		
+		if(m_absTextArea != null){
+			if(m_absTextAreaAdded){
+				try{
+					delete(m_absTextArea);
+				}catch(Exception e){}
+			}
+			sm_absTextAreaAllocator.release(m_absTextArea);
+			m_absTextArea = null;	
+		}		
+		m_absTextAreaAdded = false;
+		
+		m_simpleAbstract = null;
+		m_weiboText		= null;
+		m_commentText	= null;
+		
+		m_weiboPic		= null;		
 	}
 
 	public WeiboItemFocusField getFocusField(){
@@ -421,9 +431,7 @@ public class WeiboItemField extends Manager{
 			if(m_hasControlField[fsm_controlField_comment]){
 				m_hasControlField[fsm_controlField_comment] = false;
 				delete(m_parentManager.m_commentTextArea);
-			}
-			
-			
+			}			
 			
 			if(m_hasControlField[fsm_controlField_text]){
 				m_hasControlField[fsm_controlField_text] = false;

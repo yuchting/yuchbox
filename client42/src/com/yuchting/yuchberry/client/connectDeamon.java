@@ -51,7 +51,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListenerExtended,
 												IUploadFileScreenCallback{
 		
-	final static int	fsm_clientVer = 14;
+	final static int	fsm_clientVer = 15;
 	 
 	public sendReceive		m_connect = null;
 		
@@ -229,22 +229,27 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	public void BeginListener()throws Exception{
 		
-		m_listeningMessageFolder = GetDefaultFolder();
-		m_listeningMessageFolder.addFolderListener(this);
+		if(m_mainApp.m_closeMailSendModule){
+			return;
+		}
 		
-		m_listeningMessageFolder_out = GetDefaultOutFolder();
-		m_listeningMessageFolder_out.addFolderListener(this	);
-		
-		// add the send listener
-		//
-		Store store = Session.getDefaultInstance().getStore();
-		store.addSendListener(this);
-		
-		Session.addViewListener(this);
-						 
-		AttachmentHandlerManager.getInstance().addAttachmentHandler(this);
-		
-		
+		if(m_listeningMessageFolder == null){
+
+			m_listeningMessageFolder = GetDefaultFolder();
+			m_listeningMessageFolder.addFolderListener(this);
+			
+			m_listeningMessageFolder_out = GetDefaultOutFolder();
+			m_listeningMessageFolder_out.addFolderListener(this	);
+			
+			// add the send listener
+			//
+			Store store = Session.getDefaultInstance().getStore();
+			store.addSendListener(this);
+			
+			Session.addViewListener(this);
+							 
+			AttachmentHandlerManager.getInstance().addAttachmentHandler(this);
+		}		
 	}
 	 
 	 
@@ -1043,7 +1048,7 @@ public class connectDeamon extends Thread implements SendListener,
 			 return 0;
 		 }
 		 
-		 if(m_connectCounter++ > 6){
+		 if(m_connectCounter >= 4){
 			 m_connectCounter = 0;		 
 			 return m_mainApp.GetPulseIntervalMinutes() * 60 * 1000;
 		 }
@@ -1112,7 +1117,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 	case msg_head.msgDeviceInfo:
 		 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		 		os.write(msg_head.msgDeviceInfo);
-		 		sendReceive.WriteLong(os, recvMain.fsm_PIN);
+		 		sendReceive.WriteString(os, Long.toString(recvMain.fsm_PIN));
 		 		sendReceive.WriteString(os,recvMain.fsm_IMEI);
 		 		addSendingData(msg_head.msgDeviceInfo, os.toByteArray(), true);
 		 		break;
@@ -1247,14 +1252,19 @@ public class connectDeamon extends Thread implements SendListener,
 	
 		int t_hashcode = t_mail.GetSimpleHashCode();
 		
+		SendMailConfirmMsg(t_hashcode);
+		
+		if(m_mainApp.m_closeMailSendModule){
+			// close mail module prompt
+			//
+			m_mainApp.SetErrorString("close Mail Module " + t_hashcode + ":" + t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime());
+			return;
+		}
+		
 		for(int i = 0;i < m_recvMailSimpleHashCodeSet.size();i++){
 			Integer t_simpleHash = (Integer)m_recvMailSimpleHashCodeSet.elementAt(i);
-			if(t_simpleHash.intValue() == t_hashcode ){
-				
-				SendMailConfirmMsg(t_hashcode);
-				
+			if(t_simpleHash.intValue() == t_hashcode ){		
 				m_mainApp.SetErrorString("" + t_hashcode + " Mail has been added! ");
-				
 				return;
 			}
 		}
@@ -1263,9 +1273,11 @@ public class connectDeamon extends Thread implements SendListener,
 			m_recvMailSimpleHashCodeSet.removeElementAt(0);
 		}
 		
-		m_recvMailSimpleHashCodeSet.addElement(new Integer(t_mail.GetSimpleHashCode()));
+		m_recvMailSimpleHashCodeSet.addElement(new Integer(t_hashcode));
 		
 		if(m_mainApp.GetRecvMsgMaxLength() != 0){
+			// cut the max length to speedup mail load in low version device
+			//
 			if(t_mail.GetContain().length() > m_mainApp.GetRecvMsgMaxLength()){
 				t_mail.SetContain(t_mail.GetContain().substring(0,m_mainApp.GetRecvMsgMaxLength() - 1) + 
 									"\n.....\n\n" + recvMain.sm_local.getString(localResource.REACH_MAX_MESSAGE_LENGTH_PROMPT));
@@ -1275,9 +1287,9 @@ public class connectDeamon extends Thread implements SendListener,
 		if(m_mainApp.m_sendMailAccountList.isEmpty()){
 			sendRequestMailAccountMsg();
 		}
-
+		
 		try{
-			
+				
 			Message m = new Message();
 			
 			ComposeMessage(m,t_mail,m_mainApp.m_discardOrgText);
@@ -1298,16 +1310,33 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			// increase the receive mail quantity
 			//
-			m_mainApp.SetRecvMailNum(m_mainApp.GetRecvMailNum() + 1);			
-			
-			SendMailConfirmMsg(t_hashcode);
+			m_mainApp.SetRecvMailNum(m_mainApp.GetRecvMailNum() + 1);
 			
 			m_mainApp.SetErrorString("" + t_hashcode + ":" + t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime());
-									
 			m_mainApp.TriggerNotification();
-							
+			
+			
 		}catch(Exception _e){
 			m_mainApp.SetErrorString("C:" + _e.getMessage() + " " + _e.getClass().getName());
+		}
+		
+		// check the default account
+		//
+		boolean t_send = true;
+		for(int i = 0;i < m_mainApp.m_sendMailAccountList.size();i++){
+			String str = (String)m_mainApp.m_sendMailAccountList.elementAt(i);
+			if(str.equals(t_mail.getOwnAccount()) 
+			// the low version can't send the own account 
+			//
+			|| t_mail.getOwnAccount().length() == 0){
+				
+				t_send = false;
+				break;
+			}
+		}
+		
+		if(t_send){
+			sendRequestMailAccountMsg();
 		}
 	}
 	

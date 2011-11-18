@@ -53,4 +53,5 @@ final public class msg_head {
 	final public static byte msgChatRead			= 34;
 	final public static byte msgChatAddRoster	= 35;
 	final public static byte msgChatDelRoster	= 36;
+	final public static byte msgChatAlias		= 37;
 }

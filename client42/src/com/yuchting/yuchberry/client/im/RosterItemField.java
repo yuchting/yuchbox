@@ -231,7 +231,11 @@ public class RosterItemField extends Field{
     }
 
     protected boolean navigationClick( int status, int time ) {        
-        keyChar(Characters.ENTER, status, time );            
+        keyChar(Characters.ENTER, status, time );
         return true;
+    }
+    
+    public void invalidate(){
+    	super.invalidate();
     }
 }
