@@ -1,8 +1,10 @@
 package com.yuchting.yuchdroid.client.mail;
 
 import java.io.FileInputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random;
 import java.util.Vector;
 
 import android.app.Activity;
@@ -644,7 +646,15 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		//						MailListView	MailOpenActivity
 		//
 		
-		fetchMail t_mail = m_draftMail != null?m_draftMail:storeDB(fetchMail.GROUP_FLAG_SEND_PADDING);
+		fetchMail t_mail; 
+		
+		if(m_draftMail != null){
+			saveDraft();
+			t_mail = m_draftMail;
+		}else{
+			t_mail = storeDB(fetchMail.GROUP_FLAG_SEND_PADDING);
+		}
+		
 		if(t_mail != null){
 
 			// send mail
@@ -716,14 +726,19 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		_mail.SetSendDate(new Date());
 		_mail.SetSubject(m_subject.getText().toString());
 		_mail.SetContain(m_body.getText().toString());
-		
-		if(m_referenceGroupId != -1 && m_referenceMail != null){
+		_mail.setSendRefMailStyle(m_referenceMailStyle);
+		_mail.SetXMailer("Yuchs'Box(Android)");
+				
+		if(m_referenceMail != null){
 			_mail.SetFromVect(new String[]
             {
 				"\"" + getString(R.string.mail_me_address) + "\" <" + m_referenceMail.m_mail.getOwnAccount() + ">"
 			});
 			
 			_mail.setOwnAccount(m_referenceMail.m_mail.getOwnAccount());
+			
+			
+			
 		}else if(m_ownAccountSpinner != null){
 			
 			// compose a new mail and get the own account
@@ -744,9 +759,17 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
  			});
 		}
 		
-		_mail.setSendRefMailStyle(m_referenceMailStyle);
+		// generate the Message-ID
+		//
+		if(_mail.getMessageID() == null || _mail.getMessageID().length() == 0){
+			SimpleDateFormat t_format = new SimpleDateFormat("HHmmss");
+			_mail.setMessageID("<" + t_format.format(new Date()) + "." + (new Random()).nextInt() + "-yuchs.com-"+_mail.getOwnAccount()+">");
+		}
+		
 		if(m_referenceMail != null){
 			_mail.setSendRefMailIndex(m_referenceMail.m_mail.getDbIndex());
+			_mail.setInReplyTo(m_referenceMail.m_mail.getMessageID());
+			_mail.setReferenceID(_mail.getMessageID() + " " + m_referenceMail.m_mail.getMessageID());
 		}
 	}
 	

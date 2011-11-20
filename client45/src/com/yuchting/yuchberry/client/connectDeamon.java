@@ -1656,11 +1656,22 @@ public class connectDeamon extends Thread implements SendListener,
 			t_setFlags |= fetchMail.SEEN;
 		}
 		
-		String[] hdrs = m.getHeader("X-Mailer");
+		_mail.SetXMailer("Yuchs'Box(BlackBerry)");
 		
+		String[] hdrs = m.getHeader("Message-ID");
 		if (hdrs != null){
-			_mail.SetXMailer(hdrs[0]);
+			_mail.setMessageID(hdrs[0]);
 	    }
+		
+		hdrs = m.getHeader("In-Reply-To");
+		if(hdrs != null){
+			_mail.setInReplyTo(hdrs[0]);
+		}
+		
+		hdrs = m.getHeader("References");
+		if(hdrs != null){
+			_mail.setReferenceID(hdrs[0]);
+		}		
 		
 		_mail.ClearAttachment();
 		
@@ -1833,7 +1844,11 @@ public class connectDeamon extends Thread implements SendListener,
 		
 	    msg.setSubject(t_sub);
 	    msg.setHeader("X-Mailer",_mail.GetXMailer());
-	    msg.setSentDate(_mail.GetSendDate());	      
+	    msg.setHeader("Message-ID", _mail.getMessageID());
+	    msg.setHeader("In-Reply-To", _mail.getInReplyTo());
+	    msg.setHeader("References", _mail.getReferenceID());
+	    
+	    msg.setSentDate(_mail.GetSendDate());
 	
 	    ComposeMessageContent(msg,_mail,false);
 	}

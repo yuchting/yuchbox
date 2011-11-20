@@ -16,7 +16,7 @@ class MailAttachment{
 
 public class  fetchMail{
 	
-	final static int	VERSION = 3;
+	final static int	VERSION = 4;
 	
 	public final static String	fsm_noSubjectTile = "No Subject";
 	    	
@@ -54,6 +54,10 @@ public class  fetchMail{
 	private Message m_attachMessage		= null;
 	
 	private String			m_ownAccount	= "";
+	
+	private String			m_message_id 	= "";
+	private String			m_in_reply_to	= "";
+	private String			m_reference_id	= "";
 	
 	
 	// location information
@@ -155,6 +159,10 @@ public class  fetchMail{
 		sendReceive.WriteString(_stream,m_contain_html_type);
 		sendReceive.WriteString(_stream,m_ownAccount);
 		
+		sendReceive.WriteString(_stream,m_message_id);
+		sendReceive.WriteString(_stream,m_in_reply_to);
+		sendReceive.WriteString(_stream,m_reference_id);
+		
 	}
 		
 	public void InputMail(InputStream _stream)throws Exception{
@@ -204,6 +212,12 @@ public class  fetchMail{
 		if(t_version >= 3){
 			m_ownAccount = sendReceive.ReadString(_stream);
 		}
+		
+		if(t_version >= 4){
+			m_message_id = sendReceive.ReadString(_stream);
+			m_in_reply_to = sendReceive.ReadString(_stream);
+			m_reference_id = sendReceive.ReadString(_stream);
+		}
 	}
 	
 	
@@ -228,6 +242,15 @@ public class  fetchMail{
 	
 	public String GetXMailer(){return m_XMailName;}
 	public void SetXMailer(String _str){m_XMailName = _str;}
+	
+	public String getMessageID(){return m_message_id;}
+	public void setMessageID(String _id){m_message_id = _id;}
+	
+	public String getInReplyTo(){return m_in_reply_to;}
+	public void setInReplyTo(String _replyTo){m_in_reply_to = _replyTo;}
+	
+	public String getReferenceID(){return m_reference_id;}
+	public void setReferenceID(String _refID){m_reference_id = _refID;}
 	
 	public Date GetSendDate(){return m_sendDate;}
 	public void SetSendDate(Date _d){m_sendDate = _d;}

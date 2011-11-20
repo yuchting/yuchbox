@@ -20,6 +20,11 @@ public class MailDbAdapter {
 	
 	private final static String DATABASE_TABLE		= "yuch_mail";
 	private final static String DATABASE_TABLE_GROUP	= "yuch_mail_group";
+	
+	private final static String DATABASE_TABLE_ID		= "yuch_mail_id";
+	private final static String DATABASE_TABLE_ID_INDEX = "yuch_mail_id_index";
+		
+	@Deprecated // the index is deleted in version 2
 	private final static String DATABASE_TABLE_GROUP_SUB_INDEX	= "yuch_mail_group_sub_index";
 	
 	// mail sent flag
@@ -29,7 +34,7 @@ public class MailDbAdapter {
 	public final static int	MAIL_SENT_FLAG_SENDING	= 0x0004;
 	public final static int	MAIL_SENT_FLAG_OK		= 0x0008;
 	
-	private static final int DATABASE_VERSION 		= 1;
+	private static final int DATABASE_VERSION 		= 2;
 	
 	public final static String KEY_ID		 			= "_id";
 
@@ -79,7 +84,11 @@ public class MailDbAdapter {
 	public final static String ATTR_MAIL_SEND_REF_MAIL_ID = "mail_send_ref_id";
 	public final static String ATTR_MAIL_SEND_REF_MAIL_STYLE = "mail_send_ref_style";
 	
-	private static final String TAG 					= "MailDbAdapter";
+	public final static String ATTR_MESSAGE_ID		= "mail_message_id";
+	public final static String ATTR_IN_REPLY_TO		= "mail_in_reply_to";
+	public final static String ATTR_REFERENCES		= "mail_references";
+	
+	private static final String TAG					= "MailDbAdapter";
 	
 	public static final String[] fsm_groupfullColoumns = 
     {
@@ -98,7 +107,7 @@ public class MailDbAdapter {
 		GROUP_ATTR_MAIL_INDEX,
 		
     };
-	
+		
 	public static final String[] fsm_mailfullColoumns = 
     {
 		KEY_ID, 
@@ -128,6 +137,10 @@ public class MailDbAdapter {
         ATTR_MAIL_SEND_REF_MAIL_ID,
         ATTR_MAIL_SEND_REF_MAIL_STYLE,
         ATTR_FLAG,
+        
+        ATTR_MESSAGE_ID,
+        ATTR_IN_REPLY_TO,
+        ATTR_REFERENCES,
     };
 	
 	private final static String fsm_createTable_group = 
@@ -145,8 +158,8 @@ public class MailDbAdapter {
 						    
 						    GROUP_ATTR_ADDR_LIST + " text, " +
 						    GROUP_ATTR_GROUP + " text, " +
-						    GROUP_ATTR_MAIL_INDEX + " text )";
-	
+						    GROUP_ATTR_MAIL_INDEX + " text)";
+
 	private final static String fsm_createTable = 
 		
 							"create table " + DATABASE_TABLE + 
@@ -177,7 +190,10 @@ public class MailDbAdapter {
 					        ATTR_MAIL_OWN_ACCOUNT + " text, " +
 					        ATTR_MAIL_SEND_REF_MAIL_ID + " integer(64), "+
 					        ATTR_MAIL_SEND_REF_MAIL_STYLE + " smallint, " +
-					        ATTR_FLAG + " integer )" ;	
+					        ATTR_FLAG + " integer, " +
+					        ATTR_MESSAGE_ID + " text, " +
+					        ATTR_IN_REPLY_TO + "text, " +
+					        ATTR_REFERENCES + "text) ";
 	
 	private DatabaseHelper mDbHelper = null;
 	private SQLiteDatabase mDb = null;
@@ -196,9 +212,9 @@ public class MailDbAdapter {
         	db.execSQL(fsm_createTable);
             db.execSQL(fsm_createTable_group);
             
-        	// create the index by subject
+        	// create the index by Message-ID
         	//
-        	db.execSQL("create index " + DATABASE_TABLE_GROUP_SUB_INDEX + " on " + DATABASE_TABLE_GROUP + " (" + GROUP_ATTR_SUBJECT + ")");
+        	db.execSQL("create index " + DATABASE_TABLE + " on " + DATABASE_TABLE + " (" + ATTR_MESSAGE_ID + ")");
         }
 
         @Override
@@ -209,11 +225,22 @@ public class MailDbAdapter {
         	Log.w(TAG, "Upgrading database from version " + oldVersion + " to "
                     + newVersion + ", which will destroy all old data");
             
-            db.execSQL("drop index if exists " + DATABASE_TABLE_GROUP_SUB_INDEX + " on " + DATABASE_TABLE_GROUP);
-            db.execSQL("drop table if exists " + DATABASE_TABLE_GROUP);
-            db.execSQL("drop table if exists " + DATABASE_TABLE);
-            
-            onCreate(db);
+        	if(oldVersion == 1 && newVersion == 2){
+        		
+        		// add a column to mail tabel
+        		//
+        		db.execSQL("alter table " + DATABASE_TABLE + " add column "+ ATTR_MESSAGE_ID + " text");
+        		db.execSQL("alter table " + DATABASE_TABLE + " add column "+ ATTR_IN_REPLY_TO + " text");
+        		db.execSQL("alter table " + DATABASE_TABLE + " add column "+ ATTR_REFERENCES + " text");
+        		
+        		// create the index by Message-ID
+            	//
+            	db.execSQL("create index " + DATABASE_TABLE_ID_INDEX + " on " + DATABASE_TABLE + " (" + ATTR_MESSAGE_ID + ")");
+            	
+            	// delete index of subject
+            	//
+            	db.execSQL("drop index " + DATABASE_TABLE_GROUP_SUB_INDEX);
+        	}
         }
     }
 
@@ -353,32 +380,44 @@ public class MailDbAdapter {
     		if(_compose){
     			//compose Mail
     			//
-    			_replyGroupId = insertGroup(_mail.GetSubject(),t_mailID,_mail);
+    			_replyGroupId = insertGroup(t_mailID,_mail);
     		}else{
         		// receive mail
-        		//    
-    			String t_subject = groupSubject(_mail.GetSubject());
-        		
-        		Cursor t_cursor = mDb.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns,GROUP_ATTR_SUBJECT + "='" + t_subject + "'",
-        											null,null,null,null);
-        		try{
-        			if(t_cursor.getCount() != 0){
-
-            			// update the former group
-            			//
-            			updateGroup(t_cursor,_mail,t_mailID);
-            			_replyGroupId = t_cursor.getLong(t_cursor.getColumnIndex(KEY_ID));    			
-            		}else{
-            			
-            			// can't find the old group
-            			// create a insert one
-            			//    			
-            			_replyGroupId = insertGroup(t_subject,t_mailID,_mail);
-            		}
-        		}finally{
-        			t_cursor.close();
-        		}
+        		//
+    			boolean t_found = false; 
+    			String t_in_reply_id = _mail.getInReplyTo();
+    			if(t_in_reply_id != null && t_in_reply_id.length() > 0){
+    				
+    				Cursor t_cursor = mDb.query(DATABASE_TABLE,fsm_mailfullColoumns,ATTR_MESSAGE_ID + "='"+ t_in_reply_id + "'",
+							null,null,null,null);
+    				try{
+    					if(t_cursor.getCount() != 0){
+    						t_cursor.moveToFirst();        					
+        					Cursor c = fetchGroup(t_cursor.getLong(t_cursor.getColumnIndex(ATTR_MAIL_GROUP_INDEX)));
+        					try{
+            					// update the former group
+                    			//
+                    			updateGroup(c,_mail,t_mailID);
+                    			_replyGroupId = c.getLong(c.getColumnIndex(KEY_ID));	
+        					}finally{
+        						c.close();
+        					}
+        					
+        					t_found = true;
+        				}
+    				}finally{
+    					t_cursor.close();
+    				}	
+    			}
+    			
+    			if(!t_found){
+    				// can't find the old group
+        			// create a insert one
+        			//    			
+        			_replyGroupId = insertGroup(t_mailID,_mail);
+    			}
     		}
+    		
     		_mail.setDbIndex(t_mailID);
     		_mail.setGroupIndex(_replyGroupId);
     		
@@ -452,19 +491,18 @@ public class MailDbAdapter {
     
     /**
      *  insert a new group to the group table
-     * @param _subject group subject
      * @param _mailID first mail id
      * @param _mail mail data
      * @return new group inserted _id
      */
-    private long insertGroup(String _subject,long _mailID,fetchMail _mail){
+    private long insertGroup(long _mailID,fetchMail _mail){
     	
 		ContentValues group = new ContentValues();
 		group.put(GROUP_ATTR_MARK,0);
 		
 		group.put(GROUP_ATTR_GROUP_FLAG,_mail.getGroupFlag());
 		
-		group.put(GROUP_ATTR_SUBJECT,_subject);
+		group.put(GROUP_ATTR_SUBJECT,_mail.GetSubject());
 		group.put(GROUP_ATTR_LEATEST_BODY,getDisplayMailBody(_mail));
 		
 		group.put(GROUP_ATTR_LEATEST_TIME,_mail.getRecvMailTime());
@@ -693,7 +731,10 @@ public class MailDbAdapter {
         values.put(ATTR_MAIL_OWN_ACCOUNT,_mail.getOwnAccount());
         values.put(ATTR_MAIL_SEND_REF_MAIL_ID,_mail.getSendRefMailIndex());
         values.put(ATTR_MAIL_SEND_REF_MAIL_STYLE,_mail.getSendRefMailStyle());
-                
+        values.put(ATTR_MESSAGE_ID,_mail.getMessageID());
+        values.put(ATTR_IN_REPLY_TO,_mail.getInReplyTo());
+        values.put(ATTR_REFERENCES,_mail.getReferenceID());
+        
         return values;
     }
     
@@ -727,8 +768,12 @@ public class MailDbAdapter {
     	t_mail.setSendRefMailIndex(_mailCursor.getLong(_mailCursor.getColumnIndex(ATTR_MAIL_SEND_REF_MAIL_ID)));
     	t_mail.setSendRefMailStyle(_mailCursor.getInt(_mailCursor.getColumnIndex(ATTR_MAIL_SEND_REF_MAIL_STYLE)));
     	t_mail.setRecvMailTime(_mailCursor.getLong(_mailCursor.getColumnIndex(ATTR_RECV_DATE)));
+    	t_mail.setMessageID(_mailCursor.getString(_mailCursor.getColumnIndex(ATTR_MESSAGE_ID)));
+		t_mail.setInReplyTo(_mailCursor.getString(_mailCursor.getColumnIndex(ATTR_IN_REPLY_TO)));
+		t_mail.setReferenceID(_mailCursor.getString(_mailCursor.getColumnIndex(ATTR_REFERENCES)));		   	
     	
     	return t_mail;
     }
+   
 
 }

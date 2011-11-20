@@ -98,7 +98,7 @@ public class HelloWorld {
 	
 	
 	public static void main(String arg[])throws Exception{
-		System.out.println(sendReceive.complTosimple("輸入簡體字,點下面繁體字按鈕進行在線轉換."));
+		berryRecvTest();
 	}
 	
 	public final static String	fsm_vectStringSpliter = "<>";

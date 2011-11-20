@@ -23,6 +23,7 @@ import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Header;
 import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Part;
 import javax.mail.Session;
@@ -1105,7 +1106,11 @@ public class fetchEmail extends fetchAccount{
 	
 	public void SendMail(RecvMailAttach _mail)throws Exception{
 		
-		MimeMessage msg = new MimeMessage(m_session_send);
+		MimeMessage msg = new MimeMessage(m_session_send){
+			protected void updateMessageID() throws MessagingException{
+				// the fetchEmail.ComposeMessage will fill the header of Message-ID
+			}
+		};
 		
 		String t_signature = "";
 		
@@ -1557,6 +1562,7 @@ public class fetchEmail extends fetchAccount{
 	public void ImportMail(Message m,fetchMail _mail)throws Exception{
 				
 		Address[] a;
+				
 		
 		// FROM 
 		if ((a = m.getFrom()) != null) {
@@ -1693,6 +1699,22 @@ public class fetchEmail extends fetchAccount{
 		if (hdrs != null){
 			_mail.SetXMailer(hdrs[0]);
 	    }
+		
+		hdrs = m.getHeader("Message-ID");
+		if (hdrs != null){
+			_mail.setMessageID(hdrs[0]);
+	    }
+		
+		hdrs = m.getHeader("In-Reply-To");
+		if(hdrs != null){
+			_mail.setInReplyTo(hdrs[0]);
+		}
+		
+		hdrs = m.getHeader("References");
+		if(hdrs != null){
+			_mail.setReferenceID(hdrs[0]);
+		}		
+		
 		_mail.setOwnAccount(m_strUserNameFull);
 		_mail.ClearAttachment();
 
@@ -2102,6 +2124,18 @@ public class fetchEmail extends fetchAccount{
 			msg.setText(_mail.GetContain(),"UTF-8");
 	    }
 
+	    if(_mail.getMessageID() != null && _mail.getMessageID().length() > 0){
+	    	msg.setHeader("Message-ID",_mail.getMessageID());
+	    }
+	    
+	    if(_mail.getReferenceID() != null && _mail.getReferenceID().length() > 0){
+	    	msg.setHeader("References", _mail.getReferenceID());
+	    }
+	    
+	    if(_mail.getInReplyTo() != null && _mail.getInReplyTo().length() > 0){
+	    	msg.setHeader("In-Reply-To",_mail.getInReplyTo());
+	    }
+	    
 	    msg.setHeader("X-Mailer",_mail.GetXMailer());
 	    msg.setSentDate((_mail.GetSendDate().getTime() == 0)?(new Date()):_mail.GetSendDate());
 
