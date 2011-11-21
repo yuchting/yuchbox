@@ -695,7 +695,11 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		return t_sendMail;
 	}
 	
-	private void saveDraft(){		
+	private void saveDraft(){
+		if(m_modified == false){
+			return;
+		}
+		
 		if(m_draftMail == null){
 			m_draftMail = storeDB(fetchMail.GROUP_FLAG_SEND_DRAFT);
 			if(m_draftMail == null){
@@ -763,13 +767,13 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		//
 		if(_mail.getMessageID() == null || _mail.getMessageID().length() == 0){
 			SimpleDateFormat t_format = new SimpleDateFormat("HHmmss");
-			_mail.setMessageID("<" + t_format.format(new Date()) + "." + (new Random()).nextInt() + "-yuchs.com-"+_mail.getOwnAccount()+">");
+			_mail.setMessageID("<" + t_format.format(new Date()) + "." + (new Random()).nextInt(1000) + "-yuchs.com-"+_mail.getOwnAccount()+">");
 		}
 		
 		if(m_referenceMail != null){
 			_mail.setSendRefMailIndex(m_referenceMail.m_mail.getDbIndex());
 			_mail.setInReplyTo(m_referenceMail.m_mail.getMessageID());
-			_mail.setReferenceID(_mail.getMessageID() + " " + m_referenceMail.m_mail.getMessageID());
+			_mail.setReferenceID(m_referenceMail.m_mail.getMessageID() + " " + m_referenceMail.m_mail.getReferenceID());
 		}
 	}
 	

@@ -487,6 +487,11 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		
 		for(int i = m_currMailList.size() - 1;i >= 0 ;i--){
 			Envelope en = m_currMailList.get(i);
+			
+			if(_referenceStyle == fetchMail.REPLY_STYLE && en.m_mail.isOwnSendMail()){
+				continue;
+			}
+			
 			if(en.m_mail.getGroupFlag() != fetchMail.GROUP_FLAG_SEND_DRAFT){
 				t_envelope = en;
 				break;

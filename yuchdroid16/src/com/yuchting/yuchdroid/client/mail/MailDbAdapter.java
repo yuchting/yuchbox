@@ -18,10 +18,9 @@ public class MailDbAdapter {
 	
 	public static final String DATABASE_NAME 			= "yuch_data";
 	
-	private final static String DATABASE_TABLE		= "yuch_mail";
-	private final static String DATABASE_TABLE_GROUP	= "yuch_mail_group";
-	
-	private final static String DATABASE_TABLE_ID		= "yuch_mail_id";
+	private final static String DATABASE_TABLE		= "yuch_mail";	
+	private final static String DATABASE_TABLE_GROUP	= "yuch_mail_group";	
+
 	private final static String DATABASE_TABLE_ID_INDEX = "yuch_mail_id_index";
 		
 	@Deprecated // the index is deleted in version 2
@@ -192,8 +191,8 @@ public class MailDbAdapter {
 					        ATTR_MAIL_SEND_REF_MAIL_STYLE + " smallint, " +
 					        ATTR_FLAG + " integer, " +
 					        ATTR_MESSAGE_ID + " text, " +
-					        ATTR_IN_REPLY_TO + "text, " +
-					        ATTR_REFERENCES + "text) ";
+					        ATTR_IN_REPLY_TO + " text, " +
+					        ATTR_REFERENCES + " text) ";
 	
 	private DatabaseHelper mDbHelper = null;
 	private SQLiteDatabase mDb = null;
@@ -212,9 +211,9 @@ public class MailDbAdapter {
         	db.execSQL(fsm_createTable);
             db.execSQL(fsm_createTable_group);
             
-        	// create the index by Message-ID
+        	// create the index by Message-ID and References
         	//
-        	db.execSQL("create index " + DATABASE_TABLE + " on " + DATABASE_TABLE + " (" + ATTR_MESSAGE_ID + ")");
+        	db.execSQL("create index " + DATABASE_TABLE_ID_INDEX + " on " + DATABASE_TABLE + " (" + ATTR_MESSAGE_ID + ")");
         }
 
         @Override
@@ -233,7 +232,7 @@ public class MailDbAdapter {
         		db.execSQL("alter table " + DATABASE_TABLE + " add column "+ ATTR_IN_REPLY_TO + " text");
         		db.execSQL("alter table " + DATABASE_TABLE + " add column "+ ATTR_REFERENCES + " text");
         		
-        		// create the index by Message-ID
+        		// create the index by Message-ID and References
             	//
             	db.execSQL("create index " + DATABASE_TABLE_ID_INDEX + " on " + DATABASE_TABLE + " (" + ATTR_MESSAGE_ID + ")");
             	
@@ -389,8 +388,10 @@ public class MailDbAdapter {
     			if(t_in_reply_id != null && t_in_reply_id.length() > 0){
     				
     				Cursor t_cursor = mDb.query(DATABASE_TABLE,fsm_mailfullColoumns,ATTR_MESSAGE_ID + "='"+ t_in_reply_id + "'",
-							null,null,null,null);
+												null,null,null,null);
+    				
     				try{
+    					
     					if(t_cursor.getCount() != 0){
     						t_cursor.moveToFirst();        					
         					Cursor c = fetchGroup(t_cursor.getLong(t_cursor.getColumnIndex(ATTR_MAIL_GROUP_INDEX)));
@@ -405,6 +406,7 @@ public class MailDbAdapter {
         					
         					t_found = true;
         				}
+    					
     				}finally{
     					t_cursor.close();
     				}	
