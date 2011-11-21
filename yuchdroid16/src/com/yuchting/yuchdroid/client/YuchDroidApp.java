@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.Contacts;
 import android.provider.Contacts.People;
 import android.text.ClipboardManager;
@@ -383,6 +384,20 @@ public class YuchDroidApp extends Application {
 			
 			startConnectNotification(_state,false);
 		}
+	}
+	
+	public File getAttachmentDir(){
+		File t_dir = new File(Environment.getExternalStorageDirectory(),"AttDir");
+		if(!t_dir.exists() || !t_dir.isDirectory()){
+			t_dir.mkdir();
+		}
+		
+		return t_dir;
+	}
+	public boolean isSDCardAvailable(){
+		// We can read and write the media
+		//
+		return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
 	}
 	
 	public int getConnectState(){

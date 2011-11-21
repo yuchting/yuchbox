@@ -90,17 +90,23 @@ public class connectDeamon extends Thread implements SendListener,
 	public static final class MessageID{
 		int simpleHash;
 		int appendMessageId;
-		String m_message_id;
-		String m_in_reply_to;
-		String m_references;
-		String m_ownAccount;
+		String message_id;
+		String in_reply_to;
+		String references;
+		String ownAccount;
+		boolean sent;
 		
-		public MessageID(fetchMail _mail){
-			simpleHash 		= _mail.GetSimpleHashCode();
-			m_message_id	= _mail.getMessageID();
-			m_in_reply_to	= _mail.getInReplyTo();
-			m_references	= _mail.getReferenceID();
-			m_ownAccount	= _mail.getOwnAccount();
+		public MessageID(fetchMail _mail,boolean _sent){
+			simpleHash 	= _mail.GetSimpleHashCode();
+			message_id	= _mail.getMessageID();
+			in_reply_to	= _mail.getInReplyTo();
+			references	= _mail.getReferenceID();
+			ownAccount	= _mail.getOwnAccount();
+			sent		= _sent;
+			
+			if(_mail.GetAttachMessage() != null){
+				appendMessageId = _mail.GetAttachMessage().getMessageId();
+			}
 		}
 	}
 	
@@ -161,18 +167,17 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	int				m_connectCounter		= -1;
 	 
-	class FetchAttachment{
+	public static class FetchAttachment{
 		int						m_messageHashCode;
 		 
 		int						m_mailIndex;
 		int						m_attachmentIdx;
 		int						m_attachmentSize;
 		 
-		String						m_realName;
+		String					m_realName;
 		int						m_completePercent;
 		 
-		ByteArrayOutputStream		m_fileContainBuffer = new ByteArrayOutputStream();
-		 
+		ByteArrayOutputStream	m_fileContainBuffer = new ByteArrayOutputStream();
 	}
 	 
 	//! receive the attachment
@@ -435,9 +440,12 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				MessageID t_message_id = findMessageID(t_forwardReplyMail);
 				if(t_message_id != null){
-					t_forwardReplyMail.setMessageID(t_message_id.m_message_id);
-					t_forwardReplyMail.setInReplyTo(t_message_id.m_in_reply_to);
-					t_forwardReplyMail.setReferenceID(t_message_id.m_references);
+					t_forwardReplyMail.setMessageID(t_message_id.message_id);
+					t_forwardReplyMail.setInReplyTo(t_message_id.in_reply_to);
+					t_forwardReplyMail.setReferenceID(t_message_id.references);
+					t_forwardReplyMail.setOwnAccount(t_message_id.ownAccount);
+					
+					t_mail.setOwnAccount(t_message_id.ownAccount);
 				}
 				
 				m_mainApp.SetErrorString("origMsg:"+ t_forwardReplyMail.GetSubject());
@@ -453,6 +461,7 @@ public class connectDeamon extends Thread implements SendListener,
 					
 					t_mail.GetFromVect().removeAllElements();
 					t_mail.GetFromVect().addElement(t_defaultAcc);
+					
 					t_mail.setOwnAccount(t_defaultAcc);
 					
 					m_mainApp.SetErrorString("from:"+t_defaultAcc);
@@ -1285,8 +1294,7 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 		t_os.write(msg_head.msgMailConfirm);
-		sendReceive.WriteInt(t_os,_hashCode);
-		
+		sendReceive.WriteInt(t_os,_hashCode);		
 		
 		m_sendingQueue.addSendingData(msg_head.msgMailConfirm, t_os.toByteArray(),true);
 	}
@@ -1315,11 +1323,11 @@ public class connectDeamon extends Thread implements SendListener,
 			}
 		}
 				
-		if(m_recvMailSimpleHashCodeSet.size() > 256){
+		while(m_recvMailSimpleHashCodeSet.size() > 256){
 			m_recvMailSimpleHashCodeSet.removeElementAt(0);
 		}
 		
-		MessageID t_message_id = new MessageID(t_mail);
+		MessageID t_message_id = new MessageID(t_mail,false);
 		m_recvMailSimpleHashCodeSet.addElement(t_message_id);
 		
 		if(m_mainApp.GetRecvMsgMaxLength() != 0){
@@ -1453,8 +1461,16 @@ public class connectDeamon extends Thread implements SendListener,
 		_mail.setMessageID(t_message_id.toString());
 		
 		if(_forwardReply != null){
-			
+			_mail.setInReplyTo(_forwardReply.getMessageID());
+			_mail.setReferenceID(_forwardReply.getMessageID() + " " + _forwardReply.getReferenceID());
 		}
+		
+		Message msg = _mail.GetAttachMessage();
+		msg.addHeader("Message-ID",_mail.getMessageID());
+		msg.addHeader("In-Reply-To",_mail.getInReplyTo());
+		msg.addHeader("References",_mail.getReferenceID());
+		
+		m_recvMailSimpleHashCodeSet.addElement(new MessageID(_mail,true));
 		
 		// load the attachment if has 
 		//
@@ -1498,7 +1514,6 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			// reset the content of mail...
 			//
-			Message msg = _mail.GetAttachMessage();
 			ComposeMessageContent(msg, _mail,true);
 		}
 		
@@ -1538,7 +1553,7 @@ public class connectDeamon extends Thread implements SendListener,
 		for(int i = 0;i < m_vectReceiveAttach.size();i++){
 			FetchAttachment t_att = (FetchAttachment)m_vectReceiveAttach.elementAt(i);
 						
-			if(t_att.m_mailIndex == t_mailIndex && t_attachIndex == t_attachIndex){
+			if(t_att.m_mailIndex == t_mailIndex && t_att.m_attachmentIdx == t_attachIndex){
 				
 				byte[] t_bytes = new byte[t_size];
 				sendReceive.ForceReadByte(in, t_bytes, t_size);
@@ -1597,7 +1612,7 @@ public class connectDeamon extends Thread implements SendListener,
 			}
 		}
 		
-		// TODO weibo process....
+		// weibo process....
 		//
 		if(m_mainApp.m_weiboTimeLineScreen != null){
 			m_mainApp.m_weiboTimeLineScreen.weiboSendFileConfirm(t_hashCode,t_attachIndex);

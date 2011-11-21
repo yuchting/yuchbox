@@ -2,6 +2,8 @@ package com.yuchting.yuchdroid.client;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
@@ -695,7 +697,9 @@ public class ConnectDeamon extends Service implements Runnable{
 		 		DialogAlert("YuchBerry svr: " + t_string);
 		 		m_mainApp.setErrorString(t_string);
 		 		break;
-		 	
+		 	case msg_head.msgMailAttach:
+		 		ProcessMailAttach(in);
+		 		break;
 		 	case msg_head.msgFileAttach:
 		 		ProcessFileAttach(in);
 		 		break;	 		
@@ -903,11 +907,108 @@ public class ConnectDeamon extends Service implements Runnable{
 				}
 			}
 		}
-		
 	}
 	
-	private void ProcessFileAttach(InputStream in)throws Exception{
-		//TODO recevice file attach
+	public static class FetchAttachment{
+		int						m_messageHashCode;
+		 
+		int						m_mailIndex;
+		int						m_attachmentIdx;
+		int						m_attachmentSize;
+		 
+		String					m_realName;
+		int						m_completePercent;
+		 
+		ByteArrayOutputStream	m_fileContainBuffer = new ByteArrayOutputStream();
+	}
+	 
+	//! receive the attachment
+	Vector<FetchAttachment>		m_vectReceiveAttach = new Vector<FetchAttachment>();
+	
+	public void ProcessMailAttach(InputStream in)throws Exception{
+		
+		final int t_mailIndex		= sendReceive.ReadInt(in);
+		final int t_attachIndex	= sendReceive.ReadInt(in);
+		final int t_startIndex		= sendReceive.ReadInt(in);
+		final int t_size			= sendReceive.ReadInt(in);
+		
+		for(FetchAttachment t_att:m_vectReceiveAttach){
+						
+			if(t_att.m_mailIndex == t_mailIndex && t_att.m_attachmentIdx == t_attachIndex){
+				
+				byte[] t_bytes = new byte[t_size];
+				sendReceive.ForceReadByte(in, t_bytes, t_size);
+				
+				t_att.m_fileContainBuffer.write(t_bytes);				
+				
+				//System.out.println("write msgMailAttach mailIndex:" + t_mailIndex + " attachIndex:" + t_attachIndex + " startIndex:" +
+				//					t_startIndex + " size:" + t_size + " first:" + (int)t_bytes[0]);
+				
+				t_att.m_completePercent = (t_startIndex + t_size) * 100 / t_att.m_attachmentSize;
+				
+				// TODO refresh UI of notification
+				//
+//				if(m_mainApp.m_downloadDlg != null){
+//					m_mainApp.m_downloadDlg.RefreshProgress(t_att);
+//				}
+				
+				if(t_startIndex + t_size >= t_att.m_attachmentSize){
+					
+					// fetching attachment is over...
+					//
+					File t_file = new File(m_mainApp.getAttachmentDir(),t_att.m_realName);
+					if(t_file.exists()){
+						t_file.delete();
+					}
+					
+					if(t_file.createNewFile()){
+						byte[] t_writeBytes = t_att.m_fileContainBuffer.toByteArray();
+						FileOutputStream os = new FileOutputStream(t_file);
+						try{
+							os.write(t_writeBytes);
+							os.flush();
+						}finally{
+							os.close();
+						}
+												
+						m_vectReceiveAttach.remove(t_att);
+						
+						// TODO to notification user download done
+						//
+						//m_mainApp.PopupDlgToOpenAttach(t_att);
+					}else{	
+						// TODO display error for user
+						//
+					}
+				}
+				
+				break;
+			}
+		}
+	}
+	
+	public void ProcessFileAttach(InputStream in)throws Exception{
+		// weibo upload image done function
+		//
+		int t_hashCode = sendReceive.ReadInt(in);
+		int t_attachIndex = sendReceive.ReadInt(in);
+		
+		for(int i = 0 ;i < m_sendingMailAttachment.size();i++){
+			SendMailDeamon t_mail = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
+			if(t_mail.m_sendMail.GetSimpleHashCode() == t_hashCode){
+				
+				t_mail.m_sendFileDaemon.sendNextFile(t_attachIndex);
+								
+				return;
+			}
+		}
+		
+		// TODO weibo process....
+		//
+//		if(m_mainApp.m_weiboTimeLineScreen != null){
+//			m_mainApp.m_weiboTimeLineScreen.weiboSendFileConfirm(t_hashCode,t_attachIndex);
+//		}
+		
 	}
 	
 }
