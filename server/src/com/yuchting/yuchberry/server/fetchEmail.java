@@ -1109,6 +1109,11 @@ public class fetchEmail extends fetchAccount{
 		MimeMessage msg = new MimeMessage(m_session_send){
 			protected void updateMessageID() throws MessagingException{
 				// the fetchEmail.ComposeMessage will fill the header of Message-ID
+				//
+				String[] hdrs = getHeader("Message-ID");
+				if(hdrs == null || hdrs.length == 0){
+					super.updateMessageID();
+				}
 			}
 		};
 		

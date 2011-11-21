@@ -84,8 +84,8 @@ public class fetchMgr{
     int				m_clientDisplayWidth = 0;
     int				m_clientDisplayHeight = 0;
     
-    String			m_pin				= "";
-    String			m_IMEI				= "";    
+    public String			m_pin				= "";
+    public String			m_IMEI				= "";    
     
     
     public void SetLatestVersion(String _version){
