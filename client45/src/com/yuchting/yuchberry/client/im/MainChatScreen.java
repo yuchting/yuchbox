@@ -1159,7 +1159,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		// so must judge programmly own to close
 		//
 		int key = Keypad.key(keycode);
-		if(key == Keypad.KEY_ESCAPE){
+		if(key == Keypad.KEY_ESCAPE && m_mainApp.m_imVoiceImmMode){
 			onClose();
 			return true;
 		}

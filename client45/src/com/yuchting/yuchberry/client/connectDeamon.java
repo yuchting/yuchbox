@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.Random;
 import java.util.Vector;
 
 import javax.microedition.io.Connector;
@@ -86,7 +87,42 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	public Vector 		m_markReadVector 		= new Vector();
 	
+	public static final class MessageID{
+		int simpleHash;
+		int appendMessageId;
+		String m_message_id;
+		String m_in_reply_to;
+		String m_references;
+		String m_ownAccount;
+		
+		public MessageID(fetchMail _mail){
+			simpleHash 		= _mail.GetSimpleHashCode();
+			m_message_id	= _mail.getMessageID();
+			m_in_reply_to	= _mail.getInReplyTo();
+			m_references	= _mail.getReferenceID();
+			m_ownAccount	= _mail.getOwnAccount();
+		}
+	}
+	
 	Vector				m_recvMailSimpleHashCodeSet = new Vector();
+	
+	private MessageID findMessageID(fetchMail _mail){
+		
+		for(int i = 0 ;i < m_recvMailSimpleHashCodeSet.size();i++){
+			MessageID id = (MessageID)m_recvMailSimpleHashCodeSet.elementAt(i);
+			if(_mail.GetAttachMessage() != null){
+				if(id.appendMessageId == _mail.GetAttachMessage().getMessageId()){
+					return id;
+				}
+			}
+			
+			if(id.simpleHash == _mail.GetSimpleHashCode()){
+				return id;
+			}
+		}
+		
+		return null;
+	}
 			 
 	boolean			m_sendAboutText			= false;
 	boolean			m_recvAboutText			= false;
@@ -397,6 +433,13 @@ public class connectDeamon extends Thread implements SendListener,
 					t_forwardReplyMail.SetContain("");
 				}
 				
+				MessageID t_message_id = findMessageID(t_forwardReplyMail);
+				if(t_message_id != null){
+					t_forwardReplyMail.setMessageID(t_message_id.m_message_id);
+					t_forwardReplyMail.setInReplyTo(t_message_id.m_in_reply_to);
+					t_forwardReplyMail.setReferenceID(t_message_id.m_references);
+				}
+				
 				m_mainApp.SetErrorString("origMsg:"+ t_forwardReplyMail.GetSubject());
 			}else{
 				
@@ -410,6 +453,7 @@ public class connectDeamon extends Thread implements SendListener,
 					
 					t_mail.GetFromVect().removeAllElements();
 					t_mail.GetFromVect().addElement(t_defaultAcc);
+					t_mail.setOwnAccount(t_defaultAcc);
 					
 					m_mainApp.SetErrorString("from:"+t_defaultAcc);
 				}
@@ -1264,8 +1308,8 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 		
 		for(int i = 0;i < m_recvMailSimpleHashCodeSet.size();i++){
-			Integer t_simpleHash = (Integer)m_recvMailSimpleHashCodeSet.elementAt(i);
-			if(t_simpleHash.intValue() == t_hashcode ){		
+			MessageID t_id = (MessageID)m_recvMailSimpleHashCodeSet.elementAt(i);
+			if(t_id.simpleHash == t_hashcode ){		
 				m_mainApp.SetErrorString("" + t_hashcode + " Mail has been added! ");
 				return;
 			}
@@ -1275,7 +1319,8 @@ public class connectDeamon extends Thread implements SendListener,
 			m_recvMailSimpleHashCodeSet.removeElementAt(0);
 		}
 		
-		m_recvMailSimpleHashCodeSet.addElement(new Integer(t_hashcode));
+		MessageID t_message_id = new MessageID(t_mail);
+		m_recvMailSimpleHashCodeSet.addElement(t_message_id);
 		
 		if(m_mainApp.GetRecvMsgMaxLength() != 0){
 			// cut the max length to speedup mail load in low version device
@@ -1295,11 +1340,13 @@ public class connectDeamon extends Thread implements SendListener,
 			Message m = new Message();
 			
 			ComposeMessage(m,t_mail,m_mainApp.m_discardOrgText);
-			
+						
 			m.setInbound(true);
 			m.setStatus(Message.Status.RX_RECEIVED,1);
 			
 			m_listeningMessageFolder.appendMessage(m);
+			
+			t_message_id.appendMessageId = m.getMessageId();
 											
 			// add the message listener to send message to server
 			// to remark the message is read
@@ -1393,6 +1440,22 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	public void AddSendingMail(final fetchMail _mail,final Vector _files,
 											final fetchMail _forwardReply,final int _sendStyle)throws Exception{
+		
+		// load mail message id and 
+		//
+		StringBuffer t_message_id = new StringBuffer();
+		
+		t_message_id.append("<")
+					.append(Long.toString(System.currentTimeMillis())).append(".")
+					.append(new Random().nextInt(1000)).append("-yuchs.com-")
+					.append(_mail.getOwnAccount()).append(">");
+		
+		_mail.setMessageID(t_message_id.toString());
+		
+		if(_forwardReply != null){
+			
+		}
+		
 		// load the attachment if has 
 		//
 		final Vector t_vfileReader = new Vector();
@@ -1657,22 +1720,6 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 		
 		_mail.SetXMailer("Yuchs'Box(BlackBerry)");
-		
-		String[] hdrs = m.getHeader("Message-ID");
-		if (hdrs != null){
-			_mail.setMessageID(hdrs[0]);
-	    }
-		
-		hdrs = m.getHeader("In-Reply-To");
-		if(hdrs != null){
-			_mail.setInReplyTo(hdrs[0]);
-		}
-		
-		hdrs = m.getHeader("References");
-		if(hdrs != null){
-			_mail.setReferenceID(hdrs[0]);
-		}		
-		
 		_mail.ClearAttachment();
 		
 		m_plainTextContain = "";
@@ -1843,10 +1890,13 @@ public class connectDeamon extends Thread implements SendListener,
 	    String t_sub = _mail.GetSubject();		
 		
 	    msg.setSubject(t_sub);
-	    msg.setHeader("X-Mailer",_mail.GetXMailer());
-	    msg.setHeader("Message-ID", _mail.getMessageID());
-	    msg.setHeader("In-Reply-To", _mail.getInReplyTo());
-	    msg.setHeader("References", _mail.getReferenceID());
+	    
+	    // these follow addHeader No usefull, can't fetch form store of mail
+	    //
+	    msg.addHeader("X-Mailer",_mail.GetXMailer());
+	    msg.addHeader("Message-ID", _mail.getMessageID());
+	    msg.addHeader("In-Reply-To", _mail.getInReplyTo());
+	    msg.addHeader("References", _mail.getReferenceID());
 	    
 	    msg.setSentDate(_mail.GetSendDate());
 	
