@@ -153,8 +153,8 @@
 	<IMAccount
 		type="gtalk"
 		account="yuchdroid@gmail.com"
-		password="hF8IBrCmBDQsKaWa"
-		cryptPassword=""
+		password=""
+		cryptPassword="12eb2c6d63809ffab74725f2b6282bd0ef8857158d44258d"
 	/>
 	
 </Yuchberry>
