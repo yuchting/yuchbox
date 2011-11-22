@@ -19,12 +19,13 @@ public class MailDbAdapter {
 	public static final String DATABASE_NAME 			= "yuch_data";
 	
 	private final static String DATABASE_TABLE		= "yuch_mail";	
-	private final static String DATABASE_TABLE_GROUP	= "yuch_mail_group";	
-
+	private final static String DATABASE_TABLE_GROUP	= "yuch_mail_group";
+	
+	// database index
+	//
 	private final static String DATABASE_TABLE_ID_INDEX = "yuch_mail_id_index";
-		
-	@Deprecated // the index is deleted in version 2
 	private final static String DATABASE_TABLE_GROUP_SUB_INDEX	= "yuch_mail_group_sub_index";
+	
 	
 	// mail sent flag
 	//	
@@ -214,6 +215,7 @@ public class MailDbAdapter {
         	// create the index by Message-ID and References
         	//
         	db.execSQL("create index " + DATABASE_TABLE_ID_INDEX + " on " + DATABASE_TABLE + " (" + ATTR_MESSAGE_ID + ")");
+        	db.execSQL("create index " + DATABASE_TABLE_GROUP_SUB_INDEX + " on " + DATABASE_TABLE_GROUP + " (" + GROUP_ATTR_SUBJECT + ")");
         }
 
         @Override
@@ -226,7 +228,7 @@ public class MailDbAdapter {
             
         	if(oldVersion == 1 && newVersion == 2){
         		
-        		// add a column to mail tabel
+        		// add a column to mail table
         		//
         		db.execSQL("alter table " + DATABASE_TABLE + " add column "+ ATTR_MESSAGE_ID + " text");
         		db.execSQL("alter table " + DATABASE_TABLE + " add column "+ ATTR_IN_REPLY_TO + " text");
@@ -235,10 +237,6 @@ public class MailDbAdapter {
         		// create the index by Message-ID and References
             	//
             	db.execSQL("create index " + DATABASE_TABLE_ID_INDEX + " on " + DATABASE_TABLE + " (" + ATTR_MESSAGE_ID + ")");
-            	
-            	// delete index of subject
-            	//
-            	db.execSQL("drop index " + DATABASE_TABLE_GROUP_SUB_INDEX);
         	}
         }
     }
@@ -383,41 +381,49 @@ public class MailDbAdapter {
     		}else{
         		// receive mail
         		//
-    			boolean t_found = false; 
+    			Cursor t_groupCursor = null;
+    			
     			String t_in_reply_id = _mail.getInReplyTo();
     			if(t_in_reply_id != null && t_in_reply_id.length() > 0){
-    				
+
     				Cursor t_cursor = mDb.query(DATABASE_TABLE,fsm_mailfullColoumns,ATTR_MESSAGE_ID + "='"+ t_in_reply_id + "'",
 												null,null,null,null);
-    				
     				try{
-    					
+    					    					
     					if(t_cursor.getCount() != 0){
     						t_cursor.moveToFirst();        					
-        					Cursor c = fetchGroup(t_cursor.getLong(t_cursor.getColumnIndex(ATTR_MAIL_GROUP_INDEX)));
-        					try{
-            					// update the former group
-                    			//
-                    			updateGroup(c,_mail,t_mailID);
-                    			_replyGroupId = c.getLong(c.getColumnIndex(KEY_ID));	
-        					}finally{
-        						c.close();
-        					}
+    						t_groupCursor = fetchGroup(t_cursor.getLong(t_cursor.getColumnIndex(ATTR_MAIL_GROUP_INDEX)));        					
+        				}else{
         					
-        					t_found = true;
+        					// can't find by In-Reply-To 
+        					// we find by subject
+        					//
+    		    			String t_subject = groupSubject(_mail.GetSubject());    		    			
+    		    			t_groupCursor = mDb.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns,GROUP_ATTR_SUBJECT + "='" + t_subject + "'",
+    		        											null,null,null,null);	
         				}
-    					
     				}finally{
     					t_cursor.close();
     				}	
     			}
     			
-    			if(!t_found){
-    				// can't find the old group
-        			// create a insert one
-        			//    			
-        			_replyGroupId = insertGroup(t_mailID,_mail);
-    			}
+    			try{
+					if(t_groupCursor != null && t_groupCursor.getCount() != 0){
+	        			// update the former group
+            			//
+            			updateGroup(t_groupCursor,_mail,t_mailID);
+            			_replyGroupId = t_groupCursor.getLong(t_groupCursor.getColumnIndex(KEY_ID));
+	    			}else{
+	    				// can't find the old group
+	        			// create a insert one
+	        			//    			
+	        			_replyGroupId = insertGroup(t_mailID,_mail);
+	    			}
+        		}finally{
+        			if(t_groupCursor != null){
+        				t_groupCursor.close();
+        			}        			
+        		}
     		}
     		
     		_mail.setDbIndex(t_mailID);

@@ -21,7 +21,24 @@
 		android:gravity="center"
 		android:textColor="#777"
 		android:textSize="16dp"
-		android:layout_centerInParent="true"
 		android:text="this is a attachment filename.txt (1.2M)"/>
+		
+	<Button 
+		android:id="@+id/mail_open_attachment_item_cancel_btn"
+		android:layout_below="@id/mail_open_attach_item_icon"
+		android:layout_alignParentRight="true"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:visibility="gone"
+		android:text="@string/mail_open_attach_cancel_btn"/>
+		
+	<ImageView 
+		android:id="@+id/mail_open_attachment_item_image"
+		android:layout_below="@id/mail_open_attach_item_icon"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:visibility="gone"
+		android:maxWidth="300sp"
+		android:maxHeight="300sp"/>
     
 </RelativeLayout>

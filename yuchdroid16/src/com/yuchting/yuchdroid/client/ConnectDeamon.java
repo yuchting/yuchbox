@@ -17,6 +17,8 @@ import java.util.Vector;
 
 import android.app.ActivityManager;
 import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.app.ActivityManager.RunningAppProcessInfo;
@@ -29,11 +31,27 @@ import android.net.NetworkInfo;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
+import android.widget.RemoteViews;
 
+import com.yuchting.yuchdroid.client.mail.MailComposeActivity;
+import com.yuchting.yuchdroid.client.mail.MailOpenActivity;
 import com.yuchting.yuchdroid.client.mail.SendMailDeamon;
 import com.yuchting.yuchdroid.client.mail.fetchMail;
 
 public class ConnectDeamon extends Service implements Runnable{
+	
+	public static final class FetchAttachment{
+		RemoteViews				m_views;
+		
+		int						m_mailIndex;
+		int						m_attachmentIdx;
+		int						m_attachmentSize;
+		 
+		String					m_realName;
+		int						m_completePercent;
+		 
+		ByteArrayOutputStream	m_fileContainBuffer = new ByteArrayOutputStream();
+	}
 	
 	public final static String TAG = ConnectDeamon.class.getName();
 	
@@ -56,9 +74,10 @@ public class ConnectDeamon extends Service implements Runnable{
 	public sendReceive	m_connect			= null;
 	public Selector		m_tmpConnectSelector = null;
 	public YuchDroidApp m_mainApp;
-	
-	
-		
+		 
+	//! receive the attachment
+	Vector<FetchAttachment>		m_vectReceiveAttach = new Vector<FetchAttachment>();
+			
 	// mail system variables
 	//
 	private Vector<Integer>			m_recvMailSimpleHashCodeSet = new Vector<Integer>();		
@@ -239,6 +258,18 @@ public class ConnectDeamon extends Service implements Runnable{
 				de.sendError();
 			}
 			m_sendingMailAttachment.clear();	
+		}
+	}
+	
+	private void clearRecvAttachment(){
+		// destory the all
+		//
+		synchronized (m_vectReceiveAttach) {
+			for(FetchAttachment att:m_vectReceiveAttach){
+				// TODO clear state
+			}
+			
+			m_vectReceiveAttach.clear();
 		}
 	}
 		
@@ -568,6 +599,77 @@ public class ConnectDeamon extends Service implements Runnable{
 			}
 		}
 	}
+	
+	public static boolean isAttachDownload(){
+		if(sm_connectDeamon != null){
+			return !sm_connectDeamon.m_vectReceiveAttach.isEmpty();
+		}
+		
+		return false;
+	}
+	
+	public static boolean isConnected(){
+		if(sm_connectDeamon != null){
+			return sm_connectDeamon.m_connect != null;
+		}
+		return false;
+	}
+	
+	public static boolean hasAttachmentDownload(fetchMail _mail,int _attachIndex){
+		if(sm_connectDeamon != null){
+			for(int i = 0;i < sm_connectDeamon.m_vectReceiveAttach.size();i++){
+				FetchAttachment att = sm_connectDeamon.m_vectReceiveAttach.get(i);
+				if(att.m_mailIndex == _mail.GetMailIndex() && _attachIndex == i){
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	public static void startDownload(fetchMail _mail,int _attachIndex,PendingIntent _openIntent){
+		if(sm_connectDeamon != null){
+			sm_connectDeamon.startDownload_impl(_mail, _attachIndex,_openIntent);
+		}
+	}
+	
+	private void startDownload_impl(fetchMail _mail,int _attachIndex,PendingIntent _openIntent){
+		
+		if(!m_vectReceiveAttach.isEmpty()){
+			return;
+		}
+		
+		if(_mail.GetAttachment().size() <= _attachIndex){
+			return ;
+		}
+		
+		// prepare data
+		//
+		fetchMail.MailAttachment mailAtt = _mail.GetAttachment().get(_attachIndex);
+		FetchAttachment t_att = new FetchAttachment();
+		
+		t_att.m_mailIndex 		= _mail.GetMailIndex();
+		t_att.m_attachmentIdx	= _attachIndex;
+		t_att.m_attachmentSize	= mailAtt.m_size;
+		t_att.m_realName		= mailAtt.m_name;
+		t_att.m_completePercent	= 0;
+			
+		Notification notification = new Notification(R.drawable.ic_notification_download,
+													getString(R.string.mail_open_attach_prompt),
+													System.currentTimeMillis());
+		
+		notification.setLatestEventInfo(this,null,null,_openIntent);
+		
+		RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.mail_download_att_notification);
+		notification.contentView = contentView;
+		notification.flags |= Notification.FLAG_NO_CLEAR;
+		t_att.m_views = contentView;
+		
+		NotificationManager t_mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+		t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL_ATT, notification);
+	}
+	
 	private synchronized void Disconnect_impl()throws Exception{
 			
 		m_connectState = false;		
@@ -580,6 +682,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		
 		closeConnect();
 		clearSendingAttachment();
+		clearRecvAttachment();
 		stopReconnectAlarm();
 		
 		m_mainApp.setConnectState(YuchDroidApp.STATE_DISCONNECT);
@@ -908,85 +1011,72 @@ public class ConnectDeamon extends Service implements Runnable{
 			}
 		}
 	}
-	
-	public static class FetchAttachment{
-		int						m_messageHashCode;
-		 
-		int						m_mailIndex;
-		int						m_attachmentIdx;
-		int						m_attachmentSize;
-		 
-		String					m_realName;
-		int						m_completePercent;
-		 
-		ByteArrayOutputStream	m_fileContainBuffer = new ByteArrayOutputStream();
-	}
-	 
-	//! receive the attachment
-	Vector<FetchAttachment>		m_vectReceiveAttach = new Vector<FetchAttachment>();
-	
+
 	public void ProcessMailAttach(InputStream in)throws Exception{
 		
-		final int t_mailIndex		= sendReceive.ReadInt(in);
-		final int t_attachIndex	= sendReceive.ReadInt(in);
-		final int t_startIndex		= sendReceive.ReadInt(in);
-		final int t_size			= sendReceive.ReadInt(in);
+		int t_mailIndex		= sendReceive.ReadInt(in);
+		int t_attachIndex	= sendReceive.ReadInt(in);
+		int t_startIndex	= sendReceive.ReadInt(in);
+		int t_size			= sendReceive.ReadInt(in);
 		
-		for(FetchAttachment t_att:m_vectReceiveAttach){
-						
-			if(t_att.m_mailIndex == t_mailIndex && t_att.m_attachmentIdx == t_attachIndex){
+		synchronized (m_vectReceiveAttach) {
+			for(FetchAttachment t_att:m_vectReceiveAttach){
 				
-				byte[] t_bytes = new byte[t_size];
-				sendReceive.ForceReadByte(in, t_bytes, t_size);
-				
-				t_att.m_fileContainBuffer.write(t_bytes);				
-				
-				//System.out.println("write msgMailAttach mailIndex:" + t_mailIndex + " attachIndex:" + t_attachIndex + " startIndex:" +
-				//					t_startIndex + " size:" + t_size + " first:" + (int)t_bytes[0]);
-				
-				t_att.m_completePercent = (t_startIndex + t_size) * 100 / t_att.m_attachmentSize;
-				
-				// TODO refresh UI of notification
-				//
-//				if(m_mainApp.m_downloadDlg != null){
-//					m_mainApp.m_downloadDlg.RefreshProgress(t_att);
-//				}
-				
-				if(t_startIndex + t_size >= t_att.m_attachmentSize){
+				if(t_att.m_mailIndex == t_mailIndex && t_att.m_attachmentIdx == t_attachIndex){
 					
-					// fetching attachment is over...
+					byte[] t_bytes = new byte[t_size];
+					sendReceive.ForceReadByte(in, t_bytes, t_size);
+					
+					t_att.m_fileContainBuffer.write(t_bytes);				
+					
+					//System.out.println("write msgMailAttach mailIndex:" + t_mailIndex + " attachIndex:" + t_attachIndex + " startIndex:" +
+					//					t_startIndex + " size:" + t_size + " first:" + (int)t_bytes[0]);
+					
+					t_att.m_completePercent = (t_startIndex + t_size) * 100 / t_att.m_attachmentSize;
+					
+					// TODO refresh UI of notification
 					//
-					File t_file = new File(m_mainApp.getAttachmentDir(),t_att.m_realName);
-					if(t_file.exists()){
-						t_file.delete();
+//					if(m_mainApp.m_downloadDlg != null){
+//						m_mainApp.m_downloadDlg.RefreshProgress(t_att);
+//					}
+					
+					if(t_startIndex + t_size >= t_att.m_attachmentSize){
+						
+						// fetching attachment is over...
+						//
+						File t_file = new File(m_mainApp.getAttachmentDir(),t_att.m_realName);
+						if(t_file.exists()){
+							t_file.delete();
+						}
+						
+						if(t_file.createNewFile()){
+							byte[] t_writeBytes = t_att.m_fileContainBuffer.toByteArray();
+							FileOutputStream os = new FileOutputStream(t_file);
+							try{
+								os.write(t_writeBytes);
+								os.flush();
+							}finally{
+								os.close();
+							}
+													
+							m_vectReceiveAttach.remove(t_att);
+							
+							// TODO to notification user download done
+							//
+							//m_mainApp.PopupDlgToOpenAttach(t_att);
+						}else{	
+							// TODO display error for user
+							//
+						}
 					}
 					
-					if(t_file.createNewFile()){
-						byte[] t_writeBytes = t_att.m_fileContainBuffer.toByteArray();
-						FileOutputStream os = new FileOutputStream(t_file);
-						try{
-							os.write(t_writeBytes);
-							os.flush();
-						}finally{
-							os.close();
-						}
-												
-						m_vectReceiveAttach.remove(t_att);
-						
-						// TODO to notification user download done
-						//
-						//m_mainApp.PopupDlgToOpenAttach(t_att);
-					}else{	
-						// TODO display error for user
-						//
-					}
+					break;
 				}
-				
-				break;
 			}
 		}
+		
 	}
-	
+		
 	public void ProcessFileAttach(InputStream in)throws Exception{
 		// weibo upload image done function
 		//

@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -33,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.yuchting.yuchdroid.client.ConfigInit;
+import com.yuchting.yuchdroid.client.ConnectDeamon;
 import com.yuchting.yuchdroid.client.GlobalDialog;
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
@@ -71,10 +73,11 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	Button					m_forwardBtn;
 	Button					m_deleteBtn;
 	
-	long					m_currGroupIdx = -1;
-	long					m_preGroupIdx = -1;
-	long					m_nextGroupIdx = -1;
-	int						m_cursorPosition;
+	public long					m_currGroupIdx = -1;
+	public long					m_preGroupIdx = -1;
+	public long					m_nextGroupIdx = -1;
+	public int						m_cursorPosition;
+	public int						m_currGroupLimit;
 	
 	final MailOpenActivity	m_composeActivity = this;
 	BroadcastReceiver		m_sendMailRecv = new BroadcastReceiver() {
@@ -232,8 +235,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         	finish();
         }
         
-        m_groupCursor			= m_mainApp.m_dba.fetchAllGroup(in.getIntExtra(INTENT_CURRENT_GROUP_LIMIT, HomeActivity.MAX_GROUP_FATCH_NUM));
-        
+      
         // prepare the nav
         //
         m_preGroupIdx 	= in.getExtras().getLong(INTENT_PRE_MAIL_GROUP_INDEX);
@@ -242,8 +244,11 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         
         // prepare the mail data
         //
-        m_currGroupIdx = in.getExtras().getLong(INTENT_CURRENT_MAIL_GROUP);    
+        m_currGroupIdx = in.getExtras().getLong(INTENT_CURRENT_MAIL_GROUP);
+        m_currGroupLimit = in.getIntExtra(INTENT_CURRENT_GROUP_LIMIT, HomeActivity.MAX_GROUP_FATCH_NUM);
         
+        m_groupCursor			= m_mainApp.m_dba.fetchAllGroup(m_currGroupLimit);
+                
         try{
         	fillMailContent();
         }catch(Exception e){
@@ -532,8 +537,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		TextView		m_touchHTML	= null;
 		
 		Button			m_resendBtn	= null;
-		
-		int				m_mailDbIdx;				
+						
 		boolean		m_opened = false;
 		
 		public Envelope(fetchMail _mail,Activity _ctx){
@@ -704,8 +708,8 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		public void refreshData(){
 			init();
 			
-			Address[] t_fromAddrList 	= fetchMail.parseAddressList(m_mail.GetFromVect());
-	        Address[] t_toAddrList		= fetchMail.parseAddressList(m_mail.GetSendToVect());
+			fetchMail.Address[] t_fromAddrList 	= fetchMail.parseAddressList(m_mail.GetFromVect());
+			fetchMail.Address[] t_toAddrList		= fetchMail.parseAddressList(m_mail.GetSendToVect());
 	        
 	        if(t_fromAddrList.length != 0){
 	        	m_fromAddr.setText(t_fromAddrList[0].m_name.length() != 0?t_fromAddrList[0].m_name:
@@ -728,8 +732,47 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	        	m_attchView.setVisibility(View.VISIBLE);
 	        	
 	        	LayoutInflater t_inflater = LayoutInflater.from(m_loadCtx);
-	        	View.OnClickListener t_click = null;
-	        	for(final MailAttachment att:m_mail.GetAttachment()){
+	        	View.OnClickListener t_click = new View.OnClickListener() {
+					
+					@Override
+					public void onClick(View v){
+						// TODO load the Attachment
+						//
+						if(!ConnectDeamon.isConnected()){
+							Toast.makeText(m_loadCtx, m_loadCtx.getString(R.string.mail_open_attach_prompt_disconnect), Toast.LENGTH_SHORT).show();
+							return ;
+						}
+						if(ConnectDeamon.isAttachDownload()){
+							Toast.makeText(m_loadCtx, m_loadCtx.getString(R.string.mail_open_attach_prompt_has_download), Toast.LENGTH_SHORT).show();
+							return ;
+						}
+						
+						int t_num = m_attchView.getChildCount();
+						for(int i = 0;i < t_num;i++){
+							if(m_attchView.getChildAt(i) == v){
+								startDownloadAttachment(i);
+								break;
+							}
+						}
+					}
+				};
+				
+				View.OnClickListener t_cancelclick = new View.OnClickListener() {
+					@Override
+					public void onClick(View v){
+						int num = m_attchView.getChildCount();
+						for(int i = 0;i < num;i++){
+							View child = m_attchView.getChildAt(i);
+							if(v == child){
+								break;
+							}
+						}
+					}
+				};
+				
+				
+	        	for(int i = 0;i < m_mail.GetAttachment().size();i++){
+	        		fetchMail.MailAttachment att = m_mail.GetAttachment().get(i);
 	        		View attachView = t_inflater.inflate(R.layout.mail_open_attachment_item,null);
 	        		TextView filename = (TextView)attachView.findViewById(R.id.mail_open_attachment_item_filename);
 	        		filename.setText(att.m_name + " ("+YuchDroidApp.GetByteStr(att.m_size) + ")");
@@ -737,22 +780,49 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	        		LinearLayout.LayoutParams t_lp = new LinearLayout.LayoutParams(
 	        				LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 	        		
-	        		if(t_click == null){
-	        			t_click = new View.OnClickListener() {
-							
-							@Override
-							public void onClick(View v){
-								// TODO load the Attachment
-								//
-								Toast.makeText(m_loadCtx, m_loadCtx.getString(R.string.mail_open_attach_prompt), Toast.LENGTH_SHORT).show();
-							}
-						};
-	        		}
 	        		attachView.setOnClickListener(t_click);
+	        		
+	        		if(ConnectDeamon.hasAttachmentDownload(m_mail,i)){
+	        			Button t_cancel = (Button)attachView.findViewById(R.id.mail_open_attachment_item_cancel_btn);
+	        			t_cancel.setVisibility(View.VISIBLE);
+	        			t_cancel.setOnClickListener(t_cancelclick);
+	        		}
 	        			        		
 	        		m_attchView.addView(attachView,t_lp);
 	        	}
 	        }	        
+		}
+		
+		private void startDownloadAttachment(int _idx){
+			long t_preGroupIndex = -1;
+			long t_nextGroupIndex = -1;
+			long t_currCursorPos = 0;
+			int t_limit			= HomeActivity.MAX_GROUP_FATCH_NUM;
+			
+			if(m_loadCtx instanceof MailOpenActivity){
+				MailOpenActivity t_mailOpenActivity;
+				t_mailOpenActivity = (MailOpenActivity)m_loadCtx;
+				
+				t_preGroupIndex 	= t_mailOpenActivity.m_preGroupIdx;
+				t_nextGroupIndex	= t_mailOpenActivity.m_nextGroupIdx;
+				t_currCursorPos		= t_mailOpenActivity.m_cursorPosition;
+				t_limit				= t_mailOpenActivity.m_currGroupLimit;
+			}
+			
+			Intent in = new Intent(Intent.ACTION_MAIN);
+			in.setClass(m_loadCtx, MailOpenActivity.class);
+			
+			in.putExtra(MailOpenActivity.INTENT_CURRENT_MAIL_GROUP, m_mail.getGroupIndex());
+			in.putExtra(MailOpenActivity.INTENT_PRE_MAIL_GROUP_INDEX, t_preGroupIndex);
+			in.putExtra(MailOpenActivity.INTENT_NEXT_MAIL_GROUP_INDEX, t_nextGroupIndex);
+			in.putExtra(MailOpenActivity.INTENT_NEXT_MAIL_CURSOR_POS,t_currCursorPos);
+			in.putExtra(MailOpenActivity.INTENT_CURRENT_GROUP_LIMIT,t_limit);
+										
+
+			PendingIntent contentIntent = PendingIntent.getActivity(m_loadCtx, 0, in,
+								PendingIntent.FLAG_UPDATE_CURRENT );
+			
+			ConnectDeamon.startDownload(m_mail,_idx,contentIntent);
 		}
 				
 		public void setOnClickEnvelope(View.OnClickListener _l){
@@ -828,5 +898,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			
 			return dialog;
 		}
+		
+		
 	}	
 }

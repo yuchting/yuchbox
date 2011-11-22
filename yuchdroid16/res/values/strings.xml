@@ -109,7 +109,10 @@
     <string name="mail_open_detail_from">From</string>
     <string name="mail_open_detail_to">To</string>
     <string name="mail_open_detail_email_click_prompt">Choose the sender:</string>
-    <string name="mail_open_attach_prompt">Attachment operation is not realize this version.</string>
+    <string name="mail_open_attach_prompt_disconnect">Can\'t be downloaded when disconnect server</string>
+    <string name="mail_open_attach_prompt_has_download">There is a attachment downloading</string>
+    <string name="mail_open_attach_prompt">Start download attachment</string>
+    <string name="mail_open_attach_cancel_btn">Cancel Download</string>
     
     
     

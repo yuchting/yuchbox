@@ -8,25 +8,24 @@ import java.util.Vector;
 import com.yuchting.yuchdroid.client.GPSInfo;
 import com.yuchting.yuchdroid.client.sendReceive;
 
-class MailAttachment{
-	int 		m_size;
-	String 		m_name;
-	String		m_type;
-}
-
-final class Address{
-	String m_name;
-	String m_addr;
-	
-	public Address(String _name,String _addr){
-		m_name = _name;
-		m_addr = _addr;
-	}
-};
-
-
 public class  fetchMail{
+	
+	public static final class MailAttachment{
+		public int 		m_size;
+		public String 		m_name;
+		public String		m_type;
+	}
+	
+	public static final class Address{
+		public String m_name;
+		public String m_addr;
 		
+		public Address(String _name,String _addr){
+			m_name = _name;
+			m_addr = _addr;
+		}
+	};
+	
 	final static int	VERSION = 4;
 	
 	public final static String	fsm_vectStringSpliter = "<>";

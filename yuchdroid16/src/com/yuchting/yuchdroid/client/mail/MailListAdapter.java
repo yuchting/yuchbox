@@ -186,7 +186,7 @@ public class MailListAdapter extends BaseAdapter{
         return convertView;
     }
     
-    public static String getShortAddrList(Address[] _list){
+    public static String getShortAddrList(fetchMail.Address[] _list){
     	
     	StringBuffer t_display = new StringBuffer();
 		int t_num = 0;

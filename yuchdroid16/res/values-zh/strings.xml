@@ -113,7 +113,10 @@
     <string name="mail_open_detail_from">来自</string>
     <string name="mail_open_detail_to">收件人</string>
     <string name="mail_open_detail_email_click_prompt">选择发送程序：</string>
-    <string name="mail_open_attach_prompt">附件操作这个版本尚未实现</string>
+    <string name="mail_open_attach_prompt_disconnect">不能在断开时下载附件</string>
+    <string name="mail_open_attach_prompt_has_download">已经有一个附件正在下载了</string>
+    <string name="mail_open_attach_prompt">开始下载附件</string>
+    <string name="mail_open_attach_cancel_btn">取消下载</string>
     
     <!-- mail compose view -->
     <string name="mail_compose_title">语盒邮件撰写</string>

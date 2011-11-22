@@ -78,7 +78,8 @@ public class YuchDroidApp extends Application {
 	// notification system varaibles
 	//
 	public final static	int				YUCH_NOTIFICATION_CONNECT_STATE	= 0;
-	public final static	int				YUCH_NOTIFICATION_MAIL			= 1;	
+	public final static	int				YUCH_NOTIFICATION_MAIL			= 1;
+	public final static	int				YUCH_NOTIFICATION_MAIL_ATT		= 2;
 		
 	private int m_mailNotificationNum		= 0;
 	
