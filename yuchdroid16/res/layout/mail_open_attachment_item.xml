@@ -32,6 +32,15 @@
 		android:visibility="gone"
 		android:text="@string/mail_open_attach_cancel_btn"/>
 		
+	<Button 
+		android:id="@+id/mail_open_attachment_item_open_btn"
+		android:layout_below="@id/mail_open_attach_item_icon"
+		android:layout_alignParentRight="true"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:visibility="gone"
+		android:text="@string/mail_open_attach_open_btn"/>
+		
 	<ImageView 
 		android:id="@+id/mail_open_attachment_item_image"
 		android:layout_below="@id/mail_open_attach_item_icon"

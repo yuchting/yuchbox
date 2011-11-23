@@ -16,6 +16,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -23,6 +25,7 @@ import android.text.style.ClickableSpan;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.webkit.WebView;
 import android.widget.Button;
@@ -143,8 +146,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			for(Envelope en:m_currMailList){
 				if(en.m_mail.GetMailIndex() == t_mailIndex
 				&& en.m_mail.getMessageID().equals(t_messageID)){
-					
-					
+					en.checkAttFile(t_attIndex);
 					break;
 				}
 			}
@@ -553,7 +555,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		TextView		m_bodyText	= null;
 		WebView			m_htmlText	= null;
 		
-		LinearLayout	m_attchView	= null;
+		LinearLayout	m_attachView	= null;
 		
 		ImageView		m_mailFlag	= null;
 		TextView		m_touchHTML	= null;
@@ -710,7 +712,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	        m_touchHTML	= (TextView)m_mainView.findViewById(R.id.mail_open_html_switch);
 	        m_resendBtn = (Button)m_mainView.findViewById(R.id.mail_open_resend_btn);
 	        
-	        m_attchView	= (LinearLayout)m_mainView.findViewById(R.id.mail_open_attachment_view);
+	        m_attachView	= (LinearLayout)m_mainView.findViewById(R.id.mail_open_attachment_view);
 	        
 	        refreshData();
 		}
@@ -747,20 +749,20 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	        
 	        // set the attachment file
 	        //
-	        m_attchView.removeAllViews();
-        	m_attchView.setVisibility(View.GONE);
+	        m_attachView.removeAllViews();
+        	m_attachView.setVisibility(View.GONE);
         	
 	        if(!m_mail.GetAttachment().isEmpty()){
-	        	m_attchView.setVisibility(View.VISIBLE);
+	        	m_attachView.setVisibility(View.VISIBLE);
 	        	
 	        	LayoutInflater t_inflater = LayoutInflater.from(m_loadCtx);
 	        	
 	        	final View.OnClickListener t_cancelclick = new View.OnClickListener() {
 					@Override
 					public void onClick(final View v){
-						int num = m_attchView.getChildCount();
+						int num = m_attachView.getChildCount();
 						for(int i = 0;i < num;i++){
-							View child = m_attchView.getChildAt(i);
+							View child = m_attachView.getChildAt(i);
 							if(v == child.findViewById(R.id.mail_open_attachment_item_cancel_btn)){
 								final int t_index = i;
 								
@@ -794,9 +796,9 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 							return ;
 						}
 						
-						int t_num = m_attchView.getChildCount();
+						int t_num = m_attachView.getChildCount();
 						for(int i = 0;i < t_num;i++){
-							if(m_attchView.getChildAt(i) == v){
+							if(m_attachView.getChildAt(i) == v){
 								startDownloadAttachment(i);
 								
 								Button t_cancel = (Button)v.findViewById(R.id.mail_open_attachment_item_cancel_btn);
@@ -817,8 +819,8 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	        		LinearLayout.LayoutParams t_lp = new LinearLayout.LayoutParams(
 	        				LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 	        		
-	        		attachView.setOnClickListener(t_click);
-	        		m_attchView.addView(attachView,t_lp);
+	        		
+	        		m_attachView.addView(attachView,t_lp);
 	        		
 	        		if(ConnectDeamon.hasAttachmentDownload(m_mail,i)){
 	        			Button t_cancel = (Button)attachView.findViewById(R.id.mail_open_attachment_item_cancel_btn);
@@ -827,24 +829,69 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	        		}else{
 	        			// check has been downloaded
 	        			//
-	        			
+	        			if(!checkAttFile(i)){
+	        				attachView.setOnClickListener(t_click);
+	        			}
 	        		}
 	        	}
 	        }	        
 		}
 		
-		public void checkAttFile(int _attachIdx){
-			assert m_attchView.getChildCount() > _attachIdx;
+		final static String[]	fsm_supportImageFormat = 
+		{
+			".jpg",
+			".png",
+			".bmp",
+			".tga",
+			".gif",
+		};
+		public boolean checkAttFile(final int _attachIdx){
+			assert m_attachView.getChildCount() > _attachIdx;
 			assert m_mail.GetAttachment().size() > _attachIdx;
 			
 			fetchMail.MailAttachment t_att = m_mail.GetAttachment().get(_attachIdx);
 			YuchDroidApp t_mainApp = (YuchDroidApp)m_loadCtx.getApplicationContext();
 			File t_filename = new File(t_mainApp.getAttachmentDir(),t_att.m_name);
 			if(t_filename.exists()){
-				if(){
-					BitmapFactory
+				
+				ViewGroup t_attachView = (ViewGroup)m_attachView.getChildAt(_attachIdx);
+				
+				boolean t_openImage = false;
+				String t_name = t_att.m_name.toLowerCase();
+				for(String suffix:fsm_supportImageFormat){
+					if(t_name.endsWith(suffix)){
+						t_openImage = true;
+						break;
+					}
 				}
+				if(t_openImage){
+					
+					Bitmap t_image = BitmapFactory.decodeFile(t_filename.getPath());
+					if(t_image != null){
+						ImageView t_imageView = (ImageView)t_attachView.findViewById(R.id.mail_open_attachment_item_image);
+						t_imageView.setImageBitmap(t_image);
+						t_imageView.setVisibility(View.VISIBLE);
+					}					
+				}
+				
+				Button t_cancel = (Button)t_attachView.findViewById(R.id.mail_open_attachment_item_cancel_btn);
+    			t_cancel.setVisibility(View.GONE);
+				
+				Button t_open = (Button)t_attachView.findViewById(R.id.mail_open_attachment_item_open_btn);
+				t_open.setVisibility(View.VISIBLE);
+				t_open.setOnClickListener(new View.OnClickListener() {
+					
+					@Override
+					public void onClick(View v) {
+						// TODO open the attachment file 
+						//
+					}
+				});
+				
+				return true;
 			}
+			
+			return false;
 		}
 		
 		private void startDownloadAttachment(int _idx){

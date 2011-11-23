@@ -17,7 +17,9 @@ import java.net.URLConnection;
 import java.security.KeyStore;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -98,7 +100,11 @@ public class HelloWorld {
 	
 	
 	public static void main(String arg[])throws Exception{
-		berryRecvTest();
+		List<String> t_list = Arrays.asList(new String[]{"aa","bb","cc"});
+		for(String str:t_list){
+			System.out.println(str);
+		}
+		
 	}
 	
 	public final static String	fsm_vectStringSpliter = "<>";

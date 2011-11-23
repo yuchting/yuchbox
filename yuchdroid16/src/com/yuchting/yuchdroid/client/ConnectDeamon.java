@@ -91,8 +91,8 @@ public class ConnectDeamon extends Service implements Runnable{
 			
 	// mail system variables
 	//
-	private Vector<Integer>			m_recvMailSimpleHashCodeSet = new Vector<Integer>();		
-	private Vector<SendMailDeamon>		m_sendingMailAttachment = new Vector<SendMailDeamon>();
+	private Vector<String>			m_recvMailMessageID = new Vector<String>();		
+	private Vector<SendMailDeamon>	m_sendingMailAttachment = new Vector<SendMailDeamon>();
 		
 	private Thread m_agentThread		= new Thread(this);	
 	private PowerManager.WakeLock m_powerWakeLock	= null;
@@ -992,23 +992,22 @@ public class ConnectDeamon extends Service implements Runnable{
 	
 		int t_hashcode = t_mail.GetSimpleHashCode();
 		
-		for(int i = 0;i < m_recvMailSimpleHashCodeSet.size();i++){
-			Integer t_simpleHash = (Integer)m_recvMailSimpleHashCodeSet.elementAt(i);
-			if(t_simpleHash.intValue() == t_hashcode ){
+		for(String id:m_recvMailMessageID){
+			
+			if(id.equals(t_mail.getMessageID())){
 				
-				SendMailConfirmMsg(t_hashcode);
-				
+				SendMailConfirmMsg(t_hashcode);				
 				m_mainApp.setErrorString("" + t_hashcode + " Mail has been added! ");
 				
 				return;
 			}
 		}
 				
-		if(m_recvMailSimpleHashCodeSet.size() > 256){
-			m_recvMailSimpleHashCodeSet.removeElementAt(0);
+		while(m_recvMailMessageID.size() > 256){
+			m_recvMailMessageID.removeElementAt(0);
 		}
 		
-		m_recvMailSimpleHashCodeSet.addElement(new Integer(t_mail.GetSimpleHashCode()));
+		m_recvMailMessageID.add(t_mail.getMessageID());
 		
 		try{
 						

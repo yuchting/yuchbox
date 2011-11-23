@@ -3,13 +3,14 @@ package com.yuchting.yuchdroid.client.mail;
 import java.io.FileInputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
@@ -185,6 +186,18 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 				t_sub = m_draftMail.GetSubject();
 				m_body.setText(m_draftMail.GetContain());
 				t_toVect = m_draftMail.GetSendToVect();
+				Vector<String> t_ccVect = m_draftMail.GetCCToVect();
+				Vector<String> t_bccVect = m_draftMail.GetBCCToVect();
+				
+				if(t_ccVect != null && !t_ccVect.isEmpty()){
+					showCc_Bcc();
+					setEmailAddr(m_cc, t_ccVect);
+				}
+				
+				if(t_bccVect != null && !t_bccVect.isEmpty()){
+					showCc_Bcc();
+					setEmailAddr(m_bcc, t_bccVect);
+				}
 			}else{
 								
 				if(m_referenceMailStyle == fetchMail.REPLY_STYLE
@@ -222,21 +235,14 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			}
 			
 			if(t_toVect != null){
-				
-				StringBuffer t_to = new StringBuffer();
-				for(String addr:t_toVect){
-					// get rid of comma with blank
-					//
-					t_to.append(addr.replace(',', ' ')).append(",");
-				}
-				m_to.setText(t_to.toString());
+				setEmailAddr(m_to,t_toVect);
 				m_body.requestFocus();
 			}else{
 				m_to.requestFocus();
 			}				
 			
 			setTitle(t_sub);
-			m_subject.setText(t_sub);
+			m_subject.setText(t_sub);		
 			
 		}else{
 			
@@ -245,8 +251,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			m_discardRefView.setVisibility(View.GONE);
 			m_to.requestFocus();
 			
-			loadSendMailIntentData();
-			
+			loadSendMailIntentData();			
 			loadSendMailAccountList();
 		}
 	}
@@ -769,14 +774,22 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		}
 	}
 	
+	private static void setEmailAddr(AutoCompleteTextView _view,List<String> _addrList){
+		if(_addrList != null){
+
+			StringBuffer t_to = new StringBuffer();
+			for(String addr:_addrList){
+				// get rid of comma with blank
+				//
+				t_to.append(addr.replace(',', ' ')).append(",");
+			}
+			_view.setText(t_to.toString());	
+		}
+	}
+	
 	private static boolean setEmailAddr(AutoCompleteTextView _view,String[] _addr){
 		if(_addr != null){
-			StringBuffer t_toString = new StringBuffer();
-			for(String to:_addr){
-				t_toString.append(to).append(",");
-			}
-			_view.setText(t_toString.toString());
-			
+			setEmailAddr(_view, Arrays.asList(_addr));			
 			return _addr.length > 0;
 		}		
 		return false;
