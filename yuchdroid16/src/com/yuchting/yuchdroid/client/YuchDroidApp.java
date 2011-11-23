@@ -52,6 +52,7 @@ public class YuchDroidApp extends Application {
 	public final static	String	FILTER_MAIL_GROUP_FLAG	= TAG + "_FILTER_MGF";
 	public final static	String	FILTER_RECV_MAIL		= TAG + "_FILTER_RM";
 	public final static	String	FILTER_DELETE_MAIL		= TAG + "_FILTER_DM";
+	public final static	String	FILTER_DOWNLOAD_ATT_DONE= TAG + "_FILTER_ATT";
 	
 	// FILTER_MARK_MAIL_READ broadcast parameters data
 	//
@@ -69,6 +70,12 @@ public class YuchDroidApp extends Application {
 	public final static	String	DATA_FILTER_MAIL_GROUP_FLAG_GROUP_FLAG	= "groupFlag";
 	public final static	String	DATA_FILTER_MAIL_GROUP_FLAG_REFRESH_BODY= "refreshBody";
 	
+	// FILTER_DOWNLOAD_ATT_DONE broadcast parameters data
+	//
+	public final static	String	DATA_FILTER_DOWNLOAD_ATT_DONE_INDEX		= "mailId";
+	public final static	String	DATA_FILTER_DOWNLOAD_ATT_DONE_ATT_INDEX	= "mailAttId";
+	public final static	String	DATA_FILTER_DOWNLOAD_ATT_DONE_MSG_ID	= "messageId";
+		
 	// connect state
 	//
 	public final static	int				STATE_DISCONNECT	= 0;

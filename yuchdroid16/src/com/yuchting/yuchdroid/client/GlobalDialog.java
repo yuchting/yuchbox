@@ -98,10 +98,32 @@ public class GlobalDialog extends Activity implements DialogInterface.OnCancelLi
     	_ctx.startActivity(myIntent);
 	}
 	
-	public static void showYesNoDialog(String _promptInfo,Context _ctx,DialogInterface.OnClickListener _yesNolistener){
+	public static interface YesNoListener{
+		public void click();
+	}
+	
+	public static void showYesNoDialog(String _promptInfo,Context _ctx,final YesNoListener _yes,final YesNoListener _no){
+		
+		DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				if(which == DialogInterface.BUTTON_POSITIVE){
+					if(_yes != null){
+						_yes.click();
+					}					
+				}else{
+					if(_no != null){
+						_no.click();
+					}	
+				}
+								
+			}
+		};
+		
 		AlertDialog.Builder builder = new AlertDialog.Builder(_ctx);
 		builder.setMessage(_promptInfo)
-			.setPositiveButton(R.string.dlg_info_yesno_confirm, _yesNolistener)
-		    .setNegativeButton(R.string.dlg_info_yesno_cancel	, _yesNolistener).show();
+				.setPositiveButton(R.string.dlg_info_yesno_confirm,listener)
+				.setNegativeButton(R.string.dlg_info_yesno_cancel,listener).show();
 	}
 }

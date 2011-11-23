@@ -1,6 +1,7 @@
 package com.yuchting.yuchdroid.client.mail;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
 import java.util.Vector;
@@ -12,7 +13,6 @@ import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
@@ -43,14 +43,15 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 
 	public final static String			TAG = "MailOpenActivity";
 	
+	// start onCreate Intent parameters
+	//
 	public final static String			INTENT_PRE_MAIL_GROUP_INDEX 	= "pre";
 	public final static String			INTENT_NEXT_MAIL_GROUP_INDEX	= "next";
 	public final static String			INTENT_NEXT_MAIL_CURSOR_POS		= "pos";
 	public final static String			INTENT_CURRENT_GROUP_LIMIT		= "group";
 		
 	public final static String			INTENT_CURRENT_MAIL_GROUP		= "mail";
-	
-	
+		
 	
 	YuchDroidApp			m_mainApp;
 	Cursor					m_groupCursor;
@@ -125,6 +126,26 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 					}catch(Exception e){
 						m_mainApp.setErrorString(TAG+" sendMailRecv",e);
 					}
+				}
+			}
+			
+		}
+	};
+	
+	BroadcastReceiver	m_attDownloadDone = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			int t_mailIndex = intent.getIntExtra(YuchDroidApp.DATA_FILTER_DOWNLOAD_ATT_DONE_INDEX,-1);
+			int t_attIndex = intent.getIntExtra(YuchDroidApp.DATA_FILTER_DOWNLOAD_ATT_DONE_ATT_INDEX, -1);
+			String t_messageID = intent.getStringExtra(YuchDroidApp.DATA_FILTER_DOWNLOAD_ATT_DONE_MSG_ID);
+						
+			for(Envelope en:m_currMailList){
+				if(en.m_mail.GetMailIndex() == t_mailIndex
+				&& en.m_mail.getMessageID().equals(t_messageID)){
+					
+					
+					break;
 				}
 			}
 			
@@ -256,7 +277,8 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         	finish();
         }
         
-        registerReceiver(m_sendMailRecv, new IntentFilter(YuchDroidApp.FILTER_MAIL_GROUP_FLAG));       
+        registerReceiver(m_sendMailRecv, new IntentFilter(YuchDroidApp.FILTER_MAIL_GROUP_FLAG));
+        registerReceiver(m_attDownloadDone,new IntentFilter(YuchDroidApp.FILTER_DOWNLOAD_ATT_DONE));
     }
 	
 
@@ -265,7 +287,9 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		super.onDestroy();
 		
 		m_groupCursor.close();
+		
 		unregisterReceiver(m_sendMailRecv);
+		unregisterReceiver(m_attDownloadDone);		
 	}
 	
 	protected Dialog onCreateDialog (int id){
@@ -449,39 +473,37 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			if(m_currGroupIdx != -1){
 
 				GlobalDialog.showYesNoDialog(getString(R.string.mail_open_delete_prompt), this, 
-					new DialogInterface.OnClickListener() {
-						
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							if(which == DialogInterface.BUTTON_POSITIVE){	
+				new GlobalDialog.YesNoListener() {
+					
+					@Override
+					public void click() {
 
-								if(m_mainApp.m_config.m_delRemoteMail){
-									// send deleting messge to server
-									//
-									StringBuffer t_hashList = new StringBuffer();
-									for(Envelope en:m_currMailList){
-										if(!en.m_mail.isOwnSendMail()){
-											t_hashList.append(en.m_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
-										}
-									}
-									
-									// send broadcast to ConnectDeamon
-									//
-									Intent t_intent = new Intent(YuchDroidApp.FILTER_DELETE_MAIL);
-						        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_hashList.toString());
-						    		sendBroadcast(t_intent);
+						if(m_mainApp.m_config.m_delRemoteMail){
+							// send deleting messge to server
+							//
+							StringBuffer t_hashList = new StringBuffer();
+							for(Envelope en:m_currMailList){
+								if(!en.m_mail.isOwnSendMail()){
+									t_hashList.append(en.m_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
 								}
-								
-								m_mainApp.m_dba.deleteGroup(m_currGroupIdx);
-								
-								Intent in = new Intent(YuchDroidApp.FILTER_MAIL_GROUP_FLAG);
-								sendBroadcast(in);
-								
-								finish();
-								
-							}						
+							}
+							
+							// send broadcast to ConnectDeamon
+							//
+							Intent t_intent = new Intent(YuchDroidApp.FILTER_DELETE_MAIL);
+				        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_hashList.toString());
+				    		sendBroadcast(t_intent);
 						}
-					});	
+						
+						m_mainApp.m_dba.deleteGroup(m_currGroupIdx);
+						
+						Intent in = new Intent(YuchDroidApp.FILTER_MAIL_GROUP_FLAG);
+						sendBroadcast(in);
+						
+						finish();
+													
+					}
+				},null);
 			}
 		}
 	}
@@ -732,7 +754,32 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	        	m_attchView.setVisibility(View.VISIBLE);
 	        	
 	        	LayoutInflater t_inflater = LayoutInflater.from(m_loadCtx);
-	        	View.OnClickListener t_click = new View.OnClickListener() {
+	        	
+	        	final View.OnClickListener t_cancelclick = new View.OnClickListener() {
+					@Override
+					public void onClick(final View v){
+						int num = m_attchView.getChildCount();
+						for(int i = 0;i < num;i++){
+							View child = m_attchView.getChildAt(i);
+							if(v == child.findViewById(R.id.mail_open_attachment_item_cancel_btn)){
+								final int t_index = i;
+								
+								GlobalDialog.showYesNoDialog(m_loadCtx.getString(R.string.mail_open_attach_cancel_btn_prompt),m_loadCtx, 
+								new GlobalDialog.YesNoListener() {
+									@Override
+									public void click(){
+										ConnectDeamon.stopDownload(m_mail, t_index);
+										v.setVisibility(View.GONE);
+									}
+								},null);
+								
+								break;
+							}
+						}
+					}
+				};
+				
+				final View.OnClickListener t_click = new View.OnClickListener() {
 					
 					@Override
 					public void onClick(View v){
@@ -751,25 +798,15 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 						for(int i = 0;i < t_num;i++){
 							if(m_attchView.getChildAt(i) == v){
 								startDownloadAttachment(i);
+								
+								Button t_cancel = (Button)v.findViewById(R.id.mail_open_attachment_item_cancel_btn);
+			        			t_cancel.setVisibility(View.VISIBLE);
+			        			t_cancel.setOnClickListener(t_cancelclick);
 								break;
 							}
 						}
 					}
 				};
-				
-				View.OnClickListener t_cancelclick = new View.OnClickListener() {
-					@Override
-					public void onClick(View v){
-						int num = m_attchView.getChildCount();
-						for(int i = 0;i < num;i++){
-							View child = m_attchView.getChildAt(i);
-							if(v == child){
-								break;
-							}
-						}
-					}
-				};
-				
 				
 	        	for(int i = 0;i < m_mail.GetAttachment().size();i++){
 	        		fetchMail.MailAttachment att = m_mail.GetAttachment().get(i);
@@ -781,19 +818,37 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	        				LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 	        		
 	        		attachView.setOnClickListener(t_click);
+	        		m_attchView.addView(attachView,t_lp);
 	        		
 	        		if(ConnectDeamon.hasAttachmentDownload(m_mail,i)){
 	        			Button t_cancel = (Button)attachView.findViewById(R.id.mail_open_attachment_item_cancel_btn);
 	        			t_cancel.setVisibility(View.VISIBLE);
 	        			t_cancel.setOnClickListener(t_cancelclick);
+	        		}else{
+	        			// check has been downloaded
+	        			//
+	        			
 	        		}
-	        			        		
-	        		m_attchView.addView(attachView,t_lp);
 	        	}
 	        }	        
 		}
 		
+		public void checkAttFile(int _attachIdx){
+			assert m_attchView.getChildCount() > _attachIdx;
+			assert m_mail.GetAttachment().size() > _attachIdx;
+			
+			fetchMail.MailAttachment t_att = m_mail.GetAttachment().get(_attachIdx);
+			YuchDroidApp t_mainApp = (YuchDroidApp)m_loadCtx.getApplicationContext();
+			File t_filename = new File(t_mainApp.getAttachmentDir(),t_att.m_name);
+			if(t_filename.exists()){
+				if(){
+					BitmapFactory
+				}
+			}
+		}
+		
 		private void startDownloadAttachment(int _idx){
+			
 			long t_preGroupIndex = -1;
 			long t_nextGroupIndex = -1;
 			long t_currCursorPos = 0;

@@ -528,30 +528,26 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		if(v == m_discardRefView){
 			
 			GlobalDialog.showYesNoDialog(getString(R.string.mail_compose_delete_ref_mail), this, 
-			new DialogInterface.OnClickListener() {
+			new GlobalDialog.YesNoListener() {
 				
 				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					if(which == DialogInterface.BUTTON_POSITIVE){
-						discardReferenceMail();
-					}					
+				public void click() {
+					discardReferenceMail();				
 				}
-			});
+			},null);
 			
 		}else if(v == m_sendBtn){
 			if(!m_modified){
 				// without modified confirm
 				//
 				GlobalDialog.showYesNoDialog(getString(R.string.mail_compose_send_without_modified), this, 
-				new DialogInterface.OnClickListener(){
+				new GlobalDialog.YesNoListener(){
 					
 					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						if(which == DialogInterface.BUTTON_POSITIVE){
-							send();
-						}					
+					public void click() {
+						send();			
 					}
-				});
+				},null);
 				
 			}else{
 				
@@ -559,15 +555,13 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 					// body is empty confirm
 					//
 					GlobalDialog.showYesNoDialog(getString(R.string.mail_compose_empty_body_question), this, 
-					new DialogInterface.OnClickListener(){
+					new GlobalDialog.YesNoListener(){
 						
 						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							if(which == DialogInterface.BUTTON_POSITIVE){
-								send();
-							}					
+						public void click() {
+							send();			
 						}
-					});
+					},null);
 				}else{
 					send();
 				}
@@ -609,15 +603,13 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		}
 		
 		GlobalDialog.showYesNoDialog(getString(R.string.mail_compose_discard_mail), this, 
-		new DialogInterface.OnClickListener() {
+		new GlobalDialog.YesNoListener() {
 			
 			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				if(which == DialogInterface.BUTTON_POSITIVE){
-					finish();
-				}					
+			public void click() {
+				finish();			
 			}
-		});
+		},null);
 	}
 	
 	private void send(){

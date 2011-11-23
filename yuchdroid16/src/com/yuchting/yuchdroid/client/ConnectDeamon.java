@@ -33,8 +33,6 @@ import android.os.PowerManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-import com.yuchting.yuchdroid.client.mail.MailComposeActivity;
-import com.yuchting.yuchdroid.client.mail.MailOpenActivity;
 import com.yuchting.yuchdroid.client.mail.SendMailDeamon;
 import com.yuchting.yuchdroid.client.mail.fetchMail;
 
@@ -42,15 +40,28 @@ public class ConnectDeamon extends Service implements Runnable{
 	
 	public static final class FetchAttachment{
 		RemoteViews				m_views;
-		
+		PendingIntent			m_openIntent;
 		int						m_mailIndex;
 		int						m_attachmentIdx;
 		int						m_attachmentSize;
-		 
+		
+		String					m_messageID;
 		String					m_realName;
-		int						m_completePercent;
 		 
 		ByteArrayOutputStream	m_fileContainBuffer = new ByteArrayOutputStream();
+		
+		public void refreshName(fetchMail _mail){
+			StringBuffer t_name = new StringBuffer();
+			t_name.append("(").append(YuchDroidApp.GetByteStr(m_attachmentSize)).append(")")
+					.append(m_realName);
+			
+			m_views.setTextViewText(R.id.mail_download_att_filename,t_name.toString());
+		}
+		
+		public void refreshProgress(int _percent){
+			m_views.setProgressBar(R.id.mail_download_att_progress,100,_percent,false);
+			m_views.setTextViewText(R.id.mail_download_att_progress_text, Integer.toString(_percent) + "%");
+		}
 	}
 	
 	public final static String TAG = ConnectDeamon.class.getName();
@@ -266,11 +277,13 @@ public class ConnectDeamon extends Service implements Runnable{
 		//
 		synchronized (m_vectReceiveAttach) {
 			for(FetchAttachment att:m_vectReceiveAttach){
-				// TODO clear state
+				// TODO clear state 
 			}
 			
 			m_vectReceiveAttach.clear();
 		}
+		
+		stopDownloadAttNotification();
 	}
 		
 	public void onDestroy(){
@@ -619,7 +632,8 @@ public class ConnectDeamon extends Service implements Runnable{
 		if(sm_connectDeamon != null){
 			for(int i = 0;i < sm_connectDeamon.m_vectReceiveAttach.size();i++){
 				FetchAttachment att = sm_connectDeamon.m_vectReceiveAttach.get(i);
-				if(att.m_mailIndex == _mail.GetMailIndex() && _attachIndex == i){
+				if(att.m_mailIndex == _mail.GetMailIndex() && _attachIndex == i
+				&& att.m_messageID.equals(_mail.getMessageID())){
 					return true;
 				}
 			}
@@ -648,26 +662,92 @@ public class ConnectDeamon extends Service implements Runnable{
 		//
 		fetchMail.MailAttachment mailAtt = _mail.GetAttachment().get(_attachIndex);
 		FetchAttachment t_att = new FetchAttachment();
-		
+				
 		t_att.m_mailIndex 		= _mail.GetMailIndex();
 		t_att.m_attachmentIdx	= _attachIndex;
+		t_att.m_messageID		= _mail.getMessageID();
 		t_att.m_attachmentSize	= mailAtt.m_size;
 		t_att.m_realName		= mailAtt.m_name;
-		t_att.m_completePercent	= 0;
-			
+		t_att.m_views			= new RemoteViews(getPackageName(), R.layout.mail_download_att_notification);
+		t_att.m_openIntent		= _openIntent;
+		t_att.refreshName(_mail);
+		m_vectReceiveAttach.add(t_att);
+		
+		// start the notification of status bar
+		//
 		Notification notification = new Notification(R.drawable.ic_notification_download,
 													getString(R.string.mail_open_attach_prompt),
 													System.currentTimeMillis());
 		
 		notification.setLatestEventInfo(this,null,null,_openIntent);
-		
-		RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.mail_download_att_notification);
-		notification.contentView = contentView;
+		notification.contentView = t_att.m_views;
 		notification.flags |= Notification.FLAG_NO_CLEAR;
-		t_att.m_views = contentView;
+		
 		
 		NotificationManager t_mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 		t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL_ATT, notification);
+		
+		
+		// send to message to server to download the attach
+		//
+		try{
+			// send the message to server to stop 
+			//
+			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+			t_os.write(msg_head.msgFetchAttach);
+			sendReceive.WriteInt(t_os, t_att.m_mailIndex);
+			sendReceive.WriteInt(t_os, t_att.m_attachmentIdx);
+						
+			addSendingData(msg_head.msgMailAttCancel, t_os.toByteArray(), true);
+			
+		}catch(Exception e){
+			m_mainApp.setErrorString("stopDownload_impl", e);
+		}
+	}
+	
+	private void stopDownloadAttNotification(){
+		NotificationManager t_mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+		t_mgr.cancel(YuchDroidApp.YUCH_NOTIFICATION_MAIL_ATT);
+	}
+	
+	public static void stopDownload(fetchMail _mail,int _attachIndex){
+		if(sm_connectDeamon != null){
+			sm_connectDeamon.stopDownload_impl(_mail, _attachIndex);
+		}
+	}
+	
+	private void stopDownload_impl(fetchMail _mail,int _attachIndex){
+		synchronized (m_vectReceiveAttach) {
+			
+			for(int i = 0;i < m_vectReceiveAttach.size();i++){
+				FetchAttachment att = m_vectReceiveAttach.get(i);
+				if(att.m_mailIndex == _mail.GetMailIndex() && _attachIndex == i){
+					
+					try{
+						// send the message to server to stop 
+						//
+						ByteArrayOutputStream os = new ByteArrayOutputStream();
+						os.write(msg_head.msgMailAttCancel);
+						sendReceive.WriteInt(os,_mail.GetMailIndex());
+						
+						addSendingData(msg_head.msgMailAttCancel, os.toByteArray(), true);
+						
+					}catch(Exception e){
+						m_mainApp.setErrorString("stopDownload_impl", e);
+					}
+					
+					// cancel the notification
+					//
+					stopDownloadAttNotification();
+					
+					// remove data of fetching attachment
+					//
+					m_vectReceiveAttach.remove(i);
+					
+					break;
+				}
+			}
+		}
 	}
 	
 	private synchronized void Disconnect_impl()throws Exception{
@@ -1031,16 +1111,13 @@ public class ConnectDeamon extends Service implements Runnable{
 					
 					//System.out.println("write msgMailAttach mailIndex:" + t_mailIndex + " attachIndex:" + t_attachIndex + " startIndex:" +
 					//					t_startIndex + " size:" + t_size + " first:" + (int)t_bytes[0]);
+									
 					
-					t_att.m_completePercent = (t_startIndex + t_size) * 100 / t_att.m_attachmentSize;
-					
-					// TODO refresh UI of notification
-					//
-//					if(m_mainApp.m_downloadDlg != null){
-//						m_mainApp.m_downloadDlg.RefreshProgress(t_att);
-//					}
+
 					
 					if(t_startIndex + t_size >= t_att.m_attachmentSize){
+						
+						t_att.refreshProgress(100);
 						
 						// fetching attachment is over...
 						//
@@ -1050,6 +1127,7 @@ public class ConnectDeamon extends Service implements Runnable{
 						}
 						
 						if(t_file.createNewFile()){
+							
 							byte[] t_writeBytes = t_att.m_fileContainBuffer.toByteArray();
 							FileOutputStream os = new FileOutputStream(t_file);
 							try{
@@ -1061,13 +1139,38 @@ public class ConnectDeamon extends Service implements Runnable{
 													
 							m_vectReceiveAttach.remove(t_att);
 							
-							// TODO to notification user download done
+							// to notification user download done
+							//							
+							Intent intent = new Intent(YuchDroidApp.FILTER_DOWNLOAD_ATT_DONE);
+							intent.putExtra(YuchDroidApp.DATA_FILTER_DOWNLOAD_ATT_DONE_INDEX,t_att.m_mailIndex);
+							intent.putExtra(YuchDroidApp.DATA_FILTER_DOWNLOAD_ATT_DONE_ATT_INDEX,t_att.m_attachmentIdx);
+							intent.putExtra(YuchDroidApp.DATA_FILTER_DOWNLOAD_ATT_DONE_MSG_ID,t_att.m_messageID);
+							sendBroadcast(intent);
+							
+							// start the notification of status bar
 							//
+							Notification notification = new Notification(R.drawable.ic_notification_download,
+																		getString(R.string.mail_open_attach_prompt),
+																		System.currentTimeMillis());
+							
+							notification.setLatestEventInfo(this,null,null,t_att.m_openIntent);
+							
+							notification.contentView = t_att.m_views;
+							notification.flags |= Notification.FLAG_AUTO_CANCEL;
+														
+							NotificationManager t_mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+							t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL_ATT, notification);
+							
 							//m_mainApp.PopupDlgToOpenAttach(t_att);
 						}else{	
 							// TODO display error for user
 							//
 						}
+					}else{
+
+						// refresh UI of notification
+						//
+						t_att.refreshProgress((t_startIndex + t_size) * 100 / t_att.m_attachmentSize);
 					}
 					
 					break;

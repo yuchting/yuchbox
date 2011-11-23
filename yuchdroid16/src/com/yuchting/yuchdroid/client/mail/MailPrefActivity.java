@@ -58,18 +58,18 @@ public class MailPrefActivity extends PreferenceActivity {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
 				GlobalDialog.showYesNoDialog(getString(R.string.login_pref_statistics_clear_prompt),MailPrefActivity.this,
-					new DialogInterface.OnClickListener(){
+					new GlobalDialog.YesNoListener(){
 			
 					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						if(which == DialogInterface.BUTTON_POSITIVE){
-							m_config.m_sendMailNum = 0;
-							m_config.m_recvMailNum = 0;
-							
-							updateData(true);
-						}
+					public void click() {
+						
+						m_config.m_sendMailNum = 0;
+						m_config.m_recvMailNum = 0;
+						
+						updateData(true);
+					
 					}
-				});
+				},null);
 				return true;
 			}
 		});

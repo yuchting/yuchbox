@@ -96,19 +96,17 @@ public class ConnectPrefActivity extends PreferenceActivity {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
 				GlobalDialog.showYesNoDialog(getString(R.string.login_pref_statistics_clear_prompt), 
-									ConnectPrefActivity.this,
-									new DialogInterface.OnClickListener(){
-
+				ConnectPrefActivity.this,new GlobalDialog.YesNoListener() {
+					
 					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						if(which == DialogInterface.BUTTON_POSITIVE){
-							m_config.m_uploadByte = 0;
-							m_config.m_downloadByte = 0;
-							
-							updateData(true);
-						}
+					public void click() {
+						m_config.m_uploadByte = 0;
+						m_config.m_downloadByte = 0;
+						
+						updateData(true);
 					}
-				});
+				},null);
+				
 				return false;
 			}
 		});
