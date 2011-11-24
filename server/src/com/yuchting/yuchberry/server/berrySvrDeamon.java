@@ -12,8 +12,7 @@ class berrySvrPush extends Thread{
 	
 	public berrySvrPush(berrySvrDeamon _svrDeamon)throws Exception{
 		m_serverDeamon = _svrDeamon;
-		m_sendReceive = new sendReceive(m_serverDeamon.m_socket.getOutputStream(),
-										m_serverDeamon.m_socket.getInputStream());
+		m_sendReceive = new sendReceive(m_serverDeamon.m_socket);
 		
 		start();
 	}

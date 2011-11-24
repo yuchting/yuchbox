@@ -2,8 +2,10 @@ package com.yuchting.yuchberry.server;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -13,16 +15,19 @@ class sendReceive extends Thread{
 	OutputStream		m_socketOutputStream = null;
 	InputStream			m_socketInputStream = null;
 	
+	Socket				m_currSocket		= null;
+	
 	int					m_sendBufferLen 		= 0;
 	
-	private Vector		m_unsendedPackage 		= new Vector();
-	private Vector		m_unprocessedPackage 	= new Vector();
+	private Vector<byte[]>		m_unsendedPackage 		= new Vector<byte[]>();
+	private Vector<byte[]>		m_unprocessedPackage 	= new Vector<byte[]>();
 	
 	boolean			m_closed				= false;
 		
-	public sendReceive(OutputStream _socketOut,InputStream _socketIn){
-		m_socketOutputStream = _socketOut;
-		m_socketInputStream = _socketIn;
+	public sendReceive(Socket _socket)throws Exception{
+		m_currSocket		= _socket;
+		m_socketOutputStream = _socket.getOutputStream();
+		m_socketInputStream = _socket.getInputStream();
 				
 		start();
 	}
@@ -94,13 +99,36 @@ class sendReceive extends Thread{
 		return t_stream.toByteArray();
 	}
 	
+	public static final String toHex(byte b) {
+		return ("" + "0123456789ABCDEF".charAt(0xf & b >> 4) + "0123456789ABCDEF".charAt(b & 0xf));
+	}
+	
+	FileOutputStream	m_debugFile = null;
+	private void writeDebugFile(byte[] _data){
+		try{
+			if(m_debugFile == null){
+				m_debugFile = new FileOutputStream("serv_debugData.data");
+			}
+			
+			StringBuffer t_buffer = new StringBuffer();
+			for(byte b:_data){
+				t_buffer.append(toHex(b)).append(" ");
+			}
+			t_buffer.append("\n");
+			m_debugFile.write(t_buffer.toString().getBytes());
+			
+		}catch(Exception e){
+			
+		}
+	}
+	
 	//! send buffer implement
 	private void SendBufferToSvr_imple(byte[] _write)throws Exception{
 		
 		if(_write == null){
 			return;
-		}		
-		
+		}
+			
 		OutputStream os = m_socketOutputStream;
 		
 		ByteArrayOutputStream zos = new ByteArrayOutputStream();
@@ -109,6 +137,8 @@ class sendReceive extends Thread{
 		zo.close();	
 		
 		byte[] t_zipData = zos.toByteArray();
+		
+		writeDebugFile(t_zipData);
 		
 		if(t_zipData.length > _write.length){
 			// if the ZIP data is large than original length

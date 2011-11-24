@@ -450,7 +450,7 @@ public class HelloWorld {
 		try{
 			
 			Socket t_socket = GetSocketServer("111111","localhost",9716,false);
-			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
+			sendReceive t_receive = new sendReceive(t_socket);
 			
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			os.write(msg_head.msgConfirm);
@@ -499,7 +499,7 @@ public class HelloWorld {
 		try{
 			
 			Socket t_socket = GetSocketServer("111111","192.168.10.20",9716,false);
-			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
+			sendReceive t_receive = new sendReceive(t_socket);
 			
 			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
 			t_stream.write(msg_head.msgConfirm);
@@ -534,7 +534,7 @@ public class HelloWorld {
 		try{
 			
 			Socket t_socket = GetSocketServer("111111","127.0.0.1",9716,false);
-			sendReceive t_receive = new sendReceive(t_socket.getOutputStream(),t_socket.getInputStream());
+			sendReceive t_receive = new sendReceive(t_socket);
 			
 			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
 			t_stream.write(msg_head.msgConfirm);

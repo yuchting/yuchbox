@@ -356,7 +356,7 @@ public class fetchMgr{
 		
 		try{
 			
-			t_tmp = new sendReceive(_s.getOutputStream(),_s.getInputStream());
+			t_tmp = new sendReceive(_s);
 			
 			m_logger.LogOut("some client<"+ _s.getInetAddress().getHostAddress() +"> connecting ,waiting for auth");
 			
