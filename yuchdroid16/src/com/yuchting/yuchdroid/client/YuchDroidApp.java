@@ -604,7 +604,9 @@ public class YuchDroidApp extends Application {
 		
 		// clear all unhandle excpetion files 
 		//
-		String[] t_files = (new File(getFilesDir().getAbsolutePath())).list(new FilenameFilter() {
+		String t_path = getFilesDir().getAbsolutePath();
+		
+		String[] t_files = (new File(t_path)).list(new FilenameFilter() {
 			
 			@Override
 			public boolean accept(File dir, String filename) {
@@ -614,7 +616,7 @@ public class YuchDroidApp extends Application {
 		});
 		
 		for(String f:t_files){
-			File delFile = new File(f);
+			File delFile = new File(t_path,f);
 			delFile.delete();
 		}
 	}

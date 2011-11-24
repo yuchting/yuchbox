@@ -888,6 +888,10 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 					}
 				});
 				
+				// disable the click listener
+				//
+				t_attachView.setOnClickListener(null);
+				
 				return true;
 			}
 			
@@ -979,18 +983,9 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			t_fromView.setText(t_form);
 			t_fromView.setOnClickListener(t_emailClick);
 			
-			LinearLayout t_toLayout = (LinearLayout)layout.findViewById(R.id.mail_open_detail_to_list);
-			for(String to:m_mail.GetSendToVect()){
-				TextView v = new TextView(m_loadCtx);
-				v.setLayoutParams(
-						new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT,
-									LinearLayout.LayoutParams.WRAP_CONTENT));
-				v.setPadding(10, 10, 10, 10);
-				v.setText(to);
-				v.setOnClickListener(t_emailClick);
-				t_toLayout.addView(v);
-				
-			}
+			addDetailAddr((ViewGroup)layout.findViewById(R.id.mail_open_detail_to_list),m_mail.GetSendToVect(),t_emailClick);
+			addDetailAddr((ViewGroup)layout.findViewById(R.id.mail_open_detail_cc_list),m_mail.GetCCToVect(),t_emailClick);
+			addDetailAddr((ViewGroup)layout.findViewById(R.id.mail_open_detail_bcc_list),m_mail.GetBCCToVect(),t_emailClick);
 			
 			TextView t_subjectView 	= (TextView)layout.findViewById(R.id.mail_open_detail_subject);
 			t_subjectView.setText(t_subject);
@@ -999,6 +994,23 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			t_dataView.setText(getDateString() + " " + getTimeString());
 			
 			return dialog;
+		}
+		
+		private void addDetailAddr(ViewGroup _view,Vector<String> _addrList,View.OnClickListener _click){
+
+			_view.setVisibility(_addrList.isEmpty()?View.GONE:View.VISIBLE);
+			
+			for(String to:_addrList){
+				TextView v = new TextView(m_loadCtx);
+				v.setLayoutParams(
+						new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT,
+									LinearLayout.LayoutParams.WRAP_CONTENT));
+				v.setPadding(10, 10, 10, 10);
+				v.setText(to);
+				v.setOnClickListener(_click);
+				_view.addView(v);
+				
+			}	
 		}
 		
 		

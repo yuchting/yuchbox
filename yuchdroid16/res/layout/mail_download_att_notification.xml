@@ -11,12 +11,13 @@
     	android:gravity="center"
     	android:singleLine="true"
     	android:padding="5sp"
-    	android:text="download filname"/>
+    	android:text="download filname"
+    	android:textColor="#000"/>
     <ProgressBar 
     	android:id="@+id/mail_download_att_progress"
     	android:layout_below="@id/mail_download_att_filename"
     	android:layout_marginLeft="5sp"
-    	android:layout_width="275sp"
+    	android:layout_width="270sp"
     	android:layout_height="wrap_content"
     	style="?android:attr/progressBarStyleHorizontal" 
     	android:max="100"/>
@@ -28,5 +29,6 @@
     	android:layout_height="wrap_content"
     	android:layout_marginLeft="5sp"
     	android:gravity="center"
-    	android:text="0%"/>
+    	android:text="0%"
+    	android:textColor="#000"/>
 </RelativeLayout>

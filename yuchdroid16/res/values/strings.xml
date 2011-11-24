@@ -108,6 +108,8 @@
     <string name="mail_open_reference_line_replace">Click to display original reference part</string>
     <string name="mail_open_detail_from">From</string>
     <string name="mail_open_detail_to">To</string>
+    <string name="mail_open_detail_cc">Cc</string>
+    <string name="mail_open_detail_bcc">Bcc</string>    
     <string name="mail_open_detail_email_click_prompt">Choose the sender:</string>
     <string name="mail_open_attach_prompt_disconnect">Can\'t be downloaded when disconnect server</string>
     <string name="mail_open_attach_prompt_has_download">There is a attachment downloading</string>

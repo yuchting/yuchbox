@@ -26,6 +26,7 @@ public class sendReceive{
 		void store(long _uploadByte,long _downloadByte);
 		int getPushInterval();
 		void logOut(String _log);
+		void debugOut(byte[] _data,boolean _done);
 	}
 	
 	public static String TAG = sendReceive.class.getName();
@@ -339,17 +340,31 @@ public class sendReceive{
 			
 			t_orgdata = new byte[t_orglen];
 			
-			GZIPInputStream zi	= new GZIPInputStream(new ByteArrayInputStream(readData(t_ziplen)));
+			byte[] t_read = readData(t_ziplen);
+			GZIPInputStream zi;
+			
+			try{
+				zi	= new GZIPInputStream(new ByteArrayInputStream(t_read));
+			}catch (Exception e) {
+				m_storeInterface.debugOut(t_read,true);
+				throw e;
+			}
+			
 
 			ForceReadByte(zi,t_orgdata,t_orglen);
 			
 			zi.close();
 		}
+		try{
+			byte[] t_ret = ParsePackage(t_orgdata);
+			t_orgdata = null;									
+			
+			return t_ret;	
+		}catch(Exception e){
+			m_storeInterface.debugOut(t_orgdata,true);
+			throw e	;
+		}
 		
-		byte[] t_ret = ParsePackage(t_orgdata);
-		t_orgdata = null;									
-		
-		return t_ret;
 	}
 
 	//! send buffer implement

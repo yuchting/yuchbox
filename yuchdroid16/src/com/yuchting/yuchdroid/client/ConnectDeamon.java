@@ -3,6 +3,7 @@ package com.yuchting.yuchdroid.client;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.ConnectException;
@@ -408,6 +409,13 @@ public class ConnectDeamon extends Service implements Runnable{
 		public void logOut(String _log){
 			m_mainApp.setErrorString(_log);
 		}
+		
+		public void debugOut(byte[] _data,boolean _done){
+			writeDebugFile(_data);
+			if(_done){
+				writeDebugFile_done();
+			}
+		}
 	};
 	
 	// delay destroy alarm 
@@ -687,6 +695,12 @@ public class ConnectDeamon extends Service implements Runnable{
 		NotificationManager t_mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 		t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL_ATT, notification);
 		
+		// delete the former attachment file of same name
+		//
+		File t_file = new File(m_mainApp.getAttachmentDir(),t_att.m_realName);
+		if(t_file.exists()){
+			t_file.delete();
+		}		
 		
 		// send to message to server to download the attach
 		//
@@ -722,6 +736,13 @@ public class ConnectDeamon extends Service implements Runnable{
 			for(int i = 0;i < m_vectReceiveAttach.size();i++){
 				FetchAttachment att = m_vectReceiveAttach.get(i);
 				if(att.m_mailIndex == _mail.GetMailIndex() && _attachIndex == i){
+					
+					// delete the downloaded file
+					//
+					File t_file = new File(m_mainApp.getAttachmentDir(),att.m_realName);
+					if(t_file.exists()){
+						t_file.delete();
+					}
 					
 					try{
 						// send the message to server to stop 
@@ -858,54 +879,85 @@ public class ConnectDeamon extends Service implements Runnable{
 		}
 	}
 	
+	public static final String toHex(byte b) {
+		return ("" + "0123456789ABCDEF".charAt(0xf & b >> 4) + "0123456789ABCDEF".charAt(b & 0xf));
+	}
 	
+	FileOutputStream	m_debugFile = null;
+	StringBuffer 		m_debugBuffer = new StringBuffer();
+	private void writeDebugFile(byte[] _data){
+		try{	
+			for(byte b:_data){
+				m_debugBuffer.append(toHex(b)).append(" ");
+			}
+			m_debugBuffer.append("\n");
+						
+		}catch(Exception e){
+			
+		}
+	}
+	
+	private void writeDebugFile_done(){
+		try{
+			if(m_debugFile != null){
+				m_debugFile.close();
+			}
+			m_debugFile = openFileOutput("debugData.data", 0);
+			m_debugFile.write(m_debugBuffer.toString().getBytes());
+			m_debugFile.close();
+		}catch(Exception e){}
+		
+	}
 	
 	private synchronized void ProcessMsg(byte[] _package)throws Exception{
-		 ByteArrayInputStream in  = new ByteArrayInputStream(_package);
+		ByteArrayInputStream in  = new ByteArrayInputStream(_package);
+		
+		//writeDebugFile(_package);
+		
+		final int t_msg_head = in.read();
 		 
-		 final int t_msg_head = in.read();
-		 
-		 switch(t_msg_head){
+		switch(t_msg_head){
 		 	case msg_head.msgKeepLive:
 		 		//m_mainApp.setErrorString("back pulse!");
-		 		break;
-		 	case msg_head.msgMail:
-				ProcessRecvMail(in);	 		
-		 		break;
-		 	case msg_head.msgSendMail:
-		 		ProcessSentMail(in);
-		 		break;
-		 	case msg_head.msgNote:
-		 		String t_string = sendReceive.ReadString(in);
-		 		DialogAlert("YuchBerry svr: " + t_string);
-		 		m_mainApp.setErrorString(t_string);
-		 		break;
-		 	case msg_head.msgMailAttach:
-		 		ProcessMailAttach(in);
-		 		break;
-		 	case msg_head.msgFileAttach:
-		 		ProcessFileAttach(in);
-		 		break;	 		
-		 	case msg_head.msgLatestVersion:
-		 		String t_latestVersion = sendReceive.ReadString(in);
-		 		if(!YuchDroidApp.fsm_appVersion.equals(t_latestVersion)){
-		 			YuchDroidApp.fsm_appVersion = t_latestVersion;
-		 			SetReportLatestVersion(t_latestVersion);
-		 		}
-		 		break;
-		 	case msg_head.msgDeviceInfo:
-		 		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		 		os.write(msg_head.msgDeviceInfo);
-		 		sendReceive.WriteString(os, YuchDroidApp.fsm_PIN);
-		 		sendReceive.WriteString(os,YuchDroidApp.fsm_IMEI);
-		 		addSendingData(msg_head.msgDeviceInfo, os.toByteArray(), true);
-		 		break;
-		 	case msg_head.msgMailAccountList:
-		 		sendReceive.ReadStringVector(in, m_mainApp.m_config.m_sendMailAccountList);
-		 		m_mainApp.m_config.WriteReadIni(false);
-		 		break;
-		 	
-		 		
+			break;
+		case msg_head.msgMail:
+			//writeDebugFile_done();
+			ProcessRecvMail(in);	 		
+			break;
+		case msg_head.msgSendMail:
+			ProcessSentMail(in);
+			break;
+		case msg_head.msgNote:
+			String t_string = sendReceive.ReadString(in);
+			DialogAlert("YuchBerry svr: " + t_string);
+			m_mainApp.setErrorString(t_string);
+			break;
+		case msg_head.msgMailAttach:
+			ProcessMailAttach(in);
+			break;
+		case msg_head.msgFileAttach:
+			ProcessFileAttach(in);
+			break;	 		
+		case msg_head.msgLatestVersion:
+			String t_latestVersion = sendReceive.ReadString(in);
+			if(!YuchDroidApp.fsm_appVersion.equals(t_latestVersion)){
+				YuchDroidApp.fsm_appVersion = t_latestVersion;
+				SetReportLatestVersion(t_latestVersion);
+			}
+			break;
+		case msg_head.msgDeviceInfo:
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			os.write(msg_head.msgDeviceInfo);
+			sendReceive.WriteString(os, YuchDroidApp.fsm_PIN);
+			sendReceive.WriteString(os,YuchDroidApp.fsm_IMEI);
+			addSendingData(msg_head.msgDeviceInfo, os.toByteArray(), true);
+			break;
+		case msg_head.msgMailAccountList:
+			sendReceive.ReadStringVector(in, m_mainApp.m_config.m_sendMailAccountList);
+			m_mainApp.m_config.WriteReadIni(false);
+			break;
+
+	
 //		 	case msg_head.msgWeibo:
 //		 		ProcessWeibo(in);
 //		 		break;
@@ -1105,37 +1157,34 @@ public class ConnectDeamon extends Service implements Runnable{
 					
 					byte[] t_bytes = new byte[t_size];
 					sendReceive.ForceReadByte(in, t_bytes, t_size);
-					
 					t_att.m_fileContainBuffer.write(t_bytes);				
 					
-					//System.out.println("write msgMailAttach mailIndex:" + t_mailIndex + " attachIndex:" + t_attachIndex + " startIndex:" +
-					//					t_startIndex + " size:" + t_size + " first:" + (int)t_bytes[0]);
-									
-					
-
-					
-					if(t_startIndex + t_size >= t_att.m_attachmentSize){
+					boolean t_done = t_startIndex + t_size >= t_att.m_attachmentSize;
 						
-						t_att.refreshProgress(100);
-						
-						// fetching attachment is over...
+					if(!t_done){
+						// refresh UI of notification
 						//
+						t_att.refreshProgress((t_startIndex + t_size) * 100 / t_att.m_attachmentSize);
+					}
+					
+					if(t_att.m_fileContainBuffer.size() > 10240 || t_done){
+						// write to file
+						//
+						byte[] t_writeBytes = t_att.m_fileContainBuffer.toByteArray();
 						File t_file = new File(m_mainApp.getAttachmentDir(),t_att.m_realName);
-						if(t_file.exists()){
-							t_file.delete();
+						FileOutputStream t_osfile = new FileOutputStream(t_file, true);
+						try{
+							t_osfile.write(t_writeBytes);
+							t_osfile.flush();
+						}finally{
+							t_osfile.close();
 						}
+					
+						t_att.m_fileContainBuffer.reset();
 						
-						if(t_file.createNewFile()){
+						if(t_done){
 							
-							byte[] t_writeBytes = t_att.m_fileContainBuffer.toByteArray();
-							FileOutputStream os = new FileOutputStream(t_file);
-							try{
-								os.write(t_writeBytes);
-								os.flush();
-							}finally{
-								os.close();
-							}
-													
+							t_att.refreshProgress(100);
 							m_vectReceiveAttach.remove(t_att);
 							
 							// to notification user download done
@@ -1160,18 +1209,9 @@ public class ConnectDeamon extends Service implements Runnable{
 							NotificationManager t_mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 							t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL_ATT, notification);
 							
-							//m_mainApp.PopupDlgToOpenAttach(t_att);
-						}else{	
-							// TODO display error for user
-							//
 						}
-					}else{
-
-						// refresh UI of notification
-						//
-						t_att.refreshProgress((t_startIndex + t_size) * 100 / t_att.m_attachmentSize);
 					}
-					
+										
 					break;
 				}
 			}
