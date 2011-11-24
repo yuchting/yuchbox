@@ -852,47 +852,55 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			fetchMail.MailAttachment t_att = m_mail.GetAttachment().get(_attachIdx);
 			YuchDroidApp t_mainApp = (YuchDroidApp)m_loadCtx.getApplicationContext();
 			File t_filename = new File(t_mainApp.getAttachmentDir(),t_att.m_name);
+			
 			if(t_filename.exists()){
 				
-				ViewGroup t_attachView = (ViewGroup)m_attachView.getChildAt(_attachIdx);
-				
-				boolean t_openImage = false;
-				String t_name = t_att.m_name.toLowerCase();
-				for(String suffix:fsm_supportImageFormat){
-					if(t_name.endsWith(suffix)){
-						t_openImage = true;
-						break;
-					}
-				}
-				if(t_openImage){
+				if(t_filename.length() >= t_att.m_size){
+
+					ViewGroup t_attachView = (ViewGroup)m_attachView.getChildAt(_attachIdx);
 					
-					Bitmap t_image = BitmapFactory.decodeFile(t_filename.getPath());
-					if(t_image != null){
-						ImageView t_imageView = (ImageView)t_attachView.findViewById(R.id.mail_open_attachment_item_image);
-						t_imageView.setImageBitmap(t_image);
-						t_imageView.setVisibility(View.VISIBLE);
-					}					
+					boolean t_openImage = false;
+					String t_name = t_att.m_name.toLowerCase();
+					for(String suffix:fsm_supportImageFormat){
+						if(t_name.endsWith(suffix)){
+							t_openImage = true;
+							break;
+						}
+					}
+					if(t_openImage){
+						
+						Bitmap t_image = BitmapFactory.decodeFile(t_filename.getPath());
+						if(t_image != null){
+							ImageView t_imageView = (ImageView)t_attachView.findViewById(R.id.mail_open_attachment_item_image);
+							t_imageView.setImageBitmap(t_image);
+							t_imageView.setVisibility(View.VISIBLE);
+						}					
+					}
+					
+					Button t_cancel = (Button)t_attachView.findViewById(R.id.mail_open_attachment_item_cancel_btn);
+	    			t_cancel.setVisibility(View.GONE);
+					
+					Button t_open = (Button)t_attachView.findViewById(R.id.mail_open_attachment_item_open_btn);
+					t_open.setVisibility(View.VISIBLE);
+					t_open.setOnClickListener(new View.OnClickListener() {
+						
+						@Override
+						public void onClick(View v) {
+							// TODO open the attachment file 
+							//
+						}
+					});
+					
+					// disable the click listener
+					//
+					t_attachView.setOnClickListener(null);
+					
+					return true;
+					
+				}else{
+					t_filename.delete();
 				}
 				
-				Button t_cancel = (Button)t_attachView.findViewById(R.id.mail_open_attachment_item_cancel_btn);
-    			t_cancel.setVisibility(View.GONE);
-				
-				Button t_open = (Button)t_attachView.findViewById(R.id.mail_open_attachment_item_open_btn);
-				t_open.setVisibility(View.VISIBLE);
-				t_open.setOnClickListener(new View.OnClickListener() {
-					
-					@Override
-					public void onClick(View v) {
-						// TODO open the attachment file 
-						//
-					}
-				});
-				
-				// disable the click listener
-				//
-				t_attachView.setOnClickListener(null);
-				
-				return true;
 			}
 			
 			return false;

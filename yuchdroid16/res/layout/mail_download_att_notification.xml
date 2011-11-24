@@ -17,7 +17,7 @@
     	android:id="@+id/mail_download_att_progress"
     	android:layout_below="@id/mail_download_att_filename"
     	android:layout_marginLeft="5sp"
-    	android:layout_width="270sp"
+    	android:layout_width="260sp"
     	android:layout_height="wrap_content"
     	style="?android:attr/progressBarStyleHorizontal" 
     	android:max="100"/>
@@ -29,6 +29,6 @@
     	android:layout_height="wrap_content"
     	android:layout_marginLeft="5sp"
     	android:gravity="center"
-    	android:text="0%"
+    	android:text="100%"
     	android:textColor="#000"/>
 </RelativeLayout>

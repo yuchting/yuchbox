@@ -26,7 +26,6 @@ public class sendReceive{
 		void store(long _uploadByte,long _downloadByte);
 		int getPushInterval();
 		void logOut(String _log);
-		void debugOut(byte[] _data,boolean _done);
 	}
 	
 	public static String TAG = sendReceive.class.getName();
@@ -63,7 +62,8 @@ public class sendReceive{
 	private boolean		m_keeplive			= true;
 	private boolean 		m_keepliveClose		= false;
 			
-	public sendReceive(Context _ctx,Selector _selector,SocketChannel _chn,boolean _ssl,IStoreUpDownloadByte _callback)throws Exception{
+	public sendReceive(Context _ctx,Selector _selector,SocketChannel _chn,boolean _ssl,
+					IStoreUpDownloadByte _callback)throws Exception{
 
 		if(_ssl){
 			throw new IllegalArgumentException(TAG + " Current YuchDroid can't support !");
@@ -207,7 +207,6 @@ public class sendReceive{
 	private byte[] readData(int _len)throws Exception{
 		
 		ByteBuffer t_retBuf = ByteBuffer.allocate(_len);
-		int t_readLen = 0;
 		
 		int t_selectkey = 0;
 		while(true){
@@ -245,23 +244,19 @@ public class sendReceive{
 						if(key.isReadable()){
 							
 							SocketChannel t_chn = (SocketChannel)key.channel();						
-							
-							int len = t_chn.read(t_retBuf);
-							
-							if(len == -1){
+														
+							if(t_chn.read(t_retBuf) == -1){
 								throw new Exception(TAG + " Client read -1 to closed!");
-							}
+							}				
 							
-							t_readLen += len;
-							if(t_readLen < _len){
+							if(t_retBuf.hasRemaining()){
 								continue;
 							}
 							
 							m_keeplive = true;
 							
-							t_retBuf.flip(); 
+							t_retBuf.flip();
 							return t_retBuf.array();
-							
 						}else if(key.isWritable()){	
 							sendDataByChn_impl(key);
 						}else{
@@ -340,31 +335,14 @@ public class sendReceive{
 			
 			t_orgdata = new byte[t_orglen];
 			
-			byte[] t_read = readData(t_ziplen);
-			GZIPInputStream zi;
-			
-			try{
-				zi	= new GZIPInputStream(new ByteArrayInputStream(t_read));
-			}catch (Exception e) {
-				m_storeInterface.debugOut(t_read,true);
-				throw e;
-			}
-			
+			GZIPInputStream zi = new GZIPInputStream(new ByteArrayInputStream(readData(t_ziplen)));			
 
 			ForceReadByte(zi,t_orgdata,t_orglen);
 			
 			zi.close();
 		}
-		try{
-			byte[] t_ret = ParsePackage(t_orgdata);
-			t_orgdata = null;									
-			
-			return t_ret;	
-		}catch(Exception e){
-			m_storeInterface.debugOut(t_orgdata,true);
-			throw e	;
-		}
 		
+		return ParsePackage(t_orgdata);	
 	}
 
 	//! send buffer implement

@@ -2,7 +2,6 @@ package com.yuchting.yuchberry.server;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -42,11 +41,10 @@ class sendReceive extends Thread{
 		}
 		
 		m_sendBufferLen += _write.length + fsm_packageHeadLength;
-		
 		m_unsendedPackage.addElement(_write);
 		
 		if(_sendImm){
-			SendBufferToSvr_imple(PrepareOutputData());	
+			SendBufferToSvr_imple(PrepareOutputData());
 		}
 	}
 	
@@ -77,53 +75,38 @@ class sendReceive extends Thread{
 		}		
 	}
 	
-	private synchronized byte[] PrepareOutputData()throws Exception{
+	private byte[] PrepareOutputData()throws Exception{
 		
-		if(m_unsendedPackage.isEmpty()){
-			return null;
-		}
-		
-		ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
+		synchronized (m_unsendedPackage) {
+			
+			if(m_unsendedPackage.isEmpty()){
+				return null;
+			}
+			
+			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
+					
+			for(int i = 0;i < m_unsendedPackage.size();i++){
+				byte[] t_package = (byte[])m_unsendedPackage.elementAt(i);	
 				
-		for(int i = 0;i < m_unsendedPackage.size();i++){
-			byte[] t_package = (byte[])m_unsendedPackage.elementAt(i);	
-			
-			WriteInt(t_stream, t_package.length);
-						
-			t_stream.write(t_package);
-		}
-		
-		m_unsendedPackage.removeAllElements();
-		m_sendBufferLen = 0;
-		
-		return t_stream.toByteArray();
-	}
-	
-	public static final String toHex(byte b) {
-		return ("" + "0123456789ABCDEF".charAt(0xf & b >> 4) + "0123456789ABCDEF".charAt(b & 0xf));
-	}
-	
-	FileOutputStream	m_debugFile = null;
-	private void writeDebugFile(byte[] _data){
-		try{
-			if(m_debugFile == null){
-				m_debugFile = new FileOutputStream("serv_debugData.data");
+				WriteInt(t_stream, t_package.length);
+							
+				t_stream.write(t_package);
 			}
 			
-			StringBuffer t_buffer = new StringBuffer();
-			for(byte b:_data){
-				t_buffer.append(toHex(b)).append(" ");
+			m_unsendedPackage.removeAllElements();
+			
+			synchronized (this) {
+				m_sendBufferLen = 0;
 			}
-			t_buffer.append("\n");
-			m_debugFile.write(t_buffer.toString().getBytes());
 			
-		}catch(Exception e){
-			
+			return t_stream.toByteArray();
 		}
 	}
-	
+		
 	//! send buffer implement
-	private void SendBufferToSvr_imple(byte[] _write)throws Exception{
+	// Must Be synchronized !!!
+	//
+	private synchronized void SendBufferToSvr_imple(byte[] _write)throws Exception{
 		
 		if(_write == null){
 			return;
@@ -138,22 +121,21 @@ class sendReceive extends Thread{
 		
 		byte[] t_zipData = zos.toByteArray();
 		
-		writeDebugFile(t_zipData);
-		
 		if(t_zipData.length > _write.length){
 			// if the ZIP data is large than original length
 			// NOT convert
 			//
-			WriteInt(os,(_write.length << 16) & 0xffff0000);
+			int t_header = (_write.length << 16) & 0xffff0000;
+			WriteInt(os,t_header);
 			os.write(_write);
 			os.flush();
 			
 		}else{
-			WriteInt(os,((_write.length << 16) & 0xffff0000) | t_zipData.length);
+			int t_header = ((_write.length << 16) & 0xffff0000) | t_zipData.length;
+			WriteInt(os,t_header);
 			os.write(t_zipData);
 			os.flush();
-		}
-				
+		}				
 	}
 	
 	public void run(){

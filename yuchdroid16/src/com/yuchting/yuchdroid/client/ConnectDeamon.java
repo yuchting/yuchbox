@@ -386,7 +386,8 @@ public class ConnectDeamon extends Service implements Runnable{
 	    final String packageName = getPackageName();
 	    
 	    for(RunningAppProcessInfo appProcess : appProcesses) {
-	    	if(appProcess.importance == RunningAppProcessInfo.IMPORTANCE_FOREGROUND && appProcess.processName.equals(packageName)) {
+	    	if(appProcess.importance == RunningAppProcessInfo.IMPORTANCE_FOREGROUND 
+	    	&& appProcess.processName.equals(packageName)) {
 	    		return true;
 	    	}
 	    }
@@ -408,13 +409,6 @@ public class ConnectDeamon extends Service implements Runnable{
 		
 		public void logOut(String _log){
 			m_mainApp.setErrorString(_log);
-		}
-		
-		public void debugOut(byte[] _data,boolean _done){
-			writeDebugFile(_data);
-			if(_done){
-				writeDebugFile_done();
-			}
 		}
 	};
 	
@@ -882,46 +876,17 @@ public class ConnectDeamon extends Service implements Runnable{
 	public static final String toHex(byte b) {
 		return ("" + "0123456789ABCDEF".charAt(0xf & b >> 4) + "0123456789ABCDEF".charAt(b & 0xf));
 	}
-	
-	FileOutputStream	m_debugFile = null;
-	StringBuffer 		m_debugBuffer = new StringBuffer();
-	private void writeDebugFile(byte[] _data){
-		try{	
-			for(byte b:_data){
-				m_debugBuffer.append(toHex(b)).append(" ");
-			}
-			m_debugBuffer.append("\n");
-						
-		}catch(Exception e){
-			
-		}
-	}
-	
-	private void writeDebugFile_done(){
-		try{
-			if(m_debugFile != null){
-				m_debugFile.close();
-			}
-			m_debugFile = openFileOutput("debugData.data", 0);
-			m_debugFile.write(m_debugBuffer.toString().getBytes());
-			m_debugFile.close();
-		}catch(Exception e){}
 		
-	}
-	
 	private synchronized void ProcessMsg(byte[] _package)throws Exception{
 		ByteArrayInputStream in  = new ByteArrayInputStream(_package);
-		
-		//writeDebugFile(_package);
-		
+				
 		final int t_msg_head = in.read();
 		 
 		switch(t_msg_head){
-		 	case msg_head.msgKeepLive:
-		 		//m_mainApp.setErrorString("back pulse!");
+		case msg_head.msgKeepLive:
+		 	//m_mainApp.setErrorString("back pulse!");
 			break;
 		case msg_head.msgMail:
-			//writeDebugFile_done();
 			ProcessRecvMail(in);	 		
 			break;
 		case msg_head.msgSendMail:
