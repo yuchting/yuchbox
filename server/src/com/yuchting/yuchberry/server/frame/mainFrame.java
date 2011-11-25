@@ -1423,7 +1423,24 @@ public class mainFrame extends JFrame implements ActionListener{
 				return t_result.toString();
 				
 			}else if(_type.equals("2") && _bber != null){
+				
 				return ProcessLogQuery(_bber);
+				
+			}else if(_type.equals("close")){
+				// close the server
+				//
+		    	CloseProcess();
+		    	
+		    	new Thread(){
+		    		public void run(){
+		    			try{
+		    				sleep(1000);
+		    				System.exit(0);
+		    			}catch(Exception e){}
+		    		}
+		    	}.start();		    	
+		    	
+		    	return "Close done!";
 			}
 			
 			return "";
