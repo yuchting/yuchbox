@@ -47,6 +47,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
+import twitter4j.internal.org.json.JSONArray;
+import twitter4j.internal.org.json.JSONObject;
+
 import com.yuchting.yuchberry.server.Logger;
 import com.yuchting.yuchberry.server.fakeMDSSvr;
 import com.yuchting.yuchberry.server.fetchMain;
@@ -1360,40 +1363,50 @@ public class mainFrame extends JFrame implements ActionListener{
 		try{
 			if(_type.equals("0")){
 				
-				StringBuffer t_result = new StringBuffer();
+				JSONObject t_result = new JSONObject();
 				
-				t_result.append("state:").append(m_checkFolderStateThread.size()).append("/")
+				StringBuffer t_abs = new StringBuffer();
+				t_abs.append("state:").append(m_checkFolderStateThread.size()).append("/")
 									.append(m_currConnectAccount).append("/").append(m_currUsingAccount)
-									.append("/").append(m_accountList.size()).append("\n");
+									.append("/").append(m_accountList.size());
 				
-				long t_currTime = System.currentTimeMillis();
-				
-				if(!m_accountList.isEmpty()){
+				try{
+					t_result.put("abs",t_abs.toString());
 					
-					synchronized (m_accountList) {
-						for(int i = m_accountList.size() - 1; i >= 0;i--){
-							fetchThread t_acc = m_accountList.elementAt(i);
-							t_result.append(t_acc.m_fetchMgr.GetAccountName()).append("\t\t");
-							t_result.append(t_acc.m_fetchMgr.GetServerPort()).append("\t\t");
-							t_result.append(t_acc.m_fetchMgr.m_IMEI + t_acc.m_fetchMgr.m_pin).append("\t\t");
-							
-							if(!t_acc.m_pauseState){
+					JSONArray t_logList = new JSONArray();
+					
+					long t_currTime = System.currentTimeMillis();
+					
+					if(!m_accountList.isEmpty()){
 						
-								long t_remainTime = t_acc.GetLastTime(t_currTime);
-								t_result.append(t_remainTime / 3600000).append("h");
+						synchronized (m_accountList) {
+							for(int i = m_accountList.size() - 1; i >= 0;i--){
+								fetchThread t_acc = m_accountList.elementAt(i);
+								JSONObject t_accObj = new JSONObject();
+								t_accObj.put("acc",t_acc.m_fetchMgr.GetAccountName());
+								t_accObj.put("port",t_acc.m_fetchMgr.GetServerPort());
+								t_accObj.put("PIN",t_acc.m_fetchMgr.m_IMEI + t_acc.m_fetchMgr.m_pin);
+														
+								if(!t_acc.m_pauseState){
+									long t_remainTime = t_acc.GetLastTime(t_currTime);
+									t_accObj.put("remain",t_remainTime / 360000);
+								}else{		
+									t_accObj.put("remain",-1);
+								}
 								
-							}else{
-								t_result.append("--");
+								t_accObj.put("state",t_acc.GetStateString());
+								t_logList.put(t_accObj);
 							}
-							
-							t_result.append("\t\t").append(t_acc.GetStateString()).append("\n");
-							
 						}
 					}
-				}				
-							
-				return t_result.toString();
+					
+					t_result.put("log",t_logList);
+
+				}catch(Exception e){
+					m_logger.PrinterException(e);
+				}
 				
+				return t_result.toString();
 			}else if(_type.equals("1")){
 				
 				StringBuffer t_result = new StringBuffer();
