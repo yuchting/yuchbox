@@ -21,7 +21,7 @@ public class BackupAccount {
 
 		m_logger.EnabelSystemOut(true);
 		
-		File t_accountfile = new File(mainFrame.fsm_accountDataFilename);
+		File t_accountfile = new File(YuchServer.fsm_accountDataFilename);
 		if(!t_accountfile.exists()){
 			m_logger.LogOut("can't find 'account.info' file!");
 			return;
@@ -37,9 +37,9 @@ public class BackupAccount {
 		try{
 			// copy the account file
 			//
-			createDialog.CopyFile(mainFrame.fsm_accountDataFilename, _backupDir + "/" + mainFrame.fsm_accountDataFilename);
+			createDialog.CopyFile(YuchServer.fsm_accountDataFilename, _backupDir + "/" + YuchServer.fsm_accountDataFilename);
 			
-			m_logger.LogOut("copy " + mainFrame.fsm_accountDataFilename + " OK!");
+			m_logger.LogOut("copy " + YuchServer.fsm_accountDataFilename + " OK!");
 			
 			BufferedReader in = new BufferedReader(
 					new InputStreamReader(
@@ -56,7 +56,7 @@ public class BackupAccount {
 				in.close();
 			}
 			
-			m_logger.LogOut("read " + mainFrame.fsm_accountDataFilename + " OK!");
+			m_logger.LogOut("read " + YuchServer.fsm_accountDataFilename + " OK!");
 			
 		}catch(Exception e){
 			m_logger.PrinterException(e);

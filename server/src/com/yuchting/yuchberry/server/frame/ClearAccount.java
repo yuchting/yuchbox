@@ -24,7 +24,7 @@ public class ClearAccount {
 				if(name.endsWith("_tmpCreate")){
 					
 					m_logger.LogOut("Delete tmpCreate dir: " + name);
-					mainFrame.DelDirectory(name);					
+					YuchServer.DelDirectory(name);					
 					
 				}else if(name.indexOf("@") != -1){
 					ProcessAccountFile(acclist);					
@@ -64,7 +64,7 @@ public class ClearAccount {
 				// delete the log directory
 				//
 				m_logger.LogOut("Delete log/WeiboAccount dir");
-				mainFrame.DelDirectory(_pushFile.getAbsolutePath());
+				YuchServer.DelDirectory(_pushFile.getAbsolutePath());
 				
 			}else if(pushName.indexOf("@") != -1){
 				// process the email account

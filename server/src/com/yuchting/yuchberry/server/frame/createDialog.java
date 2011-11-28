@@ -60,44 +60,7 @@ import com.yuchting.yuchberry.server.fetchGTalk;
 import com.yuchting.yuchberry.server.fetchMgr;
 import com.yuchting.yuchberry.server.fetchWeibo;
 
-class NumberMaxMinLimitedDmt extends PlainDocument {
-	 
-	private int 		m_max;
-	private JTextField	m_ownText;
-	   
-	public NumberMaxMinLimitedDmt(int max,JTextField _text) {
-		super();
-	   
-		m_ownText = _text;
-		m_max = max;
-	}  
-   
-	public void insertString(int offset, String  str, AttributeSet attr) throws BadLocationException {   
-		if(str == null){
-			return;
-		}
-		if(str.charAt(0) < '0' || str.charAt(0) > '9'){
-			return;
-		}
-	   
-		String t_current = m_ownText.getText().substring(0,offset) + str + m_ownText.getText().substring(offset);
-	   
-		if(m_max == -1 || Integer.valueOf(t_current).intValue() <= m_max){
-		   
-			char[] upper = str.toCharArray();
-			int length = 0;
-	       
-			for(int i = 0; i < upper.length; i++) {       
-				if(upper[i]>='0'&&upper[i]<='9'){           
-					upper[length++] = upper[i];
-				}
-			}
-		       
-			super.insertString(offset, new String(upper,0,length), attr);
-		}
-	}
-	       
-}
+
 
 final class createEmailData{
 	
@@ -163,6 +126,45 @@ public class createDialog extends JDialog implements DocumentListener,
 	
 	final static int		fsm_width = 520;
 	final static int		fsm_height = 680;
+	
+	public static class NumberMaxMinLimitedDmt extends PlainDocument {
+		 
+		private int 		m_max;
+		private JTextField	m_ownText;
+		   
+		public NumberMaxMinLimitedDmt(int max,JTextField _text) {
+			super();
+		   
+			m_ownText = _text;
+			m_max = max;
+		}  
+	   
+		public void insertString(int offset, String  str, AttributeSet attr) throws BadLocationException {   
+			if(str == null){
+				return;
+			}
+			if(str.charAt(0) < '0' || str.charAt(0) > '9'){
+				return;
+			}
+		   
+			String t_current = m_ownText.getText().substring(0,offset) + str + m_ownText.getText().substring(offset);
+		   
+			if(m_max == -1 || Integer.valueOf(t_current).intValue() <= m_max){
+			   
+				char[] upper = str.toCharArray();
+				int length = 0;
+		       
+				for(int i = 0; i < upper.length; i++) {       
+					if(upper[i]>='0'&&upper[i]<='9'){           
+						upper[length++] = upper[i];
+					}
+				}
+			       
+				super.insertString(offset, new String(upper,0,length), attr);
+			}
+		}
+		       
+	}
 	
 	JTextField	m_userPassword		= new JTextField();
 	JTextField	m_serverPort		= new JTextField();
@@ -709,7 +711,7 @@ public class createDialog extends JDialog implements DocumentListener,
 				WriteXmlFile(m_createConfigDoc,t_prefix + fetchMgr.fsm_configFilename);
 				WriteSignatureAndGooglePos(t_prefix,m_signature.getText());
 				
-				m_mainFrame.AddAccountThread(new fetchThread(m_fetchMgrCreate,t_prefix,
+				m_mainFrame.m_mainServer.AddAccountThread(new fetchThread(m_fetchMgrCreate,t_prefix,
 															Long.valueOf(m_expiredTime.getText()).longValue(),
 															(new Date()).getTime(),false),
 											true);
@@ -763,7 +765,7 @@ public class createDialog extends JDialog implements DocumentListener,
 	}
 	
 	public void PromptAndLog(Exception _e){
-		m_mainFrame.m_logger.PrinterException(_e);
+		m_mainFrame.m_mainServer.m_logger.PrinterException(_e);
 		JOptionPane.showMessageDialog(this,"请查看 frame Log:" + _e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
 	}
 	
@@ -794,7 +796,7 @@ public class createDialog extends JDialog implements DocumentListener,
 			throw new Exception("监听yuchberry端口不能小于 " + t_listenPort);
 		}
 		
-		if(m_mainFrame.SearchAccountThread("",t_serverPort) != null){
+		if(m_mainFrame.m_mainServer.SearchAccountThread("",t_serverPort) != null){
 			throw new Exception("服务端口" + t_serverPort + "已经被使用");
 		}
 		
@@ -848,7 +850,7 @@ public class createDialog extends JDialog implements DocumentListener,
 			throw new Exception("邮件发送服务器地址不能为空，端口非法");
 		}		
 
-		if(m_mainFrame.SearchAccountThread(_email.m_accountName,0) != null){
+		if(m_mainFrame.m_mainServer.SearchAccountThread(_email.m_accountName,0) != null){
 			throw new Exception(_email.m_accountName + " 账户重复");
 		}	
 		
