@@ -89,7 +89,7 @@ class checkStateThread extends Thread{
 				
 				if(m_mainServer.m_needbackup && t_backupCounter > t_backupInterval){
 					t_backupCounter = 0;
-					Runtime.getRuntime().exec("cmd.exe /c start backup.bat");
+					Runtime.getRuntime().exec(m_mainServer.m_backupShellLine);
 				}
 				
 				t_backupCounter++;
@@ -786,6 +786,7 @@ public fetchThread SearchAccountThread(String _accountName,int _port){
 	Vector<BberRequestThread> m_bberRequestList = new Vector<BberRequestThread>();
 	
 	String 		m_yuchsignFramePass = null;
+	String		m_backupShellLine = null;
 	int 	  	m_yuchsignMaxBber = 0;
 	
 	public boolean m_needbackup = false;		
@@ -801,6 +802,7 @@ public fetchThread SearchAccountThread(String _accountName,int _port){
 				m_yuchsignFramePass 	= in.readLine();
 				String	t_port 			= in.readLine();
 				m_yuchsignMaxBber 		= Integer.valueOf(in.readLine()).intValue();
+				m_backupShellLine		= in.readLine();
 				
 				if(m_yuchsignFramePass == null || m_yuchsignFramePass.isEmpty()){
 					return ;
@@ -881,7 +883,7 @@ public fetchThread SearchAccountThread(String _accountName,int _port){
 														
 								if(!t_acc.m_pauseState){
 									long t_remainTime = t_acc.GetLastTime(t_currTime);
-									t_accObj.put("remain",t_remainTime / 360000);
+									t_accObj.put("remain",t_remainTime / 3600000);
 								}else{		
 									t_accObj.put("remain",-1);
 								}

@@ -37,7 +37,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
-import com.yuchting.yuchberry.server.Logger;
 import com.yuchting.yuchberry.server.fakeMDSSvr;
 import com.yuchting.yuchberry.server.fetchMain;
 import com.yuchting.yuchberry.server.fetchMgr;
