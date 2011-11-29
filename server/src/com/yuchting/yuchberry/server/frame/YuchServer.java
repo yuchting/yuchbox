@@ -888,7 +888,7 @@ public fetchThread SearchAccountThread(String _accountName,int _port){
 									t_accObj.put("remain",-1);
 								}
 								
-								t_accObj.put("state",t_acc.GetStateString());
+								t_accObj.put("state",t_acc.getConnectState());
 								t_logList.put(t_accObj);
 							}
 						}
@@ -964,7 +964,7 @@ public fetchThread SearchAccountThread(String _accountName,int _port){
 				DelAccoutThread(_bber, true);
 			}
 		}.start();		
-		return "<Processed/>";
+		return "<Processed />";
 	}
 	
 	private String ProcessHTTPD(String method, Properties header, Properties parms){

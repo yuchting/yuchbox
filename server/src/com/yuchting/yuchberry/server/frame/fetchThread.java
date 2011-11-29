@@ -62,6 +62,19 @@ public class fetchThread extends Thread{
 		}
 	}
 	
+	public int getConnectState(){
+		
+		if(m_pauseState){
+			return -1;
+		}else if(m_close){
+			return -2;
+		}else if(m_fetchMgr.GetClientConnected() != null){
+			return -3;
+		}else{		
+			return (int)(m_clientDisconnectTime / 1000);
+		}
+	}
+	
 	public void run(){
 		
 		while(!m_close){
