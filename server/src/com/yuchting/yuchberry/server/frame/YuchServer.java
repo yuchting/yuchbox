@@ -931,7 +931,7 @@ public fetchThread SearchAccountThread(String _accountName,int _port){
 				
 			}else if(_type.equals("2") && _bber != null){
 				
-				return ProcessLogQuery(_bber);
+				return ProcessLogQuery(_bber,true);
 				
 			}else if(_type.equals("3") && _bber != null){
 				return ProcessDelBberQuery(_bber);
@@ -981,7 +981,7 @@ public fetchThread SearchAccountThread(String _accountName,int _port){
 			String t_bberParam = URLDecoder.decode(t_string, "UTF-8");
 			
 			if((parms.getProperty("log") != null)){
-				return ProcessLogQuery(t_bberParam);
+				return ProcessLogQuery(t_bberParam,false);
 			}
 			
 			if((parms.getProperty("create") != null)){
@@ -1103,10 +1103,13 @@ public fetchThread SearchAccountThread(String _accountName,int _port){
 		
 	}
 	
-	static final int fsm_maxReadLogLen = 4096;
-	static final byte[] fsm_readLogBuffer = new byte[4096]; 
+	static final int fsm_maxReadLogLen = 1024 * 4;
+	static final byte[] fsm_readLogBuffer = new byte[fsm_maxReadLogLen];
 	
-	private String ProcessLogQuery(String _bberName){
+	static final int fsm_maxReadLogLen_admin = 1024 * 30;
+	static final byte[] fsm_readLogBuffer_admin = new byte[fsm_maxReadLogLen_admin]; 
+	
+	private String ProcessLogQuery(String _bberName,boolean _admin){
 		
 		m_logger.LogOut(_bberName + " query log.");
 		
@@ -1121,19 +1124,29 @@ public fetchThread SearchAccountThread(String _accountName,int _port){
 		try{
 			FileInputStream t_stream = new FileInputStream(t_thread.m_logger.GetLogFileName());
 			try{
+				
 				int t_fileLen = t_stream.available();
 				if(t_fileLen == 0){
 					m_logger.LogOut(_bberName + " query log null.");
 					return "null";
 				}
 				
-				t_stream.skip(Math.max(t_fileLen - fsm_maxReadLogLen,0));
+				int t_bufferLength;
+				byte[] t_buffer;
+				if(_admin){
+					t_bufferLength	= fsm_maxReadLogLen_admin;
+					t_buffer		= fsm_readLogBuffer_admin;
+				}else{
+					t_bufferLength	= fsm_maxReadLogLen;
+					t_buffer		= fsm_readLogBuffer;
+				}
 				
+				t_stream.skip(Math.max(t_fileLen - t_bufferLength,0));
+								
+				final int t_bufferLen = Math.min(t_fileLen - 1, t_bufferLength);
+				t_stream.read(t_buffer,0,t_bufferLen);
 				
-				final int t_bufferLen = Math.min(t_fileLen - 1, fsm_maxReadLogLen);
-				t_stream.read(fsm_readLogBuffer,0,t_bufferLen);
-				
-				return (new String(fsm_readLogBuffer,0,t_bufferLen,"UTF-8"));
+				return (new String(t_buffer,0,t_bufferLen,"UTF-8"));
 				
 			}finally{
 				
