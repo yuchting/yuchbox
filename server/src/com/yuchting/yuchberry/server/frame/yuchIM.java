@@ -2,6 +2,8 @@ package com.yuchting.yuchberry.server.frame;
 
 import org.dom4j.Element;
 
+import com.yuchting.yuchberry.server.fetchMgr;
+
 public class yuchIM {
 
 	public String m_typeName = "gtalk";
@@ -11,7 +13,7 @@ public class yuchIM {
 	public void OuputXMLData(final StringBuffer _output){
 		_output.append("\t<IMAccount ").append("type=\"").append(m_typeName).
 				append("\" account=\"").append(m_accoutName).
-				append("\" pass=\"").append(m_password).
+				append("\" pass=\"").append(mainFrame.prepareXmlAttr(m_password)).
 				append("\" />\n");
 	}
 	

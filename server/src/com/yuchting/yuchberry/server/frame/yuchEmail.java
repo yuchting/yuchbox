@@ -2,6 +2,8 @@ package com.yuchting.yuchberry.server.frame;
 
 import org.dom4j.Element;
 
+import com.yuchting.yuchberry.server.fetchMgr;
+
 
 public class yuchEmail {
 	
@@ -44,7 +46,7 @@ public class yuchEmail {
 		
 		_output.append("\t<email ").append("account=\"").append(m_emailAddr).
 									append("\" name=\"").append(m_username).
-									append("\" pass=\"").append(m_password).
+									append("\" pass=\"").append(mainFrame.prepareXmlAttr(m_password)).
 									append("\" full=\"").append(m_fullnameSignIn?1:0).
 									append("\" protocal=\"").append(m_protocol).
 									append("\" host=\"").append(m_host).

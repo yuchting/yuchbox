@@ -100,11 +100,7 @@ public class HelloWorld {
 	
 	
 	public static void main(String arg[])throws Exception{
-		List<String> t_list = Arrays.asList(new String[]{"aa","bb","cc"});
-		for(String str:t_list){
-			System.out.println(str);
-		}
-		
+		Runtime.getRuntime().exec("bash ./backup.sh");		
 	}
 	
 	public final static String	fsm_vectStringSpliter = "<>";

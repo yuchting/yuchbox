@@ -1020,11 +1020,13 @@ public class fetchMgr{
 		String t_result = t_shorterText.toString();
 		
 		t_result = t_result.replace("&lt;", "<");
-		t_result = t_result.replace("&gt;", ">");
-		t_result = t_result.replace("&amp;", "&");
+		t_result = t_result.replace("&gt;", ">");		
 		t_result = t_result.replace("&apos;", "'");
 		t_result = t_result.replace("&quot;", "\"");
 		t_result = t_result.replace("&nbsp;", " ");	
+		t_result = t_result.replace("&copy;", "©");
+		t_result = t_result.replace("&reg;", "®");	
+		t_result = t_result.replace("&amp;", "&");
 		
 		t_result = t_result.replaceAll("<!--(?s).*?-->","");
 		
@@ -1072,7 +1074,7 @@ public class fetchMgr{
 		
         
 	}
-	
+		
 	// statistics
 	//
 	boolean	m_stat_disableReport = false;

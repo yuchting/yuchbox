@@ -538,4 +538,12 @@ public class mainFrame extends JFrame implements ActionListener{
 
 	    desktop.open(new File(_filename));    
 	}
+	
+	public static String prepareXmlAttr(String _attr){
+		return _attr.replace("&","&amp;")
+						.replace("<","&lt;")
+						.replace(">","&gt;")
+						.replace("\"","&quot;")
+						.replace("'","&apos;");
+	}
 }

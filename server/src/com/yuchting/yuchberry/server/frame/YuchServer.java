@@ -89,7 +89,10 @@ class checkStateThread extends Thread{
 				
 				if(m_mainServer.m_needbackup && t_backupCounter > t_backupInterval){
 					t_backupCounter = 0;
-					Runtime.getRuntime().exec(m_mainServer.m_backupShellLine);
+					try{
+						Runtime.getRuntime().exec(m_mainServer.m_backupShellLine);
+					}catch(Exception e){}
+					
 				}
 				
 				t_backupCounter++;
@@ -479,7 +482,7 @@ public fetchThread SearchAccountThread(String _accountName,int _port){
 					
 					for(yuchEmail email:m_currbber.GetEmailList()){
 						t_configBuffer.append("<EmailAccount account=\"").append(email.m_emailAddr)
-														.append("\" password=\"").append(email.m_password)
+														.append("\" password=\"").append(mainFrame.prepareXmlAttr(email.m_password))
 														.append("\" sendName=\"").append(email.m_username)
 														.append("\" useFullNameSignIn=\"").append(email.m_fullnameSignIn?1:0)
 														.append("\" protocol=\"").append(email.m_protocol)
@@ -508,7 +511,7 @@ public fetchThread SearchAccountThread(String _accountName,int _port){
 					for(yuchIM im:m_currbber.GetIMList()){
 						t_configBuffer.append("<IMAccount type=\"").append(im.m_typeName)
 														.append("\" account=\"").append(im.m_accoutName)
-														.append("\" password=\"").append(im.m_password)
+														.append("\" password=\"").append(mainFrame.prepareXmlAttr(im.m_password))
 														.append("\" cryptPassword=\"")
 										.append("\" />\n");
 					}
@@ -971,14 +974,12 @@ public fetchThread SearchAccountThread(String _accountName,int _port){
 		
 		m_logger.LogOut("start ProcessHTTPD 0");
 		
-		String t_string = parms.getProperty("bber");
-		if( t_string == null){
+		String t_bberParam  = parms.getProperty("bber");
+		if(t_bberParam == null){
 			return "<Error>没有bber参数的URL</Error>";
 		}
 		
-		try{
-			
-			String t_bberParam = URLDecoder.decode(t_string, "UTF-8");
+		try{			
 			
 			if((parms.getProperty("log") != null)){
 				return ProcessLogQuery(t_bberParam,false);

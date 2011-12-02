@@ -9,6 +9,8 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.xml.sax.InputSource;
 
+import com.yuchting.yuchberry.server.fetchMgr;
+
 public final class yuchbber {
 	
 	public static final int[] fsm_weekMoney = {2,3,4,5};
@@ -90,14 +92,7 @@ public final class yuchbber {
 	public void SetSignature(final String _signature){m_signature = _signature;}
 	
 	public String OuputXMLData(){
-		
-		String t_signature = m_signature.replace("<","&lt;");
-		t_signature = t_signature.replace(">","&gt;");
-		t_signature = t_signature.replace("&","&amp;");
-		t_signature = t_signature.replace("\"","&quot;");
-		t_signature = t_signature.replace("'","&apos;");
-		t_signature = t_signature.replace("\n","#r");
-		
+				
 		StringBuffer t_output = new StringBuffer();
 		t_output.append("<yuchbber ").append("name=\"").append(m_signinName).
 									append("\" connect=\"").append(m_connectHost).
@@ -108,7 +103,7 @@ public final class yuchbber {
 									append("\" interval=\"").append(m_pushInterval).
 									append("\" SSL=\"").append(m_usingSSL?1:0).
 									append("\" T2S=\"").append(m_convertSimpleChar?1:0).
-									append("\" signature=\"").append(t_signature).
+									append("\" signature=\"").append(mainFrame.prepareXmlAttr(m_signature).replace("\n","#r")).
 									append("\" lev=\"").append(m_bberLev).
 									append("\" sync=\"").append(m_latestSyncTime).
 									append("\">\n");
@@ -159,12 +154,6 @@ public final class yuchbber {
 			m_bberLev = fsm_weekMoney.length - 1;
 		}
 		m_latestSyncTime = ReadLongAttr(t_elem,"sync");
-		
-		m_signature = m_signature.replace("&lt;", "<");
-		m_signature = m_signature.replace("&gt;", ">");
-		m_signature = m_signature.replace("&amp;", "&");
-		m_signature = m_signature.replace("&apos;", "'");
-		m_signature = m_signature.replace("&quot;", "\"");
 		m_signature = m_signature.replace("#r", "\n");
 		
 		m_emailList.removeAllElements();
