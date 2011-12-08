@@ -126,4 +126,8 @@ public class GlobalDialog extends Activity implements DialogInterface.OnCancelLi
 				.setPositiveButton(R.string.dlg_info_yesno_confirm,listener)
 				.setNegativeButton(R.string.dlg_info_yesno_cancel,listener).show();
 	}
+	
+	public static void showYesNoDialog(int _stringId,Context _ctx,final YesNoListener _yes,final YesNoListener _no){
+		showYesNoDialog(_ctx.getString(_stringId),_ctx,_yes,_no);
+	}
 }

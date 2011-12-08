@@ -39,6 +39,11 @@
     <string name="login_menu_about">关于</string>
     <string name="login_beta_prompt"> - 只有使用net网络（cmnet,uninet,ctnet），WIFI网络,才能正常使用语盒，wap网络无法使用。\n\n
                                       - beta版没有新手指引，详细使用方法请在电脑上访问 www.yuchs.com 注册帐号试用。</string>
+                                      
+    <!-- yuch logon web site activity -->                                
+    <string name="yuch_logon_quit_ask">你确定要退出登录|注册？</string>
+    <string name="yuch_logon_sign_title">语盒官方服务 登录|注册</string>
+    <string name="yuch_logon_menu_refresh">刷新页面</string>
     
     <!-- login preference activity -->
     <string name="login_pref_title">通用选项</string>

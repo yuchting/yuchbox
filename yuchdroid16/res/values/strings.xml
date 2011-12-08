@@ -36,7 +36,12 @@
     <string name="login_menu_about">About</string>
     <string name="login_beta_prompt"> - Only available for NET APN(such as cmnet uninet ctnet) WIFI network. WAP is NOT support.\n\n
                                       - Because beta version has not user tutorial, please visit www.yuchs.com for using detail.</string>
-    
+                                      
+                                          
+    <!-- yuch logon web site activity -->                                
+    <string name="yuch_logon_quit_ask">Are you sure quit to login or signin?</string>
+    <string name="yuch_logon_sign_title">YuchDroid Official Service Login|Signin</string> 
+    <string name="yuch_logon_menu_refresh">Refresh Site</string>
     
     
     <!-- login preference activity -->

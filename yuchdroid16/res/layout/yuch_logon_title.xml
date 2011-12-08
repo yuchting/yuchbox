@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+
+	<TextView android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:text="@string/yuch_logon_sign_title"/>
+		
+	<ProgressBar 
+    	android:id="@+id/logon_title_progress"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+    	style="?android:attr/progressBarStyleHorizontal" 
+    	android:max="100"/>
+		  
+</RelativeLayout>

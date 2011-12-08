@@ -57,6 +57,9 @@
         <activity android:name=".ConnectPrefActivity"
         	android:label="@string/login_pref_title"/>
         	
+        <activity android:name=".YuchLogonActivity"
+        	android:label="@string/yuch_logon_sign_title"/>
+        	
         <activity android:name=".mail.MailPrefActivity"
         	android:label="@string/mail_pref_title"/>
         	

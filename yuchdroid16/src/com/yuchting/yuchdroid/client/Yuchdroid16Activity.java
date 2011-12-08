@@ -47,8 +47,11 @@ public class Yuchdroid16Activity extends Activity {
         initLoginLayout();
         
         registerReceiver(m_intentRecv, new IntentFilter(YuchDroidApp.FILTER_CONNECT_STATE));
-    }  
-    
+        
+        
+        startLogon();
+    }
+        
     private void initLoginLayout() { 
         
     	m_connectBut = (Button) findViewById(R.id.login_start_svr);
@@ -98,6 +101,12 @@ public class Yuchdroid16Activity extends Activity {
         m_userPass.setText(m_config.m_userPass); 
                 
         setConnectState(m_mainApp.m_connectState);   
+    }
+    
+
+    private void startLogon(){
+    	Intent in = new Intent(this,YuchLogonActivity.class);
+    	startActivity(in);
     }
     
     private boolean validateHost(String _host,String _port,String _userPass){
