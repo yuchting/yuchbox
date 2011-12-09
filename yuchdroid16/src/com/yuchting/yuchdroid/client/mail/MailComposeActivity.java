@@ -1,3 +1,30 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchdroid.client.mail;
 
 import java.io.FileInputStream;
@@ -40,6 +67,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemSelectedListener;
 
+import com.google.ads.AdRequest;
+import com.google.ads.AdView;
 import com.yuchting.yuchdroid.client.GlobalDialog;
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
@@ -58,6 +87,8 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	
 	EditText	m_subject			= null;
 	EditText	m_body				= null;
+	
+	AdView		m_adsView			= null;
 	
 	TextView	m_discardRefView	= null;
 	
@@ -85,6 +116,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		
 		m_mainApp = (YuchDroidApp)getApplicationContext();
 		
+		
 		m_to		= (AutoCompleteTextView)findViewById(R.id.mail_compose_to);
 		m_cc		= (AutoCompleteTextView)findViewById(R.id.mail_compose_cc);
 		m_bcc		= (AutoCompleteTextView)findViewById(R.id.mail_compose_bcc);
@@ -94,9 +126,10 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		m_body.setTextSize(TypedValue.COMPLEX_UNIT_DIP, m_mainApp.m_config.getMailFontSize());
 		
 		m_mainView 	= (LinearLayout)findViewById(R.id.mail_compose_main_view);
-		
+		m_adsView	= (AdView)findViewById(R.id.mail_compose_ads);
+				
 		m_discardRefView = (TextView)findViewById(R.id.mail_compose_ref_label);
-		m_discardRefView.setOnClickListener(this);
+		m_discardRefView.setOnClickListener(this);		
 		
 		m_sendBtn 	= (Button)findViewById(R.id.mail_compose_send_btn);
 		m_sendBtn.setOnClickListener(this);
@@ -132,6 +165,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		m_modified = false;
 		m_saveBtn.setEnabled(false);
 		
+		processAds();		
 	}
 	
 	private void prepareData(){
@@ -815,6 +849,21 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	private void showCc_Bcc(){
 		m_cc.setVisibility(View.VISIBLE);
 		m_bcc.setVisibility(View.VISIBLE);
+	}
+	
+	private void processAds(){
+		if(m_mainApp.m_isOfficeHost){
+			m_adsView.setVisibility(View.GONE);
+		}else{
+			
+			AdRequest t_request = new AdRequest();
+			if(m_referenceMail != null){
+				String t_subject = MailDbAdapter.groupSubject(m_referenceMail.m_mail.GetSubject());
+				t_request.addKeyword(t_subject);
+			}
+			
+			m_adsView.loadAd(t_request);
+		}
 	}
 	
 	@Override

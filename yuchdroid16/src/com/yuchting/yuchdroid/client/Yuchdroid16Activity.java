@@ -1,4 +1,37 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchdroid.client;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -75,6 +108,31 @@ public class Yuchdroid16Activity extends Activity {
                 		m_config.m_userPass = t_pass;
                 		
                 		m_config.WriteReadIni(false);
+                		
+                		new Thread(){
+                			public void run(){
+                				try{
+                					m_mainApp.m_isOfficeHost = false;
+                					
+                					//URL t_request = new URL("http://www.yuchs.com/verOffical/?host=" + URLEncoder.encode(m_config.m_host,"UTF-8"));
+                					URL t_request = new URL("http://192.168.2.228:8888/verOffical/?host=" + URLEncoder.encode(m_config.m_host,"UTF-8"));
+                					
+                					URLConnection yc = t_request.openConnection();
+                					yc.setConnectTimeout(10000);
+                					yc.setReadTimeout(50000);
+                					BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream()));
+                					try{
+                						if(in.readLine().equals("true")){
+                							m_mainApp.m_isOfficeHost = true;
+                					    }
+                					}finally{
+                						in.close();
+                					}                			       
+                				}catch(Exception e){
+                					m_mainApp.setErrorString("check offical state failed", e);
+                				}
+                			}
+                		}.start();
                 	}            		
             	}
             	

@@ -16,6 +16,16 @@
   			android:layout_height="wrap_content"
   			android:orientation="vertical" 
   			android:layout_marginRight="5sp">
+  			
+  			<com.google.ads.AdView
+				xmlns:ads="http://schemas.android.com/apk/lib/com.google.ads"
+				android:id="@+id/mail_compose_ads"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				ads:adSize="BANNER"
+				ads:adUnitId="a14ee199e02a4e1"
+				ads:loadAdOnCreate="false"/>
+				
   			<Spinner 
   				android:layout_height="wrap_content" 
   				android:layout_width="fill_parent" 
@@ -60,8 +70,7 @@
 				android:minHeight="200sp"
 				android:hint="@string/mail_compose_body"
 				android:gravity="top" />
-			
-			
+						
 			<TextView 
 				android:id="@+id/mail_compose_ref_label"
 				android:layout_width="fill_parent"
