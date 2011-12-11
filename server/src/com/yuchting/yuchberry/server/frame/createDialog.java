@@ -1,3 +1,30 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.server.frame;
 
 import java.awt.Color;
@@ -1092,13 +1119,22 @@ public class createDialog extends JDialog implements DocumentListener,
 	
 	static public  void WriteSignatureAndGooglePos(String _prefix,String _signature)throws Exception{
 		
+		String t_filename = _prefix + fetchEmail.fsm_signatureFilename;
+		
 		if(_signature.length() != 0){
-			FileOutputStream t_out = new FileOutputStream(_prefix + fetchEmail.fsm_signatureFilename);
+			FileOutputStream t_out = new FileOutputStream(t_filename);
 			try{
 				t_out.write(_signature.getBytes("UTF-8"));
 				t_out.flush();
 			}finally{
 				t_out.close();
+			}
+		}else{
+			//delete it if the signature is empty
+			//
+			File t_file = new File(t_filename);
+			if(t_file.exists()){
+				t_file.delete();
 			}
 		}
 		

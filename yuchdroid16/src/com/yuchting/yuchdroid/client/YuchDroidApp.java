@@ -27,11 +27,16 @@
  */
 package com.yuchting.yuchdroid.client;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -322,7 +327,56 @@ public class YuchDroidApp extends Application {
         }
 	}
 	
-	
+	private Thread m_checkOfficalHostThread = null;
+	public void checkOfficalHost(){
+		
+		synchronized (this) {
+			if(m_checkOfficalHostThread == null){
+				m_checkOfficalHostThread = new Thread(){
+					public void run(){
+						try{
+							
+							try{
+								sleep(10000);
+							}catch(Exception e){}
+							
+							m_isOfficeHost = false;
+							
+							//final String t_mainHost = "http://www.yuchs.com/verOffical/";
+							final String t_mainHost = "http://192.168.2.228:8888/verOffical/";
+							
+							StringBuffer t_url = new StringBuffer(t_mainHost);
+							t_url.append("?host=").append(URLEncoder.encode(m_config.m_host,"UTF-8"))
+								 .append("&port=").append(m_config.m_port);
+							
+							URL t_request = new URL(t_url.toString());
+							
+							URLConnection yc = t_request.openConnection();
+							yc.setConnectTimeout(10000);
+							yc.setReadTimeout(50000);
+							BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream()));
+							try{
+								if(in.readLine().equals("true")){
+									m_isOfficeHost = true;
+							    }
+							}finally{
+								in.close();
+							}                			       
+						}catch(Exception e){
+							setErrorString("check offical state failed", e);
+						}
+						
+						synchronized (YuchDroidApp.this) {
+							m_checkOfficalHostThread = null;
+						}
+					}
+				};
+				
+				m_checkOfficalHostThread.start();
+			}
+		}
+		
+	}
 	
 	private void addMailAddrSearch(String name, String email){
 		

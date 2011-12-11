@@ -109,30 +109,7 @@ public class Yuchdroid16Activity extends Activity {
                 		
                 		m_config.WriteReadIni(false);
                 		
-                		new Thread(){
-                			public void run(){
-                				try{
-                					m_mainApp.m_isOfficeHost = false;
-                					
-                					//URL t_request = new URL("http://www.yuchs.com/verOffical/?host=" + URLEncoder.encode(m_config.m_host,"UTF-8"));
-                					URL t_request = new URL("http://192.168.2.228:8888/verOffical/?host=" + URLEncoder.encode(m_config.m_host,"UTF-8"));
-                					
-                					URLConnection yc = t_request.openConnection();
-                					yc.setConnectTimeout(10000);
-                					yc.setReadTimeout(50000);
-                					BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream()));
-                					try{
-                						if(in.readLine().equals("true")){
-                							m_mainApp.m_isOfficeHost = true;
-                					    }
-                					}finally{
-                						in.close();
-                					}                			       
-                				}catch(Exception e){
-                					m_mainApp.setErrorString("check offical state failed", e);
-                				}
-                			}
-                		}.start();
+                		m_mainApp.checkOfficalHost();
                 	}            		
             	}
             	
