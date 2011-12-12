@@ -1212,7 +1212,7 @@ public class fetchMgr{
 		
 	}
 		
-	final static  private String fsm_statURL = "http://yuchberrybbs.com/ym/apps/interface/ys.php";
+	final static  private String fsm_statURL = "http://bbs.yuchs.com/ym/apps/interface/ys.php";
 	
 	private static void postURLStat(String _info){
 		
