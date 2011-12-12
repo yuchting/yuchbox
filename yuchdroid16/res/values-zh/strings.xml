@@ -22,6 +22,7 @@
     
     <string name="start_svr_but">开始连接</string>
     <string name="stop_svr_but">停止连接</string>
+    
     <string name="login_host">服务主机:</string>
     <string name="login_host_hint">填写域名或者IP地址</string>
     <string name="login_host_error_prompt">请输入正确的服务主机地址（域名或者IP地址）</string>
@@ -37,13 +38,14 @@
     <string name="login_menu_setting">连接设置</string>
     <string name="login_menu_home">内容主界面</string>
     <string name="login_menu_about">关于</string>
-    <string name="login_beta_prompt"> - 只有使用net网络（cmnet,uninet,ctnet），WIFI网络,才能正常使用语盒，wap网络无法使用。\n\n
-                                      - beta版没有新手指引，详细使用方法请在电脑上访问 www.yuchs.com 注册帐号试用。</string>
+    <string name="login_menu_account">官方账户</string>
+    <string name="login_beta_prompt"> - 只有使用net网络（cmnet,uninet,ctnet），WIFI网络,才能正常使用语盒，wap网络无法使用。</string>
                                       
     <!-- yuch logon web site activity -->                                
     <string name="yuch_logon_quit_ask">你确定要退出登录|注册？</string>
     <string name="yuch_logon_sign_title">语盒官方服务 登录|注册</string>
     <string name="yuch_logon_menu_refresh">刷新页面</string>
+    <string name="yuch_logon_sync_ok_prompt">同步成功！信息已经填写在连接界面，并且处于连接状态。可以按返回键退出这个配置界面了。详情请访问 http://www.yuchs.com/ 。</string>
     
     <!-- login preference activity -->
     <string name="login_pref_title">通用选项</string>

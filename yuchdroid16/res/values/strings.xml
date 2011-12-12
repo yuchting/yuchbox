@@ -20,6 +20,8 @@
     
     <string name="start_svr_but">Connect</string>
     <string name="stop_svr_but">Disconnect</string>
+    
+    
     <string name="login_host">Host:</string>
     <string name="login_host_hint">Domain or IP address</string>
     <string name="login_host_error_prompt">Please input right Host (Domain or IP address)</string>
@@ -34,14 +36,15 @@
     <string name="login_state_connected">Connected.</string>
     <string name="login_menu_setting">Preference</string>
     <string name="login_menu_about">About</string>
-    <string name="login_beta_prompt"> - Only available for NET APN(such as cmnet uninet ctnet) WIFI network. WAP is NOT support.\n\n
-                                      - Because beta version has not user tutorial, please visit www.yuchs.com for using detail.</string>
+    <string name="login_menu_account">Account</string>
+    <string name="login_beta_prompt"> - Only available for NET APN(such as cmnet uninet ctnet) WIFI network. WAP is NOT support.</string>
                                       
                                           
     <!-- yuch logon web site activity -->                                
     <string name="yuch_logon_quit_ask">Are you sure quit to login or signin?</string>
     <string name="yuch_logon_sign_title">YuchDroid Official Service Login|Signin</string> 
     <string name="yuch_logon_menu_refresh">Refresh Site</string>
+    <string name="yuch_logon_sync_ok_prompt">Sync OK! The information has filled and connected. Can press return key to quit this step. Please visit http://www.yuchs.com/ to get detail.</string>
     
     
     <!-- login preference activity -->

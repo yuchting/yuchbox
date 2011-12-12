@@ -27,12 +27,6 @@
  */
 package com.yuchting.yuchdroid.client;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -54,6 +48,12 @@ import android.widget.Toast;
 public class Yuchdroid16Activity extends Activity {
 	
 	public final static String TAG = "Yuchdroid16Activity";
+	
+	public final static String LOGON_SYNC_OK = TAG + "_sync_ok";
+	
+	public final static String LOGON_SYNC_OK_HOST = LOGON_SYNC_OK + "_host";
+	public final static String LOGON_SYNC_OK_PORT = LOGON_SYNC_OK + "_port";
+	public final static String LOGON_SYNC_OK_PASS = LOGON_SYNC_OK + "_pass";
 		
 	EditText	m_host	= null;
 	EditText	m_port	= null;
@@ -64,7 +64,53 @@ public class Yuchdroid16Activity extends Activity {
 	
 	YuchDroidApp m_mainApp;
 	
-	ConfigInit m_config;	
+	ConfigInit m_config;
+	
+	
+    BroadcastReceiver	m_intentRecv = new BroadcastReceiver(){
+		public void onReceive(Context context, Intent intent){
+			setConnectState(m_mainApp.m_connectState);
+		}
+	};
+	
+	BroadcastReceiver m_syncOKRecv = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String t_host	= intent.getStringExtra(LOGON_SYNC_OK_HOST);
+			int t_port		= intent.getIntExtra(LOGON_SYNC_OK_PORT, 0);
+			String t_pass	= intent.getStringExtra(LOGON_SYNC_OK_PASS);
+			String t_portStr = Integer.toString(t_port);
+			
+			if(validateHost(t_host,Integer.toString(t_port),t_pass)){
+				
+				m_mainApp.m_isOfficeHost = true;
+				
+				if(m_mainApp.m_config.m_host == null 
+				|| m_mainApp.m_config.m_host.length() == 0){	
+					
+					Toast.makeText(Yuchdroid16Activity.this,getString(R.string.yuch_logon_sync_ok_prompt), Toast.LENGTH_LONG).show();
+					
+				}else if(t_host.equalsIgnoreCase(m_config.m_host) 
+				&& t_portStr.equalsIgnoreCase(Integer.toString(m_config.m_port)) 
+				&& t_pass.equalsIgnoreCase(m_config.m_userPass) 
+				&& ConnectDeamon.isConnected()){
+					
+					return;
+				}
+				
+				if(ConnectDeamon.isConnected()){
+					ConnectDeamon.Disconnect();
+				}
+				
+				m_host.setText(t_host);
+				m_port.setText(t_portStr);
+				m_userPass.setText(t_pass);
+				
+				clickConnectBtn();            	
+			}
+		}
+	};
 		
     /** Called when the activity is first created. */
     @Override
@@ -80,9 +126,11 @@ public class Yuchdroid16Activity extends Activity {
         initLoginLayout();
         
         registerReceiver(m_intentRecv, new IntentFilter(YuchDroidApp.FILTER_CONNECT_STATE));
+        registerReceiver(m_syncOKRecv, new IntentFilter(LOGON_SYNC_OK));
         
-        
-        startLogon();
+        if(m_config.m_host == null || m_config.m_host.length() == 0){
+        	startLogonActivity();
+        }
     }
         
     private void initLoginLayout() { 
@@ -90,38 +138,7 @@ public class Yuchdroid16Activity extends Activity {
     	m_connectBut = (Button) findViewById(R.id.login_start_svr);
     	m_connectBut.setOnClickListener(new OnClickListener() {  
             public void onClick(View arg0){
-            	            	
-            	boolean t_readConfig = false;
-            	
-            	String t_host = m_host.getText().toString();
-            	String t_port = m_port.getText().toString();
-            	String t_pass = m_userPass.getText().toString();        	
-            	
-            	if(validateHost(t_host,t_port,t_pass)){	
-                	if(!t_host.equals(m_mainApp.m_config.m_host) 
-                	|| !t_port.equals(m_mainApp.m_config.m_port) 
-                	|| !t_pass.equals(m_mainApp.m_config.m_userPass)){
-                		t_readConfig = true;
-                		
-                		m_config.m_host = t_host;
-                		m_config.m_port = Integer.valueOf(t_port).intValue();
-                		m_config.m_userPass = t_pass;
-                		
-                		m_config.WriteReadIni(false);
-                		
-                		m_mainApp.checkOfficalHost();
-                	}            		
-            	}
-            	
-            	if(!m_mainApp.m_connectDeamonRun){
-            		startConnectDeamon(t_readConfig);                	
-                }else{
-                	if(m_mainApp.m_connectState == YuchDroidApp.STATE_DISCONNECT){
-                		ConnectDeamon.Connect();
-                	}else{
-                		ConnectDeamon.Disconnect();                		
-                	}
-                }
+            	clickConnectBtn();
             }
         });
         
@@ -138,13 +155,51 @@ public class Yuchdroid16Activity extends Activity {
         setConnectState(m_mainApp.m_connectState);   
     }
     
-
-    private void startLogon(){
+    private void clickConnectBtn(){
+    	boolean t_readConfig = false;
+    	
+    	String t_host = m_host.getText().toString();
+    	String t_port = m_port.getText().toString();
+    	String t_pass = m_userPass.getText().toString();        	
+    	
+    	if(validateHost(t_host,t_port,t_pass)){	
+    		
+        	if(!t_host.equals(m_mainApp.m_config.m_host) 
+        	|| !t_port.equals(m_mainApp.m_config.m_port) 
+        	|| !t_pass.equals(m_mainApp.m_config.m_userPass)){
+        		t_readConfig = true;
+        		
+        		m_config.m_host = t_host;
+        		m_config.m_port = Integer.valueOf(t_port).intValue();
+        		m_config.m_userPass = t_pass;
+        		
+        		m_config.WriteReadIni(false);
+        		
+        		m_mainApp.checkOfficalHost();
+        	}            		
+    	}
+    	
+    	if(!m_mainApp.m_connectDeamonRun){
+    		startConnectDeamon(t_readConfig);                	
+        }else{
+        	if(m_mainApp.m_connectState == YuchDroidApp.STATE_DISCONNECT){
+        		ConnectDeamon.Connect();
+        	}else{
+        		ConnectDeamon.Disconnect();                		
+        	}
+        }
+    }
+    
+    private void startLogonActivity(){
     	Intent in = new Intent(this,YuchLogonActivity.class);
     	startActivity(in);
     }
     
     private boolean validateHost(String _host,String _port,String _userPass){
+    	
+    	if(_host == null || _port == null || _userPass == null){
+    		return false;
+    	}
     	
     	if(!_host.matches("([\\w-]+\\.)+[\\w-]+(/[\\w- ./?%%&=]*)?") 
     	&& !_host.matches("/(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)/g")){
@@ -182,11 +237,7 @@ public class Yuchdroid16Activity extends Activity {
         Log.i(TAG,"onStart " + this);
     }
     
-    BroadcastReceiver	m_intentRecv = new BroadcastReceiver(){
-		public void onReceive(Context context, Intent intent){
-			setConnectState(m_mainApp.m_connectState);
-		}
-	};
+
 	
 	private synchronized void setConnectState(int _state){
 		switch(_state){
@@ -226,6 +277,10 @@ public class Yuchdroid16Activity extends Activity {
             	Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://code.google.com/p/yuchberry/wiki/Thanks_sheet"));
             	startActivity(browserIntent);
             	return true;
+            case R.id.login_menu_account:
+            	startLogonActivity();
+            	return true;
+            
         }
 
         return super.onMenuItemSelected(featureId, item);
@@ -263,6 +318,7 @@ public class Yuchdroid16Activity extends Activity {
         Log.i(TAG,"onDestroy " + this);
         
         unregisterReceiver(m_intentRecv);
+        unregisterReceiver(m_syncOKRecv);
     }
  
 }

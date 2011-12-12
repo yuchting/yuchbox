@@ -29,6 +29,7 @@ package com.yuchting.yuchdroid.client;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -51,17 +52,31 @@ public class YuchLogonActivity extends Activity {
 	    	m_ctx = c;
 	    }
 
-	    public void syncSucc(String _host,int _port,String _pass) {
-	        Toast.makeText(YuchLogonActivity.this, _host + " " + _port + " " + _pass, Toast.LENGTH_LONG).show();
+	    public void syncSucc(String _host,int _port,String _pass){
+	    	Intent intent = new Intent(Yuchdroid16Activity.LOGON_SYNC_OK);
+	    	intent.putExtra(Yuchdroid16Activity.LOGON_SYNC_OK_HOST,_host);
+	    	intent.putExtra(Yuchdroid16Activity.LOGON_SYNC_OK_PORT,_port);
+	    	intent.putExtra(Yuchdroid16Activity.LOGON_SYNC_OK_PASS,_pass);
+	    	
+	    	sendBroadcast(intent);
+	        	    	
+	    	if(m_mainApp.m_config.m_host == null || m_mainApp.m_config.m_host.length() == 0){
+	    		finish();
+	    	}else{
+	    		Toast.makeText(YuchLogonActivity.this,getString(R.string.yuch_logon_sync_ok_prompt), Toast.LENGTH_LONG).show();
+	    	}
+	    	
 	    }
 	}
 	
-	final static String LOAD_WEB_URL = "http://192.168.2.228:8888/Android.html";
-	//final static String LOAD_WEB_URL = "http://http://www.yuchs.com/Android.html";
+	//final static String LOAD_WEB_URL = "http://192.168.2.228:8888/Android.html";
+	final static String LOAD_WEB_URL = "http://www.yuchs.com/Android.html";
 	
 	WebView			m_mainWeb;
 	
 	ProgressBar		m_loadProgress;
+	
+	YuchDroidApp	m_mainApp;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -69,6 +84,8 @@ public class YuchLogonActivity extends Activity {
         requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
         setContentView(R.layout.yuch_logon);
         getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.yuch_logon_title);
+        
+        m_mainApp 		= (YuchDroidApp)getApplicationContext();
         
         m_loadProgress	= (ProgressBar)findViewById(R.id.logon_title_progress);
         m_loadProgress.setMax(100);
@@ -121,10 +138,10 @@ public class YuchLogonActivity extends Activity {
 	@Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         switch(item.getItemId()) {
-            case R.id.mail_list_compose_new_mail:
+            case R.id.yuch_logon_menu_refresh:
             	m_loadProgress.setVisibility(View.VISIBLE);
             	m_loadProgress.setProgress(0);
-            	m_mainWeb.loadUrl(LOAD_WEB_URL);
+            	m_mainWeb.reload();
                 break;           
         }
 
