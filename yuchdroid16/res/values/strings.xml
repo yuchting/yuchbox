@@ -17,6 +17,7 @@
     <string name="login_connect_deamon_state_connect">Connection OK!</string>
     <string name="login_connect_deamon_state_connecting">Connecting...</string>
     <string name="login_connect_deamon_state_disconnect">User Disconnect.</string>
+    <string name="login_connect_deamon_state_disconnect_detail">Please wait for a moment to quit( after a YuchDroid pulse ) and release memory...</string>
     
     <string name="start_svr_but">Connect</string>
     <string name="stop_svr_but">Disconnect</string>

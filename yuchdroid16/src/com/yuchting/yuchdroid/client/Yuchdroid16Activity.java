@@ -107,7 +107,7 @@ public class Yuchdroid16Activity extends Activity {
 				m_port.setText(t_portStr);
 				m_userPass.setText(t_pass);
 				
-				clickConnectBtn();            	
+				clickConnectBtn();
 			}
 		}
 	};
@@ -138,7 +138,9 @@ public class Yuchdroid16Activity extends Activity {
     	m_connectBut = (Button) findViewById(R.id.login_start_svr);
     	m_connectBut.setOnClickListener(new OnClickListener() {  
             public void onClick(View arg0){
-            	clickConnectBtn();
+            	if(clickConnectBtn()){
+            		m_mainApp.checkOfficalHost();
+            	}
             }
         });
         
@@ -155,7 +157,8 @@ public class Yuchdroid16Activity extends Activity {
         setConnectState(m_mainApp.m_connectState);   
     }
     
-    private void clickConnectBtn(){
+    private boolean clickConnectBtn(){
+    	
     	boolean t_readConfig = false;
     	
     	String t_host = m_host.getText().toString();
@@ -175,7 +178,6 @@ public class Yuchdroid16Activity extends Activity {
         		
         		m_config.WriteReadIni(false);
         		
-        		m_mainApp.checkOfficalHost();
         	}            		
     	}
     	
@@ -188,6 +190,8 @@ public class Yuchdroid16Activity extends Activity {
         		ConnectDeamon.Disconnect();                		
         	}
         }
+    	
+    	return t_readConfig;
     }
     
     private void startLogonActivity(){

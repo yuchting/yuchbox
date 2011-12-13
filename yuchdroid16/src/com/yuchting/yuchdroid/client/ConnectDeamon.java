@@ -74,6 +74,8 @@ public class ConnectDeamon extends Service implements Runnable{
 		
 		String					m_messageID;
 		String					m_realName;
+		
+		int						m_progress;
 		 
 		ByteArrayOutputStream	m_fileContainBuffer = new ByteArrayOutputStream();
 		
@@ -86,8 +88,14 @@ public class ConnectDeamon extends Service implements Runnable{
 		}
 		
 		public void refreshProgress(int _percent){
-			m_views.setProgressBar(R.id.mail_download_att_progress,100,_percent,false);
-			m_views.setTextViewText(R.id.mail_download_att_progress_text, Integer.toString(_percent) + "%");
+			if(m_progress != _percent){
+				
+				m_progress = _percent;
+				
+				m_views.setProgressBar(R.id.mail_download_att_progress,100,50,false);
+				m_views.setTextViewText(R.id.mail_download_att_progress_text, Integer.toString(m_progress) + "%");
+			}
+			
 		}
 	}
 	
@@ -458,7 +466,7 @@ public class ConnectDeamon extends Service implements Runnable{
 			m_destoryAlarm = PendingIntent.getBroadcast(this, 0, notificationIntent,0);
 			
 			t_msg.set(AlarmManager.RTC_WAKEUP, 
-							System.currentTimeMillis() + 3 * m_mainApp.m_config.getPulseInterval(), 
+							System.currentTimeMillis() + m_mainApp.m_config.getPulseInterval(), 
 							m_destoryAlarm);
 		}
 	}

@@ -29,6 +29,6 @@
     	android:layout_height="wrap_content"
     	android:layout_marginLeft="5sp"
     	android:gravity="center"
-    	android:text="100%"
+    	android:text="0%"
     	android:textColor="#000"/>
 </RelativeLayout>

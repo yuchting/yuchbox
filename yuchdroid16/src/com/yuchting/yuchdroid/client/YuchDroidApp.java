@@ -342,8 +342,8 @@ public class YuchDroidApp extends Application {
 							
 							m_isOfficeHost = false;
 							
-							//final String t_mainHost = "http://www.yuchs.com/verOffical/";
-							final String t_mainHost = "http://192.168.2.228:8888/verOffical/";
+							final String t_mainHost = "http://www.yuchs.com/verOffical/";
+							//final String t_mainHost = "http://192.168.2.228:8888/verOffical/";
 							
 							StringBuffer t_url = new StringBuffer(t_mainHost);
 							t_url.append("?host=").append(URLEncoder.encode(m_config.m_host,"UTF-8"))
@@ -477,8 +477,16 @@ public class YuchDroidApp extends Application {
 		}
 	}
 	
+	private void checkMainSDCardDir(){
+		File t_dir = new File(Environment.getExternalStorageDirectory(),"YuchDroid");
+		if(!t_dir.exists() || !t_dir.isDirectory()){
+			t_dir.mkdir();
+		}
+	}
 	public File getAttachmentDir(){
-		File t_dir = new File(Environment.getExternalStorageDirectory(),"AttDir");
+		checkMainSDCardDir();
+		
+		File t_dir = new File(Environment.getExternalStorageDirectory(),"YuchDroid/AttDir");
 		if(!t_dir.exists() || !t_dir.isDirectory()){
 			t_dir.mkdir();
 		}
@@ -506,6 +514,7 @@ public class YuchDroidApp extends Application {
 		
 		int icon;
 		int t_titleId;
+		int t_detailId = R.string.login_connect_deamon_state_detail;
 		if(_state == STATE_CONNECTED){
 			t_titleId = R.string.login_connect_deamon_state_connect;
 			icon = R.drawable.notification_connect_state_on;        
@@ -515,6 +524,7 @@ public class YuchDroidApp extends Application {
 				t_titleId = R.string.login_connect_deamon_state_connecting;
 			}else{
 				t_titleId = R.string.login_connect_deamon_state_disconnect;
+				t_detailId = R.string.login_connect_deamon_state_disconnect_detail;
 			}	
 		}
 		
@@ -528,7 +538,7 @@ public class YuchDroidApp extends Application {
 		// the next two lines initialize the Notification, using the configurations above
 		//
 		Notification notification = new Notification(icon, getString(R.string.login_connect_deamon_state), System.currentTimeMillis());
-		notification.setLatestEventInfo(this, contentTitle, getString(R.string.login_connect_deamon_state_detail), contentIntent);
+		notification.setLatestEventInfo(this, contentTitle, getString(t_detailId), contentIntent);
 		
 		if(_soundAndLight && m_config.isPromptTime()){
 			
