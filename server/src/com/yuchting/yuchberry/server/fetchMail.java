@@ -36,15 +36,13 @@ import java.util.Vector;
 import javax.mail.Message;
 import javax.mail.internet.MimeUtility;
 
-final class MailAttachment{
-	int 		m_size;
-	String 		m_name;
-	String		m_type;
-}
-
-
-
 public class  fetchMail{
+	
+	public final static class MailAttachment{
+		int 		m_size;
+		String 		m_name;
+		String		m_type;
+	}
 	
 	final static int	VERSION = 4;
 	
@@ -63,12 +61,12 @@ public class  fetchMail{
 	
 	private int 		m_mailIndex = 0;
 	
-	private Vector		m_vectFrom 		= new Vector();
-	private Vector		m_vectReplyTo	= new Vector();
-	private Vector		m_vectCCTo		= new Vector();
-	private Vector		m_vectBCCTo		= new Vector();
-	private Vector		m_vectTo		= new Vector();
-	private Vector		m_vectGroup		= new Vector();
+	private Vector<String>		m_vectFrom 		= new Vector<String>();
+	private Vector<String>		m_vectReplyTo	= new Vector<String>();
+	private Vector<String>		m_vectCCTo		= new Vector<String>();
+	private Vector<String>		m_vectBCCTo		= new Vector<String>();
+	private Vector<String>		m_vectTo		= new Vector<String>();
+	private Vector<String>		m_vectGroup		= new Vector<String>();
 	
 	private String			m_subject 		= "";
 	private Date			m_sendDate 		= new Date();
@@ -94,7 +92,7 @@ public class  fetchMail{
 	
 	private boolean m_convertoSimpleChar = false;
 	
-	private Vector	m_vectAttachment	 	= new Vector();
+	private Vector<MailAttachment>	m_vectAttachment	 	= new Vector<MailAttachment>();
 	
 	private Message m_attachMessage	= null; 
 	
@@ -121,7 +119,7 @@ public class  fetchMail{
 	public void SetAttchMessage(Message m){ m_attachMessage = m;}
 	public Message GetAttachMessage(){return m_attachMessage;}
 		
-	public static String parseAddressList(Vector _list)throws Exception{
+	public static String parseAddressList(Vector<String> _list)throws Exception{
 		
 		StringBuffer t_addressList = new StringBuffer();
 		
@@ -306,7 +304,7 @@ public class  fetchMail{
 			m_vectTo.addElement(_to[i]);
 		}		
 	}
-	public Vector GetSendToVect(){return m_vectTo;}
+	public Vector<String> GetSendToVect(){return m_vectTo;}
 	
 	public void SetReplyToVect(String[] _replyTo){
 		m_vectReplyTo.removeAllElements();
@@ -314,7 +312,7 @@ public class  fetchMail{
 			m_vectReplyTo.addElement(_replyTo[i]);
 		}		
 	}
-	public Vector GetReplyToVect(){return m_vectReplyTo;}
+	public Vector<String> GetReplyToVect(){return m_vectReplyTo;}
 	
 	public void SetCCToVect(String[] _CCTo){
 		m_vectCCTo.removeAllElements();
@@ -322,7 +320,7 @@ public class  fetchMail{
 			m_vectCCTo.addElement(_CCTo[i]);
 		}		
 	}
-	public Vector GetCCToVect(){return m_vectCCTo;}
+	public Vector<String> GetCCToVect(){return m_vectCCTo;}
 	
 	public void SetBCCToVect(String[] _BCCTo){
 		m_vectBCCTo.removeAllElements();
@@ -330,10 +328,10 @@ public class  fetchMail{
 			m_vectBCCTo.addElement(_BCCTo[i]);
 		}		
 	}
-	public Vector GetBCCToVect(){return m_vectBCCTo;}
+	public Vector<String> GetBCCToVect(){return m_vectBCCTo;}
 	
 	
-	public Vector GetFromVect(){return m_vectFrom;}
+	public Vector<String> GetFromVect(){return m_vectFrom;}
 	public void SetFromVect(String[] _from){
 		m_vectFrom.removeAllElements();
 		for(int i = 0;i < _from.length;i++){
@@ -341,7 +339,7 @@ public class  fetchMail{
 		}		
 	}
 	
-	public Vector GetGroupVect(){return m_vectGroup;}
+	public Vector<String> GetGroupVect(){return m_vectGroup;}
 	public void SetGroupVect(String[] _group){
 		m_vectGroup.removeAllElements();
 		for(int i = 0;i < _group.length;i++){
@@ -373,7 +371,7 @@ public class  fetchMail{
 		m_vectAttachment.removeAllElements();
 	}
 	
-	public Vector GetAttachment(){
+	public Vector<MailAttachment> GetAttachment(){
 		return m_vectAttachment;
 	}
 	

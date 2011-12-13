@@ -293,7 +293,7 @@ class RecvMailAttach{
 				
 				t_string.append(t_forwordMsgLine);
 
-				Vector t_form = m_forwardReplyMail.GetFromVect();
+				Vector<String> t_form = m_forwardReplyMail.GetFromVect();
 				
 				if(!t_form.isEmpty()){
 					t_string.append(t_sender+ (String)t_form.elementAt(0) + "\n");
@@ -305,7 +305,7 @@ class RecvMailAttach{
 				t_string.append(t_dateTile+ new SimpleDateFormat(t_dateFormat).format(m_forwardReplyMail.GetSendDate()) + "\n");
 				t_string.append(t_subject+ m_forwardReplyMail.GetSubject() + "\n");
 				
-				Vector t_sendto = m_forwardReplyMail.GetSendToVect();
+				Vector<String> t_sendto = m_forwardReplyMail.GetSendToVect();
 				if(!t_sendto.isEmpty()){
 					t_string.append(t_receiver+ (String)t_sendto.elementAt(0) + "\n");
 					for(int i = 1;i < t_sendto.size();i++){
@@ -398,10 +398,10 @@ public class fetchEmail extends fetchAccount{
     	boolean	m_send;
     	long		m_mailIndexOrTime;
     	
-    	Vector<MailAttachment>		m_attachmentName = null;
+    	Vector<fetchMail.MailAttachment>		m_attachmentName = null;
     	
     	public MailIndexAttachment(){
-    		m_attachmentName = new Vector<MailAttachment>();
+    		m_attachmentName = new Vector<fetchMail.MailAttachment>();
     	}
     	
     	public MailIndexAttachment(fetchMail _mail,boolean _send){
@@ -816,7 +816,7 @@ public class fetchEmail extends fetchAccount{
 			t_forwardReplyMail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
 			t_forwardReplyMail.InputMail(in);
 							
-			Vector t_replyAddr = t_forwardReplyMail.GetSendToVect();
+			Vector<String> t_replyAddr = t_forwardReplyMail.GetSendToVect();
 			
 			if(!t_replyAddr.isEmpty()){
 
@@ -1286,7 +1286,7 @@ public class fetchEmail extends fetchAccount{
 					
 					final int t_attNum = sendReceive.ReadInt(t_fileRead);
 					for(int j = 0;j < t_attNum;j++){
-						MailAttachment t_att 	= new MailAttachment();
+						fetchMail.MailAttachment t_att 	= new fetchMail.MailAttachment();
 						
 						t_att.m_size			= sendReceive.ReadInt(t_fileRead);
 						t_att.m_name			= sendReceive.ReadString(t_fileRead);
@@ -1315,7 +1315,7 @@ public class fetchEmail extends fetchAccount{
 					sendReceive.WriteInt(t_fileWrite,t_att.m_attachmentName.size());
 					
 					for(int j = 0 ;j < t_att.m_attachmentName.size();j++){
-						MailAttachment t_attachment = (MailAttachment)t_att.m_attachmentName.elementAt(j);
+						fetchMail.MailAttachment t_attachment = (fetchMail.MailAttachment)t_att.m_attachmentName.elementAt(j);
 						sendReceive.WriteInt(t_fileWrite,t_attachment.m_size);
 						sendReceive.WriteString(t_fileWrite,t_attachment.m_name,m_mainMgr.m_convertToSimpleChar);
 						sendReceive.WriteString(t_fileWrite,t_attachment.m_type,m_mainMgr.m_convertToSimpleChar);
@@ -1531,10 +1531,10 @@ public class fetchEmail extends fetchAccount{
 		
 		m_mainMgr.m_logger.LogOut("send mail with attachment " + _mail.m_sendMail.GetAttachment().size());
 		
-		Vector t_list = _mail.m_sendMail.GetAttachment();
+		Vector<fetchMail.MailAttachment> t_list = _mail.m_sendMail.GetAttachment();
 		
 		for(int i = 0;i < t_list.size();i++){
-			MailAttachment t_attachment = (MailAttachment)t_list.elementAt(i);
+			fetchMail.MailAttachment t_attachment = (fetchMail.MailAttachment)t_list.elementAt(i);
 			
 			String t_filename = GetAccountPrefix() + _mail.m_sendMail.GetSendDate().getTime() + "_" + i + ".satt";
 			FileOutputStream fos = new FileOutputStream(t_filename);
@@ -1574,20 +1574,24 @@ public class fetchEmail extends fetchAccount{
 		t_mail.SetFromVect(new String[]{_from});
 		t_mail.SetSendToVect(new String[]{m_strUserNameFull});
 		
+		int t_tryTime = 0;
+		
 		try{
+
+			ComposeMessage(msg,t_mail,null,"");			
 			
-			ComposeMessage(msg,t_mail,null,"");
-			
-			int t_tryTime = 0;
-			while(t_tryTime++ < 5){
+			while(t_tryTime++ >= 2){
+				
 				m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
 				m_sendTransport.sendMessage(msg, msg.getAllRecipients());
 				m_sendTransport.close();
+				
 				break;
 			}
-			
 		
-		}catch(Exception e){}	    
+		}catch(Exception e){
+			m_mainMgr.m_logger.PrinterException(e);
+		}   
 		
 	}
 	
@@ -1598,7 +1602,7 @@ public class fetchEmail extends fetchAccount{
 		
 		// FROM 
 		if ((a = m.getFrom()) != null) {
-			Vector t_from = _mail.GetFromVect();
+			Vector<String> t_from = _mail.GetFromVect();
 			t_from.removeAllElements();
 		    for (int j = 0; j < a.length; j++){
 		    	t_from.addElement(DecodeName(a[j].toString(),false));
@@ -1607,7 +1611,7 @@ public class fetchEmail extends fetchAccount{
 
 		// REPLY TO
 		if ((a = m.getReplyTo()) != null) {
-			Vector t_vect = _mail.GetReplyToVect();
+			Vector<String> t_vect = _mail.GetReplyToVect();
 			t_vect.removeAllElements();
 		    for (int j = 0; j < a.length; j++){
 		    	t_vect.addElement(DecodeName(a[j].toString(),false));
@@ -1616,7 +1620,7 @@ public class fetchEmail extends fetchAccount{
 		
 		// CC
 		if( (a = m.getRecipients(Message.RecipientType.CC)) != null){
-			Vector t_vect = _mail.GetCCToVect();
+			Vector<String> t_vect = _mail.GetCCToVect();
 			t_vect.removeAllElements();
 		    for (int j = 0; j < a.length; j++){
 		    	t_vect.addElement(DecodeName(a[j].toString(),false));
@@ -1625,7 +1629,7 @@ public class fetchEmail extends fetchAccount{
 		
 		// BCC
 		if( (a = m.getRecipients(Message.RecipientType.BCC)) != null){
-			Vector t_vect = _mail.GetBCCToVect();
+			Vector<String> t_vect = _mail.GetBCCToVect();
 			t_vect.removeAllElements();
 		    for (int j = 0; j < a.length; j++){
 		    	t_vect.addElement(DecodeName(a[j].toString(),false));
@@ -1634,10 +1638,10 @@ public class fetchEmail extends fetchAccount{
 
 		// TO
 		if ((a = m.getRecipients(Message.RecipientType.TO)) != null) {
-			Vector t_vect = _mail.GetSendToVect();
+			Vector<String> t_vect = _mail.GetSendToVect();
 			t_vect.removeAllElements();
 			
-			Vector t_vectGroup = _mail.GetGroupVect();
+			Vector<String> t_vectGroup = _mail.GetGroupVect();
 			t_vectGroup.removeAllElements();
 			
 			boolean t_addCurrEmail = true;
@@ -1667,7 +1671,7 @@ public class fetchEmail extends fetchAccount{
 		}
 		
 		String mailTitle = ""; 
-		Enumeration enumerationHeaderTmp = ((MimeMessage) m).getMatchingHeaders(new String[] { "Subject" });  
+		Enumeration<?> enumerationHeaderTmp = ((MimeMessage) m).getMatchingHeaders(new String[] { "Subject" });  
 		
 		while (enumerationHeaderTmp.hasMoreElements()) {  
 		    Header header = (Header) enumerationHeaderTmp.nextElement();  
@@ -1859,7 +1863,7 @@ public class fetchEmail extends fetchAccount{
 			
 			StoreAttachment(_mail.GetMailIndex(), _mail.GetAttachment().size(), t_bytes);
 			
-			Vector t_vect = _mail.GetAttachment();
+			Vector<fetchMail.MailAttachment> t_vect = _mail.GetAttachment();
 			if (filename == null){	
 			    filename = "Attachment_" + t_vect.size();
 			}else{
@@ -1890,7 +1894,7 @@ public class fetchEmail extends fetchAccount{
 				 */
 				Object o = p.getContent();
 				
-				Vector t_vect = _mail.GetAttachment();
+				Vector<fetchMail.MailAttachment> t_vect = _mail.GetAttachment();
 				if (filename == null){	
 				    filename = "Attachment_" + t_vect.size();
 				}else{
@@ -2093,13 +2097,13 @@ public class fetchEmail extends fetchAccount{
 				t_mainPart.addBodyPart(t_containPart);			
 			}			
 			
-			Vector t_contain = _mail.GetAttachment();
+			Vector<fetchMail.MailAttachment> t_contain = _mail.GetAttachment();
 			
 			try{				
 
 				for(int i = 0;i< t_contain.size();i++){
 
-					MailAttachment t_attachment = (MailAttachment)t_contain.elementAt(i);
+					fetchMail.MailAttachment t_attachment = (fetchMail.MailAttachment)t_contain.elementAt(i);
 					
 					MimeBodyPart t_filePart = new MimeBodyPart();
 					t_filePart.setFileName(MimeUtility.encodeText(t_attachment.m_name));
@@ -2122,7 +2126,7 @@ public class fetchEmail extends fetchAccount{
 					t_contain = t_forwardMailAttach.m_attachmentName;
 					
 					for(int i = 0;i < t_contain.size();i++){
-						MailAttachment t_attachment = (MailAttachment)t_contain.elementAt(i);
+						fetchMail.MailAttachment t_attachment = (fetchMail.MailAttachment)t_contain.elementAt(i);
 											
 						String t_fullname = GetAccountPrefix() + t_forwardMailAttach.m_mailIndexOrTime + "_" + i;
 						

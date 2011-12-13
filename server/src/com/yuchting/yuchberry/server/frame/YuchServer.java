@@ -752,7 +752,7 @@ public fetchThread SearchAccountThread(String _accountName,int _port){
 		for(fetchThread thread : t_deadPool){
 			m_logger.LogOut("未连接时间超过5天，删除帐户 " + thread.m_fetchMgr.GetAccountName() + " 账户暂停状态：" + thread.m_pauseState);
 			
-			DelAccoutThread(thread.m_fetchMgr.GetAccountName(), false);			
+			DelAccoutThread(thread.m_fetchMgr.GetAccountName(), false);	
 		}
 		
 		if(m_mainFrame != null){
