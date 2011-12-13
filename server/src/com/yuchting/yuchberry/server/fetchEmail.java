@@ -114,10 +114,10 @@ class EmailSendAttachment extends Thread{
 		sendReceive.WriteInt(m_os,m_startIndex);
 		sendReceive.WriteInt(m_os,t_size);
 		m_os.write(m_buffer,0,t_size);
-		
-		m_mainMgr.m_logger.LogOut("send msgMailAttach mailIndex:" + m_mailIndex + " attachIndex:" + m_attachIndex + " startIndex:" +
-									m_startIndex + " size:" + t_size + " first:" + (int)m_buffer[0]);
-		
+				
+//		m_mainMgr.m_logger.LogOut("send msgMailAttach mailIndex:" + m_mailIndex + " attachIndex:" + m_attachIndex + " startIndex:" +
+//				m_startIndex + " size:" + t_size + " first:" + (int)m_buffer[0]);
+//		
 		int t_waitTimer = 0;
 		while(m_mainMgr.GetClientConnected() == null 
 			|| m_mainMgr.GetClientConnected().m_sendReceive == null){
@@ -134,6 +134,9 @@ class EmailSendAttachment extends Thread{
 		m_mainMgr.SendData(m_os,_send);
 		
 		if(m_startIndex + t_size >= m_fileLength){
+			
+			m_mainMgr.m_logger.LogOut("sent msgMailAttach mailIndex:" + m_mailIndex + " attachIndex:" + m_attachIndex + " OK");
+			
 			return true;
 		}
 		

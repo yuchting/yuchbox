@@ -354,8 +354,8 @@ public class ConnectDeamon extends Service implements Runnable{
 		unregisterReceiver(m_destoryRecv);
 	}
 	
-	private boolean CanNotConnectSvr(){
-		ConnectivityManager t_connect = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+	public static boolean CanNotConnectSvr(Context _ctx){
+		ConnectivityManager t_connect = (ConnectivityManager)_ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
 		
 		if(t_connect == null){
 			return true;
@@ -549,7 +549,7 @@ public class ConnectDeamon extends Service implements Runnable{
 			throw new Exception("user reset connect");
 		}
 		
-		if(CanNotConnectSvr()){
+		if(CanNotConnectSvr(this)){
 			throw new Exception("CanNotConnectSvr ");
 		}
 		

@@ -502,9 +502,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	private void mkHeadImageDir(String _prefix,String[] dir,boolean _init)throws Exception{
 		
-		boolean t_sdCard = isSDCardAvailable(false);
-		
-		if(!t_sdCard){
+		if(!isSDCardAvailable(false)){
 			throw new Exception("Can't use the sd card to store weibo head image.");
 		}
 		
@@ -512,9 +510,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		//
 		if(!_init){
 			
-			if(t_sdCard){
-				makeDir(uploadFileScreen.fsm_rootPath_default + "YuchBerry/");
-			}			
+			makeDir(uploadFileScreen.fsm_rootPath_default + "YuchBerry/");	
 			
         	for(int i = 0;i < dir.length;i++){
         		dir[i] = _prefix + dir[i];

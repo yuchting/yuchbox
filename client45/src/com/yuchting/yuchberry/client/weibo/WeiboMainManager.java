@@ -549,12 +549,6 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 
 			if(t_formerExtendItem == null && t_currentExtendItem != null){	
 			
-				setCurrExtendedItem(null);
-				
-				if(t_formerExtendItem != null){
-					t_formerExtendItem.AddDelControlField(false);
-				}
-				
 				setCurrExtendedItem(t_currentExtendItem);
 				t_currentExtendItem.AddDelControlField(true);			
 				

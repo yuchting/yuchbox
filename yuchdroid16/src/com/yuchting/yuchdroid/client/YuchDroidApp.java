@@ -142,7 +142,7 @@ public class YuchDroidApp extends Application {
 	public fetchMail		m_composeRefMail;
 	public fetchMail		m_composeStyleRefMail;
 	
-	public boolean			m_isOfficeHost		= false;
+	public boolean			m_isOfficalHost		= true;
 		
 	@Override
 	public void onCreate (){
@@ -334,37 +334,42 @@ public class YuchDroidApp extends Application {
 			if(m_checkOfficalHostThread == null){
 				m_checkOfficalHostThread = new Thread(){
 					public void run(){
-						try{
-							
+						
+						while(true){
 							try{
-								sleep(10000);
-							}catch(Exception e){}
-							
-							m_isOfficeHost = false;
-							
-							final String t_mainHost = "http://www.yuchs.com/verOffical/";
-							//final String t_mainHost = "http://192.168.2.228:8888/verOffical/";
-							
-							StringBuffer t_url = new StringBuffer(t_mainHost);
-							t_url.append("?host=").append(URLEncoder.encode(m_config.m_host,"UTF-8"))
-								 .append("&port=").append(m_config.m_port);
-							
-							URL t_request = new URL(t_url.toString());
-							
-							URLConnection yc = t_request.openConnection();
-							yc.setConnectTimeout(10000);
-							yc.setReadTimeout(50000);
-							BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream()));
-							try{
-								if(in.readLine().equals("true")){
-									m_isOfficeHost = true;
-							    }
-							}finally{
-								in.close();
-							}                			       
-						}catch(Exception e){
-							setErrorString("check offical state failed", e);
-						}
+								
+								while(ConnectDeamon.CanNotConnectSvr(YuchDroidApp.this)){
+									try{
+										sleep(10000);
+									}catch(Exception e){}
+								}								
+								
+								m_isOfficalHost = false;
+								
+								final String t_mainHost = "http://www.yuchs.com/verOffical/";
+								
+								StringBuffer t_url = new StringBuffer(t_mainHost);
+								t_url.append("?host=").append(URLEncoder.encode(m_config.m_host,"UTF-8"))
+									 .append("&port=").append(m_config.m_port);
+								
+								URL t_request = new URL(t_url.toString());
+								
+								URLConnection yc = t_request.openConnection();
+								yc.setConnectTimeout(10000);
+								yc.setReadTimeout(50000);
+								BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream()));
+								try{
+									m_isOfficalHost = in.readLine().equals("true");
+								}finally{
+									in.close();
+								}
+								
+								break;
+								
+							}catch(Exception e){
+								setErrorString("check offical state failed", e);
+							}
+						}						
 						
 						synchronized (YuchDroidApp.this) {
 							m_checkOfficalHostThread = null;

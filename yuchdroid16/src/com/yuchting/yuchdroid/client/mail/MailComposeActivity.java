@@ -852,7 +852,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	}
 	
 	private void processAds(){
-		if(m_mainApp.m_isOfficeHost){
+		if(m_mainApp.m_isOfficalHost){
 			m_adsView.setVisibility(View.GONE);
 		}else{
 			

@@ -1079,7 +1079,6 @@ public class weiboTimeLineScreen extends MainScreen{
 	    	case 'B':
     			m_bottomItem.run();	
     			return true;
-    			
 	    	case 'F':
 	    		m_forwardWeiboItem.run();
 	    		return true;
@@ -1118,9 +1117,6 @@ public class weiboTimeLineScreen extends MainScreen{
 					switch(key){
 			    	case 'S':
 			    		m_stateItem.run();
-			    		return true;
-			    	case 'R':
-			    		m_refreshItem.run();
 			    		return true;
 			    	case 10: // enter key
 			    	case ' ':

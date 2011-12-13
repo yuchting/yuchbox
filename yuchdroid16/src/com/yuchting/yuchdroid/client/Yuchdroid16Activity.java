@@ -84,7 +84,7 @@ public class Yuchdroid16Activity extends Activity {
 			
 			if(validateHost(t_host,Integer.toString(t_port),t_pass)){
 				
-				m_mainApp.m_isOfficeHost = true;
+				m_mainApp.m_isOfficalHost = true;
 				
 				if(m_mainApp.m_config.m_host == null 
 				|| m_mainApp.m_config.m_host.length() == 0){	
