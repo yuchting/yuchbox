@@ -118,13 +118,16 @@ class checkStateThread extends Thread{
 					t_backupCounter = 0;
 					try{
 						Runtime.getRuntime().exec(m_mainServer.m_backupShellLine);
-					}catch(Exception e){}
-					
+					}catch(Exception e){
+						m_mainServer.m_logger.PrinterException(e);
+					}					
 				}
 				
 				t_backupCounter++;
 				
-			}catch(Exception ex){}
+			}catch(Exception ex){
+				m_mainServer.m_logger.PrinterException(ex);
+			}
 		}
 	}
 }
@@ -705,6 +708,8 @@ public class YuchServer {
 					if(t_thread.GetLastTime(t_currTime) < 0){
 						m_logger.LogOut("帐户暂停： " + t_thread.m_fetchMgr.GetAccountName());
 						t_thread.Pause();
+					}else{			
+						m_logger.LogOut(t_thread.m_fetchMgr.GetAccountName() + " 没有暂停的数据：" + t_thread.m_usingHours + " " + t_currTime + " " + t_thread.m_formerTimer);
 					}
 					
 					m_currUsingAccount++;

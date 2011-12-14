@@ -377,10 +377,12 @@ public class fetchEmail extends fetchAccount{
     final class UnreadMailMarkingData{
     	int m_simpleHashCode;
     	int m_mailIndex;
+    	String m_messageID;
     	
     	public UnreadMailMarkingData(fetchMail _mail){
     		m_simpleHashCode	= _mail.GetSimpleHashCode();
     		m_mailIndex			= _mail.GetMailIndex();
+    		m_messageID			= _mail.getMessageID();
     	}
     }
     
@@ -1100,6 +1102,11 @@ public class fetchEmail extends fetchAccount{
 	private  boolean ProcessBeenReadOrDelMail(ByteArrayInputStream in,boolean _del)throws Exception{
 		
 		final int t_mailHashCode	= sendReceive.ReadInt(in);
+		String	t_messageID = "";
+		
+		if(m_mainMgr.m_clientVer >= 16){
+			t_messageID		= sendReceive.ReadString(in);
+		}		
 
 		boolean t_found = false;
 		
@@ -1108,7 +1115,9 @@ public class fetchEmail extends fetchAccount{
 		synchronized (m_unreadMailVector_marking) {
 			for(UnreadMailMarkingData t_mail :m_unreadMailVector_marking){
 				
-				if(t_mail.m_simpleHashCode == t_mailHashCode){
+				if(t_mail.m_simpleHashCode == t_mailHashCode
+				|| t_messageID.equals(t_mail.m_messageID)){
+					
 					t_mailIndex =  t_mail.m_mailIndex;
 					
 					if(_del){

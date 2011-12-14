@@ -44,7 +44,7 @@ public class Logger{
 	private boolean			m_systemOut = false;
 	
 	private boolean			m_disable = false;
-	
+		
 	public Logger(){
 		// empty logger
 	}
@@ -58,7 +58,7 @@ public class Logger{
 	public void disableLog(boolean _disable){
 		m_disable = _disable;
 	}
-
+	
 	public void EnabelSystemOut(boolean _enabled){
 		m_systemOut = _enabled;
 	}
@@ -75,24 +75,27 @@ public class Logger{
 		return m_printStack;
 	}
 	
+	private final static SimpleDateFormat fsm_timeFormat = new SimpleDateFormat("MM-dd HH:mm:ss : ");
+	private final static Date fsm_date = new Date();
+	
 	public synchronized void LogOut(String _log){
 		
 		if(m_disable){
 			return ;
 		}
-		
+				
 		if(m_logFileStream != null){
-			SimpleDateFormat format = new SimpleDateFormat("MM-dd HH:mm:ss");
 			
-			String t_out = format.format(new Date()) + ": " + _log + "\n";
+			fsm_date.setTime(System.currentTimeMillis());
+			String t_finalLog = fsm_timeFormat.format(fsm_date) + _log + "\n";
 			
 			if(m_systemOut){
-				System.out.print(t_out);
-			}			
+				System.out.print(t_finalLog);
+			}	
 			
 			try{
 				
-				m_logFileStream.write(t_out.getBytes("UTF-8"));
+				m_logFileStream.write(t_finalLog.getBytes("UTF-8"));
 				m_logFileStream.flush();
 							
 			}catch(Exception _e){
@@ -103,21 +106,21 @@ public class Logger{
 	
 	public synchronized void PrinterException(Exception _e){
 		
-		if(m_disable){
+		if(m_disable ){
 			return ;
 		}
 		
+		fsm_date.setTime(System.currentTimeMillis());
+		String timePrefix = fsm_timeFormat.format(fsm_date);
+		
+		if(m_systemOut){
+			System.out.print(timePrefix);
+		}		
+				
 		if(m_printStack != null){
-			SimpleDateFormat format = new SimpleDateFormat("MM-dd HH:mm:ss :");
-			
-			String t_out = format.format(new Date());
-			
-			if(m_systemOut){
-				System.out.print(t_out);
-			}
 			
 			try{
-				m_printStack.write(t_out.getBytes());
+				m_printStack.write(timePrefix.getBytes());
 				m_logFileStream.flush();
 			}catch(Exception e){}
 			
