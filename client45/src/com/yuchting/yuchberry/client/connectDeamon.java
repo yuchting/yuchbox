@@ -81,7 +81,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListenerExtended,
 												IUploadFileScreenCallback{
 		
-	final static int	fsm_clientVer = 15;
+	final static int	fsm_clientVer = 16;
 	 
 	public sendReceive		m_connect = null;
 		
@@ -100,10 +100,12 @@ public class connectDeamon extends Thread implements SendListener,
 		long	m_date;
 		String	m_fromAddr = "";
 		int		m_simpleHashCode;
+		String	m_messageID;
 		
 		public MarkReadMailData(fetchMail _mail){
 			m_date 				= _mail.GetSendDate().getTime();
 			m_simpleHashCode	= _mail.GetSimpleHashCode();
+			m_messageID			= _mail.getMessageID();
 			
 			if(!_mail.GetFromVect().isEmpty()){
 				m_fromAddr	= (String)_mail.GetFromVect().elementAt(0);
@@ -1665,6 +1667,7 @@ public class connectDeamon extends Thread implements SendListener,
 						ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 						t_os.write(t_msgType);
 						sendReceive.WriteInt(t_os, t_mail.m_simpleHashCode);
+						sendReceive.WriteString(t_os,t_mail.m_messageID);
 						
 						m_sendingQueue.addSendingData(t_msgType, t_os.toByteArray(),true);
 											
