@@ -352,7 +352,8 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         
         // fetch Mail data from the group list
         //
-        StringBuffer t_markReadMailString = new StringBuffer();
+        StringBuffer t_markReadMailString_hash = new StringBuffer();
+        StringBuffer t_markReadMailString_ID = new StringBuffer();
         boolean t_hasUnreadMail = false;
         boolean t_modifiedFlag;
         long t_id;
@@ -388,7 +389,8 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
             		//
         			t_hasUnreadMail = true;
             		m_mainApp.m_dba.markMailRead(t_id);
-            		t_markReadMailString.append(t_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
+            		t_markReadMailString_hash.append(t_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
+            		t_markReadMailString_ID.append(t_mail.getMessageID()).append(fetchMail.fsm_vectStringSpliter);
         		}
         		
         	}else{
@@ -409,7 +411,8 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         	//
         	Intent t_intent = new Intent(YuchDroidApp.FILTER_MARK_MAIL_READ);
         	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_GROUPID,m_currGroupIdx);
-        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_markReadMailString.toString());
+        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_markReadMailString_ID.toString());
+        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAIL_HASH,t_markReadMailString_hash.toString());
     		sendBroadcast(t_intent);
         }
         
@@ -511,16 +514,21 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 							// send deleting messge to server
 							//
 							StringBuffer t_hashList = new StringBuffer();
+							StringBuffer t_messageList = new StringBuffer();
 							for(Envelope en:m_currMailList){
 								if(!en.m_mail.isOwnSendMail()){
 									t_hashList.append(en.m_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
+									t_messageList.append(en.m_mail.getMessageID()).append(fetchMail.fsm_vectStringSpliter);
 								}
 							}
 							
 							// send broadcast to ConnectDeamon
 							//
 							Intent t_intent = new Intent(YuchDroidApp.FILTER_DELETE_MAIL);
-				        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_hashList.toString());
+							t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_GROUPID,m_currGroupIdx);
+				        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAIL_HASH,t_hashList.toString());
+				        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_messageList.toString());			        	
+				        	
 				    		sendBroadcast(t_intent);
 						}
 						

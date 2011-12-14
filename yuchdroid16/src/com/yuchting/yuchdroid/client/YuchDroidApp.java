@@ -88,8 +88,10 @@ public class YuchDroidApp extends Application {
 	
 	// FILTER_MARK_MAIL_READ broadcast parameters data
 	//
-	public final static	String	DATA_FILTER_MARK_MAIL_READ_GROUPID	= "groupId";
-	public final static	String	DATA_FILTER_MARK_MAIL_READ_MAILID	= "mailId";
+	public final static	String	DATA_FILTER_MARK_MAIL_READ_GROUPID		= "groupId";
+	public final static	String	DATA_FILTER_MARK_MAIL_READ_MAIL_HASH	= "mailHash";
+	public final static	String	DATA_FILTER_MARK_MAIL_READ_MAILID	= "messageID";
+	
 	
 	// FILTER_SEND_MAIL broadcast parameters data
 	//

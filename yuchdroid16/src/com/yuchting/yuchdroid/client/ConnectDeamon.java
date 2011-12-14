@@ -65,18 +65,27 @@ import com.yuchting.yuchdroid.client.mail.fetchMail;
 
 public class ConnectDeamon extends Service implements Runnable{
 	
+	// the version to cooperate the communication of client and server
+	//
+	final static int	fsm_clientVer = 16;
+	
+	
 	public static final class FetchAttachment{
-		RemoteViews				m_views;
-		PendingIntent			m_openIntent;
-		int						m_mailIndex;
-		int						m_attachmentIdx;
-		int						m_attachmentSize;
+		Notification 		m_notification;
+		NotificationManager m_notifyMgr;
 		
-		String					m_messageID;
-		String					m_realName;
+		RemoteViews		m_views;
 		
-		int						m_progress;
-		 
+		PendingIntent	m_openIntent;
+		int				m_mailIndex;
+		int				m_attachmentIdx;
+		int				m_attachmentSize;
+		
+		String			m_messageID;
+		String			m_realName;
+		
+		int				m_progress;
+				 
 		ByteArrayOutputStream	m_fileContainBuffer = new ByteArrayOutputStream();
 		
 		public void refreshName(fetchMail _mail){
@@ -92,8 +101,10 @@ public class ConnectDeamon extends Service implements Runnable{
 				
 				m_progress = _percent;
 				
-				m_views.setProgressBar(R.id.mail_download_att_progress,100,50,false);
+				m_views.setProgressBar(R.id.mail_download_att_progress,100,m_progress,false);
 				m_views.setTextViewText(R.id.mail_download_att_progress_text, Integer.toString(m_progress) + "%");
+				
+				m_notifyMgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL_ATT, m_notification);				
 			}
 			
 		}
@@ -106,8 +117,6 @@ public class ConnectDeamon extends Service implements Runnable{
 	
 	public static	ConnectDeamon sm_connectDeamon = null;
 		
-	final static int	fsm_clientVer = 15;
-	
 	public boolean m_sendAuthMsg 			= false;
 	public boolean m_connectState			= true;
 	public boolean m_destroy				= false;
@@ -270,21 +279,37 @@ public class ConnectDeamon extends Service implements Runnable{
 	
 	private void markDelMail(Intent _intent,boolean _markOrDel){
 		
-		String t_mailHashcode = _intent.getExtras().getString(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID);
-		String[] t_mailHashList = t_mailHashcode.split(fetchMail.fsm_vectStringSpliter);
+		String t_mailHashcode	= _intent.getExtras().getString(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAIL_HASH);
+		String t_mailMessageID	= _intent.getExtras().getString(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID);
 		
-		for(String id : t_mailHashList){
+		String[] t_mailHashList		= t_mailHashcode.split(fetchMail.fsm_vectStringSpliter);
+		String[] t_mailMessageIDList= t_mailMessageID.split(fetchMail.fsm_vectStringSpliter);
+		
+		String hash ;
+		String id ;
+		
+		for(int i = 0;i < t_mailHashList.length;i++){
 			
-			if(id.length() != 0){
+			hash	= t_mailHashList[i];
+			
+			if(i < t_mailMessageIDList.length){
+				id	= t_mailMessageIDList[i];
+			}else{
+				id	= "";
+			}			
+			
+			if(hash.length() != 0){
 				
-				int t_hash = Integer.valueOf(id).intValue();
+				int hashVal = Integer.valueOf(hash).intValue();
+				
 				try{
 					ByteArrayOutputStream os  = new ByteArrayOutputStream();
 					
 					byte t_type = _markOrDel?msg_head.msgBeenRead:msg_head.msgMailDel;
 					
 					os.write(t_type);
-					sendReceive.WriteInt(os, t_hash);
+					sendReceive.WriteInt(os, hashVal);
+					sendReceive.WriteString(os,id);
 					
 					m_sendingQueue.addSendingData(t_type, os.toByteArray(), true);
 				}catch(Exception e){
@@ -717,11 +742,14 @@ public class ConnectDeamon extends Service implements Runnable{
 		
 		notification.setLatestEventInfo(this,null,null,_openIntent);
 		notification.contentView = t_att.m_views;
-		notification.flags |= Notification.FLAG_NO_CLEAR;
+		notification.flags |= Notification.FLAG_NO_CLEAR | PendingIntent.FLAG_UPDATE_CURRENT;
 		
 		
 		NotificationManager t_mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 		t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL_ATT, notification);
+		
+		t_att.m_notification = notification;
+		t_att.m_notifyMgr	= t_mgr;
 		
 		// delete the former attachment file of same name
 		//
