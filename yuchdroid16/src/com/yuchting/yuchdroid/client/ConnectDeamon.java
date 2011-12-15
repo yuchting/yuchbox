@@ -69,23 +69,24 @@ public class ConnectDeamon extends Service implements Runnable{
 	//
 	final static int	fsm_clientVer = 16;
 	
-	
 	public static final class FetchAttachment{
+		
 		Notification 		m_notification;
 		NotificationManager m_notifyMgr;
 		
 		RemoteViews		m_views;
 		
 		PendingIntent	m_openIntent;
+		
+		int				m_progress;
+		
 		int				m_mailIndex;
 		int				m_attachmentIdx;
 		int				m_attachmentSize;
 		
 		String			m_messageID;
-		String			m_realName;
+		String			m_realName;	
 		
-		int				m_progress;
-				 
 		ByteArrayOutputStream	m_fileContainBuffer = new ByteArrayOutputStream();
 		
 		public void refreshName(fetchMail _mail){
@@ -105,9 +106,13 @@ public class ConnectDeamon extends Service implements Runnable{
 				m_views.setTextViewText(R.id.mail_download_att_progress_text, Integer.toString(m_progress) + "%");
 				
 				m_notifyMgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL_ATT, m_notification);				
-			}
-			
-		}
+			}	
+		}	
+		
+	}
+	
+	public static final class PutAttachment{
+				
 	}
 	
 	public final static String TAG = ConnectDeamon.class.getName();

@@ -69,7 +69,14 @@
 				android:minHeight="200sp"
 				android:hint="@string/mail_compose_body"
 				android:gravity="top" />
-						
+			
+			<LinearLayout 
+			    android:id="@+id/mail_compose_attachment_parent"
+			    android:layout_width="fill_parent"
+			    android:layout_height="wrap_content"
+			    android:orientation="vertical">
+			</LinearLayout>
+			
 			<TextView 
 				android:id="@+id/mail_compose_ref_label"
 				android:layout_width="fill_parent"

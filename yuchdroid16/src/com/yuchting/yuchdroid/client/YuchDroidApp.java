@@ -345,9 +345,7 @@ public class YuchDroidApp extends Application {
 										sleep(10000);
 									}catch(Exception e){}
 								}								
-								
-								m_isOfficalHost = false;
-								
+																
 								final String t_mainHost = "http://www.yuchs.com/verOffical/";
 								
 								StringBuffer t_url = new StringBuffer(t_mainHost);

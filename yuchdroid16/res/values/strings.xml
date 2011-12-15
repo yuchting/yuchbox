@@ -123,6 +123,7 @@
     <string name="mail_open_attach_prompt_disconnect">Can\'t be downloaded when disconnect server</string>
     <string name="mail_open_attach_prompt_has_download">There is a attachment downloading</string>
     <string name="mail_open_attach_prompt">Start download attachment</string>
+    <string name="mail_open_attach_select_prompt">Select a Attachment</string>
     <string name="mail_open_attach_cancel_btn">Cancel Download</string>
     <string name="mail_open_attach_open_btn">Open</string>
     <string name="mail_open_attach_cancel_btn_prompt">Are you sure stop downloading?</string>

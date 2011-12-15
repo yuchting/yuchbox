@@ -69,6 +69,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 
 import com.google.ads.AdRequest;
 import com.google.ads.AdView;
+import com.yuchting.yuchdroid.client.ConnectDeamon;
 import com.yuchting.yuchdroid.client.GlobalDialog;
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
@@ -92,6 +93,9 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	
 	TextView	m_discardRefView	= null;
 	
+	ViewGroup	m_attachmentParent	= null;
+	Vector<ConnectDeamon.PutAttachment>	m_attachmentList = new Vector<ConnectDeamon.PutAttachment>();
+	
 	Button		m_sendBtn			= null;
 	Button		m_saveBtn			= null;
 	Button		m_discardBtn		= null;
@@ -114,8 +118,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.mail_compose);
 		
-		m_mainApp = (YuchDroidApp)getApplicationContext();
-		
+		m_mainApp = (YuchDroidApp)getApplicationContext();		
 		
 		m_to		= (AutoCompleteTextView)findViewById(R.id.mail_compose_to);
 		m_cc		= (AutoCompleteTextView)findViewById(R.id.mail_compose_cc);
@@ -881,11 +884,39 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
             	showCc_Bcc();
                 return true;
             case R.id.mail_compose_attachment:
-            	Toast.makeText(this,getString(R.string.mail_open_attach_prompt), Toast.LENGTH_SHORT).show();
+            	openFile();
             	return true;
            
         }
 
         return super.onMenuItemSelected(featureId, item);
 	}
+	
+	private void openFile(){
+		
+		// To open up a gallery browser
+		Intent intent = new Intent();
+		intent.setType("image/*");
+		intent.setAction(Intent.ACTION_GET_CONTENT);
+		startActivityForResult(Intent.createChooser(intent, getString(R.string.mail_open_attach_select_prompt)),1);
+	}
+	
+	// To handle when an image is selected from the browser, add the following to your Activity
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) { 
+
+		if (resultCode == RESULT_OK) {
+
+			if (requestCode == 1) {
+
+				// currImageURI is the global variable I'm using to hold the content:// URI of the image
+				Uri currImageURI = data.getData();
+				String path = currImageURI.getPath();
+				
+				
+			}
+		}
+	}
+
+
 }

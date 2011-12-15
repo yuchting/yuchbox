@@ -126,6 +126,7 @@
     <string name="mail_open_attach_prompt_disconnect">不能在断开时下载附件</string>
     <string name="mail_open_attach_prompt_has_download">已经有一个附件正在下载了</string>
     <string name="mail_open_attach_prompt">开始下载附件</string>
+    <string name="mail_open_attach_select_prompt">选择一个程序选择文件</string>
     <string name="mail_open_attach_cancel_btn">取消下载</string>
     <string name="mail_open_attach_open_btn">打开</string>
     <string name="mail_open_attach_cancel_btn_prompt">你真的想要取消下载么？</string>
