@@ -27,7 +27,7 @@
  */
 package com.yuchting.yuchberry.client.im;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Keypad;
@@ -48,10 +48,10 @@ public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 	
 	LabelField				m_nameText = new LabelField();
 	LabelField				m_msgText = new LabelField();
-	ButtonField				m_replyBut	 = new ButtonField(recvMain.sm_local.getString(localResource.IM_PROMPT_DLG_CONFIRM_BUT),
+	ButtonField				m_replyBut	 = new ButtonField(recvMain.sm_local.getString(yblocalResource.IM_PROMPT_DLG_CONFIRM_BUT),
 												Field.FIELD_HCENTER | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	
-	ButtonField				m_laterBut	 = new ButtonField(recvMain.sm_local.getString(localResource.IM_PROMPT_DLG_CANCEL_BUT),
+	ButtonField				m_laterBut	 = new ButtonField(recvMain.sm_local.getString(yblocalResource.IM_PROMPT_DLG_CANCEL_BUT),
 												Field.FIELD_HCENTER | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	
 	public IMPromptDlg(MainIMScreen _mainScreen){
@@ -59,7 +59,7 @@ public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 		
 		m_mainScreen = _mainScreen;
 		
-		LabelField t_title = new LabelField(recvMain.sm_local.getString(localResource.IM_PROMPT_DLG_TITLE));
+		LabelField t_title = new LabelField(recvMain.sm_local.getString(yblocalResource.IM_PROMPT_DLG_TITLE));
 		t_title.setFont(MainIMScreen.fsm_boldFont);
 		add(t_title);
 		

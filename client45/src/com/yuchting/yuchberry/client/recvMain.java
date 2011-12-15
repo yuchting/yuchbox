@@ -45,7 +45,7 @@ import javax.microedition.location.Location;
 import javax.microedition.location.LocationListener;
 import javax.microedition.location.LocationProvider;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.blackberry.api.browser.Browser;
 import net.rim.blackberry.api.browser.BrowserSession;
 import net.rim.blackberry.api.homescreen.HomeScreen;
@@ -97,7 +97,7 @@ import com.yuchting.yuchberry.client.weibo.weiboTimeLineScreen;
 
 
 
-public class recvMain extends UiApplication implements localResource,LocationListener {
+public class recvMain extends UiApplication implements yblocalResource,LocationListener {
 	
 	public final static int 		fsm_display_width		= Display.getWidth();
 	public final static int 		fsm_display_height		= Display.getHeight();
@@ -127,13 +127,13 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	public static ResourceBundle sm_local = ResourceBundle.getBundle(localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
+	public static ResourceBundle sm_local = ResourceBundle.getBundle(yblocalResource.BUNDLE_ID, yblocalResource.BUNDLE_NAME);
 	
 	final static long		fsm_notifyID_email = 767918509114947L;
 	
 	final static Object 	fsm_notifyEvent_email = new Object() {
 	    public String toString() {
-	       return recvMain.sm_local.getString(localResource.NOTIFY_EMAIL_LABEL);
+	       return recvMain.sm_local.getString(yblocalResource.NOTIFY_EMAIL_LABEL);
 	    }
 	};
 	
@@ -141,7 +141,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	final static Object 	fsm_notifyEvent_weibo = new Object() {
 	    public String toString() {
-	       return recvMain.sm_local.getString(localResource.NOTIFY_WEIBO_LABEL);
+	       return recvMain.sm_local.getString(yblocalResource.NOTIFY_WEIBO_LABEL);
 	    }
 	};
 	
@@ -150,7 +150,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	final static Object 	fsm_notifyEvent_disconnect = new Object() {
 	    public String toString() {
-	       return recvMain.sm_local.getString(localResource.NOTIFY_DISCONNECT_LABEL);
+	       return recvMain.sm_local.getString(yblocalResource.NOTIFY_DISCONNECT_LABEL);
 	    }
 	};
 	
@@ -158,7 +158,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	final static Object 	fsm_notifyEvent_weibo_home = new Object() {
 	    public String toString() {
-	       return recvMain.sm_local.getString(localResource.NOTIFY_WEIBO_LABEL_HOME);
+	       return recvMain.sm_local.getString(yblocalResource.NOTIFY_WEIBO_LABEL_HOME);
 	    }
 	};
 	
@@ -166,7 +166,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	final static Object 	fsm_notifyEvent_im = new Object() {
 	    public String toString() {
-	       return recvMain.sm_local.getString(localResource.NOTIFY_IM_LABEL);
+	       return recvMain.sm_local.getString(yblocalResource.NOTIFY_IM_LABEL);
 	    }
 	};
 	
@@ -187,7 +187,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	
 	public int					m_connectState		= 0; 
-	public String				m_aboutString		= recvMain.sm_local.getString(localResource.ABOUT_DESC);
+	public String				m_aboutString		= recvMain.sm_local.getString(yblocalResource.ABOUT_DESC);
 	
 	final class ErrorInfo{
 		Date		m_time;
@@ -248,11 +248,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public static final String[] fsm_apnListString = 
 	{
-		sm_local.getString(localResource.APN_LIST_NULL),
-		sm_local.getString(localResource.APN_LIST_CMNET) 	+ " cmnet",
-		sm_local.getString(localResource.APN_LIST_UNINET) 	+ " uninet",
-		sm_local.getString(localResource.APN_LIST_3GNET) 	+ " 3gnet",
-		sm_local.getString(localResource.APN_LIST_CTNET) 	+ " ctnet",
+		sm_local.getString(yblocalResource.APN_LIST_NULL),
+		sm_local.getString(yblocalResource.APN_LIST_CMNET) 	+ " cmnet",
+		sm_local.getString(yblocalResource.APN_LIST_UNINET) 	+ " uninet",
+		sm_local.getString(yblocalResource.APN_LIST_3GNET) 	+ " 3gnet",
+		sm_local.getString(yblocalResource.APN_LIST_CTNET) 	+ " ctnet",
 	};
 	
 	public static final String[]		fsm_apnString		= 
@@ -286,7 +286,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	ApplicationMenuItem m_addItem	= new ApplicationMenuItem(20){
 						
 		public String toString(){
-			return recvMain.sm_local.getString(localResource.ADD_ATTACHMENT);
+			return recvMain.sm_local.getString(yblocalResource.ADD_ATTACHMENT);
 		}
 		
 		public Object run(Object context){
@@ -301,7 +301,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	ApplicationMenuItem	m_delItem	= new ApplicationMenuItem(21){
 		public String toString(){
-			return recvMain.sm_local.getString(localResource.CHECK_DEL_ATTACHMENT);
+			return recvMain.sm_local.getString(yblocalResource.CHECK_DEL_ATTACHMENT);
 		}
 		
 		public Object run(Object context){
@@ -604,7 +604,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		if(m_latestVersion != null){
 						
-			Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,sm_local.getString(localResource.LATEST_VER_REPORT) + m_latestVersion,
+			Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,sm_local.getString(yblocalResource.LATEST_VER_REPORT) + m_latestVersion,
 					Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL);
 			
 			t_dlg.setDialogClosedListener(new DialogClosedListener(){
@@ -1839,7 +1839,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		// prompt by the background thread
 		//
 				
-		Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,_att.m_realName + sm_local.getString(localResource.DOWNLOAD_OVER_PROMPT),
+		Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,_att.m_realName + sm_local.getString(yblocalResource.DOWNLOAD_OVER_PROMPT),
 	    							Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.QUESTION),Manager.VERTICAL_SCROLL);
 		
 		t_dlg.setDialogClosedListener(new DialogClosedListener(){
@@ -2121,7 +2121,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public static final int[]		fsm_refreshWeiboInterval		= {0,10,20,30,40};
 	public int						m_refreshWeiboIntervalIndex = 0;
 	
-	public static final String[]	fsm_weiboUploadImageSizeList = {"800×600","1280×800",sm_local.getString(localResource.WEIBO_IMAGE_ORIGINAL_SIZE)};
+	public static final String[]	fsm_weiboUploadImageSizeList = {"800×600","1280×800",sm_local.getString(yblocalResource.WEIBO_IMAGE_ORIGINAL_SIZE)};
 	public static final XYPoint[]	fsm_weiboUploadImageSize_size		= 
 	{
 		new XYPoint(800,600),
@@ -2197,7 +2197,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				m_updateWeiboItem = new ApplicationMenuItem(30) {
 					
 					public String toString() {
-						return recvMain.sm_local.getString(localResource.WEIBO_UPDATE_DLG);
+						return recvMain.sm_local.getString(yblocalResource.WEIBO_UPDATE_DLG);
 					}
 					
 					public Object run(Object context) {
@@ -2389,7 +2389,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 		}else{
 			
-			Dialog t_waitDlg = new Dialog(sm_local.getString(localResource.WAITING_FOR_STORE_DATA),new Object[0],new int[0],0,null);
+			Dialog t_waitDlg = new Dialog(sm_local.getString(yblocalResource.WAITING_FOR_STORE_DATA),new Object[0],new int[0],0,null);
 			t_waitDlg.show();
 			
 			invokeLater(new Runnable() {
@@ -2516,9 +2516,9 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public int					m_imCurrUseStatusIndex	= 0;
 	public static Vector		sm_imStatusList			= new Vector();
 	static{
-		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_AVAIL,sm_local.getString(localResource.IM_STATUS_DEFAULT_AVAIL)));
-		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_AWAY,sm_local.getString(localResource.IM_STATUS_DEFAULT_AWAY)));
-		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_BUSY,sm_local.getString(localResource.IM_STATUS_DEFAULT_BUSY)));
+		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_AVAIL,sm_local.getString(yblocalResource.IM_STATUS_DEFAULT_AVAIL)));
+		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_AWAY,sm_local.getString(yblocalResource.IM_STATUS_DEFAULT_AWAY)));
+		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_BUSY,sm_local.getString(yblocalResource.IM_STATUS_DEFAULT_BUSY)));
 	}
 	
 	public static final String[]	fsm_imChatMsgHistoryList 	= {"32","64","128","256"};

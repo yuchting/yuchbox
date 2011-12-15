@@ -33,7 +33,7 @@ import java.util.Vector;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
@@ -158,7 +158,7 @@ public class uploadFileScreen extends MainScreen implements
 	fileIconList		m_fileList 		= new fileIconList();
 	
 	uploadFileScreenMenu	m_ok		= new uploadFileScreenMenu(" ",0,100,this);
-	uploadFileScreenMenu	m_check		= new uploadFileScreenMenu(recvMain.sm_local.getString(localResource.CHECK_UPLOAD_FILE),1,100,this);	
+	uploadFileScreenMenu	m_check		= new uploadFileScreenMenu(recvMain.sm_local.getString(yblocalResource.CHECK_UPLOAD_FILE),1,100,this);	
 	
 	
 	public final static int fsm_bitmap_width	= 32;
@@ -215,9 +215,9 @@ public class uploadFileScreen extends MainScreen implements
 		add(m_fileList);		
 		
 		if(_del){
-			m_ok.setText(recvMain.sm_local.getString(localResource.DEL_UPLOAD_FILE));
+			m_ok.setText(recvMain.sm_local.getString(yblocalResource.DEL_UPLOAD_FILE));
 		}else{
-			m_ok.setText(recvMain.sm_local.getString(localResource.ADD_UPLOAD_FILE));
+			m_ok.setText(recvMain.sm_local.getString(yblocalResource.ADD_UPLOAD_FILE));
 		}
 		
 		try{
@@ -443,14 +443,14 @@ public class uploadFileScreen extends MainScreen implements
 					if(m_delScreen){
 						m_clickCallback.clickDel(t_file.m_filename_full);
 						
-						m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.DEL_ATTACHMENT_SUCC));
+						m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.DEL_ATTACHMENT_SUCC));
 					}else{
 						
 						if(!m_clickCallback.clickOK(t_file.m_filename_full,t_file.m_fileSize)){
 							return ;
 						}
 						
-						m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.ADD_ATTACHMENT_SUCC));
+						m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.ADD_ATTACHMENT_SUCC));
 					}				
 										
 					close();

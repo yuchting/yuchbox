@@ -29,7 +29,7 @@ package com.yuchting.yuchberry.client.weibo;
 
 import java.util.Vector;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.component.TextField;
 
@@ -84,8 +84,8 @@ public class WeiboDMItemField extends WeiboItemField{
 		new WeiboTextField(WeiboItemField.fsm_weiboCommentFGColor,WeiboItemField.fsm_weiboCommentBGColor),
 	};
 	
-	public static HyperlinkButtonField	 sm_nextPageBut = new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_DM_NEXT_PAGE_BUT_LABEL));
-	public static HyperlinkButtonField	 sm_prePageBut  = new HyperlinkButtonField(recvMain.sm_local.getString(localResource.WEIBO_DM_PRE_PAGE_BUT_LABEL));
+	public static HyperlinkButtonField	 sm_nextPageBut = new HyperlinkButtonField(recvMain.sm_local.getString(yblocalResource.WEIBO_DM_NEXT_PAGE_BUT_LABEL));
+	public static HyperlinkButtonField	 sm_prePageBut  = new HyperlinkButtonField(recvMain.sm_local.getString(yblocalResource.WEIBO_DM_PRE_PAGE_BUT_LABEL));
 	
 	final static int			fsm_nextPageBut_x = fsm_weiboItemFieldWidth - sm_defaultFont.getAdvance(sm_nextPageBut.getText());
 	final static int			fsm_prePageBut_x = fsm_nextPageBut_x -  sm_defaultFont.getAdvance(sm_prePageBut.getText());

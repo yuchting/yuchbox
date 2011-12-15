@@ -32,7 +32,7 @@ import java.io.ByteArrayOutputStream;
 import javax.microedition.media.Player;
 import javax.microedition.media.control.RecordControl;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Screen;
@@ -141,7 +141,7 @@ public class RecordAudioScreen{
 		m_callback = _callback;
 		
 		// get the length
-		fsm_screenWidth = Font.getDefault().getAdvance(recvMain.sm_local.getString(localResource.RECORDING_REMAIN_LABEL) + "00") + 10;
+		fsm_screenWidth = Font.getDefault().getAdvance(recvMain.sm_local.getString(yblocalResource.RECORDING_REMAIN_LABEL) + "00") + 10;
 	}
 	
 	public void startRecord(){
@@ -154,7 +154,7 @@ public class RecordAudioScreen{
 		m_recordThread.start();
 		
 		m_remainTimer = fsm_maxRecordingTime;
-		m_remain = recvMain.sm_local.getString(localResource.RECORDING_REMAIN_LABEL) + Integer.toString(m_remainTimer);
+		m_remain = recvMain.sm_local.getString(yblocalResource.RECORDING_REMAIN_LABEL) + Integer.toString(m_remainTimer);
 		
 		m_remainTimerTheard = new Thread(){
 			public void run(){
@@ -166,7 +166,7 @@ public class RecordAudioScreen{
 						break;
 					}
 			
-					m_remain = recvMain.sm_local.getString(localResource.RECORDING_REMAIN_LABEL) + 
+					m_remain = recvMain.sm_local.getString(yblocalResource.RECORDING_REMAIN_LABEL) + 
 									Integer.toString(--m_remainTimer);
 					if(m_remainTimer <= 0){
 						close();

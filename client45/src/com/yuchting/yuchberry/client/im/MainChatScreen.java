@@ -35,7 +35,7 @@ import java.util.Vector;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.blackberry.api.invoke.CameraArguments;
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.device.api.system.Backlight;
@@ -166,7 +166,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 	
 	public void enableVoiceMode(boolean _enable){
 		if(_enable){
-			m_editTextArea.setText(recvMain.sm_local.getString(localResource.IM_VOICE_MODE_PROMPT));			
+			m_editTextArea.setText(recvMain.sm_local.getString(yblocalResource.IM_VOICE_MODE_PROMPT));			
 			m_editTextArea.setEditable(false);
 		}else{
 			m_editTextArea.setEditable(true);
@@ -656,19 +656,19 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 	public final static int fsm_background = 0x2b3d4d;
 	
 	int m_menu_op = 0;
-	MenuItem m_sendMenu = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_SEND_LABEL),m_menu_op++,0){
+	MenuItem m_sendMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_SEND_LABEL),m_menu_op++,0){
 		public void run(){
 			m_middleMgr.m_inputMgr.send();
 		}
 	};
 	
-	MenuItem m_phizMenu = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_PHIZ_LABEL),m_menu_op++,0){
+	MenuItem m_phizMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_PHIZ_LABEL),m_menu_op++,0){
 		public void run(){
 			UiApplication.getUiApplication().pushScreen(
 					PhizSelectedScreen.getPhizScreen(m_middleMgr.m_inputMgr.m_editTextArea));
 		}
 	};
-	MenuItem m_snapItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPEN_CAMERA_SNAP),m_menu_op++,0){
+	MenuItem m_snapItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_OPEN_CAMERA_SNAP),m_menu_op++,0){
     	public void run(){
     		try{
     			m_cameraScreen = new CameraScreen(new ICameraScreenCallback(){
@@ -689,13 +689,13 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
     	}
     };
 	    
-	MenuItem m_cameraMenu = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPEN_CAMERA),m_menu_op++,0){
+	MenuItem m_cameraMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_OPEN_CAMERA),m_menu_op++,0){
 		public void run(){
 			Invoke.invokeApplication(Invoke.APP_TYPE_CAMERA, new CameraArguments());
 		}
 	};
 	
-	MenuItem m_recordMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_RECORD_AUDIO_MENU_LABEL),m_menu_op++,0){
+	MenuItem m_recordMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_RECORD_AUDIO_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			m_recordScreen.startRecord();
 			m_isRecording = true;
@@ -704,10 +704,10 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		}
 	};
 	
-	MenuItem m_deleteChatMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_DELETE_HISTORY_CHAT),m_menu_op++,0){
+	MenuItem m_deleteChatMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_DELETE_HISTORY_CHAT),m_menu_op++,0){
 		public void run(){
 			if(Dialog.ask(Dialog.D_YES_NO,
-				recvMain.sm_local.getString(localResource.IM_DELETE_HISTORY_CHAT_PROMPT),
+				recvMain.sm_local.getString(yblocalResource.IM_DELETE_HISTORY_CHAT_PROMPT),
 				Dialog.NO) == Dialog.YES){
 				
 				m_currRoster.m_chatMsgList.removeAllElements();
@@ -716,7 +716,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		}
 	};
 	
-	MenuItem m_checkPic		= new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_CHECK_UPLOADING_IMAGE),m_menu_op++,0){
+	MenuItem m_checkPic		= new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_CHECK_UPLOADING_IMAGE),m_menu_op++,0){
     	public void run(){
     		try{
     			if(m_imagePath != null){
@@ -736,13 +736,13 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
     	}
     };
     
-    MenuItem m_deletePic	= new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_DELETE_PIC_MENU_LABEL),m_menu_op++,0){
+    MenuItem m_deletePic	= new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_DELETE_PIC_MENU_LABEL),m_menu_op++,0){
     	public void run(){
     		clearAttachment();
     	}
     };
 	
-	MenuItem m_resendMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_RESEND_MSG_MENU_LABEL),m_menu_op++,0){
+	MenuItem m_resendMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_RESEND_MSG_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			ChatField t_field = getResendField();
 			if(t_field != null){
@@ -761,7 +761,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		}
 	};
 	
-	MenuItem m_displayTimeMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_DISPLAY_CHAT_FIELD_TIME),m_menu_op++,0){
+	MenuItem m_displayTimeMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_DISPLAY_CHAT_FIELD_TIME),m_menu_op++,0){
 		public void run(){
 			if(!recvMain.sm_imDisplayTime){
 				recvMain.sm_imDisplayTime = true;
@@ -773,7 +773,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		}
 	};
 	
-	MenuItem m_hideTimeMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_HIDE_CHAT_FIELD_TIME),m_menu_op++,0){
+	MenuItem m_hideTimeMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_HIDE_CHAT_FIELD_TIME),m_menu_op++,0){
 		public void run(){
 			if(recvMain.sm_imDisplayTime){
 				recvMain.sm_imDisplayTime = false;
@@ -785,7 +785,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		}
 	};
 	
-	MenuItem m_enableVoiceModeMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_ENABLE_VOICE_MODE),m_menu_op++,0){
+	MenuItem m_enableVoiceModeMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_ENABLE_VOICE_MODE),m_menu_op++,0){
 		public void run(){
 			m_mainApp.m_imVoiceImmMode = true;
 			m_middleMgr.m_inputMgr.enableVoiceMode(true);
@@ -793,7 +793,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		}
 	};
 	
-	MenuItem m_disableVoiceModeMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_DISABLE_VOICE_MODE),m_menu_op++,0){
+	MenuItem m_disableVoiceModeMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_DISABLE_VOICE_MODE),m_menu_op++,0){
 		public void run(){
 			m_mainApp.m_imVoiceImmMode = false;
 			m_middleMgr.m_inputMgr.enableVoiceMode(false);
@@ -1064,7 +1064,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		if(m_imagePath == null){
 			sendChatMsg_impl(_text);
 		}else{
-			m_waitDlg = new Dialog(recvMain.sm_local.getString(localResource.WEIBO_WAIT_COMPRESS_IMAGE),new Object[0],new int[0],0,null);
+			m_waitDlg = new Dialog(recvMain.sm_local.getString(yblocalResource.WEIBO_WAIT_COMPRESS_IMAGE),new Object[0],new int[0],0,null);
 			m_waitDlg.show();
 			
 			m_mainApp.invokeLater(new Runnable() {

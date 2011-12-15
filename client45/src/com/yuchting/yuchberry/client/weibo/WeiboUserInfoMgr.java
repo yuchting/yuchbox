@@ -27,7 +27,7 @@
  */
 package com.yuchting.yuchberry.client.weibo;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
@@ -44,9 +44,9 @@ import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 
 public class WeiboUserInfoMgr extends WeiboMainManager{
 
-	final static String fsm_follow_text	= recvMain.sm_local.getString(localResource.WEIBO_USER_INFO_FOLLOW);
-	final static String fsm_fans_text		= recvMain.sm_local.getString(localResource.WEIBO_USER_INFO_FANS);
-	final static String fsm_weibo_text		= recvMain.sm_local.getString(localResource.WEIBO_USER_INFO_WEIBO_NUM);
+	final static String fsm_follow_text	= recvMain.sm_local.getString(yblocalResource.WEIBO_USER_INFO_FOLLOW);
+	final static String fsm_fans_text		= recvMain.sm_local.getString(yblocalResource.WEIBO_USER_INFO_FANS);
+	final static String fsm_weibo_text		= recvMain.sm_local.getString(yblocalResource.WEIBO_USER_INFO_WEIBO_NUM);
 	
 	fetchWeiboUser		m_weiboUser = null;	
 	recvMain			m_mainApp	= null;

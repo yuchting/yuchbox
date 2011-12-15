@@ -30,7 +30,7 @@ package com.yuchting.yuchberry.client.weibo;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import local.localResource;
+import local.yblocalResource;
 
 import com.yuchting.yuchberry.client.GPSInfo;
 import com.yuchting.yuchberry.client.recvMain;
@@ -323,13 +323,13 @@ public class fetchWeibo {
 		
 		switch(GetWeiboStyle()){
 		case fetchWeibo.QQ_WEIBO_STYLE:
-			t_style = recvMain.sm_local.getString(localResource.WEIBO_QQ_STYLE);
+			t_style = recvMain.sm_local.getString(yblocalResource.WEIBO_QQ_STYLE);
 			break;
 		case fetchWeibo.SINA_WEIBO_STYLE:
-			t_style = recvMain.sm_local.getString(localResource.WEIBO_SINA_STYLE);
+			t_style = recvMain.sm_local.getString(yblocalResource.WEIBO_SINA_STYLE);
 			break;
 		case fetchWeibo.TWITTER_WEIBO_STYLE:
-			t_style = recvMain.sm_local.getString(localResource.WEIBO_TWITTER_STYLE);
+			t_style = recvMain.sm_local.getString(yblocalResource.WEIBO_TWITTER_STYLE);
 			break;
 		}
 		
@@ -354,7 +354,7 @@ public class fetchWeibo {
 			t_content.append(GetOriginalPic()).append("\n").append(_spaceLine);
 		}
 				
-		t_content.append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
+		t_content.append(recvMain.sm_local.getString(yblocalResource.WEIBO_SOURCE_PREFIX))
 				.append(GetSource());
 		
 		if(m_commentWeibo != null){
@@ -365,6 +365,6 @@ public class fetchWeibo {
 	}
 	
 	public String getShareEmailSubject(){
-		return recvMain.sm_local.getString(localResource.WEIBO_EMAIL_SHARE) + getLocalStyleName();
+		return recvMain.sm_local.getString(yblocalResource.WEIBO_EMAIL_SHARE) + getLocalStyleName();
 	}
 }

@@ -27,7 +27,7 @@
  */
 package com.yuchting.yuchberry.client.im;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
@@ -64,21 +64,21 @@ public class RosterInfoScreen extends MainScreen {
 		add(new SeparatorField());
 		
 		m_addr = new TextField(Field.READONLY);
-		m_addr.setLabel(recvMain.sm_local.getString(localResource.IM_ROSTER_INFO_ADDR));
+		m_addr.setLabel(recvMain.sm_local.getString(yblocalResource.IM_ROSTER_INFO_ADDR));
 		m_addr.setText(_roster.m_roster.getAccount());
 		add(m_addr);
 		
 		add(new SeparatorField());
 		
 		m_source = new TextField(Field.READONLY);
-		m_source.setLabel(recvMain.sm_local.getString(localResource.IM_ROSTER_INFO_SOURCE));
+		m_source.setLabel(recvMain.sm_local.getString(yblocalResource.IM_ROSTER_INFO_SOURCE));
 		m_source.setText(_roster.m_roster.getOwnAccount() + " " + _roster.m_roster.getSource());
 		add(m_source);
 		
 		add(new SeparatorField());
 		
 		m_status = new TextField(Field.READONLY);
-		m_status.setLabel(recvMain.sm_local.getString(localResource.IM_ROSTER_INFO_STATUS));
+		m_status.setLabel(recvMain.sm_local.getString(yblocalResource.IM_ROSTER_INFO_STATUS));
 		m_status.setText(_roster.m_roster.getStatus());
 		
 		add(m_status);

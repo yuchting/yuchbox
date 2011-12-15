@@ -32,7 +32,7 @@ import java.util.Vector;
 import javax.microedition.media.Player;
 import javax.microedition.media.control.VideoControl;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Keypad;
@@ -210,7 +210,7 @@ public class CameraScreen extends MainScreen
     	}
     }
     
-    private MenuItem takePhoto = new MenuItem(recvMain.sm_local.getString(localResource.CAMERA_SCREEN_TAKE_LABEL), 1000, 10){
+    private MenuItem takePhoto = new MenuItem(recvMain.sm_local.getString(yblocalResource.CAMERA_SCREEN_TAKE_LABEL), 1000, 10){
         public void run(){
             try{
 

@@ -38,7 +38,7 @@ import java.util.Vector;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.blackberry.api.invoke.MessageArguments;
 import net.rim.blackberry.api.mail.Address;
@@ -92,21 +92,21 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
 	int m_menu_label = 0;
 	
-	MenuItem	m_historyChatMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_HISTORY_MENU_LABEL),m_menu_label++,0){
+	MenuItem	m_historyChatMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_HISTORY_MENU_LABEL),m_menu_label++,0){
 		public void run(){
 			m_header.setCurrState(MainIMScreenHeader.STATE_HISTORY_CHAT);
 			refreshHeader();
 		}
 	};
 	
-	MenuItem	m_rosterListMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_ROSTER_LIST_MENU_LABEL),m_menu_label++,0){
+	MenuItem	m_rosterListMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_ROSTER_LIST_MENU_LABEL),m_menu_label++,0){
 		public void run(){
 			m_header.setCurrState(MainIMScreenHeader.STATE_ROSTER_LIST);
 			refreshHeader();
 		}
 	};
 	
-	MenuItem	m_statusListMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_STATUS_LIST_MENU_LABEL),m_menu_label++,0){
+	MenuItem	m_statusListMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_STATUS_LIST_MENU_LABEL),m_menu_label++,0){
 		public void run(){
 			m_header.setCurrState(MainIMScreenHeader.STATE_STATUS_LIST);
 			refreshHeader();
@@ -115,13 +115,13 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
 	int m_menu_op = 20;
 	
-	MenuItem	m_refreshListMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_REFRESH_ROSTER_MENU_LABEL),m_menu_op++,0){
+	MenuItem	m_refreshListMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_REFRESH_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			sendRequestRosterListMsg();
 		}
 	};
 	
-	MenuItem	m_showUnvailRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_SHOW_UNVAIL_ROSTER_MENU_LABEL),m_menu_op++,0){
+	MenuItem	m_showUnvailRosterMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_SHOW_UNVAIL_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			m_mainApp.m_hideUnvailiableRoster = false;
 			
@@ -136,7 +136,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	};
 	
 
-	MenuItem	m_searchRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_SEARCH_ROSTER_MENU_LABEL),m_menu_op++,0){
+	MenuItem	m_searchRosterMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_SEARCH_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			if(m_searchStatus == null){
 				m_searchStatus = new SearchStatus(MainIMScreen.this);
@@ -148,7 +148,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	};
 	
 	public IMAddRosterDlg		m_addRosterDlg = null;
-	MenuItem	m_addRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_ADD_ROSTER_MENU_LABEL),m_menu_op++,0){
+	MenuItem	m_addRosterMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_ADD_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			if(m_addRosterDlg == null){
 				m_addRosterDlg = new IMAddRosterDlg(MainIMScreen.this);
@@ -160,7 +160,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
 
 	public RosterInfoScreen m_checkRosterInfoScreen = null;
-	MenuItem	m_checkRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_CHECK_ROSTER_MENU_LABEL),m_menu_op++,0){
+	MenuItem	m_checkRosterMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_CHECK_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			
 			RosterChatData t_data = getCurrFocusRosterData();
@@ -176,13 +176,13 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	
-	MenuItem	m_delRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_DEL_ROSTER_MENU_LABEL),m_menu_op++,0){
+	MenuItem	m_delRosterMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_DEL_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			if(m_currFocusRosterItemField != null && m_currMgr == m_rosterListMgr){
 			
 				fetchChatRoster t_roster = ((RosterItemField)m_currFocusRosterItemField).m_currRoster.m_roster;
 				
-				String t_prompt = recvMain.sm_local.getString(localResource.IM_DEL_ROSTER_PROMPT) 
+				String t_prompt = recvMain.sm_local.getString(yblocalResource.IM_DEL_ROSTER_PROMPT) 
 										+ t_roster.getName() + " " + t_roster.getAccount();
 				
 				if(Dialog.ask(Dialog.D_YES_NO,t_prompt,Dialog.NO) != Dialog.YES){
@@ -196,7 +196,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	};
 	
 	public IMAliasDlg m_aliasDlg = null;
-	MenuItem	m_aliasRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_ALIAS_ROSTER_MENU_LABEL),m_menu_op++,0){
+	MenuItem	m_aliasRosterMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_ALIAS_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			if(m_currFocusRosterItemField != null){
 			
@@ -210,7 +210,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	
-	MenuItem m_delHistoryRoster = new MenuItem(recvMain.sm_local.getString(localResource.IM_DEL_HISTORY_ROSTER_MENU_LABEL),m_menu_op++,0){
+	MenuItem m_delHistoryRoster = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_DEL_HISTORY_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			
 			if(m_currMgr == m_historyChatMgr){
@@ -219,7 +219,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 					
 					fetchChatRoster t_roster = t_data.m_roster;
 					
-					String t_prompt = recvMain.sm_local.getString(localResource.IM_DEL_HISTORY_ROSTER_PROMPT) 
+					String t_prompt = recvMain.sm_local.getString(yblocalResource.IM_DEL_HISTORY_ROSTER_PROMPT) 
 											+ t_roster.getName() + " " + t_roster.getAccount();
 					
 					if(Dialog.ask(Dialog.D_YES_NO,t_prompt,Dialog.NO) != Dialog.YES){
@@ -234,7 +234,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	};
 	
 	
-	MenuItem		m_sendEmailMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_SEND_EMAIL),m_menu_op++,0){
+	MenuItem		m_sendEmailMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_SEND_EMAIL),m_menu_op++,0){
 		public void run(){
 			RosterChatData t_data = getCurrFocusRosterData();
 			
@@ -255,7 +255,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	
-	MenuItem	m_hideUnvailRosterMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_HIDE_UNVAIL_ROSTER_MENU_LABEL),m_menu_op++,0){
+	MenuItem	m_hideUnvailRosterMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_HIDE_UNVAIL_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			m_mainApp.m_hideUnvailiableRoster = true;
 			
@@ -269,7 +269,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	public IMStatusAddScreen m_statusAddScreen = null;
-	MenuItem	m_addStatusMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_ADD_STATUS),m_menu_op++,0){
+	MenuItem	m_addStatusMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_ADD_STATUS),m_menu_op++,0){
 		public void run(){
 			m_statusAddScreen = new IMStatusAddScreen(MainIMScreen.this, null);
 			m_mainApp.pushScreen(m_statusAddScreen);
@@ -277,7 +277,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	
-	MenuItem	m_modifyStatusMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_MODIFY_STATUS),m_menu_op++,0){
+	MenuItem	m_modifyStatusMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_MODIFY_STATUS),m_menu_op++,0){
 		public void run(){
 			
 			int num = m_statusListMgr.getFieldCount();
@@ -294,7 +294,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	
-	MenuItem	m_delStatusMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_DELETE_STATUS),m_menu_op++,0){
+	MenuItem	m_delStatusMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_DELETE_STATUS),m_menu_op++,0){
 		public void run(){
 			
 			int num = m_statusListMgr.getFieldCount();
@@ -303,7 +303,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				if(t_field.isFocus()){
 					
 					if(Dialog.ask(Dialog.D_YES_NO,
-						recvMain.sm_local.getString(localResource.IM_DELETE_STATUS_PROMPT) + t_field.m_status,Dialog.NO) != Dialog.YES){
+						recvMain.sm_local.getString(yblocalResource.IM_DELETE_STATUS_PROMPT) + t_field.m_status,Dialog.NO) != Dialog.YES){
 						
 						return;
 					}
@@ -342,7 +342,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	
-	MenuItem	m_optionMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_OPTION_SCREEN),m_menu_op++,0){
+	MenuItem	m_optionMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_OPTION_SCREEN),m_menu_op++,0){
 		public void run(){
 			if(m_optionScreen == null){
 				m_optionScreen = new IMOptionScreen(MainIMScreen.this);
@@ -353,7 +353,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	};
 		
 	
-	MenuItem	m_stateMenu = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_STATE_SCREEN_MENU_LABEL),100,0){
+	MenuItem	m_stateMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_STATE_SCREEN_MENU_LABEL),100,0){
 		public void run(){
 			recvMain t_recv = (recvMain)UiApplication.getUiApplication();
         	
@@ -363,7 +363,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	};
 	
 	  
-    MenuItem m_weiboScreenItem = new MenuItem(recvMain.sm_local.getString(localResource.YB_WEIBO_MENU_LABEL),101,0){
+    MenuItem m_weiboScreenItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.YB_WEIBO_MENU_LABEL),101,0){
         public void run() {
         	        	
         	if(m_mainApp.m_enableWeiboModule){
@@ -849,8 +849,8 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	}
 	
-	public static String fsm_chatMsgPrompt_image = recvMain.sm_local.getString(localResource.IM_CHAT_MSG_IMAGE_PROMPT);
-	public static String fsm_chatMsgPrompt_voice = recvMain.sm_local.getString(localResource.IM_CHAT_MSG_VOICE_PROMPT);
+	public static String fsm_chatMsgPrompt_image = recvMain.sm_local.getString(yblocalResource.IM_CHAT_MSG_IMAGE_PROMPT);
+	public static String fsm_chatMsgPrompt_voice = recvMain.sm_local.getString(yblocalResource.IM_CHAT_MSG_VOICE_PROMPT);
 	
 	public static String getChatMsgAbsText(fetchChatMsg _msg){
 		
@@ -1455,7 +1455,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		
 		final long t_currTime = System.currentTimeMillis();
 		if(Math.abs(m_refreshRosterTimer - t_currTime) < 5 * 6000){
-			m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.IM_REFRESH_MIN_TIME_PROMPT));
+			m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.IM_REFRESH_MIN_TIME_PROMPT));
 			return;
 		}
 		

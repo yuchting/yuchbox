@@ -29,7 +29,7 @@ package com.yuchting.yuchberry.client.ui;
 
 import java.util.Vector;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
@@ -239,7 +239,7 @@ public class PhizSelectedScreen extends MainScreen{
 	};
 	
 	PhizMgr		m_phizMgr;
-	String		m_promptString = recvMain.sm_local.getString(localResource.WEIBO_PHIZ_SCREEN_PROMPT);
+	String		m_promptString = recvMain.sm_local.getString(yblocalResource.WEIBO_PHIZ_SCREEN_PROMPT);
 	LabelField	m_promptLabel = new LabelField(m_promptString,Field.NON_FOCUSABLE);
 	
 	public PhizSelectedScreen(Vector _phizList){
@@ -270,7 +270,6 @@ public class PhizSelectedScreen extends MainScreen{
 			}catch(Exception e){
 				
 			}
-			
 		}
 		
 		super.close();

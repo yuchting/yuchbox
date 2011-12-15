@@ -29,7 +29,7 @@ package com.yuchting.yuchberry.client;
 
 import java.util.Vector;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.i18n.SimpleDateFormat;
 import net.rim.device.api.system.Clipboard;
 import net.rim.device.api.system.Display;
@@ -196,22 +196,22 @@ public class debugInfo extends MainScreen{
 	
 	ErrorLabelText  m_errorText = null;
 	
-	MenuItem 	m_helpMenu = new MenuItem(recvMain.sm_local.getString(localResource.DEBUG_INFO_HELP_MENU), 100, 10) {
+	MenuItem 	m_helpMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.DEBUG_INFO_HELP_MENU), 100, 10) {
 		public void run() {
 			recvMain.openURL("http://code.google.com/p/yuchberry/wiki/Connect_Error_info");	
 		}
 	};
 
-	MenuItem 	m_clearMenu = new MenuItem(recvMain.sm_local.getString(localResource.DEBUG_INFO_CLEAR_MENU), 101, 10) {
+	MenuItem 	m_clearMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.DEBUG_INFO_CLEAR_MENU), 101, 10) {
 		public void run() {
 			m_mainApp.clearDebugMenu();											
 		}
 	};
 	
-	MenuItem 	m_copyMenu = new MenuItem(recvMain.sm_local.getString(localResource.COPY_TO_CLIPBOARD), 101, 10) {
+	MenuItem 	m_copyMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.COPY_TO_CLIPBOARD), 101, 10) {
 		public void run() {		
 			Clipboard.getClipboard().put(m_mainApp.GetAllErrorString());
-			m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.COPY_TO_CLIPBOARD_SUCC));
+			m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.COPY_TO_CLIPBOARD_SUCC));
 		}
 	};
 	

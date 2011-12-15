@@ -39,7 +39,7 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.SocketConnection;
 import javax.microedition.io.file.FileConnection;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.blackberry.api.mail.Address;
 import net.rim.blackberry.api.mail.AttachmentHandler;
 import net.rim.blackberry.api.mail.AttachmentHandlerManager;
@@ -563,7 +563,7 @@ public class connectDeamon extends Thread implements SendListener,
 
 		String t_attName = p.getFilename();
 		
-		if(t_attName.equals(recvMain.sm_local.getString(localResource.HTML_PART_FILENAME))){
+		if(t_attName.equals(recvMain.sm_local.getString(yblocalResource.HTML_PART_FILENAME))){
 			
 			try{
 				
@@ -648,7 +648,7 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 	
 	public String	menuString(){
-		return recvMain.sm_local.getString(localResource.OPEN_ATTACHMENT);
+		return recvMain.sm_local.getString(yblocalResource.OPEN_ATTACHMENT);
 	}
 	
 	public boolean supports(String contentType){
@@ -1364,7 +1364,7 @@ public class connectDeamon extends Thread implements SendListener,
 			//
 			if(t_mail.GetContain().length() > m_mainApp.GetRecvMsgMaxLength()){
 				t_mail.SetContain(t_mail.GetContain().substring(0,m_mainApp.GetRecvMsgMaxLength() - 1) + 
-									"\n.....\n\n" + recvMain.sm_local.getString(localResource.REACH_MAX_MESSAGE_LENGTH_PROMPT));
+									"\n.....\n\n" + recvMain.sm_local.getString(yblocalResource.REACH_MAX_MESSAGE_LENGTH_PROMPT));
 			}
 		}
 		
@@ -1960,7 +1960,7 @@ public class connectDeamon extends Thread implements SendListener,
 	    	
 	    	if(_mail.GetContain_html().length() != 0){
 	    		SupportedAttachmentPart sap = null;
-	    		String t_filename = recvMain.sm_local.getString(localResource.HTML_PART_FILENAME);
+	    		String t_filename = recvMain.sm_local.getString(yblocalResource.HTML_PART_FILENAME);
 	    		
 	    		String t_type = "UTF-8";
 	    		    		

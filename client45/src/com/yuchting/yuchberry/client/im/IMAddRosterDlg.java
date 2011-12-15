@@ -27,7 +27,7 @@
  */
 package com.yuchting.yuchberry.client.im;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Manager;
@@ -52,16 +52,16 @@ public class IMAddRosterDlg extends PopupScreen implements FieldChangeListener{
 		new RadioButtonField("MSN",m_addTypeGroup,false,Field.READONLY),
 	};
 	
-	EditField		m_addr	= new EditField(recvMain.sm_local.getString(localResource.IM_ADD_ROSTER_DLG_ADDR),
+	EditField		m_addr	= new EditField(recvMain.sm_local.getString(yblocalResource.IM_ADD_ROSTER_DLG_ADDR),
 									"",128, EditField.FILTER_DEFAULT);
 	
-	EditField		m_name	= new EditField(recvMain.sm_local.getString(localResource.IM_ADD_ROSTER_DLG_NAME),
+	EditField		m_name	= new EditField(recvMain.sm_local.getString(yblocalResource.IM_ADD_ROSTER_DLG_NAME),
 									"",128, EditField.FILTER_DEFAULT);
 	
-	ButtonField		m_add = new ButtonField(recvMain.sm_local.getString(localResource.IM_STATUS_SCREEN_OK),
+	ButtonField		m_add = new ButtonField(recvMain.sm_local.getString(yblocalResource.IM_STATUS_SCREEN_OK),
 									Field.FIELD_HCENTER | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	
-	ButtonField		m_cancel = new ButtonField(recvMain.sm_local.getString(localResource.IM_STATUS_SCREEN_CANCEL),
+	ButtonField		m_cancel = new ButtonField(recvMain.sm_local.getString(yblocalResource.IM_STATUS_SCREEN_CANCEL),
 									Field.FIELD_HCENTER | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	
 	MainIMScreen	m_mainScreen = null;
@@ -70,7 +70,7 @@ public class IMAddRosterDlg extends PopupScreen implements FieldChangeListener{
 		super(new VerticalFieldManager(Manager.VERTICAL_SCROLL));
 		m_mainScreen = _screen;
 		
-		LabelField t_title = new LabelField(recvMain.sm_local.getString(localResource.IM_ADD_ROSTER_DLG_TITLE));
+		LabelField t_title = new LabelField(recvMain.sm_local.getString(yblocalResource.IM_ADD_ROSTER_DLG_TITLE));
 		t_title.setFont(MainIMScreen.fsm_boldFont);
 		
 		add(t_title);
@@ -116,7 +116,7 @@ public class IMAddRosterDlg extends PopupScreen implements FieldChangeListener{
 				
 				if(style == 0 || style == 1){
 					if(t_dot == -1 || t_at == -1 || t_addr.length() <= 5){
-						m_mainScreen.m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.IM_ADD_ROSTER_DLG_ERROR));
+						m_mainScreen.m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.IM_ADD_ROSTER_DLG_ERROR));
 						return;
 					}
 				}
@@ -124,7 +124,7 @@ public class IMAddRosterDlg extends PopupScreen implements FieldChangeListener{
 				String t_name = m_name.getText();
 				
 				m_mainScreen.sendAddRosterMsg(style, t_addr, t_name, 
-						recvMain.sm_local.getString(localResource.IM_ADD_ROSTER_DLG_DEFAULT_GROUP));
+						recvMain.sm_local.getString(yblocalResource.IM_ADD_ROSTER_DLG_DEFAULT_GROUP));
 				
 				close();
 				

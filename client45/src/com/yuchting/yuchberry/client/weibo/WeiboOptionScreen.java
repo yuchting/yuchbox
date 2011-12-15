@@ -27,7 +27,7 @@
  */
 package com.yuchting.yuchberry.client.weibo;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
@@ -63,12 +63,12 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 	 CheckboxField		m_weiboDontReadHistroy = null;
 	 
 	 private RadioButtonGroup m_shortkeyTypeGroup = new RadioButtonGroup();
-	 private RadioButtonField m_spaceDown	= new RadioButtonField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SPACE_DOWN),m_shortkeyTypeGroup,true);
-	 private RadioButtonField m_spaceUp	= new RadioButtonField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SPACE_UP),m_shortkeyTypeGroup,false);
+	 private RadioButtonField m_spaceDown	= new RadioButtonField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_SPACE_DOWN),m_shortkeyTypeGroup,true);
+	 private RadioButtonField m_spaceUp	= new RadioButtonField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_SPACE_UP),m_shortkeyTypeGroup,false);
 	
 	 private RadioButtonGroup m_uiGroup = new RadioButtonGroup();
-	 private RadioButtonField m_uiStandard	= new RadioButtonField(recvMain.sm_local.getString(localResource.WEIBO_OPTION_STANDARD_UI),m_uiGroup,true);
-	 private RadioButtonField m_uiBlack	= new RadioButtonField(recvMain.sm_local.getString(localResource.WEIBO_OPTION_BLACK_UI),m_uiGroup,false);
+	 private RadioButtonField m_uiStandard	= new RadioButtonField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_STANDARD_UI),m_uiGroup,true);
+	 private RadioButtonField m_uiBlack	= new RadioButtonField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_BLACK_UI),m_uiGroup,false);
 	
 	 recvMain			m_mainApp = null;
 	 
@@ -76,42 +76,42 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 		 m_mainApp = _mainApp;
 		 
 		 //@{ weibo operation
-		 LabelField t_label = new LabelField(recvMain.sm_local.getString(localResource.WEIBO_OPTION_OP_LABEL));
+		 LabelField t_label = new LabelField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_OP_LABEL));
 		 t_label.setFont(t_label.getFont().derive(t_label.getFont().getStyle() | Font.BOLD));
 		 add(t_label);
 		 
-		 m_updateOwnWhenFw = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_UPDATE_FW),m_mainApp.m_updateOwnListWhenFw);
+		 m_updateOwnWhenFw = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_OP_UPDATE_FW),m_mainApp.m_updateOwnListWhenFw);
 		 add(m_updateOwnWhenFw);
 		 
-		 m_updateOwnWhenRe = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_UPDATE_RE),m_mainApp.m_updateOwnListWhenRe);
+		 m_updateOwnWhenRe = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_OP_UPDATE_RE),m_mainApp.m_updateOwnListWhenRe);
 		 add(m_updateOwnWhenRe);
 		 		 
-		 m_publicForward	= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_PUBLIC_FW),m_mainApp.m_publicForward);
+		 m_publicForward	= new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_OP_PUBLIC_FW),m_mainApp.m_publicForward);
 		 m_publicForward.setChangeListener(this);
 		 add(m_publicForward);
 		 	 
-		 m_dontDownloadHeadImage = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DONT_DOWNLOAD_HEAD_IMAGE),m_mainApp.m_dontDownloadWeiboHeadImage);
+		 m_dontDownloadHeadImage = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_DONT_DOWNLOAD_HEAD_IMAGE),m_mainApp.m_dontDownloadWeiboHeadImage);
 		 add(m_dontDownloadHeadImage);
 		 
-		 m_weiboUseLocation		= new CheckboxField(recvMain.sm_local.getString(localResource.WEIBO_USE_LOCATION_LABEL),m_mainApp.m_weiboUseLocation);
+		 m_weiboUseLocation		= new CheckboxField(recvMain.sm_local.getString(yblocalResource.WEIBO_USE_LOCATION_LABEL),m_mainApp.m_weiboUseLocation);
 		 add(m_weiboUseLocation);
 		 
-		 m_weiboDontReadHistroy		= new CheckboxField(recvMain.sm_local.getString(localResource.WEIBO_READ_HISTROY_LABEL),m_mainApp.m_weiboDontReadHistroy);
+		 m_weiboDontReadHistroy		= new CheckboxField(recvMain.sm_local.getString(yblocalResource.WEIBO_READ_HISTROY_LABEL),m_mainApp.m_weiboDontReadHistroy);
 		 add(m_weiboDontReadHistroy);
 		 		 		 
-		 m_maxWeiboNum		= new ObjectChoiceField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_MAX_WEIBO_NUM),
+		 m_maxWeiboNum		= new ObjectChoiceField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_OP_MAX_WEIBO_NUM),
 								recvMain.fsm_maxWeiboNumList,m_mainApp.m_maxWeiboNumIndex);
 		 add(m_maxWeiboNum);
 		 
-		 m_refreshWeiboInterval		= new ObjectChoiceField(recvMain.sm_local.getString(localResource.WEIBO_OPTION_REFRESH_INTERVAL),
+		 m_refreshWeiboInterval		= new ObjectChoiceField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_REFRESH_INTERVAL),
 								recvMain.fsm_refreshWeiboIntervalList,m_mainApp.m_refreshWeiboIntervalIndex);
 		 add(m_refreshWeiboInterval);
 		 
-		 m_uploadImageSize			= new ObjectChoiceField(recvMain.sm_local.getString(localResource.WEIBO_UPLOAD_IMAGE_SIZE),
+		 m_uploadImageSize			= new ObjectChoiceField(recvMain.sm_local.getString(yblocalResource.WEIBO_UPLOAD_IMAGE_SIZE),
 								recvMain.fsm_weiboUploadImageSizeList,m_mainApp.m_weiboUploadImageSizeIndex);
 		 add(m_uploadImageSize);
 		 
-		 m_clearCheckImageSetting = new ButtonField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_CLEAR_CHECK_IMAGE_PROMPT),
+		 m_clearCheckImageSetting = new ButtonField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_CLEAR_CHECK_IMAGE_PROMPT),
 				 									Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 		 m_clearCheckImageSetting.setChangeListener(this);
 		 add(m_clearCheckImageSetting);
@@ -132,37 +132,37 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 		 add(new SeparatorField());
 		 
 		 //@{ weibo display
-		 t_label = new LabelField(recvMain.sm_local.getString(localResource.WEIBO_OPTION_DISPLAY_LABEL));
+		 t_label = new LabelField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_DISPLAY_LABEL));
 		 t_label.setFont(t_label.getFont().derive(t_label.getFont().getStyle() | Font.BOLD));
 		 add(t_label);
 		 
-		 m_commentFirst		= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DISPLAY_COMMENT_FIRST),
+		 m_commentFirst		= new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_DISPLAY_COMMENT_FIRST),
 				 							recvMain.sm_commentFirst);
 		 add(m_commentFirst);
 		 
-		 m_displayHeadImage = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_DISPLAY_HEAD_IMAGE),
+		 m_displayHeadImage = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_DISPLAY_HEAD_IMAGE),
 				 							recvMain.sm_displayHeadImage);
 		 add(m_displayHeadImage);
 		 
-		 m_simpleMode 	=  new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SIMPLE_MODE),
+		 m_simpleMode 	=  new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_SIMPLE_MODE),
 				 							recvMain.sm_simpleMode);
 		 add(m_simpleMode);
 		 
-		 m_hideWeiboHeader = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_HIDE_HEADER),
+		 m_hideWeiboHeader = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_HIDE_HEADER),
 				 							m_mainApp.m_hideHeader);
 		 add(m_hideWeiboHeader);
 		 
-		 m_showAllInList	= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SHOW_ALL_IN_LIST),
+		 m_showAllInList	= new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_SHOW_ALL_IN_LIST),
 				 							recvMain.sm_showAllInList);
 		 add(m_showAllInList);
 		 m_showAllInList.setChangeListener(this);
 		 
-		 m_autoLoadNewTimelineWeibo = new CheckboxField(recvMain.sm_local.getString(localResource.WEIBO_OPTION_AUTO_LOAD_TIMELINE),
+		 m_autoLoadNewTimelineWeibo = new CheckboxField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_AUTO_LOAD_TIMELINE),
 				 				m_mainApp.m_autoLoadNewTimelineWeibo);
 		 
 		 add(m_autoLoadNewTimelineWeibo);
 		 		 
-		 t_label = new LabelField(recvMain.sm_local.getString(localResource.WEIBO_OPTION_THEME_LABEL));
+		 t_label = new LabelField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_THEME_LABEL));
 		 add(t_label);
 		 add(m_uiStandard);
 		 add(m_uiBlack);
@@ -175,23 +175,23 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 		 //@} 
 		 
 		 
-		 setTitle(recvMain.sm_local.getString(localResource.WEIBO_SETTING_SCREEN_TITLE));
+		 setTitle(recvMain.sm_local.getString(yblocalResource.WEIBO_SETTING_SCREEN_TITLE));
 	 }
 	 
 	 public void fieldChanged(Field field, int context) {
 		 if(context != FieldChangeListener.PROGRAMMATIC){
 			 if(field == m_publicForward){
 				 if(m_publicForward.getChecked()){
-					 m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_PUBLIC_FW_PROMPT));
+					 m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_OP_PUBLIC_FW_PROMPT));
 				 }
 			 }else if(field == m_showAllInList){
-				 m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SHOW_ALL_IN_LIST_PROMPT));				
+				 m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_SHOW_ALL_IN_LIST_PROMPT));				
 			 }else if(field == m_clearCheckImageSetting){
 				 m_mainApp.m_hasPromptToCheckImg = true;
 				 m_mainApp.DialogAlert("Clear OK!");
 			 }else if(field == m_uiStandard || field == m_uiBlack){
 				 if(((RadioButtonField)field).isSelected()){
-					 m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.WEIBO_OPTION_UI_CHANGE_PROMPT));
+					 m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_UI_CHANGE_PROMPT));
 				 }				 
 			 }
 		 }	

@@ -27,7 +27,7 @@
  */
 package com.yuchting.yuchberry.client.im;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Keypad;
@@ -51,7 +51,7 @@ public class SearchStatus extends PopupScreen implements FieldChangeListener{
 		m_mainScreen = _screen;
 	
 		add(m_editTextArea);	
-		add(new LabelField(recvMain.sm_local.getString(localResource.IM_SEARCH_PROMPT_LABEL)));
+		add(new LabelField(recvMain.sm_local.getString(yblocalResource.IM_SEARCH_PROMPT_LABEL)));
 
 		m_editTextArea.setChangeListener(this);
 	}

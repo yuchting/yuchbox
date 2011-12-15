@@ -32,7 +32,7 @@ import java.io.InputStream;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
-import local.localResource;
+import local.yblocalResource;
 
 import net.rim.device.api.io.file.FileSystemJournal;
 import net.rim.device.api.io.file.FileSystemJournalEntry;

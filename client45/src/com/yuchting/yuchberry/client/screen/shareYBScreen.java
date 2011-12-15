@@ -37,7 +37,7 @@ import javax.wireless.messaging.Message;
 import javax.wireless.messaging.MessageConnection;
 import javax.wireless.messaging.TextMessage;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.blackberry.api.pdap.BlackBerryContact;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Field;
@@ -69,7 +69,7 @@ final class sendingSMSDlg extends Dialog{
 	shareYBScreen		m_parentScreen		= null;
 			
 	public sendingSMSDlg(recvMain _mainApp,shareYBScreen _parent){
-		super("Sending...",new Object[]{recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_CONTENT_SMS_STOP)},new int[]{0},
+		super("Sending...",new Object[]{recvMain.sm_local.getString(yblocalResource.SHARE_TO_FRIEND_CONTENT_SMS_STOP)},new int[]{0},
 				Dialog.OK, Bitmap.getPredefinedBitmap(Bitmap.INFORMATION), Dialog.GLOBAL_STATUS);
 		
 		m_mainApp		= _mainApp;
@@ -179,7 +179,7 @@ final class sendSMSThread extends Thread{
 			}
 		});
 		
-		m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_THANKS));
+		m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.SHARE_TO_FRIEND_THANKS));
 	}
 };
 
@@ -191,8 +191,8 @@ public class shareYBScreen extends MainScreen implements FieldChangeListener{
 	private Vector			m_concatList = new Vector();
 	
 	private RadioButtonGroup m_shareTypeGroup = new RadioButtonGroup();
-	private RadioButtonField m_useEmail= new RadioButtonField(recvMain.sm_local.getString(localResource.SHARE_USE_EMAIL),m_shareTypeGroup,true);
-	private RadioButtonField m_useSMS	= new RadioButtonField(recvMain.sm_local.getString(localResource.SHARE_USE_SMS),m_shareTypeGroup,false);
+	private RadioButtonField m_useEmail= new RadioButtonField(recvMain.sm_local.getString(yblocalResource.SHARE_USE_EMAIL),m_shareTypeGroup,true);
+	private RadioButtonField m_useSMS	= new RadioButtonField(recvMain.sm_local.getString(yblocalResource.SHARE_USE_SMS),m_shareTypeGroup,false);
 	
 	private HorizontalFieldManager	m_selectShareType = new  HorizontalFieldManager(){
 		
@@ -240,7 +240,7 @@ public class shareYBScreen extends MainScreen implements FieldChangeListener{
 	    add(new SeparatorField());
 	    add(m_concatListMgr);
 	    
-	    setTitle(new LabelField(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_MENU)));
+	    setTitle(new LabelField(recvMain.sm_local.getString(yblocalResource.SHARE_TO_FRIEND_MENU)));
 	    
 	    reloadConcatList();
 	}
@@ -348,7 +348,7 @@ public class shareYBScreen extends MainScreen implements FieldChangeListener{
 	
 	sendSMSThread	m_sendThread = null;
 	
-	MenuItem 	m_checkContentMenu = new MenuItem(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_CHECK_MENU), 100, 10) {
+	MenuItem 	m_checkContentMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.SHARE_TO_FRIEND_CHECK_MENU), 100, 10) {
 		public void run() {
 			PopupCheckContentScreen();
 		}
@@ -374,19 +374,19 @@ public class shareYBScreen extends MainScreen implements FieldChangeListener{
 		}
 		
 		if(m_sendConcatData.isEmpty()){
-			m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_EMPTY));
+			m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.SHARE_TO_FRIEND_EMPTY));
 			return;
 		}
 		
-		final EditField t_text = new EditField("",m_useEmail.isSelected()?recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_CONTENT_EMAIL).replace('#','\n')
-																:recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_CONTENT_SMS).replace('#','\n'),
+		final EditField t_text = new EditField("",m_useEmail.isSelected()?recvMain.sm_local.getString(yblocalResource.SHARE_TO_FRIEND_CONTENT_EMAIL).replace('#','\n')
+																:recvMain.sm_local.getString(yblocalResource.SHARE_TO_FRIEND_CONTENT_SMS).replace('#','\n'),
 												m_useEmail.isSelected()?256:70,
 												EditField.FILTER_DEFAULT);
 		
 		m_checkContentScreen = new MainScreen(){
 			
 
-			MenuItem 	m_sendMenu = new MenuItem(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_SEND_MENU), 101, 10) {
+			MenuItem 	m_sendMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.SHARE_TO_FRIEND_SEND_MENU), 101, 10) {
 				public void run() {
 					Send(t_text.getText());
 				}
@@ -406,7 +406,7 @@ public class shareYBScreen extends MainScreen implements FieldChangeListener{
 	
 		
 		m_checkContentScreen.add(t_text);
-		m_checkContentScreen.setTitle(new LabelField(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_CONTENT_TITLE)));
+		m_checkContentScreen.setTitle(new LabelField(recvMain.sm_local.getString(yblocalResource.SHARE_TO_FRIEND_CONTENT_TITLE)));
 		m_mainApp.pushScreen(m_checkContentScreen);
 	}
 	
@@ -417,7 +417,7 @@ public class shareYBScreen extends MainScreen implements FieldChangeListener{
 				
 				fetchMail t_email = new fetchMail();
 				
-				t_email.SetSubject(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_CONTENT_EMAIL_SUBJECT));
+				t_email.SetSubject(recvMain.sm_local.getString(yblocalResource.SHARE_TO_FRIEND_CONTENT_EMAIL_SUBJECT));
 				t_email.SetContain(_content);
 				
 				for(int i = 0;i<m_sendConcatData.size();i++){
@@ -435,7 +435,7 @@ public class shareYBScreen extends MainScreen implements FieldChangeListener{
 					m_mainApp.popScreen(this);
 					m_mainApp.m_shareScreen = null;
 					
-					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_THANKS));
+					m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.SHARE_TO_FRIEND_THANKS));
 					
 				}catch(Exception e){
 					m_mainApp.SetErrorString("SH:" + e.getMessage() + " " + e.getClass().getName());

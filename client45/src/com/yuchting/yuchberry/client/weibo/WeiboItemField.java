@@ -30,7 +30,7 @@ package com.yuchting.yuchberry.client.weibo;
 import java.util.Calendar;
 import java.util.Date;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
@@ -229,7 +229,7 @@ public class WeiboItemField extends Manager{
 		t_weiboTextBuffer.append("@").append(m_weibo.GetUserScreenName()).append(" :").append(m_weibo.GetText());
 		
 		if(!recvMain.sm_simpleMode && m_weibo.GetSource().length() != 0){
-			t_weiboTextBuffer.append("\n       --").append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
+			t_weiboTextBuffer.append("\n       --").append(recvMain.sm_local.getString(yblocalResource.WEIBO_SOURCE_PREFIX))
 			.append(parseSource(m_weibo.GetSource()));
 		}						
 		
@@ -251,7 +251,7 @@ public class WeiboItemField extends Manager{
 			StringBuffer t_commentText = new StringBuffer();
 			t_commentText.append("@").append(t_comment.GetUserScreenName()).append(":").append(t_comment.GetText());
 			if(!recvMain.sm_simpleMode && t_comment.GetSource().length() != 0){		
-				t_commentText.append("\n       --").append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
+				t_commentText.append("\n       --").append(recvMain.sm_local.getString(yblocalResource.WEIBO_SOURCE_PREFIX))
 							.append(parseSource(t_comment.GetSource()));
 			}
 			
@@ -612,8 +612,8 @@ public class WeiboItemField extends Manager{
 	static Date		sm_timeDate = new Date();
 	static public long sm_currTime = sm_timeDate.getTime();
 	
-	static String sm_timeUnitStr = recvMain.sm_local.getString(localResource.WEIBO_TIME_UNIT);
-	static String sm_timeAgoStr = recvMain.sm_local.getString(localResource.WEIBO_TIME_AGO);
+	static String sm_timeUnitStr = recvMain.sm_local.getString(yblocalResource.WEIBO_TIME_UNIT);
+	static String sm_timeAgoStr = recvMain.sm_local.getString(yblocalResource.WEIBO_TIME_AGO);
 	
 	static protected synchronized String getTimeString(fetchWeibo _weibo){
 		
