@@ -36,6 +36,7 @@ import java.net.ServerSocket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +48,7 @@ import twitter4j.internal.org.json.JSONArray;
 import twitter4j.internal.org.json.JSONObject;
 
 import com.yuchting.yuchberry.server.Logger;
+import com.yuchting.yuchberry.server.fetchEmail;
 import com.yuchting.yuchberry.server.fetchMgr;
 
 class checkStateThread extends Thread{
@@ -90,12 +92,14 @@ class checkStateThread extends Thread{
 			        yc.setReadTimeout(50000);
 			        BufferedReader in = new BufferedReader(
 			                                new InputStreamReader(yc.getInputStream()));
-			        
-			        String t_version = in.readLine();
-			        in.close();
+			        String t_version;
+			        try{
+			        	t_version = in.readLine();
+			        }finally{
+			        	in.close();
+			        }			        
 			        
 			        t_mgrList.clear();
-			        
 			        synchronized (m_mainServer.m_accountList) {
 			        	for(fetchThread t_thread:m_mainServer.m_accountList){
 				        	t_mgrList.add(t_thread.m_fetchMgr);    	
@@ -149,6 +153,17 @@ public class YuchServer {
 		
 	int			m_currUsingAccount		= 0;
 	int			m_currConnectAccount	= 0;
+	
+	/*
+	 * current request thread
+	 */
+	Vector<BberRequestThread> m_bberRequestList = new Vector<BberRequestThread>();
+	
+	String 		m_yuchsignFramePass = null;
+	String		m_backupShellLine = null;
+	int 	  	m_yuchsignMaxBber = 0;
+	
+	public boolean m_needbackup = false;		
 	
 	static public void main(String _arg[])throws Exception{
 		new YuchServer(null);
@@ -716,13 +731,13 @@ public class YuchServer {
 					
 					final long t_lastTime = t_thread.GetLastTime(t_currTime);
 					
-					if(!t_thread.m_sendTimeupMail && t_lastTime > 0 && t_lastTime < 48 * 3600 * 1000){
+					if(!t_thread.m_sendTimeupMail && t_lastTime != 0 && t_lastTime < 48 * 3600 * 1000){
 						
 						t_thread.m_sendTimeupMail = true;
 						
 						m_logger.LogOut("到期帐户，发送邮件： " + t_thread.m_fetchMgr.GetAccountName());
 						
-						SendTimeupMail(t_thread);
+						SendTimeupMail(t_thread,m_yuchsignFramePass);
 					}
 					
 					if(t_thread.m_fetchMgr.GetClientConnected() != null){
@@ -806,26 +821,58 @@ public class YuchServer {
 		}
 	}
 	
-	public void SendTimeupMail(fetchThread _thread){
-		try{
-			final String t_contain = fetchMgr.ReadSimpleIniFile("timeupMail.txt","UTF-8",null);
-			
-			_thread.m_fetchMgr.SendImmMail("yuchberry 提示", t_contain, "\"YuchBerry\" <yuchberry@gmail.com>");
-			
-		}catch(Exception e){}		
+	public void SendTimeupMail(final fetchThread _thread,final String _officalPass){
+		
+		new Thread(){
+			public void run(){
+				
+				int t_tryTime = 0;
+				while(t_tryTime++ < 3){
+					try{
+						if(_officalPass != null){
+							
+							String to = _thread.m_fetchMgr.GetAccountName();
+							fetchEmail t_emailAcc = _thread.m_fetchMgr.findEmailAcc();
+							if(t_emailAcc != null){
+								to = t_emailAcc.GetAccountName();
+							}
+							
+							// send the offical timeup mail
+							//
+							URL is_gd = new URL("http://api.yuchs.com/sm.php?to="+ 
+												URLEncoder.encode(to,"UTF-8") + 
+												"&pass=" + _officalPass + 
+												"&rand=" + (new Random().nextInt()) );
+							
+					        URLConnection yc = is_gd.openConnection();
+					        yc.setConnectTimeout(10000);
+					        yc.setReadTimeout(20000);
+					        BufferedReader in = new BufferedReader(
+					                                new InputStreamReader(yc.getInputStream()));
+					        try{
+					        	String result = in.readLine();
+					        	System.out.println("send timeup mail to " + to + " result:"+result);
+					        }finally{
+					        	in.close();
+					        }
+					     
+						}else{
+							
+							_thread.m_fetchMgr.SendImmMail("语盒提示", 
+									fetchMgr.ReadSimpleIniFile("timeupMail.txt","UTF-8",null),
+									"\"YuchsBox\" <yuchberry@gmail.com>");
+						}
+						
+						break;
+						
+					}catch(Exception e){
+						m_logger.PrinterException(e);
+					}
+				}	
+			}
+		}.start();			
 	}
-	
-	/*
-	 * current request thread
-	 */
-	Vector<BberRequestThread> m_bberRequestList = new Vector<BberRequestThread>();
-	
-	String 		m_yuchsignFramePass = null;
-	String		m_backupShellLine = null;
-	int 	  	m_yuchsignMaxBber = 0;
-	
-	public boolean m_needbackup = false;		
-	
+		
 	private void LoadYuchsign(){
 		
 		try{

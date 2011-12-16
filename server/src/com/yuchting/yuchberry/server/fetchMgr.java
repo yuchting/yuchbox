@@ -769,14 +769,26 @@ public class fetchMgr{
 		
 	}
 	
-	public void SendImmMail(final String _subject ,final String _contain,final String _from){
+	public fetchEmail findEmailAcc(){
 		for(fetchAccount account :m_fetchAccount){
 			
 			if(account instanceof fetchEmail){
-				((fetchEmail)account).SendImmMail(_subject, _contain, _from);
-				break;
+				return ((fetchEmail)account);
 			}
 		}
+		
+		return null;
+	}
+	
+	public boolean SendImmMail(final String _subject ,final String _contain,final String _from){
+
+		fetchEmail t_acc = findEmailAcc();
+		if(t_acc != null){
+			t_acc.SendImmMail(_subject, _contain, _from);
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public void CheckAccountFolders(){

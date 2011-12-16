@@ -1577,9 +1577,7 @@ public class fetchEmail extends fetchAccount{
 	}
 	
 	public void SendImmMail(final String _subject ,final String _contain,final String _from){
-		
-		MimeMessage msg = new MimeMessage(m_session_send);
-		
+				
 		fetchMail t_mail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
 		t_mail.SetSubject(_subject);
 		t_mail.SetContain(_contain);
@@ -1588,22 +1586,31 @@ public class fetchEmail extends fetchAccount{
 		
 		int t_tryTime = 0;
 		
-		try{
-
-			ComposeMessage(msg,t_mail,null,"");			
+		while(t_tryTime++ < 2){
 			
-			while(t_tryTime++ >= 2){
+			try{
+	
+				MimeMessage msg = new MimeMessage(m_session_send);
+				ComposeMessage(msg,t_mail,null,"");					
 				
-				m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
-				m_sendTransport.sendMessage(msg, msg.getAllRecipients());
-				m_sendTransport.close();
+				if(m_useFullNameSignIn){
+					m_sendTransport.connect(m_host_send,m_port_send,m_strUserNameFull,m_password);
+				}else{
+					m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
+				}
 				
-				break;
-			}
-		
-		}catch(Exception e){
-			m_mainMgr.m_logger.PrinterException(e);
-		}   
+				try{
+					m_sendTransport.sendMessage(msg, msg.getAllRecipients());
+				}finally{
+					m_sendTransport.close();
+				}
+				
+				break;			
+			
+			}catch(Exception e){
+				m_mainMgr.m_logger.PrinterException(e);
+			}   
+		}
 		
 	}
 	
