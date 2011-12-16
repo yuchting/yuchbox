@@ -104,7 +104,7 @@ public class YuchLogonActivity extends Activity {
         	}
         });
        
-        m_mainWeb.addJavascriptInterface(new JavaScriptInterface(this), "YuchDroid");
+        m_mainWeb.addJavascriptInterface(new JavaScriptInterface(this), "YuchsBox");
     } 
     
     @Override

@@ -93,7 +93,7 @@ public class sendReceive{
 					IStoreUpDownloadByte _callback)throws Exception{
 
 		if(_ssl){
-			throw new IllegalArgumentException(TAG + " Current YuchDroid can't support !");
+			throw new IllegalArgumentException(TAG + " Current YuchsBox can't support !");
 		}
 		
 		m_context	= _ctx;

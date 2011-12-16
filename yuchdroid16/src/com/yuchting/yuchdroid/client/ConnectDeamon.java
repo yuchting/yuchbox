@@ -560,7 +560,7 @@ public class ConnectDeamon extends Service implements Runnable{
 	private sendReceive getConnection(boolean _ssl)throws Exception{
 				
 		if(_ssl){
-			throw new IllegalArgumentException("Current YuchDroid can't support SSL!");
+			throw new IllegalArgumentException("Current YuchsBox can't support SSL!");
 		}
 		 
 		if(!canReconnectImm()){

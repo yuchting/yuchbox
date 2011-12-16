@@ -96,7 +96,7 @@ public class HomeActivity extends ListActivity{
         
         if(!m_mainApp.m_connectDeamonRun){
         	// if the connect daemon is NOT run
-        	// start the YuchDroid connect daemon activity
+        	// start the YuchsBox connect daemon activity
         	//
         	startActivity(new Intent(this,Yuchdroid16Activity.class));
         }

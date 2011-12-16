@@ -67,7 +67,7 @@ import com.yuchting.yuchdroid.client.mail.fetchMail;
 
 public class YuchDroidApp extends Application {
 	
-	public final static String	TAG = "YuchDroidApp";
+	public final static String	TAG = "YuchsBoxApp";
 	
 	public 	static String fsm_PIN			= "";
 	public static String fsm_IMEI			= "ad";
@@ -483,7 +483,7 @@ public class YuchDroidApp extends Application {
 	}
 	
 	private void checkMainSDCardDir(){
-		File t_dir = new File(Environment.getExternalStorageDirectory(),"YuchDroid");
+		File t_dir = new File(Environment.getExternalStorageDirectory(),TAG);
 		if(!t_dir.exists() || !t_dir.isDirectory()){
 			t_dir.mkdir();
 		}
@@ -491,7 +491,7 @@ public class YuchDroidApp extends Application {
 	public File getAttachmentDir(){
 		checkMainSDCardDir();
 		
-		File t_dir = new File(Environment.getExternalStorageDirectory(),"YuchDroid/AttDir");
+		File t_dir = new File(Environment.getExternalStorageDirectory(),TAG + "/AttDir");
 		if(!t_dir.exists() || !t_dir.isDirectory()){
 			t_dir.mkdir();
 		}
