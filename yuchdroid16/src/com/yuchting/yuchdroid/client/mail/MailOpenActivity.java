@@ -45,6 +45,7 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -54,6 +55,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.webkit.MimeTypeMap;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -820,7 +822,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 					
 					@Override
 					public void onClick(View v){
-						// TODO load the Attachment
+						// load the Attachment
 						//
 						if(!ConnectDeamon.isConnected()){
 							Toast.makeText(m_loadCtx, m_loadCtx.getString(R.string.mail_open_attach_prompt_disconnect), Toast.LENGTH_SHORT).show();
@@ -886,7 +888,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			
 			fetchMail.MailAttachment t_att = m_mail.GetAttachment().get(_attachIdx);
 			YuchDroidApp t_mainApp = (YuchDroidApp)m_loadCtx.getApplicationContext();
-			File t_filename = new File(t_mainApp.getAttachmentDir(),t_att.m_name);
+			final File t_filename = new File(t_mainApp.getAttachmentDir(),t_att.m_name);
 			
 			if(t_filename.exists()){
 				
@@ -921,8 +923,18 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 						
 						@Override
 						public void onClick(View v) {
-							// TODO open the attachment file 
+							// open the attachment by its extent filename
 							//
+						    Intent intent = new Intent();
+			                intent.setAction(android.content.Intent.ACTION_VIEW);
+			               
+			                MimeTypeMap mime = MimeTypeMap.getSingleton();
+			                String ext= t_filename.getName().substring(t_filename.getName().indexOf(".") + 1);
+			                String type = mime.getMimeTypeFromExtension(ext);
+			              
+			                intent.setDataAndType(Uri.fromFile(t_filename),type);
+			               
+			                m_loadCtx.startActivity(Intent.createChooser(intent,m_loadCtx.getString(R.string.mail_open_attach_select_prompt)));
 						}
 					});
 					

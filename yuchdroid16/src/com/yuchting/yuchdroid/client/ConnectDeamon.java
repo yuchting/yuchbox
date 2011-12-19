@@ -69,17 +69,41 @@ public class ConnectDeamon extends Service implements Runnable{
 	//
 	final static int	fsm_clientVer = 16;
 	
-	public static final class FetchAttachment{
+	public static abstract class Attachment{
 		
 		Notification 		m_notification;
 		NotificationManager m_notifyMgr;
+		int					m_notifyId;
 		
 		RemoteViews		m_views;
-		
-		PendingIntent	m_openIntent;
-		
 		int				m_progress;
 		
+		PendingIntent	m_openIntent;
+				
+		int m_progressId;
+		int m_textId;
+		
+		public Attachment(int _progressId,int _textId,int _notifyId){
+			m_progressId	= _progressId;
+			m_textId		= _textId;
+			m_notifyId		= _notifyId;
+		}
+		
+		public void refreshProgress(int _percent){
+			if(m_progress != _percent){
+				
+				m_progress = _percent;
+				
+				m_views.setProgressBar(m_progressId,100,m_progress,false);
+				m_views.setTextViewText(m_textId, Integer.toString(m_progress) + "%");
+				
+				m_notifyMgr.notify(m_notifyId, m_notification);				
+			}	
+		}	
+	}
+	
+	public static final class FetchAttachment extends Attachment{
+
 		int				m_mailIndex;
 		int				m_attachmentIdx;
 		int				m_attachmentSize;
@@ -89,6 +113,12 @@ public class ConnectDeamon extends Service implements Runnable{
 		
 		ByteArrayOutputStream	m_fileContainBuffer = new ByteArrayOutputStream();
 		
+		public FetchAttachment(){
+			super(R.id.mail_download_att_progress,
+				R.id.mail_download_att_progress_text,
+				YuchDroidApp.YUCH_NOTIFICATION_MAIL_ATT);
+		}
+		
 		public void refreshName(fetchMail _mail){
 			StringBuffer t_name = new StringBuffer();
 			t_name.append("(").append(YuchDroidApp.GetByteStr(m_attachmentSize)).append(")")
@@ -96,23 +126,15 @@ public class ConnectDeamon extends Service implements Runnable{
 			
 			m_views.setTextViewText(R.id.mail_download_att_filename,t_name.toString());
 		}
-		
-		public void refreshProgress(int _percent){
-			if(m_progress != _percent){
-				
-				m_progress = _percent;
-				
-				m_views.setProgressBar(R.id.mail_download_att_progress,100,m_progress,false);
-				m_views.setTextViewText(R.id.mail_download_att_progress_text, Integer.toString(m_progress) + "%");
-				
-				m_notifyMgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL_ATT, m_notification);				
-			}	
-		}	
-		
 	}
 	
-	public static final class PutAttachment{
-				
+	public static final class PutAttachment extends Attachment{
+		
+		public PutAttachment(){
+			super(R.id.mail_download_att_progress,
+				R.id.mail_download_att_progress_text,
+				YuchDroidApp.YUCH_NOTIFICATION_MAIL_ATT_SEND);
+		}
 	}
 	
 	public final static String TAG = ConnectDeamon.class.getName();
