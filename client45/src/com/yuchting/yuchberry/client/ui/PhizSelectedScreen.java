@@ -92,8 +92,8 @@ final class PhizMgr extends Manager{
 			setPositionChild(t_phiz,t_x,t_y);		
 			layoutChild(t_phiz,m_phizSize,m_phizSize);
 			
-			t_x += Phiz.fsm_phizSize + fsm_phizInterval; 
-			if(t_x + Phiz.fsm_phizSize + fsm_phizInterval>= Display.getWidth()){				
+			t_x += Phiz.fsm_phizSize + fsm_phizInterval;
+			if(t_x + Phiz.fsm_phizSize + fsm_phizInterval > Display.getWidth()){				
 				t_x = 0;
 				t_y += Phiz.fsm_phizSize + fsm_phizInterval;
 			}
