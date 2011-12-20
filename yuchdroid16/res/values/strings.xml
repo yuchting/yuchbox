@@ -152,6 +152,10 @@
     <string name="mail_compose_own_account_prompt">Select send from:</string>
     <string name="mail_compose_add_cc_bcc">Add Cc/Bcc</string>
     <string name="mail_compose_attachment">Attachment</string>
+    <string name="mail_compose_remove_attach_prompt">Are you sure remove this attchment?</string>
+    <string name="mail_compose_cant_send_att">Has another mail with attachment is sending, please wait.</string>
+    <string name="mail_compose_cant_add_att">This files has been added!</string>
+    
     
     <!-- mail preference activity -->
 	<string name="mail_pref_title">Mail Preference</string>

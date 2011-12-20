@@ -849,13 +849,12 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 				
 	        	for(int i = 0;i < m_mail.GetAttachment().size();i++){
 	        		fetchMail.MailAttachment att = m_mail.GetAttachment().get(i);
-	        		View attachView = t_inflater.inflate(R.layout.mail_open_attachment_item,null);
+	        		ViewGroup attachView = (ViewGroup)t_inflater.inflate(R.layout.mail_open_attachment_item,null);
 	        		TextView filename = (TextView)attachView.findViewById(R.id.mail_open_attachment_item_filename);
 	        		filename.setText(att.m_name + " ("+YuchDroidApp.GetByteStr(att.m_size) + ")");
 	        			        		
 	        		LinearLayout.LayoutParams t_lp = new LinearLayout.LayoutParams(
 	        				LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-	        		
 	        		
 	        		m_attachView.addView(attachView,t_lp);
 	        		
@@ -864,10 +863,16 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	        			t_cancel.setVisibility(View.VISIBLE);
 	        			t_cancel.setOnClickListener(t_cancelclick);
 	        		}else{
-	        			// check has been downloaded
-	        			//
-	        			if(!checkAttFile(i)){
-	        				attachView.setOnClickListener(t_click);
+	        			if(m_mail.isOwnSendMail()){
+	        				// show directly the open button to open 
+	        				//
+	        				showOpenAttButton(new File(att.m_name), attachView);
+	        			}else{
+		        			// check whether has been downloaded
+		        			//
+		        			if(!checkAttFile(i)){
+		        				attachView.setOnClickListener(t_click);
+		        			}	        				
 	        			}
 	        		}
 	        	}
@@ -896,48 +901,27 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 
 					ViewGroup t_attachView = (ViewGroup)m_attachView.getChildAt(_attachIdx);
 					
-					boolean t_openImage = false;
 					String t_name = t_att.m_name.toLowerCase();
 					for(String suffix:fsm_supportImageFormat){
 						if(t_name.endsWith(suffix)){
-							t_openImage = true;
+							
+							Bitmap t_image = BitmapFactory.decodeFile(t_filename.getPath());
+							
+							if(t_image != null){
+								ImageView t_imageView = (ImageView)t_attachView.findViewById(R.id.mail_open_attachment_item_image);
+								t_imageView.setImageBitmap(t_image);
+								t_imageView.setVisibility(View.VISIBLE);
+							}
+							
 							break;
 						}
-					}
-					if(t_openImage){
-						
-						Bitmap t_image = BitmapFactory.decodeFile(t_filename.getPath());
-						if(t_image != null){
-							ImageView t_imageView = (ImageView)t_attachView.findViewById(R.id.mail_open_attachment_item_image);
-							t_imageView.setImageBitmap(t_image);
-							t_imageView.setVisibility(View.VISIBLE);
-						}					
-					}
+					}					
 					
 					Button t_cancel = (Button)t_attachView.findViewById(R.id.mail_open_attachment_item_cancel_btn);
 	    			t_cancel.setVisibility(View.GONE);
 					
-					Button t_open = (Button)t_attachView.findViewById(R.id.mail_open_attachment_item_open_btn);
-					t_open.setVisibility(View.VISIBLE);
-					t_open.setOnClickListener(new View.OnClickListener() {
-						
-						@Override
-						public void onClick(View v) {
-							// open the attachment by its extent filename
-							//
-						    Intent intent = new Intent();
-			                intent.setAction(android.content.Intent.ACTION_VIEW);
-			               
-			                MimeTypeMap mime = MimeTypeMap.getSingleton();
-			                String ext= t_filename.getName().substring(t_filename.getName().indexOf(".") + 1);
-			                String type = mime.getMimeTypeFromExtension(ext);
-			              
-			                intent.setDataAndType(Uri.fromFile(t_filename),type);
-			               
-			                m_loadCtx.startActivity(Intent.createChooser(intent,m_loadCtx.getString(R.string.mail_open_attach_select_prompt)));
-						}
-					});
-					
+	    			showOpenAttButton(t_filename,t_attachView);
+	    								
 					// disable the click listener
 					//
 					t_attachView.setOnClickListener(null);
@@ -948,9 +932,28 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 					t_filename.delete();
 				}
 				
-			}
+			}			
 			
 			return false;
+		}
+		
+		private void showOpenAttButton(final File _file,ViewGroup _attachView){
+			
+			Button t_open = (Button)_attachView.findViewById(R.id.mail_open_attachment_item_open_btn);
+			t_open.setVisibility(View.VISIBLE);
+			t_open.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					// open the attachment by its extent filename
+					//
+				    Intent intent = new Intent();
+	                intent.setAction(android.content.Intent.ACTION_VIEW);
+	                intent.setDataAndType(Uri.fromFile(_file),YuchDroidApp.getFileMIMEType(_file));
+	               
+	                m_loadCtx.startActivity(Intent.createChooser(intent,m_loadCtx.getString(R.string.mail_open_attach_select_prompt)));
+				}
+			});
 		}
 		
 		private void startDownloadAttachment(int _idx){
@@ -977,11 +980,9 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			in.putExtra(MailOpenActivity.INTENT_PRE_MAIL_GROUP_INDEX, t_preGroupIndex);
 			in.putExtra(MailOpenActivity.INTENT_NEXT_MAIL_GROUP_INDEX, t_nextGroupIndex);
 			in.putExtra(MailOpenActivity.INTENT_NEXT_MAIL_CURSOR_POS,t_currCursorPos);
-			in.putExtra(MailOpenActivity.INTENT_CURRENT_GROUP_LIMIT,t_limit);
-										
+			in.putExtra(MailOpenActivity.INTENT_CURRENT_GROUP_LIMIT,t_limit);										
 
-			PendingIntent contentIntent = PendingIntent.getActivity(m_loadCtx, 0, in,
-								PendingIntent.FLAG_UPDATE_CURRENT );
+			PendingIntent contentIntent = PendingIntent.getActivity(m_loadCtx, 0, in,PendingIntent.FLAG_UPDATE_CURRENT);
 			
 			ConnectDeamon.startDownload(m_mail,_idx,contentIntent);
 		}

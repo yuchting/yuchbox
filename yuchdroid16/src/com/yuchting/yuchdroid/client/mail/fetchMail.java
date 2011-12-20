@@ -117,7 +117,6 @@ public class  fetchMail{
 	private long					m_dbIndex		= -1;
 	private long					m_groupId		= -1;
 	
-	
 	private long					m_sendRefMailId		= -1;
 	private int					m_sendRefMailStyle	= NOTHING_STYLE;
 	
@@ -311,7 +310,7 @@ public class  fetchMail{
 	
 	public void setDbIndex(long _id){m_dbIndex = _id;}
 	public long getDbIndex(){return m_dbIndex;}
-	
+		
 	public void setGroupIndex(long _id){m_groupId = _id;}
 	public long getGroupIndex(){return m_groupId;}
 	

@@ -85,8 +85,8 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	}
 	
 	public void sendProgress(int _fileIndex,int _uploaded,int _totalSize){
-//		m_connect.SetUploadingDesc(m_sendMail,_fileIndex,
-//											_uploaded,_totalSize);
+		m_connect.setUploadingDesc(m_sendMail,_fileIndex,
+											_uploaded,_totalSize);
 	}
 	
 	public void sendPause(){
@@ -125,10 +125,11 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 			// does want to copy tu sent folder?
 			//
 			sendReceive.WriteBoolean(t_os,m_connect.m_mainApp.m_config.m_copyMailToSentFolder);
-			
 			m_connect.m_connect.SendBufferToSvr(t_os.toByteArray(), false);
 					
 			t_os.close();
+			
+			m_connect.setUploadingDesc(m_sendMail,-2,0,0);
 						
 		}catch(Exception e){
 			m_connect.m_mainApp.setErrorString("SSF:" + e.getMessage() + e.getClass().getName());
@@ -195,8 +196,8 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 					sendError();
 					m_connect.m_mainApp.setErrorString("S: " + _e.getMessage() + " " + _e.getClass().getName());
 					
-					//TODO set uploading describe
-					//m_connect.SetUploadingDesc(m_sendMail,-1,0,0);				
+					//set uploading describe
+					m_connect.setUploadingDesc(m_sendMail,-1,0,0);
 				}		
 			}
 		}finally{

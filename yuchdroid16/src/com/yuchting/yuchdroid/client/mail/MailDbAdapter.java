@@ -460,7 +460,7 @@ public class MailDbAdapter {
     		//
     		values.clear();
     		values.put(ATTR_MAIL_GROUP_INDEX,_replyGroupId);
-    		mDb.update(DATABASE_TABLE, values, KEY_ID + "=" + t_mailID, null);
+    		mDb.update(DATABASE_TABLE, values, KEY_ID + "=" + t_mailID, null);    		
     	}
     	
     	return t_mailID;

@@ -27,10 +27,12 @@
  */
 package com.yuchting.yuchdroid.client.mail;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -40,8 +42,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -94,7 +98,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	TextView	m_discardRefView	= null;
 	
 	ViewGroup	m_attachmentParent	= null;
-	Vector<ConnectDeamon.PutAttachment>	m_attachmentList = new Vector<ConnectDeamon.PutAttachment>();
+	Vector<fetchMail.MailAttachment>	m_attachmentList = new Vector<fetchMail.MailAttachment>();
 	
 	Button		m_sendBtn			= null;
 	Button		m_saveBtn			= null;
@@ -141,8 +145,10 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		m_saveBtn.setOnClickListener(this);
 		
 		m_discardBtn = (Button)findViewById(R.id.mail_compose_discard_btn);
-		m_discardBtn.setOnClickListener(this);	
-						
+		m_discardBtn.setOnClickListener(this);
+		
+		m_attachmentParent	= (ViewGroup)findViewById(R.id.mail_compose_attachment_parent);
+								
 		prepareData();
 		
 		// set the modified flag
@@ -486,7 +492,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			                	prefixString = prefixString.substring(t_lastComma + 1);
 			                }
 			                
-			                final ArrayList<String> newValues = new ArrayList<String>(m_addrList.length);
+			                final ArrayList<String> newValues = new ArrayList<String>();
 
 			                String t_textValue;
 			                String t_lowTextValue;
@@ -497,6 +503,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			                	t_lowTextValue	= m_addrList[i].toLowerCase();
 
 			                    // First match against the whole, non-splitted value
+			                	//
 			                    if (t_lowTextValue.startsWith(prefixString)) {
 			                        newValues.add(t_textValue);
 			                    }else{			                    	
@@ -504,28 +511,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			                        final int wordCount = words.length;
 
 			                        for (int k = 0; k < wordCount; k++) {
-			                            if (words[k].startsWith(prefixString)) {
-			                                newValues.add(t_textValue);
-			                                break;
-			                            }
-			                        }
-			                    }
-			                }
-			                
-			                for (int i = 0; i < m_addrList.length; i++) {
-
-			                	t_textValue		= m_addrList[i];
-			                	t_lowTextValue	= m_addrList[i].toLowerCase();
-
-			                    // First match against the whole, non-splitted value
-			                    if (t_lowTextValue.indexOf(prefixString) != -1) {
-			                        newValues.add(t_textValue);
-			                    }else{			                    	
-			                    	final String[] words = t_lowTextValue.split(" ");
-			                        final int wordCount = words.length;
-
-			                        for (int k = 0; k < wordCount; k++) {
-			                            if (words[k].indexOf(prefixString) != -1) {
+			                            if (words[k].startsWith(prefixString) || words[k].indexOf(prefixString) != -1) {
 			                                newValues.add(t_textValue);
 			                                break;
 			                            }
@@ -661,6 +647,8 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			return ;
 		}
 		
+		
+		
 		// send progress:
 		//
 		//    MailComposeActivity.send()
@@ -673,7 +661,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		//									|																	
 		//								write database (fetchMail's group flag)									
 		//									|																	
-		//									| Broadcast (YuchDroidApp.FILTER_SEND_MAIL_VIEW)				
+		//									| Broadcast (YuchDroidApp.FILTER_SEND_MAIL_VIEW)
 		//									|
 		//							-----------------
 		//							|				|
@@ -687,6 +675,12 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			t_mail = m_draftMail;
 		}else{
 			t_mail = storeDB(fetchMail.GROUP_FLAG_SEND_PADDING);
+		}
+		
+		if(!t_mail.GetAttachment().isEmpty()
+		&& ConnectDeamon.hasAttachmentSending()){
+			Toast.makeText(this, getString(R.string.mail_compose_cant_send_att), Toast.LENGTH_SHORT).show();
+			return ;
 		}
 		
 		if(t_mail != null){
@@ -766,6 +760,10 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		_mail.SetContain(m_body.getText().toString());
 		_mail.setSendRefMailStyle(m_referenceMailStyle);
 		_mail.SetXMailer("Yuchs'Box(Android)");
+		
+		_mail.GetAttachment().clear();
+		_mail.GetAttachment().setSize(m_attachmentList.size());
+		Collections.copy(_mail.GetAttachment(), m_attachmentList);
 				
 		if(m_referenceMail != null){
 			_mail.SetFromVect(new String[]
@@ -892,8 +890,63 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
         return super.onMenuItemSelected(featureId, item);
 	}
 	
-	private void openFile(){
+	// attachment item click event
+	//
+	View.OnClickListener m_attachItemclick = new View.OnClickListener() {
 		
+		@Override
+		public void onClick(View v) {
+						
+			int t_childNum = m_attachmentParent.getChildCount();
+			for(int i = 0;i < t_childNum;i++){
+				if(m_attachmentParent.getChildAt(i) == v){
+					
+					final int t_selected = i; 
+					
+					GlobalDialog.showYesNoDialog(R.string.mail_compose_remove_attach_prompt, MailComposeActivity.this, 
+					new GlobalDialog.YesNoListener() {
+						
+						@Override
+						public void click() {
+							m_attachmentParent.removeViewAt(t_selected);
+							m_attachmentList.remove(t_selected);								
+						}
+					},null);
+					
+					break;
+				}
+			}
+		}
+	};
+	
+	private void refreshAttachment(){
+		
+		m_attachmentParent.removeAllViews();
+					
+		for(fetchMail.MailAttachment att:m_attachmentList){
+			File t_file = new File(att.m_name);
+			if(t_file.exists()){
+				addAttachmentItem(att);
+			}
+		}
+	}
+	
+	private void addAttachmentItem(fetchMail.MailAttachment _att){
+		LayoutInflater t_inflater = LayoutInflater.from(this);
+		
+		ViewGroup attachView = (ViewGroup)t_inflater.inflate(R.layout.mail_open_attachment_item,null);
+		TextView filename = (TextView)attachView.findViewById(R.id.mail_open_attachment_item_filename);
+		filename.setText("("+YuchDroidApp.GetByteStr(_att.m_size) + ") " + _att.m_name);
+			        		
+		LinearLayout.LayoutParams t_lp = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		
+		m_attachmentParent.addView(attachView,t_lp);
+		
+		attachView.setOnClickListener(m_attachItemclick);
+	}
+	
+	private void openFile(){
 		// To open up a gallery browser
 		Intent intent = new Intent();
 		intent.setType("image/*");
@@ -910,10 +963,31 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			if (requestCode == 1) {
 
 				// currImageURI is the global variable I'm using to hold the content:// URI of the image
-				Uri currImageURI = data.getData();
-				String path = currImageURI.getPath();
-				
-				
+				Uri contentUri = data.getData();
+				String[] proj = { MediaStore.Images.Media.DATA };
+			    Cursor cursor = managedQuery(contentUri, proj, null, null, null);
+			    int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+			    cursor.moveToFirst();
+			    String path = cursor.getString(column_index);
+			        
+				File t_file = new File(path);
+				if(t_file.exists()){
+					
+					for(fetchMail.MailAttachment att :m_attachmentList){
+						if(att.m_name.equals(path)){
+							Toast.makeText(this, getString(R.string.mail_compose_cant_add_att), Toast.LENGTH_SHORT).show();
+							return ;
+						}
+					}
+					
+					fetchMail.MailAttachment t_att = new fetchMail.MailAttachment();
+					t_att.m_name = path;
+					t_att.m_size = (int)t_file.length();
+					t_att.m_type = YuchDroidApp.getFileMIMEType(t_file);
+					
+					m_attachmentList.add(t_att);
+					addAttachmentItem(t_att);
+				}				 
 			}
 		}
 	}

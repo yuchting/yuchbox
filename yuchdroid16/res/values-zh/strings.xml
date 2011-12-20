@@ -153,6 +153,9 @@
     <string name="mail_compose_own_account_prompt">请选择想要从哪个信箱发出</string>
     <string name="mail_compose_add_cc_bcc">添加抄送/密送地址</string>
     <string name="mail_compose_attachment">附件</string>
+    <string name="mail_compose_remove_attach_prompt">你确定要移除这个附件么？</string>
+    <string name="mail_compose_cant_send_att">已经有一封带有附件的邮件正在发送，请等待。</string>
+    <string name="mail_compose_cant_add_att">这个文件已经添加为附件了！</string>
     
     <!-- mail preference activity -->
 	<string name="mail_pref_title">邮件配置</string>

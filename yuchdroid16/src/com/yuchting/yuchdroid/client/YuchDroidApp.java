@@ -59,6 +59,7 @@ import android.text.ClipboardManager;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
+import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import com.yuchting.yuchdroid.client.mail.HomeActivity;
@@ -790,4 +791,16 @@ public class YuchDroidApp extends Application {
         }
         return buf.toString();
     }
+	
+	public static String getFileMIMEType(File _file){
+		MimeTypeMap mime = MimeTypeMap.getSingleton();
+        String ext= _file.getName().substring(_file.getName().indexOf(".") + 1);
+        return mime.getMimeTypeFromExtension(ext);
+	}
+	
+	public static String getFileMIMEType(String _filename){
+		MimeTypeMap mime = MimeTypeMap.getSingleton();
+        String ext= _filename.substring(_filename.indexOf(".") + 1);
+        return mime.getMimeTypeFromExtension(ext);
+	}
 }

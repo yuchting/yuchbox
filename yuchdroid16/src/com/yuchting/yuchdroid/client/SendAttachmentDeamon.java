@@ -227,13 +227,7 @@ public class SendAttachmentDeamon extends Thread{
 					
 					if(m_attachmentIndex >= m_vFileConnection.size()){
 						
-						// send over
-						//
-						//m_sendCallback.sendProgress(m_sendHashCode, -2, 0, 0);
-						//m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-2,0,0);
-						
-						m_sendCallback.sendFinish();
-						
+						m_sendCallback.sendFinish();						
 						m_closeState = true;
 					
 					}else{

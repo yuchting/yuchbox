@@ -138,9 +138,8 @@ public class Yuchdroid16Activity extends Activity {
     	m_connectBut = (Button) findViewById(R.id.login_start_svr);
     	m_connectBut.setOnClickListener(new OnClickListener() {  
             public void onClick(View arg0){
-            	if(clickConnectBtn()){
-            		m_mainApp.checkOfficalHost();
-            	}
+            	clickConnectBtn();
+            	m_mainApp.checkOfficalHost();
             }
         });
         
@@ -157,7 +156,7 @@ public class Yuchdroid16Activity extends Activity {
         setConnectState(m_mainApp.m_connectState);   
     }
     
-    private boolean clickConnectBtn(){
+    private void clickConnectBtn(){
     	
     	boolean t_readConfig = false;
     	
@@ -190,8 +189,6 @@ public class Yuchdroid16Activity extends Activity {
         		ConnectDeamon.Disconnect();                		
         	}
         }
-    	
-    	return t_readConfig;
     }
     
     private void startLogonActivity(){

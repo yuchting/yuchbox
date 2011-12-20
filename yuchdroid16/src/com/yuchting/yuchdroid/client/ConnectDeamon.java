@@ -60,6 +60,8 @@ import android.os.PowerManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.yuchting.yuchdroid.client.mail.HomeActivity;
+import com.yuchting.yuchdroid.client.mail.MailOpenActivity;
 import com.yuchting.yuchdroid.client.mail.SendMailDeamon;
 import com.yuchting.yuchdroid.client.mail.fetchMail;
 
@@ -83,13 +85,16 @@ public class ConnectDeamon extends Service implements Runnable{
 		int m_progressId;
 		int m_textId;
 		
-		public Attachment(int _progressId,int _textId,int _notifyId){
+		int				m_attachmentSize = -1;
+		
+		public Attachment(RemoteViews _views,int _progressId,int _textId,int _notifyId){
+			m_views			= _views;
 			m_progressId	= _progressId;
 			m_textId		= _textId;
 			m_notifyId		= _notifyId;
 		}
 		
-		public void refreshProgress(int _percent){
+		public void refreshProgress(int _percent,int _attIndex){
 			if(m_progress != _percent){
 				
 				m_progress = _percent;
@@ -106,15 +111,14 @@ public class ConnectDeamon extends Service implements Runnable{
 
 		int				m_mailIndex;
 		int				m_attachmentIdx;
-		int				m_attachmentSize;
-		
+
 		String			m_messageID;
 		String			m_realName;	
 		
 		ByteArrayOutputStream	m_fileContainBuffer = new ByteArrayOutputStream();
 		
-		public FetchAttachment(){
-			super(R.id.mail_download_att_progress,
+		public FetchAttachment(RemoteViews _view){
+			super(_view,R.id.mail_download_att_progress,
 				R.id.mail_download_att_progress_text,
 				YuchDroidApp.YUCH_NOTIFICATION_MAIL_ATT);
 		}
@@ -130,10 +134,44 @@ public class ConnectDeamon extends Service implements Runnable{
 	
 	public static final class PutAttachment extends Attachment{
 		
-		public PutAttachment(){
-			super(R.id.mail_download_att_progress,
+		fetchMail			m_sendMail		= null;
+		int					m_uploadIndex	= 0;
+		
+		public PutAttachment(RemoteViews _view,fetchMail _mail){
+			super(_view,R.id.mail_download_att_progress,
 				R.id.mail_download_att_progress_text,
 				YuchDroidApp.YUCH_NOTIFICATION_MAIL_ATT_SEND);
+			
+			m_sendMail = _mail;
+		}
+		
+		private int getTotalSize(){
+			if(m_attachmentSize == -1){
+				m_attachmentSize = 0;
+				for(fetchMail.MailAttachment att:m_sendMail.GetAttachment()){
+					m_attachmentSize += att.m_size;
+				}
+			}
+			
+			return m_attachmentSize;
+		}
+		
+		public void refreshProgress(int _percent,int _attIndex){
+			super.refreshProgress(_percent,_attIndex);
+			
+			if(_attIndex != m_uploadIndex){
+				m_uploadIndex = _attIndex;
+				refreshName();
+			}
+		}
+		
+		public void refreshName(){
+			String t_filename = m_sendMail.GetAttachment().get(m_uploadIndex).m_name;
+			
+			StringBuffer t_text = new StringBuffer();
+			t_text.append("(").append("Total ").append(YuchDroidApp.GetByteStr(getTotalSize())).append(") Current:").append(t_filename);
+			
+			m_views.setTextViewText(R.id.mail_download_att_filename,t_text.toString());
 		}
 	}
 	
@@ -159,6 +197,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		 
 	//! receive the attachment
 	Vector<FetchAttachment>		m_vectReceiveAttach = new Vector<FetchAttachment>();
+	Vector<PutAttachment>		m_vectSendAttach = new Vector<PutAttachment>();
 			
 	// mail system variables
 	//
@@ -201,16 +240,22 @@ public class ConnectDeamon extends Service implements Runnable{
 								return;
 							}else{
 								m_sendingMailAttachment.remove(send);
-								
 								break;
 							}
 						}
 					}
 				}
 				
+				Vector<File> t_attachFiles = null;
+				if(!t_sendMail.GetAttachment().isEmpty()){
+					// start the sending progress for attachment
+					//
+					t_attachFiles = startSendAttachmentNotification(t_sendMail);
+				}
+				
 				try{
 					m_sendingMailAttachment.add(new SendMailDeamon(ConnectDeamon.this, 
-													t_sendMail, null, t_referenceMail,t_style));
+													t_sendMail, t_attachFiles, t_referenceMail,t_style));
 				}catch(Exception e){
 					m_mainApp.setErrorString(TAG+" MailSendRecv", e);
 				}
@@ -357,6 +402,11 @@ public class ConnectDeamon extends Service implements Runnable{
 			}
 			m_sendingMailAttachment.clear();	
 		}
+		
+		// clear the send attachment list
+		//
+		m_vectSendAttach.clear();
+		stopAttachmentSendingNotification();		
 	}
 	
 	private void clearRecvAttachment(){
@@ -716,6 +766,99 @@ public class ConnectDeamon extends Service implements Runnable{
 		return false;
 	}
 	
+	public static boolean hasAttachmentSending(){
+		if(sm_connectDeamon != null){
+			return !sm_connectDeamon.m_vectSendAttach.isEmpty();
+		}
+		
+		return false;
+	}
+	
+	public void stopAttachmentSendingNotification(){
+		NotificationManager t_mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+		t_mgr.cancel(YuchDroidApp.YUCH_NOTIFICATION_MAIL_ATT_SEND);
+	}
+	
+	private Vector<File> startSendAttachmentNotification(fetchMail _sendMail){
+		
+		assert !_sendMail.GetAttachment().isEmpty();
+		assert m_vectSendAttach.isEmpty();
+		
+		PutAttachment t_att = new PutAttachment(new RemoteViews(getPackageName(), R.layout.mail_download_att_notification),_sendMail);	
+		t_att.refreshName();
+		
+		Intent in = new Intent(Intent.ACTION_MAIN);
+		in.setClass(this, MailOpenActivity.class);
+		
+		in.putExtra(MailOpenActivity.INTENT_CURRENT_MAIL_GROUP, _sendMail.getGroupIndex());
+		in.putExtra(MailOpenActivity.INTENT_PRE_MAIL_GROUP_INDEX, -1);
+		in.putExtra(MailOpenActivity.INTENT_NEXT_MAIL_GROUP_INDEX, -1);
+		in.putExtra(MailOpenActivity.INTENT_NEXT_MAIL_CURSOR_POS,-1);
+		in.putExtra(MailOpenActivity.INTENT_CURRENT_GROUP_LIMIT,HomeActivity.MAX_GROUP_FATCH_NUM);
+
+		t_att.m_openIntent = PendingIntent.getActivity(this, 0, in,PendingIntent.FLAG_UPDATE_CURRENT);
+		
+		// start the notification of status bar
+		//
+		Notification notification = new Notification(R.drawable.ic_notification_upload,
+													getString(R.string.mail_open_attach_prompt),
+													System.currentTimeMillis());
+		
+		notification.setLatestEventInfo(this,null,null,t_att.m_openIntent);
+		notification.contentView = t_att.m_views;
+		notification.flags |= PendingIntent.FLAG_UPDATE_CURRENT;
+		
+		NotificationManager t_mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+		t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL_ATT_SEND, notification);
+		
+		t_att.m_notification = notification;
+		t_att.m_notifyMgr	= t_mgr;
+		
+		// add it to list
+		//
+		m_vectSendAttach.add(t_att);
+		
+		// return the vector of Files
+		//
+		Vector<File> t_files = new Vector<File>();
+		for(fetchMail.MailAttachment att:_sendMail.GetAttachment()){
+			File file = new File(att.m_name);
+			if(file.exists()){
+				t_files.add(file);
+			}
+		}
+		
+		return t_files;
+	}
+	
+	public void setUploadingDesc(fetchMail _mail,int _uploadIndex,
+									int _uploadByte,int _totalByte){
+		synchronized(m_vectSendAttach) {
+			for(PutAttachment att:m_vectSendAttach){
+				if(att.m_sendMail == _mail){
+					
+					if(_uploadIndex == -1){
+						// upload failed
+						//
+						m_vectSendAttach.remove(att);
+						stopAttachmentSendingNotification();
+												
+					}else if(_uploadIndex == -2){
+						// upload over
+						//
+						m_vectSendAttach.remove(att);
+						att.refreshProgress(100, att.m_sendMail.GetAttachment().size() - 1);
+						
+					}else{
+						att.refreshProgress(_uploadByte * 100 / _totalByte, _uploadIndex);
+					}
+					
+					break;
+				}
+			}
+		}		
+	}
+	
 	public static boolean hasAttachmentDownload(fetchMail _mail,int _attachIndex){
 		if(sm_connectDeamon != null){
 			for(int i = 0;i < sm_connectDeamon.m_vectReceiveAttach.size();i++){
@@ -739,6 +882,8 @@ public class ConnectDeamon extends Service implements Runnable{
 	private void startDownload_impl(fetchMail _mail,int _attachIndex,PendingIntent _openIntent){
 		
 		if(!m_vectReceiveAttach.isEmpty()){
+			// can be download a attachment once 
+			//
 			return;
 		}
 		
@@ -749,14 +894,13 @@ public class ConnectDeamon extends Service implements Runnable{
 		// prepare data
 		//
 		fetchMail.MailAttachment mailAtt = _mail.GetAttachment().get(_attachIndex);
-		FetchAttachment t_att = new FetchAttachment();
+		FetchAttachment t_att = new FetchAttachment(new RemoteViews(getPackageName(), R.layout.mail_download_att_notification));
 				
 		t_att.m_mailIndex 		= _mail.GetMailIndex();
 		t_att.m_attachmentIdx	= _attachIndex;
 		t_att.m_messageID		= _mail.getMessageID();
 		t_att.m_attachmentSize	= mailAtt.m_size;
 		t_att.m_realName		= mailAtt.m_name;
-		t_att.m_views			= new RemoteViews(getPackageName(), R.layout.mail_download_att_notification);
 		t_att.m_openIntent		= _openIntent;
 		t_att.refreshName(_mail);
 		m_vectReceiveAttach.add(t_att);
@@ -1218,7 +1362,7 @@ public class ConnectDeamon extends Service implements Runnable{
 					if(!t_done){
 						// refresh UI of notification
 						//
-						t_att.refreshProgress((t_startIndex + t_size) * 100 / t_att.m_attachmentSize);
+						t_att.refreshProgress((t_startIndex + t_size) * 100 / t_att.m_attachmentSize,t_attachIndex);
 					}
 					
 					if(t_att.m_fileContainBuffer.size() > 10240 || t_done){
@@ -1238,7 +1382,7 @@ public class ConnectDeamon extends Service implements Runnable{
 						
 						if(t_done){
 							
-							t_att.refreshProgress(100);
+							t_att.refreshProgress(100,t_attachIndex);
 							m_vectReceiveAttach.remove(t_att);
 							
 							// to notification user download done
@@ -1296,5 +1440,7 @@ public class ConnectDeamon extends Service implements Runnable{
 //		}
 		
 	}
+	
+	
 	
 }
