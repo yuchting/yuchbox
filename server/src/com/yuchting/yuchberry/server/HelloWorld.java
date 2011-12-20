@@ -28,37 +28,6 @@
 package com.yuchting.yuchberry.server;
 
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.URL;
-import java.net.URLConnection;
-import java.security.KeyStore;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.concurrent.Callable;
-
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-
-import weibo4j.http.OAuth;
-import weibo4j.http.OAuthToken;
-import weibo4j.http.PostParameter;
-
-import com.mime.qweibo.OauthKey;
-import com.mime.qweibo.QOAuth;
-import com.mime.qweibo.QParameter;
-
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -66,11 +35,33 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URL;
+import java.net.URLConnection;
+import java.security.KeyStore;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Vector;
+import java.util.concurrent.Callable;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
@@ -86,6 +77,14 @@ import javax.swing.JToolBar;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.filechooser.FileFilter;
+
+import weibo4j.http.OAuth;
+import weibo4j.http.OAuthToken;
+import weibo4j.http.PostParameter;
+
+import com.mime.qweibo.OauthKey;
+import com.mime.qweibo.QOAuth;
+import com.mime.qweibo.QParameter;
 
 /**
  * 实现一个简单的Web浏览器，支持HTML和HTM页面的显示。使用了JEditorPane组件
@@ -653,8 +652,17 @@ public class HelloWorld {
 	
 	
 	public static void main(String arg[])throws Exception{
-		WebBrowser t_bro = new WebBrowser();
-		t_bro.setVisible(true);
+		Vector<String> t_list = new Vector<String>();
+		Vector<String> t_list1 = new Vector<String>();
+		t_list1.add("aa");
+		t_list1.add("bb");
+		t_list1.add("vv");
+		
+		t_list.setSize(t_list1.size());
+		
+		System.out.println(t_list.size());
+		
+		Collections.copy(t_list,t_list1);
 	}
 	
 	public final static String	fsm_vectStringSpliter = "<>";
