@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 	<item android:id="@+id/mail_open_context_menu_copy"
-	    android:text="@string/mail_open_context_menu_copy" />
+	    android:title="@string/mail_open_context_menu_copy" />
 </menu>

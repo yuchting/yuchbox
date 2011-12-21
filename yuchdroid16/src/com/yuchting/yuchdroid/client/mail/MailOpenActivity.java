@@ -374,24 +374,44 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		return null;
 	}
 	
+	// buffered the selected envelope 
+	//
+	Envelope		m_longClickEnvelope= null;
+	
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
 		//menu.setHeaderTitle("Context Menu");
 		
 		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.mail_open_body_context, menu);			
+		inflater.inflate(R.menu.mail_open_body_context, menu);
+		
+		m_longClickEnvelope = null;
+		for(int i = 0 ;i < m_currMailList.size();i++){
+			Envelope en = m_currMailList.get(i);
+			if(en.m_bodyText == v){
+				m_longClickEnvelope = en;
+				break;
+			}
+		}
 	}
 	
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		
+		switch(item.getItemId()){
+		case R.id.mail_open_context_menu_copy:
+			if(m_longClickEnvelope != null){
+				YuchDroidApp.copyTextToClipboard(this, m_longClickEnvelope.m_mail.GetContain());
+				return true;
+			}
+			break;
+		}
 		return super.onContextItemSelected(item);
 	}
 	
 	private void fillMailContent()throws Exception{   
 
-		 // remove all envelope
+		// remove all envelope
         //
         while(m_mainMailView.getChildCount() > fsm_insertEnvelopeIndex){
         	m_mainMailView.removeViewAt(fsm_insertEnvelopeIndex);
@@ -1098,7 +1118,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		private void addDetailAddr(ViewGroup _view,Vector<String> _addrList,View.OnClickListener _click){
 			
 			while(_view.getChildCount() > 1){
-				_view.removeViewAt(_view.getChildCount() - 1);
+				_view.removeViewAt(1);
 			}
 			
 			_view.setVisibility(_addrList.isEmpty()?View.GONE:View.VISIBLE);
