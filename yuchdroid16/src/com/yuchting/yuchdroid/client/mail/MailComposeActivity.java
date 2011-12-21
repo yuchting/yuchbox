@@ -241,6 +241,9 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 					showCc_Bcc();
 					setEmailAddr(m_bcc, t_bccVect);
 				}
+				
+				refreshAttachment(m_draftMail);
+								
 			}else{
 								
 				if(m_referenceMailStyle == fetchMail.REPLY_STYLE
@@ -647,7 +650,14 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			return ;
 		}
 		
-		
+		// send to address judge
+		//
+		String[] t_toAddrList 	= m_to.getText().toString().replaceAll("\n", ",").split(",");
+		if(!checkSendToAddr(t_toAddrList,false)){
+			m_to.requestFocus();
+			Toast.makeText(this, getString(R.string.mail_compose_address_error), Toast.LENGTH_SHORT).show();
+			return;
+		}		
 		
 		// send progress:
 		//
@@ -675,16 +685,15 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			t_mail = m_draftMail;
 		}else{
 			t_mail = storeDB(fetchMail.GROUP_FLAG_SEND_PADDING);
-		}
-		
-		if(!t_mail.GetAttachment().isEmpty()
-		&& ConnectDeamon.hasAttachmentSending()){
-			Toast.makeText(this, getString(R.string.mail_compose_cant_send_att), Toast.LENGTH_SHORT).show();
-			return ;
-		}
+		}		
 		
 		if(t_mail != null){
 
+			if(!t_mail.GetAttachment().isEmpty() && ConnectDeamon.hasAttachmentSending()){
+				Toast.makeText(this, getString(R.string.mail_compose_cant_send_att), Toast.LENGTH_SHORT).show();
+				return ;
+			}	
+		
 			// send mail
 			//
 			m_mainApp.sendMail(t_mail,
@@ -696,7 +705,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			finish();
 		}		
 	}
-	
+
 	private fetchMail storeDB(int _flag){
 		
 		String[] t_toAddrList 	= m_to.getText().toString().replaceAll("\n", ",").split(",");
@@ -705,12 +714,12 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		
 		// check the address
 		//
-		if(!checkSendToAddr(t_toAddrList)
-		|| !checkSendToAddr(t_ccAddrList)
-		|| !checkSendToAddr(t_bccAddrList)){
+		if(!checkSendToAddr(t_toAddrList,true)
+		|| !checkSendToAddr(t_ccAddrList,true)
+		|| !checkSendToAddr(t_bccAddrList,true)){
 			Toast.makeText(this, getString(R.string.mail_compose_address_error), Toast.LENGTH_SHORT).show();
 			return null;
-		}		
+		}
 		
 		fetchMail t_sendMail = new fetchMail();
 		updateMail(t_sendMail,_flag);
@@ -830,7 +839,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		return false;
 	}
 		
-	private boolean checkSendToAddr(String[] _toAddrList){
+	private boolean checkSendToAddr(String[] _toAddrList,boolean _acceptEmtpy){
 		if(_toAddrList.length == 0){
 			return false;
 		}
@@ -839,6 +848,10 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			if(addr.length() != 0){
 				if(!addr.matches("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$")
 				&& !addr.matches("(.)*<\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*>")){
+					return false;
+				}
+			}else{
+				if(!_acceptEmtpy){
 					return false;
 				}
 			}
@@ -919,10 +932,12 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		}
 	};
 	
-	private void refreshAttachment(){
+	private void refreshAttachment(fetchMail _mail){
 		
 		m_attachmentParent.removeAllViews();
-					
+		m_attachmentList.setSize(_mail.GetAttachment().size());
+		Collections.copy(m_attachmentList,_mail.GetAttachment());
+		
 		for(fetchMail.MailAttachment att:m_attachmentList){
 			File t_file = new File(att.m_name);
 			if(t_file.exists()){

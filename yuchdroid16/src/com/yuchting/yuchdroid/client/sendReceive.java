@@ -245,18 +245,20 @@ public class sendReceive{
 				m_selector.close();				
 				throw new Exception(TAG + " Client own closed!");
 			}
+						
+			if(m_keepliveClose){
+				throw new Exception(TAG + " keeplive can't sendback!");
+			}
 			
 			if(!m_unsendedPackage.isEmpty()){
 				SendBufferToSvr_imple(PrepareOutputData());				
 				m_socketChn.keyFor(m_selector).interestOps(SelectionKey.OP_WRITE);
 				
-				// the next select will hold the write op
-				//
-				continue;
-			}
-			
-			if(m_keepliveClose){
-				throw new Exception(TAG + " keeplive can't sendback!");
+				if(t_selectkey == 0){
+					// the next select will hold the write op
+					//
+					continue;
+				}
 			}
 				
 			if(t_selectkey != 0){
@@ -303,7 +305,9 @@ public class sendReceive{
 					m_socketChn.keyFor(m_selector).interestOps(SelectionKey.OP_WRITE);
 					m_keeplive = false;
 				}
-			}			
+			}
+			
+			
 		}
 	}
 	

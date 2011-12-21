@@ -95,8 +95,8 @@
     <string name="mail_me_address">Me</string>
     <string name="mail_over_max_length_prompt">--YuchDroid Prompt\nMail content is over the max length</string>
     <string name="mail_notification_ticker">New Mail Coming!</string>
-    <string name="mail_time_year">/</string>
-    <string name="mail_time_month">/</string>
+    <string name="mail_time_year">-</string>
+    <string name="mail_time_month">-</string>
     <string name="mail_time_day"></string>
     <string name="mail_list_compose_new_mail">Compose</string>
     <string name="mail_home_empty_group">Opps, there is not any mail...</string>
@@ -117,6 +117,7 @@
     <string name="mail_open_reference_line_replace">Click to display original reference part</string>
     <string name="mail_open_detail_from">From</string>
     <string name="mail_open_detail_to">To</string>
+    <string name="mail_open_detail_reply_to">Reply To</string>
     <string name="mail_open_detail_cc">Cc</string>
     <string name="mail_open_detail_bcc">Bcc</string>    
     <string name="mail_open_detail_email_click_prompt">Choose the sender:</string>
@@ -127,7 +128,7 @@
     <string name="mail_open_attach_cancel_btn">Cancel Download</string>
     <string name="mail_open_attach_open_btn">Open</string>
     <string name="mail_open_attach_cancel_btn_prompt">Are you sure stop downloading?</string>
-    
+    <string name="mail_open_context_menu_copy">Copy text to clipboard</string>    
     
     
     <!-- mail compose view -->

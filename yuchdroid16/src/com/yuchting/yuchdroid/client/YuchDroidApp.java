@@ -743,7 +743,7 @@ public class YuchDroidApp extends Application {
 		return t_ret.toString();
 	}
 	
-	 // utility function
+	// utility function
     //
     public static String GetByteStr(long _byte){
     	if(_byte < 1000){
@@ -793,14 +793,16 @@ public class YuchDroidApp extends Application {
     }
 	
 	public static String getFileMIMEType(File _file){
-		MimeTypeMap mime = MimeTypeMap.getSingleton();
-        String ext= _file.getName().substring(_file.getName().indexOf(".") + 1);
-        return mime.getMimeTypeFromExtension(ext);
+		return getFileMIMEType(_file.getName());
 	}
 	
 	public static String getFileMIMEType(String _filename){
 		MimeTypeMap mime = MimeTypeMap.getSingleton();
-        String ext= _filename.substring(_filename.indexOf(".") + 1);
-        return mime.getMimeTypeFromExtension(ext);
+        String ext= _filename.substring(_filename.lastIndexOf(".") + 1);
+        ext = mime.getMimeTypeFromExtension(ext);
+        if(ext.length() == 0){
+        	ext = "application/octet-stream";
+        }
+        return ext;
 	}
 }

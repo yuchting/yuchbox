@@ -51,11 +51,14 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ClickableSpan;
 import android.util.TypedValue;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.webkit.MimeTypeMap;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -83,11 +86,12 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	public final static String			INTENT_CURRENT_GROUP_LIMIT		= "group";
 		
 	public final static String			INTENT_CURRENT_MAIL_GROUP		= "mail";
-		
 	
+	public final static int				DIALOG_DETAIL		= 0;
+			
 	YuchDroidApp			m_mainApp;
 	Cursor					m_groupCursor;
-		
+
 	Vector<Envelope>		m_currMailList = new Vector<Envelope>();
 	
 	TextView				m_formerMailView;
@@ -106,11 +110,11 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	Button					m_forwardBtn;
 	Button					m_deleteBtn;
 	
-	public long					m_currGroupIdx = -1;
-	public long					m_preGroupIdx = -1;
-	public long					m_nextGroupIdx = -1;
-	public int						m_cursorPosition;
-	public int						m_currGroupLimit;
+	public long			m_currGroupIdx = -1;
+	public long			m_preGroupIdx = -1;
+	public long			m_nextGroupIdx = -1;
+	public int				m_cursorPosition;
+	public int				m_currGroupLimit;
 	
 	final MailOpenActivity	m_composeActivity = this;
 	BroadcastReceiver		m_sendMailRecv = new BroadcastReceiver() {
@@ -211,7 +215,10 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			}			
 		}
 	};
-		
+	
+	int		m_currentDetailDlgIndex = 0;
+	Dialog	m_envelopDetailDlg		= null;
+	
 	View.OnClickListener m_clickEnvelopeListener = new View.OnClickListener() {
 		
 		@Override
@@ -234,7 +241,14 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 						startActivity(in);
 	
 		            }else{
-		            	showDialog(i);
+		            	// the Dailog.show will make memory leaded of activity
+		            	//
+		            	//en.getEnvelopeDetailDlg().show();
+		            	
+		            	// showDialog is dialog buffered (don't re-create)
+		            	//
+		            	m_currentDetailDlgIndex = i;
+		            	showDialog(DIALOG_DETAIL);
 		            }					
 				}				
 			}
@@ -323,13 +337,57 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		unregisterReceiver(m_attDownloadDone);		
 	}
 	
-	protected Dialog onCreateDialog (int id){
-		if(id < m_currMailList.size()){
-			return m_currMailList.get(id).getEnvelopeDetailDlg();
+	protected void onPrepareDialog (int id, Dialog dialog){
+		switch(id){
+		case DIALOG_DETAIL:
+			if(m_currentDetailDlgIndex < m_currMailList.size()){
+				m_currMailList.get(id).setEnvelopeDetailDlg(m_envelopDetailDlg);		
+			}
+			break;
 		}
+	}
+	
+	protected void onPrepareDialog (int id, Dialog dialog, Bundle args){
+		onPrepareDialog(id, dialog);
+	}
+	
+	protected Dialog onCreateDialog (int id){
+		switch(id){
+		case DIALOG_DETAIL:
+			if(m_currentDetailDlgIndex < m_currMailList.size()){
+				if(m_envelopDetailDlg == null){
+
+					LayoutInflater inflater = LayoutInflater.from(this);
+					View layout = inflater.inflate(R.layout.mail_open_envelope_detail,null);
+					
+					AlertDialog.Builder builder = new AlertDialog.Builder(this);
+					builder.setView(layout);
+					builder.setPositiveButton(R.string.dlg_info_yesno_confirm, null);
+					
+					m_envelopDetailDlg = builder.create();
+				}
+				return m_envelopDetailDlg;
+			}
+			break;
+		}
+		
 		return null;
 	}
 	
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		//menu.setHeaderTitle("Context Menu");
+		
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.mail_open_body_context, menu);			
+	}
+	
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		
+		return super.onContextItemSelected(item);
+	}
 	
 	private void fillMailContent()throws Exception{   
 
@@ -639,6 +697,10 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 				}
 				m_bodyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, t_config.getMailFontSize());
 				m_bodyText.setText(t_str);
+				
+				// register the context menu for body text to copy text
+				//
+				m_loadCtx.registerForContextMenu(m_bodyText);
             }else{
             	m_bodyText.setVisibility(View.GONE);
             }
@@ -879,14 +941,6 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	        }	        
 		}
 		
-		final static String[]	fsm_supportImageFormat = 
-		{
-			".jpg",
-			".png",
-			".bmp",
-			".tga",
-			".gif",
-		};
 		public boolean checkAttFile(final int _attachIdx){
 			assert m_attachView.getChildCount() > _attachIdx;
 			assert m_mail.GetAttachment().size() > _attachIdx;
@@ -901,21 +955,19 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 
 					ViewGroup t_attachView = (ViewGroup)m_attachView.getChildAt(_attachIdx);
 					
-					String t_name = t_att.m_name.toLowerCase();
-					for(String suffix:fsm_supportImageFormat){
-						if(t_name.endsWith(suffix)){
-							
-							Bitmap t_image = BitmapFactory.decodeFile(t_filename.getPath());
-							
-							if(t_image != null){
-								ImageView t_imageView = (ImageView)t_attachView.findViewById(R.id.mail_open_attachment_item_image);
-								t_imageView.setImageBitmap(t_image);
-								t_imageView.setVisibility(View.VISIBLE);
-							}
-							
-							break;
+					String t_name = t_att.m_name.toLowerCase();				
+					
+					if(YuchDroidApp.getFileMIMEType(t_name).startsWith("image")){
+						
+						Bitmap t_image = BitmapFactory.decodeFile(t_filename.getPath());
+						
+						if(t_image != null){
+							ImageView t_imageView = (ImageView)t_attachView.findViewById(R.id.mail_open_attachment_item_image);
+							t_imageView.setImageBitmap(t_image);
+							t_imageView.setVisibility(View.VISIBLE);
 						}
-					}					
+					}
+									
 					
 					Button t_cancel = (Button)t_attachView.findViewById(R.id.mail_open_attachment_item_cancel_btn);
 	    			t_cancel.setVisibility(View.GONE);
@@ -1010,7 +1062,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			    	|| m_mail.getGroupFlag() == fetchMail.GROUP_FLAG_SEND_SENDING;
 		}
 		
-		public Dialog getEnvelopeDetailDlg(){
+		public void setEnvelopeDetailDlg(Dialog _dialog){
 			
 			View.OnClickListener t_emailClick = new View.OnClickListener() {
 				
@@ -1027,33 +1079,28 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			String t_form 		= m_mail.GetFromVect().isEmpty()?"":m_mail.GetFromVect().get(0);
 			String t_subject 	= m_mail.GetSubject();
 
-			LayoutInflater inflater = LayoutInflater.from(m_loadCtx);
-			View layout = inflater.inflate(R.layout.mail_open_envelope_detail,null);
-			
-			AlertDialog.Builder builder = new AlertDialog.Builder(m_loadCtx);
-			builder.setView(layout);
-			builder.setPositiveButton(R.string.dlg_info_yesno_confirm, null);
-			
-			final Dialog dialog = builder.create();
-			TextView t_fromView = (TextView)layout.findViewById(R.id.mail_open_detail_from);
+			TextView t_fromView = (TextView)_dialog.findViewById(R.id.mail_open_detail_from);
 			t_fromView.setText(t_form);
 			t_fromView.setOnClickListener(t_emailClick);
 			
-			addDetailAddr((ViewGroup)layout.findViewById(R.id.mail_open_detail_to_list),m_mail.GetSendToVect(),t_emailClick);
-			addDetailAddr((ViewGroup)layout.findViewById(R.id.mail_open_detail_cc_list),m_mail.GetCCToVect(),t_emailClick);
-			addDetailAddr((ViewGroup)layout.findViewById(R.id.mail_open_detail_bcc_list),m_mail.GetBCCToVect(),t_emailClick);
+			addDetailAddr((ViewGroup)_dialog.findViewById(R.id.mail_open_detail_to_list),m_mail.GetSendToVect(),t_emailClick);
+			addDetailAddr((ViewGroup)_dialog.findViewById(R.id.mail_open_detail_reply_to_list),m_mail.GetReplyToVect(),t_emailClick);
+			addDetailAddr((ViewGroup)_dialog.findViewById(R.id.mail_open_detail_cc_list),m_mail.GetCCToVect(),t_emailClick);
+			addDetailAddr((ViewGroup)_dialog.findViewById(R.id.mail_open_detail_bcc_list),m_mail.GetBCCToVect(),t_emailClick);
 			
-			TextView t_subjectView 	= (TextView)layout.findViewById(R.id.mail_open_detail_subject);
+			TextView t_subjectView 	= (TextView)_dialog.findViewById(R.id.mail_open_detail_subject);
 			t_subjectView.setText(t_subject);
 			
-			TextView t_dataView		= (TextView)layout.findViewById(R.id.mail_open_detail_date);
+			TextView t_dataView		= (TextView)_dialog.findViewById(R.id.mail_open_detail_date);
 			t_dataView.setText(getDateString() + " " + getTimeString());
-			
-			return dialog;
 		}
 		
 		private void addDetailAddr(ViewGroup _view,Vector<String> _addrList,View.OnClickListener _click){
-
+			
+			while(_view.getChildCount() > 1){
+				_view.removeViewAt(_view.getChildCount() - 1);
+			}
+			
 			_view.setVisibility(_addrList.isEmpty()?View.GONE:View.VISIBLE);
 			
 			for(String to:_addrList){
@@ -1065,7 +1112,6 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 				v.setText(to);
 				v.setOnClickListener(_click);
 				_view.addView(v);
-				
 			}	
 		}
 		

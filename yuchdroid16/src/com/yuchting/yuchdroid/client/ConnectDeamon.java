@@ -387,7 +387,41 @@ public class ConnectDeamon extends Service implements Runnable{
 				}catch(Exception e){
 					m_mainApp.setErrorString("ConnectDeamon MailMarkReadRecv", e);
 				}
+				
+				synchronized (m_vectSendAttach) {
+					for(PutAttachment att:m_vectSendAttach){
+						if(att.m_sendMail.GetSimpleHashCode() == hashVal){
+							m_vectSendAttach.remove(att);
+							stopAttachmentSendingNotification();
+							break;
+						}
+					}
+				}
+				
+				synchronized (m_vectReceiveAttach) {
+					for(FetchAttachment att:m_vectReceiveAttach){
+						if(att.m_messageID.equals(id)){
+							m_vectReceiveAttach.remove(att);
+							stopDownloadAttNotification();
+							break;
+						}
+					}
+				}
+				
+				synchronized (m_sendingMailAttachment) {
+					for(SendMailDeamon de:m_sendingMailAttachment){
+						if(de.m_sendMail.GetSimpleHashCode() == hashVal){
+							de.m_closeState = true;
+							de.inter();
+							
+							m_sendingMailAttachment.remove(de);
+							break;
+						}					
+					}
+				}				
 			}
+			
+			
 		}
 	}
 	

@@ -120,6 +120,7 @@
     <string name="mail_open_reference_line_replace">点击显示邮件引用部分</string>
     <string name="mail_open_detail_from">来自</string>
     <string name="mail_open_detail_to">收件人</string>
+    <string name="mail_open_detail_reply_to">回复至</string>
     <string name="mail_open_detail_cc">抄送</string>
     <string name="mail_open_detail_bcc">密送</string>
     <string name="mail_open_detail_email_click_prompt">选择发送程序：</string>
@@ -130,6 +131,7 @@
     <string name="mail_open_attach_cancel_btn">取消下载</string>
     <string name="mail_open_attach_open_btn">打开</string>
     <string name="mail_open_attach_cancel_btn_prompt">你真的想要取消下载么？</string>
+    <string name="mail_open_context_menu_copy">拷贝邮件到剪切板</string>
     
     <!-- mail compose view -->
     <string name="mail_compose_title">语盒邮件撰写</string>

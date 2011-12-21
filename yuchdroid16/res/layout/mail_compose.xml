@@ -94,21 +94,15 @@
 		android:layout_height="wrap_content"
 		android:orientation="horizontal"
 		android:background="#888"
-		android:paddingTop="3sp">		
-		<Button 
-			android:id="@+id/mail_compose_send_btn"
-			android:layout_width="0sp"
-			android:layout_height="fill_parent"
-			android:layout_weight="1"
-			android:text="@string/mail_compose_send_btn"/>
-			
+		android:paddingTop="3sp">
+  		
 		<Button 
 			android:id="@+id/mail_compose_save_btn"
 			android:layout_width="0sp"
 			android:layout_height="fill_parent"
 			android:layout_weight="1"
 			android:text="@string/mail_compose_save_btn"/>
-			
+		
 		<Button 
 			android:id="@+id/mail_compose_discard_btn"
 			android:layout_width="0sp"
@@ -116,5 +110,14 @@
 			android:layout_weight="1"
 			android:text="@string/mail_compose_discard_btn"
 			android:paddingRight="5sp"/>
+		
+		<Button 
+			android:id="@+id/mail_compose_send_btn"
+			android:layout_width="0sp"
+			android:layout_height="fill_parent"
+			android:layout_weight="1"
+			android:text="@string/mail_compose_send_btn"/>
+		
+		
 	</LinearLayout>
 </LinearLayout>
