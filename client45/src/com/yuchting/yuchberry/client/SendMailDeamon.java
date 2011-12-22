@@ -92,6 +92,11 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	
 	public void sendError(){
 		RefreshMessageStatus(Message.Status.TX_ERROR);
+		m_connect.m_mainApp.TriggerEmailFailedNotifaction();
+	}
+	
+	public void sendSucc(){
+		RefreshMessageStatus(Message.Status.TX_DELIVERED);
 	}
 	
 	public void sendFinish(){

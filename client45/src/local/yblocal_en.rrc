@@ -110,6 +110,7 @@ LOCATION_OPTIION_LABEL#0="Send Mail Location:";
 MESSAGE_CONTAIN_MAX_LENGTH#0="Max Message Text Length:";
 NEED_CMIME_PROMPT#0="Can't find CMIME in Service Book, please load the SB with CMIME firstly.";
 NOTIFY_DISCONNECT_LABEL#0="YuchBerry Disconnect";
+NOTIFY_EMAIL_FAILED_LABEL#0="YuchBerry Email Failed";
 NOTIFY_EMAIL_LABEL#0="YuchBerry Email";
 NOTIFY_IM_LABEL#0="YuchBerry IM";
 NOTIFY_WEIBO_LABEL#0="YuchBerry Weibo Relation";

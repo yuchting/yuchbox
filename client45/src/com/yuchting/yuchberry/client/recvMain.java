@@ -170,6 +170,14 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	    }
 	};
 	
+	final static long		fsm_notifyID_email_failed = 767918509114952L;
+	
+	final static Object 	fsm_notifyEvent_email_failed = new Object() {
+	    public String toString() {
+	       return recvMain.sm_local.getString(yblocalResource.NOTIFY_EMAIL_FAILED_LABEL);
+	    }
+	};
+	
 	public connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
 	public aboutScreen			m_aboutScreen		= null;
@@ -264,7 +272,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		"ctnet",
 	};
 	
-	public int						m_apnStringIndex = 0;
+	public int				m_apnStringIndex 	= 0;
 	
 	public boolean			m_fulldayPrompt		= true;
 	public int				m_startPromptHour	= 8;
@@ -330,6 +338,9 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	FileConnection m_logfc				= null;
 	OutputStream	m_logfcOutput		= null;
+	
+	// is offical server
+	public boolean		m_isOfficalSvr	= true;
 			
 	public static void main(String[] args) {
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());
@@ -417,6 +428,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
     	NotificationsManager.registerSource(fsm_notifyID_weibo_home, fsm_notifyEvent_weibo_home,NotificationsConstants.CASUAL);
     	NotificationsManager.registerSource(fsm_notifyID_disconnect, fsm_notifyEvent_disconnect,NotificationsConstants.CASUAL);
     	NotificationsManager.registerSource(fsm_notifyID_im, fsm_notifyEvent_im,NotificationsConstants.CASUAL);
+    	NotificationsManager.registerSource(fsm_notifyID_im, fsm_notifyEvent_email_failed,NotificationsConstants.CASUAL);
     	
         if(_systemRun){       
         	
@@ -812,6 +824,22 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	public int GetPulseIntervalMinutes(){
 		return fsm_pulseInterval[m_pulseIntervalIndex];
+	}
+	
+	Thread m_checkOfficalSvrThread = null;
+	public void checkOfficalSvr(){
+		if(m_checkOfficalSvrThread != null){
+			return ;
+		}
+		
+		synchronized (this) {
+			m_checkOfficalSvrThread = new Thread(){
+				public void run(){
+					
+				}
+			};
+		}
+		
 	}
 	
 	
@@ -1616,6 +1644,10 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}		
 	}
 	
+	public void StopDisconnectNotification(){
+		NotificationsManager.cancelImmediateEvent(fsm_notifyID_disconnect, 0, this, null);
+	}
+	
 	public void TriggerIMNotification(){
 		if(IsPromptTime()){
 			NotificationsManager.triggerImmediateEvent(fsm_notifyID_im, 0, this, null);
@@ -1626,12 +1658,16 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		NotificationsManager.cancelImmediateEvent(fsm_notifyID_im, 0, this, null);
 	}
 	
-	public void StopDisconnectNotification(){
-		NotificationsManager.cancelImmediateEvent(fsm_notifyID_disconnect, 0, this, null);
+	public void TriggerEmailFailedNotifaction(){
+		if(IsPromptTime()){
+			NotificationsManager.triggerImmediateEvent(fsm_notifyID_email_failed, 0, this, null);
+		}
 	}
 	
-	
-	
+	public void StopEmailFailedNotifaction(){
+		NotificationsManager.cancelImmediateEvent(fsm_notifyID_email_failed, 0, this, null);
+	}
+		
 	public void PopupAboutScreen(){
 		m_aboutScreen = new aboutScreen(this);
 		pushScreen(m_aboutScreen);
@@ -1872,22 +1908,38 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}		
 	}
 	
+	private Dialog m_alartDlg = null;
+	
 	public void DialogAlert(final String _msg){
 
+		SetErrorString(_msg);
+		
+		if(m_alartDlg != null){
+			return;
+		}
+		
 		invokeLater(new Runnable() {
 			public void run(){
 				synchronized(getEventLock()){
 					
-					Dialog t_dlg = new Dialog(Dialog.D_OK,_msg,
-							Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL);
+					synchronized (recvMain.this) {
+						m_alartDlg = new Dialog(Dialog.D_OK,_msg,
+								Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL){
+							public void close(){
+								super.close();
+								synchronized (recvMain.this) {
+									m_alartDlg = null;
+								}
+							}
+						};
+						
+						m_alartDlg.setEscapeEnabled(true);			
+						pushGlobalScreen(m_alartDlg,1, UiEngine.GLOBAL_QUEUE);
+					}
 					
-					t_dlg.setEscapeEnabled(true);			
-					pushGlobalScreen(t_dlg,1, UiEngine.GLOBAL_QUEUE);
 				};
 			}
-		});
-		
-		SetErrorString(_msg);		
+		});				
     }
  
 	public void SetUploadingDesc(final fetchMail _mail,final int _attachmentIdx,

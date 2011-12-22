@@ -688,6 +688,7 @@ public class connectDeamon extends Thread implements SendListener,
 	//@{ ViewListener
 	public void open(MessageEvent e){
 		m_mainApp.StopNotification();
+		m_mainApp.StopEmailFailedNotifaction();
 	}
 	
 	public void close(MessageEvent e){
@@ -699,6 +700,7 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 		
 		m_mainApp.StopNotification();
+		m_mainApp.StopEmailFailedNotifaction();
 	}
 	//@}
 	
@@ -1438,24 +1440,22 @@ public class connectDeamon extends Thread implements SendListener,
 			SendMailDeamon t_deamon = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
 			
 			if(t_deamon.m_sendMail.GetSendDate().getTime() == t_time){
+				
+				t_deamon.m_closeState = true;
+				t_deamon.inter();
 			
 				if(t_deamon.m_sendMail.GetAttachMessage() != null){
 					
 					if(t_succ){
-						m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_DELIVERED);
-						
+						t_deamon.sendSucc();
+												
 						// increase the send mail quantity
 						//
-						m_mainApp.SetSendMailNum(m_mainApp.GetSendMailNum() + 1);
-						
+						m_mainApp.SetSendMailNum(m_mainApp.GetSendMailNum() + 1);						
 					}else{
-						m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_ERROR);
+						t_deamon.sendError();
 					}
 				}
-				
-				t_deamon.m_closeState = true;
-				t_deamon.inter();
-							
 				
 				m_sendingMailAttachment.removeElement(t_deamon);
 				
