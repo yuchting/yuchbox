@@ -45,6 +45,8 @@ public class GlobalDialog extends Activity implements DialogInterface.OnCancelLi
 	// information prompt dialog
 	public final static int STYLE_INFO		= 0;
 	
+	public static boolean		sm_globalDlgShow = false; 
+	
 	
 	//Now edit this function
     protected Dialog onCreateDialog(int id) {
@@ -100,9 +102,17 @@ public class GlobalDialog extends Activity implements DialogInterface.OnCancelLi
 	
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        sm_globalDlgShow = true;
+        
         showDialog(this.getIntent().getExtras().getInt("dialog"));
     }
-
+	
+	protected void onDestroy(){
+		super.onDestroy();
+		
+		sm_globalDlgShow = false;
+	}
+	
 	@Override
 	public void onCancel(DialogInterface arg0) {
 		// THIS IS VERY IMPORTANT TO REMOVE THE ACTIVITY WHEN THE DIALOG IS DISMISSED
@@ -113,6 +123,11 @@ public class GlobalDialog extends Activity implements DialogInterface.OnCancelLi
 	// show info dialog
 	//
 	public static void showInfo(String _promptInfo,Context _ctx){
+		
+		if(sm_globalDlgShow){
+			return ;
+		}
+		
 		Intent myIntent = new Intent(_ctx, GlobalDialog.class);
 		
     	Bundle bundle = new Bundle();

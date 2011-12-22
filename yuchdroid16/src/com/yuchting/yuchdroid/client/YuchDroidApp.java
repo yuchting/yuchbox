@@ -123,6 +123,7 @@ public class YuchDroidApp extends Application {
 	public final static	int				YUCH_NOTIFICATION_MAIL			= 1;
 	public final static	int				YUCH_NOTIFICATION_MAIL_ATT		= 2;
 	public final static	int				YUCH_NOTIFICATION_MAIL_ATT_SEND	= 3;
+	public final static	int				YUCH_NOTIFICATION_MAIL_FAILED	= 4;
 		
 	private int m_mailNotificationNum		= 0;
 	
@@ -617,11 +618,6 @@ public class YuchDroidApp extends Application {
 		}		
 				
 		t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL, notification);
-		
-		// send broadcast
-		//
-		Intent intent = new Intent(YuchDroidApp.FILTER_RECV_MAIL);
-		sendBroadcast(intent);
 	}
 	
 	public void StopMailNotification(){
@@ -629,6 +625,49 @@ public class YuchDroidApp extends Application {
 		t_mgr.cancel(YUCH_NOTIFICATION_MAIL);
 		
 		m_mailNotificationNum = 0;
+	}
+	
+	public void triggerMailFailedNotification(fetchMail _mail){
+		
+		NotificationManager t_mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+		
+		int icon = R.drawable.ic_notification_mail_failed;        
+		
+		CharSequence tickerText = getString(R.string.mail_failed_notification_ticker);
+		CharSequence contentTitle = _mail.GetSubject(); 
+		CharSequence contentText = MailDbAdapter.getDisplayMailBody(_mail);
+
+		Intent notificationIntent = new Intent(Intent.ACTION_MAIN);
+		notificationIntent.setClass(this, HomeActivity.class);		
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
+				PendingIntent.FLAG_UPDATE_CURRENT | Notification.FLAG_ONLY_ALERT_ONCE | Notification.FLAG_AUTO_CANCEL);
+
+		// the next two lines initialize the Notification, using the configurations above
+		Notification notification = new Notification(icon, tickerText, System.currentTimeMillis());
+		notification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
+				
+		// sound & vibrate & LED 
+		//
+		if(m_config.isPromptTime()){
+			if(m_config.m_mailPrompt_sound.length() != 0){
+				notification.sound = Uri.parse(m_config.m_mailPrompt_sound);
+			}
+			if(m_config.m_mailPrompt_vibrate){
+				notification.defaults |= Notification.DEFAULT_VIBRATE;
+			}
+			
+			notification.ledARGB = 0xffff0000;
+			notification.ledOnMS = 300;
+			notification.ledOffMS = 5000;
+			notification.flags |= Notification.FLAG_SHOW_LIGHTS;
+		}		
+				
+		t_mgr.notify(YuchDroidApp.YUCH_NOTIFICATION_MAIL_FAILED, notification);
+	}
+	
+	public void stopMailFailedNotification(){
+		NotificationManager t_mgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+		t_mgr.cancel(YUCH_NOTIFICATION_MAIL_FAILED);		
 	}
 	
 	public void sendMail(fetchMail _mail,fetchMail _refMail,int _refStyle){

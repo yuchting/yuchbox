@@ -95,6 +95,7 @@
     <string name="mail_me_address">Me</string>
     <string name="mail_over_max_length_prompt">--YuchDroid Prompt\nMail content is over the max length</string>
     <string name="mail_notification_ticker">New Mail Coming!</string>
+    <string name="mail_failed_notification_ticker">Send Mail Failed!</string>
     <string name="mail_time_year">-</string>
     <string name="mail_time_month">-</string>
     <string name="mail_time_day"></string>
@@ -174,9 +175,9 @@
 	<string name="mail_pref_display_plain_text_when_html_sumOff">Auto display HTML part priority, does not display plain text</string>
 	<string name="mail_pref_prompt_category">Notification</string>
 	<string name="mail_pref_vibrate">Vibreate</string>
-	<string name="mail_pref_vibrate_sum">Vibreate when new mail comes</string>
+	<string name="mail_pref_vibrate_sum">Vibreate when new mail comes or send failed.</string>
 	<string name="mail_pref_sound">Sound</string>
-	<string name="mail_pref_sound_sum">Sound when new mail comes</string>
+	<string name="mail_pref_sound_sum">Sound when new mail comes or send failed.</string>
 	<string name="mail_pref_other_category">Other</string>
 	<string name="mail_pref_statistics">Mail Statistics</string>
 	<string name="mail_pref_statistics_send">Mail Send:</string>

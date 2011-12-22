@@ -134,6 +134,7 @@ public class HomeActivity extends ListActivity{
 		super.onResume();
 		
 		m_mainApp.StopMailNotification();
+		m_mainApp.stopMailFailedNotification();
 	}
 		
 	public void onDestroy(){

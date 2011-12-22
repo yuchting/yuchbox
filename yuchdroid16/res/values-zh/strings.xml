@@ -98,6 +98,7 @@
     <string name="mail_me_address">我</string>
     <string name="mail_over_max_length_prompt">--语盒提示\n邮件的长度超过最大设置长度。</string>
     <string name="mail_notification_ticker">新邮件到达！</string>
+	<string name="mail_failed_notification_ticker">发送邮件失败！</string>
     <string name="mail_time_year">年</string>
     <string name="mail_time_month">月</string>
     <string name="mail_time_day">日</string>
@@ -175,9 +176,9 @@
 	<string name="mail_pref_display_plain_text_when_html_sumOff">优先自动显示HTML部分，不显示纯文本信息</string>
 	<string name="mail_pref_prompt_category">提醒</string>
 	<string name="mail_pref_vibrate">震动</string>
-	<string name="mail_pref_vibrate_sum">新邮件到达时震动</string>
+	<string name="mail_pref_vibrate_sum">新邮件到达时（发送失败时）震动</string>
 	<string name="mail_pref_sound">提示音</string>
-	<string name="mail_pref_sound_sum">新邮件到达时候的提示音</string>
+	<string name="mail_pref_sound_sum">新邮件到达时（发送失败时）的提示音</string>
 	<string name="mail_pref_other_category">其他</string>
 	<string name="mail_pref_statistics">邮件统计</string>
 	<string name="mail_pref_statistics_send">发送：</string>

@@ -91,7 +91,7 @@ public class MailListAdapter extends BaseAdapter{
 
 			sm_monthDayHourFormat = new SimpleDateFormat("MM"+_ctx.getString(R.string.mail_time_month)+
 											"dd" + _ctx.getString(R.string.mail_time_day) +
-											" HH:mm");	
+											" HH:mm");
 		}
 		
 		sm_timeDate.setTime(System.currentTimeMillis());

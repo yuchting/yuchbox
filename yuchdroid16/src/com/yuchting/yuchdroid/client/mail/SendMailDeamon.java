@@ -144,6 +144,10 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 		m_connect.m_mainApp.m_dba.setMailGroupFlag(m_sendMail.getDbIndex(), m_sendMail.getGroupIndex(), _flag);
 		
 		m_connect.m_mainApp.sendBroadcastUpdateFlag(m_sendMail,false);
+		
+		// trigger the failed notification
+		//
+		m_connect.m_mainApp.triggerMailFailedNotification(m_sendMail);
 	}
 		
 	public void run(){		

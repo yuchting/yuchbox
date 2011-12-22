@@ -1306,6 +1306,11 @@ public class ConnectDeamon extends Service implements Runnable{
 			m_mainApp.setErrorString("" + t_hashcode + ":" + t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime());
 									
 			m_mainApp.TriggerMailNotification(t_mail);
+			
+			// send broadcast
+			//
+			Intent intent = new Intent(YuchDroidApp.FILTER_RECV_MAIL);
+			sendBroadcast(intent);
 							
 		}catch(Exception _e){
 			m_mainApp.setErrorString("C ",_e);
