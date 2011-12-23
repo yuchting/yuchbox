@@ -665,6 +665,25 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		case 'F':
 			m_searchRosterMenu.run();
 			return true;
+		case Keypad.KEY_BACKSPACE:
+			
+			if(m_currMgr == m_statusListMgr){
+				
+				m_delStatusMenu.run();
+				
+			}else if(m_currFocusRosterItemField != null){
+				
+				if(m_currMgr == m_rosterListMgr){
+					m_delRosterMenu.run();
+				}else if(m_currMgr == m_historyChatMgr){
+					m_delHistoryRoster.run();
+				}
+				
+				return true;
+			}
+			
+			break;
+			
 		}
 		
 		if(key == 10 && click()){

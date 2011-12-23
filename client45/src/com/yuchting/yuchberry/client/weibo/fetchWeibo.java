@@ -102,9 +102,7 @@ public class fetchWeibo {
 	boolean 	m_hasLocationInfo		= false;
 	GPSInfo		m_gpsInfo = new GPSInfo();
 		
-	public fetchWeibo(){
-		
-	}
+	public fetchWeibo(){}
 	
 	public boolean equals(fetchWeibo _weibo){
 		
@@ -363,7 +361,7 @@ public class fetchWeibo {
 		
 		return t_content.toString();
 	}
-	
+		
 	public String getShareEmailSubject(){
 		return recvMain.sm_local.getString(yblocalResource.WEIBO_EMAIL_SHARE) + getLocalStyleName();
 	}

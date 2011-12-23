@@ -221,9 +221,14 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 			 m_mainApp.m_autoLoadNewTimelineWeibo = m_autoLoadNewTimelineWeibo.getChecked();
 			 
 			 m_mainApp.m_spaceDownWeiboShortcutKey  = m_spaceDown.isSelected();
-			 
 			
 			 recvMain.sm_standardUI = m_uiStandard.isSelected();
+			 
+			 // don't display headimage if simple mode
+			 //
+			 if(recvMain.sm_simpleMode){
+				 recvMain.sm_displayHeadImage = false; 
+			 }
 			
 			 m_mainApp.WriteReadIni(false);
 		 }

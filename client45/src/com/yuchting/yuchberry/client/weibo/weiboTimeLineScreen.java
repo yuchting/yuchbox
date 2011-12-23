@@ -30,6 +30,10 @@ package com.yuchting.yuchberry.client.weibo;
 import java.io.ByteArrayOutputStream;
 import java.util.Vector;
 
+import javax.microedition.io.Connector;
+import javax.wireless.messaging.MessageConnection;
+import javax.wireless.messaging.TextMessage;
+
 import local.yblocalResource;
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.blackberry.api.invoke.MessageArguments;
@@ -836,6 +840,20 @@ public class weiboTimeLineScreen extends MainScreen{
         }
     };
     
+    public WeiboShareSMSDlg m_smsShareDlg = null;
+    MenuItem m_smsItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_SMS_MENU_LABEL),m_menuIndex_op++,0){
+        public void run() {
+        	if(m_currMgr.getCurrSelectedItem() != null 
+        	&& m_currMgr.getCurrSelectedItem().m_weibo != null){
+        		
+        		fetchWeibo t_weibo = m_currMgr.getCurrSelectedItem().m_weibo;
+
+				m_smsShareDlg = new WeiboShareSMSDlg(weiboTimeLineScreen.this, t_weibo);
+				m_mainApp.pushScreen(m_smsShareDlg);
+        	}
+        }
+    };
+    
     public WeiboOptionScreen m_optionScreen = null;
     MenuItem m_optionItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_MENU_LABEL),98,0){
     	public void run() {
@@ -933,7 +951,8 @@ public class weiboTimeLineScreen extends MainScreen{
 				_menu.add(m_deleteItem);
 			}
 			
-			_menu.add(m_emailItem);			
+			_menu.add(m_emailItem);
+			_menu.add(m_smsItem);
 		}
 		
 		_menu.add(MenuItem.separator(50));

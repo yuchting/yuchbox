@@ -338,10 +338,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	FileConnection m_logfc				= null;
 	OutputStream	m_logfcOutput		= null;
-	
-	// is offical server
-	public boolean		m_isOfficalSvr	= true;
-			
+				
 	public static void main(String[] args) {
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());
 		t_theApp.enterEventDispatcher();
@@ -824,22 +821,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	public int GetPulseIntervalMinutes(){
 		return fsm_pulseInterval[m_pulseIntervalIndex];
-	}
-	
-	Thread m_checkOfficalSvrThread = null;
-	public void checkOfficalSvr(){
-		if(m_checkOfficalSvrThread != null){
-			return ;
-		}
-		
-		synchronized (this) {
-			m_checkOfficalSvrThread = new Thread(){
-				public void run(){
-					
-				}
-			};
-		}
-		
 	}
 	
 	
@@ -1511,6 +1492,10 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				&& PhizSelectedScreen.sm_phizScreen != null){
 						
 				PhizSelectedScreen.sm_phizScreen.close();
+				
+			}else if(m_shareScreen != null
+				&& getActiveScreen() == m_shareScreen){
+				m_shareScreen.close();
 			}
 			
 			if(m_weiboTimeLineScreen != null ){
@@ -1527,8 +1512,14 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 					
 					m_weiboTimeLineScreen.m_optionScreen.close();
 					
-				}else if(getActiveScreen() == m_weiboTimeLineScreen){
+				}else if(m_weiboTimeLineScreen.m_smsShareDlg != null 
+					&& (getActiveScreen() == m_weiboTimeLineScreen.m_smsShareDlg 
+						|| getActiveScreen() == m_weiboTimeLineScreen.m_smsShareDlg.m_sendingDlg)){
 					
+					m_weiboTimeLineScreen.m_smsShareDlg.close();
+				}
+				
+				if(getActiveScreen() == m_weiboTimeLineScreen){
 					popScreen(m_weiboTimeLineScreen);
 				}
 				
@@ -1568,8 +1559,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 						m_mainIMScreen.m_addRosterDlg,
 						m_mainIMScreen.m_searchStatus,
 						m_mainIMScreen.m_checkRosterInfoScreen,
-						m_mainIMScreen.m_aliasDlg,
-						
+						m_mainIMScreen.m_aliasDlg,						
 					};
 					
 					
@@ -2024,6 +2014,10 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		if(m_debugInfoScreen != null){
 			m_debugInfoScreen.RefreshText();
 		}			
+	}
+	
+	public void SetErrorString(String _label,Exception e){
+		SetErrorString(_label + " " + e.getMessage() + " " + e.getClass().getName());
 	}
 	
 	public synchronized String GetAllErrorString(){

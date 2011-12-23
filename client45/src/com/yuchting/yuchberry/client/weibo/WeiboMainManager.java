@@ -836,7 +836,6 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				}
 				
 			}else{
-				
 				t_text = m_forwardText;
 			}			
 			
