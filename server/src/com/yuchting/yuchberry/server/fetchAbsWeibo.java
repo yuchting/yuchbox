@@ -496,6 +496,16 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		}catch(Exception e){}
 	}
 	
+	static byte[] sm_followOkPrompt_zh = null;
+	static {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgWeiboPrompt);
+		try{
+			sendReceive.WriteString(os,"成功关注此人！",false);
+			sm_followOkPrompt_zh = os.toByteArray();
+		}catch(Exception e){}
+	}
+	
 	static byte[] sm_updateOkPrompt = null;
 	static {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -506,7 +516,32 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		}catch(Exception e){}
 	}
 	
+	static byte[] sm_updateOkPrompt_zh = null;
+	static {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgWeiboPrompt);
+		try{
+			sendReceive.WriteString(os,"发布Weibo成功！",false);
+			sm_updateOkPrompt_zh = os.toByteArray();
+		}catch(Exception e){}
+	}	
 	
+	
+	private byte[] getUpdateOKData(){
+		if(m_mainMgr.GetClientLanguage() == fetchMgr.CLIENT_LANG_ZH_S){
+			return sm_updateOkPrompt_zh;
+		}else{
+			return sm_updateOkPrompt;
+		}
+	}
+	
+	private byte[] getFollowOKData(){
+		if(m_mainMgr.GetClientLanguage() == fetchMgr.CLIENT_LANG_ZH_S){
+			return sm_followOkPrompt_zh;
+		}else{
+			return sm_followOkPrompt;
+		}
+	}
 	
 	protected boolean ProcessWeiboDelete(ByteArrayInputStream in)throws Exception{
 		int t_style = in.read();
@@ -612,7 +647,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					m_mainMgr.m_logger.LogOut(GetAccountName() + " update new weibo with file:"+ t_fileBuffer.length +"B type:"+t_fileType);
 				}				
 				
-				m_mainMgr.SendData(sm_updateOkPrompt, false);
+				
+				m_mainMgr.SendData(getUpdateOKData(), false);
 				
 				ProcessWeiboRefresh();
 				
@@ -665,7 +701,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 						UpdateReply(t_text,t_commentWeiboId,t_orgWeiboId,t_gpsInfo,t_updateTimeline);
 					}
 					
-					m_mainMgr.SendData(sm_updateOkPrompt, false);
+					m_mainMgr.SendData(getUpdateOKData(), false);
 					
 					if(t_updateTimeline){
 						ProcessWeiboRefresh();
@@ -700,7 +736,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					
 					sendDirectMsg(t_screenName,t_text);				
 					
-					m_mainMgr.SendData(sm_updateOkPrompt, false);
+					m_mainMgr.SendData(getUpdateOKData(), false);
 					
 					ProcessWeiboRefresh();
 					
@@ -893,7 +929,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			try{
 				
 				FollowUser(t_id);
-				m_mainMgr.SendData(sm_followOkPrompt, false);
+				m_mainMgr.SendData(getFollowOKData(), false);
 				
 			}catch(Exception e){
 				m_mainMgr.m_logger.PrinterException(e);

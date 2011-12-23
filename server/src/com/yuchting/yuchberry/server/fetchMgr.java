@@ -69,6 +69,10 @@ import twitter4j.internal.org.json.JSONObject;
 public class fetchMgr{
 		
 	public final static String	fsm_configFilename 			= "config.xml";
+	
+	public final static int		CLIENT_LANG_ZH_S = 0;
+	public final static int		CLIENT_LANG_ZH_T = 1;	
+	public final static int		CLIENT_LANG_EN = 2;
 				
 	Logger	m_logger					= null;
 	

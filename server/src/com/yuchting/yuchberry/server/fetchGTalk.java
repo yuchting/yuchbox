@@ -1086,10 +1086,10 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 
 				StringBuffer ret = new StringBuffer();
 				switch (m_mainMgr.GetClientLanguage()) {
-				case 0:
+				case fetchMgr.CLIENT_LANG_ZH_S:
 					ret.append("添加好友 ").append(t_name).append(" ").append(t_addr).append("成功！请等待他人同意之后自动刷新好友列表。");
 					break;
-				case 1:
+				case fetchMgr.CLIENT_LANG_ZH_T:
 					ret.append("添加好友 ").append(t_name).append(" ").append(t_addr).append("成功！請等待他人同意之後自動刷新好友列表。");
 					break;
 				default:

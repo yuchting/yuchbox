@@ -224,7 +224,7 @@ class RecvMailAttach{
 		String t_receiver;
 		
 		switch (m_fetchMgr.GetClientLanguage()) {
-			case 0:
+			case fetchMgr.CLIENT_LANG_ZH_S:
 				t_originalMsgLine	= "\n\n-- 原始邮件 --\n";
 				t_forwordMsgLine	= "\n\n-- 已转发邮件 --\n";
 				t_forwordErrorMsg	= "！！！读取转发消息出现异常！！！";
@@ -234,7 +234,7 @@ class RecvMailAttach{
 				t_subject			= "主题：";
 				t_receiver			= "收件人：";
 				break;
-			case 1:
+			case fetchMgr.CLIENT_LANG_ZH_T:
 				t_originalMsgLine	= "\n\n-- 原始郵件 --\n";
 				t_forwordMsgLine	= "\n\n-- 已轉發郵件 --\n";
 				t_forwordErrorMsg	= "！！！讀取轉發消息出現異常！！！";
@@ -673,10 +673,10 @@ public class fetchEmail extends fetchAccount{
 	 		    				
 		 		    			String t_prompt = null;
 		 		    			switch (m_mainMgr.GetClientLanguage()) {
-				 		   		case 0:
+				 		   		case fetchMgr.CLIENT_LANG_ZH_S:
 				 		   			t_prompt = "\nYuchBerry服务器提示：由于网络，格式等问题，读取这封邮件的时候出现了错误，需要通过其它方式查看。\n\n\n"; 
 				 		   			break;
-				 		   		case 1:
+				 		   		case fetchMgr.CLIENT_LANG_ZH_T:
 				 		   			t_prompt = "\nYuchBerry服务器提示：由於網絡，格式等問題，讀取這封郵件的時候出現了錯誤，需要通過其他方式查看。\n\n\n";
 				 		   			break;
 				 		   		default:
@@ -880,10 +880,10 @@ public class fetchEmail extends fetchAccount{
 					m_mainMgr.m_logger.LogOut("Set signature OK!");
 					
 					switch(m_mainMgr.GetClientLanguage()){
-					case 0:
+					case fetchMgr.CLIENT_LANG_ZH_S:
 						t_mail.SetContain("YuchBerry 提示：完成设置签名！"+(t_overMaxlength?("超过最大长度:" + t_maxSignatureLength):"")+"\n\n" + t_mail.GetContain());
 						break;
-					case 1:
+					case fetchMgr.CLIENT_LANG_ZH_T:
 						t_mail.SetContain("YuchBerry 提示: 完成設置簽名！"+(t_overMaxlength?("超過最大長度:" + t_maxSignatureLength):"")+"\n\n" + t_mail.GetContain());
 						break;
 					default:
@@ -1834,10 +1834,10 @@ public class fetchEmail extends fetchAccount{
 		    		String t_prompt = "\n\n--following converting HTML part--\n\n";
 		    		
 		    		switch (m_mainMgr.GetClientLanguage()) {
-						case 0:
+						case fetchMgr.CLIENT_LANG_ZH_S:
 							t_prompt	= "\n\n--以下为 HTML 转换部分--\n\n";							
 							break;
-						case 1:
+						case fetchMgr.CLIENT_LANG_ZH_T:
 							t_prompt	= "\n\n--以下為 HTML 轉換部分--\n\n";
 							break;
 						
