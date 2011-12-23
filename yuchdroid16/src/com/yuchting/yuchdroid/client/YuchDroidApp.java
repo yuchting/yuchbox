@@ -147,7 +147,7 @@ public class YuchDroidApp extends Application {
 	public fetchMail		m_composeRefMail;
 	public fetchMail		m_composeStyleRefMail;
 	
-	public boolean			m_isOfficalHost		= true;
+	public boolean			m_isOfficalHost		= false;
 		
 	@Override
 	public void onCreate (){

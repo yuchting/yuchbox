@@ -62,10 +62,12 @@
         	
         <activity android:name=".mail.MailPrefActivity"
         	android:label="@string/mail_pref_title"/>
-        	
+        
+        <!-- please use API-LEVEL 13 (android 3.2)  
         <activity android:name="com.google.ads.AdActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/>
-        	
+        -->
+         
         <receiver android:name=".BootConnectRecv">  
 		    <intent-filter>  
 		        <action android:name="android.intent.action.BOOT_COMPLETED" />  

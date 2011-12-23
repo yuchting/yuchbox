@@ -6,6 +6,7 @@
 	android:layout_height="fill_parent"
 	android:background="#FFF">
 	
+    <!-- ad....
     <com.google.ads.AdView
 		xmlns:ads="http://schemas.android.com/apk/lib/com.google.ads"
 		android:id="@+id/mail_compose_ads"
@@ -14,7 +15,8 @@
 		ads:adSize="BANNER"
 		ads:adUnitId="a14ee199e02a4e1"
 		ads:loadAdOnCreate="false"/>
-    
+     -->
+     
   	<ScrollView 
   		android:layout_width="fill_parent"
   		android:layout_height="fill_parent"

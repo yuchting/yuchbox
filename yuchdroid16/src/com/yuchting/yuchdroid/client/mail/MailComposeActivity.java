@@ -71,8 +71,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemSelectedListener;
 
-import com.google.ads.AdRequest;
-import com.google.ads.AdView;
 import com.yuchting.yuchdroid.client.ConnectDeamon;
 import com.yuchting.yuchdroid.client.GlobalDialog;
 import com.yuchting.yuchdroid.client.R;
@@ -92,9 +90,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	
 	EditText	m_subject			= null;
 	EditText	m_body				= null;
-	
-	AdView		m_adsView			= null;
-	
+		
 	TextView	m_discardRefView	= null;
 	
 	ViewGroup	m_attachmentParent	= null;
@@ -133,8 +129,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		m_body.setTextSize(TypedValue.COMPLEX_UNIT_DIP, m_mainApp.m_config.getMailFontSize());
 		
 		m_mainView 	= (LinearLayout)findViewById(R.id.mail_compose_main_view);
-		m_adsView	= (AdView)findViewById(R.id.mail_compose_ads);
-				
+						
 		m_discardRefView = (TextView)findViewById(R.id.mail_compose_ref_label);
 		m_discardRefView.setOnClickListener(this);		
 		
@@ -174,7 +169,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		m_modified = false;
 		m_saveBtn.setEnabled(false);
 		
-		processAds();		
+//		processAds();		
 	}
 	
 	private void prepareData(){
@@ -865,20 +860,21 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		m_bcc.setVisibility(View.VISIBLE);
 	}
 	
-	private void processAds(){
-		if(m_mainApp.m_isOfficalHost){
-			m_adsView.setVisibility(View.GONE);
-		}else{
-			
-			AdRequest t_request = new AdRequest();
-			if(m_referenceMail != null){
-				String t_subject = MailDbAdapter.groupSubject(m_referenceMail.m_mail.GetSubject());
-				t_request.addKeyword(t_subject);
-			}
-			
-			m_adsView.loadAd(t_request);
-		}
-	}
+//	private void processAds(){
+//		AdView t_adsView	= (AdView)findViewById(R.id.mail_compose_ads);
+//		if(m_mainApp.m_isOfficalHost){
+//			t_adsView.setVisibility(View.GONE);
+//		}else{
+//			
+//			AdRequest t_request = new AdRequest();
+//			if(m_referenceMail != null){
+//				String t_subject = MailDbAdapter.groupSubject(m_referenceMail.m_mail.GetSubject());
+//				t_request.addKeyword(t_subject);
+//			}
+//			
+//			t_adsView(t_request);
+//		}
+//	}
 	
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
