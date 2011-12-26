@@ -139,7 +139,7 @@ public class Yuchdroid16Activity extends Activity {
     	m_connectBut.setOnClickListener(new OnClickListener() {  
             public void onClick(View arg0){
             	clickConnectBtn();
-            	m_mainApp.checkOfficalHost();
+            	//m_mainApp.checkOfficalHost();
             }
         });
         
