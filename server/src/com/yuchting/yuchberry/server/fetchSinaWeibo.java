@@ -28,7 +28,6 @@
 package com.yuchting.yuchberry.server;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.util.List;
 import java.util.Vector;
 
@@ -329,6 +328,10 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 
 	protected void FollowUser(String _screenName)throws Exception{
 		m_weibo.createFriendship(_screenName);
+	}
+	
+	protected void UnfollowUser(String _screenName)throws Exception{
+		m_weibo.destroyFriendship(_screenName);
 	}
 	
 	protected void DeleteWeibo(long _id,boolean _isComment)throws Exception{

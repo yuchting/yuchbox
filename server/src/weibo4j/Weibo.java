@@ -2247,7 +2247,8 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
      * @throws WeiboException
      */
     public User createFriendship(String screenName) throws WeiboException {
-    	return new User(http.post(getBaseURL() + "friendships/create.json", new PostParameter[]{new PostParameter("screen_name",screenName)}, true).asJSONObject());
+    	return new User(http.post(getBaseURL() + "friendships/create.json", new PostParameter[]{
+    				new PostParameter("screen_name",screenName)}, true).asJSONObject());
     }
 
     /**
@@ -2293,9 +2294,11 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
      * @since Weibo4J 1.1220
      * @see <a href="http://open.t.sina.com.cn/wiki/index.php/Friendships/destroy">friendships/destroy </a>
      */
-    public User destroyFriendship(String id) throws WeiboException {
+    public User destroyFriendship(String screenName) throws WeiboException {
 //        return new User(http.post(getBaseURL() + "friendships/destroy/" + id + ".xml", new PostParameter[0], true), this);
-    	 return new User(http.post(getBaseURL() + "friendships/destroy/" + id + ".json", new PostParameter[0], true).asJSONObject());
+    	return new User(http.post(getBaseURL() + "friendships/destroy.json", new PostParameter[]{
+			new PostParameter("screen_name",screenName)}, true).asJSONObject());
+    	
     }
 
     /**

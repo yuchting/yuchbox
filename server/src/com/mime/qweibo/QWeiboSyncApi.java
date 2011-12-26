@@ -28,6 +28,7 @@ public class QWeiboSyncApi {
 	final static String fsm_publishCommentURL			= "http://open.t.qq.com/api/t/comment";
 	
 	final static String fsm_followUserURL				= "http://open.t.qq.com/api/friends/add";
+	final static String fsm_unfollowUserURL			= "http://open.t.qq.com/api/friends/del";
 	
 	final static String fsm_directMessageInboxURL		= "http://open.t.qq.com/api/private/recv";
 	final static String fsm_directMessageOutboxURL		= "http://open.t.qq.com/api/private/send";
@@ -447,6 +448,18 @@ public class QWeiboSyncApi {
 		
 		if(t_ret.getInt("ret") != 0){
 			throw new Exception("followUser failed:" + t_ret.getString("msg"));
+		}
+	}
+	
+	public void unfollowUser(String _name)throws Exception{
+		m_parameters.clear();
+		m_parameters.add(new QParameter("format", "json"));
+		m_parameters.add(new QParameter("name",_name));
+		
+		JSONObject t_ret = new JSONObject(m_request.syncRequest(fsm_unfollowUserURL, "POST", m_oauthKey, m_parameters, null));
+		
+		if(t_ret.getInt("ret") != 0){
+			throw new Exception("unfollowUser failed:" + t_ret.getString("msg"));
 		}
 	}
 	

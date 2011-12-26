@@ -447,6 +447,9 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			case msg_head.msgWeiboUser:
 				t_processed = ProcessWeiboUser(in);
 				break;
+			case msg_head.msgWeiboUnfollowUser :
+				t_processed = ProcessWeiboUnfollowUser(in);
+				break;
 		}
 		
 		return t_processed;
@@ -506,6 +509,26 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		}catch(Exception e){}
 	}
 	
+	static byte[] sm_unfollowOkPrompt = null;
+	static {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgWeiboPrompt);
+		try{
+			sendReceive.WriteString(os,"unfollow user OK!",false);
+			sm_unfollowOkPrompt = os.toByteArray();
+		}catch(Exception e){}
+	}
+	
+	static byte[] sm_unfollowOkPrompt_zh = null;
+	static {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgWeiboPrompt);
+		try{
+			sendReceive.WriteString(os,"成功取消关注此人！",false);
+			sm_unfollowOkPrompt_zh = os.toByteArray();
+		}catch(Exception e){}
+	}
+	
 	static byte[] sm_updateOkPrompt = null;
 	static {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -540,6 +563,14 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			return sm_followOkPrompt_zh;
 		}else{
 			return sm_followOkPrompt;
+		}
+	}
+	
+	private byte[] getUnfollowOKData(){
+		if(m_mainMgr.GetClientLanguage() == fetchMgr.CLIENT_LANG_ZH_S){
+			return sm_unfollowOkPrompt_zh;
+		}else{
+			return sm_unfollowOkPrompt;
 		}
 	}
 	
@@ -782,6 +813,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	
 	protected abstract void FavoriteWeibo(long _id)throws Exception;
 	protected abstract void FollowUser(String _screenName)throws Exception;
+	protected abstract void UnfollowUser(String _screenName)throws Exception;
 	protected abstract void DeleteWeibo(long _id,boolean _isComment)throws Exception;
 	protected abstract void sendDirectMsg(String _screenName,String _text)throws Exception;
 	
@@ -930,6 +962,43 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				
 				FollowUser(t_id);
 				m_mainMgr.SendData(getFollowOKData(), false);
+				
+			}catch(Exception e){
+				m_mainMgr.m_logger.PrinterException(e);
+			}			
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
+	protected boolean ProcessWeiboUnfollowUser(ByteArrayInputStream in)throws Exception{
+		
+		int t_style = in.read();
+		if(t_style == GetCurrWeiboStyle()){
+			
+			String t_id = null;
+			
+			if(m_mainMgr.GetConnectClientVersion() >= 10){
+				
+				t_id = sendReceive.ReadString(in);
+				
+			}else{
+
+				if(t_style == fetchWeibo.QQ_WEIBO_STYLE){
+					t_id = sendReceive.ReadString(in);
+				}else{
+					t_id = Long.toString(sendReceive.ReadLong(in));
+				}	
+			}
+
+			m_mainMgr.m_logger.LogOut(GetAccountName() + " Unfollow User " + t_id);
+			
+			try{
+				
+				UnfollowUser(t_id);
+				m_mainMgr.SendData(getUnfollowOKData(), false);
 				
 			}catch(Exception e){
 				m_mainMgr.m_logger.PrinterException(e);

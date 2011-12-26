@@ -28,7 +28,6 @@
 package com.yuchting.yuchberry.server;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.util.List;
 
 import org.dom4j.Element;
@@ -249,6 +248,10 @@ public class fetchTWeibo extends fetchAbsWeibo{
 
 	protected void FollowUser(String _screenName)throws Exception{
 		m_twitter.createFriendship(_screenName);
+	}
+	
+	protected void UnfollowUser(String _screenName)throws Exception{
+		m_twitter.destroyFriendship(_screenName);
 	}
 	
 	protected void DeleteWeibo(long _id,boolean _isComment)throws Exception{

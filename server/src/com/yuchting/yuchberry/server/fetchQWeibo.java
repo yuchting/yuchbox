@@ -287,6 +287,10 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		m_api.followUser(_screenName);
 	}
 	
+	protected void UnfollowUser(String _screenName)throws Exception{
+		m_api.unfollowUser(_screenName);
+	}
+	
 	protected fetchWeiboUser getWeiboUser(String _name)throws Exception{
 		QUser t_user = m_api.getUserInfo(_name);
 		
