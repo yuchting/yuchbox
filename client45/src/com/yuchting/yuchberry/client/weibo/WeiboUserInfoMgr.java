@@ -38,6 +38,7 @@ import net.rim.device.api.ui.component.TextField;
 
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
+import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 
 
@@ -111,11 +112,17 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 				recvMain.sm_weiboUIImage.drawImage(
 						_g,weiboTimeLineScreen.GetWeiboSign(m_weiboUser.getStyle()),t_start_x, t_start_y);
 
+				int t_gender_y = WeiboItemField.fsm_weiboSignImageSize + t_start_y + ft_interval;
+				
 				if(m_weiboUser.isVerified()){
-					recvMain.sm_weiboUIImage.drawImage(
-							_g,weiboTimeLineScreen.GetVIPSignBitmap(m_weiboUser.getStyle()),
+					ImageUnit t_vipSign = weiboTimeLineScreen.GetVIPSignBitmap(m_weiboUser.getStyle());
+					recvMain.sm_weiboUIImage.drawImage(_g,t_vipSign,
 							t_start_x,WeiboItemField.fsm_weiboSignImageSize + t_start_y + ft_interval);
+					
+					t_gender_y += t_vipSign.getHeight() ;
 				}
+				
+				recvMain.sm_weiboUIImage.drawImage(_g,weiboTimeLineScreen.GetGenderImage(m_weiboUser.getGender()),t_start_x,t_gender_y);
 				
 				t_start_x += WeiboItemField.fsm_weiboSignImageSize + ft_interval;
 				
@@ -153,7 +160,7 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 				// description
 				//
 				t_start_x = 3;
-				t_start_y += WeiboItemField.sm_fontHeight + ft_interval;
+				t_start_y += WeiboItemField.sm_fontHeight + ft_interval * 2;
 				m_descText.setText(m_weiboUser.getDesc());
 				
 				int t_desc_width = recvMain.fsm_display_width - ft_interval * 2;
@@ -216,6 +223,7 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 				_g.setColor(t_color);
 			}
 		}
+
 	}
 	
 	DescTextField		m_descText = new DescTextField();

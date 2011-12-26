@@ -35,7 +35,7 @@ import com.yuchting.yuchberry.client.sendReceive;
 
 public class fetchWeiboUser {
 	
-	public final static int VERSION = 0;
+	public final static int VERSION = 1;
 	
 	byte m_weiboUserStyle = fetchWeibo.SINA_WEIBO_STYLE;
 	byte m_gender = 0;
@@ -55,10 +55,10 @@ public class fetchWeiboUser {
 	int m_fansNum = 0;
 	
 	int m_weiboNum = 0;	
-	
+		
 	byte[] m_headImage = null;
 	Vector	m_updateWeibo = new Vector();
-	
+		
 	public long getId(){return m_id;}
 	public void setId(long _id){m_id = _id;}
 	
@@ -126,7 +126,7 @@ public class fetchWeiboUser {
 		m_followNum			= sendReceive.ReadInt(in);
 		m_fansNum			= sendReceive.ReadInt(in);
 		m_weiboNum			= sendReceive.ReadInt(in);
-		
+			
 		int t_appendWeiboNum = sendReceive.ReadInt(in);
 		for(int i = 0;i < t_appendWeiboNum;i++){
 			fetchWeibo t_weibo = new fetchWeibo();
@@ -164,6 +164,7 @@ public class fetchWeiboUser {
 		sendReceive.WriteInt(os,m_followNum);
 		sendReceive.WriteInt(os,m_fansNum);
 		sendReceive.WriteInt(os,m_weiboNum);
+		
 		
 		sendReceive.WriteInt(os,m_updateWeibo.size());
 		for(int i = 0;i < m_updateWeibo.size();i++){

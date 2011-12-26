@@ -102,6 +102,18 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 		}
 	};
+	
+	public WeiboUserMenu m_userUnfollowMenu = new WeiboUserMenu(yblocalResource.WEIBO_UNFOLLOW_USER_MENU_LABEL,5,9){
+		public void run(){
+	
+			if(Dialog.ask(Dialog.D_YES_NO,recvMain.sm_local.getString(yblocalResource.WEIBO_UNFOLLOW_USER_PROMPT),Dialog.NO) != Dialog.YES){
+				return;
+			}
+			
+			unfollowUser(m_userName);
+		}
+	};
+	
 	public static recvMain				sm_mainApp = (recvMain)UiApplication.getUiApplication();
 	
 	public ImageSets					m_weiboUIImage = null;
@@ -1036,6 +1048,29 @@ public class weiboTimeLineScreen extends MainScreen{
 			}
 		}
 	}
+    
+    public void unfollowUser(String _screenName){
+		
+    	WeiboItemField t_field = m_currMgr.getCurrExtendedItem();
+    	
+		if(t_field != null && _screenName.length() != 0){
+			
+			try{
+				
+				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+				t_os.write(msg_head.msgWeiboUnfollowUser);
+				t_os.write(t_field.m_weibo.GetWeiboStyle());
+
+				sendReceive.WriteString(t_os,_screenName);
+				
+				weiboTimeLineScreen.sm_mainApp.m_connectDeamon.addSendingData(
+						msg_head.msgWeiboUnfollowUser, t_os.toByteArray(),true);
+				
+			}catch(Exception e){
+				weiboTimeLineScreen.sm_mainApp.SetErrorString("UFCU:" + e.getMessage() + e.getClass().getName());
+			}
+		}
+	}
 
     
     public void displayWeiboUser(final fetchWeiboUser _user){
@@ -1301,6 +1336,19 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 	
 		return sm_VIPSign[_weiboStyle];		
+	}
+	
+	private static ImageUnit sm_weiboMaleImage = null;
+	private static ImageUnit sm_weiboFemaleImage = null;
+	
+	static public ImageUnit GetGenderImage(int _gender){
+		
+		if(sm_weiboMaleImage == null){
+			sm_weiboMaleImage		= recvMain.sm_weiboUIImage.getImageUnit("male");
+			sm_weiboFemaleImage		= recvMain.sm_weiboUIImage.getImageUnit("female");
+		}
+	
+		return _gender == 0?sm_weiboMaleImage:sm_weiboFemaleImage;		
 	}
 		
 	private static ImageUnit sm_weiboPicSignImage = null;

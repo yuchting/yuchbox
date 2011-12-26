@@ -73,8 +73,7 @@ class WeiboUserFindActiveFieldCookie implements ActiveFieldCookie
      * This is an abstract method for the ActiveFieldCookie and must be implemented.
      * @return always return false.
      */
-    public boolean invokeApplicationKeyVerb()
-    {
+    public boolean invokeApplicationKeyVerb(){
         return false;
     }
 
@@ -85,6 +84,10 @@ class WeiboUserFindActiveFieldCookie implements ActiveFieldCookie
      */
     public MenuItem getFocusVerbs(CookieProvider provider, Object context, Vector items)
     {
+    	if(WeiboUserFindFactory.sm_mainScreen == null){
+    		return null;
+    	}
+    	
     	WeiboItemField t_extendedItem = WeiboUserFindFactory.sm_mainScreen.m_currMgr.getCurrExtendedItem();
     	
     	WeiboUserFindFactory.sm_mainScreen.m_userGetInfoMenu.setUserName(m_userName);
@@ -97,7 +100,7 @@ class WeiboUserFindActiveFieldCookie implements ActiveFieldCookie
             
             if(!t_extendedItem.m_weibo.GetUserScreenName().equals(m_userName) || !t_extendedItem.m_weibo.IsOwnWeibo()){
             	WeiboUserFindFactory.sm_mainScreen.m_userSendMessageMenu.setUserName(m_userName);    	
-                items.addElement( WeiboUserFindFactory.sm_mainScreen.m_userSendMessageMenu);	
+                items.addElement( WeiboUserFindFactory.sm_mainScreen.m_userSendMessageMenu);
             }
             
             if(!t_extendedItem.m_weibo.GetUserScreenName().equals(m_userName) 
@@ -105,6 +108,13 @@ class WeiboUserFindActiveFieldCookie implements ActiveFieldCookie
             	
             	WeiboUserFindFactory.sm_mainScreen.m_userFollowMenu.setUserName(m_userName);
                 items.addElement( WeiboUserFindFactory.sm_mainScreen.m_userFollowMenu );
+            }
+            
+            if(t_extendedItem.m_weibo.GetUserScreenName().equals(m_userName)
+            && t_extendedItem.m_weibo.GetWeiboClass() == fetchWeibo.TIMELINE_CLASS
+            && !t_extendedItem.m_weibo.IsOwnWeibo()){
+                WeiboUserFindFactory.sm_mainScreen.m_userUnfollowMenu.setUserName(m_userName);
+                items.addElement( WeiboUserFindFactory.sm_mainScreen.m_userUnfollowMenu);
             }
             
     	}            
@@ -182,17 +192,38 @@ public class WeiboUserFindFactory implements Factory
 	public final static long		fsm_pattern_instance_id = 217827014192L;
 	
 	public static weiboTimeLineScreen	sm_mainScreen;
+	
+	class FactoryInst{
+		boolean m_init = false;
+		
+		public void init(){
+			if(!m_init){
+				m_init = true;
+								
+	            RuntimeStore.getRuntimeStore().put( fsm_pattern_factory_id, WeiboUserFindFactory.this );
+	            
+				WeiboUserFind pattern = new WeiboUserFind();
+	    		StringPatternRepository.addPattern( pattern );
+			}
+		}
+	}
 			
     public WeiboUserFindFactory(weiboTimeLineScreen _mainScreen){
     	
     	sm_mainScreen = _mainScreen;
+
+    	FactoryInst t_factory = (FactoryInst)RuntimeStore.getRuntimeStore().get(fsm_pattern_instance_id);
     	
-    	if(RuntimeStore.getRuntimeStore().get(fsm_pattern_factory_id) == null){
-    		RuntimeStore.getRuntimeStore().put( fsm_pattern_factory_id, this);
+    	if(t_factory == null){
+    		t_factory = new FactoryInst();
+    		RuntimeStore.getRuntimeStore().put( fsm_pattern_instance_id, t_factory);
     		
-    		WeiboUserFind pattern = new WeiboUserFind();
-    		StringPatternRepository.addPattern( pattern );
-    	}    	
+    		t_factory.init();
+    		
+    	}else{
+    		
+    		t_factory.init();
+    	}
     }
 
     /**

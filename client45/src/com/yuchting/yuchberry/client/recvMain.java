@@ -187,7 +187,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public settingScreen		m_settingScreen		= null;
 	public shareYBScreen		m_shareScreen		= null;
 			
-	UiApplication		m_messageApplication = null;
+	UiApplication				m_messageApplication = null;
 	
 	public final static	int				DISCONNECT_STATE = 0;
 	public final static	int				CONNECTING_STATE = 1;
@@ -924,7 +924,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 	}
 	
-	final static int		fsm_clientVersion = 37;
+	final static int		fsm_clientVersion = 38;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -1149,6 +1149,10 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				    			m_weiboDontReadHistroy = sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
+				    		if(t_currVer >= 38){
+				    			m_imRenotifyPrompt = sendReceive.ReadBoolean(t_readFile);
+				    		}
+				    		
 				    		
 			    		}finally{
 			    			t_readFile.close();
@@ -1268,6 +1272,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		    			
 		    			sendReceive.WriteBoolean(t_writeFile,m_imStoreImageVoice);
 		    			sendReceive.WriteBoolean(t_writeFile,m_weiboDontReadHistroy);
+		    			sendReceive.WriteBoolean(t_writeFile,m_imRenotifyPrompt);
 		    			
 						
 						if(m_connectDeamon.m_connect != null){
@@ -1762,6 +1767,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			}
 		});		
 	}
+	
+	public String	m_uploadFileFavorPath = null;
 	public Object OpenAttachmentFileScreen(final boolean _del){
 		
 		try{
@@ -2555,7 +2562,16 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public boolean				m_imVoiceImmMode		= false;
 	
 	public boolean				m_imReturnSend	= false;
+	
+	/**
+	 * IM option to popup a dialog prompt 
+	 */
 	public boolean				m_imPopupPrompt	= true;
+	
+	/**
+	 * any chat message re-notify when backlight is disable 
+	 */
+	public boolean				m_imRenotifyPrompt = false;
 	
 	public boolean				m_imStoreImageVoice		= false;
 		

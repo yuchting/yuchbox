@@ -81,4 +81,6 @@ final public class msg_head {
 	final public static byte msgChatAddRoster	= 35;
 	final public static byte msgChatDelRoster	= 36;
 	final public static byte msgChatAlias		= 37;
+	
+	final public static byte msgWeiboUnfollowUser = 38;
 }

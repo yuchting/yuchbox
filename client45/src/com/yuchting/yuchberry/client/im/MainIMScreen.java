@@ -892,6 +892,8 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 							|| !m_mainApp.isForeground() 
 							|| getUiEngine() == null;
 		
+		boolean t_reNotify = !Backlight.isEnabled() && m_mainApp.m_imRenotifyPrompt;
+		
 		synchronized (m_rosterChatDataList) {
 			for(int i = 0;i < m_rosterChatDataList.size();i++){
 				RosterChatData data = (RosterChatData)m_rosterChatDataList.elementAt(i);
@@ -1000,7 +1002,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			}	
 		}
 		
-		if(t_notify){
+		if(t_notify || t_reNotify){
 			m_mainApp.TriggerIMNotification();
 		}
 	}

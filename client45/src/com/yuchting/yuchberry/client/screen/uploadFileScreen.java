@@ -222,17 +222,17 @@ public class uploadFileScreen extends MainScreen implements
 		
 		try{
 			FileConnection fc = (FileConnection) Connector.open(fsm_rootPath_default,Connector.READ_WRITE);
-			m_rootPath = fsm_rootPath_default;
+			m_rootPath = fsm_rootPath_default;			
 			fc.close();
 		}catch(Exception _e){
 			m_rootPath = fsm_rootPath_back;
 		}
 		
-		DisplayFileList(m_rootPath);
+		DisplayFileList(m_mainApp.m_uploadFileFavorPath == null?m_rootPath:m_mainApp.m_uploadFileFavorPath);
 	}
 		
 	public void DisplayFileList(String _path){
-
+		
 		// clear all former file list
 		//
 		for(int i = 0;i < m_listCallback.m_iconList.size();i++){
@@ -282,12 +282,12 @@ public class uploadFileScreen extends MainScreen implements
 				}
 				
 			}catch(Exception _e){
-				//System.out.println(_e.getMessage());
+				m_mainApp.SetErrorString("DFL0", _e);
 			}
 
 		}else{
 
-			
+			m_mainApp.m_uploadFileFavorPath = _path;
 			m_currDisplayPath = _path;
 			
 			setTitle(_path);
@@ -359,7 +359,7 @@ public class uploadFileScreen extends MainScreen implements
 				}
 
 			}catch(Exception _e){
-				//System.out.println(_e.getMessage());
+				m_mainApp.SetErrorString("DFL1", _e);
 			}
 		}
 	}

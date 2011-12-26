@@ -65,7 +65,7 @@ public class ChatField extends Manager{
 	
 	private static ObjectAllocator sm_textFieldAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.ui.WeiboTextField"){
 		protected Object newInstance()throws Exception{
-			return new WeiboTextField(0,0);
+			return new WeiboTextField(0,0,true);
 		}
 	};
 	
@@ -197,7 +197,7 @@ public class ChatField extends Manager{
 		String t_converText = null;
 		
 		if(_msg.getMsg().length() != 0){
-			t_converText = WeiboTextField.getConvertString(_msg.getMsg());
+			t_converText = WeiboTextField.getConvertString(_msg.getMsg(),true);
 			m_msgTextWidth = MainIMScreen.fsm_defaultFont.getAdvance(t_converText);
 			
 			if(m_msgTextWidth < fsm_minTextWidth){
