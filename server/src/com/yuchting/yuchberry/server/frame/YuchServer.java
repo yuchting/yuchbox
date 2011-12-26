@@ -701,6 +701,8 @@ public class YuchServer {
 	
 	public void RefreshState(){
 		
+		m_logger.LogOut("RefreshState start");
+		
 		m_currUsingAccount		= 0;
 		m_currConnectAccount	= 0;
 		
@@ -723,8 +725,6 @@ public class YuchServer {
 					if(t_thread.GetLastTime(t_currTime) < 0){
 						m_logger.LogOut("帐户暂停： " + t_thread.m_fetchMgr.GetAccountName());
 						t_thread.Pause();
-					}else{			
-						m_logger.LogOut(t_thread.m_fetchMgr.GetAccountName() + " 没有暂停的数据：" + t_thread.m_usingHours + " " + t_currTime + " " + t_thread.m_formerTimer);
 					}
 					
 					m_currUsingAccount++;
@@ -766,6 +766,7 @@ public class YuchServer {
 			}
 		}
 		
+		m_logger.LogOut("RefreshState 0");
 			
 		// delete the disconnect time-up thread
 		//
@@ -783,6 +784,8 @@ public class YuchServer {
 				m_mainFrame.FillLogInfo(m_mainFrame.m_currentSelectThread);
 			}
 		}
+		
+		m_logger.LogOut("RefreshState 1");
 		
 		// close the timeup Bber Request
 		//
@@ -819,6 +822,8 @@ public class YuchServer {
 		if(!t_deadPool.isEmpty() || t_deleteThread){		
 			storeAccountInfo();
 		}
+		
+		m_logger.LogOut("RefreshState end");
 	}
 	
 	public void SendTimeupMail(final fetchThread _thread,final String _officalPass){
