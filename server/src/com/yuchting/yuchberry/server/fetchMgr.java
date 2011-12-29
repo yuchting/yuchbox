@@ -1285,7 +1285,7 @@ public class fetchMgr{
 				}
 								
 			}catch(Exception e){
-				
+				e.printStackTrace();
 			}
 		}
 	}

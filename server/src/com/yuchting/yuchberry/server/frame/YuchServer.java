@@ -83,8 +83,10 @@ class checkStateThread extends Thread{
 				
 				m_mainServer.RefreshState();
 				
-				if(t_versionDetectCounter == -1 ||  t_versionDetectCounter > t_versionDetect ){
-									
+				if(t_versionDetectCounter == -1 || t_versionDetectCounter > t_versionDetect ){
+				
+					m_mainServer.m_logger.LogOut("versionDetect start");
+					
 					URL is_gd = new URL("http://yuchberry.googlecode.com/files/latest_version?a="+(new Random()).nextInt());
 					
 			        URLConnection yc = is_gd.openConnection();
@@ -97,7 +99,8 @@ class checkStateThread extends Thread{
 			        	t_version = in.readLine();
 			        }finally{
 			        	in.close();
-			        }			        
+			        }
+			        
 			        
 			        t_mgrList.clear();
 			        synchronized (m_mainServer.m_accountList) {
@@ -112,19 +115,28 @@ class checkStateThread extends Thread{
 			        	if(t_versionDetectCounter != -1){
 			        		mgr.sendStatictiscInfo();
 			        	}			        	
-			        }   
+			        }
+			        
 			        t_versionDetectCounter = 0;
+			        
+			        m_mainServer.m_logger.LogOut("versionDetect end");
 				}
-								
+				
 				t_versionDetectCounter++;
+
 				
 				if(m_mainServer.m_needbackup && t_backupCounter > t_backupInterval){
+					
+					m_mainServer.m_logger.LogOut("backup start");
+					 
 					t_backupCounter = 0;
 					try{
 						Runtime.getRuntime().exec(m_mainServer.m_backupShellLine);
 					}catch(Exception e){
 						m_mainServer.m_logger.PrinterException(e);
-					}					
+					}
+					
+					 m_mainServer.m_logger.LogOut("backup end");
 				}
 				
 				t_backupCounter++;
@@ -700,9 +712,7 @@ public class YuchServer {
 	}
 	
 	public void RefreshState(){
-		
-		m_logger.LogOut("RefreshState start");
-		
+				
 		m_currUsingAccount		= 0;
 		m_currConnectAccount	= 0;
 		
@@ -765,9 +775,7 @@ public class YuchServer {
 				}
 			}
 		}
-		
-		m_logger.LogOut("RefreshState 0");
-			
+					
 		// delete the disconnect time-up thread
 		//
 		for(fetchThread thread : t_deadPool){
@@ -784,9 +792,7 @@ public class YuchServer {
 				m_mainFrame.FillLogInfo(m_mainFrame.m_currentSelectThread);
 			}
 		}
-		
-		m_logger.LogOut("RefreshState 1");
-		
+				
 		// close the timeup Bber Request
 		//
 		boolean t_deleteThread = false;
@@ -822,8 +828,6 @@ public class YuchServer {
 		if(!t_deadPool.isEmpty() || t_deleteThread){		
 			storeAccountInfo();
 		}
-		
-		m_logger.LogOut("RefreshState end");
 	}
 	
 	public void SendTimeupMail(final fetchThread _thread,final String _officalPass){
