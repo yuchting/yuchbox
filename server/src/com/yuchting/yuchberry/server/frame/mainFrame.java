@@ -160,7 +160,7 @@ public class mainFrame extends JFrame implements ActionListener{
 		
 		boolean t_hideWindow = _arg.length >= 2 && _arg[1].equalsIgnoreCase("hide");
 
-		setTitle("yuchberry 集成配置工具 beta");
+		setTitle("语盒(Yuchs'Box)集成配置工具 bate");
 		setSize(fsm_width,fsm_height);
 		
 		if(!t_hideWindow){
