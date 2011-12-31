@@ -46,7 +46,8 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	public fetchMail			m_sendMail 	= null;
 	public fetchMail			m_forwardReply 	= null;
 
-	int					m_sendStyle = fetchMail.NOTHING_STYLE;	
+	int					m_sendStyle = fetchMail.NOTHING_STYLE;
+	int					m_groupFlag		= 0;
 	public	boolean	m_closeState = false;
 	
 	public SendAttachmentDeamon m_sendFileDaemon = null;
@@ -59,6 +60,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 		m_sendMail	= _mail;
 		m_forwardReply	= _forwardReply;
 		m_sendStyle = _sendStyle;
+		m_groupFlag	= m_sendMail.getGroupFlag();
 		
 		if(_vFileConnection != null && !_vFileConnection.isEmpty()){
 			m_sendFileDaemon = new SendAttachmentDeamon(_connect, _vFileConnection, 
@@ -95,6 +97,10 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	
 	public void sendError(){
 		RefreshMessageStatus(fetchMail.GROUP_FLAG_SEND_ERROR);
+		
+		// trigger the failed notification
+		//
+		m_connect.m_mainApp.triggerMailFailedNotification(m_sendMail);
 	}
 	
 	public void sendSucc(){
@@ -138,20 +144,24 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 	
 	private void RefreshMessageStatus(int _flag){
 		
+		if(m_groupFlag == _flag){
+			return;
+		}
+		
+		m_groupFlag = _flag;
+		
 		// check the MailComposeActivity.send() for progress detail
 		//
 		m_sendMail.setGroupFlag(_flag);
 		m_connect.m_mainApp.m_dba.setMailGroupFlag(m_sendMail.getDbIndex(), m_sendMail.getGroupIndex(), _flag);
 		
 		m_connect.m_mainApp.sendBroadcastUpdateFlag(m_sendMail,false);
-		
-		// trigger the failed notification
-		//
-		m_connect.m_mainApp.triggerMailFailedNotification(m_sendMail);
 	}
 		
 	public void run(){		
+		
 		m_connect.acquireWakeLock();
+		
 		try{
 			int t_resend_time = 0;
 			
@@ -169,7 +179,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 						}
 						
 						try{
-							sleep(10000);
+							sleep(20000);
 						}catch(Exception e){}
 					}
 					
