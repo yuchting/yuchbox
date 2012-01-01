@@ -112,9 +112,9 @@ class checkStateThread extends Thread{
 			        for(fetchMgr mgr:t_mgrList){
 			        	mgr.SetLatestVersion(t_version);
 			        	
-			        	if(t_versionDetectCounter != -1){
-			        		mgr.sendStatictiscInfo();
-			        	}			        	
+//			        	if(t_versionDetectCounter != -1){
+//			        		mgr.sendStatictiscInfo();
+//			        	}			        	
 			        }
 			        
 			        t_versionDetectCounter = 0;
