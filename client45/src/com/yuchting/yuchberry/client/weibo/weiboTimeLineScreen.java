@@ -30,10 +30,6 @@ package com.yuchting.yuchberry.client.weibo;
 import java.io.ByteArrayOutputStream;
 import java.util.Vector;
 
-import javax.microedition.io.Connector;
-import javax.wireless.messaging.MessageConnection;
-import javax.wireless.messaging.TextMessage;
-
 import local.yblocalResource;
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.blackberry.api.invoke.MessageArguments;
@@ -50,6 +46,7 @@ import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.container.MainScreen;
 
+import com.yuchting.yuchberry.client.GPSInfo;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
@@ -598,10 +595,17 @@ public class weiboTimeLineScreen extends MainScreen{
 			}
 		}
 	}
-	public void UpdateNewWeibo(String _weiboText,byte[] _fileBuffer,int _fileType){
+	public void UpdateNewWeibo(String _weiboText,byte[] _fileBuffer,int _fileType,boolean _location){
 		
 		try{
-			m_sendDaemonList.addElement(new WeiboSendDaemon(_weiboText,_fileBuffer,_fileType,m_mainApp));
+			
+			GPSInfo t_info = null;
+			
+			if(_location && m_mainApp.getGPSInfo().isValidLocation()){
+				t_info = m_mainApp.getGPSInfo().cloneData();
+			}
+			
+			m_sendDaemonList.addElement(new WeiboSendDaemon(_weiboText,_fileBuffer,_fileType,m_mainApp,t_info));
 
 			m_mainApp.m_sentWeiboNum++;
 			m_currMgr.EscapeKey();

@@ -54,4 +54,19 @@ public final class GPSInfo{
 		sendReceive.WriteFloat(os,m_speed);
 		sendReceive.WriteFloat(os,m_heading);
 	}
+	
+	public boolean isValidLocation(){
+		return m_longitude != 0 && m_latitude != 0;
+	}
+	
+	public GPSInfo cloneData()throws Exception{
+		GPSInfo info = new GPSInfo();
+		info.m_longitude = m_longitude;
+		info.m_latitude	= m_latitude;
+		info.m_altitude	= m_altitude;
+		info.m_speed	= m_speed;
+		info.m_heading	= m_heading;
+		
+		return info;
+	}
 }

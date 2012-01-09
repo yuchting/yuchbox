@@ -49,6 +49,8 @@
 	<Image Name="photo_button" XPos="150" YPos="251" Width="40" Height="24" />
 	<Image Name="attach_button_focus" XPos="190" YPos="179" Width="40" Height="24" />
 	<Image Name="attach_button" XPos="190" YPos="203" Width="40" Height="24" />
+	<Image Name="location_button_focus" XPos="294" YPos="110" Width="40" Height="24" />
+	<Image Name="location_button" XPos="294" YPos="134" Width="40" Height="24" />
 	
 	<Image Name="picSign" XPos="0" YPos="353" Width="16" Height="16" />
 	<Image Name="commentSign" XPos="16" YPos="353" Width="16" Height="16" />
