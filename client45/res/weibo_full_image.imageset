@@ -52,6 +52,8 @@
 	<Image Name="location_button_focus" XPos="294" YPos="110" Width="40" Height="24" />
 	<Image Name="location_button" XPos="294" YPos="134" Width="40" Height="24" />
 	
+	<Image Name="locationSign" XPos="56" YPos="352" Width="18" Height="18" />
+	
 	<Image Name="picSign" XPos="0" YPos="353" Width="16" Height="16" />
 	<Image Name="commentSign" XPos="16" YPos="353" Width="16" Height="16" />
 	<Image Name="picSign_1" XPos="0" YPos="426" Width="16" Height="16" />

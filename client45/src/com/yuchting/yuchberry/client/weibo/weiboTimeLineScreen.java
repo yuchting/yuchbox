@@ -677,7 +677,7 @@ public class weiboTimeLineScreen extends MainScreen{
 										m_currMgr.m_currentSendType,t_orgId,t_commentId);
 						
 					}else{
-						UpdateNewWeibo(t_text,null,0);
+						UpdateNewWeibo(t_text,null,0,false);
 						return ;
 					}
 				}else{

@@ -248,7 +248,7 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 			sendReceive.WriteLong(t_os,m_origId);
 			sendReceive.WriteLong(t_os,m_commentId);
 			
-			if(m_mainApp.canUseLocation()){
+			if(m_gpsInfo != null /*m_mainApp.canUseLocation()*/){
 				t_os.write(1);
 				m_mainApp.getGPSInfo().OutputData(t_os);
 			}else{

@@ -477,6 +477,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 	recvMain				m_mainApp	= null;
 	
 	ImageUnit				m_hasImageSign	= null;
+	ImageUnit				m_hasLocation = null;
 	
 	CameraFileOP			m_fileSystem = new CameraFileOP() {
 		
@@ -505,7 +506,8 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		m_snapshotAvaiable = recvMain.fsm_snapshotAvailible;
 		
 		m_mainApp = _screen.m_mainApp;
-		m_hasImageSign = m_weiboUIImageSets.getImageUnit("picSign");
+		m_hasImageSign	= m_weiboUIImageSets.getImageUnit("picSign");
+		m_hasLocation	= m_weiboUIImageSets.getImageUnit("locationSign");
 	}
 	
 	public void clearAttachment(){
@@ -606,7 +608,11 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		
 		if(m_imagePath != null || m_snapBuffer != null){
 			m_weiboUIImageSets.drawImage(_g, m_hasImageSign,
-					2,getPreferredHeight() - m_hasImageSign.getHeight() - 10);
+					2,getPreferredHeight() - m_hasImageSign.getHeight() - 10 );
+		}
+		
+		if(m_updateManager.m_addLocation){
+			m_weiboUIImageSets.drawImage(_g, m_hasLocation,2,1);
 		}
 	}
 	

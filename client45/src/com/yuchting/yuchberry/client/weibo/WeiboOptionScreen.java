@@ -54,7 +54,6 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 	 CheckboxField		m_hideWeiboHeader = null;
 	 CheckboxField		m_showAllInList	= null;
 	 CheckboxField		m_autoLoadNewTimelineWeibo = null;
-	 CheckboxField		m_weiboUseLocation = null;
 	 ObjectChoiceField	m_refreshWeiboInterval = null;
 	 ObjectChoiceField	m_maxWeiboNum	= null;
 	 ObjectChoiceField	m_uploadImageSize	= null;

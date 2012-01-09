@@ -2165,6 +2165,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	public boolean				m_hasPromptToCheckImg = true;
 	public int					m_checkImgIndex = 1;
+	
 	public boolean				m_weiboUseLocation = false;
 	public boolean				m_autoLoadNewTimelineWeibo = false;
 	
