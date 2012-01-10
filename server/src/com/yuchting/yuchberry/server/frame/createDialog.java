@@ -151,7 +151,7 @@ public class createDialog extends JDialog implements DocumentListener,
 															ActionListener,
 															ItemListener,IWeiboAuthOk{
 	
-	final static int		fsm_width = 520;
+	final static int		fsm_width = 540;
 	final static int		fsm_height = 680;
 	
 	public static class NumberMaxMinLimitedDmt extends PlainDocument {
@@ -418,8 +418,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		t_mainPanel.add(t_separator);
 		
 		getContentPane().add(t_mainPanel);
-		
-		
+			
 		
 		////////////////////////////////////////////////////////////////////
 		// account data
@@ -866,7 +865,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		CheckMainAttr();
 		
 		if(_email.m_accountName.length() == 0 || (_email.m_password.isEmpty() && _email.m_cryptPassword.isEmpty())){
-			throw new Exception("账户名、密码(加密密码)不能为空");
+			throw new Exception("账号名称、密码(加密密码)不能为空");
 		}
 		
 		if(_email.m_host.length() == 0 || _email.m_port.length() == 0){

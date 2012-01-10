@@ -1587,7 +1587,7 @@ public class connectDeamon extends Thread implements SendListener,
 				byte[] t_bytes = new byte[t_size];
 				sendReceive.ForceReadByte(in, t_bytes, t_size);
 				
-				t_att.m_fileContainBuffer.write(t_bytes);				
+				t_att.m_fileContainBuffer.write(t_bytes);
 				
 				//System.out.println("write msgMailAttach mailIndex:" + t_mailIndex + " attachIndex:" + t_attachIndex + " startIndex:" +
 				//					t_startIndex + " size:" + t_size + " first:" + (int)t_bytes[0]);

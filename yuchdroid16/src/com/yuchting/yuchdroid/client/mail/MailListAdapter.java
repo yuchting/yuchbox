@@ -46,8 +46,8 @@ import com.yuchting.yuchdroid.client.YuchDroidApp;
 
 public class MailListAdapter extends BaseAdapter{
 	
-	private final static int	MAIL_GROUP_ITEM_HEIGHT = YuchDroidApp.sm_displyHeight >= 800?70:50;
-	private final static int	MAIL_GROUP_ITEM_SPLITER_HEIGHT = YuchDroidApp.sm_displyHeight >= 800?30:20;
+	private final static int	MAIL_GROUP_ITEM_HEIGHT = YuchDroidApp.sm_displyHeight >= 640?70:50;
+	private final static int	MAIL_GROUP_ITEM_SPLITER_HEIGHT = YuchDroidApp.sm_displyHeight >= 640?30:20;
 	
 	private int m_cursorIDIndex;
     private int m_cursorMarkIndex;

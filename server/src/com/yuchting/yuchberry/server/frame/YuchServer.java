@@ -85,7 +85,7 @@ class checkStateThread extends Thread{
 				
 				if(t_versionDetectCounter == -1 || t_versionDetectCounter > t_versionDetect ){
 				
-					m_mainServer.m_logger.LogOut("versionDetect start");
+					//m_mainServer.m_logger.LogOut("versionDetect start");
 					
 					URL is_gd = new URL("http://yuchberry.googlecode.com/files/latest_version?a="+(new Random()).nextInt());
 					
@@ -119,7 +119,7 @@ class checkStateThread extends Thread{
 			        
 			        t_versionDetectCounter = 0;
 			        
-			        m_mainServer.m_logger.LogOut("versionDetect end");
+			        //m_mainServer.m_logger.LogOut("versionDetect end");
 				}
 				
 				t_versionDetectCounter++;
@@ -127,7 +127,7 @@ class checkStateThread extends Thread{
 				
 				if(m_mainServer.m_needbackup && t_backupCounter > t_backupInterval){
 					
-					m_mainServer.m_logger.LogOut("backup start");
+					//m_mainServer.m_logger.LogOut("backup start");
 					 
 					t_backupCounter = 0;
 					try{
@@ -136,7 +136,7 @@ class checkStateThread extends Thread{
 						m_mainServer.m_logger.PrinterException(e);
 					}
 					
-					 m_mainServer.m_logger.LogOut("backup end");
+					//m_mainServer.m_logger.LogOut("backup end");
 				}
 				
 				t_backupCounter++;
@@ -937,7 +937,7 @@ public class YuchServer {
 				in.close();
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 	
