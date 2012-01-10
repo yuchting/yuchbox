@@ -91,10 +91,7 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 		 	 
 		 m_dontDownloadHeadImage = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_DONT_DOWNLOAD_HEAD_IMAGE),m_mainApp.m_dontDownloadWeiboHeadImage);
 		 add(m_dontDownloadHeadImage);
-		 
-		 m_weiboUseLocation		= new CheckboxField(recvMain.sm_local.getString(yblocalResource.WEIBO_USE_LOCATION_LABEL),m_mainApp.m_weiboUseLocation);
-		 add(m_weiboUseLocation);
-		 
+		 		 
 		 m_weiboDontReadHistroy		= new CheckboxField(recvMain.sm_local.getString(yblocalResource.WEIBO_READ_HISTROY_LABEL),m_mainApp.m_weiboDontReadHistroy);
 		 add(m_weiboDontReadHistroy);
 		 		 		 
@@ -193,7 +190,7 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 					 m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_UI_CHANGE_PROMPT));
 				 }				 
 			 }
-		 }	
+		 }
 	 }
 	 
 	 protected boolean onSave(){
@@ -210,7 +207,6 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 			 m_mainApp.m_weiboTimeLineScreen.startAutoRefresh();
 			 m_mainApp.m_weiboDontReadHistroy = m_weiboDontReadHistroy.getChecked();
 			 m_mainApp.m_hideHeader			= m_hideWeiboHeader.getChecked();
-			 m_mainApp.m_weiboUseLocation	= m_weiboUseLocation.getChecked();
 			
 			 recvMain.sm_displayHeadImage	= m_displayHeadImage.getChecked();
 			 recvMain.sm_simpleMode			= m_simpleMode.getChecked();
