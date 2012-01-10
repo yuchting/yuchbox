@@ -242,7 +242,6 @@ public class MailDbAdapter {
         	// create the index by Message-ID and References
         	//
         	db.execSQL("create index " + DATABASE_TABLE_ID_INDEX + " on " + DATABASE_TABLE + " (" + ATTR_MESSAGE_ID + ")");
-        	db.execSQL("create index " + DATABASE_TABLE_GROUP_SUB_INDEX + " on " + DATABASE_TABLE_GROUP + " (" + GROUP_ATTR_SUBJECT + ")");
         }
 
         @Override
@@ -419,8 +418,11 @@ public class MailDbAdapter {
     					    					
     					if(t_cursor.getCount() != 0){
     						t_cursor.moveToFirst();        					
-    						t_groupCursor = fetchGroup(t_cursor.getLong(t_cursor.getColumnIndex(ATTR_MAIL_GROUP_INDEX)));        					
-        				}else{
+    						t_groupCursor = fetchGroup(t_cursor.getLong(t_cursor.getColumnIndex(ATTR_MAIL_GROUP_INDEX)));
+        				}
+    					
+    					/*
+    					else{
         					
         					// can't find by In-Reply-To 
         					// we find by subject
@@ -429,6 +431,7 @@ public class MailDbAdapter {
     		    			t_groupCursor = mDb.query(DATABASE_TABLE_GROUP,fsm_groupfullColoumns,GROUP_ATTR_SUBJECT + "='" + t_subject + "'",
     		        											null,null,null,null);	
         				}
+        				*/
     				}finally{
     					t_cursor.close();
     				}	
@@ -480,6 +483,18 @@ public class MailDbAdapter {
     	t_ret.append(_addAddr).append(fetchMail.fsm_vectStringSpliter);
     	
     	return t_ret.toString();
+    }
+    
+    public void clearHistoryMail(long _beforeDay){
+    	
+    	if(_beforeDay == -1){
+    		return ;
+    	}
+    	
+    	long t_beforeTime = System.currentTimeMillis() - _beforeDay * 24 * 3600000;
+    	
+    	mDb.delete(DATABASE_TABLE_GROUP, GROUP_ATTR_LEATEST_TIME + "<=" + t_beforeTime, null);
+    	mDb.delete(DATABASE_TABLE,ATTR_DATE + "<=" + t_beforeTime, null);
     }
     
     private boolean updateGroup(Cursor _groupCursor,fetchMail _mail,long _mailIndex){
@@ -617,7 +632,7 @@ public class MailDbAdapter {
         return t_cursor;
     }
     
-    public Cursor fetchMailCursor(long _mailId)throws SQLException{
+    private Cursor fetchMailCursor(long _mailId)throws SQLException{
     	if(mDbHelper == null){
     		open();
     	}

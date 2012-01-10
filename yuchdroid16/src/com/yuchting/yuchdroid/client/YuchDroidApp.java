@@ -143,6 +143,8 @@ public class YuchDroidApp extends Application {
 	public fetchMail		m_composeStyleRefMail;
 	
 	public boolean			m_isOfficalHost		= false;
+	
+	private int				m_pulseCounter 		= 0;
 		
 	@Override
 	public void onCreate (){
@@ -380,6 +382,30 @@ public class YuchDroidApp extends Application {
 //		}
 //		
 //	}
+	
+	public synchronized void increasePulseCounter(){
+		m_pulseCounter++;
+	}
+	
+	public synchronized void clearPulseCounter(){
+		m_pulseCounter = 0;
+	}
+	
+	
+	public void clearHistory(){
+		
+		if(m_pulseCounter % 20 == 0){
+			
+			// clear mail history first
+			//
+			int t_day = m_config.getClearMailBeforeDays();
+			if(t_day != -1){
+				m_dba.clearHistoryMail(t_day);
+			}
+			
+			increasePulseCounter();
+		}		
+	}
 	
 	private void addMailAddrSearch(String name, String email){
 		
@@ -669,7 +695,10 @@ public class YuchDroidApp extends Application {
 		// check the MailComposeActivity.send for detail
 		
 		assert _mail != null;
-		assert _refMail != null || _refStyle == fetchMail.NOTHING_STYLE;
+		
+		if(_refMail == null){
+			_refStyle = fetchMail.NOTHING_STYLE;
+		}
 		
 		// prepare the temporary data
 		//
@@ -834,7 +863,7 @@ public class YuchDroidApp extends Application {
 		MimeTypeMap mime = MimeTypeMap.getSingleton();
         String ext= _filename.substring(_filename.lastIndexOf(".") + 1);
         ext = mime.getMimeTypeFromExtension(ext);
-        if(ext.length() == 0){
+        if(ext == null || ext.length() == 0){
         	ext = "application/octet-stream";
         }
         return ext;

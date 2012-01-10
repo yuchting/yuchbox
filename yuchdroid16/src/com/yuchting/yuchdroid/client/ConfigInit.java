@@ -53,7 +53,7 @@ public final class ConfigInit {
 	public boolean m_autoRun				= false;
 	
 	public int[]	m_pulseIntervalValues	= {1 * 60000,3 * 60000,5 * 60000,10 * 60000,30 * 60000};
-	public int	m_pulseIntervalIndex	= 2;
+	public int	m_pulseIntervalIndex		= 2;
 	
 	public boolean m_fulldayPrompt		= true;
 	public int	m_startPromptHour		= 8;
@@ -66,6 +66,9 @@ public final class ConfigInit {
 	public long m_downloadByte				= 0;
 	
 	public int[]	m_fontSizeValues		= {14,16,18,20,22};
+	
+	public int[]	m_mailClearBeforeDay = {15,30,60,90,120,150,180,-1};
+	public int		m_mailClearBeforeDayIndex = 1;
 	
 	// always display connect state
 	//
@@ -156,22 +159,34 @@ public final class ConfigInit {
 	
 	public ConfigInit(Context _ctx){
 		m_ctx = _ctx;
+				
+		m_pulseIntervalValues	= reinitArray(R.array.login_pref_pulse_values,60000);
+		m_fontSizeValues		= reinitArray(R.array.mail_font_size_values,1);
+		m_mailClearBeforeDay	= reinitArray(R.array.mail_clear_before_day_values,1);
 		
-		String[] t_str = _ctx.getResources().getStringArray(R.array.login_pref_pulse_values);
-		assert t_str != null;
-		m_pulseIntervalValues = new int[t_str.length];
-		for(int i = 0;i < m_pulseIntervalValues.length;i++){
-			m_pulseIntervalValues[i] = Integer.valueOf(t_str[i]).intValue() * 60000;
-		}
-		
-		t_str = _ctx.getResources().getStringArray(R.array.font_size_values);
-		assert t_str != null;
-		
-		m_fontSizeValues = new int[t_str.length];
-		for(int i = 0;i < m_fontSizeValues.length;i++){
-			m_fontSizeValues[i] = Integer.valueOf(t_str[i]).intValue();
-		}
+	}
 	
+	
+	
+	private int[] reinitArray(int _resId,int _rate){
+		
+		String[] t_str = m_ctx.getResources().getStringArray(_resId);
+		assert t_str != null;
+		
+		int[] t_arr = new int[t_str.length];
+		for(int i = 0;i < t_arr.length;i++){
+			t_arr[i] = Integer.valueOf(t_str[i]).intValue() * _rate;
+		}
+		
+		return t_arr;
+	}
+	
+	public int getClearMailBeforeDays(){
+		if(m_mailClearBeforeDayIndex < 0 || m_mailClearBeforeDayIndex >= m_mailClearBeforeDay.length){
+			return m_mailClearBeforeDay[0];
+		}
+		
+		return m_mailClearBeforeDay[m_mailClearBeforeDayIndex];
 	}
 	
 	public int getPulseInterval(){
@@ -264,7 +279,7 @@ public final class ConfigInit {
 		}
 	}
 	
-	final static int		fsm_configVersion = 4;
+	final static int		fsm_configVersion = 5;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -399,6 +414,10 @@ public final class ConfigInit {
 		    				m_alwaysDisplayState			= sendReceive.ReadBoolean(t_readFile);
 		    			}
 		    			
+		    			if(t_version >= 5){
+		    				m_mailClearBeforeDayIndex		= t_readFile.read();
+		    			}
+		    			
 					}finally{
 						t_readFile.close();
 					}
@@ -518,6 +537,8 @@ public final class ConfigInit {
     				t_writeFile.write(m_imFontSizeIndex);
     				
     				sendReceive.WriteBoolean(t_writeFile,m_alwaysDisplayState);
+    				
+    				t_writeFile.write(m_mailClearBeforeDayIndex);
 					
 				}finally{
 					t_writeFile.close();

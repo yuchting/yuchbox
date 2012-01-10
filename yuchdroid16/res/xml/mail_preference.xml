@@ -55,9 +55,19 @@
 		<ListPreference
 			android:key="config_mail_font_size"
 			android:title="@string/mail_pref_font_size"
-			android:entries="@array/font_size"
-			android:entryValues="@array/font_size_values"
+			android:entries="@array/mail_font_size"
+			android:entryValues="@array/mail_font_size_values"
 			android:summary="@string/mail_pref_font_size_sum"
 			android:dialogTitle="@string/mail_pref_font_size"/>
+		
+		<ListPreference
+			android:key="config_mail_clear_before_days"
+			android:title="@string/mail_pref_clear_before_days"
+			android:entries="@array/mail_clear_before_day"
+			android:entryValues="@array/mail_clear_before_day_values"
+			android:summary="@string/mail_pref_clear_before_days_sum"
+			android:dialogTitle="@string/mail_pref_clear_before_days"/>
+		
 	</PreferenceCategory>
+	
 </PreferenceScreen>

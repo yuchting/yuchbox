@@ -445,13 +445,20 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         	t_id = Long.valueOf(t_mailList[i]).longValue();
         	
         	fetchMail t_mail	= m_mainApp.m_dba.fetchMail(t_id);
+        	if(t_mail == null){
+        		// the mail has been deleted (clear history)
+        		//
+        		continue;
+        	}
+        	
         	t_mail.setGroupIndex(m_currGroupIdx);
         	
         	Envelope en = new Envelope(t_mail,this);
         	
         	AtomicReference<Integer> t_flag = new AtomicReference<Integer>(t_mail.getGroupFlag());
         	t_modifiedFlag = MailDbAdapter.modifiedUnreadFlag(t_flag);
-        	if(t_modifiedFlag || en.isNeedInitOpen() || i == t_mailList.length - 1){
+        	if(t_modifiedFlag || en.isNeedInitOpen() 
+        		|| i == t_mailList.length - 1){ // the final mail must be opened
         		
         		t_mail.setGroupFlag(t_flag.get());
         		en.openBody();

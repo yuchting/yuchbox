@@ -580,6 +580,10 @@ public class ConnectDeamon extends Service implements Runnable{
 		public void logOut(String _log){
 			m_mainApp.setErrorString(_log);
 		}
+		
+		public void pulse(){
+			m_mainApp.increasePulseCounter();	
+		}
 	};
 	
 	// delay destroy alarm 
@@ -1037,6 +1041,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		m_connectState = false;		
 		m_reconnectCounter = 0;
 		m_connectFailedCounter = 0;
+		m_mainApp.clearPulseCounter();
 		
 		synchronized (m_reconnectRecv) {
 			m_reconnectRecv.notify();

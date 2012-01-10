@@ -54,6 +54,8 @@ public class MailPrefActivity extends PreferenceActivity {
 	
 	Preference				m_statistics;
 	ListPreference			m_mailFontSize;
+	ListPreference			m_mailClearBeforeDays;
+	
 			
 	ConfigInit				m_config;
 	
@@ -76,6 +78,7 @@ public class MailPrefActivity extends PreferenceActivity {
 		
 		m_statistics		= t_prefMgr.findPreference("config_mail_statistics");
 		m_mailFontSize		= (ListPreference)t_prefMgr.findPreference("config_mail_font_size");
+		m_mailClearBeforeDays	= (ListPreference)t_prefMgr.findPreference("config_mail_clear_before_days");
 		
 		updateData(true);
 		
@@ -131,17 +134,19 @@ public class MailPrefActivity extends PreferenceActivity {
 			m_statistics.setSummary(t_stat.toString());
 			
 			m_mailFontSize.setValueIndex(m_config.m_mailFontSizeIndex);
+			m_mailClearBeforeDays.setValueIndex(m_config.m_mailClearBeforeDayIndex);
 			
 		}else{
 			if(!m_config.m_sendMailAccountList.isEmpty()){
 				m_config.m_defaultSendMailAccountIndex = m_defaultAccount.findIndexOfValue(m_defaultAccount.getValue());
 			}
-			m_config.m_discardOrgText	= m_discardOrgMail.isChecked();
-			m_config.m_delRemoteMail	= m_delRemoteMail.isChecked();
-			m_config.m_copyMailToSentFolder = m_copyToFolder.isChecked();
-			m_config.m_mailPrompt_vibrate = m_vibrate.isChecked();
-			m_config.m_displayTextWhenHTML = m_displayTextWhenHTML.isChecked();
-			m_config.m_mailFontSizeIndex = m_mailFontSize.findIndexOfValue(m_mailFontSize.getValue());
+			m_config.m_discardOrgText			= m_discardOrgMail.isChecked();
+			m_config.m_delRemoteMail			= m_delRemoteMail.isChecked();
+			m_config.m_copyMailToSentFolder 	= m_copyToFolder.isChecked();
+			m_config.m_mailPrompt_vibrate 		= m_vibrate.isChecked();
+			m_config.m_displayTextWhenHTML 		= m_displayTextWhenHTML.isChecked();
+			m_config.m_mailFontSizeIndex		= m_mailFontSize.findIndexOfValue(m_mailFontSize.getValue());
+			m_config.m_mailClearBeforeDayIndex	= m_mailClearBeforeDays.findIndexOfValue(m_mailClearBeforeDays.getValue());
 			
 			SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
 			String sound = prefs.getString(m_sound.getKey(), ""); 

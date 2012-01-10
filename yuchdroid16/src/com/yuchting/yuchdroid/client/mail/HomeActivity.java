@@ -45,8 +45,9 @@ import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
 import com.yuchting.yuchdroid.client.Yuchdroid16Activity;
 
+
 public class HomeActivity extends ListActivity{
-		
+			
 	public static final int	MAX_GROUP_FATCH_NUM		= 35;
 
 	public Cursor			m_groupCursor;
@@ -100,7 +101,7 @@ public class HomeActivity extends ListActivity{
         	//
         	startActivity(new Intent(this,Yuchdroid16Activity.class));
         }
-        
+              
         setContentView(R.layout.home);
         m_groupCursor 		= m_mainApp.m_dba.fetchAllGroup(m_currGroupLimit);
         refershTitle();
@@ -147,6 +148,8 @@ public class HomeActivity extends ListActivity{
 		unregisterReceiver(m_recvMailRecv);
 		unregisterReceiver(m_markReadRecv);
 		unregisterReceiver(m_sendMailRecv);
+		
+		m_mainApp.clearHistory();
 	}
 	
 	private void refershTitle(){

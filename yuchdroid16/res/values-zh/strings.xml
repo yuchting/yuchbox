@@ -185,5 +185,7 @@
 	<string name="mail_pref_statistics_recv">接收：</string>
 	<string name="mail_pref_font_size">字体大小</string>
 	<string name="mail_pref_font_size_sum">邮件显示字体大小</string>
+	<string name="mail_pref_clear_before_days">保留邮件</string>
+	<string name="mail_pref_clear_before_days_sum">历史邮件需要保留的时间</string>
 	
 </resources>

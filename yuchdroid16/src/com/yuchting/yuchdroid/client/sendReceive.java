@@ -50,9 +50,31 @@ import android.content.IntentFilter;
 public class sendReceive{
 	
 	public static interface IStoreUpDownloadByte{
-		void store(long _uploadByte,long _downloadByte);
-		int getPushInterval();
-		void logOut(String _log);
+		/**
+		 * callback and store the upload and download byte 
+		 * 
+		 * @param _uploadByte
+		 * @param _downloadByte
+		 */
+		public void store(long _uploadByte,long _downloadByte);
+		
+		/**
+		 * get the push interval (pulse cycle)
+		 * @return push interval
+		 */
+		public int getPushInterval();
+		
+		/**
+		 * debug logout
+		 * @param _log
+		 */
+		public void logOut(String _log);
+		
+		/**
+		 * pulse called to do something such as clear history mail and so on
+		 */
+		public void pulse();
+		
 	}
 	
 	public static String TAG = sendReceive.class.getName();
@@ -186,7 +208,11 @@ public class sendReceive{
 								startAlarmForPulse();
 							}
 						}
-											
+						
+						m_storeInterface.pulse();
+						
+						// just wake up selector to let the NIO socket send a pulse
+						//
 						try{						
 							m_selector.wakeup();
 						}catch(Exception e){}
