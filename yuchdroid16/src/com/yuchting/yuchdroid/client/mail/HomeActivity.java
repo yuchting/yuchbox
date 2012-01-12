@@ -149,7 +149,7 @@ public class HomeActivity extends ListActivity{
 		unregisterReceiver(m_markReadRecv);
 		unregisterReceiver(m_sendMailRecv);
 		
-		m_mainApp.clearHistory();
+		m_mainApp.clearHistoryImm();
 	}
 	
 	private void refershTitle(){

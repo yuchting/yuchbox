@@ -57,6 +57,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -90,6 +91,9 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	
 	EditText	m_subject			= null;
 	EditText	m_body				= null;
+	
+	TextView	m_titleSubject		= null;
+	TextView	m_titleOwnAccount	= null;
 		
 	TextView	m_discardRefView	= null;
 	
@@ -116,9 +120,14 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 	@Override
     public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
 		setContentView(R.layout.mail_compose);
+		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.mail_open_title);
 		
-		m_mainApp = (YuchDroidApp)getApplicationContext();		
+		m_mainApp = (YuchDroidApp)getApplicationContext();
+		
+		m_titleSubject			= (TextView)findViewById(R.id.mail_open_title_subject);
+	    m_titleOwnAccount		= (TextView)findViewById(R.id.mail_open_title_own_account);
 		
 		m_to		= (AutoCompleteTextView)findViewById(R.id.mail_compose_to);
 		m_cc		= (AutoCompleteTextView)findViewById(R.id.mail_compose_cc);
@@ -148,7 +157,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		
 		// set the modified flag
 		//
-		TextWatcher t_watcher = new TextWatcher(){
+		final TextWatcher t_watcher = new TextWatcher(){
 			public void afterTextChanged (Editable s){}
 			public void beforeTextChanged (CharSequence s, int start, int count, int after){}
 			public void onTextChanged(CharSequence s, int start, int before, int count){
@@ -156,11 +165,21 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 				m_saveBtn.setEnabled(true);
 			}
 		};
+		
+		final TextWatcher t_subjectWatcher = new TextWatcher() {
+			
+			public void afterTextChanged (Editable s){}
+			public void beforeTextChanged (CharSequence s, int start, int count, int after){}
+			public void onTextChanged(CharSequence s, int start, int before, int count){
+				t_watcher.onTextChanged(s, start, before, count);
+				m_titleSubject.setText(s);
+			}
+		};
 		m_to.addTextChangedListener(t_watcher);
 		m_bcc.addTextChangedListener(t_watcher);
 		m_cc.addTextChangedListener(t_watcher);
 		m_body.addTextChangedListener(t_watcher);
-		m_subject.addTextChangedListener(t_watcher);
+		m_subject.addTextChangedListener(t_subjectWatcher);
 
 		setAutoCompleteEditText(m_cc);
 		setAutoCompleteEditText(m_bcc);
@@ -282,8 +301,12 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 				m_to.requestFocus();
 			}				
 			
-			setTitle(t_sub);
-			m_subject.setText(t_sub);		
+			m_titleSubject.setText(t_sub);		
+			m_subject.setText(t_sub);
+			
+			if(m_referenceMail != null){
+				m_titleOwnAccount.setText(m_referenceMail.m_mail.getOwnAccount());
+			}
 			
 		}else{
 			
@@ -291,6 +314,8 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			//
 			m_discardRefView.setVisibility(View.GONE);
 			m_to.requestFocus();
+			
+			m_titleSubject.setText("");
 			
 			loadSendMailIntentData();			
 			loadSendMailAccountList();
@@ -387,7 +412,9 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			if(m_mainApp.m_config.m_defaultSendMailAccountIndex >= m_mainApp.m_config.m_sendMailAccountList.size()){
 				m_mainApp.m_config.m_defaultSendMailAccountIndex = 0;
 			}
+			
 			m_ownAccountSpinner.setSelection(m_mainApp.m_config.m_defaultSendMailAccountIndex,true);
+			m_titleOwnAccount.setText(m_mainApp.m_config.m_sendMailAccountList.get(m_mainApp.m_config.m_defaultSendMailAccountIndex));
 			
 			// set the listener
 			//
@@ -395,6 +422,8 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 				public void onItemSelected(AdapterView<?> parent,View view, int pos, long id) {
 					m_modified = true;
 					m_saveBtn.setEnabled(true);
+					
+					m_titleOwnAccount.setText(prepareOwnAccount());
 			    }
 
 			    public void onNothingSelected(AdapterView<?> parent){}
@@ -783,15 +812,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			
 			// compose a new mail and get the own account
 			//
-			int t_select = (int)m_ownAccountSpinner.getSelectedItemId();
-			
-			if(t_select < 0 || t_select >= m_mainApp.m_config.m_sendMailAccountList.size()){
-				t_select = 0;
-			}
-			
-			m_mainApp.m_config.m_defaultSendMailAccountIndex = t_select;
-			_mail.setOwnAccount(m_mainApp.m_config.m_sendMailAccountList.get(
-								m_mainApp.m_config.m_defaultSendMailAccountIndex));
+			_mail.setOwnAccount(prepareOwnAccount());
 			
 			_mail.SetFromVect(new String[]
             {
@@ -811,6 +832,21 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			_mail.setInReplyTo(m_referenceMail.m_mail.getMessageID());
 			_mail.setReferenceID(m_referenceMail.m_mail.getMessageID() + " " + m_referenceMail.m_mail.getReferenceID());
 		}
+	}
+	
+	private String prepareOwnAccount(){
+		// compose a new mail and get the own account
+		//
+		int t_select = (int)m_ownAccountSpinner.getSelectedItemId();
+		
+		if(t_select < 0 || t_select >= m_mainApp.m_config.m_sendMailAccountList.size()){
+			t_select = 0;
+		}
+		
+		m_mainApp.m_config.m_defaultSendMailAccountIndex = t_select;
+		
+		return m_mainApp.m_config.m_sendMailAccountList.get(
+				m_mainApp.m_config.m_defaultSendMailAccountIndex);
 	}
 	
 	private static void setEmailAddr(AutoCompleteTextView _view,List<String> _addrList){

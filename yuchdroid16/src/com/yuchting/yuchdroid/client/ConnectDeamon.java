@@ -62,6 +62,7 @@ import android.widget.RemoteViews;
 
 import com.yuchting.yuchdroid.client.mail.HomeActivity;
 import com.yuchting.yuchdroid.client.mail.MailOpenActivity;
+import com.yuchting.yuchdroid.client.mail.MailPrefActivity;
 import com.yuchting.yuchdroid.client.mail.SendMailDeamon;
 import com.yuchting.yuchdroid.client.mail.fetchMail;
 
@@ -582,7 +583,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		}
 		
 		public void pulse(){
-			m_mainApp.increasePulseCounter();	
+			m_mainApp.setDBClearCounter(m_mainApp.getDBClearCounter() + 1);	
 		}
 	};
 	
@@ -1041,7 +1042,6 @@ public class ConnectDeamon extends Service implements Runnable{
 		m_connectState = false;		
 		m_reconnectCounter = 0;
 		m_connectFailedCounter = 0;
-		m_mainApp.clearPulseCounter();
 		
 		synchronized (m_reconnectRecv) {
 			m_reconnectRecv.notify();
@@ -1192,6 +1192,10 @@ public class ConnectDeamon extends Service implements Runnable{
 		case msg_head.msgMailAccountList:
 			sendReceive.ReadStringVector(in, m_mainApp.m_config.m_sendMailAccountList);
 			m_mainApp.m_config.WriteReadIni(false);
+			
+			// send broadcast to the mail preference activity if it's requested by menu of that
+			//
+			sendBroadcast(new Intent(MailPrefActivity.DEFTAUL_ACCOUNT_LIST_REFRESH));
 			break;
 
 	
@@ -1266,7 +1270,13 @@ public class ConnectDeamon extends Service implements Runnable{
 		m_sendingQueue.addSendingData(msg_head.msgMailConfirm, t_os.toByteArray(),true);
 	}
 	
-	private void sendRequestMailAccountMsg(){
+	public static void sendRequestMailAccountMsg(){
+		if(sm_connectDeamon != null){
+			sm_connectDeamon.sendRequestMailAccountMsg_impl();
+		}
+	}
+	
+	private void sendRequestMailAccountMsg_impl(){
 		try{
 			addSendingData(msg_head.msgMailAccountList, new byte[]{msg_head.msgMailAccountList}, true);
 		}catch(Exception e){
@@ -1314,8 +1324,7 @@ public class ConnectDeamon extends Service implements Runnable{
 			
 			// send broadcast
 			//
-			Intent intent = new Intent(YuchDroidApp.FILTER_RECV_MAIL);
-			sendBroadcast(intent);
+			sendBroadcast(new Intent(YuchDroidApp.FILTER_RECV_MAIL));
 							
 		}catch(Exception _e){
 			m_mainApp.setErrorString("C ",_e);
@@ -1336,7 +1345,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		}
 		
 		if(t_send){
-			sendRequestMailAccountMsg();
+			sendRequestMailAccountMsg_impl();
 		}
 	}
 

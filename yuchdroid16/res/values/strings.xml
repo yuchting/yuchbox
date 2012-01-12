@@ -186,5 +186,12 @@
 	<string name="mail_pref_font_size_sum">Mail font size to display</string>	
 	<string name="mail_pref_clear_before_days">Reserve Mail</string>
 	<string name="mail_pref_clear_before_days_sum">How long these history mail been reserved</string>
+	<string name="mail_pref_menu_refresh_own_account">Refresh Default Account</string>
+	<string name="mail_pref_menu_clear_history">Clear History Email</string>
+	<string name="mail_pref_menu_clear_history_prompt">Are you sure clear email before %s ?</string>
+	<string name="mail_pref_menu_clear_history_prompt_error">Failed! The reserve mail day is forever.</string>
+	
+	
+	    
 
 </resources>

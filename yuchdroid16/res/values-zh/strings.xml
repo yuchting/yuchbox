@@ -187,5 +187,9 @@
 	<string name="mail_pref_font_size_sum">邮件显示字体大小</string>
 	<string name="mail_pref_clear_before_days">保留邮件</string>
 	<string name="mail_pref_clear_before_days_sum">历史邮件需要保留的时间</string>
+	<string name="mail_pref_menu_refresh_own_account">刷新默认账户</string>
+	<string name="mail_pref_menu_clear_history">清除历史邮件</string>
+	<string name="mail_pref_menu_clear_history_prompt">你确认要是删除%s之前的历史邮件么？</string>
+	<string name="mail_pref_menu_clear_history_prompt_error">删除失败！保存邮件的设置是永久的。</string>
 	
 </resources>

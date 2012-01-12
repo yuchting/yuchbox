@@ -144,7 +144,11 @@ public class YuchDroidApp extends Application {
 	
 	public boolean			m_isOfficalHost		= false;
 	
-	private int				m_pulseCounter 		= 0;
+	/**
+	 * database clear counter
+	 * will trigger database delete process if reach some value (increase every pulse)
+	 */
+	private int			m_clearHistoryDBCounter 	= 0;
 		
 	@Override
 	public void onCreate (){
@@ -383,18 +387,20 @@ public class YuchDroidApp extends Application {
 //		
 //	}
 	
-	public synchronized void increasePulseCounter(){
-		m_pulseCounter++;
+	public int getDBClearCounter(){
+		return m_clearHistoryDBCounter;
 	}
-	
-	public synchronized void clearPulseCounter(){
-		m_pulseCounter = 0;
+	public synchronized void setDBClearCounter(int _counter){
+		m_clearHistoryDBCounter = _counter;
 	}
-	
-	
-	public void clearHistory(){
 		
-		if(m_pulseCounter % 20 == 0){
+	public synchronized void clearHistoryLater(){
+		m_clearHistoryDBCounter = Integer.MAX_VALUE;
+	}
+	
+	public void clearHistoryImm(){
+		
+		if(m_clearHistoryDBCounter > 30){
 			
 			// clear mail history first
 			//
@@ -403,7 +409,10 @@ public class YuchDroidApp extends Application {
 				m_dba.clearHistoryMail(t_day);
 			}
 			
-			increasePulseCounter();
+			synchronized (this) {
+				m_clearHistoryDBCounter = 0;
+			}
+			
 		}		
 	}
 	

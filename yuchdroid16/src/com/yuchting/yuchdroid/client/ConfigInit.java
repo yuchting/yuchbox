@@ -206,6 +206,7 @@ public final class ConfigInit {
 		m_mailFontSizeIndex = 0;
 		return m_fontSizeValues[0];
 	}
+	
 	static Calendar sm_calendar = Calendar.getInstance();
 	static Date		sm_timeDate = new Date();
 	
