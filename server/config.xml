@@ -60,7 +60,7 @@
 		pushHistoryMsg="1"
 	/-->
 	
-	<EmailAccount
+	<!--EmailAccount
 		account="233010045@qq.com"
 		password=""
 		cryptPassword="8dbf031d4b9b5e9639d6b561de8e76ed"
@@ -78,7 +78,7 @@
 		
 		appendHTML="1"
 		pushHistoryMsg="1"
-	/>
+	/-->
 	
 	<!--WeiboAccount
 		type="sina"
@@ -134,12 +134,6 @@
 	
 	<!--IMAccount
 		type="gtalk"
-		account="yuchdroid@gmail.com"
-		password="hF8IBrCmBDQsKaWa"
-		cryptPassword=""
-	/-->
-	<!--IMAccount
-		type="gtalk"
 		account="yuchberry@gmail.com"
 		password=""
 		cryptPassword="7b371a95bc2d7a9b9d7c68d2cca46d98ef8857158d44258d"
@@ -151,11 +145,11 @@
 		cryptPassword="396bc581a6277f66ca6d40eb5fd98d38ef8857158d44258d"
 	/-->
 	
-	<!--IMAccount
+	<IMAccount
 		type="gtalk"
 		account="yuchdroid@gmail.com"
 		password=""
 		cryptPassword="12eb2c6d63809ffab74725f2b6282bd0ef8857158d44258d"
-	/-->
+	/>
 	
 </Yuchberry>

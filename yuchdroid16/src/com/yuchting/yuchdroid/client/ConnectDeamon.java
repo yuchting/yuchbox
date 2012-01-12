@@ -96,7 +96,9 @@ public class ConnectDeamon extends Service implements Runnable{
 		}
 		
 		public void refreshProgress(int _percent,int _attIndex){
-			if(m_progress != _percent){
+			
+			if(Math.abs(m_progress - _percent) > 3 // m_notifyMgr.notify will slow the system, so we let it notify less times
+			|| _percent == 100){
 				
 				m_progress = _percent;
 				

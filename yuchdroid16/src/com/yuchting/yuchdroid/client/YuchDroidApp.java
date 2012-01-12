@@ -55,6 +55,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
+import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import com.yuchting.yuchdroid.client.mail.HomeActivity;
@@ -153,7 +154,7 @@ public class YuchDroidApp extends Application {
 	@Override
 	public void onCreate (){
 		super.onCreate();
-		
+			
 		// start own unhandled exception handler
 		//
 		ExceptionHandler.registerHandler(this);
