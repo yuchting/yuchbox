@@ -1207,9 +1207,9 @@ public class weiboTimeLineScreen extends MainScreen{
 	protected boolean keyChar(char c,int status,int time){
 		
 		if(m_currMgr.getCurrEditItem() != null){
-			if(c == '0'){
+			if(c == ' '){
 							
-				boolean t_shiftDown = (status & KeypadListener.STATUS_SHIFT) != 0;
+				boolean t_shiftDown = (status & KeypadListener.STATUS_SHIFT_LEFT) != 0;
 				
 	    		if(t_shiftDown ){
 	    			m_phizItem.run();    			

@@ -349,7 +349,8 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			//
 			return true;
 		}else if(c == ' '){
-			if((status & KeypadListener.STATUS_SHIFT) != 0){
+			
+			if((status & KeypadListener.STATUS_SHIFT_LEFT) != 0){
 				((WeiboUpdateDlg)getScreen()).m_phizItem.run();
 				return true;
 			}

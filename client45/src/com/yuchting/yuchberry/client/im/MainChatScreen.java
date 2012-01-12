@@ -337,7 +337,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 			
 			if(c == 10){
 				
-				boolean t_shiftDown = (status & KeypadListener.STATUS_SHIFT_LEFT) != 0;
+				boolean t_shiftDown = (status & KeypadListener.STATUS_SHIFT) != 0;
 				boolean t_returnSend = m_middleMgr.m_chatScreen.m_mainApp.m_imReturnSend;
 				
 	    		if((m_editTextArea.getText().length() != 0 
@@ -362,7 +362,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 					m_middleMgr.m_chatScreen.m_recordMenu.run();
 					return true;
 					
-				}else if((status & KeypadListener.STATUS_SHIFT) != 0){
+				}else if((status & KeypadListener.STATUS_SHIFT_LEFT) != 0){
 										
 					m_middleMgr.m_chatScreen.m_phizMenu.run();
 					return true;					
