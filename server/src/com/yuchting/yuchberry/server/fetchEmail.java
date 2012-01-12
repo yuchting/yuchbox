@@ -816,41 +816,15 @@ public class fetchEmail extends fetchAccount{
 		
 		if(t_style != fetchMail.NOTHING_STYLE){
 			
-			// find the reply mail
+			// find the reply/forward mail
 			//
 			t_forwardReplyMail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
-			t_forwardReplyMail.InputMail(in);
-							
-			Vector<String> t_replyAddr = t_forwardReplyMail.GetSendToVect();
 			
-			if(!t_replyAddr.isEmpty()){
-
-				boolean t_found = false;
-				
-				if(!t_mail.getOwnAccount().isEmpty()){
-					if(t_mail.getOwnAccount().equals(GetAccountName())){
-						t_found = true;
-					}
-				}else{
-					for(int i= 0 ;i < t_replyAddr.size();i++){
-						String t_addr = (String)t_replyAddr.elementAt(i);
-																		
-						if(t_addr.toLowerCase().indexOf(GetAccountName().toLowerCase()) != -1){
-							t_found = true;
-							break;
-						}
-					}
-				}				
-				
-				if(!t_found){
-					// if forward it's own sent email
-					// will using the default account to send
-					//
-					if(t_style != fetchMail.FORWORD_STYLE){				
-						return false;
-					}					
-				}
-			}			
+			t_forwardReplyMail.InputMail(in);
+			
+			if(!doesSendThisMail(t_mail.getOwnAccount(),t_forwardReplyMail.GetSendToVect())){
+				return false;
+			}					
 			
 		}else{
 			
@@ -894,23 +868,10 @@ public class fetchEmail extends fetchAccount{
 					return false;
 				}
 				
-			}else if(!t_mail.GetFromVect().isEmpty()){
+			}else{
 				
-				String t_from = ((String)t_mail.GetFromVect().elementAt(0)).toLowerCase();
-								
-				if(t_from.indexOf(GetAccountName()) == -1){
-					// find whether has other fetchEmail to send this Email
-					//
-					for(fetchAccount acc:m_mainMgr.m_fetchAccount){
-						if(acc != this && acc instanceof fetchEmail){
-							if(t_from.indexOf(((fetchEmail)acc).GetAccountName()) != -1){
-								
-								// another email account is found
-								//
-								return false;
-							}
-						}
-					}
+				if(!doesSendThisMail(t_mail.getOwnAccount(),t_mail.GetFromVect())){
+					return false;
 				}
 			}
 		}
@@ -919,8 +880,7 @@ public class fetchEmail extends fetchAccount{
 		
 		if(m_mainMgr.GetConnectClientVersion() >= 4){
 			t_copyToSentFolder = (in.read() == 1);
-		}
-		
+		}		
 		
 		if(t_mail.GetAttachment().isEmpty() || m_mainMgr.GetConnectClientVersion() >= 13){
 			SendMailToSvr(new RecvMailAttach(m_mainMgr,t_mail,t_forwardReplyMail,t_style,t_copyToSentFolder));
@@ -941,6 +901,48 @@ public class fetchEmail extends fetchAccount{
 		return true;
 	}
 	
+	private boolean doesSendThisMail(String _ownAccount,Vector<String> _fromAddr){
+		
+		boolean t_send = false;
+		
+		if(!_ownAccount.isEmpty()){
+			// has the own account
+			//
+			if(_ownAccount.equals(GetAccountName()) || m_mainMgr.getEmailPushAccount(_ownAccount) == null){
+				t_send = true;
+			}
+			
+		}else if(!_fromAddr.isEmpty()){
+			// from address list
+			//
+			fetchEmail t_account = null;
+			fetchEmail t_sendAccount = null;
+			for(String addr:_fromAddr){
+				
+				t_account = m_mainMgr.getEmailPushAccount(addr);
+				
+				if(t_account == this){
+					// this account can send this mail
+					//
+					t_send = true;
+					break;
+				}else if(t_account != null){
+					// has another email push account can send this mail
+					//
+					t_sendAccount = t_account;
+				}
+			}
+			
+			if(!t_send && t_sendAccount == null){
+				// didn't found any send account
+				//
+				t_send = true;
+			}
+		}
+		
+		return t_send;
+	}
+		
 	private boolean ProcessMailConfirm(ByteArrayInputStream in)throws Exception{
 		
 		final int t_mailHash = sendReceive.ReadInt(in);

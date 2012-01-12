@@ -593,6 +593,26 @@ public class fetchMgr{
 		}
 	}
 	
+	public fetchEmail getEmailPushAccount(String _accountName){
+		
+		_accountName = _accountName.toLowerCase();
+		
+		// find whether has other fetchEmail to send this Email
+		//
+		for(fetchAccount acc:m_fetchAccount){
+			if(acc instanceof fetchEmail){
+				if(_accountName.indexOf(((fetchEmail)acc).GetAccountName()) != -1){
+					
+					// another email account is found
+					//
+					return (fetchEmail)acc;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
 	public synchronized void EndListening(){
 		
 		m_endListenState = true;
