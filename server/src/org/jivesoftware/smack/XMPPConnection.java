@@ -383,8 +383,14 @@ public class XMPPConnection extends Connection {
         authenticated = false;
         connected = false;
 
-        packetReader.shutdown();
-        packetWriter.shutdown();
+        if(packetReader != null){
+        	packetReader.shutdown();
+        }
+        
+        if(packetWriter != null){
+        	packetWriter.shutdown();
+        }        
+        
         // Wait 150 ms for processes to clean-up, then shutdown.
         try {
             Thread.sleep(150);

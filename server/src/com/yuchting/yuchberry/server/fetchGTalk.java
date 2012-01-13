@@ -416,7 +416,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	
 
 	/**
-	 * client is connected to server
+	 * yuchsbox client is connected to server
 	 */
 	public void ClientConnected(){
 		
