@@ -1117,11 +1117,15 @@ public class connectDeamon extends Thread implements SendListener,
 				 if(message.indexOf("Peer") != -1){
 					 m_connectCounter = 1000;
 				 }
+			 }else if(_e instanceof java.io.IOException){
+				 m_connectCounter = 1000;
+				 m_mainApp.SetErrorString(recvMain.sm_local.getString(yblocalResource.CONNECT_NET_BROKEN_PROMPT));
 			 }
 			 
 			 if(t_append.length() != 0){
 				 m_mainApp.SetErrorString("CM Failed: " + t_append);
 			 }
+			 
 			 
 			 throw _e;
 		 } 
