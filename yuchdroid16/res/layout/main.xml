@@ -12,13 +12,25 @@
 	    	android:layout_height="wrap_content" 
 	    	android:layout_width="fill_parent"
 	    	android:orientation="vertical">
-	    	<ImageView
-		    	android:layout_height="wrap_content"
-		    	android:layout_width="wrap_content"
-		    	android:layout_gravity="center_horizontal"
-		    	android:layout_centerHorizontal="true"
-		    	android:src="@drawable/big_logo"
-		    />
+	    	<LinearLayout 
+	    	    android:layout_height="wrap_content" 
+	    		android:layout_width="wrap_content"
+				android:layout_gravity="center_horizontal"
+			    android:layout_centerHorizontal="true"
+	    		android:orientation="horizontal">
+	    		<ImageView
+			    	android:layout_height="wrap_content"
+			    	android:layout_width="wrap_content"
+			    	android:src="@drawable/Long_year"
+			    />
+		    	<ImageView
+			    	android:layout_height="wrap_content"
+			    	android:layout_width="wrap_content"
+			    	android:layout_gravity="bottom"
+			    	android:src="@drawable/big_logo"
+			    />    
+	    	</LinearLayout>
+	    	
 		    <LinearLayout 
 		    	android:layout_height="wrap_content" 
 		    	android:layout_width="fill_parent"
