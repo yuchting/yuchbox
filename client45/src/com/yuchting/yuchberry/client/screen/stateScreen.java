@@ -378,6 +378,9 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 			
 			m_mainApp.m_allImageSets.drawImage(_g, m_stateLogo, t_logo_x, t_logo_y);
 			
+			t_logo_x = t_logo_x + m_stateLogo.getWidth();
+			m_mainApp.m_allImageSets.drawImage(_g, m_LongYearLogo, t_logo_x, 0);
+			
 	    	int t_delta_x = 4;
 	    	int t_delta_y = (m_stateInputBG.getImageHeight() - m_hostName.getFont().getHeight()) / 2;	    	
 	    	
@@ -422,15 +425,16 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 	
 	ImageUnit		m_stateBG = null;
 	ImageUnit		m_stateLogo = null;
+	ImageUnit		m_LongYearLogo = null;
 	
 	ButtonSegImage	m_stateInputBG = null;
 	
     public stateScreen(recvMain _app){
-    	m_mainApp	= _app;
-    	 
+    	m_mainApp	= _app;    	 
     	
     	m_stateBG		= m_mainApp.m_allImageSets.getImageUnit("state_bg");
     	m_stateLogo		= m_mainApp.m_allImageSets.getImageUnit("state_logo");
+    	m_LongYearLogo	= m_mainApp.m_allImageSets.getImageUnit("LongYear");
     	
     	m_stateInputBG = new ButtonSegImage(m_mainApp.m_allImageSets.getImageUnit("state_input_left"), 
 							    			m_mainApp.m_allImageSets.getImageUnit("state_input_mid"), 

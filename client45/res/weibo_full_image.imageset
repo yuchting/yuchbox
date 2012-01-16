@@ -58,7 +58,7 @@
 	<Image Name="commentSign" XPos="16" YPos="353" Width="16" Height="16" />
 	<Image Name="picSign_1" XPos="0" YPos="426" Width="16" Height="16" />
 	<Image Name="commentSign_1" XPos="16" YPos="426" Width="16" Height="16" />
-	
+		
 	<Image Name="refresh" XPos="32" YPos="353" Width="24" Height="24" />
 	<Image Name="refresh_back" XPos="210" YPos="277" Width="8" Height="32" />
 	<Image Name="refresh_selected" XPos="202" YPos="277" Width="8" Height="32" />
