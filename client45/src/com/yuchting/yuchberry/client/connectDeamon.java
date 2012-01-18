@@ -195,6 +195,7 @@ public class connectDeamon extends Thread implements SendListener,
 	int				m_ipConnectCounter 		= 0;
 	 
 	int				m_connectCounter		= -1;
+	int				m_connectSleep			= 10000; //10second
 	 
 	public static class FetchAttachment{
 		int						m_messageHashCode;
@@ -999,6 +1000,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 interrupt();	 
 		 
 		 m_connectCounter = -1;
+		 m_connectSleep = 10000;
 				 	
 		 synchronized (this) {
 			 
@@ -1111,15 +1113,42 @@ public class connectDeamon extends Thread implements SendListener,
 			 
 		 }catch(Exception _e){
 	
+			 m_connectSleep = 10000;
+			 
 			 String message = _e.getMessage();
 
-			 if(message != null){
-				 if(message.indexOf("Peer") != -1){
-					 m_connectCounter = 1000;
+			 if(message != null && message.indexOf("Peer") != -1){
+				 // server daemon process is not start
+				 //
+				 m_connectSleep = 20 * 60000;
+				 
+				 if(m_mainApp.isForeground()){
+					 m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.CONNECT_SERVER_NOT_START_PROMPT));
+				 }else{
+					 m_mainApp.SetErrorString(recvMain.sm_local.getString(yblocalResource.CONNECT_SERVER_NOT_START_PROMPT));
 				 }
-			 }else if(_e instanceof java.io.IOException){
-				 m_connectCounter = 1000;
-				 m_mainApp.SetErrorString(recvMain.sm_local.getString(yblocalResource.CONNECT_NET_BROKEN_PROMPT));
+			
+			 }else if(message == null && _e instanceof java.io.IOException){
+				 
+				 // client BlackBerry NET BROKEN
+				 //
+				 m_connectSleep = 30 * 60000;
+				 
+				 if(m_mainApp.isForeground()){
+					 m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.CONNECT_NET_BROKEN_PROMPT));
+				 }else{
+					 m_mainApp.SetErrorString(recvMain.sm_local.getString(yblocalResource.CONNECT_NET_BROKEN_PROMPT));
+				 }
+				 
+			 }else{
+				 // another exception information
+				 //
+				 if(m_mainApp.getActiveScreen() == m_mainApp.m_stateScreen 
+					&& m_mainApp.m_stateScreen != null){
+					 // prompt the user if in state screen
+					 //
+					 m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.CONNECT_ERROR_PROMPT));
+				 }
 			 }
 			 
 			 if(t_append.length() != 0){
@@ -1143,7 +1172,7 @@ public class connectDeamon extends Thread implements SendListener,
 			 return m_mainApp.GetPulseIntervalMinutes() * 60 * 1000;
 		 }
 		 
-		 return 10000;
+		 return m_connectSleep;
 	 }
 	 
 	 private synchronized void ProcessMsg(byte[] _package)throws Exception{
