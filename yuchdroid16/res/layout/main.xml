@@ -21,7 +21,7 @@
 	    		<ImageView
 			    	android:layout_height="wrap_content"
 			    	android:layout_width="wrap_content"
-			    	android:src="@drawable/Long_year"
+			    	android:src="@drawable/long_year_logo"
 			    />
 		    	<ImageView
 			    	android:layout_height="wrap_content"
