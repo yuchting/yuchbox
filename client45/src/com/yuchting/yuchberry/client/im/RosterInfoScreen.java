@@ -48,10 +48,10 @@ public class RosterInfoScreen extends MainScreen {
 	TextField		m_source = null;
 	TextField		m_status = null;
 	
-	RosterChatData	m_currRoster = null;
+	MainIMScreen.RosterChatData	m_currRoster = null;
 	
 		
-	public RosterInfoScreen(MainIMScreen _screen,RosterChatData _roster){
+	public RosterInfoScreen(MainIMScreen _screen,MainIMScreen.RosterChatData _roster){
 		super(Manager.VERTICAL_SCROLL);
 		m_mainScreen = _screen;
 		

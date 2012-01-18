@@ -1,8 +1,35 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.ui;
 
 import java.util.Vector;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
@@ -65,8 +92,8 @@ final class PhizMgr extends Manager{
 			setPositionChild(t_phiz,t_x,t_y);		
 			layoutChild(t_phiz,m_phizSize,m_phizSize);
 			
-			t_x += Phiz.fsm_phizSize + fsm_phizInterval; 
-			if(t_x + Phiz.fsm_phizSize + fsm_phizInterval>= Display.getWidth()){				
+			t_x += Phiz.fsm_phizSize + fsm_phizInterval;
+			if(t_x + Phiz.fsm_phizSize + fsm_phizInterval > Display.getWidth()){				
 				t_x = 0;
 				t_y += Phiz.fsm_phizSize + fsm_phizInterval;
 			}
@@ -212,7 +239,7 @@ public class PhizSelectedScreen extends MainScreen{
 	};
 	
 	PhizMgr		m_phizMgr;
-	String		m_promptString = recvMain.sm_local.getString(localResource.WEIBO_PHIZ_SCREEN_PROMPT);
+	String		m_promptString = recvMain.sm_local.getString(yblocalResource.WEIBO_PHIZ_SCREEN_PROMPT);
 	LabelField	m_promptLabel = new LabelField(m_promptString,Field.NON_FOCUSABLE);
 	
 	public PhizSelectedScreen(Vector _phizList){
@@ -243,7 +270,6 @@ public class PhizSelectedScreen extends MainScreen{
 			}catch(Exception e){
 				
 			}
-			
 		}
 		
 		super.close();

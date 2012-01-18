@@ -1,3 +1,30 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.ui;
 
 import java.util.Vector;
@@ -46,12 +73,24 @@ public class WeiboTextField extends ActiveRichTextField{
 	};
 		
 	Vector m_phizList	= new Vector();
+	boolean	m_disableAtSign = false;
 		
 	public static String sm_replacePhizText = " ";
 	public static int sm_replacePhiz_x_offset = 0;
 	
 	public WeiboTextField(int _foreground,int _background){
 		super("",Field.READONLY | Field.FOCUSABLE | SCANFLAG_THREAD_ON_CREATE);
+		init(_foreground,_background);
+	}
+	
+	public WeiboTextField(int _foreground,int _background,boolean _disableAtSign){
+		super("",Field.READONLY | Field.FOCUSABLE | SCANFLAG_THREAD_ON_CREATE);
+		init(_foreground,_background);
+		
+		m_disableAtSign = _disableAtSign;
+	}
+	
+	private void init(int _foreground,int _background){
 		setColor(_foreground,_background);
 		
 		if(sm_fontList[0] == null){
@@ -78,7 +117,7 @@ public class WeiboTextField extends ActiveRichTextField{
 		Arrays.fill(m_background,_background);
 	}
 		
-	public static String getTag(ReadText _text){
+	public static String getTag(ReadText _text,boolean _disableAtSign){
 		
 		if(_text.m_index >= _text.m_originalText.length()){
 			return null;
@@ -92,27 +131,7 @@ public class WeiboTextField extends ActiveRichTextField{
 			char a = _text.m_originalText.charAt(_text.m_index);
 			
 			switch(a){
-			case '@':
-				
-				if(t_tag.length() != 0){
-					break getTag_while;
-				}
-				
-				t_tag.append(a);
-				_text.m_index++;
-				
-				while(_text.m_index < _text.m_originalText.length()){
-					a = _text.m_originalText.charAt(_text.m_index);
-										
-					if(!isLeagalNameCharacter(a)){
-						break getTag_while;
-					}
-					
-					t_tag.append(a);
-					_text.m_index++;
-				}
-				
-				break;
+
 			case '[':
 				
 				if(t_tag.length() != 0){
@@ -140,6 +159,27 @@ public class WeiboTextField extends ActiveRichTextField{
 					_text.m_index++;					
 				}
 				break;
+			case '@':
+				if(!_disableAtSign){
+					if(t_tag.length() != 0){
+						break getTag_while;
+					}
+					
+					t_tag.append(a);
+					_text.m_index++;
+					
+					while(_text.m_index < _text.m_originalText.length()){
+						a = _text.m_originalText.charAt(_text.m_index);
+											
+						if(!isLeagalNameCharacter(a)){
+							break getTag_while;
+						}
+						
+						t_tag.append(a);
+						_text.m_index++;
+					}
+					break;
+				}				
 			default:
 				t_tag.append(a);
 			}
@@ -196,14 +236,14 @@ public class WeiboTextField extends ActiveRichTextField{
 		super.paint(_g);
 	}
 	
-	public static String getConvertString(String _text){
+	public static String getConvertString(String _text,boolean _disableAtSign){
 		
 		StringBuffer t_finalText = new StringBuffer();
 		
 		ReadText t_originalText = new ReadText(_text);
 		
 		String t_read = null;
-		while((t_read = getTag(t_originalText)) != null){
+		while((t_read = getTag(t_originalText,_disableAtSign)) != null){
 			char a = t_read.charAt(0);
 			
 			switch(a){
@@ -259,15 +299,11 @@ public class WeiboTextField extends ActiveRichTextField{
 		ReadText t_originalText = new ReadText(_text);
 		
 		String t_read = null;
-		while((t_read = getTag(t_originalText)) != null){
+		while((t_read = getTag(t_originalText,m_disableAtSign)) != null){
 			char a = t_read.charAt(0);
 			
 			switch(a){
-			case '@':
-				t_finalText.append(t_read);
-				m_bufferedOffset[t_offsetIndex] = t_finalText.length();
-				m_bufferedAttr[t_attrIndex]		= 1;			
-				break;
+
 			case '[':
 				
 				Phiz t_phiz = findPhizName(t_read);
@@ -283,6 +319,13 @@ public class WeiboTextField extends ActiveRichTextField{
 				
 				m_bufferedOffset[t_offsetIndex] = t_finalText.length();
 				break;
+			case '@':
+				if(!m_disableAtSign){
+					t_finalText.append(t_read);
+					m_bufferedOffset[t_offsetIndex] = t_finalText.length();
+					m_bufferedAttr[t_attrIndex]		= 1;			
+					break;
+				}
 			default:
 				t_finalText.append(t_read);
 				

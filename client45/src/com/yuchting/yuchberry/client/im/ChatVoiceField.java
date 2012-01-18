@@ -34,14 +34,14 @@ import com.yuchting.yuchberry.client.ui.ImageButton;
 
 public class ChatVoiceField extends ImageButton {
 	fetchChatMsg m_msg = null;
-	IChatFieldOpen m_open = null;
+	ChatField.IChatFieldOpen m_open = null;
 	
 	public ChatVoiceField(){
 		super("",recvMain.sm_weiboUIImage.getImageUnit("voice_button"),
 										recvMain.sm_weiboUIImage.getImageUnit("voice_button_focus"),recvMain.sm_weiboUIImage);
 	}
 	
-	public void init(fetchChatMsg msg,IChatFieldOpen _open){
+	public void init(fetchChatMsg msg,ChatField.IChatFieldOpen _open){
 		m_msg 	= msg;
 		m_open = _open;
 	}

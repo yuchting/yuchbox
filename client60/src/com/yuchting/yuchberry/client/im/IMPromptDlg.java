@@ -1,6 +1,33 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.im;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Keypad;
@@ -16,15 +43,15 @@ import com.yuchting.yuchberry.client.recvMain;
 
 public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 	
-	RosterChatData 			m_openData = null;
+	MainIMScreen.RosterChatData 	m_openData = null;
 	MainIMScreen			m_mainScreen = null;
 	
 	LabelField				m_nameText = new LabelField();
 	LabelField				m_msgText = new LabelField();
-	ButtonField				m_replyBut	 = new ButtonField(recvMain.sm_local.getString(localResource.IM_PROMPT_DLG_CONFIRM_BUT),
+	ButtonField				m_replyBut	 = new ButtonField(recvMain.sm_local.getString(yblocalResource.IM_PROMPT_DLG_CONFIRM_BUT),
 												Field.FIELD_HCENTER | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	
-	ButtonField				m_laterBut	 = new ButtonField(recvMain.sm_local.getString(localResource.IM_PROMPT_DLG_CANCEL_BUT),
+	ButtonField				m_laterBut	 = new ButtonField(recvMain.sm_local.getString(yblocalResource.IM_PROMPT_DLG_CANCEL_BUT),
 												Field.FIELD_HCENTER | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	
 	public IMPromptDlg(MainIMScreen _mainScreen){
@@ -32,7 +59,7 @@ public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 		
 		m_mainScreen = _mainScreen;
 		
-		LabelField t_title = new LabelField(recvMain.sm_local.getString(localResource.IM_PROMPT_DLG_TITLE));
+		LabelField t_title = new LabelField(recvMain.sm_local.getString(yblocalResource.IM_PROMPT_DLG_TITLE));
 		t_title.setFont(MainIMScreen.fsm_boldFont);
 		add(t_title);
 		
@@ -50,7 +77,7 @@ public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 		m_laterBut.setChangeListener(this);
 	}
 	
-	public void setRosterChatData(RosterChatData _data,String _text){
+	public void setRosterChatData(MainIMScreen.RosterChatData _data,String _text){
 		m_openData = _data;
 
 		m_nameText.setText(m_openData.m_roster.getName() + ":");
@@ -101,7 +128,7 @@ public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 	
 	private boolean hasMoreChatPrompt(){
 		if(!m_mainScreen.m_promptQueue.isEmpty()){
-			RosterChatData t_promptData = (RosterChatData)m_mainScreen.m_promptQueue.elementAt(0);
+			MainIMScreen.RosterChatData t_promptData = (MainIMScreen.RosterChatData)m_mainScreen.m_promptQueue.elementAt(0);
 			m_mainScreen.m_promptQueue.removeElementAt(0);
 			
 			int t_num = t_promptData.m_chatMsgList.size();

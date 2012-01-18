@@ -1,3 +1,30 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.weibo;
 
 import java.io.InputStream;
@@ -8,7 +35,7 @@ import com.yuchting.yuchberry.client.sendReceive;
 
 public class fetchWeiboUser {
 	
-	public final static int VERSION = 0;
+	public final static int VERSION = 1;
 	
 	byte m_weiboUserStyle = fetchWeibo.SINA_WEIBO_STYLE;
 	byte m_gender = 0;
@@ -28,10 +55,10 @@ public class fetchWeiboUser {
 	int m_fansNum = 0;
 	
 	int m_weiboNum = 0;	
-	
+		
 	byte[] m_headImage = null;
 	Vector	m_updateWeibo = new Vector();
-	
+		
 	public long getId(){return m_id;}
 	public void setId(long _id){m_id = _id;}
 	
@@ -99,7 +126,7 @@ public class fetchWeiboUser {
 		m_followNum			= sendReceive.ReadInt(in);
 		m_fansNum			= sendReceive.ReadInt(in);
 		m_weiboNum			= sendReceive.ReadInt(in);
-		
+			
 		int t_appendWeiboNum = sendReceive.ReadInt(in);
 		for(int i = 0;i < t_appendWeiboNum;i++){
 			fetchWeibo t_weibo = new fetchWeibo();
@@ -137,6 +164,7 @@ public class fetchWeiboUser {
 		sendReceive.WriteInt(os,m_followNum);
 		sendReceive.WriteInt(os,m_fansNum);
 		sendReceive.WriteInt(os,m_weiboNum);
+		
 		
 		sendReceive.WriteInt(os,m_updateWeibo.size());
 		for(int i = 0;i < m_updateWeibo.size();i++){

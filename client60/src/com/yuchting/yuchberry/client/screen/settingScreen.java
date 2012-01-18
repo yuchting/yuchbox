@@ -1,9 +1,36 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.screen;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Vector;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.system.Clipboard;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -51,10 +78,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 LabelField			m_totalByte		= new LabelField();
 	 LabelField			m_sendRecvMailNum	= new LabelField();
 	 LabelField			m_sentRecvWeiboNum	= new LabelField();
-	 ButtonField		m_clearByteBut	= new ButtonField(recvMain.sm_local.getString(localResource.SETTING_CLEAR_STATISTICS),
+	 ButtonField		m_clearByteBut	= new ButtonField(recvMain.sm_local.getString(yblocalResource.SETTING_CLEAR_STATISTICS),
 			 											Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	 
-	 ButtonField		m_copyStatBut	= new ButtonField(recvMain.sm_local.getString(localResource.SETTING_COPY_STATISTICS),
+	 ButtonField		m_copyStatBut	= new ButtonField(recvMain.sm_local.getString(yblocalResource.SETTING_COPY_STATISTICS),
 			 											Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	 CheckboxField		m_fulldayPrompt = null;
 	 NumericChoiceField	m_startPromptHour = null;
@@ -70,24 +97,24 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 CheckboxField		m_mailUseLocation = null;
 	 ObjectChoiceField	m_recvMsgTextLength	= null;
 	 CheckboxField		m_closeMailSendModule = null;
-	 ButtonField		m_changeSignature = new ButtonField(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_BUTTON_TEXT),
+	 ButtonField		m_changeSignature = new ButtonField(recvMain.sm_local.getString(yblocalResource.CHANGE_SIGNATURE_BUTTON_TEXT),
 			 										Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	 
 	 VerticalFieldManager	m_sendMailAccountList = new VerticalFieldManager(Manager.VERTICAL_SCROLL);
-	 ButtonField		m_requestMailAccountBut = new ButtonField(recvMain.sm_local.getString(localResource.SETTING_REQUEST_MAIL_ACCOUNT),
+	 ButtonField		m_requestMailAccountBut = new ButtonField(recvMain.sm_local.getString(yblocalResource.SETTING_REQUEST_MAIL_ACCOUNT),
 			 											Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	 
 	 CheckboxField		m_weiboModule	= null;
 	 NullField			m_weiboNullField = new NullField(Field.NON_FOCUSABLE);
-	 LabelField			m_weiboSettingPrompt = new LabelField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SETTING_PROMPT));
+	 LabelField			m_weiboSettingPrompt = new LabelField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_SETTING_PROMPT));
 	 
 	 CheckboxField		m_imModule		= null;
 	 NullField			m_imNullField	= new NullField(Field.NON_FOCUSABLE);
-	 LabelField			m_imSettingPrompt = new LabelField(recvMain.sm_local.getString(localResource.SETTING_IM_SETTING_PROMPT));
+	 LabelField			m_imSettingPrompt = new LabelField(recvMain.sm_local.getString(yblocalResource.SETTING_IM_SETTING_PROMPT));
 	 
 	 recvMain			m_mainApp		= null;
 	 
-	 MenuItem	m_helpMenu = new MenuItem(recvMain.sm_local.getString(localResource.SETTING_HELP_MENU_LABEL), 99, 10) {	
+	 MenuItem	m_helpMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.SETTING_HELP_MENU_LABEL), 99, 10) {	
 		 public void run() {
 			 recvMain.openURL("http://code.google.com/p/yuchberry/wiki/Use_introduction#高级设置");
 		 }
@@ -103,43 +130,43 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 
 		 
 		 //@{ connection option
-		 LabelField t_title = new LabelField(recvMain.sm_local.getString(localResource.CONNECT_OPTION_LABEL));
+		 LabelField t_title = new LabelField(recvMain.sm_local.getString(yblocalResource.CONNECT_OPTION_LABEL));
 		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
 		 add(t_title);
 		 
-		 m_APN			= new EditField(recvMain.sm_local.getString(localResource.APN_LABEL),
+		 m_APN			= new EditField(recvMain.sm_local.getString(yblocalResource.APN_LABEL),
 		 									m_mainApp.GetAPNList(),128,EditField.FILTER_DEFAULT);
 		 add(m_APN);
 		 
-		 m_appendString	= new EditField(recvMain.sm_local.getString(localResource.APPEND_STRING_LABEL),
+		 m_appendString	= new EditField(recvMain.sm_local.getString(yblocalResource.APPEND_STRING_LABEL),
 											m_mainApp.m_appendString,128,EditField.FILTER_DEFAULT);
 		 add(m_appendString);
 		 
-		 m_passwordKey	= new EditField(recvMain.sm_local.getString(localResource.SETTING_PASSWORD_KEY),
+		 m_passwordKey	= new EditField(recvMain.sm_local.getString(yblocalResource.SETTING_PASSWORD_KEY),
 				 							(m_mainApp.m_passwordKey.length() != 0)?"***":"",128,EditField.FILTER_DEFAULT);
 		 add(m_passwordKey);
 		 m_passwordKey.setChangeListener(this);
 		 m_passwordKey.setFocusListener(this);
 		 
-		 m_pulseInterval	= new ObjectChoiceField(recvMain.sm_local.getString(localResource.PULSE_INTERVAL_LABEL),
+		 m_pulseInterval	= new ObjectChoiceField(recvMain.sm_local.getString(yblocalResource.PULSE_INTERVAL_LABEL),
 				 							recvMain.fsm_pulseIntervalString,m_mainApp.m_pulseIntervalIndex);
 		 add(m_pulseInterval);
 		 m_pulseInterval.setChangeListener(this);
 
-		 m_useSSLCheckbox	= new CheckboxField(recvMain.sm_local.getString(localResource.USE_SSL_LABEL),m_mainApp.m_useSSL);
+		 m_useSSLCheckbox	= new CheckboxField(recvMain.sm_local.getString(yblocalResource.USE_SSL_LABEL),m_mainApp.m_useSSL);
 		 add(m_useSSLCheckbox);
 		 m_useSSLCheckbox.setChangeListener(this);
 		 
-		 m_uesMDS			= new CheckboxField(recvMain.sm_local.getString(localResource.USE_MDS),m_mainApp.UseMDS());
+		 m_uesMDS			= new CheckboxField(recvMain.sm_local.getString(yblocalResource.USE_MDS),m_mainApp.UseMDS());
 		 add(m_uesMDS);
 		 
-		 m_useWifi			= new CheckboxField(recvMain.sm_local.getString(localResource.USE_WIFI_LABEL), m_mainApp.m_useWifi);
+		 m_useWifi			= new CheckboxField(recvMain.sm_local.getString(yblocalResource.USE_WIFI_LABEL), m_mainApp.m_useWifi);
 		 add(m_useWifi);
 		 
-		 m_autoRun			= new CheckboxField(recvMain.sm_local.getString(localResource.AUTO_RUN_CHECK_BOX), m_mainApp.m_autoRun);
+		 m_autoRun			= new CheckboxField(recvMain.sm_local.getString(yblocalResource.AUTO_RUN_CHECK_BOX), m_mainApp.m_autoRun);
 		 add(m_autoRun);
 		 
-		 m_conDisPrompt		= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_CONNECT_DISCONNECT_PROMPT), m_mainApp.m_connectDisconnectPrompt);
+		 m_conDisPrompt		= new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_CONNECT_DISCONNECT_PROMPT), m_mainApp.m_connectDisconnectPrompt);
 		 add(m_conDisPrompt);
 		 
 		 //@}
@@ -147,33 +174,33 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 add(new SeparatorField());
 		 
 		 //@{ mail operation
-		 t_title = new LabelField(recvMain.sm_local.getString(localResource.SETTING_MAIL_OP));
+		 t_title = new LabelField(recvMain.sm_local.getString(yblocalResource.SETTING_MAIL_OP));
 		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
 		 add(t_title);
 		 
-		 m_discardOrgText	= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_DISCARD_ORG_TEXT), m_mainApp.m_discardOrgText);
+		 m_discardOrgText	= new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_DISCARD_ORG_TEXT), m_mainApp.m_discardOrgText);
 		 add(m_discardOrgText);
 		 
-		 m_delRemoteMail	= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_DELETE_REMOTE_MAIL),m_mainApp.m_delRemoteMail);
+		 m_delRemoteMail	= new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_DELETE_REMOTE_MAIL),m_mainApp.m_delRemoteMail);
 		 add(m_delRemoteMail);
 		 
-		 m_copyToSentFolder	= new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_COPY_MAIL_TO_SENT_FOLDER),m_mainApp.m_copyMailToSentFolder);
+		 m_copyToSentFolder	= new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_COPY_MAIL_TO_SENT_FOLDER),m_mainApp.m_copyMailToSentFolder);
 		 add(m_copyToSentFolder);
 		 
-		 m_mailUseLocation = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_MAIL_USER_LOCATION),m_mainApp.m_mailUseLocation);
+		 m_mailUseLocation = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_MAIL_USER_LOCATION),m_mainApp.m_mailUseLocation);
 		 add(m_mailUseLocation);
 		 
-		 m_closeMailSendModule = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_CLOSE_SEND_MAIL),m_mainApp.m_closeMailSendModule);
+		 m_closeMailSendModule = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_CLOSE_SEND_MAIL),m_mainApp.m_closeMailSendModule);
 		 add(m_closeMailSendModule);
 		 
-		 m_recvMsgTextLength = new ObjectChoiceField(recvMain.sm_local.getString(localResource.MESSAGE_CONTAIN_MAX_LENGTH),
+		 m_recvMsgTextLength = new ObjectChoiceField(recvMain.sm_local.getString(yblocalResource.MESSAGE_CONTAIN_MAX_LENGTH),
 				 					recvMain.fsm_recvMaxTextLenghtString,m_mainApp.m_recvMsgTextLengthIndex);
 		 add(m_recvMsgTextLength);
 		 
 		 add(m_changeSignature);
 		 m_changeSignature.setChangeListener(this);
 		 		 
-		 add(new LabelField(recvMain.sm_local.getString(localResource.SETTING_DEFAULT_MAIL_ACCOUNT)));
+		 add(new LabelField(recvMain.sm_local.getString(yblocalResource.SETTING_DEFAULT_MAIL_ACCOUNT)));
 		 add(m_sendMailAccountList);
 		 add(m_requestMailAccountBut);
 		 m_requestMailAccountBut.setChangeListener(this);
@@ -185,11 +212,11 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 add(new SeparatorField());
 		 
 		 //@{ weibo op
-		 t_title = new LabelField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP));
+		 t_title = new LabelField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_OP));
 		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
 		 add(t_title);
 		 
-		 m_weiboModule = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_WEIBO_OP_ENABLE),
+		 m_weiboModule = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_OP_ENABLE),
 				 								m_mainApp.m_enableWeiboModule);
 		 add(m_weiboModule);
 		 m_weiboModule.setChangeListener(this);
@@ -204,11 +231,11 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 add(new SeparatorField());
 		 
 		 //@{ im op
-		 t_title = new LabelField(recvMain.sm_local.getString(localResource.SETTING_IM_OP));
+		 t_title = new LabelField(recvMain.sm_local.getString(yblocalResource.SETTING_IM_OP));
 		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
 		 add(t_title);
 		 
-		 m_imModule = new CheckboxField(recvMain.sm_local.getString(localResource.SETTING_IM_OP_ENABLE),m_mainApp.m_enableIMModule);
+		 m_imModule = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_IM_OP_ENABLE),m_mainApp.m_enableIMModule);
 		 add(m_imModule);
 		 m_imModule.setChangeListener(this);
 		 
@@ -221,28 +248,28 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 add(new SeparatorField());		 
 		 
 		 //@{ reminder option
-		 t_title = new LabelField(recvMain.sm_local.getString(localResource.PROMPT_OPTION_LABEL));
+		 t_title = new LabelField(recvMain.sm_local.getString(yblocalResource.PROMPT_OPTION_LABEL));
 		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
 		 add(t_title);
 		 
-		 m_fulldayPrompt 	= new CheckboxField(recvMain.sm_local.getString(localResource.FULLDAY_PROMT_LABEL),m_mainApp.m_fulldayPrompt);
+		 m_fulldayPrompt 	= new CheckboxField(recvMain.sm_local.getString(yblocalResource.FULLDAY_PROMT_LABEL),m_mainApp.m_fulldayPrompt);
 		 add(m_fulldayPrompt);
 		 
-		 m_startPromptHour	= new NumericChoiceField(recvMain.sm_local.getString(localResource.START_HOUR_PROMPT_LABEL),0,24,1,m_mainApp.m_startPromptHour);
+		 m_startPromptHour	= new NumericChoiceField(recvMain.sm_local.getString(yblocalResource.START_HOUR_PROMPT_LABEL),0,24,1,m_mainApp.m_startPromptHour);
 		 add(m_startPromptHour);
 		 
-		 m_endPromptHour	= new NumericChoiceField(recvMain.sm_local.getString(localResource.END_HOUR_PROMPT_LABEL),0,24,1,m_mainApp.m_endPromptHour);
+		 m_endPromptHour	= new NumericChoiceField(recvMain.sm_local.getString(yblocalResource.END_HOUR_PROMPT_LABEL),0,24,1,m_mainApp.m_endPromptHour);
 		 add(m_endPromptHour);
 		 //@}
 		 
 		 add(new SeparatorField());
 		 
 		 //@{ other option
-		 t_title = new LabelField(recvMain.sm_local.getString(localResource.LOCATION_OPTIION_LABEL));
+		 t_title = new LabelField(recvMain.sm_local.getString(yblocalResource.LOCATION_OPTIION_LABEL));
 		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
 		 add(t_title);
 		 
-		 m_useLocationInfo	= new CheckboxField(recvMain.sm_local.getString(localResource.USE_LOCATION_LABEL), m_mainApp.m_useLocationInfo);
+		 m_useLocationInfo	= new CheckboxField(recvMain.sm_local.getString(yblocalResource.USE_LOCATION_LABEL), m_mainApp.m_useLocationInfo);
 		 add(m_useLocationInfo);
 		 
 		 add(m_longitude);
@@ -255,7 +282,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 add(new SeparatorField());
 		 
 		 //@{ upload and download bytes statistics
-		 t_title = new LabelField(recvMain.sm_local.getString(localResource.BYTE_STATISTICS));
+		 t_title = new LabelField(recvMain.sm_local.getString(yblocalResource.BYTE_STATISTICS));
 		 t_title.setFont(t_title.getFont().derive(Font.BOLD));
 		 add(t_title);
 		 
@@ -276,7 +303,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 RefreshUpDownloadByte();
 		 //@}
 		 
-		 setTitle(new LabelField(recvMain.sm_local.getString(localResource.ADVANCE_SETTING_TITEL_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
+		 setTitle(new LabelField(recvMain.sm_local.getString(yblocalResource.ADVANCE_SETTING_TITEL_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
 		 
 	 }
 	 	 
@@ -301,7 +328,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 			// Perform action if user changed field. 
 			//
 			if(field == m_clearByteBut){
-				if(Dialog.ask(Dialog.D_YES_NO,recvMain.sm_local.getString(localResource.CLEAR_STATISTICS_PROMPT),Dialog.NO) == Dialog.YES){
+				if(Dialog.ask(Dialog.D_YES_NO,recvMain.sm_local.getString(yblocalResource.CLEAR_STATISTICS_PROMPT),Dialog.NO) == Dialog.YES){
 					m_mainApp.ClearUpDownloadByte();
 					
 					m_mainApp.SetSendMailNum(0);
@@ -315,7 +342,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 			}else if(field == m_copyStatBut){
 				StringBuffer t_string = new StringBuffer();
 				 
-				t_string.append(recvMain.sm_local.getString(localResource.BYTE_STATISTICS)).append("\n")
+				t_string.append(recvMain.sm_local.getString(yblocalResource.BYTE_STATISTICS)).append("\n")
 						.append(m_sendRecvMailNum.getText()).append("\n")
 						.append(m_sentRecvWeiboNum.getText()).append("\n")
 						.append(m_uploadDownloadByte.getText()).append("\n")
@@ -323,19 +350,19 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 						
 				
 				Clipboard.getClipboard().put(t_string.toString());
-				m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.COPY_TO_CLIPBOARD_SUCC));
+				m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.COPY_TO_CLIPBOARD_SUCC));
 				
 			}else if(field == m_pulseInterval){
 				if(m_pulseInterval.getSelectedIndex() == 0){
-					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.PULSE_INTERVAL_TOO_SHORT_PROMPT));
+					m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.PULSE_INTERVAL_TOO_SHORT_PROMPT));
 				}
 			}else if(field == m_changeSignature){
-				m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.CHANGE_SIGNATURE_PROMPT_TEXT));
+				m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.CHANGE_SIGNATURE_PROMPT_TEXT));
 			}else if(field == m_passwordKey){			
 				m_hasChangePasswordKey = true;
 			}else if(field == m_useSSLCheckbox){
 				if(m_useSSLCheckbox.getChecked()){
-					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.SETTING_ENABLE_SSL_ENABLE));
+					m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.SETTING_ENABLE_SSL_ENABLE));
 				}
 			}else if(field == m_weiboModule){
 				enableWeiboSet(m_weiboModule.getChecked());
@@ -394,7 +421,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 			m_mainApp.m_startPromptHour	= m_startPromptHour.getSelectedIndex();
 			m_mainApp.m_endPromptHour	= m_endPromptHour.getSelectedIndex();
 		}else{
-			m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.START_BIGGER_THAN_END_PROMPT));
+			m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.START_BIGGER_THAN_END_PROMPT));
 			return false;
 		}
 	 
@@ -515,16 +542,16 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 public void RefreshUpDownloadByte(){
 		 m_mainApp.invokeLater(new Runnable() {
 			public void run() {
-				m_sendRecvMailNum.setText(recvMain.sm_local.getString(localResource.SETTING_SEND_RECV_MAIL_NUM) + 
+				m_sendRecvMailNum.setText(recvMain.sm_local.getString(yblocalResource.SETTING_SEND_RECV_MAIL_NUM) + 
 						m_mainApp.GetSendMailNum() + " / " + m_mainApp.GetRecvMailNum());
 								
-				m_sentRecvWeiboNum.setText(recvMain.sm_local.getString(localResource.SETTING_WEIBO_SENT_RECV_NUM) + 
+				m_sentRecvWeiboNum.setText(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_SENT_RECV_NUM) + 
 						m_mainApp.m_sentWeiboNum + " / " + m_mainApp.m_receivedWeiboNum);
 				
-				m_uploadDownloadByte.setText(recvMain.sm_local.getString(localResource.SETTING_UPLOAD_DOWNLOAD_STATISTICS) + 
+				m_uploadDownloadByte.setText(recvMain.sm_local.getString(yblocalResource.SETTING_UPLOAD_DOWNLOAD_STATISTICS) + 
 						recvMain.GetByteStr(m_mainApp.m_uploadByte) + " / " + recvMain.GetByteStr(m_mainApp.m_downloadByte));
 				
-				m_totalByte.setText(recvMain.sm_local.getString(localResource.TOTAL_STATISTICS) + 
+				m_totalByte.setText(recvMain.sm_local.getString(yblocalResource.TOTAL_STATISTICS) + 
 						recvMain.GetByteStr(m_mainApp.m_downloadByte + m_mainApp.m_uploadByte));
 			}
 		});
@@ -533,8 +560,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 public void RefreshLocation(){
 		 m_mainApp.invokeLater(new Runnable() {
 			public void run() {
-				m_longitude.setText(recvMain.sm_local.getString(localResource.CURRENT_LONGITUDE_LABEL) + m_mainApp.m_gpsInfo.m_longitude);
-				m_latitude.setText(recvMain.sm_local.getString(localResource.CURRENT_LATITUDE_LABEL) + m_mainApp.m_gpsInfo.m_latitude);
+				m_longitude.setText(recvMain.sm_local.getString(yblocalResource.CURRENT_LONGITUDE_LABEL) + m_mainApp.m_gpsInfo.m_longitude);
+				m_latitude.setText(recvMain.sm_local.getString(yblocalResource.CURRENT_LATITUDE_LABEL) + m_mainApp.m_gpsInfo.m_latitude);
 			}
 		});
 	 }

@@ -1,3 +1,30 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client;
 
 import java.io.InputStream;
@@ -16,7 +43,7 @@ class MailAttachment{
 
 public class  fetchMail{
 	
-	final static int	VERSION = 3;
+	final static int	VERSION = 4;
 	
 	public final static String	fsm_noSubjectTile = "No Subject";
 	    	
@@ -54,6 +81,10 @@ public class  fetchMail{
 	private Message m_attachMessage		= null;
 	
 	private String			m_ownAccount	= "";
+	
+	private String			m_message_id 	= "";
+	private String			m_in_reply_to	= "";
+	private String			m_reference_id	= "";
 	
 	
 	// location information
@@ -155,6 +186,10 @@ public class  fetchMail{
 		sendReceive.WriteString(_stream,m_contain_html_type);
 		sendReceive.WriteString(_stream,m_ownAccount);
 		
+		sendReceive.WriteString(_stream,m_message_id);
+		sendReceive.WriteString(_stream,m_in_reply_to);
+		sendReceive.WriteString(_stream,m_reference_id);
+		
 	}
 		
 	public void InputMail(InputStream _stream)throws Exception{
@@ -204,6 +239,12 @@ public class  fetchMail{
 		if(t_version >= 3){
 			m_ownAccount = sendReceive.ReadString(_stream);
 		}
+		
+		if(t_version >= 4){
+			m_message_id = sendReceive.ReadString(_stream);
+			m_in_reply_to = sendReceive.ReadString(_stream);
+			m_reference_id = sendReceive.ReadString(_stream);
+		}
 	}
 	
 	
@@ -228,6 +269,15 @@ public class  fetchMail{
 	
 	public String GetXMailer(){return m_XMailName;}
 	public void SetXMailer(String _str){m_XMailName = _str;}
+	
+	public String getMessageID(){return m_message_id;}
+	public void setMessageID(String _id){m_message_id = _id;}
+	
+	public String getInReplyTo(){return m_in_reply_to;}
+	public void setInReplyTo(String _replyTo){m_in_reply_to = _replyTo;}
+	
+	public String getReferenceID(){return m_reference_id;}
+	public void setReferenceID(String _refID){m_reference_id = _refID;}
 	
 	public Date GetSendDate(){return m_sendDate;}
 	public void SetSendDate(Date _d){m_sendDate = _d;}

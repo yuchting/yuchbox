@@ -1,3 +1,30 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client;
 
 import java.io.ByteArrayInputStream;
@@ -5,13 +32,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.Random;
 import java.util.Vector;
 
 import javax.microedition.io.Connector;
 import javax.microedition.io.SocketConnection;
 import javax.microedition.io.file.FileConnection;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.blackberry.api.mail.Address;
 import net.rim.blackberry.api.mail.AttachmentHandler;
 import net.rim.blackberry.api.mail.AttachmentHandlerManager;
@@ -51,7 +79,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListenerExtended,
 												IUploadFileScreenCallback{
 		
-	final static int	fsm_clientVer = 15;
+	final static int	fsm_clientVer = 16;
 	 
 	public sendReceive		m_connect = null;
 		
@@ -70,10 +98,12 @@ public class connectDeamon extends Thread implements SendListener,
 		long	m_date;
 		String	m_fromAddr = "";
 		int		m_simpleHashCode;
+		String	m_messageID;
 		
 		public MarkReadMailData(fetchMail _mail){
 			m_date 				= _mail.GetSendDate().getTime();
 			m_simpleHashCode	= _mail.GetSimpleHashCode();
+			m_messageID			= _mail.getMessageID();
 			
 			if(!_mail.GetFromVect().isEmpty()){
 				m_fromAddr	= (String)_mail.GetFromVect().elementAt(0);
@@ -84,7 +114,48 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	public Vector 		m_markReadVector 		= new Vector();
 	
+	public static final class MessageID{
+		int simpleHash;
+		int appendMessageId;
+		String message_id;
+		String in_reply_to;
+		String references;
+		String ownAccount;
+		boolean sent;
+		
+		public MessageID(fetchMail _mail,boolean _sent){
+			simpleHash 	= _mail.GetSimpleHashCode();
+			message_id	= _mail.getMessageID();
+			in_reply_to	= _mail.getInReplyTo();
+			references	= _mail.getReferenceID();
+			ownAccount	= _mail.getOwnAccount();
+			sent		= _sent;
+			
+			if(_mail.GetAttachMessage() != null){
+				appendMessageId = _mail.GetAttachMessage().getMessageId();
+			}
+		}
+	}
+	
 	Vector				m_recvMailSimpleHashCodeSet = new Vector();
+	
+	private MessageID findMessageID(fetchMail _mail){
+		
+		for(int i = 0 ;i < m_recvMailSimpleHashCodeSet.size();i++){
+			MessageID id = (MessageID)m_recvMailSimpleHashCodeSet.elementAt(i);
+			if(_mail.GetAttachMessage() != null){
+				if(id.appendMessageId == _mail.GetAttachMessage().getMessageId()){
+					return id;
+				}
+			}
+			
+			if(id.simpleHash == _mail.GetSimpleHashCode()){
+				return id;
+			}
+		}
+		
+		return null;
+	}
 			 
 	boolean			m_sendAboutText			= false;
 	boolean			m_recvAboutText			= false;
@@ -122,19 +193,19 @@ public class connectDeamon extends Thread implements SendListener,
 	int				m_ipConnectCounter 		= 0;
 	 
 	int				m_connectCounter		= -1;
+	int				m_connectSleep			= 10000; //10second
 	 
-	class FetchAttachment{
+	public static class FetchAttachment{
 		int						m_messageHashCode;
 		 
 		int						m_mailIndex;
 		int						m_attachmentIdx;
 		int						m_attachmentSize;
 		 
-		String						m_realName;
+		String					m_realName;
 		int						m_completePercent;
 		 
-		ByteArrayOutputStream		m_fileContainBuffer = new ByteArrayOutputStream();
-		 
+		ByteArrayOutputStream	m_fileContainBuffer = new ByteArrayOutputStream();
 	}
 	 
 	//! receive the attachment
@@ -395,6 +466,16 @@ public class connectDeamon extends Thread implements SendListener,
 					t_forwardReplyMail.SetContain("");
 				}
 				
+				MessageID t_message_id = findMessageID(t_forwardReplyMail);
+				if(t_message_id != null){
+					t_forwardReplyMail.setMessageID(t_message_id.message_id);
+					t_forwardReplyMail.setInReplyTo(t_message_id.in_reply_to);
+					t_forwardReplyMail.setReferenceID(t_message_id.references);
+					t_forwardReplyMail.setOwnAccount(t_message_id.ownAccount);
+					
+					t_mail.setOwnAccount(t_message_id.ownAccount);
+				}
+				
 				m_mainApp.SetErrorString("origMsg:"+ t_forwardReplyMail.GetSubject());
 			}else{
 				
@@ -408,6 +489,8 @@ public class connectDeamon extends Thread implements SendListener,
 					
 					t_mail.GetFromVect().removeAllElements();
 					t_mail.GetFromVect().addElement(t_defaultAcc);
+					
+					t_mail.setOwnAccount(t_defaultAcc);
 					
 					m_mainApp.SetErrorString("from:"+t_defaultAcc);
 				}
@@ -479,7 +562,7 @@ public class connectDeamon extends Thread implements SendListener,
 
 		String t_attName = p.getFilename();
 		
-		if(t_attName.equals(recvMain.sm_local.getString(localResource.HTML_PART_FILENAME))){
+		if(t_attName.equals(recvMain.sm_local.getString(yblocalResource.HTML_PART_FILENAME))){
 			
 			try{
 				
@@ -564,7 +647,7 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 	
 	public String	menuString(){
-		return recvMain.sm_local.getString(localResource.OPEN_ATTACHMENT);
+		return recvMain.sm_local.getString(yblocalResource.OPEN_ATTACHMENT);
 	}
 	
 	public boolean supports(String contentType){
@@ -604,6 +687,7 @@ public class connectDeamon extends Thread implements SendListener,
 	//@{ ViewListener
 	public void open(MessageEvent e){
 		m_mainApp.StopNotification();
+		m_mainApp.StopEmailFailedNotifaction();
 	}
 	
 	public void close(MessageEvent e){
@@ -615,6 +699,7 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 		
 		m_mainApp.StopNotification();
+		m_mainApp.StopEmailFailedNotifaction();
 	}
 	//@}
 	
@@ -913,6 +998,7 @@ public class connectDeamon extends Thread implements SendListener,
 		 interrupt();	 
 		 
 		 m_connectCounter = -1;
+		 m_connectSleep = 10000;
 				 	
 		 synchronized (this) {
 			 
@@ -1025,17 +1111,48 @@ public class connectDeamon extends Thread implements SendListener,
 			 
 		 }catch(Exception _e){
 	
+			 m_connectSleep = 10000;
+			 
 			 String message = _e.getMessage();
 
-			 if(message != null){
-				 if(message.indexOf("Peer") != -1){
-					 m_connectCounter = 1000;
+			 if(message != null && message.indexOf("Peer") != -1){
+				 // server daemon process is not start
+				 //
+				 m_connectSleep = 20 * 60000;
+				 
+				 if(m_mainApp.isForeground()){
+					 m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.CONNECT_SERVER_NOT_START_PROMPT));
+				 }else{
+					 m_mainApp.SetErrorString(recvMain.sm_local.getString(yblocalResource.CONNECT_SERVER_NOT_START_PROMPT));
+				 }
+			
+			 }else if(message == null && _e instanceof java.io.IOException){
+				 
+				 // client BlackBerry NET BROKEN
+				 //
+				 m_connectSleep = 30 * 60000;
+				 
+				 if(m_mainApp.isForeground()){
+					 m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.CONNECT_NET_BROKEN_PROMPT));
+				 }else{
+					 m_mainApp.SetErrorString(recvMain.sm_local.getString(yblocalResource.CONNECT_NET_BROKEN_PROMPT));
+				 }
+				 
+			 }else{
+				 // another exception information
+				 //
+				 if(m_mainApp.getActiveScreen() == m_mainApp.m_stateScreen 
+					&& m_mainApp.m_stateScreen != null){
+					 // prompt the user if in state screen
+					 //
+					 m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.CONNECT_ERROR_PROMPT));
 				 }
 			 }
 			 
 			 if(t_append.length() != 0){
 				 m_mainApp.SetErrorString("CM Failed: " + t_append);
 			 }
+			 
 			 
 			 throw _e;
 		 } 
@@ -1053,7 +1170,7 @@ public class connectDeamon extends Thread implements SendListener,
 			 return m_mainApp.GetPulseIntervalMinutes() * 60 * 1000;
 		 }
 		 
-		 return 10000;
+		 return m_connectSleep;
 	 }
 	 
 	 private synchronized void ProcessMsg(byte[] _package)throws Exception{
@@ -1239,8 +1356,7 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 		t_os.write(msg_head.msgMailConfirm);
-		sendReceive.WriteInt(t_os,_hashCode);
-		
+		sendReceive.WriteInt(t_os,_hashCode);		
 		
 		m_sendingQueue.addSendingData(msg_head.msgMailConfirm, t_os.toByteArray(),true);
 	}
@@ -1262,25 +1378,26 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 		
 		for(int i = 0;i < m_recvMailSimpleHashCodeSet.size();i++){
-			Integer t_simpleHash = (Integer)m_recvMailSimpleHashCodeSet.elementAt(i);
-			if(t_simpleHash.intValue() == t_hashcode ){		
+			MessageID t_id = (MessageID)m_recvMailSimpleHashCodeSet.elementAt(i);
+			if(t_id.simpleHash == t_hashcode ){		
 				m_mainApp.SetErrorString("" + t_hashcode + " Mail has been added! ");
 				return;
 			}
 		}
 				
-		if(m_recvMailSimpleHashCodeSet.size() > 256){
+		while(m_recvMailSimpleHashCodeSet.size() > 256){
 			m_recvMailSimpleHashCodeSet.removeElementAt(0);
 		}
 		
-		m_recvMailSimpleHashCodeSet.addElement(new Integer(t_hashcode));
+		MessageID t_message_id = new MessageID(t_mail,false);
+		m_recvMailSimpleHashCodeSet.addElement(t_message_id);
 		
 		if(m_mainApp.GetRecvMsgMaxLength() != 0){
 			// cut the max length to speedup mail load in low version device
 			//
 			if(t_mail.GetContain().length() > m_mainApp.GetRecvMsgMaxLength()){
 				t_mail.SetContain(t_mail.GetContain().substring(0,m_mainApp.GetRecvMsgMaxLength() - 1) + 
-									"\n.....\n\n" + recvMain.sm_local.getString(localResource.REACH_MAX_MESSAGE_LENGTH_PROMPT));
+									"\n.....\n\n" + recvMain.sm_local.getString(yblocalResource.REACH_MAX_MESSAGE_LENGTH_PROMPT));
 			}
 		}
 		
@@ -1293,11 +1410,13 @@ public class connectDeamon extends Thread implements SendListener,
 			Message m = new Message();
 			
 			ComposeMessage(m,t_mail,m_mainApp.m_discardOrgText);
-			
+						
 			m.setInbound(true);
 			m.setStatus(Message.Status.RX_RECEIVED,1);
 			
 			m_listeningMessageFolder.appendMessage(m);
+			
+			t_message_id.appendMessageId = m.getMessageId();
 											
 			// add the message listener to send message to server
 			// to remark the message is read
@@ -1352,24 +1471,22 @@ public class connectDeamon extends Thread implements SendListener,
 			SendMailDeamon t_deamon = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
 			
 			if(t_deamon.m_sendMail.GetSendDate().getTime() == t_time){
+				
+				t_deamon.m_closeState = true;
+				t_deamon.inter();
 			
 				if(t_deamon.m_sendMail.GetAttachMessage() != null){
 					
 					if(t_succ){
-						m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_DELIVERED);
-						
+						t_deamon.sendSucc();
+												
 						// increase the send mail quantity
 						//
-						m_mainApp.SetSendMailNum(m_mainApp.GetSendMailNum() + 1);
-						
+						m_mainApp.SetSendMailNum(m_mainApp.GetSendMailNum() + 1);						
 					}else{
-						m_mainApp.UpdateMessageStatus(t_deamon.m_sendMail.GetAttachMessage(),Message.Status.TX_ERROR);
+						t_deamon.sendError();
 					}
 				}
-				
-				t_deamon.m_closeState = true;
-				t_deamon.inter();
-							
 				
 				m_sendingMailAttachment.removeElement(t_deamon);
 				
@@ -1391,6 +1508,30 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	public void AddSendingMail(final fetchMail _mail,final Vector _files,
 											final fetchMail _forwardReply,final int _sendStyle)throws Exception{
+		
+		// load mail message id and 
+		//
+		StringBuffer t_message_id = new StringBuffer();
+		
+		t_message_id.append("<")
+					.append(Long.toString(System.currentTimeMillis())).append(".")
+					.append(new Random().nextInt(1000)).append("-yuchs.com-")
+					.append(_mail.getOwnAccount()).append(">");
+		
+		_mail.setMessageID(t_message_id.toString());
+		
+		if(_forwardReply != null){
+			_mail.setInReplyTo(_forwardReply.getMessageID());
+			_mail.setReferenceID(_forwardReply.getMessageID() + " " + _forwardReply.getReferenceID());
+		}
+		
+		Message msg = _mail.GetAttachMessage();
+		msg.addHeader("Message-ID",_mail.getMessageID());
+		msg.addHeader("In-Reply-To",_mail.getInReplyTo());
+		msg.addHeader("References",_mail.getReferenceID());
+		
+		m_recvMailSimpleHashCodeSet.addElement(new MessageID(_mail,true));
+		
 		// load the attachment if has 
 		//
 		final Vector t_vfileReader = new Vector();
@@ -1433,7 +1574,6 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			// reset the content of mail...
 			//
-			Message msg = _mail.GetAttachMessage();
 			ComposeMessageContent(msg, _mail,true);
 		}
 		
@@ -1473,12 +1613,12 @@ public class connectDeamon extends Thread implements SendListener,
 		for(int i = 0;i < m_vectReceiveAttach.size();i++){
 			FetchAttachment t_att = (FetchAttachment)m_vectReceiveAttach.elementAt(i);
 						
-			if(t_att.m_mailIndex == t_mailIndex && t_attachIndex == t_attachIndex){
+			if(t_att.m_mailIndex == t_mailIndex && t_att.m_attachmentIdx == t_attachIndex){
 				
 				byte[] t_bytes = new byte[t_size];
 				sendReceive.ForceReadByte(in, t_bytes, t_size);
 				
-				t_att.m_fileContainBuffer.write(t_bytes);				
+				t_att.m_fileContainBuffer.write(t_bytes);
 				
 				//System.out.println("write msgMailAttach mailIndex:" + t_mailIndex + " attachIndex:" + t_attachIndex + " startIndex:" +
 				//					t_startIndex + " size:" + t_size + " first:" + (int)t_bytes[0]);
@@ -1532,7 +1672,7 @@ public class connectDeamon extends Thread implements SendListener,
 			}
 		}
 		
-		// TODO weibo process....
+		// weibo process....
 		//
 		if(m_mainApp.m_weiboTimeLineScreen != null){
 			m_mainApp.m_weiboTimeLineScreen.weiboSendFileConfirm(t_hashCode,t_attachIndex);
@@ -1558,6 +1698,7 @@ public class connectDeamon extends Thread implements SendListener,
 						ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 						t_os.write(t_msgType);
 						sendReceive.WriteInt(t_os, t_mail.m_simpleHashCode);
+						sendReceive.WriteString(t_os,t_mail.m_messageID);
 						
 						m_sendingQueue.addSendingData(t_msgType, t_os.toByteArray(),true);
 											
@@ -1654,12 +1795,7 @@ public class connectDeamon extends Thread implements SendListener,
 			t_setFlags |= fetchMail.SEEN;
 		}
 		
-		String[] hdrs = m.getHeader("X-Mailer");
-		
-		if (hdrs != null){
-			_mail.SetXMailer(hdrs[0]);
-	    }
-		
+		_mail.SetXMailer("Yuchs'Box(BlackBerry)");
 		_mail.ClearAttachment();
 		
 		m_plainTextContain = "";
@@ -1830,8 +1966,15 @@ public class connectDeamon extends Thread implements SendListener,
 	    String t_sub = _mail.GetSubject();		
 		
 	    msg.setSubject(t_sub);
-	    msg.setHeader("X-Mailer",_mail.GetXMailer());
-	    msg.setSentDate(_mail.GetSendDate());	      
+	    
+	    // these follow addHeader No usefull, can't fetch form store of mail
+	    //
+	    msg.addHeader("X-Mailer",_mail.GetXMailer());
+	    msg.addHeader("Message-ID", _mail.getMessageID());
+	    msg.addHeader("In-Reply-To", _mail.getInReplyTo());
+	    msg.addHeader("References", _mail.getReferenceID());
+	    
+	    msg.setSentDate(_mail.GetSendDate());
 	
 	    ComposeMessageContent(msg,_mail,false);
 	}
@@ -1848,7 +1991,7 @@ public class connectDeamon extends Thread implements SendListener,
 	    	
 	    	if(_mail.GetContain_html().length() != 0){
 	    		SupportedAttachmentPart sap = null;
-	    		String t_filename = recvMain.sm_local.getString(localResource.HTML_PART_FILENAME);
+	    		String t_filename = recvMain.sm_local.getString(yblocalResource.HTML_PART_FILENAME);
 	    		
 	    		String t_type = "UTF-8";
 	    		    		

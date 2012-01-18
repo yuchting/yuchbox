@@ -1,8 +1,35 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.weibo;
 
 import java.io.ByteArrayOutputStream;
-import java.util.Date;
 
+import com.yuchting.yuchberry.client.GPSInfo;
 import com.yuchting.yuchberry.client.ISendAttachmentCallback;
 import com.yuchting.yuchberry.client.SendAttachmentDeamon;
 import com.yuchting.yuchberry.client.msg_head;
@@ -29,21 +56,27 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 	
 	public  boolean	m_closeState	= false;
 	
+	GPSInfo		m_gpsInfo		= null;
+	
 	SendAttachmentDeamon m_sendFileDaemon = null;
 	
 	// update new weibo
 	//
-	public WeiboSendDaemon(String _text,byte[] _file,int _fileType,recvMain _mainApp)throws Exception{
+	public WeiboSendDaemon(String _text,byte[] _file,int _fileType,recvMain _mainApp,GPSInfo _gps)throws Exception{
 		
 		if(_mainApp == null){
 			throw new IllegalArgumentException("WeiboSendDeamon _mainApp == null");
 		}
 		
 		m_mainApp		= _mainApp;
-		
+		m_gpsInfo		= _gps;
 		m_updateText	= _text;
 		m_fileBuffer	= _file;
 		m_fileType		= _fileType;
+		
+		// disable
+		//
+		m_mainApp.m_weiboUseLocation = false;
 		
 		if(m_fileBuffer != null){
 			m_sendFileDaemon = new SendAttachmentDeamon(m_mainApp.m_connectDeamon,m_fileBuffer,m_hashCode,this);
@@ -183,7 +216,7 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 			
 			sendReceive.WriteString(t_os,m_updateText);
 			
-			if(m_mainApp.canUseLocation() && m_mainApp.m_weiboUseLocation){
+			if(m_gpsInfo != null /*m_mainApp.canUseLocation() && m_mainApp.m_weiboUseLocation*/){
 				t_os.write(1);
 				m_mainApp.getGPSInfo().OutputData(t_os);
 			}else{
@@ -215,7 +248,7 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 			sendReceive.WriteLong(t_os,m_origId);
 			sendReceive.WriteLong(t_os,m_commentId);
 			
-			if(m_mainApp.canUseLocation()){
+			if(m_gpsInfo != null /*m_mainApp.canUseLocation()*/){
 				t_os.write(1);
 				m_mainApp.getGPSInfo().OutputData(t_os);
 			}else{

@@ -42,7 +42,7 @@ public class ChatImageField extends Field{
 	
 	
 	Bitmap	m_imageBitmap	= null;
-	IChatFieldOpen	m_open	= null;
+	ChatField.IChatFieldOpen	m_open	= null;
 	
 	public fetchChatMsg m_msg		= null;
 	
@@ -51,7 +51,7 @@ public class ChatImageField extends Field{
 	}
 	
 
-	public void init(fetchChatMsg _msg,IChatFieldOpen _open){
+	public void init(fetchChatMsg _msg,ChatField.IChatFieldOpen _open){
 		m_msg = _msg;
 		m_open = _open;
 		

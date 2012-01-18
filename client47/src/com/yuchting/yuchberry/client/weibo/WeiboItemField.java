@@ -1,9 +1,36 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.weibo;
 
 import java.util.Calendar;
 import java.util.Date;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
@@ -119,6 +146,8 @@ public class WeiboItemField extends Manager{
 	ContentTextField 		m_absTextArea	= null;
 	boolean				m_absTextAreaAdded = false;
 	
+	String					m_displayName	= null;
+	
 	static ObjectAllocator	sm_absTextAreaAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.weibo.ContentTextField");
 	
 	public static BubbleImage		sm_selectedBackgroud = new BubbleImage(
@@ -202,7 +231,7 @@ public class WeiboItemField extends Manager{
 		t_weiboTextBuffer.append("@").append(m_weibo.GetUserScreenName()).append(" :").append(m_weibo.GetText());
 		
 		if(!recvMain.sm_simpleMode && m_weibo.GetSource().length() != 0){
-			t_weiboTextBuffer.append("\n       --").append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
+			t_weiboTextBuffer.append("\n       --").append(recvMain.sm_local.getString(yblocalResource.WEIBO_SOURCE_PREFIX))
 			.append(parseSource(m_weibo.GetSource()));
 		}						
 		
@@ -210,7 +239,7 @@ public class WeiboItemField extends Manager{
 		t_weiboTextBuffer = null;
 		
 		sm_testTextArea.setText(m_weiboText);
-				
+					
 		m_simpleAbstract		= getSimpleAbstract(_weibo);
 
 		m_textHeight			= sm_testTextArea.getHeight();
@@ -224,7 +253,7 @@ public class WeiboItemField extends Manager{
 			StringBuffer t_commentText = new StringBuffer();
 			t_commentText.append("@").append(t_comment.GetUserScreenName()).append(":").append(t_comment.GetText());
 			if(!recvMain.sm_simpleMode && t_comment.GetSource().length() != 0){		
-				t_commentText.append("\n       --").append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
+				t_commentText.append("\n       --").append(recvMain.sm_local.getString(yblocalResource.WEIBO_SOURCE_PREFIX))
 							.append(parseSource(t_comment.GetSource()));
 			}
 			
@@ -585,8 +614,8 @@ public class WeiboItemField extends Manager{
 	static Date		sm_timeDate = new Date();
 	static public long sm_currTime = sm_timeDate.getTime();
 	
-	static String sm_timeUnitStr = recvMain.sm_local.getString(localResource.WEIBO_TIME_UNIT);
-	static String sm_timeAgoStr = recvMain.sm_local.getString(localResource.WEIBO_TIME_AGO);
+	static String sm_timeUnitStr = recvMain.sm_local.getString(yblocalResource.WEIBO_TIME_UNIT);
+	static String sm_timeAgoStr = recvMain.sm_local.getString(yblocalResource.WEIBO_TIME_AGO);
 	
 	static protected synchronized String getTimeString(fetchWeibo _weibo){
 		
@@ -793,17 +822,34 @@ public class WeiboItemField extends Manager{
 								
 				// display name
 				//
-				String t_displayName = null;
-				if(m_weibo.GetWeiboStyle() == fetchWeibo.TWITTER_WEIBO_STYLE
-				|| m_weibo.GetWeiboStyle() == fetchWeibo.QQ_WEIBO_STYLE ){
-					t_displayName = m_weibo.GetUserName();
-				}else{
-					t_displayName = m_weibo.GetUserScreenName();
+				if(m_displayName == null){
+					// cut the weibo user name
+					//
+					m_displayName = m_weibo.GetUserName();
+					
+					int t_maxDisplyNameWidth = recvMain.fsm_display_width - t_nameLeadingSpace - sm_timeFont.getAdvance("00-00 00:00");
+					
+					if(m_weiboPic != null){
+						t_maxDisplyNameWidth -= weiboTimeLineScreen.getWeiboPicSignImage().getWidth();
+					}
+			    	
+			    	if(m_commentText != null){
+			    		t_maxDisplyNameWidth -= weiboTimeLineScreen.getWeiboCommentSignImage().getWidth();
+			    	}			    							
+					
+			    	String t_final = m_displayName;
+					
+					while(sm_boldFont.getAdvance(t_final) > t_maxDisplyNameWidth){
+						m_displayName = m_displayName.substring(0,m_displayName.length() - 1);
+						t_final = m_displayName + "...";
+					}
+					
+					m_displayName = t_final;
 				}
 				
 				_g.setFont(sm_boldFont);
 				_g.setColor(fsm_weiboNameTextColor);
-				int t_nameLength = _g.drawText(t_displayName,
+				int t_nameLength = _g.drawText(m_displayName,
 											fsm_weiboSignImageSize + t_nameLeadingSpace,
 											t_firstLineHeight,Graphics.ELLIPSIS);
 				

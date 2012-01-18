@@ -43,7 +43,7 @@ import com.yuchting.yuchberry.client.recvMain;
 
 public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 	
-	RosterChatData 			m_openData = null;
+	MainIMScreen.RosterChatData 	m_openData = null;
 	MainIMScreen			m_mainScreen = null;
 	
 	LabelField				m_nameText = new LabelField();
@@ -77,7 +77,7 @@ public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 		m_laterBut.setChangeListener(this);
 	}
 	
-	public void setRosterChatData(RosterChatData _data,String _text){
+	public void setRosterChatData(MainIMScreen.RosterChatData _data,String _text){
 		m_openData = _data;
 
 		m_nameText.setText(m_openData.m_roster.getName() + ":");
@@ -128,7 +128,7 @@ public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 	
 	private boolean hasMoreChatPrompt(){
 		if(!m_mainScreen.m_promptQueue.isEmpty()){
-			RosterChatData t_promptData = (RosterChatData)m_mainScreen.m_promptQueue.elementAt(0);
+			MainIMScreen.RosterChatData t_promptData = (MainIMScreen.RosterChatData)m_mainScreen.m_promptQueue.elementAt(0);
 			m_mainScreen.m_promptQueue.removeElementAt(0);
 			
 			int t_num = t_promptData.m_chatMsgList.size();

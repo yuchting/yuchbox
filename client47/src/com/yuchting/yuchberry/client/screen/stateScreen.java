@@ -1,8 +1,35 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.screen;
 
 import java.util.Vector;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.servicebook.ServiceBook;
 import net.rim.device.api.servicebook.ServiceRecord;
 import net.rim.device.api.system.Characters;
@@ -63,10 +90,10 @@ class ConnectButton extends Field{
     		switch(m_connectState){
     		case recvMain.CONNECTED_STATE:
     		case recvMain.CONNECTING_STATE:
-    			m_text = recvMain.sm_local.getString(localResource.DISCONNECT_BUTTON_LABEL);
+    			m_text = recvMain.sm_local.getString(yblocalResource.DISCONNECT_BUTTON_LABEL);
     			break;
     		case recvMain.DISCONNECT_STATE:
-    			m_text = recvMain.sm_local.getString(localResource.CONNECT_BUTTON_LABEL);
+    			m_text = recvMain.sm_local.getString(yblocalResource.CONNECT_BUTTON_LABEL);
     			break;
     		}
     		
@@ -222,21 +249,21 @@ class ConnectButton extends Field{
 public class stateScreen extends MainScreen implements FieldChangeListener{
     
 	int m_menu_op = 100;
-	MenuItem 	m_aboutMenu = new MenuItem(recvMain.sm_local.getString(localResource.ABOUT_MENU_TEXT), m_menu_op++, 10) {
+	MenuItem 	m_aboutMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.ABOUT_MENU_TEXT), m_menu_op++, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
 			t_app.PopupAboutScreen();
 		}
 	};
 	
-	MenuItem	m_shareMenu = new MenuItem(recvMain.sm_local.getString(localResource.SHARE_TO_FRIEND_MENU), m_menu_op++, 10) {
+	MenuItem	m_shareMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.SHARE_TO_FRIEND_MENU), m_menu_op++, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
 			t_app.PopupShareScreen();
 		}
 	};
 	
-	MenuItem 	m_setingMenu = new MenuItem(recvMain.sm_local.getString(localResource.SETTING_MENU_TEXT), m_menu_op++, 10) {
+	MenuItem 	m_setingMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.SETTING_MENU_TEXT), m_menu_op++, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
 			t_app.PopupSettingScreen();													
@@ -244,7 +271,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 	};
 	
 											
-	MenuItem	m_debugInfoMenu = new MenuItem(recvMain.sm_local.getString(localResource.DEBUG_MENU_TEXT), m_menu_op++, 10) {
+	MenuItem	m_debugInfoMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.DEBUG_MENU_TEXT), m_menu_op++, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
 			t_app.m_debugInfoScreen = new debugInfo(t_app);
@@ -253,21 +280,21 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 	};
 	
 											
-	MenuItem	m_weiboMenu = new MenuItem(recvMain.sm_local.getString(localResource.YB_WEIBO_MENU_LABEL), m_menu_op++, 10) {
+	MenuItem	m_weiboMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.YB_WEIBO_MENU_LABEL), m_menu_op++, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
 			t_app.PopupWeiboScreen();			
 		}
 	};
 	
-	MenuItem	m_imMenu = new MenuItem(recvMain.sm_local.getString(localResource.IM_MENU_LABEL),m_menu_op++, 10) {
+	MenuItem	m_imMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_MENU_LABEL),m_menu_op++, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
 			t_app.PopupIMScreen();			
 		}
 	};
 	
-	MenuItem	m_quitMenu = new MenuItem(recvMain.sm_local.getString(localResource.STATE_QUIT_MENU_LABEL), 200, 10) {
+	MenuItem	m_quitMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.STATE_QUIT_MENU_LABEL), 200, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
 			t_app.Exit();
@@ -286,7 +313,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
        
     public ConnectButton	m_connectBut    = null;
     
-    HyperlinkButtonField m_getHostLink	= new HyperlinkButtonField(recvMain.sm_local.getString(localResource.STATE_SCREEN_HELP_MENU),0xffffff,0x8a8a8a);
+    HyperlinkButtonField m_getHostLink	= new HyperlinkButtonField(recvMain.sm_local.getString(yblocalResource.STATE_SCREEN_HELP_MENU),0xffffff,0x8a8a8a);
    
     RichTextField		m_uploadingText = null;
             
@@ -351,6 +378,9 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 			
 			m_mainApp.m_allImageSets.drawImage(_g, m_stateLogo, t_logo_x, t_logo_y);
 			
+			t_logo_x = t_logo_x + m_stateLogo.getWidth();
+			m_mainApp.m_allImageSets.drawImage(_g, m_LongYearLogo, t_logo_x, 0);
+			
 	    	int t_delta_x = 4;
 	    	int t_delta_y = (m_stateInputBG.getImageHeight() - m_hostName.getFont().getHeight()) / 2;	    	
 	    	
@@ -395,15 +425,16 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 	
 	ImageUnit		m_stateBG = null;
 	ImageUnit		m_stateLogo = null;
+	ImageUnit		m_LongYearLogo = null;
 	
 	ButtonSegImage	m_stateInputBG = null;
 	
     public stateScreen(recvMain _app){
-    	m_mainApp	= _app;
-    	 
+    	m_mainApp	= _app;    	 
     	
     	m_stateBG		= m_mainApp.m_allImageSets.getImageUnit("state_bg");
     	m_stateLogo		= m_mainApp.m_allImageSets.getImageUnit("state_logo");
+    	m_LongYearLogo	= m_mainApp.m_allImageSets.getImageUnit("LongYear");
     	
     	m_stateInputBG = new ButtonSegImage(m_mainApp.m_allImageSets.getImageUnit("state_input_left"), 
 							    			m_mainApp.m_allImageSets.getImageUnit("state_input_mid"), 
@@ -411,27 +442,27 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 							    			m_mainApp.m_allImageSets);  	
        
         
-        m_hostName = new EditField(recvMain.sm_local.getString(localResource.HOST),
+        m_hostName = new EditField(recvMain.sm_local.getString(yblocalResource.HOST),
         				m_mainApp.m_hostname,128, EditField.FILTER_DEFAULT);
                
         m_hostName.setChangeListener(this);
         m_hostNameMgr.add(m_hostName);
         m_mainManger.add(m_hostNameMgr);
         
-        m_hostport = new EditField(recvMain.sm_local.getString(localResource.PORT),
+        m_hostport = new EditField(recvMain.sm_local.getString(yblocalResource.PORT),
         				m_mainApp.m_port == 0?"":Integer.toString(m_mainApp.m_port),5,EditField.FILTER_INTEGER);
 
         m_hostport.setChangeListener(this);
         m_hostportMgr.add(m_hostport);
         m_mainManger.add(m_hostportMgr);
         
-        m_userPassword = new PasswordEditField(recvMain.sm_local.getString(localResource.USER_PASSWORD),
+        m_userPassword = new PasswordEditField(recvMain.sm_local.getString(yblocalResource.USER_PASSWORD),
         								m_mainApp.m_userPassword,128,EditField.NO_COMPLEX_INPUT);
         
         m_userPasswordMgr.add(m_userPassword);
         m_mainManger.add(m_userPasswordMgr);
                
-        m_connectBut = new ConnectButton(recvMain.sm_local.getString(localResource.CONNECT_BUTTON_LABEL),
+        m_connectBut = new ConnectButton(recvMain.sm_local.getString(yblocalResource.CONNECT_BUTTON_LABEL),
         								new ImageUnit[]{
         									m_mainApp.m_allImageSets.getImageUnit("button_disconnect"),
         									m_mainApp.m_allImageSets.getImageUnit("button_connecting"),
@@ -458,7 +489,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
                     
         RefreshUploadState(_app.m_uploadingDesc);
         
-        //setTitle(new LabelField(recvMain.sm_local.getString(localResource.STATE_TITLE_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
+        //setTitle(new LabelField(recvMain.sm_local.getString(yblocalResource.STATE_TITLE_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
         
         if(m_mainApp.m_connectDeamon.IsConnectState()){
         	m_connectBut.setFocus();
@@ -576,7 +607,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 					|| m_userPassword.getText().length() == 0
 					|| m_hostport.getText().length() == 0){
 					
-					Dialog.alert(recvMain.sm_local.getString(localResource.INPUT_FULL_SIGN_IN_SEG));
+					Dialog.alert(recvMain.sm_local.getString(yblocalResource.INPUT_FULL_SIGN_IN_SEG));
 					
 					return;
 				}	
@@ -594,12 +625,12 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 					ServiceBook t_sb = ServiceBook.getSB();
 					ServiceRecord[] t_record = t_sb.findRecordsByCid("CMIME");
 					if(t_record == null || t_record.length == 0){
-						m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.NEED_CMIME_PROMPT));
+						m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.NEED_CMIME_PROMPT));
 						return;
 					}
 					
 					if(m_hostName.getText().indexOf(" ") != -1){
-						m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.STATE_HOST_STRING_ILLEGAL_PROMPT));
+						m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.STATE_HOST_STRING_ILLEGAL_PROMPT));
 						return;
 					}
 					

@@ -938,6 +938,10 @@ public class fetchEmail extends fetchAccount{
 				//
 				t_send = true;
 			}
+		}else if(_ownAccount.isEmpty() && _fromAddr.isEmpty()){
+			// send finally if both emtpy
+			//
+			t_send = true;
 		}
 		
 		return t_send;

@@ -41,11 +41,13 @@ import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.WeiboTextField;
 
-interface IChatFieldOpen{
-	public void open(fetchChatMsg msg);
-}
+
 
 public class ChatField extends Manager{
+	
+	public interface IChatFieldOpen{
+		public void open(fetchChatMsg msg);
+	}
 		
 	public final static int	fsm_offsetWidth = 32;
 	public final static int	fsm_bubblePointWidth = 8;

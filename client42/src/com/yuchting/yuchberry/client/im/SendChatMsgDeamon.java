@@ -1,3 +1,30 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.im;
 
 import java.io.ByteArrayOutputStream;
@@ -12,7 +39,7 @@ import com.yuchting.yuchberry.client.sendReceive;
 public class SendChatMsgDeamon extends Thread implements ISendAttachmentCallback{
 
 	fetchChatMsg		m_sendMsg	= null;
-	RosterChatData		m_sendTo	= null;
+	MainIMScreen.RosterChatData		m_sendTo	= null;
 
 	MainChatScreen		m_chatScreen = null;
 	
@@ -21,7 +48,7 @@ public class SendChatMsgDeamon extends Thread implements ISendAttachmentCallback
 	public	boolean	m_closeState = false;
 	public SendAttachmentDeamon m_sendFileDaemon = null;
 	
-	public SendChatMsgDeamon(fetchChatMsg _msg,RosterChatData _sendTo,MainChatScreen _chatScreen){
+	public SendChatMsgDeamon(fetchChatMsg _msg,MainIMScreen.RosterChatData _sendTo,MainChatScreen _chatScreen){
 		m_sendMsg		= _msg;
 		m_chatScreen	= _chatScreen;
 		m_connect		= _chatScreen.m_mainApp.m_connectDeamon;

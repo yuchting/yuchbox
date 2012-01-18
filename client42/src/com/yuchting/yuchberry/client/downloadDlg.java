@@ -1,6 +1,33 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Manager;
@@ -19,10 +46,10 @@ public class downloadDlg extends PopupScreen implements FieldChangeListener{
 
 	GaugeField			m_progress		= null;
 	
-	ButtonField			m_backgroud		= new ButtonField(recvMain.sm_local.getString(localResource.DOWNLOAD_BACKGROUND),
+	ButtonField			m_backgroud		= new ButtonField(recvMain.sm_local.getString(yblocalResource.DOWNLOAD_BACKGROUND),
 											Field.FIELD_HCENTER | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	
-	ButtonField			m_cancel		= new ButtonField(recvMain.sm_local.getString(localResource.DOWNLOAD_CANCEL),
+	ButtonField			m_cancel		= new ButtonField(recvMain.sm_local.getString(yblocalResource.DOWNLOAD_CANCEL),
 											Field.FIELD_HCENTER | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	
 	recvMain			m_mainApp		= null;
@@ -37,7 +64,7 @@ public class downloadDlg extends PopupScreen implements FieldChangeListener{
 		m_mainApp	= _mainApp;
 		m_att		= _att;
 
-		LabelField	t_label = new LabelField(recvMain.sm_local.getString(localResource.DOWNLOAD_DLG_LABEL) + _att.m_realName);
+		LabelField	t_label = new LabelField(recvMain.sm_local.getString(yblocalResource.DOWNLOAD_DLG_LABEL) + _att.m_realName);
 		add(t_label);
 		
 		m_progress	= new GaugeField("", 0, 100, 0, Field.NON_FOCUSABLE | Field.FIELD_HCENTER);

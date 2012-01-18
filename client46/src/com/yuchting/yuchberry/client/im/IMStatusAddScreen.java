@@ -1,6 +1,33 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.im;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Manager;
@@ -21,16 +48,16 @@ public class IMStatusAddScreen extends PopupScreen implements FieldChangeListene
 	RadioButtonGroup		m_presenceGroup	= new RadioButtonGroup();
 	RadioButtonField[]		m_presenceBut = 
 	{
-		new RadioButtonField(recvMain.sm_local.getString(localResource.IM_STATUS_DEFAULT_AVAIL),m_presenceGroup,true),
-		new RadioButtonField(recvMain.sm_local.getString(localResource.IM_STATUS_DEFAULT_AWAY),m_presenceGroup,false),
-		new RadioButtonField(recvMain.sm_local.getString(localResource.IM_STATUS_DEFAULT_BUSY),m_presenceGroup,false),
+		new RadioButtonField(recvMain.sm_local.getString(yblocalResource.IM_STATUS_DEFAULT_AVAIL),m_presenceGroup,true),
+		new RadioButtonField(recvMain.sm_local.getString(yblocalResource.IM_STATUS_DEFAULT_AWAY),m_presenceGroup,false),
+		new RadioButtonField(recvMain.sm_local.getString(yblocalResource.IM_STATUS_DEFAULT_BUSY),m_presenceGroup,false),
 	};
-	AutoTextEditField	m_status	= new AutoTextEditField(recvMain.sm_local.getString(localResource.IM_STATUS_LABEL_PROMPT),"");
+	AutoTextEditField	m_status	= new AutoTextEditField(recvMain.sm_local.getString(yblocalResource.IM_STATUS_LABEL_PROMPT),"");
 	
-	ButtonField			m_ok		= new ButtonField(recvMain.sm_local.getString(localResource.IM_STATUS_SCREEN_OK),
+	ButtonField			m_ok		= new ButtonField(recvMain.sm_local.getString(yblocalResource.IM_STATUS_SCREEN_OK),
 										Field.FIELD_HCENTER | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	
-	ButtonField			m_cancel	= new ButtonField(recvMain.sm_local.getString(localResource.IM_STATUS_SCREEN_CANCEL),
+	ButtonField			m_cancel	= new ButtonField(recvMain.sm_local.getString(yblocalResource.IM_STATUS_SCREEN_CANCEL),
 										Field.FIELD_HCENTER | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	
 	IMStatus			m_modifyStatus = null;
@@ -55,12 +82,12 @@ public class IMStatusAddScreen extends PopupScreen implements FieldChangeListene
 		add(m_status);
 			
 		if(m_modifyStatus != null){
-			t_title.setText(recvMain.sm_local.getString(localResource.IM_MODIFY_STATUS));
+			t_title.setText(recvMain.sm_local.getString(yblocalResource.IM_MODIFY_STATUS));
 			m_presenceBut[m_modifyStatus.m_presence].setSelected(true);
 			
 			m_status.setText(m_modifyStatus.m_status);
 		}else{
-			t_title.setText(recvMain.sm_local.getString(localResource.IM_ADD_STATUS));
+			t_title.setText(recvMain.sm_local.getString(yblocalResource.IM_ADD_STATUS));
 		}
 		
 		add(new SeparatorField());

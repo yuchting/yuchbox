@@ -1,3 +1,30 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.screen;
 
 import java.io.ByteArrayOutputStream;
@@ -5,7 +32,7 @@ import java.io.ByteArrayOutputStream;
 import javax.microedition.media.Player;
 import javax.microedition.media.control.RecordControl;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Screen;
@@ -114,7 +141,7 @@ public class RecordAudioScreen{
 		m_callback = _callback;
 		
 		// get the length
-		fsm_screenWidth = Font.getDefault().getAdvance(recvMain.sm_local.getString(localResource.RECORDING_REMAIN_LABEL) + "00") + 10;
+		fsm_screenWidth = Font.getDefault().getAdvance(recvMain.sm_local.getString(yblocalResource.RECORDING_REMAIN_LABEL) + "00") + 10;
 	}
 	
 	public void startRecord(){
@@ -127,7 +154,7 @@ public class RecordAudioScreen{
 		m_recordThread.start();
 		
 		m_remainTimer = fsm_maxRecordingTime;
-		m_remain = recvMain.sm_local.getString(localResource.RECORDING_REMAIN_LABEL) + Integer.toString(m_remainTimer);
+		m_remain = recvMain.sm_local.getString(yblocalResource.RECORDING_REMAIN_LABEL) + Integer.toString(m_remainTimer);
 		
 		m_remainTimerTheard = new Thread(){
 			public void run(){
@@ -139,7 +166,7 @@ public class RecordAudioScreen{
 						break;
 					}
 			
-					m_remain = recvMain.sm_local.getString(localResource.RECORDING_REMAIN_LABEL) + 
+					m_remain = recvMain.sm_local.getString(yblocalResource.RECORDING_REMAIN_LABEL) + 
 									Integer.toString(--m_remainTimer);
 					if(m_remainTimer <= 0){
 						close();

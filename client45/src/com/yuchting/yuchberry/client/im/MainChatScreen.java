@@ -474,7 +474,7 @@ final class MiddleMgr extends VerticalFieldManager{
 		
 		m_chatMsgMgr.deleteAll();
 	}
-	public synchronized void prepareChatScreen(RosterChatData _chatData){
+	public synchronized void prepareChatScreen(MainIMScreen.RosterChatData _chatData){
 		
 		deleteChat();
 		
@@ -651,7 +651,7 @@ final class MiddleMgr extends VerticalFieldManager{
 	}
 }
 
-public class MainChatScreen extends MainScreen implements IChatFieldOpen{
+public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOpen{
 	
 	public final static int fsm_background = 0x2b3d4d;
 	
@@ -858,7 +858,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 	public ObjectAllocator			m_chatFieldAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.im.ChatField");
 	public boolean					m_isPrompted = false;
 	
-	RosterChatData	m_currRoster 	= null;
+	MainIMScreen.RosterChatData	m_currRoster 	= null;
 		
 	recvMain		m_mainApp 		= null;
 	MainIMScreen	m_mainScreen 	= null;
@@ -988,7 +988,7 @@ public class MainChatScreen extends MainScreen implements IChatFieldOpen{
 		super.makeMenu(_menu,instance);
 	}
 	
-	public void popup(RosterChatData _roster){
+	public void popup(MainIMScreen.RosterChatData _roster){
 		m_currRoster = _roster;
 		
 		clearAttachment();

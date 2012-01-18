@@ -1,7 +1,34 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.weibo;
 
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.blackberry.api.invoke.CameraArguments;
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.device.api.system.Characters;
@@ -50,11 +77,14 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
     ImageButton				m_phizButton = null;
     ImageButton				m_photoButton = null;
     ImageButton				m_attachButton = null;
+    ImageButton				m_locationButton = null;
     
 	ImageButton				m_sendButton	= null;
 	
 	ImageUnit				m_updateTitle		= null;
 	BubbleImage				m_editBubbleImage = null;
+	
+	boolean 				m_addLocation = false;
 	
 	// because the Message application will reload some method of this WeiboUpdateDlg
 	// the WeiboItemField.static variables will be called/reloaded by Message application(another process) again...
@@ -107,13 +137,13 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		m_weiboCommentFGColor = WeiboItemField.fsm_weiboCommentFGColor;
 				
 		if(recvMain.GetClientLanguage() == 0){
-			m_sendButton = new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_SEND_LABEL),
+			m_sendButton = new ImageButton(recvMain.sm_local.getString(yblocalResource.WEIBO_SEND_LABEL),
 					m_weiboUIImageSets.getImageUnit("update_button"),
 					m_weiboUIImageSets.getImageUnit("update_button_focus"),
 					m_weiboUIImageSets,
 					Field.FIELD_RIGHT);
 		}else{
-			m_sendButton = new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_SEND_LABEL),
+			m_sendButton = new ImageButton(recvMain.sm_local.getString(yblocalResource.WEIBO_SEND_LABEL),
 					m_weiboUIImageSets.getImageUnit("update_button_en"),
 					m_weiboUIImageSets.getImageUnit("update_button_focus_en"),
 					m_weiboUIImageSets,
@@ -135,6 +165,11 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 				m_weiboUIImageSets.getImageUnit("attach_button_focus"),
 				m_weiboUIImageSets,Field.FIELD_LEFT);
 		
+		m_locationButton = new ImageButton("location",
+				m_weiboUIImageSets.getImageUnit("location_button"),
+				m_weiboUIImageSets.getImageUnit("location_button_focus"),
+				m_weiboUIImageSets,Field.FIELD_LEFT);
+		
 		if(recvMain.sm_standardUI){
 			m_updateTitle = m_weiboUIImageSets.getImageUnit("compose_nav_bar");
 		}else{
@@ -152,6 +187,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		m_attachButton.setChangeListener(this);
 		m_sendButton.setChangeListener(this);
 		m_editTextArea.setChangeListener(this);
+		m_locationButton.setChangeListener(this);
 		
 		m_editTextManager.add(m_editTextArea);
 		
@@ -160,8 +196,9 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		add(m_phizButton);
 		add(m_photoButton);
 		add(m_attachButton);
+		add(m_locationButton);
 		
-		add(m_sendButton);
+		add(m_sendButton);		
 				
 		m_titleHeight = m_updateDlgHeaderHeight + 2;
 		m_separateLine_y = m_titleHeight + m_editTextManager.getPreferredHeight();
@@ -195,6 +232,8 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			
 		}else if(field == m_attachButton){
 			m_timelineScreen.m_currUpdateDlg.m_attachItem.run();
+		}else if(field == m_locationButton){
+			m_timelineScreen.m_currUpdateDlg.m_locationItem.run();
 		}
 	}
 	
@@ -220,6 +259,11 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		
 		setPositionChild(m_attachButton,t_button_x,t_button_y);
 		layoutChild(m_attachButton, m_attachButton.getImageWidth(),m_attachButton.getImageHeight());		
+		
+		t_button_x += m_attachButton.getWidth() + 2;
+		
+		setPositionChild(m_locationButton,t_button_x,t_button_y);
+		layoutChild(m_locationButton, m_locationButton.getImageWidth(),m_locationButton.getImageHeight());
 		
 		// layout the send update button
 		//
@@ -252,7 +296,8 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			}
 			
 			m_timelineScreen.UpdateNewWeibo(m_editTextArea.getText(),
-					t_content,m_timelineScreen.m_currUpdateDlg.m_imageType);
+					t_content,m_timelineScreen.m_currUpdateDlg.m_imageType,
+					m_addLocation);
 			
 			m_editTextArea.setText("");
 			
@@ -271,14 +316,13 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		
 		int oldColor = _g.getColor();
 		Font oldFont = _g.getFont();
-		
-		
+				
 		try{
 			Font t_boldFont = oldFont.derive(oldFont.getStyle() | Font.BOLD);
 			
 			_g.setFont(t_boldFont);
 			_g.setColor(0xffffff);
-			String t_str = recvMain.sm_local.getString(localResource.WEIBO_UPDATE_DIALOG_TITLE) 
+			String t_str = recvMain.sm_local.getString(yblocalResource.WEIBO_UPDATE_DIALOG_TITLE) 
 				+ " (" + m_editTextArea.getText().length() + ")";
 			
 			_g.drawText(t_str,(getPreferredWidth() - t_boldFont.getAdvance(t_str)) / 2,
@@ -305,7 +349,8 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			//
 			return true;
 		}else if(c == ' '){
-			if((status & KeypadListener.STATUS_SHIFT) != 0){
+			
+			if((status & KeypadListener.STATUS_SHIFT_LEFT) != 0){
 				((WeiboUpdateDlg)getScreen()).m_phizItem.run();
 				return true;
 			}
@@ -322,20 +367,34 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 	
 	int m_menuIndex_op = 0;
 	
-	MenuItem m_sendItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_SEND_LABEL),m_menuIndex_op++,0){
+	MenuItem m_sendItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_SEND_LABEL),m_menuIndex_op++,0){
         public void run() {
         	m_updateManager.sendUpdate();
         }
     };
         
-    MenuItem m_phizItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_PHIZ_LABEL),m_menuIndex_op++,0){
+    MenuItem m_phizItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_PHIZ_LABEL),m_menuIndex_op++,0){
         public void run() {
         	m_weiboUIImageSets = null;
         	UiApplication.getUiApplication().pushScreen(m_phizScreen);
         }
-    };    
+    };
     
-    MenuItem m_snapItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPEN_CAMERA_SNAP),m_menuIndex_op++,0){
+    MenuItem m_locationItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_LOCATION_LABEL),m_menuIndex_op++,0){
+        public void run() {
+        	//TODO add logical for location process
+        	if(!m_mainApp.getGPSInfo().isValidLocation()){
+        		m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.WEIBO_NEED_GPS_PROMPT));
+        		return ;
+        	}
+        	
+        	m_updateManager.m_addLocation = !m_updateManager.m_addLocation;
+        	
+        	invalidate();
+        }
+    };
+        
+    MenuItem m_snapItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_OPEN_CAMERA_SNAP),m_menuIndex_op++,0){
     	public void run(){
     		try{
     			m_cameraScreen = new CameraScreen(new ICameraScreenCallback(){
@@ -358,13 +417,13 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
     	}
     };
     
-    MenuItem m_cameraItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_OPEN_CAMERA),m_menuIndex_op++,0){
+    MenuItem m_cameraItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_OPEN_CAMERA),m_menuIndex_op++,0){
     	public void run(){
     		Invoke.invokeApplication(Invoke.APP_TYPE_CAMERA, new CameraArguments());
     	}
     };
     
-    MenuItem m_attachItem = new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_ADD_ATTACH_MENU_LABEL),m_menuIndex_op++,0){
+    MenuItem m_attachItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_ADD_ATTACH_MENU_LABEL),m_menuIndex_op++,0){
     	public void run(){
     		try{
     			m_mainApp.pushScreen(new uploadFileScreen(m_mainApp.m_connectDeamon,m_mainApp,false,WeiboUpdateDlg.this));
@@ -375,7 +434,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
     	}
     };
     
-    MenuItem m_checkPic		= new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_CHECK_UPLOADING_IMAGE),m_menuIndex_op++,0){
+    MenuItem m_checkPic		= new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_CHECK_UPLOADING_IMAGE),m_menuIndex_op++,0){
     	public void run(){
     		try{
     			if(m_imagePath != null){
@@ -394,7 +453,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
     	}
     };
     
-    MenuItem m_deletePic	= new MenuItem(recvMain.sm_local.getString(localResource.WEIBO_DELETE_PIC_MENU_LABEL),m_menuIndex_op++,0){
+    MenuItem m_deletePic	= new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_DELETE_PIC_MENU_LABEL),m_menuIndex_op++,0){
     	public void run(){
     		clearAttachment();
     	}
@@ -410,8 +469,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 	boolean	 			m_snapshotAvaiable;
 	ImageSets				m_weiboUIImageSets = null;
 	PhizSelectedScreen		m_phizScreen		= null;
-	
-	
+		
 	String					m_imagePath = null;
 	int						m_imageType = 0;
 	
@@ -420,6 +478,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 	recvMain				m_mainApp	= null;
 	
 	ImageUnit				m_hasImageSign	= null;
+	ImageUnit				m_hasLocation = null;
 	
 	CameraFileOP			m_fileSystem = new CameraFileOP() {
 		
@@ -448,7 +507,8 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		m_snapshotAvaiable = recvMain.fsm_snapshotAvailible;
 		
 		m_mainApp = _screen.m_mainApp;
-		m_hasImageSign = m_weiboUIImageSets.getImageUnit("picSign");
+		m_hasImageSign	= m_weiboUIImageSets.getImageUnit("picSign");
+		m_hasLocation	= m_weiboUIImageSets.getImageUnit("locationSign");
 	}
 	
 	public void clearAttachment(){
@@ -485,6 +545,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 	protected void makeMenu(Menu _menu,int instance){
 		_menu.add(m_sendItem);
 		_menu.add(m_phizItem);
+		_menu.add(m_locationItem);		
 		
 		if(DeviceInfo.hasCamera()){
 			if(m_snapshotAvaiable){
@@ -505,7 +566,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 	
 	public boolean clickOK(String _filename,int _size){
 		if(!m_fileSystem.addUploadingPic(_filename)){
-			//m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.WEIBO_ADD_ATTACH_PROMPT));
+			//m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.WEIBO_ADD_ATTACH_PROMPT));
 			return false;
 		}
 				
@@ -548,7 +609,11 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		
 		if(m_imagePath != null || m_snapBuffer != null){
 			m_weiboUIImageSets.drawImage(_g, m_hasImageSign,
-					2,getPreferredHeight() - m_hasImageSign.getHeight() - 10);
+					2,getPreferredHeight() - m_hasImageSign.getHeight() - 10 );
+		}
+		
+		if(m_updateManager.m_addLocation){
+			m_weiboUIImageSets.drawImage(_g, m_hasLocation,2,1);
 		}
 	}
 	

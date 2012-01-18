@@ -48,14 +48,14 @@ public class RosterItemField extends Field{
 	public final static int		fsm_nameTextColor			= 0xededed;
 	public final static int		fsm_statusTextColor			= 0xdfdfdf;
 	
-	RosterChatData					m_currRoster;
+	MainIMScreen.RosterChatData					m_currRoster;
 	WeiboHeadImage					m_headImage;
 	
 	MainIMScreen					m_mainScreen;	
 	boolean						m_isChatHistoryItem = false;
 		
 	public RosterItemField(MainIMScreen _mainScreen,
-							RosterChatData _roster,WeiboHeadImage _head,
+							MainIMScreen.RosterChatData _roster,WeiboHeadImage _head,
 							boolean _isChatHistroyItem,
 							FieldChangeListener _changedListener){
 		super(Field.FOCUSABLE);

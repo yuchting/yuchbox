@@ -1,3 +1,30 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.screen;
 
 import java.util.Enumeration;
@@ -6,7 +33,7 @@ import java.util.Vector;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Graphics;
@@ -131,7 +158,7 @@ public class uploadFileScreen extends MainScreen implements
 	fileIconList		m_fileList 		= new fileIconList();
 	
 	uploadFileScreenMenu	m_ok		= new uploadFileScreenMenu(" ",0,100,this);
-	uploadFileScreenMenu	m_check		= new uploadFileScreenMenu(recvMain.sm_local.getString(localResource.CHECK_UPLOAD_FILE),1,100,this);	
+	uploadFileScreenMenu	m_check		= new uploadFileScreenMenu(recvMain.sm_local.getString(yblocalResource.CHECK_UPLOAD_FILE),1,100,this);	
 	
 	
 	public final static int fsm_bitmap_width	= 32;
@@ -188,24 +215,24 @@ public class uploadFileScreen extends MainScreen implements
 		add(m_fileList);		
 		
 		if(_del){
-			m_ok.setText(recvMain.sm_local.getString(localResource.DEL_UPLOAD_FILE));
+			m_ok.setText(recvMain.sm_local.getString(yblocalResource.DEL_UPLOAD_FILE));
 		}else{
-			m_ok.setText(recvMain.sm_local.getString(localResource.ADD_UPLOAD_FILE));
+			m_ok.setText(recvMain.sm_local.getString(yblocalResource.ADD_UPLOAD_FILE));
 		}
 		
 		try{
 			FileConnection fc = (FileConnection) Connector.open(fsm_rootPath_default,Connector.READ_WRITE);
-			m_rootPath = fsm_rootPath_default;
+			m_rootPath = fsm_rootPath_default;			
 			fc.close();
 		}catch(Exception _e){
 			m_rootPath = fsm_rootPath_back;
 		}
 		
-		DisplayFileList(m_rootPath);
+		DisplayFileList(m_mainApp.m_uploadFileFavorPath == null?m_rootPath:m_mainApp.m_uploadFileFavorPath);
 	}
 		
 	public void DisplayFileList(String _path){
-
+		
 		// clear all former file list
 		//
 		for(int i = 0;i < m_listCallback.m_iconList.size();i++){
@@ -255,12 +282,12 @@ public class uploadFileScreen extends MainScreen implements
 				}
 				
 			}catch(Exception _e){
-				//System.out.println(_e.getMessage());
+				m_mainApp.SetErrorString("DFL0", _e);
 			}
 
 		}else{
 
-			
+			m_mainApp.m_uploadFileFavorPath = _path;
 			m_currDisplayPath = _path;
 			
 			setTitle(_path);
@@ -332,7 +359,7 @@ public class uploadFileScreen extends MainScreen implements
 				}
 
 			}catch(Exception _e){
-				//System.out.println(_e.getMessage());
+				m_mainApp.SetErrorString("DFL1", _e);
 			}
 		}
 	}
@@ -416,14 +443,14 @@ public class uploadFileScreen extends MainScreen implements
 					if(m_delScreen){
 						m_clickCallback.clickDel(t_file.m_filename_full);
 						
-						m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.DEL_ATTACHMENT_SUCC));
+						m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.DEL_ATTACHMENT_SUCC));
 					}else{
 						
 						if(!m_clickCallback.clickOK(t_file.m_filename_full,t_file.m_fileSize)){
 							return ;
 						}
 						
-						m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.ADD_ATTACHMENT_SUCC));
+						m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.ADD_ATTACHMENT_SUCC));
 					}				
 										
 					close();

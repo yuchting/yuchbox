@@ -1,6 +1,33 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.im;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Keypad;
@@ -24,7 +51,7 @@ public class SearchStatus extends PopupScreen implements FieldChangeListener{
 		m_mainScreen = _screen;
 	
 		add(m_editTextArea);	
-		add(new LabelField(recvMain.sm_local.getString(localResource.IM_SEARCH_PROMPT_LABEL)));
+		add(new LabelField(recvMain.sm_local.getString(yblocalResource.IM_SEARCH_PROMPT_LABEL)));
 
 		m_editTextArea.setChangeListener(this);
 	}

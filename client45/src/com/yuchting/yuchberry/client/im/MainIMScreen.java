@@ -65,28 +65,30 @@ import com.yuchting.yuchberry.client.sendReceive;
 import com.yuchting.yuchberry.client.ui.BubbleTextField;
 import com.yuchting.yuchberry.client.ui.SliderHeader;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
-final class RosterChatData{
-	
-	public fetchChatRoster		m_roster;
-	public Vector				m_chatMsgList = new Vector();
-	
-	public String				m_lastChatText = "";
-	public int					m_currChatState;
-	
-	boolean					m_isYuch = false;
-	
-	public RosterChatData(fetchChatRoster _roster){
-		m_roster = _roster;
-		m_isYuch = m_roster.getSource().indexOf(MainIMScreen.fsm_YuchBerrySource) != -1;
-	}
-	
-	public void copyFrom(fetchChatRoster _roster){
-		m_roster.copyFrom(_roster);
-		m_isYuch = m_roster.getSource().indexOf(MainIMScreen.fsm_YuchBerrySource) != -1;
-	}
-}
+
 
 public class MainIMScreen extends MainScreen implements FieldChangeListener{
+	
+	public final static class RosterChatData{
+		
+		public fetchChatRoster		m_roster;
+		public Vector				m_chatMsgList = new Vector();
+		
+		public String				m_lastChatText = "";
+		public int					m_currChatState;
+		
+		boolean					m_isYuch = false;
+		
+		public RosterChatData(fetchChatRoster _roster){
+			m_roster = _roster;
+			m_isYuch = m_roster.getSource().indexOf(MainIMScreen.fsm_YuchBerrySource) != -1;
+		}
+		
+		public void copyFrom(fetchChatRoster _roster){
+			m_roster.copyFrom(_roster);
+			m_isYuch = m_roster.getSource().indexOf(MainIMScreen.fsm_YuchBerrySource) != -1;
+		}
+	}
 	
 	public final static int fsm_backgroundColor = 0x1f2d39;
 	
@@ -163,7 +165,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	MenuItem	m_checkRosterMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_CHECK_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
 			
-			RosterChatData t_data = getCurrFocusRosterData();
+			MainIMScreen.RosterChatData t_data = getCurrFocusRosterData();
 			
 			if(t_data != null){
 

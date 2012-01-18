@@ -1,3 +1,30 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client;
 
 import java.io.ByteArrayOutputStream;
@@ -18,7 +45,7 @@ import javax.microedition.location.Location;
 import javax.microedition.location.LocationListener;
 import javax.microedition.location.LocationProvider;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.blackberry.api.browser.Browser;
 import net.rim.blackberry.api.browser.BrowserSession;
 import net.rim.blackberry.api.homescreen.HomeScreen;
@@ -70,7 +97,7 @@ import com.yuchting.yuchberry.client.weibo.weiboTimeLineScreen;
 
 
 
-public class recvMain extends UiApplication implements localResource,LocationListener {
+public class recvMain extends UiApplication implements yblocalResource,LocationListener {
 	
 	public final static int 		fsm_display_width		= Display.getWidth();
 	public final static int 		fsm_display_height		= Display.getHeight();
@@ -100,13 +127,13 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	public static ResourceBundle sm_local = ResourceBundle.getBundle(localResource.BUNDLE_ID, localResource.BUNDLE_NAME);
+	public static ResourceBundle sm_local = ResourceBundle.getBundle(yblocalResource.BUNDLE_ID, yblocalResource.BUNDLE_NAME);
 	
 	final static long		fsm_notifyID_email = 767918509114947L;
 	
 	final static Object 	fsm_notifyEvent_email = new Object() {
 	    public String toString() {
-	       return recvMain.sm_local.getString(localResource.NOTIFY_EMAIL_LABEL);
+	       return recvMain.sm_local.getString(yblocalResource.NOTIFY_EMAIL_LABEL);
 	    }
 	};
 	
@@ -114,7 +141,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	final static Object 	fsm_notifyEvent_weibo = new Object() {
 	    public String toString() {
-	       return recvMain.sm_local.getString(localResource.NOTIFY_WEIBO_LABEL);
+	       return recvMain.sm_local.getString(yblocalResource.NOTIFY_WEIBO_LABEL);
 	    }
 	};
 	
@@ -123,7 +150,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	final static Object 	fsm_notifyEvent_disconnect = new Object() {
 	    public String toString() {
-	       return recvMain.sm_local.getString(localResource.NOTIFY_DISCONNECT_LABEL);
+	       return recvMain.sm_local.getString(yblocalResource.NOTIFY_DISCONNECT_LABEL);
 	    }
 	};
 	
@@ -131,7 +158,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	final static Object 	fsm_notifyEvent_weibo_home = new Object() {
 	    public String toString() {
-	       return recvMain.sm_local.getString(localResource.NOTIFY_WEIBO_LABEL_HOME);
+	       return recvMain.sm_local.getString(yblocalResource.NOTIFY_WEIBO_LABEL_HOME);
 	    }
 	};
 	
@@ -139,7 +166,15 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	final static Object 	fsm_notifyEvent_im = new Object() {
 	    public String toString() {
-	       return recvMain.sm_local.getString(localResource.NOTIFY_IM_LABEL);
+	       return recvMain.sm_local.getString(yblocalResource.NOTIFY_IM_LABEL);
+	    }
+	};
+	
+	final static long		fsm_notifyID_email_failed = 767918509114952L;
+	
+	final static Object 	fsm_notifyEvent_email_failed = new Object() {
+	    public String toString() {
+	       return recvMain.sm_local.getString(yblocalResource.NOTIFY_EMAIL_FAILED_LABEL);
 	    }
 	};
 	
@@ -152,7 +187,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public settingScreen		m_settingScreen		= null;
 	public shareYBScreen		m_shareScreen		= null;
 			
-	UiApplication		m_messageApplication = null;
+	UiApplication				m_messageApplication = null;
 	
 	public final static	int				DISCONNECT_STATE = 0;
 	public final static	int				CONNECTING_STATE = 1;
@@ -160,7 +195,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	
 	public int					m_connectState		= 0; 
-	public String				m_aboutString		= recvMain.sm_local.getString(localResource.ABOUT_DESC);
+	public String				m_aboutString		= recvMain.sm_local.getString(yblocalResource.ABOUT_DESC);
 	
 	final class ErrorInfo{
 		Date		m_time;
@@ -221,11 +256,11 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public static final String[] fsm_apnListString = 
 	{
-		sm_local.getString(localResource.APN_LIST_NULL),
-		sm_local.getString(localResource.APN_LIST_CMNET) 	+ " cmnet",
-		sm_local.getString(localResource.APN_LIST_UNINET) 	+ " uninet",
-		sm_local.getString(localResource.APN_LIST_3GNET) 	+ " 3gnet",
-		sm_local.getString(localResource.APN_LIST_CTNET) 	+ " ctnet",
+		sm_local.getString(yblocalResource.APN_LIST_NULL),
+		sm_local.getString(yblocalResource.APN_LIST_CMNET) 	+ " cmnet",
+		sm_local.getString(yblocalResource.APN_LIST_UNINET) 	+ " uninet",
+		sm_local.getString(yblocalResource.APN_LIST_3GNET) 	+ " 3gnet",
+		sm_local.getString(yblocalResource.APN_LIST_CTNET) 	+ " ctnet",
 	};
 	
 	public static final String[]		fsm_apnString		= 
@@ -237,7 +272,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		"ctnet",
 	};
 	
-	public int						m_apnStringIndex = 0;
+	public int				m_apnStringIndex 	= 0;
 	
 	public boolean			m_fulldayPrompt		= true;
 	public int				m_startPromptHour	= 8;
@@ -259,7 +294,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	ApplicationMenuItem m_addItem	= new ApplicationMenuItem(20){
 						
 		public String toString(){
-			return recvMain.sm_local.getString(localResource.ADD_ATTACHMENT);
+			return recvMain.sm_local.getString(yblocalResource.ADD_ATTACHMENT);
 		}
 		
 		public Object run(Object context){
@@ -274,7 +309,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	ApplicationMenuItem	m_delItem	= new ApplicationMenuItem(21){
 		public String toString(){
-			return recvMain.sm_local.getString(localResource.CHECK_DEL_ATTACHMENT);
+			return recvMain.sm_local.getString(yblocalResource.CHECK_DEL_ATTACHMENT);
 		}
 		
 		public Object run(Object context){
@@ -303,7 +338,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	FileConnection m_logfc				= null;
 	OutputStream	m_logfcOutput		= null;
-			
+				
 	public static void main(String[] args) {
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());
 		t_theApp.enterEventDispatcher();
@@ -390,6 +425,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
     	NotificationsManager.registerSource(fsm_notifyID_weibo_home, fsm_notifyEvent_weibo_home,NotificationsConstants.CASUAL);
     	NotificationsManager.registerSource(fsm_notifyID_disconnect, fsm_notifyEvent_disconnect,NotificationsConstants.CASUAL);
     	NotificationsManager.registerSource(fsm_notifyID_im, fsm_notifyEvent_im,NotificationsConstants.CASUAL);
+    	NotificationsManager.registerSource(fsm_notifyID_email_failed, fsm_notifyEvent_email_failed,NotificationsConstants.CASUAL);
     	
         if(_systemRun){       
         	
@@ -475,9 +511,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	private void mkHeadImageDir(String _prefix,String[] dir,boolean _init)throws Exception{
 		
-		boolean t_sdCard = isSDCardAvailable(false);
-		
-		if(!t_sdCard){
+		if(!isSDCardAvailable(false)){
 			throw new Exception("Can't use the sd card to store weibo head image.");
 		}
 		
@@ -485,9 +519,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		//
 		if(!_init){
 			
-			if(t_sdCard){
-				makeDir(uploadFileScreen.fsm_rootPath_default + "YuchBerry/");
-			}			
+			makeDir(uploadFileScreen.fsm_rootPath_default + "YuchBerry/");	
 			
         	for(int i = 0;i < dir.length;i++){
         		dir[i] = _prefix + dir[i];
@@ -581,7 +613,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 		if(m_latestVersion != null){
 						
-			Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,sm_local.getString(localResource.LATEST_VER_REPORT) + m_latestVersion,
+			Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,sm_local.getString(yblocalResource.LATEST_VER_REPORT) + m_latestVersion,
 					Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL);
 			
 			t_dlg.setDialogClosedListener(new DialogClosedListener(){
@@ -892,7 +924,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		
 	}
 	
-	final static int		fsm_clientVersion = 37;
+	final static int		fsm_clientVersion = 38;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -1117,6 +1149,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				    			m_weiboDontReadHistroy = sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
+				    		if(t_currVer >= 38){
+				    			m_imRenotifyPrompt = sendReceive.ReadBoolean(t_readFile);
+				    		}
+				    		
 				    		
 			    		}finally{
 			    			t_readFile.close();
@@ -1236,6 +1272,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		    			
 		    			sendReceive.WriteBoolean(t_writeFile,m_imStoreImageVoice);
 		    			sendReceive.WriteBoolean(t_writeFile,m_weiboDontReadHistroy);
+		    			sendReceive.WriteBoolean(t_writeFile,m_imRenotifyPrompt);
 		    			
 						
 						if(m_connectDeamon.m_connect != null){
@@ -1460,6 +1497,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				&& PhizSelectedScreen.sm_phizScreen != null){
 						
 				PhizSelectedScreen.sm_phizScreen.close();
+				
+			}else if(m_shareScreen != null
+				&& getActiveScreen() == m_shareScreen){
+				m_shareScreen.close();
 			}
 			
 			if(m_weiboTimeLineScreen != null ){
@@ -1476,8 +1517,14 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 					
 					m_weiboTimeLineScreen.m_optionScreen.close();
 					
-				}else if(getActiveScreen() == m_weiboTimeLineScreen){
+				}else if(m_weiboTimeLineScreen.m_smsShareDlg != null 
+					&& (getActiveScreen() == m_weiboTimeLineScreen.m_smsShareDlg 
+						|| getActiveScreen() == m_weiboTimeLineScreen.m_smsShareDlg.m_sendingDlg)){
 					
+					m_weiboTimeLineScreen.m_smsShareDlg.close();
+				}
+				
+				if(getActiveScreen() == m_weiboTimeLineScreen){
 					popScreen(m_weiboTimeLineScreen);
 				}
 				
@@ -1517,8 +1564,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 						m_mainIMScreen.m_addRosterDlg,
 						m_mainIMScreen.m_searchStatus,
 						m_mainIMScreen.m_checkRosterInfoScreen,
-						m_mainIMScreen.m_aliasDlg,
-						
+						m_mainIMScreen.m_aliasDlg,						
 					};
 					
 					
@@ -1593,6 +1639,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}		
 	}
 	
+	public void StopDisconnectNotification(){
+		NotificationsManager.cancelImmediateEvent(fsm_notifyID_disconnect, 0, this, null);
+	}
+	
 	public void TriggerIMNotification(){
 		if(IsPromptTime()){
 			NotificationsManager.triggerImmediateEvent(fsm_notifyID_im, 0, this, null);
@@ -1603,12 +1653,16 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		NotificationsManager.cancelImmediateEvent(fsm_notifyID_im, 0, this, null);
 	}
 	
-	public void StopDisconnectNotification(){
-		NotificationsManager.cancelImmediateEvent(fsm_notifyID_disconnect, 0, this, null);
+	public void TriggerEmailFailedNotifaction(){
+		if(IsPromptTime()){
+			NotificationsManager.triggerImmediateEvent(fsm_notifyID_email_failed, 0, this, null);
+		}
 	}
 	
-	
-	
+	public void StopEmailFailedNotifaction(){
+		NotificationsManager.cancelImmediateEvent(fsm_notifyID_email_failed, 0, this, null);
+	}
+		
 	public void PopupAboutScreen(){
 		m_aboutScreen = new aboutScreen(this);
 		pushScreen(m_aboutScreen);
@@ -1713,6 +1767,8 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			}
 		});		
 	}
+	
+	public String	m_uploadFileFavorPath = null;
 	public Object OpenAttachmentFileScreen(final boolean _del){
 		
 		try{
@@ -1816,7 +1872,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		// prompt by the background thread
 		//
 				
-		Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,_att.m_realName + sm_local.getString(localResource.DOWNLOAD_OVER_PROMPT),
+		Dialog t_dlg = new Dialog(Dialog.D_OK_CANCEL,_att.m_realName + sm_local.getString(yblocalResource.DOWNLOAD_OVER_PROMPT),
 	    							Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.QUESTION),Manager.VERTICAL_SCROLL);
 		
 		t_dlg.setDialogClosedListener(new DialogClosedListener(){
@@ -1849,22 +1905,38 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		}		
 	}
 	
+	private Dialog m_alartDlg = null;
+	
 	public void DialogAlert(final String _msg){
 
+		SetErrorString(_msg);
+		
+		if(m_alartDlg != null){
+			return;
+		}
+		
 		invokeLater(new Runnable() {
 			public void run(){
 				synchronized(getEventLock()){
 					
-					Dialog t_dlg = new Dialog(Dialog.D_OK,_msg,
-							Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL);
+					synchronized (recvMain.this) {
+						m_alartDlg = new Dialog(Dialog.D_OK,_msg,
+								Dialog.OK,Bitmap.getPredefinedBitmap(Bitmap.EXCLAMATION),Manager.VERTICAL_SCROLL){
+							public void close(){
+								super.close();
+								synchronized (recvMain.this) {
+									m_alartDlg = null;
+								}
+							}
+						};
+						
+						m_alartDlg.setEscapeEnabled(true);			
+						pushGlobalScreen(m_alartDlg,1, UiEngine.GLOBAL_QUEUE);
+					}
 					
-					t_dlg.setEscapeEnabled(true);			
-					pushGlobalScreen(t_dlg,1, UiEngine.GLOBAL_QUEUE);
 				};
 			}
-		});
-		
-		SetErrorString(_msg);		
+		});				
     }
  
 	public void SetUploadingDesc(final fetchMail _mail,final int _attachmentIdx,
@@ -1949,6 +2021,10 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 		if(m_debugInfoScreen != null){
 			m_debugInfoScreen.RefreshText();
 		}			
+	}
+	
+	public void SetErrorString(String _label,Exception e){
+		SetErrorString(_label + " " + e.getMessage() + " " + e.getClass().getName());
 	}
 	
 	public synchronized String GetAllErrorString(){
@@ -2089,6 +2165,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	
 	public boolean				m_hasPromptToCheckImg = true;
 	public int					m_checkImgIndex = 1;
+
 	public boolean				m_weiboUseLocation = false;
 	public boolean				m_autoLoadNewTimelineWeibo = false;
 	
@@ -2098,7 +2175,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public static final int[]		fsm_refreshWeiboInterval		= {0,10,20,30,40};
 	public int						m_refreshWeiboIntervalIndex = 0;
 	
-	public static final String[]	fsm_weiboUploadImageSizeList = {"800×600","1280×800",sm_local.getString(localResource.WEIBO_IMAGE_ORIGINAL_SIZE)};
+	public static final String[]	fsm_weiboUploadImageSizeList = {"800×600","1280×800",sm_local.getString(yblocalResource.WEIBO_IMAGE_ORIGINAL_SIZE)};
 	public static final XYPoint[]	fsm_weiboUploadImageSize_size		= 
 	{
 		new XYPoint(800,600),
@@ -2174,7 +2251,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 				m_updateWeiboItem = new ApplicationMenuItem(30) {
 					
 					public String toString() {
-						return recvMain.sm_local.getString(localResource.WEIBO_UPDATE_DLG);
+						return recvMain.sm_local.getString(yblocalResource.WEIBO_UPDATE_DLG);
 					}
 					
 					public Object run(Object context) {
@@ -2366,7 +2443,7 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 			
 		}else{
 			
-			Dialog t_waitDlg = new Dialog(sm_local.getString(localResource.WAITING_FOR_STORE_DATA),new Object[0],new int[0],0,null);
+			Dialog t_waitDlg = new Dialog(sm_local.getString(yblocalResource.WAITING_FOR_STORE_DATA),new Object[0],new int[0],0,null);
 			t_waitDlg.show();
 			
 			invokeLater(new Runnable() {
@@ -2486,16 +2563,25 @@ public class recvMain extends UiApplication implements localResource,LocationLis
 	public boolean				m_imVoiceImmMode		= false;
 	
 	public boolean				m_imReturnSend	= false;
+	
+	/**
+	 * IM option to popup a dialog prompt 
+	 */
 	public boolean				m_imPopupPrompt	= true;
+	
+	/**
+	 * any chat message re-notify when backlight is disable 
+	 */
+	public boolean				m_imRenotifyPrompt = false;
 	
 	public boolean				m_imStoreImageVoice		= false;
 		
 	public int					m_imCurrUseStatusIndex	= 0;
 	public static Vector		sm_imStatusList			= new Vector();
 	static{
-		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_AVAIL,sm_local.getString(localResource.IM_STATUS_DEFAULT_AVAIL)));
-		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_AWAY,sm_local.getString(localResource.IM_STATUS_DEFAULT_AWAY)));
-		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_BUSY,sm_local.getString(localResource.IM_STATUS_DEFAULT_BUSY)));
+		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_AVAIL,sm_local.getString(yblocalResource.IM_STATUS_DEFAULT_AVAIL)));
+		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_AWAY,sm_local.getString(yblocalResource.IM_STATUS_DEFAULT_AWAY)));
+		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_BUSY,sm_local.getString(yblocalResource.IM_STATUS_DEFAULT_BUSY)));
 	}
 	
 	public static final String[]	fsm_imChatMsgHistoryList 	= {"32","64","128","256"};

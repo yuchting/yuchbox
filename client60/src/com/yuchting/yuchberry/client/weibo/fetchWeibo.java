@@ -1,9 +1,36 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.weibo;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import local.localResource;
+import local.yblocalResource;
 
 import com.yuchting.yuchberry.client.GPSInfo;
 import com.yuchting.yuchberry.client.recvMain;
@@ -34,7 +61,7 @@ public class fetchWeibo {
 	final public static byte	IMAGE_TYPE_GIF			= 1;
 	final public static byte	IMAGE_TYPE_PNG			= 2;
 	final public static byte	IMAGE_TYPE_BMP			= 3;
-	
+		
 	final public static int	fsm_headImageSize		= 32;
 	final public static int	fsm_headImageSize_l		= 50;
 	
@@ -74,10 +101,10 @@ public class fetchWeibo {
 	
 	boolean 	m_hasLocationInfo		= false;
 	GPSInfo		m_gpsInfo = new GPSInfo();
+	
+
 		
-	public fetchWeibo(){
-		
-	}
+	public fetchWeibo(){}
 	
 	public boolean equals(fetchWeibo _weibo){
 		
@@ -296,13 +323,13 @@ public class fetchWeibo {
 		
 		switch(GetWeiboStyle()){
 		case fetchWeibo.QQ_WEIBO_STYLE:
-			t_style = recvMain.sm_local.getString(localResource.WEIBO_QQ_STYLE);
+			t_style = recvMain.sm_local.getString(yblocalResource.WEIBO_QQ_STYLE);
 			break;
 		case fetchWeibo.SINA_WEIBO_STYLE:
-			t_style = recvMain.sm_local.getString(localResource.WEIBO_SINA_STYLE);
+			t_style = recvMain.sm_local.getString(yblocalResource.WEIBO_SINA_STYLE);
 			break;
 		case fetchWeibo.TWITTER_WEIBO_STYLE:
-			t_style = recvMain.sm_local.getString(localResource.WEIBO_TWITTER_STYLE);
+			t_style = recvMain.sm_local.getString(yblocalResource.WEIBO_TWITTER_STYLE);
 			break;
 		}
 		
@@ -327,7 +354,7 @@ public class fetchWeibo {
 			t_content.append(GetOriginalPic()).append("\n").append(_spaceLine);
 		}
 				
-		t_content.append(recvMain.sm_local.getString(localResource.WEIBO_SOURCE_PREFIX))
+		t_content.append(recvMain.sm_local.getString(yblocalResource.WEIBO_SOURCE_PREFIX))
 				.append(GetSource());
 		
 		if(m_commentWeibo != null){
@@ -336,8 +363,8 @@ public class fetchWeibo {
 		
 		return t_content.toString();
 	}
-	
+		
 	public String getShareEmailSubject(){
-		return recvMain.sm_local.getString(localResource.WEIBO_EMAIL_SHARE) + getLocalStyleName();
+		return recvMain.sm_local.getString(yblocalResource.WEIBO_EMAIL_SHARE) + getLocalStyleName();
 	}
 }

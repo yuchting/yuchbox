@@ -1,3 +1,30 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.im;
 
 import net.rim.device.api.system.Characters;
@@ -21,14 +48,14 @@ public class RosterItemField extends Field{
 	public final static int		fsm_nameTextColor			= 0xededed;
 	public final static int		fsm_statusTextColor			= 0xdfdfdf;
 	
-	RosterChatData					m_currRoster;
+	MainIMScreen.RosterChatData					m_currRoster;
 	WeiboHeadImage					m_headImage;
 	
 	MainIMScreen					m_mainScreen;	
 	boolean						m_isChatHistoryItem = false;
 		
 	public RosterItemField(MainIMScreen _mainScreen,
-							RosterChatData _roster,WeiboHeadImage _head,
+							MainIMScreen.RosterChatData _roster,WeiboHeadImage _head,
 							boolean _isChatHistroyItem,
 							FieldChangeListener _changedListener){
 		super(Field.FOCUSABLE);

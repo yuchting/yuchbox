@@ -1,9 +1,35 @@
+/**
+ *  Dear developer:
+ *  
+ *   If you want to modify this file of project and re-publish this please visit:
+ *  
+ *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     
+ *   to check your responsibility and my humble proposal. Thanks!
+ *   
+ *  -- 
+ *  Yuchs' Developer    
+ *  
+ *  
+ *  
+ *  
+ *  尊敬的开发者：
+ *   
+ *    如果你想要修改这个项目中的文件，同时重新发布项目程序，请访问一下：
+ *    
+ *      http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *      
+ *    了解你的责任，还有我卑微的建议。 谢谢！
+ *   
+ *  -- 
+ *  语盒开发者
+ *  
+ */
 package com.yuchting.yuchberry.client.weibo;
 
-import java.util.Date;
 import java.util.Vector;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -88,35 +114,35 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		super(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
 		
 		
-		m_forwardBut	= new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL),
+		m_forwardBut	= new ImageButton(recvMain.sm_local.getString(yblocalResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL),
 				recvMain.sm_weiboUIImage.getImageUnit("forward_comment_button"),
 				recvMain.sm_weiboUIImage.getImageUnit("forward_comment_button_focus"),
 				recvMain.sm_weiboUIImage);
 	
-		m_atBut	= new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_AT_WEIBO_BUTTON_LABEL),
+		m_atBut	= new ImageButton(recvMain.sm_local.getString(yblocalResource.WEIBO_AT_WEIBO_BUTTON_LABEL),
 				recvMain.sm_weiboUIImage.getImageUnit("at_reply_button"),
 				recvMain.sm_weiboUIImage.getImageUnit("at_reply_button_focus"),
 				recvMain.sm_weiboUIImage);
 		
 		if(recvMain.GetClientLanguage() == 0){
 
-			m_favoriteBut = new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL),
+			m_favoriteBut = new ImageButton(recvMain.sm_local.getString(yblocalResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL),
 					recvMain.sm_weiboUIImage.getImageUnit("favorite_button"),
 					recvMain.sm_weiboUIImage.getImageUnit("favorite_button_focus"),
 					recvMain.sm_weiboUIImage);
 			
-			m_picBut = new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL),
+			m_picBut = new ImageButton(recvMain.sm_local.getString(yblocalResource.WEIBO_CHECK_PICTURE_LABEL),
 					recvMain.sm_weiboUIImage.getImageUnit("picture_button"),
 					recvMain.sm_weiboUIImage.getImageUnit("picture_button_focus"),
 					recvMain.sm_weiboUIImage);
 		}else{
 			
-			m_favoriteBut = new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL),
+			m_favoriteBut = new ImageButton(recvMain.sm_local.getString(yblocalResource.WEIBO_FAVORITE_WEIBO_BUTTON_LABEL),
 					recvMain.sm_weiboUIImage.getImageUnit("favorite_button_en"),
 					recvMain.sm_weiboUIImage.getImageUnit("favorite_button_focus_en"),
 					recvMain.sm_weiboUIImage);
 			
-			m_picBut = new ImageButton(recvMain.sm_local.getString(localResource.WEIBO_CHECK_PICTURE_LABEL),
+			m_picBut = new ImageButton(recvMain.sm_local.getString(yblocalResource.WEIBO_CHECK_PICTURE_LABEL),
 					recvMain.sm_weiboUIImage.getImageUnit("picture_button_en"),
 					recvMain.sm_weiboUIImage.getImageUnit("picture_button_focus_en"),
 					recvMain.sm_weiboUIImage);
@@ -283,7 +309,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		try{
 			
 			graphics.setColor(WeiboItemField.fsm_darkColor);
-			graphics.drawText(recvMain.sm_local.getString(localResource.WEIBO_REACH_MAX_WEIBO_NUM_PROMPT),
+			graphics.drawText(recvMain.sm_local.getString(yblocalResource.WEIBO_REACH_MAX_WEIBO_NUM_PROMPT),
 								0,m_bufferedTotalHeight - WeiboItemField.sm_fontHeight);
 			
 			if(getFieldCount() >= fsm_maxItemInOneScreen){
@@ -523,12 +549,6 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 
 			if(t_formerExtendItem == null && t_currentExtendItem != null){	
 			
-				setCurrExtendedItem(null);
-				
-				if(t_formerExtendItem != null){
-					t_formerExtendItem.AddDelControlField(false);
-				}
-				
 				setCurrExtendedItem(t_currentExtendItem);
 				t_currentExtendItem.AddDelControlField(true);			
 				
@@ -552,7 +572,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			}else{
 				
 				if(getFieldWithFocus() != getCurrSelectedItem()){
-					m_mainApp.DialogAlert(recvMain.sm_local.getString(localResource.WEIBO_EXTENDED_CLICK_PROMPT));
+					m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.WEIBO_EXTENDED_CLICK_PROMPT));
 				}				
 			}
 	
@@ -816,7 +836,6 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				}
 				
 			}else{
-				
 				t_text = m_forwardText;
 			}			
 			
@@ -859,14 +878,14 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				
 				final PopupScreen t_popDlg = new PopupScreen(t_manager,Manager.VERTICAL_SCROLL);
 				
-				final CheckboxField t_samePrompt = new CheckboxField(recvMain.sm_local.getString(localResource.WEIBO_SAVE_CHECK_IMAGE_PROMPT),
+				final CheckboxField t_samePrompt = new CheckboxField(recvMain.sm_local.getString(yblocalResource.WEIBO_SAVE_CHECK_IMAGE_PROMPT),
 						false,Field.FIELD_HCENTER);
 				
 				final ButtonField[] t_buttons = new ButtonField[]
 				{
-					new ButtonField(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_0),Field.FIELD_HCENTER),
-					new ButtonField(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_1),Field.FIELD_HCENTER),
-					new ButtonField(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_STYLE_2),Field.FIELD_HCENTER),
+					new ButtonField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPEN_IMAGE_URL_STYLE_0),Field.FIELD_HCENTER),
+					new ButtonField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPEN_IMAGE_URL_STYLE_1),Field.FIELD_HCENTER),
+					new ButtonField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPEN_IMAGE_URL_STYLE_2),Field.FIELD_HCENTER),
 				};
 
 				FieldChangeListener t_listener = new FieldChangeListener() {
@@ -896,7 +915,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 					}
 				};
 				
-				t_manager.add(new LabelField(recvMain.sm_local.getString(localResource.WEIBO_OPEN_IMAGE_URL_QUESTION),Field.FIELD_HCENTER));
+				t_manager.add(new LabelField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPEN_IMAGE_URL_QUESTION),Field.FIELD_HCENTER));
 				t_manager.add(t_samePrompt);
 				
 				t_samePrompt.setChangeListener(t_listener);
