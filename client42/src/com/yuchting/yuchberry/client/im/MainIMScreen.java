@@ -77,6 +77,9 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		public String				m_lastChatText = "";
 		public int					m_currChatState;
 		
+		/**
+		 * this data roster is Yuch client
+		 */
 		boolean					m_isYuch = false;
 		
 		public RosterChatData(fetchChatRoster _roster){

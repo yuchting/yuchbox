@@ -322,6 +322,7 @@ public class WeiboItemField extends Manager{
 		m_simpleAbstract = null;
 		m_weiboText		= null;
 		m_commentText	= null;
+		m_displayName	= null;
 		
 		m_weiboPic		= null;		
 	}

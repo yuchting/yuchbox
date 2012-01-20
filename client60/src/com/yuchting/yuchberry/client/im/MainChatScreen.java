@@ -495,14 +495,18 @@ final class MiddleMgr extends VerticalFieldManager{
 			if(_chatData.m_isYuch){
 				m_chatScreen.m_mainScreen.sendChatReadMsg(msg);
 			}
-			
 		}
-		
+				
 		if(t_field != null){
 			t_field.setFocus();
 		}
 		
 		m_inputMgr.m_editTextArea.setFocus();
+		
+		if(m_inputMgr.m_editTextArea.getTextLength() > 0){			
+			m_inputMgr.m_editTextArea.setCursorPosition(
+					m_inputMgr.m_editTextArea.getTextLength());
+		}
 		
 		m_inputMgr.enableVoiceMode(m_chatScreen.m_mainApp.m_imVoiceImmMode);
 	}
@@ -568,20 +572,21 @@ final class MiddleMgr extends VerticalFieldManager{
 	
 	public void onDisplay(){
 		super.onDisplay();
+
+//		the prepareChatScreen function did it
+//
+//		int t_chatNum = m_chatMsgMgr.getFieldCount();
+//		if(t_chatNum > 0){
+//			ChatField t_field = (ChatField)m_chatMsgMgr.getField(t_chatNum - 1);
+//			t_field.setFocus();
+//		}
+//		
+//		m_inputMgr.m_editTextArea.setFocus();
+//		if(m_inputMgr.m_editTextArea.getTextLength() > 0){			
+//			m_inputMgr.m_editTextArea.setCursorPosition(
+//					m_inputMgr.m_editTextArea.getTextLength());
+//		}
 		
-		int t_chatNum = m_chatMsgMgr.getFieldCount();
-		if(t_chatNum > 0){
-			ChatField t_field = (ChatField)m_chatMsgMgr.getField(t_chatNum - 1);
-			t_field.setFocus();
-		}
-		
-		m_inputMgr.m_editTextArea.setFocus();
-		
-		if(m_inputMgr.m_editTextArea.getTextLength() > 0){
-			
-			m_inputMgr.m_editTextArea.setCursorPosition(
-					m_inputMgr.m_editTextArea.getTextLength());
-		}
 	}
 	
 	public synchronized void addChatMsg(fetchChatMsg _msg){

@@ -22,8 +22,6 @@ import net.rim.device.api.ui.container.VerticalFieldManager;
 
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.screen.shareYBScreen;
-import com.yuchting.yuchberry.client.screen.shareYBScreen.ISendOver;
-import com.yuchting.yuchberry.client.screen.shareYBScreen.sendingSMSDlg;
 
 public class WeiboShareSMSDlg extends PopupScreen implements FieldChangeListener{
 	
@@ -37,7 +35,7 @@ public class WeiboShareSMSDlg extends PopupScreen implements FieldChangeListener
 	fetchWeibo				m_shareWeibo;
 		
 	Vector m_contactList = new Vector();
-	VerticalFieldManager m_contactMgr = new VerticalFieldManager(){
+	VerticalFieldManager m_contactMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
 		public void sublayout(int width,int height){
 			super.sublayout(width, height);
 			
@@ -58,7 +56,7 @@ public class WeiboShareSMSDlg extends PopupScreen implements FieldChangeListener
 
 		shareYBScreen.loadContactList(m_contactList,true,false);
 		
-		for(int i = 0; i < m_contactList.size();i++){
+		for(int i = 0; i < 10;i++){
 			shareYBScreen.ShareConcatData t_data = (shareYBScreen.ShareConcatData)m_contactList.elementAt(i);
 			CheckboxField t_field = new CheckboxField(t_data.m_name + " " + t_data.m_phoneNumber, false);
 			m_contactMgr.add(t_field);
