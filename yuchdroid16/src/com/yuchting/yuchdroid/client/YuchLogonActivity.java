@@ -68,17 +68,10 @@ public class YuchLogonActivity extends Activity {
 	    }
 	    
 	    public void escape(){
-	    	
-	    	GlobalDialog.showYesNoDialog(getString(R.string.yuch_logon_quit_ask),YuchLogonActivity.this, new GlobalDialog.YesNoListener() {
-				
-				@Override
-				public void click() {
-					finish();					
-				}
-			},null);
+	    	escape_impl();
 	    }
 	}
-	
+		
 	//final static String LOAD_WEB_URL = "http://172.16.8.228:8888/Android.html";
 	final static String LOAD_WEB_URL = "http://www.yuchs.com/Android.html";
 	
@@ -104,7 +97,7 @@ public class YuchLogonActivity extends Activity {
         m_mainWeb.getSettings().setJavaScriptEnabled(true);
         
         m_mainWeb.loadUrl(LOAD_WEB_URL);
-        
+
         m_mainWeb.setWebChromeClient(new WebChromeClient(){
         	public void onProgressChanged(WebView view, int progress){
         		m_loadProgress.setProgress(progress);
@@ -115,7 +108,17 @@ public class YuchLogonActivity extends Activity {
         });
        
         m_mainWeb.addJavascriptInterface(new JavaScriptInterface(this), "YuchDroid");
-    } 
+    }
+    
+    private void escape_impl(){
+    	GlobalDialog.showYesNoDialog(getString(R.string.yuch_logon_quit_ask),YuchLogonActivity.this, new GlobalDialog.YesNoListener() {
+			
+			@Override
+			public void click() {
+				finish();					
+			}
+		},null);
+    }
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -145,7 +148,10 @@ public class YuchLogonActivity extends Activity {
             	m_loadProgress.setVisibility(View.VISIBLE);
             	m_loadProgress.setProgress(0);
             	m_mainWeb.reload();
-                break;           
+                break;
+            case R.id.yuch_logon_menu_quit:
+            	escape_impl();
+            	break;
         }
 
         return super.onMenuItemSelected(featureId, item);

@@ -46,6 +46,7 @@
     <string name="yuch_logon_quit_ask">你确定要退出登录|注册？</string>
     <string name="yuch_logon_sign_title">语盒官方服务 登录|注册</string>
     <string name="yuch_logon_menu_refresh">刷新页面</string>
+    <string name="yuch_logon_menu_quit">退出登录</string>    
     <string name="yuch_logon_sync_ok_prompt">同步成功！信息已经填写在连接界面，并且处于连接状态。可以按返回键退出这个配置界面了。详情请访问 http://www.yuchs.com/ 。</string>
     
     <!-- login preference activity -->

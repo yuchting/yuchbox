@@ -45,6 +45,7 @@
     <string name="yuch_logon_quit_ask">Are you sure quit to login or signin?</string>
     <string name="yuch_logon_sign_title">Yuchs\'Box Official Service Login|Signin</string> 
     <string name="yuch_logon_menu_refresh">Refresh Site</string>
+    <string name="yuch_logon_menu_quit">Quit Sign In</string>
     <string name="yuch_logon_sync_ok_prompt">Sync OK! The information has filled and connected. Can press return key to quit this step. Please visit http://www.yuchs.com/ to get detail.</string>
     
     
