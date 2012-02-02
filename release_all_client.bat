@@ -59,4 +59,6 @@ copy .\client60\deliverables\Web\6.0.0\*.jad .\release_client_%var%\yuchsbox_%va
 7z a .\release_client_%var%\yuchsbox_%var%_for_5.0os.zip .\release_client_%var%\yuchsbox_%var%_for_5.0os\
 7z a .\release_client_%var%\yuchsbox_%var%_for_6.0os.zip .\release_client_%var%\yuchsbox_%var%_for_6.0os\
 
+ren .\yuchsbox.apk yuchsbox_%var%.apk
+
 pause
