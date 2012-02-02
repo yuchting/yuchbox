@@ -375,7 +375,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
         
     MenuItem m_phizItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_PHIZ_LABEL),m_menuIndex_op++,0){
         public void run() {
-        	m_weiboUIImageSets = null;
+        	m_phizScreen.preparePhizScreen(m_updateManager.m_editTextArea);
         	UiApplication.getUiApplication().pushScreen(m_phizScreen);
         }
     };
