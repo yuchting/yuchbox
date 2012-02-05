@@ -48,8 +48,8 @@ import twitter4j.auth.RequestToken;
 
 public class fetchTWeibo extends fetchAbsWeibo{
 
-	static String sm_consumerKey 	= "YdIUCx8guEJm9h46HiG1w";
-	static String sm_consumerSecret = "nihtObnPRottjwJaQf6Y1iXlOKdojhvve6A1jh3aV6w";
+	final static String fsm_consumerKey 	= getTWConsumerKey();
+	final static String fsm_consumerSecret = getTWSecretKey();
 	
 	Twitter	m_twitter	= new TwitterFactory().getInstance();
 	User	m_userself	= null;
@@ -61,7 +61,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	public void InitAccount(Element _elem)throws Exception{
 		super.InitAccount(_elem);
 		
-		m_twitter.setOAuthConsumer(sm_consumerKey, sm_consumerSecret);
+		m_twitter.setOAuthConsumer(fsm_consumerKey, fsm_consumerSecret);
 		
 		m_accountName = m_accountName + "[TWeibo]";
 		
@@ -357,17 +357,17 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	
 	
 	public RequestToken getRequestToken()throws Exception{	
-		m_twitter.setOAuthConsumer(sm_consumerKey, sm_consumerSecret);
+		m_twitter.setOAuthConsumer(fsm_consumerKey, fsm_consumerSecret);
 		return m_twitter.getOAuthRequestToken();
 	}
 	
 	public RequestToken getRequestToken(String _callback)throws Exception{	
-		m_twitter.setOAuthConsumer(sm_consumerKey, sm_consumerSecret);
+		m_twitter.setOAuthConsumer(fsm_consumerKey, fsm_consumerSecret);
 		return m_twitter.getOAuthRequestToken(_callback);
 	}
 	
 	public Twitter getTwitter(){
-		m_twitter.setOAuthConsumer(sm_consumerKey, sm_consumerSecret);
+		m_twitter.setOAuthConsumer(fsm_consumerKey, fsm_consumerSecret);
 		return m_twitter;
 	}
 	
@@ -385,7 +385,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		
 		fetchTWeibo t_weibo = new fetchTWeibo(t_manger);		
 		
-		t_weibo.m_twitter.setOAuthConsumer(sm_consumerKey, sm_consumerSecret);
+		t_weibo.m_twitter.setOAuthConsumer(fsm_consumerKey, fsm_consumerSecret);
 		
 		t_weibo.m_accessToken = "123158821-96vShVD9oXGZmj6usNAz4vVyLzL1fJVGxKZABa1C";
 		t_weibo.m_secretToken = "s9zpyuKVpOTksVr0tBC1md6Rge3SXvnQDzNkm8vg";

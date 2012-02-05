@@ -34,6 +34,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Vector;
@@ -1170,5 +1171,62 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			m_stat_weiboSendB = 0;
 			m_stat_weiboRecvB = 0;	
 		}			
+	}
+	
+	public static String getSinaConsumerKey(){
+		try{
+			Class<?> clazz = Class.forName("com.yuchting.yuchberry.server.PrivateConfig");
+			Method method = clazz.getMethod("getSinaConsumerKey",new Class[0]);
+			return method.invoke(null, null).toString();
+		}catch(Exception e){
+			return "";
+		}
+	}
+	public static String getSinaSecretKey(){
+		try{
+			Class<?> clazz = Class.forName("com.yuchting.yuchberry.server.PrivateConfig");
+			Method method = clazz.getMethod("getSinaSecretKey",new Class[0]);
+			return method.invoke(null, null).toString();
+		}catch(Exception e){
+			return "";
+		}
+	}
+	
+	public static String getQQConsumerKey(){
+		try{
+			Class<?> clazz = Class.forName("com.yuchting.yuchberry.server.PrivateConfig");
+			Method method = clazz.getMethod("getQQConsumerKey",new Class[0]);
+			return method.invoke(null, null).toString();
+		}catch(Exception e){
+			return "";
+		}
+	}
+	public static String getQQSecretKey(){
+		try{
+			Class<?> clazz = Class.forName("com.yuchting.yuchberry.server.PrivateConfig");
+			Method method = clazz.getMethod("getQQSecretKey",new Class[0]);
+			return method.invoke(null, null).toString();
+		}catch(Exception e){
+			return "";
+		}
+	}
+	
+	public static String getTWConsumerKey(){
+		try{
+			Class<?> clazz = Class.forName("com.yuchting.yuchberry.server.PrivateConfig");
+			Method method = clazz.getMethod("getTWConsumerKey",new Class[0]);
+			return method.invoke(null, null).toString();
+		}catch(Exception e){
+			return "";
+		}
+	}
+	public static String getTWSecretKey(){
+		try{
+			Class<?> clazz = Class.forName("com.yuchting.yuchberry.server.PrivateConfig");
+			Method method = clazz.getMethod("getTWSecretKey",new Class[0]);
+			return method.invoke(null, null).toString();
+		}catch(Exception e){
+			return "";
+		}
 	}
 }

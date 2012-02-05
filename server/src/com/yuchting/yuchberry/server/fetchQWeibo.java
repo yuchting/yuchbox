@@ -43,8 +43,8 @@ import com.mime.qweibo.QWeiboSyncApi;
 
 public class fetchQWeibo extends fetchAbsWeibo{
 	
-	final static String		fsm_consumerKey 	= "06d0a334755146d9b3dfe024e205f36b";
-	final static String		fsm_consumerSecret	= "dcc64862deec1a57e98b6985c405e369";
+	final static String		fsm_consumerKey 	= getQQConsumerKey();
+	final static String		fsm_consumerSecret	= getQQSecretKey();
 		
 	
 	public QWeiboSyncApi m_api = new QWeiboSyncApi();

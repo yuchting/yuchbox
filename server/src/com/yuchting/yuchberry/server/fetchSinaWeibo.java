@@ -46,16 +46,23 @@ import weibo4j.http.RequestToken;
 
 public class fetchSinaWeibo extends fetchAbsWeibo{
 	
-	public static final String	fsm_consumer_key = "1290385296";
-	public static final String	fsm_consumer_serect = "508aa0bfd4b1d039bdf48374f5703d2b";
+	public static final String	fsm_consumer_key = getSinaConsumerKey();
+	public static final String	fsm_consumer_serect = getSinaSecretKey();
 	
 	static
 	{
-		Weibo.CONSUMER_KEY = fsm_consumer_key;
-    	Weibo.CONSUMER_SECRET = fsm_consumer_serect;
-    	
-    	System.setProperty("weibo4j.oauth.consumerKey", Weibo.CONSUMER_KEY);
-    	System.setProperty("weibo4j.oauth.consumerSecret", Weibo.CONSUMER_SECRET);
+		try{
+			
+			Weibo.CONSUMER_KEY = fsm_consumer_key;
+	    	Weibo.CONSUMER_SECRET = fsm_consumer_serect;
+	    	
+	    	System.setProperty("weibo4j.oauth.consumerKey", Weibo.CONSUMER_KEY);
+	    	System.setProperty("weibo4j.oauth.consumerSecret", Weibo.CONSUMER_SECRET);
+		}catch(Exception e){
+			
+		}
+		
+		
 	};
 	
 	Weibo	m_weibo				= new Weibo();
