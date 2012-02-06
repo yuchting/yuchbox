@@ -153,7 +153,17 @@ public class HelloWorld {
 	
 	public static void main(String arg[])throws Exception{
 	
-		System.out.println(fetchAbsWeibo.getSinaConsumerKey());
+		char a = 0x33;
+		char b = 0x36;
+		StringBuffer t_bf = new StringBuffer();
+		
+		char c = 0x39;
+		
+		t_bf.append(a).append(b);
+		
+		cryptPassword t_crypt = new cryptPassword(t_bf.append(c).toString());
+		System.out.println(t_crypt.encrypt("CDUH1L5EuszWjiU1y8firw"));
+		System.out.println(t_crypt.encrypt("1CGdAVmxaezBQNzgKJvRkXM8WL5tQ7itAosMwp9QlMg"));
 	}
 	
 	public final static String	fsm_vectStringSpliter = "<>";
