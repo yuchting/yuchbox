@@ -124,7 +124,14 @@ public class YuchLogonActivity extends Activity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // Check if the key event was the BACK key and if there's history
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-        	m_mainWeb.loadUrl("javascript:escapeGWT();");
+        	if(m_loadProgress.getVisibility() != View.GONE){
+        		// just process escape when the web is loading 
+        		//
+        		escape_impl();
+        	}else{
+        		m_mainWeb.loadUrl("javascript:escapeGWT();");
+        	}
+        	
             return true;
         }
         
