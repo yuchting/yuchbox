@@ -60,12 +60,14 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
+import javax.mail.util.SharedByteArrayInputStream;
 
 import org.dom4j.Element;
 
 import twitter4j.internal.org.json.JSONArray;
 import twitter4j.internal.org.json.JSONObject;
 
+import com.sun.mail.imap.IMAPInputStream;
 import com.sun.mail.smtp.SMTPTransport;
 
 class EmailSendAttachment extends Thread{
@@ -1860,12 +1862,40 @@ public class fetchEmail extends fetchAccount{
 		    
 		}else if (p.isMimeType("multipart/*")) {
 			
-		    Multipart mp = (Multipart)p.getContent();
-		    int count = mp.getCount();
+			if(p.getContent() instanceof IMAPInputStream || 
+			p.getContent() instanceof SharedByteArrayInputStream){
+				
+				// qq mail will cause this condition
+				// I can't read the string correctly so read them all to generate a string to display 
+				//
+				InputStream in = (InputStream)p.getContent();
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+				
+				int read = 0;
+				while((read = in.read()) > 0){
+					os.write(read);
+				}
+				
+				byte[] t_data = os.toByteArray();
+				
+				try{
+					_mail.SetContain(new String(t_data,"GB2312"));
+				}catch(Exception e){
+					_mail.SetContain(new String(t_data,"UTF-8"));
+				}
+				
+				throw new Exception("YuchBox can't read the mail content correctly");
+				
+			}else{
+				
+				Multipart mp = (Multipart)p.getContent();
+			    int count = mp.getCount();
+			    
+			    for (int i = 0; i < count; i++){
+			    	ImportPart(mp.getBodyPart(i),_mail);
+			    }
+			}
 		    
-		    for (int i = 0; i < count; i++){
-		    	ImportPart(mp.getBodyPart(i),_mail);
-		    }
 		    
 		} else if (p.isMimeType("message/rfc822")) {
 
