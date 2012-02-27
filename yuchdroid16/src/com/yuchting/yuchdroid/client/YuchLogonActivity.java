@@ -39,6 +39,7 @@ import android.view.View;
 import android.view.Window;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -81,6 +82,8 @@ public class YuchLogonActivity extends Activity {
 	
 	YuchDroidApp	m_mainApp;
 	
+	boolean		m_loadError = false;
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,7 +106,15 @@ public class YuchLogonActivity extends Activity {
         		m_loadProgress.setProgress(progress);
         		if(progress == 100){
         			m_loadProgress.setVisibility(View.GONE);
-        		}
+        		}        		
+        		
+        	}
+        });
+        
+        m_mainWeb.setWebViewClient(new WebViewClient(){
+        	public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+        		//Toast.makeText(activity, "Oh no! " + description, Toast.LENGTH_SHORT).show();
+        		m_loadError = false;
         	}
         });
        
@@ -111,6 +122,7 @@ public class YuchLogonActivity extends Activity {
     }
     
     private void escape_impl(){
+    	
     	GlobalDialog.showYesNoDialog(getString(R.string.yuch_logon_quit_ask),YuchLogonActivity.this, new GlobalDialog.YesNoListener() {
 			
 			@Override
@@ -124,7 +136,7 @@ public class YuchLogonActivity extends Activity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // Check if the key event was the BACK key and if there's history
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-        	if(m_loadProgress.getVisibility() != View.GONE){
+        	if(m_loadProgress.getVisibility() == View.GONE || m_loadError){
         		// just process escape when the web is loading 
         		//
         		escape_impl();
@@ -155,6 +167,8 @@ public class YuchLogonActivity extends Activity {
             	m_loadProgress.setVisibility(View.VISIBLE);
             	m_loadProgress.setProgress(0);
             	m_mainWeb.reload();
+            	
+            	m_loadError = false;
                 break;
             case R.id.yuch_logon_menu_quit:
             	escape_impl();
