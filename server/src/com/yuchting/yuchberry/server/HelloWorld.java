@@ -125,7 +125,11 @@ public class HelloWorld {
 	
 	
 	public static void main(String arg[])throws Exception{
-	
+		
+		for(int i = 0;i < 10000;i++){
+			String str = Integer.toString(i);
+			System.out.println(str);
+		}
 	}
 	
 	public final static String	fsm_vectStringSpliter = "<>";
