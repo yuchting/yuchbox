@@ -46,8 +46,14 @@ import com.yuchting.yuchdroid.client.YuchDroidApp;
 
 public class MailListAdapter extends BaseAdapter{
 	
-	private final static int	MAIL_GROUP_ITEM_HEIGHT = YuchDroidApp.sm_displyHeight >= 640?70:50;
-	private final static int	MAIL_GROUP_ITEM_SPLITER_HEIGHT = YuchDroidApp.sm_displyHeight >= 640?30:20;
+	// this MAIL_GROUP_ITEM_HEIGHT MAIL_GROUP_ITEM_SPLITER_HEIGHT will be calculated 
+	// in YuchDroidApp.retrieveGroupListItemHeight to retrieve from inflater in native system size 
+	// 
+	private static int	MAIL_GROUP_ITEM_HEIGHT = (YuchDroidApp.sm_displyHeight >= 640)?(YuchDroidApp.sm_displyHeight >= 1280?120:70):50;
+	private static int	MAIL_GROUP_ITEM_SPLITER_HEIGHT = (YuchDroidApp.sm_displyHeight >= 640)?(YuchDroidApp.sm_displyHeight >= 1280?30:20):10;
+	
+	private static boolean	MAIL_GROUP_ITEM__HEIGHT_ASSIGN = false;
+	
 	
 	private int m_cursorIDIndex;
     private int m_cursorMarkIndex;
@@ -197,7 +203,7 @@ public class MailListAdapter extends BaseAdapter{
     	ItemHolder holder = new ItemHolder();
     	
         View convertView = m_inflater.inflate(R.layout.mail_list_item,null);
-        
+                
         holder.background 	= (ViewGroup)convertView.findViewById(R.id.mail_item);
         holder.groupFlag	= (ImageView)convertView.findViewById(R.id.mail_group_flag);
         holder.subject		= (TextView)convertView.findViewById(R.id.mail_subject);
@@ -205,8 +211,25 @@ public class MailListAdapter extends BaseAdapter{
         holder.mailAddr		= (TextView)convertView.findViewById(R.id.mail_from_to);
         holder.latestTime	= (TextView)convertView.findViewById(R.id.mail_time);
         holder.mailDateSpliter	= (TextView)convertView.findViewById(R.id.mail_date_spliter);
-
+        
         convertView.setTag(holder);
+        
+        // assign the item height
+        //
+        synchronized (this) {
+        	
+			if(!MAIL_GROUP_ITEM__HEIGHT_ASSIGN){
+			 	
+				MAIL_GROUP_ITEM__HEIGHT_ASSIGN = true;
+			 	
+			 	float t_subjectHeight 		= holder.subject.getPaint().getTextSize();
+				float t_bodyHeight 			= holder.body.getPaint().getTextSize();
+				float t_timeSpliterHeight	= holder.mailDateSpliter.getPaint().getTextSize();
+				
+				MAIL_GROUP_ITEM_SPLITER_HEIGHT = (int)t_timeSpliterHeight;
+				MAIL_GROUP_ITEM_HEIGHT = (int)(t_subjectHeight +  t_bodyHeight + MAIL_GROUP_ITEM_SPLITER_HEIGHT);
+			}
+		}
                 
         return convertView;
     }

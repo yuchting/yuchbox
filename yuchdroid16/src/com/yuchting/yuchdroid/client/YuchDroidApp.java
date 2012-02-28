@@ -46,8 +46,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.database.Cursor;
-import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.Contacts;
@@ -55,12 +53,16 @@ import android.provider.Contacts.People;
 import android.text.ClipboardManager;
 import android.util.Log;
 import android.view.Display;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.yuchting.yuchdroid.client.mail.HomeActivity;
 import com.yuchting.yuchdroid.client.mail.MailDbAdapter;
+import com.yuchting.yuchdroid.client.mail.MailListAdapter;
 import com.yuchting.yuchdroid.client.mail.fetchMail;
 
 public class YuchDroidApp extends Application {
@@ -201,7 +203,6 @@ public class YuchDroidApp extends Application {
 		}).start();
 		
 	}
-	
 	
 	private  void constructMailAddrList(){
 	
