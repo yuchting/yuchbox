@@ -126,12 +126,8 @@ public class HelloWorld {
 	
 	public static void main(String arg[])throws Exception{
 		
-		for(int i = 0;i < 10000;i++){
-			String str = Integer.toString(i);
-			System.out.println(str);
-		}
 	}
-	
+		
 	public final static String	fsm_vectStringSpliter = "<>";
 	public final static String	fsm_vectStringSpliter_sub = "@#&";
 	
@@ -482,7 +478,7 @@ public class HelloWorld {
 			sendReceive.WriteString(os, "111111",false);
 			sendReceive.WriteInt(os,4);
 			os.write(0);
-			sendReceive.WriteString(os,"1.1.715",false);
+			sendReceive.WriteString(os,"1.10.1556",false);
 			t_receive.SendBufferToSvr(os.toByteArray(), false);
 			
 			fetchMail t_mail = new fetchMail(false);

@@ -1224,7 +1224,9 @@ public class fetchEmail extends fetchAccount{
 
 							m_mainMgr.m_logger.LogOut("Copy the sent message to SENT folder.");
 						}finally{
-							folder.close(false);	
+							if(folder.isOpen()){
+								folder.close(false);
+							}
 						}	
 					}
 				
@@ -2093,7 +2095,7 @@ public class fetchEmail extends fetchAccount{
 	
 	public void ComposeMessage(MimeMessage msg,fetchMail _mail,fetchMail _forwardMail,String _sendName)throws Exception{
 		
-		msg.setFrom(new InternetAddress(MimeUtility.encodeText(m_strUserNameFull,"UTF-8","B"),_sendName));
+		msg.setFrom(new InternetAddress(m_strUserNameFull,MimeUtility.encodeText(_sendName,"UTF-8","B")));
 	
 		String t_sendTo = fetchMail.parseAddressList(_mail.GetSendToVect());
 		
