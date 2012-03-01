@@ -35,130 +35,81 @@ import javax.microedition.io.file.FileConnection;
 
 import local.yblocalResource;
 import net.rim.device.api.ui.Field;
-import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Keypad;
+import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
-import net.rim.device.api.ui.component.ListField;
-import net.rim.device.api.ui.component.ListFieldCallback;
+import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.Menu;
-import net.rim.device.api.ui.component.ObjectListField;
 import net.rim.device.api.ui.container.MainScreen;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 
 import com.yuchting.yuchberry.client.connectDeamon;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 
-class fileIcon {
-
-	static ImageSets	sm_imageSets = null;
-	
-	int				m_fileSize;
-	String			m_filename 	= null;
-	String			m_filename_full 	= null;
-	ImageUnit		m_bitmap		= null;
-	boolean		m_isFolder	= false;
-	long			m_lastModified = 0;
-	
-	public fileIcon(String _name,String _name_full,ImageUnit _image,
-			int _fileSize,boolean _isFolder,long _lastModified){
+public class uploadFileScreen extends MainScreen{
 		
-		m_fileSize	= _fileSize;
-		m_filename	= _name;
-		m_filename_full = _name_full;
-		m_bitmap		= _image;
-		m_isFolder	= _isFolder;
-		m_lastModified = _lastModified;
-	}
+	FileFieldManager		m_fileList 		= new FileFieldManager();
 	
-	public String toString(){
-		return m_filename;
-	}
-
-}
-
-
-class IconListCallback implements ListFieldCallback {
+	int m_menuOrder			= 0;
 	
-	Vector 	m_iconList	= new Vector();
-	
-	public void drawListRow(ListField listField, Graphics graphics, int index, int y, int width) {
-		
-		fileIcon t_file = (fileIcon)m_iconList.elementAt(index);
-		
-		fileIcon.sm_imageSets.drawImage(graphics, t_file.m_bitmap, 0, y);
-		
-		if(t_file.m_isFolder){
-			graphics.drawText(t_file.m_filename, uploadFileScreen.fsm_bitmap_width, y);
-		}else{
-			if(t_file.m_fileSize > 1024 * 1024){
-				 
-				graphics.drawText("(" + (t_file.m_fileSize / 1024 / 1024) + "MB) " + t_file.m_filename, uploadFileScreen.fsm_bitmap_width, y);
-			}else if(t_file.m_fileSize > 1024){
-				graphics.drawText("(" + (t_file.m_fileSize / 1024 ) + "KB) " + t_file.m_filename, uploadFileScreen.fsm_bitmap_width, y);
-			}else{
-				graphics.drawText("(" + (t_file.m_fileSize) + "B) " + t_file.m_filename, uploadFileScreen.fsm_bitmap_width, y);
+	MenuItem	m_ok		= new MenuItem("",m_menuOrder++,0){
+		public void run() {
+			if(m_currFocusIconItem != null){
+				if(m_currFocusIconItem.m_isFolder){
+					DisplayFileList(m_currFocusIconItem.m_filename_full);
+					
+				}else{
+					
+					// add a attachment file
+					//
+					if(m_delScreen){
+						m_clickCallback.clickDel(m_currFocusIconItem.m_filename_full);
+						
+						m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.DEL_ATTACHMENT_SUCC));
+					}else{
+						
+						if(!m_clickCallback.clickOK(m_currFocusIconItem.m_filename_full,m_currFocusIconItem.m_fileSize)){
+							return ;
+						}
+						
+						m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.ADD_ATTACHMENT_SUCC));
+					}				
+					close();
+				}
 			}
-			
-		}
-		          
-	}
-		 
-	public Object get(ListField listField, int index){
-		return m_iconList.elementAt(index);
-	}
-		 
-	public int getPreferredWidth(ListField listField){
-		return recvMain.fsm_display_width;
-	}
-		 
-	public int indexOfList(ListField listField, String prefix, int start){
-		for(;start < m_iconList.size();start++){
-			
-			fileIcon t_file = (fileIcon)m_iconList.elementAt(start);
-			if(t_file.m_filename.indexOf(prefix) != -1){
-				return start;
+		}		
+	};
+	
+	MenuItem	m_check		= new MenuItem(recvMain.sm_local.getString(yblocalResource.UPLOAD_FILE_CHECK),m_menuOrder++,0){
+		public void run() {
+			if(m_currFocusIconItem != null){
+				m_mainApp.PushViewFileScreen(m_currFocusIconItem.m_filename_full);
 			}
 		}
-		
-		return -1;
-	}
+	};
 	
-	public void insert(fileIcon _icon,int _index){
-		m_iconList.insertElementAt(_icon, _index);
-	}
+	MenuItem	m_topMenu	= new MenuItem(recvMain.sm_local.getString(yblocalResource.UPLOAD_FILE_TOP_MENU),m_menuOrder++,0){
+		public void run() {
+			if(m_fileList.getFieldCount() > 0){
+				m_fileList.setVerticalScroll(0);
+				m_fileList.getField(0).setFocus();
+			}
+		}
+	};
 	
-}
-
-class fileIconList extends ObjectListField{
+	MenuItem	m_bottomMenu	= new MenuItem(recvMain.sm_local.getString(yblocalResource.UPLOAD_FILE_BOTTOM_MENU),m_menuOrder++,0){
+		public void run() {
+			if(m_fileList.getFieldCount() > 0){
+				m_fileList.setVerticalScroll(m_fileList.getVirtualHeight());
+				m_fileList.getField(m_fileList.getFieldCount() - 1).setFocus();
+			}
+		}
+	};
 	
-}
-
-class uploadFileScreenMenu extends MenuItem{
-	
-	uploadFileScreen m_screen = null;
-	
-	public uploadFileScreenMenu(String _text,
-								int _order,
-								int priority,
-								uploadFileScreen _screen){
-		
-		super(_text, _order, priority);
-		m_screen = _screen;
-	}
-	
-	public void run() {
-		m_screen.menuClicked(this);
-    }
-
-}
-public class uploadFileScreen extends MainScreen implements
-										FieldChangeListener{
-	
-	fileIconList		m_fileList 		= new fileIconList();
-	
-	uploadFileScreenMenu	m_ok		= new uploadFileScreenMenu(" ",0,100,this);
-	uploadFileScreenMenu	m_check		= new uploadFileScreenMenu(recvMain.sm_local.getString(yblocalResource.CHECK_UPLOAD_FILE),1,100,this);	
 	
 	
 	public final static int fsm_bitmap_width	= 32;
@@ -170,9 +121,7 @@ public class uploadFileScreen extends MainScreen implements
 	ImageUnit				m_folderBitmap	= null;
 	ImageUnit				m_pictureBitmap	= null;
 	ImageUnit				m_movieBitmap	= null;
-	
-	IconListCallback	m_listCallback	= new IconListCallback();
-	
+		
 	connectDeamon		m_deamon	= null; 
 	
 	boolean			m_addAttachment = false;
@@ -190,8 +139,16 @@ public class uploadFileScreen extends MainScreen implements
 	
 	IUploadFileScreenCallback	m_clickCallback = null;
 	
-	public uploadFileScreen(connectDeamon _deamon,recvMain _app,boolean _del,IUploadFileScreenCallback _callback) 
-							throws Exception {
+	ImageSets			m_imageSets = null;
+	
+	// current selection file icon
+	FileIcon			m_currFocusIconItem = null;
+	
+	// delay load runnable id
+	LoadFileThread		m_delayLoadRunnable	= null;
+			
+	public uploadFileScreen(connectDeamon _deamon,recvMain _app,boolean _del,IUploadFileScreenCallback _callback)throws Exception {
+		super(Manager.NO_VERTICAL_SCROLL);
 		
 		if(_callback == null){
 			throw new IllegalArgumentException("uploadFileScreen _callback == null");
@@ -202,7 +159,7 @@ public class uploadFileScreen extends MainScreen implements
 		m_delScreen = _del;
 		m_clickCallback = _callback;
 		
-		fileIcon.sm_imageSets = _app.m_allImageSets;
+		m_imageSets			= _app.m_allImageSets;
 		
 		m_textFileBitmap 	= _app.m_allImageSets.getImageUnit("text_resize");
 		m_audioFileBitmap 	= _app.m_allImageSets.getImageUnit("audio_resize");
@@ -211,13 +168,14 @@ public class uploadFileScreen extends MainScreen implements
 		m_pictureBitmap		= _app.m_allImageSets.getImageUnit("picture_resize");
 		m_movieBitmap		= _app.m_allImageSets.getImageUnit("movie_resize");
 		
-		m_fileList.setCallback(m_listCallback);	
-		add(m_fileList);		
+		
+		add(m_fileList);
+		m_fileList.setFocus();
 		
 		if(_del){
-			m_ok.setText(recvMain.sm_local.getString(yblocalResource.DEL_UPLOAD_FILE));
+			m_ok.setText(recvMain.sm_local.getString(yblocalResource.UPLOAD_FILE_DEL));
 		}else{
-			m_ok.setText(recvMain.sm_local.getString(yblocalResource.ADD_UPLOAD_FILE));
+			m_ok.setText(recvMain.sm_local.getString(yblocalResource.UPLOAD_FILE_ADD));
 		}
 		
 		try{
@@ -231,14 +189,19 @@ public class uploadFileScreen extends MainScreen implements
 		DisplayFileList(m_mainApp.m_uploadFileFavorPath == null?m_rootPath:m_mainApp.m_uploadFileFavorPath);
 	}
 		
-	public void DisplayFileList(String _path){
+	public void DisplayFileList(final String _path){
 		
+		if(m_delayLoadRunnable != null){
+			synchronized (this){
+				m_delayLoadRunnable.closeLoad();
+				m_delayLoadRunnable = null;
+			}
+		}		
+				
 		// clear all former file list
 		//
-		for(int i = 0;i < m_listCallback.m_iconList.size();i++){
-			m_fileList.delete(0);			
-		}
-		m_listCallback.m_iconList.removeAllElements();
+		m_fileList.deleteAll();
+		m_currFocusIconItem = null;
 		
 		if(m_delScreen){
 			try{	
@@ -272,11 +235,8 @@ public class uploadFileScreen extends MainScreen implements
 					}else{
 						bitmap = m_binFileBitmap;
 					}
-					
-					fileIcon t_icon = new fileIcon(t_name,t_att.m_filename,bitmap,t_att.m_fileSize,false,0);
-					
-					m_fileList.insert(t_index);
-					m_listCallback.insert(t_icon,t_index);
+										
+					m_fileList.add(new FileIcon(t_name,t_att.m_filename,bitmap,t_att.m_fileSize,false,0));
 					
 					t_index++;
 				}
@@ -291,79 +251,102 @@ public class uploadFileScreen extends MainScreen implements
 			m_currDisplayPath = _path;
 			
 			setTitle(_path);
-			
-			try{			
-				
-				
-				FileConnection fc = (FileConnection) Connector.open(_path,Connector.READ);
 
-				for(Enumeration e = fc.list("*",true); e.hasMoreElements() ;) {
-					
-					String t_name = (String)e.nextElement();
-					String t_fullname = _path + t_name;
-					
-					FileConnection next = (FileConnection) Connector.open(t_fullname,Connector.READ);
-				    
-					ImageUnit bitmap = null;
-					
-					if(next.isDirectory()){
-						bitmap = m_folderBitmap;
-					}else if(IsAudioFile(t_name)){
-						bitmap = m_audioFileBitmap;
-					}else if(IsTxtFile(t_name)){
-						bitmap = m_textFileBitmap;
-					}else if(IsImageFile(t_name)){
-						bitmap = m_pictureBitmap;
-					}else if(IsMovieFile(t_name)){
-						bitmap = m_movieBitmap;
-					}else{
-						bitmap = m_binFileBitmap;
-					}
-					
-					long t_time = next.lastModified();					
-					
-					fileIcon t_icon ;
-					if(next.isDirectory()){
-						t_icon = new fileIcon(t_name,t_fullname,bitmap,0,true,t_time);
-					}else{
-						t_icon = new fileIcon(t_name,t_fullname,bitmap,(int)next.fileSize(),false,t_time);
-					}					
-					
-					if(m_listCallback.m_iconList.size() == 0){
-						
-						m_fileList.insert(0);
-						m_listCallback.insert(t_icon,0);
-						
-					}else{
-						
-						boolean t_add = false;
-						
-						for(int i = 0;i < m_listCallback.m_iconList.size();i++){
-							fileIcon icon = (fileIcon)m_listCallback.m_iconList.elementAt(i);
-							if(icon.m_lastModified <= t_icon.m_lastModified){
-								
-								t_add = true;
-								
-								m_fileList.insert(i);
-								m_listCallback.insert(t_icon,i);
-								
-								break;
-							}
-						}
-						
-						if(!t_add){
-							m_fileList.insert(m_listCallback.m_iconList.size() - 1);
-							m_listCallback.insert(t_icon,m_listCallback.m_iconList.size() - 1);
-						}
-					}
+			try{
+				
+				synchronized (this) {
+					m_delayLoadRunnable = new LoadFileThread(_path);
+					m_delayLoadRunnable.start();
 				}
-
+				
 			}catch(Exception _e){
 				m_mainApp.SetErrorString("DFL1", _e);
 			}
 		}
 	}
 		 
+	
+
+	
+	public void openAddAttachment(){
+		m_addAttachment = true;
+	}
+	
+	public void openDelAttachment(){
+		m_addAttachment = false;
+	}
+
+	protected void makeMenu(Menu menu, int instance) {
+		menu.add(m_ok);
+		menu.add(m_check);
+	    
+		menu.add(m_topMenu);
+		menu.add(m_bottomMenu);
+	    
+	    super.makeMenu(menu,instance);
+	}
+		
+	public boolean onClose(){
+		if(m_delScreen){
+			close();
+			return true;
+		}
+		
+		if(m_currDisplayPath.equals(m_rootPath)){
+			
+			close();
+			return true;
+			
+		}else{
+			final int t_slash_rear = m_currDisplayPath.lastIndexOf('/', m_currDisplayPath.length() - 2);
+			m_currDisplayPath = m_currDisplayPath.substring(0, t_slash_rear + 1);
+			
+			DisplayFileList(m_currDisplayPath);
+			
+			return false;
+		}
+	}
+	
+	public void close(){
+		super.close();
+		
+		if(m_delayLoadRunnable != null){
+			synchronized (this){
+				m_delayLoadRunnable.closeLoad();
+				m_delayLoadRunnable = null;
+			}
+		}	
+	}
+	
+	public boolean keyDown(int keycode,int time){
+		final int key = Keypad.key(keycode);
+		
+		switch(key){
+		case 'T':
+			m_topMenu.run();
+			return true;
+		case 'B':
+			m_topMenu.run();
+			return true;
+		case 10:
+			return trackwheelClick(0,0);
+		}
+		
+		return super.keyDown(keycode,time);
+	}
+	
+	public boolean trackwheelClick(int status, int time){
+
+		if(m_currFocusIconItem != null){
+			if(m_currFocusIconItem.m_isFolder){
+				DisplayFileList(m_currFocusIconItem.m_filename_full);
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	public static boolean IsAudioFile(String _filename){
 		String t_lower = _filename.toLowerCase();
 		t_lower = t_lower.substring(Math.max(0, t_lower.length() - 4));
@@ -404,106 +387,243 @@ public class uploadFileScreen extends MainScreen implements
 				|| t_lower.equals(".mp4")
 				|| t_lower.equals(".avi");
 	}
+	
+	/**
+	 * file list manager to display file list
+	 * @author yuch
+	 *
+	 */
+	private class FileFieldManager extends VerticalFieldManager{
+		
+		public FileFieldManager(){
+			super(VerticalFieldManager.VERTICAL_SCROLL | Field.FOCUSABLE);
+		}
+		
+		public void sublayout(int width, int height){
 
-	
-	public void openAddAttachment(){
-		m_addAttachment = true;
-	}
-	
-	public void openDelAttachment(){
-		m_addAttachment = false;
-	}
-
-	protected void makeMenu(Menu menu, int instance) {
-		menu.add(m_check);
-	    menu.add(m_ok);
-	    
-	    super.makeMenu(menu,instance);
-	}
-	
-	public void menuClicked(uploadFileScreenMenu _menu){
-		if(_menu == m_check){
-			final int t_index = m_fileList.getSelectedIndex();
-			if(t_index != -1){
-				final fileIcon t_file = (fileIcon)m_listCallback.m_iconList.elementAt(t_index);
-				m_mainApp.PushViewFileScreen(t_file.m_filename_full);
+			int t_num = getFieldCount();
+			int t_y = 0;
+			for(int i = 0;i < t_num;i++){
+				Field f = getField(i);
+				
+				setPositionChild(f,0,t_y);
+				layoutChild(f,f.getPreferredWidth(),f.getPreferredHeight());
+				
+				t_y += f.getPreferredHeight();
 			}
 			
-		}else if(_menu == m_ok){
+			setExtent(getPreferredWidth(), getPreferredHeight());
+		}
+		
+		public int getPreferredWidth(){			
+			return recvMain.fsm_display_width;
+		}
+		
+		public int getPreferredHeight(){
 			
-			final int t_index = m_fileList.getSelectedIndex();
-			if(t_index != -1 ){
-				final fileIcon t_file = (fileIcon)m_listCallback.m_iconList.elementAt(t_index);
-				if(t_file.m_isFolder){
-					DisplayFileList(t_file.m_filename_full);
-				}else{
+			int t_titleHeight;
+			Manager mgr = uploadFileScreen.this.getMainManager().getManager();
+			if(mgr != null && mgr.getFieldCount() > 0){
+				t_titleHeight = mgr.getField(0).getHeight();
+			}else{
+				t_titleHeight = Font.getDefault().getHeight(); 
+			}
+			
+			return recvMain.fsm_display_height - t_titleHeight;			
+		}
+	}
+	
+	class LoadFileThread extends Thread{
+		
+		final String m_path;
+		
+		boolean m_closed = false;
+				
+		public LoadFileThread(String _path)throws Exception {
+			m_path = _path;
+		}
+		
+		public void closeLoad(){
+			m_closed = true;
+		}
+		
+		public void run() {
+			
+			// load times counter
+			int t_loadTimer = 0;
+			Enumeration t_delayLoadFileEnum;
+			
+			try{
+				
+				FileConnection fc = (FileConnection)Connector.open(m_path,Connector.READ);
+				try{
+					t_delayLoadFileEnum = fc.list("*",true);
+				}finally{
+					fc.close();
+				}
+				
+				while(!m_closed && !t_delayLoadFileEnum.hasMoreElements()) {
 					
-					// add a attachment file
-					//
-					if(m_delScreen){
-						m_clickCallback.clickDel(t_file.m_filename_full);
+					if(t_loadTimer > 2){
 						
-						m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.DEL_ATTACHMENT_SUCC));
-					}else{
+						t_loadTimer = 0;
 						
-						if(!m_clickCallback.clickOK(t_file.m_filename_full,t_file.m_fileSize)){
-							return ;
+						synchronized (UiApplication.getEventLock()) {
+							m_fileList.sublayout(0, 0);
+						}
+						m_fileList.invalidate();
+										
+						try{
+							Thread.sleep(100);
+						}catch(Exception e){}
+						
+						continue;
+					}
+					
+					t_loadTimer++;
+					
+					String t_name = t_delayLoadFileEnum.nextElement().toString();
+					String t_fullname = m_path + t_name;
+					
+					FileConnection next = (FileConnection) Connector.open(t_fullname,Connector.READ);
+					try{
+						ImageUnit bitmap = null;
+						
+						if(next.isDirectory()){
+							bitmap = m_folderBitmap;
+						}else if(IsAudioFile(t_name)){
+							bitmap = m_audioFileBitmap;
+						}else if(IsTxtFile(t_name)){
+							bitmap = m_textFileBitmap;
+						}else if(IsImageFile(t_name)){
+							bitmap = m_pictureBitmap;
+						}else if(IsMovieFile(t_name)){
+							bitmap = m_movieBitmap;
+						}else{
+							bitmap = m_binFileBitmap;
 						}
 						
-						m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.ADD_ATTACHMENT_SUCC));
-					}				
-										
-					close();
+						long t_time = next.lastModified();
+						
+						FileIcon t_icon ;
+						if(next.isDirectory()){
+							t_icon = new FileIcon(t_name,t_fullname,bitmap,0,true,t_time);
+						}else{
+							t_icon = new FileIcon(t_name,t_fullname,bitmap,(int)next.fileSize(),false,t_time);
+						}									
+							
+						boolean t_add = false;
+						int t_num = m_fileList.getFieldCount();
+						
+						for(int i = 0;i < t_num;i++){
+							FileIcon icon = (FileIcon)m_fileList.getField(i);
+							
+							if(icon.m_lastModified <= t_icon.m_lastModified){	
+								t_add = true;
+								synchronized (UiApplication.getEventLock()) {
+									m_fileList.insert(t_icon,i);
+								}											
+								break;
+							}
+						}
+						
+						if(!t_add){
+							synchronized (UiApplication.getEventLock()) {
+								m_fileList.add(t_icon);
+							}
+						}
+						
+					}finally{
+						next.close();
+					}	
 				}
-			}else{
-				m_mainApp.SetErrorString("menuClicked:-1");
-			}
-			
-		}
-	}
-	
-	public boolean onClose(){
-		if(m_delScreen){
-			close();
-			return true;
-		}
-		
-		if(m_currDisplayPath.equals(m_rootPath)){
-			
-			close();
-			return true;
-			
-		}else{
-			final int t_slash_rear = m_currDisplayPath.lastIndexOf('/', m_currDisplayPath.length() - 2);
-			m_currDisplayPath = m_currDisplayPath.substring(0, t_slash_rear + 1);
-			
-			DisplayFileList(m_currDisplayPath);
-			
-			return false;
-		}
-	}
-	
-	public void fieldChanged(Field field, int context) {
-		
-	}
-	
-	public boolean trackwheelClick(int status, int time) 
-	{
-		final int t_index = m_fileList.getSelectedIndex(); 
-		if(t_index != -1 ){
-			final fileIcon t_file = (fileIcon)m_listCallback.m_iconList.elementAt(t_index);
-			if(t_file.m_isFolder){
-				DisplayFileList(t_file.m_filename_full);
 				
-				return true;
-			}else{
 				
-				return false;
+			}catch(Exception _e){
+				m_mainApp.SetErrorString("DFL1R", _e);
 			}
 		}
-		
-		return false;
 	}
 
-	
+	/**
+	 * file icon static data
+	 * @author yuch
+	 *
+	 */
+	private class FileIcon extends Field{
+		
+		int				m_fileSize;
+		String			m_filename 	= null;
+		String			m_filename_full 	= null;
+		ImageUnit		m_bitmap		= null;
+		boolean		m_isFolder	= false;
+		long			m_lastModified = 0;
+		
+		public FileIcon(String _name,String _name_full,ImageUnit _image,
+				int _fileSize,boolean _isFolder,long _lastModified){
+			
+			super(Field.FOCUSABLE);
+						
+			m_fileSize	= _fileSize;
+			m_filename	= _name;
+			m_filename_full = _name_full;
+			m_bitmap		= _image;
+			m_isFolder	= _isFolder;
+			m_lastModified = _lastModified;
+		}
+		
+		public String toString(){
+			return m_filename;
+		}
+		
+		protected void drawFocus(Graphics graphics,boolean _on){
+			if(_on){
+				m_currFocusIconItem = this;
+				
+				int t_color = graphics.getColor();
+				try{
+					graphics.setColor(0x005de7);
+					graphics.fillRect(0, 0, getPreferredWidth(), getPreferredHeight());
+				}finally{
+					graphics.setColor(t_color);
+				}
+			}		
+			
+			m_imageSets.drawImage(graphics, m_bitmap, 0, 0);
+			
+			if(m_isFolder){
+				graphics.drawText(m_filename, uploadFileScreen.fsm_bitmap_width, 0);
+			}else{
+				if(m_fileSize > 1024 * 1024){					 
+					graphics.drawText("(" + (m_fileSize / 1024 / 1024) + "MB) " + m_filename, uploadFileScreen.fsm_bitmap_width, 0);
+				}else if(m_fileSize > 1024){
+					graphics.drawText("(" + (m_fileSize / 1024 ) + "KB) " + m_filename, uploadFileScreen.fsm_bitmap_width, 0);
+				}else{
+					graphics.drawText("(" + (m_fileSize) + "B) " + m_filename, uploadFileScreen.fsm_bitmap_width, 0);
+				}
+			}
+		}
+		
+		protected void onUnfocus(){
+			super.onUnfocus();
+			invalidate();
+		}
+		
+		public int getPreferredWidth(){
+			return recvMain.fsm_display_width;
+		}
+		
+		public int getPreferredHeight(){
+			return m_bitmap.getHeight();
+		}
+		
+		protected void layout(int width, int height){
+			setExtent(getPreferredWidth(), getPreferredHeight());
+		}
+
+		protected void paint(Graphics graphics) {
+			drawFocus(graphics, isFocus());			
+		}
+
+	}	
 }
