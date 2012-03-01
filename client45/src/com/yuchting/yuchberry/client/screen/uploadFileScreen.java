@@ -34,6 +34,7 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
 import local.yblocalResource;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
@@ -127,7 +128,7 @@ public class uploadFileScreen extends MainScreen{
 	boolean			m_addAttachment = false;
 	
 	recvMain			m_mainApp		= null;
-	
+		
 	public final static String fsm_rootPath_back		= "file:///store/home/user/";
 	public final static String fsm_rootPath_default	= "file:///SDCard/";
 	
@@ -147,7 +148,10 @@ public class uploadFileScreen extends MainScreen{
 	// delay load runnable id
 	LoadFileThread		m_delayLoadRunnable	= null;
 			
-	public uploadFileScreen(connectDeamon _deamon,recvMain _app,boolean _del,IUploadFileScreenCallback _callback)throws Exception {
+
+	public uploadFileScreen(connectDeamon _deamon,recvMain _app,
+							boolean _del,IUploadFileScreenCallback _callback)throws Exception {
+		
 		super(Manager.NO_VERTICAL_SCROLL);
 		
 		if(_callback == null){
@@ -309,7 +313,7 @@ public class uploadFileScreen extends MainScreen{
 	
 	public void close(){
 		super.close();
-		
+				
 		if(m_delayLoadRunnable != null){
 			synchronized (this){
 				m_delayLoadRunnable.closeLoad();
@@ -326,7 +330,7 @@ public class uploadFileScreen extends MainScreen{
 			m_topMenu.run();
 			return true;
 		case 'B':
-			m_topMenu.run();
+			m_bottomMenu.run();
 			return true;
 		case 10:
 			return trackwheelClick(0,0);
@@ -341,6 +345,8 @@ public class uploadFileScreen extends MainScreen{
 			if(m_currFocusIconItem.m_isFolder){
 				DisplayFileList(m_currFocusIconItem.m_filename_full);
 				return true;
+			}else{
+				m_check.run();
 			}
 		}
 		
@@ -462,7 +468,7 @@ public class uploadFileScreen extends MainScreen{
 					fc.close();
 				}
 				
-				while(!m_closed && !t_delayLoadFileEnum.hasMoreElements()) {
+				while(!m_closed && t_delayLoadFileEnum.hasMoreElements()) {
 					
 					if(t_loadTimer > 2){
 						

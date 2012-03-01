@@ -727,11 +727,11 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
     			if(m_imagePath != null){
     				
     				if(!m_mainApp.CheckMediaNativeApps(m_imagePath)){
-    					m_mainApp.pushGlobalScreen(new imageViewScreen(m_imagePath,m_mainApp),0,UiEngine.GLOBAL_MODAL);
+    					UiApplication.getUiApplication().pushGlobalScreen(new imageViewScreen(m_imagePath),0,UiEngine.GLOBAL_MODAL);
     				}
         			
         		}else if(m_snapBuffer != null){
-        			m_mainApp.pushGlobalScreen(new imageViewScreen(m_snapBuffer,m_mainApp),0,UiEngine.GLOBAL_MODAL);
+        			UiApplication.getUiApplication().pushGlobalScreen(new imageViewScreen(m_snapBuffer),0,UiEngine.GLOBAL_MODAL);
         		}else if(m_recordBuffer != null){
         			playAudio(m_recordBuffer);
         		}
@@ -1247,7 +1247,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 					}
 					
 					if(!m_mainApp.CheckMediaNativeApps(t_file)){
-						m_mainApp.pushGlobalScreen(new imageViewScreen(msg.getFileContent(),m_mainApp)
+						UiApplication.getUiApplication().pushGlobalScreen(new imageViewScreen(msg.getFileContent())
 															,0,UiEngine.GLOBAL_MODAL);
 					}
 					

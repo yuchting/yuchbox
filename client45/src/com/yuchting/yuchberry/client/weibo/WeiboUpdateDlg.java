@@ -438,13 +438,11 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
     	public void run(){
     		try{
     			if(m_imagePath != null){
-    				
     				if(!m_mainApp.CheckMediaNativeApps(m_imagePath)){
-    					m_mainApp.pushGlobalScreen(new imageViewScreen(m_imagePath,m_mainApp),0,UiEngine.GLOBAL_MODAL);
-    				}
-        			
+    					UiApplication.getUiApplication().pushGlobalScreen(new imageViewScreen(m_imagePath),0,UiEngine.GLOBAL_MODAL);
+    				}        			
         		}else{
-        			m_mainApp.pushGlobalScreen(new imageViewScreen(m_snapBuffer,m_mainApp),0,UiEngine.GLOBAL_MODAL);
+        			UiApplication.getUiApplication().pushGlobalScreen(new imageViewScreen(m_snapBuffer),0,UiEngine.GLOBAL_MODAL);
         		}	
     		}catch(Exception e){
     			m_mainApp.SetErrorString("WCP:"+e.getMessage()+e.getClass().getName());

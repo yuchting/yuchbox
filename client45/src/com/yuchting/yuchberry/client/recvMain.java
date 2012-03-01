@@ -1402,8 +1402,10 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		DisableWeiboModule();
 		
 		StopNotification();
+		StopWeiboHomeNotification();
 		StopWeiboNotification();
 		StopDisconnectNotification();
+		StopEmailFailedNotifaction();		
 		
 		if(m_connectDeamon.m_connect != null){
 			m_connectDeamon.m_connect.StoreUpDownloadByteImm(true);
@@ -1443,7 +1445,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				}
 			}
 			
-			if(getScreenCount() == 0){
+			if(getScreenCount() == 0){   
 				
 				if(m_isWeiboOrIMScreen && m_weiboTimeLineScreen != null){
 					m_isWeiboOrIMScreen = false;
@@ -1465,6 +1467,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				}else{
 					pushStateScreen();
 				}
+				
 			}			
 			
 		}else{
@@ -1768,15 +1771,16 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		});		
 	}
 	
-	public String	m_uploadFileFavorPath = null;
+	public String	m_uploadFileFavorPath 				= null;
+	
 	public Object OpenAttachmentFileScreen(final boolean _del){
 		
 		try{
 
-			MainScreen t_uploadFileScreen = new uploadFileScreen(m_connectDeamon, this,_del,m_connectDeamon);
-			UiApplication.getUiApplication().pushScreen(t_uploadFileScreen);
+			uploadFileScreen t_mailAttachSelectScreen = new uploadFileScreen(m_connectDeamon, this,_del,m_connectDeamon);
+			UiApplication.getUiApplication().pushScreen(t_mailAttachSelectScreen);
 			
-			return t_uploadFileScreen;
+			return t_mailAttachSelectScreen;
 			
 		}catch(Exception _e){
 			SetErrorString("att screen error:" + _e.getMessage());
@@ -1787,7 +1791,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	public void PushViewFileScreen(final String _filename){
 		
-		invokeLater(new Runnable(){
+		UiApplication.getUiApplication().invokeLater(new Runnable(){
 			
 		    public void run(){
 		    	
@@ -1795,22 +1799,21 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		    		return;
 		    	}
 		    	
-		    	recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
 		    	try{
 		    		if(uploadFileScreen.IsAudioFile(_filename)){
-		    			t_mainApp.pushGlobalScreen(new audioViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    			UiApplication.getUiApplication().pushGlobalScreen(new audioViewScreen(_filename),0,UiEngine.GLOBAL_MODAL);
 		    		}else if(uploadFileScreen.IsTxtFile(_filename)){
-		    			t_mainApp.pushGlobalScreen(new textViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    			UiApplication.getUiApplication().pushGlobalScreen(new textViewScreen(_filename),0,UiEngine.GLOBAL_MODAL);
 		    		}else if(uploadFileScreen.IsMovieFile(_filename)){
-		    			t_mainApp.pushGlobalScreen(new videoViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);		    					    			
+		    			UiApplication.getUiApplication().pushGlobalScreen(new videoViewScreen(_filename),0,UiEngine.GLOBAL_MODAL);		    					    			
 		    		}else if(uploadFileScreen.IsImageFile(_filename)){
-		    			t_mainApp.pushGlobalScreen(new imageViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);			
+		    			UiApplication.getUiApplication().pushGlobalScreen(new imageViewScreen(_filename),0,UiEngine.GLOBAL_MODAL);			
 		    		}else {
-		    			t_mainApp.DialogAlert("yuchberry prompt:unknow format");		    					    			
+		    			DialogAlert("yuchberry prompt:unknow format");		    					    			
 		    		}
 		    		
 		    	}catch(Exception _e){
-		    		t_mainApp.DialogAlert(_e.getMessage());
+		    		DialogAlert(_e.getMessage());
 		    	}		    	
 			}
 		});
