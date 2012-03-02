@@ -1777,7 +1777,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 		try{
 
-			uploadFileScreen t_mailAttachSelectScreen = new uploadFileScreen(m_connectDeamon, this,_del,m_connectDeamon);
+			uploadFileScreen t_mailAttachSelectScreen = new uploadFileScreen(this,_del,m_connectDeamon);
 			UiApplication.getUiApplication().pushScreen(t_mailAttachSelectScreen);
 			
 			return t_mailAttachSelectScreen;
@@ -2598,7 +2598,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		new XYPoint(640,480),
 		null,
 	};
-	public int					m_imSendImageQuality		= 0;	
+	public int					m_imSendImageQuality		= 0;
 	MainIMScreen				m_mainIMScreen = null;
 	
 	public void initIMModule(){

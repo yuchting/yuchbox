@@ -34,7 +34,6 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
 import local.yblocalResource;
-import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
@@ -68,8 +67,7 @@ public class uploadFileScreen extends MainScreen{
 					// add a attachment file
 					//
 					if(m_delScreen){
-						m_clickCallback.clickDel(m_currFocusIconItem.m_filename_full);
-						
+						m_clickCallback.clickDel(m_currFocusIconItem.m_filename_full);						
 						m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.DEL_ATTACHMENT_SUCC));
 					}else{
 						
@@ -122,9 +120,7 @@ public class uploadFileScreen extends MainScreen{
 	ImageUnit				m_folderBitmap	= null;
 	ImageUnit				m_pictureBitmap	= null;
 	ImageUnit				m_movieBitmap	= null;
-		
-	connectDeamon		m_deamon	= null; 
-	
+			
 	boolean			m_addAttachment = false;
 	
 	recvMain			m_mainApp		= null;
@@ -149,8 +145,7 @@ public class uploadFileScreen extends MainScreen{
 	LoadFileThread		m_delayLoadRunnable	= null;
 			
 
-	public uploadFileScreen(connectDeamon _deamon,recvMain _app,
-							boolean _del,IUploadFileScreenCallback _callback)throws Exception {
+	public uploadFileScreen(recvMain _app,boolean _del,IUploadFileScreenCallback _callback)throws Exception {
 		
 		super(Manager.NO_VERTICAL_SCROLL);
 		
@@ -158,7 +153,6 @@ public class uploadFileScreen extends MainScreen{
 			throw new IllegalArgumentException("uploadFileScreen _callback == null");
 		}
 		
-		m_deamon = _deamon;
 		m_mainApp = _app;
 		m_delScreen = _del;
 		m_clickCallback = _callback;
@@ -170,8 +164,7 @@ public class uploadFileScreen extends MainScreen{
 		m_binFileBitmap 	= _app.m_allImageSets.getImageUnit("unknown_resize");
 		m_folderBitmap 		= _app.m_allImageSets.getImageUnit("folder_resize");
 		m_pictureBitmap		= _app.m_allImageSets.getImageUnit("picture_resize");
-		m_movieBitmap		= _app.m_allImageSets.getImageUnit("movie_resize");
-		
+		m_movieBitmap		= _app.m_allImageSets.getImageUnit("movie_resize");		
 		
 		add(m_fileList);
 		m_fileList.setFocus();
@@ -213,7 +206,7 @@ public class uploadFileScreen extends MainScreen{
 				setTitle("Del your uploading attachment");
 				
 				int t_index = 0;
-				Vector t_files = m_deamon.GetAttachmentFile();
+				Vector t_files = m_mainApp.m_connectDeamon.GetAttachmentFile();
 				for(int i = 0;i < t_files.size();i++){
 					
 					connectDeamon.ComposingAttachment t_att = (connectDeamon.ComposingAttachment)t_files.elementAt(i);

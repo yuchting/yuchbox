@@ -426,7 +426,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
     MenuItem m_attachItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_ADD_ATTACH_MENU_LABEL),m_menuIndex_op++,0){
     	public void run(){
     		try{
-    			m_mainApp.pushScreen(new uploadFileScreen(m_mainApp.m_connectDeamon,m_mainApp,false,WeiboUpdateDlg.this));
+    			m_mainApp.pushScreen(new uploadFileScreen(m_mainApp,false,WeiboUpdateDlg.this));
     		}catch(Exception e){
     			m_mainApp.SetErrorString("WAI:"+e.getMessage()+e.getClass().getName());
     		}

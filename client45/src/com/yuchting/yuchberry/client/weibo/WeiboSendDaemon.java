@@ -45,7 +45,8 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 	int			m_fileType		= 0;
 	
 	byte		m_weiboStyle	= 0;
-	byte		m_sendType		= 0; 
+	byte		m_sendType		= 0;
+	boolean	m_onlyComment	= false;
 	
 	long		m_origId		= 0;
 	long		m_commentId		= 0;
@@ -87,7 +88,7 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 	
 	// reply/comment weibo
 	//
-	public WeiboSendDaemon(String _text,byte _weiboStyle,byte _sendType,long _origId,long _commentId,
+	public WeiboSendDaemon(String _text,byte _weiboStyle,byte _sendType,long _origId,long _commentId,boolean _onlyComment,
 							recvMain _mainApp)throws Exception{
 		
 		if(_mainApp == null){
@@ -95,7 +96,7 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 		}
 		
 		m_mainApp		= _mainApp;
-		
+		m_onlyComment	= _onlyComment;
 		m_updateText	= _text;
 		m_weiboStyle	= _weiboStyle;
 		m_sendType		= _sendType;
@@ -256,7 +257,12 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 			}
 			
 			if(m_sendType == fetchWeibo.SEND_FORWARD_TYPE){
-				sendReceive.WriteBoolean(t_os,m_mainApp.m_updateOwnListWhenFw);
+				if(m_onlyComment){
+					sendReceive.WriteBoolean(t_os,false);
+				}else{
+					sendReceive.WriteBoolean(t_os,m_mainApp.m_updateOwnListWhenFw);
+				}
+				
 			}else{
 				sendReceive.WriteBoolean(t_os,m_mainApp.m_updateOwnListWhenRe);
 			}

@@ -63,8 +63,10 @@ import com.yuchting.yuchberry.client.sendReceive;
 import com.yuchting.yuchberry.client.screen.CameraScreen;
 import com.yuchting.yuchberry.client.screen.ICameraScreenCallback;
 import com.yuchting.yuchberry.client.screen.IRecordAudioScreenCallback;
+import com.yuchting.yuchberry.client.screen.IUploadFileScreenCallback;
 import com.yuchting.yuchberry.client.screen.RecordAudioScreen;
 import com.yuchting.yuchberry.client.screen.imageViewScreen;
+import com.yuchting.yuchberry.client.screen.uploadFileScreen;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.CameraFileOP;
 import com.yuchting.yuchberry.client.ui.ImageButton;
@@ -709,6 +711,41 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		}
 	};
 	
+	MenuItem m_browseFile = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_BROWSE_FILES_MENU_LABEL),m_menu_op++,0){
+		public void run(){
+			try{
+				uploadFileScreen t_fileScreen = new uploadFileScreen(m_mainApp, false,new IUploadFileScreenCallback(){
+					
+					public boolean clickOK(String _filename,int _size){
+						
+						_filename = _filename.toLowerCase();
+						
+						if(_filename.endsWith(".jpg")){
+							clearAttachment();
+							
+							m_imagePath = _filename;
+							m_imageType	= fetchChatMsg.FILE_TYPE_IMG;					
+							
+							return true;
+							
+						}else{
+							
+							m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.IM_BROWSE_FILES_PROMPT));
+							return false;	
+						}				
+					}
+					
+					public void clickDel(String _filename){}
+				});
+				
+				UiApplication.getUiApplication().pushScreen(t_fileScreen);
+				
+			}catch(Exception e){
+				m_mainApp.SetErrorString("MCSBF", e);
+			}
+		}
+	};
+	
 	MenuItem m_deleteChatMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_DELETE_HISTORY_CHAT),m_menu_op++,0){
 		public void run(){
 			if(Dialog.ask(Dialog.D_YES_NO,
@@ -964,6 +1001,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 			_menu.add(m_cameraMenu);
 		}
 		_menu.add(m_recordMenu);
+		_menu.add(m_browseFile);
 		
 		if(!m_currRoster.m_chatMsgList.isEmpty()){
 			_menu.add(m_deleteChatMenu);
