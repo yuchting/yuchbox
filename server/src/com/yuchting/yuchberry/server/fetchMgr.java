@@ -118,6 +118,10 @@ public class fetchMgr{
     public String			m_pin				= "";
     public String			m_IMEI				= "";    
     
+    /**
+     * the fetchMgr.CheckFolder will catch the Auth error exception to notity via send mail
+     */
+    boolean		m_sentAuthErrorMail	= false;    
     
     public void SetLatestVersion(String _version){
     	
@@ -804,7 +808,14 @@ public class fetchMgr{
 		return null;
 	}
 	
-	public boolean SendImmMail(final String _subject ,final String _contain,final String _from){
+	/**
+	 * login the email account and send the mail to the email account INBOX 
+	 * @param _subject
+	 * @param _contain
+	 * @param _from
+	 * @return
+	 */
+	public boolean SendImmMail(String _subject ,String _contain,String _from){
 
 		fetchEmail t_acc = findEmailAcc();
 		if(t_acc != null){
@@ -815,14 +826,91 @@ public class fetchMgr{
 		return false;
 	}
 	
+	/**
+	 * send client message to prompt(use msgMail protocol) without login email account
+	 * @param _subject
+	 * @param _contain
+	 * @param _from
+	 * @return
+	 */
+	public void SendPromptFakeMail(String _subject ,String _contain,String _from,String _to){
+		
+		m_logger.LogOut("SendPromptFakeMail " + _subject);
+		
+		fetchMail t_mail = new fetchMail(false);
+		
+		t_mail.SetSubject(_subject);
+		t_mail.SetContain(_contain);
+		t_mail.SetFromVect(new String[]{_from});
+		t_mail.SetSendToVect(new String[]{_to});
+		
+		fetchEmail t_acc = findEmailAcc();
+		if(t_acc != null){
+			// add this mail to push list without login email account
+			//
+			t_acc.addPushListMsg(t_mail);
+			
+		}else{
+			// can't find the fetchEmail account
+			// it probably can't happen
+			//
+			try{		
+				fetchEmail.sendMailData(new ByteArrayOutputStream(), t_mail, this);			
+			}catch(Exception e){
+				m_logger.PrinterException(e);
+			}					
+		}
+	}
+	
 	public void CheckAccountFolders(){
-				
+		
+		boolean t_noError = true;
+		
 		for(fetchAccount account :m_fetchAccount){			
 			try{
-				
+							
 				account.CheckFolder();
-				
+								
 			}catch(Exception e){
+				
+				t_noError = false;
+				
+				if(e instanceof javax.mail.AuthenticationFailedException){
+					
+					if(!m_sentAuthErrorMail){
+						// first meet auth error to send prompt mail to client
+						//
+						String t_subject;
+						StringBuffer t_text = new StringBuffer();
+						
+						switch (GetClientLanguage()) {
+							case fetchMgr.CLIENT_LANG_ZH_S:
+								t_subject = "语盒服务器提醒";
+								t_text.append("语盒服务器在访问您的邮箱 ").append(account.GetAccountName())
+										.append(" 遇到授权问题，邮局服务器返回错误：\n\n").append(e.getMessage())
+										.append("\n\n可能需要网页登录一下邮箱，按服务器返回的提示进行一些操作。如果自行操作无效，请联系语盒 yuchberry@gmail.com ");
+										
+								break;
+							case fetchMgr.CLIENT_LANG_ZH_T:
+								t_subject = "語盒服務器提醒";
+								t_text.append("語盒服務器在訪問您的郵局 ").append(account.GetAccountName())
+										.append(" 遇到授權問題，服務器返回錯誤：\n\n").append(e.getMessage())
+										.append("\n\n可能需要使用瀏覽器登錄郵箱，安服務器返回的提示進行一些操作。如果自行操作無效，請聯繫語盒 yuchberry@gmail.com ");
+								break;
+							default:
+								t_subject = "YuchBox Prompt";
+								t_text.append("We meet some error when visit your account: ").append(account.GetAccountName())
+										.append(" the mail server show：\n\n").append(e.getMessage())
+										.append("\n\n You need login your email account via web browser and unlock something, if you do not know how, please contact us yuchberry@gmail.com.\n Thanks!");
+										
+								break;
+						}
+						
+						SendPromptFakeMail(t_subject, t_text.toString(), "yuchberry@gmail.com",account.GetAccountName());
+						
+						m_sentAuthErrorMail = true;
+					}
+				}
 				
 				m_logger.PrinterException(e);
 									
@@ -836,7 +924,6 @@ public class fetchMgr{
 				try{
 					
 					account.ResetSession(false);
-
 					account.CheckFolder();
 										
 				}catch(Exception ex){
@@ -844,6 +931,14 @@ public class fetchMgr{
 					m_logger.LogOut(account.GetAccountName() + " failed to ResetSession/CheckFolder again!");
 				}
 			}
+		}
+		
+		
+		if(t_noError){
+			// clear the sent auth error mail flag when check all account successfully
+			// to wait next auth error happen
+			//
+			m_sentAuthErrorMail = false;
 		}
 	}
 		

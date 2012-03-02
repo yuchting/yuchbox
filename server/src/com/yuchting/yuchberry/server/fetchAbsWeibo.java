@@ -712,25 +712,26 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 						t_gpsInfo.InputData(in);
 					}
 					
-					boolean t_updateTimeline = (in.read() == 1);
+					boolean t_updateTimeline = sendReceive.ReadBoolean(in);
 					
 					if(m_mainMgr.GetConnectClientVersion() >= 13){
 						// find the uploaded file
-						//						
-						sendWeiboConfirm(sendReceive.ReadInt(in));						
+						//
+						sendWeiboConfirm(sendReceive.ReadInt(in));
 					}
 					
 					if(t_type == fetchWeibo.SEND_FORWARD_TYPE){
+
+						m_mainMgr.m_logger.LogOut(GetAccountName() + "comment weibo " + t_orgWeiboId + " updateNew:" + t_updateTimeline);
 						
-						m_mainMgr.m_logger.LogOut(GetAccountName() + "comment weibo " + t_orgWeiboId );
-	
 						UpdateComment(t_style,t_text,t_orgWeiboId,t_gpsInfo,t_updateTimeline);
 						
-					}else{
+					}else{	
 						
-						m_mainMgr.m_logger.LogOut(GetAccountName() + " reply weibo " + t_commentWeiboId + " orgWeibo " + t_orgWeiboId);
+						m_mainMgr.m_logger.LogOut(GetAccountName() + " reply weibo " + t_commentWeiboId + " orgWeibo " + t_orgWeiboId + " updateNew:" + t_updateTimeline);
 						
 						UpdateReply(t_text,t_commentWeiboId,t_orgWeiboId,t_gpsInfo,t_updateTimeline);
+						
 					}
 					
 					m_mainMgr.SendData(getUpdateOKData(), false);

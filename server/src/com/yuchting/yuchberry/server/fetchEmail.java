@@ -697,29 +697,11 @@ public class fetchEmail extends fetchAccount{
 	 		    		 
 	 		    		AddMailIndexAttach(t_mail,false);
 	 		    		
-	 		    		// if some client connect very fast many times
-	 		    		// it will load same mail 
-	 		    		//
-	 		    		// check the duplicating mail
-	 		    		//
-	 		    		boolean t_hasLoad = false;
-	 		    		
-	 		    		synchronized (m_unreadMailVector) {
-	 		    			
-	 		    			for(int index = 0;index < m_unreadMailVector.size();index++ ){
-		 		    			fetchMail t_loadMail = (fetchMail)m_unreadMailVector.elementAt(index); 
-		 		    			if(t_loadMail.GetMailIndex() == t_mail.GetMailIndex()){
-		 		    				t_hasLoad = true;
-		 		    				break;
-		 		    			}
-		 		    		}
-		 		    		
-		 		    		if(t_hasLoad){
-		 		    			continue;
-		 		    		}
-		 		    		
-		 		    		m_unreadMailVector.addElement(t_mail);
-						}	 		    		
+	 		    		if(!addPushListMsg(t_mail)){
+	 		    			// duplicate mail read the next message mail
+	 		    			//
+	 		    			continue;
+	 		    		}	 		    	
 	 		    			 		    		
 	 		    		synchronized (m_unreadMailVector_marking) {
 	 		    			
@@ -750,6 +732,40 @@ public class fetchEmail extends fetchAccount{
 	    	}
 	    	 
 	    }	   
+	}
+	
+	/**
+	 * add a mail to push list
+	 * @param _mail
+	 * @return true if added 
+	 */
+	public boolean addPushListMsg(fetchMail _mail){
+		
+		// if some client connect very fast many times
+ 		// it will load same mail 
+ 		//
+ 		// check the duplicating mail
+ 		//
+ 		boolean t_hasLoad = false;
+ 		
+ 		synchronized (m_unreadMailVector) {
+ 			
+ 			for(int index = 0;index < m_unreadMailVector.size();index++ ){
+    			fetchMail t_loadMail = (fetchMail)m_unreadMailVector.elementAt(index); 
+    			if(t_loadMail.GetMailIndex() == _mail.GetMailIndex()){
+    				t_hasLoad = true;
+    				break;
+    			}
+    		}
+    		
+    		if(t_hasLoad){
+    			return false;
+    		}
+    		
+    		m_unreadMailVector.addElement(_mail);
+		}
+ 		
+ 		return true;
 	}
 	
 	public boolean ProcessNetworkPackage(byte[] _package)throws Exception{
@@ -1518,10 +1534,9 @@ public class fetchEmail extends fetchAccount{
 				
 				fetchMail t_mail = (fetchMail)m_unreadMailVector.elementAt(0); 
 
-				t_output.write(msg_head.msgMail);
-				t_mail.OutputMail(t_output);
-				
-				m_mainMgr.SendData(t_output,false);
+				// send protocol data first
+				//
+				sendMailData(t_output,t_mail,m_mainMgr);				
 				
 				m_unreadMailVector.remove(0);
 				t_mail.m_sendConfirmTime = System.currentTimeMillis();
@@ -1543,6 +1558,23 @@ public class fetchEmail extends fetchAccount{
 				t_output.reset();
 			}	
 		}
+	}
+	
+	/**
+	 * send mail data to client by one protocol message
+	 * @param _os 		data stream
+	 * @param _mail		mail data
+	 * @param _mgr		fetchMgr instance
+	 * @throws Exception
+	 */
+	public static void sendMailData(ByteArrayOutputStream _os,fetchMail _mail,fetchMgr _mgr)throws Exception{
+		// this function would be called in fetchMgr.SendPromptFakeMail
+		// to sub-function it.
+		//
+		_os.write(msg_head.msgMail);
+		_mail.OutputMail(_os);
+		
+		_mgr.SendData(_os,false);
 	}
 	
 	public void CreateTmpSendMailAttachFile(final RecvMailAttach _mail)throws Exception{
@@ -1586,7 +1618,7 @@ public class fetchEmail extends fetchAccount{
 		return null;
 	}
 	
-	public void SendImmMail(final String _subject ,final String _contain,final String _from){
+	public void SendImmMail(String _subject ,String _contain,String _from){
 				
 		fetchMail t_mail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
 		t_mail.SetSubject(_subject);

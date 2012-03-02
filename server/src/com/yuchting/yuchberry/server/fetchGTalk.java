@@ -445,7 +445,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	 */
 	public void ClientDisconnected(){
 		
-		if(m_mainConnection.isConnected()){
+		if(m_mainConnection != null && m_mainConnection.isConnected()){
 			
 			Presence t_presence = new Presence(Presence.Type.available);
 			t_presence.setMode(Presence.Mode.xa);
