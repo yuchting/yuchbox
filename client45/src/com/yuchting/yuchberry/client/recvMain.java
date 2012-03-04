@@ -72,7 +72,6 @@ import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.XYPoint;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
-import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.connectDeamon.FetchAttachment;
 import com.yuchting.yuchberry.client.im.IMStatus;

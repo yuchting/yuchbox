@@ -499,9 +499,7 @@ final class MiddleMgr extends VerticalFieldManager{
 			}
 		}
 				
-		if(t_field != null){
-			t_field.setFocus();
-		}
+		scrollToBottom(t_field);
 		
 		m_inputMgr.m_editTextArea.setFocus();
 		
@@ -606,7 +604,7 @@ final class MiddleMgr extends VerticalFieldManager{
 				
 		// scroll to bottom
 		//
-		t_field.setFocus();
+		scrollToBottom(t_field);
 				
 		if(m_chatScreen.m_currRoster.m_isYuch
 		&& Backlight.isEnabled() 
@@ -628,7 +626,8 @@ final class MiddleMgr extends VerticalFieldManager{
 	
 	public synchronized void addChatMsg(ChatField _field){	
 		addChatField(_field);
-		_field.setFocus();	
+			
+		scrollToBottom(_field);	
 		
 		// set the focus back
 		//
@@ -648,6 +647,23 @@ final class MiddleMgr extends VerticalFieldManager{
 		return null;
 	}
 	
+	private void scrollToBottom(Field _field){
+		
+		// scroll to bottom
+		//
+		if(m_chatScreen.m_mainApp.m_imChatScreenReverse){				
+			m_chatMsgMiddleMgr.setVerticalScroll(0);
+		}else{
+			int t_height = m_chatMsgMiddleMgr.getVirtualHeight() - m_chatMsgMiddleMgr.getPreferredHeight();
+			if(t_height > 0){
+				m_chatMsgMiddleMgr.setVerticalScroll(t_height);
+			}
+		}
+		
+		if(_field != null){
+			_field.setFocus();
+		}
+	}
 	
 	private void addChatField(ChatField _field){
 		if(m_chatScreen.m_mainApp.m_imChatScreenReverse){

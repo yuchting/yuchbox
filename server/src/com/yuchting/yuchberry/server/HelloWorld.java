@@ -125,7 +125,7 @@ public class HelloWorld {
 	
 	
 	public static void main(String arg[])throws Exception{
-		
+		System.out.print("hahaha".hashCode());
 	}
 		
 	public final static String	fsm_vectStringSpliter = "<>";
