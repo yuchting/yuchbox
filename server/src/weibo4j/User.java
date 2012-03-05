@@ -49,7 +49,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
 
     static final String[] POSSIBLE_ROOT_NAMES = new String[]{"user", "sender", "recipient", "retweeting_user"};
     private Weibo weibo;
-    private int id;
+    private long id;
     private String name;
     private String screenName;
     private String location;
@@ -107,7 +107,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
     private void init(JSONObject json) throws WeiboException {
     	if(json!=null){
         try {
-            id = json.getInt("id");
+            id = json.getLong("id");
             name = json.getString("name");
             screenName = json.getString("screen_name");
             location = json.getString("location");
@@ -157,7 +157,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
     private void init(Element elem, Weibo weibo) throws WeiboException {
         this.weibo = weibo;
         ensureRootNodeNameIs(POSSIBLE_ROOT_NAMES, elem);
-        id = getChildInt("id", elem);
+        id = getChildLong("id", elem);
         name = getChildText("name", elem);
         screenName = getChildText("screen_name", elem);
         location = getChildText("location", elem);
@@ -205,7 +205,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
      *
      * @return the id of the user
      */
-    public int getId() {
+    public long getId() {
         return id;
     }
 
@@ -609,7 +609,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
 
     @Override
     public int hashCode() {
-        return id;
+        return (int)id;
     }
 
     @Override

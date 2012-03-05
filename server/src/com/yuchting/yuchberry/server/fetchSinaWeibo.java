@@ -379,6 +379,27 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		throw new Exception("sina direct message no support."); 
 	}
 	
+	protected void addWeiboAccountList(Vector<WeiboAccount> _accList){
+		if(m_userself != null){
+			WeiboAccount acc = new WeiboAccount();
+			
+			acc.name 		= m_userself.getScreenName();
+			acc.id			= m_userself.getId();
+			acc.weiboStyle	= fetchWeibo.SINA_WEIBO_STYLE;
+			acc.needUpdate	= true;	
+			
+			_accList.add(acc);
+		}
+	}
+	
+	protected long getCurrAccountId(){
+		if(m_userself != null){
+			return m_userself.getId();
+		}else{
+			return 0;
+		}
+	}
+	
 	public void ImportWeibo(fetchWeibo _weibo,Status _stat,byte _weiboClass){
 		
 		_weibo.SetId(_stat.getId());

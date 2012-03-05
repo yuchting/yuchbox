@@ -33,6 +33,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Vector;
 
 import org.dom4j.Element;
 
@@ -326,7 +327,26 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		m_api.sendDirectMessage(_screenName,_text,null,-1,-1);
 	}
 	
+	protected void addWeiboAccountList(Vector<WeiboAccount> _accList){
+		if(m_userself != null){
+			WeiboAccount acc = new WeiboAccount();
+			
+			acc.name 		= m_userself.getScreenName();
+			acc.id			= m_userself.getId();
+			acc.weiboStyle	= fetchWeibo.SINA_WEIBO_STYLE;
+			acc.needUpdate	= true;
+			
+			_accList.add(acc);
+		}
+	}
 	
+	protected long getCurrAccountId(){
+		if(m_userself != null){
+			return m_userself.getId();
+		}else{
+			return 0;
+		}
+	}
 	
 	private void AddWeibo(List<QWeibo> _from,fetchWeiboData _to,byte _class){
 		

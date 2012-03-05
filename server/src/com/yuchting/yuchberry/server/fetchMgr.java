@@ -725,6 +725,9 @@ public class fetchMgr{
 				SendData(os, true);
 				
 				break;
+			case msg_head.msgWeiboAccountList:
+				ProcessWeiboAccountList(in);
+				break;
 			default:
 			{
 				for(fetchAccount account :m_fetchAccount){
@@ -734,6 +737,31 @@ public class fetchMgr{
 				}
 			}
 		}		
+	}
+	
+	public void ProcessWeiboAccountList(InputStream in)throws Exception{
+		Vector<WeiboAccount> t_accList = new Vector<WeiboAccount>();
+		
+		for(fetchAccount account :m_fetchAccount){
+			
+			if(account instanceof fetchSinaWeibo
+			|| account instanceof fetchTWeibo
+			|| account instanceof fetchQWeibo){
+				((fetchAbsWeibo)account).addWeiboAccountList(t_accList);
+			}
+		}
+		
+		if(!t_accList.isEmpty()){
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			os.write(msg_head.msgWeiboAccountList);
+			sendReceive.WriteInt(os,t_accList.size());
+			
+			for(WeiboAccount acc:t_accList){
+				acc.Output(os);
+			}
+			
+			SendData(os, false);
+		}
 	}
 	
 	public void ProcessFileAttach(InputStream in)throws Exception{

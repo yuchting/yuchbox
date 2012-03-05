@@ -634,8 +634,25 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 						//
 						int attach = sendReceive.ReadInt(in);
 						int t_fileTypeVal = in.read();
-						
+												
 						sendWeiboConfirm(attach);
+						
+						if(m_mainMgr.GetConnectClientVersion() >= 17){
+							// find whether update in this account
+							//
+							String t_updateIdList = sendReceive.ReadString(in);
+							
+							if(t_updateIdList.length() != 0){
+								String t_currAccountId = Long.toString(getCurrAccountId());
+								
+								if(t_updateIdList.indexOf(t_currAccountId) == -1){
+									// don't update in this weibo account
+									//
+									m_mainMgr.m_logger.LogOut(GetAccountName() + " client[id " + t_currAccountId + "] can't update to this account.");
+									return false;
+								}
+							}
+						}						
 						
 						File t_attachFile = new File(m_mainMgr.GetPrefixString() + attach + "_0.satt");
 						
@@ -778,8 +795,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					synchronized (this) {
 						m_stat_weiboSend++;
 						m_stat_weiboSendB += t_byte;
-					}
-					
+					}					
 					
 					return true;	
 				}
@@ -818,6 +834,20 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	protected abstract void UnfollowUser(String _screenName)throws Exception;
 	protected abstract void DeleteWeibo(long _id,boolean _isComment)throws Exception;
 	protected abstract void sendDirectMsg(String _screenName,String _text)throws Exception;
+	
+	/**
+	 * instance of fetchAbsWeibo realize to add a WeiboAccount class to
+	 * parameter list  
+	 * 
+	 * @param	_accList		list vector to add
+	 */
+	protected abstract void addWeiboAccountList(Vector<WeiboAccount> _accList);
+	
+	/**
+	 * get the current account id
+	 * @return
+	 */
+	protected abstract long getCurrAccountId();
 	
 	protected abstract fetchWeiboUser getWeiboUser(String _name)throws Exception;
 	
