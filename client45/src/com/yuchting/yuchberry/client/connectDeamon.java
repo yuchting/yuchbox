@@ -1149,20 +1149,24 @@ public class connectDeamon extends Thread implements SendListener,
 				 //
 				 m_connectSleep = 30 * 60000;
 				 
-				 if(m_mainApp.isForeground()){
-					 m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.CONNECT_NET_BROKEN_PROMPT));
-				 }else{
-					 m_mainApp.SetErrorString(recvMain.sm_local.getString(yblocalResource.CONNECT_NET_BROKEN_PROMPT));
-				 }
+				 if(!m_disconnect){
+					 if(m_mainApp.isForeground()){
+						 m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.CONNECT_NET_BROKEN_PROMPT));
+					 }else{
+						 m_mainApp.SetErrorString(recvMain.sm_local.getString(yblocalResource.CONNECT_NET_BROKEN_PROMPT));
+					 }
+				 }				 
 				 
 			 }else{
 				 // another exception information
 				 //
-				 if(m_mainApp.getActiveScreen() == m_mainApp.m_stateScreen 
-					&& m_mainApp.m_stateScreen != null){
-					 // prompt the user if in state screen
-					 //
-					 m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.CONNECT_ERROR_PROMPT));
+				 if(!m_disconnect){
+					 if(m_mainApp.getActiveScreen() == m_mainApp.m_stateScreen 
+						&& m_mainApp.m_stateScreen != null){
+						 // prompt the user if in state screen
+						 //
+						 m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.CONNECT_ERROR_PROMPT));
+					 }
 				 }
 			 }
 			 

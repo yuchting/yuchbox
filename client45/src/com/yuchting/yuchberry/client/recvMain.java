@@ -427,6 +427,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
     	NotificationsManager.registerSource(fsm_notifyID_im, fsm_notifyEvent_im,NotificationsConstants.CASUAL);
     	NotificationsManager.registerSource(fsm_notifyID_email_failed, fsm_notifyEvent_email_failed,NotificationsConstants.CASUAL);
     	
+    	Indicator.registerIndicator();
+    	
         if(_systemRun){       
         	
         	if(!m_autoRun || m_hostname.length() == 0 || m_port == 0 || m_userPassword.length() == 0){
