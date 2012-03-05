@@ -393,7 +393,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
         	invalidate();
         }
     };
-        
+    
     MenuItem m_snapItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_OPEN_CAMERA_SNAP),m_menuIndex_op++,0){
     	public void run(){
     		try{
@@ -454,6 +454,12 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
     MenuItem m_deletePic	= new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_DELETE_PIC_MENU_LABEL),m_menuIndex_op++,0){
     	public void run(){
     		clearAttachment();
+    	}
+    };
+    
+    MenuItem m_weiboAccount	= new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_WEIBO_ACCOUNT_MENU_LABEL),m_menuIndex_op++,0){
+    	public void run(){
+    		m_mainApp.m_weiboTimeLineScreen.m_optionItem.run();
     	}
     };
     		
@@ -557,6 +563,9 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 			_menu.add(m_deletePic);
 			_menu.add(m_checkPic);
 		}
+		
+		_menu.add(m_weiboAccount);
+		
 		_menu.add(MenuItem.separator(m_menuIndex_op));
 		
 		super.makeMenu(_menu,instance);

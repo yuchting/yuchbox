@@ -472,7 +472,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	}
 	
 	public void AddWeibo(fetchWeibo _weibo,boolean _initAdd){
-		
+	
 		m_delayWeiboAddList.addElement(new DelayAddWeiboData(_weibo,_initAdd));
 		
 		if(m_delayWeiboAddRunnableID == -1){
@@ -819,7 +819,13 @@ public class weiboTimeLineScreen extends MainScreen{
         
 	MenuItem m_atWeiboItem	= new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_AT_WEIBO_BUTTON_LABEL),m_menuIndex_op++,0){
 		public void run(){
-			m_currMgr.AtWeibo(m_currMgr.getCurrSelectedItem());
+			m_currMgr.AtWeibo(m_currMgr.getCurrSelectedItem(),false);
+		}
+	};
+	
+	MenuItem m_parseUserWeiboItem	= new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_AT_ALL_USER_WEIBO_BUTTON_LABEL),m_menuIndex_op++,0){
+		public void run(){
+			m_currMgr.AtWeibo(m_currMgr.getCurrSelectedItem(),true);
 		}
 	};
 	
@@ -958,7 +964,7 @@ public class weiboTimeLineScreen extends MainScreen{
 					_menu.add(m_onlyCommnetWeiboItem);
 				}
 				_menu.add(m_atWeiboItem);
-				
+				_menu.add(m_parseUserWeiboItem);
 				_menu.setDefault(m_forwardWeiboItem);
 			}
 			

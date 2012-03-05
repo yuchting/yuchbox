@@ -226,6 +226,18 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 			
 			sendReceive.WriteInt(t_os, m_hashCode);
 			t_os.write(m_fileType);
+			
+			StringBuffer t_updateAccount = new StringBuffer();
+			if(m_mainApp.m_weiboAccountList.size() >= 2){
+				for(int i = 0;i < m_mainApp.m_weiboAccountList.size();i++){
+					WeiboAccount acc = (WeiboAccount)m_mainApp.m_weiboAccountList.elementAt(i);
+					if(acc.needUpdate){
+						t_updateAccount.append(acc.id).append(" ");
+					}
+				}
+			}
+			
+			sendReceive.WriteString(t_os,t_updateAccount.toString());
 								
 			m_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeibo,t_os.toByteArray(),true);
 					

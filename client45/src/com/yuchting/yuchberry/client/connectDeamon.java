@@ -70,6 +70,7 @@ import net.rim.device.api.util.Arrays;
 import com.yuchting.yuchberry.client.screen.IUploadFileScreenCallback;
 import com.yuchting.yuchberry.client.screen.uploadFileScreen;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
+import com.yuchting.yuchberry.client.weibo.WeiboAccount;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 import com.yuchting.yuchberry.client.weibo.fetchWeiboUser;
 
@@ -81,7 +82,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListenerExtended,
 												IUploadFileScreenCallback{
 		
-	final static int	fsm_clientVer = 16;
+	final static int	fsm_clientVer = 17;
 	 
 	public sendReceive		m_connect = null;
 		
@@ -936,6 +937,20 @@ public class connectDeamon extends Thread implements SendListener,
 				m_mainApp.StopDisconnectNotification();
 				
 				m_mainApp.SetModuleOnlineState(true);
+				
+				// send the roster list request if IM module enabled and roster list is empty
+				//
+				if(m_mainApp.m_mainIMScreen != null
+				&& m_mainApp.m_mainIMScreen.m_rosterChatDataList.isEmpty()){
+					m_mainApp.m_mainIMScreen.sendRequestRosterListMsg(false);
+				}
+				
+				// send the weibo Account list request if Weibo module enabled and the List is empty
+				//
+				if(m_mainApp.m_weiboTimeLineScreen != null
+				&& m_mainApp.m_weiboAccountList.isEmpty()){
+					m_mainApp.sendRefreshWeiboAccountList();
+				}
 								
 				while(true){
 					ProcessMsg(m_connect.RecvBufferFromSvr());
@@ -1277,6 +1292,22 @@ public class connectDeamon extends Thread implements SendListener,
 		 	case msg_head.msgChatRead:
 		 		if(m_mainApp.m_mainIMScreen != null){
 		 			m_mainApp.m_mainIMScreen.processChatRead(in);
+		 		}
+		 		break;
+		 	case msg_head.msgWeiboAccountList:
+		 		m_mainApp.m_weiboAccountList.removeAllElements();
+		 		int t_num = sendReceive.ReadInt(in);
+		 		for(int i = 0;i < t_num;i++){
+		 			WeiboAccount acc = new WeiboAccount();
+		 			acc.Input(in);
+		 			m_mainApp.m_weiboAccountList.addElement(acc);
+		 		}
+		 		
+		 		m_mainApp.WriteReadIni(false);
+		 		
+		 		if(m_mainApp.m_weiboTimeLineScreen != null 
+		 		&& m_mainApp.m_weiboTimeLineScreen.m_optionScreen != null){
+		 			m_mainApp.m_weiboTimeLineScreen.m_optionScreen.refreshWeiboAccount();
 		 		}
 		 		break;
 		 }

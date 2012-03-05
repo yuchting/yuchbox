@@ -91,6 +91,7 @@ import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.Phiz;
 import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
+import com.yuchting.yuchberry.client.weibo.WeiboAccount;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 import com.yuchting.yuchberry.client.weibo.weiboTimeLineScreen;
 
@@ -923,7 +924,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 	}
 	
-	final static int		fsm_clientVersion = 38;
+	final static int		fsm_clientVersion = 39;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -1152,6 +1153,19 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				    			m_imRenotifyPrompt = sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
+				    		if(t_currVer >= 39){
+				    			
+				    			m_weiboAccountList.removeAllElements();
+				    			
+				    			int t_accountNum = sendReceive.ReadInt(t_readFile);
+				    			for(int i = 0;i < t_accountNum;i++){
+				    				WeiboAccount acc = new WeiboAccount();
+				    				acc.Input(t_readFile);
+				    				
+				    				m_weiboAccountList.addElement(acc);
+				    			}
+				    		}
+				    		
 				    		
 			    		}finally{
 			    			t_readFile.close();
@@ -1273,7 +1287,12 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		    			sendReceive.WriteBoolean(t_writeFile,m_weiboDontReadHistroy);
 		    			sendReceive.WriteBoolean(t_writeFile,m_imRenotifyPrompt);
 		    			
-						
+		    			sendReceive.WriteInt(t_writeFile,m_weiboAccountList.size());
+		    			for(int i = 0;i < m_weiboAccountList.size();i++){
+		    				WeiboAccount acc = (WeiboAccount)m_weiboAccountList.elementAt(i);
+		    				acc.Output(t_writeFile);
+		    			}
+		    									
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
 						}
@@ -2186,8 +2205,9 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	};
 	
 	public int						m_weiboUploadImageSizeIndex = 0;
-	
-	
+		
+	public Vector					m_weiboAccountList		= new Vector();	
+		
 	public int getRefreshWeiboInterval(){
 		if(m_refreshWeiboIntervalIndex < fsm_refreshWeiboInterval.length){
 			return fsm_refreshWeiboInterval[m_refreshWeiboIntervalIndex];
@@ -2319,6 +2339,23 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			StopWeiboHomeNotification();
 			StopWeiboNotification();
 		}
+	}
+	
+	long m_weiboRefereshAccountTime = 0;
+	public void sendRefreshWeiboAccountList(){
+		long t_currTime = System.currentTimeMillis();
+		if(Math.abs(t_currTime - m_weiboRefereshAccountTime) < 2 * 60000){
+			return;
+		}
+		
+		m_weiboRefereshAccountTime = t_currTime;
+		
+		try{
+			m_connectDeamon.addSendingData(msg_head.msgWeiboAccountList, new byte[]{msg_head.msgWeiboAccountList}, true);
+		}catch(Exception e){
+			SetErrorString("SRWAL", e);
+		}
+		
 	}
 		
 	public void PrepareWeiboItem(fetchWeibo _weibo){

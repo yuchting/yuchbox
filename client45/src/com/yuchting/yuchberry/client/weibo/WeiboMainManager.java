@@ -241,7 +241,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	
 	public void fieldChanged(Field field, int context) {
 		if(m_atBut == field){
-			AtWeibo(getCurrExtendedItem());
+			AtWeibo(getCurrExtendedItem(),false);
 		}else if(m_forwardBut == field){
 			ForwardWeibo(getCurrExtendedItem(),false);
 		}else if(m_editTextArea == field){
@@ -773,7 +773,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		
 	}
 	
-	public void AtWeibo(WeiboItemField _item){
+	public void AtWeibo(WeiboItemField _item,boolean _rtToAll){
 		
 		if(getCurrEditItem() != _item){	
 			
@@ -786,9 +786,40 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			|| m_replyStyleBackup != _item.m_weibo.GetWeiboStyle()){
 								
 				StringBuffer t_text = new StringBuffer();
-				t_text.append("@").append(_item.m_weibo.GetUserScreenName()).append(" ");
-
-				t_finalText = t_text.toString();			
+								
+				if(_rtToAll){
+					t_text.append(" @").append(_item.m_weibo.GetUserScreenName()).append(" ");
+					
+					t_text.append(WeiboTextField.getConvertString(_item.m_weibo.GetText(),
+							WeiboTextField.CONVERT_DISABLE_PHIZ | WeiboTextField.CONVERT_DISABLE_TEXT,t_text.toString()));
+					
+					if(_item.m_weibo.GetCommentWeibo() != null){
+						String t_findDupliate = t_text.toString();
+						
+						if(t_findDupliate.indexOf(_item.m_weibo.GetCommentWeibo().GetUserScreenName()) == -1){
+							t_text.append("@").append(_item.m_weibo.GetCommentWeibo().GetUserScreenName()).append(" ");
+						}
+						
+						t_text.append(WeiboTextField.getConvertString(_item.m_weibo.GetCommentWeibo().GetText(),
+								WeiboTextField.CONVERT_DISABLE_PHIZ | WeiboTextField.CONVERT_DISABLE_TEXT,t_text.toString()));
+					}
+					
+					if(_item.m_weibo.GetReplyWeibo() != null){
+						
+						String t_findDupliate = t_text.toString();
+						if(t_findDupliate.indexOf(_item.m_weibo.GetReplyWeibo().GetUserScreenName()) == -1){
+							t_text.append("@").append(_item.m_weibo.GetReplyWeibo().GetUserScreenName()).append(" ");
+						}
+						
+						t_text.append(WeiboTextField.getConvertString(_item.m_weibo.GetReplyWeibo().GetText(),
+								WeiboTextField.CONVERT_DISABLE_PHIZ | WeiboTextField.CONVERT_DISABLE_TEXT,t_text.toString()));
+					}			
+				}else{
+					t_text.append("@").append(_item.m_weibo.GetUserScreenName()).append(" ");
+				}
+				
+				t_finalText = t_text.toString();
+				
 			}else{
 				t_finalText = m_replyText;
 			}
@@ -805,7 +836,12 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			sublayout(0,0);
 			invalidate();
 			
-			m_editTextArea.setCursorPosition(t_finalText.length());
+			if(_rtToAll){
+				m_editTextArea.setCursorPosition(0);
+			}else{
+				m_editTextArea.setCursorPosition(t_finalText.length());
+			}
+			
 		}
 	}
 	
