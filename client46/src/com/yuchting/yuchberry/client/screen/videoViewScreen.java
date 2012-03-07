@@ -38,8 +38,8 @@ public class videoViewScreen extends fileViewScreen{
 	VideoControl m_videoControl		= null;
 	
 	
-	public videoViewScreen(String _filename,recvMain _mainApp) throws Exception{
-		super(_filename,_mainApp,false);
+	public videoViewScreen(String _filename) throws Exception{
+		super(_filename,false);
 		
 		m_player = Manager.createPlayer(_filename);
 		m_player.realize();

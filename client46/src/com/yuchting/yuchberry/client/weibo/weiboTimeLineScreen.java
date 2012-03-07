@@ -47,6 +47,7 @@ import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.GPSInfo;
+import com.yuchting.yuchberry.client.Indicator;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
@@ -444,6 +445,7 @@ public class weiboTimeLineScreen extends MainScreen{
 				
 				if(_weibo.GetWeiboClass() != fetchWeibo.TIMELINE_CLASS){
 					m_mainApp.TriggerWeiboNotification();
+					Indicator.notifyWeibo();
 				}
 			}
 			
@@ -472,7 +474,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	}
 	
 	public void AddWeibo(fetchWeibo _weibo,boolean _initAdd){
-		
+	
 		m_delayWeiboAddList.addElement(new DelayAddWeiboData(_weibo,_initAdd));
 		
 		if(m_delayWeiboAddRunnableID == -1){
@@ -657,7 +659,7 @@ public class weiboTimeLineScreen extends MainScreen{
 					t_text = t_text.substring(0,WeiboItemField.fsm_maxWeiboTextLength);
 				}
 				
-				m_currMgr.BackupSendWeiboText(m_currMgr.m_currentSendType,m_currMgr.getCurrEditItem().m_weibo,t_text);
+				m_currMgr.BackupSendWeiboText(t_text);
 				
 				if(m_currMgr.getCurrEditItem().m_weibo.GetWeiboClass() == fetchWeibo.COMMENT_ME_CLASS){
 					
@@ -696,7 +698,8 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	private void sendCommentReply(String _text,int _weiboStyle,int _sendType,long _orgId,long _commentId)throws Exception{
 					
-		m_sendDaemonList.addElement(new WeiboSendDaemon(_text,(byte)_weiboStyle,(byte)_sendType,_orgId,_commentId,m_mainApp));
+		m_sendDaemonList.addElement(new WeiboSendDaemon(_text,(byte)_weiboStyle,(byte)_sendType,_orgId,
+														_commentId,m_currMgr.m_forwardOnlyCommnet,m_mainApp));
 		
 		m_mainApp.m_sentWeiboNum++;
 		m_currMgr.EscapeKey();
@@ -806,13 +809,25 @@ public class weiboTimeLineScreen extends MainScreen{
 	
     MenuItem m_forwardWeiboItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL),m_menuIndex_op++,0){
 		public void run(){
-			m_currMgr.ForwardWeibo(m_currMgr.getCurrSelectedItem());
+			m_currMgr.ForwardWeibo(m_currMgr.getCurrSelectedItem(),false);
+		}
+	};
+	
+	MenuItem m_onlyCommnetWeiboItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_ONLY_COMMENT_WEIBO_MENU),m_menuIndex_op++,0){
+		public void run(){
+			m_currMgr.ForwardWeibo(m_currMgr.getCurrSelectedItem(),true);
 		}
 	};
         
 	MenuItem m_atWeiboItem	= new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_AT_WEIBO_BUTTON_LABEL),m_menuIndex_op++,0){
 		public void run(){
-			m_currMgr.AtWeibo(m_currMgr.getCurrSelectedItem());
+			m_currMgr.AtWeibo(m_currMgr.getCurrSelectedItem(),false);
+		}
+	};
+	
+	MenuItem m_parseUserWeiboItem	= new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_AT_ALL_USER_WEIBO_BUTTON_LABEL),m_menuIndex_op++,0){
+		public void run(){
+			m_currMgr.AtWeibo(m_currMgr.getCurrSelectedItem(),true);
 		}
 	};
 	
@@ -947,8 +962,11 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 			if(m_currMgr.getCurrEditItem() == null){
 				_menu.add(m_forwardWeiboItem);
+				if(m_currMgr.getCurrSelectedItem().m_weibo.GetWeiboStyle() == fetchWeibo.SINA_WEIBO_STYLE){
+					_menu.add(m_onlyCommnetWeiboItem);
+				}
 				_menu.add(m_atWeiboItem);
-				
+				_menu.add(m_parseUserWeiboItem);
 				_menu.setDefault(m_forwardWeiboItem);
 			}
 			
@@ -1139,6 +1157,9 @@ public class weiboTimeLineScreen extends MainScreen{
     			return true;
 	    	case 'F':
 	    		m_forwardWeiboItem.run();
+	    		return true;
+	    	case 'L':
+	    		m_onlyCommnetWeiboItem.run();
 	    		return true;
 	    	case 'V':
 	    		m_favWeiboItem.run();

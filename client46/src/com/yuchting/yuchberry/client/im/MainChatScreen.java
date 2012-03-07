@@ -63,8 +63,10 @@ import com.yuchting.yuchberry.client.sendReceive;
 import com.yuchting.yuchberry.client.screen.CameraScreen;
 import com.yuchting.yuchberry.client.screen.ICameraScreenCallback;
 import com.yuchting.yuchberry.client.screen.IRecordAudioScreenCallback;
+import com.yuchting.yuchberry.client.screen.IUploadFileScreenCallback;
 import com.yuchting.yuchberry.client.screen.RecordAudioScreen;
 import com.yuchting.yuchberry.client.screen.imageViewScreen;
+import com.yuchting.yuchberry.client.screen.uploadFileScreen;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.CameraFileOP;
 import com.yuchting.yuchberry.client.ui.ImageButton;
@@ -497,9 +499,7 @@ final class MiddleMgr extends VerticalFieldManager{
 			}
 		}
 				
-		if(t_field != null){
-			t_field.setFocus();
-		}
+		scrollToBottom(t_field);
 		
 		m_inputMgr.m_editTextArea.setFocus();
 		
@@ -604,7 +604,7 @@ final class MiddleMgr extends VerticalFieldManager{
 				
 		// scroll to bottom
 		//
-		t_field.setFocus();
+		scrollToBottom(t_field);
 				
 		if(m_chatScreen.m_currRoster.m_isYuch
 		&& Backlight.isEnabled() 
@@ -626,7 +626,8 @@ final class MiddleMgr extends VerticalFieldManager{
 	
 	public synchronized void addChatMsg(ChatField _field){	
 		addChatField(_field);
-		_field.setFocus();	
+			
+		scrollToBottom(_field);	
 		
 		// set the focus back
 		//
@@ -646,6 +647,23 @@ final class MiddleMgr extends VerticalFieldManager{
 		return null;
 	}
 	
+	private void scrollToBottom(Field _field){
+		
+		// scroll to bottom
+		//
+		if(m_chatScreen.m_mainApp.m_imChatScreenReverse){				
+			m_chatMsgMiddleMgr.setVerticalScroll(0);
+		}else{
+			int t_height = m_chatMsgMiddleMgr.getVirtualHeight() - m_chatMsgMiddleMgr.getPreferredHeight();
+			if(t_height > 0){
+				m_chatMsgMiddleMgr.setVerticalScroll(t_height);
+			}
+		}
+		
+		if(_field != null){
+			_field.setFocus();
+		}
+	}
 	
 	private void addChatField(ChatField _field){
 		if(m_chatScreen.m_mainApp.m_imChatScreenReverse){
@@ -709,6 +727,41 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		}
 	};
 	
+	MenuItem m_browseFile = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_BROWSE_FILES_MENU_LABEL),m_menu_op++,0){
+		public void run(){
+			try{
+				uploadFileScreen t_fileScreen = new uploadFileScreen(m_mainApp, false,new IUploadFileScreenCallback(){
+					
+					public boolean clickOK(String _filename,int _size){
+						
+						_filename = _filename.toLowerCase();
+						
+						if(_filename.endsWith(".jpg")){
+							clearAttachment();
+							
+							m_imagePath = _filename;
+							m_imageType	= fetchChatMsg.FILE_TYPE_IMG;					
+							
+							return true;
+							
+						}else{
+							
+							m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.IM_BROWSE_FILES_PROMPT));
+							return false;	
+						}				
+					}
+					
+					public void clickDel(String _filename){}
+				});
+				
+				UiApplication.getUiApplication().pushScreen(t_fileScreen);
+				
+			}catch(Exception e){
+				m_mainApp.SetErrorString("MCSBF", e);
+			}
+		}
+	};
+	
 	MenuItem m_deleteChatMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_DELETE_HISTORY_CHAT),m_menu_op++,0){
 		public void run(){
 			if(Dialog.ask(Dialog.D_YES_NO,
@@ -727,11 +780,11 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
     			if(m_imagePath != null){
     				
     				if(!m_mainApp.CheckMediaNativeApps(m_imagePath)){
-    					m_mainApp.pushGlobalScreen(new imageViewScreen(m_imagePath,m_mainApp),0,UiEngine.GLOBAL_MODAL);
+    					UiApplication.getUiApplication().pushGlobalScreen(new imageViewScreen(m_imagePath),0,UiEngine.GLOBAL_MODAL);
     				}
         			
         		}else if(m_snapBuffer != null){
-        			m_mainApp.pushGlobalScreen(new imageViewScreen(m_snapBuffer,m_mainApp),0,UiEngine.GLOBAL_MODAL);
+        			UiApplication.getUiApplication().pushGlobalScreen(new imageViewScreen(m_snapBuffer),0,UiEngine.GLOBAL_MODAL);
         		}else if(m_recordBuffer != null){
         			playAudio(m_recordBuffer);
         		}
@@ -964,6 +1017,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 			_menu.add(m_cameraMenu);
 		}
 		_menu.add(m_recordMenu);
+		_menu.add(m_browseFile);
 		
 		if(!m_currRoster.m_chatMsgList.isEmpty()){
 			_menu.add(m_deleteChatMenu);
@@ -1247,7 +1301,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 					}
 					
 					if(!m_mainApp.CheckMediaNativeApps(t_file)){
-						m_mainApp.pushGlobalScreen(new imageViewScreen(msg.getFileContent(),m_mainApp)
+						UiApplication.getUiApplication().pushGlobalScreen(new imageViewScreen(msg.getFileContent())
 															,0,UiEngine.GLOBAL_MODAL);
 					}
 					
