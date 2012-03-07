@@ -445,8 +445,9 @@ public class weiboTimeLineScreen extends MainScreen{
 				
 				if(_weibo.GetWeiboClass() != fetchWeibo.TIMELINE_CLASS){
 					m_mainApp.TriggerWeiboNotification();
-					Indicator.notifyWeibo();
 				}
+				
+				Indicator.notifyWeibo();
 			}
 			
 		}catch(Exception e){

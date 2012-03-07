@@ -104,14 +104,13 @@ class sendReceive extends Thread{
 	
 	private byte[] PrepareOutputData()throws Exception{
 		
+		if(m_unsendedPackage.isEmpty()){
+			return null;
+		}
+		
+		ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
+		
 		synchronized (m_unsendedPackage) {
-			
-			if(m_unsendedPackage.isEmpty()){
-				return null;
-			}
-			
-			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
-					
 			for(int i = 0;i < m_unsendedPackage.size();i++){
 				byte[] t_package = (byte[])m_unsendedPackage.elementAt(i);	
 				
@@ -121,13 +120,14 @@ class sendReceive extends Thread{
 			}
 			
 			m_unsendedPackage.removeAllElements();
-			
-			synchronized (this) {
-				m_sendBufferLen = 0;
-			}
-			
-			return t_stream.toByteArray();
 		}
+		
+		synchronized (this) {
+			m_sendBufferLen = 0;
+		}
+		
+		return t_stream.toByteArray();
+		
 	}
 		
 	//! send buffer implement

@@ -17,68 +17,93 @@ public class Indicator {
 	static int	sm_weiboCount	= 	0;
 	static int	sm_imCount		= 	0;
 	
-	static ApplicationIndicator		sm_weiboIndicator	= null;
-	static ApplicationIndicator		sm_imIndicator		= null;
-		
-	/**
-	 * register the indicator resource 
-	 * it must be called at initialization of app
-	 */
-	public static void registerIndicator(){
-		
-		if(sm_weiboIndicator == null && sm_imIndicator == null){
-			EncodedImage t_weiboImage = EncodedImage.getEncodedImageResource("weibo_indicator.png");
-			EncodedImage t_imImage = EncodedImage.getEncodedImageResource("im_indicator.png");
-			
-	        try {
-	            ApplicationIndicatorRegistry reg = ApplicationIndicatorRegistry.getInstance();
-	            sm_weiboIndicator 	= reg.register(new ApplicationIcon(t_weiboImage), false, false);
-	            sm_imIndicator		= reg.register(new ApplicationIcon(t_imImage), false, false);
-	        }catch(Exception ex){}
-		}	
+	static ApplicationIndicator		sm_indicator	= null;
+	
+	
+	static ApplicationIcon			sm_currIndicatorIcon = null;
+	
+	static ApplicationIcon	sm_weiboIcon = null;
+	static ApplicationIcon	sm_imIcon = null;
+	static{
+		EncodedImage t_weiboImage = EncodedImage.getEncodedImageResource("weibo_indicator.png");
+		EncodedImage t_imImage = EncodedImage.getEncodedImageResource("im_indicator.png");
+		sm_weiboIcon = new ApplicationIcon(t_weiboImage);
+		sm_imIcon	= new ApplicationIcon(t_imImage);
 	}
 	
 	/**
 	 * unregister the indicator when app is closed
 	 */
 	public static void unregisterIndicator(){
-		if(sm_weiboIndicator != null && sm_imIndicator != null){
-			
-			disableNotifiyWeibo();
-			disableNotifyIM();
-			
+		if(sm_indicator == null){
+
 			try {
+				sm_indicator.setVisible(false);
+				
 	            ApplicationIndicatorRegistry reg = ApplicationIndicatorRegistry.getInstance();
 	            reg.unregister();
 	        }catch(Exception ex){}
+	        
+	        sm_indicator = null;	
 		}
 	}
 	
 	public static void notifyWeibo(){
-		if(sm_weiboIndicator != null){
-			sm_weiboIndicator.setVisible(true);
-			sm_weiboIndicator.setValue(++sm_weiboCount);
-		}		
+		
+		try{
+			if(sm_currIndicatorIcon != sm_weiboIcon){
+				unregisterIndicator();
+				
+				ApplicationIndicatorRegistry reg = ApplicationIndicatorRegistry.getInstance();
+				sm_indicator = reg.register(sm_weiboIcon,false,true);
+			}			
+			
+			sm_currIndicatorIcon = sm_weiboIcon;
+			sm_indicator.setValue(++sm_weiboCount);
+		}catch(Exception ex){}
 	}
 	
 	public static void notifyIM(){
-		if(sm_imIndicator != null){
-			sm_imIndicator.setVisible(true);
-			sm_imIndicator.setValue(++sm_imCount);
-		}
+			
+		try{
+			if(sm_currIndicatorIcon != sm_imIcon){
+				unregisterIndicator();
+				
+	        	ApplicationIndicatorRegistry reg = ApplicationIndicatorRegistry.getInstance();
+	        	sm_indicator	= reg.register(sm_imIcon,false,true);
+			}
+			sm_currIndicatorIcon = sm_imIcon;
+    		sm_indicator.setValue(++sm_imCount);
+		}catch(Exception ex){}
 	}
 	
 	public static void disableNotifiyWeibo(){
-		if(sm_weiboIndicator != null){
-			sm_weiboIndicator.setVisible(false);
-			sm_weiboCount = 0;
+		if(sm_indicator != null){
+			try{	        	
+				if(sm_imCount != 0){		        	
+					sm_indicator.set(sm_imIcon,sm_imCount);
+				}else{
+					unregisterIndicator();
+				}
+	        
+			}catch(Exception ex){}
+			
+			 sm_weiboCount = 0;
 		}
 	}
 	
 	public static void disableNotifyIM(){
-		if(sm_imIndicator != null){
-			sm_imIndicator.setVisible(false);
-			sm_imCount = 0;
+		if(sm_indicator != null){
+			try{        	
+				if(sm_weiboCount != 0){		        	
+					sm_indicator.set(sm_weiboIcon,sm_weiboCount);
+				}else{
+					unregisterIndicator();
+				}
+
+			}catch(Exception ex){}
+						
+	        sm_imCount = 0;
 		}
 	}
 }

@@ -53,16 +53,12 @@ import android.provider.Contacts.People;
 import android.text.ClipboardManager;
 import android.util.Log;
 import android.view.Display;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.yuchting.yuchdroid.client.mail.HomeActivity;
 import com.yuchting.yuchdroid.client.mail.MailDbAdapter;
-import com.yuchting.yuchdroid.client.mail.MailListAdapter;
 import com.yuchting.yuchdroid.client.mail.fetchMail;
 
 public class YuchDroidApp extends Application {
