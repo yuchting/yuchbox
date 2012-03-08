@@ -1639,6 +1639,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		if(IsPromptTime()){
 			NotificationsManager.triggerImmediateEvent(fsm_notifyID_weibo, 0, this, null);
 		}
+		
+		Indicator.notifyWeibo();
 	}
 	
 	public void StopWeiboNotification(){
