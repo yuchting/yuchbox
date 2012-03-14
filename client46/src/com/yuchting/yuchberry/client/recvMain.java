@@ -1486,7 +1486,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				}else{
 					pushStateScreen();
 				}
-				
 			}			
 			
 		}else{
@@ -1529,7 +1528,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				
 				m_isWeiboOrIMScreen = true;
 				
-				if(m_weiboTimeLineScreen.m_pushUpdateDlg){
+				if(m_weiboTimeLineScreen.m_pushUpdateDlg
+				&& getActiveScreen() == m_weiboTimeLineScreen.m_currUpdateDlg){
 					m_weiboUpdateDlg = true;
 					m_weiboTimeLineScreen.m_currUpdateDlg.close();
 				}

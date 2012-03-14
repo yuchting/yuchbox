@@ -326,7 +326,7 @@ public class uploadFileScreen extends MainScreen{
 			m_bottomMenu.run();
 			return true;
 		case 10:
-			return trackwheelClick(0,0);
+			return trackwheelClick(-1,-1);
 		}
 		
 		return super.keyDown(keycode,time);
@@ -339,11 +339,14 @@ public class uploadFileScreen extends MainScreen{
 				DisplayFileList(m_currFocusIconItem.m_filename_full);
 				return true;
 			}else{
-				m_check.run();
+				if(status == -1 && time == -1){ // called in keyDown function
+					m_check.run();
+					return true;
+				}				
 			}
 		}
 		
-		return false;
+		return super.trackwheelClick(status, time);
 	}
 	
 	public static boolean IsAudioFile(String _filename){
