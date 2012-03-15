@@ -4,7 +4,6 @@ import net.rim.blackberry.api.messagelist.ApplicationIcon;
 import net.rim.blackberry.api.messagelist.ApplicationIndicator;
 import net.rim.blackberry.api.messagelist.ApplicationIndicatorRegistry;
 import net.rim.device.api.system.EncodedImage;
-import net.rim.device.api.ui.UiApplication;
 
 
 /**
@@ -116,3 +115,25 @@ public class Indicator {
 		}
 	}
 }
+
+
+/**
+ * indicator (notification of current application)
+ * @author yuch
+ *
+ */
+//public class Indicator {
+//	
+//	/**
+//	 * unregister the indicator when app is closed
+//	 */
+//	public static void unregisterIndicator(){ }
+//	
+//	public static void notifyWeibo(){	}
+//	
+//	public static void notifyIM(){ }
+//	
+//	public static void disableNotifiyWeibo(){ }
+//	
+//	public static void disableNotifyIM(){	}
+//}
