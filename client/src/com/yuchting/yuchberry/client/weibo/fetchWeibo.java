@@ -318,10 +318,14 @@ public class fetchWeibo {
 	}
 	
 	public String getLocalStyleName(){
+		return getLocalStyleName(GetWeiboStyle());
+	}
+	
+	public static String getLocalStyleName(int _style){
 		
 		String t_style = "Weibo";
 		
-		switch(GetWeiboStyle()){
+		switch(_style){
 		case fetchWeibo.QQ_WEIBO_STYLE:
 			t_style = recvMain.sm_local.getString(yblocalResource.WEIBO_QQ_STYLE);
 			break;

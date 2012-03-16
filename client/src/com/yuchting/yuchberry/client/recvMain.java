@@ -72,7 +72,6 @@ import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.XYPoint;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
-import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.connectDeamon.FetchAttachment;
 import com.yuchting.yuchberry.client.im.IMStatus;
@@ -92,6 +91,7 @@ import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.Phiz;
 import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
+import com.yuchting.yuchberry.client.weibo.WeiboAccount;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 import com.yuchting.yuchberry.client.weibo.weiboTimeLineScreen;
 
@@ -205,7 +205,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			m_info	= _info;
 			m_time	= new Date();
 		}
-		
 	}
 	
 	public Vector			m_errorString		= new Vector();	
@@ -426,7 +425,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
     	NotificationsManager.registerSource(fsm_notifyID_disconnect, fsm_notifyEvent_disconnect,NotificationsConstants.CASUAL);
     	NotificationsManager.registerSource(fsm_notifyID_im, fsm_notifyEvent_im,NotificationsConstants.CASUAL);
     	NotificationsManager.registerSource(fsm_notifyID_email_failed, fsm_notifyEvent_email_failed,NotificationsConstants.CASUAL);
-    	
+    	    	    	
         if(_systemRun){       
         	
         	if(!m_autoRun || m_hostname.length() == 0 || m_port == 0 || m_userPassword.length() == 0){
@@ -553,7 +552,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			     root = (String) e.nextElement();
 			     if( root.equalsIgnoreCase("sdcard/") ) {
 			    	 synchronized (this) {
-			    		 m_isSDCardAvailable = true;	
+			    		 m_isSDCardAvailable = true;
 			    	 }
 			    	 break;
 			     }
@@ -924,7 +923,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 	}
 	
-	final static int		fsm_clientVersion = 38;
+	final static int		fsm_clientVersion = 39;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -1153,6 +1152,19 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				    			m_imRenotifyPrompt = sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
+				    		if(t_currVer >= 39){
+				    			
+				    			m_weiboAccountList.removeAllElements();
+				    			
+				    			int t_accountNum = sendReceive.ReadInt(t_readFile);
+				    			for(int i = 0;i < t_accountNum;i++){
+				    				WeiboAccount acc = new WeiboAccount();
+				    				acc.Input(t_readFile);
+				    				
+				    				m_weiboAccountList.addElement(acc);
+				    			}
+				    		}
+				    		
 				    		
 			    		}finally{
 			    			t_readFile.close();
@@ -1274,7 +1286,12 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		    			sendReceive.WriteBoolean(t_writeFile,m_weiboDontReadHistroy);
 		    			sendReceive.WriteBoolean(t_writeFile,m_imRenotifyPrompt);
 		    			
-						
+		    			sendReceive.WriteInt(t_writeFile,m_weiboAccountList.size());
+		    			for(int i = 0;i < m_weiboAccountList.size();i++){
+		    				WeiboAccount acc = (WeiboAccount)m_weiboAccountList.elementAt(i);
+		    				acc.Output(t_writeFile);
+		    			}
+		    									
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
 						}
@@ -1402,8 +1419,12 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		DisableWeiboModule();
 		
 		StopNotification();
+		StopWeiboHomeNotification();
 		StopWeiboNotification();
 		StopDisconnectNotification();
+		StopEmailFailedNotifaction();
+		
+		Indicator.unregisterIndicator();
 		
 		if(m_connectDeamon.m_connect != null){
 			m_connectDeamon.m_connect.StoreUpDownloadByteImm(true);
@@ -1443,7 +1464,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				}
 			}
 			
-			if(getScreenCount() == 0){
+			if(getScreenCount() == 0){   
 				
 				if(m_isWeiboOrIMScreen && m_weiboTimeLineScreen != null){
 					m_isWeiboOrIMScreen = false;
@@ -1507,7 +1528,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				
 				m_isWeiboOrIMScreen = true;
 				
-				if(m_weiboTimeLineScreen.m_pushUpdateDlg){
+				if(m_weiboTimeLineScreen.m_pushUpdateDlg
+				&& getActiveScreen() == m_weiboTimeLineScreen.m_currUpdateDlg){
 					m_weiboUpdateDlg = true;
 					m_weiboTimeLineScreen.m_currUpdateDlg.close();
 				}
@@ -1616,11 +1638,15 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public void TriggerWeiboNotification(){
 		if(IsPromptTime()){
 			NotificationsManager.triggerImmediateEvent(fsm_notifyID_weibo, 0, this, null);
-		}		
+		}
+		
+		Indicator.notifyWeibo();
 	}
 	
 	public void StopWeiboNotification(){
 		NotificationsManager.cancelImmediateEvent(fsm_notifyID_weibo, 0, this, null);
+		
+		Indicator.disableNotifiyWeibo();
 	}
 	
 	public void TriggerWeiboHomeNotification(){
@@ -1646,11 +1672,13 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public void TriggerIMNotification(){
 		if(IsPromptTime()){
 			NotificationsManager.triggerImmediateEvent(fsm_notifyID_im, 0, this, null);
-		}		
+		}
 	}
 	
 	public void StopIMNotification(){
 		NotificationsManager.cancelImmediateEvent(fsm_notifyID_im, 0, this, null);
+		
+		Indicator.disableNotifyIM();
 	}
 	
 	public void TriggerEmailFailedNotifaction(){
@@ -1768,15 +1796,16 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		});		
 	}
 	
-	public String	m_uploadFileFavorPath = null;
+	public String	m_uploadFileFavorPath 				= null;
+	
 	public Object OpenAttachmentFileScreen(final boolean _del){
 		
 		try{
 
-			MainScreen t_uploadFileScreen = new uploadFileScreen(m_connectDeamon, this,_del,m_connectDeamon);
-			UiApplication.getUiApplication().pushScreen(t_uploadFileScreen);
+			uploadFileScreen t_mailAttachSelectScreen = new uploadFileScreen(this,_del,m_connectDeamon);
+			UiApplication.getUiApplication().pushScreen(t_mailAttachSelectScreen);
 			
-			return t_uploadFileScreen;
+			return t_mailAttachSelectScreen;
 			
 		}catch(Exception _e){
 			SetErrorString("att screen error:" + _e.getMessage());
@@ -1787,7 +1816,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	public void PushViewFileScreen(final String _filename){
 		
-		invokeLater(new Runnable(){
+		UiApplication.getUiApplication().invokeLater(new Runnable(){
 			
 		    public void run(){
 		    	
@@ -1795,22 +1824,21 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		    		return;
 		    	}
 		    	
-		    	recvMain t_mainApp = (recvMain)UiApplication.getUiApplication();
 		    	try{
 		    		if(uploadFileScreen.IsAudioFile(_filename)){
-		    			t_mainApp.pushGlobalScreen(new audioViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    			UiApplication.getUiApplication().pushGlobalScreen(new audioViewScreen(_filename),0,UiEngine.GLOBAL_MODAL);
 		    		}else if(uploadFileScreen.IsTxtFile(_filename)){
-		    			t_mainApp.pushGlobalScreen(new textViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);
+		    			UiApplication.getUiApplication().pushGlobalScreen(new textViewScreen(_filename),0,UiEngine.GLOBAL_MODAL);
 		    		}else if(uploadFileScreen.IsMovieFile(_filename)){
-		    			t_mainApp.pushGlobalScreen(new videoViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);		    					    			
+		    			UiApplication.getUiApplication().pushGlobalScreen(new videoViewScreen(_filename),0,UiEngine.GLOBAL_MODAL);		    					    			
 		    		}else if(uploadFileScreen.IsImageFile(_filename)){
-		    			t_mainApp.pushGlobalScreen(new imageViewScreen(_filename,t_mainApp),0,UiEngine.GLOBAL_MODAL);			
+		    			UiApplication.getUiApplication().pushGlobalScreen(new imageViewScreen(_filename),0,UiEngine.GLOBAL_MODAL);			
 		    		}else {
-		    			t_mainApp.DialogAlert("yuchberry prompt:unknow format");		    					    			
+		    			DialogAlert("yuchberry prompt:unknow format");		    					    			
 		    		}
 		    		
 		    	}catch(Exception _e){
-		    		t_mainApp.DialogAlert(_e.getMessage());
+		    		DialogAlert(_e.getMessage());
 		    	}		    	
 			}
 		});
@@ -2184,8 +2212,9 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	};
 	
 	public int						m_weiboUploadImageSizeIndex = 0;
-	
-	
+		
+	public Vector					m_weiboAccountList		= new Vector();	
+		
 	public int getRefreshWeiboInterval(){
 		if(m_refreshWeiboIntervalIndex < fsm_refreshWeiboInterval.length){
 			return fsm_refreshWeiboInterval[m_refreshWeiboIntervalIndex];
@@ -2317,6 +2346,23 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			StopWeiboHomeNotification();
 			StopWeiboNotification();
 		}
+	}
+	
+	long m_weiboRefereshAccountTime = 0;
+	public void sendRefreshWeiboAccountList(){
+		long t_currTime = System.currentTimeMillis();
+		if(Math.abs(t_currTime - m_weiboRefereshAccountTime) < 2 * 60000){
+			return;
+		}
+		
+		m_weiboRefereshAccountTime = t_currTime;
+		
+		try{
+			m_connectDeamon.addSendingData(msg_head.msgWeiboAccountList, new byte[]{msg_head.msgWeiboAccountList}, true);
+		}catch(Exception e){
+			SetErrorString("SRWAL", e);
+		}
+		
 	}
 		
 	public void PrepareWeiboItem(fetchWeibo _weibo){
@@ -2595,7 +2641,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		new XYPoint(640,480),
 		null,
 	};
-	public int					m_imSendImageQuality		= 0;	
+	public int					m_imSendImageQuality		= 0;
 	MainIMScreen				m_mainIMScreen = null;
 	
 	public void initIMModule(){
