@@ -1166,6 +1166,13 @@ public class fetchEmail extends fetchAccount{
 		return t_found;
 	}
 	
+	/**
+	 * return whether is GMail
+	 */
+	public boolean isGmail(){
+		return m_host_send.toLowerCase().indexOf("googlemail.com") != -1
+				|| m_host_send.toLowerCase().indexOf("gmail.com") != -1;
+	}
 	
 	public void SendMail(RecvMailAttach _mail)throws Exception{
 		
@@ -1215,8 +1222,7 @@ public class fetchEmail extends fetchAccount{
 				try{
 					
 					if(_mail.m_copyToSentFolder 
-					&& m_host_send.toLowerCase().indexOf("googlemail.com") == -1
-					&& m_host_send.toLowerCase().indexOf("gmail.com") == -1
+					&& !isGmail()
 					
 					// pop3 is NOT support this operating
 					//
