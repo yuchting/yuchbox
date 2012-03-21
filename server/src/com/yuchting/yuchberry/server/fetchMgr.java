@@ -905,7 +905,8 @@ public class fetchMgr{
 				
 				if(e instanceof javax.mail.AuthenticationFailedException){
 					
-					if((account instanceof fetchEmail) && ((fetchEmail)account).isGmail()){
+					if((account instanceof fetchEmail) && ((fetchEmail)account).isGmail()
+					&& e.getMessage() != null && e.getMessage().length() != 0){
 						
 						if(!m_sentAuthErrorMail){
 							// first meet auth error to send prompt mail to client
@@ -918,20 +919,21 @@ public class fetchMgr{
 									t_subject = "语盒服务器提醒";
 									t_text.append("语盒服务器在访问您的邮箱 ").append(account.GetAccountName())
 											.append(" 遇到授权问题，邮局服务器返回错误：\n\n").append(e.getMessage())
-											.append("\n\n可能需要网页登录一下邮箱，按服务器返回的提示进行一些操作。如果自行操作无效，请联系语盒 yuchberry@gmail.com ");
+											.append("\n\n如果无法正常收信和发信，可能需要网页登录一下邮箱，按服务器返回的提示进行一些操作。如果自行操作无效，请联系语盒 yuchberry@gmail.com ");
 											
 									break;
 								case fetchMgr.CLIENT_LANG_ZH_T:
 									t_subject = "語盒服務器提醒";
 									t_text.append("語盒服務器在訪問您的郵局 ").append(account.GetAccountName())
 											.append(" 遇到授權問題，服務器返回錯誤：\n\n").append(e.getMessage())
-											.append("\n\n可能需要使用瀏覽器登錄郵箱，安服務器返回的提示進行一些操作。如果自行操作無效，請聯繫語盒 yuchberry@gmail.com ");
+											.append("\n\n如果無法正常收信和發信，可能需要使用瀏覽器登錄郵箱，安服務器返回的提示進行一些操作。如果自行操作無效，請聯繫語盒 yuchberry@gmail.com ");
 									break;
 								default:
 									t_subject = "YuchBox Prompt";
 									t_text.append("We meet some error when visit your account: ").append(account.GetAccountName())
 											.append(" the mail server show：\n\n").append(e.getMessage())
-											.append("\n\n You need login your email account via web browser and unlock something, if you do not know how, please contact us yuchberry@gmail.com.\n Thanks!");
+											.append("\n\n You need login your email account via web browser and unlock something when can NOT receive mail or send mail, " +
+													"if you do not know how, please contact us yuchberry@gmail.com.\n Thanks!");
 											
 									break;
 							}
@@ -940,7 +942,6 @@ public class fetchMgr{
 							
 							m_sentAuthErrorMail = true;
 						}
-						
 					}
 					
 				}
