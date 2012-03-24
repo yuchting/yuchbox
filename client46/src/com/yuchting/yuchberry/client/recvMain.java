@@ -127,7 +127,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 	}
 	
-	public static ResourceBundle sm_local = ResourceBundle.getBundle(yblocalResource.BUNDLE_ID, yblocalResource.BUNDLE_NAME);
+	public final static ResourceBundle sm_local = ResourceBundle.getBundle(yblocalResource.BUNDLE_ID, yblocalResource.BUNDLE_NAME);
 	
 	final static long		fsm_notifyID_email = 767918509114947L;
 	
@@ -383,7 +383,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		try{
 			makeDir(uploadFileScreen.fsm_rootPath_back + "YuchBerry/");			
 		}catch (Exception _e) {
-			DialogAlertAndExit("can't use the dev ROM to store config file!");
+			DialogAlertAndExit(sm_local.getString(yblocalResource.SYSTEM_ROM_ERROR));
         	return;
 		}
 		
@@ -407,7 +407,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		try{
 			m_locationProvider = LocationProvider.getInstance(t_criteria);
 			if(m_locationProvider == null){
-				SetErrorString("your device can't support GPS location.");
+				SetErrorString(sm_local.getString(yblocalResource.SYSTEM_GPS_ERROR));
 			}
 		}catch(Exception e){
 			SetErrorString("location:"+e.getMessage()+" " + e.getClass().getName());
@@ -552,7 +552,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			     root = (String) e.nextElement();
 			     if( root.equalsIgnoreCase("sdcard/") ) {
 			    	 synchronized (this) {
-			    		 m_isSDCardAvailable = true;	
+			    		 m_isSDCardAvailable = true;
 			    	 }
 			    	 break;
 			     }

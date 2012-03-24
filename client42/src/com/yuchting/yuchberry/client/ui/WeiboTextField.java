@@ -38,15 +38,22 @@ import net.rim.device.api.util.Arrays;
 
 import com.yuchting.yuchberry.client.recvMain;
 
-final class ReadText{
-	String m_originalText = null;
-	int m_index = 0;
-	public ReadText(String _text){
-		m_originalText = _text;
-	}
-}
-
 public class WeiboTextField extends ActiveRichTextField{
+	
+	private static final class ReadText{
+		String m_originalText = null;
+		int m_index = 0;
+		public ReadText(String _text){
+			m_originalText = _text;
+		}
+	}
+	
+	// getConvertString parameters using macro
+	//
+	public final static int			CONVERT_NORMAL				= 0;
+	public final static int			CONVERT_DISABLE_AT_SIGN		= 0x1 << 1;
+	public final static int			CONVERT_DISABLE_PHIZ		= 0x1 << 2;
+	public final static int			CONVERT_DISABLE_TEXT		= 0x1 << 3;
 	
 	int[] m_bufferedOffset	 = new int[20];
 	byte[] m_bufferedAttr	= new byte[20];
@@ -117,7 +124,13 @@ public class WeiboTextField extends ActiveRichTextField{
 		Arrays.fill(m_background,_background);
 	}
 		
-	public static String getTag(ReadText _text,boolean _disableAtSign){
+	/**
+	 * get the tag of weibo text or IM text
+	 * @param _text
+	 * @param _disable	check WeiboTextField.CONVERT_NORMAL for detail
+	 * @return
+	 */
+	public static String getTag(ReadText _text,int _disable){
 		
 		if(_text.m_index >= _text.m_originalText.length()){
 			return null;
@@ -134,33 +147,39 @@ public class WeiboTextField extends ActiveRichTextField{
 
 			case '[':
 				
-				if(t_tag.length() != 0){
-					break getTag_while;
-				}
-				
-				t_tag.append(a);
-				_text.m_index++;
-				
-				while(_text.m_index < _text.m_originalText.length()){
-					
-					a = _text.m_originalText.charAt(_text.m_index);
-					
-					switch(a){
-					case ']':
-						t_tag.append(a);
-						_text.m_index++;
-						break getTag_while;
-					case ' ':
-					case '[':
+				if((_disable & CONVERT_DISABLE_PHIZ) == 0){
+					if(t_tag.length() != 0){
 						break getTag_while;
 					}
 					
 					t_tag.append(a);
-					_text.m_index++;					
+					_text.m_index++;
+					
+					while(_text.m_index < _text.m_originalText.length()){
+						
+						a = _text.m_originalText.charAt(_text.m_index);
+						
+						switch(a){
+						case ']':
+							t_tag.append(a);
+							_text.m_index++;
+							break getTag_while;
+						case ' ':
+						case '[':
+							break getTag_while;
+						}
+						
+						t_tag.append(a);
+						_text.m_index++;					
+					}
+					break;
 				}
-				break;
+				
 			case '@':
-				if(!_disableAtSign){
+				
+				if((_disable & CONVERT_DISABLE_AT_SIGN) == 0 
+				&& a == '@'){ // _disable & CONVERT_DISABLE_PHIZ can make this condition false
+					
 					if(t_tag.length() != 0){
 						break getTag_while;
 					}
@@ -179,9 +198,13 @@ public class WeiboTextField extends ActiveRichTextField{
 						_text.m_index++;
 					}
 					break;
-				}				
+				}
+				
 			default:
-				t_tag.append(a);
+				
+				if((_disable & CONVERT_DISABLE_TEXT) == 0){
+					t_tag.append(a);
+				}				
 			}
 			
 			_text.m_index++;
@@ -236,33 +259,68 @@ public class WeiboTextField extends ActiveRichTextField{
 		super.paint(_g);
 	}
 	
-	public static String getConvertString(String _text,boolean _disableAtSign){
+	/**
+	 * convert the original weibo text to some final string
+	 * @param _text		original Text
+	 * @param _disable	check CONVERT_NORMAL for detail
+	 * @return
+	 */
+	public static String getConvertString(String _text,int _disable,String _otherText){
 		
 		StringBuffer t_finalText = new StringBuffer();
 		
 		ReadText t_originalText = new ReadText(_text);
 		
+		boolean t_appendSpace = ((_disable & CONVERT_DISABLE_TEXT) != 0) && ((_disable & CONVERT_DISABLE_PHIZ) != 0);
+		
 		String t_read = null;
-		while((t_read = getTag(t_originalText,_disableAtSign)) != null){
+		while((t_read = getTag(t_originalText,_disable)) != null){
+			
+			if(t_read.length() == 0){
+				continue;
+			}
+			
 			char a = t_read.charAt(0);
 			
 			switch(a){
-			case '@':
-				t_finalText.append(t_read);		
-				break;
+			
 			case '[':
 				
-				Phiz t_phiz = findPhizName(t_read);
-				if(t_phiz != null){
-					t_finalText.append(sm_replacePhizText);
+				if((_disable & CONVERT_DISABLE_PHIZ) == 0){
+					Phiz t_phiz = findPhizName(t_read);
+					if(t_phiz != null){
+						t_finalText.append(sm_replacePhizText);
+						
+					}else{
+						t_finalText.append(t_read);
+					}
 					
-				}else{
-					t_finalText.append(t_read);
+					break;
 				}
 				
-				break;
+			case '@':
+				
+				if((_disable & CONVERT_DISABLE_AT_SIGN) == 0
+				&& a == '@'){ // _disable & CONVERT_DISABLE_PHIZ can make this condition false
+					
+					if(t_appendSpace){
+						if(t_finalText.toString().indexOf(t_read) == -1
+						&& (_otherText != null && _otherText.indexOf(t_read) == -1)){ // get rid of duplication
+							
+							t_finalText.append(t_read);	
+							t_finalText.append(" ");
+						}						
+					}else{
+						t_finalText.append(t_read);
+					}					
+					break;
+				}
+				
 			default:
-				t_finalText.append(t_read);
+				
+				if((_disable & CONVERT_DISABLE_TEXT) == 0){
+					t_finalText.append(t_read);
+				}
 
 				break;
 			}
@@ -299,7 +357,12 @@ public class WeiboTextField extends ActiveRichTextField{
 		ReadText t_originalText = new ReadText(_text);
 		
 		String t_read = null;
-		while((t_read = getTag(t_originalText,m_disableAtSign)) != null){
+		while((t_read = getTag(t_originalText,m_disableAtSign ? CONVERT_DISABLE_AT_SIGN : CONVERT_NORMAL)) != null){
+			
+			if(t_read.length() == 0){
+				continue;
+			}
+			
 			char a = t_read.charAt(0);
 			
 			switch(a){

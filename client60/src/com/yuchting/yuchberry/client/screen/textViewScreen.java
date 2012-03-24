@@ -35,9 +35,9 @@ public class textViewScreen extends fileViewScreen{
 
 	RichTextField m_editText	= null;
 	
-	public textViewScreen(String _filename,recvMain _mainApp)throws Exception{
+	public textViewScreen(String _filename)throws Exception{
 		
-		super(_filename,_mainApp,true);
+		super(_filename,true);
 		
 		final int t_maxTextLen = 5 * 1024;
 		

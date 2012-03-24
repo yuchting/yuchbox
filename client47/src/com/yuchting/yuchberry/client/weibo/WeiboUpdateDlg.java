@@ -375,7 +375,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
         
     MenuItem m_phizItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_PHIZ_LABEL),m_menuIndex_op++,0){
         public void run() {
-        	m_weiboUIImageSets = null;
+        	m_phizScreen.preparePhizScreen(m_updateManager.m_editTextArea);
         	UiApplication.getUiApplication().pushScreen(m_phizScreen);
         }
     };
@@ -393,7 +393,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
         	invalidate();
         }
     };
-        
+    
     MenuItem m_snapItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_OPEN_CAMERA_SNAP),m_menuIndex_op++,0){
     	public void run(){
     		try{
@@ -426,7 +426,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
     MenuItem m_attachItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_ADD_ATTACH_MENU_LABEL),m_menuIndex_op++,0){
     	public void run(){
     		try{
-    			m_mainApp.pushScreen(new uploadFileScreen(m_mainApp.m_connectDeamon,m_mainApp,false,WeiboUpdateDlg.this));
+    			UiApplication.getUiApplication().pushScreen(new uploadFileScreen(m_mainApp,false,WeiboUpdateDlg.this));
     		}catch(Exception e){
     			m_mainApp.SetErrorString("WAI:"+e.getMessage()+e.getClass().getName());
     		}
@@ -438,13 +438,11 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
     	public void run(){
     		try{
     			if(m_imagePath != null){
-    				
     				if(!m_mainApp.CheckMediaNativeApps(m_imagePath)){
-    					m_mainApp.pushGlobalScreen(new imageViewScreen(m_imagePath,m_mainApp),0,UiEngine.GLOBAL_MODAL);
-    				}
-        			
+    					UiApplication.getUiApplication().pushGlobalScreen(new imageViewScreen(m_imagePath),0,UiEngine.GLOBAL_MODAL);
+    				}        			
         		}else{
-        			m_mainApp.pushGlobalScreen(new imageViewScreen(m_snapBuffer,m_mainApp),0,UiEngine.GLOBAL_MODAL);
+        			UiApplication.getUiApplication().pushGlobalScreen(new imageViewScreen(m_snapBuffer),0,UiEngine.GLOBAL_MODAL);
         		}	
     		}catch(Exception e){
     			m_mainApp.SetErrorString("WCP:"+e.getMessage()+e.getClass().getName());
@@ -456,6 +454,12 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
     MenuItem m_deletePic	= new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_DELETE_PIC_MENU_LABEL),m_menuIndex_op++,0){
     	public void run(){
     		clearAttachment();
+    	}
+    };
+    
+    MenuItem m_weiboAccount	= new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_WEIBO_ACCOUNT_MENU_LABEL),m_menuIndex_op++,0){
+    	public void run(){
+    		m_mainApp.m_weiboTimeLineScreen.m_optionItem.run();
     	}
     };
     		
@@ -559,6 +563,9 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 			_menu.add(m_deletePic);
 			_menu.add(m_checkPic);
 		}
+		
+		_menu.add(m_weiboAccount);
+		
 		_menu.add(MenuItem.separator(m_menuIndex_op));
 		
 		super.makeMenu(_menu,instance);
@@ -566,7 +573,6 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 	
 	public boolean clickOK(String _filename,int _size){
 		if(!m_fileSystem.addUploadingPic(_filename)){
-			//m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.WEIBO_ADD_ATTACH_PROMPT));
 			return false;
 		}
 				
@@ -577,7 +583,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		clearAttachment();
 	}
 	
-	protected  void	onDisplay(){
+	protected void onDisplay(){
 		super.onDisplay();
 		
 		m_updateManager.setVerticalScroll(0);

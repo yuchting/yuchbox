@@ -32,22 +32,20 @@ import net.rim.device.api.system.Display;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.component.BitmapField;
 
-import com.yuchting.yuchberry.client.recvMain;
-
 public class imageViewScreen extends fileViewScreen{
 
 	BitmapField	m_image	= null;
 	
-	public imageViewScreen(String _name,recvMain _mainApp)throws Exception{
+	public imageViewScreen(String _name)throws Exception{
 		
-		super(_name,_mainApp,true);
+		super(_name,true);
 		
 		init();
 	}
 	
-	public imageViewScreen(byte[] _buffer,recvMain _mainApp)throws Exception{
+	public imageViewScreen(byte[] _buffer)throws Exception{
 		
-		super(_buffer,_mainApp);
+		super(_buffer);
 		
 		init();
 	}

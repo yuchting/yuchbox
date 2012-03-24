@@ -58,6 +58,7 @@ import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
+import com.yuchting.yuchberry.client.Indicator;
 import com.yuchting.yuchberry.client.ObjectAllocator;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
@@ -892,7 +893,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	}
 	
 	private void addChatMsg(fetchChatMsg _msg){
-		
+				
 		boolean t_notify = !Backlight.isEnabled() 
 							|| !m_mainApp.isForeground() 
 							|| getUiEngine() == null;
@@ -1010,6 +1011,8 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		if(t_notify || t_reNotify){
 			m_mainApp.TriggerIMNotification();
 		}
+		
+		Indicator.notifyIM();
 	}
 	
 	static Calendar sm_calendar = Calendar.getInstance();

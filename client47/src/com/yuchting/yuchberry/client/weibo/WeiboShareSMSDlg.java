@@ -9,6 +9,7 @@ import javax.wireless.messaging.TextMessage;
 import local.yblocalResource;
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.blackberry.api.invoke.MessageArguments;
+import net.rim.device.api.system.Clipboard;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Manager;
@@ -56,7 +57,7 @@ public class WeiboShareSMSDlg extends PopupScreen implements FieldChangeListener
 
 		shareYBScreen.loadContactList(m_contactList,true,false);
 		
-		for(int i = 0; i < 10;i++){
+		for(int i = 0; i < m_contactList.size();i++){
 			shareYBScreen.ShareConcatData t_data = (shareYBScreen.ShareConcatData)m_contactList.elementAt(i);
 			CheckboxField t_field = new CheckboxField(t_data.m_name + " " + t_data.m_phoneNumber, false);
 			m_contactMgr.add(t_field);
@@ -114,8 +115,18 @@ public class WeiboShareSMSDlg extends PopupScreen implements FieldChangeListener
 					MessageConnection mc = (MessageConnection)Connector.open("sms://");
 					TextMessage m = (TextMessage)mc.newMessage( MessageConnection.TEXT_MESSAGE );
 					
+					String t_contain = m_shareWeibo.getShareEmailContain("");
+					
 					m.setAddress("sms://" + t_data.m_phoneNumber);
-					m.setPayloadText(m_shareWeibo.getShareEmailContain(""));
+					m.setPayloadText(t_contain);
+					
+					if(!recvMain.fsm_OS_version.startsWith("4")){
+						// the TextMessage::setPayloadText method is invalid from OS5
+						// so copy to the clipboard and prompt user
+						//
+						Clipboard.getClipboard().put(t_contain);
+						m_mainScreen.m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.WEIBO_SHARE_SMS_COPY_PROMPT));
+					}
 											
 					Invoke.invokeApplication( Invoke.APP_TYPE_MESSAGES, new MessageArguments(m) );
 				}catch(Exception e){

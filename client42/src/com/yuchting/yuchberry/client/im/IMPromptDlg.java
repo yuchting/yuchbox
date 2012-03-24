@@ -81,6 +81,14 @@ public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 		m_openData = _data;
 
 		m_nameText.setText(m_openData.m_roster.getName() + ":");
+		
+		// cut the text to display
+		//
+		final int ft_maxLength = 20;
+		
+		if(_text.length() > ft_maxLength){
+			_text = _text.substring(0,ft_maxLength) + "...";
+		}
 		m_msgText.setText(_text);
 	}
 	

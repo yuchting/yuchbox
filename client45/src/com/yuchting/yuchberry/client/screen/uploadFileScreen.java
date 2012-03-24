@@ -109,6 +109,17 @@ public class uploadFileScreen extends MainScreen{
 		}
 	};
 	
+	MenuItem	m_systemROMMenu	= new MenuItem(recvMain.sm_local.getString(yblocalResource.UPLOAD_FILE_SYS_ROM_MENU),m_menuOrder++,0){
+		public void run() {
+			browsePath(fsm_rootPath_back);
+		}
+	};
+	
+	MenuItem	m_sdCardRomMenu	= new MenuItem(recvMain.sm_local.getString(yblocalResource.UPLOAD_FILE_SDCARD_ROM_MENU),m_menuOrder++,0){
+		public void run() {
+			browsePath(fsm_rootPath_default);
+		}
+	};
 	
 	
 	public final static int fsm_bitmap_width	= 32;
@@ -128,8 +139,6 @@ public class uploadFileScreen extends MainScreen{
 	public final static String fsm_rootPath_back		= "file:///store/home/user/";
 	public final static String fsm_rootPath_default	= "file:///SDCard/";
 	
-	String				m_rootPath = null;
-	
 	String				m_currDisplayPath = null;
 	
 	boolean			m_delScreen		=false;
@@ -148,6 +157,23 @@ public class uploadFileScreen extends MainScreen{
 	public uploadFileScreen(recvMain _app,boolean _del,IUploadFileScreenCallback _callback)throws Exception {
 		
 		super(Manager.NO_VERTICAL_SCROLL);
+		
+		String t_initPath = fsm_rootPath_default;
+		
+		if(!_app.isSDCardAvailable(false)){
+			
+			t_initPath = fsm_rootPath_back;
+			try{
+				FileConnection fc = (FileConnection) Connector.open(t_initPath,Connector.READ_WRITE);
+				fc.close();
+			}catch(Exception e){
+				// two both path are NOT avaiable 
+				//
+				_app.DialogAlert(recvMain.sm_local.getString(yblocalResource.UPLOAD_FILE_CANT_SELECT_PROMPT));
+				return;
+			}
+		}
+		
 		
 		if(_callback == null){
 			throw new IllegalArgumentException("uploadFileScreen _callback == null");
@@ -174,18 +200,39 @@ public class uploadFileScreen extends MainScreen{
 		}else{
 			m_ok.setText(recvMain.sm_local.getString(yblocalResource.UPLOAD_FILE_ADD));
 		}
+				
+		// there is a upload file favor path (former path)
+		// but current path is NOT available (maybe plugin USB)
+		//
+		if(m_mainApp.m_uploadFileFavorPath != null){
+			try{
+				FileConnection fc = (FileConnection) Connector.open(m_mainApp.m_uploadFileFavorPath,Connector.READ_WRITE);
+				fc.close();
+				
+				t_initPath = m_mainApp.m_uploadFileFavorPath;
+			}catch(Exception e){}
+		}		
 		
+		DisplayFileList(t_initPath);
+	}
+	
+	/**
+	 * browse path called by menu item
+	 * @param _path
+	 */
+	private void browsePath(String _path){
 		try{
-			FileConnection fc = (FileConnection) Connector.open(fsm_rootPath_default,Connector.READ_WRITE);
-			m_rootPath = fsm_rootPath_default;			
+			FileConnection fc = (FileConnection) Connector.open(_path,Connector.READ_WRITE);
 			fc.close();
-		}catch(Exception _e){
-			m_rootPath = fsm_rootPath_back;
+		}catch(Exception e){
+			m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.UPLOAD_FILE_CANT_SELECT_PROMPT));
+			return;
 		}
 		
-		DisplayFileList(m_mainApp.m_uploadFileFavorPath == null?m_rootPath:m_mainApp.m_uploadFileFavorPath);
+		m_mainApp.m_uploadFileFavorPath = _path;
+		DisplayFileList(_path);
 	}
-		
+	
 	public void DisplayFileList(final String _path){
 		
 		if(m_delayLoadRunnable != null){
@@ -261,24 +308,16 @@ public class uploadFileScreen extends MainScreen{
 			}
 		}
 	}
-		 
 	
-
-	
-	public void openAddAttachment(){
-		m_addAttachment = true;
-	}
-	
-	public void openDelAttachment(){
-		m_addAttachment = false;
-	}
-
 	protected void makeMenu(Menu menu, int instance) {
 		menu.add(m_ok);
 		menu.add(m_check);
 	    
 		menu.add(m_topMenu);
 		menu.add(m_bottomMenu);
+		
+		menu.add(m_systemROMMenu);
+		menu.add(m_sdCardRomMenu);
 	    
 	    super.makeMenu(menu,instance);
 	}
@@ -289,7 +328,8 @@ public class uploadFileScreen extends MainScreen{
 			return true;
 		}
 		
-		if(m_currDisplayPath.equals(m_rootPath)){
+		if(m_currDisplayPath.equals(fsm_rootPath_back)
+			|| m_currDisplayPath.equals(fsm_rootPath_default)){
 			
 			close();
 			return true;
@@ -326,7 +366,7 @@ public class uploadFileScreen extends MainScreen{
 			m_bottomMenu.run();
 			return true;
 		case 10:
-			return trackwheelClick(0,0);
+			return trackwheelClick(-1,-1);
 		}
 		
 		return super.keyDown(keycode,time);
@@ -339,11 +379,14 @@ public class uploadFileScreen extends MainScreen{
 				DisplayFileList(m_currFocusIconItem.m_filename_full);
 				return true;
 			}else{
-				m_check.run();
+				if(status == -1 && time == -1){ // called in keyDown function
+					m_check.run();
+					return true;
+				}				
 			}
 		}
 		
-		return false;
+		return super.trackwheelClick(status, time);
 	}
 	
 	public static boolean IsAudioFile(String _filename){

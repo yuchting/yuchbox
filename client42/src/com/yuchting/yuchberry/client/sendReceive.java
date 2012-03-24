@@ -93,7 +93,8 @@ public class sendReceive extends Thread{
 		
 		if(m_sendBufferLen + _write.length + fsm_packageHeadLength >= 65535){
 			SendBufferToSvr_imple(PrepareOutputData());
-		}		
+		}
+		
 		m_sendBufferLen += _write.length + fsm_packageHeadLength;
 
 		m_unsendedPackage.addElement(_write);
@@ -148,27 +149,28 @@ public class sendReceive extends Thread{
 	
 	private byte[] PrepareOutputData()throws Exception{
 		
-		synchronized (m_unsendedPackage) {
-			if(m_unsendedPackage.isEmpty()){
-				return null;
-			}
-			
-			ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
+		if(m_unsendedPackage.isEmpty()){
+			return null;
+		}
 		
+		ByteArrayOutputStream t_stream = new ByteArrayOutputStream();
+		
+		synchronized (m_unsendedPackage) {
+					
 			for(int i = 0;i < m_unsendedPackage.size();i++){
 				byte[] t_package = (byte[])m_unsendedPackage.elementAt(i);	
-				
-				WriteInt(t_stream, t_package.length);
-							
+				WriteInt(t_stream, t_package.length);		
 				t_stream.write(t_package);
 			}
-			
-			m_unsendedPackage.removeAllElements();
-
-			m_sendBufferLen = 0;	
-			
-			return t_stream.toByteArray();
 		}
+		
+		m_unsendedPackage.removeAllElements();
+		
+		synchronized (this) {
+			m_sendBufferLen = 0;
+		}			
+		
+		return t_stream.toByteArray();
 		
 	}
 

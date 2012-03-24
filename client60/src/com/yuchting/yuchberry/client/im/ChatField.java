@@ -199,7 +199,7 @@ public class ChatField extends Manager{
 		String t_converText = null;
 		
 		if(_msg.getMsg().length() != 0){
-			t_converText = WeiboTextField.getConvertString(_msg.getMsg(),true);
+			t_converText = WeiboTextField.getConvertString(_msg.getMsg(),WeiboTextField.CONVERT_DISABLE_AT_SIGN,null);
 			m_msgTextWidth = MainIMScreen.fsm_defaultFont.getAdvance(t_converText);
 			
 			if(m_msgTextWidth < fsm_minTextWidth){

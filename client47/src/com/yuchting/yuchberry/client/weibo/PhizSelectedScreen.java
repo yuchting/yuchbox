@@ -2,7 +2,7 @@ package com.yuchting.yuchberry.client.weibo;
 
 import java.util.Vector;
 
-import local.localResource;
+import local.yblocalResource;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Keypad;
@@ -171,7 +171,7 @@ public class PhizSelectedScreen extends MainScreen{
 	
 	public PhizSelectedScreen(recvMain _mainApp,Vector _phizList,IPhizSelected _selectedCallback){
 		
-		LabelField		t_prompt = new LabelField(recvMain.sm_local.getString(localResource.WEIBO_PHIZ_SCREEN_PROMPT),Field.NON_FOCUSABLE);
+		LabelField		t_prompt = new LabelField(recvMain.sm_local.getString(yblocalResource.WEIBO_PHIZ_SCREEN_PROMPT),Field.NON_FOCUSABLE);
 		
 		add(t_prompt);
 		add(new SeparatorField());

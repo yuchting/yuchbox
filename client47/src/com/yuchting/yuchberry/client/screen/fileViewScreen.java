@@ -45,9 +45,8 @@ public class fileViewScreen extends MainScreen{
 	
 	byte[]		m_fileContain	= null;
 	
-	public fileViewScreen(String _filename,recvMain _mainApp,boolean _readFile) throws Exception{
+	public fileViewScreen(String _filename,boolean _readFile) throws Exception{
 		m_viewFileName = _filename;
-		m_mainApp = _mainApp;
 		
 		// prepare the image
 		//
@@ -67,9 +66,8 @@ public class fileViewScreen extends MainScreen{
 
 	}
 	
-	public fileViewScreen(byte[] _buffer,recvMain _mainApp) throws Exception{
+	public fileViewScreen(byte[] _buffer) throws Exception{
 		m_viewFileName = "contain";
-		m_mainApp = _mainApp;
 		
 		m_fileContain = _buffer;
 	}

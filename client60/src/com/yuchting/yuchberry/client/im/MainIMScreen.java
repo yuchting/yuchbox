@@ -58,6 +58,7 @@ import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
+import com.yuchting.yuchberry.client.Indicator;
 import com.yuchting.yuchberry.client.ObjectAllocator;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
@@ -122,7 +123,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
 	MenuItem	m_refreshListMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_REFRESH_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
-			sendRequestRosterListMsg();
+			sendRequestRosterListMsg(true);
 		}
 	};
 	
@@ -796,7 +797,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				
 				if(!m_isRequestRoster){
 					m_isRequestRoster = true;
-					sendRequestRosterListMsg();
+					sendRequestRosterListMsg(false);
 				}
 								
 			}else{
@@ -892,7 +893,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	}
 	
 	private void addChatMsg(fetchChatMsg _msg){
-		
+				
 		boolean t_notify = !Backlight.isEnabled() 
 							|| !m_mainApp.isForeground() 
 							|| getUiEngine() == null;
@@ -1010,6 +1011,8 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		if(t_notify || t_reNotify){
 			m_mainApp.TriggerIMNotification();
 		}
+		
+		Indicator.notifyIM();
 	}
 	
 	static Calendar sm_calendar = Calendar.getInstance();
@@ -1477,11 +1480,13 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
 	long m_refreshRosterTimer = 0;
 	
-	private void sendRequestRosterListMsg(){
+	public void sendRequestRosterListMsg(boolean _prompt){
 		
 		final long t_currTime = System.currentTimeMillis();
 		if(Math.abs(m_refreshRosterTimer - t_currTime) < 5 * 6000){
-			m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.IM_REFRESH_MIN_TIME_PROMPT));
+			if(_prompt){
+				m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.IM_REFRESH_MIN_TIME_PROMPT));
+			}			
 			return;
 		}
 		

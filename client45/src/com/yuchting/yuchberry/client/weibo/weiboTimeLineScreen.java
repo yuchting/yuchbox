@@ -47,6 +47,7 @@ import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.GPSInfo;
+import com.yuchting.yuchberry.client.Indicator;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
@@ -889,7 +890,7 @@ public class weiboTimeLineScreen extends MainScreen{
         	if(m_optionScreen == null){
         		m_optionScreen = new WeiboOptionScreen(m_mainApp);
         	}
-        	m_mainApp.pushScreen(m_optionScreen);
+        	UiApplication.getUiApplication().pushScreen(m_optionScreen);
         }
     };
     MenuItem m_helpItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_HELP_MENU_LABEL),99,0){

@@ -31,14 +31,12 @@ import java.io.ByteArrayInputStream;
 
 import javax.microedition.media.Player;
 
-import com.yuchting.yuchberry.client.recvMain;
-
 public class audioViewScreen extends fileViewScreen{
 	
 	Player 		m_player		 = null;
 	
-	public audioViewScreen(String _filename,recvMain _mainApp)throws Exception{
-		super(_filename,_mainApp,true);
+	public audioViewScreen(String _filename)throws Exception{
+		super(_filename,true);
 	
 		String t_type = null;
 		if(_filename.indexOf(".mp3") != -1){

@@ -45,7 +45,8 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 	int			m_fileType		= 0;
 	
 	byte		m_weiboStyle	= 0;
-	byte		m_sendType		= 0; 
+	byte		m_sendType		= 0;
+	boolean	m_onlyComment	= false;
 	
 	long		m_origId		= 0;
 	long		m_commentId		= 0;
@@ -87,7 +88,7 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 	
 	// reply/comment weibo
 	//
-	public WeiboSendDaemon(String _text,byte _weiboStyle,byte _sendType,long _origId,long _commentId,
+	public WeiboSendDaemon(String _text,byte _weiboStyle,byte _sendType,long _origId,long _commentId,boolean _onlyComment,
 							recvMain _mainApp)throws Exception{
 		
 		if(_mainApp == null){
@@ -95,7 +96,7 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 		}
 		
 		m_mainApp		= _mainApp;
-		
+		m_onlyComment	= _onlyComment;
 		m_updateText	= _text;
 		m_weiboStyle	= _weiboStyle;
 		m_sendType		= _sendType;
@@ -225,6 +226,18 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 			
 			sendReceive.WriteInt(t_os, m_hashCode);
 			t_os.write(m_fileType);
+			
+			StringBuffer t_updateAccount = new StringBuffer();
+			if(m_mainApp.m_weiboAccountList.size() >= 2){
+				for(int i = 0;i < m_mainApp.m_weiboAccountList.size();i++){
+					WeiboAccount acc = (WeiboAccount)m_mainApp.m_weiboAccountList.elementAt(i);
+					if(acc.needUpdate){
+						t_updateAccount.append(acc.id).append(" ");
+					}
+				}
+			}
+			
+			sendReceive.WriteString(t_os,t_updateAccount.toString());
 								
 			m_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeibo,t_os.toByteArray(),true);
 					
@@ -256,7 +269,12 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 			}
 			
 			if(m_sendType == fetchWeibo.SEND_FORWARD_TYPE){
-				sendReceive.WriteBoolean(t_os,m_mainApp.m_updateOwnListWhenFw);
+				if(m_onlyComment){
+					sendReceive.WriteBoolean(t_os,false);
+				}else{
+					sendReceive.WriteBoolean(t_os,m_mainApp.m_updateOwnListWhenFw);
+				}
+				
 			}else{
 				sendReceive.WriteBoolean(t_os,m_mainApp.m_updateOwnListWhenRe);
 			}

@@ -106,7 +106,7 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 			return false;
 		}
 		
-		onAddUploadingPic(_file,t_type);		
+		onAddUploadingPic(_file,t_type);
 		
 		return true;
 	}

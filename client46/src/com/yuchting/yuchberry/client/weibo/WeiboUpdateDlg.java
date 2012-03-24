@@ -573,7 +573,6 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 	
 	public boolean clickOK(String _filename,int _size){
 		if(!m_fileSystem.addUploadingPic(_filename)){
-			//m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.WEIBO_ADD_ATTACH_PROMPT));
 			return false;
 		}
 				

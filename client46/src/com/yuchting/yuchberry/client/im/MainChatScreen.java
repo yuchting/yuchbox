@@ -734,9 +734,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 					
 					public boolean clickOK(String _filename,int _size){
 						
-						_filename = _filename.toLowerCase();
-						
-						if(_filename.endsWith(".jpg")){
+						if(_filename.toLowerCase().endsWith(".jpg")){
 							clearAttachment();
 							
 							m_imagePath = _filename;
@@ -805,8 +803,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 			ChatField t_field = getResendField();
 			if(t_field != null){
 				m_middleMgr.m_chatMsgMgr.delete(t_field);
-				m_currRoster.m_chatMsgList.removeElement(t_field.m_msg);
-				
+				m_currRoster.m_chatMsgList.removeElement(t_field.m_msg);				
 				
 				m_currRoster.m_chatMsgList.addElement(t_field.m_msg);
 				m_middleMgr.addChatMsg(t_field);

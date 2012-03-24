@@ -31,6 +31,8 @@ import local.yblocalResource;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
+import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.CheckboxField;
 import net.rim.device.api.ui.component.LabelField;
@@ -39,6 +41,7 @@ import net.rim.device.api.ui.component.RadioButtonField;
 import net.rim.device.api.ui.component.RadioButtonGroup;
 import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 
 import com.yuchting.yuchberry.client.recvMain;
 
@@ -68,14 +71,30 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 	 private RadioButtonGroup m_uiGroup = new RadioButtonGroup();
 	 private RadioButtonField m_uiStandard	= new RadioButtonField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_STANDARD_UI),m_uiGroup,true);
 	 private RadioButtonField m_uiBlack	= new RadioButtonField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_BLACK_UI),m_uiGroup,false);
-	
+	 
+	 public VerticalFieldManager	m_weiboAccountList = new VerticalFieldManager(Manager.VERTICAL_SCROLL);
+	 ButtonField		m_weiboAccountRefreshBtn = new ButtonField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_ACCOUNT_REFRESH_BTN_LABEL),
+			 														Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	 recvMain			m_mainApp = null;
 	 
 	 public WeiboOptionScreen(recvMain _mainApp){
 		 m_mainApp = _mainApp;
 		 
+		 //@{{ weibo account list
+		 LabelField t_label = new LabelField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_ACCOUNT_LABEL),Field.FOCUSABLE);
+		 t_label.setFont(t_label.getFont().derive(t_label.getFont().getStyle() | Font.BOLD));
+		 add(t_label);
+		 
+		 add(m_weiboAccountList);
+		 add(m_weiboAccountRefreshBtn);
+		 
+		 m_weiboAccountRefreshBtn.setChangeListener(this);
+		 //@}}
+		 
+		 add(new SeparatorField());
+		 
 		 //@{ weibo operation
-		 LabelField t_label = new LabelField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_OP_LABEL));
+		 t_label = new LabelField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_OP_LABEL));
 		 t_label.setFont(t_label.getFont().derive(t_label.getFont().getStyle() | Font.BOLD));
 		 add(t_label);
 		 
@@ -111,9 +130,7 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 				 									Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 		 m_clearCheckImageSetting.setChangeListener(this);
 		 add(m_clearCheckImageSetting);
-		 
-		 
-		 
+		 		 
 		 add(m_spaceDown);
 		 add(m_spaceUp);
 		 
@@ -122,11 +139,11 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 		 }else{
 			 m_spaceUp.setSelected(true);
 		 }
-		 
+		 		 
 		 //@}}
 		 
 		 add(new SeparatorField());
-		 
+				 
 		 //@{ weibo display
 		 t_label = new LabelField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_DISPLAY_LABEL));
 		 t_label.setFont(t_label.getFont().derive(t_label.getFont().getStyle() | Font.BOLD));
@@ -168,10 +185,12 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 		 if(!recvMain.sm_standardUI){
 			 m_uiBlack.setSelected(true);
 		 }
-		 //@} 
-		 
-		 
+		 //@}
+		 		 
 		 setTitle(recvMain.sm_local.getString(yblocalResource.WEIBO_SETTING_SCREEN_TITLE));
+		 
+		 // refresh WeiboAccount list
+		 refreshWeiboAccount();
 	 }
 	 
 	 public void fieldChanged(Field field, int context) {
@@ -189,13 +208,36 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 				 if(((RadioButtonField)field).isSelected()){
 					 m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_UI_CHANGE_PROMPT));
 				 }				 
+			 }else if(field == m_weiboAccountRefreshBtn){
+				 m_mainApp.sendRefreshWeiboAccountList();
 			 }
 		 }
+	 }
+	 
+	 public void refreshWeiboAccount(){
+		 
+		 UiApplication.getUiApplication().invokeLater(new Runnable() {
+			
+			public void run() {
+				m_weiboAccountList.deleteAll();
+				 
+				int num = m_mainApp.m_weiboAccountList.size();
+				for(int i = 0 ; i< num;i++){
+					WeiboAccount acc = (WeiboAccount)m_mainApp.m_weiboAccountList.elementAt(i);
+					String t_name = acc.name + "(" + fetchWeibo.getLocalStyleName(acc.weiboStyle) + ")";
+					CheckboxField t_field = new CheckboxField(t_name,acc.needUpdate);
+					 
+					m_weiboAccountList.add(t_field);
+				}
+				
+			}
+		});		
 	 }
 	 
 	 protected boolean onSave(){
 		 boolean t_ret = super.onSave();
 		 if(t_ret){
+			 
 			 m_mainApp.m_updateOwnListWhenFw = m_updateOwnWhenFw.getChecked();
 			 m_mainApp.m_updateOwnListWhenRe = m_updateOwnWhenRe.getChecked();
 			 recvMain.sm_commentFirst	= m_commentFirst.getChecked();
@@ -225,6 +267,16 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 				 recvMain.sm_displayHeadImage = false; 
 			 }
 			
+			 // refresh the weibo updata list
+			 //
+			 int num = m_mainApp.m_weiboAccountList.size();
+			 for(int i = 0 ; i< num;i++){
+				 WeiboAccount acc = (WeiboAccount)m_mainApp.m_weiboAccountList.elementAt(i);
+				 CheckboxField t_field = (CheckboxField)m_weiboAccountList.getField(i);
+				 
+				 acc.needUpdate = t_field.getChecked();
+			 }
+			 
 			 m_mainApp.WriteReadIni(false);
 		 }
 		 return t_ret;
