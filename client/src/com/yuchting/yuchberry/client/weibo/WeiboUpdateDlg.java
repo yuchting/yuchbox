@@ -382,7 +382,6 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
     
     MenuItem m_locationItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_LOCATION_LABEL),m_menuIndex_op++,0){
         public void run() {
-        	//TODO add logical for location process
         	if(!m_mainApp.getGPSInfo().isValidLocation()){
         		m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.WEIBO_NEED_GPS_PROMPT));
         		return ;
