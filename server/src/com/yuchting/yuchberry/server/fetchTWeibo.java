@@ -301,7 +301,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 			
 			acc.name 		= m_userself.getScreenName();
 			acc.id			= m_userself.getId();
-			acc.weiboStyle	= fetchWeibo.SINA_WEIBO_STYLE;
+			acc.weiboStyle	= (byte)GetCurrWeiboStyle();
 			acc.needUpdate	= true;		
 			
 			_accList.add(acc);
