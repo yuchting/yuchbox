@@ -48,6 +48,9 @@ public class RosterItemField extends Field{
 	public final static int		fsm_nameTextColor			= 0x000000;
 	public final static int		fsm_statusTextColor			= 0x323232;
 	
+	public final static Font		fsm_addressFont			= MainIMScreen.fsm_defaultFont.derive(MainIMScreen.fsm_defaultFont.getStyle(),MainIMScreen.fsm_defaultFontHeight - 2);
+	public final static int		fsm_addressFontHeight	= fsm_addressFont.getHeight();
+	
 	MainIMScreen.RosterChatData					m_currRoster;
 	WeiboHeadImage					m_headImage;
 	
@@ -74,7 +77,7 @@ public class RosterItemField extends Field{
 	}
 	
 	public int getPreferredHeight() {
-		return 2 * MainIMScreen.fsm_defaultFontHeight ;
+		return 2 * MainIMScreen.fsm_defaultFontHeight + 4;
 	}
 	
 	protected void layout(int _width,int _height){
@@ -125,9 +128,9 @@ public class RosterItemField extends Field{
 			_g.drawText(m_currRoster.m_roster.getName(),t_x,2);
 			
 			_g.setColor(fsm_statusTextColor);
-			_g.setFont(font);
+			_g.setFont(fsm_addressFont);
 			
-			int t_y = MainIMScreen.fsm_defaultFontHeight;		
+			int t_y = getPreferredHeight() - fsm_addressFontHeight - 3;
 			
 			if(m_isChatHistoryItem && !m_currRoster.m_chatMsgList.isEmpty()){
 				// 
@@ -156,7 +159,7 @@ public class RosterItemField extends Field{
 				if(t_status.length() == 0){
 					t_status = m_currRoster.m_roster.getAccount();
 				}
-				_g.drawText(t_status,t_x,MainIMScreen.fsm_defaultFontHeight );
+				_g.drawText(t_status,t_x,t_y );
 			}
 						
 		}finally{
