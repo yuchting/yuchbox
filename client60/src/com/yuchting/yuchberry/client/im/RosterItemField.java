@@ -161,7 +161,7 @@ public class RosterItemField extends Field{
 			}
 					
 		}finally{
-			_g.setColor(fsm_nameTextColor);
+			_g.setColor(color);
 			_g.setFont(font);
 		}
 				
