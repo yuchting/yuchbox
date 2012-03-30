@@ -72,13 +72,14 @@ import com.yuchting.yuchberry.client.ui.CameraFileOP;
 import com.yuchting.yuchberry.client.ui.ImageButton;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
+import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 
 final class InputManager extends Manager implements FieldChangeListener{
 	
-	public final static int fsm_inputBubbleBorder = 4;
+	public final static int fsm_inputBubbleBorder = 6;
 	public final static int fsm_textBorder = 2;
-	
-	public final static int fsm_minHeight = MainIMScreen.fsm_defaultFontHeight + (fsm_textBorder + fsm_inputBubbleBorder) * 2;
+
+	public final static int fsm_minHeight = MainIMScreen.fsm_defaultFontHeight + (fsm_textBorder + fsm_inputBubbleBorder) * 2 ;
 	public final static int fsm_maxHeight = recvMain.fsm_display_height / 2;
 	
 	MiddleMgr		m_middleMgr	= null;
@@ -405,7 +406,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 
 final class MiddleMgr extends VerticalFieldManager{
 	
-	public final static int	fsm_linespace	= 6;
+	public final static int	fsm_linespace	= 18; 
 	VerticalFieldManager	m_chatMsgMgr = null;
 	
 	VerticalFieldManager	m_chatMsgMiddleMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
@@ -510,9 +511,9 @@ final class MiddleMgr extends VerticalFieldManager{
 		
 		m_inputMgr.enableVoiceMode(m_chatScreen.m_mainApp.m_imVoiceImmMode);
 	}
-	
+
 	public int getPreferredWidth(){
-		return recvMain.fsm_display_width;
+		return recvMain.fsm_display_width ;
 	}
 	
 	public int getPreferredHeight(){
@@ -561,7 +562,7 @@ final class MiddleMgr extends VerticalFieldManager{
 			g.setColor(MainChatScreen.fsm_background);
 			g.fillRect(0,0,getPreferredWidth(),getPreferredHeight());
 			
-			g.fillRect(0,0,100,100);
+			g.fillRect(0,0,100,100); 
 			
 		}finally{
 			g.setColor(t_color);
@@ -676,7 +677,7 @@ final class MiddleMgr extends VerticalFieldManager{
 
 public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOpen{
 	
-	public final static int fsm_background = 0x2b3d4d;
+	public final static int fsm_background = 0xf3ecfc; 
 	
 	int m_menu_op = 0;
 	MenuItem m_sendMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_SEND_LABEL),m_menu_op++,0){
@@ -864,7 +865,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 	
 	final class ChatScreenHeader extends Field{
 		
-		public final static int fsm_chatScreenHeaderHeight = 30;
+		public final static int fsm_chatScreenHeaderHeight = 45; 
 		
 		public int getPreferredWidth() {
 			return recvMain.fsm_display_width;
@@ -883,7 +884,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		
 		protected void paint(Graphics _g){
 			recvMain.sm_weiboUIImage.drawBitmapLine(_g, m_title, 0, 0, getPreferredWidth());
-			
+		
 			// draw roster state
 			//
 			int t_x = RosterItemField.drawRosterState(_g,3,3,m_currRoster.m_roster.getPresence());
@@ -892,7 +893,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 			Font font = _g.getFont();
 			try{
 				
-				_g.setColor(RosterItemField.fsm_nameTextColor);
+				_g.setColor(0xffffff);
 				_g.setFont(MainIMScreen.fsm_boldFont);
 				
 				_g.drawText(m_currRoster.m_roster.getName(),t_x,2);

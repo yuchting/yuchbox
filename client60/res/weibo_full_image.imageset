@@ -109,10 +109,10 @@
 	<Image Name="space_line_1" XPos="110" YPos="379" Width="8" Height="2" />
 	
 	<Image Name="nav_bar" XPos="118" YPos="377" Width="48" Height="45" />
-	<Image Name="nav_bar_block" XPos="150" YPos="277" Width="25" Height="43" />
+	<Image Name="nav_bar_block" XPos="360" YPos="277" Width="25" Height="43" />
 	<Image Name="nav_bar_block_offline" XPos="175" YPos="277" Width="25" Height="43" />
 	<Image Name="nav_bar_seg" XPos="200" YPos="277" Width="2" Height="43" />
-	<Image Name="nav_bar_point" XPos="150" YPos="322" Width="12" Height="8" />
+	<Image Name="nav_bar_point" XPos="300" YPos="322" Width="40" Height="3" />
 	
 	<Image Name="compose_nav_bar" XPos="110" YPos="381" Width="8" Height="32" />
 		
@@ -133,6 +133,8 @@
 	<Image Name="selected_inner_block" XPos="256" YPos="371" Width="24" Height="24" />
 	
 	<!-- im -->
+        <Image Name="im_bg" XPos="380" YPos="377" Width="8" Height="64" />
+
 	<Image Name="gtalk_sign" XPos="80" YPos="345" Width="16" Height="16" />
 	<Image Name="msn_sign" XPos="80" YPos="361" Width="16" Height="16" />
 	<Image Name="yuch_sign" XPos="128" YPos="361" Width="16" Height="16" />
@@ -169,7 +171,7 @@
 	
 	<Image Name="input_inner_block" XPos="160" YPos="355" Width="16" Height="12" />
 	
-	<Image Name="input_phiz" XPos="214" YPos="377" Width="18" Height="18" />
+	<Image Name="input_phiz" XPos="280" YPos="300" Width="18" Height="18" />
 		
 	
 	<Image Name="other_top_left" XPos="162" YPos="320" Width="8" Height="6" />

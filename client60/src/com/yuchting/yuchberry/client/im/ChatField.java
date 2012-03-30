@@ -31,6 +31,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
@@ -39,8 +40,9 @@ import com.yuchting.yuchberry.client.ObjectAllocator;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
+import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 import com.yuchting.yuchberry.client.ui.WeiboTextField;
-
+import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 
 
 public class ChatField extends Manager{
@@ -48,22 +50,23 @@ public class ChatField extends Manager{
 	public interface IChatFieldOpen{
 		public void open(fetchChatMsg msg);
 	}
-		
+	
 	public final static int	fsm_offsetWidth = 32;
 	public final static int	fsm_bubblePointWidth = 8;
 	public final static int	fsm_border		= 6;
+
+	public final static int fsm_WebioHeadImage		= WeiboHeadImage.fsm_headImageWidth;
+	public final static int	fsm_minTextWidth		= fsm_offsetWidth + fsm_bubblePointWidth  ;
+	public final static int	fsm_maxTextWidth 		= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth  ;
 	
-	public final static int	fsm_minTextWidth		= fsm_offsetWidth + fsm_bubblePointWidth;
-	public final static int	fsm_maxTextWidth 		= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth;
+	public final static int	fsm_ownChatTextBGColor		= 0xd6efff; 
+	public final static int	fsm_otherChatTextBGColor	= 0xe7ebf7; 
 	
-	public final static int	fsm_ownChatTextBGColor		= 0x95be0d;
-	public final static int	fsm_otherChatTextBGColor	= 0xd0d1d3;
-	
-	public final static int	fsm_ownChatTextFGColor		= 0x233c01;
-	public final static int	fsm_otherChatTextFGColor	= 0x565656;
-	
-	public final static int	fsm_timeTextBGColor			= 0xffffcc;
-	public final static int	fsm_timeTextBorderColor		= 0xc0c0c0;
+	public final static int	fsm_ownChatTextFGColor		= 0x000000; 
+	public final static int	fsm_otherChatTextFGColor	= 0x000000; 
+
+	public final static int	fsm_timeTextBGColor			= 0xffffff; 
+//	public final static int	fsm_timeTextBorderColor		= 0xc0c0c0;  					//
 	
 	private static ObjectAllocator sm_textFieldAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.ui.WeiboTextField"){
 		protected Object newInstance()throws Exception{
@@ -104,7 +107,7 @@ public class ChatField extends Manager{
 			}
 		}catch(Exception e){}
 	}
-	
+
 	public static BubbleImage sm_otherChatBubble = new BubbleImage(
 			recvMain.sm_weiboUIImage.getImageUnit("other_top_left"),
 			recvMain.sm_weiboUIImage.getImageUnit("other_top"),
@@ -154,6 +157,11 @@ public class ChatField extends Manager{
 		super(Field.FOCUSABLE | Manager.NO_VERTICAL_SCROLL);
 	}
 	
+	private int getColor() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 	public void destory(){
 		int t_num = getFieldCount();
 		for(int i = 0 ;i < t_num;i++){
@@ -317,9 +325,9 @@ public class ChatField extends Manager{
 		int t_x = 0;
 		
 		if(m_msg.isOwnMsg()){
-			t_x = recvMain.fsm_display_width - m_msgTextWidth - fsm_border - fsm_bubblePointWidth;
+			t_x = recvMain.fsm_display_width - m_msgTextWidth - fsm_border - fsm_bubblePointWidth ;
 		}else{
-			t_x = fsm_border + fsm_bubblePointWidth;
+			t_x = fsm_border + fsm_bubblePointWidth ;
 		}
 		
 		if(m_textfield != null){
@@ -338,10 +346,11 @@ public class ChatField extends Manager{
 		
 		setExtent(recvMain.fsm_display_width,getPreferredHeight());
 	}
+
 	
 	protected void subpaint(Graphics _g){
 
-		int t_bubbleWidth = m_msgTextWidth + fsm_border * 2;
+		int t_bubbleWidth = m_msgTextWidth + fsm_border * 2  ; 
 		
 		int t_x = 0;
 		
@@ -356,7 +365,7 @@ public class ChatField extends Manager{
 			sm_ownChatBubble.draw(_g, t_x, 0, t_bubbleWidth, getPreferredHeight(), 
 					BubbleImage.RIGHT_POINT_STYLE);
 			
-			t_time_x = t_x - t_time_width + 5;
+			t_time_x = t_x - t_time_width ; 
 			
 		}else{
 			
@@ -365,7 +374,7 @@ public class ChatField extends Manager{
 			sm_otherChatBubble.draw(_g,t_x, 0, t_bubbleWidth, getPreferredHeight(), 
 					BubbleImage.LEFT_POINT_STYLE);
 			
-			t_time_x = t_x + t_bubbleWidth - 5;
+			t_time_x = t_x + t_bubbleWidth ;
 		}
 		
 		super.subpaint(_g);
@@ -383,13 +392,13 @@ public class ChatField extends Manager{
 			int t_color = _g.getColor();
 			Font t_font	= _g.getFont();
 			try{
-				_g.setColor(fsm_timeTextBGColor);
+				_g.setColor(MainChatScreen.fsm_background); 
 				_g.fillRoundRect(t_time_x,t_time_y, t_time_width, fsm_timeFont.getHeight(), 5, 5);
 				
-				_g.setColor(fsm_timeTextBorderColor);
+				_g.setColor(MainChatScreen.fsm_background); 
 				_g.drawRoundRect(t_time_x,t_time_y, t_time_width, fsm_timeFont.getHeight(), 5, 5);
 						
-				_g.setColor(0);
+				_g.setColor(t_color); 
 				
 				_g.setFont(fsm_timeFont);
 				_g.drawText(m_timeText,t_time_x,t_time_y);						
