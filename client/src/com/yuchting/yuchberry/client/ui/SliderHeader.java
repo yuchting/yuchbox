@@ -34,16 +34,16 @@ import com.yuchting.yuchberry.client.recvMain;
 
 public abstract class SliderHeader extends Field{
 	
-	public final static int fsm_headHeight = 45;
+	public final static int fsm_headHeight = 44;
 	
 	protected final static int fsm_darkColor		  = 0xb1aeae;
 			
 	protected final static int fsm_stateBitmapInterval = 12;
-	protected final static int fsm_stateBitmapSize = 32;
+	protected final static int fsm_stateBitmapSize = 40;
 	
 	protected final static int fsm_stateBitmapTop = (fsm_headHeight - fsm_stateBitmapSize) /2;
 	
-	protected final static int fsm_blockWidth = 50;
+	protected final static int fsm_blockWidth = 48;
 	
 	protected ImageUnit[] m_stateBitmap = null;
 	
@@ -106,7 +106,7 @@ public abstract class SliderHeader extends Field{
 		return m_currState;
 	}
 	
-	private final static int fsm_moveSliderHeight = 4;
+	private final static int fsm_moveSliderHeight = 1;
 	private final static int	fsm_moveTime = 35;
 		
 	protected int				m_curr_x = 0;
