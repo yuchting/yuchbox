@@ -155,8 +155,7 @@ public class uploadFileScreen extends MainScreen{
 			
 
 	public uploadFileScreen(recvMain _app,boolean _del,IUploadFileScreenCallback _callback)throws Exception {
-		
-		super(Manager.NO_VERTICAL_SCROLL);
+		super(Manager.VERTICAL_SCROLL);
 		
 		String t_initPath = fsm_rootPath_default;
 		
@@ -438,7 +437,7 @@ public class uploadFileScreen extends MainScreen{
 	private class FileFieldManager extends VerticalFieldManager{
 		
 		public FileFieldManager(){
-			super(VerticalFieldManager.VERTICAL_SCROLL | Field.FOCUSABLE);
+			super(VerticalFieldManager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR | Field.FOCUSABLE );
 		}
 		
 		public void sublayout(int width, int height){
@@ -454,7 +453,7 @@ public class uploadFileScreen extends MainScreen{
 				t_y += f.getPreferredHeight();
 			}
 			
-			setExtent(getPreferredWidth(), getPreferredHeight());
+			setExtent(getPreferredWidth(), t_y);
 		}
 		
 		public int getPreferredWidth(){			
@@ -463,15 +462,14 @@ public class uploadFileScreen extends MainScreen{
 		
 		public int getPreferredHeight(){
 			
-			int t_titleHeight;
-			Manager mgr = uploadFileScreen.this.getMainManager().getManager();
-			if(mgr != null && mgr.getFieldCount() > 0){
-				t_titleHeight = mgr.getField(0).getHeight();
-			}else{
-				t_titleHeight = Font.getDefault().getHeight(); 
+			int t_num = getFieldCount();
+			int t_y = 0;
+			for(int i = 0;i < t_num;i++){
+				Field f = getField(i);			
+				t_y += f.getPreferredHeight();
 			}
 			
-			return recvMain.fsm_display_height - t_titleHeight;			
+			return t_y;
 		}
 	}
 	
