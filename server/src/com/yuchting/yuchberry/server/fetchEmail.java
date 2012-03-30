@@ -1212,11 +1212,16 @@ public class fetchEmail extends fetchAccount{
 					m_sendTransport.connect(m_host_send,m_port_send,m_strUserNameFull,m_password);
 				}else{
 					m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
-				}		
+				}
+				
 				try{
 					m_sendTransport.sendMessage(msg, msg.getAllRecipients());
 				}finally{
-					m_sendTransport.close();
+					try{
+						m_sendTransport.close();
+					}catch(Exception e){
+						m_mainMgr.m_logger.PrinterException(e);
+					}			
 				}
 				
 				try{
@@ -1254,8 +1259,7 @@ public class fetchEmail extends fetchAccount{
 				
 				}catch(Exception e){
 					m_mainMgr.m_logger.PrinterException(e);
-				}
-				
+				}				
 						
 				break;
 				

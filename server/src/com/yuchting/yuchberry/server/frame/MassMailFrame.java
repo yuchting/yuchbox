@@ -48,8 +48,11 @@ public class MassMailFrame extends JFrame implements ActionListener{
 	
 	JTextArea	m_mailAddr			= new JTextArea();
 	JScrollPane	m_mailAddrScroll	= new JScrollPane(m_mailAddr);
-	JTextField	m_mailSub			= new JTextField();
-	JTextArea	m_mailContain		= new JTextArea();
+	JTextField	m_mailSub			= new JTextField("语盒服务提醒");
+	JTextArea	m_mailContain		= new JTextArea("您好！\n\n" +
+													"您收到这封邮件，是因为您在语盒官方网站 http://www.yuchs.com 注册了账号，并成功添加了推送账户。\n\n\n\n" +
+													"再次感谢您的支持和关注，如有打扰，敬请谅解！有任何疑问，请回复这封邮件让我知道，我会尽快答复您。\n\n" +
+													"--\n语盒开发者敬上！");
 	
 	JProgressBar m_progress 		= new JProgressBar();
 	
