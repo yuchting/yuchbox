@@ -886,7 +886,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 			
 			// draw roster state
 			//
-			int t_x = RosterItemField.drawRosterState(_g,3,3,m_currRoster.m_roster.getPresence());
+			int t_x = RosterItemField.drawRosterState(_g,3,6,m_currRoster.m_roster.getPresence());
 			
 			int color = _g.getColor();
 			Font font = _g.getFont();
