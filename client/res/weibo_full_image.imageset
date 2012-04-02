@@ -171,8 +171,8 @@
 	
 	<Image Name="input_inner_block" XPos="160" YPos="355" Width="16" Height="12" />
 	
-	<Image Name="input_phiz" XPos="280" YPos="300" Width="18" Height="18" />
-		
+	<Image Name="input_phiz_select" XPos="214" YPos="377" Width="18" Height="18" />
+	<Image Name="input_phiz" XPos="280" YPos="300" Width="18" Height="18" />	
 	
 	<Image Name="other_top_left" XPos="162" YPos="320" Width="8" Height="6" />
 	<Image Name="other_top" XPos="170" YPos="320" Width="30" Height="6" />

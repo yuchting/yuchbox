@@ -76,7 +76,7 @@ import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 
 final class InputManager extends Manager implements FieldChangeListener{
 	
-	public final static int fsm_inputBubbleBorder = 6;
+	public final static int fsm_inputBubbleBorder = 4;
 	public final static int fsm_textBorder = 2;
 
 	public final static int fsm_minHeight = MainIMScreen.fsm_defaultFontHeight + (fsm_textBorder + fsm_inputBubbleBorder) * 2 ;
@@ -85,7 +85,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 	MiddleMgr		m_middleMgr	= null;
 	ImageButton		m_phizButton = new ImageButton("",
 												recvMain.sm_weiboUIImage.getImageUnit("input_phiz"),
-												recvMain.sm_weiboUIImage.getImageUnit("input_phiz"),
+												recvMain.sm_weiboUIImage.getImageUnit("input_phiz_select"),
 												recvMain.sm_weiboUIImage){
 		
 		ImageUnit	m_selected = recvMain.sm_weiboUIImage.getImageUnit("nav_bar_block");

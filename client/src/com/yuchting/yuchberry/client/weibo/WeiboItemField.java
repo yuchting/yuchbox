@@ -37,6 +37,7 @@ import net.rim.device.api.ui.Manager;
 
 import com.yuchting.yuchberry.client.ObjectAllocator;
 import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.im.MainIMScreen;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.SliderHeader;
@@ -49,14 +50,14 @@ public class WeiboItemField extends Manager{
 	public final static int		fsm_weiboItemFieldWidth		= recvMain.fsm_display_width - WeiboMainManager.fsm_scrollbarSize;
 	public final static int		fsm_maxWeiboTextLength		= 140;
 
-	public final static int		fsm_headImageTextInterval	= 3;
+	public final static int		fsm_headImageTextInterval	= 2;
 	
 	public final static int		fsm_weiboSignImageSize		= 16;
 	
 	public final static int		fsm_weiboVIPImageSize		= 12;
 	public final static int		fsm_weiboBBerImageSize		= 12; 
 	
-	public final static int		fsm_maxWeiboAbstractLength	= 20;
+	public final static int		fsm_maxWeiboAbstractLength	= 23; //列表微博长度//
 	
 	public final static int		fsm_textWidth				= fsm_weiboItemFieldWidth - WeiboHeadImage.fsm_headImageWidth - fsm_headImageTextInterval;
 	public final static int		fsm_editTextWidth			= fsm_weiboItemFieldWidth;
@@ -67,19 +68,19 @@ public class WeiboItemField extends Manager{
 	public final static int		fsm_promptTextBGColor		= 0xffffcc;
 	public final static int		fsm_promptTextBorderColor	= 0xc0c0c0;	
 	
-	public final static int		fsm_selectedColor			= 0x00a7e6;
+	public final static int		fsm_selectedColor			= 0xcbfea5;
 	
 	public final static int		fsm_timeTextColor			= recvMain.sm_standardUI?0xfb9620:0x8bc5f8;
 	
 	public final static int		fsm_extendTextColor			= recvMain.sm_standardUI?0:0xd0d0d0;
-	public final static int		fsm_extendBGColor			= recvMain.sm_standardUI?0xc0deed:0x1f2d39;
-		
+	public final static int		fsm_extendBGColor			= recvMain.sm_standardUI?0xdbf3fe:0x1f2d39;//Original: 0xc0deed:0x1f2d39;微博内容字体背景//
+	
 	public final static int		fsm_absTextColor			= recvMain.sm_standardUI?0x586061:0xbbc1c6;
 	
-	public final static int		fsm_weiboNameTextColor		= recvMain.sm_standardUI?0:0xe5e3cf;
+	public final static int		fsm_weiboNameTextColor		= recvMain.sm_standardUI?0x1e3f5e:0xe5e3cf;
 
 	public final static int		fsm_weiboCommentFGColor		= recvMain.sm_standardUI?0x6d6f6f:0x84c3fa;
-	public final static int		fsm_weiboCommentBGColor		= recvMain.sm_standardUI?0xecf6fb:0x2b3d4d;
+	public final static int		fsm_weiboCommentBGColor		= recvMain.sm_standardUI?0xFFFFFF:0x2b3d4d;
 	
 	
 	// BasicEditField for 4.2os
@@ -99,21 +100,21 @@ public class WeiboItemField extends Manager{
 	
 	public static Font		sm_defaultFont				= sm_testTextArea.getFont();
 	public static Font		sm_timeFont					= sm_testTextArea.getFont().derive(sm_defaultFont.getStyle(),16);
+	public static Font		sm_absFont					= sm_testTextArea.getFont().derive(sm_defaultFont.getStyle(),20);
 	public static Font		sm_boldFont					= sm_testTextArea.getFont().derive(sm_defaultFont.getStyle() | Font.BOLD,sm_defaultFont.getHeight());
-	public static int		sm_fontHeight				= sm_defaultFont.getHeight() + 2;
-		
+	public static int		sm_fontHeight				= sm_defaultFont.getHeight()+ 3;
 	public static int		sm_imageAreaMinHeight		= fsm_weiboSignImageSize + WeiboHeadImage.fsm_headImageWidth + fsm_headImageTextInterval;
 	
-	public final static int	fsm_closeHeight			= sm_fontHeight * 2 + 1;
+	public final static int	fsm_closeHeight			= sm_fontHeight * 2 + 1; 
  
 	static public final int fsm_controlField_text 		= 0;
-	static public final int fsm_controlField_comment 		= 1;
-	static public final int fsm_controlField_forwardBtn 	= 2;
+	static public final int fsm_controlField_comment 	= 1;
+	static public final int fsm_controlField_forwardBtn	= 2;
 	static public final int fsm_controlField_atBtn 		= 3;
-	static public final int fsm_controlField_favorBtn		= 4;
+	static public final int fsm_controlField_favorBtn	= 4;
 	static public final int fsm_controlField_picBtn		= 5;
 	static public final int fsm_controlField_followBtn	= 6;
-	static public final int fsm_controlField_editText		= 7;
+	static public final int fsm_controlField_editText	= 7;
 		
 	boolean[]				m_hasControlField = 
 	{
@@ -242,7 +243,7 @@ public class WeiboItemField extends Manager{
 					
 		m_simpleAbstract		= getSimpleAbstract(_weibo);
 
-		m_textHeight			= sm_testTextArea.getHeight();
+		m_textHeight			= sm_testTextArea.getHeight() ; 
 
 		m_functionButton_y		= Math.max(m_textHeight,sm_imageAreaMinHeight) + fsm_headImageTextInterval + fsm_weiboSignImageSize;
 				
@@ -252,6 +253,7 @@ public class WeiboItemField extends Manager{
 			
 			StringBuffer t_commentText = new StringBuffer();
 			t_commentText.append("@").append(t_comment.GetUserScreenName()).append(":").append(t_comment.GetText());
+
 			if(!recvMain.sm_simpleMode && t_comment.GetSource().length() != 0){		
 				t_commentText.append("\n       --").append(recvMain.sm_local.getString(yblocalResource.WEIBO_SOURCE_PREFIX))
 							.append(parseSource(t_comment.GetSource()));
@@ -379,7 +381,7 @@ public class WeiboItemField extends Manager{
 		
 		m_absTextArea.setTextWidth(recvMain.fsm_display_width - getAbsTextPosX() - WeiboMainManager.fsm_scrollbarSize - 1);		
 		m_absTextArea.setText(m_weiboText);
-		m_absTextHeight = m_absTextArea.getHeight();
+		m_absTextHeight = m_absTextArea.getHeight() ; 
 	}
 	
 	public void AddDelControlField(boolean _add){
@@ -661,7 +663,7 @@ public class WeiboItemField extends Manager{
 					_g.fillRect(0,0,fsm_weiboItemFieldWidth,m_extendHeight);
 				}								
 							
-				int t_textStart_y = recvMain.sm_commentFirst?m_commentText_height : 1;
+				int t_textStart_y = recvMain.sm_commentFirst?m_commentText_height : 2;
 				
 				// draw weibo style 
 				//
@@ -782,7 +784,7 @@ public class WeiboItemField extends Manager{
 				}
 				
 				sm_bubbleImage.draw(_g,getAbsTextPosX() - 4,t_firstLineHeight - 1,
-						m_absTextArea.getTextWidth() + 4,m_absTextHeight + 5,BubbleImage.LEFT_POINT_STYLE);
+						m_absTextArea.getTextWidth() + 4,m_absTextHeight + 5 ,BubbleImage.LEFT_POINT_STYLE);
 				
 				
 				paintChild(_g,m_absTextArea);
@@ -879,6 +881,7 @@ public class WeiboItemField extends Manager{
 				
 				// contain abstract
 				//
+				_g.setFont(sm_absFont); //列表微博字体//
 				_g.setColor(fsm_absTextColor);			
 				
 				int t_abs_x = t_nameLeadingSpace + fsm_weiboSignImageSize;
@@ -1003,11 +1006,11 @@ public class WeiboItemField extends Manager{
 			
 			int t_color = _g.getColor();
 			try{
-				int t_fillColor = 0xdaeaeb;
+				int t_fillColor = 0xf4fcff;//Original:0xdaeaeb;微博列表背景//
 				
 				if(m_parentManager.getCurrExtendedItem() != null 
 				&& m_parentManager.getCurrExtendedItem() != this){
-					t_fillColor = 0xb3c8c9;
+					t_fillColor = 0xedefef;//Original:0xb3c8c9;打开微博后未激活时的列表背景//
 				}
 				
 				_g.setColor(t_fillColor);

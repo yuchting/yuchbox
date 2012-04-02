@@ -84,7 +84,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 	MiddleMgr		m_middleMgr	= null;
 	ImageButton		m_phizButton = new ImageButton("",
 												recvMain.sm_weiboUIImage.getImageUnit("input_phiz"),
-												recvMain.sm_weiboUIImage.getImageUnit("input_phiz"),
+												recvMain.sm_weiboUIImage.getImageUnit("input_phiz_select"),
 												recvMain.sm_weiboUIImage){
 		
 		ImageUnit	m_selected = recvMain.sm_weiboUIImage.getImageUnit("nav_bar_block");
@@ -99,7 +99,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 	    protected void focusPaint(Graphics g,boolean focus){
 	    	if(focus){
 	    		recvMain.sm_weiboUIImage.drawBitmapLine(g, m_selected, 
-	    				sm_split_line.getWidth(), 0, getImageHeight());
+	    				sm_split_line.getWidth() , 0, getImageHeight());
 	    	}
 	    	
 	    	super.focusPaint(g,focus);

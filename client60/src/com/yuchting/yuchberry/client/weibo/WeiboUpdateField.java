@@ -66,7 +66,7 @@ public class WeiboUpdateField extends Field{
 	}
 	
 	public int getPreferredHeight() {
-		return WeiboItemField.sm_fontHeight + 5;
+		return WeiboItemField.sm_fontHeight ; //sm_fontHeight + 5; 更新提示的高度//
 	}
 		
 	public int getPreferredWidth(){
@@ -96,7 +96,7 @@ public class WeiboUpdateField extends Field{
 				}							
 			}	
         	
-			recvMain.sm_weiboUIImage.drawImage(_g,m_updateBitmap,2,0);
+			recvMain.sm_weiboUIImage.drawImage(_g,m_updateBitmap,2,2); //recvMain.sm_weiboUIImage.drawImage(_g,m_updateBitmap,2,0);更新图标下移1pix//
         	
 			_g.setColor(fsm_textColor);
 			_g.setFont(WeiboItemField.sm_boldFont);
