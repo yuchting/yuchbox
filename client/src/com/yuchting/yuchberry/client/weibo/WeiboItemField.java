@@ -100,7 +100,7 @@ public class WeiboItemField extends Manager{
 	
 	public static Font		sm_defaultFont				= sm_testTextArea.getFont();
 	public static Font		sm_timeFont					= sm_testTextArea.getFont().derive(sm_defaultFont.getStyle(),16);
-	public static Font		sm_absFont					= sm_testTextArea.getFont().derive(sm_defaultFont.getStyle(),20);
+	public static Font		sm_absFont					= sm_testTextArea.getFont().derive(sm_defaultFont.getStyle(),sm_defaultFont.getHeight() - 2); // yuchting@2012-4-3 把绝对高度20改成相对高度，不同系统的字体高度是不一样的
 	public static Font		sm_boldFont					= sm_testTextArea.getFont().derive(sm_defaultFont.getStyle() | Font.BOLD,sm_defaultFont.getHeight());
 	public static int		sm_fontHeight				= sm_defaultFont.getHeight()+ 3;
 	public static int		sm_imageAreaMinHeight		= fsm_weiboSignImageSize + WeiboHeadImage.fsm_headImageWidth + fsm_headImageTextInterval;
@@ -123,7 +123,7 @@ public class WeiboItemField extends Manager{
 	};
 	
 	fetchWeibo				m_weibo			= null;
-		
+
 	String					m_simpleAbstract = null;
 	String					m_weiboText		= null;
 	String					m_commentText	= null;
