@@ -63,7 +63,7 @@ import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
 
 final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	
-	public int			m_updateDlgHeaderHeight = 32;
+	public int			m_updateDlgHeaderHeight = 50;
 	
 	public int			m_width 	= Display.getWidth() - 20;
 	public int			m_height 	= (Display.getHeight() - 30 > 300?300:(Display.getHeight() - 30));
@@ -201,7 +201,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		
 		add(m_sendButton);		
 				
-		m_titleHeight = m_updateDlgHeaderHeight + 10;
+		m_titleHeight = m_updateDlgHeaderHeight + 2;
 		m_separateLine_y = m_titleHeight + m_editTextManager.getPreferredHeight();
 	}
 	

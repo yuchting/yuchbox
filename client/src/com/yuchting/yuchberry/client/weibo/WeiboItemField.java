@@ -73,11 +73,11 @@ public class WeiboItemField extends Manager{
 	public final static int		fsm_timeTextColor			= recvMain.sm_standardUI?0xfb9620:0x8bc5f8;
 	
 	public final static int		fsm_extendTextColor			= recvMain.sm_standardUI?0:0xd0d0d0;
-	public final static int		fsm_extendBGColor			= recvMain.sm_standardUI?0xdbf3fe:0x1f2d39;//Original: 0xc0deed:0x1f2d39;微博内容字体背景//
+	public final static int		fsm_extendBGColor			= recvMain.sm_standardUI?0xc1e6ff:0x1f2d39;//Original: 0xc0deed:0x1f2d39;微博内容字体背景//
 	
 	public final static int		fsm_absTextColor			= recvMain.sm_standardUI?0x586061:0xbbc1c6;
 	
-	public final static int		fsm_weiboNameTextColor		= recvMain.sm_standardUI?0x1e3f5e:0xe5e3cf;
+	public final static int		fsm_weiboNameTextColor		= recvMain.sm_standardUI?0:0xe5e3cf;
 
 	public final static int		fsm_weiboCommentFGColor		= recvMain.sm_standardUI?0x6d6f6f:0x84c3fa;
 	public final static int		fsm_weiboCommentBGColor		= recvMain.sm_standardUI?0xFFFFFF:0x2b3d4d;
@@ -850,7 +850,7 @@ public class WeiboItemField extends Manager{
 					m_displayName = t_final;
 				}
 				
-				_g.setFont(sm_boldFont);
+				_g.setFont(sm_defaultFont); //改为普通字体Original:sm_boldFont//
 				_g.setColor(fsm_weiboNameTextColor);
 				int t_nameLength = _g.drawText(m_displayName,
 											fsm_weiboSignImageSize + t_nameLeadingSpace,

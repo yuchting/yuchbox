@@ -48,7 +48,7 @@ public class RosterItemField extends Field{
 	public final static int		fsm_nameTextColor			= 0x000000;
 	public final static int		fsm_statusTextColor			= 0x323232;
 	
-	public final static Font		fsm_addressFont			= MainIMScreen.fsm_defaultFont.derive(MainIMScreen.fsm_defaultFont.getStyle(),MainIMScreen.fsm_defaultFontHeight - 6);
+	public final static Font		fsm_addressFont			= MainIMScreen.fsm_defaultFont.derive(MainIMScreen.fsm_defaultFont.getStyle(),MainIMScreen.fsm_defaultFontHeight - 2);
 	public final static int		fsm_addressFontHeight	= fsm_addressFont.getHeight();
 	
 	MainIMScreen.RosterChatData					m_currRoster;
