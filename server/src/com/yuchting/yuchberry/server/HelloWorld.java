@@ -125,8 +125,7 @@ public class HelloWorld {
 	
 	
 	public static void main(String arg[])throws Exception{
-		float f = 1.2f % 1.0f;
-		System.out.print(f);
+		berryRecvTest();
 	}
 		
 	public final static String	fsm_vectStringSpliter = "<>";

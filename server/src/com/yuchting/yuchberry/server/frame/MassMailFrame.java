@@ -25,6 +25,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -147,6 +148,7 @@ public class MassMailFrame extends JFrame implements ActionListener{
 			
 		}catch(Exception e){
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(this, "无法找到yuchsign文件装载邮件密码", "提示", JOptionPane.INFORMATION_MESSAGE);			
 		}
 	}
 
@@ -223,13 +225,18 @@ public class MassMailFrame extends JFrame implements ActionListener{
 							}
 							
 							synchronized (MassMailFrame.this) {
+								
 								m_sendThread = null;
 								m_stopBtn.setEnabled(false);
 								m_sendBtn.setEnabled(true);
 								
-								JOptionPane.showMessageDialog(MassMailFrame.this, "发送完毕", "提示", JOptionPane.INFORMATION_MESSAGE);
-							}
-							
+								SwingUtilities.invokeLater(new Runnable() {
+									
+									public void run() {
+										JOptionPane.showMessageDialog(MassMailFrame.this, "发送完毕", "提示", JOptionPane.INFORMATION_MESSAGE);
+									}
+								});
+							}							
 						}
 					};
 					
