@@ -350,7 +350,7 @@ public class ChatField extends Manager{
 	
 	protected void subpaint(Graphics _g){
 
-		int t_bubbleWidth = m_msgTextWidth + fsm_border * 2  ; 
+		int t_bubbleWidth = m_msgTextWidth + fsm_border * 2 - 4; //修正时间显示超出屏幕 - 4 //
 		
 		int t_x = 0;
 		
