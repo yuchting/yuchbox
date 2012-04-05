@@ -77,7 +77,7 @@ public class WeiboItemField extends Manager{
 	
 	public final static int		fsm_absTextColor			= recvMain.sm_standardUI?0x586061:0xbbc1c6;
 	
-	public final static int		fsm_weiboNameTextColor		= recvMain.sm_standardUI?0:0xe5e3cf;
+	public final static int		fsm_weiboNameTextColor		= recvMain.sm_standardUI?0x073b50:0xe5e3cf;
 
 	public final static int		fsm_weiboCommentFGColor		= recvMain.sm_standardUI?0x6d6f6f:0x84c3fa;
 	public final static int		fsm_weiboCommentBGColor		= recvMain.sm_standardUI?0xFFFFFF:0x2b3d4d;
@@ -100,7 +100,7 @@ public class WeiboItemField extends Manager{
 	
 	public static Font		sm_defaultFont				= sm_testTextArea.getFont();
 	public static Font		sm_timeFont					= sm_testTextArea.getFont().derive(sm_defaultFont.getStyle(),16);
-	public static Font		sm_absFont					= sm_testTextArea.getFont().derive(sm_defaultFont.getStyle(),sm_defaultFont.getHeight() - 2); // yuchting@2012-4-3 把绝对高度20改成相对高度，不同系统的字体高度是不一样的
+	public static Font		sm_absFont					= sm_testTextArea.getFont().derive(sm_defaultFont.getStyle(),sm_defaultFont.getHeight() - 4); // yuchting@2012-4-3 把绝对高度20改成相对高度，不同系统的字体高度是不一样的
 	public static Font		sm_boldFont					= sm_testTextArea.getFont().derive(sm_defaultFont.getStyle() | Font.BOLD,sm_defaultFont.getHeight());
 	public static int		sm_fontHeight				= sm_defaultFont.getHeight()+ 3;
 	public static int		sm_imageAreaMinHeight		= fsm_weiboSignImageSize + WeiboHeadImage.fsm_headImageWidth + fsm_headImageTextInterval;
