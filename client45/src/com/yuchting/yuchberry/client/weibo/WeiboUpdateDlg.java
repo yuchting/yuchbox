@@ -63,12 +63,12 @@ import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
 
 final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	
-	public int			m_updateDlgHeaderHeight = 32;
+	public int			m_updateDlgHeaderHeight = 50;
 	
 	public int			m_width 	= Display.getWidth() - 20;
 	public int			m_height 	= (Display.getHeight() - 30 > 300?300:(Display.getHeight() - 30));
 	
-	public AutoTextEditField 	m_editTextArea	= new AutoTextEditField();
+	public AutoTextEditField 	m_editTextArea	= new AutoTextEditField(); 
 	
 	weiboTimeLineScreen		m_timelineScreen;
 	int						m_titleHeight 	= 0;
@@ -104,7 +104,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		
 		protected void sublayout(int width, int height){
 			
-			setPositionChild(m_editTextArea,0,0);
+			setPositionChild(m_editTextArea,0,0); 
 			layoutChild(m_editTextArea,getPreferredWidth(),999);
 			
 			setExtent(getPreferredWidth(),getPreferredHeight());
@@ -118,7 +118,8 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 				if(field == m_editTextArea){
 					int t_color = _g.getColor();
 					try{
-						_g.setColor(m_weiboCommentFGColor);
+						_g.setFont(WeiboItemField.sm_absFont); //取小一号字体//
+						_g.setColor(0);// (m_weiboCommentFGColor); 输入文字为黑色//
 						paintChild(_g, field);
 					}finally{
 						_g.setColor(t_color);
@@ -321,7 +322,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			Font t_boldFont = oldFont.derive(oldFont.getStyle() | Font.BOLD);
 			
 			_g.setFont(t_boldFont);
-			_g.setColor(0xffffff);
+			_g.setColor(0); //标题字体改黑//
 			String t_str = recvMain.sm_local.getString(yblocalResource.WEIBO_UPDATE_DIALOG_TITLE) 
 				+ " (" + m_editTextArea.getText().length() + ")";
 			
@@ -382,7 +383,6 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
     
     MenuItem m_locationItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_LOCATION_LABEL),m_menuIndex_op++,0){
         public void run() {
-        	//TODO add logical for location process
         	if(!m_mainApp.getGPSInfo().isValidLocation()){
         		m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.WEIBO_NEED_GPS_PROMPT));
         		return ;

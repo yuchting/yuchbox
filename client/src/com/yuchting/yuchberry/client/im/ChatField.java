@@ -202,7 +202,7 @@ public class ChatField extends Manager{
 		
 		if(_msg.getMsg().length() != 0){
 			t_converText = WeiboTextField.getConvertString(_msg.getMsg(),WeiboTextField.CONVERT_DISABLE_AT_SIGN,null);
-			m_msgTextWidth = MainIMScreen.fsm_defaultFont.getAdvance(t_converText);
+			m_msgTextWidth = MainIMScreen.fsm_defaultFont.getAdvance(t_converText) - 4 ; //缩短聊天文本的长度//
 			
 			if(m_msgTextWidth < fsm_minTextWidth){
 				m_msgTextWidth = fsm_minTextWidth;

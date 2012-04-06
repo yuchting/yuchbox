@@ -84,7 +84,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 	MiddleMgr		m_middleMgr	= null;
 	ImageButton		m_phizButton = new ImageButton("",
 												recvMain.sm_weiboUIImage.getImageUnit("input_phiz"),
-												recvMain.sm_weiboUIImage.getImageUnit("input_phiz"),
+												recvMain.sm_weiboUIImage.getImageUnit("input_phiz_select"),
 												recvMain.sm_weiboUIImage){
 		
 		ImageUnit	m_selected = recvMain.sm_weiboUIImage.getImageUnit("nav_bar_block");
@@ -99,7 +99,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 	    protected void focusPaint(Graphics g,boolean focus){
 	    	if(focus){
 	    		recvMain.sm_weiboUIImage.drawBitmapLine(g, m_selected, 
-	    				sm_split_line.getWidth(), 0, getImageHeight());
+	    				sm_split_line.getWidth() , 0, getImageHeight());
 	    	}
 	    	
 	    	super.focusPaint(g,focus);
@@ -405,7 +405,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 
 final class MiddleMgr extends VerticalFieldManager{
 	
-	public final static int	fsm_linespace	= 6;
+	public final static int	fsm_linespace	= 18;
 	VerticalFieldManager	m_chatMsgMgr = null;
 	
 	VerticalFieldManager	m_chatMsgMiddleMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
@@ -676,7 +676,7 @@ final class MiddleMgr extends VerticalFieldManager{
 
 public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOpen{
 	
-	public final static int fsm_background = 0x2b3d4d;
+	public final static int fsm_background = 0xf3ecfc;
 	
 	int m_menu_op = 0;
 	MenuItem m_sendMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_SEND_LABEL),m_menu_op++,0){
@@ -864,7 +864,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 	
 	final class ChatScreenHeader extends Field{
 		
-		public final static int fsm_chatScreenHeaderHeight = 30;
+		public final static int fsm_chatScreenHeaderHeight = 45;
 		
 		public int getPreferredWidth() {
 			return recvMain.fsm_display_width;
@@ -886,13 +886,13 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 			
 			// draw roster state
 			//
-			int t_x = RosterItemField.drawRosterState(_g,3,3,m_currRoster.m_roster.getPresence());
+			int t_x = RosterItemField.drawRosterState(_g,3,4,m_currRoster.m_roster.getPresence());
 			
 			int color = _g.getColor();
 			Font font = _g.getFont();
 			try{
 				
-				_g.setColor(RosterItemField.fsm_nameTextColor);
+				_g.setColor(0xffffff);//(RosterItemField.fsm_nameTextColor);//
 				_g.setFont(MainIMScreen.fsm_boldFont);
 				
 				_g.drawText(m_currRoster.m_roster.getName(),t_x,2);
