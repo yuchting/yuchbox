@@ -57,7 +57,7 @@ public class ChatField extends Manager{
 
 	public final static int fsm_WebioHeadImage		= WeiboHeadImage.fsm_headImageWidth;
 	public final static int	fsm_minTextWidth		= fsm_offsetWidth + fsm_bubblePointWidth  ;
-	public final static int	fsm_maxTextWidth 		= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth  ;
+	public final static int	fsm_maxTextWidth 		= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth - 12 ; //修正时间出界、、
 	
 	public final static int	fsm_ownChatTextBGColor		= 0xd6efff; 
 	public final static int	fsm_otherChatTextBGColor	= 0xe7ebf7; 
@@ -208,7 +208,7 @@ public class ChatField extends Manager{
 		
 		if(_msg.getMsg().length() != 0){
 			t_converText = WeiboTextField.getConvertString(_msg.getMsg(),WeiboTextField.CONVERT_DISABLE_AT_SIGN,null);
-			m_msgTextWidth = MainIMScreen.fsm_defaultFont.getAdvance(t_converText) - 4; //缩短聊天文字长度//
+			m_msgTextWidth = MainIMScreen.fsm_defaultFont.getAdvance(t_converText) ;
 			
 			if(m_msgTextWidth < fsm_minTextWidth){
 				m_msgTextWidth = fsm_minTextWidth;
@@ -350,7 +350,7 @@ public class ChatField extends Manager{
 	
 	protected void subpaint(Graphics _g){
 
-		int t_bubbleWidth = m_msgTextWidth + fsm_border * 2 - 4; //修正时间显示超出屏幕 - 4 //
+		int t_bubbleWidth = m_msgTextWidth + fsm_border * 2 + 4 ; //Bubble加宽//
 		
 		int t_x = 0;
 		

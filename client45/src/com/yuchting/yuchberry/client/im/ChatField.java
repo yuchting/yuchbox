@@ -54,7 +54,7 @@ public class ChatField extends Manager{
 	public final static int	fsm_border		= 6;
 	
 	public final static int	fsm_minTextWidth		= fsm_offsetWidth + fsm_bubblePointWidth;
-	public final static int	fsm_maxTextWidth 		= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth;
+	public final static int	fsm_maxTextWidth 		= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth - 12; //修复时间出界//
 
 	
 	public final static int	fsm_ownChatTextBGColor		= 0xd6efff; 
@@ -343,7 +343,7 @@ public class ChatField extends Manager{
 	
 	protected void subpaint(Graphics _g){
 
-		int t_bubbleWidth = m_msgTextWidth + fsm_border * 2 - 4; //修正时间显示超出屏幕 - 4 //
+		int t_bubbleWidth = m_msgTextWidth + fsm_border * 2 + 4; //Bubble加宽//
 		
 		int t_x = 0;
 		
