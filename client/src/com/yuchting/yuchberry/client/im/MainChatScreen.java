@@ -895,8 +895,16 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 				_g.setColor(0xffffff);//(RosterItemField.fsm_nameTextColor);//
 				_g.setFont(MainIMScreen.fsm_boldFont);
 	
-				_g.drawText(m_currRoster.m_roster.getName(),t_x,2);
-				
+				// get rid of rear of '@'
+				// xxxx@yyy.com --> xxxx
+				//
+				int t_atIndex = m_currRoster.m_roster.getName().indexOf("@");
+				if(t_atIndex != -1){
+					_g.drawText(m_currRoster.m_roster.getName().substring(0,t_atIndex),t_x,2);
+				}else{
+					_g.drawText(m_currRoster.m_roster.getName(),t_x,2);
+				}
+								
 			}finally{
 				_g.setColor(color);
 				_g.setFont(font);
