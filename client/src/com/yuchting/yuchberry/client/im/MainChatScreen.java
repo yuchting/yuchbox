@@ -676,7 +676,7 @@ final class MiddleMgr extends VerticalFieldManager{
 
 public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOpen{
 	
-	public final static int fsm_background = 0xf3ecfc;
+	public final static int fsm_background = 0xd8d8d8; //聊天对话背景色
 	
 	int m_menu_op = 0;
 	MenuItem m_sendMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_SEND_LABEL),m_menu_op++,0){
@@ -894,7 +894,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 				
 				_g.setColor(0xffffff);//(RosterItemField.fsm_nameTextColor);//
 				_g.setFont(MainIMScreen.fsm_boldFont);
-				
+	
 				_g.drawText(m_currRoster.m_roster.getName(),t_x,2);
 				
 			}finally{
@@ -902,10 +902,10 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 				_g.setFont(font);
 			}
 			
-			t_x = RosterItemField.drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch);
+			t_x = RosterItemField.drawChatSign(_g,getPreferredWidth() - 35 ,getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch);//防止系统输入法标示遮挡sign
 						
 			if(m_currRoster.m_currChatState == fetchChatMsg.CHAT_STATE_COMPOSING){
-				recvMain.sm_weiboUIImage.drawImage(_g, sm_composing, t_x - sm_composing.getWidth(), 3);
+				recvMain.sm_weiboUIImage.drawImage(_g, sm_composing, t_x - sm_composing.getWidth()- 12, 3); //防止系统输入法标示遮挡输入状态
 			}
 		}
 	}
@@ -970,7 +970,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		m_mainScreen	= _mainScreen;
 		
 		m_middleMgr		= new MiddleMgr(this);
-		m_title 		= recvMain.sm_weiboUIImage.getImageUnit("im_nav_bar");		//IM Chat Header BG 
+		m_title 		= recvMain.sm_weiboUIImage.getImageUnit("im_chat_nav_bar");		//IM Chat Header BG 
 		m_header 		= new ChatScreenHeader();
 		m_hasImageSign	= recvMain.sm_weiboUIImage.getImageUnit("picSign");
 		m_hasVoiceSign	= recvMain.sm_weiboUIImage.getImageUnit("voice_sign");

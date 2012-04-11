@@ -141,6 +141,8 @@
 	<Image Name="im_nav_bar_seg" XPos="200" YPos="277" Width="2" Height="43" />
 	<Image Name="im_nav_bar_point" XPos="300" YPos="329" Width="40" Height="4" />
 
+	<Image Name="im_chat_nav_bar" XPos="400" YPos="408" Width="48" Height="45" />
+
 	<Image Name="gtalk_sign" XPos="80" YPos="345" Width="16" Height="16" />
 	<Image Name="msn_sign" XPos="80" YPos="361" Width="16" Height="16" />
 	<Image Name="yuch_sign" XPos="128" YPos="361" Width="16" Height="16" />
@@ -164,8 +166,8 @@
 	
 	<Image Name="composing_chat_state" XPos="224" YPos="345" Width="22" Height="22" />
 
-	<Image Name="input_nav_bar" XPos="300" YPos="335" Width="25" Height="43" />
-	<Image Name="input_nav_bar_seg" XPos="325" YPos="335" Width="2" Height="43" />
+	<Image Name="input_nav_bar" XPos="400" YPos="335" Width="48" Height="43" />
+	<Image Name="input_nav_bar_seg" XPos="448" YPos="335" Width="2" Height="43" />
 	
 	<Image Name="input_top_left" XPos="144" YPos="345" Width="16" Height="10" />
 	<Image Name="input_top" XPos="160" YPos="345" Width="16" Height="10" />

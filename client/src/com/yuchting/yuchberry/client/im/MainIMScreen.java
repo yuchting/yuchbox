@@ -94,7 +94,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	}
 	
-	public final static int fsm_backgroundColor = 0xf0fbff;
+	public final static int fsm_backgroundColor = 0xf3f3f3; //列表空白区域颜色
 	
 	int m_menu_label = 0;
 	
