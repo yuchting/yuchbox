@@ -128,8 +128,8 @@ final class InputManager extends Manager implements FieldChangeListener{
 														},
 														recvMain.sm_weiboUIImage);
 
-	public static ImageUnit	sm_background		= recvMain.sm_weiboUIImage.getImageUnit("nav_bar");
-	public static ImageUnit	sm_split_line 		= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_seg");
+	public static ImageUnit	sm_background		= recvMain.sm_weiboUIImage.getImageUnit("input_nav_bar"); //输入法背景//
+	public static ImageUnit	sm_split_line 		= recvMain.sm_weiboUIImage.getImageUnit("input_nav_bar_seg");//输入法分割线//
 	
 	int					m_currHeight	= fsm_minHeight;
 	
@@ -970,7 +970,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		m_mainScreen	= _mainScreen;
 		
 		m_middleMgr		= new MiddleMgr(this);
-		m_title 		= recvMain.sm_weiboUIImage.getImageUnit("nav_bar");		
+		m_title 		= recvMain.sm_weiboUIImage.getImageUnit("im_nav_bar");		//IM Chat Header BG 
 		m_header 		= new ChatScreenHeader();
 		m_hasImageSign	= recvMain.sm_weiboUIImage.getImageUnit("picSign");
 		m_hasVoiceSign	= recvMain.sm_weiboUIImage.getImageUnit("voice_sign");

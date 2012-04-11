@@ -109,10 +109,10 @@
 	<Image Name="space_line_1" XPos="110" YPos="379" Width="8" Height="2" />
 	
 	<Image Name="nav_bar" XPos="118" YPos="377" Width="48" Height="45" />
-	<Image Name="nav_bar_block" XPos="360" YPos="277" Width="25" Height="43" />
+	<Image Name="nav_bar_block" XPos="150" YPos="277" Width="25" Height="43" />
 	<Image Name="nav_bar_block_offline" XPos="175" YPos="277" Width="25" Height="43" />
 	<Image Name="nav_bar_seg" XPos="200" YPos="277" Width="2" Height="43" />
-	<Image Name="nav_bar_point" XPos="300" YPos="322" Width="40" Height="3" />
+	<Image Name="nav_bar_point" XPos="300" YPos="322" Width="40" Height="4" />
 	
 	<Image Name="compose_nav_bar" XPos="110" YPos="381" Width="8" Height="32" />
 		
@@ -134,6 +134,12 @@
 	
 	<!-- im -->
         <Image Name="im_bg" XPos="380" YPos="377" Width="8" Height="64" />
+
+	<Image Name="im_nav_bar" XPos="241" YPos="408" Width="48" Height="45" />
+	<Image Name="im_nav_bar_block" XPos="215" YPos="408" Width="25" Height="43" />
+	<Image Name="im_nav_bar_block_offline" XPos="175" YPos="277" Width="25" Height="43" />
+	<Image Name="im_nav_bar_seg" XPos="200" YPos="277" Width="2" Height="43" />
+	<Image Name="im_nav_bar_point" XPos="300" YPos="329" Width="40" Height="4" />
 
 	<Image Name="gtalk_sign" XPos="80" YPos="345" Width="16" Height="16" />
 	<Image Name="msn_sign" XPos="80" YPos="361" Width="16" Height="16" />
@@ -157,6 +163,9 @@
 	
 	
 	<Image Name="composing_chat_state" XPos="224" YPos="345" Width="22" Height="22" />
+
+	<Image Name="input_nav_bar" XPos="300" YPos="335" Width="25" Height="43" />
+	<Image Name="input_nav_bar_seg" XPos="325" YPos="335" Width="2" Height="43" />
 	
 	<Image Name="input_top_left" XPos="144" YPos="345" Width="16" Height="10" />
 	<Image Name="input_top" XPos="160" YPos="345" Width="16" Height="10" />
@@ -264,7 +273,14 @@
 	<Image Name="[嘘]" XPos="414" YPos="22" Width="22" Height="22" />
 	<Image Name="[委屈]" XPos="436" YPos="22" Width="22" Height="22" />
 	<Image Name="[吐]" XPos="458" YPos="22" Width="22" Height="22" />	
-	
+
+	<Image Name="[c捂脸]" XPos="106" YPos="44" Width="22" Height="22" />
+	<Image Name="[囧]" XPos="128" YPos="44" Width="22" Height="22" />
+	<Image Name="[彩虹]" XPos="150" YPos="44" Width="22" Height="22" />
+	<Image Name="[实习]" XPos="172" YPos="44" Width="22" Height="22" />
+	<Image Name="[放电抛媚]" XPos="194" YPos="44" Width="22" Height="22" />
+	<Image Name="[玫瑰]" XPos="216" YPos="44" Width="22" Height="22" />
+	<Image Name="[赞啊]" XPos="238" YPos="44" Width="22" Height="22" />
 	<Image Name="[可怜]" XPos="260" YPos="44" Width="22" Height="22" />
 	<Image Name="[打哈气]" XPos="282" YPos="44" Width="22" Height="22" />
 	<Image Name="[顶]" XPos="304" YPos="44" Width="22" Height="22" />
@@ -276,7 +292,14 @@
 	<Image Name="[太阳]" XPos="436" YPos="44" Width="22" Height="22" />
 	<Image Name="[蜡烛]" XPos="458" YPos="44" Width="22" Height="22" />
 	<Image Name="[话筒]" XPos="480" YPos="44" Width="22" Height="22" />
-	
+
+	<Image Name="[酒]" XPos="106" YPos="66" Width="22" Height="22" />
+	<Image Name="[西瓜]" XPos="128" YPos="66" Width="22" Height="22" />
+	<Image Name="[屎]" XPos="150" YPos="66" Width="22" Height="22" />
+	<Image Name="[刀]" XPos="172" YPos="66" Width="22" Height="22" />
+	<Image Name="[咖啡]" XPos="194" YPos="66" Width="22" Height="22" />
+	<Image Name="[驯鹿]" XPos="216" YPos="66" Width="22" Height="22" />
+	<Image Name="[萌]" XPos="238" YPos="66" Width="22" Height="22" />
 	<Image Name="[弱]" XPos="260" YPos="66" Width="22" Height="22" />
 	<Image Name="[不要]" XPos="282" YPos="66" Width="22" Height="22" />
 	<Image Name="[ok]" XPos="304" YPos="66" Width="22" Height="22" />
@@ -288,7 +311,9 @@
 	<Image Name="[钟]" XPos="436" YPos="66" Width="22" Height="22" />
 	<Image Name="[猪头]" XPos="458" YPos="66" Width="22" Height="22" />
 	<Image Name="[月亮]" XPos="480" YPos="66" Width="22" Height="22" />
-	
+
+	<Image Name="[热吻]" XPos="106" YPos="88" Width="22" Height="22" />
+	<Image Name="[红包]" XPos="128" YPos="88" Width="22" Height="22" />
 	<Image Name="[男孩儿]" XPos="150" YPos="88" Width="22" Height="22" />
 	<Image Name="[女孩儿]" XPos="172" YPos="88" Width="22" Height="22" />
 	<Image Name="[风扇]" XPos="194" YPos="88" Width="22" Height="22" />
@@ -304,5 +329,6 @@
 	<Image Name="[飞机]" XPos="414" YPos="88" Width="22" Height="22" />
 	<Image Name="[大巴]" XPos="436" YPos="88" Width="22" Height="22" />
 	<Image Name="[冰棍]" XPos="458" YPos="88" Width="22" Height="22" />
+	<Image Name="[互粉]" XPos="480" YPos="88" Width="22" Height="22" />
 	
 </Imageset>
