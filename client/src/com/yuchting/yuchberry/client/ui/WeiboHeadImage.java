@@ -326,7 +326,7 @@ public final class WeiboHeadImage {
 	static public void drawSelectedImage(Graphics _g,int _limitWidth,int _limitHeight,boolean _weiboOrIM){
 		
 		ImageUnit selImg = null;
-		
+		ImageSets imgSet = recvMain.sm_weiboUIImage;
 		if(_weiboOrIM){
 			
 			if(sm_selectedImage_weibo == null){
@@ -338,10 +338,11 @@ public final class WeiboHeadImage {
 		}else{
 						
 			if(sm_selectedImage_im == null){
-				sm_selectedImage_im = recvMain.sm_weiboUIImage.getImageUnit("im_sel");
+				sm_selectedImage_im = recvMain.sm_extUIImage.getImageUnit("im_sel");
 			}
 			
 			selImg = sm_selectedImage_im;
+			imgSet = recvMain.sm_extUIImage;
 		}
 			
 		int t_draw_y = 0;
@@ -354,7 +355,7 @@ public final class WeiboHeadImage {
 		
 		// draw selected backgroud
 		//
-		recvMain.sm_weiboUIImage.drawImage(_g,selImg,
+		imgSet.drawImage(_g,selImg,
 						0, t_draw_y, _limitWidth, _limitHeight,0, t_y);
 	}
 }
