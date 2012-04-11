@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry excluding="**/.svn/*|Thumbs.db" kind="src" path="src"/>
 	<classpathentry excluding="**/.svn/*|Thumbs.db" kind="src" path="res"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/net.rim.ejde.BlackBerryVMInstallType/BlackBerry JRE 5.0.0"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/net.rim.ejde.BlackBerryVMInstallType/BlackBerry JRE 5.0.0"/>
 	<classpathentry excluding="**/.svn/*|Thumbs.db" kind="src" path=".locale_interfaces"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
