@@ -57,7 +57,7 @@ public class ChatField extends Manager{
 	public final static int	fsm_maxTextWidth 		= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth - 12;//修正时间出界//
 
 	
-	public final static int	fsm_ownChatTextBGColor		= 0xffb238; 
+	public final static int	fsm_ownChatTextBGColor		= 0xffecea; 
 	public final static int	fsm_otherChatTextBGColor	= 0xf7eee5; 
 	
 	public final static int	fsm_ownChatTextFGColor		= 0x572500; 
