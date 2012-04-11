@@ -123,7 +123,7 @@ public class WeiboItemField extends Manager{
 	};
 	
 	fetchWeibo				m_weibo			= null;
-		
+
 	String					m_simpleAbstract = null;
 	String					m_weiboText		= null;
 	String					m_commentText	= null;
@@ -804,7 +804,7 @@ public class WeiboItemField extends Manager{
 					if(recvMain.sm_standardUI){
 						sm_selectedBackgroud.draw(_g, 0, 0, getPreferredWidth(), getPreferredHeight(), BubbleImage.NO_POINT_STYLE);
 					}else{
-						WeiboHeadImage.drawSelectedImage(_g,getPreferredWidth(),getPreferredHeight());
+						WeiboHeadImage.drawSelectedImage(_g,getPreferredWidth(),getPreferredHeight(),true);
 					}
 				}
 				
@@ -850,7 +850,7 @@ public class WeiboItemField extends Manager{
 					m_displayName = t_final;
 				}
 				
-				_g.setFont(sm_defaultFont);//去除名字加粗 (sm_boldFont);
+				_g.setFont(sm_defaultFont); //改为普通字体Original:sm_boldFont//
 				_g.setColor(fsm_weiboNameTextColor);
 				int t_nameLength = _g.drawText(m_displayName,
 											fsm_weiboSignImageSize + t_nameLeadingSpace,

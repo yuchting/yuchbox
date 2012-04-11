@@ -72,14 +72,13 @@ import com.yuchting.yuchberry.client.ui.CameraFileOP;
 import com.yuchting.yuchberry.client.ui.ImageButton;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
-import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 
 final class InputManager extends Manager implements FieldChangeListener{
 	
 	public final static int fsm_inputBubbleBorder = 4;
 	public final static int fsm_textBorder = 2;
-
-	public final static int fsm_minHeight = MainIMScreen.fsm_defaultFontHeight + (fsm_textBorder + fsm_inputBubbleBorder) * 2 ;
+	
+	public final static int fsm_minHeight = MainIMScreen.fsm_defaultFontHeight + (fsm_textBorder + fsm_inputBubbleBorder) * 2;
 	public final static int fsm_maxHeight = recvMain.fsm_display_height / 2;
 	
 	MiddleMgr		m_middleMgr	= null;
@@ -100,7 +99,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 	    protected void focusPaint(Graphics g,boolean focus){
 	    	if(focus){
 	    		recvMain.sm_weiboUIImage.drawBitmapLine(g, m_selected, 
-	    				sm_split_line.getWidth(), 0, getImageHeight());
+	    				sm_split_line.getWidth() , 0, getImageHeight());
 	    	}
 	    	
 	    	super.focusPaint(g,focus);
@@ -128,9 +127,9 @@ final class InputManager extends Manager implements FieldChangeListener{
 															recvMain.sm_weiboUIImage.getImageUnit("bubble_bottom_point"),
 														},
 														recvMain.sm_weiboUIImage);
-	
-	public static ImageUnit	sm_background		= recvMain.sm_weiboUIImage.getImageUnit("nav_bar");
-	public static ImageUnit	sm_split_line 		= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_seg");
+
+	public static ImageUnit	sm_background		= recvMain.sm_weiboUIImage.getImageUnit("input_nav_bar"); //输入法背景//
+	public static ImageUnit	sm_split_line 		= recvMain.sm_weiboUIImage.getImageUnit("input_nav_bar_seg");//输入法分割线//
 	
 	int					m_currHeight	= fsm_minHeight;
 	
@@ -406,7 +405,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 
 final class MiddleMgr extends VerticalFieldManager{
 	
-	public final static int	fsm_linespace	= 18; 
+	public final static int	fsm_linespace	= 18;
 	VerticalFieldManager	m_chatMsgMgr = null;
 	
 	VerticalFieldManager	m_chatMsgMiddleMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
@@ -511,9 +510,9 @@ final class MiddleMgr extends VerticalFieldManager{
 		
 		m_inputMgr.enableVoiceMode(m_chatScreen.m_mainApp.m_imVoiceImmMode);
 	}
-
+	
 	public int getPreferredWidth(){
-		return recvMain.fsm_display_width ;
+		return recvMain.fsm_display_width;
 	}
 	
 	public int getPreferredHeight(){
@@ -562,7 +561,7 @@ final class MiddleMgr extends VerticalFieldManager{
 			g.setColor(MainChatScreen.fsm_background);
 			g.fillRect(0,0,getPreferredWidth(),getPreferredHeight());
 			
-			g.fillRect(0,0,100,100); 
+			g.fillRect(0,0,100,100);
 			
 		}finally{
 			g.setColor(t_color);
@@ -677,7 +676,7 @@ final class MiddleMgr extends VerticalFieldManager{
 
 public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOpen{
 	
-	public final static int fsm_background = 0xf3ecfc; 
+	public final static int fsm_background = 0xd8d8d8; //聊天对话背景色
 	
 	int m_menu_op = 0;
 	MenuItem m_sendMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_SEND_LABEL),m_menu_op++,0){
@@ -865,7 +864,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 	
 	final class ChatScreenHeader extends Field{
 		
-		public final static int fsm_chatScreenHeaderHeight = 45; 
+		public final static int fsm_chatScreenHeaderHeight = 45;
 		
 		public int getPreferredWidth() {
 			return recvMain.fsm_display_width;
@@ -884,7 +883,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		
 		protected void paint(Graphics _g){
 			recvMain.sm_weiboUIImage.drawBitmapLine(_g, m_title, 0, 0, getPreferredWidth());
-		
+			
 			// draw roster state
 			//
 			int t_x = RosterItemField.drawRosterState(_g,3,6,m_currRoster.m_roster.getPresence());
@@ -893,20 +892,28 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 			Font font = _g.getFont();
 			try{
 				
-				_g.setColor(0xffffff);
+				_g.setColor(0xffffff);//(RosterItemField.fsm_nameTextColor);//
 				_g.setFont(MainIMScreen.fsm_boldFont);
-				
-				_g.drawText(m_currRoster.m_roster.getName(),t_x,2);
-				
+	
+				// get rid of rear of '@'
+				// xxxx@yyy.com --> xxxx
+				//
+				int t_atIndex = m_currRoster.m_roster.getName().indexOf("@");
+				if(t_atIndex != -1){
+					_g.drawText(m_currRoster.m_roster.getName().substring(0,t_atIndex),t_x,2);
+				}else{
+					_g.drawText(m_currRoster.m_roster.getName(),t_x,2);
+				}
+								
 			}finally{
 				_g.setColor(color);
 				_g.setFont(font);
 			}
 			
-			t_x = RosterItemField.drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch);
+			t_x = RosterItemField.drawChatSign(_g,getPreferredWidth() - 35 ,getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch);//防止系统输入法标示遮挡sign
 						
 			if(m_currRoster.m_currChatState == fetchChatMsg.CHAT_STATE_COMPOSING){
-				recvMain.sm_weiboUIImage.drawImage(_g, sm_composing, t_x - sm_composing.getWidth(), 3);
+				recvMain.sm_weiboUIImage.drawImage(_g, sm_composing, t_x - sm_composing.getWidth()- 12, 3); //防止系统输入法标示遮挡输入状态
 			}
 		}
 	}
@@ -971,7 +978,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		m_mainScreen	= _mainScreen;
 		
 		m_middleMgr		= new MiddleMgr(this);
-		m_title 		= recvMain.sm_weiboUIImage.getImageUnit("nav_bar");		
+		m_title 		= recvMain.sm_weiboUIImage.getImageUnit("im_chat_nav_bar");		//IM Chat Header BG 
 		m_header 		= new ChatScreenHeader();
 		m_hasImageSign	= recvMain.sm_weiboUIImage.getImageUnit("picSign");
 		m_hasVoiceSign	= recvMain.sm_weiboUIImage.getImageUnit("voice_sign");

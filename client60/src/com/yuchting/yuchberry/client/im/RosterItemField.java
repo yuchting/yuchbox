@@ -45,8 +45,8 @@ public class RosterItemField extends Field{
 	
 	public final static int		fsm_headImageWidth 			= recvMain.fsm_display_width>320 ? fetchWeibo.fsm_headImageSize_l:fetchWeibo.fsm_headImageSize;
 	
-	public final static int		fsm_nameTextColor			= 0x000000;
-	public final static int		fsm_statusTextColor			= 0x464646;
+	public final static int		fsm_nameTextColor			= 0x512301; //别名字体颜色
+	public final static int		fsm_statusTextColor			= 0xbb7846; //聊天状态字体颜色
 	
 	public final static Font		fsm_addressFont			= MainIMScreen.fsm_defaultFont.derive(MainIMScreen.fsm_defaultFont.getStyle(),MainIMScreen.fsm_defaultFontHeight - 2);
 	public final static int		fsm_addressFontHeight	= fsm_addressFont.getHeight();
@@ -109,11 +109,11 @@ public class RosterItemField extends Field{
 		if(_on){
 			// draw selected backgroud
 			//
-			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight());
+			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight(),false);
 		}
 		// draw roster state
 		//
-		drawRosterState(_g,1,18,m_currRoster.m_roster.getPresence());  
+		drawRosterState(_g,1,20,m_currRoster.m_roster.getPresence());  
 		
 		// draw the IM sign and head image
 		//

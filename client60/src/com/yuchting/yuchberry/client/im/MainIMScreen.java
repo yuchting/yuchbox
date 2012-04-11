@@ -94,7 +94,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	}
 	
-	public final static int fsm_backgroundColor = 0xf0fbff; 
+	public final static int fsm_backgroundColor = 0xf3f3f3; //列表空白区域颜色
 	
 	int m_menu_label = 0;
 	
@@ -386,7 +386,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	public final static BubbleTextField 	fsm_testTextArea	= new BubbleTextField();
 	
 	public final static Font		fsm_defaultFont			= fsm_testTextArea.getFont();
-	public final static int		fsm_defaultFontHeight	= fsm_defaultFont.getHeight() - 1;
+	public final static int		fsm_defaultFontHeight	= fsm_defaultFont.getHeight();
 	
 	public final static String	fsm_YuchBerrySource		= "YuchBerry.info";
 	public final static Font		fsm_boldFont			= fsm_defaultFont.derive(fsm_defaultFont.getStyle() | Font.BOLD);

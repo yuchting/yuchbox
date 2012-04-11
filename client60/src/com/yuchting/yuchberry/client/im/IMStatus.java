@@ -108,12 +108,12 @@ final class IMStatusField extends Field{
 		if(_on){
 			// draw selected backgroud
 			//
-			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight());
+			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight(),false);
 		}
 		
 		// draw roster state
 		//
-		int t_x = RosterItemField.drawRosterState(_g,1,5,m_status.m_presence);
+		int t_x = RosterItemField.drawRosterState(_g,1,6,m_status.m_presence);
 		Font font = _g.getFont();
 		int color = _g.getColor();
 		
