@@ -1509,7 +1509,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 		if(m_enableWeiboModule || m_enableIMModule){
 			
-			if(m_stateScreen != null){
+			if(m_stateScreen != null && getActiveScreen() == m_stateScreen){
 				popScreen(m_stateScreen);
 				m_stateScreen = null;
 			}
@@ -1603,12 +1603,12 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			
 			
 		}else{
-			
-			if(m_stateScreen != null){
+
+			if(m_stateScreen != null && getActiveScreen() == m_stateScreen){
 				popScreen(m_stateScreen);
 				m_stateScreen = null;
 			}
-		}			
+		}
 	}
 	
 	public void pushStateScreen(){
