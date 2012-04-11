@@ -341,7 +341,7 @@ public final class WeiboHeadImage {
 				sm_selectedImage_im = recvMain.sm_weiboUIImage.getImageUnit("im_sel");
 			}
 			
-			selImg = sm_selectedImage_weibo;
+			selImg = sm_selectedImage_im;
 		}
 			
 		int t_draw_y = 0;
