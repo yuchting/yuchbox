@@ -1509,7 +1509,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 		if(m_enableWeiboModule || m_enableIMModule){
 			
-			if(m_stateScreen != null){
+			if(m_stateScreen != null && getActiveScreen() == m_stateScreen){
 				popScreen(m_stateScreen);
 				m_stateScreen = null;
 			}
@@ -1603,8 +1603,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			
 			
 		}else{
-			
-			if(m_stateScreen != null){
+
+			if(m_stateScreen != null && getActiveScreen() == m_stateScreen){
 				popScreen(m_stateScreen);
 				m_stateScreen = null;
 			}
@@ -2238,7 +2238,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		return null;
 	}
 	
-	public static ImageSets			sm_weiboUIImage = null;	
+	public static ImageSets			sm_weiboUIImage = null;
+	public static ImageSets			sm_extUIImage = null;	
 	public Vector						m_phizImageList = new Vector();
 	public static Vector				sm_phizImageList = null;		
 	
@@ -2250,6 +2251,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 
 			try{
 				sm_weiboUIImage = new ImageSets("/weibo_full_image.imageset");
+				sm_extUIImage = new ImageSets("/ext_full_image.imageset");
 			}catch(Exception e){
 				DialogAlertAndExit("weibo UI load Error:"+ e.getMessage() + e.getClass().getName());
 			}
@@ -2265,7 +2267,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			
 			sm_phizImageList = m_phizImageList;
 		}
-	}
+		
+			}
 	
 	public void InitWeiboModule(){
 		

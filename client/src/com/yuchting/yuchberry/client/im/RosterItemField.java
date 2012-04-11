@@ -109,7 +109,7 @@ public class RosterItemField extends Field{
 		if(_on){
 			// draw selected backgroud
 			//
-			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight());
+			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight(),false);
 		}
 		// draw roster state
 		//

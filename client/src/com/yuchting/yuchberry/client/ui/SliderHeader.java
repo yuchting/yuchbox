@@ -66,15 +66,28 @@ public abstract class SliderHeader extends Field{
 		return sm_isBBerSign;
 	}
 	
-	public SliderHeader(recvMain _mainApp,String[] _stateName){
+	public SliderHeader(recvMain _mainApp,String[] _stateName,boolean _weiboOrIM){
 		m_mainApp = _mainApp;
 			
 		if(sm_navigateBitmap == null){
-			sm_navigateBitmap 				= recvMain.sm_weiboUIImage.getImageUnit("nav_bar");
-			sm_navigateSegBitmap 			= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_seg");
-			sm_navigateBlockBitmap 			= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_block");
-			sm_navigateBlockBitmap_offline 	= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_block_offline");
-			sm_navigatePointBitmap 			= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_point");
+			if(_weiboOrIM){
+				// weibo slider header background
+				//
+				sm_navigateBitmap 				= recvMain.sm_weiboUIImage.getImageUnit("nav_bar");
+				sm_navigateSegBitmap 			= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_seg");
+				sm_navigateBlockBitmap 			= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_block");
+				sm_navigateBlockBitmap_offline 	= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_block_offline");
+				sm_navigatePointBitmap 			= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_point");
+			}else{
+				// weibo slider header background
+				//
+				sm_navigateBitmap 				= recvMain.sm_weiboUIImage.getImageUnit("nav_bar");
+				sm_navigateSegBitmap 			= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_seg");
+				sm_navigateBlockBitmap 			= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_block");
+				sm_navigateBlockBitmap_offline 	= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_block_offline");
+				sm_navigatePointBitmap 			= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_point");
+			}
+			
 		}
 		
 		m_stateBitmap = new ImageUnit[_stateName.length];

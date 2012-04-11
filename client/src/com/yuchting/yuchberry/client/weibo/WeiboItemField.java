@@ -804,7 +804,7 @@ public class WeiboItemField extends Manager{
 					if(recvMain.sm_standardUI){
 						sm_selectedBackgroud.draw(_g, 0, 0, getPreferredWidth(), getPreferredHeight(), BubbleImage.NO_POINT_STYLE);
 					}else{
-						WeiboHeadImage.drawSelectedImage(_g,getPreferredWidth(),getPreferredHeight());
+						WeiboHeadImage.drawSelectedImage(_g,getPreferredWidth(),getPreferredHeight(),true);
 					}
 				}
 				

@@ -127,7 +127,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 															recvMain.sm_weiboUIImage.getImageUnit("bubble_bottom_point"),
 														},
 														recvMain.sm_weiboUIImage);
-	
+
 	public static ImageUnit	sm_background		= recvMain.sm_weiboUIImage.getImageUnit("nav_bar");
 	public static ImageUnit	sm_split_line 		= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_seg");
 	

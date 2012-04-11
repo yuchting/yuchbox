@@ -53,7 +53,7 @@ public class WeiboHeader extends SliderHeader{
 	weiboTimeLineScreen m_parentScreen;	
 	
 	public WeiboHeader(weiboTimeLineScreen _screen){
-		super(_screen.m_mainApp,fsm_stateBitmapString);
+		super(_screen.m_mainApp,fsm_stateBitmapString,true);
 		
 		m_parentScreen = _screen;
 	}	
