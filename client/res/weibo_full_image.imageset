@@ -196,7 +196,7 @@
 	<Image Name="other_right" XPos="202" YPos="326" Width="8" Height="12" />
 	<Image Name="other_bottom_right" XPos="202" YPos="338" Width="8" Height="7" />
 	
-	<Image Name="other_inner_block" XPos="170" YPos="326" Width="32" Height="12" />
+	<Image Name="other_inner_block" XPos="170" YPos="326" Width="30" Height="12" />
 	
 	<Image Name="other_point" XPos="150" YPos="331" Width="12" Height="14" />
 	

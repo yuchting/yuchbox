@@ -198,7 +198,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 		if(_preferredHeight > sm_background.getHeight()){
 			int t_color = _g.getColor();
 			try{
-				_g.setColor(0x24130d); //输入超过两行后用此色补充
+				_g.setColor(0x3e3e3e); //输入超过两行后用此色补充
 				_g.fillRect(0, sm_background.getHeight(), 
 						_preferredWidth, _preferredHeight - sm_background.getHeight());
 			}finally{
@@ -676,7 +676,7 @@ final class MiddleMgr extends VerticalFieldManager{
 
 public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOpen{
 	
-	public final static int fsm_background = 0xd8d8d8; //聊天对话背景色
+	public final static int fsm_background = 0xd8d8d8; //聊天对话背景色d8d8d8
 	
 	int m_menu_op = 0;
 	MenuItem m_sendMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_SEND_LABEL),m_menu_op++,0){

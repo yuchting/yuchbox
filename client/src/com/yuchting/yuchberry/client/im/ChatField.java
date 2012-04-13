@@ -54,14 +54,14 @@ public class ChatField extends Manager{
 	public final static int	fsm_border		= 6;
 	
 	public final static int	fsm_minTextWidth		= fsm_offsetWidth + fsm_bubblePointWidth;
-	public final static int	fsm_maxTextWidth 		= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth - 12;//修正时间出界//
+	public final static int	fsm_maxTextWidth 		= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth - 10;//修正时间出界//
 
 	
-	public final static int	fsm_ownChatTextBGColor		= 0xffecea; 
-	public final static int	fsm_otherChatTextBGColor	= 0xf7eee5; 
+	public final static int	fsm_ownChatTextBGColor		= 0xd6efff; 
+	public final static int	fsm_otherChatTextBGColor	= 0xe7ebf7; 
 	
-	public final static int	fsm_ownChatTextFGColor		= 0x572500; 
-	public final static int	fsm_otherChatTextFGColor	= 0x543f29; 
+	public final static int	fsm_ownChatTextFGColor		= 0; 
+	public final static int	fsm_otherChatTextFGColor	= 0; 
 
 	public final static int	fsm_timeTextBGColor			= 0xffffff; 
 //	public final static int	fsm_timeTextBorderColor		= 0xc0c0c0;  					//
@@ -144,6 +144,7 @@ public class ChatField extends Manager{
 				null,
 				recvMain.sm_weiboUIImage.getImageUnit("own_point"),
 				null,
+
 			},
 			recvMain.sm_weiboUIImage);
 	
@@ -202,7 +203,7 @@ public class ChatField extends Manager{
 		
 		if(_msg.getMsg().length() != 0){
 			t_converText = WeiboTextField.getConvertString(_msg.getMsg(),WeiboTextField.CONVERT_DISABLE_AT_SIGN,null);
-			m_msgTextWidth = MainIMScreen.fsm_defaultFont.getAdvance(t_converText)  ; 
+			m_msgTextWidth = MainIMScreen.fsm_defaultFont.getAdvance(t_converText) ;
 			
 			if(m_msgTextWidth < fsm_minTextWidth){
 				m_msgTextWidth = fsm_minTextWidth;
@@ -319,9 +320,9 @@ public class ChatField extends Manager{
 		int t_x = 0;
 		
 		if(m_msg.isOwnMsg()){
-			t_x = recvMain.fsm_display_width - m_msgTextWidth - fsm_border - fsm_bubblePointWidth;
+			t_x = recvMain.fsm_display_width - m_msgTextWidth - fsm_border * 2 - fsm_bubblePointWidth ;
 		}else{
-			t_x = fsm_border + fsm_bubblePointWidth;
+			t_x = fsm_border * 2 + fsm_bubblePointWidth ;
 		}
 		
 		if(m_textfield != null){
@@ -343,7 +344,7 @@ public class ChatField extends Manager{
 	
 	protected void subpaint(Graphics _g){
 
-		int t_bubbleWidth = m_msgTextWidth + fsm_border * 2 + 4; //Bubble加宽//
+		int t_bubbleWidth = m_msgTextWidth + (fsm_border + 2 ) * 2 ; //Bubble加宽
 		
 		int t_x = 0;
 		
@@ -358,7 +359,7 @@ public class ChatField extends Manager{
 			sm_ownChatBubble.draw(_g, t_x, 0, t_bubbleWidth, getPreferredHeight(), 
 					BubbleImage.RIGHT_POINT_STYLE);
 			
-			t_time_x = t_x - t_time_width ;
+			t_time_x = t_x - t_time_width  ;
 			
 		}else{
 			
