@@ -54,14 +54,14 @@ public class ChatField extends Manager{
 	public final static int	fsm_border		= 6;
 	
 	public final static int	fsm_minTextWidth		= fsm_offsetWidth + fsm_bubblePointWidth;
-	public final static int	fsm_maxTextWidth 		= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth - 10;//修正时间出界//
+	public final static int	fsm_maxTextWidth 		= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth - 12;//修正时间出界//
 
 	
-	public final static int	fsm_ownChatTextBGColor		= 0xd6efff; 
-	public final static int	fsm_otherChatTextBGColor	= 0xe7ebf7; 
+	public final static int	fsm_ownChatTextBGColor		= 0xc1e6ff; //BBM d6efff
+	public final static int	fsm_otherChatTextBGColor	= 0xededff; //BBM e7ebf7
 	
-	public final static int	fsm_ownChatTextFGColor		= 0; 
-	public final static int	fsm_otherChatTextFGColor	= 0; 
+	public final static int	fsm_ownChatTextFGColor		= 0x073b50; //BBM 0
+	public final static int	fsm_otherChatTextFGColor	= 0x2d3035; 
 
 	public final static int	fsm_timeTextBGColor			= 0xffffff; 
 //	public final static int	fsm_timeTextBorderColor		= 0xc0c0c0;  					//
@@ -344,7 +344,7 @@ public class ChatField extends Manager{
 	
 	protected void subpaint(Graphics _g){
 
-		int t_bubbleWidth = m_msgTextWidth + (fsm_border + 2 ) * 2 ; //Bubble加宽
+		int t_bubbleWidth = m_msgTextWidth + (fsm_border + 4 ) * 2 ; //Bubble加宽
 		
 		int t_x = 0;
 		
