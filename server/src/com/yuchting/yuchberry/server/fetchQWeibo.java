@@ -300,7 +300,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		t_weibo.setStyle(fetchWeibo.QQ_WEIBO_STYLE);
 		t_weibo.setId(0);
 		
-		t_weibo.setName(t_user.getName());
+		t_weibo.setName(t_user.getNickName());
 		t_weibo.setScreenName(t_user.getScreenName());
 		t_weibo.setHeadImage(DownloadHeadImage(new URL(t_user.getHeadImageURL()),t_user.getScreenName()));
 		t_weibo.setDesc(t_user.getIntroduction());
@@ -331,7 +331,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		if(m_userself != null){
 			WeiboAccount acc = new WeiboAccount();
 			
-			acc.name 		= m_userself.getScreenName();
+			acc.name 		= m_userself.getNickName();
 			acc.id			= m_userself.getId();
 			acc.weiboStyle	= (byte)GetCurrWeiboStyle();
 			acc.needUpdate	= true;

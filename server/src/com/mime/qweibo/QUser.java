@@ -165,7 +165,7 @@ public class QUser{
 		return m_name;
 	}
 
-	public String getName(){
+	public String getNickName(){
 		return m_nick;
 	}
 
