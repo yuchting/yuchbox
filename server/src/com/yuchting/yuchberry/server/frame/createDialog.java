@@ -215,6 +215,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		String	m_host_send;
 		String	m_port_send;
 		
+		boolean m_fullnameSign;
 		public commonConfig(String _parserLine)throws Exception{
 			String[] t_data = _parserLine.split(",");
 			
@@ -233,7 +234,11 @@ public class createDialog extends JDialog implements DocumentListener,
 			m_host 			= t_data[2];
 			m_port 			= t_data[3];
 			m_host_send		= t_data[4];
-			m_port_send		= t_data[5];			
+			m_port_send		= t_data[5];
+			
+			if(t_data.length >= 7){
+				m_fullnameSign = Integer.parseInt(t_data[6]) != 0;
+			}
 		}
 		
 		public void SetConfig(createDialog _dlg){
@@ -253,6 +258,8 @@ public class createDialog extends JDialog implements DocumentListener,
 			
 			_dlg.m_send_host.setText(m_host_send);
 			_dlg.m_send_port.setText(m_port_send);
+			
+			_dlg.m_signInAsFullname.setSelected(m_fullnameSign);
 		}
 		
 	}
