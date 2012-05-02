@@ -120,6 +120,11 @@ public class mainFrame extends JFrame implements ActionListener{
 	Vector<fetchThread>	m_accountList	= null;
 		
 	static public void main(String _arg[])throws Exception{
+		
+		String Darg = System.getProperty("yuch.arg");
+		if(Darg != null){
+			_arg = Darg.split(";");
+		}
 				
 		if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("cryptTool")){
 			if(_arg.length == 2 && _arg[1].equalsIgnoreCase("console")){
