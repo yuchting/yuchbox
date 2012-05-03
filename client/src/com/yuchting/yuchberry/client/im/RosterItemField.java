@@ -45,8 +45,8 @@ public class RosterItemField extends Field{
 	
 	public final static int		fsm_headImageWidth 			= recvMain.fsm_display_width>320 ? fetchWeibo.fsm_headImageSize_l:fetchWeibo.fsm_headImageSize;
 	
-	public final static int		fsm_nameTextColor			= 0x272625; //别名字体颜色
-	public final static int		fsm_statusTextColor			= 0x4b4b4b; //聊天状态字体颜色
+	public final static int		fsm_nameTextColor			= 0; //别名字体颜色
+	public final static int		fsm_statusTextColor			= 0x6d6f6f; //聊天状态字体颜色
 	
 	public final static Font		fsm_addressFont			= MainIMScreen.fsm_defaultFont.derive(MainIMScreen.fsm_defaultFont.getStyle(),MainIMScreen.fsm_defaultFontHeight - 2);
 	public final static int		fsm_addressFontHeight	= fsm_addressFont.getHeight();
@@ -121,6 +121,25 @@ public class RosterItemField extends Field{
 		
 		int color = _g.getColor();
 		Font font = _g.getFont();
+/*
+		try{
+			// 选中的条目，字体颜色改为白色
+			if (_on){
+				_g.setColor(0xffffff);
+				_g.setFont(font);//(MainIMScreen.fsm_boldFont);//				
+				_g.drawText(m_currRoster.m_roster.getName(),t_x + 3 ,2);
+			
+				_g.setColor(0xffffff);
+				_g.setFont(fsm_addressFont);
+			}else{
+				_g.setColor(fsm_nameTextColor);
+				_g.setFont(font);//(MainIMScreen.fsm_boldFont);//				
+				_g.drawText(m_currRoster.m_roster.getName(),t_x + 3 ,2);
+				_g.setColor(fsm_statusTextColor);
+				_g.setFont(fsm_addressFont);
+		
+		}
+*/
 		try{
 			_g.setColor(fsm_nameTextColor);
 			_g.setFont(font);//(MainIMScreen.fsm_boldFont);//
