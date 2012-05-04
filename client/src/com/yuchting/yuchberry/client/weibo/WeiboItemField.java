@@ -73,11 +73,11 @@ public class WeiboItemField extends Manager{
 	public final static int		fsm_timeTextColor			= recvMain.sm_standardUI?0xfb9620:0x8bc5f8;
 	
 	public final static int		fsm_extendTextColor			= recvMain.sm_standardUI?0:0xd0d0d0;
-	public final static int		fsm_extendBGColor			= recvMain.sm_standardUI?0xc1e6ff:0x1f2d39;//Original: 0xc0deed:0x1f2d39;微博内容字体背景//
+	public final static int		fsm_extendBGColor			= recvMain.sm_standardUI?0xfad5e9:0x1f2d39;//Original: 0xc0deed:0x1f2d39;微博内容字体背景//
 	
 	public final static int		fsm_absTextColor			= recvMain.sm_standardUI?0x586061:0xbbc1c6;
 	
-	public final static int		fsm_weiboNameTextColor		= recvMain.sm_standardUI?0x073b50:0xe5e3cf;
+	public final static int		fsm_weiboNameTextColor		= recvMain.sm_standardUI?0xfb4d7b:0xe5e3cf;
 
 	public final static int		fsm_weiboCommentFGColor		= recvMain.sm_standardUI?0x6d6f6f:0x84c3fa;
 	public final static int		fsm_weiboCommentBGColor		= recvMain.sm_standardUI?0xFFFFFF:0x2b3d4d;
@@ -1007,7 +1007,7 @@ public class WeiboItemField extends Manager{
 			
 			int t_color = _g.getColor();
 			try{
-				int t_fillColor = 0xeaf2fe;//Original:0xdaeaeb;微博列表背景//
+				int t_fillColor = 0xfdf1fb;//Original:0xdaeaeb;微博列表背景//
 				
 				if(m_parentManager.getCurrExtendedItem() != null 
 				&& m_parentManager.getCurrExtendedItem() != this){

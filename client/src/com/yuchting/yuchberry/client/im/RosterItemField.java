@@ -45,7 +45,7 @@ public class RosterItemField extends Field{
 	
 	public final static int		fsm_headImageWidth 			= recvMain.fsm_display_width>320 ? fetchWeibo.fsm_headImageSize_l:fetchWeibo.fsm_headImageSize;
 	
-	public final static int		fsm_nameTextColor			= 0; //别名字体颜色
+	public final static int		fsm_nameTextColor			= 0xf74f7c; //别名字体颜色
 	public final static int		fsm_statusTextColor			= 0x6d6f6f; //聊天状态字体颜色
 	
 	public final static Font		fsm_addressFont			= MainIMScreen.fsm_defaultFont.derive(MainIMScreen.fsm_defaultFont.getStyle(),MainIMScreen.fsm_defaultFontHeight - 2);
