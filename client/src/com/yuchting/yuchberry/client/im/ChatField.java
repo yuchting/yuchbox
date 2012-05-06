@@ -312,9 +312,14 @@ public class ChatField extends Manager{
 		}else if(m_voiceField != null){
 			extra = m_voiceField.getImageHeight();
 		}
-		return m_msgTextHeight + fsm_border * 2 + extra;
+//源代码:		return m_msgTextHeight + fsm_border * 2 + extra;
+		//长文本判断
+		if (m_textfield != null && m_textfield.getHeight() > m_msgTextHeight ){
+			return m_textfield.getHeight() + fsm_border * 2 + extra;
+		}else{
+			return m_msgTextHeight + fsm_border * 2 + extra;
+		}
 	}
-	
 	protected void sublayout(int _width, int _height){
 		
 		int t_x = 0;
