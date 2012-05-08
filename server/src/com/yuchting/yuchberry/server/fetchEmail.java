@@ -585,6 +585,11 @@ public class fetchEmail extends fetchAccount{
     	
     	if(m_protocol.indexOf("s") != -1){
     		t_sysProps_send.put("mail.smtp.starttls.enable","true");
+    		
+    		if(m_port_send == 465){
+    			t_sysProps_send.put("mail.smtp.socketFactory.class","javax.net.ssl.SSLSocketFactory");
+    		}
+    		
     	}else{
     		t_sysProps_send.put("mail.smtp.starttls.enable","false");
     	}

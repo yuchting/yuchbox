@@ -124,32 +124,7 @@ public class HelloWorld {
     }
 	
 	public static void main(String arg[])throws Exception{
-		double x = 0;
-		double t = 0;
-		double k = 0.02;
-		
-		double v = 0;
-		double s = 0;
-		
-		do{
-			
-			double t_delta  = 0.5 - s;
-			double a = Math.pow(t_delta,2) * k;
-			
-			if(t_delta < 0){
-				a = -a;
-			}
-			
-			v += a;
-			s = s + v;
-			
-			System.out.print(s);
-			System.out.print(",");
-			
-		}while(v > 0.0);
-		
-		
-
+		berrySendTest();
 	}
 		
 	public final static String	fsm_vectStringSpliter = "<>";
