@@ -19,26 +19,6 @@
 		appendHTML="1"
 		pushHistoryMsg="1"
 	/-->
-	
-	<EmailAccount
-		account="yuchting@zoho.com"
-		password="ijOw2zmmjolblcXTVwSC"
-		cryptPassword=""
-		sendName="语盒"
-		
-		useFullNameSignIn="0"
-		
-		protocol="imaps"
-		host="imap.zoho.com"
-		port="993"
-		
-		protocol_send="smtp"
-		host_send="smtp.zoho.com"
-		port_send="465"
-		
-		appendHTML="1"
-		pushHistoryMsg="1"
-	/>
 		
 	<!--EmailAccount
 		account="yuchting@gmail.com"
