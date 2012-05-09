@@ -541,8 +541,8 @@ public class fetchEmail extends fetchAccount{
 	    }	
     	
 		// Get a Properties object
-	    Properties t_sysProps 		= System.getProperties();
-	    Properties t_sysProps_send	= System.getProperties();
+	    Properties t_sysProps 		= new Properties();
+	    Properties t_sysProps_send	= new Properties();
 	    
 		// initialize the session by the configure
 		// IMAP/POP3
@@ -550,10 +550,15 @@ public class fetchEmail extends fetchAccount{
     	if(m_protocol.indexOf("pop3") != -1){
     		t_sysProps.put("mail.pop3.disabletop", "true");
     		t_sysProps.put("mail.pop3s.disabletop", "true");
+    	}else{
+    		t_sysProps.put("mail.pop3.disabletop", "false");
+    		t_sysProps.put("mail.pop3s.disabletop", "false");
     	}
     	
     	if(m_host.indexOf(".qq.com") != -1){
     		t_sysProps.put("mail.imap.auth.login.disable","true");
+    	}else{
+    		t_sysProps.put("mail.imap.auth.login.disable","false");
     	}
     	
     	t_sysProps.put("mail.pop3s.ssl.protocols","SSLv3");
@@ -583,6 +588,8 @@ public class fetchEmail extends fetchAccount{
     	t_sysProps_send.put("mail.smtp.timeout","10000");
     	t_sysProps_send.put("mail.smtp.connectiontimeout","10000");
     	
+    	t_sysProps_send.remove("mail.smtp.socketFactory.class");
+    	
     	if(m_protocol.indexOf("s") != -1){
     		t_sysProps_send.put("mail.smtp.starttls.enable","true");
     		
@@ -591,7 +598,7 @@ public class fetchEmail extends fetchAccount{
     		}
     		
     	}else{
-    		t_sysProps_send.put("mail.smtp.starttls.enable","false");
+    		t_sysProps_send.put("mail.smtp.starttls.enable","false");	
     	}
     	
     	m_session_send = Session.getInstance(t_sysProps_send, null);

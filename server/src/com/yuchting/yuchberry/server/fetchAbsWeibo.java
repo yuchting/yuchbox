@@ -1091,6 +1091,10 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	}
 	protected int StoreHeadImage(URL _url,String _id){
 		
+		if(_url == null){
+			return -1;
+		}
+		
 		long t_currentTime = System.currentTimeMillis();
 		
 		final String t_filename 		= GetHeadImageFilename(_id);
@@ -1115,10 +1119,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			if(!t_file_l.exists() || !t_file.exists() || t_forceDownload){
 				
 				// local file is NOT exist and then download from the URL
-				//
-				URL t_url = _url;
-				
-		        URLConnection t_connect = t_url.openConnection();
+				//				
+		        URLConnection t_connect = _url.openConnection();
 		        t_connect.setConnectTimeout(10000);
 		        t_connect.setReadTimeout(50000);
 		        

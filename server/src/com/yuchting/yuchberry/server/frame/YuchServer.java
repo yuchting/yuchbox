@@ -1207,7 +1207,8 @@ public class YuchServer {
 		fetchThread t_thread = SearchAccountThread(_bberName,0);
 		if(t_thread == null){
 			m_logger.LogOut(_bberName + " query log error.");
-			return "<Error>在主机上查询不到账户，请先同步，获得有效主机。</Error>";
+			return "<Error>在主机上查询不到账户，请先同步，获得有效主机。\n" +
+					"Cannot search the log in this host, please Sync Account again.</Error>";
 		}
 		
 		try{

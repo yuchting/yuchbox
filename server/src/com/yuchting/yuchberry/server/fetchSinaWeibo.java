@@ -424,10 +424,6 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		}		
 		
 		_weibo.SetUserHeadImageHashCode(StoreHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));		
-
-		if(_weibo.GetUserScreenName().equals("yuchberry")){
-			System.out.print("");
-		}
 		
 		try{
 			
