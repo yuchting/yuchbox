@@ -360,7 +360,7 @@ public class fetchMgr{
 		
 		if(_type.equalsIgnoreCase("sina")){
         	t_weibo = new fetchSinaWeibo(_mgr);
-        }else if(_type.equalsIgnoreCase("twitter") || _type.equalsIgnoreCase("tw")){
+        }else if(_type.startsWith("tw")){
         	t_weibo = new fetchTWeibo(_mgr);
         }else if(_type.equalsIgnoreCase("qq")){
         	t_weibo = new fetchQWeibo(_mgr);
