@@ -348,7 +348,7 @@ public class YuchDroidApp extends Application {
 //									}catch(Exception e){}
 //								}								
 //																
-//								final String t_mainHost = "http://www.yuchs.com/verOffical/";
+//								final String t_mainHost = "http://www.yuchs.com/f/verOffical/";
 //								
 //								StringBuffer t_url = new StringBuffer(t_mainHost);
 //								t_url.append("?host=").append(URLEncoder.encode(m_config.m_host,"UTF-8"))
