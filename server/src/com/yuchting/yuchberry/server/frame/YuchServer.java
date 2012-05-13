@@ -539,37 +539,39 @@ public class YuchServer {
 					
 					for(yuchEmail email:m_currbber.GetEmailList()){
 						t_configBuffer.append("<EmailAccount account=\"").append(email.m_emailAddr)
-														.append("\" password=\"").append(mainFrame.prepareXmlAttr(email.m_password))
-														.append("\" sendName=\"").append(email.m_username)
-														.append("\" useFullNameSignIn=\"").append(email.m_fullnameSignIn?1:0)
-														.append("\" protocol=\"").append(email.m_protocol)
-														.append("\" host=\"").append(email.m_host)
-														.append("\" port=\"").append(email.m_port)
-														.append("\" protocol_send=\"").append("smtp")
-														.append("\" host_send=\"").append(email.m_host_send)
-														.append("\" port_send=\"").append(email.m_port_send)
-														.append("\" appendHTML=\"").append(email.m_appendHTML?1:0)
+										.append("\" signinName=\"").append(email.m_signinName)
+										.append("\" password=\"").append(mainFrame.prepareXmlAttr(email.m_password))
+										.append("\" sendName=\"").append(email.m_username)
+										.append("\" useFullNameSignIn=\"").append(email.m_fullnameSignIn?1:0)
+										.append("\" protocol=\"").append(email.m_protocol)
+										.append("\" host=\"").append(email.m_host)
+										.append("\" port=\"").append(email.m_port)
+										.append("\" protocol_send=\"").append("smtp")
+										.append("\" host_send=\"").append(email.m_host_send)
+										.append("\" port_send=\"").append(email.m_port_send)
+										.append("\" appendHTML=\"").append(email.m_appendHTML?1:0)
 										.append("\" />\n");
 					}
 					
 					for(yuchWeibo weibo:m_currbber.GetWeiboList()){
 						t_configBuffer.append("<WeiboAccount type=\"").append(weibo.m_typeName)
-														.append("\" account=\"").append(weibo.m_accoutName)
-														.append("\" accessToken=\"").append(weibo.m_accessToken)
-														.append("\" secretToken=\"").append(weibo.m_secretToken)
-														.append("\" timelineSum=\"").append(weibo.m_timelineSum)
-														.append("\" directMessageSum=\"").append(weibo.m_directMsgSum)
-														.append("\" atMeSum=\"").append(weibo.m_atMeSum)
-														.append("\" commentSum=\"").append(weibo.m_commentMeSum)
-														
+										.append("\" account=\"").append(weibo.m_accoutName)
+										.append("\" accessToken=\"").append(weibo.m_accessToken)
+										.append("\" secretToken=\"").append(weibo.m_secretToken)
+										.append("\" timelineSum=\"").append(weibo.m_timelineSum)
+										.append("\" directMessageSum=\"").append(weibo.m_directMsgSum)
+										.append("\" atMeSum=\"").append(weibo.m_atMeSum)
+										.append("\" commentSum=\"").append(weibo.m_commentMeSum)
 										.append("\" />\n");
 					}
 					
 					for(yuchIM im:m_currbber.GetIMList()){
 						t_configBuffer.append("<IMAccount type=\"").append(im.m_typeName)
-														.append("\" account=\"").append(im.m_accoutName)
-														.append("\" password=\"").append(mainFrame.prepareXmlAttr(im.m_password))
-														.append("\" cryptPassword=\"")
+										.append("\" account=\"").append(im.m_accoutName)
+										.append("\" password=\"").append(mainFrame.prepareXmlAttr(im.m_password))
+										.append("\" cryptPassword=\"")
+										.append("\" xmppHost=\"").append(im.m_xmppHost)
+										.append("\" xmppPort=\"").append(im.m_xmppPort)
 										.append("\" />\n");
 					}
 					

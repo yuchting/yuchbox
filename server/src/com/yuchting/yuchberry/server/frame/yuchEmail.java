@@ -29,13 +29,14 @@ package com.yuchting.yuchberry.server.frame;
 
 import org.dom4j.Element;
 
-import com.yuchting.yuchberry.server.fetchMgr;
+import com.yuchting.yuchberry.server.fetchAccount;
 
 
 public class yuchEmail {
 	
 
 	public String m_emailAddr = "";
+	public String m_signinName = "";
 	
 	public String m_username = "";
 
@@ -72,6 +73,7 @@ public class yuchEmail {
 		}
 		
 		_output.append("\t<email ").append("account=\"").append(m_emailAddr).
+									append("\" signin=\"").append(m_signinName).
 									append("\" name=\"").append(m_username).
 									append("\" pass=\"").append(mainFrame.prepareXmlAttr(m_password)).
 									append("\" full=\"").append(m_fullnameSignIn?1:0).
@@ -86,19 +88,20 @@ public class yuchEmail {
 	
 	public void InputXMLData(final Element _elem)throws Exception{
 				
-		m_emailAddr		= yuchbber.ReadStringAttr(_elem, "account");
-		m_username		= yuchbber.ReadStringAttr(_elem,"name");
-		m_password		= yuchbber.ReadStringAttr(_elem, "pass");
-		m_fullnameSignIn= yuchbber.ReadBooleanAttr(_elem, "full");
-		m_protocol		= yuchbber.ReadStringAttr(_elem, "protocal");
+		m_emailAddr		= fetchAccount.ReadStringAttr(_elem, "account");
+		m_signinName	= fetchAccount.ReadStringAttr(_elem, "signin");
+		m_username		= fetchAccount.ReadStringAttr(_elem,"name");
+		m_password		= fetchAccount.ReadStringAttr(_elem, "pass");
+		m_fullnameSignIn= fetchAccount.ReadBooleanAttr(_elem, "full");
+		m_protocol		= fetchAccount.ReadStringAttr(_elem, "protocal");
 		
-		m_host			= yuchbber.ReadStringAttr(_elem, "host");
-		m_port			= yuchbber.ReadIntegerAttr(_elem, "port");
+		m_host			= fetchAccount.ReadStringAttr(_elem, "host");
+		m_port			= fetchAccount.ReadIntegerAttr(_elem, "port");
 		
-		m_host_send		= yuchbber.ReadStringAttr(_elem, "hosts");
-		m_port_send		= yuchbber.ReadIntegerAttr(_elem, "ports");
+		m_host_send		= fetchAccount.ReadStringAttr(_elem, "hosts");
+		m_port_send		= fetchAccount.ReadIntegerAttr(_elem, "ports");
 		
-		m_appendHTML	= yuchbber.ReadBooleanAttr(_elem, "appHTML");
+		m_appendHTML	= fetchAccount.ReadBooleanAttr(_elem, "appHTML");
 	}
 	
 	public String toString(){

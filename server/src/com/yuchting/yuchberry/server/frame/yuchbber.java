@@ -36,7 +36,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.xml.sax.InputSource;
 
-import com.yuchting.yuchberry.server.fetchMgr;
+import com.yuchting.yuchberry.server.fetchAccount;
 
 public final class yuchbber {
 	
@@ -159,18 +159,18 @@ public final class yuchbber {
 		
 		Element t_elem = t_doc.getRootElement();
 		
-		m_signinName	= ReadStringAttr(t_elem,"name");
-		m_connectHost	= ReadStringAttr(t_elem,"connect");		
-		m_password		= ReadStringAttr(t_elem,"pass");
-		m_usingHours	= ReadLongAttr(t_elem,"hour");
-		m_createTime	= ReadLongAttr(t_elem, "time");
-		m_serverPort	= ReadIntegerAttr(t_elem, "port");
-		m_pushInterval	= ReadIntegerAttr(t_elem, "interval");
-		m_usingSSL		= ReadBooleanAttr(t_elem, "SSL");
-		m_convertSimpleChar = ReadBooleanAttr(t_elem, "T2S");
+		m_signinName	= fetchAccount.ReadStringAttr(t_elem,"name");
+		m_connectHost	= fetchAccount.ReadStringAttr(t_elem,"connect");		
+		m_password		= fetchAccount.ReadStringAttr(t_elem,"pass");
+		m_usingHours	= fetchAccount.ReadLongAttr(t_elem,"hour");
+		m_createTime	= fetchAccount.ReadLongAttr(t_elem, "time");
+		m_serverPort	= fetchAccount.ReadIntegerAttr(t_elem, "port");
+		m_pushInterval	= fetchAccount.ReadIntegerAttr(t_elem, "interval");
+		m_usingSSL		= fetchAccount.ReadBooleanAttr(t_elem, "SSL");
+		m_convertSimpleChar = fetchAccount.ReadBooleanAttr(t_elem, "T2S");
 		
-		m_signature = ReadStringAttr(t_elem,"signature");
-		m_bberLev	= ReadIntegerAttr(t_elem, "lev");
+		m_signature = fetchAccount.ReadStringAttr(t_elem,"signature");
+		m_bberLev	= fetchAccount.ReadIntegerAttr(t_elem, "lev");
 		
 		// validate the bber level
 		//
@@ -180,7 +180,7 @@ public final class yuchbber {
 		if(m_bberLev >= fsm_weekMoney.length){
 			m_bberLev = fsm_weekMoney.length - 1;
 		}
-		m_latestSyncTime = ReadLongAttr(t_elem,"sync");
+		m_latestSyncTime = fetchAccount.ReadLongAttr(t_elem,"sync");
 		m_signature = m_signature.replace("#r", "\n");
 		
 		m_emailList.removeAllElements();
@@ -214,38 +214,5 @@ public final class yuchbber {
 			m_imList.add(t_im);
         }
 			
-	}
-		
-	/**
-	 * read String attribute from xml
-	 */
-	static public String ReadStringAttr(Element _elem,String _attrName)throws Exception{
-		String attr = _elem.attributeValue(_attrName);
-		if(attr == null){
-			attr = "0";
-		}
-		
-		return attr;
-	}
-	
-	/**
-	 * read boolean attribute from xml
-	 */
-	static public boolean ReadBooleanAttr(Element _elem,String _attrName)throws Exception{
-		return Integer.valueOf(ReadStringAttr(_elem,_attrName)).intValue() == 1;
-	}
-	
-	/**
-	 * read the integer value from xml
-	 */
-	static public int ReadIntegerAttr(Element _elem,String _attrName)throws Exception{
-		return Integer.valueOf(ReadStringAttr(_elem,_attrName)).intValue();
-	}
-	
-	/**
-	 * read the integer value from xml
-	 */
-	static public long ReadLongAttr(Element _elem,String _attrName)throws Exception{
-		return Long.valueOf(ReadStringAttr(_elem,_attrName)).longValue();
 	}
 }

@@ -62,6 +62,8 @@ import net.rim.blackberry.api.mail.event.MessageListener;
 import net.rim.blackberry.api.mail.event.ViewListener;
 import net.rim.blackberry.api.mail.event.ViewListenerExtended;
 import net.rim.device.api.io.Base64OutputStream;
+import net.rim.device.api.servicebook.ServiceBook;
+import net.rim.device.api.servicebook.ServiceRecord;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.ui.UiApplication;
@@ -323,6 +325,21 @@ public class connectDeamon extends Thread implements SendListener,
 			Session.addViewListener(this);
 							 
 			AttachmentHandlerManager.getInstance().addAttachmentHandler(this);
+			
+			ServiceBook t_sb = ServiceBook.getSB();
+			ServiceRecord[] t_record = t_sb.findRecordsByCid("CMIME");
+			
+			if(t_record.length != 1){
+
+				String prompt = recvMain.sm_local.getString(yblocalResource.CONNECT_CMIME_PROMPT);
+				int t_repleaseIndex = prompt.indexOf("%1");
+				
+				if(t_repleaseIndex != -1){
+					prompt = prompt.substring(0,t_repleaseIndex) + store.getServiceConfiguration().getName() + prompt.substring(t_repleaseIndex + 2);
+				}
+				
+				m_mainApp.DialogAlert(prompt);
+			}
 		}		
 	}
 	 

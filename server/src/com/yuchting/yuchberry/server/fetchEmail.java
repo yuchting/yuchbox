@@ -353,6 +353,8 @@ public class fetchEmail extends fetchAccount{
 	String 	m_userName 					= null;
 	String 	m_strUserNameFull			= null;
 	
+	String	m_signinName				= null;
+	
 	String	m_sendName					= "";
 	
 	boolean m_useFullNameSignIn		= false;
@@ -486,8 +488,9 @@ public class fetchEmail extends fetchAccount{
 		if(m_strUserNameFull.indexOf('@') == -1 || m_strUserNameFull.indexOf('.') == -1){
 			throw new Exception("account : xxxxx@xxx.xxx such as 1234@gmail.com");
 		}
-    	m_userName	= m_strUserNameFull.substring(0,m_strUserNameFull.indexOf('@'));
-    	
+		
+    	m_userName							= m_strUserNameFull.substring(0,m_strUserNameFull.indexOf('@'));
+    	m_signinName						= ReadStringAttr(_elem,"signinName");
     	m_password							= ReadStringAttr(_elem,"password");
 
     	m_useFullNameSignIn					= ReadBooleanAttr(_elem,"useFullNameSignIn");
@@ -512,13 +515,8 @@ public class fetchEmail extends fetchAccount{
 			}
 		}
 		
-		if(_elem.attributeValue("sendName") !=null){
-			m_sendName	= ReadStringAttr(_elem,"sendName");
-		}
-		
-		if(_elem.attributeValue("cryptPassword") != null){
-			m_cryptPassword = ReadStringAttr(_elem,"cryptPassword");
-		}
+		m_sendName		= ReadStringAttr(_elem,"sendName");
+		m_cryptPassword = ReadStringAttr(_elem,"cryptPassword");		
 		
 		File t_file = new File(GetAccountPrefix());
 		if(!t_file.exists() || !t_file.isDirectory()){
@@ -1219,12 +1217,16 @@ public class fetchEmail extends fetchAccount{
 		while(t_tryTime++ < 5){
 			try{
 				
-				
-				if(m_useFullNameSignIn){
-					m_sendTransport.connect(m_host_send,m_port_send,m_strUserNameFull,m_password);
+				if(m_signinName != null && m_signinName.length() != 0){
+					m_sendTransport.connect(m_host_send,m_port_send,m_signinName,m_password);
 				}else{
-					m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
+					if(m_useFullNameSignIn){
+						m_sendTransport.connect(m_host_send,m_port_send,m_strUserNameFull,m_password);
+					}else{
+						m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
+					}
 				}
+				
 				
 				try{
 					m_sendTransport.sendMessage(msg, msg.getAllRecipients());
@@ -1468,21 +1470,30 @@ public class fetchEmail extends fetchAccount{
 			//
 			return ;
 		}
-		    	
-		if(m_useFullNameSignIn){
-			m_store.connect(m_host,m_port,m_strUserNameFull,m_password);
+		   
+		if(m_signinName != null && m_signinName.length() != 0){
+			m_store.connect(m_host,m_port,m_signinName,m_password);
 		}else{
-			m_store.connect(m_host,m_port,m_userName,m_password);
-		}  	
+			if(m_useFullNameSignIn){
+				m_store.connect(m_host,m_port,m_strUserNameFull,m_password);
+			}else{
+				m_store.connect(m_host,m_port,m_userName,m_password);
+			}
+		}		  	
 		    	
     	// test connected
     	//
     	if(_fullTest){
-    		if(m_useFullNameSignIn){
-				m_sendTransport.connect(m_host_send,m_port_send,m_strUserNameFull,m_password);
-			}else{
-				m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
-			}
+    		if(m_signinName != null && m_signinName.length() != 0){
+    			m_sendTransport.connect(m_host_send,m_port_send,m_signinName,m_password);
+    		}else{
+    			if(m_useFullNameSignIn){
+    				m_sendTransport.connect(m_host_send,m_port_send,m_strUserNameFull,m_password);
+    			}else{
+    				m_sendTransport.connect(m_host_send,m_port_send,m_userName,m_password);
+    			}
+    		}
+    		
         	m_sendTransport.close();        		
     	}
     	
@@ -2149,7 +2160,11 @@ public class fetchEmail extends fetchAccount{
 	
 	public void ComposeMessage(MimeMessage msg,fetchMail _mail,fetchMail _forwardMail,String _sendName)throws Exception{
 		
-		msg.setFrom(new InternetAddress(m_strUserNameFull,MimeUtility.encodeText(_sendName,"UTF-8","B")));
+		if(_sendName.length() != 0){
+			msg.setFrom(new InternetAddress(m_strUserNameFull,MimeUtility.encodeText(_sendName,"UTF-8","B")));
+		}else{
+			msg.setFrom(new InternetAddress(m_strUserNameFull));
+		}		
 	
 		String t_sendTo = fetchMail.parseAddressList(_mail.GetSendToVect());
 		

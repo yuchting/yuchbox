@@ -347,7 +347,7 @@ public class fetchMgr{
 		
 		fetchAccount t_im = null;
 		
-		if(_type.equalsIgnoreCase("gtalk")){
+		if(_type.equalsIgnoreCase("gtalk") || _type.equalsIgnoreCase("xmpp")){
 			t_im = new fetchGTalk(_mgr);
         }
 		

@@ -79,6 +79,8 @@ import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
+import sun.awt.HorizBagLayout;
+
 import com.yuchting.yuchberry.server.Logger;
 import com.yuchting.yuchberry.server.fetchAbsWeibo;
 import com.yuchting.yuchberry.server.fetchAccount;
@@ -93,6 +95,7 @@ final class createEmailData{
 	
 	// account attribute
 	String m_accountName	;
+	String m_signinName		;
 	String m_password		;
 	String m_cryptPassword	;
 	String m_sendName		;
@@ -152,7 +155,7 @@ public class createDialog extends JDialog implements DocumentListener,
 															ItemListener,IWeiboAuthOk{
 	
 	final static int		fsm_width = 540;
-	final static int		fsm_height = 680;
+	final static int		fsm_height = 740;
 	
 	public static class NumberMaxMinLimitedDmt extends PlainDocument {
 		 
@@ -282,6 +285,7 @@ public class createDialog extends JDialog implements DocumentListener,
 	Vector<commonConfig>		m_commonConfigData	= new Vector<commonConfig>();
 	
 	JTextField 	m_account		= new JTextField();
+	JTextField 	m_signinName	= new JTextField();
 	JTextField 	m_password		= new JTextField();
 	JButton		m_cryptPasswordHelpBut = new JButton("加密密码:");
 	JTextField 	m_cryptPassword	= new JTextField();
@@ -432,17 +436,16 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 		JPanel t_accountMainPanel = new JPanel();
 		t_accountMainPanel.setLayout(new FlowLayout());
-		t_accountMainPanel.setPreferredSize(new Dimension(fsm_width, 340));
+		t_accountMainPanel.setPreferredSize(new Dimension(fsm_width, 400));
 		
-		m_accountListScroll.setPreferredSize(new Dimension(140,330));
+		m_accountListScroll.setPreferredSize(new Dimension(140,390));
 		t_accountMainPanel.add(m_accountListScroll);
 		
 		t_accountMainPanel.add(PrepareAccountBut());
 		t_accountMainPanel.add(PrepareAccountDataPanel(_formerHost,_formerPort,_formerHost_send,_formerPort_send));				
 		
 		getContentPane().add(t_accountMainPanel);
-		
-		
+				
 		
 		////////////////////////////////////////////////////////////////////
 		// confirm button data
@@ -475,7 +478,7 @@ public class createDialog extends JDialog implements DocumentListener,
 		t_separator.setPreferredSize(new Dimension(fsm_width, 5));
 		t_accountPanel.add(t_separator);
 		
-		AddTextLabel(t_accountPanel,"帐号名称:",m_account,220,"");
+		AddTextLabel(t_accountPanel,"邮件地址:",m_account,220,"");
 		AddTextLabel(t_accountPanel,"帐号密码:",m_password,220,"");
 		
 		m_cryptPasswordHelpBut.setMargin(new Insets(1, 1, 1, 1));
@@ -505,10 +508,17 @@ public class createDialog extends JDialog implements DocumentListener,
 		m_appendHTML.setPreferredSize(new Dimension(fsm_width, 20));
 		t_accountPanel.add(m_appendHTML);
 		
+		m_signinName.setPreferredSize(new Dimension(280, 25));
+		t_label = new JLabel("登陆账户名（如果和邮件地址一样，请留空）：");
+		t_label.setPreferredSize(new Dimension(fsm_width, 20));
+		
+		t_accountPanel.add(t_label);
+		t_accountPanel.add(m_signinName);
+		
 		m_tabbedPane.addTab("邮件",null,t_accountPanel,"添加邮件账户");
 		m_tabbedPane.addTab("Weibo",null,PrepareWeiboDataPanel(),"添加推送微博账户");
 		m_tabbedPane.addTab("IM",null,PrepareIMDataPanel(),"添加IM推送账户");
-		m_tabbedPane.setPreferredSize(new Dimension(300, 330));
+		m_tabbedPane.setPreferredSize(new Dimension(300, 390));	
 		
 		return m_tabbedPane;
 	}
@@ -619,6 +629,7 @@ public class createDialog extends JDialog implements DocumentListener,
 				createEmailData t_email = new createEmailData();
 				
 				t_email.m_accountName	= m_account.getText();
+				t_email.m_signinName	= m_signinName.getText();
 				t_email.m_sendName		= m_sendName.getText();
 				t_email.m_password		= m_password.getText();
 				t_email.m_cryptPassword	= m_cryptPassword.getText();
@@ -1012,9 +1023,11 @@ public class createDialog extends JDialog implements DocumentListener,
 		
 		Element t_elem = DocumentFactory.getInstance().createDocument().addElement("EmailAccount");
 		t_elem.addAttribute("account", _email.m_accountName);
+		t_elem.addAttribute("signinName",_email.m_signinName);
 		t_elem.addAttribute("password", _email.m_password);
 		t_elem.addAttribute("cryptPassword",_email.m_cryptPassword);
 		t_elem.addAttribute("sendName",_email.m_sendName);
+		
 				
 		t_elem.addAttribute("useFullNameSignIn", _email.m_useFullNameSignIn?"1":"0");
 		t_elem.addAttribute("protocol", _email.m_protocal);
@@ -1179,5 +1192,5 @@ public class createDialog extends JDialog implements DocumentListener,
 	    outBuff.close(); 
 	    output.close(); 
 	    input.close(); 
-	} 
+	}
 }

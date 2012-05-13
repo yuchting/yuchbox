@@ -29,6 +29,8 @@ package com.yuchting.yuchberry.server.frame;
 
 import org.dom4j.Element;
 
+import com.yuchting.yuchberry.server.fetchAccount;
+
 public class yuchWeibo {
 
 
@@ -70,15 +72,15 @@ public class yuchWeibo {
 	}
 	
 	public void InputXMLData(final Element _elem)throws Exception{
-		m_typeName 		= yuchbber.ReadStringAttr(_elem, "type");
-		m_accoutName	= yuchbber.ReadStringAttr(_elem, "account");
-		m_accessToken	= yuchbber.ReadStringAttr(_elem, "accessToken");
-		m_secretToken	= yuchbber.ReadStringAttr(_elem, "secretToken");
+		m_typeName 		= fetchAccount.ReadStringAttr(_elem, "type");
+		m_accoutName	= fetchAccount.ReadStringAttr(_elem, "account");
+		m_accessToken	= fetchAccount.ReadStringAttr(_elem, "accessToken");
+		m_secretToken	= fetchAccount.ReadStringAttr(_elem, "secretToken");
 		
-		m_timelineSum	= yuchbber.ReadIntegerAttr(_elem, "timelineSum");
-		m_directMsgSum	= yuchbber.ReadIntegerAttr(_elem, "directMessageSum");
-		m_atMeSum		= yuchbber.ReadIntegerAttr(_elem, "atMeSum");
-		m_commentMeSum	= yuchbber.ReadIntegerAttr(_elem, "commentSum");
+		m_timelineSum	= fetchAccount.ReadIntegerAttr(_elem, "timelineSum");
+		m_directMsgSum	= fetchAccount.ReadIntegerAttr(_elem, "directMessageSum");
+		m_atMeSum		= fetchAccount.ReadIntegerAttr(_elem, "atMeSum");
+		m_commentMeSum	= fetchAccount.ReadIntegerAttr(_elem, "commentSum");
 	}
 	
 	public String toString(){

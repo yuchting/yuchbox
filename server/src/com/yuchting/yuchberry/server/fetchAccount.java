@@ -150,27 +150,50 @@ abstract public class fetchAccount {
 	/**
 	 * read String attribute from xml
 	 */
-	static public String ReadStringAttr(Element _elem,String _attrName)throws Exception{
-		String attr = _elem.attributeValue(_attrName);
-		if(attr == null){
-			attr = "0";
-		}
-		
-		return attr;
+	static public String ReadStringAttr(Element _elem,String _attrName){
+		String t_value = _elem.attributeValue(_attrName);
+		return t_value == null?"":t_value;
 	}
 	
 	/**
 	 * read boolean attribute from xml
 	 */
-	static public boolean ReadBooleanAttr(Element _elem,String _attrName)throws Exception{
-		return Integer.valueOf(ReadStringAttr(_elem,_attrName)).intValue() == 1;
+	static public boolean ReadBooleanAttr(Element _elem,String _attrName){
+		String attr = _elem.attributeValue(_attrName);
+		
+		return attr != null && (attr.equals("1") || attr.equalsIgnoreCase("true"));
 	}
 	
 	/**
 	 * read the integer value from xml
 	 */
-	static public int ReadIntegerAttr(Element _elem,String _attrName)throws Exception{
-		return Integer.valueOf(ReadStringAttr(_elem,_attrName)).intValue();
+	static public int ReadIntegerAttr(Element _elem,String _attrName){
+		String attr = _elem.attributeValue(_attrName);
+		if(attr == null){
+			return 0;
+		}
+		
+		try{
+			return Integer.parseInt(attr);
+		}catch(Exception e){
+			return 0;
+		}		
+	}
+	
+	/**
+	 * read the integer value from xml
+	 */
+	static public long ReadLongAttr(Element _elem,String _attrName){
+		String attr = _elem.attributeValue(_attrName);
+		if(attr == null){
+			return 0;
+		}
+		
+		try{
+			return Long.parseLong(attr);
+		}catch(Exception e){
+			return 0;
+		}	
 	}
 	
 	static public String getImageType(byte[] _data){

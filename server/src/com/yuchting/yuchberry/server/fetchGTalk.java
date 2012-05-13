@@ -248,6 +248,9 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	String	m_prefix			= null;
 	String	m_headImageDir		= null;
 	
+	String	m_XMPPHost			= null;
+	int		m_XMPPPort			= 5222;
+	
 	String m_password			= null;
 	String m_cryptPassword		= null;
 	
@@ -296,11 +299,16 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	
 	public void InitAccount(Element _elem)throws Exception{
 		
+		String t_type	= fetchAccount.ReadStringAttr(_elem,"type").toLowerCase();
+		
 		m_accountName	= fetchAccount.ReadStringAttr(_elem,"account").toLowerCase();
 		m_password		= fetchAccount.ReadStringAttr(_elem,"password");
 		m_cryptPassword	= fetchAccount.ReadStringAttr(_elem,"cryptPassword");
 		
-		m_prefix				= m_mainMgr.GetPrefixString() + m_accountName + "[GTalk]/";
+		m_XMPPHost		= fetchAccount.ReadStringAttr(_elem,"xmppHost");
+		m_XMPPPort		= fetchAccount.ReadIntegerAttr(_elem,"xmppPort");
+				
+		m_prefix				= m_mainMgr.GetPrefixString() + m_accountName + "["+t_type+"]/" ;
 		m_headImageDir			= m_prefix;
 		
 		File t_file  = new File(GetAccountPrefix());
@@ -356,7 +364,15 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			
 			// Create a connection to the jabber.org server on a specific port.
 			//
-			ConnectionConfiguration t_config = new ConnectionConfiguration("talk.google.com",5222,t_domain);
+			ConnectionConfiguration t_config;
+			if(m_XMPPHost != null && m_XMPPHost.length() != 0){
+				// manually xmpp server
+				//
+				t_config = new ConnectionConfiguration(m_XMPPHost,m_XMPPPort,t_domain);
+			}else{
+				t_config = new ConnectionConfiguration("talk.google.com",5222,t_domain);
+			}
+			
 			
 			if(t_domain.equals("gmail.com")){
 				t_config.setSASLAuthenticationEnabled(false);

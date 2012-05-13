@@ -20,6 +20,7 @@ CHANGE_SIGNATURE_PROMPT_TEXT#0="Send your pushed Email address a message which s
 CHECK_DEL_ATTACHMENT#0="Check/Delete Attachment(YB)";
 CLEAR_STATISTICS_PROMPT#0="Are you sure clear ths stat?";
 CONNECT_BUTTON_LABEL#0="Connect";
+CONNECT_CMIME_PROMPT#0="YuchBerry uses %1 [CMIME] item to Service Book to receive and send Email, please use the same one to operate or delete other CMIME items and restart YuchBox.";
 CONNECT_ERROR_PROMPT#0="Connection failed. Please check DebugInfo screen and it's help menu to check more detail.";
 CONNECT_NET_BROKEN_PROMPT#0="BlackBerry Network Broken!";
 CONNECT_OPTION_LABEL#0="Connection Option:";
