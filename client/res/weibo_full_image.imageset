@@ -14,6 +14,8 @@
 	
 	<Image Name="female" XPos="72" YPos="83" Width="16" Height="16" />
 	<Image Name="male" XPos="72" YPos="99" Width="16" Height="16" />
+	<Image Name="followState_1" XPos="88" YPos="83" Width="12" Height="12" />
+	<Image Name="followState" XPos="88" YPos="99" Width="12" Height="12" />
 	
 	<Image Name="statusIM" XPos="262" YPos="110" Width="32" Height="32" />
 	<Image Name="atMe_1" XPos="230" YPos="110" Width="32" Height="32" />

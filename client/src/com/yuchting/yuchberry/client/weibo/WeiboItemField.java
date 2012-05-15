@@ -665,8 +665,13 @@ public class WeiboItemField extends Manager{
 				
 				// draw weibo style 
 				//
-				recvMain.sm_weiboUIImage.drawImage(
-						_g, weiboTimeLineScreen.GetWeiboSign(m_weibo.GetWeiboStyle()), 0, t_textStart_y);
+				ImageUnit t_style = weiboTimeLineScreen.GetWeiboSign(m_weibo.GetWeiboStyle());
+				recvMain.sm_weiboUIImage.drawImage(_g,t_style , 0, t_textStart_y);
+				
+				if(m_weibo.isUserFollowing() && m_weibo.isUserFollowMe()){
+					// draw follow state image
+					recvMain.sm_weiboUIImage.drawImage(_g, weiboTimeLineScreen.getFollowStateImage(), t_style.getWidth() + 2, t_textStart_y);
+				}
 				
 				// draw time string , weibo pic/comment
 				//
@@ -759,16 +764,26 @@ public class WeiboItemField extends Manager{
 				
 				// draw the weibo style
 				//
-				recvMain.sm_weiboUIImage.drawImage(
-						_g,weiboTimeLineScreen.GetWeiboSign(m_weibo.GetWeiboStyle()),t_leadingSpace, fsm_headImageTextInterval);
+				ImageUnit t_style = weiboTimeLineScreen.GetWeiboSign(m_weibo.GetWeiboStyle());
+				recvMain.sm_weiboUIImage.drawImage(_g,t_style,t_leadingSpace, fsm_headImageTextInterval);
+								
+				int t_followState_x = t_leadingSpace + t_style.getWidth();
 				
 				// name VIP sign
 				//
 				if(m_weibo.IsSinaVIP()){
-					recvMain.sm_weiboUIImage.drawImage(_g,weiboTimeLineScreen.GetVIPSignBitmap(m_weibo.GetWeiboStyle()),
-														fsm_weiboSignImageSize ,fsm_headImageTextInterval);
+					t_style = weiboTimeLineScreen.GetVIPSignBitmap(m_weibo.GetWeiboStyle());
+					recvMain.sm_weiboUIImage.drawImage(_g,t_style,t_followState_x ,fsm_headImageTextInterval);
+					
+					t_followState_x += t_style.getWidth() + 2;
 				}
 				
+				if(m_weibo.isUserFollowing() && m_weibo.isUserFollowMe()){
+					// draw follow state image
+					recvMain.sm_weiboUIImage.drawImage(_g, weiboTimeLineScreen.getFollowStateImage(),
+													t_followState_x, fsm_headImageTextInterval);
+				}
+								
 				// time string
 				//
 				drawWeiboTime(_g,t_firstLineHeight,true);				
@@ -808,8 +823,14 @@ public class WeiboItemField extends Manager{
 				
 				// weibo sign 
 				//
-				recvMain.sm_weiboUIImage.drawImage(
-						_g,weiboTimeLineScreen.GetWeiboSign(m_weibo.GetWeiboStyle()),t_leadingSpace, t_firstLineHeight);
+				ImageUnit t_style = weiboTimeLineScreen.GetWeiboSign(m_weibo.GetWeiboStyle());
+				recvMain.sm_weiboUIImage.drawImage(_g,t_style,t_leadingSpace, t_firstLineHeight);
+				
+				if(m_weibo.isUserFollowing() && m_weibo.isUserFollowMe()){
+					// draw follow state image
+					recvMain.sm_weiboUIImage.drawImage(_g, weiboTimeLineScreen.getFollowStateImage(),
+							t_leadingSpace, t_firstLineHeight + t_style.getHeight() + fsm_headImageTextInterval);
+				}
 				
 				int t_nameLeadingSpace = t_leadingSpace;
 				

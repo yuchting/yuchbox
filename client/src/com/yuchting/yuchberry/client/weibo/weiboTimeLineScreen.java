@@ -1402,6 +1402,19 @@ public class weiboTimeLineScreen extends MainScreen{
 		return sm_weiboCommentSignImage;
 	}
 	
+	private static ImageUnit sm_weiboFollowStateImage = null;
+	static public ImageUnit getFollowStateImage(){
+		if(sm_weiboFollowStateImage == null){
+			if(recvMain.sm_standardUI){
+				sm_weiboFollowStateImage = recvMain.sm_weiboUIImage.getImageUnit("followState_1");
+			}else{
+				sm_weiboFollowStateImage = recvMain.sm_weiboUIImage.getImageUnit("followState");
+			}
+			
+		}
+		return sm_weiboFollowStateImage;
+	}
+	
 	// 
 	//
 
