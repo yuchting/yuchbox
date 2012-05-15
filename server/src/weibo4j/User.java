@@ -82,6 +82,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
     private String profileBackgroundImageUrl;
     private String profileBackgroundTile;
     private boolean following;
+    private boolean follow_me;
     private boolean notificationEnabled;
     private int statusesCount;
     private boolean geoEnabled;
@@ -130,6 +131,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
             profileBackgroundImageUrl = json.getString("profile_background_image_url");
             profileBackgroundTile = json.getString("profile_background_tile");
             following = getBoolean("following", json);
+            follow_me = getBoolean("follow_me", json); //yuch modified
             notificationEnabled = getBoolean("notifications", json);
             statusesCount = json.getInt("statuses_count");
             
@@ -180,6 +182,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
         profileBackgroundImageUrl = getChildText("profile_background_image_url", elem);
         profileBackgroundTile = getChildText("profile_background_tile", elem);
         following = getChildBoolean("following", elem);
+        follow_me = getChildBoolean("follow_me", elem); //yuch modified
         notificationEnabled = getChildBoolean("notifications", elem);
         statusesCount = getChildInt("statuses_count", elem);
         geoEnabled = getChildBoolean("geo_enabled", elem);
@@ -567,6 +570,15 @@ public class User extends WeiboResponse implements java.io.Serializable {
      */
     public boolean isFollowing() {
         return following;
+    }
+    
+    /**
+     * Yuch added
+     * whether this user is following me
+     * @return
+     */
+    public boolean isFollowMe(){
+    	return follow_me;
     }
 
     /**

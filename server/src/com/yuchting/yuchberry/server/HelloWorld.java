@@ -123,8 +123,41 @@ public class HelloWorld {
         Params[] mParams;
     }
 	
+	public static boolean isPlalindrome(int number){
+		//此方法实现判断数字是不是回文数
+		String num = String.valueOf(number);
+		return new StringBuffer(num).reverse().toString().equalsIgnoreCase(num);
+	}
+ 
+	public static boolean PrimeNum(int maxNum)
+    {
+		boolean IsPrime = true;
+        for (int i = 3; i <= maxNum; i++)
+        {
+        	IsPrime = true;
+            for (int j = 2; j <= Math.sqrt(i); j++)
+            {
+                if (i % j == 0)
+                {
+                    IsPrime = false;
+                    break;//有因子证明是合数，马上退出循环。
+                }
+            }
+            
+        }
+        
+        return IsPrime;
+    }
+	
 	public static void main(String arg[])throws Exception{
-		berrySendTest();
+		int imm = 0;
+		for(int i =1 ;i <= 10000;i++ ){
+			if(PrimeNum(i) &&  isPlalindrome(i)){
+				imm++;
+			}
+		}
+		
+		System.out.print(imm);
 	}
 		
 	public final static String	fsm_vectStringSpliter = "<>";

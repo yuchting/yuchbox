@@ -28,7 +28,6 @@
 package com.yuchting.yuchberry.server;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Comparator;
@@ -412,6 +411,19 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		
 		_weibo.SetSinaVIP(_qweibo.isVIP());
 		
+		try{
+			QUser t_user;
+			if(_qweibo.isOwnWeibo()){
+				t_user = m_userself;
+			}else{
+				t_user = m_api.getUserInfo(_qweibo.getScreenName());
+			}
+			
+			_weibo.setUserFollowMe(t_user.isMyFans());
+			_weibo.setUserFollowing(t_user.hasBeenFollowed());
+			
+		}catch(Exception e){}
+		
 		if(_qweibo.getImage() != null){
 			_weibo.SetOriginalPic(_qweibo.getImage());
 		}		
@@ -462,30 +474,32 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		t_weibo.m_timeline.m_sum = 10;
 		t_weibo.m_directMessage.m_sum = 5;
 		
-		File t_file = new File("logo.png");
-		FileInputStream t_fileIn = new FileInputStream(t_file);
-		byte[] t_fileBuffer = new byte[(int)t_file.length()];
-		
-		sendReceive.ForceReadByte(t_fileIn, t_fileBuffer, t_fileBuffer.length);
-		
-		t_weibo.UpdateStatus("image again", null, t_fileBuffer, "image/png");	
-				
-		System.out.print(t_weibo);
-		
-		
+//		File t_file = new File("logo.png");
+//		FileInputStream t_fileIn = new FileInputStream(t_file);
+//		byte[] t_fileBuffer = new byte[(int)t_file.length()];
 //		
-//		List<QWeibo> t_list = t_weibo.m_api.getHomeList(1307720032001L,20);
+//		sendReceive.ForceReadByte(t_fileIn, t_fileBuffer, t_fileBuffer.length);
 //		
-//		for(QWeibo weibo : t_list){
-//			
-//			System.out.println(Long.toString(weibo.getId()) + " @" + weibo.getScreenName() + "("+weibo.getNickName()+") " + weibo.getTime() +":"+ weibo.getText());
-//			
-//			if(weibo.getSourceWeibo() != null){
-//				weibo = weibo.getSourceWeibo();
-//				System.out.print("\t\tsource:");
-//				System.out.print(Long.toString(weibo.getId()) + " @" + weibo.getScreenName() + "("+weibo.getNickName()+") :"+ weibo.getText());
-//			}
-//		}
+//		t_weibo.UpdateStatus("image again", null, t_fileBuffer, "image/png");	
+//				
+//		System.out.print(t_weibo);
+			
+		List<QWeibo> t_list = t_weibo.m_api.getHomeList(1307720032001L,20);
+		
+		fetchWeibo t_wb = new fetchWeibo(false);
+		
+		for(QWeibo weibo : t_list){
+			
+			t_weibo.ImportWeibo(t_wb,weibo,fetchWeibo.TIMELINE_CLASS);
+			
+			System.out.println(Long.toString(weibo.getId()) + " @" + weibo.getScreenName() + "("+weibo.getNickName()+") " + weibo.getTime() +":"+ weibo.getText());
+			
+			if(weibo.getSourceWeibo() != null){
+				weibo = weibo.getSourceWeibo();
+				System.out.print("\t\tsource:");
+				System.out.print(Long.toString(weibo.getId()) + " @" + weibo.getScreenName() + "("+weibo.getNickName()+") :"+ weibo.getText());
+			}
+		}
 		
 //		List<QDirectMessage> t_dmInboxlist =  t_weibo.m_api.getInboxDirectMessage();
 //		

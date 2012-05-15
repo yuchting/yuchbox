@@ -418,7 +418,9 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		_weibo.SetUserName(t_user.getName());
 		_weibo.SetUserScreenName(t_user.getScreenName());
 		_weibo.SetSinaVIP(t_user.isVerified());
-				
+		_weibo.setUserFollowing(t_user.isFollowing());
+		_weibo.setUserFollowMe(t_user.isFollowMe());
+		
 		if(_stat.getOriginal_pic() != null){
 			_weibo.SetOriginalPic(_stat.getOriginal_pic());
 		}		
@@ -473,7 +475,9 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 			_weibo.SetUserId(t_user.getId());
 			_weibo.SetUserName(t_user.getName());
 			_weibo.SetUserScreenName(t_user.getScreenName());
-			_weibo.SetSinaVIP(t_user.isVerified());	
+			_weibo.SetSinaVIP(t_user.isVerified());
+			_weibo.setUserFollowing(t_user.isFollowing());
+			_weibo.setUserFollowMe(t_user.isFollowMe());
 		}
 				
 		_weibo.SetUserHeadImageHashCode(StoreHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));
@@ -495,7 +499,9 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 			_weibo.SetUserId(t_user.getId());
 			_weibo.SetUserName(t_user.getName());
 			_weibo.SetUserScreenName(t_user.getScreenName());
-			_weibo.SetSinaVIP(t_user.isVerified());	
+			_weibo.SetSinaVIP(t_user.isVerified());
+			_weibo.setUserFollowing(t_user.isFollowing());
+			_weibo.setUserFollowMe(t_user.isFollowMe());
 		}
 		
 		try{

@@ -119,7 +119,7 @@
 		commentSum="5"
 	/-->
 		
-	<!--WeiboAccount
+	<WeiboAccount
 		type="qq"
 		account="yuchberry"
 		accessToken="d7804a95bde0436ca9f0b62ef84de787"
@@ -130,7 +130,7 @@
 		directMessageSum="5"
 		atMeSum="5"
 		commentSum="5"
-	/-->
+	/>
 	
 	<!--IMAccount
 		type="gtalk"
