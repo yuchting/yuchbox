@@ -39,6 +39,7 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Screen;
@@ -419,6 +420,8 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
     MenuItem m_cameraItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_OPEN_CAMERA),m_menuIndex_op++,0){
     	public void run(){
     		Invoke.invokeApplication(Invoke.APP_TYPE_CAMERA, new CameraArguments());
+    		
+    		m_canbeAttachImage = true;
     	}
     };
     
@@ -476,6 +479,11 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 	String					m_imagePath = null;
 	int						m_imageType = 0;
 	
+	// canbe attach a image from file system
+	// maybe a non-relation file would be attached sometimes
+	// some chat will send this image
+	boolean				m_canbeAttachImage = false;
+	
 	byte[]					m_snapBuffer = null;
 	
 	recvMain				m_mainApp	= null;
@@ -495,7 +503,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		}
 		
 		public boolean canAdded(){
-			return m_imagePath == null;
+			return m_imagePath == null && m_canbeAttachImage;
 		}
 	};
 	
@@ -593,6 +601,8 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		m_updateManager.m_editTextArea.setFocus();
 		
 		m_mainApp.addFileSystemJournalListener(m_fileSystem);
+		
+		m_canbeAttachImage = false;
 	}
 	
 	protected void paint(Graphics _g){		
@@ -620,6 +630,19 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		if(m_updateManager.m_addLocation){
 			m_weiboUIImageSets.drawImage(_g, m_hasLocation,2,1);
 		}
+	}
+	
+	protected boolean keyDown(int keycode,int time){
+		
+		int key = Keypad.key(keycode);
+		if(key == Keypad.KEY_CAMERA_FOCUS){
+			// camera focus shortcut key clicked
+			// canbe attach image
+			//
+			m_canbeAttachImage = true;
+		}
+		
+		return super.keyDown(keycode,time);		
 	}
 	
 	public void close(){

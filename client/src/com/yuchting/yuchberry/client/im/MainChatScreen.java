@@ -40,6 +40,7 @@ import net.rim.blackberry.api.invoke.CameraArguments;
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.DeviceInfo;
+import net.rim.device.api.system.KeyListener;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -570,9 +571,9 @@ final class MiddleMgr extends VerticalFieldManager{
 		super.subpaint(g);
 	}
 	
-	public void onDisplay(){
-		super.onDisplay();
-
+//	public void onDisplay(){
+//		super.onDisplay();
+//
 //		the prepareChatScreen function did it
 //
 //		int t_chatNum = m_chatMsgMgr.getFieldCount();
@@ -586,8 +587,8 @@ final class MiddleMgr extends VerticalFieldManager{
 //			m_inputMgr.m_editTextArea.setCursorPosition(
 //					m_inputMgr.m_editTextArea.getTextLength());
 //		}
-		
-	}
+//		
+//	}
 	
 	public synchronized void addChatMsg(fetchChatMsg _msg){
 		ChatField t_field = null;
@@ -713,8 +714,10 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
     };
 	    
 	MenuItem m_cameraMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_OPEN_CAMERA),m_menu_op++,0){
-		public void run(){
+		public void run(){			
 			Invoke.invokeApplication(Invoke.APP_TYPE_CAMERA, new CameraArguments());
+			
+			m_canbeAttachImage = true;
 		}
 	};
 	
@@ -923,17 +926,22 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 	
 	MiddleMgr		m_middleMgr		= null;
 	
-	String					m_imagePath = null;
-	int						m_imageType = 0;
+	String			m_imagePath = null;
+	int				m_imageType = 0;
 	
-	byte[]					m_snapBuffer = null;
+	// canbe attach a image from file system
+	// maybe a non-relation file would be attached sometimes
+	// some chat will send this image
+	boolean		m_canbeAttachImage = false;
 	
-	ImageUnit				m_hasImageSign	= null;
-	ImageUnit				m_hasVoiceSign	= null;
+	byte[]			m_snapBuffer = null;
 	
-	CameraScreen			m_cameraScreen = null;
+	ImageUnit		m_hasImageSign	= null;
+	ImageUnit		m_hasVoiceSign	= null;
 	
-	CameraFileOP			m_camerFileOp = new CameraFileOP() {
+	CameraScreen	m_cameraScreen = null;
+	
+	CameraFileOP	m_camerFileOp = new CameraFileOP() {
 		
 		public void onAddUploadingPic(String file, int type) {
 			clearAttachment();
@@ -943,7 +951,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		}
 		
 		public boolean canAdded() {
-			return m_imagePath == null;
+			return m_imagePath == null && m_canbeAttachImage;
 		}
 	};
 	
@@ -959,7 +967,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		m_snapBuffer = null;
 		
 		m_isPrompted = false;
-		
+
 		invalidate();
 	}
 			
@@ -1065,8 +1073,10 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		m_isPrompted = false;
 		
 		m_mainApp.addFileSystemJournalListener(m_camerFileOp);
+		
+		m_canbeAttachImage = false;
 	}
-	
+		
 	public ChatField getResendField(){
 		if(m_middleMgr.m_inputMgr.m_editTextArea.isFocus()
 		|| m_middleMgr.m_inputMgr.m_phizButton.isFocus()){
@@ -1262,6 +1272,11 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		if(key == 'R' && !m_middleMgr.m_inputMgr.m_editTextArea.isFocus()){
 			m_middleMgr.m_inputMgr.m_editTextArea.setFocus();
 			return true;
+		}else if(key == Keypad.KEY_CAMERA_FOCUS){
+			// camera focus shortcut key clicked
+			// canbe attach image
+			//
+			m_canbeAttachImage = true;
 		}
 		
 		return super.keyDown(keycode,time);		
