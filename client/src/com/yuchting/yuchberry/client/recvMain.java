@@ -72,6 +72,7 @@ import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.XYPoint;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
+import net.rim.device.api.util.LongHashtable;
 
 import com.yuchting.yuchberry.client.connectDeamon.FetchAttachment;
 import com.yuchting.yuchberry.client.im.IMStatus;
@@ -871,8 +872,14 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 //		}		
 //	}
 	
-	
-	private void PreWriteReadIni(boolean _read,
+	/**
+	 * pre process write or read a file
+	 * 
+	 * Write: change original name to back file name when write
+	 * 
+	 * Read: change back filename to original filename if back file is existed
+	 */
+	private void preWriteReadIni(boolean _read,
 			String _backPathFilename,String _orgPathFilename,
 			String _backFilename,String _orgFilename){
 		
@@ -920,6 +927,29 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}catch(Exception e){
 			SetErrorString("write/read PreWriteReadIni file from SDCard error :" + e.getMessage() + e.getClass().getName());
 		}
+	}
+	
+	/**
+	 * delete the back file ~xxx.xxx
+	 * @param _backfile
+	 */
+	private void postWriteReadIni(String _backfile){
+		
+		try{
+			// delete the back file ~xxx.data
+			//
+			FileConnection t_backFile = (FileConnection) Connector.open(_backfile,Connector.READ_WRITE);
+			try{
+				if(t_backFile.exists()){
+					t_backFile.delete();
+				}
+			}finally{
+				t_backFile.close();
+				t_backFile = null;
+			}
+		}catch(Exception e){
+			SetErrorString("PWRI", e);
+		}
 		
 	}
 	
@@ -939,7 +969,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		// check the issue 85 
 		// http://code.google.com/p/yuchberry/issues/detail?id=85&colspec=ID%20Type%20Status%20Priority%20Stars%20Summary
 		//
-		PreWriteReadIni(_read,fsm_backInitFilename,fsm_initFilename,
+		preWriteReadIni(_read,fsm_backInitFilename,fsm_initFilename,
 				fsm_initFilename_back_init_data,fsm_initFilename_init_data);
 		
 		try{
@@ -1301,17 +1331,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 						t_writeFile = null;
 					}
 					
-					// delete the back file ~Init.data
-					//
-					FileConnection t_backFile = (FileConnection) Connector.open(fsm_backInitFilename,Connector.READ_WRITE);
-					try{
-						if(t_backFile.exists()){
-							t_backFile.delete();
-						}
-					}finally{
-						t_backFile.close();
-						t_backFile = null;
-					}
+					postWriteReadIni(fsm_backInitFilename);
 				}
 			}finally{
 				fc.close();
@@ -2212,9 +2232,12 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	};
 	
 	public int						m_weiboUploadImageSizeIndex = 0;
+	public Vector					m_weiboAccountList		= new Vector();
 		
-	public Vector					m_weiboAccountList		= new Vector();	
-		
+	/**
+	 * get the automatic refresh Weibo interval time 
+	 * @return
+	 */		
 	public int getRefreshWeiboInterval(){
 		if(m_refreshWeiboIntervalIndex < fsm_refreshWeiboInterval.length){
 			return fsm_refreshWeiboInterval[m_refreshWeiboIntervalIndex];
@@ -2443,7 +2466,10 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			}
 			
 			m_receivedWeiboList.addElement(_weibo);
-		}		
+		}
+		
+		// store the weibo name data
+		storeWeiboName(_weibo);
 		
 		m_weiboTimeLineScreen.AddWeibo(_weibo,false);
 	}
@@ -2473,7 +2499,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	static final String fsm_weiboDataName = "weibo.data";
 	static final String fsm_weiboDataBackName = "~weibo.data";
-	
+		
 	private synchronized boolean ReadWriteWeiboFile(final boolean _read){
 		
 		if(!m_receiveWeiboListChanged && !_read){
@@ -2484,7 +2510,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 					
 		if(_read){
 			
-			ReadWriteWeiboFile_impl(_read);
+			readWriteWeiboFile_impl(_read);
+			readWeiboNameList();
 			return true;
 			
 		}else{
@@ -2495,7 +2522,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			invokeLater(new Runnable() {
 				
 				public void run() {
-					ReadWriteWeiboFile_impl(_read);
+					readWriteWeiboFile_impl(_read);
 					
 					System.exit(0);
 				}
@@ -2505,14 +2532,18 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}
 	}
 	
-	private void ReadWriteWeiboFile_impl(final boolean _read){
+	/**
+	 * read or write weibo history list to a file sync
+	 * @param _read
+	 */
+	private synchronized void readWriteWeiboFile_impl(final boolean _read){
 		
 		String t_weiboDataDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
 		
 		String t_weiboDataPathName 		= t_weiboDataDir + fsm_weiboDataName;
 		String t_weiboDataBackPathName	= t_weiboDataDir + fsm_weiboDataBackName;
 		
-		PreWriteReadIni(_read, t_weiboDataBackPathName,t_weiboDataPathName,
+		preWriteReadIni(_read, t_weiboDataBackPathName,t_weiboDataPathName,
 				fsm_weiboDataBackName, fsm_weiboDataName);		
 		
 		try{
@@ -2564,25 +2595,14 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 						}
 						
 						t_fileos.write(tmpos.toByteArray());
-												
-					}finally{
 						t_fileos.flush();
+						
+					}finally{
 						t_fileos.close();
 						t_fileos = null;
 					}
 					
-					// delete the back file ~weibo.data
-					//
-					FileConnection t_backFile = (FileConnection) Connector.open(t_weiboDataBackPathName,Connector.READ_WRITE);
-					try{
-						if(t_backFile.exists()){
-							t_backFile.delete();
-						}
-					}finally{
-						t_backFile.close();
-						t_backFile = null;
-					}
-					
+					postWriteReadIni(t_weiboDataBackPathName);
 				}
 				
 			}finally{
@@ -2591,6 +2611,238 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			}
 		}catch(Exception e){
 			SetErrorString("RWWF:"+e.getMessage()+e.getClass().getName());
+		}
+	}
+	
+	/**
+	 * the weibo name file header
+	 * @author yuch
+	 *
+	 */
+	public static class WeiboNameHeader{
+		int	fileLength		= 0;
+		int weiboNameNum	= 0;
+	}
+	
+	/**
+	 * weibo name
+	 * @author yuch
+	 *
+	 */
+	public static class WeiboName{
+		long id;
+		String name;
+		
+		public WeiboName(){}
+		public WeiboName(long _id,String _name){
+			id 		= _id;
+			name	= _name;
+		}
+	}
+	
+	/**
+	 * the weibo name list
+	 */
+	public LongHashtable	m_weiboNameList 	= new LongHashtable();
+	public WeiboNameHeader m_weiboNameHeader	= new WeiboNameHeader();
+	
+	static final int		fsm_weiboNameFile_version 	= 0;
+
+	static final String fsm_weiboNameIdxFilename		= "weiboNameIdx.data";
+	static final String fsm_weiboNameIdxBackFilename	= "~weiboNameIdx.data";
+	
+	static final String fsm_weiboNameListFilename		= "weiboNameList.data";
+	
+	/**
+	 * read weibo name data 
+	 */
+	private synchronized void readWeiboNameList(){
+		
+		String t_weiboDataDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
+		
+		String t_weiboDataPathName 		= t_weiboDataDir + fsm_weiboNameIdxFilename;
+		String t_weiboDataBackPathName	= t_weiboDataDir + fsm_weiboNameIdxBackFilename;
+
+		String t_weiboNameListName		= t_weiboDataDir + fsm_weiboNameListFilename;
+		
+		preWriteReadIni(true, t_weiboDataBackPathName,t_weiboDataPathName,
+						fsm_weiboDataBackName, fsm_weiboDataName);
+		
+		synchronized (m_weiboNameList) {
+			m_weiboNameList.clear();
+			
+			try{
+				
+				// read the weibo name header file
+				//
+				FileConnection t_fc = (FileConnection)Connector.open(t_weiboDataPathName);
+				try{
+					if(t_fc.exists()){
+						InputStream in = t_fc.openInputStream();
+						try{
+							int t_version 					= in.read();
+							
+							m_weiboNameHeader.fileLength	= sendReceive.ReadInt(in);
+							m_weiboNameHeader.weiboNameNum	= sendReceive.ReadInt(in);
+						}finally{
+							in.close();
+							in = null;
+						}
+					}
+				}finally{
+					t_fc.close();
+					t_fc = null;
+				}
+				
+				postWriteReadIni(fsm_weiboDataBackName);
+				
+				// read the weibo name list 
+				//
+				t_fc = (FileConnection)Connector.open(t_weiboNameListName);
+				try{
+					if(t_fc.exists()){
+						InputStream in = t_fc.openInputStream();
+						try{							
+							WeiboName w;
+							for(int i = 0;i < m_weiboNameHeader.weiboNameNum;i++){
+								w = new WeiboName();
+								w.id 	= sendReceive.ReadLong(in);
+								w.name	= sendReceive.ReadString(in);
+								
+								m_weiboNameList.put(w.id,w);
+							}
+						}finally{
+							in.close();
+							in = null;
+						}
+					}
+				}finally{
+					t_fc.close();
+					t_fc = null;
+				}
+				
+				
+				
+			}catch(Exception e){
+				SetErrorString("RWNL", e);
+			}
+		}
+		
+	}
+	
+	/**
+	 * write weibo name to the file
+	 * @param _id
+	 * @param _name
+	 */
+	private void writeWeiboName(long _id,String _name){
+		
+		// whether has been added
+		if(m_weiboNameList.get(_id) != null){
+			return;
+		}
+
+		String t_weiboDataDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
+		
+		String t_weiboDataPathName 		= t_weiboDataDir + fsm_weiboNameIdxFilename;
+		String t_weiboDataBackPathName	= t_weiboDataDir + fsm_weiboNameIdxBackFilename;
+
+		String t_weiboNameListName		= t_weiboDataDir + fsm_weiboNameListFilename;
+		
+		preWriteReadIni(false, t_weiboDataBackPathName,t_weiboDataPathName,
+						fsm_weiboDataBackName, fsm_weiboDataName);
+		
+		synchronized (m_weiboNameList) {
+			
+			try{			
+				
+				// read the weibo name list 
+				//
+				FileConnection t_fc = (FileConnection)Connector.open(t_weiboNameListName);
+				try{
+					if(!t_fc.exists()){
+						t_fc.create();
+					}
+					
+					// append the weibo name data to the weibo filae
+					OutputStream os = t_fc.openOutputStream(t_fc.fileSize());
+					try{
+						sendReceive.WriteLong(os, _id);
+						sendReceive.WriteString(os, _name);
+						
+						os.flush();
+					}finally{
+						os.close();
+						os = null;
+					}
+					
+					m_weiboNameList.put(_id,new WeiboName(_id,_name));
+					
+					// increase 
+					//
+					m_weiboNameHeader.fileLength = (int)t_fc.fileSize();
+					m_weiboNameHeader.weiboNameNum++;
+					
+				}finally{
+					t_fc.close();
+					t_fc = null;
+				}
+				
+				// read the weibo name header file
+				//
+				t_fc = (FileConnection)Connector.open(t_weiboDataPathName);
+				try{
+					if(!t_fc.exists()){
+						t_fc.create();						
+					}
+					OutputStream os = t_fc.openOutputStream();
+					try{
+						os.write(fsm_weiboNameFile_version);
+						
+						sendReceive.WriteInt(os, m_weiboNameHeader.fileLength);
+						sendReceive.WriteInt(os, m_weiboNameHeader.weiboNameNum);
+						
+						os.flush();
+					}finally{
+						os.close();
+						os = null;
+					}
+					
+				}finally{
+					t_fc.close();
+					t_fc = null;
+				}
+				
+				postWriteReadIni(fsm_weiboDataBackName);
+				
+			}catch(Exception e){
+				SetErrorString("RWNL", e);
+			}
+		}
+		
+	}
+	
+
+	/**
+	 * store 
+	 * @param _weibo
+	 */
+	public void storeWeiboName(fetchWeibo _weibo){
+		
+		storeWeiboName_impl(_weibo);
+		
+		if(_weibo.GetCommentWeibo() != null){
+			storeWeiboName(_weibo.GetCommentWeibo());
+		}
+		
+		if(_weibo.GetReplyWeibo() != null){
+			storeWeiboName(_weibo.GetReplyWeibo());
+		}
+	}
+	
+	private void storeWeiboName_impl(fetchWeibo _weibo){
+		if(_weibo.isUserFollowing() && _weibo.isUserFollowMe()){
+			writeWeiboName(_weibo.GetUserId(), _weibo.GetUserScreenName());
 		}
 	}
 	
