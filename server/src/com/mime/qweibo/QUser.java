@@ -101,14 +101,10 @@ public class QUser{
 		m_birthDay		= _json.getInt("birth_day");
 		
 		try{
-			
 			m_countryCode 	= _json.getInt("country_code");
 			m_provinceCode 	= _json.getInt("province_code");
 			m_cityCode 		= _json.getInt("city_code");
-			
-		}catch(Exception e){
-			e.printStackTrace();
-		}		
+		}catch(Exception e){}		
 		
 		m_sex 			= _json.getInt("sex");
 		m_fansNum 		= _json.getInt("fansnum");
@@ -228,11 +224,11 @@ public class QUser{
 		return m_sex;
 	}
 
-	public int getFansNum(){
+	public int getFollowerNum(){
 		return m_fansNum;
 	}
 	
-	public int getIdolNum(){
+	public int getFollowingNum(){
 		return m_idolNum;
 	}
 	

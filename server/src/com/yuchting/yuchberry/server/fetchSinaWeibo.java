@@ -68,7 +68,12 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	};
 	
 	Weibo	m_weibo				= new Weibo();
-	User 	m_userself = 		null;
+	User 	m_userself 			= null;
+	
+	// following and followers list
+	Set<Long>					m_followingList				= new HashSet<Long>();
+	Set<Long>					m_followerList				= new HashSet<Long>();
+	long						m_refreshFollowingListTimer = 0;
 	
 	public fetchSinaWeibo(fetchMgr _mainMgr){
 		super(_mainMgr);
@@ -85,11 +90,31 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 			t_file.mkdir();
 		}
 		
+		// if sync his/her account will refresh following and follower list
+		//
+		m_refreshFollowingListTimer = 0;
+	}
+	
+	/**
+	 * overload to refresh following and follower list interval
+	 */
+	public synchronized void CheckFolder()throws Exception{
+		super.CheckFolder();
+		
+		try{
+			refreshFollowingFollowerList(false);
+		}catch(Exception e){
+			m_mainMgr.m_logger.LogOut(GetAccountName() + " refreshFollowingFollowerList Error:"+ e.getMessage());
+			// sleep for a while
+			//
+			Thread.sleep(2000);
+		}
 	}
 	
 	protected int GetCurrWeiboStyle(){
 		return fetchWeibo.SINA_WEIBO_STYLE;
 	}
+	
 	protected void CheckTimeline()throws Exception{
 		
 		List<Status> t_fetch = null;
@@ -232,7 +257,6 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	}
 	
 	
-	static final int MaxPageNum = 5000;
 	
 	/**
 	 * reset the session for connection
@@ -247,20 +271,31 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		ResetCheckFolderLimit();
 				
 		if(m_followingList.isEmpty() || m_followerList.isEmpty()){
-			freshFollowingFollowerList();
+			refreshFollowingFollowerList(true);
 		}
 		
 		m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + "> Prepare OK!");
 	}
 	
-	
+	/**
+	 * request the following and follower list max page number
+	 */
+	static final int MaxPageNum = 5000;
 	/**
 	 * refresh the following and followers list
 	 * @throws Exception
 	 */
-	protected void freshFollowingFollowerList()throws Exception{
+	private void refreshFollowingFollowerList(boolean _ignoreTimer)throws Exception{
 		
-		// read the following list and followMe list
+		if(!_ignoreTimer){
+			// refresh interval judge
+			//
+			if(System.currentTimeMillis() - m_refreshFollowingListTimer < 24 * 3600000){
+				return;
+			}
+		}
+		
+		// clear the list first
 		//
 		m_followingList.clear();
 		m_followerList.clear();
@@ -304,6 +339,16 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 				t_cursor += t_ids.getIDs().length;
 			}
 		}
+		
+		m_refreshFollowingListTimer = System.currentTimeMillis();
+	}
+	
+	private boolean isUserFollowing(long _id){
+		return m_followingList.contains(_id);
+	}
+	
+	private boolean isUserFollower(long _id){
+		return m_followerList.contains(_id);
 	}
 	
 	protected void ResetCheckFolderLimit()throws Exception{
@@ -422,8 +467,8 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		t_weibo.setFansNum(t_user.getFollowersCount());
 		t_weibo.setWeiboNum(t_user.getStatusesCount());
 		
-		t_weibo.setHasBeenFollowed(t_user.isFollowing());
-		t_weibo.setIsMyFans(t_user.isFollowMe());
+		t_weibo.setHasBeenFollowed(isUserFollowing(t_user.getId()));
+		t_weibo.setIsMyFans(isUserFollower(t_user.getId()));
 		
 		List<Status> t_list = m_weibo.getUserTimeline(Long.toString(t_user.getId()),new Paging(1, 10));
 		for(Status s:t_list){
@@ -479,8 +524,9 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		_weibo.SetUserName(t_user.getName());
 		_weibo.SetUserScreenName(t_user.getScreenName());
 		_weibo.SetSinaVIP(t_user.isVerified());
-		_weibo.setUserFollowing(t_user.isNotificationEnabled());
-		_weibo.setUserFollowMe(t_user.isFollowMe());
+		
+		_weibo.setUserFollowing(isUserFollowing(t_user.getId()));
+		_weibo.setUserFollowMe(isUserFollower(t_user.getId()));
 		
 		if(_stat.getOriginal_pic() != null){
 			_weibo.SetOriginalPic(_stat.getOriginal_pic());
@@ -523,8 +569,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		_weibo.SetId(_dm.getId());
 		_weibo.SetDateLong(_dm.getCreatedAt().getTime());
 		_weibo.SetText(_dm.getText());
-		
-		
+				
 		_weibo.SetWeiboStyle(fetchWeibo.SINA_WEIBO_STYLE);
 		_weibo.SetWeiboClass(fetchWeibo.DIRECT_MESSAGE_CLASS);
 		
@@ -536,10 +581,11 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 			_weibo.SetUserId(t_user.getId());
 			_weibo.SetUserName(t_user.getName());
 			_weibo.SetUserScreenName(t_user.getScreenName());
-			_weibo.SetSinaVIP(t_user.isVerified());
-			_weibo.setUserFollowing(t_user.isFollowing());
-			_weibo.setUserFollowMe(t_user.isFollowMe());
+			_weibo.SetSinaVIP(t_user.isVerified());	
 		}
+		
+		_weibo.setUserFollowing(isUserFollowing(t_user.getId()));
+		_weibo.setUserFollowMe(isUserFollower(t_user.getId()));
 				
 		_weibo.SetUserHeadImageHashCode(StoreHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));
 	}
@@ -560,10 +606,11 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 			_weibo.SetUserId(t_user.getId());
 			_weibo.SetUserName(t_user.getName());
 			_weibo.SetUserScreenName(t_user.getScreenName());
-			_weibo.SetSinaVIP(t_user.isVerified());
-			_weibo.setUserFollowing(t_user.isFollowing());
-			_weibo.setUserFollowMe(t_user.isFollowMe());
+			_weibo.SetSinaVIP(t_user.isVerified());	
 		}
+		
+		_weibo.setUserFollowing(isUserFollowing(t_user.getId()));
+		_weibo.setUserFollowMe(isUserFollower(t_user.getId()));
 		
 		try{
 			

@@ -31,12 +31,17 @@ import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import org.dom4j.Element;
 
+import weibo4j.IDs;
+
 import com.mime.qweibo.QDirectMessage;
+import com.mime.qweibo.QOpenIDs;
 import com.mime.qweibo.QUser;
 import com.mime.qweibo.QWeibo;
 import com.mime.qweibo.QWeiboSyncApi;
@@ -50,6 +55,13 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	public QWeiboSyncApi m_api = new QWeiboSyncApi();
 		
 	QUser		m_userself = null;
+	
+	// following and followers list
+	// Set<QQ OpenID>
+	//
+	Set<String>					m_followingList				= new HashSet<String>();
+	Set<String>					m_followerList				= new HashSet<String>();
+	long						m_refreshFollowingListTimer = 0;
 	
 	public fetchQWeibo(fetchMgr _mainMgr){
 		super(_mainMgr);
@@ -67,6 +79,9 @@ public class fetchQWeibo extends fetchAbsWeibo{
 			t_file.mkdir();
 		}
 		
+		// if sync his/her account will refresh following and follower list
+		//
+		m_refreshFollowingListTimer = 0;
 	}
 	
 	protected int GetCurrWeiboStyle(){
@@ -195,6 +210,21 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		m_api.deleteMessage(_id);
 	}
 	
+	/**
+	 * overload to refresh following and follower list interval
+	 */
+	public synchronized void CheckFolder()throws Exception{
+		super.CheckFolder();
+		
+		try{
+			refreshFollowingFollowerList(false);
+		}catch(Exception e){
+			m_mainMgr.m_logger.LogOut(GetAccountName() + " refreshFollowingFollowerList Error:"+ e.getMessage());
+			// sleep for a while
+			//
+			Thread.sleep(2000);
+		}
+	}
 	
 	
 	/**
@@ -209,8 +239,87 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		
 		ResetCheckFolderLimit();
 		
+		if(m_followerList.isEmpty() && m_followingList.isEmpty()){
+			refreshFollowingFollowerList(true);
+		}
+		
 		m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + "> Prepare OK!");
 		
+	}
+	
+	/**
+	 * request the following and follower list max page number
+	 */
+	static final int MaxPageNum = 200;
+	
+	/**
+	 * refresh the following and followers list
+	 * @throws Exception
+	 */
+	private void refreshFollowingFollowerList(boolean _ignoreTimer)throws Exception{
+		
+		if(!_ignoreTimer){
+			// refresh interval judge
+			//
+			if(System.currentTimeMillis() - m_refreshFollowingListTimer < 24 * 3600000){
+				return;
+			}
+		}
+		
+		// clear the list first
+		//
+		m_followingList.clear();
+		m_followerList.clear();
+		
+		// get the friends ids
+		//
+		if(m_userself.getFollowingNum() != 0){	
+			int t_pageIdx = 0;
+			while(true){
+				QOpenIDs t_ids = m_api.getOwnFollowingList(t_pageIdx,200);
+								
+				for(String id:t_ids.getOpenidList()){
+					m_followingList.add(id);
+				}
+				
+				if(t_ids.getOpenidList().length < MaxPageNum){
+					break;
+				}
+				
+				t_pageIdx++;
+			}
+		}
+		
+		// get the followers ids
+		//
+		if(m_userself.getFollowerNum() != 0){
+			
+			int t_pageIdx = 0;
+			while(true){
+				
+				QOpenIDs t_ids = m_api.getOwnFollowerList(t_pageIdx,MaxPageNum);
+				
+				for(String id:t_ids.getOpenidList()){
+					m_followerList.add(id);
+				}
+				
+				if(t_ids.getOpenidList().length < MaxPageNum){
+					break;
+				}
+				
+				t_pageIdx++;
+			}
+		}
+		
+		m_refreshFollowingListTimer = System.currentTimeMillis();
+	}
+	
+	private boolean isUserFollowing(String _openid){
+		return m_followingList.contains(_openid);
+	}
+	
+	private boolean isUserFollower(String _openid){
+		return m_followerList.contains(_openid);
 	}
 	
 	protected void ResetCheckFolderLimit()throws Exception{
@@ -221,9 +330,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	/**
 	 * destroy the session connection
 	 */
-	public void DestroySession(){
-		
-	}	
+	public void DestroySession(){}	
 	
 	protected void UpdateStatus(String _text,GPSInfo _info,byte[] _filePic,String _fileType)throws Exception{
 		if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
@@ -307,8 +414,9 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		t_weibo.setVerified(t_user.isVerified());
 		t_weibo.setHasBeenFollowed(t_user.hasBeenFollowed());
 		t_weibo.setIsMyFans(t_user.isMyFans());
-		t_weibo.setFollowNum(t_user.getIdolNum());
-		t_weibo.setFansNum(t_user.getFansNum());
+		
+		t_weibo.setFollowNum(t_user.getFollowingNum());
+		t_weibo.setFansNum(t_user.getFollowerNum());
 		t_weibo.setWeiboNum(t_user.getWeiboNum());
 		
 		List<QWeibo> t_list = m_api.getUserTimeline(_name);
@@ -411,18 +519,10 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		
 		_weibo.SetSinaVIP(_qweibo.isVIP());
 		
-		try{
-			QUser t_user;
-			if(_qweibo.isOwnWeibo()){
-				t_user = m_userself;
-			}else{
-				t_user = m_api.getUserInfo(_qweibo.getScreenName());
-			}
-			
-			_weibo.setUserFollowMe(t_user.isMyFans());
-			_weibo.setUserFollowing(t_user.hasBeenFollowed());
-			
-		}catch(Exception e){}
+		if(!_qweibo.isOwnWeibo()){
+			_weibo.setUserFollowMe(isUserFollower(_qweibo.getUserOpenid()));
+			_weibo.setUserFollowing(isUserFollowing(_qweibo.getUserOpenid()));
+		}		
 		
 		if(_qweibo.getImage() != null){
 			_weibo.SetOriginalPic(_qweibo.getImage());
@@ -474,6 +574,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		t_weibo.m_timeline.m_sum = 10;
 		t_weibo.m_directMessage.m_sum = 5;
 		
+		
 //		File t_file = new File("logo.png");
 //		FileInputStream t_fileIn = new FileInputStream(t_file);
 //		byte[] t_fileBuffer = new byte[(int)t_file.length()];
@@ -492,6 +593,9 @@ public class fetchQWeibo extends fetchAbsWeibo{
 			
 			t_weibo.ImportWeibo(t_wb,weibo,fetchWeibo.TIMELINE_CLASS);
 			
+			if(t_wb.isUserFollowing() && t_wb.isUserFollowMe()){
+				System.out.print("互粉\t");
+			}
 			System.out.println(Long.toString(weibo.getId()) + " @" + weibo.getScreenName() + "("+weibo.getNickName()+") " + weibo.getTime() +":"+ weibo.getText());
 			
 			if(weibo.getSourceWeibo() != null){

@@ -37,8 +37,6 @@ import java.io.FileOutputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
@@ -88,13 +86,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	//! check number 
 	int		m_maxCheckFolderNum = 0;
 	int		m_currRemainCheckFolderNum = 0;
-	
-
-	// following and followers list
-	Set<Long>					m_followingList			= new HashSet<Long>();
-	Set<Long>					m_followerList			= new HashSet<Long>();
-	long						m_refreshFollowingListTimer = 0;
-		
+			
 	public fetchAbsWeibo(fetchMgr _mainMgr){
 		super(_mainMgr);
 	}
@@ -256,17 +248,6 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			// sleep for a while
 			//
 			Thread.sleep(2000);
-		}
-		
-		try{
-
-			long t_currTime = m_refreshFollowingListTimer = System.currentTimeMillis();
-			if(t_currTime - m_refreshFollowingListTimer >= 24 * 3600000){
-				freshFollowingFollowerList();
-				m_refreshFollowingListTimer = t_currTime;
-			}
-		}catch(Exception e){
-			
 		}
 	}
 	
@@ -875,12 +856,6 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	 * @throws Exception
 	 */
 	protected abstract fetchWeiboUser getWeiboUser(String _name)throws Exception;
-	
-	/**
-	 * refresh the following and followers list
-	 * @throws Exception
-	 */
-	protected abstract void freshFollowingFollowerList()throws Exception;
 	
 	protected boolean ProcessWeiboConfirmed(ByteArrayInputStream in)throws Exception{
 		

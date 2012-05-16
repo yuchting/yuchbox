@@ -41,6 +41,12 @@ public class QWeiboSyncApi {
 	
 	final static String fsm_sendDirectMsgURL			= "http://open.t.qq.com/api/private/add";
 	
+	final static String fsm_ownFollowingList			= "http://open.t.qq.com/api/friends/idollist_name";
+	final static String fsm_ownFollowerList			= "http://open.t.qq.com/api/friends/fanslist_name";
+	
+	final static String fsm_userFollowingList			= "http://open.t.qq.com/api/friends/user_idollist";
+	final static String fsm_userFollowerList			= "http://open.t.qq.com/api/friends/user_fanslist";
+	
 	
 	OauthKey 			m_oauthKey = new OauthKey();
 	QWeiboRequest 		m_request = new QWeiboRequest();
@@ -279,6 +285,78 @@ public class QWeiboSyncApi {
 		
 		return QWeibo.getWeiboList(new JSONObject(m_request.syncRequest(_url, "GET", 
 																	m_oauthKey, m_parameters, null)));
+	}
+	
+
+	/**
+	 * get the my following list
+	 * @param _pageIdx		page index (0 - n)
+	 * @param _reqNum		request number 1-200
+	 * @return
+	 * @throws Exception
+	 */
+	public QOpenIDs getOwnFollowingList(int _pageIdx,int _reqNum)throws Exception{
+		return getFollowingFollowerList(fsm_ownFollowingList, null, _pageIdx, _reqNum);
+	}
+	
+	/**
+	 * get the my own follower list 
+	 * @param _pageIdx
+	 * @param _reqNum
+	 * @return
+	 * @throws Exception
+	 */
+	public QOpenIDs getOwnFollowerList(int _pageIdx,int _reqNum)throws Exception{
+		return getFollowingFollowerList(fsm_ownFollowerList, null, _pageIdx, _reqNum);
+	}
+	
+	/**
+	 * get the user following list
+	 * @param _name 			user name
+	 * @param _pageIdx
+	 * @param _reqNum
+	 * @return
+	 * @throws Exception
+	 */
+	public QOpenIDs getUserFollowingList(String _name,int _pageIdx,int _reqNum)throws Exception{
+		return getFollowingFollowerList(fsm_userFollowingList,_name,_pageIdx,_reqNum);
+	}
+	
+	/**
+	 * get the user follower list
+	 * @param _name			user name
+	 * @param _pageIdx
+	 * @param _reqNum
+	 * @return
+	 * @throws Exception
+	 */
+	public QOpenIDs getUserFollowerList(String _name,int _pageIdx,int _reqNum)throws Exception{
+		return getFollowingFollowerList(fsm_userFollowerList,_name,_pageIdx,_reqNum);
+	}
+	
+	/**
+	 * get the user relationship API ids
+	 * @param _url
+	 * @param _name
+	 * @param _pageIdx
+	 * @param _reqNum
+	 * @return
+	 * @throws Exception
+	 */
+	public QOpenIDs getFollowingFollowerList(String _url,String _name,int _pageIdx,int _reqNum)throws Exception{
+		
+		m_parameters.clear();
+		m_parameters.add(new QParameter("mode", "1"));
+		m_parameters.add(new QParameter("format", "json"));
+		m_parameters.add(new QParameter("reqnum", Integer.toString(_reqNum)));
+		m_parameters.add(new QParameter("startindex", Integer.toString(_pageIdx)));
+		
+		if(_name != null && _name.length() != 0){
+			m_parameters.add(new QParameter("name", _name));
+		}
+		
+		return new QOpenIDs(new JSONObject(m_request.syncRequest(_url, "GET", 
+									m_oauthKey, m_parameters, null)));
 	}
 	
 	

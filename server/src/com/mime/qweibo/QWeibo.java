@@ -19,6 +19,7 @@ public class QWeibo {
 	private String m_name;
 	private String m_nickName;
 	private String	m_headImageURL;
+	private String m_openId;
 	
 	private boolean m_isOwnWeibo;
 	
@@ -41,7 +42,7 @@ public class QWeibo {
 		
 		m_forwardCount	= _json.getInt("count");
 		m_commentCount	= _json.getInt("mcount");
-		
+		m_openId		= _json.getString("openid");
 		m_id			= _json.getLong("id");
 		
 		String t_image = _json.getString("image");
@@ -102,6 +103,8 @@ public class QWeibo {
 	public String getScreenName(){return m_name;}
 	public String getNickName(){return m_nickName;}
 	public String getHeadImageURL(){return m_headImageURL;}
+	
+	public String getUserOpenid(){return m_openId;}
 	
 	public boolean isOwnWeibo(){return m_isOwnWeibo;}
 	public boolean isVIP(){return m_isVIP;}
