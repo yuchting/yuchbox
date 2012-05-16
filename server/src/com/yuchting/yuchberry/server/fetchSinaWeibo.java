@@ -28,7 +28,9 @@
 package com.yuchting.yuchberry.server;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import org.dom4j.Element;
@@ -66,9 +68,8 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	};
 	
 	Weibo	m_weibo				= new Weibo();
-	
 	User 	m_userself = 		null;
-
+	
 	public fetchSinaWeibo(fetchMgr _mainMgr){
 		super(_mainMgr);
 	}
@@ -231,7 +232,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	}
 	
 	
-	
+	static final int MaxPageNum = 5000;
 	
 	/**
 	 * reset the session for connection
@@ -244,8 +245,65 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		m_userself = m_weibo.verifyCredentials();
 		
 		ResetCheckFolderLimit();
+				
+		if(m_followingList.isEmpty() || m_followerList.isEmpty()){
+			freshFollowingFollowerList();
+		}
 		
 		m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + "> Prepare OK!");
+	}
+	
+	
+	/**
+	 * refresh the following and followers list
+	 * @throws Exception
+	 */
+	protected void freshFollowingFollowerList()throws Exception{
+		
+		// read the following list and followMe list
+		//
+		m_followingList.clear();
+		m_followerList.clear();
+		
+		// get the friends ids
+		//
+		if(m_userself.getFriendsCount() != 0){	
+			int t_cursor = 0;
+			while(true){
+				IDs t_ids = m_weibo.getFriendsIDs(m_userself.getId(),t_cursor,MaxPageNum);
+								
+				for(long id:t_ids.getIDs()){
+					m_followingList.add(id);
+				}
+				
+				if(t_ids.getIDs().length < MaxPageNum){
+					break;
+				}
+				
+				t_cursor += t_ids.getIDs().length;
+			}
+		}
+		
+		// get the followers ids
+		//
+		if(m_userself.getFollowersCount() != 0){
+			
+			int t_cursor = 0;
+			while(true){
+				
+				IDs t_ids = m_weibo.getFollowersIDs(m_userself.getId(),t_cursor,MaxPageNum);
+				
+				for(long id:t_ids.getIDs()){
+					m_followerList.add(id);
+				}
+				
+				if(t_ids.getIDs().length < MaxPageNum){
+					break;
+				}
+				
+				t_cursor += t_ids.getIDs().length;
+			}
+		}
 	}
 	
 	protected void ResetCheckFolderLimit()throws Exception{
@@ -364,6 +422,9 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		t_weibo.setFansNum(t_user.getFollowersCount());
 		t_weibo.setWeiboNum(t_user.getStatusesCount());
 		
+		t_weibo.setHasBeenFollowed(t_user.isFollowing());
+		t_weibo.setIsMyFans(t_user.isFollowMe());
+		
 		List<Status> t_list = m_weibo.getUserTimeline(Long.toString(t_user.getId()),new Paging(1, 10));
 		for(Status s:t_list){
 			fetchWeibo weibo = new fetchWeibo(m_mainMgr.m_convertToSimpleChar);
@@ -418,7 +479,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		_weibo.SetUserName(t_user.getName());
 		_weibo.SetUserScreenName(t_user.getScreenName());
 		_weibo.SetSinaVIP(t_user.isVerified());
-		_weibo.setUserFollowing(t_user.isFollowing());
+		_weibo.setUserFollowing(t_user.isNotificationEnabled());
 		_weibo.setUserFollowMe(t_user.isFollowMe());
 		
 		if(_stat.getOriginal_pic() != null){
@@ -559,10 +620,22 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		
 		fetchSinaWeibo t_weibo = new fetchSinaWeibo(t_manger);		
 		
-		t_weibo.m_accessToken = "8a2bf4e5a97194a1eb73740b448f034e";
-		t_weibo.m_secretToken = "7529265879f3c97af609c694064bbc59";
+		// yuchberry_test
+		//t_weibo.m_accessToken = "8a2bf4e5a97194a1eb73740b448f034e";
+		//t_weibo.m_secretToken = "7529265879f3c97af609c694064bbc59";
+		
+		// yuchberry
+		t_weibo.m_accessToken = "1eef9899c847f1cd0735c6775fdcc576";
+		t_weibo.m_secretToken = "5f248ea06daf600f17edd57c303cc9ce";
+		
 		
 		t_weibo.ResetSession(true);
+		
+		t_weibo.m_timeline.m_sum = 20;
+		
+		t_weibo.CheckTimeline();
+		fetchWeiboUser t_user = t_weibo.getWeiboUser(t_weibo.m_timeline.m_weiboList.get(0).GetUserScreenName());
+		
 		
 //		File t_file = new File("1314193031_0.satt");
 //		FileInputStream t_fileIn = new FileInputStream(t_file);
@@ -592,8 +665,6 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 			
 		}
 		
-				
-		System.out.print("");
 	}
 	
 }

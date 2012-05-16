@@ -2354,18 +2354,6 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
     }
 
     /**
-     * Returns an array of numeric IDs for every user the authenticating user is following.
-     * @param cursor  Specifies the page number of the results beginning at 1. A single page contains 5000 ids. This is recommended for users with large ID lists. If not provided all ids are returned.
-     * @return an array of numeric IDs for every user the authenticating user is following
-     * @throws WeiboException when Weibo service or network is unavailable
-     * @since Weibo4J 1.1220
-     * @see <a href="http://open.t.sina.com.cn/wiki/index.php/Friends/ids">friends/ids</a>
-     */
-    public IDs getFriendsIDs(long cursor) throws WeiboException {
-        return new IDs(get(getBaseURL() + "friends/ids.xml?cursor=" + cursor, true));
-    }
-
-    /**
      * Returns an array of numeric IDs for every user the specified user is following.<br>
      * all IDs are attempted to be returned, but large sets of IDs will likely fail with timeout errors.
      * @param userId Specfies the ID of the user for whom to return the friends list.
@@ -2374,23 +2362,8 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
      * @since Weibo4J 1.1220
      * @see <a href="http://open.t.sina.com.cn/wiki/index.php/Friends/ids">friends/ids</a>
      */
-    public IDs getFriendsIDs(int userId) throws WeiboException {
+    public IDs getFriendsIDs(long userId) throws WeiboException {
         return getFriendsIDs(userId, -1l);
-    }
-
-    /**
-     * Returns an array of numeric IDs for every user the specified user is following.
-     * @param userId Specifies the ID of the user for whom to return the friends list.
-     * @param paging Specifies the page number of the results beginning at 1. A single page contains 5000 ids. This is recommended for users with large ID lists. If not provided all ids are returned.
-     * @return an array of numeric IDs for every user the specified user is following
-     * @throws WeiboException when Weibo service or network is unavailable
-     * @since Weibo4J 1.1220
-     * @see <a href="http://open.t.sina.com.cn/wiki/index.php/Friends/ids">friends/ids</a>
-     * @deprecated use getFriendsIDs(int userId, long cursor) instead
-     */
-    public IDs getFriendsIDs(int userId, Paging paging) throws WeiboException {
-        return new IDs(get(getBaseURL() + "friends/ids.xml?user_id=" + userId, null
-                , paging, true));
     }
 
     /**
@@ -2402,7 +2375,7 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
      * @since Weibo4J 1.1220
      * @see <a href="http://open.t.sina.com.cn/wiki/index.php/Friends/ids">friends/ids</a>
      */
-    public IDs getFriendsIDs(int userId, long cursor) throws WeiboException {
+    public IDs getFriendsIDs(long userId, long cursor) throws WeiboException {
         /*return new IDs(get(getBaseURL() + "friends/ids.xml?user_id=" + userId +
                 "&cursor=" + cursor, true));*/
     	return new IDs(get(getBaseURL() + "friends/ids.json?user_id=" + userId +
@@ -2429,11 +2402,10 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
      * @throws WeiboException when Weibo service or network is unavailable
      * @since Weibo4J 1.1220
      * @see <a href="http://open.t.sina.com.cn/wiki/index.php/Friends/ids">friends/ids</a>
-     * @deprecated use getFriendsIDs(String screenName, long cursor) instead
      */
-    public IDs getFriendsIDs(String screenName, Paging paging) throws WeiboException {
-        return new IDs(get(getBaseURL() + "friends/ids.xml?screen_name=" + screenName
-                , null, paging, true));
+    public IDs getFriendsIDs(long userId, long cursor,long _count) throws WeiboException {
+    	return new IDs(get(getBaseURL() + "friends/ids.json?user_id=" + userId +
+                "&cursor=" + cursor + "&count=" + _count, true),this);
     }
 
     /**
@@ -2477,20 +2449,6 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
                 , true));
     }
 
-    /**
-     * Returns an array of numeric IDs for every user the specified user is followed by.
-     * @return The ID or screen_name of the user to retrieve the friends ID list for.
-     * @param cursor  Specifies the page number of the results beginning at 1. A single page contains 5000 ids. This is recommended for users with large ID lists. If not provided all ids are returned.
-     * @throws WeiboException when Weibo service or network is unavailable
-     * @since Weibo4J 1.1220
-     * @see <a href="http://open.t.sina.com.cn/wiki/index.php/Followers/ids">followers/ids </a>
-     */
-    public IDs getFollowersIDs(long cursor) throws WeiboException {
-        /*return new IDs(get(getBaseURL() + "followers/ids.xml?cursor=" + cursor
-                , true));*/
-    	return new IDs(get(getBaseURL() + "followers/ids.json?cursor=" + cursor
-                , true),this);
-    }
 
     /**
      * Returns an array of numeric IDs for every user the specified user is followed by.
@@ -2500,8 +2458,8 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
      * @since Weibo4J 1.1220
      * @see <a href="http://open.t.sina.com.cn/wiki/index.php/Followers/ids">followers/ids </a>
      */
-    public IDs getFollowersIDs(int userId) throws WeiboException {
-        return getFollowersIDs(userId, -1l);
+    public IDs getFollowersIDs(long userId) throws WeiboException {
+        return getFollowersIDs(userId, -1l,-1l);
     }
 
     /**
@@ -2514,7 +2472,7 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
      * @see <a href="http://open.t.sina.com.cn/wiki/index.php/Followers/ids">followers/ids </a>
      * @deprecated use getFollowersIDs(int userId, long cursor) instead
      */
-    public IDs getFollowersIDs(int userId, Paging paging) throws WeiboException {
+    public IDs getFollowersIDs(long userId, Paging paging) throws WeiboException {
         return new IDs(get(getBaseURL() + "followers/ids.xml?user_id=" + userId, null
                 , paging, true));
     }
@@ -2528,9 +2486,9 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
      * @since Weibo4J 1.1220
      * @see <a href="http://open.t.sina.com.cn/wiki/index.php/Followers/ids">followers/ids </a>
      */
-    public IDs getFollowersIDs(int userId, long cursor) throws WeiboException {
+    public IDs getFollowersIDs(long userId, long cursor,long count) throws WeiboException {
         return new IDs(get(getBaseURL() + "followers/ids.xml?user_id=" + userId
-                + "&cursor=" + cursor, true));
+                + "&cursor=" + cursor + "&count=" + count, true));
     }
 
     /**
