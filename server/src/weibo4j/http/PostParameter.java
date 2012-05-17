@@ -52,6 +52,11 @@ public class PostParameter implements java.io.Serializable, Comparable {
         this.name = name;
         this.value = String.valueOf(value);
     }
+        
+    public PostParameter(String name, long value) {
+        this.name = name;
+        this.value = String.valueOf(value);
+    }
 
     public PostParameter(String name, int value) {
         this.name = name;

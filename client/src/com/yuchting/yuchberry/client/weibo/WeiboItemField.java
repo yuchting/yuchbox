@@ -670,7 +670,8 @@ public class WeiboItemField extends Manager{
 				
 				if(m_weibo.isUserFollowing() && m_weibo.isUserFollowMe()){
 					// draw follow state image
-					recvMain.sm_weiboUIImage.drawImage(_g, weiboTimeLineScreen.getFollowStateImage(), t_style.getWidth() + 2, t_textStart_y);
+					recvMain.sm_weiboUIImage.drawImage(_g, weiboTimeLineScreen.getFollowStateImage(),
+							t_style.getWidth() + fsm_headImageTextInterval, t_textStart_y + fsm_headImageTextInterval);
 				}
 				
 				// draw time string , weibo pic/comment

@@ -681,7 +681,9 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		t_weibo.m_timeline.m_sum = 20;
 		
 		t_weibo.CheckTimeline();
-		fetchWeiboUser t_user = t_weibo.getWeiboUser(t_weibo.m_timeline.m_weiboList.get(0).GetUserScreenName());
+		//fetchWeiboUser t_user = t_weibo.getWeiboUser(t_weibo.m_timeline.m_weiboList.get(0).GetUserScreenName());
+		
+		User t_userdd = t_weibo.m_weibo.updateFriendRemark(t_weibo.m_timeline.m_weiboList.get(0).GetUserId(), "测试备注");
 		
 		
 //		File t_file = new File("1314193031_0.satt");

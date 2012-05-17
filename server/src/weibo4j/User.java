@@ -87,6 +87,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
     private int statusesCount;
     private boolean geoEnabled;
     private boolean verified;
+    private String remark; //yuch added
     private static final long serialVersionUID = -6345893237975349030L;
 
 
@@ -134,6 +135,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
             follow_me = getBoolean("follow_me", json); //yuch modified
             notificationEnabled = getBoolean("notifications", json);
             statusesCount = json.getInt("statuses_count");
+            remark = json.getString("remark");
             
             //! yuchberry modify
             verified = getBoolean("verified",json);
@@ -246,6 +248,15 @@ public class User extends WeiboResponse implements java.io.Serializable {
      */
     public String getDescription() {
         return description;
+    }
+    
+    /**
+     * yuch added
+     * get the remark of own following friends
+     * @return
+     */
+    public String getRemark(){
+    	return remark;
     }
 
     /**
@@ -674,6 +685,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
                 ", statusesCount=" + statusesCount +
                 ", geoEnabled=" + geoEnabled +
                 ", verified=" + verified +
+                ", remark=" + remark +
                 '}';
     }
 }

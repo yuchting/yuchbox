@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package weibo4j;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,7 +37,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import org.omg.Dynamic.Parameter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -2407,6 +2407,20 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
     	return new IDs(get(getBaseURL() + "friends/ids.json?user_id=" + userId +
                 "&cursor=" + cursor + "&count=" + _count, true),this);
     }
+    
+    /**
+     * Returns an array of numeric IDs for every user the specified user is following.
+     * @param screenName Specfies the screen name of the user for whom to return the friends list.
+     * @param paging Specifies the page number of the results beginning at 1. A single page contains 5000 ids. This is recommended for users with large ID lists. If not provided all ids are returned.
+     * @return an array of numeric IDs for every user the specified user is following
+     * @throws WeiboException when Weibo service or network is unavailable
+     * @since Weibo4J 1.1220
+     * @see <a href="http://open.t.sina.com.cn/wiki/index.php/Friends/ids">friends/ids</a>
+     */
+    public IDs getFriendsIDs(long userId, Paging _page) throws WeiboException {
+    	return new IDs(get(getBaseURL() + "friends/ids.json?user_id=" + userId +
+                "&cursor=" + _page.getPage() + "&count=" + _page.getCount(), true),this);
+    }
 
     /**
      * Returns an array of numeric IDs for every user the specified user is following.
@@ -2422,6 +2436,22 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
                 + "&cursor=" + cursor, true));*/
     	 return new IDs(get(getBaseURL() + "friends/ids.json?screen_name=" + screenName
                  + "&cursor=" + cursor, true),this);
+    }
+    
+    /**
+     * Returns an array of numeric IDs for every user the specified user is following.
+     * @param screenName Specfies the screen name of the user for whom to return the friends list.
+     * @param cursor  Specifies the page number of the results beginning at 1. A single page contains 5000 ids. This is recommended for users with large ID lists. If not provided all ids are returned.
+     * @return an array of numeric IDs for every user the specified user is following
+     * @throws WeiboException when Weibo service or network is unavailable
+     * @since Weibo4J 1.1220
+     * @see <a href="http://open.t.sina.com.cn/wiki/index.php/Friends/ids">friends/ids</a>
+     */
+    public IDs getFriendsIDs(String screenName, Paging page) throws WeiboException {
+       /* return new IDs(get(getBaseURL() + "friends/ids.xml?screen_name=" + screenName
+                + "&cursor=" + cursor, true));*/
+    	 return new IDs(get(getBaseURL() + "friends/ids.json?screen_name=" + screenName
+                 + "&cursor=" + page.getPage(), true),this);
     }
 
     /**
@@ -3701,7 +3731,20 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
     
   
 
-
+    /**
+     * yuch added 
+     */
+    
+    /**
+     * updata the current appkey user following friends remark
+     * @param _userId user following friend id
+     * @param _remark update remark description
+     * @return User
+     */
+    public User updateFriendRemark(long _userId,String _remark)throws WeiboException,UnsupportedEncodingException{
+    	return new User(http.post(getBaseURL() + "user/friends/update_remark.json",
+    			new PostParameter[]{new PostParameter("user_id", _userId),new PostParameter("remark", URLEncoder.encode(_remark, "UTF-8"))}, true).asJSONObject());
+    }
     
     
 }

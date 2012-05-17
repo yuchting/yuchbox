@@ -2693,9 +2693,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 					t_fc.close();
 					t_fc = null;
 				}
-				
-				postWriteReadIni(fsm_weiboDataBackName);
-				
+								
 				// read the weibo name list 
 				//
 				t_fc = (FileConnection)Connector.open(t_weiboNameListName);
@@ -2720,8 +2718,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 					t_fc.close();
 					t_fc = null;
 				}
-				
-				
 				
 			}catch(Exception e){
 				SetErrorString("RWNL", e);

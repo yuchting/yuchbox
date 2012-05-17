@@ -1930,7 +1930,7 @@ public class AsyncWeibo extends Weibo {
     public void getFriendsIDsAsync(int userId, WeiboListener listener) {
         getDispatcher().invokeLater(new AsyncTask(FRIENDS_IDS, listener, new Integer[]{userId}) {
             public void invoke(WeiboListener listener, Object[] args) throws WeiboException {
-                listener.gotFriendsIDs(getFriendsIDs((Integer) args[0]));
+                listener.gotFriendsIDs(getFriendsIDs((Long) args[0]));
             }
         });
     }
@@ -1946,10 +1946,10 @@ public class AsyncWeibo extends Weibo {
      * @since Weibo4J 2.0.1
      * @deprecated use getFriendsIDsAsync(int userId, long cursor, WeiboListener listener) instead
      */
-    public void getFriendsIDsAsync(int userId, Paging paging, WeiboListener listener) {
+    public void getFriendsIDsAsync(long userId, Paging paging, WeiboListener listener) {
         getDispatcher().invokeLater(new AsyncTask(FRIENDS_IDS, listener, new Object[]{userId, paging}) {
             public void invoke(WeiboListener listener, Object[] args) throws WeiboException {
-                listener.gotFriendsIDs(getFriendsIDs((Integer) args[0],(Paging)args[1]));
+                listener.gotFriendsIDs(getFriendsIDs((Long)args[0],(Paging)args[1]));
             }
         });
     }
@@ -1964,10 +1964,10 @@ public class AsyncWeibo extends Weibo {
      * @see <a href="http://open.t.sina.com.cn/wiki/index.php/Friends/ids">friends/ids</a>
      * @since Weibo4J 2.0.10
      */
-    public void getFriendsIDsAsync(int userId, long cursor, WeiboListener listener) {
+    public void getFriendsIDsAsync(long userId, long cursor, WeiboListener listener) {
         getDispatcher().invokeLater(new AsyncTask(FRIENDS_IDS, listener, new Object[]{userId, cursor}) {
             public void invoke(WeiboListener listener, Object[] args) throws WeiboException {
-                listener.gotFriendsIDs(getFriendsIDs((Integer) args[0],(Long)args[1]));
+                listener.gotFriendsIDs(getFriendsIDs((Long) args[0],(Long)args[1]));
             }
         });
     }
@@ -2140,7 +2140,7 @@ public class AsyncWeibo extends Weibo {
         getDispatcher().invokeLater(new AsyncTask(FOLLOWERS_IDS, listener
                 , new Object[]{userId, cursor}) {
             public void invoke(WeiboListener listener, Object[] args) throws WeiboException {
-                listener.gotFollowersIDs(getFollowersIDs((Integer) args[0],(Long)args[1]));
+                listener.gotFollowersIDs(getFollowersIDs((Long) args[0],(Long)args[1],-1l));
             }
         });
     }
