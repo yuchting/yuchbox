@@ -110,7 +110,7 @@
 
 	<Image Name="space_line_1" XPos="110" YPos="379" Width="8" Height="2" />
 	
-	<Image Name="nav_bar" XPos="118" YPos="377" Width="48" Height="45" />
+	<Image Name="nav_bar" XPos="118" YPos="377" Width="48" Height="54" />
 	<Image Name="nav_bar_block" XPos="150" YPos="277" Width="25" Height="43" />
 	<Image Name="nav_bar_block_offline" XPos="175" YPos="277" Width="25" Height="43" />
 	<Image Name="nav_bar_seg" XPos="200" YPos="277" Width="2" Height="43" />

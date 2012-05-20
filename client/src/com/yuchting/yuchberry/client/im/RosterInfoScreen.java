@@ -89,7 +89,7 @@ public class RosterInfoScreen extends MainScreen {
 		super.paint(_g);
 		
 		RosterItemField.drawChatSign(_g,recvMain.fsm_display_width,recvMain.fsm_display_height,
-				m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch);		
+				m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch,0);		
 	}
 	
 	public boolean onClose(){

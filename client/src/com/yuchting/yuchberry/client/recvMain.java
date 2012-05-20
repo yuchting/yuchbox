@@ -58,6 +58,7 @@ import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.i18n.SimpleDateFormat;
 import net.rim.device.api.notification.NotificationsConstants;
 import net.rim.device.api.notification.NotificationsManager;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Bitmap;
@@ -78,6 +79,7 @@ import com.yuchting.yuchberry.client.connectDeamon.FetchAttachment;
 import com.yuchting.yuchberry.client.im.IMStatus;
 import com.yuchting.yuchberry.client.im.MainIMScreen;
 import com.yuchting.yuchberry.client.im.fetchChatRoster;
+import com.yuchting.yuchberry.client.screen.ChangeMailSenderDlg;
 import com.yuchting.yuchberry.client.screen.aboutScreen;
 import com.yuchting.yuchberry.client.screen.audioViewScreen;
 import com.yuchting.yuchberry.client.screen.imageViewScreen;
@@ -283,6 +285,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public Vector 			m_sendMailAccountList = new Vector();
 	public int				m_defaultSendMailAccountIndex = 0;
 	
+	public boolean 		m_hideBackgroundIcon = false;
+	
 	public final class UploadingDesc{
 		
 		public fetchMail		m_mail = null;
@@ -300,7 +304,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		public Object run(Object context){
 			if(context instanceof Message ){
 				
-				return OpenAttachmentFileScreen(false);
+				return OpenAttachmentFileScreen(context,false);
 			}
 			
 			return context;
@@ -315,7 +319,21 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		public Object run(Object context){
 			if(context instanceof Message ){
 
-				return OpenAttachmentFileScreen(true);
+				return OpenAttachmentFileScreen(context,true);
+			}
+			
+			return context;	
+		}
+	};
+	
+	ApplicationMenuItem	m_changeDefaultSenderItem	= new ApplicationMenuItem(22){
+		public String toString(){
+			return recvMain.sm_local.getString(yblocalResource.CHANGE_DEFAULT_SENDER_ACC);
+		}
+		
+		public Object run(Object context){
+			if(context instanceof Message ){
+				return openChangeMailSenderDlg(context);
 			}
 			
 			return context;	
@@ -468,6 +486,14 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
         WeiboHeadImage.sm_mainApp = this;
         InitWeiboModule();
         initIMModule();
+	}
+	
+	protected boolean acceptsForeground() {
+		if(!m_hideBackgroundIcon){
+			return true; 
+		}
+		
+		return Application.getApplication() instanceof recvMain;
 	}
 	
 	public boolean isBackground(){
@@ -953,7 +979,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 	}
 	
-	final static int		fsm_clientVersion = 39;
+	final static int		fsm_clientVersion = 40;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -1195,6 +1221,11 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				    			}
 				    		}
 				    		
+				    		if(t_currVer >= 40){
+				    			m_hideBackgroundIcon 		= sendReceive.ReadBoolean(t_readFile);
+				    			m_imChatScreenShowHeadImg	= sendReceive.ReadBoolean(t_readFile);
+				    		}
+				    		
 				    		
 			    		}finally{
 			    			t_readFile.close();
@@ -1321,6 +1352,9 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		    				WeiboAccount acc = (WeiboAccount)m_weiboAccountList.elementAt(i);
 		    				acc.Output(t_writeFile);
 		    			}
+		    			
+		    			sendReceive.WriteBoolean(t_writeFile,m_hideBackgroundIcon);
+		    			sendReceive.WriteBoolean(t_writeFile,m_imChatScreenShowHeadImg);
 		    									
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1818,7 +1852,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	public String	m_uploadFileFavorPath 				= null;
 	
-	public Object OpenAttachmentFileScreen(final boolean _del){
+	public Object OpenAttachmentFileScreen(Object _org,final boolean _del){
 		
 		try{
 
@@ -1832,7 +1866,48 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}
 		
 		return null;
-	}	
+	}
+	
+	//! message composed screen to add context menu to return change mailsender dialog  
+	public Object openChangeMailSenderDlg(Object _org){
+		
+		try{
+			
+			ChangeMailSenderDlg t_dlg = new ChangeMailSenderDlg(recvMain.this);
+			UiApplication.getUiApplication().pushScreen(t_dlg);
+			return t_dlg;
+			
+		}catch(Exception e){
+			SetErrorString("OCMSD",e);
+		}
+		
+		return _org;
+	}
+	
+	/**
+	 * load the change mail sender dialog menu item or remove it
+	 */
+	private boolean m_loadChangeMailSenderMenu = false; 
+	
+	/**
+	 * load the change mail sender dialog menu item or remove it
+	 * @param _load		load or remove
+	 */
+	public void loadChangeMailSenderMenu(boolean _load){
+		if(m_loadChangeMailSenderMenu != _load){
+						
+			if(_load){
+				if(m_sendMailAccountList.size() <= 1){ //unique account...
+					return;
+				}
+				ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_changeDefaultSenderItem);
+			}else{
+				ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_changeDefaultSenderItem);
+			}
+			
+			m_loadChangeMailSenderMenu = _load;
+		}
+	}
 	
 	public void PushViewFileScreen(final String _filename){
 		
@@ -2175,6 +2250,31 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
         return buf.toString();
     }
 	
+	public static String sprintf(int _expid,String[] _arg){
+		return sprintf(sm_local.getString(_expid),_arg);
+	}
+
+	public static String sprintf(String _exp,String[] _arg){
+		
+		if(_arg == null){
+			return _exp;
+		}
+		
+		int t_idx 		= 0;
+		int t_argIdx	= 0;
+		
+		while(t_argIdx < _arg.length){
+			
+			t_idx = _exp.indexOf("%s");
+			if(t_idx == -1){
+				break;
+			}
+			
+			_exp = _exp.substring(0,t_idx) + _arg[t_argIdx++] + _exp.substring(t_idx + 2);
+		}
+		
+		return _exp;
+	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///// weibo module
@@ -2857,6 +2957,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public boolean				m_imVoiceImmMode		= false;
 	
 	public boolean				m_imReturnSend	= false;
+	
+	public boolean				m_imChatScreenShowHeadImg = false;
 	
 	/**
 	 * IM option to popup a dialog prompt 

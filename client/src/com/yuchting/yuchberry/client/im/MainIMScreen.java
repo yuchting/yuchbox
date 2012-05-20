@@ -160,7 +160,12 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				m_addRosterDlg = new IMAddRosterDlg(MainIMScreen.this);
 			}
 			
-			m_mainApp.pushScreen(m_addRosterDlg);
+			m_mainApp.invokeLater(new Runnable() {
+				public void run() {
+					m_mainApp.pushScreen(m_addRosterDlg);
+				}
+			});
+			
 		}
 	};
 	
@@ -210,7 +215,11 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 					m_aliasDlg = new IMAliasDlg(MainIMScreen.this,(RosterItemField)m_currFocusRosterItemField);
 				}
 				
-				m_mainApp.pushScreen(m_aliasDlg);				
+				m_mainApp.invokeLater(new Runnable() {
+					public void run() {
+						m_mainApp.pushScreen(m_aliasDlg);
+					}
+				});
 			}
 			
 		}
@@ -278,7 +287,11 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	MenuItem	m_addStatusMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_ADD_STATUS),m_menu_op++,0){
 		public void run(){
 			m_statusAddScreen = new IMStatusAddScreen(MainIMScreen.this, null);
-			m_mainApp.pushScreen(m_statusAddScreen);
+			m_mainApp.invokeLater(new Runnable() {
+				public void run() {
+					m_mainApp.pushScreen(m_statusAddScreen);
+				}
+			});
 			
 		}
 	};
@@ -292,7 +305,11 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				if(t_field.isFocus()){
 					
 					m_statusAddScreen = new IMStatusAddScreen(MainIMScreen.this, t_field.m_status);
-					m_mainApp.pushScreen(m_statusAddScreen);
+					m_mainApp.invokeLater(new Runnable() {
+						public void run() {
+							m_mainApp.pushScreen(m_statusAddScreen);
+						}
+					});
 					
 					break;
 				}
@@ -1462,6 +1479,17 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				}
 			}
 		});		
+	}
+	
+	/**
+	 * get the fetch roster head image
+	 * @param _roster
+	 * @return
+	 * @throws Exception
+	 */
+	public WeiboHeadImage getHeadImage(fetchChatRoster _roster)throws Exception{
+		return WeiboHeadImage.SearchHeadImage(m_headImageList, _roster.getAccount(),
+				(byte)_roster.getStyle(),_roster.getHeadImageHashCode(), false);
 	}
 	
 	private void addRosterListByPresence(int _presence)throws Exception{

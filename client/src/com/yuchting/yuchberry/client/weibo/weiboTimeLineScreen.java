@@ -879,9 +879,29 @@ public class weiboTimeLineScreen extends MainScreen{
         		fetchWeibo t_weibo = m_currMgr.getCurrSelectedItem().m_weibo;
 
 				m_smsShareDlg = new WeiboShareSMSDlg(weiboTimeLineScreen.this, t_weibo);
-				m_mainApp.pushScreen(m_smsShareDlg);
+				m_mainApp.invokeLater(new Runnable() {
+					public void run() {
+						m_mainApp.pushScreen(m_smsShareDlg);
+					}
+				});
+				
         	}
         }
+    };
+    
+    MenuItem m_friendRemarkItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_REMARK_MENU_LABEL),m_menuIndex_op++,0){
+    	public void run() {
+    		
+    		if(m_currMgr.getCurrSelectedItem() != null				// has selected
+    		&& m_currMgr.getCurrSelectedItem().m_weibo != null		// is not update weibo
+    		){
+        		m_mainApp.invokeLater(new Runnable() {
+    				public void run() {
+    					m_mainApp.pushScreen(new UpdateFriendRemarkDlg(weiboTimeLineScreen.this,m_currMgr.getCurrSelectedItem().m_weibo));
+    				}
+    			});
+    		}
+    	}
     };
     
     public WeiboOptionScreen m_optionScreen = null;
@@ -986,6 +1006,11 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 			_menu.add(m_emailItem);
 			_menu.add(m_smsItem);
+			
+			if(m_currMgr.getCurrSelectedItem().m_weibo.isUserFollowing()
+			&& m_currMgr.getCurrSelectedItem().m_weibo.GetWeiboStyle() == fetchWeibo.SINA_WEIBO_STYLE){
+				_menu.add(m_friendRemarkItem);
+			}
 		}
 		
 		_menu.add(MenuItem.separator(50));

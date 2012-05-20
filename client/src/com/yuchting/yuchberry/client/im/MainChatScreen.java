@@ -40,7 +40,6 @@ import net.rim.blackberry.api.invoke.CameraArguments;
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.DeviceInfo;
-import net.rim.device.api.system.KeyListener;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -73,6 +72,7 @@ import com.yuchting.yuchberry.client.ui.CameraFileOP;
 import com.yuchting.yuchberry.client.ui.ImageButton;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
+import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 
 final class InputManager extends Manager implements FieldChangeListener{
 	
@@ -503,7 +503,7 @@ final class MiddleMgr extends VerticalFieldManager{
 		scrollToBottom(t_field);
 		
 		m_inputMgr.m_editTextArea.setFocus();
-		
+				
 		if(m_inputMgr.m_editTextArea.getTextLength() > 0){			
 			m_inputMgr.m_editTextArea.setCursorPosition(
 					m_inputMgr.m_editTextArea.getTextLength());
@@ -517,7 +517,7 @@ final class MiddleMgr extends VerticalFieldManager{
 	}
 	
 	public int getPreferredHeight(){
-		return recvMain.fsm_display_height - MainChatScreen.ChatScreenHeader.fsm_chatScreenHeaderHeight;
+		return recvMain.fsm_display_height - m_chatScreen.m_header.getPreferredHeight();
 	}
 	
 	public void sublayout(int _width,int _height){
@@ -867,29 +867,40 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 	
 	final class ChatScreenHeader extends Field{
 		
-		public final static int fsm_chatScreenHeaderHeight = 30;
+		WeiboHeadImage		m_rosterImage;
+		
+		public void setRosterImage(WeiboHeadImage _image){
+			m_rosterImage = _image;
+		}
 		
 		public int getPreferredWidth() {
 			return recvMain.fsm_display_width;
 		}
 		
 		public int getPreferredHeight() {
-			return fsm_chatScreenHeaderHeight;
+			return m_mainApp.m_imChatScreenShowHeadImg?54:30;
 		}
 		
 		public void invalidate(){
 			super.invalidate();
 		}
+		
 		protected void layout(int _width,int _height){
-			setExtent(recvMain.fsm_display_width,fsm_chatScreenHeaderHeight);
-		}
+			setExtent(recvMain.fsm_display_width,getPreferredHeight());
+		}	
 		
 		protected void paint(Graphics _g){
 			recvMain.sm_weiboUIImage.drawBitmapLine(_g, m_title, 0, 0, getPreferredWidth());
 			
+			int t_start_x = 0;
+			
+			if(m_mainApp.m_imChatScreenShowHeadImg){
+				t_start_x += WeiboHeadImage.displayHeadImage(_g,0, 2, m_rosterImage);
+			}
+			
 			// draw roster state
 			//
-			int t_x = RosterItemField.drawRosterState(_g,3,3,m_currRoster.m_roster.getPresence());
+			int t_x = RosterItemField.drawRosterState(_g,t_start_x,3,m_currRoster.m_roster.getPresence());
 			
 			int color = _g.getColor();
 			Font font = _g.getFont();
@@ -900,12 +911,20 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 				
 				_g.drawText(m_currRoster.m_roster.getName(),t_x,2);
 				
+				if(m_mainApp.m_imChatScreenShowHeadImg){
+					String t_status = m_currRoster.m_roster.getStatus();
+					if(t_status.length() == 0){
+						t_status = m_currRoster.m_roster.getAccount();
+					}
+					_g.drawText(t_status,t_start_x,MainIMScreen.fsm_boldFont.getHeight());
+				}
+				
 			}finally{
 				_g.setColor(color);
 				_g.setFont(font);
 			}
 			
-			t_x = RosterItemField.drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch);
+			t_x = RosterItemField.drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch,30);
 						
 			if(m_currRoster.m_currChatState == fetchChatMsg.CHAT_STATE_COMPOSING){
 				recvMain.sm_weiboUIImage.drawImage(_g, sm_composing, t_x - sm_composing.getWidth(), 3);
@@ -977,9 +996,9 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		m_mainApp 		= _mainApp;
 		m_mainScreen	= _mainScreen;
 		
-		m_middleMgr		= new MiddleMgr(this);
-		m_title 		= recvMain.sm_weiboUIImage.getImageUnit("nav_bar");		
 		m_header 		= new ChatScreenHeader();
+		m_middleMgr		= new MiddleMgr(this);
+		m_title 		= recvMain.sm_weiboUIImage.getImageUnit("nav_bar");
 		m_hasImageSign	= recvMain.sm_weiboUIImage.getImageUnit("picSign");
 		m_hasVoiceSign	= recvMain.sm_weiboUIImage.getImageUnit("voice_sign");
 				
@@ -1065,6 +1084,11 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		
 		if(m_currRoster != null){
 			m_middleMgr.prepareChatScreen(m_currRoster);
+			try{
+				m_header.setRosterImage(m_mainScreen.getHeadImage(m_currRoster.m_roster));
+			}catch(Exception e){
+				m_mainApp.SetErrorString("MCS_OD", e);
+			}			
 		}
 
 		m_mainApp.StopIMNotification();

@@ -731,6 +731,8 @@ public class connectDeamon extends Thread implements SendListener,
 		m_forwordReplyMail = FindOrgMessage(e.getMessage());
 		
 		m_sendStyle = fetchMail.FORWORD_STYLE;
+		
+		m_mainApp.loadChangeMailSenderMenu(false);
 	}
 
 	public void newMessage(MessageEvent e){
@@ -738,6 +740,8 @@ public class connectDeamon extends Thread implements SendListener,
 		m_composingAttachment.removeAllElements();
 		
 		m_sendStyle = fetchMail.NOTHING_STYLE;
+		
+		m_mainApp.loadChangeMailSenderMenu(true);
 	}
 	public void reply(MessageEvent e){
 		m_composingMail = e.getMessage();
@@ -746,6 +750,8 @@ public class connectDeamon extends Thread implements SendListener,
 		m_forwordReplyMail = FindOrgMessage(e.getMessage());
 		
 		m_sendStyle = fetchMail.REPLY_STYLE;
+		
+		m_mainApp.loadChangeMailSenderMenu(false);
 	}
 	//@}
 			

@@ -51,7 +51,7 @@ public class RosterItemField extends Field{
 	public final static Font		fsm_addressFont			= MainIMScreen.fsm_defaultFont.derive(MainIMScreen.fsm_defaultFont.getStyle(),MainIMScreen.fsm_defaultFontHeight - 2);
 	public final static int		fsm_addressFontHeight	= fsm_addressFont.getHeight();
 	
-	MainIMScreen.RosterChatData					m_currRoster;
+	MainIMScreen.RosterChatData		m_currRoster;
 	WeiboHeadImage					m_headImage;
 	
 	MainIMScreen					m_mainScreen;	
@@ -167,18 +167,28 @@ public class RosterItemField extends Field{
 			_g.setFont(font);
 		}
 		
-		drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch);
+		drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch,0);
 	}
 	
 	public static ImageUnit	sm_gtalkSign = null;
 	public static ImageUnit	sm_MSNSign = null;
 	public static ImageUnit	sm_YuchSign = null;
 	
-	public static int drawChatSign(Graphics _g,int _limitWidth,int _limitHeight,int _style,boolean _isYuch){
+	/**
+	 * draw the chat style and yuchbox sign
+	 * @param _g
+	 * @param _limitWidth
+	 * @param _limitHeight
+	 * @param _style
+	 * @param _isYuch			is yuchbox client
+	 * @param _rightOffset		the right edge distance
+	 * @return
+	 */
+	public static int drawChatSign(Graphics _g,int _limitWidth,int _limitHeight,int _style,boolean _isYuch,int _rightOffset){
 
 		int t_ret = 0;
 		
-		int x = _limitWidth - 3 - sm_rosterState[0].getWidth();
+		int x = _limitWidth - 3 - sm_rosterState[0].getWidth() - _rightOffset;
 		int y = 3;
 		
 		if(_style == fetchChatMsg.STYLE_GTALK){

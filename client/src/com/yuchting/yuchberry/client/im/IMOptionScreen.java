@@ -50,8 +50,11 @@ public class IMOptionScreen extends MainScreen {
 	CheckboxField			m_imStoreImageVoice		= null;
 	CheckboxField			m_imPopupPrompt		= null;
 	CheckboxField			m_imRenotifyPrompt	= null;
+	CheckboxField			m_imChatScreenShowHeadImg = null;
 	ObjectChoiceField		m_imChatMsgHistory	= null;
 	ObjectChoiceField		m_imSendImageQuality	= null;
+	
+	
 	
 	public IMOptionScreen(MainIMScreen _mainScreen){
 		m_mainScreen = _mainScreen;
@@ -103,6 +106,10 @@ public class IMOptionScreen extends MainScreen {
 									m_mainScreen.m_mainApp.m_imChatScreenReverse);
 		add(m_imChatScreenReverse);
 		
+		m_imChatScreenShowHeadImg	= new CheckboxField(recvMain.sm_local.getString(yblocalResource.IM_OPTION_CHAT_SHOW_HEAD_IMG),
+												m_mainScreen.m_mainApp.m_imChatScreenShowHeadImg);
+		add(m_imChatScreenShowHeadImg);
+		
 		m_imChatMsgHistory		= new ObjectChoiceField(recvMain.sm_local.getString(yblocalResource.IM_OPTION_CHAT_HISTORY_NUM),
 									recvMain.fsm_imChatMsgHistoryList,m_mainScreen.m_mainApp.m_imChatMsgHistory);
 		add(m_imChatMsgHistory);
@@ -135,6 +142,7 @@ public class IMOptionScreen extends MainScreen {
 			 
 			 m_mainScreen.m_mainApp.m_imStoreImageVoice = m_imStoreImageVoice.getChecked();
 			 m_mainScreen.m_mainApp.m_imRenotifyPrompt = m_imRenotifyPrompt.getChecked();
+			 m_mainScreen.m_mainApp.m_imChatScreenShowHeadImg = m_imChatScreenShowHeadImg.getChecked();
 			 
 			 if(t_formerReverse != m_mainScreen.m_mainApp.m_imChatScreenReverse){
 				 m_mainScreen.m_chatScreen.m_middleMgr.readdControl();
