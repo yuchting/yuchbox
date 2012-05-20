@@ -210,6 +210,8 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		m_api.deleteMessage(_id);
 	}
 	
+	protected void setFriendRemark(String _id,String _remark)throws Exception{}
+	
 	/**
 	 * overload to refresh following and follower list interval
 	 */

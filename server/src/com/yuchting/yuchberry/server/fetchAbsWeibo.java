@@ -451,6 +451,9 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			case msg_head.msgWeiboUnfollowUser :
 				t_processed = ProcessWeiboUnfollowUser(in);
 				break;
+			case msg_head.msgWeiboRemark:
+				t_processed = ProcessWeiboRemarkName(in);
+				break;
 		}
 		
 		return t_processed;
@@ -548,6 +551,27 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			sendReceive.WriteString(os,"发布Weibo成功！",false);
 			sm_updateOkPrompt_zh = os.toByteArray();
 		}catch(Exception e){}
+	}
+	
+	
+	static byte[] sm_friendRemarkOkPrompt = null;
+	static {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgWeiboPrompt);
+		try{
+			sendReceive.WriteString(os,"Update friend remark OK!",false);
+			sm_friendRemarkOkPrompt = os.toByteArray();
+		}catch(Exception e){}
+	}
+	
+	static byte[] sm_friendRemarkOkPrompt_zh = null;
+	static {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgWeiboPrompt);
+		try{
+			sendReceive.WriteString(os,"更新好友备注成功成功！",false);
+			sm_friendRemarkOkPrompt_zh = os.toByteArray();
+		}catch(Exception e){}
 	}	
 	
 	
@@ -572,6 +596,14 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			return sm_unfollowOkPrompt_zh;
 		}else{
 			return sm_unfollowOkPrompt;
+		}
+	}
+	
+	private byte[] getUpdateFriendRemarkOKData(){
+		if(m_mainMgr.GetClientLanguage() == fetchMgr.CLIENT_LANG_ZH_S){
+			return sm_friendRemarkOkPrompt_zh;
+		}else{
+			return sm_friendRemarkOkPrompt;
 		}
 	}
 	
@@ -835,6 +867,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	protected abstract void DeleteWeibo(long _id,boolean _isComment)throws Exception;
 	protected abstract void sendDirectMsg(String _screenName,String _text)throws Exception;
 	
+	protected abstract void setFriendRemark(String _id,String _remark)throws Exception;
+	
 	/**
 	 * instance of fetchAbsWeibo realize to add a WeiboAccount class to
 	 * parameter list  
@@ -1043,6 +1077,26 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			}			
 			
 			return true;
+		}
+		
+		return false;
+	}
+	
+	protected boolean ProcessWeiboRemarkName(ByteArrayInputStream in)throws Exception{
+		int t_style = in.read();
+		if(t_style == GetCurrWeiboStyle()){
+			String t_id 		= sendReceive.ReadString(in);
+			String t_remark		= sendReceive.ReadString(in);
+			
+			try{
+				setFriendRemark(t_id,t_remark);
+				m_mainMgr.SendData(getUpdateFriendRemarkOKData(), false);
+				
+			}catch(Exception e){
+				m_mainMgr.m_logger.PrinterException(e);
+			}	
+			
+			return true;			
 		}
 		
 		return false;

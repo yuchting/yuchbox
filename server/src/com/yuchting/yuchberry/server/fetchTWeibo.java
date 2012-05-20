@@ -259,6 +259,8 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		m_twitter.destroyStatus(_id);
 	}
 	
+	protected void setFriendRemark(String _id,String _remark)throws Exception{}
+	
 	protected fetchWeiboUser getWeiboUser(String _name)throws Exception{
 		User t_user = m_twitter.showUser(_name);
 		
@@ -395,9 +397,9 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	
 	static public void main(String[] _arg)throws Exception{
 		
-		//System.setProperty("proxySet", "true");
-		//System.setProperty("proxyHost", "127.0.0.1");
-		//System.setProperty("proxyPort", "8580");
+		System.setProperty("proxySet", "true");
+		System.setProperty("proxyHost", "127.0.0.1");
+		System.setProperty("proxyPort", "8580");
 		
 		fetchMgr t_manger = new fetchMgr();
 		Logger t_logger = new Logger("");
@@ -409,12 +411,16 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		
 		t_weibo.m_twitter.setOAuthConsumer(fsm_consumerKey, fsm_consumerSecret);
 		
-		t_weibo.m_accessToken = "123158821-96vShVD9oXGZmj6usNAz4vVyLzL1fJVGxKZABa1C";
-		t_weibo.m_secretToken = "s9zpyuKVpOTksVr0tBC1md6Rge3SXvnQDzNkm8vg";
+		t_weibo.m_accessToken = "123158821-XD2V5L2W4ylntDS6orwfPKBEkqoJgcGHdvhMvnAq";
+		t_weibo.m_secretToken = "sM9M4F14ozghV7SZ1dzrl3iFiCYCkzQMOs7RXOa8rs";
 		
 		t_weibo.ResetSession(true);
 		
-		t_weibo.getWeiboUser("YuchTing");
+		t_weibo.m_atMeMessage.m_sum = 10;
+		t_weibo.m_timeline.m_sum = 10;
+		t_weibo.m_directMessage.m_sum = 5;
+		
+		t_weibo.CheckTimeline();
 	}
 	
 	

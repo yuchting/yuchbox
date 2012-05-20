@@ -448,6 +448,10 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		m_weibo.destroyStatus(_id);
 	}
 	
+	protected void setFriendRemark(String _id,String _remark)throws Exception{
+		m_weibo.updateFriendRemark(Long.parseLong(_id),_remark);
+	}
+	
 	protected fetchWeiboUser getWeiboUser(String _name)throws Exception{
 		User t_user = m_weibo.showUser(_name);
 		
