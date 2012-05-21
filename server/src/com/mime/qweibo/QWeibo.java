@@ -37,6 +37,9 @@ public class QWeibo {
 	
 	public QWeibo(JSONObject _json)throws Exception{
 		m_text 			= _json.getString("text");
+		if(m_text != null){
+			m_text = restoreXmlAttr(m_text);
+		}
 		m_orgText		= _json.getString("orgtext");
 		m_source = "<a href=\""+ _json.getString("fromurl") +"\">" + _json.getString("from") +"</a>";
 		
@@ -141,6 +144,14 @@ public class QWeibo {
 		
 		
 		return t_list;
+	}
+	
+	public static String restoreXmlAttr(String _attr){
+		return _attr.replace("&amp;","&")
+						.replace("&lt;","<")
+						.replace("&gt;",">")
+						.replace("&quot;","\"")
+						.replace("&apos;","'");
 	}
 	
 	

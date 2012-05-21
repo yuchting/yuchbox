@@ -387,12 +387,17 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		
  
 	protected void UpdateComment(int _style,String _text,long _orgWeiboId,
-									GPSInfo _info,boolean _updateTimeline)throws Exception{
+									GPSInfo _info,int _updateStyle)throws Exception{
 
 		if(_style == GetCurrWeiboStyle()){
-			m_weibo.updateComment(_text,Long.toString(_orgWeiboId),null);
+			
+			if(_updateStyle != 2){ // don't comment this weibo if style == 2
+				m_weibo.updateComment(_text,Long.toString(_orgWeiboId),null);
+			}
+			
 						 
-			if(_updateTimeline){
+			if(_updateStyle != 0){ // update state in own timeline
+				
 				if(_info != null && _info.m_longitude != 0 && _info.m_latitude != 0){
 					m_weibo.updateStatus(_text, _orgWeiboId, _info.m_latitude, _info.m_longitude);
 				}else{
@@ -428,7 +433,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 			
 		}else{
 			
-			UpdateComment(GetCurrWeiboStyle(),_text,_orgWeiboId,_info,_updateTimeline);
+			UpdateComment(GetCurrWeiboStyle(),_text,_orgWeiboId,_info,_updateTimeline?1:0);
 		}
 	}
 	

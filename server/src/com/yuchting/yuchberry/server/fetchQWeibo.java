@@ -353,23 +353,34 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	}
 	
 	protected void UpdateComment(int _style,String _text,long _orgWeiboId,
-						GPSInfo _info,boolean _updateTimeline)throws Exception{
+						GPSInfo _info,int _updateStyle)throws Exception{
 		
 		if(_style == GetCurrWeiboStyle()){
 			
-			if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
-				m_api.commentMsg(_text, _orgWeiboId, _info.m_longitude, _info.m_latitude);
-			}else{
-				m_api.commentMsg(_text, _orgWeiboId);
+			if(_updateStyle != 2){ // don't commnet this message
+
+				if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
+					m_api.commentMsg(_text, _orgWeiboId, _info.m_longitude, _info.m_latitude);
+				}else{
+					m_api.commentMsg(_text, _orgWeiboId);
+				}
 			}
 			
-			if(_updateTimeline){
+			if(_updateStyle == 1){ // need publish message in timeline
 
 				if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
 					m_api.publishMsg(_text, _info.m_longitude, _info.m_latitude);
 				}else{
 					m_api.publishMsg(_text);
-				}	
+				}
+				
+			}else if(_updateStyle == 2){
+				
+				if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
+					m_api.forwardMsg(_text,_orgWeiboId, _info.m_longitude, _info.m_latitude);
+				}else{
+					m_api.forwardMsg(_text,_orgWeiboId);
+				}
 			}
 			
 		}else{
@@ -384,8 +395,9 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	}
 	
 	protected void UpdateReply(String _text,long _commentWeiboId,long _orgWeiboId,
-			GPSInfo _info,boolean _updateTimeline)throws Exception{
-		UpdateComment(GetCurrWeiboStyle(),_text,_orgWeiboId,_info,_updateTimeline);
+									GPSInfo _info,boolean _updateTimeline)throws Exception{
+		
+		UpdateComment(GetCurrWeiboStyle(),_text,_orgWeiboId,_info,_updateTimeline?1:0);
 	}
 	
 	protected void FavoriteWeibo(long _id)throws Exception{
@@ -500,7 +512,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		
 		if(!_from.isEmpty()){
 			QWeibo t_lashOne = _from.get(0);
-			_to.m_fromIndex = t_lashOne.getTime() + 1;
+			_to.m_fromIndex = t_lashOne.getTime() + 1000;
 		}
 	}
 	

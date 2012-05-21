@@ -761,7 +761,20 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 						t_gpsInfo.InputData(in);
 					}
 					
-					boolean t_updateTimeline = sendReceive.ReadBoolean(in);
+					int t_forwardStyle = in.read();
+					
+					if(t_forwardStyle == 2){
+						// just forward this weibo append text
+						//
+						String t_appendText = sendReceive.ReadString(in);
+						
+						if(t_style != GetCurrWeiboStyle() && !t_appendText.isEmpty()){							
+							t_text += t_appendText;							
+							if(t_text.length() > 140){
+								t_text = t_text.substring(0,140);
+							}
+						}					
+					}
 					
 					if(m_mainMgr.GetConnectClientVersion() >= 13){
 						// find the uploaded file
@@ -771,21 +784,21 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 					
 					if(t_type == fetchWeibo.SEND_FORWARD_TYPE){
 
-						m_mainMgr.m_logger.LogOut(GetAccountName() + "comment weibo " + t_orgWeiboId + " updateNew:" + t_updateTimeline);
+						m_mainMgr.m_logger.LogOut(GetAccountName() + "comment weibo " + t_orgWeiboId + " updateStyle:" + t_forwardStyle);
 						
-						UpdateComment(t_style,t_text,t_orgWeiboId,t_gpsInfo,t_updateTimeline);
+						UpdateComment(t_style,t_text,t_orgWeiboId,t_gpsInfo,t_forwardStyle);
 						
 					}else{	
 						
-						m_mainMgr.m_logger.LogOut(GetAccountName() + " reply weibo " + t_commentWeiboId + " orgWeibo " + t_orgWeiboId + " updateNew:" + t_updateTimeline);
+						m_mainMgr.m_logger.LogOut(GetAccountName() + " reply weibo " + t_commentWeiboId + " orgWeibo " + t_orgWeiboId + " updateStyle:" + t_forwardStyle);
 						
-						UpdateReply(t_text,t_commentWeiboId,t_orgWeiboId,t_gpsInfo,t_updateTimeline);
+						UpdateReply(t_text,t_commentWeiboId,t_orgWeiboId,t_gpsInfo,t_forwardStyle != 0);
 						
 					}
 					
 					m_mainMgr.SendData(getUpdateOKData(), false);
 					
-					if(t_updateTimeline){
+					if(t_forwardStyle != 0){
 						ProcessWeiboRefresh();
 					}
 					
@@ -856,7 +869,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	protected abstract int GetCurrWeiboStyle(); 
 	protected abstract void UpdateStatus(String _text,GPSInfo _info,byte[] _filePic,String _fileType)throws Exception;
 	protected abstract void UpdateComment(int _style,String _text,long _commentWeiboId,
-											GPSInfo _info,boolean _updateTimeline)throws Exception;
+											GPSInfo _info,int _updateStyle)throws Exception;
 	
 	protected abstract void UpdateReply(String _text,long _commentWeiboId,long _orgWeiboId,
 											GPSInfo _info,boolean _updateTimeline)throws Exception;

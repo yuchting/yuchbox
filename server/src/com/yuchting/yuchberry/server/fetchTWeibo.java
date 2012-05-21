@@ -221,7 +221,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	}
 	
 	protected void UpdateComment(int _style,String _text,long _orgWeiboId,
-									GPSInfo _info,boolean _updateTimeline)throws Exception{
+									GPSInfo _info,int _updateStyle)throws Exception{
 					
 		
 		StatusUpdate t_status = new StatusUpdate(_text);
@@ -240,7 +240,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	
 	protected void UpdateReply(String _text,long _commentWeiboId,long _orgWeiboId,
 			GPSInfo _info,boolean _updateTimeline)throws Exception{
-		UpdateComment(GetCurrWeiboStyle(),_text,_orgWeiboId,_info,_updateTimeline);
+		UpdateComment(GetCurrWeiboStyle(),_text,_orgWeiboId,_info,_updateTimeline?1:0);
 	}
 	
 	protected void FavoriteWeibo(long _id)throws Exception{
