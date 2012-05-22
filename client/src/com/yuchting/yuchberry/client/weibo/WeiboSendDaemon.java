@@ -47,9 +47,10 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 	byte		m_weiboStyle	= 0;
 	byte		m_sendType		= 0;
 	boolean	m_onlyComment	= false;
+	boolean	m_onlyForward	= false;
 	
-	long		m_origId		= 0;
-	long		m_commentId		= 0;
+	fetchWeibo		m_origWeibo		= null;
+	fetchWeibo		m_commentWeibo	= null;
 	
 	String		m_directMsgName = null; 
 	
@@ -88,7 +89,7 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 	
 	// reply/comment weibo
 	//
-	public WeiboSendDaemon(String _text,byte _weiboStyle,byte _sendType,long _origId,long _commentId,boolean _onlyComment,
+	public WeiboSendDaemon(String _text,byte _weiboStyle,byte _sendType,fetchWeibo _origWeibo,fetchWeibo _commentWeibo,boolean _onlyComment,boolean _onlyForward,
 							recvMain _mainApp)throws Exception{
 		
 		if(_mainApp == null){
@@ -97,12 +98,13 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 		
 		m_mainApp		= _mainApp;
 		m_onlyComment	= _onlyComment;
+		m_onlyForward	= _onlyForward;
 		m_updateText	= _text;
 		m_weiboStyle	= _weiboStyle;
 		m_sendType		= _sendType;
 		
-		m_origId		= _origId;
-		m_commentId		= _commentId;
+		m_origWeibo		= _origWeibo;
+		m_commentWeibo	= _commentWeibo;
 			
 		start();		
 	}
@@ -258,8 +260,9 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 			
 			sendReceive.WriteString(t_os,m_updateText);
 			sendReceive.WriteBoolean(t_os,m_onlyComment?false:m_mainApp.m_publicForward);
-			sendReceive.WriteLong(t_os,m_origId);
-			sendReceive.WriteLong(t_os,m_commentId);
+			
+			sendReceive.WriteLong(t_os,m_origWeibo != null?m_origWeibo.GetId():0);
+			sendReceive.WriteLong(t_os,m_commentWeibo != null?m_commentWeibo.GetId():0);
 			
 			if(m_gpsInfo != null /*m_mainApp.canUseLocation()*/){
 				t_os.write(1);
@@ -270,9 +273,24 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 			
 			if(m_sendType == fetchWeibo.SEND_FORWARD_TYPE){
 				if(m_onlyComment){
-					sendReceive.WriteBoolean(t_os,false);
+					t_os.write(0);
+				}else if(m_onlyForward){
+					t_os.write(2);
+					
+					// prepare the append text for forward to other style weibo
+					//
+					String t_append = "";
+					if(m_commentWeibo != null){
+						t_append += m_commentWeibo.getForwardPrefix() + "@" + m_commentWeibo.GetUserScreenName() + " :" + m_commentWeibo.GetText();
+					}
+					
+					if(m_origWeibo != null){
+						t_append += m_origWeibo.getForwardPrefix() + "@" + m_origWeibo.GetUserScreenName() + " :" + m_origWeibo.GetText();
+					}
+					
+					sendReceive.WriteString(t_os, t_append);
 				}else{
-					sendReceive.WriteBoolean(t_os,m_mainApp.m_updateOwnListWhenFw);
+					t_os.write(m_mainApp.m_updateOwnListWhenFw?1:0);
 				}
 				
 			}else{

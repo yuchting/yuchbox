@@ -664,28 +664,27 @@ public class weiboTimeLineScreen extends MainScreen{
 					
 					if(m_currMgr.getCurrEditItem().m_weibo.GetCommentWeibo() != null){
 						
-						long t_orgId = 0;
+						fetchWeibo t_orgWeibo = null;
 						
 						if(m_currMgr.getCurrEditItem().m_weibo.GetReplyWeiboId() != -1){
-							t_orgId = m_currMgr.getCurrEditItem().m_weibo.GetReplyWeiboId();
+							t_orgWeibo = m_currMgr.getCurrEditItem().m_weibo.GetReplyWeibo();
 						}else{
-							t_orgId = m_currMgr.getCurrEditItem().m_weibo.GetCommentWeiboId();
+							t_orgWeibo = m_currMgr.getCurrEditItem().m_weibo.GetCommentWeibo();
 						}
 						
-						long t_commentId = m_currMgr.getCurrEditItem().m_weibo.GetId();
+						fetchWeibo t_commentWeibo = m_currMgr.getCurrEditItem().m_weibo;
 						
 						sendCommentReply(t_text,m_currMgr.getCurrEditItem().m_weibo.GetWeiboStyle(),
-										m_currMgr.m_currentSendType,t_orgId,t_commentId);
+										m_currMgr.m_currentSendType,t_orgWeibo,t_commentWeibo);
 						
 					}else{
 						UpdateNewWeibo(t_text,null,0,false);
 						return ;
 					}
 				}else{
-					long t_orgId = m_currMgr.getCurrEditItem().m_weibo.GetId();
 					
 					sendCommentReply(t_text,m_currMgr.getCurrEditItem().m_weibo.GetWeiboStyle(),
-									m_currMgr.m_currentSendType,t_orgId,0);
+									m_currMgr.m_currentSendType,m_currMgr.getCurrEditItem().m_weibo,null);
 				}			
 				
 				
@@ -695,10 +694,10 @@ public class weiboTimeLineScreen extends MainScreen{
 		}
 	}
 	
-	private void sendCommentReply(String _text,int _weiboStyle,int _sendType,long _orgId,long _commentId)throws Exception{
+	private void sendCommentReply(String _text,int _weiboStyle,int _sendType,fetchWeibo _orgWeibo,fetchWeibo _commentWeibo)throws Exception{
 					
-		m_sendDaemonList.addElement(new WeiboSendDaemon(_text,(byte)_weiboStyle,(byte)_sendType,_orgId,
-														_commentId,m_currMgr.m_forwardOnlyCommnet,m_mainApp));
+		m_sendDaemonList.addElement(new WeiboSendDaemon(_text,(byte)_weiboStyle,(byte)_sendType,_orgWeibo,
+														_commentWeibo,m_currMgr.m_forwardOnlyCommnet,m_currMgr.m_forwardOnlyForward,m_mainApp));
 		
 		m_mainApp.m_sentWeiboNum++;
 		m_currMgr.EscapeKey();
@@ -808,13 +807,19 @@ public class weiboTimeLineScreen extends MainScreen{
 	
     MenuItem m_forwardWeiboItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_FORWARD_WEIBO_BUTTON_LABEL),m_menuIndex_op++,0){
 		public void run(){
-			m_currMgr.ForwardWeibo(m_currMgr.getCurrSelectedItem(),false);
+			m_currMgr.ForwardWeibo(m_currMgr.getCurrSelectedItem(),false,false);
 		}
 	};
 	
 	MenuItem m_onlyCommnetWeiboItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_ONLY_COMMENT_WEIBO_MENU),m_menuIndex_op++,0){
 		public void run(){
-			m_currMgr.ForwardWeibo(m_currMgr.getCurrSelectedItem(),true);
+			m_currMgr.ForwardWeibo(m_currMgr.getCurrSelectedItem(),true,false);
+		}
+	};
+	
+	MenuItem m_onlyForwardWeiboItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_ONLY_FORWARD_WEIBO_MENU),m_menuIndex_op++,0){
+		public void run(){
+			m_currMgr.ForwardWeibo(m_currMgr.getCurrSelectedItem(),false,true);
 		}
 	};
         
@@ -981,8 +986,12 @@ public class weiboTimeLineScreen extends MainScreen{
 			
 			if(m_currMgr.getCurrEditItem() == null){
 				_menu.add(m_forwardWeiboItem);
-				if(m_currMgr.getCurrSelectedItem().m_weibo.GetWeiboStyle() == fetchWeibo.SINA_WEIBO_STYLE){
-					_menu.add(m_onlyCommnetWeiboItem);
+				if(m_currMgr.getCurrSelectedItem().m_weibo.GetWeiboStyle() == fetchWeibo.SINA_WEIBO_STYLE
+				|| m_currMgr.getCurrSelectedItem().m_weibo.GetWeiboStyle() == fetchWeibo.QQ_WEIBO_STYLE){
+					
+					_menu.add(m_onlyCommnetWeiboItem);				
+					_menu.add(m_onlyForwardWeiboItem);
+										
 				}
 				_menu.add(m_atWeiboItem);
 				_menu.add(m_parseUserWeiboItem);
@@ -1184,6 +1193,9 @@ public class weiboTimeLineScreen extends MainScreen{
 	    		return true;
 	    	case 'L':
 	    		m_onlyCommnetWeiboItem.run();
+	    		return true;
+	    	case 'K':
+	    		m_onlyForwardWeiboItem.run();
 	    		return true;
 	    	case 'V':
 	    		m_favWeiboItem.run();
