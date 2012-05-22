@@ -257,7 +257,7 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 			t_os.write(m_sendType);
 			
 			sendReceive.WriteString(t_os,m_updateText);
-			sendReceive.WriteBoolean(t_os,m_mainApp.m_publicForward);
+			sendReceive.WriteBoolean(t_os,m_onlyComment?false:m_mainApp.m_publicForward);
 			sendReceive.WriteLong(t_os,m_origId);
 			sendReceive.WriteLong(t_os,m_commentId);
 			
