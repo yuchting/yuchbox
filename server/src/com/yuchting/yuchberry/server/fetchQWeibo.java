@@ -103,29 +103,31 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		List<QDirectMessage> t_fetch = null;
 		
 		if(m_directMessage.m_fromIndex > 1){
-			t_fetch = m_api.getOutboxDirectMessage(0,10,m_directMessage.m_fromIndex);
+			t_fetch = m_api.getOutboxDirectMessage(m_directMessage.m_fromIndex2,10,m_directMessage.m_fromIndex);
 		}else{
 			t_fetch = m_api.getOutboxDirectMessage();
 		}
 		
-		AddDirectMsgWeibo(t_fetch,m_directMessage,fetchWeibo.DIRECT_MESSAGE_CLASS);
+		AddDirectMsgWeibo(t_fetch,m_directMessage,fetchWeibo.DIRECT_MESSAGE_CLASS,true);
 		
 		if(!t_fetch.isEmpty()){
 			m_directMessage.m_fromIndex = t_fetch.get(0).getWeiboContentItem().getId();
+			m_directMessage.m_fromIndex2= t_fetch.get(0).getWeiboContentItem().getTime();
 		}
 		
 		// inbox
 		//
 		if(m_directMessage.m_fromIndex2 > 1){
-			t_fetch = m_api.getInboxDirectMessage(0,10,m_directMessage.m_fromIndex2);
+			t_fetch = m_api.getInboxDirectMessage(m_directMessage.m_fromIndex4,10,m_directMessage.m_fromIndex3);
 		}else{
 			t_fetch = m_api.getInboxDirectMessage();
 		}
 		
-		AddDirectMsgWeibo(t_fetch,m_directMessage,fetchWeibo.DIRECT_MESSAGE_CLASS);
+		AddDirectMsgWeibo(t_fetch,m_directMessage,fetchWeibo.DIRECT_MESSAGE_CLASS,false);
 		
 		if(!t_fetch.isEmpty()){
-			m_directMessage.m_fromIndex2 = t_fetch.get(0).getWeiboContentItem().getId();
+			m_directMessage.m_fromIndex3 = t_fetch.get(0).getWeiboContentItem().getId();
+			m_directMessage.m_fromIndex4= t_fetch.get(0).getWeiboContentItem().getTime();
 		}
 						
 		// sort by time
@@ -149,12 +151,21 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		
 	}
 	
-	private void AddDirectMsgWeibo(List<QDirectMessage> _from,fetchWeiboData _to,byte _class){
+	private void AddDirectMsgWeibo(List<QDirectMessage> _from,fetchWeiboData _to,byte _class,boolean _outOrInBox){
 		
 		boolean t_insert;
+		long t_compareId = _outOrInBox?_to.m_fromIndex2:_to.m_fromIndex4;
 		
 		for(QDirectMessage fetchOne : _from){
 
+			if((_outOrInBox && fetchOne.getDirectMessageType() == QDirectMessage.OUTBOX_TYPE)
+			|| (!_outOrInBox && fetchOne.getDirectMessageType() == QDirectMessage.INBOX_TYPE)){
+
+				if(t_compareId >= fetchOne.getWeiboContentItem().getTime()){
+					continue;
+				}
+			}
+			
 			t_insert = true;
 			
 			for(fetchWeibo weibo : _to.m_weiboList){

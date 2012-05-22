@@ -123,31 +123,9 @@ public class HelloWorld {
         Params[] mParams;
     }
 	
-	public static String sprintf(String _exp,String[] _arg){
-		
-		if(_arg == null){
-			return _exp;
-		}
-		
-		int t_idx 		= 0;
-		int t_argIdx	= 0;
-		
-		while(t_argIdx < _arg.length){
-			
-			t_idx = _exp.indexOf("%s");
-			if(t_idx == -1){
-				break;
-			}
-			
-			_exp = _exp.substring(0,t_idx) + _arg[t_argIdx++] + _exp.substring(t_idx + 2);
-			
-		}
-		
-		return _exp;
-	}
 
 	public static void main(String arg[])throws Exception{
-		System.out.println(sprintf("is googd",new String[]{"aaa","bbb"}));
+		berryRecvTest();
 	}
 		
 	public final static String	fsm_vectStringSpliter = "<>";

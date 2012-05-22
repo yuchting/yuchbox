@@ -62,7 +62,10 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 
 	final class fetchWeiboData{
 		long					m_fromIndex = -1;
-		long					m_fromIndex2 = -1; // this var for QQ out/in box		
+		long					m_fromIndex2 = -1; // this var for QQ out/in box
+		long					m_fromIndex3 = -1;// this var for QQ out/in box timestamp
+		long					m_fromIndex4 = -1;// this var for QQ out/in box timestamp
+		
 		Vector<fetchWeibo>		m_historyList = null;
 		Vector<fetchWeibo>		m_weiboList = new Vector<fetchWeibo>();
 		int						m_sum		= -1;
