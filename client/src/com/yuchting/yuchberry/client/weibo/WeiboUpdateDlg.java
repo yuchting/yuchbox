@@ -53,6 +53,7 @@ import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.screen.CameraScreen;
 import com.yuchting.yuchberry.client.screen.ICameraScreenCallback;
 import com.yuchting.yuchberry.client.screen.IUploadFileScreenCallback;
+import com.yuchting.yuchberry.client.screen.PhizSelectedScreen;
 import com.yuchting.yuchberry.client.screen.imageViewScreen;
 import com.yuchting.yuchberry.client.screen.uploadFileScreen;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
@@ -60,7 +61,6 @@ import com.yuchting.yuchberry.client.ui.CameraFileOP;
 import com.yuchting.yuchberry.client.ui.ImageButton;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
-import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
 
 final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	
@@ -509,17 +509,18 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 	
 	public WeiboUpdateDlg(weiboTimeLineScreen _screen){
 		super(new WeiboUpdateManager(_screen),Screen.DEFAULT_MENU | Manager.NO_VERTICAL_SCROLL);
-		m_updateManager = (WeiboUpdateManager)getDelegate();
 		
-		m_phizScreen = PhizSelectedScreen.getPhizScreen(m_updateManager.m_editTextArea);
-		m_weiboUIImageSets = recvMain.sm_weiboUIImage;
+		m_mainApp 			= _screen.m_mainApp;
+		m_weiboUIImageSets 	= m_mainApp.m_weiboUIImage;
+		
+		m_hasImageSign		= m_weiboUIImageSets.getImageUnit("picSign");
+		m_hasLocation		= m_weiboUIImageSets.getImageUnit("locationSign");
 		
 		m_backgroundColor = WeiboItemField.fsm_extendBGColor;
 		m_snapshotAvaiable = recvMain.fsm_snapshotAvailible;
 		
-		m_mainApp = _screen.m_mainApp;
-		m_hasImageSign	= m_weiboUIImageSets.getImageUnit("picSign");
-		m_hasLocation	= m_weiboUIImageSets.getImageUnit("locationSign");
+		m_updateManager = (WeiboUpdateManager)getDelegate();		
+		m_phizScreen = PhizSelectedScreen.getPhizScreen(m_mainApp,m_updateManager.m_editTextArea);
 	}
 	
 	public void clearAttachment(){

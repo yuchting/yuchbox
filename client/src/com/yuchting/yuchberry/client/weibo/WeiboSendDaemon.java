@@ -280,13 +280,16 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 					// prepare the append text for forward to other style weibo
 					//
 					String t_append = "";
-					if(m_commentWeibo != null){
-						t_append += m_commentWeibo.getForwardPrefix() + "@" + m_commentWeibo.GetUserScreenName() + " :" + m_commentWeibo.GetText();
-					}
 					
-					if(m_origWeibo != null){
-						t_append += m_origWeibo.getForwardPrefix() + "@" + m_origWeibo.GetUserScreenName() + " :" + m_origWeibo.GetText();
-					}
+					if(m_mainApp.m_publicForward){
+						if(m_commentWeibo != null){
+							t_append += m_commentWeibo.getForwardPrefix() + "@" + m_commentWeibo.GetUserScreenName() + " :" + m_commentWeibo.GetText();
+						}
+						
+						if(m_origWeibo != null){
+							t_append += m_origWeibo.getForwardPrefix() + "@" + m_origWeibo.GetUserScreenName() + " :" + m_origWeibo.GetText();
+						}
+					}					
 					
 					sendReceive.WriteString(t_os, t_append);
 				}else{

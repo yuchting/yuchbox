@@ -64,6 +64,7 @@ import com.yuchting.yuchberry.client.screen.CameraScreen;
 import com.yuchting.yuchberry.client.screen.ICameraScreenCallback;
 import com.yuchting.yuchberry.client.screen.IRecordAudioScreenCallback;
 import com.yuchting.yuchberry.client.screen.IUploadFileScreenCallback;
+import com.yuchting.yuchberry.client.screen.PhizSelectedScreen;
 import com.yuchting.yuchberry.client.screen.RecordAudioScreen;
 import com.yuchting.yuchberry.client.screen.imageViewScreen;
 import com.yuchting.yuchberry.client.screen.uploadFileScreen;
@@ -71,7 +72,6 @@ import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.CameraFileOP;
 import com.yuchting.yuchberry.client.ui.ImageButton;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
-import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 
 final class InputManager extends Manager implements FieldChangeListener{
@@ -299,7 +299,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 							
 		}else if(field == m_phizButton){
 			UiApplication.getUiApplication().pushScreen(
-					PhizSelectedScreen.getPhizScreen(m_editTextArea));
+					PhizSelectedScreen.getPhizScreen(m_middleMgr.m_chatScreen.m_mainApp,m_editTextArea));
 		}
 	}	
 		
@@ -689,7 +689,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 	MenuItem m_phizMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_PHIZ_LABEL),m_menu_op++,0){
 		public void run(){
 			UiApplication.getUiApplication().pushScreen(
-					PhizSelectedScreen.getPhizScreen(m_middleMgr.m_inputMgr.m_editTextArea));
+					PhizSelectedScreen.getPhizScreen(m_mainApp,m_middleMgr.m_inputMgr.m_editTextArea));
 		}
 	};
 	MenuItem m_snapItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_OPEN_CAMERA_SNAP),m_menu_op++,0){

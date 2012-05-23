@@ -80,6 +80,7 @@ import com.yuchting.yuchberry.client.im.IMStatus;
 import com.yuchting.yuchberry.client.im.MainIMScreen;
 import com.yuchting.yuchberry.client.im.fetchChatRoster;
 import com.yuchting.yuchberry.client.screen.ChangeMailSenderDlg;
+import com.yuchting.yuchberry.client.screen.PhizSelectedScreen;
 import com.yuchting.yuchberry.client.screen.aboutScreen;
 import com.yuchting.yuchberry.client.screen.audioViewScreen;
 import com.yuchting.yuchberry.client.screen.imageViewScreen;
@@ -92,7 +93,6 @@ import com.yuchting.yuchberry.client.screen.videoViewScreen;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.Phiz;
-import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 import com.yuchting.yuchberry.client.weibo.WeiboAccount;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
@@ -2361,11 +2361,12 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		return null;
 	}
 	
-	public static ImageSets			sm_weiboUIImage = null;	
+	public static ImageSets			sm_weiboUIImage = null;
 	public Vector						m_phizImageList = new Vector();
 	public static Vector				sm_phizImageList = null;		
 	
 	public ObjectAllocator				m_weiboAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.weibo.fetchWeibo");
+	public ImageSets					m_weiboUIImage = null;
 	
 	public void loadImageSets(){
 		
@@ -2387,6 +2388,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			}
 			
 			sm_phizImageList = m_phizImageList;
+			
+			m_weiboUIImage = sm_weiboUIImage;
 		}
 	}
 	

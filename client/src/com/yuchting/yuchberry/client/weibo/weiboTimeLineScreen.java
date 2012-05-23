@@ -47,13 +47,12 @@ import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.GPSInfo;
-import com.yuchting.yuchberry.client.Indicator;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
+import com.yuchting.yuchberry.client.screen.PhizSelectedScreen;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
-import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
 import com.yuchting.yuchberry.client.ui.SliderHeader;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 
@@ -322,6 +321,8 @@ public class weiboTimeLineScreen extends MainScreen{
 	public PromptTextField m_inputTextNum		= new PromptTextField(true);
 
 	public synchronized void popupPromptText(String _prompt){
+		
+		m_mainApp.SetErrorString("prompt: "+_prompt);
 		
 		if(!m_promptTextArea.getText().equals(_prompt)){
 			
@@ -762,7 +763,7 @@ public class weiboTimeLineScreen extends MainScreen{
     MenuItem m_phizItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_PHIZ_LABEL),m_menuIndex_op++,0){
         public void run() {
         	UiApplication.getUiApplication().pushScreen(
-        			PhizSelectedScreen.getPhizScreen(m_currMgr.m_editTextArea));
+        			PhizSelectedScreen.getPhizScreen(m_mainApp,m_currMgr.m_editTextArea));
         }
     };
     
