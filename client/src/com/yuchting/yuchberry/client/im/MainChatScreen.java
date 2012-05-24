@@ -762,19 +762,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 			}
 		}
 	};
-	
-	MenuItem m_deleteChatMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_DELETE_HISTORY_CHAT),m_menu_op++,0){
-		public void run(){
-			if(Dialog.ask(Dialog.D_YES_NO,
-				recvMain.sm_local.getString(yblocalResource.IM_DELETE_HISTORY_CHAT_PROMPT),
-				Dialog.NO) == Dialog.YES){
-				
-				m_currRoster.m_chatMsgList.removeAllElements();
-				m_middleMgr.deleteChat();
-			}
-		}
-	};
-	
+		
 	MenuItem m_checkPic		= new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_CHECK_UPLOADING_IMAGE),m_menu_op++,0){
     	public void run(){
     		try{
@@ -800,6 +788,18 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
     		clearAttachment();
     	}
     };
+    
+    MenuItem m_deleteChatMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_DELETE_HISTORY_CHAT),m_menu_op++,0){
+		public void run(){
+			if(Dialog.ask(Dialog.D_YES_NO,
+				recvMain.sm_local.getString(yblocalResource.IM_DELETE_HISTORY_CHAT_PROMPT),
+				Dialog.NO) == Dialog.YES){
+				
+				m_currRoster.m_chatMsgList.removeAllElements();
+				m_middleMgr.deleteChat();
+			}
+		}
+	};
 	
 	MenuItem m_resendMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_RESEND_MSG_MENU_LABEL),m_menu_op++,0){
 		public void run(){
@@ -839,6 +839,30 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 				m_middleMgr.m_chatMsgMgr.invalidate();
 				
 				m_mainApp.WriteReadIni(false);
+			}
+		}
+	};
+	
+	MenuItem m_goTopMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_CHAT_SCREEN_TOP_MENU),m_menu_op++,0){
+		public void run(){
+			if(m_middleMgr.m_chatMsgMgr.getFieldCount() != 0){
+				if(m_mainApp.m_imChatScreenReverse){
+					m_middleMgr.m_chatMsgMgr.getField(m_middleMgr.m_chatMsgMgr.getFieldCount() - 1).setFocus();
+				}else{
+					m_middleMgr.m_chatMsgMgr.getField(0).setFocus();
+				}				
+			}
+		}
+	};
+	
+	MenuItem m_goBottomMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_CHAT_SCREEN_BOTTOM_MENU),m_menu_op++,0){
+		public void run(){
+			if(m_middleMgr.m_chatMsgMgr.getFieldCount() != 0){
+				if(m_mainApp.m_imChatScreenReverse){
+					m_middleMgr.m_chatMsgMgr.getField(0).setFocus();
+				}else{
+					m_middleMgr.m_chatMsgMgr.getField(m_middleMgr.m_chatMsgMgr.getFieldCount() - 1).setFocus();					
+				}				
 			}
 		}
 	};
@@ -1042,14 +1066,14 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		}
 		_menu.add(m_recordMenu);
 		_menu.add(m_browseFile);
-		
-		if(!m_currRoster.m_chatMsgList.isEmpty()){
-			_menu.add(m_deleteChatMenu);
-		}
-		
+				
 		if(m_imagePath != null || m_snapBuffer != null || m_recordBuffer != null){
 			_menu.add(m_checkPic);
 			_menu.add(m_deletePic);
+		}
+		
+		if(!m_currRoster.m_chatMsgList.isEmpty()){
+			_menu.add(m_deleteChatMenu);
 		}
 		
 		if(getResendField() != null){
@@ -1062,6 +1086,10 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 			_menu.add(m_displayTimeMenu);
 		}
 		
+		if(m_middleMgr.m_chatMsgMgr.getFieldCount() != 0){
+			_menu.add(m_goTopMenu);
+			_menu.add(m_goBottomMenu);
+		}
 		if(m_mainApp.m_imVoiceImmMode){
 			_menu.add(m_disableVoiceModeMenu);
 		}else{
@@ -1293,15 +1321,39 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		m_isPrompted = false;
 		
 		int key = Keypad.key(keycode);
-		if(key == 'R' && !m_middleMgr.m_inputMgr.m_editTextArea.isFocus()){
-			m_middleMgr.m_inputMgr.m_editTextArea.setFocus();
-			return true;
-		}else if(key == Keypad.KEY_CAMERA_FOCUS){
+		if(key == Keypad.KEY_CAMERA_FOCUS){
 			// camera focus shortcut key clicked
 			// canbe attach image
 			//
 			m_canbeAttachImage = true;
+		}		
+		
+		if(!m_middleMgr.m_inputMgr.m_editTextArea.isFocus()){
+			// edit text area is NOT focus
+			//
+			if(key == 'R'){
+				m_middleMgr.m_inputMgr.m_editTextArea.setFocus();
+				return true;				
+			}
+			
+			if(m_middleMgr.m_chatMsgMgr.getFieldCount() != 0){
+
+				int t_topKey = m_mainApp.m_imChatScreenReverse?'B':'T';
+				int t_bottomKey = m_mainApp.m_imChatScreenReverse?'T':'B';
+				
+				if(key == t_topKey){
+					
+					m_goTopMenu.run();
+					return true;
+					
+				}else if(key == t_bottomKey){
+					
+					m_goBottomMenu.run();
+					return true;
+				}
+			}
 		}
+		
 		
 		return super.keyDown(keycode,time);		
 	}

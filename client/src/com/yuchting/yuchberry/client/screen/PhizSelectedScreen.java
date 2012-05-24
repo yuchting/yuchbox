@@ -293,7 +293,7 @@ public class PhizSelectedScreen extends MainScreen{
 	
 	protected  void	onDisplay(){
 		super.onDisplay();
-		m_phizMgr.resetSelected();
+		//m_phizMgr.resetSelected();
 	}
 	
 	public void setPromptLabel(String _phizName){
