@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 
@@ -46,6 +47,7 @@ import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.RosterEntry;
+import org.jivesoftware.smack.RosterGroup;
 import org.jivesoftware.smack.RosterListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.IQ;
@@ -829,6 +831,16 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		roster.setStyle(fetchChatMsg.STYLE_GTALK);
 		roster.setAccount(_entry.getUser().toLowerCase());
 		roster.setOwnAccount(GetAccountName().toLowerCase());
+		
+		Collection<RosterGroup> t_groupList = _entry.getGroups();
+		if(t_groupList == null || t_groupList.isEmpty()){
+			roster.setGroup("Friends");
+		}else{
+			for(RosterGroup g:t_groupList){
+				roster.setGroup(g.getName());
+				break;
+			}			
+		}
 		
 		String t_name = _entry.getName();
 		roster.setName(t_name == null?roster.getAccount():t_name);
