@@ -45,6 +45,7 @@ public class RosterInfoScreen extends MainScreen {
 	LabelField		m_accName = null;
 	TextField		m_addr	= null;
 	
+	TextField		m_group = null;
 	TextField		m_source = null;
 	TextField		m_status = null;
 	
@@ -67,6 +68,13 @@ public class RosterInfoScreen extends MainScreen {
 		m_addr.setLabel(recvMain.sm_local.getString(yblocalResource.IM_ROSTER_INFO_ADDR));
 		m_addr.setText(_roster.m_roster.getAccount());
 		add(m_addr);
+		
+		add(new SeparatorField());
+		
+		m_group = new TextField(Field.READONLY);
+		m_group.setLabel(recvMain.sm_local.getString(yblocalResource.IM_ROSTER_INFO_GROUP));
+		m_group.setText(_roster.m_roster.getGroup());
+		add(m_group);
 		
 		add(new SeparatorField());
 		

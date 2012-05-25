@@ -97,6 +97,7 @@ IM_REFRESH_MIN_TIME_PROMPT#0="Please don't refresh quickly, the min interval is 
 IM_REFRESH_ROSTER_MENU_LABEL#0="Refresh friends' info";
 IM_RESEND_MSG_MENU_LABEL#0="Resend";
 IM_ROSTER_INFO_ADDR#0="Account Addr:";
+IM_ROSTER_INFO_GROUP#0="Group:";
 IM_ROSTER_INFO_SOURCE#0="Account Source:";
 IM_ROSTER_INFO_STATUS#0="Status Info:";
 IM_ROSTER_LIST_MENU_LABEL#0="Friends List(J\u0332)";
