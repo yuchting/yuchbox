@@ -27,11 +27,16 @@
  */
 package com.yuchting.yuchberry.server;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
@@ -438,7 +443,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 	 */
 	public void ClientConnected(){
 		
-		if(m_mainConnection.isConnected()){
+		if(m_mainConnection != null && m_mainConnection.isConnected()){
 			
 			Presence t_presence = null;
 			
@@ -621,6 +626,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				
 				if(data.m_accountName.equals(t_acc)){
 					
+					data.m_isYBClient = chat.getParticipant().indexOf(fsm_ybClientSource) != -1;
 					data.m_lastActiveTime = System.currentTimeMillis();
 					
 					return;
@@ -713,7 +719,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 			for(ChatData data:m_chatList){
 				if(data.m_accountName.equals(t_acc)){
 					
-					data.m_isYBClient = chat.getParticipant().indexOf(fsm_ybClientSource) != -1;					
+					data.m_isYBClient = chat.getParticipant().indexOf(fsm_ybClientSource) != -1;
 					data.m_lastActiveTime = System.currentTimeMillis();
 					
 					if(t_state != -1){
@@ -1147,7 +1153,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				for(fetchChatMsg msg:m_markReadChatMsgList){
 					if(t_hashCode == msg.getReadHashCode()){
 						
-						if(m_mainConnection.isConnected()){
+						if(m_mainConnection != null && m_mainConnection.isConnected()){
 							
 							synchronized (m_chatList) {
 								for(ChatData data:m_chatList){
@@ -1183,7 +1189,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		
 		Presence t_sendStatus = getPresence(m_connectPresence,m_connectStatus);
 		
-		if(m_mainConnection.isConnected()){
+		if(m_mainConnection != null && m_mainConnection.isConnected()){
 			
 			try{
 				m_mainConnection.sendPacket(t_sendStatus);
@@ -1360,14 +1366,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				
 				String convertText = convertPhiz(message,false);
 				Message t_message = new Message();
-				t_message.setBody(convertText);
 				t_message.setProperty(fsm_ybReadProperty, hashcode);
-				
-				if(t_fileContent != null){
-					t_message.setProperty(fsm_ybFile, t_fileContent);
-					t_message.setProperty(fsm_ybFileType, t_type);
-				}
-				
 				
 				try{
 					
@@ -1376,30 +1375,39 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 					//
 					CheckFolder();
 					
-					boolean found = false;
-					synchronized (m_chatList){
+					ChatData t_chatData = searchChatData(to);
+					
+					if(t_chatData == null){
 						
-						for(ChatData data:m_chatList){
-							if(data.m_accountName.equals(to)){
-								
-								data.m_chatData.sendMessage(t_message);
-								data.m_lastActiveTime = System.currentTimeMillis();
-
-								found = true;
-								break;
-							}
+						// the fetchGTalk.chatCreated will add it to m_chatList
+						// this function will call fetchGTalk.createChat to add the chatData to m_chatList;
+						//
+						m_chatManager.createChat(to, this);
+					}
+					
+					t_chatData = searchChatData(to);
+					
+					if(t_chatData == null){
+						throw new Exception("YuchBox fetchGtalk Internal Error: t_chatData == null");
+					}
+					
+					if(t_chatData.m_isYBClient){					
+						if(t_fileContent != null){
+							t_message.setProperty(fsm_ybFile, t_fileContent);
+							t_message.setProperty(fsm_ybFileType, t_type);
+						}
+					}else{
+						if(t_fileContent != null){
+							convertText += uploadResFile(t_fileContent, t_type);
 						}
 					}
 					
-					if(!found){
-						// the fetchGTalk.chatCreated will add it to m_chatList
-						//
-						Chat t_newChat = m_chatManager.createChat(to, this);
-						t_newChat.sendMessage(t_message);
-					}
+					t_message.setBody(convertText);
 					
-					sendMsgChatSentConfirm(t_sendTime);
+					t_chatData.m_chatData.sendMessage(t_message);
+					t_chatData.m_lastActiveTime = System.currentTimeMillis();					
 					
+					sendMsgChatSentConfirm(t_sendTime);					
 					appendSentChatMsg(hashcode);
 					
 					//statistics
@@ -1423,13 +1431,74 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		return false;
 	}
 	
+	/**
+	 * search the chatData from the m_chatList
+	 * @param _acc
+	 * @return
+	 */
+	private ChatData searchChatData(String _acc){
+		
+		synchronized (m_chatList){			
+			for(ChatData data:m_chatList){
+				if(data.m_accountName.equals(_acc)){
+					return data;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * upload the resource file(image or sound) to my file server
+	 * @param _data
+	 * @param _type
+	 * @return
+	 */
+	private String uploadResFile(byte[] _data,int _type){
+		
+		try{
+			
+			String t_ext = _type==fetchChatMsg.FILE_TYPE_IMG?".jpg":".amr";
+			
+			HttpURLConnection httpUrlConnection = 
+				(HttpURLConnection)new URL("http://d.yuchs.com/upload.php?fext="+t_ext+"&pass=" + fetchAbsWeibo.getSinaSecretKey()).openConnection();
+			
+			try{
+				httpUrlConnection.setDoOutput(true);
+		        httpUrlConnection.setRequestMethod("POST");
+
+		        OutputStream os = httpUrlConnection.getOutputStream();
+		        try{
+		        	os.write(_data);
+		        }finally{
+		        	os.close();
+		        }
+		        
+		        
+		        BufferedReader in = new BufferedReader(new InputStreamReader(httpUrlConnection.getInputStream()));
+		        try{
+		        	return "\r\n" + in.readLine();
+		        }finally{
+		        	in.close();   	
+		        }
+			}finally{
+				httpUrlConnection.disconnect();
+			}	        
+	        
+		}catch(Exception e){
+			return "";
+		}
+		
+	}
+	
 	public void CheckFolder()throws Exception{
 		
 		if(!m_mainMgr.isIMEnabled()){
 			return;
 		}
 		
-		if(!m_mainConnection.isConnected() || !m_mainConnection.isAuthenticated()){
+		if(m_mainConnection == null || !m_mainConnection.isConnected() || !m_mainConnection.isAuthenticated()){
 			
 			m_mainMgr.m_logger.LogOut(GetAccountPrefix() + " disconnected reset it.");
 			
