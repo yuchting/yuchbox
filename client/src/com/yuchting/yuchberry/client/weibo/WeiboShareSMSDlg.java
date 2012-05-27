@@ -10,16 +10,7 @@ import local.yblocalResource;
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.blackberry.api.invoke.MessageArguments;
 import net.rim.device.api.system.Clipboard;
-import net.rim.device.api.ui.Field;
-import net.rim.device.api.ui.FieldChangeListener;
-import net.rim.device.api.ui.Manager;
-import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.CheckboxField;
-import net.rim.device.api.ui.component.LabelField;
-import net.rim.device.api.ui.component.SeparatorField;
-import net.rim.device.api.ui.container.HorizontalFieldManager;
-import net.rim.device.api.ui.container.PopupScreen;
-import net.rim.device.api.ui.container.VerticalFieldManager;
 
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.screen.SimpleOKCancelDlg;

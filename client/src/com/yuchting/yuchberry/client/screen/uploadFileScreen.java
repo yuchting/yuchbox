@@ -35,7 +35,6 @@ import javax.microedition.io.file.FileConnection;
 
 import local.yblocalResource;
 import net.rim.device.api.ui.Field;
-import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;

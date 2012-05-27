@@ -1915,9 +1915,9 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			
 		    public void run(){
 		    	
-		    	if(CheckMediaNativeApps(_filename)){
-		    		return;
-		    	}
+		    	//if(CheckMediaNativeApps(_filename)){
+		    	//	return;
+		    	//}
 		    	
 		    	try{
 		    		if(uploadFileScreen.IsAudioFile(_filename)){

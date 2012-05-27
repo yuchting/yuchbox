@@ -46,6 +46,7 @@ public class RosterItemField extends Field{
 	public final static int		fsm_headImageWidth 			= recvMain.fsm_display_width>320 ? fetchWeibo.fsm_headImageSize_l:fetchWeibo.fsm_headImageSize;
 	
 	public final static int		fsm_nameTextColor			= 0xededed;
+	public final static int		fsm_groupTitleTextColor		= 0xb0b0b0;
 	public final static int		fsm_statusTextColor			= 0xdfdfdf;
 	
 	public final static Font		fsm_addressFont			= MainIMScreen.fsm_defaultFont.derive(MainIMScreen.fsm_defaultFont.getStyle(),MainIMScreen.fsm_defaultFontHeight - 2);
@@ -77,7 +78,7 @@ public class RosterItemField extends Field{
 	}
 	
 	public int getPreferredHeight() {
-		return 2 * MainIMScreen.fsm_defaultFontHeight + 4;
+		return Math.max(2 * MainIMScreen.fsm_defaultFontHeight + 4,fsm_headImageWidth);
 	}
 	
 	protected void layout(int _width,int _height){
@@ -99,7 +100,8 @@ public class RosterItemField extends Field{
 				m_mainScreen.m_currFocusHistoryRosterItemField = this;
 			}else{
 				m_mainScreen.m_currFocusRosterItemField = this;
-			}			
+				m_mainScreen.m_selectGroupTitleField = null;
+			}
 		}
 				
 		// fill the IM field BG

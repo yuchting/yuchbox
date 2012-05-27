@@ -75,8 +75,10 @@ public class WeiboItemField extends Manager{
 	public final static int		fsm_extendBGColor			= recvMain.sm_standardUI?0xc0deed:0x1f2d39;
 		
 	public final static int		fsm_absTextColor			= recvMain.sm_standardUI?0x586061:0xbbc1c6;
+	public final static int		fsm_absTextColor_disable	= recvMain.sm_standardUI?0x98a0a1:0x7b8186;
 	
 	public final static int		fsm_weiboNameTextColor		= recvMain.sm_standardUI?0:0xe5e3cf;
+	public final static int		fsm_weiboNameTextColor_disable	= recvMain.sm_standardUI?0x868686:0x85836f;
 
 	public final static int		fsm_weiboCommentFGColor		= recvMain.sm_standardUI?0x6d6f6f:0x84c3fa;
 	public final static int		fsm_weiboCommentBGColor		= recvMain.sm_standardUI?0xecf6fb:0x2b3d4d;
@@ -665,14 +667,7 @@ public class WeiboItemField extends Manager{
 				
 				// draw weibo style 
 				//
-				ImageUnit t_style = weiboTimeLineScreen.GetWeiboSign(m_weibo.GetWeiboStyle());
-				recvMain.sm_weiboUIImage.drawImage(_g,t_style , 0, t_textStart_y);
-				
-				if(m_weibo.isUserFollowing() && m_weibo.isUserFollowMe()){
-					// draw follow state image
-					recvMain.sm_weiboUIImage.drawImage(_g, weiboTimeLineScreen.getFollowStateImage(),
-							t_style.getWidth() + fsm_headImageTextInterval, t_textStart_y + fsm_headImageTextInterval);
-				}
+				recvMain.sm_weiboUIImage.drawImage(_g,weiboTimeLineScreen.GetWeiboSign(m_weibo.GetWeiboStyle()) , 0, t_textStart_y);				
 				
 				// draw time string , weibo pic/comment
 				//
@@ -691,14 +686,21 @@ public class WeiboItemField extends Manager{
 							_g,weiboTimeLineScreen.GetVIPSignBitmap(m_weibo.GetWeiboStyle()),t_startSign_x,t_textStart_y);
 					
 					t_startSign_x += fsm_weiboVIPImageSize;
-	
 				}
-				
+								
 				// name BBer sign
 				//
 				if(m_weibo.IsBBer()){
 					recvMain.sm_weiboUIImage.drawImage(
 							_g,SliderHeader.GetBBerSignBitmap(),t_startSign_x,t_textStart_y);
+					
+					t_startSign_x += fsm_weiboVIPImageSize;
+				}			
+
+				if(m_weibo.isUserFollowing() && m_weibo.isUserFollowMe()){
+					// draw follow state image
+					recvMain.sm_weiboUIImage.drawImage(_g, weiboTimeLineScreen.getFollowStateImage(),
+							t_startSign_x + fsm_headImageTextInterval, t_textStart_y + fsm_headImageTextInterval);
 				}
 				
 				// draw text
@@ -800,7 +802,13 @@ public class WeiboItemField extends Manager{
 				sm_bubbleImage.draw(_g,getAbsTextPosX() - 4,t_firstLineHeight - 1,
 						m_absTextArea.getTextWidth() + 4,m_absTextHeight + 5,BubbleImage.LEFT_POINT_STYLE);
 				
-				
+				// contain abstract
+				//
+				if(m_parentManager.getCurrExtendedItem() != null){
+					_g.setColor(fsm_absTextColor_disable);
+				}else{
+					_g.setColor(fsm_absTextColor);
+				}
 				paintChild(_g,m_absTextArea);
 								
 				// display head image
@@ -871,7 +879,12 @@ public class WeiboItemField extends Manager{
 				}
 				
 				_g.setFont(sm_boldFont);
-				_g.setColor(fsm_weiboNameTextColor);
+				if(m_parentManager.getCurrExtendedItem() != null){
+					_g.setColor(fsm_weiboNameTextColor_disable);
+				}else{
+					_g.setColor(fsm_weiboNameTextColor);
+				}
+				
 				int t_nameLength = _g.drawText(m_displayName,
 											fsm_weiboSignImageSize + t_nameLeadingSpace,
 											t_firstLineHeight,Graphics.ELLIPSIS);
@@ -901,7 +914,12 @@ public class WeiboItemField extends Manager{
 				
 				// contain abstract
 				//
-				_g.setColor(fsm_absTextColor);			
+				if(m_parentManager.getCurrExtendedItem() != null){
+					_g.setColor(fsm_absTextColor_disable);
+				}else{
+					_g.setColor(fsm_absTextColor);
+				}
+							
 				
 				int t_abs_x = t_nameLeadingSpace + fsm_weiboSignImageSize;
 				int t_abs_y = sm_fontHeight + fsm_headImageTextInterval;

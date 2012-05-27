@@ -2,8 +2,8 @@ package com.yuchting.yuchberry.client.weibo;
 
 import java.io.ByteArrayOutputStream;
 
-import net.rim.device.api.ui.component.EditField;
 import local.yblocalResource;
+import net.rim.device.api.ui.component.EditField;
 
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;

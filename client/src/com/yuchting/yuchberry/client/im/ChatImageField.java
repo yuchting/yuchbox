@@ -31,7 +31,6 @@ import net.rim.device.api.math.Fixed32;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.system.EncodedImage;
-import net.rim.device.api.system.JPEGEncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
 
