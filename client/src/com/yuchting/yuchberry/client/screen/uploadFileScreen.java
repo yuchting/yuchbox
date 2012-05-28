@@ -32,8 +32,12 @@ import java.util.Vector;
 
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
+import javax.microedition.lcdui.Image;
 
 import local.yblocalResource;
+import net.rim.device.api.math.Fixed32;
+import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
@@ -46,6 +50,7 @@ import net.rim.device.api.ui.container.VerticalFieldManager;
 
 import com.yuchting.yuchberry.client.connectDeamon;
 import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.sendReceive;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 
@@ -350,7 +355,7 @@ public class uploadFileScreen extends MainScreen{
 				m_delayLoadRunnable.closeLoad();
 				m_delayLoadRunnable = null;
 			}
-		}	
+		}
 	}
 	
 	public boolean keyDown(int keycode,int time){
@@ -472,7 +477,15 @@ public class uploadFileScreen extends MainScreen{
 		}
 	}
 	
-	class LoadFileThread extends Thread{
+	static class SortFile{
+		String m_name;
+		String m_full_name;
+		long m_modifiedTime;
+		boolean m_isFolder;
+		int m_size;
+	}
+	
+	private class LoadFileThread extends Thread{
 		
 		final String m_path;
 		
@@ -480,12 +493,18 @@ public class uploadFileScreen extends MainScreen{
 				
 		public LoadFileThread(String _path)throws Exception {
 			m_path = _path;
+			
+			m_loadImageThread.start();
 		}
 		
 		public void closeLoad(){
 			m_closed = true;
+			
+			synchronized (m_loadImageThread) {
+				m_loadImageThread.notify();
+			}
 		}
-		
+				
 		public void run() {
 			
 			// load times counter
@@ -500,10 +519,56 @@ public class uploadFileScreen extends MainScreen{
 				}finally{
 					fc.close();
 				}
+
+				Vector t_fileList 		= new Vector();
+								
+				SortFile t_sortFile;
+				SortFile t_cmpSortFile;
 				
-				while(!m_closed && t_delayLoadFileEnum.hasMoreElements()) {
+				while(!m_closed && t_delayLoadFileEnum.hasMoreElements()){
 					
-					if(t_loadTimer > 2){
+					t_sortFile = new SortFile();
+					
+					t_sortFile.m_name 		= t_delayLoadFileEnum.nextElement().toString(); 
+					t_sortFile.m_full_name	= m_path + t_sortFile.m_name;					
+					
+					FileConnection next = (FileConnection) Connector.open(t_sortFile.m_full_name,Connector.READ);
+					try{
+						t_sortFile.m_modifiedTime	= next.lastModified();
+						t_sortFile.m_isFolder		= next.isDirectory();
+						
+						if(!t_sortFile.m_isFolder){
+							t_sortFile.m_size			= (int)next.fileSize();
+						}
+						
+					}finally{
+						next.close();
+					}
+					
+					boolean t_add = false;
+					int t_num = t_fileList.size();
+					for(int i = 0;i < t_num;i++){
+						t_cmpSortFile = (SortFile)t_fileList.elementAt(i);
+						
+						if(t_cmpSortFile.m_modifiedTime <= t_sortFile.m_modifiedTime){
+							
+							t_add = true;
+							t_fileList.insertElementAt(t_sortFile, i);
+																		
+							break;
+						}
+					}
+					
+					if(!t_add){
+						t_fileList.addElement(t_sortFile);
+					}
+				}
+				
+				int t_fileIdx = 0;
+				
+				while(!m_closed && t_fileIdx < t_fileList.size()) {
+					
+					if(t_loadTimer > 3){
 						
 						t_loadTimer = 0;
 						
@@ -519,71 +584,145 @@ public class uploadFileScreen extends MainScreen{
 						continue;
 					}
 					
-					t_loadTimer++;
+					t_sortFile = (SortFile)t_fileList.elementAt(t_fileIdx);
 					
-					String t_name = t_delayLoadFileEnum.nextElement().toString();
-					String t_fullname = m_path + t_name;
+					String t_name 	  = t_sortFile.m_name;
+					String t_fullname = t_sortFile.m_full_name;
 					
-					FileConnection next = (FileConnection) Connector.open(t_fullname,Connector.READ);
-					try{
-						ImageUnit bitmap = null;
-						
-						if(next.isDirectory()){
-							bitmap = m_folderBitmap;
-						}else if(IsAudioFile(t_name)){
-							bitmap = m_audioFileBitmap;
-						}else if(IsTxtFile(t_name)){
-							bitmap = m_textFileBitmap;
-						}else if(IsImageFile(t_name)){
-							bitmap = m_pictureBitmap;
-						}else if(IsMovieFile(t_name)){
-							bitmap = m_movieBitmap;
-						}else{
-							bitmap = m_binFileBitmap;
-						}
-						
-						long t_time = next.lastModified();
-						
-						FileIcon t_icon ;
-						if(next.isDirectory()){
-							t_icon = new FileIcon(t_name,t_fullname,bitmap,0,true,t_time);
-						}else{
-							t_icon = new FileIcon(t_name,t_fullname,bitmap,(int)next.fileSize(),false,t_time);
-						}									
-							
-						boolean t_add = false;
-						int t_num = m_fileList.getFieldCount();
-						
-						for(int i = 0;i < t_num;i++){
-							FileIcon icon = (FileIcon)m_fileList.getField(i);
-							
-							if(icon.m_lastModified <= t_icon.m_lastModified){	
-								t_add = true;
-								synchronized (UiApplication.getEventLock()) {
-									m_fileList.insert(t_icon,i);
-								}											
-								break;
-							}
-						}
-						
-						if(!t_add){
-							synchronized (UiApplication.getEventLock()) {
-								m_fileList.add(t_icon);
-							}
-						}
-						
-					}finally{
-						next.close();
-					}	
-				}
-				
+					t_fileIdx ++;
+					t_loadTimer++;					
+					
+					Object bitmap = null;
+					
+					if(t_sortFile.m_isFolder){
+						bitmap = m_folderBitmap;
+					}else if(IsAudioFile(t_name)){
+						bitmap = m_audioFileBitmap;
+					}else if(IsTxtFile(t_name)){
+						bitmap = m_textFileBitmap;
+					}else if(IsImageFile(t_name)){
+						bitmap = m_pictureBitmap;																			
+					}else if(IsMovieFile(t_name)){
+						bitmap = m_movieBitmap;
+					}else{
+						bitmap = m_binFileBitmap;
+					}
+										
+					FileIcon t_icon ;
+					
+					if(t_sortFile.m_isFolder){
+						t_icon = new FileIcon(t_name,t_fullname,bitmap,0,true,t_sortFile.m_modifiedTime,this);
+					}else{
+						t_icon = new FileIcon(t_name,t_fullname,bitmap,t_sortFile.m_size,false,t_sortFile.m_modifiedTime,this);
+					}
+					
+					if(t_fileIdx <= 5){
+						readImageFile(t_icon);	
+					}					
+					
+					synchronized (UiApplication.getEventLock()) {
+						m_fileList.add(t_icon);
+					}
+				}				
 				
 			}catch(Exception _e){
 				m_mainApp.SetErrorString("DFL1R", _e);
 			}
 		}
-	}
+		
+		final int fm_scaleSize = recvMain.fsm_display_width >= 320?80:50;
+		byte[]	m_readImageBuffer = null;
+		int		m_readImageLength = 0;
+		
+		Vector	m_imageLoadList = new Vector();
+		
+		Thread	m_loadImageThread = new Thread(){
+			public void run(){
+				readImageProcess();
+			}
+		};
+		
+		private void readImageProcess(){
+			
+			while(!m_closed){
+				
+				synchronized (m_loadImageThread) {
+					try{
+						m_loadImageThread.wait();
+					}catch(Exception e){
+						break;
+					}
+				}
+								
+				if(m_imageLoadList.size() != 0){
+					FileIcon t_icon = (FileIcon)m_imageLoadList.elementAt(0);
+					t_icon.m_bitmapSnap = (Bitmap)readImageFile_imple(t_icon.m_filename_full);
+					t_icon.invalidate();
+					
+					m_imageLoadList.removeElementAt(0);
+				}
+			}
+		}
+		
+		public void readImageFile(FileIcon _icon){
+			
+			synchronized (m_imageLoadList) {
+				for(int i = 0;i < m_imageLoadList.size();i++){
+					if(m_imageLoadList.elementAt(i) == _icon){
+						return ;
+					}
+				}
+			}
+			
+			m_imageLoadList.addElement(_icon);
+			
+			synchronized (m_loadImageThread) {
+				m_loadImageThread.notify();
+			}
+		}
+		
+		private Object readImageFile_imple(String _name_full){
+				
+			try{
+				
+				FileConnection t_fileRead = (FileConnection)Connector.open(_name_full,Connector.READ);
+				try{
 
+					if(!t_fileRead.exists() || t_fileRead.isDirectory()){
+						return null;
+					}
+					
+					m_readImageLength = (int)t_fileRead.fileSize();
+					
+					if(m_readImageBuffer == null || m_readImageBuffer.length < m_readImageLength){					
+						m_readImageBuffer = new byte[m_readImageLength];
+					}
+					
+					sendReceive.ForceReadByte(t_fileRead.openInputStream(), m_readImageBuffer, m_readImageLength);
+				}finally{
+					t_fileRead.close();
+				}
+			
+				EncodedImage t_origImage = EncodedImage.createEncodedImage(m_readImageBuffer, 0, m_readImageLength);
+				
+				int t_origWidth = t_origImage.getWidth();
+				int t_origHeight = t_origImage.getHeight();
+				
+				int scaleX = Fixed32.div(Fixed32.toFP(t_origWidth), Fixed32.toFP(fm_scaleSize));
+				int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(fm_scaleSize));
+													
+				return t_origImage.scaleImage32(scaleX, scaleY).getBitmap();
+				
+			}catch(Exception e){
+				m_mainApp.SetErrorString("RIF:",e);
+			}				
+		
+			return null;
+		}
+	}
+	
+	
+	
 	/**
 	 * file icon static data
 	 * @author yuch
@@ -595,20 +734,47 @@ public class uploadFileScreen extends MainScreen{
 		String			m_filename 	= null;
 		String			m_filename_full 	= null;
 		ImageUnit		m_bitmap		= null;
+		Bitmap			m_bitmapSnap	= null;
 		boolean		m_isFolder	= false;
 		long			m_lastModified = 0;
 		
-		public FileIcon(String _name,String _name_full,ImageUnit _image,
-				int _fileSize,boolean _isFolder,long _lastModified){
+		String			m_display_name = null;
+		
+		LoadFileThread	m_loadThread;
+				
+		public FileIcon(String _name,String _name_full,Object _image,
+				int _fileSize,boolean _isFolder,long _lastModified,LoadFileThread _thread){
 			
 			super(Field.FOCUSABLE);
 						
-			m_fileSize	= _fileSize;
-			m_filename	= _name;
-			m_filename_full = _name_full;
-			m_bitmap		= _image;
-			m_isFolder	= _isFolder;
-			m_lastModified = _lastModified;
+			m_fileSize			= _fileSize;
+			m_filename			= _name;
+			m_filename_full 	= _name_full;
+			m_isFolder			= _isFolder;
+			m_lastModified 		= _lastModified;
+			m_loadThread		= _thread;
+			
+			if(_image instanceof ImageUnit){
+				m_bitmap			= (ImageUnit)_image;
+			}else{
+				m_bitmapSnap		= (Bitmap)_image;
+			}
+			
+			if(m_isFolder){
+				m_display_name = m_filename;
+			}else{
+				if(m_fileSize > 1024 * 1024){					 
+					m_display_name = "(" + (m_fileSize / 1024 / 1024) + "MB) " + m_filename;
+				}else if(m_fileSize > 1024){
+					m_display_name = "(" + (m_fileSize / 1024 ) + "KB) " + m_filename;
+				}else{
+					m_display_name = "(" + (m_fileSize) + "B) " + m_filename;
+				}	
+			}
+		}
+		
+		public void invalidate(){
+			super.invalidate();
 		}
 		
 		public String toString(){
@@ -626,21 +792,23 @@ public class uploadFileScreen extends MainScreen{
 				}finally{
 					graphics.setColor(t_color);
 				}
+				
+				if(IsImageFile(m_filename_full) && m_bitmapSnap == null){
+					m_loadThread.readImageFile(this);
+				}
 			}		
 			
-			m_imageSets.drawImage(graphics, m_bitmap, 0, 0);
+			int t_x = uploadFileScreen.fsm_bitmap_width;
+			int t_y = (getPreferredHeight() - graphics.getFont().getHeight()) / 2;
 			
-			if(m_isFolder){
-				graphics.drawText(m_filename, uploadFileScreen.fsm_bitmap_width, 0);
+			if(m_bitmapSnap != null){
+				graphics.drawBitmap(2, 2, m_bitmapSnap.getWidth(), m_bitmapSnap.getHeight(), m_bitmapSnap, 0, 0);
+				t_x = m_bitmapSnap.getWidth() + 5;
 			}else{
-				if(m_fileSize > 1024 * 1024){					 
-					graphics.drawText("(" + (m_fileSize / 1024 / 1024) + "MB) " + m_filename, uploadFileScreen.fsm_bitmap_width, 0);
-				}else if(m_fileSize > 1024){
-					graphics.drawText("(" + (m_fileSize / 1024 ) + "KB) " + m_filename, uploadFileScreen.fsm_bitmap_width, 0);
-				}else{
-					graphics.drawText("(" + (m_fileSize) + "B) " + m_filename, uploadFileScreen.fsm_bitmap_width, 0);
-				}
+				m_imageSets.drawImage(graphics, m_bitmap, 0, 0);
 			}
+			
+			graphics.drawText(m_display_name, t_x, t_y);			
 		}
 		
 		protected void onUnfocus(){
@@ -653,7 +821,7 @@ public class uploadFileScreen extends MainScreen{
 		}
 		
 		public int getPreferredHeight(){
-			return m_bitmap.getHeight();
+			return m_bitmapSnap != null ? (m_bitmapSnap.getHeight() + 5):m_bitmap.getHeight();
 		}
 		
 		protected void layout(int width, int height){
@@ -883,10 +1051,4 @@ public class uploadFileScreen extends MainScreen{
 		
 		return "application/octet-stream";
 	}
-	
-	
-	public static void main(String[] _arg){
-		System.out.print(getMIMETypeString("haha.mp4"));
-	}
-	
 }

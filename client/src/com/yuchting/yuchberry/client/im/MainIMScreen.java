@@ -79,6 +79,8 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		public String				m_lastChatText = "";
 		public int					m_currChatState;
 		
+		public boolean				m_hasNewMessage = false;
+		
 		/**
 		 * this data roster is Yuch client
 		 */
@@ -987,6 +989,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 						data.m_chatMsgList.removeElementAt(0);
 					}
 					
+					data.m_hasNewMessage = true;
 					data.m_chatMsgList.addElement(_msg);
 					data.m_currChatState = fetchChatMsg.CHAT_STATE_COMMON;
 					
@@ -999,7 +1002,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 						// popup the dialog to prompt
 						//
 						if(!m_mainApp.isForeground() || m_chatScreen.getUiEngine() == null
-						 || (m_chatScreen.getUiEngine() != null && m_chatScreen.m_currRoster != data ) ){
+						 || (m_chatScreen.getUiEngine() != null && m_chatScreen.getCurrRoster() != data ) ){
 							
 							if(m_promptDlg.isGlobal()){
 								// has been popup to prompt
@@ -1041,7 +1044,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 					}
 					
 					if(m_chatScreen.getUiEngine() != null
-						&& m_chatScreen.m_currRoster == data){
+						&& m_chatScreen.getCurrRoster() == data){
 						// the activate screen is chat screen
 						//
 						m_chatScreen.m_middleMgr.addChatMsg(_msg);
@@ -1349,7 +1352,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 							}							
 							
 							if(m_mainApp.getActiveScreen() == m_chatScreen
-							&& m_chatScreen.m_currRoster == data){
+							&& m_chatScreen.getCurrRoster() == data){
 								m_chatScreen.m_header.invalidate();
 							}
 							
@@ -1661,7 +1664,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 					
 					t_data.m_currChatState = t_state;
 					
-					if(m_chatScreen.m_currRoster == t_data){
+					if(m_chatScreen.getCurrRoster() == t_data){
 						m_chatScreen.m_header.invalidate();
 					}
 					
@@ -1700,7 +1703,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 						msg.setSendState(fetchChatMsg.SEND_STATE_READ);
 						
 						if(m_mainApp.getActiveScreen() == m_chatScreen
-							&& m_chatScreen.m_currRoster == data){
+							&& m_chatScreen.getCurrRoster() == data){
 							
 							// refresh the right ChatField 
 							//

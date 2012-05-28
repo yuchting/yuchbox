@@ -35,6 +35,7 @@ import net.rim.device.api.ui.Graphics;
 
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
+import com.yuchting.yuchberry.client.ui.SliderHeader;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 
@@ -113,6 +114,7 @@ public class RosterItemField extends Field{
 			//
 			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight());
 		}
+		
 		// draw roster state
 		//
 		drawRosterState(_g,1,6,m_currRoster.m_roster.getPresence());  
@@ -120,6 +122,10 @@ public class RosterItemField extends Field{
 		// draw the IM sign and head image
 		//
 		int t_x = WeiboHeadImage.displayHeadImage(_g,sm_rosterState[0].getWidth() + 2, 2, m_headImage);
+		
+		if(m_currRoster.m_hasNewMessage){
+			recvMain.sm_weiboUIImage.drawImage(_g,SliderHeader.GetBBerSignBitmap(),1,20);
+		}
 		
 		int color = _g.getColor();
 		Font font = _g.getFont();
@@ -261,7 +267,7 @@ public class RosterItemField extends Field{
 		
 		recvMain.sm_weiboUIImage.drawImage(_g, sm_rosterState[_presence], _x, _y);
 		
-		return _x + sm_rosterState[0].getWidth(); 
+		return _x + sm_rosterState[0].getWidth();
 	}
 	
 	protected boolean keyChar( char character, int status, int time ){

@@ -60,6 +60,7 @@ import com.yuchting.yuchberry.client.ObjectAllocator;
 import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
+import com.yuchting.yuchberry.client.im.MainIMScreen.RosterChatData;
 import com.yuchting.yuchberry.client.screen.CameraScreen;
 import com.yuchting.yuchberry.client.screen.ICameraScreenCallback;
 import com.yuchting.yuchberry.client.screen.IRecordAudioScreenCallback;
@@ -173,7 +174,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 			m_editTextArea.setEditable(false);
 		}else{
 			m_editTextArea.setEditable(true);
-			m_editTextArea.setText(m_middleMgr.m_chatScreen.m_currRoster.m_lastChatText);
+			m_editTextArea.setText(m_middleMgr.m_chatScreen.getCurrRoster().m_lastChatText);
 		}
 	}
 	
@@ -251,7 +252,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 		if(field == m_editTextArea){
 			
 			if(!m_middleMgr.m_chatScreen.m_mainApp.m_imVoiceImmMode){
-				m_middleMgr.m_chatScreen.m_currRoster.m_lastChatText = m_editTextArea.getText();
+				m_middleMgr.m_chatScreen.getCurrRoster().m_lastChatText = m_editTextArea.getText();
 			}	
 			int t_formerHeight = m_currHeight;
 			m_currHeight = m_editTextArea.getHeight() + (fsm_textBorder + fsm_inputBubbleBorder) * 2;
@@ -305,11 +306,11 @@ final class InputManager extends Manager implements FieldChangeListener{
 		
 	protected boolean keyDown(int keycode,int time){
 		
-		if(m_middleMgr.m_chatScreen.m_currRoster.m_isYuch
+		if(m_middleMgr.m_chatScreen.getCurrRoster().m_isYuch
 		&& m_middleMgr.m_chatScreen.m_mainApp.m_enableChatChecked){
 			// send the read message to the server
 			//	
-			Vector list = m_middleMgr.m_chatScreen.m_currRoster.m_chatMsgList;
+			Vector list = m_middleMgr.m_chatScreen.getCurrRoster().m_chatMsgList;
 			int num = list.size();
 			for(int i = 0 ;i < num;i++){
 				fetchChatMsg msg = (fetchChatMsg)list.elementAt(i);
@@ -607,7 +608,7 @@ final class MiddleMgr extends VerticalFieldManager{
 		//
 		scrollToBottom(t_field);
 				
-		if(m_chatScreen.m_currRoster.m_isYuch
+		if(m_chatScreen.getCurrRoster().m_isYuch
 		&& Backlight.isEnabled() 
 		&& m_chatScreen.m_mainApp.isForeground() 
 		&& m_chatScreen.m_mainApp.getActiveScreen() == m_chatScreen){
@@ -683,6 +684,12 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 	MenuItem m_sendMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_SEND_LABEL),m_menu_op++,0){
 		public void run(){
 			m_middleMgr.m_inputMgr.send();
+		}
+	};
+	
+	MenuItem m_copyMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_COPY_MESSAGE_LABEL),m_menu_op++,0){
+		public void run(){
+			
 		}
 	};
 	
@@ -959,7 +966,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 	public ObjectAllocator			m_chatFieldAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.im.ChatField");
 	public boolean					m_isPrompted = false;
 	
-	MainIMScreen.RosterChatData	m_currRoster 	= null;
+	private MainIMScreen.RosterChatData	m_currRoster 	= null;
 		
 	recvMain		m_mainApp 		= null;
 	MainIMScreen	m_mainScreen 	= null;
@@ -1099,24 +1106,47 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		super.makeMenu(_menu,instance);
 	}
 	
+	/**
+	 * pop up the roster
+	 * @param _roster
+	 */
 	public void popup(MainIMScreen.RosterChatData _roster){
-		m_currRoster = _roster;
 		
-		clearAttachment();
+		setCurrRoster(_roster);
 		
+		clearAttachment();	
 		m_mainApp.pushScreen(this);
 	}
 	
+	/**
+	 * set the current chat roster
+	 * @param _roster
+	 */
+	public void setCurrRoster(RosterChatData _roster){	m_currRoster = _roster;}
+	
+	/**
+	 * get the current chat roster
+	 * @return
+	 */
+	public RosterChatData getCurrRoster(){return m_currRoster;}
+	
 	protected void onDisplay(){
 		super.onDisplay();
-		
+		onDisplay_impl();
+	}
+	
+	public void onDisplay_impl(){
 		if(m_currRoster != null){
+			
+			m_currRoster.m_hasNewMessage = false;
+			
 			m_middleMgr.prepareChatScreen(m_currRoster);
+			
 			try{
 				m_header.setRosterImage(m_mainScreen.getHeadImage(m_currRoster.m_roster));
 			}catch(Exception e){
 				m_mainApp.SetErrorString("MCS_OD", e);
-			}			
+			}
 		}
 
 		m_mainApp.StopIMNotification();
