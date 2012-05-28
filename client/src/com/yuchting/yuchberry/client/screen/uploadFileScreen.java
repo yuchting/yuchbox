@@ -32,7 +32,6 @@ import java.util.Vector;
 
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
-import javax.microedition.lcdui.Image;
 
 import local.yblocalResource;
 import net.rim.device.api.math.Fixed32;
@@ -156,6 +155,9 @@ public class uploadFileScreen extends MainScreen{
 	
 	// delay load runnable id
 	LoadFileThread		m_delayLoadRunnable	= null;
+	
+	// load the image snap thread
+	LoadImageThread m_loadImageThread = new LoadImageThread();
 			
 
 	public uploadFileScreen(recvMain _app,boolean _del,IUploadFileScreenCallback _callback)throws Exception {
@@ -203,6 +205,9 @@ public class uploadFileScreen extends MainScreen{
 		}else{
 			m_ok.setText(recvMain.sm_local.getString(yblocalResource.UPLOAD_FILE_ADD));
 		}
+		
+		// start the load image thread
+		m_loadImageThread.start();
 				
 		// there is a upload file favor path (former path)
 		// but current path is NOT available (maybe plugin USB)
@@ -255,7 +260,6 @@ public class uploadFileScreen extends MainScreen{
 				
 				setTitle("Del your uploading attachment");
 				
-				int t_index = 0;
 				Vector t_files = m_mainApp.m_connectDeamon.GetAttachmentFile();
 				for(int i = 0;i < t_files.size();i++){
 					
@@ -282,10 +286,14 @@ public class uploadFileScreen extends MainScreen{
 					}else{
 						bitmap = m_binFileBitmap;
 					}
-										
-					m_fileList.add(new FileIcon(t_name,t_att.m_filename,bitmap,t_att.m_fileSize,false,0));
+					FileIcon t_icon = new FileIcon(t_name,t_att.m_filename,bitmap,t_att.m_fileSize,false,0,m_loadImageThread);
 					
-					t_index++;
+					if(i < 5){
+						m_loadImageThread.readImageFile(t_icon);
+					}
+					
+					m_fileList.add(t_icon);
+					
 				}
 				
 			}catch(Exception _e){
@@ -356,6 +364,8 @@ public class uploadFileScreen extends MainScreen{
 				m_delayLoadRunnable = null;
 			}
 		}
+		
+		m_loadImageThread.closed();
 	}
 	
 	public boolean keyDown(int keycode,int time){
@@ -477,6 +487,120 @@ public class uploadFileScreen extends MainScreen{
 		}
 	}
 	
+	final static int fsm_scaleSize = recvMain.fsm_display_width >= 320?80:50;
+	
+	/**
+	 * load the snap thumb image thread 
+	 * @author tzz
+	 *
+	 */
+	private class LoadImageThread extends Thread{
+		
+		
+		byte[]	m_readImageBuffer = null;
+		int		m_readImageLength = 0;
+		
+		Vector	m_imageLoadList = new Vector();
+		
+		boolean m_closed		= false;
+				
+		public void closed(){
+			m_closed = true;
+			
+			synchronized (m_imageLoadList) {
+				m_imageLoadList.notify();
+			}			
+		}
+		
+		public void run(){
+			readImageProcess();
+		}
+		
+		private void readImageProcess(){
+			
+			while(!m_closed){
+				
+				synchronized (m_imageLoadList) {
+					while(m_imageLoadList.isEmpty()){
+
+						try{
+							m_imageLoadList.wait();
+							
+							if(m_closed){
+								break;
+							}							
+						}catch(Exception e){}
+					}
+				}
+				
+				FileIcon t_icon = (FileIcon)m_imageLoadList.elementAt(0);
+				t_icon.m_bitmapSnap = (Bitmap)readImageFile_imple(t_icon.m_filename_full);
+				t_icon.invalidate();
+				
+				m_imageLoadList.removeElementAt(0);
+			
+			}
+		}
+		
+		public void readImageFile(FileIcon _icon){
+			
+			synchronized (m_imageLoadList) {
+				for(int i = 0;i < m_imageLoadList.size();i++){
+					if(m_imageLoadList.elementAt(i) == _icon){
+						return ;
+					}
+				}
+			}
+			
+			m_imageLoadList.addElement(_icon);
+			
+			synchronized (m_imageLoadList) {
+				m_imageLoadList.notify();
+			}
+		}
+		
+		private Object readImageFile_imple(String _name_full){
+				
+			try{
+				
+				FileConnection t_fileRead = (FileConnection)Connector.open(_name_full,Connector.READ);
+				try{
+
+					if(!t_fileRead.exists() || t_fileRead.isDirectory()){
+						return null;
+					}
+					
+					m_readImageLength = (int)t_fileRead.fileSize();
+					
+					if(m_readImageBuffer == null || m_readImageBuffer.length < m_readImageLength){					
+						m_readImageBuffer = new byte[m_readImageLength];
+					}
+					
+					sendReceive.ForceReadByte(t_fileRead.openInputStream(), m_readImageBuffer, m_readImageLength);
+				}finally{
+					t_fileRead.close();
+				}
+			
+				EncodedImage t_origImage = EncodedImage.createEncodedImage(m_readImageBuffer, 0, m_readImageLength);
+				
+				int t_origWidth = t_origImage.getWidth();
+				int t_origHeight = t_origImage.getHeight();
+				
+				int scaleX = Fixed32.div(Fixed32.toFP(t_origWidth), Fixed32.toFP(fsm_scaleSize));
+				int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(fsm_scaleSize));
+													
+				return t_origImage.scaleImage32(scaleX, scaleY).getBitmap();
+				
+			}catch(Exception e){
+				m_mainApp.SetErrorString("RIF:",e);
+			}				
+		
+			return null;
+		}
+		
+	}
+	
+	
 	static class SortFile{
 		String m_name;
 		String m_full_name;
@@ -493,16 +617,10 @@ public class uploadFileScreen extends MainScreen{
 				
 		public LoadFileThread(String _path)throws Exception {
 			m_path = _path;
-			
-			m_loadImageThread.start();
 		}
 		
 		public void closeLoad(){
 			m_closed = true;
-			
-			synchronized (m_loadImageThread) {
-				m_loadImageThread.notify();
-			}
 		}
 				
 		public void run() {
@@ -611,13 +729,13 @@ public class uploadFileScreen extends MainScreen{
 					FileIcon t_icon ;
 					
 					if(t_sortFile.m_isFolder){
-						t_icon = new FileIcon(t_name,t_fullname,bitmap,0,true,t_sortFile.m_modifiedTime,this);
+						t_icon = new FileIcon(t_name,t_fullname,bitmap,0,true,t_sortFile.m_modifiedTime,m_loadImageThread);
 					}else{
-						t_icon = new FileIcon(t_name,t_fullname,bitmap,t_sortFile.m_size,false,t_sortFile.m_modifiedTime,this);
+						t_icon = new FileIcon(t_name,t_fullname,bitmap,t_sortFile.m_size,false,t_sortFile.m_modifiedTime,m_loadImageThread);
 					}
 					
 					if(t_fileIdx <= 5){
-						readImageFile(t_icon);	
+						m_loadImageThread.readImageFile(t_icon);	
 					}					
 					
 					synchronized (UiApplication.getEventLock()) {
@@ -630,95 +748,7 @@ public class uploadFileScreen extends MainScreen{
 			}
 		}
 		
-		final int fm_scaleSize = recvMain.fsm_display_width >= 320?80:50;
-		byte[]	m_readImageBuffer = null;
-		int		m_readImageLength = 0;
 		
-		Vector	m_imageLoadList = new Vector();
-		
-		Thread	m_loadImageThread = new Thread(){
-			public void run(){
-				readImageProcess();
-			}
-		};
-		
-		private void readImageProcess(){
-			
-			while(!m_closed){
-				
-				synchronized (m_loadImageThread) {
-					try{
-						m_loadImageThread.wait();
-					}catch(Exception e){
-						break;
-					}
-				}
-								
-				if(m_imageLoadList.size() != 0){
-					FileIcon t_icon = (FileIcon)m_imageLoadList.elementAt(0);
-					t_icon.m_bitmapSnap = (Bitmap)readImageFile_imple(t_icon.m_filename_full);
-					t_icon.invalidate();
-					
-					m_imageLoadList.removeElementAt(0);
-				}
-			}
-		}
-		
-		public void readImageFile(FileIcon _icon){
-			
-			synchronized (m_imageLoadList) {
-				for(int i = 0;i < m_imageLoadList.size();i++){
-					if(m_imageLoadList.elementAt(i) == _icon){
-						return ;
-					}
-				}
-			}
-			
-			m_imageLoadList.addElement(_icon);
-			
-			synchronized (m_loadImageThread) {
-				m_loadImageThread.notify();
-			}
-		}
-		
-		private Object readImageFile_imple(String _name_full){
-				
-			try{
-				
-				FileConnection t_fileRead = (FileConnection)Connector.open(_name_full,Connector.READ);
-				try{
-
-					if(!t_fileRead.exists() || t_fileRead.isDirectory()){
-						return null;
-					}
-					
-					m_readImageLength = (int)t_fileRead.fileSize();
-					
-					if(m_readImageBuffer == null || m_readImageBuffer.length < m_readImageLength){					
-						m_readImageBuffer = new byte[m_readImageLength];
-					}
-					
-					sendReceive.ForceReadByte(t_fileRead.openInputStream(), m_readImageBuffer, m_readImageLength);
-				}finally{
-					t_fileRead.close();
-				}
-			
-				EncodedImage t_origImage = EncodedImage.createEncodedImage(m_readImageBuffer, 0, m_readImageLength);
-				
-				int t_origWidth = t_origImage.getWidth();
-				int t_origHeight = t_origImage.getHeight();
-				
-				int scaleX = Fixed32.div(Fixed32.toFP(t_origWidth), Fixed32.toFP(fm_scaleSize));
-				int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(fm_scaleSize));
-													
-				return t_origImage.scaleImage32(scaleX, scaleY).getBitmap();
-				
-			}catch(Exception e){
-				m_mainApp.SetErrorString("RIF:",e);
-			}				
-		
-			return null;
-		}
 	}
 	
 	
@@ -740,10 +770,10 @@ public class uploadFileScreen extends MainScreen{
 		
 		String			m_display_name = null;
 		
-		LoadFileThread	m_loadThread;
+		LoadImageThread	m_loadThread;
 				
 		public FileIcon(String _name,String _name_full,Object _image,
-				int _fileSize,boolean _isFolder,long _lastModified,LoadFileThread _thread){
+				int _fileSize,boolean _isFolder,long _lastModified,LoadImageThread _thread){
 			
 			super(Field.FOCUSABLE);
 						
@@ -793,7 +823,8 @@ public class uploadFileScreen extends MainScreen{
 					graphics.setColor(t_color);
 				}
 				
-				if(IsImageFile(m_filename_full) && m_bitmapSnap == null){
+				if(m_loadThread != null && IsImageFile(m_filename_full) 
+				&& m_bitmapSnap == null){
 					m_loadThread.readImageFile(this);
 				}
 			}		
@@ -821,7 +852,7 @@ public class uploadFileScreen extends MainScreen{
 		}
 		
 		public int getPreferredHeight(){
-			return m_bitmapSnap != null ? (m_bitmapSnap.getHeight() + 5):m_bitmap.getHeight();
+			return IsImageFile(m_filename_full) ? fsm_scaleSize : m_bitmap.getHeight();
 		}
 		
 		protected void layout(int width, int height){
