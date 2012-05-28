@@ -126,7 +126,7 @@ public class fetchChatRoster {
 		}
 	}
 	
-	public void Outport(OutputStream os)throws Exception{
+	public void Outport(OutputStream os,int _clientVer)throws Exception{
 		
 		sendReceive.WriteInt(os,VERSION);
 		
@@ -140,6 +140,10 @@ public class fetchChatRoster {
 		sendReceive.WriteString(os,m_source,false);
 		sendReceive.WriteString(os,m_ownAccount,false);
 		
-		sendReceive.WriteString(os,m_group,false);
+		// many roster will send in one package...
+		//
+		if(_clientVer >= 18){
+			sendReceive.WriteString(os,m_group,false);
+		}		
 	}
 }

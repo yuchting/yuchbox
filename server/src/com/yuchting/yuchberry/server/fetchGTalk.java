@@ -1285,7 +1285,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		sendReceive.WriteInt(os,t_rosterList.size());
 		
 		for(fetchChatRoster roster:t_rosterList){
-			roster.Outport(os);
+			roster.Outport(os,m_mainMgr.GetConnectClientVersion());
 		}
 		
 		m_mainMgr.m_logger.LogOut("IM send Roster " + t_rosterList.size());
@@ -1574,7 +1574,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				os.write(msg_head.msgChatRosterList);
 				os.write(1);
 				
-				roster.Outport(os);
+				roster.Outport(os,m_mainMgr.GetConnectClientVersion());
 				
 				m_mainMgr.SendData(os, false);
 			}
