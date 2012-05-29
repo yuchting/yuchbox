@@ -1454,6 +1454,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
         
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_addItem);
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);
+		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_changeDefaultSenderItem);
 				
 		WriteReadIni(false);
 	}
@@ -1468,7 +1469,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 		
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
-		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);	
+		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);
+		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_changeDefaultSenderItem);
 		
 		DisableWeiboModule();
 		
@@ -1882,31 +1884,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}
 		
 		return _org;
-	}
-	
-	/**
-	 * load the change mail sender dialog menu item or remove it
-	 */
-	private boolean m_loadChangeMailSenderMenu = false; 
-	
-	/**
-	 * load the change mail sender dialog menu item or remove it
-	 * @param _load		load or remove
-	 */
-	public void loadChangeMailSenderMenu(boolean _load){
-		if(m_loadChangeMailSenderMenu != _load){
-						
-			if(_load){
-				if(m_sendMailAccountList.size() <= 1){ //unique account...
-					return;
-				}
-				ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_changeDefaultSenderItem);
-			}else{
-				ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_changeDefaultSenderItem);
-			}
-			
-			m_loadChangeMailSenderMenu = _load;
-		}
 	}
 	
 	public void PushViewFileScreen(final String _filename){
