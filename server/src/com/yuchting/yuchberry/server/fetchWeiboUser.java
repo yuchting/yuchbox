@@ -148,7 +148,7 @@ public class fetchWeiboUser {
 		}
 	}
 	
-	public void OutputData(OutputStream os)throws Exception{
+	public void OutputData(OutputStream os,int _clientVar)throws Exception{
 		os.write(VERSION);
 		
 		os.write(m_weiboUserStyle);
@@ -173,7 +173,7 @@ public class fetchWeiboUser {
 		for(int i = 0;i < m_updateWeibo.size();i++){
 			fetchWeibo t_weibo = (fetchWeibo)m_updateWeibo.elementAt(i);
 			
-			t_weibo.OutputWeibo(os);
+			t_weibo.OutputWeibo(os,_clientVar);
 		}
 		
 		if(m_headImage != null){

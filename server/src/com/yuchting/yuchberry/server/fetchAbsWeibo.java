@@ -357,7 +357,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				fetchWeibo t_weibo = (fetchWeibo)_weiboList.m_weiboList.get(_weiboList.m_weiboList.size() - 1); 
 				
 				t_output.write(msg_head.msgWeibo);
-				t_weibo.OutputWeibo(t_output);
+				t_weibo.OutputWeibo(t_output,m_mainMgr.GetConnectClientVersion());
 				
 				m_mainMgr.SendData(t_output,false);
 							
@@ -470,7 +470,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 				ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 			
 				t_os.write(msg_head.msgWeiboUser);
-				t_user.OutputData(t_os);
+				t_user.OutputData(t_os,m_mainMgr.GetConnectClientVersion());
 				
 				m_mainMgr.SendData(t_os.toByteArray(), true);
 				

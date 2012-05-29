@@ -194,7 +194,7 @@ public class fetchWeibo {
 	public void setUserFollowMe(boolean _following){m_userFollow_me = _following;}
 	public boolean isUserFollowMe(){return m_userFollow_me;}
 	
-	public void OutputWeibo(OutputStream _stream)throws Exception{
+	public void OutputWeibo(OutputStream _stream,int _clientVer)throws Exception{
 		
 		_stream.write(VERSION);
 		
@@ -225,7 +225,7 @@ public class fetchWeibo {
 		if(m_commentWeiboId != -1){
 			_stream.write(m_commentWeibo != null?1:0);
 			if(m_commentWeibo != null){				
-				m_commentWeibo.OutputWeibo(_stream);
+				m_commentWeibo.OutputWeibo(_stream,_clientVer);
 			}			
 		}
 		
@@ -233,7 +233,7 @@ public class fetchWeibo {
 		if(m_replyWeiboId != -1){
 			_stream.write(m_replyWeibo != null?1:0);
 			if(m_replyWeibo != null){
-				m_replyWeibo.OutputWeibo(_stream);
+				m_replyWeibo.OutputWeibo(_stream,_clientVer);
 			}			
 		}
 		
@@ -243,8 +243,10 @@ public class fetchWeibo {
 			m_gpsInfo.OutputData(_stream);
 		}
 		
-		sendReceive.WriteBoolean(_stream,m_userFollowing);
-		sendReceive.WriteBoolean(_stream,m_userFollow_me);		
+		if(_clientVer >= 18){
+			sendReceive.WriteBoolean(_stream,m_userFollowing);
+			sendReceive.WriteBoolean(_stream,m_userFollow_me);
+		}		
 	}
 	
 	public void InputWeibo(InputStream _stream)throws Exception{

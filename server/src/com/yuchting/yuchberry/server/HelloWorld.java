@@ -540,7 +540,7 @@ public class HelloWorld {
 			t_stream.reset();
 			t_stream.write(msg_head.msgWeibo);
 			
-			t_weibo.OutputWeibo(t_stream);
+			t_weibo.OutputWeibo(t_stream,17);
 			
 			t_receive.SendBufferToSvr(t_stream.toByteArray(), true);
 			
