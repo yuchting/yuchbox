@@ -274,7 +274,6 @@ public class connectDeamon extends Thread implements SendListener,
 							SendingQueueData t_data = (SendingQueueData)m_sendingData.elementAt(i);
 							m_connect.SendBufferToSvr(t_data.msgData, false, false);
 						}
-						
 						m_sendingData.removeAllElements();
 					}
 					

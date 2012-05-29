@@ -1409,7 +1409,8 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 								t_fileos.write(msg.getFileContent());										
 							}finally{
 								t_fileos.flush();
-								t_fileos = null;
+								t_fileos.close();
+								t_fileos = null;								
 							}
 						}
 						

@@ -1111,6 +1111,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 					os.write(_msg.getFileContent());
 				}finally{
 					os.close();
+					os = null;
 				}
 				
 			}finally{

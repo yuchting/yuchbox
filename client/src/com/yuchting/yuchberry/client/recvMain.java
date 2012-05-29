@@ -65,6 +65,7 @@ import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.Display;
+import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.system.WLANInfo;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.Screen;
@@ -80,6 +81,7 @@ import com.yuchting.yuchberry.client.im.IMStatus;
 import com.yuchting.yuchberry.client.im.MainIMScreen;
 import com.yuchting.yuchberry.client.im.fetchChatRoster;
 import com.yuchting.yuchberry.client.screen.ChangeMailSenderDlg;
+import com.yuchting.yuchberry.client.screen.ImageManipulator;
 import com.yuchting.yuchberry.client.screen.PhizSelectedScreen;
 import com.yuchting.yuchberry.client.screen.aboutScreen;
 import com.yuchting.yuchberry.client.screen.audioViewScreen;
@@ -2251,6 +2253,20 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}
 		
 		return _exp;
+	}
+	
+	static ImageManipulator		sm_manipulator = new ImageManipulator(null);
+	public static Bitmap scaleImage(EncodedImage _image,int _width,int _height){
+		
+		synchronized (sm_manipulator) {
+						
+			Bitmap t_bitmap = new Bitmap(_width,_height);
+			
+			sm_manipulator.setBitmap(_image.getBitmap());
+			sm_manipulator.scaleInto(t_bitmap,0,ImageManipulator.SCALE_TO_FILL);
+			
+			return t_bitmap;
+		}		
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////

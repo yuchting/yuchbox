@@ -27,6 +27,8 @@
  */
 package com.yuchting.yuchberry.client.screen;
 
+import java.io.InputStream;
+
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
@@ -68,10 +70,17 @@ public class fileViewScreen extends MainScreen{
 				if(sm_fileContain == null || sm_fileContain.length < sm_fileLength){					
 					sm_fileContain = new byte[sm_fileLength];
 				}
+				InputStream in = t_fileRead.openInputStream();
+				try{
+					sendReceive.ForceReadByte(in, sm_fileContain, sm_fileLength);	
+				}finally{
+					in.close();
+					in = null;
+				}
 				
-				sendReceive.ForceReadByte(t_fileRead.openInputStream(), sm_fileContain, sm_fileLength);
 			}finally{
 				t_fileRead.close();
+				t_fileRead = null;
 			}			
 		}
 

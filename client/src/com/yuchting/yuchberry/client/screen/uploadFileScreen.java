@@ -27,6 +27,7 @@
  */
 package com.yuchting.yuchberry.client.screen;
 
+import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -34,7 +35,6 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
 import local.yblocalResource;
-import net.rim.device.api.math.Fixed32;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Field;
@@ -499,8 +499,7 @@ public class uploadFileScreen extends MainScreen{
 		Vector	m_imageLoadList = new Vector();
 		
 		boolean m_closed		= false;
-				
-				
+						
 		public void closed(){
 			m_closed = true;
 			
@@ -566,7 +565,11 @@ public class uploadFileScreen extends MainScreen{
 			
 			if(m_closed){
 				return ;
-			}			
+			}
+			
+			if(_icon.m_bitmapSnap != null){
+				return ;
+			}
 			
 			try{
 				
@@ -590,21 +593,26 @@ public class uploadFileScreen extends MainScreen{
 						m_readImageBuffer = new byte[m_readImageLength];
 					}
 					
-					sendReceive.ForceReadByte(t_fileReadConnection.openInputStream(), m_readImageBuffer, m_readImageLength);
+					InputStream in = t_fileReadConnection.openInputStream();
+					try{
+						sendReceive.ForceReadByte(in, m_readImageBuffer, m_readImageLength);
+					}finally{
+						in.close();
+						in = null;
+					}
+					
 				}finally{
 					t_fileReadConnection.close();
 					t_fileReadConnection = null;
 				}
 			
+				
 				EncodedImage t_origImage = EncodedImage.createEncodedImage(m_readImageBuffer, 0, m_readImageLength);
 				
 				int t_origWidth = t_origImage.getWidth();
 				int t_origHeight = t_origImage.getHeight();
 				
-				int scaleX = Fixed32.div(Fixed32.toFP(t_origWidth), Fixed32.toFP(fsm_scaleSize));
-				int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(fsm_scaleSize * t_origHeight / t_origWidth));
-													
-				_icon.m_bitmapSnap = t_origImage.scaleImage32(scaleX, scaleY).getBitmap();
+				_icon.m_bitmapSnap = recvMain.scaleImage(t_origImage, fsm_scaleSize, fsm_scaleSize * t_origHeight / t_origWidth);
 				
 			}catch(Exception e){
 				m_mainApp.SetErrorString("RIF:",e);
@@ -679,7 +687,6 @@ public class uploadFileScreen extends MainScreen{
 					if(!t_added){
 						t_fileList.insertElementAt(t_sortFile,0);
 					}
-					
 				}
 								
 				int t_fileIdx = 0;
