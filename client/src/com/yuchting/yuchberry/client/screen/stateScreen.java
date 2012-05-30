@@ -453,7 +453,7 @@ public class stateScreen extends MainScreen{
 //    	m_uploadingText.setText(t_total);    	
     }
     
-    protected void paint(Graphics _g){
+    protected void paintBackground(Graphics _g){
     	int oldColor = _g.getColor();
     	try{	    	
     		_g.setColor(0xffffff);
@@ -469,9 +469,6 @@ public class stateScreen extends MainScreen{
 		int t_logo_y = 10;
 		
 		m_mainApp.m_allImageSets.drawImage(_g, m_stateLogo, t_logo_x, t_logo_y);
-				
-		
-		super.paint(_g);
     }
     
     /**
@@ -537,7 +534,7 @@ public class stateScreen extends MainScreen{
 	        m_getHostLink.setChangeListener(this);
 	        add(m_getHostLink);
     	}
-    	
+    	    	
     	public void sublayout(int _width,int _height){
 			
 			int t_start_x = 10;
