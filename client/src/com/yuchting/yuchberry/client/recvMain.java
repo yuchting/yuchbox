@@ -56,6 +56,7 @@ import net.rim.device.api.crypto.MD5Digest;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.i18n.SimpleDateFormat;
+import net.rim.device.api.math.Fixed32;
 import net.rim.device.api.notification.NotificationsConstants;
 import net.rim.device.api.notification.NotificationsManager;
 import net.rim.device.api.system.Application;
@@ -81,7 +82,6 @@ import com.yuchting.yuchberry.client.im.IMStatus;
 import com.yuchting.yuchberry.client.im.MainIMScreen;
 import com.yuchting.yuchberry.client.im.fetchChatRoster;
 import com.yuchting.yuchberry.client.screen.ChangeMailSenderDlg;
-import com.yuchting.yuchberry.client.screen.ImageManipulator;
 import com.yuchting.yuchberry.client.screen.PhizSelectedScreen;
 import com.yuchting.yuchberry.client.screen.aboutScreen;
 import com.yuchting.yuchberry.client.screen.audioViewScreen;
@@ -305,7 +305,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 		public Object run(Object context){
 			if(context instanceof Message ){
-				
 				return OpenAttachmentFileScreen(context,false);
 			}
 			
@@ -1456,7 +1455,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
         
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_addItem);
 		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);
-		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_changeDefaultSenderItem);
 				
 		WriteReadIni(false);
 	}
@@ -1472,7 +1470,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);
-		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_changeDefaultSenderItem);
 		
 		DisableWeiboModule();
 		
@@ -1888,6 +1885,31 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		return _org;
 	}
 	
+	/**
+	 * load the change mail sender dialog menu item or remove it
+	 */
+	private boolean m_loadChangeMailSenderMenu = false; 
+	
+	/**
+	 * load the change mail sender dialog menu item or remove it
+	 * @param _load		load or remove
+	 */
+	public void loadChangeMailSenderMenu(boolean _load){
+		if(m_loadChangeMailSenderMenu != _load){
+						
+			if(_load){
+				if(m_sendMailAccountList.size() <= 1){ //unique account...
+					return;
+				}
+				ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_changeDefaultSenderItem);
+			}else{
+				ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_changeDefaultSenderItem);
+			}
+			
+			m_loadChangeMailSenderMenu = _load;
+		}
+	}
+	
 	public void PushViewFileScreen(final String _filename){
 		
 		UiApplication.getUiApplication().invokeLater(new Runnable(){
@@ -1922,7 +1944,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 		try{
 			Invocation request = new Invocation(_filename);
-			Registry registry = Registry.getRegistry("com.yuchting.yuchberry.client.recvMain");
+			Registry registry = Registry.getRegistry(UiApplication.getUiApplication().getClass().getName());
 			registry.invoke(request);
 			
 			return true;
@@ -2255,18 +2277,26 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		return _exp;
 	}
 	
-	static ImageManipulator		sm_manipulator = new ImageManipulator(null);
+//	static ImageManipulator		sm_manipulator = new ImageManipulator(null);
 	public static Bitmap scaleImage(EncodedImage _image,int _width,int _height){
 		
-		synchronized (sm_manipulator) {
-						
-			Bitmap t_bitmap = new Bitmap(_width,_height);
-			
-			sm_manipulator.setBitmap(_image.getBitmap());
-			sm_manipulator.scaleInto(t_bitmap,0,ImageManipulator.SCALE_TO_FILL);
-			
-			return t_bitmap;
-		}		
+//		synchronized (sm_manipulator) {
+//						
+//			Bitmap t_bitmap = new Bitmap(_width,_height);
+//			
+//			sm_manipulator.setBitmap(_image.getBitmap());
+//			sm_manipulator.scaleInto(t_bitmap,0,ImageManipulator.SCALE_TO_FILL);
+//			
+//			return t_bitmap;
+//		}
+		
+		int t_origWidth = _image.getWidth();
+		int t_origHeight = _image.getHeight();
+		
+		int scaleX = Fixed32.div(Fixed32.toFP(t_origWidth), Fixed32.toFP(_width));
+		int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(_height));
+		
+		return _image.scaleImage32(scaleX, scaleY).getBitmap();
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////

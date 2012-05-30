@@ -166,6 +166,22 @@ final class InputManager extends Manager implements FieldChangeListener{
 			this.layout(m_textWidth,1000);
 			return super.keyDown(keycode,time);
 		}
+		
+		protected void onUnfocus(){
+			super.onUnfocus();
+			// refresh all InputManager area to refresh prompt of [press R key]
+			// in InputManager::subpaint
+			//
+			InputManager.this.invalidate();
+		}
+		
+		protected void onFocus(int direction){
+			super.onFocus(direction);
+			// refresh all InputManager area to refresh prompt of [press R key]  
+			// in InputManager::subpaint
+			//
+			InputManager.this.invalidate();
+		}
 	};
 	
 	public void enableVoiceMode(boolean _enable){
@@ -245,6 +261,19 @@ final class InputManager extends Manager implements FieldChangeListener{
 		int y = 1;
 		
 		recvMain.sm_weiboUIImage.drawBitmapLine_vert(_g, sm_split_line, x, y,getPreferredHeight());
+		
+		if(!m_editTextArea.isFocus() && m_editTextArea.getTextLength() == 0){
+			// draw the R key prompt
+			//
+			int color = _g.getColor();
+			try{
+				_g.setColor(0x888888);
+				_g.drawText(recvMain.sm_local.getString(yblocalResource.IM_CHAT_INPUT_PROMPT), fsm_inputBubbleBorder + 1, fsm_inputBubbleBorder + 1);				
+			}finally{
+				_g.setColor(color);
+			}
+			
+		}
 	}
 	
 	public void fieldChanged(Field field, int context) {
@@ -318,7 +347,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 					m_middleMgr.m_chatScreen.m_mainScreen.sendChatReadMsg(msg);
 				}			
 			}
-		}		
+		}
 		
 		int key = Keypad.key(keycode);
 		
@@ -571,26 +600,7 @@ final class MiddleMgr extends VerticalFieldManager{
 		
 		super.subpaint(g);
 	}
-	
-//	public void onDisplay(){
-//		super.onDisplay();
-//
-//		the prepareChatScreen function did it
-//
-//		int t_chatNum = m_chatMsgMgr.getFieldCount();
-//		if(t_chatNum > 0){
-//			ChatField t_field = (ChatField)m_chatMsgMgr.getField(t_chatNum - 1);
-//			t_field.setFocus();
-//		}
-//		
-//		m_inputMgr.m_editTextArea.setFocus();
-//		if(m_inputMgr.m_editTextArea.getTextLength() > 0){			
-//			m_inputMgr.m_editTextArea.setCursorPosition(
-//					m_inputMgr.m_editTextArea.getTextLength());
-//		}
-//		
-//	}
-	
+		
 	public synchronized void addChatMsg(fetchChatMsg _msg){
 		ChatField t_field = null;
 		
@@ -606,7 +616,10 @@ final class MiddleMgr extends VerticalFieldManager{
 				
 		// scroll to bottom
 		//
-		scrollToBottom(t_field);
+		boolean t_editFocus = m_inputMgr.m_editTextArea.isFocus(); 
+		if(t_editFocus){
+			scrollToBottom(t_field);
+		}
 				
 		if(m_chatScreen.getCurrRoster().m_isYuch
 		&& Backlight.isEnabled() 
@@ -623,12 +636,13 @@ final class MiddleMgr extends VerticalFieldManager{
 		
 		// set the focus back
 		//
-		m_inputMgr.m_editTextArea.setFocus();
+		if(t_editFocus){
+			m_inputMgr.m_editTextArea.setFocus();
+		}		
 	}
 	
 	public synchronized void addChatMsg(ChatField _field){	
-		addChatField(_field);
-			
+		addChatField(_field);			
 		scrollToBottom(_field);	
 		
 		// set the focus back
@@ -649,7 +663,7 @@ final class MiddleMgr extends VerticalFieldManager{
 		return null;
 	}
 	
-	private void scrollToBottom(Field _field){
+	public void scrollToBottom(Field _field){
 		
 		// scroll to bottom
 		//
@@ -664,6 +678,16 @@ final class MiddleMgr extends VerticalFieldManager{
 		
 		if(_field != null){
 			_field.setFocus();
+		}else{
+			if(m_chatMsgMiddleMgr.getFieldCount() != 0){
+				if(m_chatScreen.m_mainApp.m_imChatScreenReverse){				
+					_field = m_chatMsgMiddleMgr.getField(0);
+				}else{
+					_field = m_chatMsgMiddleMgr.getField(m_chatMsgMiddleMgr.getFieldCount() - 1);
+				}
+				
+				_field.setFocus();
+			}
 		}
 	}
 	
@@ -1362,8 +1386,27 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 			// edit text area is NOT focus
 			//
 			if(key == 'R'){
+				m_middleMgr.scrollToBottom(null);
 				m_middleMgr.m_inputMgr.m_editTextArea.setFocus();
 				return true;				
+			}
+			
+			// hacking function for [私信] xxxx:
+			if(key == 'D' && ChatField.sm_currFocusField != null){
+				if(m_middleMgr.m_inputMgr.m_editTextArea.getTextLength() == 0){
+					String t_message = ChatField.sm_currFocusField.m_msg.getMsg();
+					int t_commaIdx = t_message.indexOf("：");
+					if(t_message.startsWith("[私信]") && t_commaIdx > 4){
+						t_message = "/d" + t_message.substring(4,t_commaIdx) + " ";
+						
+						m_middleMgr.scrollToBottom(null);
+						m_middleMgr.m_inputMgr.m_editTextArea.setFocus();
+						m_middleMgr.m_inputMgr.m_editTextArea.setText(t_message);
+						m_middleMgr.m_inputMgr.m_editTextArea.setCursorPosition(t_message.length());
+						
+						return true;
+					}
+				}				
 			}
 			
 			if(m_middleMgr.m_chatMsgMgr.getFieldCount() != 0){
@@ -1385,7 +1428,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		}
 		
 		
-		return super.keyDown(keycode,time);		
+		return super.keyDown(keycode,time);
 	}
 	
 	Thread m_currPlayVoiceThread = null;
