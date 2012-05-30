@@ -246,7 +246,7 @@ class ConnectButton extends Field{
     }
 }
 
-public class stateScreen extends MainScreen implements FieldChangeListener{
+public class stateScreen extends MainScreen{
     
 	int m_menu_op = 100;
 	MenuItem 	m_aboutMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.ABOUT_MENU_TEXT), m_menu_op++, 10) {
@@ -301,208 +301,64 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	
-	
-	HorizontalFieldManager m_hostNameMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
-	EditField           m_hostName      = null;
-	
-	HorizontalFieldManager m_hostportMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
-	EditField			m_hostport		= null;
-	
-	HorizontalFieldManager m_userPasswordMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
-    PasswordEditField   m_userPassword  = null;
-       
-    public ConnectButton	m_connectBut    = null;
-    
-    HyperlinkButtonField m_getHostLink	= new HyperlinkButtonField(recvMain.sm_local.getString(yblocalResource.STATE_SCREEN_HELP_MENU),0xffffff,0x8a8a8a);
+    Field m_emptyField = new Field(Field.NON_FOCUSABLE){
+
+    	public int getPreferredWidth(){
+    		return recvMain.fsm_display_width;
+    	}
+    	public int getPreferredHeight(){
+    		return recvMain.fsm_display_height/3 + 20;
+    	}
+		protected void layout(int width, int height) {
+			setExtent(getPreferredWidth(), getPreferredHeight());			
+		}
+		protected void paint(Graphics graphics) {}
+    	
+    };
    
-    RichTextField		m_uploadingText = null;
             
     recvMain			m_mainApp		= null;
     
-	Manager m_mainManger = new Manager(Manager.VERTICAL_SCROLL){
-		
-		public void sublayout(int _width,int _height){
-			
-			int t_start_x = 10;
-			int t_width = recvMain.fsm_display_width - t_start_x * 2;
-			int t_height = m_stateInputBG.getImageHeight();
-			
-			int y = recvMain.fsm_display_height/3 + 20;
-			
-			setPositionChild(m_hostNameMgr,t_start_x,y);
-			layoutChild(m_hostNameMgr,t_width,t_height);
-			
-			y += m_stateInputBG.getImageHeight();
-			
-			setPositionChild(m_hostportMgr,t_start_x,y);
-			layoutChild(m_hostportMgr,t_width,t_height);
-			
-			y += m_stateInputBG.getImageHeight();
-			
-			setPositionChild(m_userPasswordMgr,t_start_x,y);
-			layoutChild(m_userPasswordMgr,t_width,t_height);
-			
-			y += m_stateInputBG.getImageHeight();
-			
-			setPositionChild(m_connectBut,t_start_x,y);
-			layoutChild(m_connectBut,m_connectBut.getImageWidth(),m_connectBut.getImageHeight());
-			
-			t_start_x += m_connectBut.getImageWidth();
-						
-			setPositionChild(m_getHostLink,t_start_x,y);
-			layoutChild(m_getHostLink,getPreferredWidth(),m_getHostLink.getFont().getHeight());
-			
-			y += m_connectBut.getImageHeight();
-			t_start_x = 0;
-			
-			setPositionChild(m_uploadingText, t_start_x, y);
-			layoutChild(m_uploadingText,getPreferredWidth(),getPreferredHeight() / 2);
-			
-			setExtent(getPreferredWidth(), getPreferredHeight());
-		}
-		
-		public int getPreferredWidth(){
-			return recvMain.fsm_display_width;
-		}
-		
-		public int getPreferredHeight(){
-			return recvMain.fsm_display_height * 2;
-		}
-		
-		public void subpaint(Graphics _g){
-			
-			m_mainApp.m_allImageSets.fillImageBlock(_g, m_stateBG, 0, 0, getPreferredWidth(), getPreferredHeight());
-			
-			int t_logo_x = (getPreferredWidth() - m_stateLogo.getWidth()) / 2;
-			int t_logo_y = m_hostNameMgr.getExtent().y - m_stateLogo.getHeight();
-			
-			m_mainApp.m_allImageSets.drawImage(_g, m_stateLogo, t_logo_x, t_logo_y);
-			
-			t_logo_x = t_logo_x + m_stateLogo.getWidth();
-			m_mainApp.m_allImageSets.drawImage(_g, m_LongYearLogo, t_logo_x, 0);
-			
-	    	int t_delta_x = 4;
-	    	int t_delta_y = (m_stateInputBG.getImageHeight() - m_hostName.getFont().getHeight()) / 2;	    	
-	    	
-	    	m_stateInputBG.draw(_g, m_hostNameMgr.getExtent().x - t_delta_x, 
-	    							m_hostNameMgr.getExtent().y - t_delta_y, m_hostNameMgr.getExtent().width + t_delta_x * 2);
-	    	
-	    	m_stateInputBG.draw(_g, m_hostportMgr.getExtent().x - t_delta_x, 
-	    							m_hostportMgr.getExtent().y - t_delta_y, m_hostportMgr.getExtent().width + t_delta_x * 2);
-	    	
-	    	m_stateInputBG.draw(_g, m_userPasswordMgr.getExtent().x - t_delta_x, 
-	    							m_userPasswordMgr.getExtent().y - t_delta_y, m_userPasswordMgr.getExtent().width + t_delta_x * 2);
-
-	    	int oldColor = _g.getColor();
-	    	try{	    	
-	    		_g.setColor(0xffffff);
-	    		_g.drawText(recvMain.fsm_client_version, 0, 0);
-	    		
-	    	}finally{
-	    		_g.setColor(oldColor);
-	    	}    	
-	    	
-	    	int t_num = getFieldCount();
-	    	for(int i = 0 ;i < t_num;i++){
-	    		Field t_field = getField(i);
-	    			    		
-	    		if(t_field == m_uploadingText){
-	    			// set the uploading text
-	    			//
-	    			oldColor = _g.getColor();
-	    			try{
-	    				_g.setColor(0xffffff);
-	    				paintChild(_g, t_field);
-	    			}finally{
-	    				_g.setColor(oldColor);
-	    			}
-	    		}else{
-	    			paintChild(_g, t_field);
-	    		}	    		
-	    	}
-		}
-	};
+    AccMainManger		m_mainManger 	= null;
 	
-	ImageUnit		m_stateBG = null;
-	ImageUnit		m_stateLogo = null;
-	ImageUnit		m_LongYearLogo = null;
+	ImageUnit			m_stateBG = null;
+	ImageUnit			m_stateLogo = null;
 	
 	ButtonSegImage	m_stateInputBG = null;
 	
-    public stateScreen(recvMain _app){
+    public stateScreen(recvMain _app){    	
     	m_mainApp	= _app;    	 
     	
     	m_stateBG		= m_mainApp.m_allImageSets.getImageUnit("state_bg");
     	m_stateLogo		= m_mainApp.m_allImageSets.getImageUnit("state_logo");
-    	m_LongYearLogo	= m_mainApp.m_allImageSets.getImageUnit("LongYear");
     	
     	m_stateInputBG = new ButtonSegImage(m_mainApp.m_allImageSets.getImageUnit("state_input_left"), 
 							    			m_mainApp.m_allImageSets.getImageUnit("state_input_mid"), 
 							    			m_mainApp.m_allImageSets.getImageUnit("state_input_right"), 
 							    			m_mainApp.m_allImageSets);  	
-       
-        
-        m_hostName = new EditField(recvMain.sm_local.getString(yblocalResource.HOST),
-        				m_mainApp.m_hostname,128, EditField.FILTER_DEFAULT);
-               
-        m_hostName.setChangeListener(this);
-        m_hostNameMgr.add(m_hostName);
-        m_mainManger.add(m_hostNameMgr);
-        
-        m_hostport = new EditField(recvMain.sm_local.getString(yblocalResource.PORT),
-        				m_mainApp.m_port == 0?"":Integer.toString(m_mainApp.m_port),5,EditField.FILTER_INTEGER);
 
-        m_hostport.setChangeListener(this);
-        m_hostportMgr.add(m_hostport);
-        m_mainManger.add(m_hostportMgr);
-        
-        m_userPassword = new PasswordEditField(recvMain.sm_local.getString(yblocalResource.USER_PASSWORD),
-        								m_mainApp.m_userPassword,128,EditField.NO_COMPLEX_INPUT);
-        
-        m_userPasswordMgr.add(m_userPassword);
-        m_mainManger.add(m_userPasswordMgr);
-               
-        m_connectBut = new ConnectButton(recvMain.sm_local.getString(yblocalResource.CONNECT_BUTTON_LABEL),
-        								new ImageUnit[]{
-        									m_mainApp.m_allImageSets.getImageUnit("button_disconnect"),
-        									m_mainApp.m_allImageSets.getImageUnit("button_connecting"),
-        									m_mainApp.m_allImageSets.getImageUnit("button_connected")
-        								},
-        								new ImageUnit[]{
-											m_mainApp.m_allImageSets.getImageUnit("button_disconnect_focus"),
-											m_mainApp.m_allImageSets.getImageUnit("button_connecting_focus"),
-											m_mainApp.m_allImageSets.getImageUnit("button_connected_focus")
-										},m_mainApp.m_allImageSets);
-        
-        m_connectBut.setConnectState(m_mainApp.GetConnectState(),m_mainApp);        
-        m_connectBut.setChangeListener(this);
-        
-        m_mainManger.add(m_connectBut);
-        
-        m_getHostLink.setChangeListener(this);
-        m_mainManger.add(m_getHostLink);
-        
-        m_uploadingText = new RichTextField("", LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH);
-        m_mainManger.add(m_uploadingText);
-        
+    	add(m_emptyField);
+    	
+    	m_mainManger		= new AccMainManger();
         add(m_mainManger);      
-                    
+        
+        if(m_mainApp.m_connectDeamon.IsConnectState()){
+        	m_mainManger.m_connectBut.setFocus();
+        }else{        	
+            if(m_mainApp.m_hostname.length() != 0){
+            	m_mainManger.m_connectBut.setFocus();            	
+            }
+        }
+        
         RefreshUploadState(_app.m_uploadingDesc);
         
         //setTitle(new LabelField(recvMain.sm_local.getString(yblocalResource.STATE_TITLE_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
         
-        if(m_mainApp.m_connectDeamon.IsConnectState()){
-        	m_connectBut.setFocus();
-        }else{        	
-            if(m_mainApp.m_hostname.length() != 0){
-            	m_connectBut.setFocus();            	
-            }
-        }
         
     }
     
     public void setConnectButState(int _state,recvMain _mainApp){
-    	m_connectBut.setConnectState(_state, _mainApp);
+    	m_mainManger.m_connectBut.setConnectState(_state, _mainApp);
     }
     
     protected void makeMenu(Menu _menu,int instance){
@@ -542,7 +398,7 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     }
     
     protected boolean keyDown(int keycode,int time){
-    	if(m_connectBut.isFocus()){
+    	if(m_mainManger.m_connectBut.isFocus()){
     		final int key = Keypad.key(keycode);
         	switch(key){
         	case 'A':
@@ -575,84 +431,238 @@ public class stateScreen extends MainScreen implements FieldChangeListener{
     }   
     
     public void RefreshUploadState(final Vector _uploading){
-    	String t_total = new String();
+//    	String t_total = new String();
+//    	
+//    	for(int i = 0;i < _uploading.size();i++){
+//    		
+//    		recvMain.UploadingDesc t_desc = (recvMain.UploadingDesc)_uploading.elementAt(i);
+//    		
+//    		if(t_desc.m_attachmentIdx == -1){
+//    			
+//    			t_total = t_total + "(Failed) retry again " + t_desc.m_mail.GetSubject();
+//    			
+//    		}else{
+//    			
+//    			final int t_tmp = (int)((float)t_desc.m_uploadedSize / (float)t_desc.m_totalSize * 1000);
+//    			final float t_percent = (float)t_tmp / 10;
+//        		
+//        		t_total = t_total +"(" + t_desc.m_attachmentIdx + "/" + t_desc.m_mail.GetAttachment().size() + " " + t_percent + "%)" + t_desc.m_mail.GetSubject() ;
+//    		}   		
+//    	}
+//    	
+//    	m_uploadingText.setText(t_total);    	
+    }
+    
+    protected void paint(Graphics _g){
+    	int oldColor = _g.getColor();
+    	try{	    	
+    		_g.setColor(0xffffff);
+    		_g.drawText(recvMain.fsm_client_version, 0, 0);
+    		
+    	}finally{
+    		_g.setColor(oldColor);
+    	}  
     	
-    	for(int i = 0;i < _uploading.size();i++){
+    	m_mainApp.m_allImageSets.fillImageBlock(_g, m_stateBG, 0, 0, recvMain.fsm_display_width, recvMain.fsm_display_height);
+		
+		int t_logo_x = (recvMain.fsm_display_width - m_stateLogo.getWidth()) / 2;
+		int t_logo_y = 10;
+		
+		m_mainApp.m_allImageSets.drawImage(_g, m_stateLogo, t_logo_x, t_logo_y);
+				
+		
+		super.paint(_g);
+    }
+    
+    /**
+     * account main manager 
+     * @author tzz
+     *
+     */
+    private class AccMainManger extends Manager implements FieldChangeListener{
+    	
+    	HorizontalFieldManager m_hostNameMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
+    	EditField           m_hostName      = null;
+    	
+    	HorizontalFieldManager m_hostportMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
+    	EditField			m_hostport		= null;
+    	
+    	HorizontalFieldManager m_userPasswordMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
+        PasswordEditField   m_userPassword  = null;
+        
+        public ConnectButton	m_connectBut    = null;
+        
+        HyperlinkButtonField m_getHostLink	= new HyperlinkButtonField(recvMain.sm_local.getString(yblocalResource.STATE_SCREEN_HELP_MENU),0xffffff,0x8a8a8a);
+        
+    	public AccMainManger(){
+    		super(Manager.NO_VERTICAL_SCROLL);
     		
-    		recvMain.UploadingDesc t_desc = (recvMain.UploadingDesc)_uploading.elementAt(i);
-    		
-    		if(t_desc.m_attachmentIdx == -1){
-    			
-    			t_total = t_total + "(Failed) retry again " + t_desc.m_mail.GetSubject();
-    			
-    		}else{
-    			
-    			final int t_tmp = (int)((float)t_desc.m_uploadedSize / (float)t_desc.m_totalSize * 1000);
-    			final float t_percent = (float)t_tmp / 10;
-        		
-        		t_total = t_total +"(" + t_desc.m_attachmentIdx + "/" + t_desc.m_mail.GetAttachment().size() + " " + t_percent + "%)" + t_desc.m_mail.GetSubject() ;
-    		}   		
+    		m_hostName = new EditField(recvMain.sm_local.getString(yblocalResource.HOST),
+     						m_mainApp.m_hostname,128, EditField.FILTER_DEFAULT);
+            
+			m_hostName.setChangeListener(this);
+			m_hostNameMgr.add(m_hostName);
+			add(m_hostNameMgr);
+			
+			m_hostport = new EditField(recvMain.sm_local.getString(yblocalResource.PORT),
+							m_mainApp.m_port == 0?"":Integer.toString(m_mainApp.m_port),5,EditField.FILTER_INTEGER);
+			
+			m_hostport.setChangeListener(this);
+			m_hostportMgr.add(m_hostport);
+			add(m_hostportMgr);
+			
+			m_userPassword = new PasswordEditField(recvMain.sm_local.getString(yblocalResource.USER_PASSWORD),
+											m_mainApp.m_userPassword,128,EditField.NO_COMPLEX_INPUT);
+			
+			m_userPasswordMgr.add(m_userPassword);
+			add(m_userPasswordMgr);
+			  
+			m_connectBut = new ConnectButton(recvMain.sm_local.getString(yblocalResource.CONNECT_BUTTON_LABEL),
+											new ImageUnit[]{
+												m_mainApp.m_allImageSets.getImageUnit("button_disconnect"),
+												m_mainApp.m_allImageSets.getImageUnit("button_connecting"),
+												m_mainApp.m_allImageSets.getImageUnit("button_connected")
+											},
+											new ImageUnit[]{
+												m_mainApp.m_allImageSets.getImageUnit("button_disconnect_focus"),
+												m_mainApp.m_allImageSets.getImageUnit("button_connecting_focus"),
+												m_mainApp.m_allImageSets.getImageUnit("button_connected_focus")
+											},m_mainApp.m_allImageSets);
+			
+			m_connectBut.setConnectState(m_mainApp.GetConnectState(),m_mainApp);   
+			m_connectBut.setChangeListener(this);
+			
+			add(m_connectBut);
+			
+	        m_getHostLink.setChangeListener(this);
+	        add(m_getHostLink);
     	}
     	
-    	m_uploadingText.setText(t_total);    	
-    }
-        
-    public void fieldChanged(Field field, int context) {
-        if(context != FieldChangeListener.PROGRAMMATIC){
-			// Perform action if user changed field. 
-			//
-			if(field == m_connectBut){
-			        
-				if(m_hostName.getText().length() == 0 
-					|| m_userPassword.getText().length() == 0
-					|| m_hostport.getText().length() == 0){
-					
-					Dialog.alert(recvMain.sm_local.getString(yblocalResource.INPUT_FULL_SIGN_IN_SEG));
-					
-					return;
-				}	
-															
-				if(m_mainApp.m_connectDeamon.IsConnectState()){
-					
-					try{
-						m_mainApp.m_connectDeamon.Disconnect();
-					}catch(Exception _e){}
-					
-					m_mainApp.SetConnectState(recvMain.DISCONNECT_STATE);
-					
-				}else{
-					
-					ServiceBook t_sb = ServiceBook.getSB();
-					ServiceRecord[] t_record = t_sb.findRecordsByCid("CMIME");
-					if(t_record == null || t_record.length == 0){
-						m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.NEED_CMIME_PROMPT));
-						return;
-					}
-					
-					if(m_hostName.getText().indexOf(" ") != -1){
-						m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.STATE_HOST_STRING_ILLEGAL_PROMPT));
-						return;
-					}
-					
-					try{
-						m_mainApp.m_hostname 		= m_hostName.getText();
-						m_mainApp.m_port 			= Integer.valueOf(m_hostport.getText()).intValue();
-						m_mainApp.m_userPassword 	= m_userPassword.getText();
-
-						m_mainApp.m_connectDeamon.Connect();
-												
-						m_mainApp.Start();
+    	public void sublayout(int _width,int _height){
+			
+			int t_start_x = 10;
+			int t_width = recvMain.fsm_display_width - t_start_x * 2;
+			int t_height = m_stateInputBG.getImageHeight();
+			
+			int y = 0;
+			
+			setPositionChild(m_hostNameMgr,t_start_x,y);
+			layoutChild(m_hostNameMgr,t_width,t_height);
+			
+			y += m_stateInputBG.getImageHeight();
+			
+			setPositionChild(m_hostportMgr,t_start_x,y);
+			layoutChild(m_hostportMgr,t_width,t_height);
+			
+			y += m_stateInputBG.getImageHeight();
+			
+			setPositionChild(m_userPasswordMgr,t_start_x,y);
+			layoutChild(m_userPasswordMgr,t_width,t_height);
+			
+			y += m_stateInputBG.getImageHeight();
+			
+			setPositionChild(m_connectBut,t_start_x,y);
+			layoutChild(m_connectBut,m_connectBut.getImageWidth(),m_connectBut.getImageHeight());
+			
+			t_start_x += m_connectBut.getImageWidth();
 						
-					}catch(Exception e){
-						m_mainApp.DialogAlert(e.getMessage() + e.getClass().getName());
-					}
-				}				
-			}else if(field == m_getHostLink){
-				recvMain.openURL("http://code.google.com/p/yuchberry/wiki/YuchBerry_Client_Help");
-			}
-        }else{
-        	// Perform action if application changed field.
-        }
+			setPositionChild(m_getHostLink,t_start_x,y);
+			layoutChild(m_getHostLink,getPreferredWidth(),m_getHostLink.getFont().getHeight());
+			
+			y += m_connectBut.getImageHeight();
+			t_start_x = 0;
+			
+			setExtent(getPreferredWidth(), getPreferredHeight());
+		}
+		
+		public int getPreferredWidth(){
+			return recvMain.fsm_display_width;
+		}
+		
+		public int getPreferredHeight(){
+			return recvMain.fsm_display_height;
+		}
+		
+		public void subpaint(Graphics _g){
+			
+	    	int t_delta_x = 4;
+	    	int t_delta_y = (m_stateInputBG.getImageHeight() - m_hostName.getFont().getHeight()) / 2;	    	
+	    	
+	    	m_stateInputBG.draw(_g, m_hostNameMgr.getExtent().x - t_delta_x, 
+	    							m_hostNameMgr.getExtent().y - t_delta_y, m_hostNameMgr.getExtent().width + t_delta_x * 2);
+	    	
+	    	m_stateInputBG.draw(_g, m_hostportMgr.getExtent().x - t_delta_x, 
+	    							m_hostportMgr.getExtent().y - t_delta_y, m_hostportMgr.getExtent().width + t_delta_x * 2);
+	    	
+	    	m_stateInputBG.draw(_g, m_userPasswordMgr.getExtent().x - t_delta_x, 
+	    							m_userPasswordMgr.getExtent().y - t_delta_y, m_userPasswordMgr.getExtent().width + t_delta_x * 2);
+	    	
+	    	int t_num = getFieldCount();
+	    	for(int i = 0 ;i < t_num;i++){
+	    		paintChild(_g, getField(i));
+	    	}
+		}
+		
+		public void fieldChanged(Field field, int context) {
+	        if(context != FieldChangeListener.PROGRAMMATIC){
+				// Perform action if user changed field. 
+				//
+				if(field == m_connectBut){
+				        
+					if(m_hostName.getText().length() == 0 
+						|| m_userPassword.getText().length() == 0
+						|| m_hostport.getText().length() == 0){
+						
+						Dialog.alert(recvMain.sm_local.getString(yblocalResource.INPUT_FULL_SIGN_IN_SEG));
+						
+						return;
+					}	
+																
+					if(m_mainApp.m_connectDeamon.IsConnectState()){
+						
+						try{
+							m_mainApp.m_connectDeamon.Disconnect();
+						}catch(Exception _e){}
+						
+						m_mainApp.SetConnectState(recvMain.DISCONNECT_STATE);
+						
+					}else{
+						
+						ServiceBook t_sb = ServiceBook.getSB();
+						ServiceRecord[] t_record = t_sb.findRecordsByCid("CMIME");
+						if(t_record == null || t_record.length == 0){
+							m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.NEED_CMIME_PROMPT));
+							return;
+						}
+						
+						if(m_hostName.getText().indexOf(" ") != -1){
+							m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.STATE_HOST_STRING_ILLEGAL_PROMPT));
+							return;
+						}
+						
+						try{
+							m_mainApp.m_hostname 		= m_hostName.getText();
+							m_mainApp.m_port 			= Integer.valueOf(m_hostport.getText()).intValue();
+							m_mainApp.m_userPassword 	= m_userPassword.getText();
+
+							m_mainApp.m_connectDeamon.Connect();
+													
+							m_mainApp.Start();
+							
+						}catch(Exception e){
+							m_mainApp.DialogAlert(e.getMessage() + e.getClass().getName());
+						}
+					}				
+				}else if(field == m_getHostLink){
+					recvMain.openURL("http://code.google.com/p/yuchberry/wiki/YuchBerry_Client_Help");
+				}
+	        }else{
+	        	// Perform action if application changed field.
+	        }
+		}
+    
     }
     
 }
+    
+    
