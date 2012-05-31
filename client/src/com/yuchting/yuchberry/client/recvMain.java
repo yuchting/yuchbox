@@ -215,12 +215,14 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public Vector			m_errorString		= new Vector();	
 	public Vector			m_uploadingDesc 	= new Vector();
 	
-	public String			m_hostname 			= new String();
+	public String			m_hostname 			= "";
 	public int				m_port 				= 0;
-	public String			m_userPassword 		= new String();
+	public String			m_account			= "";
+	public String			m_userPassword 		= "";
 	public boolean			m_useSSL			= false;
 	public boolean			m_useWifi			= false;
 	public boolean			m_useMDS			= false;
+	public String			m_carrier			= "";
 		
 	public boolean			m_autoRun			= false;
 	
@@ -235,7 +237,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public Vector				m_APNList 			= new Vector();
 	public int					m_currentAPNIdx 	= 0;
 	public int					m_changeAPNCounter 	= 0;
-	public String				m_appendString		= new String();
+	public String				m_appendString		= "";
 	
 	public long				m_uploadByte		= 0;
 	public long				m_downloadByte		= 0;
@@ -1225,6 +1227,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				    		if(t_currVer >= 40){
 				    			m_hideBackgroundIcon 		= sendReceive.ReadBoolean(t_readFile);
 				    			m_imChatScreenShowHeadImg	= sendReceive.ReadBoolean(t_readFile);
+				    			m_account					= sendReceive.ReadString(t_readFile);
+				    			m_carrier					= sendReceive.ReadString(t_readFile);
 				    		}
 				    		
 				    		
@@ -1356,6 +1360,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		    			
 		    			sendReceive.WriteBoolean(t_writeFile,m_hideBackgroundIcon);
 		    			sendReceive.WriteBoolean(t_writeFile,m_imChatScreenShowHeadImg);
+		    			sendReceive.WriteString(t_writeFile,m_account);
+		    			sendReceive.WriteString(t_writeFile,m_carrier);
 		    									
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());

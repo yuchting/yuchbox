@@ -35,27 +35,45 @@ import net.rim.device.api.servicebook.ServiceRecord;
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.FocusChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.EditField;
-import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.PasswordEditField;
-import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.debugInfo;
 import com.yuchting.yuchberry.client.recvMain;
-import com.yuchting.yuchberry.client.ui.ButtonSegImage;
+import com.yuchting.yuchberry.client.ui.BubbleImage;
 import com.yuchting.yuchberry.client.ui.HyperlinkButtonField;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
+
+class StateButton extends ButtonField{
+	
+	int m_width;
+	public StateButton(String _label,ImageSets _imagesets,int _width){
+		super(_label,ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
+		
+		m_width = _width;
+	}
+	
+	public int getPreferredWidth(){
+		return m_width;
+	}
+	
+	public int getPreferredHeight(){
+		return getFont().getHeight() * 8 / 5;
+	}
+}
 
 class ConnectButton extends Field{
 	
@@ -301,60 +319,134 @@ public class stateScreen extends MainScreen{
 		}
 	};
 	
-    Field m_emptyField = new Field(Field.NON_FOCUSABLE){
-
-    	public int getPreferredWidth(){
-    		return recvMain.fsm_display_width;
-    	}
-    	public int getPreferredHeight(){
-    		return recvMain.fsm_display_height/3 + 20;
-    	}
-		protected void layout(int width, int height) {
-			setExtent(getPreferredWidth(), getPreferredHeight());			
-		}
-		protected void paint(Graphics graphics) {}
-    	
-    };
    
             
     recvMain			m_mainApp		= null;
     
+    Manager				m_currManger	= null;
+    
+    InitManager			m_initManager	= null;
     AccMainManger		m_mainManger 	= null;
+    LoginManager		m_loginManager	= null;
 	
 	ImageUnit			m_stateBG = null;
 	ImageUnit			m_stateLogo = null;
 	
-	ButtonSegImage	m_stateInputBG = null;
+	BubbleImage	m_stateInputBG 			= null;
+	BubbleImage	m_stateInputBG_focus 	= null;
+	
+	
+	
+	/**
+	 * the height of input 
+	 */
+	final int fm_inputHeight;
+	
+	/**
+	 * the front and back border width of input
+	 */
+	final int fm_inputLeftBorder;
+	
+	/**
+	 * the top and bottom border height of input
+	 */
+	final int fm_inputTopBorder;
 	
     public stateScreen(recvMain _app){    	
     	m_mainApp	= _app;    	 
     	
     	m_stateBG		= m_mainApp.m_allImageSets.getImageUnit("state_bg");
-    	m_stateLogo		= m_mainApp.m_allImageSets.getImageUnit("state_logo");
+    	m_stateLogo		= m_mainApp.m_allImageSets.getImageUnit("state_logo");  	
     	
-    	m_stateInputBG = new ButtonSegImage(m_mainApp.m_allImageSets.getImageUnit("state_input_left"), 
-							    			m_mainApp.m_allImageSets.getImageUnit("state_input_mid"), 
-							    			m_mainApp.m_allImageSets.getImageUnit("state_input_right"), 
-							    			m_mainApp.m_allImageSets);  	
+    	m_stateInputBG = new BubbleImage(m_mainApp.m_allImageSets.getImageUnit("state_input_top_left"),
+    									m_mainApp.m_allImageSets.getImageUnit("state_input_top"),
+    									m_mainApp.m_allImageSets.getImageUnit("state_input_top_right"),
+    									m_mainApp.m_allImageSets.getImageUnit("state_input_right"),
+    									m_mainApp.m_allImageSets.getImageUnit("state_input_bottom_right"),
+    									m_mainApp.m_allImageSets.getImageUnit("state_input_bottom"),
+    									m_mainApp.m_allImageSets.getImageUnit("state_input_bottom_left"),
+    									m_mainApp.m_allImageSets.getImageUnit("state_input_left"),
+    									m_mainApp.m_allImageSets.getImageUnit("state_input_mid_block"),
+    									m_mainApp.m_allImageSets);
+    	
+    	m_stateInputBG_focus = new BubbleImage(m_mainApp.m_allImageSets.getImageUnit("state_input_top_left_focus"),
+												m_mainApp.m_allImageSets.getImageUnit("state_input_top_focus"),
+												m_mainApp.m_allImageSets.getImageUnit("state_input_top_right_focus"),
+												m_mainApp.m_allImageSets.getImageUnit("state_input_right_focus"),
+												m_mainApp.m_allImageSets.getImageUnit("state_input_bottom_right_focus"),
+												m_mainApp.m_allImageSets.getImageUnit("state_input_bottom_focus"),
+												m_mainApp.m_allImageSets.getImageUnit("state_input_bottom_left_focus"),
+												m_mainApp.m_allImageSets.getImageUnit("state_input_left_focus"),
+												m_mainApp.m_allImageSets.getImageUnit("state_input_mid_block_focus"),
+												m_mainApp.m_allImageSets);
+    	
+    	fm_inputHeight		= getFont().getHeight() + m_stateInputBG.getTopBorderHeight() + m_stateInputBG.getBottomBorderHeight();
+    	fm_inputLeftBorder	= m_stateInputBG.getLeftBorderWdith();
+    	fm_inputTopBorder	= m_stateInputBG.getTopBorderHeight();
+    	
+    	m_initManager		= new InitManager();
+    	add(m_initManager);
+    	
+    	m_currManger = m_initManager;
+    	
+    	if(m_mainApp.m_hostname.length() != 0){
+    		showAccMainManager();
+    	}
+        
+        RefreshUploadState(_app.m_uploadingDesc);
+        
+        //setTitle(new LabelField(recvMain.sm_local.getString(yblocalResource.STATE_TITLE_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
+    }
+    
+    private void showInitManager(){
+    	if(m_currManger == m_initManager){
+    		return;
+    	}
+    	
+    	replace(m_currManger, m_initManager);
+    	
+    	m_currManger = m_initManager;
+    }
+    
+    private void showAccMainManager(){
 
-    	add(m_emptyField);
+    	if(m_currManger == m_mainManger){
+    		return ;
+    	}
     	
-    	m_mainManger		= new AccMainManger();
-        add(m_mainManger);      
+    	if(m_mainManger == null){
+    		m_mainManger		= new AccMainManger();
+    	}
+    	
+    	replace(m_currManger, m_mainManger);
         
         if(m_mainApp.m_connectDeamon.IsConnectState()){
         	m_mainManger.m_connectBut.setFocus();
         }else{        	
             if(m_mainApp.m_hostname.length() != 0){
-            	m_mainManger.m_connectBut.setFocus();            	
+            	m_mainManger.m_connectBut.setFocus();
             }
         }
         
-        RefreshUploadState(_app.m_uploadingDesc);
+        m_mainManger.m_userPassword.setText(m_mainApp.m_userPassword);
         
-        //setTitle(new LabelField(recvMain.sm_local.getString(yblocalResource.STATE_TITLE_LABEL),LabelField.ELLIPSIS | LabelField.USE_ALL_WIDTH));
-        
-        
+        m_currManger = m_mainManger;
+    }
+    
+    private void showLoginManager(){
+    	if(m_currManger == m_loginManager){
+    		return;
+    	}
+    	
+    	if(m_loginManager == null){
+    		m_loginManager		= new LoginManager();
+    	}
+    	
+    	replace(m_currManger,m_loginManager);
+    	
+    	m_loginManager.m_userPassword.setText(m_mainApp.m_userPassword);
+    	
+    	m_currManger = m_loginManager;
     }
     
     public void setConnectButState(int _state,recvMain _mainApp){
@@ -390,6 +482,14 @@ public class stateScreen extends MainScreen{
     			m_mainApp.popStateScreen();
     			return true;
     		}    		
+    	}else{
+    		if(m_currManger == m_mainManger && m_mainApp.m_hostname.length() == 0){
+    			showInitManager();
+        		return false;
+        	}else if(m_currManger == m_loginManager){
+        		showInitManager();
+        		return false;
+        	}
     	}
     	
     	m_mainApp.Exit();
@@ -398,21 +498,28 @@ public class stateScreen extends MainScreen{
     }
     
     protected boolean keyDown(int keycode,int time){
-    	if(m_mainManger.m_connectBut.isFocus()){
-    		final int key = Keypad.key(keycode);
+    	
+    	final int key = Keypad.key(keycode);
+    	
+    	switch(key){
+    	case 'A':
+    		m_aboutMenu.run();
+    		return true;
+    	case 'S':
+    		m_setingMenu.run();
+    		return true;
+    	case 'D':
+    		m_debugInfoMenu.run();
+    		return true;
+    	case 'F':
+    		m_shareMenu.run();
+    		return true;
+    	}
+    	
+    	if(m_mainManger != null 
+    	&& m_mainManger.m_connectBut.isFocus()){
+    		
         	switch(key){
-        	case 'A':
-        		m_aboutMenu.run();
-        		return true;
-        	case 'S':
-        		m_setingMenu.run();
-        		return true;
-        	case 'D':
-        		m_debugInfoMenu.run();
-        		return true;
-        	case 'F':
-        		m_shareMenu.run();
-        		return true;
         	case 'W':
         		if(m_mainApp.m_enableWeiboModule){
         			m_weiboMenu.run();
@@ -427,9 +534,9 @@ public class stateScreen extends MainScreen{
         	}
     	}
     	
-    	return false;    	
-    }   
-    
+    	return super.keyDown(keycode, time);    	
+    }
+        
     public void RefreshUploadState(final Vector _uploading){
 //    	String t_total = new String();
 //    	
@@ -452,31 +559,103 @@ public class stateScreen extends MainScreen{
 //    	
 //    	m_uploadingText.setText(t_total);    	
     }
-    
-    protected void paintBackground(Graphics _g){
-    	int oldColor = _g.getColor();
-    	try{	    	
-    		_g.setColor(0xffffff);
-    		_g.drawText(recvMain.fsm_client_version, 0, 0);
-    		
-    	}finally{
-    		_g.setColor(oldColor);
-    	}  
+        
+    private abstract class FullManager extends Manager{
     	
-    	m_mainApp.m_allImageSets.fillImageBlock(_g, m_stateBG, 0, 0, recvMain.fsm_display_width, recvMain.fsm_display_height);
+    	protected final static int UI_MARGIN_LEFT = 10;
+    	
+    	public FullManager(){
+    		super(Manager.NO_VERTICAL_SCROLL);
+    	}    	
+
+		public int getPreferredWidth(){
+			return recvMain.fsm_display_width;
+		}
 		
-		int t_logo_x = (recvMain.fsm_display_width - m_stateLogo.getWidth()) / 2;
-		int t_logo_y = 10;
+		public int getPreferredHeight(){
+			return recvMain.fsm_display_height;
+		}
 		
-		m_mainApp.m_allImageSets.drawImage(_g, m_stateLogo, t_logo_x, t_logo_y);
+		protected void paintBackground(Graphics _g){
+			m_mainApp.m_allImageSets.fillImageBlock(_g, m_stateBG, 0, 0, recvMain.fsm_display_width, recvMain.fsm_display_height);
+			
+			int t_logo_x = (recvMain.fsm_display_width - m_stateLogo.getWidth()) / 2;
+			int t_logo_y = 10;
+			
+			m_mainApp.m_allImageSets.drawImage(_g, m_stateLogo, t_logo_x, t_logo_y);
+			
+			int oldColor = _g.getColor();
+	    	try{	    	
+	    		_g.setColor(0xffffff);
+	    		_g.drawText(recvMain.fsm_client_version, 0, 0);
+	    		
+	    	}finally{
+	    		_g.setColor(oldColor);
+	    	}
+	    }		
     }
+    
+
+    /**
+     * initial screen when user open firstly
+     * two buttons: official host or own host
+     * 
+     * @author yuch
+     *
+     */
+    private class InitManager extends FullManager implements FieldChangeListener{
+    	StateButton		m_officialHostBtn;
+    	
+    	StateButton		m_ownHostBtn;
+    	
+    	public InitManager(){
+    		m_officialHostBtn = new StateButton(recvMain.sm_local.getString(yblocalResource.STATE_OFFICIAL_HOST_BTN), 
+    											m_mainApp.m_allImageSets,getPreferredWidth() - UI_MARGIN_LEFT * 2);
+    		
+    		m_ownHostBtn = new StateButton(recvMain.sm_local.getString(yblocalResource.STATE_OWN_HOST_BTN), 
+												m_mainApp.m_allImageSets,getPreferredWidth() - UI_MARGIN_LEFT * 2);
+    		
+    		add(m_officialHostBtn);
+    		add(m_ownHostBtn);
+    		
+    		m_officialHostBtn.setChangeListener(this);
+    		m_ownHostBtn.setChangeListener(this);
+    	}
+
+		protected void sublayout(int width, int height) {
+			int t_start_x = UI_MARGIN_LEFT;
+			
+			int t_start_y = recvMain.fsm_display_height/3 + 20;
+			
+			setPositionChild(m_officialHostBtn,t_start_x,t_start_y);
+			layoutChild(m_officialHostBtn,m_officialHostBtn.getPreferredWidth(),m_officialHostBtn.getPreferredHeight());
+			
+			t_start_y += m_officialHostBtn.getPreferredHeight() + 10;
+			
+			setPositionChild(m_ownHostBtn,t_start_x,t_start_y);
+			layoutChild(m_ownHostBtn,m_ownHostBtn.getPreferredWidth(),m_ownHostBtn.getPreferredHeight());
+			
+			setExtent(getPreferredWidth(), getPreferredHeight());			
+		}
+
+		public void fieldChanged(Field field, int context) {
+			if(context != FieldChangeListener.PROGRAMMATIC){
+				if(field == m_officialHostBtn){
+					showLoginManager();
+				}else if(field == m_ownHostBtn){
+					showAccMainManager();
+				}
+			}			
+		}
+    }
+    
     
     /**
      * account main manager 
      * @author tzz
      *
      */
-    private class AccMainManger extends Manager implements FieldChangeListener{
+    private class AccMainManger extends FullManager implements FieldChangeListener{
     	
     	HorizontalFieldManager m_hostNameMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
     	EditField           m_hostName      = null;
@@ -492,11 +671,10 @@ public class stateScreen extends MainScreen{
         HyperlinkButtonField m_getHostLink	= new HyperlinkButtonField(recvMain.sm_local.getString(yblocalResource.STATE_SCREEN_HELP_MENU),0xffffff,0x8a8a8a);
         
     	public AccMainManger(){
-    		super(Manager.NO_VERTICAL_SCROLL);
     		
     		m_hostName = new EditField(recvMain.sm_local.getString(yblocalResource.HOST),
      						m_mainApp.m_hostname,128, EditField.FILTER_DEFAULT);
-            
+    		
 			m_hostName.setChangeListener(this);
 			m_hostNameMgr.add(m_hostName);
 			add(m_hostNameMgr);
@@ -533,30 +711,45 @@ public class stateScreen extends MainScreen{
 			
 	        m_getHostLink.setChangeListener(this);
 	        add(m_getHostLink);
+	        
+	        FocusChangeListener t_changeListener = new FocusChangeListener() {
+				
+				public void focusChanged(Field field, int eventType) {
+					if(eventType == FocusChangeListener.FOCUS_GAINED){
+						invalidate();
+					}					
+				}
+			};
+			
+			m_hostName.setFocusListener(t_changeListener);
+			m_hostport.setFocusListener(t_changeListener);
+			m_userPassword.setFocusListener(t_changeListener);
+			m_connectBut.setFocusListener(t_changeListener);
     	}
     	    	
     	public void sublayout(int _width,int _height){
 			
-			int t_start_x = 10;
-			int t_width = recvMain.fsm_display_width - t_start_x * 2;
-			int t_height = m_stateInputBG.getImageHeight();
+			int t_start_x = UI_MARGIN_LEFT;
 			
-			int y = 0;
+			int t_width = recvMain.fsm_display_width - t_start_x * 2;
+			int t_height = m_hostName.getFont().getHeight();
+			
+			int y = recvMain.fsm_display_height/3 + 20 + fm_inputTopBorder;
 			
 			setPositionChild(m_hostNameMgr,t_start_x,y);
 			layoutChild(m_hostNameMgr,t_width,t_height);
 			
-			y += m_stateInputBG.getImageHeight();
+			y += fm_inputHeight;
 			
 			setPositionChild(m_hostportMgr,t_start_x,y);
 			layoutChild(m_hostportMgr,t_width,t_height);
 			
-			y += m_stateInputBG.getImageHeight();
+			y += fm_inputHeight;
 			
 			setPositionChild(m_userPasswordMgr,t_start_x,y);
 			layoutChild(m_userPasswordMgr,t_width,t_height);
 			
-			y += m_stateInputBG.getImageHeight();
+			y += fm_inputHeight;
 			
 			setPositionChild(m_connectBut,t_start_x,y);
 			layoutChild(m_connectBut,m_connectBut.getImageWidth(),m_connectBut.getImageHeight());
@@ -572,27 +765,30 @@ public class stateScreen extends MainScreen{
 			setExtent(getPreferredWidth(), getPreferredHeight());
 		}
 		
-		public int getPreferredWidth(){
-			return recvMain.fsm_display_width;
-		}
-		
-		public int getPreferredHeight(){
-			return recvMain.fsm_display_height;
-		}
 		
 		public void subpaint(Graphics _g){
 			
-	    	int t_delta_x = 4;
-	    	int t_delta_y = (m_stateInputBG.getImageHeight() - m_hostName.getFont().getHeight()) / 2;	    	
+	    	int t_delta_x = fm_inputLeftBorder;
+	    	int t_delta_y = fm_inputTopBorder;	    	
 	    	
-	    	m_stateInputBG.draw(_g, m_hostNameMgr.getExtent().x - t_delta_x, 
-	    							m_hostNameMgr.getExtent().y - t_delta_y, m_hostNameMgr.getExtent().width + t_delta_x * 2);
+	    	BubbleImage t_host = m_hostName.isFocus()?m_stateInputBG_focus:m_stateInputBG;
+	    	BubbleImage t_port = m_hostport.isFocus()?m_stateInputBG_focus:m_stateInputBG;
+	    	BubbleImage t_pass = m_userPassword.isFocus()?m_stateInputBG_focus:m_stateInputBG;
 	    	
-	    	m_stateInputBG.draw(_g, m_hostportMgr.getExtent().x - t_delta_x, 
-	    							m_hostportMgr.getExtent().y - t_delta_y, m_hostportMgr.getExtent().width + t_delta_x * 2);
+	    	t_host.draw(_g, m_hostNameMgr.getExtent().x - t_delta_x, 
+							m_hostNameMgr.getExtent().y - t_delta_y,
+							m_hostNameMgr.getExtent().width + t_delta_x * 2,
+							fm_inputHeight,BubbleImage.NO_POINT_STYLE);
 	    	
-	    	m_stateInputBG.draw(_g, m_userPasswordMgr.getExtent().x - t_delta_x, 
-	    							m_userPasswordMgr.getExtent().y - t_delta_y, m_userPasswordMgr.getExtent().width + t_delta_x * 2);
+	    	t_port.draw(_g, m_hostportMgr.getExtent().x - t_delta_x, 
+							m_hostportMgr.getExtent().y - t_delta_y, 
+							m_hostportMgr.getExtent().width + t_delta_x * 2,
+							fm_inputHeight,BubbleImage.NO_POINT_STYLE);
+	    	
+	    	t_pass.draw(_g, m_userPasswordMgr.getExtent().x - t_delta_x, 
+							m_userPasswordMgr.getExtent().y - t_delta_y, 
+							m_userPasswordMgr.getExtent().width + t_delta_x * 2,
+							fm_inputHeight,BubbleImage.NO_POINT_STYLE);
 	    	
 	    	int t_num = getFieldCount();
 	    	for(int i = 0 ;i < t_num;i++){
@@ -657,7 +853,103 @@ public class stateScreen extends MainScreen{
 	        	// Perform action if application changed field.
 	        }
 		}
+    }
     
+    private class LoginManager extends FullManager implements FieldChangeListener{
+    	
+    	HorizontalFieldManager m_accountNameMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
+    	EditField           	m_accountName      	= null;
+    	    	
+    	HorizontalFieldManager m_userPasswordMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
+        PasswordEditField   	m_userPassword  	= null;
+    	
+        
+        HorizontalFieldManager	m_btnMgr	=  new HorizontalFieldManager(Field.FIELD_HCENTER | Manager.NO_HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
+        
+        ButtonField				m_loginButton		= new ButtonField(recvMain.sm_local.getString(yblocalResource.STATE_LOGIN_BTN_LABEL),
+        															ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
+        
+        ButtonField				m_signButton		= new ButtonField(recvMain.sm_local.getString(yblocalResource.STATE_SIGN_BTN_LABEL),
+        															ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
+        
+    	public LoginManager(){
+    		
+    		m_accountName	= new EditField(recvMain.sm_local.getString(yblocalResource.STATE_ACCOUNT_LABEL),
+												m_mainApp.m_account,128, EditField.FILTER_EMAIL);
+    		m_userPassword	= new PasswordEditField(recvMain.sm_local.getString(yblocalResource.USER_PASSWORD),
+    											m_mainApp.m_userPassword,128, EditField.FILTER_INTEGER | EditField.FILTER_NUMERIC | EditField.NO_COMPLEX_INPUT);
+    		
+    		m_accountNameMgr.add(m_accountName);    		
+    		m_userPasswordMgr.add(m_userPassword);
+    		
+    		m_btnMgr.add(m_loginButton);
+    		m_btnMgr.add(m_signButton);
+    		
+    		add(m_accountNameMgr);
+    		add(m_userPasswordMgr);
+    		add(m_btnMgr);
+    		
+    		m_loginButton.setChangeListener(this);
+    		m_signButton.setChangeListener(this);
+    	}
+    	
+		protected void sublayout(int width, int height) {
+			int t_start_x = UI_MARGIN_LEFT;
+			
+			int t_width = recvMain.fsm_display_width - t_start_x * 2;
+			int t_height = m_accountName.getFont().getHeight();
+			
+			int y = recvMain.fsm_display_height/3 + 20 + fm_inputTopBorder;
+			
+			setPositionChild(m_accountNameMgr,t_start_x,y);
+			layoutChild(m_accountNameMgr,t_width,t_height);
+			
+			y += fm_inputHeight;
+			
+			setPositionChild(m_userPasswordMgr,t_start_x,y);
+			layoutChild(m_userPasswordMgr,t_width,t_height);
+			
+			y += fm_inputHeight;
+			
+			setPositionChild(m_btnMgr,t_start_x,y);
+			layoutChild(m_btnMgr,t_width,t_height);		
+		}
+		
+		public void subpaint(Graphics _g){
+			
+	    	int t_delta_x = fm_inputLeftBorder;
+	    	int t_delta_y = fm_inputTopBorder;	    	
+	    	
+	    	BubbleImage t_acc = m_accountName.isFocus()?m_stateInputBG_focus:m_stateInputBG;
+	    	BubbleImage t_pass = m_userPassword.isFocus()?m_stateInputBG_focus:m_stateInputBG;
+	    	
+	    	t_acc.draw(_g, m_accountNameMgr.getExtent().x - t_delta_x,
+	    					m_accountNameMgr.getExtent().y - t_delta_y,
+	    					m_accountNameMgr.getExtent().width + t_delta_x * 2,
+							fm_inputHeight,BubbleImage.NO_POINT_STYLE);
+	    		    	
+	    	t_pass.draw(_g, m_userPasswordMgr.getExtent().x - t_delta_x, 
+							m_userPasswordMgr.getExtent().y - t_delta_y, 
+							m_userPasswordMgr.getExtent().width + t_delta_x * 2,
+							fm_inputHeight,BubbleImage.NO_POINT_STYLE);
+	    	
+	    	int t_num = getFieldCount();
+	    	for(int i = 0 ;i < t_num;i++){
+	    		paintChild(_g, getField(i));
+	    	}
+		}
+
+		public void fieldChanged(Field field, int context) {
+			if(FieldChangeListener.PROGRAMMATIC != context){
+				if(field == m_loginButton){
+					
+				}else if(field == m_signButton){
+					
+				}
+			}
+			
+		}
+    	
     }
     
 }
