@@ -498,28 +498,25 @@ public class stateScreen extends MainScreen{
     }
     
     protected boolean keyDown(int keycode,int time){
-    	
-    	final int key = Keypad.key(keycode);
-    	
-    	switch(key){
-    	case 'A':
-    		m_aboutMenu.run();
-    		return true;
-    	case 'S':
-    		m_setingMenu.run();
-    		return true;
-    	case 'D':
-    		m_debugInfoMenu.run();
-    		return true;
-    	case 'F':
-    		m_shareMenu.run();
-    		return true;
-    	}
-    	
+
     	if(m_mainManger != null 
     	&& m_mainManger.m_connectBut.isFocus()){
     		
+    		final int key = Keypad.key(keycode);
+    		
         	switch(key){
+        	case 'A':
+        		m_aboutMenu.run();
+        		return true;
+        	case 'S':
+        		m_setingMenu.run();
+        		return true;
+        	case 'D':
+        		m_debugInfoMenu.run();
+        		return true;
+        	case 'F':
+        		m_shareMenu.run();
+        		return true;
         	case 'W':
         		if(m_mainApp.m_enableWeiboModule){
         			m_weiboMenu.run();
@@ -560,9 +557,9 @@ public class stateScreen extends MainScreen{
 //    	m_uploadingText.setText(t_total);    	
     }
         
-    private abstract class FullManager extends Manager{
+    private abstract class FullManager extends Manager implements FocusChangeListener{
     	
-    	protected final static int UI_MARGIN_LEFT = 10;
+    	protected final static int UI_MARGIN_LEFT = 15;
     	
     	public FullManager(){
     		super(Manager.NO_VERTICAL_SCROLL);
@@ -592,7 +589,13 @@ public class stateScreen extends MainScreen{
 	    	}finally{
 	    		_g.setColor(oldColor);
 	    	}
-	    }		
+	    }
+		
+    	public void focusChanged(Field field, int eventType) {
+			if(eventType == FocusChangeListener.FOCUS_GAINED){
+				invalidate();
+			}					
+		}
     }
     
 
@@ -712,20 +715,13 @@ public class stateScreen extends MainScreen{
 	        m_getHostLink.setChangeListener(this);
 	        add(m_getHostLink);
 	        
-	        FocusChangeListener t_changeListener = new FocusChangeListener() {
-				
-				public void focusChanged(Field field, int eventType) {
-					if(eventType == FocusChangeListener.FOCUS_GAINED){
-						invalidate();
-					}					
-				}
-			};
 			
-			m_hostName.setFocusListener(t_changeListener);
-			m_hostport.setFocusListener(t_changeListener);
-			m_userPassword.setFocusListener(t_changeListener);
-			m_connectBut.setFocusListener(t_changeListener);
+			m_hostName.setFocusListener(this);
+			m_hostport.setFocusListener(this);
+			m_userPassword.setFocusListener(this);
+			m_connectBut.setFocusListener(this);
     	}
+    	
     	    	
     	public void sublayout(int _width,int _height){
 			
@@ -863,14 +859,9 @@ public class stateScreen extends MainScreen{
     	HorizontalFieldManager m_userPasswordMgr = new HorizontalFieldManager(Manager.HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
         PasswordEditField   	m_userPassword  	= null;
     	
-        
-        HorizontalFieldManager	m_btnMgr	=  new HorizontalFieldManager(Field.FIELD_HCENTER | Manager.NO_HORIZONTAL_SCROLL | Manager.NO_VERTICAL_SCROLL);
-        
-        ButtonField				m_loginButton		= new ButtonField(recvMain.sm_local.getString(yblocalResource.STATE_LOGIN_BTN_LABEL),
-        															ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
-        
-        ButtonField				m_signButton		= new ButtonField(recvMain.sm_local.getString(yblocalResource.STATE_SIGN_BTN_LABEL),
-        															ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
+                
+        StateButton				m_loginButton		= null;
+        StateButton				m_signButton		= null;
         
     	public LoginManager(){
     		
@@ -881,13 +872,20 @@ public class stateScreen extends MainScreen{
     		
     		m_accountNameMgr.add(m_accountName);    		
     		m_userPasswordMgr.add(m_userPassword);
-    		
-    		m_btnMgr.add(m_loginButton);
-    		m_btnMgr.add(m_signButton);
-    		
+    		    		
     		add(m_accountNameMgr);
     		add(m_userPasswordMgr);
-    		add(m_btnMgr);
+
+    		int t_btnWidth = recvMain.fsm_display_width * 2 / 5;
+    		m_loginButton = new StateButton(recvMain.sm_local.getString(yblocalResource.STATE_LOGIN_BTN_LABEL),m_mainApp.m_allImageSets,t_btnWidth);
+    		m_signButton = new StateButton(recvMain.sm_local.getString(yblocalResource.STATE_SIGN_BTN_LABEL),m_mainApp.m_allImageSets,t_btnWidth);
+
+    		add(m_loginButton);
+    		add(m_signButton);
+    		
+    		m_accountName.setFocusListener(this);
+    		m_userPassword.setFocusListener(this);
+    		m_loginButton.setFocusListener(this);
     		
     		m_loginButton.setChangeListener(this);
     		m_signButton.setChangeListener(this);
@@ -911,8 +909,15 @@ public class stateScreen extends MainScreen{
 			
 			y += fm_inputHeight;
 			
-			setPositionChild(m_btnMgr,t_start_x,y);
-			layoutChild(m_btnMgr,t_width,t_height);		
+			setPositionChild(m_loginButton,t_start_x,y);
+			layoutChild(m_loginButton,m_loginButton.getPreferredWidth(),m_loginButton.getPreferredHeight());
+			
+			t_start_x += m_loginButton.getWidth() + 20;
+			
+			setPositionChild(m_signButton,t_start_x,y);
+			layoutChild(m_signButton,m_signButton.getPreferredWidth(),m_signButton.getPreferredHeight());
+			
+			setExtent(getPreferredWidth(), getPreferredHeight());
 		}
 		
 		public void subpaint(Graphics _g){
@@ -948,6 +953,19 @@ public class stateScreen extends MainScreen{
 				}
 			}
 			
+		}
+		
+		private void login(){
+
+			if(!m_accountName.isDataValid()){
+				m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.STATE_LOGIN_ACC_NAME_ERROR));
+				return;
+			}
+			
+			if(m_userPassword.getTextLength() < 6){
+				m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.STATE_LOGIN_ACC_PASS_ERROR));
+				return;
+			}
 		}
     	
     }

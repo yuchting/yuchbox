@@ -67,6 +67,7 @@ import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.system.EncodedImage;
+import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.system.WLANInfo;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.Screen;
@@ -232,6 +233,12 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public final class APNSelector{
 		public String		m_name			= null;
 		public int			m_validateNum	= 0;
+		
+		public APNSelector(){}
+		
+		public APNSelector(String _name){
+			m_name = _name;
+		}
 	}
 	
 	public Vector				m_APNList 			= new Vector();
@@ -437,8 +444,12 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
         
 		// must read the configure first
 		//
-		WriteReadIni(true);		
+		WriteReadIni(true);
 		
+		// prepare the APN
+		//
+		prepareAPN();
+				
 		// register the notification
     	//
     	NotificationsManager.registerSource(fsm_notifyID_email, fsm_notifyEvent_email,NotificationsConstants.CASUAL);
@@ -491,6 +502,51 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
         initIMModule();
 	}
 	
+	/**
+	 * prepare the APN value
+	 */
+	private void prepareAPN(){
+		try{
+			String t_carrierName = RadioInfo.getCurrentNetworkName();
+			
+			if(t_carrierName != null && (!t_carrierName.equals(m_carrier) || m_APNList.isEmpty())){
+				
+				String t_apn = null;
+				if(t_carrierName.equals("中国移动")){
+					t_apn = "cmnet";
+				}else if(t_carrierName.equals("中国联通")){
+					t_apn = "uninet";
+				}else if(t_carrierName.equals("中国电信")){
+					t_apn = "ctnet";
+				}
+				
+				m_carrier = t_carrierName;
+				
+				if(t_apn != null){
+					boolean t_found = false;
+					for(int i = 0;i< m_APNList.size();i++){
+						
+						APNSelector apn = (APNSelector)m_APNList.elementAt(i);
+						
+						if(apn.m_name.equalsIgnoreCase(t_apn)){
+							t_found = true;
+							break;
+						}
+					}
+					
+					if(!t_found){
+						m_APNList.addElement(new APNSelector(t_apn));
+					}
+					
+				}
+				
+				SetErrorString("Carrier["+m_carrier+"] APN["+t_apn+"]");
+			}			
+			
+		}catch(Exception e){
+			SetErrorString("RADIO:", e);
+		}
+	}
 	protected boolean acceptsForeground() {
 		if(!m_hideBackgroundIcon){
 			return true; 
@@ -748,16 +804,14 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			if(t_endIdx != -1){
 				String t_name = _APNList.substring(t_beginIdx, t_endIdx);
 				if(t_name.length() != 0){
-					APNSelector t_sel = new APNSelector();
-					t_sel.m_name = t_name;
+					APNSelector t_sel = new APNSelector(t_name);
 					m_APNList.addElement(t_sel);
 				}
 				
 			}else{
 				String t_name = _APNList.substring(t_beginIdx, _APNList.length());
 				if(t_name.length() != 0){
-					APNSelector t_sel = new APNSelector();
-					t_sel.m_name = t_name;
+					APNSelector t_sel = new APNSelector(t_name);
 					m_APNList.addElement(t_sel);
 				}
 				break;
