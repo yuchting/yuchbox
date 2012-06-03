@@ -27,6 +27,8 @@
  */
 package com.yuchting.yuchberry.server;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.List;
 import java.util.Vector;
@@ -206,6 +208,46 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		
 	}
 	
+	static byte[] sm_retweetOkPrompt = null;
+	static {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgWeiboPrompt);
+		try{
+			sendReceive.WriteString(os,"Retweet OK!",false);
+			sm_retweetOkPrompt = os.toByteArray();
+		}catch(Exception e){}
+	}
+	
+	static byte[] sm_retweetOkPrompt_zh = null;
+	static {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os.write(msg_head.msgWeiboPrompt);
+		try{
+			sendReceive.WriteString(os,"Retweet 成功！",false);
+			sm_retweetOkPrompt_zh = os.toByteArray();
+		}catch(Exception e){}
+	}
+	
+	protected boolean ProcessWeiboRetweet(ByteArrayInputStream in){
+		
+		try{
+
+			long t_id = sendReceive.ReadLong(in);
+			m_twitter.retweetStatus(t_id);
+			
+			if(m_mainMgr.GetClientLanguage() == fetchMgr.CLIENT_LANG_ZH_S){
+				m_mainMgr.SendData(sm_retweetOkPrompt_zh,false);
+			}else{
+				m_mainMgr.SendData(sm_retweetOkPrompt,false);
+			}
+			
+		}catch(Exception e){
+			m_mainMgr.m_logger.PrinterException(e);
+		}
+		
+		return true;
+	}
+	
 	protected void UpdateStatus(String _text,GPSInfo _info,byte[] _filePic,String _fileType)throws Exception{
 		if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
 			
@@ -235,7 +277,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		}
 		
 		m_twitter.updateStatus(t_status);
-			
+		
 	}
 	
 	protected void UpdateReply(String _text,long _commentWeiboId,long _orgWeiboId,

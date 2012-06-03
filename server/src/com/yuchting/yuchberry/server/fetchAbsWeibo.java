@@ -457,9 +457,16 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			case msg_head.msgWeiboRemark:
 				t_processed = ProcessWeiboRemarkName(in);
 				break;
+			case msg_head.msgWeiboRewteet:
+				t_processed = ProcessWeiboRetweet(in);
+				break;
 		}
 		
 		return t_processed;
+	}
+	
+	protected boolean ProcessWeiboRetweet(ByteArrayInputStream in){
+		return false;
 	}
 	
 	protected boolean ProcessWeiboUser(ByteArrayInputStream in){

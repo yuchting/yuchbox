@@ -75,6 +75,11 @@ class CheckVersion extends Thread{
 public class fetchMain{
 	
 	public fetchMain(){
+		
+		System.setProperty("proxySet", "true");
+		System.setProperty("proxyHost", "127.0.0.1");
+		System.setProperty("proxyPort", "8580");		
+		
 		fetchMgr t_manger = new fetchMgr();
 		Logger t_logger = new Logger("");
 		
