@@ -704,6 +704,14 @@ public class weiboTimeLineScreen extends MainScreen{
 		m_currMgr.EscapeKey();
 	}
 	
+	
+	private void retweet(fetchWeibo _rewteetItem){
+		m_sendDaemonList.addElement(new WeiboSendDaemon(_rewteetItem.GetId(),m_mainApp));
+
+		m_mainApp.m_sentWeiboNum++;
+		m_currMgr.EscapeKey();
+	}
+	
 	int m_menuIndex = 0;
 	
 	MenuItem m_homeManagerItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_HOME_MANAGER_MENU_LABEL),m_menuIndex++,0){
@@ -820,7 +828,13 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	MenuItem m_onlyForwardWeiboItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_ONLY_FORWARD_WEIBO_MENU),m_menuIndex_op++,0){
 		public void run(){
-			m_currMgr.ForwardWeibo(m_currMgr.getCurrSelectedItem(),false,true);
+			WeiboItemField t_selectItem = m_currMgr.getCurrSelectedItem();
+			if(t_selectItem.m_weibo.GetWeiboStyle() == fetchWeibo.TWITTER_WEIBO_STYLE){
+				retweet(t_selectItem.m_weibo);
+			}else{
+				m_currMgr.ForwardWeibo(t_selectItem,false,true);
+			}
+			
 		}
 	};
         
@@ -989,11 +1003,10 @@ public class weiboTimeLineScreen extends MainScreen{
 				_menu.add(m_forwardWeiboItem);
 				if(m_currMgr.getCurrSelectedItem().m_weibo.GetWeiboStyle() == fetchWeibo.SINA_WEIBO_STYLE
 				|| m_currMgr.getCurrSelectedItem().m_weibo.GetWeiboStyle() == fetchWeibo.QQ_WEIBO_STYLE){
-					
-					_menu.add(m_onlyCommnetWeiboItem);				
-					_menu.add(m_onlyForwardWeiboItem);
-										
+					_menu.add(m_onlyCommnetWeiboItem);										
 				}
+				
+				_menu.add(m_onlyForwardWeiboItem);
 				_menu.add(m_atWeiboItem);
 				_menu.add(m_parseUserWeiboItem);
 				_menu.setDefault(m_forwardWeiboItem);

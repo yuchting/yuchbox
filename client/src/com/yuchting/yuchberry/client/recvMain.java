@@ -511,14 +511,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			
 			if(t_carrierName != null && (!t_carrierName.equals(m_carrier) || m_APNList.isEmpty())){
 				
-				String t_apn = null;
-				if(t_carrierName.equals("中国移动")){
-					t_apn = "cmnet";
-				}else if(t_carrierName.equals("中国联通")){
-					t_apn = "uninet";
-				}else if(t_carrierName.equals("中国电信")){
-					t_apn = "ctnet";
-				}
+				String t_apn = findNetworkAPN();
 				
 				m_carrier = t_carrierName;
 				
@@ -547,6 +540,28 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			SetErrorString("RADIO:", e);
 		}
 	}
+	
+	/**
+	 * find a good avaiable APN
+	 * @return
+	 * @throws Exception
+	 */
+	public static String findNetworkAPN(){
+		
+		String t_carrierName = RadioInfo.getCurrentNetworkName();
+		
+		String t_apn = null;
+		if(t_carrierName.equals("中国移动")){
+			t_apn = "cmnet";
+		}else if(t_carrierName.equals("中国联通")){
+			t_apn = "uninet";
+		}else if(t_carrierName.equals("中国电信")){
+			t_apn = "ctnet";
+		}
+		
+		return t_apn;
+	}
+	
 	protected boolean acceptsForeground() {
 		if(!m_hideBackgroundIcon){
 			return true; 
@@ -1525,8 +1540,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			if(m_connectDeamon.IsConnectState()){
 				m_connectDeamon.Disconnect();
 			}	
-		}catch(Exception e){}
-		
+		}catch(Exception e){}		
 		
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);
@@ -1731,7 +1745,9 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			m_stateScreen = new stateScreen(this);	
 		}
 		
-		pushScreen(m_stateScreen);
+		if(getScreenCount() == 0){
+			pushScreen(m_stateScreen);
+		}		
 	}
 	
 	public void popStateScreen(){
@@ -2337,6 +2353,40 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		return _exp;
 	}
 	
+	/**
+	 * whether this string is valid Email  
+	 * @param _str
+	 * @return true if this string is email otherwise false
+	 */
+	public static boolean isValidateEmail(String _str){
+		int t_at = _str.indexOf("@");
+		if(t_at == -1){
+			return false;
+		}
+		
+		if(t_at == 0 || (_str.length() - 1) - t_at < 3){
+			return false;
+		}
+		
+		String t_addr = _str.substring(t_at + 1);
+		
+		int t_otherAt = t_addr.indexOf("@");
+		if(t_otherAt != -1){
+			return false;
+		}
+		
+		int t_dot = t_addr.indexOf(".");
+		if(t_dot == -1){
+			return false;
+		}
+		
+		if(t_dot == t_addr.length() - 1 ){
+			return false;
+		}
+		
+		return true;
+	}
+	
 //	static ImageManipulator		sm_manipulator = new ImageManipulator(null);
 	public static Bitmap scaleImage(EncodedImage _image,int _width,int _height){
 		
@@ -2357,6 +2407,26 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(_height));
 		
 		return _image.scaleImage32(scaleX, scaleY).getBitmap();
+	}
+	
+	/**
+	 * get the HTTP request which is opened by Connector.open() append string 
+	 * @return
+	 */
+	public static String getHTTPAppendString(){
+		String t_append = ";deviceside=true";
+		
+		if( WLANInfo.getAPInfo() != null){
+			t_append += ";interface=wifi";
+		}else{
+			
+			String apn = recvMain.findNetworkAPN();
+			if(apn != null){
+				t_append += ";apn=" + apn;
+			}
+		}
+		
+		return t_append;
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////

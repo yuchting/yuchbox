@@ -27,12 +27,21 @@
  */
 package com.yuchting.yuchberry.client.screen;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Vector;
 
+import javax.microedition.io.Connector;
+import javax.microedition.io.HttpConnection;
+
 import local.yblocalResource;
+import net.rim.device.api.io.http.HttpProtocolConstants;
 import net.rim.device.api.servicebook.ServiceBook;
 import net.rim.device.api.servicebook.ServiceRecord;
 import net.rim.device.api.system.Characters;
+import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.FocusChangeListener;
@@ -274,6 +283,12 @@ public class stateScreen extends MainScreen{
 		}
 	};
 	
+	MenuItem 	m_selectMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.STATE_SELECT_HOST_MENU_TEXT), m_menu_op++, 10) {
+		public void run() {
+			showInitManager();
+		}
+	};
+	
 	MenuItem	m_shareMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.SHARE_TO_FRIEND_MENU), m_menu_op++, 10) {
 		public void run() {
 			recvMain t_app = (recvMain)UiApplication.getUiApplication();
@@ -319,6 +334,9 @@ public class stateScreen extends MainScreen{
 		}
 	};
 	
+	
+	
+	
    
             
     recvMain			m_mainApp		= null;
@@ -334,6 +352,11 @@ public class stateScreen extends MainScreen{
 	
 	BubbleImage	m_stateInputBG 			= null;
 	BubbleImage	m_stateInputBG_focus 	= null;
+	
+	/**
+	 * login account thread first
+	 */
+	LoginAccThread		m_loginAccThread = null;
 	
 	
 	
@@ -390,7 +413,7 @@ public class stateScreen extends MainScreen{
     	m_currManger = m_initManager;
     	
     	if(m_mainApp.m_hostname.length() != 0){
-    		showAccMainManager();
+    		showAccMainManager(false);
     	}
         
         RefreshUploadState(_app.m_uploadingDesc);
@@ -408,7 +431,7 @@ public class stateScreen extends MainScreen{
     	m_currManger = m_initManager;
     }
     
-    private void showAccMainManager(){
+    public void showAccMainManager(boolean _setConnect){
 
     	if(m_currManger == m_mainManger){
     		return ;
@@ -428,7 +451,13 @@ public class stateScreen extends MainScreen{
             }
         }
         
+        m_mainManger.m_hostName.setText(m_mainApp.m_hostname);
+        m_mainManger.m_hostport.setText(Integer.toString(m_mainApp.m_port));
         m_mainManger.m_userPassword.setText(m_mainApp.m_userPassword);
+        
+        if(_setConnect){
+        	m_mainManger.fieldChanged(m_mainManger.m_connectBut,0);
+        }
         
         m_currManger = m_mainManger;
     }
@@ -455,6 +484,7 @@ public class stateScreen extends MainScreen{
     
     protected void makeMenu(Menu _menu,int instance){
     	_menu.add(m_aboutMenu);
+    	_menu.add(m_selectMenu);
     	_menu.add(m_shareMenu);
     	_menu.add(m_setingMenu);
     	_menu.add(m_debugInfoMenu);
@@ -473,6 +503,11 @@ public class stateScreen extends MainScreen{
     }
     
     public final boolean onClose(){
+    	
+    	if(m_loginAccThread != null){
+    		m_loginAccThread.m_waitDlg.close();
+    		return true;
+    	}
     	
     	if(m_mainApp.m_connectDeamon.IsConnectState()){
     		if(m_mainApp.getScreenCount() == 1){
@@ -646,7 +681,7 @@ public class stateScreen extends MainScreen{
 				if(field == m_officialHostBtn){
 					showLoginManager();
 				}else if(field == m_ownHostBtn){
-					showAccMainManager();
+					showAccMainManager(false);
 				}
 			}			
 		}
@@ -947,9 +982,28 @@ public class stateScreen extends MainScreen{
 		public void fieldChanged(Field field, int context) {
 			if(FieldChangeListener.PROGRAMMATIC != context){
 				if(field == m_loginButton){
-					
+					login();
 				}else if(field == m_signButton){
 					
+					if(recvMain.fsm_OS_version.charAt(0) < '6' && recvMain.fsm_OS_version.charAt(1) == '.'){
+						m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.STATE_CLIENT_VER_LOW));
+						return ;
+					}
+					
+					String t_url;
+					if(recvMain.GetClientLanguage() == 2){
+						t_url = "http://www.yuchs.com/Android_en.html";
+					}else{
+						t_url = "http://www.yuchs.com/Android.html";
+					}
+					
+//					try{
+//						UiApplication.getUiApplication().pushScreen(new LoginWebView(stateScreen.this,t_url));
+//					}catch(Exception e){
+//						m_mainApp.DialogAlert("Internal Error:" + e.getMessage());
+//					}					
+					
+					recvMain.openURL(t_url);
 				}
 			}
 			
@@ -966,9 +1020,140 @@ public class stateScreen extends MainScreen{
 				m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.STATE_LOGIN_ACC_PASS_ERROR));
 				return;
 			}
+			
+			m_mainApp.m_account 		= m_accountName.getText().toLowerCase();
+			m_mainApp.m_userPassword	= m_userPassword.getText();
+			
+			if(m_loginAccThread == null){
+				m_loginAccThread = new LoginAccThread(m_mainApp.m_account, m_mainApp.m_userPassword);
+				m_loginAccThread.start();
+			}
 		}
-    	
     }
+    
+    /**
+     * login acc thread
+     * @author tzz
+     *
+     */
+    private class LoginAccThread extends Thread{
+		
+		Dialog m_waitDlg = new Dialog(recvMain.sm_local.getString(yblocalResource.STATE_LOGIN_WAIT),new Object[0],new int[0],0,null);
+		
+		byte[] m_postData;
+		
+		public LoginAccThread(String _acc,String _pass){
+			String t_str = ("acc=" + _acc + "&" + "pass=" + _pass);
+			try{
+				m_postData = t_str.getBytes("UTF-8");
+			}catch(Exception e){
+				m_postData = t_str.getBytes();
+			}			
+		}
+		
+		public void run(){
+			
+			m_mainApp.invokeLater(new Runnable() {
+				public void run() {
+					m_waitDlg.show();
+				}
+			});
+			
+			String MAIN_URL = DeviceInfo.isSimulator()?"http://192.168.10.7:8888/f/login/":"http://www.yuchs.com/f/login/";		
+			
+			MAIN_URL += recvMain.getHTTPAppendString();
+			
+			try{
+				HttpConnection conn = (HttpConnection)Connector.open(MAIN_URL);
+				
+				try{
+					conn.setRequestMethod(HttpConnection.POST);
+					conn.setRequestProperty(HttpProtocolConstants.HEADER_CONTENT_LENGTH,String.valueOf(m_postData.length));
+					
+					conn.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
+					conn.setRequestProperty("User-Agent","Profile/MIDP-2.0 Configuration/CLDC-1.0");
+
+					OutputStream out = conn.openOutputStream();
+					try{
+						out.write(m_postData);
+						out.flush();
+					}finally{
+						out.close();
+						out = null;
+					}
+					
+					int rc = conn.getResponseCode();
+				    if(rc != HttpConnection.HTTP_OK){
+				    	throw new IOException("HTTP response code: " + rc);
+				    }
+				    
+				    InputStream in = conn.openInputStream();
+				    try{
+				    	int length = (int) conn.getLength();
+				    	String result;
+				    	if (length != -1){
+				    		byte servletData[] = new byte[length];
+				    		in.read(servletData);
+				    		result = new String(servletData);
+				    	}else{
+				    		ByteArrayOutputStream os = new ByteArrayOutputStream();
+				    		int ch;
+					        while ((ch = in.read()) != -1){
+					        	os.write(ch);
+					        }
+					        result = new String(os.toByteArray(),"UTF-8");
+				    	}
+				    	
+				    	int idx;
+				    	
+				    	if(result.startsWith("<Error>")){
+				    		m_mainApp.DialogAlert(result.substring(7));
+				    	}else if((idx = result.indexOf("|")) != -1){
+				    		m_mainApp.m_hostname 	= result.substring(0,idx);
+				    		m_mainApp.m_port 		= Integer.parseInt(result.substring(idx + 1));
+				    		
+				    		succ();
+				    		
+				    	}else{
+				    		m_mainApp.DialogAlert("Unknow Error: "+result); 
+				    	}
+
+				    }finally{
+				    	in.close();
+				    	in = null;
+				    }
+
+				}finally{
+					conn.close();
+					conn = null;
+				}
+								
+			}catch(Exception e){
+				m_mainApp.SetErrorString("LAT:", e);
+			}finally{
+				m_mainApp.invokeLater(new Runnable() {
+					public void run() {
+						m_waitDlg.close();
+						m_loginAccThread = null;
+					}
+				});
+			}
+		}
+		
+		private void succ(){
+			m_mainApp.invokeLater(new Runnable() {
+				public void run() {
+				
+					if(m_loginAccThread != null){
+
+						showAccMainManager(true);
+						
+						m_loginAccThread = null;
+					}
+				}
+			});
+		}
+	}
     
 }
     

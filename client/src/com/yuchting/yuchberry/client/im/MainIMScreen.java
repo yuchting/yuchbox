@@ -439,8 +439,25 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	recvMain				m_mainApp = null;
 	
 	VerticalFieldManager	m_historyChatMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
-	VerticalFieldManager	m_groupListMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
 	VerticalFieldManager	m_statusListMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
+	VerticalFieldManager	m_groupListMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR){
+		public Field getFieldWithFocus(){
+			
+			Field t_result = null;
+			
+			int num = this.getFieldCount();
+			
+			for(int i = 0;i < num;i++){
+				GroupFieldManager t_mgr = (GroupFieldManager)this.getField(i);
+				t_result = t_mgr.getFieldWithFocus();
+				if(t_result != null){
+					break;
+				}
+			}
+			
+			return t_result;
+		}
+	};
 	
 	GroupFieldManager		m_selectGroupTitleField = null;
 	
@@ -1978,7 +1995,17 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			}else{
 				replace(m_rosterItemList, m_nullField);
 			}
-		}	
+		}
+		
+		public Field getFieldWithFocus(){
+		
+			if(m_titleField.isFocus()){
+				return m_titleField;
+			}
+			
+						
+			return m_rosterItemList.getFieldWithFocus();
+		}
 		
 	}
 }

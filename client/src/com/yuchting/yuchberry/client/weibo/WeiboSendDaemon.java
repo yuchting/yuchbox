@@ -48,6 +48,8 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 	byte		m_sendType		= 0;
 	boolean	m_onlyComment	= false;
 	boolean	m_onlyForward	= false;
+	boolean	m_retweet		= false;
+	long		m_retweetId		= 0;
 	
 	fetchWeibo		m_origWeibo		= null;
 	fetchWeibo		m_commentWeibo	= null;
@@ -122,6 +124,16 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 		start();		
 	}
 	
+	// retweet weibo
+	//
+	public WeiboSendDaemon(long _rewteetId,recvMain _mainApp){
+		m_mainApp	= _mainApp;
+		m_retweetId = _rewteetId;
+		m_retweet	= true;
+		
+		start();
+	}
+	
 	public void sendStart(){}
 	public void sendProgress(int _fileIndex,int _uploaded,int _totalSize){}
 	public void sendPause(){}
@@ -182,17 +194,21 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 
 			try{
 				
-				switch(m_sendType){
-				case fetchWeibo.SEND_NEW_UPDATE_TYPE:
-					updateNew();
-					break;
-				case fetchWeibo.SEND_FORWARD_TYPE:
-				case fetchWeibo.SEND_REPLY_TYPE:
-					updateReplyComment();
-					break;
-				case fetchWeibo.SEND_DIRECT_MSG_TYPE:
-					sendDirectMsg();
-					break;
+				if(m_retweet){
+					retweet();
+				}else{
+					switch(m_sendType){
+					case fetchWeibo.SEND_NEW_UPDATE_TYPE:
+						updateNew();
+						break;
+					case fetchWeibo.SEND_FORWARD_TYPE:
+					case fetchWeibo.SEND_REPLY_TYPE:
+						updateReplyComment();
+						break;
+					case fetchWeibo.SEND_DIRECT_MSG_TYPE:
+						sendDirectMsg();
+						break;
+					}
 				}
 				
 			}catch(Exception e){
@@ -203,6 +219,22 @@ public class WeiboSendDaemon extends Thread implements ISendAttachmentCallback{
 			try{
 				sleep(3 * 60000);
 			}catch(Exception e){}
+		}
+	}
+	
+	private void retweet(){
+		try{
+
+			// retweet a twitter
+			//
+			ByteArrayOutputStream t_os = new ByteArrayOutputStream();
+			t_os.write(msg_head.msgWeiboRewteet);
+			sendReceive.WriteLong(t_os, m_retweetId);
+			
+			m_mainApp.m_connectDeamon.addSendingData(msg_head.msgWeiboRewteet,t_os.toByteArray(),true);
+			
+		}catch(Exception e){
+			m_mainApp.SetErrorString("RT:" + e.getMessage() + e.getClass().getName());
 		}
 	}
 	
