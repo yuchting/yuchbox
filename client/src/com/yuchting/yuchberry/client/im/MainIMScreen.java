@@ -43,6 +43,7 @@ import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.blackberry.api.invoke.MessageArguments;
 import net.rim.blackberry.api.mail.Address;
 import net.rim.blackberry.api.mail.Message;
+import net.rim.device.api.collection.Collection;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -1290,18 +1291,16 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				boolean t_found = false;
 				
 				Vector t_tmpRosterList = new Vector();
-				
 				int t_num = sendReceive.ReadInt(in);
 				
 				m_mainApp.SetErrorString("PCRL: recv " + t_num + " roster");
-				
-				for(int i = 0 ;i < t_num;i++){
-					fetchChatRoster t_roster = new fetchChatRoster();
-					t_roster.Import(in);
-					
-					t_found = false;
-					
-					synchronized(m_rosterChatDataList){
+				synchronized(m_rosterChatDataList){
+					for(int i = 0 ;i < t_num;i++){
+						fetchChatRoster t_roster = new fetchChatRoster();
+						t_roster.Import(in);
+						
+						t_found = false;
+												
 						for(int j = 0;j < m_rosterChatDataList.size();j++){
 							RosterChatData t_data = (RosterChatData)m_rosterChatDataList.elementAt(j);
 							
@@ -1313,22 +1312,22 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 								break;
 							}
 						}
+											
+						if(!t_found){				
+							RosterChatData t_data = new RosterChatData(t_roster);
+							t_tmpRosterList.addElement(t_data);
+						}
 					}
-					
-					if(!t_found){				
-						RosterChatData t_data = new RosterChatData(t_roster);
-						t_tmpRosterList.addElement(t_data);
-					}
-				}
-				synchronized (m_rosterChatDataList) {
+				
+					// re-add it
 					m_rosterChatDataList.removeAllElements();
-
+					
 					for(int i = 0;i < t_tmpRosterList.size();i++){
 						RosterChatData t_data = (RosterChatData)t_tmpRosterList.elementAt(i);
 						m_rosterChatDataList.addElement(t_data);								
 					}
-				}				
-										
+				}
+		
 				refreshRosterList();
 										
 				break;
@@ -1378,17 +1377,17 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 							
 							break;
 						}
-					}	
+					}
+					
+					if(!t_modified){
+						m_rosterChatDataList.addElement(new RosterChatData(t_roster));						
+					}
 				}						
 				
 				if(!t_modified){
-					
-					synchronized (m_rosterChatDataList) {
-						m_rosterChatDataList.addElement(new RosterChatData(t_roster));
-					}
-					
 					refreshRosterList();
 				}
+				
 				break;
 			}
 		}catch(Exception e){
