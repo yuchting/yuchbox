@@ -452,7 +452,7 @@ public class stateScreen extends MainScreen{
         }
         
         m_mainManger.m_hostName.setText(m_mainApp.m_hostname);
-        m_mainManger.m_hostport.setText(Integer.toString(m_mainApp.m_port));
+        m_mainManger.m_hostport.setText(m_mainApp.m_port == 0?"":Integer.toString(m_mainApp.m_port));
         m_mainManger.m_userPassword.setText(m_mainApp.m_userPassword);
         
         if(_setConnect){

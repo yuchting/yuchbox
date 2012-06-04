@@ -566,8 +566,12 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		if(!m_hideBackgroundIcon){
 			return true; 
 		}
+		try{
+			return Application.getApplication() instanceof recvMain;
+		}catch(Exception e){
+			return false;
+		}
 		
-		return Application.getApplication() instanceof recvMain;
 	}
 	
 	public boolean isBackground(){
