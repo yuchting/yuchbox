@@ -45,6 +45,7 @@ public final class ConfigInit {
 	public final static String TAG = "ConfigInit";
 	
 	public String m_host					= null;
+	public String m_account					= null;
 	public int m_port						= 0;
 	public String m_userPass				= null;
 	
@@ -280,7 +281,7 @@ public final class ConfigInit {
 		}
 	}
 	
-	final static int		fsm_configVersion = 5;
+	final static int		fsm_configVersion = 6;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -419,6 +420,11 @@ public final class ConfigInit {
 		    				m_mailClearBeforeDayIndex		= t_readFile.read();
 		    			}
 		    			
+		    			if(t_version >= 6){
+		    				m_account						= sendReceive.ReadString(t_readFile);
+		    				
+		    			}
+		    			
 					}finally{
 						t_readFile.close();
 					}
@@ -540,6 +546,7 @@ public final class ConfigInit {
     				sendReceive.WriteBoolean(t_writeFile,m_alwaysDisplayState);
     				
     				t_writeFile.write(m_mailClearBeforeDayIndex);
+    				sendReceive.WriteString(t_writeFile,m_account);
 					
 				}finally{
 					t_writeFile.close();

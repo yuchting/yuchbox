@@ -9,8 +9,18 @@
     <string name="debug_info_menu_copy">Copy To Clipboard</string>
     <string name="debug_info_menu_copy_ok">Copy To Clipboard OK!</string>
     <string name="debug_info_menu_help">Help</string>
-        
+    
     <!-- login activity -->
+    <string name="login_init_official_host">I use official service host</string>
+    <string name="login_init_own_host">I have own service host</string>
+    <string name="login_account">Account:</string>
+    <string name="login_account_hint">Email address format</string>
+    <string name="login_login_btn">Login Account</string>
+    <string name="login_register_btn">Register Free</string>
+    <string name="login_login_account_error">YuchBox Account is Email format</string>
+    <string name="login_login_pass_error">User Password is equal or more than 6 numbers or letters</string>
+   	<string name="login_dlg_wait_prompt">Logining Account...</string>
+   	    
     <string name="login_title_name">Yuchs\'Box User State</string>    
     <string name="login_connect_deamon_state">Yuchs\'Box Connection Notification</string>
     <string name="login_connect_deamon_state_detail">Can set display state in General Preference</string>
@@ -22,14 +32,13 @@
     <string name="start_svr_but">Connect</string>
     <string name="stop_svr_but">Disconnect</string>
     
-    
-    <string name="login_host">Host:</string>
+    <string name="login_host">Svr Host:</string>
     <string name="login_host_hint">Domain or IP address</string>
     <string name="login_host_error_prompt">Please input right Host (Domain or IP address)</string>
-    <string name="login_port">Port:</string>
+    <string name="login_port">Svr Port:</string>
     <string name="login_port_hint">Connect port(100-65535) </string>
     <string name="login_port_error_prompt">Please input right Port (1-65535)</string>
-    <string name="login_user_pass">UserPass:</string>
+    <string name="login_user_pass">User Pass:</string>
     <string name="login_user_pass_hint">User define password</string>
     <string name="login_user_pass_error_prompt">Please input UserPass</string>
     <string name="login_state_disconnect">Disconnect.</string>
@@ -99,7 +108,7 @@
     <string name="mail_failed_notification_ticker">Send Mail Failed!</string>
     <string name="mail_time_year">-</string>
     <string name="mail_time_month">-</string>
-    <string name="mail_time_day"></string>
+    <string name="mail_time_day"> </string>
     <string name="mail_list_compose_new_mail">Compose</string>
     <string name="mail_home_empty_group">Opps, there is not any mail...</string>
     <string name="mail_list_menu_connect_state">State</string>

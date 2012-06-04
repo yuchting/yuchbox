@@ -27,11 +27,16 @@
  */
 package com.yuchting.yuchdroid.client;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -62,7 +67,7 @@ import com.yuchting.yuchdroid.client.mail.MailDbAdapter;
 import com.yuchting.yuchdroid.client.mail.fetchMail;
 
 public class YuchDroidApp extends Application {
-	
+		
 	public final static String	TAG = "YuchsBoxApp";
 	
 	public 	static String fsm_PIN			= "";
@@ -813,6 +818,8 @@ public class YuchDroidApp extends Application {
 		return t_ret.toString();
 	}
 	
+	
+	
 	// utility function
     //
     public static String GetByteStr(long _byte){
@@ -823,6 +830,30 @@ public class YuchDroidApp extends Application {
 		}else{
 			return "" + (_byte / (1000000)) + "." + ((_byte / 1000) % 1000 / 100) + "MB";
 		}
+    }
+    
+    public static boolean isValidEmail(String _string){
+    	if(_string == null || _string.length() == 0){
+    		return false;
+    	}
+    	
+    	return _string.matches("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$");
+    }
+    
+    public static boolean isValidOfficialUserPass(String _string){
+    	
+    	if(_string == null || _string.length() < 6){
+    		return false;
+    	}
+    	char a;
+    	for(int i = 0;i < _string.length();i++){
+    		a = _string.charAt(i);
+    		if(!Character.isDigit(a) && !Character.isLetter(a)){
+    			return false;
+    		}
+    	}
+    	
+    	return true;
     }
     
     public static String md5(String _org){

@@ -10,10 +10,19 @@
     <string name="debug_info_menu_copy">拷贝到剪切版</string>
     <string name="debug_info_menu_copy_ok">成功拷贝到剪切版</string>
     <string name="debug_info_menu_help">帮助</string>
+  
+  	<!-- login activity -->
+    <string name="login_init_official_host">我使用官方服务器</string>
+    <string name="login_init_own_host">我拥有自己的服务器</string>
+    <string name="login_account">语盒账户：</string>
+    <string name="login_account_hint">电子邮件地址格式</string>
+    <string name="login_login_btn">登录语盒账户</string>
+    <string name="login_register_btn">注册语盒账户</string>    
+    <string name="login_login_account_error">语盒账户必须是邮箱地址的形式</string>
+    <string name="login_login_pass_error">用户密码是大于等于6位的数字和字母组成的</string>
+    <string name="login_dlg_wait_prompt">正在登陆语盒账户……</string>
     
-    <!-- login activity -->
-    <string name="login_title_name">语盒用户状态</string>
-        
+    <string name="login_title_name">语盒用户状态</string>   
     <string name="login_connect_deamon_state">语盒连接服务通知</string>
     <string name="login_connect_deamon_state_detail">显示状态可以在语盒连接界面中配置</string>
     <string name="login_connect_deamon_state_connect">连接正常</string>

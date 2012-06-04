@@ -877,7 +877,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		
 		for(String addr:_toAddrList){
 			if(addr.length() != 0){
-				if(!addr.matches("^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$")
+				if(!YuchDroidApp.isValidEmail(addr)
 				&& !addr.matches("(.)*<\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*>")){
 					return false;
 				}
