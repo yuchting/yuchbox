@@ -1125,7 +1125,7 @@ public class fetchEmail extends fetchAccount{
 		
 		sendReceive.WriteLong(os,_mail.m_sendMail.GetSendDate().getTime());
 		
-		m_mainMgr.SendData(os,false);
+		m_mainMgr.SendData(os,true);
 		m_mainMgr.m_logger.LogOut(GetAccountName() + " Mail <" +_mail.m_sendMail.GetSendDate().getTime() +  "> send " + (((t_succ == 1)?"Succ":"Failed") + t_exception));
 		
 		if(t_succ == 1){
