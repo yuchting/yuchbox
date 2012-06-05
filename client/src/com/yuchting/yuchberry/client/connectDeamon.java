@@ -567,13 +567,17 @@ public class connectDeamon extends Thread implements SendListener,
 				m_mainApp.SetErrorString("origMsg:"+ t_forwardReplyMail.GetSubject());
 			}else{
 				
+				int t_mailAccountIdx = m_mainApp.m_defaultSendMailAccountIndex_tmp != -1?
+											m_mainApp.m_defaultSendMailAccountIndex_tmp:
+											m_mainApp.m_defaultSendMailAccountIndex;
+				
 				// select sending from mail address
 				//
 				if(!m_mainApp.m_sendMailAccountList.isEmpty() 
-				&& m_mainApp.m_defaultSendMailAccountIndex < m_mainApp.m_sendMailAccountList.size()
-				&& m_mainApp.m_defaultSendMailAccountIndex >= 0){
+				&& t_mailAccountIdx < m_mainApp.m_sendMailAccountList.size()
+				&& t_mailAccountIdx >= 0){
 					
-					String t_defaultAcc = (String)m_mainApp.m_sendMailAccountList.elementAt(m_mainApp.m_defaultSendMailAccountIndex);
+					String t_defaultAcc = (String)m_mainApp.m_sendMailAccountList.elementAt(t_mailAccountIdx);
 					
 					t_mail.GetFromVect().removeAllElements();
 					t_mail.GetFromVect().addElement(t_defaultAcc);
@@ -581,8 +585,11 @@ public class connectDeamon extends Thread implements SendListener,
 					t_mail.setOwnAccount(t_defaultAcc);
 					
 					m_mainApp.SetErrorString("from:"+t_defaultAcc);
-				}
+				}	
 			}
+			
+			// clear the temporary default send Mail account
+			m_mainApp.m_defaultSendMailAccountIndex_tmp = -1;
 			
 			m_mainApp.SetErrorString("sendMsg:" + t_msg.getSubject());
 														
@@ -808,7 +815,7 @@ public class connectDeamon extends Thread implements SendListener,
 		m_composingAttachment.removeAllElements();
 		
 		m_sendStyle = fetchMail.NOTHING_STYLE;
-		
+				
 		m_mainApp.loadChangeMailSenderMenu(true);
 	}
 	public void reply(MessageEvent e){

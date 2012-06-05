@@ -295,6 +295,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	public Vector 			m_sendMailAccountList = new Vector();
 	public int				m_defaultSendMailAccountIndex = 0;
+	public int				m_defaultSendMailAccountIndex_tmp = -1;
 	
 	public boolean 		m_hideBackgroundIcon = false;
 	
@@ -1975,15 +1976,23 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	 * @param _load		load or remove
 	 */
 	public void loadChangeMailSenderMenu(boolean _load){
+		
+		// clear the temporary default sender
+		m_defaultSendMailAccountIndex_tmp = -1;
+		
 		if(m_loadChangeMailSenderMenu != _load){
 						
 			if(_load){
 				if(m_sendMailAccountList.size() <= 1){ //unique account...
 					return;
 				}
-				ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_changeDefaultSenderItem);
+				try{
+					ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_changeDefaultSenderItem);
+				}catch(Exception e){}
 			}else{
-				ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_changeDefaultSenderItem);
+				try{
+					ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_changeDefaultSenderItem);
+				}catch(Exception e){}				
 			}
 			
 			m_loadChangeMailSenderMenu = _load;
