@@ -33,7 +33,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
-import android.gesture.GestureLibrary;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -198,6 +197,8 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
     //! mail item touch capture
     boolean m_touchCapture 	= false;
     
+    MailListAdapter.ItemHolder	m_captureItem	= null;
+    
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		
@@ -208,30 +209,52 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
 				m_touch_x 		= event.getX();
 				m_touched 		= true;
 				m_touchCapture	= false;
+				
+				m_captureItem = (MailListAdapter.ItemHolder)v.getTag();
 			}
+			
 			break;
 		case MotionEvent.ACTION_MOVE:
 			
-			if(m_touched && v.getTag() != null){
-
+			if(m_touched && m_captureItem != null){
+				
 				float t_curr_x = event.getX();
 				float t_delta = t_curr_x - m_touch_x;
 				
 				if(!m_touchCapture){
 					
-					if(t_delta / event.getEventTime() > 20.0f){
+					float t_eventTime = event.getEventTime() - event.getDownTime();
+					
+					if(t_eventTime == 0){
+						break;
+					}
+					
+					if(Math.abs(t_delta) / t_eventTime > 0.5f){
 						m_touchCapture = true;
 						return true;
 					}
 					
 				}else{
-					ItemHolder holder = (ItemHolder)v.getTag();
 					
 					// capture view state
 					if(t_delta > 0){
-						holder.deletePrompt.setWidth((int)t_delta);
+						if(t_delta > ItemHolder.MAX_DELETE_PROMPT_WIDTH){
+							t_delta = ItemHolder.MAX_DELETE_PROMPT_WIDTH;
+						}
+						
+						m_captureItem.deletePrompt.getLayoutParams().width = (int)t_delta;
+						m_captureItem.deletePrompt.requestLayout();
+					
 					}else{
-						holder.readPrompt.setWidth((int)(-t_delta));
+						
+						t_delta = -t_delta;
+						
+						if(t_delta > ItemHolder.MAX_READ_PROMPT_WIDTH){
+							t_delta = ItemHolder.MAX_READ_PROMPT_WIDTH;
+						}
+						
+						m_captureItem.readPrompt.getLayoutParams().width = (int)t_delta;
+						m_captureItem.readPrompt.requestLayout();
 					}
 					
 					return true;
@@ -243,7 +266,17 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
 		case MotionEvent.ACTION_UP:
 		case MotionEvent.ACTION_OUTSIDE:
 		case MotionEvent.ACTION_CANCEL:
-			m_touched = false;
+			
+			if(m_touchCapture){
+				m_captureItem.deletePrompt.getLayoutParams().width = 0;
+				m_captureItem.readPrompt.getLayoutParams().width = 0;
+				m_captureItem.background.requestLayout();
+				return true;
+			}
+
+			m_touched 		= false;
+			m_captureItem 	=  null;
+			
 			break;
 		}
 		

@@ -23,8 +23,10 @@
 	    android:text="@string/mail_delete_prompt"
 	    android:background="#E2341D"
 	    android:textColor="#fff"
-	    android:padding="5sp"
-	    android:gravity="center"
+	    android:padding="5dp"
+	    android:singleLine="true"
+	    android:gravity="center|left"
+	    android:ellipsize="none"
 	    android:layout_below="@id/mail_date_spliter"/>
 	
 	<TextView
@@ -34,8 +36,9 @@
 	    android:text="@string/mail_read_prompt"
 	    android:background="#ddd"
 	    android:textColor="#000"
-	    android:padding="5sp"
-	    android:gravity="center"
+	    android:padding="5dp"
+	    android:gravity="center|left"
+	    android:singleLine="true" 
 	    android:layout_alignParentRight="true"
 	    android:layout_below="@id/mail_date_spliter"/>
 	

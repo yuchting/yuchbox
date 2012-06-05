@@ -34,13 +34,12 @@ import java.util.Date;
 import android.database.Cursor;
 import android.gesture.GestureLibraries;
 import android.gesture.GestureLibrary;
+import android.graphics.Rect;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -56,7 +55,6 @@ public class MailListAdapter extends BaseAdapter{
 	private static int	MAIL_GROUP_ITEM_SPLITER_HEIGHT = (YuchDroidApp.sm_displyHeight >= 640)?(YuchDroidApp.sm_displyHeight >= 1280?30:20):10;
 	
 	private static boolean	MAIL_GROUP_ITEM__HEIGHT_ASSIGN = false;
-	
 	
 	private int m_cursorIDIndex;
     private int m_cursorMarkIndex;
@@ -240,6 +238,9 @@ public class MailListAdapter extends BaseAdapter{
 				
 				MAIL_GROUP_ITEM_SPLITER_HEIGHT = (int)t_timeSpliterHeight;
 				MAIL_GROUP_ITEM_HEIGHT = (int)(t_subjectHeight +  t_bodyHeight + MAIL_GROUP_ITEM_SPLITER_HEIGHT);
+				
+				ItemHolder.MAX_DELETE_PROMPT_WIDTH = (int)holder.deletePrompt.getPaint().measureText(holder.deletePrompt.getText().toString()) + 10;
+				ItemHolder.MAX_READ_PROMPT_WIDTH = (int)holder.readPrompt.getPaint().measureText(holder.readPrompt.getText().toString()) + 10;
 			}
 		}
                 
@@ -282,6 +283,10 @@ public class MailListAdapter extends BaseAdapter{
     }
     
     public static class ItemHolder{
+    	
+    	public static int MAX_DELETE_PROMPT_WIDTH = 0;
+    	public static int MAX_READ_PROMPT_WIDTH = 0;
+    	
 		ViewGroup	background;
         ImageView	groupFlag;
         TextView	subject;
