@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Yuchs\'Box</string>
+    <string name="app_name">YuchBox</string>
     <string name="title_debug_info">Debug</string>
-    <string name="title_mail">Yuchs\'Box Mail</string>
+    <string name="title_mail">YuchBox Mail</string>
     
     <string name="debug_info_no_info">Opps! No debug information.</string>
     <string name="debug_info_menu_clear">Clear</string>
@@ -21,13 +21,13 @@
     <string name="login_login_pass_error">User Password is equal or more than 6 numbers or letters</string>
    	<string name="login_dlg_wait_prompt">Logining Account...</string>
    	    
-    <string name="login_title_name">Yuchs\'Box User State</string>    
-    <string name="login_connect_deamon_state">Yuchs\'Box Connection Notification</string>
+    <string name="login_title_name">YuchBox User State</string>    
+    <string name="login_connect_deamon_state">YuchBox Connection Notification</string>
     <string name="login_connect_deamon_state_detail">Can set display state in General Preference</string>
     <string name="login_connect_deamon_state_connect">Connection OK!</string>
     <string name="login_connect_deamon_state_connecting">Connecting...</string>
     <string name="login_connect_deamon_state_disconnect">User Disconnect.</string>
-    <string name="login_connect_deamon_state_disconnect_detail">Please wait for a moment to quit( after a Yuchs\'Box pulse ) and release memory...</string>
+    <string name="login_connect_deamon_state_disconnect_detail">Please wait for a moment to quit( after a YuchBox pulse ) and release memory...</string>
     
     <string name="start_svr_but">Connect</string>
     <string name="stop_svr_but">Disconnect</string>
@@ -52,7 +52,7 @@
                                           
     <!-- yuch logon web site activity -->                                
     <string name="yuch_logon_quit_ask">Are you sure quit to login or signin?</string>
-    <string name="yuch_logon_sign_title">Yuchs\'Box Official Service Login|Signin</string> 
+    <string name="yuch_logon_sign_title">YuchBox Official Service Login|Signin</string> 
     <string name="yuch_logon_menu_refresh">Refresh Site</string>
     <string name="yuch_logon_menu_quit">Quit Sign In</string>
     <string name="yuch_logon_sync_ok_prompt">Sync OK! The information has filled and connected. Can press return key to quit this step. Please visit http://www.yuchs.com/ to get detail.</string>
@@ -94,7 +94,7 @@
     <string name="login_pref_prompt_always_display_state_sum_off">Display state only disconncet in the notifcation bar</string>
          
     <!-- dialog relation -->
-    <string name="dlg_info_title">Yuchs\'Box Prompt:</string>
+    <string name="dlg_info_title">YuchBox Prompt:</string>
     <string name="dlg_info_confirm">I know it</string>
     <string name="dlg_info_copy">Copy To Clipboard</string>
     <string name="dlg_info_yesno_confirm">Yes</string>
@@ -103,15 +103,18 @@
     <!-- mail list view -->
     <string name="no_mail">no mail, please wait refresh...</string>
     <string name="mail_me_address">Me</string>
-    <string name="mail_over_max_length_prompt">--Yuchs\'Box Prompt\nMail content is over the max length</string>
+    <string name="mail_over_max_length_prompt">--YuchBox Prompt\nMail content is over the max length</string>
     <string name="mail_notification_ticker">New Mail Coming!</string>
     <string name="mail_failed_notification_ticker">Send Mail Failed!</string>
     <string name="mail_time_year">-</string>
     <string name="mail_time_month">-</string>
     <string name="mail_time_day"> </string>
+    <string name="mail_delete_prompt">Delete</string>
+    <string name="mail_read_prompt">Read</string>
     <string name="mail_list_compose_new_mail">Compose</string>
     <string name="mail_home_empty_group">Opps, there is not any mail...</string>
     <string name="mail_list_menu_connect_state">State</string>
+    
        
     <!-- mail open view -->
     <string name="mail_open_reply_btn">Reply</string>
@@ -143,7 +146,7 @@
     
     
     <!-- mail compose view -->
-    <string name="mail_compose_title">Yuchs\'Box Mail Compose</string>
+    <string name="mail_compose_title">YuchBox Mail Compose</string>
     <string name="mail_compose_to">To</string>
     <string name="mail_compose_cc">Cc</string>
     <string name="mail_compose_bcc">Bcc</string>
@@ -173,7 +176,7 @@
 	<string name="mail_pref_title">Mail Preference</string>
 	<string name="mail_pref_operation_category">Operation</string>
 	<string name="mail_pref_own_account">Default Account</string>
-	<string name="mail_pref_own_account_sum">The account of sending from which been pushed by Yuchs\'Box server</string>
+	<string name="mail_pref_own_account_sum">The account of sending from which been pushed by YuchBox server</string>
 	<string name="mail_pref_discard_org_mail">Discard Reply Mail</string>
 	<string name="mail_pref_discard_org_mail_sum">Auto-discard original mail text when reply(to save network traffic)</string>
 	<string name="mail_pref_del_remote_mail">Delete Remote Mail</string>

@@ -112,6 +112,8 @@
     <string name="mail_time_year">年</string>
     <string name="mail_time_month">月</string>
     <string name="mail_time_day">日</string>
+    <string name="mail_delete_prompt">删除</string>
+    <string name="mail_read_prompt">已读</string>
     <string name="mail_list_compose_new_mail">新建</string>
     <string name="mail_home_empty_group">天哪，还没有任何邮件...</string>
     <string name="mail_list_menu_connect_state">状态</string>

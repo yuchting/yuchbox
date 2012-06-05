@@ -32,7 +32,10 @@ import java.util.Calendar;
 import java.util.Date;
 
 import android.database.Cursor;
+import android.gesture.GestureLibraries;
+import android.gesture.GestureLibrary;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -77,6 +80,8 @@ public class MailListAdapter extends BaseAdapter{
 	private int m_currMonth;
 	private int m_currDay;
 	
+	private GestureLibrary m_gesLibrary;
+	
 	public MailListAdapter(HomeActivity _ctx){
 		m_context		= _ctx;
 		m_inflater		= LayoutInflater.from(m_context);
@@ -107,6 +112,10 @@ public class MailListAdapter extends BaseAdapter{
 		m_currMonth = sm_calendar.get(Calendar.MONTH);
 		m_currDay	= sm_calendar.get(Calendar.DAY_OF_MONTH);
 		
+		m_gesLibrary = GestureLibraries.fromRawResource(_ctx, R.raw.gestures);
+		if(!m_gesLibrary.load()){
+			m_gesLibrary = null;
+		}
 	}
 	
 
@@ -211,8 +220,11 @@ public class MailListAdapter extends BaseAdapter{
         holder.mailAddr		= (TextView)convertView.findViewById(R.id.mail_from_to);
         holder.latestTime	= (TextView)convertView.findViewById(R.id.mail_time);
         holder.mailDateSpliter	= (TextView)convertView.findViewById(R.id.mail_date_spliter);
+        holder.deletePrompt = (TextView)convertView.findViewById(R.id.mail_delete_prompt);
+        holder.readPrompt = (TextView)convertView.findViewById(R.id.mail_read_prompt);
         
         convertView.setTag(holder);
+        convertView.setOnTouchListener(m_context);
         
         // assign the item height
         //
@@ -233,6 +245,8 @@ public class MailListAdapter extends BaseAdapter{
                 
         return convertView;
     }
+    
+    
     
     public static String getShortAddrList(fetchMail.Address[] _list){
     	
@@ -269,13 +283,15 @@ public class MailListAdapter extends BaseAdapter{
     
     public static class ItemHolder{
 		ViewGroup	background;
-        CheckBox	markBut;
         ImageView	groupFlag;
         TextView	subject;
         TextView	body;
         TextView	mailAddr;
         TextView	latestTime;
         TextView	mailDateSpliter;
+        
+        TextView	deletePrompt;
+        TextView	readPrompt;
         
         long		preGroupId = -1;
         long		groupId;
@@ -379,5 +395,6 @@ public class MailListAdapter extends BaseAdapter{
     	}
     	return t_id;
 	}
+
 }
 

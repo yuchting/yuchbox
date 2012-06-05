@@ -41,7 +41,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 public class YuchLogonActivity extends Activity {
 
@@ -64,7 +63,7 @@ public class YuchLogonActivity extends Activity {
 	    	if(m_mainApp.m_config.m_host == null || m_mainApp.m_config.m_host.length() == 0){
 	    		finish();
 	    	}else{
-	    		Toast.makeText(YuchLogonActivity.this,getString(R.string.yuch_logon_sync_ok_prompt), Toast.LENGTH_LONG).show();
+	    		GlobalDialog.showInfo(getString(R.string.yuch_logon_sync_ok_prompt), YuchLogonActivity.this);
 	    	}
 	    }
 	    
@@ -74,7 +73,9 @@ public class YuchLogonActivity extends Activity {
 	}
 		
 	//final static String LOAD_WEB_URL = "http://172.16.8.228:8888/Android.html";
-	final static String LOAD_WEB_URL = "http://www.yuchs.com/Android.html";
+	final static String LOAD_WEB_URL = (ConnectDeamon.GetClientLanguage() == 2) ? 
+											"http://www.yuchs.com/Android_en.html" : 
+											"http://www.yuchs.com/Android.html";
 	
 	WebView			m_mainWeb;
 	
@@ -99,15 +100,14 @@ public class YuchLogonActivity extends Activity {
         m_mainWeb = (WebView)findViewById(R.id.yuch_logon_web);
         m_mainWeb.getSettings().setJavaScriptEnabled(true);
         
-        m_mainWeb.loadUrl(LOAD_WEB_URL);
+        m_mainWeb.loadUrl(LOAD_WEB_URL);        
 
         m_mainWeb.setWebChromeClient(new WebChromeClient(){
         	public void onProgressChanged(WebView view, int progress){
         		m_loadProgress.setProgress(progress);
         		if(progress == 100){
         			m_loadProgress.setVisibility(View.GONE);
-        		}        		
-        		
+        		}
         	}
         });
         
@@ -131,7 +131,7 @@ public class YuchLogonActivity extends Activity {
 			}
 		},null);
     }
-    
+        
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // Check if the key event was the BACK key and if there's history

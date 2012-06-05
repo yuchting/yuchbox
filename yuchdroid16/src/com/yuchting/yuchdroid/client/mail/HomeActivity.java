@@ -33,10 +33,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.gesture.GestureLibrary;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.ListView;
@@ -44,9 +46,10 @@ import android.widget.ListView;
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
 import com.yuchting.yuchdroid.client.Yuchdroid16Activity;
+import com.yuchting.yuchdroid.client.mail.MailListAdapter.ItemHolder;
 
 
-public class HomeActivity extends ListActivity{
+public class HomeActivity extends ListActivity implements View.OnTouchListener{
 			
 	public static final int	MAX_GROUP_FATCH_NUM		= 35;
 
@@ -129,6 +132,8 @@ public class HomeActivity extends ListActivity{
         registerReceiver(m_recvMailRecv, new IntentFilter(YuchDroidApp.FILTER_RECV_MAIL));
         registerReceiver(m_markReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
         registerReceiver(m_sendMailRecv, new IntentFilter(YuchDroidApp.FILTER_MAIL_GROUP_FLAG));
+        
+        getListView().setOnTouchListener(this);
     }
 	
 	public void onResume(){
@@ -183,6 +188,67 @@ public class HomeActivity extends ListActivity{
 			startActivity(in);
 		}
     }
+	
+	//! touch screen x
+    float m_touch_x 		= 0;
+    
+    //! is touch state
+    boolean m_touched			= false;
+    
+    //! mail item touch capture
+    boolean m_touchCapture 	= false;
+    
+	@Override
+	public boolean onTouch(View v, MotionEvent event) {
+		
+		switch(event.getAction()){
+		case MotionEvent.ACTION_DOWN:
+			
+			if(!(v instanceof ListView)){
+				m_touch_x 		= event.getX();
+				m_touched 		= true;
+				m_touchCapture	= false;
+			}
+			break;
+		case MotionEvent.ACTION_MOVE:
+			
+			if(m_touched && v.getTag() != null){
+
+				float t_curr_x = event.getX();
+				float t_delta = t_curr_x - m_touch_x;
+				
+				if(!m_touchCapture){
+					
+					if(t_delta / event.getEventTime() > 20.0f){
+						m_touchCapture = true;
+						return true;
+					}
+					
+				}else{
+					ItemHolder holder = (ItemHolder)v.getTag();
+					
+					// capture view state
+					if(t_delta > 0){
+						holder.deletePrompt.setWidth((int)t_delta);
+					}else{
+						holder.readPrompt.setWidth((int)(-t_delta));
+					}
+					
+					return true;
+				}
+			}			
+			
+			break;
+			
+		case MotionEvent.ACTION_UP:
+		case MotionEvent.ACTION_OUTSIDE:
+		case MotionEvent.ACTION_CANCEL:
+			m_touched = false;
+			break;
+		}
+		
+		return false;
+	}
 		
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {

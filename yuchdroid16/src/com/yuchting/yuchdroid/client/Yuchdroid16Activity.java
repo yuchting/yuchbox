@@ -34,18 +34,16 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.DialogInterface.OnCancelListener;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -67,12 +65,10 @@ public class Yuchdroid16Activity extends Activity {
 	public final static String LOGON_SYNC_OK_PORT = LOGON_SYNC_OK + "_port";
 	public final static String LOGON_SYNC_OK_PASS = LOGON_SYNC_OK + "_pass";
 	
-	
 	/**
 	 * show panel state
 	 */
 	private final static int PANEL_INIT 			= 0;
-	private final static int PANEL_ACCOUNT 		= 1;
 	private final static int PANEL_HOST 			= 2;
 	
 	/**
@@ -93,15 +89,9 @@ public class Yuchdroid16Activity extends Activity {
 	ConfigInit m_config;
 	
 	ViewGroup	m_selectHostPanel	= null;
-	ViewGroup	m_loginAccPanel		= null;
 	ViewGroup	m_hostInfoPanel		= null;
 	
 	int			m_currShowPanel		= PANEL_INIT;
-		
-	EditText	m_login_account = null;
-	EditText	m_login_pass = null;
-	
-	LoginThread	m_loginThread		= null;
 	
 	
     BroadcastReceiver	m_intentRecv = new BroadcastReceiver(){
@@ -140,6 +130,8 @@ public class Yuchdroid16Activity extends Activity {
 					ConnectDeamon.Disconnect();
 				}
 				
+				showPanel(PANEL_HOST);
+				
 				m_host.setText(t_host);
 				m_port.setText(t_portStr);
 				m_userPass.setText(t_pass);
@@ -177,7 +169,6 @@ public class Yuchdroid16Activity extends Activity {
     	// every sub-panel
     	//
     	m_selectHostPanel 	= (ViewGroup) findViewById(R.id.login_init_panel);
-    	m_loginAccPanel 	= (ViewGroup) findViewById(R.id.login_account_panel);
     	m_hostInfoPanel		= (ViewGroup) findViewById(R.id.login_host_panel);
     	
     	// host select panel
@@ -187,7 +178,7 @@ public class Yuchdroid16Activity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				showPanel(PANEL_ACCOUNT);
+				startLogonActivity();
 			}
 		});
     	
@@ -199,30 +190,6 @@ public class Yuchdroid16Activity extends Activity {
 				showPanel(PANEL_HOST);
 			}
 		});
-    	
-    	// login panel
-    	//
-    	m_login_account = (EditText)findViewById(R.id.login_account);
-    	m_login_pass	= (EditText)findViewById(R.id.login_pass);
-    	
-    	t_btn = (Button) findViewById(R.id.login_login_btn);
-    	t_btn.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				loginAccount();
-			}
-		});
-    	
-    	t_btn = (Button) findViewById(R.id.login_register_btn);
-    	t_btn.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				startLogonActivity();
-			}
-		});
-    	
     	
     	// load the host 
     	//
@@ -239,11 +206,7 @@ public class Yuchdroid16Activity extends Activity {
         m_host = (EditText)findViewById(R.id.login_host);
         m_port = (EditText)findViewById(R.id.login_port);
         m_userPass = (EditText)findViewById(R.id.login_user_pass);
-        
-        m_host.setText(m_config.m_host);
-        m_port.setText(m_config.m_port == 0?"":Integer.toString(m_config.m_port));
-        m_userPass.setText(m_config.m_userPass); 
-                
+                        
         setConnectState(m_mainApp.m_connectState); 
     }
     
@@ -253,10 +216,17 @@ public class Yuchdroid16Activity extends Activity {
      */
     private void showPanel(int _panelId){
     	m_selectHostPanel.setVisibility(_panelId == PANEL_INIT?View.VISIBLE:View.GONE);
-		m_loginAccPanel.setVisibility(_panelId == PANEL_ACCOUNT?View.VISIBLE:View.GONE);
 		m_hostInfoPanel.setVisibility(_panelId == PANEL_HOST?View.VISIBLE:View.GONE);
 		
 		m_currShowPanel = _panelId;
+		
+		switch(_panelId){
+		case PANEL_HOST:
+			m_host.setText(m_config.m_host);
+	        m_port.setText(m_config.m_port == 0?"":Integer.toString(m_config.m_port));
+	        m_userPass.setText(m_config.m_userPass); 
+			break;
+		}		
     }
         
     private void clickConnectBtn(){
@@ -292,27 +262,6 @@ public class Yuchdroid16Activity extends Activity {
         		ConnectDeamon.Disconnect();                		
         	}
         }
-    }
-    
-    public void loginAccount(){
-    	String t_account = m_login_account.getText().toString();
-    	if(!YuchDroidApp.isValidEmail(t_account)){
-    		Toast.makeText(this, R.string.login_login_account_error, Toast.LENGTH_SHORT).show();
-    		return;
-    	}
-    	
-    	String t_pass = m_login_pass.getText().toString();
-    	if(!YuchDroidApp.isValidOfficialUserPass(t_pass)){
-    		Toast.makeText(this, R.string.login_login_pass_error, Toast.LENGTH_SHORT).show();
-    		return;
-    	}
-    	
-    	m_config.m_account = t_account;
-    	m_config.m_userPass = t_pass;
-    	
-    	m_config.WriteReadIni(false);
-    	
-    	m_loginThread = new LoginThread(t_account,t_pass);    	
     }
     
     private void startLogonActivity(){
@@ -447,147 +396,6 @@ public class Yuchdroid16Activity extends Activity {
         unregisterReceiver(m_syncOKRecv);
     }
 
-    /**
-     * create the dialog function override
-     */
-    protected Dialog onCreateDialog(int id) {
-    	
-    	Dialog t_dlg = null;
-    	switch(id){
-    	case DLG_WAIT:   		
-			
-			LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
-			View layout = inflater.inflate(R.layout.dlg_wait,null);
-
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setView(layout);
-			t_dlg = builder.create();
-			
-			t_dlg.setOnCancelListener(new OnCancelListener() {
-				
-				@Override
-				public void onCancel(DialogInterface dialog) {
-					synchronized (Yuchdroid16Activity.this) {
-						m_loginThread = null;
-					}					
-				}
-			});
-			
-    		break;
-    	}
-    	
-    	return t_dlg;
-    }
-    
-
-    /**
-     * load
-     * @author yuch
-     *
-     */
-	private class LoginThread extends Thread{
-		
-		byte[] m_postData;
-		
-		public LoginThread(String _acc,String _pass){
-			
-			String t_str = ("acc=" + _acc + "&" + "pass=" + _pass);
-			try{
-				m_postData = t_str.getBytes("UTF-8");
-			}catch(Exception e){
-				m_postData = t_str.getBytes();
-			}
-			
-			showDialog(DLG_WAIT);			
-			start();
-		}
-		
-		public void run(){
-			String MAIN_URL = "http://www.yuchs.com/f/login/";
-			
-			try{
-				
-				URL url = new URL(MAIN_URL);
-				HttpURLConnection con = (HttpURLConnection)url.openConnection();
-				try{
-					con.setConnectTimeout(30000);
-					con.setReadTimeout(30000);
-
-					con.setDoInput(true);	
-					con.setRequestMethod("POST");
-					con.setDoOutput(true);
-					con.setAllowUserInteraction(false);
-						
-					con.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
-					con.setRequestProperty("Content-Length",Integer.toString(m_postData.length));
-					
-					OutputStream t_os = con.getOutputStream();
-					try{
-						t_os.write(m_postData);
-						t_os.flush();
-					}finally{				
-						t_os.close();
-					}
-					
-					BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
-					try{				
-						StringBuffer t_buffer = new StringBuffer();
-						String line;
-						while((line = in.readLine())!= null){
-							t_buffer.append(line).append("\n");
-						}
-						
-						String result = t_buffer.toString();
-						
-						int idx;
-						
-						if(m_loginThread != null){
-
-							if(result.startsWith("<Error>")){
-					    		GlobalDialog.showInfo(result.substring(7), Yuchdroid16Activity.this);
-					    	}else if((idx = result.indexOf("|")) != -1){
-					    		
-					    		m_config.m_host			= result.substring(0,idx);
-					    		m_config.m_port 		= Integer.parseInt(result.substring(idx + 1));
-					    		
-					    		succ();
-					    		
-					    	}else{
-					    		GlobalDialog.showInfo("Unknow Error: "+result,Yuchdroid16Activity.this); 
-					    	}
-						}
-						
-					}finally{
-						in.close();
-					}
-				}finally{
-					con.disconnect();
-				}
-				
-			}catch(Exception e){
-				m_mainApp.setErrorString("LTR:", e);				
-				GlobalDialog.showInfo("Error: " + e.getMessage(),Yuchdroid16Activity.this); 
-			}finally{
-				synchronized (Yuchdroid16Activity.this) {
-					m_loginThread = null;
-				}
-				
-				try{
-					dismissDialog(DLG_WAIT);
-				}catch(Exception e){}
-			}
-		}
-		
-		private void succ(){
-			
-			m_host.setText(m_config.m_host);
-			m_port.setText(m_config.m_port);
-			m_userPass.setText(m_config.m_userPass);
-			
-			showPanel(PANEL_HOST);
-			
-			clickConnectBtn();
-		}
-	}
+ 
  
 }

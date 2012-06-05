@@ -15,7 +15,30 @@
 		android:textStyle="bold"
 		android:gravity="center"
 		android:background="#aaa"/>
-		
+	
+	<TextView
+	    android:id="@+id/mail_delete_prompt"
+	    android:layout_width="0dp"
+	    android:layout_height="fill_parent"
+	    android:text="@string/mail_delete_prompt"
+	    android:background="#E2341D"
+	    android:textColor="#fff"
+	    android:padding="5sp"
+	    android:gravity="center"
+	    android:layout_below="@id/mail_date_spliter"/>
+	
+	<TextView
+	    android:id="@+id/mail_read_prompt"
+	    android:layout_width="0dp"
+	    android:layout_height="fill_parent"
+	    android:text="@string/mail_read_prompt"
+	    android:background="#ddd"
+	    android:textColor="#000"
+	    android:padding="5sp"
+	    android:gravity="center"
+	    android:layout_alignParentRight="true"
+	    android:layout_below="@id/mail_date_spliter"/>
+	
 	<ImageView
 		android:id="@+id/mail_group_flag"
 		android:layout_width="wrap_content"
@@ -23,6 +46,7 @@
 		android:src="@drawable/mail_list_flag_recv"
 		android:layout_marginLeft="2sp"
 		android:layout_marginTop="3sp"
+		android:layout_toRightOf="@id/mail_delete_prompt"
 		android:layout_below="@id/mail_date_spliter"/>    
     
 	<TextView
@@ -50,11 +74,26 @@
         android:layout_marginTop="3sp"
         android:textColor="#888"
         android:layout_toRightOf="@id/mail_subject"
+        android:layout_toLeftOf="@id/mail_read_prompt"
         android:layout_below="@id/mail_date_spliter"
         android:singleLine="true"
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:text="mail body "/>
+    
+    <TextView  
+		android:id="@+id/mail_time"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:maxWidth="100sp"
+		android:layout_alignParentBottom="true"
+		android:layout_marginBottom="5sp"
+		android:paddingRight="5sp"	
+		android:textSize="12sp"
+		android:textColor="#000"
+		android:singleLine="true"
+		android:text="mail time mail time"
+		android:layout_toLeftOf="@id/mail_read_prompt"/>
         	
    	<TextView  
 		android:id="@+id/mail_from_to"
@@ -67,20 +106,7 @@
 		android:textSize="14sp"
 		android:textColor="#000"
 		android:singleLine="true"
-		android:text="mail address list mail address list mail address list"/>
-		
-    <TextView  
-		android:id="@+id/mail_time"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:maxWidth="100sp"
-		android:layout_alignParentBottom="true"
-		android:layout_alignParentRight="true"
-		android:layout_marginBottom="5sp"
-		android:paddingRight="5sp"	
-		android:textSize="12sp"
-		android:textColor="#000"
-		android:singleLine="true"
-		android:text="mail time mail time"/>
+		android:text="mail address list mail address list mail address list"
+		android:layout_toLeftOf="@id/mail_time" />    
 
 </RelativeLayout>
