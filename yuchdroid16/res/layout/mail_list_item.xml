@@ -17,19 +17,6 @@
 		android:background="#aaa"/>
 	
 	<TextView
-	    android:id="@+id/mail_delete_prompt"
-	    android:layout_width="0dp"
-	    android:layout_height="fill_parent"
-	    android:text="@string/mail_delete_prompt"
-	    android:background="#E2341D"
-	    android:textColor="#fff"
-	    android:padding="5dp"
-	    android:singleLine="true"
-	    android:gravity="center|left"
-	    android:ellipsize="none"
-	    android:layout_below="@id/mail_date_spliter"/>
-	
-	<TextView
 	    android:id="@+id/mail_read_prompt"
 	    android:layout_width="0dp"
 	    android:layout_height="fill_parent"
@@ -37,8 +24,21 @@
 	    android:background="#ddd"
 	    android:textColor="#000"
 	    android:padding="5dp"
+	    android:singleLine="true"
 	    android:gravity="center|left"
-	    android:singleLine="true" 
+	    android:ellipsize="none"
+	    android:layout_below="@id/mail_date_spliter"/>
+	
+	<TextView
+	    android:id="@+id/mail_delete_prompt"
+	    android:layout_width="0dp"
+	    android:layout_height="fill_parent"
+	    android:text="@string/mail_delete_prompt"
+	    android:background="#E2341D"
+	    android:textColor="#fff"
+	    android:padding="5dp"
+	    android:gravity="center|left"
+	    android:singleLine="true"
 	    android:layout_alignParentRight="true"
 	    android:layout_below="@id/mail_date_spliter"/>
 	
@@ -49,7 +49,7 @@
 		android:src="@drawable/mail_list_flag_recv"
 		android:layout_marginLeft="2sp"
 		android:layout_marginTop="3sp"
-		android:layout_toRightOf="@id/mail_delete_prompt"
+		android:layout_toRightOf="@id/mail_read_prompt"
 		android:layout_below="@id/mail_date_spliter"/>    
     
 	<TextView
@@ -96,7 +96,7 @@
 		android:textColor="#000"
 		android:singleLine="true"
 		android:text="mail time mail time"
-		android:layout_toLeftOf="@id/mail_read_prompt"/>
+		android:layout_toLeftOf="@id/mail_delete_prompt"/>
         	
    	<TextView  
 		android:id="@+id/mail_from_to"

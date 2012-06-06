@@ -186,6 +186,9 @@
 	<string name="mail_pref_display_plain_text_when_html">Display Plain Text</string>
 	<string name="mail_pref_display_plain_text_when_html_sumOn">Priority display plain text, load HTML part(image) later</string>
 	<string name="mail_pref_display_plain_text_when_html_sumOff">Auto display HTML part priority, does not display plain text</string>
+	<string name="mail_pref_mail_force_delete_when_slide">Delete Mail Without Prompt</string>
+	<string name="mail_pref_mail_force_delete_when_slide_sumOn">Delete mail without prompt.</string>
+	<string name="mail_pref_mail_force_delete_when_slide_sumOff">Delete mail with prompt to ask</string>	
 	<string name="mail_pref_prompt_category">Notification</string>
 	<string name="mail_pref_vibrate">Vibreate</string>
 	<string name="mail_pref_vibrate_sum">Vibreate when new mail comes or send failed.</string>

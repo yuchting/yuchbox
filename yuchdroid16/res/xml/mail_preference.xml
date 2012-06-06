@@ -33,6 +33,11 @@
 			android:summaryOn="@string/mail_pref_display_plain_text_when_html_sumOn"
 			android:summaryOff="@string/mail_pref_display_plain_text_when_html_sumOff"/>
 		
+		<CheckBoxPreference
+			android:key="config_mail_force_delete_when_slide"
+			android:title="@string/mail_pref_mail_force_delete_when_slide"
+			android:summaryOn="@string/mail_pref_mail_force_delete_when_slide_sumOn"
+			android:summaryOff="@string/mail_pref_mail_force_delete_when_slide_sumOff"/>
 	</PreferenceCategory>
 	<PreferenceCategory
 		android:title="@string/mail_pref_prompt_category">

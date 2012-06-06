@@ -591,45 +591,52 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		}else if(v == m_deleteBtn){
 			if(m_currGroupIdx != -1){
 
-				GlobalDialog.showYesNoDialog(getString(R.string.mail_open_delete_prompt), this, 
-				new GlobalDialog.YesNoListener() {
-					
-					@Override
-					public void click() {
-
-						if(m_mainApp.m_config.m_delRemoteMail){
-							// send deleting messge to server
-							//
-							StringBuffer t_hashList = new StringBuffer();
-							StringBuffer t_messageList = new StringBuffer();
-							for(Envelope en:m_currMailList){
-								if(!en.m_mail.isOwnSendMail()){
-									t_hashList.append(en.m_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
-									t_messageList.append(en.m_mail.getMessageID()).append(fetchMail.fsm_vectStringSpliter);
-								}
-							}
-							
-							// send broadcast to ConnectDeamon
-							//
-							Intent t_intent = new Intent(YuchDroidApp.FILTER_DELETE_MAIL);
-							t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_GROUPID,m_currGroupIdx);
-				        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAIL_HASH,t_hashList.toString());
-				        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_messageList.toString());			        	
-				        	
-				    		sendBroadcast(t_intent);
+				if(m_mainApp.m_config.m_forceDeleteMail){
+					deleteMail();
+				}else{
+					GlobalDialog.showYesNoDialog(getString(R.string.mail_open_delete_prompt), this, 
+					new GlobalDialog.YesNoListener() {
+						
+						@Override
+						public void click() {
+							deleteMail();				
 						}
-						
-						m_mainApp.m_dba.deleteGroup(m_currGroupIdx);
-						
-						Intent in = new Intent(YuchDroidApp.FILTER_MAIL_GROUP_FLAG);
-						sendBroadcast(in);
-						
-						finish();
-													
-					}
-				},null);
+					},null);
+				}				
 			}
 		}
+	}
+	
+	private void deleteMail(){
+		
+		if(m_mainApp.m_config.m_delRemoteMail){
+			// send deleting messge to server
+			//
+			StringBuffer t_hashList = new StringBuffer();
+			StringBuffer t_messageList = new StringBuffer();
+			for(Envelope en:m_currMailList){
+				if(!en.m_mail.isOwnSendMail()){
+					t_hashList.append(en.m_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
+					t_messageList.append(en.m_mail.getMessageID()).append(fetchMail.fsm_vectStringSpliter);
+				}
+			}
+			
+			// send broadcast to ConnectDeamon
+			//
+			Intent t_intent = new Intent(YuchDroidApp.FILTER_DELETE_MAIL);
+			t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_GROUPID,m_currGroupIdx);
+        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAIL_HASH,t_hashList.toString());
+        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_messageList.toString());			        	
+        	
+    		sendBroadcast(t_intent);
+		}
+		
+		m_mainApp.m_dba.deleteGroup(m_currGroupIdx);
+		
+		Intent in = new Intent(YuchDroidApp.FILTER_MAIL_GROUP_FLAG);
+		sendBroadcast(in);
+		
+		finish();
 	}
 	
 	private void startReplyForwardMail(int _referenceStyle){

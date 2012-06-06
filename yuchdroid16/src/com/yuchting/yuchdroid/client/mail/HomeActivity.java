@@ -27,6 +27,10 @@
  */
 package com.yuchting.yuchdroid.client.mail;
 
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicReference;
+
 import android.app.ListActivity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -34,18 +38,22 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.AbsListView;
 import android.widget.ListView;
 
+import com.yuchting.yuchdroid.client.GlobalDialog;
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
 import com.yuchting.yuchdroid.client.Yuchdroid16Activity;
 import com.yuchting.yuchdroid.client.mail.MailListAdapter.ItemHolder;
+import com.yuchting.yuchdroid.client.mail.MailOpenActivity.Envelope;
 
 
 public class HomeActivity extends ListActivity implements View.OnTouchListener{
@@ -57,7 +65,7 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
 		
 	private YuchDroidApp	m_mainApp;
 	private MailListAdapter m_mailListAd;
-			
+				
 	BroadcastReceiver m_recvMailRecv = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -140,6 +148,7 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
 		
 		m_mainApp.StopMailNotification();
 		m_mainApp.stopMailFailedNotification();
+		
 	}
 		
 	public void onDestroy(){
@@ -147,6 +156,7 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
 		
 		if(m_groupCursor != null){
 			m_groupCursor.close();
+			m_groupCursor = null;
 		}
 				
 		unregisterReceiver(m_recvMailRecv);
@@ -188,8 +198,11 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
 		}
     }
 	
-	//! touch screen x
+	//! touch screen down event x
     float m_touch_x 		= 0;
+    
+    //! touch screen down event y
+    float m_touch_y			= 0;
     
     //! is touch state
     boolean m_touched			= false;
@@ -199,6 +212,11 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
     
     MailListAdapter.ItemHolder	m_captureItem	= null;
     
+    //! delete group id for bufferring
+    long	m_deleteGroupId		= 0;
+    
+    AccelerateDecelerateInterpolator m_interpolator	= new AccelerateDecelerateInterpolator();
+    
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		
@@ -207,6 +225,7 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
 			
 			if(!(v instanceof ListView)){
 				m_touch_x 		= event.getX();
+				m_touch_y		= event.getY();
 				m_touched 		= true;
 				m_touchCapture	= false;
 				
@@ -219,41 +238,46 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
 			if(m_touched && m_captureItem != null){
 				
 				float t_curr_x = event.getX();
-				float t_delta = t_curr_x - m_touch_x;
+				float t_curr_y = event.getY();
+				
+				float t_delta_x = t_curr_x - m_touch_x;
 				
 				if(!m_touchCapture){
+										
+					float t_delta_y = t_curr_y - m_touch_y;
 					
-					float t_eventTime = event.getEventTime() - event.getDownTime();
-					
-					if(t_eventTime == 0){
+					if(Math.abs(t_delta_x) < Math.abs(t_delta_y)){
 						break;
 					}
 					
-					if(Math.abs(t_delta) / t_eventTime > 0.5f){
-						m_touchCapture = true;
-						return true;
-					}
+					m_touchCapture = true;
+					return true;				
 					
 				}else{
 					
 					// capture view state
-					if(t_delta > 0){
-						if(t_delta > ItemHolder.MAX_DELETE_PROMPT_WIDTH){
-							t_delta = ItemHolder.MAX_DELETE_PROMPT_WIDTH;
+					if(t_delta_x < 0){
+						
+						t_delta_x = -t_delta_x;
+						
+						if(t_delta_x > ItemHolder.MAX_DELETE_PROMPT_WIDTH){
+							t_delta_x = ItemHolder.MAX_DELETE_PROMPT_WIDTH;
+						}else{
+							t_delta_x = m_interpolator.getInterpolation(t_delta_x / ItemHolder.MAX_DELETE_PROMPT_WIDTH) * t_delta_x;
 						}
 						
-						m_captureItem.deletePrompt.getLayoutParams().width = (int)t_delta;
+						m_captureItem.deletePrompt.getLayoutParams().width = (int)t_delta_x;
 						m_captureItem.deletePrompt.requestLayout();
 					
 					}else{
 						
-						t_delta = -t_delta;
-						
-						if(t_delta > ItemHolder.MAX_READ_PROMPT_WIDTH){
-							t_delta = ItemHolder.MAX_READ_PROMPT_WIDTH;
+						if(t_delta_x > ItemHolder.MAX_READ_PROMPT_WIDTH){
+							t_delta_x = ItemHolder.MAX_READ_PROMPT_WIDTH;
+						}else{
+							t_delta_x = m_interpolator.getInterpolation(t_delta_x / ItemHolder.MAX_READ_PROMPT_WIDTH) * t_delta_x;
 						}
 						
-						m_captureItem.readPrompt.getLayoutParams().width = (int)t_delta;
+						m_captureItem.readPrompt.getLayoutParams().width = (int)t_delta_x;
 						m_captureItem.readPrompt.requestLayout();
 					}
 					
@@ -266,23 +290,165 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
 		case MotionEvent.ACTION_UP:
 		case MotionEvent.ACTION_OUTSIDE:
 		case MotionEvent.ACTION_CANCEL:
-			
+									
 			if(m_touchCapture){
+				if(m_captureItem.readPrompt.getLayoutParams().width >= ItemHolder.MAX_READ_PROMPT_WIDTH){
+					// mark the mail group read
+					//
+					markMailGroupRead(m_captureItem.groupId);
+					
+				}else if(m_captureItem.deletePrompt.getLayoutParams().width >= ItemHolder.MAX_DELETE_PROMPT_WIDTH){
+					// delete the mail group
+					//
+					if(m_mainApp.m_config.m_forceDeleteMail){
+						delMailGroup(m_captureItem.groupId);
+					}else{
+						
+						m_deleteGroupId = m_captureItem.groupId;
+						
+						GlobalDialog.showYesNoDialog(getString(R.string.mail_open_delete_prompt), this, 
+						new GlobalDialog.YesNoListener() {
+							
+							@Override
+							public void click() {
+								
+								delMailGroup(m_deleteGroupId);
+							}
+						},null);
+					}
+				}
 				m_captureItem.deletePrompt.getLayoutParams().width = 0;
 				m_captureItem.readPrompt.getLayoutParams().width = 0;
 				m_captureItem.background.requestLayout();
-				return true;
-			}
+			}			
 
 			m_touched 		= false;
 			m_captureItem 	=  null;
+			
+			if(m_touchCapture){
+				m_touchCapture = false;
+				return true;
+			}
 			
 			break;
 		}
 		
 		return false;
 	}
+	
+	/**
+	 * mark mail group read
+	 */
+	private void markMailGroupRead(long _groupId){
 		
+		Cursor t_mailCursor		= m_mainApp.m_dba.fetchGroup(_groupId);
+		
+		String t_mailIndexList	= t_mailCursor.getString(t_mailCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_MAIL_INDEX));
+		String[] t_mailList 	= t_mailIndexList.split(fetchMail.fsm_vectStringSpliter);
+		
+		t_mailCursor.close();
+		
+		// fetch Mail data from the group list
+		//
+		StringBuffer t_markReadMailString_hash = new StringBuffer();
+		StringBuffer t_markReadMailString_ID = new StringBuffer();
+		
+		boolean t_hasUnreadMail = false;
+		boolean t_modifiedFlag;
+		long t_id;
+		
+		for(int i = 0;i < t_mailList.length;i++){
+			
+			t_id = Long.valueOf(t_mailList[i]).longValue();
+			
+			fetchMail t_mail	= m_mainApp.m_dba.fetchMail(t_id);
+			if(t_mail == null){
+				// the mail has been deleted (clear history)
+				//
+				continue;
+			}
+						
+			AtomicReference<Integer> t_flag = new AtomicReference<Integer>(t_mail.getGroupFlag());
+			t_modifiedFlag = MailDbAdapter.modifiedUnreadFlag(t_flag);
+			
+			if(t_modifiedFlag){
+				// mark the mail as read
+	    		//
+				t_hasUnreadMail = true;
+	    		m_mainApp.m_dba.markMailRead(t_id);
+	    		t_markReadMailString_hash.append(t_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
+	    		t_markReadMailString_ID.append(t_mail.getMessageID()).append(fetchMail.fsm_vectStringSpliter);
+			}  	
+		}
+		  	
+		if(t_hasUnreadMail){
+			
+			// mark the unread group mail as read (database)
+			//
+			m_mainApp.m_dba.markGroupRead(_groupId);
+			
+			// send the broadcast to ConnectDeamon and MailListView (MailListActivity)
+			//
+			Intent t_intent = new Intent(YuchDroidApp.FILTER_MARK_MAIL_READ);
+			t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_GROUPID,_groupId);
+			t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_markReadMailString_ID.toString());
+			t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAIL_HASH,t_markReadMailString_hash.toString());
+			
+			sendBroadcast(t_intent);
+		}
+	}
+	
+	private void delMailGroup(long _groupId){
+		
+		Cursor t_mailCursor		= m_mainApp.m_dba.fetchGroup(_groupId);
+		
+		String t_mailIndexList	= t_mailCursor.getString(t_mailCursor.getColumnIndex(MailDbAdapter.GROUP_ATTR_MAIL_INDEX));
+		String[] t_mailList 	= t_mailIndexList.split(fetchMail.fsm_vectStringSpliter);
+		
+		t_mailCursor.close();
+		
+		// fetch Mail data from the group list
+		//
+		StringBuffer t_markReadMailString_hash = new StringBuffer();
+		StringBuffer t_markReadMailString_ID = new StringBuffer();
+		
+		long t_id;
+		
+		for(int i = 0;i < t_mailList.length;i++){
+			
+			t_id = Long.valueOf(t_mailList[i]).longValue();
+			
+			fetchMail t_mail	= m_mainApp.m_dba.fetchMail(t_id);
+			if(t_mail == null){
+				// the mail has been deleted (clear history)
+				//
+				continue;
+			}
+						
+			if(!t_mail.isOwnSendMail()){
+				// is NOT own send Mail
+				//
+	    		t_markReadMailString_hash.append(t_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
+	    		t_markReadMailString_ID.append(t_mail.getMessageID()).append(fetchMail.fsm_vectStringSpliter);
+			}  	
+		}
+		  	
+		m_mainApp.m_dba.deleteGroup(_groupId);
+		refreshGroupCursor();
+		
+		if(t_markReadMailString_hash.length() != 0 && m_mainApp.m_config.m_delRemoteMail){
+			
+			// send broadcast to ConnectDeamon
+			//
+			Intent t_intent = new Intent(YuchDroidApp.FILTER_DELETE_MAIL);
+			t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_GROUPID,_groupId);
+        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAIL_HASH,t_markReadMailString_hash.toString());
+        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_markReadMailString_ID.toString());			        	
+        	
+    		sendBroadcast(t_intent);	
+		}
+	}
+			
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -312,13 +478,4 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
 
         return super.onMenuItemSelected(featureId, item);
 	}
-
-//	public boolean onTrackballEvent(MotionEvent event){
-//	View v = m_mailListView.getFocusedChild();
-//	if(v != null){
-//		v.invalidate();
-//	}		
-//	return super.onTrackballEvent(event);
-//}
-
 }

@@ -238,9 +238,6 @@ public class MailListAdapter extends BaseAdapter{
 				
 				MAIL_GROUP_ITEM_SPLITER_HEIGHT = (int)t_timeSpliterHeight;
 				MAIL_GROUP_ITEM_HEIGHT = (int)(t_subjectHeight +  t_bodyHeight + MAIL_GROUP_ITEM_SPLITER_HEIGHT);
-				
-				ItemHolder.MAX_DELETE_PROMPT_WIDTH = (int)holder.deletePrompt.getPaint().measureText(holder.deletePrompt.getText().toString()) + 10;
-				ItemHolder.MAX_READ_PROMPT_WIDTH = (int)holder.readPrompt.getPaint().measureText(holder.readPrompt.getText().toString()) + 10;
 			}
 		}
                 
@@ -284,8 +281,8 @@ public class MailListAdapter extends BaseAdapter{
     
     public static class ItemHolder{
     	
-    	public static int MAX_DELETE_PROMPT_WIDTH = 0;
-    	public static int MAX_READ_PROMPT_WIDTH = 0;
+    	public final static int MAX_DELETE_PROMPT_WIDTH = YuchDroidApp.sm_displyWidth / 4;
+    	public final static int MAX_READ_PROMPT_WIDTH = YuchDroidApp.sm_displyWidth / 4;
     	
 		ViewGroup	background;
         ImageView	groupFlag;

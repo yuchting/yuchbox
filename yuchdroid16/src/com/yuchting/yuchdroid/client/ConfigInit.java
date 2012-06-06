@@ -87,6 +87,7 @@ public final class ConfigInit {
 	public int	m_recvMailNum			= 0;
 	public boolean m_discardOrgText	= false;
 	public boolean m_delRemoteMail		= false;
+	public boolean m_forceDeleteMail	= false;
 	
 	public boolean m_mailPrompt_vibrate = false;
 	public String	m_mailPrompt_sound = "";
@@ -280,7 +281,7 @@ public final class ConfigInit {
 		}
 	}
 	
-	final static int		fsm_configVersion = 5;
+	final static int		fsm_configVersion = 6;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -418,6 +419,10 @@ public final class ConfigInit {
 		    			if(t_version >= 5){
 		    				m_mailClearBeforeDayIndex		= t_readFile.read();
 		    			}
+		    			
+		    			if(t_version >= 6){
+		    				m_forceDeleteMail				= sendReceive.ReadBoolean(t_readFile);
+		    			}
 		    					    			
 					}finally{
 						t_readFile.close();
@@ -540,6 +545,7 @@ public final class ConfigInit {
     				sendReceive.WriteBoolean(t_writeFile,m_alwaysDisplayState);
     				
     				t_writeFile.write(m_mailClearBeforeDayIndex);
+    				sendReceive.WriteBoolean(t_writeFile, m_forceDeleteMail);
 					
 				}finally{
 					t_writeFile.close();
