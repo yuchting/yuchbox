@@ -27,8 +27,6 @@
  */
 package com.yuchting.yuchdroid.client.mail;
 
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
 
 import android.app.ListActivity;
@@ -38,7 +36,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -53,7 +50,6 @@ import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
 import com.yuchting.yuchdroid.client.Yuchdroid16Activity;
 import com.yuchting.yuchdroid.client.mail.MailListAdapter.ItemHolder;
-import com.yuchting.yuchdroid.client.mail.MailOpenActivity.Envelope;
 
 
 public class HomeActivity extends ListActivity implements View.OnTouchListener{
