@@ -1375,7 +1375,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		m_isPrompted = false;
 		
 		int key = Keypad.key(keycode);
-		if(key == Keypad.KEY_CAMERA_FOCUS){
+		if(key == /*Keypad.KEY_CAMERA_FOCUS*/211){ // the 4.2/4.5 sdk has no Keypad.KEY_CAMERA_FOCUS
 			// camera focus shortcut key clicked
 			// canbe attach image
 			//

@@ -972,7 +972,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				
 		boolean t_notify = !Backlight.isEnabled() 
 							|| !m_mainApp.isForeground() 
-							|| getUiEngine() == null;
+							|| m_chatScreen.getUiEngine() == null;
 		
 		boolean t_reNotify = !Backlight.isEnabled() && m_mainApp.m_imRenotifyPrompt;
 		
