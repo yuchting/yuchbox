@@ -20,7 +20,7 @@
 		pushHistoryMsg="1"
 	/-->
 		
-	<EmailAccount
+	<!--EmailAccount
 		account="yuchting@gmail.com"
 		password=""
 		cryptPassword="396bc581a6277f66ca6d40eb5fd98d38ef8857158d44258d"
@@ -38,7 +38,7 @@
 		
 		appendHTML="1"
 		pushHistoryMsg="1"
-	/>
+	/-->
 	
 	<!--EmailAccount
 		account="yuchberry@gmail.com"
@@ -145,12 +145,12 @@
 		cryptPassword="396bc581a6277f66ca6d40eb5fd98d38ef8857158d44258d"
 	/-->
 	
-	<!--IMAccount
+	<IMAccount
 		type="gtalk"
 		account="yuchdroid@gmail.com"
 		password=""
 		cryptPassword="12eb2c6d63809ffab74725f2b6282bd0ef8857158d44258d"
-	/-->
+	/>
 	
 	
 </Yuchberry>
