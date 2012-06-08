@@ -136,7 +136,7 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
         registerReceiver(m_markReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
         registerReceiver(m_sendMailRecv, new IntentFilter(YuchDroidApp.FILTER_MAIL_GROUP_FLAG));
         
-        getListView().setOnTouchListener(this);
+        //getListView().setOnTouchListener(this);
     }
 	
 	public void onResume(){
@@ -216,118 +216,118 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		
-		switch(event.getAction()){
-		case MotionEvent.ACTION_DOWN:
-			
-			if(!(v instanceof ListView)){
-				m_touch_x 		= event.getX();
-				m_touch_y		= event.getY();
-				m_touched 		= true;
-				m_touchCapture	= false;
-				
-				m_captureItem = (MailListAdapter.ItemHolder)v.getTag();
-			}
-			
-			break;
-		case MotionEvent.ACTION_MOVE:
-			
-			if(m_touched && m_captureItem != null){
-				
-				float t_curr_x = event.getX();
-				float t_curr_y = event.getY();
-				
-				float t_delta_x = t_curr_x - m_touch_x;
-				
-				if(!m_touchCapture){
-										
-					float t_delta_y = t_curr_y - m_touch_y;
-					
-					if(Math.abs(t_delta_x) < Math.abs(t_delta_y)){
-						break;
-					}
-					
-					m_touchCapture = true;
-					return true;				
-					
-				}else{
-					
-					// capture view state
-					if(t_delta_x < 0){
-						
-						t_delta_x = -t_delta_x;
-						
-						if(t_delta_x > ItemHolder.MAX_DELETE_PROMPT_WIDTH){
-							t_delta_x = ItemHolder.MAX_DELETE_PROMPT_WIDTH;
-						}else{
-							t_delta_x = m_interpolator.getInterpolation(t_delta_x / ItemHolder.MAX_DELETE_PROMPT_WIDTH) * t_delta_x;
-						}
-						
-						m_captureItem.deletePrompt.getLayoutParams().width = (int)t_delta_x;
-						m_captureItem.deletePrompt.requestLayout();
-					
-					}else{
-						
-						if(t_delta_x > ItemHolder.MAX_READ_PROMPT_WIDTH){
-							t_delta_x = ItemHolder.MAX_READ_PROMPT_WIDTH;
-						}else{
-							t_delta_x = m_interpolator.getInterpolation(t_delta_x / ItemHolder.MAX_READ_PROMPT_WIDTH) * t_delta_x;
-						}
-						
-						m_captureItem.readPrompt.getLayoutParams().width = (int)t_delta_x;
-						m_captureItem.readPrompt.requestLayout();
-					}
-					
-					return true;
-				}
-			}			
-			
-			break;
-			
-		case MotionEvent.ACTION_UP:
-		case MotionEvent.ACTION_OUTSIDE:
-		case MotionEvent.ACTION_CANCEL:
-									
-			if(m_touchCapture){
-				if(m_captureItem.readPrompt.getLayoutParams().width >= ItemHolder.MAX_READ_PROMPT_WIDTH){
-					// mark the mail group read
-					//
-					markMailGroupRead(m_captureItem.groupId);
-					
-				}else if(m_captureItem.deletePrompt.getLayoutParams().width >= ItemHolder.MAX_DELETE_PROMPT_WIDTH){
-					// delete the mail group
-					//
-					if(m_mainApp.m_config.m_forceDeleteMail){
-						delMailGroup(m_captureItem.groupId);
-					}else{
-						
-						m_deleteGroupId = m_captureItem.groupId;
-						
-						GlobalDialog.showYesNoDialog(getString(R.string.mail_open_delete_prompt), this, 
-						new GlobalDialog.YesNoListener() {
-							
-							@Override
-							public void click() {
-								
-								delMailGroup(m_deleteGroupId);
-							}
-						},null);
-					}
-				}
-				m_captureItem.deletePrompt.getLayoutParams().width = 0;
-				m_captureItem.readPrompt.getLayoutParams().width = 0;
-				m_captureItem.background.requestLayout();
-			}			
-
-			m_touched 		= false;
-			m_captureItem 	=  null;
-			
-			if(m_touchCapture){
-				m_touchCapture = false;
-				return true;
-			}
-			
-			break;
-		}
+//		switch(event.getAction()){
+//		case MotionEvent.ACTION_DOWN:
+//			
+//			if(!(v instanceof ListView)){
+//				m_touch_x 		= event.getX();
+//				m_touch_y		= event.getY();
+//				m_touched 		= true;
+//				m_touchCapture	= false;
+//				
+//				m_captureItem = (MailListAdapter.ItemHolder)v.getTag();
+//			}
+//			
+//			break;
+//		case MotionEvent.ACTION_MOVE:
+//			
+//			if(m_touched && m_captureItem != null){
+//				
+//				float t_curr_x = event.getX();
+//				float t_curr_y = event.getY();
+//				
+//				float t_delta_x = t_curr_x - m_touch_x;
+//				
+//				if(!m_touchCapture){
+//										
+//					float t_delta_y = t_curr_y - m_touch_y;
+//					
+//					if(Math.abs(t_delta_x) < Math.abs(t_delta_y)){
+//						break;
+//					}
+//					
+//					m_touchCapture = true;
+//					return true;				
+//					
+//				}else{
+//					
+//					// capture view state
+//					if(t_delta_x < 0){
+//						
+//						t_delta_x = -t_delta_x;
+//						
+//						if(t_delta_x > ItemHolder.MAX_DELETE_PROMPT_WIDTH){
+//							t_delta_x = ItemHolder.MAX_DELETE_PROMPT_WIDTH;
+//						}else{
+//							t_delta_x = m_interpolator.getInterpolation(t_delta_x / ItemHolder.MAX_DELETE_PROMPT_WIDTH) * t_delta_x;
+//						}
+//						
+//						m_captureItem.deletePrompt.getLayoutParams().width = (int)t_delta_x;
+//						m_captureItem.deletePrompt.requestLayout();
+//					
+//					}else{
+//						
+//						if(t_delta_x > ItemHolder.MAX_READ_PROMPT_WIDTH){
+//							t_delta_x = ItemHolder.MAX_READ_PROMPT_WIDTH;
+//						}else{
+//							t_delta_x = m_interpolator.getInterpolation(t_delta_x / ItemHolder.MAX_READ_PROMPT_WIDTH) * t_delta_x;
+//						}
+//						
+//						m_captureItem.readPrompt.getLayoutParams().width = (int)t_delta_x;
+//						m_captureItem.readPrompt.requestLayout();
+//					}
+//					
+//					return true;
+//				}
+//			}			
+//			
+//			break;
+//			
+//		case MotionEvent.ACTION_UP:
+//		case MotionEvent.ACTION_OUTSIDE:
+//		case MotionEvent.ACTION_CANCEL:
+//									
+//			if(m_touchCapture){
+//				if(m_captureItem.readPrompt.getLayoutParams().width >= ItemHolder.MAX_READ_PROMPT_WIDTH){
+//					// mark the mail group read
+//					//
+//					markMailGroupRead(m_captureItem.groupId);
+//					
+//				}else if(m_captureItem.deletePrompt.getLayoutParams().width >= ItemHolder.MAX_DELETE_PROMPT_WIDTH){
+//					// delete the mail group
+//					//
+//					if(m_mainApp.m_config.m_forceDeleteMail){
+//						delMailGroup(m_captureItem.groupId);
+//					}else{
+//						
+//						m_deleteGroupId = m_captureItem.groupId;
+//						
+//						GlobalDialog.showYesNoDialog(getString(R.string.mail_open_delete_prompt), this, 
+//						new GlobalDialog.YesNoListener() {
+//							
+//							@Override
+//							public void click() {
+//								
+//								delMailGroup(m_deleteGroupId);
+//							}
+//						},null);
+//					}
+//				}
+//				m_captureItem.deletePrompt.getLayoutParams().width = 0;
+//				m_captureItem.readPrompt.getLayoutParams().width = 0;
+//				m_captureItem.background.requestLayout();
+//			}			
+//
+//			m_touched 		= false;
+//			m_captureItem 	=  null;
+//			
+//			if(m_touchCapture){
+//				m_touchCapture = false;
+//				return true;
+//			}
+//			
+//			break;
+//		}
 		
 		return false;
 	}
