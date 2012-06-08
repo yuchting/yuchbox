@@ -32,18 +32,13 @@ import java.io.InputStream;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
-import local.yblocalResource;
-
 import net.rim.device.api.io.file.FileSystemJournal;
 import net.rim.device.api.io.file.FileSystemJournalEntry;
 import net.rim.device.api.io.file.FileSystemJournalListener;
 import net.rim.device.api.math.Fixed32;
-import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.system.JPEGEncodedImage;
-import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.XYPoint;
-import net.rim.device.api.ui.component.Dialog;
 
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
@@ -144,7 +139,7 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 //								
 //							}else{
 								t_content = t_buffer;
-//							}
+							//}
 																
 						}finally{
 							t_origImage = null;
@@ -169,9 +164,17 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 		return null;
 	}
 	
-	
+	/**
+	 * sub-class override to set state wether image can be added 
+	 * @return
+	 */
 	public abstract boolean canAdded();
 	
+	/**
+	 * sub-lcass override to add uploading Pic
+	 * @param _file		filename (full-path)
+	 * @param _type		@see fetchWeibo.IMAGE_TYPE_PNG
+	 */
 	public abstract void onAddUploadingPic(String _file,int _type);
 	
 }

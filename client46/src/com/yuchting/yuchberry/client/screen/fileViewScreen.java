@@ -27,6 +27,8 @@
  */
 package com.yuchting.yuchberry.client.screen;
 
+import java.io.InputStream;
+
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
@@ -43,7 +45,8 @@ public class fileViewScreen extends MainScreen{
 	recvMain	m_mainApp		= null;
 	LabelField	m_pathText		= null;
 	
-	byte[]		m_fileContain	= null;
+	static byte[]	sm_fileContain	= null;
+	static int		sm_fileLength	= 0;
 	
 	public fileViewScreen(String _filename,boolean _readFile) throws Exception{
 		m_viewFileName = _filename;
@@ -55,21 +58,38 @@ public class fileViewScreen extends MainScreen{
 		
 		if(_readFile){
 			FileConnection t_fileRead = (FileConnection)Connector.open(_filename,Connector.READ);
-			if(!t_fileRead.exists()){
+			try{
+
+				if(!t_fileRead.exists()){
+					t_fileRead.close();
+					throw new Exception(_filename + " file is not exist!");
+				}
+				
+				sm_fileLength = (int)t_fileRead.fileSize();
+				
+				if(sm_fileContain == null || sm_fileContain.length < sm_fileLength){					
+					sm_fileContain = new byte[sm_fileLength];
+				}
+				InputStream in = t_fileRead.openInputStream();
+				try{
+					sendReceive.ForceReadByte(in, sm_fileContain, sm_fileLength);	
+				}finally{
+					in.close();
+					in = null;
+				}
+				
+			}finally{
 				t_fileRead.close();
-				throw new Exception(_filename + " file is not exist!");
-			}
-			m_fileContain = new byte[(int)t_fileRead.fileSize()];
-			sendReceive.ForceReadByte(t_fileRead.openInputStream(), m_fileContain, m_fileContain.length);
-			t_fileRead.close();
+				t_fileRead = null;
+			}			
 		}
 
 	}
 	
 	public fileViewScreen(byte[] _buffer) throws Exception{
 		m_viewFileName = "contain";
-		
-		m_fileContain = _buffer;
+		sm_fileContain = _buffer;
+		sm_fileLength = _buffer.length;
 	}
 
 	public boolean onClose(){

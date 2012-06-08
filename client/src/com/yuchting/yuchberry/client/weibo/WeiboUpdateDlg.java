@@ -636,7 +636,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 	protected boolean keyDown(int keycode,int time){
 		
 		int key = Keypad.key(keycode);
-		if(key == Keypad.KEY_CAMERA_FOCUS){
+		if(key == /*Keypad.KEY_CAMERA_FOCUS*/211){
 			// camera focus shortcut key clicked
 			// canbe attach image
 			//

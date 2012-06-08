@@ -1,12 +1,12 @@
 <Properties ModelVersion="1.1.2">
-  <General Title="YuchBerry" Version="1.11.1633" Vendor="Yuchting" Description="Push Personal Mail for your BlackBerry"/>
+  <General Title="YuchBerry" Version="1.12.1833" Vendor="Yuchting" Description="Push Personal Message for your BlackBerry"/>
   <Application Type="BlackBerry Application" MainMIDletName="" MainArgs="" HomeScreenPosition="0" StartupTier="7" IsSystemModule="false" IsAutostartup="true"/>
   <Resources hasTitleResource="true" TitleResourceBundleName="yblocal" TitleResourceBundleRelativePath="src/local/yblocal.rrh" TitleResourceBundleClassName="local.yblocal" TitleResourceBundleKey="App_Title" DescriptionId="APPLICATION_DESC">
     <Icons>
       <Icon CanonicalFileName="res/Main_offline.png" IsFocus="false"/>
     </Icons>
   </Resources>
-  <Compile OutputCompilerMessages="true" ConvertImages="false" CreateWarningForNoExportedRoutine="true" CompressResources="false" AliasList="">
+  <Compile OutputCompilerMessages="true" ConvertImages="false" CreateWarningForNoExportedRoutine="true" CompressResources="false" AliasList="YuchBox_client">
     <PreprocessorDefines/>
   </Compile>
   <Packaging OutputFileName="client" OutputFolder="deliverables" PreBuildStep="" PostBuildStep="" CleanStep="" GenerateALXFile="true">

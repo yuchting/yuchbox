@@ -72,6 +72,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 CheckboxField		m_conDisPrompt 	= null;
 	 ObjectChoiceField	m_pulseInterval	= null;
 	 
+	 CheckboxField		m_hideBackgroundIcon = null;
+	 
 	 
 	 
 	 LabelField			m_uploadDownloadByte	= new LabelField();
@@ -168,6 +170,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 
 		 m_conDisPrompt		= new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_CONNECT_DISCONNECT_PROMPT), m_mainApp.m_connectDisconnectPrompt);
 		 add(m_conDisPrompt);
+		 
+		 m_hideBackgroundIcon = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_HIDE_BG_ICON), m_mainApp.m_hideBackgroundIcon);
+		 add(m_hideBackgroundIcon);
 		 
 		 //@}
 		 
@@ -445,6 +450,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		m_mainApp.m_recvMsgTextLengthIndex = m_recvMsgTextLength.getSelectedIndex();
 		m_mainApp.m_copyMailToSentFolder = m_copyToSentFolder.getChecked();
 		m_mainApp.m_mailUseLocation = m_mailUseLocation.getChecked();
+		m_mainApp.m_hideBackgroundIcon = m_hideBackgroundIcon.getChecked();
 		
 		boolean t_formerClose = m_mainApp.m_closeMailSendModule;
 		m_mainApp.m_closeMailSendModule = m_closeMailSendModule.getChecked();

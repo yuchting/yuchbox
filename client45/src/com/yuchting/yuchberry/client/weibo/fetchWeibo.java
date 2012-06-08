@@ -38,7 +38,7 @@ import com.yuchting.yuchberry.client.sendReceive;
 
 public class fetchWeibo {
 	
-	final static int	VERSION = 3;
+	final static int	VERSION = 4;
 	
 	final public static byte	SINA_WEIBO_STYLE 		= 0;
 	final public static byte	TWITTER_WEIBO_STYLE 	= 1;
@@ -101,8 +101,9 @@ public class fetchWeibo {
 	
 	boolean 	m_hasLocationInfo		= false;
 	GPSInfo		m_gpsInfo = new GPSInfo();
-	
 
+	boolean	m_userFollowing = false;
+	boolean	m_userFollow_me = false;
 		
 	public fetchWeibo(){}
 	
@@ -196,6 +197,12 @@ public class fetchWeibo {
 	public GPSInfo GetGPSInfo(){return m_gpsInfo;}
 	
 	public void EnableGPSInfo(boolean _enable){m_hasLocationInfo = _enable;}
+	
+	public void setUserFollowing(boolean _following){m_userFollowing = _following;}
+	public boolean isUserFollowing(){return m_userFollowing;}
+	
+	public void setUserFollowMe(boolean _following){m_userFollow_me = _following;}
+	public boolean isUserFollowMe(){return m_userFollow_me;}
 		
 	public void OutputWeibo(OutputStream _stream)throws Exception{
 		
@@ -245,6 +252,9 @@ public class fetchWeibo {
 		if(m_hasLocationInfo){
 			m_gpsInfo.OutputData(_stream);
 		}
+		
+		sendReceive.WriteBoolean(_stream,m_userFollowing);
+		sendReceive.WriteBoolean(_stream,m_userFollow_me);
 	}
 	
 	public void InputWeibo(InputStream _stream)throws Exception{
@@ -304,6 +314,10 @@ public class fetchWeibo {
 			}
 		}
 		
+		if(t_version >= 4){
+			m_userFollowing = sendReceive.ReadBoolean(_stream);
+			m_userFollow_me = sendReceive.ReadBoolean(_stream);
+		}		
 	}
 	
 	public String getForwardPrefix(){

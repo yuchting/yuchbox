@@ -306,7 +306,13 @@ public final class WeiboHeadImage {
 			}
 		}
 		
-		_g.drawBitmap(_x,_y,fsm_headImageWidth,fsm_headImageWidth,_image.m_headImage,0,0);
+		if(_image != null){
+			_g.drawBitmap(_x,_y,fsm_headImageWidth,fsm_headImageWidth,_image.m_headImage,0,0);
+		}else{
+			try{
+				_g.drawBitmap(_x,_y,fsm_headImageWidth,fsm_headImageWidth,getDefaultHeadImage(),0,0);
+			}catch(Exception e){}			
+		}		
 		
 		recvMain.sm_weiboUIImage.drawImage(_g,sm_headImageMask, _x, _y);
 		

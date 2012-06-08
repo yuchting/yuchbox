@@ -33,15 +33,15 @@ import java.io.OutputStream;
 import com.yuchting.yuchberry.client.sendReceive;
 
 public class fetchChatRoster {
+
+	public final static int VERSION = 1;
 	
 	public final static int	PRESENCE_AVAIL = 0;
 	public final static int	PRESENCE_AWAY = 1;
 	public final static int	PRESENCE_BUSY = 2;
 	public final static int	PRESENCE_UNAVAIL = 3;
 	public final static int	PRESENCE_FAR_AWAY = 4;
-	
-	
-	
+		
 	int m_style		= fetchChatMsg.STYLE_GTALK;
 	int m_presence	= PRESENCE_AVAIL;
 	int m_headImageHashCode = 0; 
@@ -52,6 +52,8 @@ public class fetchChatRoster {
 	String m_source 	= "";
 	
 	String m_ownAccount = "";
+	
+	String m_group		= "";
 			
 	public fetchChatRoster(){}
 	
@@ -71,6 +73,7 @@ public class fetchChatRoster {
 		m_status				= _roster.m_status;
 		m_source				= _roster.m_source;
 		m_ownAccount 			= _roster.m_ownAccount;
+		m_group					= _roster.m_group;
 	}
 	
 	public String getName(){return m_name;}
@@ -97,6 +100,9 @@ public class fetchChatRoster {
 	public String getOwnAccount(){return m_ownAccount;}
 	public void setOwnAccount(String _own){m_ownAccount = _own;}
 	
+	public String getGroup(){return m_group;}
+	public void setGroup(String _group){m_group = _group;}
+	
 	public void Import(InputStream in)throws Exception{
 		final int version = sendReceive.ReadInt(in);
 		
@@ -109,46 +115,27 @@ public class fetchChatRoster {
 		m_status 			= sendReceive.ReadString(in);
 		m_source 			= sendReceive.ReadString(in);
 		m_ownAccount		= sendReceive.ReadString(in);
+		
+		if(version >= 1){
+			m_group			= sendReceive.ReadString(in);
+		}
 	}
 	
 	public void Outport(OutputStream os)throws Exception{
 		
-		final int version = 0;
-		sendReceive.WriteInt(os,version);
+		sendReceive.WriteInt(os,VERSION);
 		
 		os.write(m_style);
 		os.write(m_presence);
 		
 		sendReceive.WriteInt(os,m_headImageHashCode);
+		sendReceive.WriteString(os,m_name);		
+		sendReceive.WriteString(os,m_account);
+		sendReceive.WriteString(os,m_status);
+		sendReceive.WriteString(os,m_source);		
+		sendReceive.WriteString(os,m_ownAccount);
 		
-		if(m_name != null){
-			sendReceive.WriteString(os,m_name);
-		}else{
-			sendReceive.WriteString(os,"");
-		}
+		sendReceive.WriteString(os,m_group);
 		
-		if(m_account != null){
-			sendReceive.WriteString(os,m_account);
-		}else{
-			sendReceive.WriteString(os,"");
-		}
-		
-		if(m_status != null){
-			sendReceive.WriteString(os,m_status);
-		}else{
-			sendReceive.WriteString(os,"");
-		}
-		
-		if(m_source != null){
-			sendReceive.WriteString(os,m_source);
-		}else{
-			sendReceive.WriteString(os,"");
-		}
-		
-		if(m_ownAccount != null){
-			sendReceive.WriteString(os,m_ownAccount);
-		}else{
-			sendReceive.WriteString(os, m_ownAccount);
-		}
 	}
 }

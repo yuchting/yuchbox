@@ -52,7 +52,7 @@ public class imageViewScreen extends fileViewScreen{
 	
 	private void init(){
 		m_image = new BitmapField();
-		EncodedImage image = EncodedImage.createEncodedImage(m_fileContain, 0, m_fileContain.length);
+		EncodedImage image = EncodedImage.createEncodedImage(sm_fileContain, 0, sm_fileLength);
 		
 		final int scale = Fixed32.div(Fixed32.toFP(image.getWidth()),Fixed32.toFP(Display.getWidth()));
 		

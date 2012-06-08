@@ -29,8 +29,6 @@ package com.yuchting.yuchberry.client.screen;
 
 import net.rim.device.api.ui.component.RichTextField;
 
-import com.yuchting.yuchberry.client.recvMain;
-
 public class textViewScreen extends fileViewScreen{
 
 	RichTextField m_editText	= null;
@@ -43,16 +41,16 @@ public class textViewScreen extends fileViewScreen{
 		
 		byte[] t_tmpContain = null;
 		
-		if(m_fileContain.length > t_maxTextLen){
+		if(sm_fileLength > t_maxTextLen){
 			String t_appendPrompt = new String("\n\n\n remain contain... \n\n\n");
 			
 			t_tmpContain = new byte[t_maxTextLen];
 			
-			System.arraycopy(m_fileContain, 0, t_tmpContain, 0, t_maxTextLen - t_appendPrompt.length());
+			System.arraycopy(sm_fileContain, 0, t_tmpContain, 0, t_maxTextLen - t_appendPrompt.length());
 			System.arraycopy(t_appendPrompt.getBytes(),0,t_tmpContain,t_maxTextLen - t_appendPrompt.length(),t_appendPrompt.length());
 			
 		}else{
-			t_tmpContain = m_fileContain;
+			t_tmpContain = sm_fileContain;
 		}
 		
 		try{

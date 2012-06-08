@@ -49,7 +49,7 @@ public class audioViewScreen extends fileViewScreen{
 			t_type = "audio/basic";
 		}
 				
-		m_player = javax.microedition.media.Manager.createPlayer(new ByteArrayInputStream(m_fileContain),t_type);
+		m_player = javax.microedition.media.Manager.createPlayer(new ByteArrayInputStream(sm_fileContain),t_type);
 		
 		m_player.realize();
 		m_player.prefetch();

@@ -54,8 +54,8 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 	
 	Bitmap				m_headImage = null;
 	
-	final class DescTextField extends BasicEditField{
-		public DescTextField(){
+	final class DescBasicEditField extends BasicEditField{
+		public DescBasicEditField(){
 			super(Field.READONLY);
 		}
 		
@@ -226,7 +226,7 @@ public class WeiboUserInfoMgr extends WeiboMainManager{
 
 	}
 	
-	DescTextField		m_descText = new DescTextField();
+	DescBasicEditField		m_descText = new DescBasicEditField();
 	InfoField			m_infoField = new InfoField();
 	
 	public WeiboUserInfoMgr(recvMain _mainApp,weiboTimeLineScreen _screen){

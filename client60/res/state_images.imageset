@@ -1,12 +1,26 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Imageset Name="state_images" Imagefile="/state_images.png" NativeHorzRes="256" NativeVertRes="256" >
-
-	<Image Name="LongYear" XPos="255" YPos="0" Width="45" Height="160" />
 		
-	<Image Name="state_input_left" XPos="0" YPos="0" Width="16" Height="32" />
-	<Image Name="state_input_mid" XPos="16" YPos="0" Width="16" Height="32" />
-	<Image Name="state_input_right" XPos="32" YPos="0" Width="16" Height="32" />
+	<Image Name="state_input_top_left" XPos="126" YPos="0" Width="10" Height="9" />
+	<Image Name="state_input_top" XPos="136" YPos="0" Width="26" Height="9" />
+	<Image Name="state_input_top_right" XPos="162" YPos="0" Width="10" Height="9" />
+	<Image Name="state_input_left" XPos="126" YPos="9" Width="10" Height="14" />
+	<Image Name="state_input_right" XPos="162" YPos="9" Width="10" Height="14" />
+	<Image Name="state_input_bottom_left" XPos="126" YPos="23" Width="10" Height="9" />
+	<Image Name="state_input_bottom" XPos="136" YPos="23" Width="26" Height="9" />
+	<Image Name="state_input_bottom_right" XPos="162" YPos="23" Width="10" Height="9" />
+	<Image Name="state_input_mid_block" XPos="136" YPos="9" Width="26" Height="14" />	
 	
+	<Image Name="state_input_top_left_focus" XPos="80" YPos="0" Width="10" Height="9" />
+	<Image Name="state_input_top_focus" XPos="90" YPos="0" Width="26" Height="9" />
+	<Image Name="state_input_top_right_focus" XPos="116" YPos="0" Width="10" Height="9" />
+	<Image Name="state_input_left_focus" XPos="80" YPos="9" Width="10" Height="14" />
+	<Image Name="state_input_right_focus" XPos="116" YPos="9" Width="10" Height="14" />
+	<Image Name="state_input_bottom_left_focus" XPos="80" YPos="23" Width="10" Height="9" />
+	<Image Name="state_input_bottom_focus" XPos="90" YPos="23" Width="26" Height="9" />
+	<Image Name="state_input_bottom_right_focus" XPos="116" YPos="23" Width="10" Height="9" />
+	<Image Name="state_input_mid_block_focus" XPos="90" YPos="9" Width="26" Height="14" />
+		
 	<Image Name="state_bg" XPos="48" YPos="0" Width="32" Height="32" />
 	<Image Name="state_logo" XPos="32" YPos="128" Width="220" Height="96" />
 	

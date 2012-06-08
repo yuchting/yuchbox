@@ -48,6 +48,7 @@ import net.rim.blackberry.api.mail.Folder;
 import net.rim.blackberry.api.mail.Message;
 import net.rim.blackberry.api.mail.Multipart;
 import net.rim.blackberry.api.mail.SendListener;
+import net.rim.blackberry.api.mail.ServiceConfiguration;
 import net.rim.blackberry.api.mail.Session;
 import net.rim.blackberry.api.mail.Store;
 import net.rim.blackberry.api.mail.SupportedAttachmentPart;
@@ -60,6 +61,8 @@ import net.rim.blackberry.api.mail.event.MessageListener;
 import net.rim.blackberry.api.mail.event.ViewListener;
 import net.rim.blackberry.api.mail.event.ViewListenerExtended;
 import net.rim.device.api.io.Base64OutputStream;
+import net.rim.device.api.servicebook.ServiceBook;
+import net.rim.device.api.servicebook.ServiceRecord;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.ui.UiApplication;
@@ -80,7 +83,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListenerExtended,
 												IUploadFileScreenCallback{
 		
-	final static int	fsm_clientVer = 17;
+	final static int	fsm_clientVer = 18;
 	 
 	public sendReceive		m_connect = null;
 		
@@ -269,7 +272,6 @@ public class connectDeamon extends Thread implements SendListener,
 							SendingQueueData t_data = (SendingQueueData)m_sendingData.elementAt(i);
 							m_connect.SendBufferToSvr(t_data.msgData, false, false);
 						}
-						
 						m_sendingData.removeAllElements();
 					}
 					
@@ -297,7 +299,65 @@ public class connectDeamon extends Thread implements SendListener,
 		m_sendingQueue.start();
 		start();
 	}
-	 
+	
+	private Folder GetDefaultFolder(Store _store)throws Exception{
+		
+		Folder folder = null; 
+		Folder[] t_folders = _store.list();
+		for(int i = 0;i < t_folders.length;i++){
+			
+			int t_type = t_folders[i].getType();
+			
+			if(t_type == Folder.INBOX){
+				folder = t_folders[i];
+				break;
+			}
+		}
+		
+		if(folder == null ){
+			t_folders = _store.list();
+			for(int i = 0;i < t_folders.length;i++){
+				m_mainApp.SetErrorString( t_folders[i].toString());
+			}
+			folder = _store.getFolder(Folder.INBOX);
+		}
+		
+		if(folder == null){
+			throw new Exception("Can't be retrieve the Folder! check Service Book with CMIME");
+		}
+			
+		
+		return folder;
+	}
+	
+	private Folder GetDefaultOutFolder(Store _store)throws Exception{
+		
+		Folder folder = null; 
+		Folder[] t_folders = _store.list();
+		for(int i = 0;i < t_folders.length;i++){
+		
+			int t_type = t_folders[i].getType();
+			
+			if(t_type == Folder.SENT){
+				folder = t_folders[i];
+				break;
+			}
+		}
+		
+		if(folder == null ){
+			t_folders = _store.list();
+			for(int i = 0;i < t_folders.length;i++){
+				m_mainApp.SetErrorString( t_folders[i].toString());
+			}
+			folder = _store.getFolder(Folder.SENT);
+		}
+		
+		if(folder == null){
+			throw new Exception("Can't be retrieve the Folder! check Service Book with CMIME");
+		}
+		
+		return folder;
+	}
 	 
 	public void BeginListener()throws Exception{
 		
@@ -306,21 +366,46 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 		
 		if(m_listeningMessageFolder == null){
-
-			m_listeningMessageFolder = GetDefaultFolder();
-			m_listeningMessageFolder.addFolderListener(this);
 			
-			m_listeningMessageFolder_out = GetDefaultOutFolder();
-			m_listeningMessageFolder_out.addFolderListener(this	);
+			ServiceBook t_sb = ServiceBook.getSB();
+			ServiceRecord[] t_record = t_sb.findRecordsByCid("CMIME");
+			
+			if(t_record == null || t_record.length == 0){
+				m_mainApp.DialogAlertAndExit("Internal Error! Can't found CMIME!");
+				return;
+			}
+			
+			ServiceConfiguration t_config = null;
+			for(int i = 0 ;i < t_record.length;i++){
+				if(t_record[i].getName().equalsIgnoreCase("email")){
+					t_config = new ServiceConfiguration(t_record[i]);
+					break;
+				}
+			}
+			
+			if(t_config == null){
+				t_config = new ServiceConfiguration(t_record[0]);
+			}
 			
 			// add the send listener
 			//
-			Store store = Session.getDefaultInstance().getStore();
-			store.addSendListener(this);
+			Store t_store = Session.getInstance(t_config).getStore();
+			t_store.addSendListener(this);
+			
+			m_listeningMessageFolder = GetDefaultFolder(t_store);
+			m_listeningMessageFolder.addFolderListener(this);
+			
+			m_listeningMessageFolder_out = GetDefaultOutFolder(t_store);
+			m_listeningMessageFolder_out.addFolderListener(this	);					
 			
 			Session.addViewListener(this);
 							 
 			AttachmentHandlerManager.getInstance().addAttachmentHandler(this);
+						
+			if(t_record.length != 1){				
+				m_mainApp.DialogAlert(recvMain.sprintf(yblocalResource.CONNECT_CMIME_PROMPT, 
+														new String[]{t_config.getName()}));
+			}
 		}		
 	}
 	 
@@ -480,13 +565,17 @@ public class connectDeamon extends Thread implements SendListener,
 				m_mainApp.SetErrorString("origMsg:"+ t_forwardReplyMail.GetSubject());
 			}else{
 				
+				int t_mailAccountIdx = m_mainApp.m_defaultSendMailAccountIndex_tmp != -1?
+											m_mainApp.m_defaultSendMailAccountIndex_tmp:
+											m_mainApp.m_defaultSendMailAccountIndex;
+				
 				// select sending from mail address
 				//
 				if(!m_mainApp.m_sendMailAccountList.isEmpty() 
-				&& m_mainApp.m_defaultSendMailAccountIndex < m_mainApp.m_sendMailAccountList.size()
-				&& m_mainApp.m_defaultSendMailAccountIndex >= 0){
+				&& t_mailAccountIdx < m_mainApp.m_sendMailAccountList.size()
+				&& t_mailAccountIdx >= 0){
 					
-					String t_defaultAcc = (String)m_mainApp.m_sendMailAccountList.elementAt(m_mainApp.m_defaultSendMailAccountIndex);
+					String t_defaultAcc = (String)m_mainApp.m_sendMailAccountList.elementAt(t_mailAccountIdx);
 					
 					t_mail.GetFromVect().removeAllElements();
 					t_mail.GetFromVect().addElement(t_defaultAcc);
@@ -494,8 +583,11 @@ public class connectDeamon extends Thread implements SendListener,
 					t_mail.setOwnAccount(t_defaultAcc);
 					
 					m_mainApp.SetErrorString("from:"+t_defaultAcc);
-				}
+				}	
 			}
+			
+			// clear the temporary default send Mail account
+			m_mainApp.m_defaultSendMailAccountIndex_tmp = -1;
 			
 			m_mainApp.SetErrorString("sendMsg:" + t_msg.getSubject());
 														
@@ -712,6 +804,8 @@ public class connectDeamon extends Thread implements SendListener,
 		m_forwordReplyMail = FindOrgMessage(e.getMessage());
 		
 		m_sendStyle = fetchMail.FORWORD_STYLE;
+		
+		m_mainApp.loadChangeMailSenderMenu(false);
 	}
 
 	public void newMessage(MessageEvent e){
@@ -719,6 +813,8 @@ public class connectDeamon extends Thread implements SendListener,
 		m_composingAttachment.removeAllElements();
 		
 		m_sendStyle = fetchMail.NOTHING_STYLE;
+				
+		m_mainApp.loadChangeMailSenderMenu(true);
 	}
 	public void reply(MessageEvent e){
 		m_composingMail = e.getMessage();
@@ -727,6 +823,8 @@ public class connectDeamon extends Thread implements SendListener,
 		m_forwordReplyMail = FindOrgMessage(e.getMessage());
 		
 		m_sendStyle = fetchMail.REPLY_STYLE;
+
+		m_mainApp.loadChangeMailSenderMenu(false);
 	}
 	//@}
 			
@@ -1010,7 +1108,9 @@ public class connectDeamon extends Thread implements SendListener,
 		 m_disconnect = true;
 		 m_mainApp.StopDisconnectNotification();
 		 
-		 interrupt();	 
+		 if(isAlive()){
+			 interrupt();
+		 }
 		 
 		 m_connectCounter = -1;
 		 m_connectSleep = 10000;
@@ -1323,67 +1423,7 @@ public class connectDeamon extends Thread implements SendListener,
 		}
 		
 	}
-	private Folder GetDefaultFolder()throws Exception{
 		
-		Store store = Session.waitForDefaultSession().getStore();
-		Folder folder = null; 
-		Folder[] t_folders = store.list();
-		for(int i = 0;i < t_folders.length;i++){
-			
-			int t_type = t_folders[i].getType();
-			
-			if(t_type == Folder.INBOX){
-				folder = t_folders[i];
-				break;
-			}
-		}
-		
-		if(folder == null ){
-			t_folders = store.list();
-			for(int i = 0;i < t_folders.length;i++){
-				m_mainApp.SetErrorString( t_folders[i].toString());
-			}
-			folder = store.getFolder(Folder.INBOX);
-		}
-		
-		if(folder == null){
-			throw new Exception("Can't be retrieve the Folder! check Service Book with CMIME");
-		}
-			
-		
-		return folder;
-	}
-	
-	private Folder GetDefaultOutFolder()throws Exception{
-		
-		Store store = Session.waitForDefaultSession().getStore();
-		Folder folder = null; 
-		Folder[] t_folders = store.list();
-		for(int i = 0;i < t_folders.length;i++){
-		
-			int t_type = t_folders[i].getType();
-			
-			if(t_type == Folder.SENT){
-				folder = t_folders[i];
-				break;
-			}
-		}
-		
-		if(folder == null ){
-			t_folders = store.list();
-			for(int i = 0;i < t_folders.length;i++){
-				m_mainApp.SetErrorString( t_folders[i].toString());
-			}
-			folder = store.getFolder(Folder.SENT);
-		}
-		
-		if(folder == null){
-			throw new Exception("Can't be retrieve the Folder! check Service Book with CMIME");
-		}
-		
-		return folder;
-	}
-	
 	private void SendMailConfirmMsg(int _hashCode)throws Exception{
 		
 		// send the msgMailConfirm to server to confirm receive this mail
@@ -1587,23 +1627,8 @@ public class connectDeamon extends Thread implements SendListener,
 				final int t_slash_rear = t_fullname.lastIndexOf('/', t_fullname.length());
 				String t_name = t_fullname.substring( t_slash_rear + 1, t_fullname.length());
 				int t_size = (int)t_fileReader.fileSize();
-				String t_type = null;
-				
-				if(uploadFileScreen.IsAudioFile(t_name)){
+				String t_type = uploadFileScreen.getMIMETypeString(t_name);
 					
-					t_type = BodyPart.ContentType.TYPE_AUDIO + "*";
-					
-				}else if(uploadFileScreen.IsImageFile(t_name)){
-					
-					t_type = BodyPart.ContentType.TYPE_IMAGE + "*";
-					
-				}else if(uploadFileScreen.IsTxtFile(t_name)){
-					
-					t_type = BodyPart.ContentType.TYPE_TEXT + "*";
-				}else {
-					t_type = "application/*";
-				}
-	
 				_mail.AddAttachment(t_name, t_type, t_size);
 			}
 			
@@ -1635,6 +1660,8 @@ public class connectDeamon extends Thread implements SendListener,
 		});
 			
 	}
+	
+	
 	
 	
 	

@@ -80,7 +80,7 @@ final class IMStatusField extends Field{
 	}
 	
 	public int getPreferredHeight() {
-		return MainIMScreen.fsm_defaultFontHeight;
+		return MainIMScreen.fsm_defaultFontHeight + 5;
 	}
 	
 	public void invalidate(){

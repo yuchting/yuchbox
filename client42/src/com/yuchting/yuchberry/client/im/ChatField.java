@@ -31,6 +31,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.FocusChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
@@ -43,7 +44,7 @@ import com.yuchting.yuchberry.client.ui.WeiboTextField;
 
 
 
-public class ChatField extends Manager{
+public class ChatField extends Manager implements FocusChangeListener{
 	
 	public interface IChatFieldOpen{
 		public void open(fetchChatMsg msg);
@@ -150,8 +151,19 @@ public class ChatField extends Manager{
 		sm_ownChatBubble.setPointDown(true);
 	}
 	
+	public static	ChatField sm_currFocusField = null; 
+	
 	public ChatField(){
 		super(Field.FOCUSABLE | Manager.NO_VERTICAL_SCROLL);
+		setFocusListener(this);
+	}
+	
+	public void focusChanged(Field field, int eventType) {
+		if(eventType == FocusChangeListener.FOCUS_GAINED){
+			sm_currFocusField = this;
+		}else if(eventType == FocusChangeListener.FOCUS_LOST){
+			sm_currFocusField = null;
+		}
 	}
 	
 	public void destory(){
@@ -179,7 +191,7 @@ public class ChatField extends Manager{
 	public void setFocus(){
 		super.setFocus();
 		
-		if(m_imagefield != null){			
+		if(m_imagefield != null){
 			m_imagefield.setFocus();
 		}else if(m_voiceField != null){
 			m_voiceField.setFocus();
@@ -188,7 +200,7 @@ public class ChatField extends Manager{
 			m_textfield.setCursorPosition(m_textfield.getTextLength());
 		}
 	}
-	
+		
 	public void init(fetchChatMsg _msg,IChatFieldOpen _open){
 		destory();
 		
@@ -338,7 +350,7 @@ public class ChatField extends Manager{
 		
 		setExtent(recvMain.fsm_display_width,getPreferredHeight());
 	}
-	
+		
 	protected void subpaint(Graphics _g){
 
 		int t_bubbleWidth = m_msgTextWidth + fsm_border * 2;
@@ -400,4 +412,5 @@ public class ChatField extends Manager{
 			}
 		}	
 	}
+
 }

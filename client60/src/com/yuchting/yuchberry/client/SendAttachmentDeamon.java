@@ -108,6 +108,11 @@ public class SendAttachmentDeamon extends Thread{
 		try{
 			
 			if(m_vFileConnection != null){
+				if(m_fileIn != null){
+					m_fileIn.close();
+					m_fileIn = null;
+				}
+				
 				for(int i = 0;i < m_vFileConnection.size();i++){
 					FileConnection t_file = (FileConnection)m_vFileConnection.elementAt(i);
 					t_file.close();
@@ -139,21 +144,29 @@ public class SendAttachmentDeamon extends Thread{
 				sendReceive.ForceReadByte(m_fileIn, m_bufferBytes, t_size);
 				
 			}catch(Exception _e){
-				try{
-					sleep(5000);
-					m_connect.m_mainApp.SetErrorString("SA: read file fail" + _e.getMessage() + _e.getClass().getName());
-				}catch(Exception ex){}
-				
-				m_fileIn.close();
-				
-				m_fileIn = m_fileConnection.openInputStream();
-				m_fileIn.skip(m_beginIndex);
 				
 				// try again...
 				//
+				m_connect.m_mainApp.SetErrorString("SA: read file fail" + _e.getMessage() + _e.getClass().getName());
+				
 				try{
+					sleep(5000);					
+				}catch(Exception ex){
+					if(m_closeState){
+						throw new Exception("SFS:closed");
+					}
+				}
+				
+				m_fileIn.close();
+				m_fileIn = m_fileConnection.openInputStream();
+				
+				try{
+					m_fileIn.skip(m_beginIndex);
 					sendReceive.ForceReadByte(m_fileIn, m_bufferBytes, t_size);
 				}catch(Exception _ex){
+					
+					m_fileIn.close();
+					m_fileIn = null;
 					// failed again...
 					//
 					throw new Exception("SA: read file fail again, close. " + _e.getMessage() + _e.getClass().getName());

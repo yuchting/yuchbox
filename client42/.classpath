@@ -3,7 +3,6 @@
 	<classpathentry excluding="**/.svn/*|Thumbs.db" kind="src" path="src"/>
 	<classpathentry excluding="**/.svn/*|Thumbs.db" kind="src" path="res"/>
 	<classpathentry excluding="**/.svn/*|Thumbs.db" kind="src" path=".locale_interfaces"/>
-	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/net.rim.ejde.BlackBerryVMInstallType/BlackBerry JRE 4.2.1"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

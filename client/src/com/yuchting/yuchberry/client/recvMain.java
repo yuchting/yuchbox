@@ -727,7 +727,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 					
 					switch (choice) {
 						case Dialog.OK:
-							openURL("http://code.google.com/p/yuchberry/downloads/list");
+							openURL("http://ota.yuchs.com/");
 							
 							break;
 						
