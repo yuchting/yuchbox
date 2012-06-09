@@ -80,7 +80,7 @@ final class IMStatusField extends Field{
 	}
 	
 	public int getPreferredHeight() {
-		return MainIMScreen.fsm_defaultFontHeight + 5;
+		return MainIMScreen.fsm_defaultFontHeight + 6; //间距加大
 	}
 	
 	public void invalidate(){
@@ -108,7 +108,7 @@ final class IMStatusField extends Field{
 		if(_on){
 			// draw selected backgroud
 			//
-			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight(),false);
+			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight(),true);//切换选择的背景图，False时为ext_full_image中的图片
 		}
 		
 		// draw roster state

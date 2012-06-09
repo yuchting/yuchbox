@@ -1589,23 +1589,8 @@ public class connectDeamon extends Thread implements SendListener,
 				final int t_slash_rear = t_fullname.lastIndexOf('/', t_fullname.length());
 				String t_name = t_fullname.substring( t_slash_rear + 1, t_fullname.length());
 				int t_size = (int)t_fileReader.fileSize();
-				String t_type = null;
-				
-				if(uploadFileScreen.IsAudioFile(t_name)){
+				String t_type = uploadFileScreen.getMIMETypeString(t_name);
 					
-					t_type = BodyPart.ContentType.TYPE_AUDIO + "*";
-					
-				}else if(uploadFileScreen.IsImageFile(t_name)){
-					
-					t_type = BodyPart.ContentType.TYPE_IMAGE + "*";
-					
-				}else if(uploadFileScreen.IsTxtFile(t_name)){
-					
-					t_type = BodyPart.ContentType.TYPE_TEXT + "*";
-				}else {
-					t_type = "application/*";
-				}
-	
 				_mail.AddAttachment(t_name, t_type, t_size);
 			}
 			
@@ -1637,6 +1622,8 @@ public class connectDeamon extends Thread implements SendListener,
 		});
 			
 	}
+	
+	
 	
 	
 	

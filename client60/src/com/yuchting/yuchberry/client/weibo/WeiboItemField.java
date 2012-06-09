@@ -552,32 +552,33 @@ public class WeiboItemField extends Manager{
 			if(m_commentText != null){
 				// comment area
 				//
-				setPositionChild(m_parentManager.m_commentTextArea,fsm_headImageTextInterval,t_commentText_y);
+	
+				setPositionChild(m_parentManager.m_commentTextArea,fsm_headImageTextInterval,t_commentText_y + 2); //气泡文字的上边距+2
 				layoutChild(m_parentManager.m_commentTextArea,fsm_commentTextWidth,m_functionButton_y - m_commentText_y);			
 			}
 			
 			if(!recvMain.sm_simpleMode){
 				// forward button
 				//
-				setPositionChild(m_parentManager.m_forwardBut,WeiboMainManager.sm_forwardBut_x,m_functionButton_y);
-				layoutChild(m_parentManager.m_atBut,m_parentManager.m_atBut.getPreferredWidth(),m_parentManager.m_atBut.getPreferredHeight());
+				setPositionChild(m_parentManager.m_forwardBut,WeiboMainManager.sm_forwardBut_x + 20,m_functionButton_y + 1);
+				layoutChild(m_parentManager.m_atBut,m_parentManager.m_atBut.getPreferredWidth(),m_parentManager.m_atBut.getPreferredHeight() + 1);
 				
 				
 				// at button
 				//
-				setPositionChild(m_parentManager.m_atBut,WeiboMainManager.sm_atBut_x,m_functionButton_y);
-				layoutChild(m_parentManager.m_forwardBut,m_parentManager.m_forwardBut.getPreferredWidth(),m_parentManager.m_forwardBut.getPreferredHeight());
+				setPositionChild(m_parentManager.m_atBut,WeiboMainManager.sm_atBut_x + 30,m_functionButton_y + 1);
+				layoutChild(m_parentManager.m_forwardBut,m_parentManager.m_forwardBut.getPreferredWidth(),m_parentManager.m_forwardBut.getPreferredHeight()+ 1);
 				
 				// favorite button
 				//
-				setPositionChild(m_parentManager.m_favoriteBut,WeiboMainManager.sm_favoriteBut_x,m_functionButton_y);
-				layoutChild(m_parentManager.m_favoriteBut,m_parentManager.m_favoriteBut.getPreferredWidth(),m_parentManager.m_favoriteBut.getPreferredHeight());
+				setPositionChild(m_parentManager.m_favoriteBut,WeiboMainManager.sm_favoriteBut_x + 40,m_functionButton_y + 1);
+				layoutChild(m_parentManager.m_favoriteBut,m_parentManager.m_favoriteBut.getPreferredWidth(),m_parentManager.m_favoriteBut.getPreferredHeight()+ 1);
 				
 				if(m_weiboPic != null){
 					// open the browser to check the picture button 
 					//
-					setPositionChild(m_parentManager.m_picBut,WeiboMainManager.sm_picBut_x,m_functionButton_y);
-					layoutChild(m_parentManager.m_picBut,m_parentManager.m_picBut.getPreferredWidth(),m_parentManager.m_picBut.getPreferredHeight());
+					setPositionChild(m_parentManager.m_picBut,WeiboMainManager.sm_picBut_x + 50,m_functionButton_y + 1);
+					layoutChild(m_parentManager.m_picBut,m_parentManager.m_picBut.getPreferredWidth(),m_parentManager.m_picBut.getPreferredHeight()+ 1);
 				}
 			}
 			
@@ -1006,7 +1007,7 @@ public class WeiboItemField extends Manager{
 			
 			int t_color = _g.getColor();
 			try{
-				int t_fillColor = 0xf4fcff;//Original:0xdaeaeb;微博列表背景//
+				int t_fillColor = 0xeaf2fe;//Original:0xdaeaeb;微博列表背景//
 				
 				if(m_parentManager.getCurrExtendedItem() != null 
 				&& m_parentManager.getCurrExtendedItem() != this){

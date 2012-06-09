@@ -153,7 +153,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 	public AutoTextEditField 	m_editTextArea			= new AutoTextEditField(){
 		public void setText(String _text){
 			super.setText(_text);
-			this.layout(m_textWidth,1000);
+			this.layout(m_textWidth,this.getHeight());
 		}
 		
 		public int getPreferredWidth(){
@@ -161,7 +161,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 		}
 		
 		protected boolean keyDown(int keycode,int time){
-			this.layout(m_textWidth,1000);
+			this.layout(m_textWidth,this.getHeight());
 			return super.keyDown(keycode,time);
 		}
 	};
@@ -198,7 +198,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 		if(_preferredHeight > sm_background.getHeight()){
 			int t_color = _g.getColor();
 			try{
-				_g.setColor(0);
+				_g.setColor(0x212122); //输入超过两行后用此色补充
 				_g.fillRect(0, sm_background.getHeight(), 
 						_preferredWidth, _preferredHeight - sm_background.getHeight());
 			}finally{
@@ -405,7 +405,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 
 final class MiddleMgr extends VerticalFieldManager{
 	
-	public final static int	fsm_linespace	= 18;
+	public final static int	fsm_linespace	= 12;
 	VerticalFieldManager	m_chatMsgMgr = null;
 	
 	VerticalFieldManager	m_chatMsgMiddleMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
@@ -676,7 +676,7 @@ final class MiddleMgr extends VerticalFieldManager{
 
 public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOpen{
 	
-	public final static int fsm_background = 0xd8d8d8; //聊天对话背景色
+	public final static int fsm_background = 0xf3ecfc; //聊天对话背景色d8d8d8
 	
 	int m_menu_op = 0;
 	MenuItem m_sendMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_SEND_LABEL),m_menu_op++,0){
@@ -864,7 +864,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 	
 	final class ChatScreenHeader extends Field{
 		
-		public final static int fsm_chatScreenHeaderHeight = 45;
+		public final static int fsm_chatScreenHeaderHeight = 43;
 		
 		public int getPreferredWidth() {
 			return recvMain.fsm_display_width;
@@ -880,14 +880,15 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		protected void layout(int _width,int _height){
 			setExtent(recvMain.fsm_display_width,fsm_chatScreenHeaderHeight);
 		}
-		
+
+	
 		protected void paint(Graphics _g){
 			recvMain.sm_weiboUIImage.drawBitmapLine(_g, m_title, 0, 0, getPreferredWidth());
-			
+
 			// draw roster state
-			//
+			//		
 			int t_x = RosterItemField.drawRosterState(_g,3,6,m_currRoster.m_roster.getPresence());
-			
+
 			int color = _g.getColor();
 			Font font = _g.getFont();
 			try{
@@ -900,20 +901,22 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 				//
 				int t_atIndex = m_currRoster.m_roster.getName().indexOf("@");
 				if(t_atIndex != -1){
-					_g.drawText(m_currRoster.m_roster.getName().substring(0,t_atIndex),t_x,2);
+					_g.drawText(m_currRoster.m_roster.getName().substring(0,t_atIndex),t_x + 5,2);
 				}else{
-					_g.drawText(m_currRoster.m_roster.getName(),t_x,2);
+					_g.drawText(m_currRoster.m_roster.getName(),t_x + 5,2);
 				}
 								
 			}finally{
 				_g.setColor(color);
 				_g.setFont(font);
 			}
-			
+
+				
 			t_x = RosterItemField.drawChatSign(_g,getPreferredWidth() - 35 ,getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch);//防止系统输入法标示遮挡sign
-						
+			
+				
 			if(m_currRoster.m_currChatState == fetchChatMsg.CHAT_STATE_COMPOSING){
-				recvMain.sm_weiboUIImage.drawImage(_g, sm_composing, t_x - sm_composing.getWidth()- 12, 3); //防止系统输入法标示遮挡输入状态
+				recvMain.sm_weiboUIImage.drawImage(_g, sm_composing, t_x - sm_composing.getWidth()- 2, 3); //防止系统输入法标示遮挡输入状态
 			}
 		}
 	}
@@ -927,6 +930,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 	MainIMScreen	m_mainScreen 	= null;
 	
 	ImageUnit		m_title			= null;
+
 	ChatScreenHeader m_header 		= null;
 	
 	MiddleMgr		m_middleMgr		= null;

@@ -63,7 +63,7 @@ import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
 
 final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	
-	public int			m_updateDlgHeaderHeight = 50;
+	public int			m_updateDlgHeaderHeight = 60;
 	
 	public int			m_width 	= Display.getWidth() - 20;
 	public int			m_height 	= (Display.getHeight() - 30 > 300?300:(Display.getHeight() - 30));
@@ -104,7 +104,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		
 		protected void sublayout(int width, int height){
 			
-			setPositionChild(m_editTextArea,0,0); 
+			setPositionChild(m_editTextArea,0,5); 
 			layoutChild(m_editTextArea,getPreferredWidth(),999);
 			
 			setExtent(getPreferredWidth(),getPreferredHeight());
@@ -172,7 +172,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 				m_weiboUIImageSets,Field.FIELD_LEFT);
 		
 		if(recvMain.sm_standardUI){
-			m_updateTitle = m_weiboUIImageSets.getImageUnit("compose_nav_bar");
+			m_updateTitle = m_weiboUIImageSets.getImageUnit("w_updlg_header"); //发微博页面Header背景
 		}else{
 			m_updateTitle = m_weiboUIImageSets.getImageUnit("nav_bar");
 		}
@@ -312,7 +312,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		m_weiboUIImageSets.drawBitmapLine(_g, m_updateTitle, 1, 1, 
 				getPreferredWidth() - 2,m_updateDlgHeaderHeight);
 		
-		m_editBubbleImage.draw(_g, 1, m_titleHeight,getPreferredWidth() - 3,
+		m_editBubbleImage.draw(_g, 1, m_titleHeight,getPreferredWidth() - 1, //Bubble边界
 				m_editTextManager.getPreferredHeight() + 2,BubbleImage.NO_POINT_STYLE);
 		
 		int oldColor = _g.getColor();

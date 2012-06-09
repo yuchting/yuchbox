@@ -45,8 +45,8 @@ public class RosterItemField extends Field{
 	
 	public final static int		fsm_headImageWidth 			= recvMain.fsm_display_width>320 ? fetchWeibo.fsm_headImageSize_l:fetchWeibo.fsm_headImageSize;
 	
-	public final static int		fsm_nameTextColor			= 0x502e28; //别名字体颜色
-	public final static int		fsm_statusTextColor			= 0x9d706b; //聊天状态字体颜色
+	public final static int		fsm_nameTextColor			= 0; //别名字体颜色
+	public final static int		fsm_statusTextColor			= 0x6d6f6f; //聊天状态字体颜色
 	
 	public final static Font		fsm_addressFont			= MainIMScreen.fsm_defaultFont.derive(MainIMScreen.fsm_defaultFont.getStyle(),MainIMScreen.fsm_defaultFontHeight - 2);
 	public final static int		fsm_addressFontHeight	= fsm_addressFont.getHeight();
@@ -109,23 +109,42 @@ public class RosterItemField extends Field{
 		if(_on){
 			// draw selected backgroud
 			//
-			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight(),false);
+			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight(),true);//切换选择的背景图，False时为ext_full_image中的图片
 		}
 		// draw roster state
 		//
-		drawRosterState(_g,1,20,m_currRoster.m_roster.getPresence());  
+		drawRosterState(_g,3,20,m_currRoster.m_roster.getPresence());  
 		
 		// draw the IM sign and head image
 		//
-		int t_x = WeiboHeadImage.displayHeadImage(_g,sm_rosterState[0].getWidth() + 2, 2, m_headImage);
+		int t_x = WeiboHeadImage.displayHeadImage(_g,sm_rosterState[0].getWidth() + 6, 2, m_headImage);
 		
 		int color = _g.getColor();
 		Font font = _g.getFont();
+/*
+		try{
+			// 选中的条目，字体颜色改为白色
+			if (_on){
+				_g.setColor(0xffffff);
+				_g.setFont(font);//(MainIMScreen.fsm_boldFont);//				
+				_g.drawText(m_currRoster.m_roster.getName(),t_x + 3 ,2);
+			
+				_g.setColor(0xffffff);
+				_g.setFont(fsm_addressFont);
+			}else{
+				_g.setColor(fsm_nameTextColor);
+				_g.setFont(font);//(MainIMScreen.fsm_boldFont);//				
+				_g.drawText(m_currRoster.m_roster.getName(),t_x + 3 ,2);
+				_g.setColor(fsm_statusTextColor);
+				_g.setFont(fsm_addressFont);
+		
+		}
+*/
 		try{
 			_g.setColor(fsm_nameTextColor);
 			_g.setFont(font);//(MainIMScreen.fsm_boldFont);//
 			
-			_g.drawText(m_currRoster.m_roster.getName(),t_x,2);
+			_g.drawText(m_currRoster.m_roster.getName(),t_x + 3 ,2);
 			
 			_g.setColor(fsm_statusTextColor);
 			_g.setFont(fsm_addressFont);
@@ -147,11 +166,11 @@ public class RosterItemField extends Field{
 					
 					ImageUnit t_unit = ChatField.sm_stateImage[t_msg.getSendState()];
 					
-					recvMain.sm_weiboUIImage.drawImage(_g,t_unit,t_x,t_y);
-					_g.drawText(t_textMsg,t_x + t_unit.getWidth() + 2,t_y);
+					recvMain.sm_weiboUIImage.drawImage(_g,t_unit,t_x + 3,t_y);
+					_g.drawText(t_textMsg,t_x + t_unit.getWidth() + 5,t_y);
 					
 				}else{
-					_g.drawText(t_textMsg,t_x,t_y);
+					_g.drawText(t_textMsg,t_x + 3,t_y);
 				}
 				
 			}else{
@@ -159,7 +178,7 @@ public class RosterItemField extends Field{
 				if(t_status.length() == 0){
 					t_status = m_currRoster.m_roster.getAccount();
 				}
-				_g.drawText(t_status,t_x,t_y );
+				_g.drawText(t_status,t_x + 3,t_y );
 			}
 						
 		}finally{
