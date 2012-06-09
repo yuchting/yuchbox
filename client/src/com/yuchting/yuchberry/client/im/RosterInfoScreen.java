@@ -45,6 +45,7 @@ public class RosterInfoScreen extends MainScreen {
 	LabelField		m_accName = null;
 	TextField		m_addr	= null;
 	
+	TextField		m_group = null;
 	TextField		m_source = null;
 	TextField		m_status = null;
 	
@@ -70,6 +71,13 @@ public class RosterInfoScreen extends MainScreen {
 		
 		add(new SeparatorField());
 		
+		m_group = new TextField(Field.READONLY);
+		m_group.setLabel(recvMain.sm_local.getString(yblocalResource.IM_ROSTER_INFO_GROUP));
+		m_group.setText(_roster.m_roster.getGroup());
+		add(m_group);
+		
+		add(new SeparatorField());
+		
 		m_source = new TextField(Field.READONLY);
 		m_source.setLabel(recvMain.sm_local.getString(yblocalResource.IM_ROSTER_INFO_SOURCE));
 		m_source.setText(_roster.m_roster.getOwnAccount() + " " + _roster.m_roster.getSource());
@@ -89,7 +97,7 @@ public class RosterInfoScreen extends MainScreen {
 		super.paint(_g);
 		
 		RosterItemField.drawChatSign(_g,recvMain.fsm_display_width,recvMain.fsm_display_height,
-				m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch);		
+				m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch,0);		
 	}
 	
 	public boolean onClose(){

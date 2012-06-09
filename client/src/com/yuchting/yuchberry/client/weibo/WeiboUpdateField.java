@@ -88,6 +88,8 @@ public class WeiboUpdateField extends Field{
 		
         try{
 			
+        	int t_y = (getPreferredHeight() - WeiboItemField.sm_boldFont.getHeight()) / 2;
+        	
 			if(_on){	
 				recvMain.sm_weiboUIImage.drawBitmapLine(_g, m_standardUI_selected, 0, 0, getPreferredWidth());			
 			}else{
@@ -97,11 +99,12 @@ public class WeiboUpdateField extends Field{
 			}	
         	
 			recvMain.sm_weiboUIImage.drawImage(_g,m_updateBitmap,2,2); //recvMain.sm_weiboUIImage.drawImage(_g,m_updateBitmap,2,0);更新图标下移1pix//
+
         	
 			_g.setColor(fsm_textColor);
 			_g.setFont(WeiboItemField.sm_boldFont);
         	_g.drawText(m_updatePromptText + m_parentManager.m_bufferedWeiboList.size() + " Weibo",
-        			m_updateBitmap.getWidth() + 2,2,Graphics.ELLIPSIS);
+        			m_updateBitmap.getWidth() + 2,t_y,Graphics.ELLIPSIS);
         	
         }finally{
         	_g.setColor( oldColour );

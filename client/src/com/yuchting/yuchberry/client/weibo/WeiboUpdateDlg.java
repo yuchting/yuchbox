@@ -39,6 +39,7 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Screen;
@@ -52,6 +53,7 @@ import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.screen.CameraScreen;
 import com.yuchting.yuchberry.client.screen.ICameraScreenCallback;
 import com.yuchting.yuchberry.client.screen.IUploadFileScreenCallback;
+import com.yuchting.yuchberry.client.screen.PhizSelectedScreen;
 import com.yuchting.yuchberry.client.screen.imageViewScreen;
 import com.yuchting.yuchberry.client.screen.uploadFileScreen;
 import com.yuchting.yuchberry.client.ui.BubbleImage;
@@ -59,7 +61,6 @@ import com.yuchting.yuchberry.client.ui.CameraFileOP;
 import com.yuchting.yuchberry.client.ui.ImageButton;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
-import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
 
 final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	
@@ -420,6 +421,8 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
     MenuItem m_cameraItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_OPEN_CAMERA),m_menuIndex_op++,0){
     	public void run(){
     		Invoke.invokeApplication(Invoke.APP_TYPE_CAMERA, new CameraArguments());
+    		
+    		m_canbeAttachImage = true;
     	}
     };
     
@@ -477,6 +480,11 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 	String					m_imagePath = null;
 	int						m_imageType = 0;
 	
+	// canbe attach a image from file system
+	// maybe a non-relation file would be attached sometimes
+	// some chat will send this image
+	boolean				m_canbeAttachImage = false;
+	
 	byte[]					m_snapBuffer = null;
 	
 	recvMain				m_mainApp	= null;
@@ -496,23 +504,24 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		}
 		
 		public boolean canAdded(){
-			return m_imagePath == null;
+			return m_imagePath == null && m_canbeAttachImage;
 		}
 	};
 	
 	public WeiboUpdateDlg(weiboTimeLineScreen _screen){
 		super(new WeiboUpdateManager(_screen),Screen.DEFAULT_MENU | Manager.NO_VERTICAL_SCROLL);
-		m_updateManager = (WeiboUpdateManager)getDelegate();
 		
-		m_phizScreen = PhizSelectedScreen.getPhizScreen(m_updateManager.m_editTextArea);
-		m_weiboUIImageSets = recvMain.sm_weiboUIImage;
+		m_mainApp 			= _screen.m_mainApp;
+		m_weiboUIImageSets 	= m_mainApp.m_weiboUIImage;
+		
+		m_hasImageSign		= m_weiboUIImageSets.getImageUnit("picSign");
+		m_hasLocation		= m_weiboUIImageSets.getImageUnit("locationSign");
 		
 		m_backgroundColor = WeiboItemField.fsm_extendBGColor;
 		m_snapshotAvaiable = recvMain.fsm_snapshotAvailible;
 		
-		m_mainApp = _screen.m_mainApp;
-		m_hasImageSign	= m_weiboUIImageSets.getImageUnit("picSign");
-		m_hasLocation	= m_weiboUIImageSets.getImageUnit("locationSign");
+		m_updateManager = (WeiboUpdateManager)getDelegate();		
+		m_phizScreen = PhizSelectedScreen.getPhizScreen(m_mainApp,m_updateManager.m_editTextArea);
 	}
 	
 	public void clearAttachment(){
@@ -594,6 +603,8 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		m_updateManager.m_editTextArea.setFocus();
 		
 		m_mainApp.addFileSystemJournalListener(m_fileSystem);
+		
+		m_canbeAttachImage = false;
 	}
 	
 	protected void paint(Graphics _g){		
@@ -621,6 +632,19 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		if(m_updateManager.m_addLocation){
 			m_weiboUIImageSets.drawImage(_g, m_hasLocation,2,1);
 		}
+	}
+	
+	protected boolean keyDown(int keycode,int time){
+		
+		int key = Keypad.key(keycode);
+		if(key == /*Keypad.KEY_CAMERA_FOCUS*/211){
+			// camera focus shortcut key clicked
+			// canbe attach image
+			//
+			m_canbeAttachImage = true;
+		}
+		
+		return super.keyDown(keycode,time);		
 	}
 	
 	public void close(){

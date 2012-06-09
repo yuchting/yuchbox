@@ -25,7 +25,7 @@
  *  语盒开发者
  *  
  */
-package com.yuchting.yuchberry.client.ui;
+package com.yuchting.yuchberry.client.screen;
 
 public interface IPhizSelected {
 	public void phizSelected(String _phizName);

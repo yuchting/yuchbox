@@ -35,6 +35,7 @@ import net.rim.device.api.ui.Graphics;
 
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
+import com.yuchting.yuchberry.client.ui.SliderHeader;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 
@@ -47,11 +48,14 @@ public class RosterItemField extends Field{
 	
 	public final static int		fsm_nameTextColor			= 0xf74f7c; //别名字体颜色
 	public final static int		fsm_statusTextColor			= 0x6d6f6f; //聊天状态字体颜色
-	
+
+	public final static int		fsm_groupTitleTextColor		= 0xb0b0b0;
+
 	public final static Font		fsm_addressFont			= MainIMScreen.fsm_defaultFont.derive(MainIMScreen.fsm_defaultFont.getStyle(),MainIMScreen.fsm_defaultFontHeight - 2);
 	public final static int		fsm_addressFontHeight	= fsm_addressFont.getHeight();
 	
 	MainIMScreen.RosterChatData					m_currRoster;
+
 	WeiboHeadImage					m_headImage;
 	
 	MainIMScreen					m_mainScreen;	
@@ -99,7 +103,8 @@ public class RosterItemField extends Field{
 				m_mainScreen.m_currFocusHistoryRosterItemField = this;
 			}else{
 				m_mainScreen.m_currFocusRosterItemField = this;
-			}			
+				m_mainScreen.m_selectGroupTitleField = null;
+			}
 		}
 				
 		// fill the IM field BG
@@ -111,13 +116,19 @@ public class RosterItemField extends Field{
 			//
 			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight(),true);//切换选择的背景图，False时为ext_full_image中的图片
 		}
+		
 		// draw roster state
 		//
 		drawRosterState(_g,3,20,m_currRoster.m_roster.getPresence());  
+
 		
 		// draw the IM sign and head image
 		//
 		int t_x = WeiboHeadImage.displayHeadImage(_g,sm_rosterState[0].getWidth() + 6, 2, m_headImage);
+		
+		if(m_currRoster.m_hasNewMessage){
+			recvMain.sm_weiboUIImage.drawImage(_g,SliderHeader.GetBBerSignBitmap(),1,20);
+		}
 		
 		int color = _g.getColor();
 		Font font = _g.getFont();
@@ -186,18 +197,28 @@ public class RosterItemField extends Field{
 			_g.setFont(font);
 		}
 		
-		drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch);
+		drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch,0);
 	}
 	
 	public static ImageUnit	sm_gtalkSign = null;
 	public static ImageUnit	sm_MSNSign = null;
 	public static ImageUnit	sm_YuchSign = null;
 	
-	public static int drawChatSign(Graphics _g,int _limitWidth,int _limitHeight,int _style,boolean _isYuch){
+	/**
+	 * draw the chat style and yuchbox sign
+	 * @param _g
+	 * @param _limitWidth
+	 * @param _limitHeight
+	 * @param _style
+	 * @param _isYuch			is yuchbox client
+	 * @param _rightOffset		the right edge distance
+	 * @return
+	 */
+	public static int drawChatSign(Graphics _g,int _limitWidth,int _limitHeight,int _style,boolean _isYuch,int _rightOffset){
 
 		int t_ret = 0;
 		
-		int x = _limitWidth - 3 - sm_rosterState[0].getWidth();
+		int x = _limitWidth - 3 - sm_rosterState[0].getWidth() - _rightOffset;
 		int y = 3;
 		
 		if(_style == fetchChatMsg.STYLE_GTALK){
@@ -268,7 +289,7 @@ public class RosterItemField extends Field{
 		
 		recvMain.sm_weiboUIImage.drawImage(_g, sm_rosterState[_presence], _x, _y);
 		
-		return _x + sm_rosterState[0].getWidth(); 
+		return _x + sm_rosterState[0].getWidth();
 	}
 	
 	protected boolean keyChar( char character, int status, int time ){

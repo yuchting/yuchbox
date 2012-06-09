@@ -56,6 +56,27 @@ public class BubbleImage {
 	private boolean 		m_point_down = false;
 	
 	public BubbleImage(ImageUnit _top_left,ImageUnit _top,
+			ImageUnit _top_right,ImageUnit _right,
+			ImageUnit _bottom_right,ImageUnit _bottom,
+			ImageUnit _bottom_left,ImageUnit _left,
+			ImageUnit _innerBlock,ImageSets _parentSets){
+		
+		init(_top_left,_top,_top_right,_right,
+			_bottom_right,_bottom,_bottom_left,_left,_innerBlock,null,_parentSets);
+	}
+	
+	public BubbleImage(ImageUnit _top_left,ImageUnit _top,
+						ImageUnit _top_right,ImageUnit _right,
+						ImageUnit _bottom_right,ImageUnit _bottom,
+						ImageUnit _bottom_left,ImageUnit _left,
+						ImageUnit _innerBlock,ImageUnit[] _point,
+						ImageSets _parentSets){
+		
+		init(_top_left,_top,_top_right,_right,
+			_bottom_right,_bottom,_bottom_left,_left,_innerBlock,_point,_parentSets);
+	}
+	
+	private void init(ImageUnit _top_left,ImageUnit _top,
 						ImageUnit _top_right,ImageUnit _right,
 						ImageUnit _bottom_right,ImageUnit _bottom,
 						ImageUnit _bottom_left,ImageUnit _left,
@@ -83,6 +104,26 @@ public class BubbleImage {
 	
 	public int getInnerBlockSize(){
 		return m_innerBlock.getWidth();
+	}
+	
+	public int getTopBorderHeight(){
+		return m_top.getHeight();
+	}
+	
+	public int getBottomBorderHeight(){
+		return m_bottom.getHeight();
+	}
+	
+	public int getLeftBorderWdith(){
+		return m_left.getHeight();
+	}
+	
+	public int getRightBorderWidth(){
+		return m_right.getWidth();
+	}
+	
+	public void draw(Graphics _g,int _x,int _y,int _width,int _height){
+		draw(_g,_x,_y,_width,_height,NO_POINT_STYLE);
 	}
 	
 	public void draw(Graphics _g,int _x,int _y,int _width,int _height,int _pointStyle){

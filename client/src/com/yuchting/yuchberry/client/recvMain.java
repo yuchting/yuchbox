@@ -56,14 +56,18 @@ import net.rim.device.api.crypto.MD5Digest;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.i18n.SimpleDateFormat;
+import net.rim.device.api.math.Fixed32;
 import net.rim.device.api.notification.NotificationsConstants;
 import net.rim.device.api.notification.NotificationsManager;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.Display;
+import net.rim.device.api.system.EncodedImage;
+import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.system.WLANInfo;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.Screen;
@@ -72,11 +76,14 @@ import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.XYPoint;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
+import net.rim.device.api.util.LongHashtable;
 
 import com.yuchting.yuchberry.client.connectDeamon.FetchAttachment;
 import com.yuchting.yuchberry.client.im.IMStatus;
 import com.yuchting.yuchberry.client.im.MainIMScreen;
 import com.yuchting.yuchberry.client.im.fetchChatRoster;
+import com.yuchting.yuchberry.client.screen.ChangeMailSenderDlg;
+import com.yuchting.yuchberry.client.screen.PhizSelectedScreen;
 import com.yuchting.yuchberry.client.screen.aboutScreen;
 import com.yuchting.yuchberry.client.screen.audioViewScreen;
 import com.yuchting.yuchberry.client.screen.imageViewScreen;
@@ -89,7 +96,6 @@ import com.yuchting.yuchberry.client.screen.videoViewScreen;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.Phiz;
-import com.yuchting.yuchberry.client.ui.PhizSelectedScreen;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 import com.yuchting.yuchberry.client.weibo.WeiboAccount;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
@@ -210,12 +216,14 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public Vector			m_errorString		= new Vector();	
 	public Vector			m_uploadingDesc 	= new Vector();
 	
-	public String			m_hostname 			= new String();
+	public String			m_hostname 			= "";
 	public int				m_port 				= 0;
-	public String			m_userPassword 		= new String();
+	public String			m_account			= "";
+	public String			m_userPassword 		= "";
 	public boolean			m_useSSL			= false;
 	public boolean			m_useWifi			= false;
 	public boolean			m_useMDS			= false;
+	public String			m_carrier			= "";
 		
 	public boolean			m_autoRun			= false;
 	
@@ -225,12 +233,18 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public final class APNSelector{
 		public String		m_name			= null;
 		public int			m_validateNum	= 0;
+		
+		public APNSelector(){}
+		
+		public APNSelector(String _name){
+			m_name = _name;
+		}
 	}
 	
 	public Vector				m_APNList 			= new Vector();
 	public int					m_currentAPNIdx 	= 0;
 	public int					m_changeAPNCounter 	= 0;
-	public String				m_appendString		= new String();
+	public String				m_appendString		= "";
 	
 	public long				m_uploadByte		= 0;
 	public long				m_downloadByte		= 0;
@@ -281,6 +295,9 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	public Vector 			m_sendMailAccountList = new Vector();
 	public int				m_defaultSendMailAccountIndex = 0;
+	public int				m_defaultSendMailAccountIndex_tmp = -1;
+	
+	public boolean 		m_hideBackgroundIcon = false;
 	
 	public final class UploadingDesc{
 		
@@ -298,8 +315,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 		public Object run(Object context){
 			if(context instanceof Message ){
-				
-				return OpenAttachmentFileScreen(false);
+				return OpenAttachmentFileScreen(context,false);
 			}
 			
 			return context;
@@ -314,7 +330,21 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		public Object run(Object context){
 			if(context instanceof Message ){
 
-				return OpenAttachmentFileScreen(true);
+				return OpenAttachmentFileScreen(context,true);
+			}
+			
+			return context;	
+		}
+	};
+	
+	ApplicationMenuItem	m_changeDefaultSenderItem	= new ApplicationMenuItem(22){
+		public String toString(){
+			return recvMain.sm_local.getString(yblocalResource.CHANGE_DEFAULT_SENDER_ACC);
+		}
+		
+		public Object run(Object context){
+			if(context instanceof Message ){
+				return openChangeMailSenderDlg(context);
 			}
 			
 			return context;	
@@ -415,8 +445,12 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
         
 		// must read the configure first
 		//
-		WriteReadIni(true);		
+		WriteReadIni(true);
 		
+		// prepare the APN
+		//
+		prepareAPN();
+				
 		// register the notification
     	//
     	NotificationsManager.registerSource(fsm_notifyID_email, fsm_notifyEvent_email,NotificationsConstants.CASUAL);
@@ -467,6 +501,78 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
         WeiboHeadImage.sm_mainApp = this;
         InitWeiboModule();
         initIMModule();
+	}
+	
+	/**
+	 * prepare the APN value
+	 */
+	private void prepareAPN(){
+		try{
+			String t_carrierName = RadioInfo.getCurrentNetworkName();
+			
+			if(t_carrierName != null && (!t_carrierName.equals(m_carrier) || m_APNList.isEmpty())){
+				
+				String t_apn = findNetworkAPN();
+				
+				m_carrier = t_carrierName;
+				
+				if(t_apn != null){
+					boolean t_found = false;
+					for(int i = 0;i< m_APNList.size();i++){
+						
+						APNSelector apn = (APNSelector)m_APNList.elementAt(i);
+						
+						if(apn.m_name.equalsIgnoreCase(t_apn)){
+							t_found = true;
+							break;
+						}
+					}
+					
+					if(!t_found){
+						m_APNList.addElement(new APNSelector(t_apn));
+					}
+					
+				}
+				
+				SetErrorString("Carrier["+m_carrier+"] APN["+t_apn+"]");
+			}			
+			
+		}catch(Exception e){
+			SetErrorString("RADIO:", e);
+		}
+	}
+	
+	/**
+	 * find a good avaiable APN
+	 * @return
+	 * @throws Exception
+	 */
+	public static String findNetworkAPN(){
+		
+		String t_carrierName = RadioInfo.getCurrentNetworkName();
+		
+		String t_apn = null;
+		if(t_carrierName.equals("中国移动")){
+			t_apn = "cmnet";
+		}else if(t_carrierName.equals("中国联通")){
+			t_apn = "uninet";
+		}else if(t_carrierName.equals("中国电信")){
+			t_apn = "ctnet";
+		}
+		
+		return t_apn;
+	}
+	
+	protected boolean acceptsForeground() {
+		if(!m_hideBackgroundIcon){
+			return true; 
+		}
+		try{
+			return Application.getApplication() instanceof recvMain;
+		}catch(Exception e){
+			return false;
+		}
+		
 	}
 	
 	public boolean isBackground(){
@@ -621,7 +727,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 					
 					switch (choice) {
 						case Dialog.OK:
-							openURL("http://code.google.com/p/yuchberry/downloads/list");
+							openURL("http://ota.yuchs.com/");
 							
 							break;
 						
@@ -718,16 +824,14 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			if(t_endIdx != -1){
 				String t_name = _APNList.substring(t_beginIdx, t_endIdx);
 				if(t_name.length() != 0){
-					APNSelector t_sel = new APNSelector();
-					t_sel.m_name = t_name;
+					APNSelector t_sel = new APNSelector(t_name);
 					m_APNList.addElement(t_sel);
 				}
 				
 			}else{
 				String t_name = _APNList.substring(t_beginIdx, _APNList.length());
 				if(t_name.length() != 0){
-					APNSelector t_sel = new APNSelector();
-					t_sel.m_name = t_name;
+					APNSelector t_sel = new APNSelector(t_name);
 					m_APNList.addElement(t_sel);
 				}
 				break;
@@ -871,8 +975,14 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 //		}		
 //	}
 	
-	
-	private void PreWriteReadIni(boolean _read,
+	/**
+	 * pre process write or read a file
+	 * 
+	 * Write: change original name to back file name when write
+	 * 
+	 * Read: change back filename to original filename if back file is existed
+	 */
+	private void preWriteReadIni(boolean _read,
 			String _backPathFilename,String _orgPathFilename,
 			String _backFilename,String _orgFilename){
 		
@@ -920,10 +1030,33 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}catch(Exception e){
 			SetErrorString("write/read PreWriteReadIni file from SDCard error :" + e.getMessage() + e.getClass().getName());
 		}
+	}
+	
+	/**
+	 * delete the back file ~xxx.xxx
+	 * @param _backfile
+	 */
+	private void postWriteReadIni(String _backfile){
+		
+		try{
+			// delete the back file ~xxx.data
+			//
+			FileConnection t_backFile = (FileConnection) Connector.open(_backfile,Connector.READ_WRITE);
+			try{
+				if(t_backFile.exists()){
+					t_backFile.delete();
+				}
+			}finally{
+				t_backFile.close();
+				t_backFile = null;
+			}
+		}catch(Exception e){
+			SetErrorString("PWRI", e);
+		}
 		
 	}
 	
-	final static int		fsm_clientVersion = 39;
+	final static int		fsm_clientVersion = 40;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -939,7 +1072,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		// check the issue 85 
 		// http://code.google.com/p/yuchberry/issues/detail?id=85&colspec=ID%20Type%20Status%20Priority%20Stars%20Summary
 		//
-		PreWriteReadIni(_read,fsm_backInitFilename,fsm_initFilename,
+		preWriteReadIni(_read,fsm_backInitFilename,fsm_initFilename,
 				fsm_initFilename_back_init_data,fsm_initFilename_init_data);
 		
 		try{
@@ -1165,6 +1298,13 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				    			}
 				    		}
 				    		
+				    		if(t_currVer >= 40){
+				    			m_hideBackgroundIcon 		= sendReceive.ReadBoolean(t_readFile);
+				    			m_imChatScreenShowHeadImg	= sendReceive.ReadBoolean(t_readFile);
+				    			m_account					= sendReceive.ReadString(t_readFile);
+				    			m_carrier					= sendReceive.ReadString(t_readFile);
+				    		}
+				    		
 				    		
 			    		}finally{
 			    			t_readFile.close();
@@ -1291,6 +1431,11 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		    				WeiboAccount acc = (WeiboAccount)m_weiboAccountList.elementAt(i);
 		    				acc.Output(t_writeFile);
 		    			}
+		    			
+		    			sendReceive.WriteBoolean(t_writeFile,m_hideBackgroundIcon);
+		    			sendReceive.WriteBoolean(t_writeFile,m_imChatScreenShowHeadImg);
+		    			sendReceive.WriteString(t_writeFile,m_account);
+		    			sendReceive.WriteString(t_writeFile,m_carrier);
 		    									
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1301,17 +1446,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 						t_writeFile = null;
 					}
 					
-					// delete the back file ~Init.data
-					//
-					FileConnection t_backFile = (FileConnection) Connector.open(fsm_backInitFilename,Connector.READ_WRITE);
-					try{
-						if(t_backFile.exists()){
-							t_backFile.delete();
-						}
-					}finally{
-						t_backFile.close();
-						t_backFile = null;
-					}
+					postWriteReadIni(fsm_backInitFilename);
 				}
 			}finally{
 				fc.close();
@@ -1410,11 +1545,10 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			if(m_connectDeamon.IsConnectState()){
 				m_connectDeamon.Disconnect();
 			}	
-		}catch(Exception e){}
-		
+		}catch(Exception e){}		
 		
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
-		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);	
+		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);
 		
 		DisableWeiboModule();
 		
@@ -1608,7 +1742,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				popScreen(m_stateScreen);
 				m_stateScreen = null;
 			}
-		}			
+		}
 	}
 	
 	public void pushStateScreen(){
@@ -1616,7 +1750,9 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			m_stateScreen = new stateScreen(this);	
 		}
 		
-		pushScreen(m_stateScreen);
+		if(getScreenCount() == 0){
+			pushScreen(m_stateScreen);
+		}		
 	}
 	
 	public void popStateScreen(){
@@ -1798,7 +1934,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	public String	m_uploadFileFavorPath 				= null;
 	
-	public Object OpenAttachmentFileScreen(final boolean _del){
+	public Object OpenAttachmentFileScreen(Object _org,final boolean _del){
 		
 		try{
 
@@ -1812,7 +1948,56 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}
 		
 		return null;
-	}	
+	}
+	
+	//! message composed screen to add context menu to return change mailsender dialog  
+	public Object openChangeMailSenderDlg(Object _org){
+		
+		try{
+			
+			ChangeMailSenderDlg t_dlg = new ChangeMailSenderDlg(recvMain.this);
+			UiApplication.getUiApplication().pushScreen(t_dlg);
+			return t_dlg;
+			
+		}catch(Exception e){
+			SetErrorString("OCMSD",e);
+		}
+		
+		return _org;
+	}
+	
+	/**
+	 * load the change mail sender dialog menu item or remove it
+	 */
+	private boolean m_loadChangeMailSenderMenu = false; 
+	
+	/**
+	 * load the change mail sender dialog menu item or remove it
+	 * @param _load		load or remove
+	 */
+	public void loadChangeMailSenderMenu(boolean _load){
+		
+		// clear the temporary default sender
+		m_defaultSendMailAccountIndex_tmp = -1;
+		
+		if(m_loadChangeMailSenderMenu != _load){
+						
+			if(_load){
+				if(m_sendMailAccountList.size() <= 1){ //unique account...
+					return;
+				}
+				try{
+					ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_changeDefaultSenderItem);
+				}catch(Exception e){}
+			}else{
+				try{
+					ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_changeDefaultSenderItem);
+				}catch(Exception e){}				
+			}
+			
+			m_loadChangeMailSenderMenu = _load;
+		}
+	}
 	
 	public void PushViewFileScreen(final String _filename){
 		
@@ -1848,7 +2033,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 		try{
 			Invocation request = new Invocation(_filename);
-			Registry registry = Registry.getRegistry("com.yuchting.yuchberry.client.recvMain");
+			Registry registry = Registry.getRegistry(UiApplication.getUiApplication().getClass().getName());
 			registry.invoke(request);
 			
 			return true;
@@ -2155,6 +2340,107 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
         return buf.toString();
     }
 	
+	public static String sprintf(int _expid,String[] _arg){
+		return sprintf(sm_local.getString(_expid),_arg);
+	}
+
+	public static String sprintf(String _exp,String[] _arg){
+		
+		if(_arg == null){
+			return _exp;
+		}
+		
+		int t_idx 		= 0;
+		int t_argIdx	= 0;
+		
+		while(t_argIdx < _arg.length){
+			
+			t_idx = _exp.indexOf("%s");
+			if(t_idx == -1){
+				break;
+			}
+			
+			_exp = _exp.substring(0,t_idx) + _arg[t_argIdx++] + _exp.substring(t_idx + 2);
+		}
+		
+		return _exp;
+	}
+	
+	/**
+	 * whether this string is valid Email  
+	 * @param _str
+	 * @return true if this string is email otherwise false
+	 */
+	public static boolean isValidateEmail(String _str){
+		int t_at = _str.indexOf("@");
+		if(t_at == -1){
+			return false;
+		}
+		
+		if(t_at == 0 || (_str.length() - 1) - t_at < 3){
+			return false;
+		}
+		
+		String t_addr = _str.substring(t_at + 1);
+		
+		int t_otherAt = t_addr.indexOf("@");
+		if(t_otherAt != -1){
+			return false;
+		}
+		
+		int t_dot = t_addr.indexOf(".");
+		if(t_dot == -1){
+			return false;
+		}
+		
+		if(t_dot == t_addr.length() - 1 ){
+			return false;
+		}
+		
+		return true;
+	}
+	
+//	static ImageManipulator		sm_manipulator = new ImageManipulator(null);
+	public static Bitmap scaleImage(EncodedImage _image,int _width,int _height){
+		
+//		synchronized (sm_manipulator) {
+//						
+//			Bitmap t_bitmap = new Bitmap(_width,_height);
+//			
+//			sm_manipulator.setBitmap(_image.getBitmap());
+//			sm_manipulator.scaleInto(t_bitmap,0,ImageManipulator.SCALE_TO_FILL);
+//			
+//			return t_bitmap;
+//		}
+		
+		int t_origWidth = _image.getWidth();
+		int t_origHeight = _image.getHeight();
+		
+		int scaleX = Fixed32.div(Fixed32.toFP(t_origWidth), Fixed32.toFP(_width));
+		int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(_height));
+		
+		return _image.scaleImage32(scaleX, scaleY).getBitmap();
+	}
+	
+	/**
+	 * get the HTTP request which is opened by Connector.open() append string 
+	 * @return
+	 */
+	public static String getHTTPAppendString(){
+		String t_append = ";deviceside=true";
+		
+		if( WLANInfo.getAPInfo() != null){
+			t_append += ";interface=wifi";
+		}else{
+			
+			String apn = recvMain.findNetworkAPN();
+			if(apn != null){
+				t_append += ";apn=" + apn;
+			}
+		}
+		
+		return t_append;
+	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///// weibo module
@@ -2212,9 +2498,12 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	};
 	
 	public int						m_weiboUploadImageSizeIndex = 0;
+	public Vector					m_weiboAccountList		= new Vector();
 		
-	public Vector					m_weiboAccountList		= new Vector();	
-		
+	/**
+	 * get the automatic refresh Weibo interval time 
+	 * @return
+	 */		
 	public int getRefreshWeiboInterval(){
 		if(m_refreshWeiboIntervalIndex < fsm_refreshWeiboInterval.length){
 			return fsm_refreshWeiboInterval[m_refreshWeiboIntervalIndex];
@@ -2240,10 +2529,12 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	public static ImageSets			sm_weiboUIImage = null;
 	public static ImageSets			sm_extUIImage = null;	
+
 	public Vector						m_phizImageList = new Vector();
 	public static Vector				sm_phizImageList = null;		
 	
 	public ObjectAllocator				m_weiboAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.weibo.fetchWeibo");
+	public ImageSets					m_weiboUIImage = null;
 	
 	public void loadImageSets(){
 		
@@ -2266,6 +2557,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			}
 			
 			sm_phizImageList = m_phizImageList;
+			
+			m_weiboUIImage = sm_weiboUIImage;
 		}
 		
 			}
@@ -2446,7 +2739,10 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			}
 			
 			m_receivedWeiboList.addElement(_weibo);
-		}		
+		}
+		
+		// store the weibo name data
+		storeWeiboName(_weibo);
 		
 		m_weiboTimeLineScreen.AddWeibo(_weibo,false);
 	}
@@ -2476,7 +2772,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	static final String fsm_weiboDataName = "weibo.data";
 	static final String fsm_weiboDataBackName = "~weibo.data";
-	
+		
 	private synchronized boolean ReadWriteWeiboFile(final boolean _read){
 		
 		if(!m_receiveWeiboListChanged && !_read){
@@ -2487,7 +2783,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 					
 		if(_read){
 			
-			ReadWriteWeiboFile_impl(_read);
+			readWriteWeiboFile_impl(_read);
+			readWeiboNameList();
 			return true;
 			
 		}else{
@@ -2498,7 +2795,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			invokeLater(new Runnable() {
 				
 				public void run() {
-					ReadWriteWeiboFile_impl(_read);
+					readWriteWeiboFile_impl(_read);
 					
 					System.exit(0);
 				}
@@ -2508,14 +2805,18 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}
 	}
 	
-	private void ReadWriteWeiboFile_impl(final boolean _read){
+	/**
+	 * read or write weibo history list to a file sync
+	 * @param _read
+	 */
+	private synchronized void readWriteWeiboFile_impl(final boolean _read){
 		
 		String t_weiboDataDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
 		
 		String t_weiboDataPathName 		= t_weiboDataDir + fsm_weiboDataName;
 		String t_weiboDataBackPathName	= t_weiboDataDir + fsm_weiboDataBackName;
 		
-		PreWriteReadIni(_read, t_weiboDataBackPathName,t_weiboDataPathName,
+		preWriteReadIni(_read, t_weiboDataBackPathName,t_weiboDataPathName,
 				fsm_weiboDataBackName, fsm_weiboDataName);		
 		
 		try{
@@ -2567,25 +2868,14 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 						}
 						
 						t_fileos.write(tmpos.toByteArray());
-												
-					}finally{
 						t_fileos.flush();
+						
+					}finally{
 						t_fileos.close();
 						t_fileos = null;
 					}
 					
-					// delete the back file ~weibo.data
-					//
-					FileConnection t_backFile = (FileConnection) Connector.open(t_weiboDataBackPathName,Connector.READ_WRITE);
-					try{
-						if(t_backFile.exists()){
-							t_backFile.delete();
-						}
-					}finally{
-						t_backFile.close();
-						t_backFile = null;
-					}
-					
+					postWriteReadIni(t_weiboDataBackPathName);
 				}
 				
 			}finally{
@@ -2594,6 +2884,234 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			}
 		}catch(Exception e){
 			SetErrorString("RWWF:"+e.getMessage()+e.getClass().getName());
+		}
+	}
+	
+	/**
+	 * the weibo name file header
+	 * @author yuch
+	 *
+	 */
+	public static class WeiboNameHeader{
+		int	fileLength		= 0;
+		int weiboNameNum	= 0;
+	}
+	
+	/**
+	 * weibo name
+	 * @author yuch
+	 *
+	 */
+	public static class WeiboName{
+		long id;
+		String name;
+		
+		public WeiboName(){}
+		public WeiboName(long _id,String _name){
+			id 		= _id;
+			name	= _name;
+		}
+	}
+	
+	/**
+	 * the weibo name list
+	 */
+	public LongHashtable	m_weiboNameList 	= new LongHashtable();
+	public WeiboNameHeader m_weiboNameHeader	= new WeiboNameHeader();
+	
+	static final int		fsm_weiboNameFile_version 	= 0;
+
+	static final String fsm_weiboNameIdxFilename		= "weiboNameIdx.data";
+	static final String fsm_weiboNameIdxBackFilename	= "~weiboNameIdx.data";
+	
+	static final String fsm_weiboNameListFilename		= "weiboNameList.data";
+	
+	/**
+	 * read weibo name data 
+	 */
+	private synchronized void readWeiboNameList(){
+		
+		String t_weiboDataDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
+		
+		String t_weiboDataPathName 		= t_weiboDataDir + fsm_weiboNameIdxFilename;
+		String t_weiboDataBackPathName	= t_weiboDataDir + fsm_weiboNameIdxBackFilename;
+
+		String t_weiboNameListName		= t_weiboDataDir + fsm_weiboNameListFilename;
+		
+		preWriteReadIni(true, t_weiboDataBackPathName,t_weiboDataPathName,
+						fsm_weiboDataBackName, fsm_weiboDataName);
+		
+		synchronized (m_weiboNameList) {
+			m_weiboNameList.clear();
+			
+			try{
+				
+				// read the weibo name header file
+				//
+				FileConnection t_fc = (FileConnection)Connector.open(t_weiboDataPathName);
+				try{
+					if(t_fc.exists()){
+						InputStream in = t_fc.openInputStream();
+						try{
+							int t_version 					= in.read();
+							
+							m_weiboNameHeader.fileLength	= sendReceive.ReadInt(in);
+							m_weiboNameHeader.weiboNameNum	= sendReceive.ReadInt(in);
+						}finally{
+							in.close();
+							in = null;
+						}
+					}
+				}finally{
+					t_fc.close();
+					t_fc = null;
+				}
+								
+				// read the weibo name list 
+				//
+				t_fc = (FileConnection)Connector.open(t_weiboNameListName);
+				try{
+					if(t_fc.exists()){
+						InputStream in = t_fc.openInputStream();
+						try{							
+							WeiboName w;
+							for(int i = 0;i < m_weiboNameHeader.weiboNameNum;i++){
+								w = new WeiboName();
+								w.id 	= sendReceive.ReadLong(in);
+								w.name	= sendReceive.ReadString(in);
+								
+								m_weiboNameList.put(w.id,w);
+							}
+						}finally{
+							in.close();
+							in = null;
+						}
+					}
+				}finally{
+					t_fc.close();
+					t_fc = null;
+				}
+				
+			}catch(Exception e){
+				SetErrorString("RWNL", e);
+			}
+		}
+		
+	}
+	
+	/**
+	 * write weibo name to the file
+	 * @param _id
+	 * @param _name
+	 */
+	private void writeWeiboName(long _id,String _name){
+		
+		// whether has been added
+		if(m_weiboNameList.get(_id) != null){
+			return;
+		}
+
+		String t_weiboDataDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
+		
+		String t_weiboDataPathName 		= t_weiboDataDir + fsm_weiboNameIdxFilename;
+		String t_weiboDataBackPathName	= t_weiboDataDir + fsm_weiboNameIdxBackFilename;
+
+		String t_weiboNameListName		= t_weiboDataDir + fsm_weiboNameListFilename;
+		
+		preWriteReadIni(false, t_weiboDataBackPathName,t_weiboDataPathName,
+						fsm_weiboDataBackName, fsm_weiboDataName);
+		
+		synchronized (m_weiboNameList) {
+			
+			try{			
+				
+				// read the weibo name list 
+				//
+				FileConnection t_fc = (FileConnection)Connector.open(t_weiboNameListName);
+				try{
+					if(!t_fc.exists()){
+						t_fc.create();
+					}
+					
+					// append the weibo name data to the weibo filae
+					OutputStream os = t_fc.openOutputStream(t_fc.fileSize());
+					try{
+						sendReceive.WriteLong(os, _id);
+						sendReceive.WriteString(os, _name);
+						
+						os.flush();
+					}finally{
+						os.close();
+						os = null;
+					}
+					
+					m_weiboNameList.put(_id,new WeiboName(_id,_name));
+					
+					// increase 
+					//
+					m_weiboNameHeader.fileLength = (int)t_fc.fileSize();
+					m_weiboNameHeader.weiboNameNum++;
+					
+				}finally{
+					t_fc.close();
+					t_fc = null;
+				}
+				
+				// read the weibo name header file
+				//
+				t_fc = (FileConnection)Connector.open(t_weiboDataPathName);
+				try{
+					if(!t_fc.exists()){
+						t_fc.create();						
+					}
+					OutputStream os = t_fc.openOutputStream();
+					try{
+						os.write(fsm_weiboNameFile_version);
+						
+						sendReceive.WriteInt(os, m_weiboNameHeader.fileLength);
+						sendReceive.WriteInt(os, m_weiboNameHeader.weiboNameNum);
+						
+						os.flush();
+					}finally{
+						os.close();
+						os = null;
+					}
+					
+				}finally{
+					t_fc.close();
+					t_fc = null;
+				}
+				
+				postWriteReadIni(fsm_weiboDataBackName);
+				
+			}catch(Exception e){
+				SetErrorString("RWNL", e);
+			}
+		}
+		
+	}
+	
+
+	/**
+	 * store 
+	 * @param _weibo
+	 */
+	public void storeWeiboName(fetchWeibo _weibo){
+		
+		storeWeiboName_impl(_weibo);
+		
+		if(_weibo.GetCommentWeibo() != null){
+			storeWeiboName(_weibo.GetCommentWeibo());
+		}
+		
+		if(_weibo.GetReplyWeibo() != null){
+			storeWeiboName(_weibo.GetReplyWeibo());
+		}
+	}
+	
+	private void storeWeiboName_impl(fetchWeibo _weibo){
+		if(_weibo.isUserFollowing() && _weibo.isUserFollowMe()){
+			writeWeiboName(_weibo.GetUserId(), _weibo.GetUserScreenName());
 		}
 	}
 	
@@ -2612,6 +3130,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public boolean				m_imVoiceImmMode		= false;
 	
 	public boolean				m_imReturnSend	= false;
+	
+	public boolean				m_imChatScreenShowHeadImg = false;
 	
 	/**
 	 * IM option to popup a dialog prompt 

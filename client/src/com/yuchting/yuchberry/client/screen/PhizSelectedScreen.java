@@ -25,14 +25,16 @@
  *  语盒开发者
  *  
  */
-package com.yuchting.yuchberry.client.ui;
+package com.yuchting.yuchberry.client.screen;
 
 import java.util.Vector;
 
 import local.yblocalResource;
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.AutoTextEditField;
@@ -41,6 +43,7 @@ import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.ui.Phiz;
 
 final class PhizMgr extends Manager{
 	
@@ -57,10 +60,17 @@ final class PhizMgr extends Manager{
 	
 	int					m_phizSize = 0;
 	
+	Phiz				m_currSelected = null;
+	
 	public PhizMgr(Vector _phizList){
 		super(Manager.VERTICAL_SCROLL);
-				
+		
+		if(_phizList.size() == 0){
+			throw new RuntimeException("_phizList.size() == 0");
+		}
+		
 		m_phizList = _phizList;
+		m_currSelected = (Phiz)m_phizList.elementAt(0);
 		
 		for(int i = 0 ; i < m_phizList.size();i++){
 			Phiz t_phiz = (Phiz)m_phizList.elementAt(i);
@@ -154,9 +164,10 @@ final class PhizMgr extends Manager{
 	public void resetSelected(){
 		m_move_x = m_move_y = 0;
 		if(getFieldCount() > 0){
-			Phiz t_phiz = (Phiz)getField(0);			
-			t_phiz.setFocus();
-			((PhizSelectedScreen)getScreen()).setPromptLabel(t_phiz.getPhizName());
+			m_currSelected = (Phiz)getField(0);			
+			m_currSelected.setFocus();
+			
+			((PhizSelectedScreen)getScreen()).setPromptLabel(m_currSelected.getPhizName());
 		}		
 	}
 	
@@ -193,17 +204,21 @@ final class PhizMgr extends Manager{
 		int t_index = m_move_y * m_maxRowNum + m_move_x;
 		int t_fieldNum = getFieldCount();
 		
-		Phiz t_phiz = null;
+		Phiz t_formerSelected = m_currSelected;
 		if(t_index < t_fieldNum){
-			t_phiz = (Phiz)getField(t_index);
+			m_currSelected = (Phiz)getField(t_index);
 		}else{
-			t_phiz = (Phiz)getField(t_fieldNum - 1);
+			m_currSelected = (Phiz)getField(t_fieldNum - 1);
 			m_move_x = t_fieldNum % m_maxRowNum - 1;
 			m_move_y = m_maxColNum - 1;
 		}
 		
-		t_phiz.setFocus();
-		((PhizSelectedScreen)getScreen()).setPromptLabel(t_phiz.getPhizName());
+		m_currSelected.setFocus();
+		((PhizSelectedScreen)getScreen()).setPromptLabel(m_currSelected.getPhizName());
+		
+		if(t_formerSelected != m_currSelected){
+			getScreen().invalidate();
+		}
 		
 		return true;
 	}
@@ -211,6 +226,8 @@ final class PhizMgr extends Manager{
 }
 
 public class PhizSelectedScreen extends MainScreen{
+	
+	static final int BIG_PHIZ_SIZE = recvMain.fsm_display_width / 4;
 
 	public static PhizSelectedScreen	sm_phizScreen 	= null;
 	
@@ -240,24 +257,47 @@ public class PhizSelectedScreen extends MainScreen{
 	
 	PhizMgr		m_phizMgr;
 	String		m_promptString = recvMain.sm_local.getString(yblocalResource.WEIBO_PHIZ_SCREEN_PROMPT);
-	LabelField	m_promptLabel = new LabelField(m_promptString,Field.NON_FOCUSABLE);
+	LabelField	m_prompt = new LabelField(m_promptString,Field.NON_FOCUSABLE);
 	
-	public PhizSelectedScreen(Vector _phizList){
-		add(m_promptLabel);
+	int[]		m_currPhizBuffer = null;
+	Bitmap 		m_currPhizImage = null; 
+	Bitmap 		m_bigPhizImage = null;
+	
+	recvMain	m_mainApp;
+	
+	boolean	m_showBigPhizImage = false;
+	
+	public PhizSelectedScreen(recvMain _mainApp){
+		
+		if(_mainApp.m_phizImageList.size() == 0){
+			throw new RuntimeException("_phizList.size() == 0");
+		}
+		
+		m_mainApp = _mainApp;
+		
+		// prepare th field 
+		m_prompt = new LabelField(recvMain.sm_local.getString(yblocalResource.WEIBO_PHIZ_SCREEN_PROMPT),Field.NON_FOCUSABLE);
+		add(m_prompt);
 		add(new SeparatorField());
 				
-		m_phizMgr = new PhizMgr(_phizList);
+		m_phizMgr = new PhizMgr(_mainApp.m_phizImageList);
 		add(m_phizMgr);
+				
+		// prepare the scale phiz variables
+		//
+		Phiz t_phiz = (Phiz)_mainApp.m_phizImageList.elementAt(0);
+		m_currPhizBuffer	= new int[t_phiz.getImage().getWidth() * t_phiz.getImage().getHeight()];
+		m_bigPhizImage 		= new Bitmap(BIG_PHIZ_SIZE,BIG_PHIZ_SIZE);
+		m_currPhizImage		= new Bitmap(t_phiz.getImage().getWidth(),t_phiz.getImage().getHeight());
 	}
 	
 	protected  void	onDisplay(){
 		super.onDisplay();
-		
-		m_phizMgr.resetSelected();
+		//m_phizMgr.resetSelected();
 	}
 	
 	public void setPromptLabel(String _phizName){
-		m_promptLabel.setText(m_promptString + _phizName);
+		m_prompt.setText(m_promptString + _phizName);
 	}
 	
 	public void close(){
@@ -275,15 +315,51 @@ public class PhizSelectedScreen extends MainScreen{
 		super.close();
 	}
 
+	/**
+	 * 
+	 */
+	protected void paint(Graphics g){
+		super.paint(g);
+				
+		try{
+			
+			int t_x = 0;			
+			int t_y = recvMain.fsm_display_height - BIG_PHIZ_SIZE;
+			if(m_phizMgr.m_move_y * Phiz.fsm_phizSize > recvMain.fsm_display_height / 2){
+				t_y = m_prompt.getFont().getHeight() + 2;
+			}
+			
+			m_mainApp.m_weiboUIImage.getImageUnitBuffer(m_phizMgr.m_currSelected.getImage(), m_currPhizBuffer);
+			m_currPhizImage.setARGB(m_currPhizBuffer, 0, m_currPhizImage.getWidth(), 0, 0, m_currPhizImage.getWidth(),m_currPhizImage.getHeight());
+			m_currPhizImage.scaleInto(m_bigPhizImage, Bitmap.FILTER_LANCZOS);
+			
+			int t_color = g.getColor();
+			try{
+				g.setColor(0xffffff);
+				g.fillRect(t_x, t_y, BIG_PHIZ_SIZE, BIG_PHIZ_SIZE);
+			}finally{
+				g.setColor(t_color);
+			}
+			
+			g.drawBitmap(t_x, t_y, m_bigPhizImage.getWidth(), m_bigPhizImage.getHeight(), m_bigPhizImage, 0, 0);
+			
+		}catch(Exception e){}
+		
+		
+	}
+	
+	protected boolean trackwheelRoll(int amount,int status,int time){		
+		return m_phizMgr.navigationMovement(amount, 0, status, time);
+	}
 	
 	protected boolean navigationMovement(int dx,int dy,int status,int time){
 		return m_phizMgr.navigationMovement(dx, dy, status, time);
 	}
 	
-	static public PhizSelectedScreen getPhizScreen(AutoTextEditField _insertEdit){
+	static public PhizSelectedScreen getPhizScreen(recvMain _mainApp,AutoTextEditField _insertEdit){
 		
 		if(sm_phizScreen == null){
-			sm_phizScreen = new PhizSelectedScreen(recvMain.sm_phizImageList);
+			sm_phizScreen = new PhizSelectedScreen(_mainApp);
 		}
 		
 		sm_phizScreen.preparePhizScreen(_insertEdit);
