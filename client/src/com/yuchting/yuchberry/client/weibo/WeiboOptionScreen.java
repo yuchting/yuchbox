@@ -176,14 +176,13 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 		 add(m_autoLoadNewTimelineWeibo);
 		 		 
 		 t_label = new LabelField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_THEME_LABEL));
-// 屏蔽UI选择按钮
-/*
+
 		 add(t_label);
 		 add(m_uiStandard);
-	 	 add(m_uiBlack);
+//		 add(m_uiBlack); //RRR:屏蔽夜晚皮肤选项
 		 m_uiStandard.setChangeListener(this);
-		 m_uiBlack.setChangeListener(this);
-*/		 
+//		 m_uiBlack.setChangeListener(this);//RRR:屏蔽夜晚皮肤选项
+		 
 		 if(!recvMain.sm_standardUI){
 			 m_uiBlack.setSelected(true);
 		 }

@@ -2528,8 +2528,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	}
 	
 	public static ImageSets			sm_weiboUIImage = null;
-	public static ImageSets			sm_extUIImage = null;	
-
 	public Vector						m_phizImageList = new Vector();
 	public static Vector				sm_phizImageList = null;		
 	
@@ -2542,7 +2540,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 
 			try{
 				sm_weiboUIImage = new ImageSets("/weibo_full_image.imageset");
-				sm_extUIImage = new ImageSets("/ext_full_image.imageset");
 			}catch(Exception e){
 				DialogAlertAndExit("weibo UI load Error:"+ e.getMessage() + e.getClass().getName());
 			}
@@ -2560,8 +2557,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			
 			m_weiboUIImage = sm_weiboUIImage;
 		}
-		
-			}
+	}
 	
 	public void InitWeiboModule(){
 		

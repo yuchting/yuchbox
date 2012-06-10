@@ -180,7 +180,7 @@ public class BubbleImage {
 			m_parentSets.drawImage(_g,m_right,_x + (_width - m_right.m_width),
 					t_vert_y,m_right.m_width,t_vert_remain_height);
 		}
-				
+		
 		// draw the point 
 		//
 		if(m_point != null){
@@ -188,13 +188,13 @@ public class BubbleImage {
 			case LEFT_POINT_STYLE:
 				if(m_point[LEFT_POINT_STYLE] != null){
 					if(m_point_down){
-						m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width + 1,  // more one pixel to overload the edge 
+						m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width,
 								_y + _height - (m_point[LEFT_POINT_STYLE].getHeight() * 3 / 2) );
 					}else{
-						m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width + 1, // more one pixel to overload the edge 
+						m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width,
 								_y + (m_point[LEFT_POINT_STYLE].getHeight() / 2) );
 					}					
-				}
+				}				
 				break;
 			case TOP_POINT_STYLE:
 				if(m_point[TOP_POINT_STYLE] != null){
@@ -222,7 +222,7 @@ public class BubbleImage {
 				}				
 				break;
 			}
-		}
+		}		
 		
 		// fill the inner rectangle
 		//

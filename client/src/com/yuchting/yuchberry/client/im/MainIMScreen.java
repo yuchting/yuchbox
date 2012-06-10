@@ -98,9 +98,9 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	}
 	
-	public final static int fsm_backgroundColor = 0xfafafa; //列表空白区域颜色
+	public final static int fsm_backgroundColor = 0xfafafa; //RRR:列表空白区域颜色0x1f2d39;
 	
-	public final static int fsm_groupBackgroundColor = 0x122030;
+	public final static int fsm_groupBackgroundColor = 0xd8e7fc;//RRR:分组背景0x122030
 	
 	int m_menu_label = 0;
 	
@@ -1951,7 +1951,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 					if(_on){
 						// draw selected backgroud
 						//
-						WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight(),false);
+						WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight());
 					}
 					
 					_g.setColor(RosterItemField.fsm_groupTitleTextColor);

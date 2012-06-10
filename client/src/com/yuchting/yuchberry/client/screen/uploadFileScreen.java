@@ -863,6 +863,7 @@ public class uploadFileScreen extends MainScreen{
 		protected void paint(Graphics graphics) {
 			drawFocus(graphics, isFocus());			
 		}
+
 	}
 	
 	/**

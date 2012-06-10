@@ -227,7 +227,7 @@ final class PhizMgr extends Manager{
 
 public class PhizSelectedScreen extends MainScreen{
 	
-	static final int BIG_PHIZ_SIZE = recvMain.fsm_display_width / 4;
+	static final int BIG_PHIZ_SIZE = 64; //RRR: 表情放大 recvMain.fsm_display_width / 4; 
 
 	public static PhizSelectedScreen	sm_phizScreen 	= null;
 	
@@ -323,7 +323,7 @@ public class PhizSelectedScreen extends MainScreen{
 				
 		try{
 			
-			int t_x = 0;			
+			int t_x =  recvMain.fsm_display_width / 2 - 32;			//RRR:放大表情的X轴的坐标居中
 			int t_y = recvMain.fsm_display_height - BIG_PHIZ_SIZE;
 			if(m_phizMgr.m_move_y * Phiz.fsm_phizSize > recvMain.fsm_display_height / 2){
 				t_y = m_prompt.getFont().getHeight() + 2;

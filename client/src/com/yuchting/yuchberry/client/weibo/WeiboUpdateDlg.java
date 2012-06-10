@@ -64,12 +64,12 @@ import com.yuchting.yuchberry.client.ui.ImageUnit;
 
 final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	
-	public int			m_updateDlgHeaderHeight = 60;
+	public int			m_updateDlgHeaderHeight = 60; //RRR:发微博标题框高度：32;
 	
 	public int			m_width 	= Display.getWidth() - 20;
 	public int			m_height 	= (Display.getHeight() - 30 > 300?300:(Display.getHeight() - 30));
 	
-	public AutoTextEditField 	m_editTextArea	= new AutoTextEditField(); 
+	public AutoTextEditField 	m_editTextArea	= new AutoTextEditField();
 	
 	weiboTimeLineScreen		m_timelineScreen;
 	int						m_titleHeight 	= 0;
@@ -105,7 +105,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		
 		protected void sublayout(int width, int height){
 			
-			setPositionChild(m_editTextArea,0,5); 
+			setPositionChild(m_editTextArea,4,4);
 			layoutChild(m_editTextArea,getPreferredWidth(),999);
 			
 			setExtent(getPreferredWidth(),getPreferredHeight());
@@ -119,8 +119,9 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 				if(field == m_editTextArea){
 					int t_color = _g.getColor();
 					try{
-						_g.setFont(WeiboItemField.sm_absFont); //取小一号字体//
-						_g.setColor(0);// (m_weiboCommentFGColor); 输入文字为黑色//
+						_g.setFont(WeiboItemField.sm_absFont); //RRR: 取小一号字体
+						_g.setColor(0);//RRR: 输入文字为黑色_g.setColor(m_weiboCommentFGColor);
+						
 						paintChild(_g, field);
 					}finally{
 						_g.setColor(t_color);
@@ -173,7 +174,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 				m_weiboUIImageSets,Field.FIELD_LEFT);
 		
 		if(recvMain.sm_standardUI){
-			m_updateTitle = m_weiboUIImageSets.getImageUnit("w_updlg_header"); //发微博页面Header背景
+			m_updateTitle = m_weiboUIImageSets.getImageUnit("w_updlg_header");//RRR:发微博页面Header背景("nav_bar");
 		}else{
 			m_updateTitle = m_weiboUIImageSets.getImageUnit("nav_bar");
 		}
@@ -313,7 +314,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		m_weiboUIImageSets.drawBitmapLine(_g, m_updateTitle, 1, 1, 
 				getPreferredWidth() - 2,m_updateDlgHeaderHeight);
 		
-		m_editBubbleImage.draw(_g, 1, m_titleHeight,getPreferredWidth() - 1, //Bubble边界
+		m_editBubbleImage.draw(_g, 1, m_titleHeight,getPreferredWidth() - 3,
 				m_editTextManager.getPreferredHeight() + 2,BubbleImage.NO_POINT_STYLE);
 		
 		int oldColor = _g.getColor();
@@ -323,7 +324,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			Font t_boldFont = oldFont.derive(oldFont.getStyle() | Font.BOLD);
 			
 			_g.setFont(t_boldFont);
-			_g.setColor(0); //标题字体改黑//
+			_g.setColor(0);//RRR:标题字体改黑色(0xffffff);
 			String t_str = recvMain.sm_local.getString(yblocalResource.WEIBO_UPDATE_DIALOG_TITLE) 
 				+ " (" + m_editTextArea.getText().length() + ")";
 			

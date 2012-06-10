@@ -75,7 +75,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		}
 	};
 	
-	public final static int		fsm_scrollbarSize	= 2;	
+	public final static int		fsm_scrollbarSize	= 3;	
 	public final static int		fsm_maxItemInOneScreen = recvMain.fsm_display_height / WeiboItemField.fsm_closeHeight;
 	
 	static ObjectAllocator		sm_weiboItemFieldAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.weibo.WeiboItemField");
@@ -314,6 +314,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		try{
 			
 			graphics.setColor(WeiboItemField.fsm_darkColor);
+			graphics.setFont(WeiboItemField.sm_absFont); //RRR:修改删除提示字体
 			graphics.drawText(recvMain.sm_local.getString(yblocalResource.WEIBO_REACH_MAX_WEIBO_NUM_PROMPT),
 								0,m_bufferedTotalHeight - WeiboItemField.sm_fontHeight);
 			
@@ -336,7 +337,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 					t_scroll_height = 4;
 				}
 				
-				graphics.setColor(0x606060); //滚动条颜色
+				graphics.setColor(0x606060);
 				graphics.fillRect(t_start_x,t_scroll_y,fsm_scrollbarSize,t_scroll_height);
 								
 				m_parentScreen.enableHeader(t_start_y == 0);

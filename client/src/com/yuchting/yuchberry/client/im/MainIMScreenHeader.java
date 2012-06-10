@@ -47,7 +47,7 @@ public class MainIMScreenHeader extends SliderHeader{
 	
 	MainIMScreen	m_parentScreen = null;
 	public MainIMScreenHeader(MainIMScreen _parentScreen){
-		super(_parentScreen.m_mainApp,fsm_stateBitmapString,false);
+		super(_parentScreen.m_mainApp,fsm_stateBitmapString);
 		
 		m_parentScreen = _parentScreen;
 	}

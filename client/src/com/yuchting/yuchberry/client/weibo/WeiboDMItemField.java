@@ -396,7 +396,7 @@ public class WeiboDMItemField extends WeiboItemField{
 			paintChild(_g,sm_nextPageBut);
 		}
 		
-		m_textHeight += sm_fontHeight ;
+		m_textHeight += sm_fontHeight;
 		
 		if(_g != null){
 			_g.drawLine(0,m_textHeight - 1,fsm_weiboItemFieldWidth,m_textHeight - 1);
