@@ -100,12 +100,11 @@ public class IMPromptDlg extends PopupScreen implements FieldChangeListener{
 					m_mainScreen.m_mainApp.requestForeground();
 				}
 				
-				if(m_mainScreen.m_mainApp.getActiveScreen() != m_mainScreen.m_chatScreen){
-					m_mainScreen.m_chatScreen.m_currRoster = m_openData;
-					m_mainScreen.m_mainApp.pushScreen(m_mainScreen.m_chatScreen);	
+				if(m_mainScreen.m_chatScreen.getUiEngine() == null){
+					m_mainScreen.m_chatScreen.popup(m_openData);
 				}else{
-					m_mainScreen.m_chatScreen.m_currRoster = m_openData;
-					m_mainScreen.m_chatScreen.m_middleMgr.prepareChatScreen(m_openData);
+					m_mainScreen.m_chatScreen.setCurrRoster(m_openData);
+					m_mainScreen.m_chatScreen.onDisplay_impl();
 				}
 				
 				m_mainScreen.m_chatScreen.clearAttachment();

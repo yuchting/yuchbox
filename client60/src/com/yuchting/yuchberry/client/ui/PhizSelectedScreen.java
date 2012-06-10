@@ -76,7 +76,7 @@ final class PhizMgr extends Manager{
 			return ;
 		}
 		
-		int t_x = 0;
+		int t_x = 0; 
 		int t_y = 0;
 		
 		m_maxRowNum = Display.getWidth() / (m_phizSize + fsm_phizInterval);

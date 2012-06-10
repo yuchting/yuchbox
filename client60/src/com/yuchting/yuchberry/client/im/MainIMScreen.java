@@ -43,6 +43,7 @@ import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.blackberry.api.invoke.MessageArguments;
 import net.rim.blackberry.api.mail.Address;
 import net.rim.blackberry.api.mail.Message;
+import net.rim.device.api.collection.Collection;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -55,6 +56,7 @@ import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.Menu;
+import net.rim.device.api.ui.component.NullField;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
@@ -78,6 +80,8 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		public String				m_lastChatText = "";
 		public int					m_currChatState;
 		
+		public boolean				m_hasNewMessage = false;
+		
 		/**
 		 * this data roster is Yuch client
 		 */
@@ -94,7 +98,9 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	}
 	
-	public final static int fsm_backgroundColor = 0xfafafa; //列表空白区域颜色
+	public final static int fsm_backgroundColor = 0xfafafa; //RRR:列表空白区域颜色0x1f2d39;
+	
+	public final static int fsm_groupBackgroundColor = 0xd8e7fc;//RRR:分组背景0x122030
 	
 	int m_menu_label = 0;
 	
@@ -153,6 +159,22 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	};
 	
+	MenuItem m_topRosterMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_TOP_ROSTER_MENU_LABEL),m_menu_op++,0){
+		public void run(){
+			if(m_currMgr != null && m_currMgr.getFieldCount() != 0){
+				m_currMgr.getField(0).setFocus();
+			}
+		}
+	};
+	
+	MenuItem m_bottomRosterMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_BOTTOM_ROSTER_MENU_LABEL),m_menu_op++,0){
+		public void run(){
+			if(m_currMgr != null && m_currMgr.getFieldCount() != 0){
+				m_currMgr.getField(m_currMgr.getFieldCount() - 1).setFocus();
+			}
+		}
+	};
+	
 	public IMAddRosterDlg		m_addRosterDlg = null;
 	MenuItem	m_addRosterMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_ADD_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
@@ -160,10 +182,14 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				m_addRosterDlg = new IMAddRosterDlg(MainIMScreen.this);
 			}
 			
-			m_mainApp.pushScreen(m_addRosterDlg);
+			m_mainApp.invokeLater(new Runnable() {
+				public void run() {
+					m_mainApp.pushScreen(m_addRosterDlg);
+				}
+			});
+			
 		}
-	};
-	
+	};	
 
 	public RosterInfoScreen m_checkRosterInfoScreen = null;
 	MenuItem	m_checkRosterMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_CHECK_ROSTER_MENU_LABEL),m_menu_op++,0){
@@ -184,7 +210,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
 	MenuItem	m_delRosterMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_DEL_ROSTER_MENU_LABEL),m_menu_op++,0){
 		public void run(){
-			if(m_currFocusRosterItemField != null && m_currMgr == m_rosterListMgr){
+			if(m_currFocusRosterItemField != null && m_currMgr == m_groupListMgr){
 			
 				fetchChatRoster t_roster = ((RosterItemField)m_currFocusRosterItemField).m_currRoster.m_roster;
 				
@@ -210,7 +236,11 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 					m_aliasDlg = new IMAliasDlg(MainIMScreen.this,(RosterItemField)m_currFocusRosterItemField);
 				}
 				
-				m_mainApp.pushScreen(m_aliasDlg);				
+				m_mainApp.invokeLater(new Runnable() {
+					public void run() {
+						m_mainApp.pushScreen(m_aliasDlg);
+					}
+				});
 			}
 			
 		}
@@ -278,7 +308,11 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	MenuItem	m_addStatusMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_ADD_STATUS),m_menu_op++,0){
 		public void run(){
 			m_statusAddScreen = new IMStatusAddScreen(MainIMScreen.this, null);
-			m_mainApp.pushScreen(m_statusAddScreen);
+			m_mainApp.invokeLater(new Runnable() {
+				public void run() {
+					m_mainApp.pushScreen(m_statusAddScreen);
+				}
+			});
 			
 		}
 	};
@@ -292,7 +326,11 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				if(t_field.isFocus()){
 					
 					m_statusAddScreen = new IMStatusAddScreen(MainIMScreen.this, t_field.m_status);
-					m_mainApp.pushScreen(m_statusAddScreen);
+					m_mainApp.invokeLater(new Runnable() {
+						public void run() {
+							m_mainApp.pushScreen(m_statusAddScreen);
+						}
+					});
 					
 					break;
 				}
@@ -402,8 +440,30 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	recvMain				m_mainApp = null;
 	
 	VerticalFieldManager	m_historyChatMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
-	VerticalFieldManager	m_rosterListMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
 	VerticalFieldManager	m_statusListMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
+	VerticalFieldManager	m_groupListMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR){
+		public Field getFieldWithFocus(){
+			
+			Field t_result = null;
+			
+			int num = this.getFieldCount();
+			
+			for(int i = 0;i < num;i++){
+				GroupFieldManager t_mgr = (GroupFieldManager)this.getField(i);
+				t_result = t_mgr.getFieldWithFocus();
+				if(t_result != null){
+					break;
+				}
+			}
+			
+			return t_result;
+		}
+	};
+	
+	GroupFieldManager		m_selectGroupTitleField = null;
+	
+	Vector					m_groupNameList = new Vector();
+	Vector					m_groupRosterList = new Vector();
 		
 	public Vector			m_rosterChatDataList = new Vector();
 	
@@ -558,7 +618,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	private RosterChatData getCurrFocusRosterData(){
 		RosterChatData t_data = null;
 		
-		if(m_currMgr == m_rosterListMgr && m_currFocusRosterItemField != null){
+		if(m_currMgr == m_groupListMgr && m_currFocusRosterItemField != null){
 			t_data = ((RosterItemField)m_currFocusRosterItemField).m_currRoster;
 		}else if(m_currMgr == m_historyChatMgr && m_currFocusHistoryRosterItemField != null){
 			t_data = ((RosterItemField)m_currFocusHistoryRosterItemField).m_currRoster;
@@ -574,7 +634,13 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		_menu.add(MenuItem.separator(m_menu_label));
 		
 		_menu.add(m_refreshListMenu);
-		if(m_currMgr == m_rosterListMgr){
+		
+		if(m_currMgr != null && m_currMgr.getFieldCount() != 0){
+			_menu.add(m_topRosterMenu);
+			_menu.add(m_bottomRosterMenu);
+		}
+		
+		if(m_currMgr == m_groupListMgr){
 
 			if(m_mainApp.m_hideUnvailiableRoster){
 				_menu.add(m_showUnvailRosterMenu);
@@ -599,7 +665,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			}
 		}
 		
-		if(m_currMgr == m_rosterListMgr || m_currMgr == m_historyChatMgr){
+		if(m_currMgr == m_groupListMgr || m_currMgr == m_historyChatMgr){
 			_menu.add(m_searchRosterMenu);
 			
 			if(getCurrFocusRosterData() != null){
@@ -679,7 +745,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				
 			}else if(m_currFocusRosterItemField != null){
 				
-				if(m_currMgr == m_rosterListMgr){
+				if(m_currMgr == m_groupListMgr){
 					m_delRosterMenu.run();
 				}else if(m_currMgr == m_historyChatMgr){
 					m_delHistoryRoster.run();
@@ -689,7 +755,12 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			}
 			
 			break;
-			
+		case 'T':
+			m_topRosterMenu.run();
+			return true;
+		case 'B':
+			m_bottomRosterMenu.run();
+			return true;
 		}
 		
 		if(key == 10 && click()){
@@ -719,6 +790,11 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
 	private boolean click(){
 
+		if(m_currMgr == m_groupListMgr && m_selectGroupTitleField != null){
+			m_selectGroupTitleField.fieldChanged(null, 0);
+			return true;
+		}
+		
 		if(m_currMgr == m_statusListMgr){
 			
 			int t_fieldCount = m_currMgr.getFieldCount();
@@ -736,7 +812,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 					
 					refreshStatusList();
 					
-					return true;					
+					return true;
 				}
 			}
 		}		
@@ -763,7 +839,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		
 		if(m_currMgr == m_historyChatMgr){
 			m_currFocusHistoryRosterItemField_scrollBackup = m_currMgr.getFieldWithFocus();
-		}else if(m_currMgr == m_rosterListMgr){
+		}else if(m_currMgr == m_groupListMgr){
 			m_currFocusRosterItemField_scrollBackup = m_currMgr.getFieldWithFocus();
 		}else if(m_currMgr == m_statusListMgr){
 			m_currFocusStatusField_scrollBackup  = m_currMgr.getFieldWithFocus();
@@ -790,10 +866,10 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			}
 			break;
 		case MainIMScreenHeader.STATE_ROSTER_LIST:
-			if(m_currMgr != m_rosterListMgr){
+			if(m_currMgr != m_groupListMgr){
 		
-				replace(m_currMgr,m_rosterListMgr);
-				m_currMgr = m_rosterListMgr;
+				replace(m_currMgr,m_groupListMgr);
+				m_currMgr = m_groupListMgr;
 				
 				if(!m_isRequestRoster){
 					m_isRequestRoster = true;
@@ -818,7 +894,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		
 		if(m_currMgr == m_historyChatMgr && m_currFocusHistoryRosterItemField_scrollBackup != null){
 			m_currFocusHistoryRosterItemField_scrollBackup.setFocus();
-		}else if(m_currMgr == m_rosterListMgr && m_currFocusRosterItemField_scrollBackup != null){
+		}else if(m_currMgr == m_groupListMgr && m_currFocusRosterItemField_scrollBackup != null){
 			m_currFocusRosterItemField_scrollBackup.setFocus();
 		}else if(m_currMgr == m_statusListMgr && m_currFocusStatusField_scrollBackup != null){
 			m_currFocusStatusField_scrollBackup.setFocus();
@@ -896,7 +972,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				
 		boolean t_notify = !Backlight.isEnabled() 
 							|| !m_mainApp.isForeground() 
-							|| getUiEngine() == null;
+							|| m_chatScreen.getUiEngine() == null;
 		
 		boolean t_reNotify = !Backlight.isEnabled() && m_mainApp.m_imRenotifyPrompt;
 		
@@ -931,6 +1007,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 						data.m_chatMsgList.removeElementAt(0);
 					}
 					
+					data.m_hasNewMessage = true;
 					data.m_chatMsgList.addElement(_msg);
 					data.m_currChatState = fetchChatMsg.CHAT_STATE_COMMON;
 					
@@ -943,7 +1020,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 						// popup the dialog to prompt
 						//
 						if(!m_mainApp.isForeground() || m_chatScreen.getUiEngine() == null
-						 || (m_chatScreen.getUiEngine() != null && m_chatScreen.m_currRoster != data ) ){
+						 || (m_chatScreen.getUiEngine() != null && m_chatScreen.getCurrRoster() != data ) ){
 							
 							if(m_promptDlg.isGlobal()){
 								// has been popup to prompt
@@ -985,7 +1062,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 					}
 					
 					if(m_chatScreen.getUiEngine() != null
-						&& m_chatScreen.m_currRoster == data){
+						&& m_chatScreen.getCurrRoster() == data){
 						// the activate screen is chat screen
 						//
 						m_chatScreen.m_middleMgr.addChatMsg(_msg);
@@ -1052,6 +1129,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 					os.write(_msg.getFileContent());
 				}finally{
 					os.close();
+					os = null;
 				}
 				
 			}finally{
@@ -1083,17 +1161,22 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			}
 		}
 		
-		synchronized (m_rosterListMgr) {
-			int t_count = m_rosterListMgr.getFieldCount();
-			for(int i = 0; i < t_count;i++){
-				RosterItemField field = (RosterItemField)m_rosterListMgr.getField(i);
-				if(field.m_currRoster.m_roster == _roster){
-					
-					m_rosterListMgr.delete(field);
-					
-					break;				
-				}			
-			}
+		synchronized (m_groupListMgr) {
+			
+			Manager t_groupRosterMgr = getRosterGroupMgr(_roster);
+			if(t_groupRosterMgr != null){
+				
+				int t_count = t_groupRosterMgr.getFieldCount();
+				for(int i = 0; i < t_count;i++){
+					RosterItemField field = (RosterItemField)t_groupRosterMgr.getField(i);
+					if(field.m_currRoster.m_roster == _roster){
+						
+						t_groupRosterMgr.delete(field);
+						
+						break;				
+					}			
+				}	
+			}			
 		}
 		
 				
@@ -1208,18 +1291,16 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				boolean t_found = false;
 				
 				Vector t_tmpRosterList = new Vector();
-				
 				int t_num = sendReceive.ReadInt(in);
 				
 				m_mainApp.SetErrorString("PCRL: recv " + t_num + " roster");
-				
-				for(int i = 0 ;i < t_num;i++){
-					fetchChatRoster t_roster = new fetchChatRoster();
-					t_roster.Import(in);
-					
-					t_found = false;
-					
-					synchronized(m_rosterChatDataList){
+				synchronized(m_rosterChatDataList){
+					for(int i = 0 ;i < t_num;i++){
+						fetchChatRoster t_roster = new fetchChatRoster();
+						t_roster.Import(in);
+						
+						t_found = false;
+												
 						for(int j = 0;j < m_rosterChatDataList.size();j++){
 							RosterChatData t_data = (RosterChatData)m_rosterChatDataList.elementAt(j);
 							
@@ -1231,22 +1312,22 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 								break;
 							}
 						}
+											
+						if(!t_found){				
+							RosterChatData t_data = new RosterChatData(t_roster);
+							t_tmpRosterList.addElement(t_data);
+						}
 					}
-					
-					if(!t_found){				
-						RosterChatData t_data = new RosterChatData(t_roster);
-						t_tmpRosterList.addElement(t_data);
-					}
-				}
-				synchronized (m_rosterChatDataList) {
+				
+					// re-add it
 					m_rosterChatDataList.removeAllElements();
-
+					
 					for(int i = 0;i < t_tmpRosterList.size();i++){
 						RosterChatData t_data = (RosterChatData)t_tmpRosterList.elementAt(i);
 						m_rosterChatDataList.addElement(t_data);								
 					}
-				}				
-										
+				}
+		
 				refreshRosterList();
 										
 				break;
@@ -1288,7 +1369,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 							}							
 							
 							if(m_mainApp.getActiveScreen() == m_chatScreen
-							&& m_chatScreen.m_currRoster == data){
+							&& m_chatScreen.getCurrRoster() == data){
 								m_chatScreen.m_header.invalidate();
 							}
 							
@@ -1296,17 +1377,17 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 							
 							break;
 						}
-					}	
+					}
+					
+					if(!t_modified){
+						m_rosterChatDataList.addElement(new RosterChatData(t_roster));						
+					}
 				}						
 				
 				if(!t_modified){
-					
-					synchronized (m_rosterChatDataList) {
-						m_rosterChatDataList.addElement(new RosterChatData(t_roster));
-					}
-					
 					refreshRosterList();
 				}
+				
 				break;
 			}
 		}catch(Exception e){
@@ -1317,13 +1398,16 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
 	private void rangeRosterItemField(RosterChatData _rosterData){
 		
-		int num = m_rosterListMgr.getFieldCount();
+		Manager t_groupRosterMgr = getRosterGroupMgr(_rosterData.m_roster);
+		
+		int num = t_groupRosterMgr.getFieldCount();
+		
 		for(int j = 0;j < num;j++){
-			RosterItemField t_field = (RosterItemField)m_rosterListMgr.getField(j);
+			RosterItemField t_field = (RosterItemField)t_groupRosterMgr.getField(j);
 			if(_rosterData == t_field.m_currRoster){
 				// delete the changed field and re-insert it by it's presence state 
 				//
-				m_rosterListMgr.delete(t_field);
+				t_groupRosterMgr.delete(t_field);
 				
 				if(!m_mainApp.m_hideUnvailiableRoster 
 				|| t_field.m_currRoster.m_roster.getPresence() != fetchChatRoster.PRESENCE_UNAVAIL){
@@ -1354,30 +1438,80 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		}
 	}
 	
+	/**
+	 * get the group roster manager by roster group name
+	 * @param _roster
+	 * @return 
+	 */
+	private VerticalFieldManager getRosterGroupMgr(fetchChatRoster _roster){
+		
+		GroupFieldManager t_groupItemMgr = null; 
+		
+		synchronized (m_groupListMgr) {
+			
+			// search former group name list
+			//
+			int t_groupIdx = -1;
+			for(int i = 0;i < m_groupNameList.size();i++){
+				String groupName = (String)m_groupNameList.elementAt(i);
+				if(groupName.equals(_roster.getGroup())){
+					t_groupIdx = i;
+					break;
+				}
+			}
+			
+			if(t_groupIdx == -1){
+				// has NOT groups yet
+				//
+				t_groupItemMgr = new GroupFieldManager(_roster.getGroup());
+				
+				m_groupNameList.addElement(_roster.getGroup());
+				m_groupRosterList.addElement(t_groupItemMgr);
+				m_groupListMgr.add(t_groupItemMgr);
+			}else{
+				// get the added manager
+				//
+				t_groupItemMgr = (GroupFieldManager)m_groupRosterList.elementAt(t_groupIdx);
+				
+			}
+		}
+		
+		return t_groupItemMgr.m_rosterItemList;
+	}
+	
+	/**
+	 * insert a roster item field to exist list by its presence
+	 * @param _field
+	 */
 	private void insertRosterItemField(RosterItemField _field){
-					
-		int t_insertPresence = _field.m_currRoster.m_roster.getPresence();
-		int num = m_rosterListMgr.getFieldCount() - 1;
+		
+		VerticalFieldManager t_groupItemMgr = getRosterGroupMgr(_field.m_currRoster.m_roster);
+		
+		int t_insertPresence 	= _field.m_currRoster.m_roster.getPresence();
+		String t_insertAccount 	= _field.m_currRoster.m_roster.getAccount();
+		
+		int num = t_groupItemMgr.getFieldCount();
 		int index = 0;
 		
 		for(;index < num;index++){
-			RosterItemField item = (RosterItemField)m_rosterListMgr.getField(index);
-			if(item.m_currRoster.m_roster.getPresence() == t_insertPresence ){
+			RosterItemField item = (RosterItemField)t_groupItemMgr.getField(index);
+			if(t_insertPresence <= item.m_currRoster.m_roster.getPresence()){
 				break;
 			}
 		}
 		
 		for(;index < num;index++){
 							
-			RosterItemField cmp = (RosterItemField)m_rosterListMgr.getField(index + 1);
+			RosterItemField cmp = (RosterItemField)t_groupItemMgr.getField(index);
 			
-			int t_cmpPresenece = cmp.m_currRoster.m_roster.getPresence();
+			int t_cmpPresenece	= cmp.m_currRoster.m_roster.getPresence();
+			String t_cmpAccount	= cmp.m_currRoster.m_roster.getAccount();
 			
-			int t_cmpResult = cmp.m_currRoster.m_roster.getAccount().compareTo(_field.m_currRoster.m_roster.getAccount());
+			int t_cmpResult = t_cmpAccount.compareTo(t_insertAccount);
 			
 			if((t_cmpResult > 0 && t_cmpPresenece == t_insertPresence) || t_cmpPresenece != t_insertPresence){
 				
-				m_rosterListMgr.insert(_field,index);
+				t_groupItemMgr.insert(_field,index);
 				
 				return;
 			}
@@ -1385,7 +1519,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 		
 		// add to rear
 		//
-		m_rosterListMgr.add(_field);
+		t_groupItemMgr.add(_field);
 		
 	}
 	
@@ -1400,7 +1534,9 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				
 				synchronized(m_delayRefreshRosterListList){
 					
-					m_rosterListMgr.deleteAll();
+					m_groupListMgr.deleteAll();
+					m_groupNameList.removeAllElements();
+					m_groupRosterList.removeAllElements();
 					m_delayRefreshRosterListList.removeAllElements();
 					m_currFocusRosterItemField = null;
 					
@@ -1433,17 +1569,17 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 									if(m_mainApp.m_weiboTimeLineScreen != null
 										&& m_mainApp.m_weiboTimeLineScreen.isAddingWeibo()){
 										return;
-									}
-									
-									RosterChatData t_rosterData = (RosterChatData)m_delayRefreshRosterListList.elementAt(0);
+									}									
+								
 									try{
-										WeiboHeadImage t_image = WeiboHeadImage.SearchHeadImage(m_headImageList, t_rosterData.m_roster.getAccount(), 
-																(byte)t_rosterData.m_roster.getStyle(), 
-																t_rosterData.m_roster.getHeadImageHashCode(), false);
-
-										m_rosterListMgr.add(new RosterItemField(MainIMScreen.this,t_rosterData, 
-															t_image, false,MainIMScreen.this));
-
+										RosterChatData t_roster = (RosterChatData)m_delayRefreshRosterListList.elementAt(0);
+										
+										WeiboHeadImage t_image = WeiboHeadImage.SearchHeadImage(m_headImageList, t_roster.m_roster.getAccount(), 
+																						(byte)t_roster.m_roster.getStyle(), 
+																						t_roster.m_roster.getHeadImageHashCode(), false);
+																		
+										getRosterGroupMgr(t_roster.m_roster).add(new RosterItemField(MainIMScreen.this,t_roster, t_image, false,MainIMScreen.this));
+										
 									}catch(Exception e){
 										m_mainApp.SetErrorString("RRL:"+e.getMessage()+e.getClass().getName());
 									}
@@ -1462,6 +1598,17 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 				}
 			}
 		});		
+	}
+		
+	/**
+	 * get the fetch roster head image
+	 * @param _roster
+	 * @return
+	 * @throws Exception
+	 */
+	public WeiboHeadImage getHeadImage(fetchChatRoster _roster)throws Exception{
+		return WeiboHeadImage.SearchHeadImage(m_headImageList, _roster.getAccount(),
+				(byte)_roster.getStyle(),_roster.getHeadImageHashCode(), false);
 	}
 	
 	private void addRosterListByPresence(int _presence)throws Exception{
@@ -1534,7 +1681,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 					
 					t_data.m_currChatState = t_state;
 					
-					if(m_chatScreen.m_currRoster == t_data){
+					if(m_chatScreen.getCurrRoster() == t_data){
 						m_chatScreen.m_header.invalidate();
 					}
 					
@@ -1573,7 +1720,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 						msg.setSendState(fetchChatMsg.SEND_STATE_READ);
 						
 						if(m_mainApp.getActiveScreen() == m_chatScreen
-							&& m_chatScreen.m_currRoster == data){
+							&& m_chatScreen.getCurrRoster() == data){
 							
 							// refresh the right ChatField 
 							//
@@ -1700,28 +1847,164 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
 	public boolean selectedByKeyword(String _keyword,int _index){
 		
-		synchronized (m_rosterListMgr){
+		synchronized (m_groupListMgr){
 			
 			_keyword = _keyword.toLowerCase();
 			
 			int t_addIndex = 0;
 			
-			int num = m_rosterListMgr.getFieldCount();
+			int num = m_groupListMgr.getFieldCount();
 			for(int i = 0 ;i < num;i++){
-				RosterItemField t_field = (RosterItemField)m_rosterListMgr.getField(i);
+				GroupFieldManager t_groupField = (GroupFieldManager)m_groupListMgr.getField(i);
 				
-				if(t_field.m_currRoster.m_roster.getName().indexOf(_keyword) != -1
-					|| t_field.m_currRoster.m_roster.getAccount().indexOf(_keyword) != -1){
-										
-					if(t_addIndex++ == _index){
-						t_field.setFocus();
-						
-						return true;
+				// each group
+				//
+				int t_groupNum = t_groupField.m_rosterItemList.getFieldCount();
+				
+				for(int j = 0;j < t_groupNum;j++){
+				
+					RosterItemField t_field = (RosterItemField )t_groupField.m_rosterItemList.getField(j);
+					
+					if(t_field.m_currRoster.m_roster.getName().indexOf(_keyword) != -1
+						|| t_field.m_currRoster.m_roster.getAccount().indexOf(_keyword) != -1){
+											
+						if(t_addIndex++ == _index){
+							
+							if(t_groupField.m_isOpen){
+								t_field.setFocus();
+							}else{
+								t_groupField.m_titleField.setFocus();
+							}
+							
+							return true;
+						}
 					}
 				}
+				
 			}
 			
 			return false;			
 		}
+	}
+	
+	/**
+	 * group field manager
+	 * @author yuch
+	 *
+	 */
+	public class GroupFieldManager extends VerticalFieldManager implements FieldChangeListener{
+		
+		final int fm_titleHeight;
+				
+		String m_groupName;
+		
+		VerticalFieldManager m_rosterItemList = new VerticalFieldManager(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
+		
+		boolean m_isOpen		= true; 
+		
+		/**
+		 * replace field with roster item list manager
+		 */
+		NullField	m_nullField = new NullField(Field.NON_FOCUSABLE);
+		
+		/**
+		 * title field
+		 */
+		Field m_titleField = new Field(Field.FOCUSABLE){
+
+			public int getPreferredWidth(){
+				return recvMain.fsm_display_width;
+			}
+			
+			public int getPreferredHeight() {
+				return MainIMScreen.fsm_defaultFontHeight + 5;
+			}
+			
+			protected void layout(int paramInt1, int paramInt2) {
+				setExtent(getPreferredWidth(),getPreferredHeight());
+			}
+
+			protected void paint(Graphics _g) {
+				drawFocus(_g, isFocus());			
+			}
+			
+			protected void onUnfocus(){
+			    super.onUnfocus();
+			    invalidate();
+			}
+			
+			protected void drawFocus(Graphics _g,boolean _on){
+				
+				if(_on){
+					m_selectGroupTitleField = GroupFieldManager.this;
+					m_currFocusRosterItemField = null;
+				}
+				
+				int color = _g.getColor();
+				try{
+					_g.setColor(fsm_groupBackgroundColor);
+					_g.fillRect(0, 0, getPreferredWidth(), getPreferredHeight());
+					
+					_g.setColor(fsm_backgroundColor);
+					_g.drawLine(0, getPreferredHeight() - 1, getPreferredWidth(), getPreferredHeight() - 1);
+					
+					if(_on){
+						// draw selected backgroud
+						//
+						WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight());
+					}
+					
+					_g.setColor(RosterItemField.fsm_groupTitleTextColor);
+					
+					if(m_isOpen){
+						_g.drawText(" - " + m_groupName,0,2);
+					}else{
+						_g.drawText(" + " + m_groupName,0,2);
+					}
+				}finally{
+					_g.setColor(color);
+				}
+			}
+			
+		};
+		
+		public GroupFieldManager(String _groupName){
+			super(Manager.VERTICAL_SCROLL | Manager.VERTICAL_SCROLLBAR);
+			
+			fm_titleHeight 	= getFont().getHeight() + 5;
+			m_groupName 	= _groupName;
+			
+			add(m_titleField);
+			add(m_rosterItemList);
+			
+			m_titleField.setChangeListener(this);
+		}
+		
+		// m_topRosterMenu /m_bottomRosterMenu will call this function 
+		//
+		public void setFocus(){
+			m_titleField.setFocus();
+		}
+
+		public void fieldChanged(Field paramField, int paramInt) {
+			m_isOpen = !m_isOpen;
+			
+			if(m_isOpen){
+				replace(m_nullField, m_rosterItemList);
+			}else{
+				replace(m_rosterItemList, m_nullField);
+			}
+		}
+		
+		public Field getFieldWithFocus(){
+		
+			if(m_titleField.isFocus()){
+				return m_titleField;
+			}
+			
+						
+			return m_rosterItemList.getFieldWithFocus();
+		}
+		
 	}
 }

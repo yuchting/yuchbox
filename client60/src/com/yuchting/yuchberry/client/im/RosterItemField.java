@@ -35,6 +35,7 @@ import net.rim.device.api.ui.Graphics;
 
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
+import com.yuchting.yuchberry.client.ui.SliderHeader;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
 
@@ -45,13 +46,14 @@ public class RosterItemField extends Field{
 	
 	public final static int		fsm_headImageWidth 			= recvMain.fsm_display_width>320 ? fetchWeibo.fsm_headImageSize_l:fetchWeibo.fsm_headImageSize;
 	
-	public final static int		fsm_nameTextColor			= 0; //别名字体颜色
-	public final static int		fsm_statusTextColor			= 0x6d6f6f; //聊天状态字体颜色
+	public final static int		fsm_nameTextColor			=  0; //RRR:别名字体颜色 0xededed;
+	public final static int		fsm_groupTitleTextColor		= 0x878787;//RRR:分组标题字体颜色0xb0b0b0;
+	public final static int		fsm_statusTextColor			= 0x6d6f6f; //RRR:聊天状态字体颜色0xdfdfdf;
 	
-	public final static Font		fsm_addressFont			= MainIMScreen.fsm_defaultFont.derive(MainIMScreen.fsm_defaultFont.getStyle(),MainIMScreen.fsm_defaultFontHeight - 2);
+	public final static Font	fsm_addressFont			= MainIMScreen.fsm_defaultFont.derive(MainIMScreen.fsm_defaultFont.getStyle(),MainIMScreen.fsm_defaultFontHeight - 3);
 	public final static int		fsm_addressFontHeight	= fsm_addressFont.getHeight();
 	
-	MainIMScreen.RosterChatData					m_currRoster;
+	MainIMScreen.RosterChatData		m_currRoster;
 	WeiboHeadImage					m_headImage;
 	
 	MainIMScreen					m_mainScreen;	
@@ -77,7 +79,7 @@ public class RosterItemField extends Field{
 	}
 	
 	public int getPreferredHeight() {
-		return 2 * MainIMScreen.fsm_defaultFontHeight + 4;
+		return Math.max(2 * MainIMScreen.fsm_defaultFontHeight + 4,fsm_headImageWidth);
 	}
 	
 	protected void layout(int _width,int _height){
@@ -99,7 +101,8 @@ public class RosterItemField extends Field{
 				m_mainScreen.m_currFocusHistoryRosterItemField = this;
 			}else{
 				m_mainScreen.m_currFocusRosterItemField = this;
-			}			
+				m_mainScreen.m_selectGroupTitleField = null;
+			}
 		}
 				
 		// fill the IM field BG
@@ -109,42 +112,28 @@ public class RosterItemField extends Field{
 		if(_on){
 			// draw selected backgroud
 			//
-			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight(),true);//切换选择的背景图，False时为ext_full_image中的图片
+			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight());
 		}
+		
 		// draw roster state
 		//
-		drawRosterState(_g,3,20,m_currRoster.m_roster.getPresence());  
+		drawRosterState(_g,1,20,m_currRoster.m_roster.getPresence());  //RRR:(_g,1,6,m_currRoster.m_roster.getPresence());
 		
 		// draw the IM sign and head image
 		//
-		int t_x = WeiboHeadImage.displayHeadImage(_g,sm_rosterState[0].getWidth() + 6, 2, m_headImage);
+		int t_x = WeiboHeadImage.displayHeadImage(_g,sm_rosterState[0].getWidth() + 6, 2, m_headImage);//RRR:(_g,sm_rosterState[0].getWidth() + 2, 2, m_headImage)
+		
+		if(m_currRoster.m_hasNewMessage){
+			recvMain.sm_weiboUIImage.drawImage(_g,SliderHeader.GetBBerSignBitmap(),2,6);//RRR:新消息(_g,SliderHeader.GetBBerSignBitmap(),1,20);
+		}
 		
 		int color = _g.getColor();
 		Font font = _g.getFont();
-/*
-		try{
-			// 选中的条目，字体颜色改为白色
-			if (_on){
-				_g.setColor(0xffffff);
-				_g.setFont(font);//(MainIMScreen.fsm_boldFont);//				
-				_g.drawText(m_currRoster.m_roster.getName(),t_x + 3 ,2);
-			
-				_g.setColor(0xffffff);
-				_g.setFont(fsm_addressFont);
-			}else{
-				_g.setColor(fsm_nameTextColor);
-				_g.setFont(font);//(MainIMScreen.fsm_boldFont);//				
-				_g.drawText(m_currRoster.m_roster.getName(),t_x + 3 ,2);
-				_g.setColor(fsm_statusTextColor);
-				_g.setFont(fsm_addressFont);
-		
-		}
-*/
 		try{
 			_g.setColor(fsm_nameTextColor);
-			_g.setFont(font);//(MainIMScreen.fsm_boldFont);//
+			_g.setFont(font); //RRR:去除昵称字体加粗(MainIMScreen.fsm_boldFont)
 			
-			_g.drawText(m_currRoster.m_roster.getName(),t_x + 3 ,2);
+			_g.drawText(m_currRoster.m_roster.getName(),t_x,2); 
 			
 			_g.setColor(fsm_statusTextColor);
 			_g.setFont(fsm_addressFont);
@@ -166,11 +155,11 @@ public class RosterItemField extends Field{
 					
 					ImageUnit t_unit = ChatField.sm_stateImage[t_msg.getSendState()];
 					
-					recvMain.sm_weiboUIImage.drawImage(_g,t_unit,t_x + 3,t_y);
-					_g.drawText(t_textMsg,t_x + t_unit.getWidth() + 5,t_y);
+					recvMain.sm_weiboUIImage.drawImage(_g,t_unit,t_x + 4,t_y); //RRR:状态偏移4像素(_g,t_unit,t_x,t_y);
+					_g.drawText(t_textMsg,t_x + t_unit.getWidth() + 6,t_y);
 					
 				}else{
-					_g.drawText(t_textMsg,t_x + 3,t_y);
+					_g.drawText(t_textMsg,t_x + 6,t_y);//RRR:状态偏移6像素(t_textMsg,t_x,t_y);
 				}
 				
 			}else{
@@ -178,7 +167,7 @@ public class RosterItemField extends Field{
 				if(t_status.length() == 0){
 					t_status = m_currRoster.m_roster.getAccount();
 				}
-				_g.drawText(t_status,t_x + 3,t_y );
+				_g.drawText(t_status,t_x + 6,t_y );//RRR:状态偏移6像素(t_status,t_x,t_y);
 			}
 						
 		}finally{
@@ -186,18 +175,28 @@ public class RosterItemField extends Field{
 			_g.setFont(font);
 		}
 		
-		drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch);
+		drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch,0);
 	}
 	
 	public static ImageUnit	sm_gtalkSign = null;
 	public static ImageUnit	sm_MSNSign = null;
 	public static ImageUnit	sm_YuchSign = null;
 	
-	public static int drawChatSign(Graphics _g,int _limitWidth,int _limitHeight,int _style,boolean _isYuch){
+	/**
+	 * draw the chat style and yuchbox sign
+	 * @param _g
+	 * @param _limitWidth
+	 * @param _limitHeight
+	 * @param _style
+	 * @param _isYuch			is yuchbox client
+	 * @param _rightOffset		the right edge distance
+	 * @return
+	 */
+	public static int drawChatSign(Graphics _g,int _limitWidth,int _limitHeight,int _style,boolean _isYuch,int _rightOffset){
 
 		int t_ret = 0;
 		
-		int x = _limitWidth - 3 - sm_rosterState[0].getWidth();
+		int x = _limitWidth - 3 - sm_rosterState[0].getWidth() - _rightOffset;
 		int y = 3;
 		
 		if(_style == fetchChatMsg.STYLE_GTALK){
@@ -238,7 +237,7 @@ public class RosterItemField extends Field{
 	public static void fillIMFieldBG(Graphics _g,int _x,int _y,int _width,int _height){
 		
 		if(sm_imFieldBG == null){
-			sm_imFieldBG = recvMain.sm_weiboUIImage.getImageUnit("im_bg");
+			sm_imFieldBG = recvMain.sm_weiboUIImage.getImageUnit("im_bg");//RRR:换回IM背景getImageUnit("weibo_bg");
 		}
 		
 		recvMain.sm_weiboUIImage.fillImageBlock(_g, sm_imFieldBG, _x, _y, _width, _height);
@@ -268,7 +267,7 @@ public class RosterItemField extends Field{
 		
 		recvMain.sm_weiboUIImage.drawImage(_g, sm_rosterState[_presence], _x, _y);
 		
-		return _x + sm_rosterState[0].getWidth(); 
+		return _x + sm_rosterState[0].getWidth();
 	}
 	
 	protected boolean keyChar( char character, int status, int time ){

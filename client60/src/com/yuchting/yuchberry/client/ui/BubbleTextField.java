@@ -39,7 +39,7 @@ public class BubbleTextField extends WeiboTextField{
 	
 	public void setText(String _text){
 		super.setText(_text);
-		this.layout(m_textWidth,this.getHeight());
+		this.layout(m_textWidth,1000);
 	}
 	
 	public void setPreferredWidth(int _width){

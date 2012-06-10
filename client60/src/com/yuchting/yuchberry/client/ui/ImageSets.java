@@ -48,7 +48,7 @@ public class ImageSets {
 	
 	String		m_name		= "";
 	Bitmap		m_fullImage = null;
-	
+		
 	public ImageSets(final String _imageSets)throws Exception{
 		
 		XMLParser t_xml = new XMLParser();
@@ -61,7 +61,7 @@ public class ImageSets {
 					 try{
 						 byte[] bytes = IOUtilities.streamToBytes(UiApplication.getUiApplication().getClass()
 								 .getResourceAsStream(attributes.getValue("Imagefile")));		
-						 m_fullImage =  EncodedImage.createEncodedImage(bytes, 0, bytes.length).getBitmap();
+						 m_fullImage =  EncodedImage.createEncodedImage(bytes , 0, bytes .length).getBitmap();
 					 }catch(Exception e){
 						 ((recvMain)UiApplication.getUiApplication()).DialogAlertAndExit("inner load image error " + _imageSets);
 					 }
@@ -81,6 +81,15 @@ public class ImageSets {
 				 }							 
 			 }
 		});
+	}
+	
+	/**
+	 * get the image unit ARGB color value
+	 * @param _unit
+	 * @param _bufer		filling buffer
+	 */
+	public void getImageUnitBuffer(ImageUnit _unit,int[] _bufer){ 
+		m_fullImage.getARGB(_bufer, 0, _unit.getWidth(), _unit.getXPos(), _unit.getYPos(), _unit.getWidth(), _unit.getHeight());
 	}
 	
 	public Vector getImageList()	{

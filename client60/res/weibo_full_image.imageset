@@ -11,8 +11,8 @@
 	<Image Name="BBSign" XPos="48" YPos="83" Width="12" Height="12" />
 	<Image Name="qqVIP" XPos="60" YPos="99" Width="12" Height="12" />
 	<Image Name="sinaVIP" XPos="48" YPos="99" Width="12" Height="12" />
-	<Image Name="followState_1" XPos="88" YPos="83" Width="12" Height="12" />
-	<Image Name="followState" XPos="88" YPos="99" Width="12" Height="12" />
+	<Image Name="followState_1" XPos="88" YPos="99" Width="12" Height="12" />
+	<Image Name="followState" XPos="88" YPos="83" Width="12" Height="12" />
 	
 	<Image Name="female" XPos="72" YPos="83" Width="16" Height="16" />
 	<Image Name="male" XPos="72" YPos="99" Width="16" Height="16" />
@@ -146,7 +146,7 @@
 	<Image Name="im_nav_bar_seg" XPos="200" YPos="277" Width="2" Height="43" />
 	<Image Name="im_nav_bar_point" XPos="300" YPos="329" Width="40" Height="5" />
 
-	<Image Name="im_chat_nav_bar" XPos="400" YPos="408" Width="48" Height="45" />
+	<Image Name="im_chat_nav_bar" XPos="400" YPos="398" Width="48" Height="53" />
 
 	<Image Name="gtalk_sign" XPos="80" YPos="345" Width="16" Height="16" />
 	<Image Name="msn_sign" XPos="80" YPos="361" Width="16" Height="16" />
@@ -414,5 +414,7 @@
 	<Image Name="[金元宝]" XPos="436" YPos="308" Width="22" Height="22" />
 	<Image Name="[赶火车]" XPos="458" YPos="308" Width="22" Height="22" />
 	<Image Name="[推荐]" XPos="480" YPos="308" Width="22" Height="22" />
+
+	<Image Name="[din推撞]" XPos="480" YPos="330" Width="22" Height="22" />
 	
 </Imageset>

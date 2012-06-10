@@ -33,6 +33,7 @@ import local.yblocalResource;
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.AutoTextEditField;
@@ -75,7 +76,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		}
 	};
 	
-	public final static int		fsm_scrollbarSize	= 2;	
+	public final static int		fsm_scrollbarSize	= 3;	
 	public final static int		fsm_maxItemInOneScreen = recvMain.fsm_display_height / WeiboItemField.fsm_closeHeight;
 	
 	static ObjectAllocator		sm_weiboItemFieldAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.weibo.WeiboItemField");
@@ -100,8 +101,10 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	byte				m_forwardStyleBackup = 0;
 	long				m_forwardIdBackup = 0;
 	boolean			m_forwardOnlyCommentBackup = false;
+	boolean			m_forwardOnlyForwardBackup = false;
 	String				m_forwardText	= "";
 	boolean			m_forwardOnlyCommnet = false;
+	boolean			m_forwardOnlyForward = false;
 	
 	byte				m_replyStyleBackup = 0;
 	long				m_replyIdBackup	= 0;
@@ -243,7 +246,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		if(m_atBut == field){
 			AtWeibo(getCurrExtendedItem(),false);
 		}else if(m_forwardBut == field){
-			ForwardWeibo(getCurrExtendedItem(),false);
+			ForwardWeibo(getCurrExtendedItem(),false,false);
 		}else if(m_editTextArea == field){
 			
 			if(m_editTextAreaHeight != m_editTextArea.getHeight()){
@@ -307,11 +310,12 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	
 	protected void subpaint(Graphics graphics){
 		super.subpaint(graphics);
-		
+
 		int oldColour = graphics.getColor();
 		try{
 			
 			graphics.setColor(WeiboItemField.fsm_darkColor);
+			graphics.setFont(WeiboItemField.sm_absFont); //RRR:修改删除提示字体
 			graphics.drawText(recvMain.sm_local.getString(yblocalResource.WEIBO_REACH_MAX_WEIBO_NUM_PROMPT),
 								0,m_bufferedTotalHeight - WeiboItemField.sm_fontHeight);
 			
@@ -334,7 +338,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 					t_scroll_height = 4;
 				}
 				
-				graphics.setColor(0x606060); //滚动条颜色
+				graphics.setColor(0x606060);
 				graphics.fillRect(t_start_x,t_scroll_y,fsm_scrollbarSize,t_scroll_height);
 								
 				m_parentScreen.enableHeader(t_start_y == 0);
@@ -763,6 +767,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			m_forwardText			= _sentText;
 			
 			m_forwardOnlyCommentBackup = m_forwardOnlyCommnet;
+			m_forwardOnlyForwardBackup = m_forwardOnlyForward;
 						
 		}else if(m_currentSendType == fetchWeibo.SEND_REPLY_TYPE){
 			
@@ -850,21 +855,30 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		return m_editTextAreaHeight;
 	}
 	
-	public void ForwardWeibo(WeiboItemField _item,boolean _onlyComment){
+	public void ForwardWeibo(WeiboItemField _item,boolean _onlyComment,boolean _onlyForward){
 		
 		if(getCurrEditItem() != _item){
 			
 			if(getCurrExtendedItem() == null){
 				Clicked(0, 0);
 			}
-			
+			int t_cursorPos = 0;
 			String t_text = null;
 			if(m_forwardIdBackup != _item.m_weibo.GetId()
 			|| m_forwardStyleBackup != _item.m_weibo.GetWeiboStyle()
-			|| m_forwardOnlyCommentBackup != _onlyComment){
+			|| m_forwardOnlyCommentBackup != _onlyComment
+			|| m_forwardOnlyForwardBackup != _onlyForward){
 				
 				if(_onlyComment){
 					t_text = "";
+				}else if(_onlyForward){
+					if(_item.m_weibo.GetWeiboStyle() == fetchWeibo.SINA_WEIBO_STYLE){
+						t_text = recvMain.sm_local.getString(yblocalResource.WEIBO_FORWARD_PREFIX);
+					}else{
+						t_text = recvMain.sm_local.getString(yblocalResource.WEIBO_FORWARD_PREFIX_QQ);
+					}
+					
+					t_cursorPos = t_text.length();
 				}else{
 					String t_forwardSign = _item.m_weibo.getForwardPrefix();
 					
@@ -883,10 +897,17 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 				}
 				
 				m_forwardOnlyCommnet = _onlyComment;
+				m_forwardOnlyForward = _onlyForward;
 				
 			}else{
+				
 				t_text = m_forwardText;
 				m_forwardOnlyCommnet = m_forwardOnlyCommentBackup;
+				m_forwardOnlyForward = m_forwardOnlyForwardBackup;
+				
+				if(_onlyForward){
+					t_cursorPos = t_text.length();
+				}
 			}			
 			
 			_item.AddDelEditTextArea(true,t_text);
@@ -901,7 +922,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			sublayout(0,0);
 			invalidate();
 			
-			m_editTextArea.setCursorPosition(0);
+			m_editTextArea.setCursorPosition(t_cursorPos);
 		}
 	}
 	

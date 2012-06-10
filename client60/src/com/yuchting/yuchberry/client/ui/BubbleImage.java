@@ -56,6 +56,27 @@ public class BubbleImage {
 	private boolean 		m_point_down = false;
 	
 	public BubbleImage(ImageUnit _top_left,ImageUnit _top,
+			ImageUnit _top_right,ImageUnit _right,
+			ImageUnit _bottom_right,ImageUnit _bottom,
+			ImageUnit _bottom_left,ImageUnit _left,
+			ImageUnit _innerBlock,ImageSets _parentSets){
+		
+		init(_top_left,_top,_top_right,_right,
+			_bottom_right,_bottom,_bottom_left,_left,_innerBlock,null,_parentSets);
+	}
+	
+	public BubbleImage(ImageUnit _top_left,ImageUnit _top,
+						ImageUnit _top_right,ImageUnit _right,
+						ImageUnit _bottom_right,ImageUnit _bottom,
+						ImageUnit _bottom_left,ImageUnit _left,
+						ImageUnit _innerBlock,ImageUnit[] _point,
+						ImageSets _parentSets){
+		
+		init(_top_left,_top,_top_right,_right,
+			_bottom_right,_bottom,_bottom_left,_left,_innerBlock,_point,_parentSets);
+	}
+	
+	private void init(ImageUnit _top_left,ImageUnit _top,
 						ImageUnit _top_right,ImageUnit _right,
 						ImageUnit _bottom_right,ImageUnit _bottom,
 						ImageUnit _bottom_left,ImageUnit _left,
@@ -83,6 +104,26 @@ public class BubbleImage {
 	
 	public int getInnerBlockSize(){
 		return m_innerBlock.getWidth();
+	}
+	
+	public int getTopBorderHeight(){
+		return m_top.getHeight();
+	}
+	
+	public int getBottomBorderHeight(){
+		return m_bottom.getHeight();
+	}
+	
+	public int getLeftBorderWdith(){
+		return m_left.getHeight();
+	}
+	
+	public int getRightBorderWidth(){
+		return m_right.getWidth();
+	}
+	
+	public void draw(Graphics _g,int _x,int _y,int _width,int _height){
+		draw(_g,_x,_y,_width,_height,NO_POINT_STYLE);
 	}
 	
 	public void draw(Graphics _g,int _x,int _y,int _width,int _height,int _pointStyle){
@@ -139,7 +180,7 @@ public class BubbleImage {
 			m_parentSets.drawImage(_g,m_right,_x + (_width - m_right.m_width),
 					t_vert_y,m_right.m_width,t_vert_remain_height);
 		}
-				
+		
 		// draw the point 
 		//
 		if(m_point != null){
@@ -147,13 +188,13 @@ public class BubbleImage {
 			case LEFT_POINT_STYLE:
 				if(m_point[LEFT_POINT_STYLE] != null){
 					if(m_point_down){
-						m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width + 1,  // more one pixel to overload the edge 
+						m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width,
 								_y + _height - (m_point[LEFT_POINT_STYLE].getHeight() * 3 / 2) );
 					}else{
-						m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width + 1, // more one pixel to overload the edge 
+						m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width,
 								_y + (m_point[LEFT_POINT_STYLE].getHeight() / 2) );
 					}					
-				}
+				}				
 				break;
 			case TOP_POINT_STYLE:
 				if(m_point[TOP_POINT_STYLE] != null){
@@ -181,7 +222,7 @@ public class BubbleImage {
 				}				
 				break;
 			}
-		}
+		}		
 		
 		// fill the inner rectangle
 		//

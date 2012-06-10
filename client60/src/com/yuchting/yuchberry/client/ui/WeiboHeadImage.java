@@ -306,47 +306,28 @@ public final class WeiboHeadImage {
 			}
 		}
 		
-		_g.drawBitmap(_x,_y,fsm_headImageWidth,fsm_headImageWidth,_image.m_headImage,0,0);
+		if(_image != null){
+			_g.drawBitmap(_x,_y,fsm_headImageWidth,fsm_headImageWidth,_image.m_headImage,0,0);
+		}else{
+			try{
+				_g.drawBitmap(_x,_y,fsm_headImageWidth,fsm_headImageWidth,getDefaultHeadImage(),0,0);
+			}catch(Exception e){}			
+		}		
 		
 		recvMain.sm_weiboUIImage.drawImage(_g,sm_headImageMask, _x, _y);
 		
 		return _x + sm_headImageMask.getWidth();
 	}
 	
-	private static ImageUnit sm_selectedImage_weibo = null;
-	private static ImageUnit sm_selectedImage_im = null;
-	
-	/**
-	 * draw weibo or im selected background 
-	 * @param _g
-	 * @param _limitWidth
-	 * @param _limitHeight
-	 * @param _weiboOrIM  weibo or im flag
-	 */
-	static public void drawSelectedImage(Graphics _g,int _limitWidth,int _limitHeight,boolean _weiboOrIM){
+	private static ImageUnit sm_selectedImage = null;
+	static public void drawSelectedImage(Graphics _g,int _limitWidth,int _limitHeight){
 		
-		ImageUnit selImg = null;
-		ImageSets imgSet = recvMain.sm_weiboUIImage;
-		if(_weiboOrIM){
-			
-			if(sm_selectedImage_weibo == null){
-				sm_selectedImage_weibo = recvMain.sm_weiboUIImage.getImageUnit("weibo_sel");
-			}
-			
-			selImg = sm_selectedImage_weibo;
-			
-		}else{
-						
-			if(sm_selectedImage_im == null){
-				sm_selectedImage_im = recvMain.sm_extUIImage.getImageUnit("im_sel");
-			}
-			
-			selImg = sm_selectedImage_im;
-			imgSet = recvMain.sm_extUIImage;
+		if(sm_selectedImage == null){
+			sm_selectedImage = recvMain.sm_weiboUIImage.getImageUnit("weibo_sel");
 		}
-			
+		
 		int t_draw_y = 0;
-		int t_y = selImg.getHeight() - _limitHeight;
+		int t_y = sm_selectedImage.getHeight() - _limitHeight;
 		
 		if(t_y < 0){
 			t_y = 0;
@@ -355,7 +336,7 @@ public final class WeiboHeadImage {
 		
 		// draw selected backgroud
 		//
-		imgSet.drawImage(_g,selImg,
+		recvMain.sm_weiboUIImage.drawImage(_g,sm_selectedImage,
 						0, t_draw_y, _limitWidth, _limitHeight,0, t_y);
 	}
 }

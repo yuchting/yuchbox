@@ -27,11 +27,12 @@
  */
 package com.yuchting.yuchberry.client.im;
 
+import com.yuchting.yuchberry.client.recvMain;
+
 import net.rim.device.api.math.Fixed32;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.system.EncodedImage;
-import net.rim.device.api.system.JPEGEncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
 
@@ -58,14 +59,7 @@ public class ChatImageField extends Field{
 		byte[] t_buffer = m_msg.getFileContent();
 		
 		EncodedImage t_origImage = EncodedImage.createEncodedImage(t_buffer, 0, t_buffer.length);
-		
-		int t_origWidth = t_origImage.getWidth();
-		int t_origHeight = t_origImage.getHeight();
-		
-		int scaleX = Fixed32.div(Fixed32.toFP(t_origWidth), Fixed32.toFP(getPreferredWidth()));
-		int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(getPreferredHeight()));
-											
-		m_imageBitmap = t_origImage.scaleImage32(scaleX, scaleY).getBitmap();
+		m_imageBitmap = recvMain.scaleImage(t_origImage, getPreferredWidth(), getPreferredHeight());
 	}
 	
 	public int getPreferredWidth(){
