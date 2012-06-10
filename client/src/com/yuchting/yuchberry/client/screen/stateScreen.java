@@ -855,11 +855,13 @@ public class stateScreen extends MainScreen{
 						
 					}else{
 						
-						ServiceBook t_sb = ServiceBook.getSB();
-						ServiceRecord[] t_record = t_sb.findRecordsByCid("CMIME");
-						if(t_record == null || t_record.length == 0){
-							m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.NEED_CMIME_PROMPT));
-							return;
+						if(!m_mainApp.m_closeMailSendModule){
+							ServiceBook t_sb = ServiceBook.getSB();
+							ServiceRecord[] t_record = t_sb.findRecordsByCid("CMIME");
+							if(t_record == null || t_record.length == 0){
+								m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.NEED_CMIME_PROMPT));
+								return;
+							}
 						}
 						
 						if(m_hostName.getText().indexOf(" ") != -1){
@@ -906,7 +908,7 @@ public class stateScreen extends MainScreen{
     		m_accountName	= new EditField(recvMain.sm_local.getString(yblocalResource.STATE_ACCOUNT_LABEL),
 												m_mainApp.m_account,128, EditField.FILTER_EMAIL);
     		m_userPassword	= new PasswordEditField(recvMain.sm_local.getString(yblocalResource.USER_PASSWORD),
-    											m_mainApp.m_userPassword,128, EditField.FILTER_INTEGER | EditField.FILTER_NUMERIC | EditField.NO_COMPLEX_INPUT);
+    											m_mainApp.m_userPassword,128, EditField.NO_COMPLEX_INPUT);
     		
     		m_accountNameMgr.add(m_accountName);    		
     		m_userPasswordMgr.add(m_userPassword);
@@ -1014,18 +1016,19 @@ public class stateScreen extends MainScreen{
 		
 		private void login(){
 
-			if(!m_accountName.isDataValid()){
+			if(!m_accountName.isDataValid() || !recvMain.isValidateEmail(m_accountName.getText())){
 				m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.STATE_LOGIN_ACC_NAME_ERROR));
 				return;
 			}
 			
-			if(m_userPassword.getTextLength() < 6){
+			String t_pass = m_userPassword.getText();
+			if(!recvMain.isValidateUserPass(t_pass)){
 				m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.STATE_LOGIN_ACC_PASS_ERROR));
 				return;
 			}
 			
 			m_mainApp.m_account 		= m_accountName.getText().toLowerCase();
-			m_mainApp.m_userPassword	= m_userPassword.getText();
+			m_mainApp.m_userPassword	= t_pass;
 			
 			if(m_loginAccThread == null){
 				m_loginAccThread = new LoginAccThread(m_mainApp.m_account, m_mainApp.m_userPassword);
@@ -1062,7 +1065,8 @@ public class stateScreen extends MainScreen{
 				}
 			});
 			
-			String MAIN_URL = DeviceInfo.isSimulator()?"http://192.168.10.7:8888/f/login/":"http://www.yuchs.com/f/login/";		
+			//String MAIN_URL = DeviceInfo.isSimulator()?"http://192.168.10.7:8888/f/login/":"http://www.yuchs.com/f/login/";		
+			String MAIN_URL = "http://www.yuchs.com/f/login/";
 			
 			MAIN_URL += recvMain.getHTTPAppendString();
 			

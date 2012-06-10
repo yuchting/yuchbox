@@ -2400,6 +2400,27 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		return true;
 	}
 	
+	/**
+	 * is validate user pass 
+	 * @param _str
+	 * @return
+	 */
+	public static boolean isValidateUserPass(String _str){
+		if(_str.length() < 6){
+			return false;
+		}
+		
+		
+		for(int i = 0 ;i < _str.length();i++){
+			char a = _str.charAt(i);
+			if(!Character.isDigit(a) && !Character.isLowerCase(a) && !Character.isUpperCase(a)){
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
 //	static ImageManipulator		sm_manipulator = new ImageManipulator(null);
 	public static Bitmap scaleImage(EncodedImage _image,int _width,int _height){
 		

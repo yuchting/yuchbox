@@ -1266,6 +1266,17 @@ public class fetchMgr{
 		
         
 	}
+	
+	static public String getByteStr(long _byte){
+		if(_byte < 1000){
+			return "" + _byte + "B";
+		}else if(_byte >= 1000 && _byte < 1000000){
+			return "" + (_byte / 1000) + "." + (_byte % 1000 / 100)+ "KB";
+		}else{
+			return "" + (_byte / (1000000)) + "." + ((_byte / 1000) % 1000 / 100) + "MB";
+		}
+	}
+	
 		
 	// statistics
 	//

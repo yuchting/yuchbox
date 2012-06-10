@@ -1478,7 +1478,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		        
 		        BufferedReader in = new BufferedReader(new InputStreamReader(httpUrlConnection.getInputStream()));
 		        try{
-		        	return "\r\n" + in.readLine();
+		        	return "\r\n" + in.readLine() + " (" + fetchMgr.getByteStr(_data.length) + ")";
 		        }finally{
 		        	in.close();   	
 		        }
