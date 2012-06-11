@@ -933,7 +933,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		}
 		
 		public int getPreferredHeight() {
-			return m_mainApp.m_imChatScreenShowHeadImg?54:56;//RRR:聊天对话框选择头像显示时的 Header高度 54:30
+			return m_mainApp.m_imChatScreenShowHeadImg?52:45;//RRR:聊天对话框选择头像显示时的 Header高度 54:30
 		}
 		
 		public void invalidate(){
@@ -950,12 +950,12 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 			int t_start_x = 0;
 			
 			if(m_mainApp.m_imChatScreenShowHeadImg){
-				t_start_x += WeiboHeadImage.displayHeadImage(_g,0, 2, m_rosterImage);
+				t_start_x += WeiboHeadImage.displayHeadImage(_g,0, 0, m_rosterImage);//RRR:微调
 			}
 			
 			// draw roster state
 			//
-			int t_x = RosterItemField.drawRosterState(_g,t_start_x,3,m_currRoster.m_roster.getPresence());
+			int t_x = RosterItemField.drawRosterState(_g,t_start_x + 4,8,m_currRoster.m_roster.getPresence());//RRR:微调
 			
 			int color = _g.getColor();
 			Font font = _g.getFont();
@@ -972,7 +972,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 						t_status = m_currRoster.m_roster.getAccount();
 					}
 					_g.setFont(RosterItemField.fsm_addressFont); //RRR:聊天顶栏状态字体
-					_g.drawText(t_status,t_start_x,MainIMScreen.fsm_boldFont.getHeight());
+					_g.drawText(t_status,t_start_x + 4,MainIMScreen.fsm_boldFont.getHeight()); //RRR:微调
 				}
 				
 			}finally{

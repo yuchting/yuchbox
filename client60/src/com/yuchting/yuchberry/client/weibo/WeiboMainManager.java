@@ -315,7 +315,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 		try{
 			
 			graphics.setColor(WeiboItemField.fsm_darkColor);
-			graphics.setFont(WeiboItemField.sm_absFont); //RRR:修改删除提示字体
+			graphics.setFont(WeiboItemField.sm_absFont); //RRR:修改提示字体
 			graphics.drawText(recvMain.sm_local.getString(yblocalResource.WEIBO_REACH_MAX_WEIBO_NUM_PROMPT),
 								0,m_bufferedTotalHeight - WeiboItemField.sm_fontHeight);
 			
