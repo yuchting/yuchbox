@@ -79,7 +79,7 @@ public class RosterItemField extends Field{
 	}
 	
 	public int getPreferredHeight() {
-		return Math.max(2 * MainIMScreen.fsm_defaultFontHeight + 4,fsm_headImageWidth);
+		return Math.max(2 * MainIMScreen.fsm_defaultFontHeight + 2,fsm_headImageWidth); //RRR: 8号字体每列高度(2 * MainIMScreen.fsm_defaultFontHeight + 4,fsm_headImageWidth);
 	}
 	
 	protected void layout(int _width,int _height){
@@ -133,7 +133,7 @@ public class RosterItemField extends Field{
 			_g.setColor(fsm_nameTextColor);
 			_g.setFont(font); //RRR:去除昵称字体加粗(MainIMScreen.fsm_boldFont)
 			
-			_g.drawText(m_currRoster.m_roster.getName(),t_x,2); 
+			_g.drawText(m_currRoster.m_roster.getName(),t_x +4,2);  //RRR:昵称向右偏移4
 			
 			_g.setColor(fsm_statusTextColor);
 			_g.setFont(fsm_addressFont);
