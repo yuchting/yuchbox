@@ -216,7 +216,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 		if(_preferredHeight > sm_background.getHeight()){
 			int t_color = _g.getColor();
 			try{
-				_g.setColor(0xf8c3e4); //RRR:输入框超过两行后用此色补充
+				_g.setColor(0x212122); //RRR:输入框超过两行后用此色补充
 				_g.fillRect(0, sm_background.getHeight(), 
 						_preferredWidth, _preferredHeight - sm_background.getHeight());
 			}finally{
@@ -702,7 +702,7 @@ final class MiddleMgr extends VerticalFieldManager{
 
 public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOpen{
 	
-	public final static int fsm_background = 0xeaeaea; //RRR:聊天对话背景色0x2b3d4d; 
+	public final static int fsm_background = 0xf3ecfc; //RRR:聊天对话背景色0x2b3d4d; 
 	
 	int m_menu_op = 0;
 	MenuItem m_sendMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_SEND_LABEL),m_menu_op++,0){
@@ -950,7 +950,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 			int t_start_x = 0;
 			
 			if(m_mainApp.m_imChatScreenShowHeadImg){
-				t_start_x += WeiboHeadImage.displayHeadImage(_g,0, 0, m_rosterImage); //RRR:微调
+				t_start_x += WeiboHeadImage.displayHeadImage(_g,0, 0, m_rosterImage);//RRR:微调
 			}
 			
 			// draw roster state

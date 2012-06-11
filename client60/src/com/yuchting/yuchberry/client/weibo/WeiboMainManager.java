@@ -33,7 +33,6 @@ import local.yblocalResource;
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
-import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.AutoTextEditField;
@@ -310,7 +309,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 	
 	protected void subpaint(Graphics graphics){
 		super.subpaint(graphics);
-
+		
 		int oldColour = graphics.getColor();
 		try{
 			

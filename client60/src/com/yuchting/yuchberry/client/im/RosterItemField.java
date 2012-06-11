@@ -46,11 +46,11 @@ public class RosterItemField extends Field{
 	
 	public final static int		fsm_headImageWidth 			= recvMain.fsm_display_width>320 ? fetchWeibo.fsm_headImageSize_l:fetchWeibo.fsm_headImageSize;
 	
-	public final static int		fsm_nameTextColor			=  0; //RRR:别名字体颜色 0xededed;
-	public final static int		fsm_groupTitleTextColor		= 0x878787;//RRR:分组标题字体颜色0xb0b0b0;
+	public final static int		fsm_nameTextColor			= 0xf74f7c; //RRR:别名字体颜色 0xededed;
+	public final static int		fsm_groupTitleTextColor		= 0x6d6d6d;//RRR:分组标题字体颜色0xb0b0b0;
 	public final static int		fsm_statusTextColor			= 0x6d6f6f; //RRR:聊天状态字体颜色0xdfdfdf;
 	
-	public final static Font	fsm_addressFont			= MainIMScreen.fsm_defaultFont.derive(MainIMScreen.fsm_defaultFont.getStyle(),MainIMScreen.fsm_defaultFontHeight - 2);
+	public final static Font	fsm_addressFont			= MainIMScreen.fsm_defaultFont.derive(MainIMScreen.fsm_defaultFont.getStyle(),MainIMScreen.fsm_defaultFontHeight - 3);
 	public final static int		fsm_addressFontHeight	= fsm_addressFont.getHeight();
 	
 	MainIMScreen.RosterChatData		m_currRoster;
@@ -133,7 +133,7 @@ public class RosterItemField extends Field{
 			_g.setColor(fsm_nameTextColor);
 			_g.setFont(font); //RRR:去除昵称字体加粗(MainIMScreen.fsm_boldFont)
 			
-			_g.drawText(m_currRoster.m_roster.getName(),t_x + 4,2); //RRR:昵称向右偏移4
+			_g.drawText(m_currRoster.m_roster.getName(),t_x +4,2);  //RRR:昵称向右偏移4
 			
 			_g.setColor(fsm_statusTextColor);
 			_g.setFont(fsm_addressFont);

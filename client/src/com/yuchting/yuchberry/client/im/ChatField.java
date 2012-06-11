@@ -57,11 +57,11 @@ public class ChatField extends Manager implements FocusChangeListener{
 	public final static int	fsm_minTextWidth		= fsm_offsetWidth + fsm_bubblePointWidth;
 	public final static int	fsm_maxTextWidth 		= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth - 12; //RRR:修正对话时间出界
 	
-	public final static int	fsm_ownChatTextBGColor		= 0xfccbe5;//RRR:对话气泡字体背景
-	public final static int	fsm_otherChatTextBGColor	= 0xf4e9fa;//RRR:对话气泡字体背景
+	public final static int	fsm_ownChatTextBGColor		= 0xbbe4fe; //RRR:对话字体背景
+	public final static int	fsm_otherChatTextBGColor	= 0xededff; //RRR:对话字体背景
 	
-	public final static int	fsm_ownChatTextFGColor		= 0;		//RRR:对话气泡字体背景
-	public final static int	fsm_otherChatTextFGColor	= 0x2d3035; //RRR:对话气泡字体背景
+	public final static int	fsm_ownChatTextFGColor		= 0;		//RRR:对话字体背景
+	public final static int	fsm_otherChatTextFGColor	= 0x2d3035;	//RRR:对话字体背景
 /*	
 	public final static int	fsm_timeTextBGColor			= 0xffffcc; //RRR: 去除对话时间背景
 	public final static int	fsm_timeTextBorderColor		= 0xc0c0c0;	//RRR: 去除对话时间边框
