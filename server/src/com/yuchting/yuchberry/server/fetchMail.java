@@ -351,11 +351,16 @@ public class  fetchMail{
 		if(_name == null || _name.length() <= 0){
 			throw new Exception("Error Attachment format!");
 		}
+		
+		// get rid of the illeage filename character
+		_name = _name.replace("\t", "");
+		_name = _name.replace("\r", "");
+		_name = _name.replace("\n", "");
 			
 		for(int i = 0;i < m_vectAttachment.size();i++){
 			MailAttachment att = (MailAttachment)m_vectAttachment.elementAt(i);
 			if(att.m_name.equals(_name)){
-				_name = _name.concat("_");				
+				_name = _name.concat("_");
 			}
 		}
 		
