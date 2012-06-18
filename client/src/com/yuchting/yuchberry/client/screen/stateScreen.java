@@ -41,7 +41,6 @@ import net.rim.device.api.io.http.HttpProtocolConstants;
 import net.rim.device.api.servicebook.ServiceBook;
 import net.rim.device.api.servicebook.ServiceRecord;
 import net.rim.device.api.system.Characters;
-import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.FocusChangeListener;
@@ -710,21 +709,21 @@ public class stateScreen extends MainScreen{
     	public AccMainManger(){
     		
     		m_hostName = new EditField(recvMain.sm_local.getString(yblocalResource.HOST),
-     						m_mainApp.m_hostname,128, EditField.FILTER_DEFAULT);
+     						m_mainApp.m_hostname,128, EditField.FILTER_DEFAULT | EditField.NO_NEWLINE);
     		
 			m_hostName.setChangeListener(this);
 			m_hostNameMgr.add(m_hostName);
 			add(m_hostNameMgr);
 			
 			m_hostport = new EditField(recvMain.sm_local.getString(yblocalResource.PORT),
-							m_mainApp.m_port == 0?"":Integer.toString(m_mainApp.m_port),5,EditField.FILTER_INTEGER);
+							m_mainApp.m_port == 0?"":Integer.toString(m_mainApp.m_port),5,EditField.FILTER_INTEGER | EditField.NO_NEWLINE);
 			
 			m_hostport.setChangeListener(this);
 			m_hostportMgr.add(m_hostport);
 			add(m_hostportMgr);
 			
 			m_userPassword = new PasswordEditField(recvMain.sm_local.getString(yblocalResource.USER_PASSWORD),
-											m_mainApp.m_userPassword,128,EditField.NO_COMPLEX_INPUT);
+											m_mainApp.m_userPassword,128,EditField.NO_COMPLEX_INPUT | EditField.NO_NEWLINE);
 			
 			m_userPasswordMgr.add(m_userPassword);
 			add(m_userPasswordMgr);
@@ -906,9 +905,9 @@ public class stateScreen extends MainScreen{
     	public LoginManager(){
     		
     		m_accountName	= new EditField(recvMain.sm_local.getString(yblocalResource.STATE_ACCOUNT_LABEL),
-												m_mainApp.m_account,128, EditField.FILTER_EMAIL);
+												m_mainApp.m_account,128, EditField.FILTER_EMAIL | EditField.NO_NEWLINE);
     		m_userPassword	= new PasswordEditField(recvMain.sm_local.getString(yblocalResource.USER_PASSWORD),
-    											m_mainApp.m_userPassword,128, EditField.NO_COMPLEX_INPUT);
+    											m_mainApp.m_userPassword,128, EditField.NO_COMPLEX_INPUT | EditField.NO_NEWLINE);
     		
     		m_accountNameMgr.add(m_accountName);    		
     		m_userPasswordMgr.add(m_userPassword);
@@ -1006,7 +1005,7 @@ public class stateScreen extends MainScreen{
 //						UiApplication.getUiApplication().pushScreen(new LoginWebView(stateScreen.this,t_url));
 //					}catch(Exception e){
 //						m_mainApp.DialogAlert("Internal Error:" + e.getMessage());
-//					}					
+//					}	
 					
 					recvMain.openURL(t_url);
 				}
