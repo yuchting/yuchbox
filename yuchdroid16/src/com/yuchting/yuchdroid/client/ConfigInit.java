@@ -61,6 +61,7 @@ public final class ConfigInit {
 	public boolean m_connectDisconnectPrompt = false;
 	public boolean m_connectDisconnectPrompt_vibrate = true;
 	public String	m_connectDisconnectPrompt_sound = "";
+	public boolean m_markReadMail		= true;
 					
 	public long m_uploadByte 				= 0;
 	public long m_downloadByte				= 0;
@@ -422,6 +423,7 @@ public final class ConfigInit {
 		    			
 		    			if(t_version >= 6){
 		    				m_forceDeleteMail				= sendReceive.ReadBoolean(t_readFile);
+		    				m_markReadMail					= sendReceive.ReadBoolean(t_readFile);
 		    			}
 		    					    			
 					}finally{
@@ -546,6 +548,7 @@ public final class ConfigInit {
     				
     				t_writeFile.write(m_mailClearBeforeDayIndex);
     				sendReceive.WriteBoolean(t_writeFile, m_forceDeleteMail);
+    				sendReceive.WriteBoolean(t_writeFile,m_markReadMail);
 					
 				}finally{
 					t_writeFile.close();

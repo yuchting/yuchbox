@@ -61,6 +61,8 @@ public class MailPrefActivity extends PreferenceActivity {
 	CheckBoxPreference		m_copyToFolder;
 	CheckBoxPreference		m_displayTextWhenHTML;
 	CheckBoxPreference		m_forceDeleteMail;
+	CheckBoxPreference		m_markReadMail;
+	
 	
 	CheckBoxPreference		m_vibrate;
 	RingtonePreference		m_sound;
@@ -105,7 +107,8 @@ public class MailPrefActivity extends PreferenceActivity {
 		m_delRemoteMail		= (CheckBoxPreference)t_prefMgr.findPreference("config_mail_del_remote");
 		m_copyToFolder		= (CheckBoxPreference)t_prefMgr.findPreference("config_mail_send_to_copy");
 		m_displayTextWhenHTML = (CheckBoxPreference)t_prefMgr.findPreference("config_mail_display_plain_text_when_html");
-		m_forceDeleteMail	=  (CheckBoxPreference)t_prefMgr.findPreference("config_mail_force_delete_when_slide");
+		m_forceDeleteMail	= (CheckBoxPreference)t_prefMgr.findPreference("config_mail_force_delete_when_slide");
+		m_markReadMail		= (CheckBoxPreference)t_prefMgr.findPreference("config_mail_mark_read");
 		
 		m_vibrate			= (CheckBoxPreference)t_prefMgr.findPreference("config_mail_vibrate");
 		m_sound				= (RingtonePreference)t_prefMgr.findPreference("config_mail_sound");
@@ -156,6 +159,7 @@ public class MailPrefActivity extends PreferenceActivity {
 			m_copyToFolder.setChecked(m_config.m_copyMailToSentFolder);
 			m_displayTextWhenHTML.setChecked(m_config.m_displayTextWhenHTML);
 			m_forceDeleteMail.setChecked(m_config.m_forceDeleteMail);
+			m_markReadMail.setChecked(m_config.m_markReadMail);
 			
 			m_vibrate.setChecked(m_config.m_mailPrompt_vibrate);
 			m_sound.setDefaultValue(m_config.m_mailPrompt_sound);
@@ -181,6 +185,7 @@ public class MailPrefActivity extends PreferenceActivity {
 			m_config.m_forceDeleteMail			= m_forceDeleteMail.isChecked();
 			m_config.m_mailFontSizeIndex		= m_mailFontSize.findIndexOfValue(m_mailFontSize.getValue());
 			m_config.m_mailClearBeforeDayIndex	= m_mailClearBeforeDays.findIndexOfValue(m_mailClearBeforeDays.getValue());
+			m_config.m_markReadMail				= m_markReadMail.isChecked();
 			
 			SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
 			String sound = prefs.getString(m_sound.getKey(), ""); 

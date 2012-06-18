@@ -12,11 +12,18 @@
 			android:entryValues="@array/mail_pref_default_account_values"
 			android:summary="@string/mail_pref_own_account_sum"
 			android:dialogTitle="@string/mail_pref_own_account"/>
+		
 		<CheckBoxPreference
 			android:key="config_mail_discard_org_mail"
 			android:title="@string/mail_pref_discard_org_mail"
 			android:summary="@string/mail_pref_discard_org_mail_sum"/>
-			
+		
+		<CheckBoxPreference
+			android:key="config_mail_mark_read"
+			android:title="@string/mail_pref_mark_read"
+			android:summaryOn="@string/mail_pref_mark_read_sumOn"
+			android:summaryOff="@string/mail_pref_mark_read_sumOff"/>
+		
 		<CheckBoxPreference
 			android:key="config_mail_del_remote"
 			android:title="@string/mail_pref_del_remote_mail"

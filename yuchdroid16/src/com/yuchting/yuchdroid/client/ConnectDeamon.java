@@ -377,19 +377,22 @@ public class ConnectDeamon extends Service implements Runnable{
 				
 				int hashVal = Integer.valueOf(hash).intValue();
 				
-				try{
-					ByteArrayOutputStream os  = new ByteArrayOutputStream();
-					
-					byte t_type = _markOrDel?msg_head.msgBeenRead:msg_head.msgMailDel;
-					
-					os.write(t_type);
-					sendReceive.WriteInt(os, hashVal);
-					sendReceive.WriteString(os,id);
-					
-					m_sendingQueue.addSendingData(t_type, os.toByteArray(), true);
-				}catch(Exception e){
-					m_mainApp.setErrorString("ConnectDeamon MailMarkReadRecv", e);
+				if((m_mainApp.m_config.m_markReadMail && _markOrDel) || !_markOrDel){
+					try{
+						ByteArrayOutputStream os  = new ByteArrayOutputStream();
+						
+						byte t_type = _markOrDel?msg_head.msgBeenRead:msg_head.msgMailDel;
+						
+						os.write(t_type);
+						sendReceive.WriteInt(os, hashVal);
+						sendReceive.WriteString(os,id);
+						
+						m_sendingQueue.addSendingData(t_type, os.toByteArray(), true);
+					}catch(Exception e){
+						m_mainApp.setErrorString("ConnectDeamon MailMarkReadRecv", e);
+					}
 				}
+				
 				
 				synchronized (m_vectSendAttach) {
 					for(PutAttachment att:m_vectSendAttach){

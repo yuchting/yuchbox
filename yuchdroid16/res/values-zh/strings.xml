@@ -183,6 +183,9 @@
 	<string name="mail_pref_del_remote_mail_sum">删除本地邮件同步删除邮箱的邮件</string>
 	<string name="mail_pref_send_to_copy">发送保存副本</string>
 	<string name="mail_pref_send_to_copy_sum">发送邮件后，保存到邮箱已发送文件夹（不支持POP3）</string>
+	<string name="mail_pref_mark_read">同步标记已读</string>
+	<string name="mail_pref_mark_read_sumOn">打开邮件时，在邮局服务器上同时标记已读邮件</string>
+	<string name="mail_pref_mark_read_sumOff">打开邮件时，禁止同步服务器标记已读</string>
 	<string name="mail_pref_display_plain_text_when_html">显示纯文本</string>
 	<string name="mail_pref_display_plain_text_when_html_sumOn">优先显示纯文本，延迟加载HTML部分(图片等等)</string>
 	<string name="mail_pref_display_plain_text_when_html_sumOff">优先自动显示HTML部分，不显示纯文本信息</string>
