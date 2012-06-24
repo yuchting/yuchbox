@@ -1,4 +1,161 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Yuchberry userPassword="111111" serverPort="9716" pushInterval="90" userSSL="0" convertoSimpleChar="0" >
-<EmailAccount account="tigeryang911@gmail.com" signinName="" password="tiger333333" sendName="TigerYang911" useFullNameSignIn="0" protocol="pop3s" host="imap.gmail.com" port="995" protocol_send="smtp" host_send="smtp.gmail.com" port_send="587" appendHTML="0" />
+<Yuchberry userPassword="111111" serverPort="9716" pushInterval="10" userSSL="0" convertoSimpleChar="0" disableLog="0" disableReport="0">
+	<EmailAccount
+		account="tzt-123@163.com"
+		password="superman"
+		cryptPassword=""
+		sendName="语盒"
+		signinName=""
+		
+		useFullNameSignIn="0"
+		
+		protocol="imap"
+		host="imap.163.com"
+		port="143"
+		
+		protocol_send="smtp"
+		host_send="smtp.163.com"
+		port_send="25"
+		
+		appendHTML="1"
+		pushHistoryMsg="1"
+	/>
+		
+	<!--EmailAccount
+		account="yuchting@gmail.com"
+		password=""
+		cryptPassword="396bc581a6277f66ca6d40eb5fd98d38ef8857158d44258d"
+		sendName="tzz"
+		
+		useFullNameSignIn="0"
+		
+		protocol="imaps"
+		host="imap.gmail.com"
+		port="993"
+		
+		protocol_send="smtp"
+		host_send="smtp.gmail.com"
+		port_send="587"
+		
+		appendHTML="1"
+		pushHistoryMsg="1"
+	/-->
+	
+	<!--EmailAccount
+		account="yuchberry@gmail.com"
+		password=""
+		cryptPassword="7b371a95bc2d7a9b9d7c68d2cca46d98ef8857158d44258d"
+		sendName="yuchberry"
+		
+		useFullNameSignIn="0"
+		
+		protocol="imaps"
+		host="imap.gmail.com"
+		port="993"
+		
+		protocol_send="smtp"
+		host_send="smtp.gmail.com"
+		port_send="587"
+		
+		appendHTML="1"
+		pushHistoryMsg="1"
+	/-->
+	
+	<!--EmailAccount
+		account="233010045@qq.com"
+		password=""
+		cryptPassword="8dbf031d4b9b5e9639d6b561de8e76ed"
+		sendName="tzzqq"
+		
+		useFullNameSignIn="0"
+		
+		protocol="imap"
+		host="imap.qq.com"
+		port="143"
+		
+		protocol_send="smtp"
+		host_send="smtp.qq.com"
+		port_send="25"
+		
+		appendHTML="1"
+		pushHistoryMsg="1"
+	/-->
+	
+	<!--WeiboAccount
+		type="sina"
+		account="yuchberry_test"
+		accessToken="8a2bf4e5a97194a1eb73740b448f034e"
+		secretToken="7529265879f3c97af609c694064bbc59"
+		
+		
+		timelineSum="10"
+		directMessageSum="5"
+		atMeSum="5"
+		commentSum="5"
+	/-->
+	
+	<!--WeiboAccount
+		type="twitter"
+		account="yuchting"
+		accessToken="123158821-XUYTdP2MDDKpB3XSL9xgdzYNWS6wQIy7wPaVc1Tr"
+		secretToken="Ar3dKS8UOCwTSuLWqFEYrzN1sm988SfIh2HGrXTcDU"
+		
+		
+		timelineSum="10"
+		directMessageSum="5"
+		atMeSum="5"
+		commentSum="5"
+	/-->
+		
+	<!--WeiboAccount
+		type="sina"
+		account="yuchberry"
+		accessToken="1eef9899c847f1cd0735c6775fdcc576"
+		secretToken="5f248ea06daf600f17edd57c303cc9ce"
+		
+		
+		timelineSum="20"
+		directMessageSum="5"
+		atMeSum="5"
+		commentSum="5"
+	/-->
+		
+	<!--WeiboAccount
+		type="qq"
+		account="yuchberry"
+		accessToken="d7804a95bde0436ca9f0b62ef84de787"
+		secretToken="0a076b55a89ed75bada75b72d880a60b"
+		
+		
+		timelineSum="20"
+		directMessageSum="5"
+		atMeSum="5"
+		commentSum="5"
+	/-->
+	
+	<!--IMAccount
+		type="gtalk"
+		account="yuchberry@gmail.com"
+		password=""
+		cryptPassword="dde01d449002d321de0fe93154f449873f153dd6e969a81e"
+	/-->
+	<!--IMAccount
+		type="gtalk"
+		account="yuchting@gmail.com"
+		password=""
+		cryptPassword="396bc581a6277f66ca6d40eb5fd98d38ef8857158d44258d"
+	/-->
+	
+	<IMAccount
+		type="gtalk"
+		
+		xmppHost=""
+		xmppPort=""
+		
+		account="yuchdroid@gmail.com"
+		password=""
+		cryptPassword="12eb2c6d63809ffab74725f2b6282bd0ef8857158d44258d"
+	/>
+	
+	
 </Yuchberry>
