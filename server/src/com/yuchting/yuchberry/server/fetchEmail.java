@@ -2168,7 +2168,7 @@ public class fetchEmail extends fetchAccount{
 	
 		String t_sendTo = fetchMail.parseAddressList(_mail.GetSendToVect());
 		
-		m_mainMgr.m_logger.LogOut("ComposeMessage sendTo:'"+t_sendTo+"'");
+		m_mainMgr.m_logger.LogOut(m_mainMgr.GetPrefixString() + " ComposeMessage sendTo:'"+t_sendTo+"'");
 		
 		addEmailSendAddr(t_sendTo);
 		
