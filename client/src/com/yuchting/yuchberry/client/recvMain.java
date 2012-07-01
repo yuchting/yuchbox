@@ -1012,9 +1012,20 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				
 			}else{
 				
-				FileConnection t_ini	= (FileConnection) Connector.open(_orgPathFilename,Connector.READ_WRITE);
+				FileConnection t_ini	= (FileConnection)Connector.open(_orgPathFilename,Connector.READ_WRITE);
 				try{
 					if(t_ini.exists()){
+						
+						FileConnection t_back = (FileConnection) Connector.open(_backPathFilename,Connector.READ_WRITE);
+						try{
+							if(t_back.exists()){
+								t_back.delete();
+							}
+						}finally{
+							t_back.close();
+							t_back = null;
+						}
+						
 						t_ini.rename(_backFilename);
 					}
 				}finally{
@@ -1028,7 +1039,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			}
 			
 		}catch(Exception e){
-			SetErrorString("write/read PreWriteReadIni file from SDCard error :" + e.getMessage() + e.getClass().getName());
+			SetErrorString("write/read preWriteReadIni file error :" + e.getMessage() + e.getClass().getName());
 		}
 	}
 	
@@ -3099,7 +3110,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 					t_fc = null;
 				}
 				
-				postWriteReadIni(fsm_weiboDataBackName);
+				postWriteReadIni(t_weiboDataBackPathName);
 				
 			}catch(Exception e){
 				SetErrorString("RWNL", e);
