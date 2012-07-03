@@ -7,19 +7,55 @@
 	android:background="#FFF"
 	android:id="@+id/home_activity">
 	
-	<ListView 
-		android:id="@id/android:list"
+	<LinearLayout
+		android:orientation="vertical"
+		android:layout_width="fill_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1"> 
+		<ListView 
+			android:id="@id/android:list"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:divider="@drawable/mail_list_divider"
+			android:dividerHeight="1sp"
+			android:cacheColorHint="#00000000" />
+			
+		<TextView 
+			android:id="@id/android:empty"
+			android:layout_width="fill_parent" 
+			android:layout_height="fill_parent"
+			android:gravity="center"
+			android:text="@string/mail_home_empty_group"/>
+	</LinearLayout>
+	
+    <LinearLayout 
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
-		android:divider="@drawable/mail_list_divider"
-		android:dividerHeight="1sp"
-		android:cacheColorHint="#00000000" />
-		
-	<TextView 
-		android:id="@id/android:empty"
-		android:layout_width="fill_parent" 
-		android:layout_height="fill_parent"
-		android:gravity="center"
-		android:text="@string/mail_home_empty_group"/>
+		android:orientation="horizontal"
+		android:id="@+id/mail_home_footer"
+		android:background="#888"
+		android:paddingTop="3dp">	
+		<Button 
+			android:id="@+id/mail_home_read_btn"
+			android:layout_width="0dp"
+			android:layout_height="fill_parent"
+			android:layout_weight="1"
+			android:text="@string/mail_home_read_btn"/>
+			
+		<Button 
+			android:id="@+id/mail_home_unread_btn"
+			android:layout_width="0dp"
+			android:layout_height="fill_parent"
+			android:layout_weight="1"
+			android:text="@string/mail_home_unread_btn"/>
+			
+		<Button 
+			android:id="@+id/mail_home_delete_btn"
+			android:layout_width="0dp"
+			android:layout_height="fill_parent"
+			android:layout_weight="1"
+			android:text="@string/mail_open_delete_btn"
+			android:paddingRight="5dp"/>
+	</LinearLayout>
 
 </LinearLayout>

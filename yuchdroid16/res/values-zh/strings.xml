@@ -117,6 +117,8 @@
     <string name="mail_list_compose_new_mail">新建</string>
     <string name="mail_home_empty_group">天哪，还没有任何邮件...</string>
     <string name="mail_list_menu_connect_state">状态</string>
+    <string name="mail_home_read_btn">标记已读</string>
+    <string name="mail_home_unread_btn">标记未读</string>
         
     <!-- mail open view -->
     <string name="mail_open_reply_btn">回复</string>

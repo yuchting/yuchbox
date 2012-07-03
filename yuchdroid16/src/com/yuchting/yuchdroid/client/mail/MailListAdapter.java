@@ -30,16 +30,17 @@ package com.yuchting.yuchdroid.client.mail;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Vector;
 
 import android.database.Cursor;
 import android.gesture.GestureLibraries;
 import android.gesture.GestureLibrary;
-import android.graphics.Rect;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -79,6 +80,7 @@ public class MailListAdapter extends BaseAdapter{
 	private int m_currDay;
 	
 	private GestureLibrary m_gesLibrary;
+	
 	
 	public MailListAdapter(HomeActivity _ctx){
 		m_context		= _ctx;
@@ -218,12 +220,10 @@ public class MailListAdapter extends BaseAdapter{
         holder.mailAddr		= (TextView)convertView.findViewById(R.id.mail_from_to);
         holder.latestTime	= (TextView)convertView.findViewById(R.id.mail_time);
         holder.mailDateSpliter	= (TextView)convertView.findViewById(R.id.mail_date_spliter);
-        holder.deletePrompt = (TextView)convertView.findViewById(R.id.mail_delete_prompt);
-        holder.readPrompt = (TextView)convertView.findViewById(R.id.mail_read_prompt);
-        
+        holder.selected		= (CheckBox)convertView.findViewById(R.id.mail_item_checkbox);
+          
         convertView.setTag(holder);
-        convertView.setOnTouchListener(m_context);
-        
+                
         // assign the item height
         //
         synchronized (this) {
@@ -237,7 +237,7 @@ public class MailListAdapter extends BaseAdapter{
 				float t_timeSpliterHeight	= holder.mailDateSpliter.getPaint().getTextSize();
 				
 				MAIL_GROUP_ITEM_SPLITER_HEIGHT = (int)t_timeSpliterHeight;
-				MAIL_GROUP_ITEM_HEIGHT = (int)(t_subjectHeight +  t_bodyHeight + MAIL_GROUP_ITEM_SPLITER_HEIGHT);
+				MAIL_GROUP_ITEM_HEIGHT = (int)(t_subjectHeight +  t_bodyHeight + MAIL_GROUP_ITEM_SPLITER_HEIGHT) + 5;
 			}
 		}
                 
@@ -291,10 +291,8 @@ public class MailListAdapter extends BaseAdapter{
         TextView	mailAddr;
         TextView	latestTime;
         TextView	mailDateSpliter;
-        
-        TextView	deletePrompt;
-        TextView	readPrompt;
-        
+        CheckBox	selected;
+                
         long		preGroupId = -1;
         long		groupId;
         long		nextGroupId = -1;

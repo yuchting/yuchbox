@@ -27,6 +27,7 @@
  */
 package com.yuchting.yuchdroid.client.mail;
 
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
 
 import android.app.ListActivity;
@@ -36,23 +37,21 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ListView;
 
-import com.yuchting.yuchdroid.client.GlobalDialog;
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
 import com.yuchting.yuchdroid.client.Yuchdroid16Activity;
-import com.yuchting.yuchdroid.client.mail.MailListAdapter.ItemHolder;
 
 
-public class HomeActivity extends ListActivity implements View.OnTouchListener{
+public class HomeActivity extends ListActivity{
 			
 	public static final int	MAX_GROUP_FATCH_NUM		= 35;
 
@@ -61,6 +60,11 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
 		
 	private YuchDroidApp	m_mainApp;
 	private MailListAdapter m_mailListAd;
+	
+	//! select mails
+	private Vector<Long> m_selectedMailGroupList = new Vector<Long>();
+	
+	private ViewGroup	m_footer = null;
 				
 	BroadcastReceiver m_recvMailRecv = new BroadcastReceiver() {
 		@Override
@@ -109,12 +113,18 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
         }
               
         setContentView(R.layout.home);
+        
+        // add the footer
+//        m_footer = (ViewGroup)getLayoutInflater().inflate(R.layout.mail_home_footer,null,false);
+//        getListView().addHeaderView(m_footer,null,false);
+        
+        // get the cursor of db
         m_groupCursor 		= m_mainApp.m_dba.fetchAllGroup(m_currGroupLimit);
         refershTitle();
         
         m_mailListAd		= new MailListAdapter(this);
-        getListView().setAdapter(m_mailListAd);
-        
+        getListView().setAdapter(m_mailListAd);        
+       
         getListView().setOnScrollListener(new AbsListView.OnScrollListener() {
 			
 			@Override
@@ -134,9 +144,8 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
         		
         registerReceiver(m_recvMailRecv, new IntentFilter(YuchDroidApp.FILTER_RECV_MAIL));
         registerReceiver(m_markReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
-        registerReceiver(m_sendMailRecv, new IntentFilter(YuchDroidApp.FILTER_MAIL_GROUP_FLAG));
-        
-        //getListView().setOnTouchListener(this);
+        registerReceiver(m_sendMailRecv, new IntentFilter(YuchDroidApp.FILTER_MAIL_GROUP_FLAG));   
+       
     }
 	
 	public void onResume(){
@@ -194,143 +203,6 @@ public class HomeActivity extends ListActivity implements View.OnTouchListener{
 		}
     }
 	
-	//! touch screen down event x
-    float m_touch_x 		= 0;
-    
-    //! touch screen down event y
-    float m_touch_y			= 0;
-    
-    //! is touch state
-    boolean m_touched			= false;
-    
-    //! mail item touch capture
-    boolean m_touchCapture 	= false;
-    
-    MailListAdapter.ItemHolder	m_captureItem	= null;
-    
-    //! delete group id for bufferring
-    long	m_deleteGroupId		= 0;
-    
-    AccelerateDecelerateInterpolator m_interpolator	= new AccelerateDecelerateInterpolator();
-    
-	@Override
-	public boolean onTouch(View v, MotionEvent event) {
-		
-//		switch(event.getAction()){
-//		case MotionEvent.ACTION_DOWN:
-//			
-//			if(!(v instanceof ListView)){
-//				m_touch_x 		= event.getX();
-//				m_touch_y		= event.getY();
-//				m_touched 		= true;
-//				m_touchCapture	= false;
-//				
-//				m_captureItem = (MailListAdapter.ItemHolder)v.getTag();
-//			}
-//			
-//			break;
-//		case MotionEvent.ACTION_MOVE:
-//			
-//			if(m_touched && m_captureItem != null){
-//				
-//				float t_curr_x = event.getX();
-//				float t_curr_y = event.getY();
-//				
-//				float t_delta_x = t_curr_x - m_touch_x;
-//				
-//				if(!m_touchCapture){
-//										
-//					float t_delta_y = t_curr_y - m_touch_y;
-//					
-//					if(Math.abs(t_delta_x) < Math.abs(t_delta_y)){
-//						break;
-//					}
-//					
-//					m_touchCapture = true;
-//					return true;				
-//					
-//				}else{
-//					
-//					// capture view state
-//					if(t_delta_x < 0){
-//						
-//						t_delta_x = -t_delta_x;
-//						
-//						if(t_delta_x > ItemHolder.MAX_DELETE_PROMPT_WIDTH){
-//							t_delta_x = ItemHolder.MAX_DELETE_PROMPT_WIDTH;
-//						}else{
-//							t_delta_x = m_interpolator.getInterpolation(t_delta_x / ItemHolder.MAX_DELETE_PROMPT_WIDTH) * t_delta_x;
-//						}
-//						
-//						m_captureItem.deletePrompt.getLayoutParams().width = (int)t_delta_x;
-//						m_captureItem.deletePrompt.requestLayout();
-//					
-//					}else{
-//						
-//						if(t_delta_x > ItemHolder.MAX_READ_PROMPT_WIDTH){
-//							t_delta_x = ItemHolder.MAX_READ_PROMPT_WIDTH;
-//						}else{
-//							t_delta_x = m_interpolator.getInterpolation(t_delta_x / ItemHolder.MAX_READ_PROMPT_WIDTH) * t_delta_x;
-//						}
-//						
-//						m_captureItem.readPrompt.getLayoutParams().width = (int)t_delta_x;
-//						m_captureItem.readPrompt.requestLayout();
-//					}
-//					
-//					return true;
-//				}
-//			}			
-//			
-//			break;
-//			
-//		case MotionEvent.ACTION_UP:
-//		case MotionEvent.ACTION_OUTSIDE:
-//		case MotionEvent.ACTION_CANCEL:
-//									
-//			if(m_touchCapture){
-//				if(m_captureItem.readPrompt.getLayoutParams().width >= ItemHolder.MAX_READ_PROMPT_WIDTH){
-//					// mark the mail group read
-//					//
-//					markMailGroupRead(m_captureItem.groupId);
-//					
-//				}else if(m_captureItem.deletePrompt.getLayoutParams().width >= ItemHolder.MAX_DELETE_PROMPT_WIDTH){
-//					// delete the mail group
-//					//
-//					if(m_mainApp.m_config.m_forceDeleteMail){
-//						delMailGroup(m_captureItem.groupId);
-//					}else{
-//						
-//						m_deleteGroupId = m_captureItem.groupId;
-//						
-//						GlobalDialog.showYesNoDialog(getString(R.string.mail_open_delete_prompt), this, 
-//						new GlobalDialog.YesNoListener() {
-//							
-//							@Override
-//							public void click() {
-//								
-//								delMailGroup(m_deleteGroupId);
-//							}
-//						},null);
-//					}
-//				}
-//				m_captureItem.deletePrompt.getLayoutParams().width = 0;
-//				m_captureItem.readPrompt.getLayoutParams().width = 0;
-//				m_captureItem.background.requestLayout();
-//			}			
-//
-//			m_touched 		= false;
-//			m_captureItem 	=  null;
-//			
-//			if(m_touchCapture){
-//				m_touchCapture = false;
-//				return true;
-//			}
-//			
-//			break;
-//		}
-		
-		return false;
-	}
 	
 	/**
 	 * mark mail group read

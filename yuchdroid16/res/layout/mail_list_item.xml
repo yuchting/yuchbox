@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@+id/mail_item"
 	android:layout_width="fill_parent"
-	android:layout_height="66sp"
+	android:layout_height="70sp"
 	android:background="#fff">
 	
 	<TextView 
@@ -14,33 +14,7 @@
 		android:textSize="15sp"
 		android:textStyle="bold"
 		android:gravity="center"
-		android:background="#aaa"/>
-	
-	<TextView
-	    android:id="@+id/mail_read_prompt"
-	    android:layout_width="0dp"
-	    android:layout_height="fill_parent"
-	    android:text="@string/mail_read_prompt"
-	    android:background="#aaa"
-	    android:textColor="#000"
-	    android:padding="5dp"
-	    android:singleLine="true"
-	    android:gravity="center|left"
-	    android:ellipsize="none"
-	    android:layout_below="@id/mail_date_spliter"/>
-	
-	<TextView
-	    android:id="@+id/mail_delete_prompt"
-	    android:layout_width="0dp"
-	    android:layout_height="fill_parent"
-	    android:text="@string/mail_delete_prompt"
-	    android:background="#E2341D"
-	    android:textColor="#fff"
-	    android:padding="5dp"
-	    android:gravity="center|left"
-	    android:singleLine="true"
-	    android:layout_alignParentRight="true"
-	    android:layout_below="@id/mail_date_spliter"/>
+		android:background="#aaa"/>	
 	
 	<ImageView
 		android:id="@+id/mail_group_flag"
@@ -49,7 +23,6 @@
 		android:src="@drawable/mail_list_flag_recv"
 		android:layout_marginLeft="2sp"
 		android:layout_marginTop="3sp"
-		android:layout_toRightOf="@id/mail_read_prompt"
 		android:layout_below="@id/mail_date_spliter"/>    
     
 	<TextView
@@ -77,39 +50,51 @@
         android:layout_marginTop="3sp"
         android:textColor="#888"
         android:layout_toRightOf="@id/mail_subject"
-        android:layout_toLeftOf="@id/mail_read_prompt"
         android:layout_below="@id/mail_date_spliter"
         android:singleLine="true"
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:text="mail body "/>
+       
+    <CheckBox
+        android:id="@+id/mail_item_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="3sp"
+        android:layout_below="@id/mail_body"
+        android:layout_toLeftOf="@+id/mail_subject"
+        android:focusable="false"
+        android:button="@drawable/mail_item_checkbox_ui" />
     
-    <TextView  
+   	<TextView  
 		android:id="@+id/mail_time"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:maxWidth="100sp"
+		android:layout_below="@id/mail_body"
+		android:layout_alignParentRight="true"
 		android:layout_alignParentBottom="true"
-		android:layout_marginBottom="5sp"
+		android:layout_marginTop="2sp"
 		android:paddingRight="5sp"	
 		android:textSize="12sp"
 		android:textColor="#000"
 		android:singleLine="true"
-		android:text="mail time mail time"
-		android:layout_toLeftOf="@id/mail_delete_prompt"/>
-        	
-   	<TextView  
+		android:text="mail time mail time"/>
+   	
+   	 <TextView  
 		android:id="@+id/mail_from_to"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_alignLeft="@id/mail_subject"
-		android:layout_alignParentBottom="true"
-		android:layout_marginBottom="3sp"
+		android:layout_toRightOf="@id/mail_item_checkbox"
+		android:layout_toLeftOf="@id/mail_time"
+		android:layout_below="@id/mail_body"
+		android:layout_marginTop="3sp"
 		android:maxWidth="190sp"
 		android:textSize="14sp"
 		android:textColor="#000"
 		android:singleLine="true"
-		android:text="mail address list mail address list mail address list"
-		android:layout_toLeftOf="@id/mail_time" />    
+		android:text="mail address list mail address list mail address list " />  
+   
 
 </RelativeLayout>

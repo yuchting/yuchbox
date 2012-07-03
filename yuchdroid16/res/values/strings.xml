@@ -114,6 +114,8 @@
     <string name="mail_list_compose_new_mail">Compose</string>
     <string name="mail_home_empty_group">Opps, there is not any mail...</string>
     <string name="mail_list_menu_connect_state">State</string>
+    <string name="mail_home_read_btn">Mark Read</string>
+    <string name="mail_home_unread_btn">Mark Unread</string>
     
        
     <!-- mail open view -->
