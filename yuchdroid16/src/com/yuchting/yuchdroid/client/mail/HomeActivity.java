@@ -37,21 +37,25 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.ListView;
 
+import com.yuchting.yuchdroid.client.GlobalDialog;
 import com.yuchting.yuchdroid.client.R;
 import com.yuchting.yuchdroid.client.YuchDroidApp;
 import com.yuchting.yuchdroid.client.Yuchdroid16Activity;
 
 
-public class HomeActivity extends ListActivity{
+public class HomeActivity extends ListActivity implements View.OnClickListener{
 			
 	public static final int	MAX_GROUP_FATCH_NUM		= 35;
 
@@ -64,7 +68,10 @@ public class HomeActivity extends ListActivity{
 	//! select mails
 	private Vector<Long> m_selectedMailGroupList = new Vector<Long>();
 	
-	private ViewGroup	m_footer = null;
+	private ViewGroup	m_footer 			= null;
+	private Button		m_batchReadBtn 		= null;
+	private Button		m_batchUnreadBtn 	= null;
+	private Button		m_batchDelBtn		= null;
 				
 	BroadcastReceiver m_recvMailRecv = new BroadcastReceiver() {
 		@Override
@@ -115,8 +122,13 @@ public class HomeActivity extends ListActivity{
         setContentView(R.layout.home);
         
         // add the footer
-//        m_footer = (ViewGroup)getLayoutInflater().inflate(R.layout.mail_home_footer,null,false);
-//        getListView().addHeaderView(m_footer,null,false);
+        m_footer = (ViewGroup)findViewById(R.id.mail_home_footer);
+        m_batchReadBtn = (Button)m_footer.findViewById(R.id.mail_home_read_btn);
+        m_batchReadBtn.setOnClickListener(this);
+        m_batchUnreadBtn = (Button)m_footer.findViewById(R.id.mail_home_unread_btn);
+        m_batchUnreadBtn.setOnClickListener(this);
+        m_batchDelBtn = (Button)m_footer.findViewById(R.id.mail_home_delete_btn);
+        m_batchDelBtn.setOnClickListener(this);
         
         // get the cursor of db
         m_groupCursor 		= m_mainApp.m_dba.fetchAllGroup(m_currGroupLimit);
@@ -144,8 +156,7 @@ public class HomeActivity extends ListActivity{
         		
         registerReceiver(m_recvMailRecv, new IntentFilter(YuchDroidApp.FILTER_RECV_MAIL));
         registerReceiver(m_markReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
-        registerReceiver(m_sendMailRecv, new IntentFilter(YuchDroidApp.FILTER_MAIL_GROUP_FLAG));   
-       
+        registerReceiver(m_sendMailRecv, new IntentFilter(YuchDroidApp.FILTER_MAIL_GROUP_FLAG));
     }
 	
 	public void onResume(){
@@ -203,11 +214,26 @@ public class HomeActivity extends ListActivity{
 		}
     }
 	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			if(!m_selectedMailGroupList.isEmpty()){
+				
+				clearSelectedGroup();
+				refreshGroupCursor();
+				
+				return true;
+			}	
+		}
+		
+		return super.onKeyDown(keyCode, event);
+	}
 	
 	/**
 	 * mark mail group read
 	 */
-	private void markMailGroupRead(long _groupId){
+	private void markMailGroupRead(long _groupId,StringBuffer _markReadMailString_hash,StringBuffer _markReadMailString_ID){
 		
 		Cursor t_mailCursor		= m_mainApp.m_dba.fetchGroup(_groupId);
 		
@@ -218,8 +244,6 @@ public class HomeActivity extends ListActivity{
 		
 		// fetch Mail data from the group list
 		//
-		StringBuffer t_markReadMailString_hash = new StringBuffer();
-		StringBuffer t_markReadMailString_ID = new StringBuffer();
 		
 		boolean t_hasUnreadMail = false;
 		boolean t_modifiedFlag;
@@ -244,8 +268,8 @@ public class HomeActivity extends ListActivity{
 	    		//
 				t_hasUnreadMail = true;
 	    		m_mainApp.m_dba.markMailRead(t_id);
-	    		t_markReadMailString_hash.append(t_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
-	    		t_markReadMailString_ID.append(t_mail.getMessageID()).append(fetchMail.fsm_vectStringSpliter);
+	    		_markReadMailString_hash.append(t_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
+	    		_markReadMailString_ID.append(t_mail.getMessageID()).append(fetchMail.fsm_vectStringSpliter);
 			}  	
 		}
 		  	
@@ -254,19 +278,10 @@ public class HomeActivity extends ListActivity{
 			// mark the unread group mail as read (database)
 			//
 			m_mainApp.m_dba.markGroupRead(_groupId);
-			
-			// send the broadcast to ConnectDeamon and MailListView (MailListActivity)
-			//
-			Intent t_intent = new Intent(YuchDroidApp.FILTER_MARK_MAIL_READ);
-			t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_GROUPID,_groupId);
-			t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_markReadMailString_ID.toString());
-			t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAIL_HASH,t_markReadMailString_hash.toString());
-			
-			sendBroadcast(t_intent);
 		}
 	}
 	
-	private void delMailGroup(long _groupId){
+	private void delMailGroup(long _groupId,StringBuffer _markReadMailString_hash,StringBuffer _markReadMailString_ID){
 		
 		Cursor t_mailCursor		= m_mainApp.m_dba.fetchGroup(_groupId);
 		
@@ -275,10 +290,6 @@ public class HomeActivity extends ListActivity{
 		
 		t_mailCursor.close();
 		
-		// fetch Mail data from the group list
-		//
-		StringBuffer t_markReadMailString_hash = new StringBuffer();
-		StringBuffer t_markReadMailString_ID = new StringBuffer();
 		
 		long t_id;
 		
@@ -296,25 +307,13 @@ public class HomeActivity extends ListActivity{
 			if(!t_mail.isOwnSendMail()){
 				// is NOT own send Mail
 				//
-	    		t_markReadMailString_hash.append(t_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
-	    		t_markReadMailString_ID.append(t_mail.getMessageID()).append(fetchMail.fsm_vectStringSpliter);
+				_markReadMailString_hash.append(t_mail.GetSimpleHashCode()).append(fetchMail.fsm_vectStringSpliter);
+				_markReadMailString_ID.append(t_mail.getMessageID()).append(fetchMail.fsm_vectStringSpliter);
 			}  	
 		}
 		  	
 		m_mainApp.m_dba.deleteGroup(_groupId);
-		refreshGroupCursor();
 		
-		if(t_markReadMailString_hash.length() != 0 && m_mainApp.m_config.m_delRemoteMail){
-			
-			// send broadcast to ConnectDeamon
-			//
-			Intent t_intent = new Intent(YuchDroidApp.FILTER_DELETE_MAIL);
-			t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_GROUPID,_groupId);
-        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAIL_HASH,t_markReadMailString_hash.toString());
-        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_markReadMailString_ID.toString());			        	
-        	
-    		sendBroadcast(t_intent);	
-		}
 	}
 			
 	@Override
@@ -345,5 +344,149 @@ public class HomeActivity extends ListActivity{
         }
 
         return super.onMenuItemSelected(featureId, item);
+	}
+	
+	
+	/**
+	 * clear the selected group item
+	 */
+	public void clearSelectedGroup(){
+		m_selectedMailGroupList.clear();
+		m_footer.setVisibility(View.GONE);
+	}
+	
+	/**
+	 * add a mail group to select
+	 * @param _groupId
+	 */
+	public void addSelectedGroup(long _groupId){
+		m_selectedMailGroupList.add(_groupId);
+		m_footer.setVisibility(View.VISIBLE);
+	}
+	
+	/**
+	 * remove the selected mail group 
+	 * @param _groupId
+	 */
+	public void removeSeletedGroup(long _groupId){
+		for (Long groupId:m_selectedMailGroupList){
+			if(groupId == _groupId){
+				m_selectedMailGroupList.remove(groupId);
+				break;
+			}
+		}
+		
+		if(m_selectedMailGroupList.isEmpty()){
+			m_footer.setVisibility(View.GONE);
+		}
+	}
+	
+	/**
+	 * is this group id selected mail ?
+	 * @return
+	 */
+	public boolean isSelectedGroup(long _groupId){
+		
+		for (Long groupId:m_selectedMailGroupList){
+			if(groupId == _groupId){	
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	@Override
+	public void onClick(View v) {
+		
+		if(v == m_batchReadBtn){
+						
+			StringBuffer t_markReadMailString_hash	= new StringBuffer();
+			StringBuffer t_markReadMailString_ID	= new StringBuffer();
+			
+			Long t_groupId = m_selectedMailGroupList.get(0);
+			
+			for (Long groupId:m_selectedMailGroupList){
+				markMailGroupRead(groupId,t_markReadMailString_hash,t_markReadMailString_ID);
+			}
+			
+			clearSelectedGroup();
+			
+			if(t_markReadMailString_hash.length() != 0){
+
+				// send the broadcast to ConnectDeamon and MailListView (MailListActivity)
+				//
+				Intent t_intent = new Intent(YuchDroidApp.FILTER_MARK_MAIL_READ);
+				t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_GROUPID,t_groupId);
+				t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_markReadMailString_ID.toString());
+				t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAIL_HASH,t_markReadMailString_hash.toString());
+				
+				sendBroadcast(t_intent);
+			}else{
+				refreshGroupCursor();
+			}
+			
+		}else if(v == m_batchDelBtn){
+			
+			// delete the selected mail group
+			//
+			if(m_mainApp.m_config.m_forceDeleteMail){
+				deleteSelectedGroup_impl();
+			}else{
+				
+				GlobalDialog.showYesNoDialog(getString(R.string.mail_open_delete_prompt), this, 
+				new GlobalDialog.YesNoListener() {
+					
+					@Override
+					public void click() {
+						deleteSelectedGroup_impl();
+					}
+				},null);
+			}			
+			
+		}else if(v instanceof CheckBox || v instanceof ImageView){
+						
+			MailListAdapter.ItemHolder t_holder = (MailListAdapter.ItemHolder)v.getTag();
+			
+			if(v instanceof ImageView){
+				t_holder.selected.setChecked(!t_holder.selected.isChecked());
+			}
+			
+			if(t_holder.selected.isChecked()){
+				addSelectedGroup(t_holder.groupId);
+			}else{
+				removeSeletedGroup(t_holder.groupId);
+			}
+		}
+	}
+	
+	private void deleteSelectedGroup_impl(){
+		
+		if(!m_selectedMailGroupList.isEmpty()){
+			StringBuffer t_markReadMailString_hash	= new StringBuffer();
+			StringBuffer t_markReadMailString_ID	= new StringBuffer();
+			
+			Long t_groupId = m_selectedMailGroupList.get(0);
+			
+			for (Long groupId:m_selectedMailGroupList){
+				delMailGroup(groupId,t_markReadMailString_hash,t_markReadMailString_ID);
+			}
+			
+			if(t_markReadMailString_hash.length() != 0 && m_mainApp.m_config.m_delRemoteMail){
+				
+				// send broadcast to ConnectDeamon
+				//
+				Intent t_intent = new Intent(YuchDroidApp.FILTER_DELETE_MAIL);
+				t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_GROUPID,t_groupId);
+	        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAIL_HASH,t_markReadMailString_hash.toString());
+	        	t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,t_markReadMailString_ID.toString());
+	        	
+	    		sendBroadcast(t_intent);
+			}
+			
+			clearSelectedGroup();
+		}
+		
+		refreshGroupCursor();		
 	}
 }

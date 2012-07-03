@@ -151,7 +151,8 @@ public class MailListAdapter extends BaseAdapter{
         
         long t_currTime = t_groupCursor.getLong(m_cursorlatestTimeIndex);
         holder.groupId = t_groupCursor.getInt(m_cursorIDIndex);
-        
+        holder.selected.setChecked(m_context.isSelectedGroup(holder.groupId));
+                
         if(position != 0){
         	t_groupCursor.moveToPosition(position - 1);
         	holder.nextGroupId = t_groupCursor.getInt(m_cursorIDIndex);
@@ -221,8 +222,14 @@ public class MailListAdapter extends BaseAdapter{
         holder.latestTime	= (TextView)convertView.findViewById(R.id.mail_time);
         holder.mailDateSpliter	= (TextView)convertView.findViewById(R.id.mail_date_spliter);
         holder.selected		= (CheckBox)convertView.findViewById(R.id.mail_item_checkbox);
-          
+        
+        holder.selected.setTag(holder);
+        holder.groupFlag.setTag(holder);
+        
         convertView.setTag(holder);
+        
+        holder.groupFlag.setOnClickListener(m_context);
+        holder.selected.setOnClickListener(m_context);
                 
         // assign the item height
         //

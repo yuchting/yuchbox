@@ -34,6 +34,7 @@
 		android:orientation="horizontal"
 		android:id="@+id/mail_home_footer"
 		android:background="#888"
+		android:visibility="gone"
 		android:paddingTop="3dp">	
 		<Button 
 			android:id="@+id/mail_home_read_btn"
