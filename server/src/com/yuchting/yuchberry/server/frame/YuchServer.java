@@ -769,7 +769,9 @@ public class YuchServer {
 				
 				if(t_thread.m_clientDisconnectTime != 0 && t_thread.m_usingHours != 0){
 					
-					final long t_delTime = t_thread.m_pauseState?(12 * 3600 * 1000):(5 * 24 * 3600 * 1000);
+					final long t_upday = m_yuchsignFramePass == null?365:5;
+					
+					final long t_delTime = t_thread.m_pauseState?(12 * 3600 * 1000):(t_upday * 24 * 3600 * 1000);
 					
 					if(Math.abs(t_currTime - t_thread.m_clientDisconnectTime) >= t_delTime  ){
 						t_deadPool.add(t_thread);
