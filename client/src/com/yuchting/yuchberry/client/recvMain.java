@@ -550,13 +550,14 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public static String findNetworkAPN(){
 		
 		String t_carrierName = RadioInfo.getCurrentNetworkName();
+		String t_carrierName_lowcase = t_carrierName.toLowerCase();
 		
 		String t_apn = null;
-		if(t_carrierName.equals("中国移动") || t_carrierName.toLowerCase().equals("china mobile")){
+		if(t_carrierName.equals("中国移动") || t_carrierName_lowcase.equals("china mobile")){
 			t_apn = "cmnet";
-		}else if(t_carrierName.equals("中国联通") || t_carrierName.toLowerCase().equals("china unicom")){
+		}else if(t_carrierName.equals("中国联通") || t_carrierName_lowcase.equals("china unicom")){
 			t_apn = "uninet";
-		}else if(t_carrierName.equals("中国电信") || t_carrierName.toLowerCase().equals("china telecom")){
+		}else if(t_carrierName.equals("中国电信") || t_carrierName_lowcase.equals("china telecom")){
 			t_apn = "ctnet";
 		}
 		
