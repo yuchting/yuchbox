@@ -573,6 +573,10 @@ public class fetchEmail extends fetchAccount{
     	
     	t_sysProps.put("mail.pop3.connectiontimeout","10000");
     	t_sysProps.put("mail.pop3s.connectiontimeout","10000");
+    	
+    	// to modify issue:
+    	// http://code.google.com/p/yuchberry/issues/detail?id=229
+    	t_sysProps.put("mail.mime.address.strict", false);
     	    			
     	m_session = Session.getInstance(t_sysProps, null);
     	m_session.setDebug(false);
