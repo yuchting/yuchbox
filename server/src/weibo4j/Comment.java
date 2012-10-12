@@ -25,7 +25,7 @@ public class Comment extends WeiboResponse implements java.io.Serializable {
     private String source;
     private boolean isTruncated;
     private long inReplyToStatusId;
-    private int inReplyToUserId;
+    private long inReplyToUserId;
     private boolean isFavorited;
     private String inReplyToScreenName;
     private double latitude = -1;
@@ -204,7 +204,7 @@ public class Comment extends WeiboResponse implements java.io.Serializable {
      * @return the in_reply_tostatus_id
      * @since Weibo4J 1.0.4
      */
-    public int getInReplyToUserId() {
+    public long getInReplyToUserId() {
         return inReplyToUserId;
     }
 

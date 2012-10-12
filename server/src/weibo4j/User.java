@@ -65,7 +65,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
     private String statusSource = null;
     private boolean statusTruncated = false;
     private long statusInReplyToStatusId = -1;
-    private int statusInReplyToUserId = -1;
+    private long statusInReplyToUserId = -1;
     private boolean statusFavorited = false;
     private String statusInReplyToScreenName = null;
 
@@ -148,7 +148,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
                 statusSource = status.getString("source");
                 statusTruncated = status.getBoolean("truncated");
                 statusInReplyToStatusId = status.getLong("in_reply_to_status_id");
-                statusInReplyToUserId = status.getInt("in_reply_to_user_id");
+                statusInReplyToUserId = status.getLong("in_reply_to_user_id");
                 statusFavorited = status.getBoolean("favorited");
                 statusInReplyToScreenName = status.getString("in_reply_to_screen_name");
             }
@@ -199,7 +199,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
             statusSource = getChildText("source", status);
             statusTruncated = getChildBoolean("truncated", status);
             statusInReplyToStatusId = getChildLong("in_reply_to_status_id", status);
-            statusInReplyToUserId = getChildInt("in_reply_to_user_id", status);
+            statusInReplyToUserId = getChildLong("in_reply_to_user_id", status);
             statusFavorited = getChildBoolean("favorited", status);
             statusInReplyToScreenName = getChildText("in_reply_to_screen_name", status);
         }
@@ -504,7 +504,7 @@ public class User extends WeiboResponse implements java.io.Serializable {
      * @return in_reply_to_user_id or -1 if the user is protected
      * @since 1.1.4
      */
-    public int getStatusInReplyToUserId() {
+    public long getStatusInReplyToUserId() {
         return statusInReplyToUserId;
     }
 

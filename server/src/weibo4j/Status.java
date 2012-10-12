@@ -51,7 +51,7 @@ public class Status extends WeiboResponse implements java.io.Serializable {
     private String source;
     private boolean isTruncated;
     private long inReplyToStatusId;
-    private int inReplyToUserId;
+    private long inReplyToUserId;
     private boolean isFavorited;
     private String inReplyToScreenName;
     private double latitude = -1;
@@ -96,7 +96,7 @@ public class Status extends WeiboResponse implements java.io.Serializable {
 			createdAt = parseDate(json.getString("created_at"), "EEE MMM dd HH:mm:ss z yyyy");
 
 			inReplyToStatusId = getLong("in_reply_to_status_id", json);
-			inReplyToUserId = getInt("in_reply_to_user_id", json);
+			inReplyToUserId = getLong("in_reply_to_user_id", json);
 			isFavorited = getBoolean("favorited", json);
 			thumbnail_pic = json.getString("thumbnail_pic");
 			bmiddle_pic = json.getString("bmiddle_pic");
@@ -127,7 +127,7 @@ public class Status extends WeiboResponse implements java.io.Serializable {
         isTruncated=getBoolean("truncated", json);
 
         inReplyToStatusId = getLong("in_reply_to_status_id", json);
-        inReplyToUserId = getInt("in_reply_to_user_id", json);
+        inReplyToUserId = getLong("in_reply_to_user_id", json);
         inReplyToScreenName=json.getString("in_reply_to_screen_name");
         thumbnail_pic = json.getString("thumbnail_pic");
 		bmiddle_pic = json.getString("bmiddle_pic");
@@ -150,7 +150,7 @@ public class Status extends WeiboResponse implements java.io.Serializable {
         createdAt = parseDate(json.getString("created_at"), "EEE MMM dd HH:mm:ss z yyyy");
 
         inReplyToStatusId = getLong("in_reply_to_status_id", json);
-        inReplyToUserId = getInt("in_reply_to_user_id", json);
+        inReplyToUserId = getLong("in_reply_to_user_id", json);
         isFavorited = getBoolean("favorited", json);
         thumbnail_pic = json.getString("thumbnail_pic");
 		bmiddle_pic = json.getString("bmiddle_pic");
@@ -176,7 +176,7 @@ public class Status extends WeiboResponse implements java.io.Serializable {
         createdAt = getChildDate("created_at", elem);
         isTruncated = getChildBoolean("truncated", elem);
         inReplyToStatusId = getChildLong("in_reply_to_status_id", elem);
-        inReplyToUserId = getChildInt("in_reply_to_user_id", elem);
+        inReplyToUserId = getChildLong("in_reply_to_user_id", elem);
         isFavorited = getChildBoolean("favorited", elem);
         inReplyToScreenName = getChildText("in_reply_to_screen_name", elem);
         NodeList georssPoint = elem.getElementsByTagName("georss:point");
@@ -260,7 +260,7 @@ public class Status extends WeiboResponse implements java.io.Serializable {
      * @return the in_reply_tostatus_id
      * @since Weibo4J 1.0.4
      */
-    public int getInReplyToUserId() {
+    public long getInReplyToUserId() {
         return inReplyToUserId;
     }
 
