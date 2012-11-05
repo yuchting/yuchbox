@@ -1585,7 +1585,7 @@ public class fetchEmail extends fetchAccount{
 				t_mail.m_sendConfirmNum++;
 				
 				m_mainMgr.m_logger.LogOut(GetAccountName() + " send mail<" + t_mail.GetMailIndex() + " : "
-						 				+ "simpleHash<"+ t_mail.GetSimpleHashCode() + " " + t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime() + ">,wait confirm...");
+						 				+ "simpleHash<"+ t_mail.GetSimpleHashCode() + ">,wait confirm...");
 				
 				// statistics
 				//
