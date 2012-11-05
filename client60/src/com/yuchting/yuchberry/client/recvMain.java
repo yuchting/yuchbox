@@ -779,12 +779,15 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		return "";
 	}
 	
+	// check follow URL for detail
+	// http://www.blackberry.com/knowledgecenterpublic/livelink.exe/fetch/2000/348583/800332/1295814/How_To_-_Programmatically_determine_if_a_microSD_card_has_been_inserted.html?nodeid=1295868&vernum=0
+	//
 	public static boolean isSDCardSupport(){
 		String modelNum = DeviceInfo.getDeviceName();
-		if ((modelNum.startsWith("8") && !modelNum.startsWith("87")) || modelNum.startsWith("9")) {
+		if ((modelNum.startsWith("8") && !modelNum.startsWith("87")) || modelNum.startsWith("9") || modelNum.startsWith("10")) {
 			return true;
 		}
-		
+				
 		return false;
 	}
 	

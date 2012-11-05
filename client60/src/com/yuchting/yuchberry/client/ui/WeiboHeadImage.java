@@ -79,10 +79,10 @@ public final class WeiboHeadImage {
 						t_image.m_headImage = EncodedImage.createEncodedImage(_dataArray, 0, _dataArray.length).getBitmap();
 						t_image.m_dataHash 	= _dataArray.length;
 						
-						sm_mainApp.SetErrorString("recv " + _style + " head image " + _id + " dataHash " + t_image.m_dataHash);					
+						debugOutput("recv " + _style + " head image " + _id + " dataHash " + t_image.m_dataHash);					
 								
 					}catch(Exception ex){
-						sm_mainApp.SetErrorString("AWHI:"+ _id + " " + ex.getMessage() + ex.getClass().getName() );
+						exceptionOutput("AWHI+" + _id, ex);
 					}
 					
 					break;				
@@ -167,12 +167,12 @@ public final class WeiboHeadImage {
 			for(int i = 0 ;i < _imageList.size();i++){
 				WeiboHeadImage t_image = (WeiboHeadImage)_imageList.elementAt(i);
 								
-				if(_style == t_image.m_weiboStyle 
-					&& t_image.m_userID.equals(_imageID) ){
+				if(_style == t_image.m_weiboStyle && t_image.m_userID.equals(_imageID) ){
 					
-					if((t_image.m_dataHash != _hashCode && _hashCode != 0 && t_image.m_dataHash != 0)
-						|| t_image.m_headImage == getDefaultHeadImage()){
-						
+					if((t_image.m_dataHash != _hashCode && _hashCode != 0 && t_image.m_dataHash != 0)){
+						// the head image has been changed
+						// must request image
+						//
 						SendHeadImageQueryMsg(_imageID,_style,_isWeiboOrIM);
 					}
 					
@@ -188,7 +188,7 @@ public final class WeiboHeadImage {
 			t_image.m_dataHash 		= _hashCode;
 			t_image.m_weiboStyle 	= _style;
 	
-			_imageList.addElement(t_image);		
+			_imageList.addElement(t_image);
 			
 			if(recvMain.isSDCardSupport()){
 				
@@ -205,20 +205,23 @@ public final class WeiboHeadImage {
 										while(sm_loadImageQueue.isEmpty()){
 											try{
 												sm_loadImageQueue.wait();
-											}catch(Exception e){}
+											}catch(Exception e){
+												exceptionOutput("WHI0", e);
+											}
 										}
-									}
-									
+									}									
 									
 									WeiboHeadImage t_image = (WeiboHeadImage)sm_loadImageQueue.elementAt(0);
-									
+																		
 									if(!LoadWeiboImage(t_image)){
 										SendHeadImageQueryMsg(t_image.m_userID,t_image.m_weiboStyle,t_image.m_isWeiboOrIM);
 									}
 									
 									sm_loadImageQueue.removeElementAt(0);
 									
-								}catch (Exception e){}
+								}catch (Exception e){
+									exceptionOutput("WHI1", e);
+								}
 							}
 						}
 					};
@@ -229,12 +232,11 @@ public final class WeiboHeadImage {
 				
 				synchronized (sm_loadImageQueue) {
 					sm_loadImageQueue.addElement(t_image);
-					
-					
+										
 					try{
 						sm_loadImageQueue.notify();
 					}catch(Exception e){
-						System.out.println("Error notify");
+						exceptionOutput("WHI2", e);
 					}
 				}			
 			}
@@ -245,11 +247,15 @@ public final class WeiboHeadImage {
 	
 	
 	private static boolean LoadWeiboImage(WeiboHeadImage _image){
+
+		String t_imageFilename = null;
 		
 		try{
 
-			String t_imageFilename = null;
-
+			if(!sm_mainApp.isSDCardAvailable(false)){
+				return true;
+			}
+			
 			if(fsm_largeHeadImage){
 				if(_image.m_isWeiboOrIM){
 					t_imageFilename = sm_mainApp.GetWeiboHeadImageDir(_image.m_weiboStyle) + _image.m_userID + "_l.png";
@@ -264,7 +270,7 @@ public final class WeiboHeadImage {
 					t_imageFilename = sm_mainApp.GetIMHeadImageDir(_image.m_weiboStyle) + _image.m_userID + ".png";
 				}
 			}
-
+			
 			FileConnection t_fc = (FileConnection)Connector.open(t_imageFilename,Connector.READ_WRITE);
 			try{
 				if(t_fc.exists()){
@@ -290,7 +296,8 @@ public final class WeiboHeadImage {
 				t_fc = null;
 			}	
 		}catch(Exception e){
-			sm_mainApp.SetErrorString("LWI:"+ e.getMessage() + e.getClass().getName());
+			debugOutput("LWI:" + t_imageFilename);
+			exceptionOutput("LWI1",e);			
 		}
 		
 		return false;
@@ -311,7 +318,9 @@ public final class WeiboHeadImage {
 		}else{
 			try{
 				_g.drawBitmap(_x,_y,fsm_headImageWidth,fsm_headImageWidth,getDefaultHeadImage(),0,0);
-			}catch(Exception e){}			
+			}catch(Exception e){
+				exceptionOutput("DHI",e);
+			}			
 		}		
 		
 		recvMain.sm_weiboUIImage.drawImage(_g,sm_headImageMask, _x, _y);
@@ -338,5 +347,19 @@ public final class WeiboHeadImage {
 		//
 		recvMain.sm_weiboUIImage.drawImage(_g,sm_selectedImage,
 						0, t_draw_y, _limitWidth, _limitHeight,0, t_y);
+	}
+	
+	//! exception output
+	private static void exceptionOutput(String _tag,Exception e){
+		if(sm_mainApp != null){
+			sm_mainApp.SetErrorString(_tag,e);
+		}
+	}
+	
+	//! debug information output
+	private static void debugOutput(String _debug){
+		if(sm_mainApp != null){
+			sm_mainApp.SetErrorString(_debug);
+		}
 	}
 }
