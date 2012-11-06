@@ -408,7 +408,8 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
         			}
         		},m_mainApp.getWeiboUploadSize().x);
         		
-        		m_mainApp.pushScreen(m_cameraScreen);	
+        		m_mainApp.pushScreen(m_cameraScreen);
+        		
     		}catch(Exception e){
     			
     			m_mainApp.SetErrorString("WUDS:" + e.getMessage());
@@ -419,6 +420,10 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
     
     MenuItem m_cameraItem = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_OPEN_CAMERA),m_menuIndex_op++,0){
     	public void run(){
+        	
+    		// set the hide background icon option is invalid temporary
+    		m_mainApp.invalidHideForegroundIconTmp();
+    		
     		Invoke.invokeApplication(Invoke.APP_TYPE_CAMERA, new CameraArguments());
     		
     		m_canbeAttachImage = true;
@@ -636,11 +641,15 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 	protected boolean keyDown(int keycode,int time){
 		
 		int key = Keypad.key(keycode);
-		if(key == /*Keypad.KEY_CAMERA_FOCUS*/211){
+		if(key == /*Keypad.KEY_CAMERA_FOCUS*/211 // the 4.2/4.5 sdk has no Keypad.KEY_CAMERA_FOCUS
+		|| key == 19){ 	// (right shortcut key) camera shortcut key
 			// camera focus shortcut key clicked
 			// canbe attach image
 			//
 			m_canbeAttachImage = true;
+				
+			// set the hide background icon option is invalid temporary
+    		m_mainApp.invalidHideForegroundIconTmp();		
 		}
 		
 		return super.keyDown(keycode,time);		

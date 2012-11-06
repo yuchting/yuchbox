@@ -433,18 +433,29 @@ public class connectDeamon extends Thread implements SendListener,
         }        
 	}
 	
+	//! get the MessagingApp by UiApplication.getUiApplication() function and its className
 	private void gainMessagingApp(){
 		
 		try{
-			Class msgClass = Class.forName("net.rim.device.apps.internal.messaging.MessagingApp");
-						
-			if(msgClass.isInstance(UiApplication.getUiApplication())){
+			
+			String t_appName = UiApplication.getUiApplication().getClass().getName();
+			
+			if(t_appName.indexOf("MessagingApp") != -1){
 				m_mainApp.m_messageApplication = UiApplication.getUiApplication();
+			}else{
+				m_mainApp.SetErrorString("gainMessageingApp:" + t_appName );
 			}
 			
 		}catch(Exception e){
 			m_mainApp.SetErrorString("sMClass:" + e.getMessage() + e.getClass().getName());
-			m_mainApp.m_messageApplication = UiApplication.getUiApplication();
+			
+			// some 6.0 system device (Yuch's 9780) will throw Exception when UiApplication.getUiApplication() called 
+			// what's the fuck ?!
+			try{
+				m_mainApp.m_messageApplication = UiApplication.getUiApplication();
+			}catch(Exception ex){
+				m_mainApp.SetErrorString("sMClass1:" + e.getMessage() + e.getClass().getName());
+			}
 		}
 	}
 	 
@@ -612,7 +623,7 @@ public class connectDeamon extends Thread implements SendListener,
 	public void changed(MessageEvent e){
 		
 		gainMessagingApp();
-		
+				
 		if(e.getMessageChangeType() == MessageEvent.UPDATED
 		|| e.getMessageChangeType() == MessageEvent.OPENED){
 			
@@ -621,9 +632,10 @@ public class connectDeamon extends Thread implements SendListener,
 				m_mainApp.StopNotification();
 				
 				AddMarkReadOrDelMail(e.getMessage(),false);
-
 				
-			}catch(Exception _e){}
+			}catch(Exception _e){
+				m_mainApp.SetErrorString("MLC", _e);
+			}
 			
 		}
 		
@@ -993,6 +1005,10 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				m_conn = GetConnection(m_mainApp.IsUseSSL(),m_mainApp.UseMDS());
 				
+				// force read the sd card state when connection is established
+				// to load the head image and so on
+				m_mainApp.isSDCardAvailable(true);
+				
 				// TCP connect flowing bytes statistics 
 				//
 				m_mainApp.StoreUpDownloadByte(72,40,false);
@@ -1164,9 +1180,9 @@ public class connectDeamon extends Thread implements SendListener,
 		 
 		 if(_ssl){
 			 if(_useMDS){
-				 URL =  "ssl://" + (t_hostname) + ":" + t_hostport;
+				 URL =  "tls://" + (t_hostname) + ":" + t_hostport;
 			 }else{
-				 URL =  "ssl://" + (t_hostname) + ":" + t_hostport + ";deviceside=true;EndToEndDesired";
+				 URL =  "tls://" + (t_hostname) + ":" + t_hostport + ";deviceside=true;EndToEndDesired";
 			 }
 			 
 		 }else{
@@ -1484,7 +1500,7 @@ public class connectDeamon extends Thread implements SendListener,
 		
 		try{
 				
-			Message m = new Message();
+			final Message m = new Message();
 			
 			ComposeMessage(m,t_mail,m_mainApp.m_discardOrgText);
 						
@@ -1494,11 +1510,6 @@ public class connectDeamon extends Thread implements SendListener,
 			m_listeningMessageFolder.appendMessage(m);
 			
 			t_message_id.appendMessageId = m.getMessageId();
-											
-			// add the message listener to send message to server
-			// to remark the message is read
-			//
-			m.addMessageListener(this);
 			
 			synchronized (m_markReadVector) {
 				m_markReadVector.addElement(new MarkReadMailData(t_mail));
@@ -1510,6 +1521,21 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			m_mainApp.SetErrorString("" + t_hashcode + ":" + t_mail.GetSubject() + "+" + t_mail.GetSendDate().getTime());
 			m_mainApp.TriggerNotification();
+			
+			
+			// 6.0 system some device( yuch's 9780) will invoke MessageListener.changed 
+			// when message is being append to folder
+			// so add this message listener later
+			//
+			m_mainApp.invokeLater(new Runnable() {
+				
+				public void run() {
+					// add the message listener to send message to server
+					// to remark the message is read
+					//
+					m.addMessageListener(connectDeamon.this);	
+				}
+			},500,false);
 			
 			
 		}catch(Exception _e){
@@ -1745,15 +1771,15 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 		
 	public boolean AddMarkReadOrDelMail(Message m,final boolean _del){
-		
+				
 		synchronized (m_markReadVector) {
-
-			for(int i = 0;i < m_markReadVector.size();i++){
 			
+			for(int i = 0;i < m_markReadVector.size();i++){
+							
 				try{
 					
 					final MarkReadMailData t_mail = (MarkReadMailData)m_markReadVector.elementAt(i);
-					
+
 					if(t_mail.m_date == m.getSentDate().getTime() 
 					&& t_mail.m_fromAddr.indexOf(m.getFrom().getAddr()) != -1){
 						

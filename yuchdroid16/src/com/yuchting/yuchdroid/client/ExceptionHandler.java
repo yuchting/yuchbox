@@ -39,6 +39,11 @@ import java.util.Date;
 import android.content.Context;
 import android.util.Log;
 
+/**
+ *	Exception Handler to handle uncaughtExceptionHandler 
+ * @author tzz
+ *
+ */
 public class ExceptionHandler implements UncaughtExceptionHandler{
 	
 	public static final String fsm_stackstraceSuffix = ".stacktrace";

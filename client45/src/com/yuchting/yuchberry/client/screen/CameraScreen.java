@@ -67,6 +67,7 @@ public class CameraScreen extends MainScreen
     private ICameraScreenCallback m_snapOKCallback = null;
     
     int			m_maxWidth			= 800;
+
     /**
      * Constructor. Initializes the camera 
      */
@@ -81,6 +82,7 @@ public class CameraScreen extends MainScreen
         initializeCamera();
         
         addMenuItem(takePhoto);
+        
     }
     
    
@@ -253,6 +255,7 @@ public class CameraScreen extends MainScreen
     }
 
     public void close(){
+    	
     	if(m_player != null){
     		try{
     			m_player.stop();

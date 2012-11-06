@@ -33,7 +33,7 @@ public abstract class SimpleOKCancelDlg extends PopupScreen implements FieldChan
 	};
 	
 	public SimpleOKCancelDlg(int _localResourceId){
-		super(new VerticalFieldManager(Manager.NO_VERTICAL_SCROLL));
+		super(new VerticalFieldManager(Manager.NO_VERTICAL_SCROLL),DEFAULT_MENU);
 		onInit_impl(recvMain.sm_local.getString(_localResourceId));
 	}
 	

@@ -71,6 +71,7 @@ public class IMAddRosterDlg extends SimpleOKCancelDlg{
 		m_mainScreen.m_addRosterDlg = null;
 		return true;
 	}
+	
 	protected boolean onOK() {
 		int style = 0;
 		for(int i = 0 ; i < m_addType.length;i++){

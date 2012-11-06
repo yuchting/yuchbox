@@ -38,6 +38,7 @@ import javax.microedition.io.file.FileConnection;
 import local.yblocalResource;
 import net.rim.blackberry.api.invoke.CameraArguments;
 import net.rim.blackberry.api.invoke.Invoke;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.KeypadListener;
@@ -745,7 +746,11 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
     };
 	    
 	MenuItem m_cameraMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_OPEN_CAMERA),m_menu_op++,0){
-		public void run(){			
+		public void run(){
+    		
+			// set the hide background icon option is invalid temporary
+    		m_mainApp.invalidHideForegroundIconTmp();
+			
 			Invoke.invokeApplication(Invoke.APP_TYPE_CAMERA, new CameraArguments());
 			
 			m_canbeAttachImage = true;
@@ -1375,12 +1380,16 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		m_isPrompted = false;
 		
 		int key = Keypad.key(keycode);
-		if(key == /*Keypad.KEY_CAMERA_FOCUS*/211){ // the 4.2/4.5 sdk has no Keypad.KEY_CAMERA_FOCUS
+		if(key == /*Keypad.KEY_CAMERA_FOCUS*/211 // the 4.2/4.5 sdk has no Keypad.KEY_CAMERA_FOCUS 
+		|| key == 19){ 	// (right shortcut key) camera shortcut key
 			// camera focus shortcut key clicked
 			// canbe attach image
 			//
 			m_canbeAttachImage = true;
-		}		
+			
+			// set the hide background icon option is invalid temporary
+    		m_mainApp.invalidHideForegroundIconTmp();
+		}
 		
 		if(!m_middleMgr.m_inputMgr.m_editTextArea.isFocus()){
 			// edit text area is NOT focus
