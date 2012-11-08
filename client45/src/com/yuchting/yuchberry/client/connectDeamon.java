@@ -447,14 +447,14 @@ public class connectDeamon extends Thread implements SendListener,
 			}
 			
 		}catch(Exception e){
-			m_mainApp.SetErrorString("sMClass:" + e.getMessage() + e.getClass().getName());
+			//m_mainApp.SetErrorString("sMClass:" + e.getMessage() + e.getClass().getName());
 			
 			// some 6.0 system device (Yuch's 9780) will throw Exception when UiApplication.getUiApplication() called 
 			// what's the fuck ?!
 			try{
 				m_mainApp.m_messageApplication = UiApplication.getUiApplication();
 			}catch(Exception ex){
-				m_mainApp.SetErrorString("sMClass1:" + e.getMessage() + e.getClass().getName());
+				//m_mainApp.SetErrorString("sMClass1:" + e.getMessage() + e.getClass().getName());
 			}
 		}
 	}
