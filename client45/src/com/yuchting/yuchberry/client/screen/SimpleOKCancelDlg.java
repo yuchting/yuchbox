@@ -43,7 +43,7 @@ public abstract class SimpleOKCancelDlg extends PopupScreen implements FieldChan
 	}
 	
 	protected int getDlgHeight(){
-		return recvMain.fsm_display_height * 1 / 2;
+		return recvMain.fsm_display_height * 1 / 3;
 	}
 	
 	/**

@@ -1077,7 +1077,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}catch(Exception e){
 			SetErrorString("PWRI", e);
 		}
-		
 	}
 	
 	final static int		fsm_clientVersion = 40;
@@ -2421,6 +2420,27 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 		if(t_dot == t_addr.length() - 1 ){
 			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * is validate user pass 
+	 * @param _str
+	 * @return
+	 */
+	public static boolean isValidateUserPass(String _str){
+		if(_str.length() < 6){
+			return false;
+		}
+		
+		
+		for(int i = 0 ;i < _str.length();i++){
+			char a = _str.charAt(i);
+			if(!Character.isDigit(a) && !Character.isLowerCase(a) && !Character.isUpperCase(a)){
+				return false;
+			}
 		}
 		
 		return true;
