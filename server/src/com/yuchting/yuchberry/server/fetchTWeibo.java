@@ -30,6 +30,11 @@ package com.yuchting.yuchberry.server;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.Proxy;
+import java.net.SocketAddress;
+import java.net.URL;
 import java.util.List;
 import java.util.Vector;
 
@@ -363,7 +368,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	public void ImportWeibo(fetchWeibo _weibo,Status _stat,byte _weiboClass){
 		_weibo.SetId(_stat.getId());
 		_weibo.SetDateLong(_stat.getCreatedAt().getTime());
-		_weibo.SetText(_stat.getText());
+		_weibo.SetText(replaceGFWVerified_URL(_stat.getText()));
 		_weibo.SetSource(_stat.getSource());
 		
 		_weibo.SetWeiboStyle(fetchWeibo.TWITTER_WEIBO_STYLE);
@@ -402,7 +407,8 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	public void ImportWeibo(fetchWeibo _weibo,DirectMessage _dm){
 		_weibo.SetId(_dm.getId());
 		_weibo.SetDateLong(_dm.getCreatedAt().getTime());
-		_weibo.SetText(_dm.getText());
+		
+		_weibo.SetText(replaceGFWVerified_URL(_dm.getText()));
 		
 		_weibo.SetOwnWeibo(_dm.getSenderId() == m_userself.getId());
 		_weibo.SetReplyWeiboId(_dm.getRecipientId());
@@ -419,6 +425,92 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		}
 				
 		_weibo.SetUserHeadImageHashCode(StoreHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));
+	}
+	
+	final static String[]		fsm_GFWVerifiedShortURLSrv=
+	{
+		"http://t.co/",
+		"http://bit.ly/",
+		"http://j.mp/",
+		"http://ff.im/",
+	};
+	
+	/**
+	 * replace the http://t.co/xxxx short URL to other shorter URL
+	 * 
+	 * @param _weiboText weibo text
+	 * @return
+	 */
+	public static String replaceGFWVerified_URL(String _weiboText){
+		
+		for(String srv : fsm_GFWVerifiedShortURLSrv){
+			
+			int t_beginIdx = 0;
+			
+			while(true){
+				
+				int t_idx;
+				if((t_idx = _weiboText.indexOf(srv,t_beginIdx)) != -1){
+					
+					StringBuffer t_shortURL = new StringBuffer(srv);
+					
+					for(int i = t_idx + srv.length();i < _weiboText.length();i++){
+						
+						char c = _weiboText.charAt(i);
+						if(Character.isLetterOrDigit(c)){
+							t_shortURL.append(c);
+						}else{
+							break;
+						}
+					}
+					
+					if(t_shortURL.length() != srv.length()){
+						try{
+							String t_originalURL 		= expandShortURL(t_shortURL.toString());
+							String t_replaceShortURL	= fetchMgr.GetShortURL(t_originalURL);
+							
+							// replace it
+							//
+							_weiboText = _weiboText.replace(t_shortURL, t_replaceShortURL);
+							
+							t_beginIdx = t_idx + t_shortURL.length() + (t_replaceShortURL.length() - t_shortURL.length());
+							
+						}catch(Exception e){
+							//m_mainMgr.m_logger.PrinterException(e);
+							e.printStackTrace();
+							break;
+						}
+					}
+					
+				}else{
+					break;
+				}
+				
+				
+			}
+		}
+		
+		return _weiboText;		
+	}
+	
+	/**
+	 * recovery the original shorted URL
+	 * 
+	 * @param address
+	 * @return
+	 * @throws IOException
+	 */
+	private static String expandShortURL(String address) throws IOException {
+		URL t_url = new URL(address);
+
+		HttpURLConnection connection = (HttpURLConnection) t_url.openConnection(); //using proxy may increase latency
+		connection.setInstanceFollowRedirects(false);
+		connection.connect();
+		
+		String expandedURL = connection.getHeaderField("Location");
+		connection.getInputStream().close();
+		
+		return expandedURL;
 	}
 	
 	

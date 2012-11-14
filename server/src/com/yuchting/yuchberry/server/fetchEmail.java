@@ -1869,7 +1869,10 @@ public class fetchEmail extends fetchAccount{
 		if (p.isMimeType("text/plain")) {
 			
 		    try{
-		    	_mail.SetContain(_mail.GetContain().concat(p.getContent().toString()));
+		    	
+		    	
+		    	_mail.SetContain(_mail.GetContain().concat(decodePartContent(p,null)));
+		    	
 		    }catch(Exception e){
 		    	_mail.SetContain(_mail.GetContain().concat("text/plain can't decode content " + e.getMessage()));
 		    }	    
@@ -1878,8 +1881,10 @@ public class fetchEmail extends fetchAccount{
 			
 			try{
 				
-				String t_conString = p.getContent().toString();
-				String t_contentType = p.getContentType();				
+				String[] t_arrParam = {""};
+				String t_conString = decodePartContent(p,t_arrParam);
+				
+				String t_contentType = t_arrParam[0];				
 			
 				if(t_contentType.toLowerCase().indexOf("gbk") != -1){
 					// ths RIM os can't support gbk
@@ -1892,7 +1897,7 @@ public class fetchEmail extends fetchAccount{
 					if(m_mainMgr.GetClientOSVer().startsWith("4.2") 
 					|| m_mainMgr.GetClientOSVer().startsWith("4.5")){
 						
-						// the 4.2 and 4.5 os can parse the <meta /> tag
+						// the 4.2 and 4.5 os cannot parse the <meta /> tag
 						//
 						t_contentType = fsm_defaultHTML_charset_GB;
 						
@@ -2115,9 +2120,7 @@ public class fetchEmail extends fetchAccount{
 		return _html;
 	}
 	
-	
-
-	static public String DecodeName(String _name,boolean _convert)throws Exception{
+	public static String DecodeName(String _name,boolean _convert)throws Exception{
 		
 		if(_name == null){
 			return "No Subject";
@@ -2144,9 +2147,9 @@ public class fetchEmail extends fetchAccount{
 					
 					// replace all \r \n blank char to identified "=?gb2312?Q?=dei \n \r nvueHF?=" 
 					//
-					_name = _name.substring(0, t_start) + 
-							MimeUtility.decodeText(_name.substring(t_start,t_end + 2).replaceAll("[\r\n ]", "")) + 
-							_name.substring(t_end + 2);
+					String t_decodeText = _name.substring(t_start,t_end + 2).replaceAll("[\r\n ]", "");
+					
+					_name = _name.substring(0, t_start) + modifiedDecodeText(t_decodeText) + _name.substring(t_end + 2);
 				}				
 				
 				t_start = _name.indexOf("=?");
@@ -2162,6 +2165,152 @@ public class fetchEmail extends fetchAccount{
 		return _name;
 	}
 	
+	/**
+	 * decode the Text (=?gb2312?Q or =?gbk? ) to right text to replace MimeUtility.decodeText
+	 * some post server will send error decode info text
+	 * @param _text
+	 * @return
+	 */
+	public static String modifiedDecodeText(String _text)throws Exception{
+		
+		if(_text.indexOf("=?x-unknown?") != -1){
+			_text = _text.replace("x-unknown","gbk");
+		}
+		
+		String t_decoded = MimeUtility.decodeText(_text);		
+		if(t_decoded.indexOf((char)0xfffd) != -1){
+			
+			// has undecode char means error decode method
+			// Compatible for some error type
+			//
+			
+			Vector<String> t_decodeList = getModifiedDecodeMask(_text,true);
+			String t_currCharset		= t_decodeList.get(0);
+			
+			// remove the first current Charset
+			t_decodeList.remove(0);
+			
+			while(!t_decodeList.isEmpty()){
+				
+				String t_modifiedCharset = t_decodeList.get(0);
+				t_decodeList.remove(0);
+    			
+				_text = "=?"+ t_modifiedCharset + _text.substring(2 + t_currCharset.length());
+				t_decoded = MimeUtility.decodeText(_text);
+				
+				if(t_decoded.indexOf(0xfffd) == -1){
+					// find the right decode charset
+					break;
+				}
+				
+				t_currCharset = t_modifiedCharset;
+			}
+		}
+				
+		return t_decoded;
+	}
+	
+	/**
+	 * decode content input stream when Part.getContent().toString() indexOf 0xfffd
+	 * @param _p Part of JavaMail message
+	 * @param _modifiedCharset _modifiedCharset[0] is modified charset type
+	 * @return
+	 * @throws Exception
+	 */
+	private static String decodePartContent(Part _p,String[] _modifiedCharset)throws Exception{
+
+    	String t_content = _p.getContent().toString();
+    	
+    	if(t_content.indexOf((char)0xfffd) != -1){
+
+    		// has some post server send error charset to decode 
+        	// change the Decode method and new string
+    		
+    		String t_type = _p.getContentType();
+    		
+        	InputStream	in				= _p.getInputStream();
+        	try{
+        		ByteArrayOutputStream os	= new ByteArrayOutputStream();
+        		try{
+        			
+            		int t_read;
+            		while((t_read = in.read()) != -1){
+            			os.write(t_read);
+            		}
+            		byte[] t_bs = os.toByteArray();
+            		
+            		Vector<String> t_mask = getModifiedDecodeMask(t_type,false);
+            		while(!t_mask.isEmpty()){
+            			
+            			String t_modifiedCharset = t_mask.get(0);
+            			t_mask.remove(0);
+            			
+            			t_content = new String(t_bs,t_modifiedCharset);
+                		
+            			// set the right type
+            			//
+            			if(_modifiedCharset != null){
+            				_modifiedCharset[0] = t_modifiedCharset;
+            			}            			
+            			
+            			if(t_content.indexOf((char)0xfffd) == -1){
+            				// decode right
+            				
+            				break;
+            			}
+            		}
+        			
+        		}finally{
+        			os.close();
+        		}
+        	}finally{
+        		in.close();
+        	}
+    	}
+		
+		return t_content;
+	}
+		
+	final static String[]		fsm_modifiedDecodeType = 
+	{
+		"gb2312",
+		"gbk",
+		"utf-8",
+		"iso8859_1",
+	};
+	
+	/**
+	 * return a list to adapt error charset decode type
+	 * @param _currErrorDecodeType	current error type string
+	 * @param _insertHead
+	 * @return
+	 */
+	private static Vector<String> getModifiedDecodeMask(String _currErrorDecodeType,boolean _insertHead){
+		
+		_currErrorDecodeType = _currErrorDecodeType.toLowerCase();
+		
+		Vector<String>		t_list = new Vector<String>();
+		
+		for(String type:fsm_modifiedDecodeType){
+			
+			if(_insertHead){
+
+				if(_currErrorDecodeType.indexOf(type) != -1){
+					t_list.add(0,type);
+				}else{
+					t_list.add(type);
+				}
+				
+			}else{
+				if(_currErrorDecodeType.indexOf(type) == -1){
+					t_list.add(type);
+				}
+			}
+		}
+		
+		return t_list;
+	}
+		
 	public void ComposeMessage(MimeMessage msg,fetchMail _mail,fetchMail _forwardMail,String _sendName)throws Exception{
 		
 		if(_sendName.length() != 0){

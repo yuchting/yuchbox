@@ -1244,7 +1244,7 @@ public class fetchMgr{
 		return true;
 	}
 	
-	static private String GetShortURL(String _longURL){
+	public static String GetShortURL(String _longURL){
 		
 		try{
 			URL is_gd = new URL("http://is.gd/api.php?longurl=" + _longURL);
@@ -1260,7 +1260,9 @@ public class fetchMgr{
 	        
 	        return (inputLine != null && inputLine.length() < _longURL.length()) ? inputLine:_longURL ;
 	        
-		}catch(Exception _e){}
+		}catch(Exception _e){
+			_e.printStackTrace();
+		}
 		
 		return _longURL;
 		

@@ -58,6 +58,7 @@ import weibo4j.http.PostParameter;
 import com.mime.qweibo.OauthKey;
 import com.mime.qweibo.QOAuth;
 import com.mime.qweibo.QParameter;
+import com.sun.xml.internal.messaging.saaj.packaging.mime.internet.MimeUtility;
 
 
 /**
@@ -125,7 +126,27 @@ public class HelloWorld {
 	
 
 	public static void main(String arg[])throws Exception{
-		berryRecvTest();
+//		String t_test = "  =?UTF-8?B?UmU6IOWwmumCruiHquWKqOWbnuWkje+8muetlOWkje+8miBb6K+t55uSXSDogIHlpKc=?=" +
+//						"=?UTF-8?B?77+95o6S5p+l5a6Y77+95Z+f5ZCN6Kej5p6Q?=";
+//		System.out.println(fetchEmail.DecodeName(t_test, false));
+//		
+		
+//		String t_test		= "=?gb2312?B?t7Hzd5x51Ic=?=";
+//		String t_convert	= MimeUtility.decodeText(t_test);
+//		
+//		System.out.println(MimeUtility.decodeText(t_test));
+//		System.out.println(fetchEmail.DecodeName(t_test, false));
+//		
+
+		
+		System.setProperty("proxySet", "true");
+		System.setProperty("proxyHost", "127.0.0.1");
+		System.setProperty("proxyPort", "8088");
+		
+		System.out.println(fetchTWeibo.replaceGFWVerified_URL("http://t.co/HPjdqFCN sdfsdfs http://bit.ly/PU7zFy sdfskljfeind sdfjsdkfs "));
+		//berryRecvTest();
+		
+		
 	}
 		
 	public final static String	fsm_vectStringSpliter = "<>";
