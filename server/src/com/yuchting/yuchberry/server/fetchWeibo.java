@@ -209,14 +209,19 @@ public class fetchWeibo {
 		sendReceive.WriteLong(_stream,m_userId);
 		sendReceive.WriteString(_stream,m_userName,false);
 		sendReceive.WriteString(_stream,m_screenName,false);
-		sendReceive.WriteString(_stream,m_text,m_convertoSimpleChar);
+		
+		// http://code.google.com/p/yuchberry/issues/detail?id=236
+		//
+		sendReceive.WriteString(_stream,m_text,false/*m_convertoSimpleChar*/);
 		
 		sendReceive.WriteInt(_stream,m_userHeadImageHashCode);
 		
 		sendReceive.WriteLong(_stream,m_dateTime);
 		sendReceive.WriteLong(_stream,m_commentWeiboId);
-		
-		sendReceive.WriteString(_stream,m_source,m_convertoSimpleChar);
+
+		// http://code.google.com/p/yuchberry/issues/detail?id=236
+		//
+		sendReceive.WriteString(_stream,m_source,false/*m_convertoSimpleChar*/);
 		sendReceive.WriteString(_stream,m_original_pic,false);
 		
 		sendReceive.WriteInt(_stream,m_forwardWeiboNum);
