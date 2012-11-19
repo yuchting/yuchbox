@@ -1358,7 +1358,11 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				int t_filelen = sendReceive.ReadInt(in);
 				byte[] t_fileContent = null;
 				int t_type = 0;
+				boolean t_yuchClient = true;
 				if(t_filelen != 0){
+					if(m_mainMgr.GetConnectClientVersion() >= 19){
+						t_yuchClient = sendReceive.ReadBoolean(in);
+					}
 					t_type = in.read();
 					t_fileContent = new byte[t_filelen];
 					sendReceive.ForceReadByte(in, t_fileContent, t_fileContent.length);
@@ -1390,17 +1394,22 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 					if(t_chatData == null){
 						throw new Exception("YuchBox fetchGtalk Internal Error: t_chatData == null");
 					}
-					
-					if(t_chatData.m_isYBClient){					
-						if(t_fileContent != null){
+									
+					if(t_fileContent != null){
+						// has file content
+						//
+						if(m_mainMgr.GetConnectClientVersion() < 19){
+							t_yuchClient = t_chatData.m_isYBClient;
+						}
+						
+						if(t_yuchClient){
 							t_message.setProperty(fsm_ybFile, t_fileContent);
 							t_message.setProperty(fsm_ybFileType, t_type);
-						}
-					}else{
-						if(t_fileContent != null){
+						}else{
 							convertText += uploadResFile(t_fileContent, t_type);
 						}
 					}
+					
 					
 					t_message.setBody(convertText);
 					

@@ -85,7 +85,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListenerExtended,
 												IUploadFileScreenCallback{
 		
-	final static int	fsm_clientVer = 18;
+	final static int	fsm_clientVer = 19;
 	 
 	public sendReceive		m_connect = null;
 		
