@@ -552,11 +552,11 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		String t_carrierName = RadioInfo.getCurrentNetworkName();
 		
 		String t_apn = null;
-		if(t_carrierName.equals("中国移动")){
+		if(t_carrierName.equals("中国移动") || t_carrierName.toLowerCase().equals("china mobile")){
 			t_apn = "cmnet";
-		}else if(t_carrierName.equals("中国联通")){
+		}else if(t_carrierName.equals("中国联通") || t_carrierName.toLowerCase().equals("china unicom")){
 			t_apn = "uninet";
-		}else if(t_carrierName.equals("中国电信")){
+		}else if(t_carrierName.equals("中国电信") || t_carrierName.toLowerCase().equals("china telecom")){
 			t_apn = "ctnet";
 		}
 		
@@ -1056,7 +1056,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}catch(Exception e){
 			SetErrorString("PWRI", e);
 		}
-		
 	}
 	
 	final static int		fsm_clientVersion = 40;
@@ -2239,8 +2238,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}			
 	}
 	
-	public void SetErrorString(String _label,Exception e){
-		SetErrorString(_label + " " + e.getMessage() + " " + e.getClass().getName());
+	public void SetErrorString(String _label,Exception _e){
+		SetErrorString(_label + " " + _e.getMessage() + " " + _e.getClass().getName());
 	}
 	
 	public synchronized String GetAllErrorString(){
@@ -2398,6 +2397,27 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 		if(t_dot == t_addr.length() - 1 ){
 			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * is validate user pass 
+	 * @param _str
+	 * @return
+	 */
+	public static boolean isValidateUserPass(String _str){
+		if(_str.length() < 6){
+			return false;
+		}
+		
+		
+		for(int i = 0 ;i < _str.length();i++){
+			char a = _str.charAt(i);
+			if(!Character.isDigit(a) && !Character.isLowerCase(a) && !Character.isUpperCase(a)){
+				return false;
+			}
 		}
 		
 		return true;

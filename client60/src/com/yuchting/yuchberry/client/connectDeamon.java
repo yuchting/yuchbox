@@ -85,7 +85,7 @@ public class connectDeamon extends Thread implements SendListener,
 												ViewListenerExtended,
 												IUploadFileScreenCallback{
 		
-	final static int	fsm_clientVer = 18;
+	final static int	fsm_clientVer = 19;
 	 
 	public sendReceive		m_connect = null;
 		
@@ -447,14 +447,14 @@ public class connectDeamon extends Thread implements SendListener,
 			}
 			
 		}catch(Exception e){
-			m_mainApp.SetErrorString("sMClass:" + e.getMessage() + e.getClass().getName());
+			//m_mainApp.SetErrorString("sMClass:" + e.getMessage() + e.getClass().getName());
 			
 			// some 6.0 system device (Yuch's 9780) will throw Exception when UiApplication.getUiApplication() called 
 			// what's the fuck ?!
 			try{
 				m_mainApp.m_messageApplication = UiApplication.getUiApplication();
 			}catch(Exception ex){
-				m_mainApp.SetErrorString("sMClass1:" + e.getMessage() + e.getClass().getName());
+				//m_mainApp.SetErrorString("sMClass1:" + e.getMessage() + e.getClass().getName());
 			}
 		}
 	}
@@ -986,6 +986,21 @@ public class connectDeamon extends Thread implements SendListener,
 	 
 	 public void run(){
 		
+		 // send receive store call back
+		 sendReceive.IStoreUpDownloadByte t_store = new sendReceive.IStoreUpDownloadByte() {
+			public void store(long uploadByte, long downloadByte) {
+				m_mainApp.StoreUpDownloadByte(uploadByte,downloadByte,true);
+			}
+			
+			public void debug(String _info){
+				m_mainApp.SetErrorString(_info);
+			}
+			
+			public void debug(String _label,Exception _e){
+				m_mainApp.SetErrorString(_label, _e);
+			}
+		};
+	 
 		while(true){
 	
 			m_sendAuthMsg = false;
@@ -1015,13 +1030,8 @@ public class connectDeamon extends Thread implements SendListener,
 				
 				m_connect = new sendReceive(m_conn.openOutputStream(),m_conn.openInputStream());
 				m_connect.SetKeepliveInterval(m_mainApp.GetPulseIntervalMinutes());
+				m_connect.RegisterStoreUpDownloadByte(t_store);
 				
-				m_connect.RegisterStoreUpDownloadByte(new sendReceive.IStoreUpDownloadByte() {
-					public void Store(long uploadByte, long downloadByte) {
-						m_mainApp.StoreUpDownloadByte(uploadByte,downloadByte,true);
-					}
-				});
-							
 				// send the Auth info
 				//
 				ByteArrayOutputStream t_os = new ByteArrayOutputStream();

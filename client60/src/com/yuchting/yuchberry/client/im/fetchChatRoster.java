@@ -102,7 +102,7 @@ public class fetchChatRoster {
 	
 	public String getGroup(){return m_group;}
 	public void setGroup(String _group){m_group = _group;}
-	
+		
 	public void Import(InputStream in)throws Exception{
 		final int version = sendReceive.ReadInt(in);
 		
