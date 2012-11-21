@@ -45,7 +45,12 @@ public class fetchChatRoster {
 	
 	int m_style		= fetchChatMsg.STYLE_GTALK;
 	int m_presence	= PRESENCE_AVAIL;
-	int m_headImageHashCode = 0; 
+	int m_headImageHashCode = 0;
+	
+	// server use attribute
+	// roster head image is loaded before client connected
+	// so the head hash code can't confirm(small or large) and store the large one too
+	int m_headImageHashCode_l = 0;
 	
 	String m_name		= "";
 	String m_account	= "";
@@ -87,6 +92,9 @@ public class fetchChatRoster {
 	public int getHeadImageHashCode(){return m_headImageHashCode;}
 	public void setHeadImageHashCode(int _code){m_headImageHashCode = _code;}
 	
+	public int getHeadImageHashCode_l(){return m_headImageHashCode_l;}
+	public void setHeadImageHashCode_l(int _code){m_headImageHashCode_l = _code;}
+	
 	public String getAccount(){return m_account;}
 	public void setAccount(String _acc){m_account = _acc;}
 	
@@ -126,14 +134,14 @@ public class fetchChatRoster {
 		}
 	}
 	
-	public void Outport(OutputStream os,int _clientVer)throws Exception{
+	public void Outport(OutputStream os,int _clientVer,int _clientScreenWidth)throws Exception{
 		
 		sendReceive.WriteInt(os,VERSION);
 		
 		os.write(m_style);
 		os.write(m_presence);
 		
-		sendReceive.WriteInt(os,m_headImageHashCode);
+		sendReceive.WriteInt(os,_clientScreenWidth <= 320 ? m_headImageHashCode : m_headImageHashCode_l);
 		sendReceive.WriteString(os,m_name,false);
 		sendReceive.WriteString(os,m_account,false);
 		sendReceive.WriteString(os,m_status,false);

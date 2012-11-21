@@ -164,7 +164,7 @@ public class Logger{
 				t_logFile.mkdir();
 			}
 					
-			SimpleDateFormat format = new SimpleDateFormat("MM-dd-HH_mm_ss");
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH_mm_ss");
 			
 			try{
 				m_logFilename = m_prefix + "log/" + format.format(new Date()) + ".log";

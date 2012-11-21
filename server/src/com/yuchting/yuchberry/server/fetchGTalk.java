@@ -71,7 +71,7 @@ final class ChatData{
 	String			m_accountName;
 	long			m_lastActiveTime;
 	
-	boolean		m_isYBClient;
+	boolean			m_isYBClient;
 	
 	int				m_chatState 		= fetchChatMsg.CHAT_STATE_COMMON;
 	int				m_chatState_sent	= fetchChatMsg.CHAT_STATE_COMMON;
@@ -910,10 +910,18 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		}
 		
 		if(t_formerSource != null  && !t_formerSource.equals(_roster.getSource())){
-			return true;
+			
+			// both are yuchbox type will be ignored 
+			//
+			if(t_formerSource.indexOf(fetchGTalk.fsm_ybClientSource) == -1 
+			|| _roster.getSource().indexOf(fetchGTalk.fsm_ybClientSource) == -1){
+				return true;
+			}
 		}
 		
-		if(t_formerStatus != null  && !t_formerStatus.equals(_roster.getStatus())){
+		if(t_formerStatus != null 
+		&& _roster.getStatus() != null 
+		&& !t_formerStatus.equals(_roster.getStatus())){
 			return true;
 		}
 		
@@ -959,12 +967,9 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				//m_mainMgr.m_logger.PrinterException(e);	
 			}
 		}
-		
-		if(m_mainMgr.m_clientDisplayWidth <= 320){
-			_roster.setHeadImageHashCode((int)t_headImageFile.length());
-		}else{
-			_roster.setHeadImageHashCode((int)t_headImageFile_l.length());
-		}
+				
+		_roster.setHeadImageHashCode((int)t_headImageFile.length());
+		_roster.setHeadImageHashCode_l((int)t_headImageFile_l.length());
 	}
 		
 	public boolean ProcessNetworkPackage(byte[] _package)throws Exception{
@@ -1285,7 +1290,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 		sendReceive.WriteInt(os,t_rosterList.size());
 		
 		for(fetchChatRoster roster:t_rosterList){
-			roster.Outport(os,m_mainMgr.GetConnectClientVersion());
+			roster.Outport(os,m_mainMgr.GetConnectClientVersion(),m_mainMgr.m_clientDisplayWidth);
 		}
 		
 		m_mainMgr.m_logger.LogOut("IM send Roster " + t_rosterList.size());
@@ -1583,7 +1588,7 @@ public class fetchGTalk extends fetchAccount implements RosterListener,
 				os.write(msg_head.msgChatRosterList);
 				os.write(1);
 				
-				roster.Outport(os,m_mainMgr.GetConnectClientVersion());
+				roster.Outport(os,m_mainMgr.GetConnectClientVersion(),m_mainMgr.m_clientDisplayWidth);
 				
 				m_mainMgr.SendData(os, false);
 			}

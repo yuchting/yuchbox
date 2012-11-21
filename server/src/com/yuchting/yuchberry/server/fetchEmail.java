@@ -2196,10 +2196,13 @@ public class fetchEmail extends fetchAccount{
 				t_decodeList.remove(0);
     			
 				_text = "=?"+ t_modifiedCharset + _text.substring(2 + t_currCharset.length());
-				t_decoded = MimeUtility.decodeText(_text);
+				String t_modifiedText = MimeUtility.decodeText(_text);
 				
-				if(t_decoded.indexOf(0xfffd) == -1){
+				if(t_modifiedText.indexOf(0xfffd) == -1){
 					// find the right decode charset
+					//
+					t_decoded = t_modifiedText;
+					
 					break;
 				}
 				
@@ -2222,10 +2225,10 @@ public class fetchEmail extends fetchAccount{
     	String t_content = _p.getContent().toString();
     	
     	if(t_content.indexOf((char)0xfffd) != -1){
-
+    		
     		// has some post server send error charset to decode 
         	// change the Decode method and new string
-    		
+    		//
     		String t_type = _p.getContentType();
     		
         	InputStream	in				= _p.getInputStream();
@@ -2239,13 +2242,14 @@ public class fetchEmail extends fetchAccount{
             		}
             		byte[] t_bs = os.toByteArray();
             		
+            		
             		Vector<String> t_mask = getModifiedDecodeMask(t_type,false);
             		while(!t_mask.isEmpty()){
             			
             			String t_modifiedCharset = t_mask.get(0);
             			t_mask.remove(0);
             			
-            			t_content = new String(t_bs,t_modifiedCharset);
+            			String t_modifiedContent = new String(t_bs,t_modifiedCharset);
                 		
             			// set the right type
             			//
@@ -2253,8 +2257,11 @@ public class fetchEmail extends fetchAccount{
             				_modifiedCharset[0] = t_modifiedCharset;
             			}            			
             			
-            			if(t_content.indexOf((char)0xfffd) == -1){
-            				// decode right
+            			if(t_modifiedContent.indexOf((char)0xfffd) == -1){
+            				
+            				// decode right by modified charset
+            				//
+            				t_content = t_modifiedContent;
             				
             				break;
             			}
@@ -2276,7 +2283,6 @@ public class fetchEmail extends fetchAccount{
 		"gb2312",
 		"gbk",
 		"utf-8",
-		"iso8859_1",
 	};
 	
 	/**
