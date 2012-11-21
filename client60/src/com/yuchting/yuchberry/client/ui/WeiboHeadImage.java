@@ -169,7 +169,12 @@ public final class WeiboHeadImage {
 								
 				if(_style == t_image.m_weiboStyle && t_image.m_userID.equals(_imageID) ){
 					
-					if((t_image.m_dataHash != _hashCode && _hashCode != 0 && t_image.m_dataHash != 0)){
+					if((t_image.m_dataHash != _hashCode && _hashCode != 0)){
+						
+						// change the new hash code and request head image
+						//
+						t_image.m_dataHash = _hashCode;
+						
 						// the head image has been changed
 						// must request image
 						//
@@ -211,6 +216,7 @@ public final class WeiboHeadImage {
 										}
 									}									
 									
+									
 									WeiboHeadImage t_image = (WeiboHeadImage)sm_loadImageQueue.elementAt(0);
 																		
 									if(!LoadWeiboImage(t_image)){
@@ -229,16 +235,21 @@ public final class WeiboHeadImage {
 					sm_loadImageThread.start();
 				}
 				
-				
-				synchronized (sm_loadImageQueue) {
-					sm_loadImageQueue.addElement(t_image);
-										
-					try{
-						sm_loadImageQueue.notify();
-					}catch(Exception e){
-						exceptionOutput("WHI2", e);
+				if(t_image.m_dataHash != 0){
+					
+					// has image hash code (has head image, maybe some weibo or IM has not set image)
+					//
+					synchronized (sm_loadImageQueue) {
+						sm_loadImageQueue.addElement(t_image);
+											
+						try{
+							sm_loadImageQueue.notify();
+						}catch(Exception e){
+							exceptionOutput("WHI2", e);
+						}
 					}
-				}			
+				}
+							
 			}
 						
 			return t_image;

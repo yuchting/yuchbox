@@ -116,9 +116,8 @@ public class sendReceive extends Thread{
 		
 		if(_sendImm){
 			SendBufferToSvr_imple(PrepareOutputData());
-			m_keepliveCounter = 0;
 		}
-		
+				
 		if(_wait){
 			m_waitMoment = true;
 		}
@@ -199,7 +198,11 @@ public class sendReceive extends Thread{
 		
 		if(_write == null){
 			return;
-		}	
+		}
+		
+		synchronized(this){
+			m_keepliveCounter = 0;
+		}		
 		
 		ByteArrayOutputStream zos = new ByteArrayOutputStream();
 		
@@ -256,7 +259,7 @@ public class sendReceive extends Thread{
 				
 				synchronized (this){
 					if(m_keepliveInterval != 0){
-						
+												
 						m_keepliveCounter += 1;
 						
 						if(m_keepliveCounter > m_keepliveInterval){

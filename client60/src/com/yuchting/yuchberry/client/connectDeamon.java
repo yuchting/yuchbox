@@ -1190,9 +1190,9 @@ public class connectDeamon extends Thread implements SendListener,
 		 
 		 if(_ssl){
 			 if(_useMDS){
-				 URL =  "ssl://" + (t_hostname) + ":" + t_hostport;
+				 URL =  "tls://" + (t_hostname) + ":" + t_hostport;
 			 }else{
-				 URL =  "ssl://" + (t_hostname) + ":" + t_hostport + ";deviceside=true;EndToEndDesired";
+				 URL =  "tls://" + (t_hostname) + ":" + t_hostport + ";deviceside=true;EndToEndDesired";
 			 }
 			 
 		 }else{
