@@ -32,10 +32,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.Proxy;
-import java.net.SocketAddress;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.dom4j.Element;
@@ -102,9 +101,19 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	}
 	
 	protected void ResetCheckFolderLimit()throws Exception{
-		RateLimitStatus limitStatus = m_twitter.getRateLimitStatus();
-		m_currRemainCheckFolderNum = limitStatus.getRemainingHits();
-		m_maxCheckFolderNum			= limitStatus.getHourlyLimit();
+		Map<String,RateLimitStatus> t_statusMap = m_twitter.getRateLimitStatus();
+		
+        RateLimitStatus limitStatus_user_timeline = t_statusMap.get("/statuses/user_timeline");
+        RateLimitStatus limitStatus_mentions_timeline = t_statusMap.get("/statuses/mentions_timeline");
+        RateLimitStatus limitStatus_home_timeline = t_statusMap.get("/statuses/home_timeline");
+        
+        m_currRemainCheckFolderNum = limitStatus_user_timeline.getRemaining() + 
+        							limitStatus_mentions_timeline.getRemaining() + 
+        							limitStatus_home_timeline.getRemaining();
+        
+		m_maxCheckFolderNum		= limitStatus_user_timeline.getLimit() + 
+									limitStatus_mentions_timeline.getRemaining() + 
+									limitStatus_home_timeline.getRemaining();
 	}
 		
 	protected void CheckTimeline()throws Exception{
@@ -114,7 +123,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		}else{
 			t_fetch = m_twitter.getHomeTimeline();
 		}
-				
+		m_mainMgr.m_logger.LogOut(GetAccountName() + " AddWeibo!");	
 		AddWeibo(t_fetch,m_timeline,fetchWeibo.TIMELINE_CLASS);
 	}
 	
@@ -201,9 +210,9 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	protected void CheckAtMeMessage()throws Exception{
 		List<Status> t_fetch = null;
 		if(m_atMeMessage.m_fromIndex > 1){
-			t_fetch = m_twitter.getMentions(new Paging(m_atMeMessage.m_fromIndex));
+			t_fetch = m_twitter.getMentionsTimeline(new Paging(m_atMeMessage.m_fromIndex));
 		}else{
-			t_fetch = m_twitter.getMentions();
+			t_fetch = m_twitter.getMentionsTimeline();
 		}		 
 		
 		AddWeibo(t_fetch,m_atMeMessage,fetchWeibo.AT_ME_CLASS);
@@ -318,7 +327,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		
 		t_weibo.setName(t_user.getName());
 		t_weibo.setScreenName(t_user.getScreenName());
-		t_weibo.setHeadImage(DownloadHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));
+		t_weibo.setHeadImage(DownloadHeadImage(new URL(t_user.getProfileImageURL()),Long.toString(t_user.getId())));
 		t_weibo.setDesc(t_user.getDescription());
 		t_weibo.setCity(t_user.getLocation());
 		
@@ -365,7 +374,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		}
 	}
 	
-	public void ImportWeibo(fetchWeibo _weibo,Status _stat,byte _weiboClass){
+	public void ImportWeibo(fetchWeibo _weibo,Status _stat,byte _weiboClass){		
 		_weibo.SetId(_stat.getId());
 		_weibo.SetDateLong(_stat.getCreatedAt().getTime());
 		_weibo.SetText(replaceGFWVerified_URL(_stat.getText()));
@@ -383,9 +392,12 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		_weibo.SetUserScreenName(t_user.getScreenName());
 		_weibo.SetSinaVIP(t_user.isVerified());
 
-		_weibo.SetUserHeadImageHashCode(StoreHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));		
-
 		try{
+			
+			String t_imageURL = t_user.getProfileImageURL();
+			if(t_imageURL != null && t_imageURL.length() != 0){
+				_weibo.SetUserHeadImageHashCode(StoreHeadImage(new URL(t_imageURL),Long.toString(t_user.getId())));
+			}		
 			
 			if(_stat.getInReplyToStatusId() != -1){
 				
@@ -404,7 +416,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		}
 	}
 	
-	public void ImportWeibo(fetchWeibo _weibo,DirectMessage _dm){
+	public void ImportWeibo(fetchWeibo _weibo,DirectMessage _dm)throws Exception{
 		_weibo.SetId(_dm.getId());
 		_weibo.SetDateLong(_dm.getCreatedAt().getTime());
 		
@@ -423,8 +435,11 @@ public class fetchTWeibo extends fetchAbsWeibo{
 			_weibo.SetUserScreenName(t_user.getScreenName());
 			_weibo.SetSinaVIP(t_user.isVerified());	
 		}
-				
-		_weibo.SetUserHeadImageHashCode(StoreHeadImage(t_user.getProfileImageURL(),Long.toString(t_user.getId())));
+		
+		String t_imageURL = t_user.getProfileImageURL();
+		if(t_imageURL != null && t_imageURL.length() != 0){
+			_weibo.SetUserHeadImageHashCode(StoreHeadImage(new URL(t_user.getProfileImageURL()),Long.toString(t_user.getId())));
+		}		
 	}
 	
 	final static String[]		fsm_GFWVerifiedShortURLSrv=
@@ -441,7 +456,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	 * @param _weiboText weibo text
 	 * @return
 	 */
-	public static String replaceGFWVerified_URL(String _weiboText){
+	public String replaceGFWVerified_URL(String _weiboText){
 		
 		for(String srv : fsm_GFWVerifiedShortURLSrv){
 			
@@ -465,6 +480,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 					}
 					
 					if(t_shortURL.length() != srv.length()){
+						
 						try{
 							String t_originalURL 		= expandShortURL(t_shortURL.toString());
 							String t_replaceShortURL	= fetchMgr.GetShortURL(t_originalURL);
@@ -476,10 +492,13 @@ public class fetchTWeibo extends fetchAbsWeibo{
 							t_beginIdx = t_idx + t_shortURL.length() + (t_replaceShortURL.length() - t_shortURL.length());
 							
 						}catch(Exception e){
-							//m_mainMgr.m_logger.PrinterException(e);
-							e.printStackTrace();
+							m_mainMgr.m_logger.PrinterException(e);
 							break;
 						}
+						
+					}else{
+						
+						t_beginIdx = t_idx + srv.length();
 					}
 					
 				}else{
@@ -504,6 +523,8 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		URL t_url = new URL(address);
 
 		HttpURLConnection connection = (HttpURLConnection) t_url.openConnection(); //using proxy may increase latency
+		connection.setConnectTimeout(5000);
+		connection.setReadTimeout(10000);
 		connection.setInstanceFollowRedirects(false);
 		connection.connect();
 		

@@ -1881,11 +1881,11 @@ public class fetchEmail extends fetchAccount{
 			
 			try{
 				
-				String[] t_arrParam = {""};
-				String t_conString = decodePartContent(p,t_arrParam);
-				
-				String t_contentType = t_arrParam[0];				
-			
+				// html don't modify charset by decodePartContent
+				//
+				String t_conString = p.getContent().toString();
+				String t_contentType = p.getContentType();
+							
 				if(t_contentType.toLowerCase().indexOf("gbk") != -1){
 					// ths RIM os can't support gbk
 					//

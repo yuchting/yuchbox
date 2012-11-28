@@ -9,7 +9,7 @@
 	<classpathentry kind="lib" path="D:/eclipse/plugins/weibo4j/lib/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="D:/eclipse/plugins/weibo4j/lib/commons-logging-1.1.jar"/>
 	<classpathentry kind="lib" path="D:/eclipse/plugins/weibo4j/lib/junit-4.1.jar"/>
-	<classpathentry kind="lib" path="D:/eclipse/plugins/twitter4j-2.2.4/lib/twitter4j-core-2.2.4.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.6.0_25"/>
+	<classpathentry kind="lib" path="D:/eclipse/plugins/twitter4j-core-3.0.1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre6"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
