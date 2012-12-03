@@ -139,12 +139,12 @@ public class HelloWorld {
 //		
 
 		
-		System.setProperty("proxySet", "true");
-		System.setProperty("proxyHost", "127.0.0.1");
-		System.setProperty("proxyPort", "8088");
-		
-		System.out.println(fetchTWeibo.replaceGFWVerified_URL("http://t.co/HPjdqFCN sdfsdfs http://bit.ly/PU7zFy sdfskljfeind sdfjsdkfs "));
-		//berryRecvTest();
+//		System.setProperty("proxySet", "true");
+//		System.setProperty("proxyHost", "127.0.0.1");
+//		System.setProperty("proxyPort", "8088");
+//		
+//		System.out.println(fetchTWeibo.replaceGFWVerified_URL("http://t.co/HPjdqFCN sdfsdfs http://bit.ly/PU7zFy sdfskljfeind sdfjsdkfs "));
+		berryRecvTest();
 		
 		
 	}
