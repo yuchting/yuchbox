@@ -381,12 +381,14 @@ public class fetchEmail extends fetchAccount{
     final class UnreadMailMarkingData{
     	int m_simpleHashCode;
     	int m_mailIndex;
+    	int m_currMailNum;
     	String m_messageID;
     	
-    	public UnreadMailMarkingData(fetchMail _mail){
+    	public UnreadMailMarkingData(fetchMail _mail,int _currMailNum){
     		m_simpleHashCode	= _mail.GetSimpleHashCode();
     		m_mailIndex			= _mail.GetMailIndex();
     		m_messageID			= _mail.getMessageID();
+    		m_currMailNum		= _currMailNum;
     	}
     }
     
@@ -400,6 +402,16 @@ public class fetchEmail extends fetchAccount{
     boolean m_useAppendHTML			= false;    
    
     private Vector<RecvMailAttach>	m_recvMailAttach 	= new Vector<RecvMailAttach>();
+    
+    /**
+     * pop3 protocol mail inbox new message maybe appear in head index: 1 instead of rear index mailCountIdx like imap
+     * so get new message by check head of inbox
+     * please search this var to check detail of this special effection
+     */
+    private boolean	m_pop3ReverseFolder		= false;
+    
+    //! former new message hash
+    private int		m_formerNewMessageHash	= -1; 
         
     class MailIndexAttachment{
     	int			m_mailHashCode;
@@ -632,7 +644,7 @@ public class fetchEmail extends fetchAccount{
 	    	    
 	    folder.open(Folder.READ_ONLY);
 	    try{
-	    	final int t_totalMailCount = folder.getMessageCount();
+	    	int t_totalMailCount = folder.getMessageCount();
 	    	
 	    	if(m_totalMailCount < 0 && !IsPushHistoryMsg()){
 	    		m_totalMailCount = t_totalMailCount;
@@ -645,11 +657,17 @@ public class fetchEmail extends fetchAccount{
 	    	}
 	 	    
 	 	    if(m_totalMailCount != t_totalMailCount){
-	 	    	
-	 		    final int t_startIndex = Math.max(t_totalMailCount - Math.min(CHECK_NUM,t_totalMailCount) + 1,
-	 		    									Math.min(t_totalMailCount,m_beginFetchIndex));
+	 		    	
+ 		    	int t_startIndex = Math.max(t_totalMailCount - Math.min(CHECK_NUM,t_totalMailCount) + 1,
+												Math.min(t_totalMailCount,m_beginFetchIndex));
 	 		    
-	 		    Message[] t_msgs = folder.getMessages(t_startIndex, t_totalMailCount);
+	 		    Message[] t_msgs;
+	 		    
+	 		    if(m_pop3ReverseFolder){
+	 		    	t_msgs = folder.getMessages(1, t_totalMailCount - m_totalMailCount);
+	 		    }else{
+	 		    	t_msgs = folder.getMessages(t_startIndex, t_totalMailCount);
+	 		    }
 	 		    		    
 	 		    for(int i = 0;i < t_msgs.length;i++){
 	 		    	
@@ -724,7 +742,7 @@ public class fetchEmail extends fetchAccount{
 	 			    		if(m_unreadMailVector_marking.size() > 100){
 	 			    			m_unreadMailVector_marking.removeElementAt(0);
 	 			    		}
-	 						m_unreadMailVector_marking.addElement(new UnreadMailMarkingData(t_mail));
+	 						m_unreadMailVector_marking.addElement(new UnreadMailMarkingData(t_mail,t_totalMailCount));
 	 					}
 	 		    		
 	 		    	}
@@ -732,8 +750,27 @@ public class fetchEmail extends fetchAccount{
 	 		    	m_beginFetchIndex = i + t_startIndex + 1;	 		    	
 	 		    }
 	 		    
-	 		    m_totalMailCount = t_totalMailCount;
 	 		    
+				if(!m_unreadMailVector.isEmpty()){
+					
+					fetchMail t_newMail = m_unreadMailVector.get(m_unreadMailVector.size() - 1);
+					
+					if(t_newMail.GetSimpleHashCode() == m_formerNewMessageHash 
+					&& m_protocol.indexOf("pop") != -1
+					&& !m_pop3ReverseFolder){
+						
+						m_formerNewMessageHash = t_newMail.GetSimpleHashCode();
+						m_pop3ReverseFolder = true;
+						
+						m_mainMgr.m_logger.LogOut(GetAccountName() + " pop3ReverseFolder true!");
+						
+						return;
+					}
+					
+					m_formerNewMessageHash = t_newMail.GetSimpleHashCode();
+				}
+    
+				m_totalMailCount = t_totalMailCount;
 	 	    }
 	 	    
 	    }finally{
@@ -776,7 +813,12 @@ public class fetchEmail extends fetchAccount{
     			return false;
     		}
     		
-    		m_unreadMailVector.addElement(_mail);
+    		if(m_pop3ReverseFolder){
+    			m_unreadMailVector.insertElementAt(_mail, 0);
+    		}else{
+    			m_unreadMailVector.addElement(_mail);
+    		}
+    		
 		}
  		
  		return true;
@@ -1149,6 +1191,7 @@ public class fetchEmail extends fetchAccount{
 		boolean t_found = false;
 		
 		int t_mailIndex = 0;
+		int t_currMailNum = 0;
 		
 		synchronized (m_unreadMailVector_marking) {
 			for(UnreadMailMarkingData t_mail :m_unreadMailVector_marking){
@@ -1156,7 +1199,8 @@ public class fetchEmail extends fetchAccount{
 				if(t_mail.m_simpleHashCode == t_mailHashCode
 				|| t_messageID.equals(t_mail.m_messageID)){
 					
-					t_mailIndex =  t_mail.m_mailIndex;
+					t_mailIndex		= t_mail.m_mailIndex;
+					t_currMailNum	= t_mail.m_currMailNum;
 					
 					if(_del){
 						m_unreadMailVector_marking.remove(t_mail);
@@ -1171,7 +1215,7 @@ public class fetchEmail extends fetchAccount{
 		
 		if(t_found){
 			try{
-				MarkReadOrDelMail(t_mailIndex,_del);
+				MarkReadOrDelMail(t_mailIndex,t_currMailNum,_del);
 			}catch(Exception _e){
 				m_mainMgr.m_logger.PrinterException(_e);
 			}
@@ -1398,7 +1442,7 @@ public class fetchEmail extends fetchAccount{
 	}
 		
 		
-	public void MarkReadOrDelMail(int _index,boolean _del)throws Exception{
+	public void MarkReadOrDelMail(int _index,int _currMailNum,boolean _del)throws Exception{
 		
 		if(!m_store.isConnected()){
 			ResetSession(false);
@@ -1418,18 +1462,25 @@ public class fetchEmail extends fetchAccount{
 	    	
 	    	folder.open(Folder.READ_WRITE);
 	    	
-			if(_index <= folder.getMessageCount()){
+	    	int t_totalNum = folder.getMessageCount();
+	    	int t_orgIndex = _index;
+	    	
+	    	if(m_pop3ReverseFolder){
+				_index = _currMailNum - _index + 1 + (t_totalNum - _currMailNum);
+			}
+	    	
+			if(_index <= t_totalNum){
 				
 				if(_del){
 					folder.setFlags(_index, _index, new Flags(Flags.Flag.DELETED), true);
 					
-					m_mainMgr.m_logger.LogOut(GetAccountName() + " delete mail Index:"+_index);
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " delete mail Index<" + t_orgIndex + "> pop3ReverseFolder<" + m_pop3ReverseFolder + ">");
 					
 				}else{
 					
 					folder.setFlags(_index, _index, new Flags(Flags.Flag.SEEN), true);	
 					
-					m_mainMgr.m_logger.LogOut(GetAccountName() + " Set index " + _index + " read ");
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " Set index<" + t_orgIndex + "> read pop3ReverseFolder<" + m_pop3ReverseFolder + ">");
 				}
 			}			
 	 	    
@@ -1452,8 +1503,6 @@ public class fetchEmail extends fetchAccount{
 	    	}catch(Exception e){
 	    		m_mainMgr.m_logger.LogOut("MarkReadOrDelMail folder.close exception:" + e.getMessage());
 	    	}
-	    	
-	    	
 	    }	        
 	}
 			

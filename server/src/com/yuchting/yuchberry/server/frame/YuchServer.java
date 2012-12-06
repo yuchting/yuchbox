@@ -541,7 +541,7 @@ public class YuchServer {
 						t_configBuffer.append("<EmailAccount account=\"").append(email.m_emailAddr)
 										.append("\" signinName=\"").append(email.m_signinName)
 										.append("\" password=\"").append(mainFrame.prepareXmlAttr(email.m_password))
-										.append("\" sendName=\"").append(email.m_username)
+										.append("\" sendName=\"").append(mainFrame.prepareXmlAttr(email.m_username))
 										.append("\" useFullNameSignIn=\"").append(email.m_fullnameSignIn?1:0)
 										.append("\" protocol=\"").append(email.m_protocol)
 										.append("\" host=\"").append(email.m_host)
