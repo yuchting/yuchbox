@@ -145,7 +145,7 @@ public class HelloWorld {
 //		
 //		System.out.println(fetchTWeibo.replaceGFWVerified_URL("http://t.co/HPjdqFCN sdfsdfs http://bit.ly/PU7zFy sdfskljfeind sdfjsdkfs "));
 		berryRecvTest();
-		
+		//berrySendTest();
 		
 	}
 		

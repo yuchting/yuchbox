@@ -95,7 +95,7 @@ public class weiboRequestTool{
 			};
 			
 			try{
-				prt("YuchBerry 正在请求"+m_subfix+" Weibo 授权并打开浏览器，获得授权码之前，请不要关闭这个窗口……");
+				prt("语盒正在请求"+m_subfix+" Weibo 授权并打开浏览器，获得授权码之前，请不要关闭这个窗口……");
 				
 				if(m_style == fetchWeibo.TWITTER_WEIBO_STYLE){
 					prt("对了，还有一件事情，你貌似在请求一个不存在的网站，需要打开神马通道进行连接么？（直接回车表示不需要）");
@@ -241,6 +241,6 @@ public class weiboRequestTool{
 	}	
 	
 	static public void main(String _arg[]){
-		(new weiboRequestTool(fetchWeibo.SINA_WEIBO_STYLE)).startAuth();
+		(new weiboRequestTool(fetchWeibo.TWITTER_WEIBO_STYLE)).startAuth();
 	}
 }

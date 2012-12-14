@@ -941,7 +941,7 @@ public class YuchServer {
 				in.close();
 			}
 		}catch(Exception e){
-			//e.printStackTrace();
+			m_logger.PrinterException(e);
 		}
 	}
 	

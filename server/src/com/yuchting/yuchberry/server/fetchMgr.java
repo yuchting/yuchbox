@@ -464,8 +464,7 @@ public class fetchMgr{
 			}
 			
 			
-			//m_logger.LogOut("ValidateClient 3");
-			
+			//m_logger.LogOut("ValidateClient 3");			
 			
 			if(m_clientVer >= 12 && (m_pin.isEmpty() || !t_formerOSversion.equals(m_clientOSVersion))){
 				t_tmp.SendBufferToSvr(new byte[]{msg_head.msgDeviceInfo}, false);
@@ -476,8 +475,6 @@ public class fetchMgr{
 			}
 
 			//m_logger.LogOut("ValidateClient 4");
-			
-			_s.setSoTimeout(0);
 
 			return t_tmp;
 			
@@ -1246,23 +1243,26 @@ public class fetchMgr{
 	
 	public static String GetShortURL(String _longURL){
 		
-		try{
-			URL is_gd = new URL("http://is.gd/api.php?longurl=" + _longURL);
+		if(_longURL.toLowerCase().startsWith("http")){
 			
-	        URLConnection yc = is_gd.openConnection();
-	        yc.setConnectTimeout(10000);
-	        yc.setReadTimeout(50000);
-	        BufferedReader in = new BufferedReader(
-	                                new InputStreamReader(yc.getInputStream()));
-	        
-	        String inputLine = in.readLine();	        
-	        in.close();
-	        
-	        return (inputLine != null && inputLine.length() < _longURL.length()) ? inputLine:_longURL ;
-	        
-		}catch(Exception _e){
-			_e.printStackTrace();
-		}
+			try{
+				URL is_gd = new URL("http://is.gd/api.php?longurl=" + _longURL);
+				
+		        URLConnection yc = is_gd.openConnection();
+		        yc.setConnectTimeout(10000);
+		        yc.setReadTimeout(50000);
+		        BufferedReader in = new BufferedReader(
+		                                new InputStreamReader(yc.getInputStream()));
+		        
+		        String inputLine = in.readLine();	        
+		        in.close();
+		        
+		        return (inputLine != null && inputLine.length() < _longURL.length()) ? inputLine:_longURL ;
+		        
+			}catch(Exception _e){
+				_e.printStackTrace();
+			}
+		}	
 		
 		return _longURL;
 		

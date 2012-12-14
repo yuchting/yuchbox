@@ -32,6 +32,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.Vector;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -52,6 +53,12 @@ class sendReceive extends Thread{
 		
 	public sendReceive(Socket _socket)throws Exception{
 		m_currSocket		= _socket;
+		
+		// the Socket.setSoTimeout(30000) maybe make the timeout exception
+		// because SokectOutputStream.write which in SendBufferToSvr_imple() maybe block socket
+		//
+		m_currSocket.setSoTimeout(30000);
+		
 		m_socketOutputStream = _socket.getOutputStream();
 		m_socketInputStream = _socket.getInputStream();
 				
@@ -227,8 +234,9 @@ class sendReceive extends Thread{
 	private byte[] ParsePackage(byte[] _wholePackage)throws Exception{
 		
 		ByteArrayInputStream t_packagein = new ByteArrayInputStream(_wholePackage);
-		int t_len = ReadInt(t_packagein);
-					
+		
+		int t_len = ReadInt(t_packagein);;
+							
 		byte[] t_ret = new byte[t_len];
 		t_packagein.read(t_ret,0,t_len);
 		
@@ -312,16 +320,26 @@ class sendReceive extends Thread{
 			
 			while(true){
 				
-				t_byte[i] = _stream.read();				
+				while(true){
+					try{
+						// the Socket.setSoTimeout(30000) maybe make the timeout exception
+						// SokectOutputStream.write maybe block this socket must set time out
+						//
+						t_byte[i] = _stream.read();
+						break;
+					}catch(SocketTimeoutException e){
+						continue;
+					}
+				}								
 				
 				if(t_byte[i] == -1){
 					
-					if(t_counter++ >= 20){
+					if(t_counter++ >= 5){
 						return -1;
 					}
 					// first sleep 
 					//
-					Thread.sleep(20);	
+					Thread.sleep(50);	
 					continue;
 					
 				}else{
