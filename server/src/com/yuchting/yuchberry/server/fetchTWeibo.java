@@ -39,8 +39,11 @@ import java.util.Vector;
 
 import org.dom4j.Element;
 
+import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
+
 import twitter4j.DirectMessage;
 import twitter4j.GeoLocation;
+import twitter4j.MediaEntity;
 import twitter4j.Paging;
 import twitter4j.RateLimitStatus;
 import twitter4j.Status;
@@ -123,7 +126,6 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		}else{
 			t_fetch = m_twitter.getHomeTimeline();
 		}
-		m_mainMgr.m_logger.LogOut(GetAccountName() + " AddWeibo!");	
 		AddWeibo(t_fetch,m_timeline,fetchWeibo.TIMELINE_CLASS);
 	}
 	
@@ -263,17 +265,18 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	}
 	
 	protected void UpdateStatus(String _text,GPSInfo _info,byte[] _filePic,String _fileType)throws Exception{
+		StatusUpdate t_status = new StatusUpdate(_text);
+		
 		if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
-			
 			GeoLocation t_geo = new GeoLocation(_info.m_latitude,_info.m_longitude);
-			StatusUpdate t_status = new StatusUpdate(_text);
 			t_status.setLocation(t_geo);
-			
-			m_twitter.updateStatus(t_status);
-			
-		}else{
-			m_twitter.updateStatus(_text);
-		}	
+		}
+		
+		if(_filePic != null){
+			t_status.setMedia("mypic", new ByteArrayInputStream(_filePic));		
+		}
+		
+		m_twitter.updateStatus(t_status);
 	}
 	
 	protected void UpdateComment(int _style,String _text,long _orgWeiboId,
@@ -382,6 +385,11 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		
 		_weibo.SetWeiboStyle(fetchWeibo.TWITTER_WEIBO_STYLE);
 		_weibo.SetWeiboClass(_weiboClass);
+		
+		MediaEntity[] t_mediaEntity = _stat.getMediaEntities();
+		if(t_mediaEntity != null && t_mediaEntity.length != 0){
+			_weibo.SetOriginalPic(t_mediaEntity[0].getMediaURL());
+		}
 		
 		User t_user = _stat.getUser();
 
