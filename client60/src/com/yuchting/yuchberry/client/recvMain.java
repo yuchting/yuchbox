@@ -224,11 +224,11 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public boolean			m_useWifi			= false;
 	public boolean			m_useMDS			= false;
 	public String			m_carrier			= "";
-		
 	public boolean			m_autoRun			= false;
 	
 	public boolean			m_discardOrgText	= false;
 	public boolean			m_delRemoteMail		= false;
+	public boolean			m_markReadMailInSvr	= true;
 	
 	public final class APNSelector{
 		public String		m_name			= null;
@@ -1058,7 +1058,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}
 	}
 	
-	final static int		fsm_clientVersion = 40;
+	final static int		fsm_clientVersion = 41;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -1246,7 +1246,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				    			if(m_imCurrUseStatusIndex < 0 || m_imCurrUseStatusIndex >= sm_imStatusList.size()){
 				    				m_imCurrUseStatusIndex = 0;
 				    			}
-				    			
 				    		}
 				    		
 				    		if(t_currVer >= 31){
@@ -1305,6 +1304,10 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				    			m_imChatScreenShowHeadImg	= sendReceive.ReadBoolean(t_readFile);
 				    			m_account					= sendReceive.ReadString(t_readFile);
 				    			m_carrier					= sendReceive.ReadString(t_readFile);
+				    		}
+				    		
+				    		if(t_currVer >= 41){
+				    			m_markReadMailInSvr			= sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
 				    		
@@ -1438,6 +1441,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		    			sendReceive.WriteBoolean(t_writeFile,m_imChatScreenShowHeadImg);
 		    			sendReceive.WriteString(t_writeFile,m_account);
 		    			sendReceive.WriteString(t_writeFile,m_carrier);
+		    			sendReceive.WriteBoolean(t_writeFile, m_markReadMailInSvr);
 		    									
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -2153,6 +2157,10 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			}
 		});				
     }
+	
+	public void DialogAlert(int _yblocalResouce){
+		DialogAlert(sm_local.getString(_yblocalResouce));
+	}
  
 	public void SetUploadingDesc(final fetchMail _mail,final int _attachmentIdx,
 								final int _uploadedSize,final int _totalSize){
@@ -3176,10 +3184,11 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public static final int[]		fsm_imChatMsgHistory		= {32,64,128,256};
 	public int						m_imChatMsgHistory 			= 0;
 	
-	public static final String[]	fsm_imUploadImageSizeList = {"320×240","640×480"};
+	public static final String[]	fsm_imUploadImageSizeList = {"320×240","480×360","640×480"};
 	public static final XYPoint[]	fsm_imUploadImageSize_size		= 
 	{
 		new XYPoint(320,240),
+		new XYPoint(480,360),
 		new XYPoint(640,480),
 		null,
 	};

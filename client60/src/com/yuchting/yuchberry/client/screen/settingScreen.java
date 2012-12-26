@@ -95,6 +95,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 
 	 CheckboxField		m_discardOrgText = null;
 	 CheckboxField		m_delRemoteMail	= null;
+	 CheckboxField		m_markReadMailSvr = null;
 	 CheckboxField		m_copyToSentFolder = null;
 	 CheckboxField		m_mailUseLocation = null;
 	 ObjectChoiceField	m_recvMsgTextLength	= null;
@@ -189,6 +190,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 m_delRemoteMail	= new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_DELETE_REMOTE_MAIL),m_mainApp.m_delRemoteMail);
 		 add(m_delRemoteMail);
 		 
+		 m_markReadMailSvr	= new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_MARK_REAE_REMOTE_MAIL),m_mainApp.m_markReadMailInSvr);
+		 add(m_markReadMailSvr);
+		 
 		 m_copyToSentFolder	= new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_COPY_MAIL_TO_SENT_FOLDER),m_mainApp.m_copyMailToSentFolder);
 		 add(m_copyToSentFolder);
 		 
@@ -197,6 +201,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 
 		 m_closeMailSendModule = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_CLOSE_SEND_MAIL),m_mainApp.m_closeMailSendModule);
 		 add(m_closeMailSendModule);
+		 m_closeMailSendModule.setChangeListener(this);
 		 
 		 m_recvMsgTextLength = new ObjectChoiceField(recvMain.sm_local.getString(yblocalResource.MESSAGE_CONTAIN_MAX_LENGTH),
 				 					recvMain.fsm_recvMaxTextLenghtString,m_mainApp.m_recvMsgTextLengthIndex);
@@ -375,6 +380,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				m_mainApp.m_connectDeamon.sendRequestMailAccountMsg();
 			}else if(field == m_imModule){
 				enableIMSet(m_imModule.getChecked());
+			}else if(field == m_closeMailSendModule){
+				if(m_closeMailSendModule.getChecked()){
+					m_mainApp.DialogAlert(yblocalResource.SETTING_DISABLE_MAIL_PROMPT);
+				}
 			}
 		}else{
 			// Perform action if application changed field.
@@ -447,6 +456,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		
 		m_mainApp.m_discardOrgText = m_discardOrgText.getChecked();
 		m_mainApp.m_delRemoteMail	= m_delRemoteMail.getChecked();
+		m_mainApp.m_markReadMailInSvr	= m_markReadMailSvr.getChecked();
 		m_mainApp.m_recvMsgTextLengthIndex = m_recvMsgTextLength.getSelectedIndex();
 		m_mainApp.m_copyMailToSentFolder = m_copyToSentFolder.getChecked();
 		m_mainApp.m_mailUseLocation = m_mailUseLocation.getChecked();

@@ -468,11 +468,15 @@ public class connectDeamon extends Thread implements SendListener,
     		return true;
     	}
 		
+		
 		final Message t_msg = message;
 		
 		// invokeLater maybe rise some exception in function ImportMail 
 		//
 		try{
+			
+			// get rid of reply prefix
+			getRidOfReplyPrefix(message);
 			
 			for(int i = 0;i < m_sendingMailAttachment.size();i++){
 				SendMailDeamon t_mail = (SendMailDeamon)m_sendingMailAttachment.elementAt(i);
@@ -616,6 +620,89 @@ public class connectDeamon extends Thread implements SendListener,
 		// and let the YB set header sign of mail immediately
 		//
 		return false;
+	}
+	
+	/**
+	 * remove reply prefix header
+	 */
+	private static final String[]	fsm_replyPrefix = 
+	{
+		"Re: ",
+		"答复： ",
+		"回复： ",
+		"回覆： ",
+		"答覆： ",
+		"RE: ",
+		
+		"Re:",
+		"答复：",
+		"回复：",
+		"回覆：",
+		"答覆：",
+		"RE:",
+	};
+	
+	/**
+	 * get rid of mass reply prefix of this message
+	 * @param message
+	 */
+	private void getRidOfReplyPrefix(Message message){
+		
+		String t_subject = message.getSubject();
+		
+		if(t_subject == null || t_subject.length() == 0){
+			return;
+		}
+		
+		int t_firstIdx = 999999;
+		int t_replyPrefixIdx = -1;
+				
+		for(int i = 0;i < fsm_replyPrefix.length;i++){
+			int idx = t_subject.indexOf(fsm_replyPrefix[i]);
+			
+			if(idx != -1 && idx < t_firstIdx){
+				t_firstIdx = idx;
+				t_replyPrefixIdx = i;
+			}
+		}
+		
+		if(t_replyPrefixIdx == -1 || t_firstIdx != 0){
+			// has no reply prefix or miss prefix
+			return;
+		}
+		
+		// start get rid of
+		t_subject = t_subject.substring(fsm_replyPrefix[t_replyPrefixIdx].length());
+				
+		while(true){
+			
+			// get rid of blank 
+			while(true){
+				if(t_subject.charAt(0) == ' ' && t_subject.length() > 0){
+					t_subject = t_subject.substring(1);
+				}else{
+					break;
+				}
+			}
+			
+			boolean replaced = false;
+			
+			for(int i = 0;i < fsm_replyPrefix.length;i++){
+				int idx = t_subject.indexOf(fsm_replyPrefix[i]);
+				if(idx == 0){
+					replaced = true;
+					t_subject = t_subject.substring(fsm_replyPrefix[i].length());
+				}
+			}
+			
+			if(!replaced){
+				break;
+			}
+		}
+		
+		t_subject = fsm_replyPrefix[t_replyPrefixIdx] + t_subject;
+		
+		message.setSubject(t_subject);
 	}
 	
 	 
