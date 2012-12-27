@@ -916,6 +916,10 @@ public class connectDeamon extends Thread implements SendListener,
 		m_sendStyle = fetchMail.NOTHING_STYLE;
 				
 		m_mainApp.loadChangeMailSenderMenu(true);
+		
+		if(m_mainApp.m_popupDlgWhenComposeNew && m_mainApp.m_sendMailAccountList.size() > 1){
+			m_mainApp.openChangeMailSenderDlg(null);
+		}
 	}
 	public void reply(MessageEvent e){
 		m_composingMail = e.getMessage();
@@ -1881,6 +1885,14 @@ public class connectDeamon extends Thread implements SendListener,
 					&& t_mail.m_fromAddr.indexOf(m.getFrom().getAddr()) != -1){
 						
 						byte t_msgType = (_del && m_mainApp.m_delRemoteMail)?msg_head.msgMailDel:msg_head.msgBeenRead;
+						
+						if(t_msgType == msg_head.msgBeenRead && !m_mainApp.m_markReadMailInSvr){
+							// if mark read , and has been set no mark remote server flag
+							// don't send message to server
+							//
+							m_markReadVector.removeElementAt(i);
+							return true;							
+						}
 						
 						ByteArrayOutputStream t_os = new ByteArrayOutputStream();
 						t_os.write(t_msgType);

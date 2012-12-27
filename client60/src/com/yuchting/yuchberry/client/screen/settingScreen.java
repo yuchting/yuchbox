@@ -70,6 +70,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 CheckboxField		m_useWifi		= null;
 	 CheckboxField		m_autoRun		= null;
 	 CheckboxField		m_conDisPrompt 	= null;
+	 CheckboxField		m_popupDlgWhenDisconnect 	= null;
 	 ObjectChoiceField	m_pulseInterval	= null;
 	 
 	 CheckboxField		m_hideBackgroundIcon = null;
@@ -106,6 +107,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 VerticalFieldManager	m_sendMailAccountList = new VerticalFieldManager(Manager.VERTICAL_SCROLL);
 	 ButtonField		m_requestMailAccountBut = new ButtonField(recvMain.sm_local.getString(yblocalResource.SETTING_REQUEST_MAIL_ACCOUNT),
 			 											Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
+	 CheckboxField		m_popupDlgWhenComposeNew = null;
 	 
 	 CheckboxField		m_weiboModule	= null;
 	 NullField			m_weiboNullField = new NullField(Field.NON_FOCUSABLE);
@@ -172,6 +174,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 m_conDisPrompt		= new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_CONNECT_DISCONNECT_PROMPT), m_mainApp.m_connectDisconnectPrompt);
 		 add(m_conDisPrompt);
 		 
+		 m_popupDlgWhenDisconnect = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_DISCONNECT_PROMPT), m_mainApp.m_popupDlgWhenDisconnect);
+		 add(m_popupDlgWhenDisconnect);
+		 
 		 m_hideBackgroundIcon = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_HIDE_BG_ICON), m_mainApp.m_hideBackgroundIcon);
 		 add(m_hideBackgroundIcon);
 		 
@@ -216,6 +221,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 m_requestMailAccountBut.setChangeListener(this);
 		 
 		 refreshMailAccountList();
+		 
+		 m_popupDlgWhenComposeNew = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_POPUP_DLG_COMPOSE_NEW),m_mainApp.m_popupDlgWhenComposeNew);
+		 add(m_popupDlgWhenComposeNew);
 		 
 		 //@}
 		 
@@ -444,6 +452,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		m_mainApp.SetAPNName(m_APN.getText());
 		m_mainApp.m_autoRun = m_autoRun.getChecked();
 		m_mainApp.m_connectDisconnectPrompt = m_conDisPrompt.getChecked();
+		m_mainApp.m_popupDlgWhenDisconnect = m_popupDlgWhenDisconnect.getChecked();
 		
 		m_mainApp.m_appendString = m_appendString.getText();
 		m_mainApp.m_useWifi = m_useWifi.getChecked();
@@ -489,6 +498,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				break;
 			}
 		}
+		
+		m_mainApp.m_popupDlgWhenComposeNew = m_popupDlgWhenComposeNew.getChecked();
 		
 		if(m_mainApp.m_enableWeiboModule != m_weiboModule.getChecked()){
 			

@@ -78,6 +78,7 @@ import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
 import net.rim.device.api.util.LongHashtable;
 
+import com.flurry.blackberry.FlurryAgent;
 import com.yuchting.yuchberry.client.connectDeamon.FetchAttachment;
 import com.yuchting.yuchberry.client.im.IMStatus;
 import com.yuchting.yuchberry.client.im.MainIMScreen;
@@ -224,11 +225,12 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public boolean			m_useWifi			= false;
 	public boolean			m_useMDS			= false;
 	public String			m_carrier			= "";
-	public boolean			m_autoRun			= false;
+	public boolean			m_autoRun			= false;	
 	
 	public boolean			m_discardOrgText	= false;
 	public boolean			m_delRemoteMail		= false;
 	public boolean			m_markReadMailInSvr	= true;
+	public boolean			m_popupDlgWhenComposeNew = false;
 	
 	public final class APNSelector{
 		public String		m_name			= null;
@@ -256,6 +258,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public boolean				m_closeMailSendModule = false;
 	
 	public boolean			m_connectDisconnectPrompt = false;
+	public boolean			m_popupDlgWhenDisconnect = false;
 	
 	
 	public static final String[]	fsm_recvMaxTextLenghtString = {"∞","1KB","5KB","10KB","50KB"};
@@ -298,6 +301,9 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public int				m_defaultSendMailAccountIndex_tmp = -1;
 	
 	public boolean 		m_hideBackgroundIcon = false;
+	
+	//! flurry agent key
+	private String			m_flurryKey			= null;
 	
 	public final class UploadingDesc{
 		
@@ -474,6 +480,9 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
         	}      	
         }
         
+        // initialize flurry
+        initFlurry();
+        
         addFileSystemListener(new FileSystemListener(){
         	public void rootChanged(int state,String rootName) {
         		if( state == ROOT_ADDED ) {
@@ -501,6 +510,60 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
         WeiboHeadImage.sm_mainApp = this;
         InitWeiboModule();
         initIMModule();
+	}
+	
+	/**
+	 * intialize the flurry
+	 */
+	private void initFlurry(){
+		
+		try{
+			InputStream t_file = getClass().getResourceAsStream("/FlurryKey.txt");
+			try{
+
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+				try{
+					int t_readByte;
+					while((t_readByte = t_file.read()) != -1){
+						os.write(t_readByte);
+					}
+					m_flurryKey = new String(os.toByteArray());
+					
+					// invoke later to make sure flurry run in YuchCaller context
+					invokeLater(new Runnable() {
+						public void run() {
+							FlurryAgent.onStartApp(m_flurryKey);
+						}
+					});
+					
+					// invoke a runnable for destory app every 6 hours for sending custom event
+					// check follow URL for detail
+					// http://supportforums.blackberry.com/t5/Java-Development/Create-Event-in-Flurry-Analytics/td-p/1951539
+					//
+					invokeLater(new Runnable() {
+						
+						public void run() {							
+							// emulate destory app
+							FlurryAgent.onDestroyApp();
+							
+							// restart again after 20 second
+							invokeLater(new Runnable() {		
+								public void run() {
+									FlurryAgent.onStartApp(m_flurryKey);
+								}
+							},20000,false);
+						}
+					},6 * 3600000,true);
+					
+				}finally{
+					os.close();
+				}				
+			}finally{
+				t_file.close();
+			}			
+		}catch(Exception e){
+			System.out.println("Flurry init failed!"+e.getMessage());
+		}
 	}
 	
 	/**
@@ -1308,6 +1371,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				    		
 				    		if(t_currVer >= 41){
 				    			m_markReadMailInSvr			= sendReceive.ReadBoolean(t_readFile);
+				    			m_popupDlgWhenDisconnect	= sendReceive.ReadBoolean(t_readFile);
+				    			m_popupDlgWhenComposeNew	= sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
 				    		
@@ -1442,6 +1507,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		    			sendReceive.WriteString(t_writeFile,m_account);
 		    			sendReceive.WriteString(t_writeFile,m_carrier);
 		    			sendReceive.WriteBoolean(t_writeFile, m_markReadMailInSvr);
+		    			sendReceive.WriteBoolean(t_writeFile, m_popupDlgWhenDisconnect);
+		    			sendReceive.WriteBoolean(t_writeFile, m_popupDlgWhenComposeNew);
 		    									
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1804,7 +1871,11 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public void TriggerDisconnectNotification(){
 		if(IsPromptTime() && m_connectDisconnectPrompt){
 			NotificationsManager.triggerImmediateEvent(fsm_notifyID_disconnect, 0, this, null);
-		}		
+		}
+		
+		if(m_popupDlgWhenDisconnect){
+			DialogAlert(yblocalResource.SETTING_DISCONNECT_PROMPT_DESC);
+		}
 	}
 	
 	public void StopDisconnectNotification(){
