@@ -304,7 +304,7 @@ public class MailListAdapter extends BaseAdapter{
         long		groupId;
         long		nextGroupId = -1;
         
-        int			cursorPos; 
+        int			cursorPos;
         
         public void updateView(int _groupFlag,String _subject,String _mailAddr,String _body,long _latestTime){
         	

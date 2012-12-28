@@ -237,25 +237,18 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 			//
 			String t_sub;
 			Vector<String> t_toVect = null;
+			Vector<String> t_ccVect = null;
+			Vector<String> t_bccVect = null;
 			if(t_draft && m_draftMail != null){
+				
 				// draft
 				//
 				t_sub = m_draftMail.GetSubject();
 				m_body.setText(m_draftMail.GetContain());
 				t_toVect = m_draftMail.GetSendToVect();
-				Vector<String> t_ccVect = m_draftMail.GetCCToVect();
-				Vector<String> t_bccVect = m_draftMail.GetBCCToVect();
-				
-				if(t_ccVect != null && !t_ccVect.isEmpty()){
-					showCc_Bcc();
-					setEmailAddr(m_cc, t_ccVect);
-				}
-				
-				if(t_bccVect != null && !t_bccVect.isEmpty()){
-					showCc_Bcc();
-					setEmailAddr(m_bcc, t_bccVect);
-				}
-				
+				t_ccVect = m_draftMail.GetCCToVect();
+				t_bccVect = m_draftMail.GetBCCToVect();
+								
 				refreshAttachment(m_draftMail);
 								
 			}else{
@@ -267,7 +260,7 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 					if(m_referenceMail != null){
 						t_sub = MailDbAdapter.getReplySubject(m_referenceMail.m_mail.GetSubject(), getString(R.string.mail_compose_reply_prefix));
 					}else{
-						t_sub =getString(R.string.mail_compose_reply_prefix);
+						t_sub = getString(R.string.mail_compose_reply_prefix);
 					}
 					
 				}else{
@@ -287,11 +280,46 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 						t_toVect = m_referenceMail.m_mail.GetSendToVect();
 					}else{
 						
-						t_toVect = m_referenceMail.m_mail.GetReplyToVect().isEmpty()?
-								m_referenceMail.m_mail.GetFromVect():
-								m_referenceMail.m_mail.GetReplyToVect();						
+						if(m_referenceMailStyle == fetchMail.REPLY_ALL_STYLE){
+							
+							t_toVect = new Vector<String>();
+							
+							for(String add : m_referenceMail.m_mail.GetReplyToVect()){
+								t_toVect.add(add);
+							}
+
+							for(String add : m_referenceMail.m_mail.GetFromVect()){
+								t_toVect.add(add);
+							}
+							
+							for(String add : m_referenceMail.m_mail.GetSendToVect()){
+								if(m_mainApp.m_config.m_sendMailAccountList.indexOf(add) == -1){
+									t_toVect.add(add);
+								}								
+							}
+						}else{
+							t_toVect = m_referenceMail.m_mail.GetReplyToVect().isEmpty()?
+									m_referenceMail.m_mail.GetFromVect():
+									m_referenceMail.m_mail.GetReplyToVect();
+						}
+					}
+					
+					if(m_referenceMailStyle == fetchMail.REPLY_ALL_STYLE){
+						t_ccVect = m_referenceMail.m_mail.GetCCToVect();
+						t_bccVect = m_referenceMail.m_mail.GetBCCToVect();
 					}
 				}
+			}
+			
+
+			if(t_ccVect != null && !t_ccVect.isEmpty()){
+				showCc_Bcc();
+				setEmailAddr(m_cc, t_ccVect);
+			}
+			
+			if(t_bccVect != null && !t_bccVect.isEmpty()){
+				showCc_Bcc();
+				setEmailAddr(m_bcc, t_bccVect);
 			}
 			
 			if(t_toVect != null){

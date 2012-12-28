@@ -37,13 +37,18 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
@@ -55,7 +60,7 @@ import com.yuchting.yuchdroid.client.YuchDroidApp;
 import com.yuchting.yuchdroid.client.Yuchdroid16Activity;
 
 
-public class HomeActivity extends ListActivity implements View.OnClickListener{
+public class HomeActivity extends ListActivity implements View.OnClickListener, OnItemLongClickListener,OnCreateContextMenuListener{
 			
 	public static final int	MAX_GROUP_FATCH_NUM		= 35;
 
@@ -72,6 +77,9 @@ public class HomeActivity extends ListActivity implements View.OnClickListener{
 	private Button		m_batchReadBtn 		= null;
 	private Button		m_batchUnreadBtn 	= null;
 	private Button		m_batchDelBtn		= null;
+	
+	//! long click item holder var for processing
+	private MailListAdapter.ItemHolder	m_longClickItemHolder = null;
 				
 	BroadcastReceiver m_recvMailRecv = new BroadcastReceiver() {
 		@Override
@@ -153,6 +161,8 @@ public class HomeActivity extends ListActivity implements View.OnClickListener{
 				}
 			}
 		});
+        
+        getListView().setOnItemLongClickListener(this);
         		
         registerReceiver(m_recvMailRecv, new IntentFilter(YuchDroidApp.FILTER_RECV_MAIL));
         registerReceiver(m_markReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
@@ -212,6 +222,58 @@ public class HomeActivity extends ListActivity implements View.OnClickListener{
 			
 			startActivity(in);
 		}
+    }
+	
+	@Override
+	public boolean onItemLongClick(AdapterView<?> parent, View view, int position,long id){
+		
+		m_longClickItemHolder = (MailListAdapter.ItemHolder)view.getTag();		
+		if(m_longClickItemHolder != null){
+			getListView().setOnCreateContextMenuListener(this);
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,ContextMenuInfo menuInfo){
+		menu.add(0, 0, 0, getString(R.string.mail_home_item_context_menu_read));
+		menu.add(0, 1, 0, getString(R.string.mail_home_item_context_menu_del));
+		menu.add(0, 2, 0, getString(R.string.mail_home_item_context_menu_read_former));
+		menu.add(0, 3, 0, getString(R.string.mail_home_item_context_menu_del_former));
+		menu.add(0, 4, 0, getString(R.string.mail_home_item_context_menu_cancel));
+	}
+	
+	@Override
+    public boolean onContextItemSelected(MenuItem item) {
+	
+		switch (item.getItemId()) {
+			case 0:
+				clearSelectedGroup();
+				addSelectedGroup(m_longClickItemHolder.groupId);
+				onClick(m_batchReadBtn);
+				break;
+			case 1:
+				clearSelectedGroup();
+				addSelectedGroup(m_longClickItemHolder.groupId);
+				onClick(m_batchDelBtn);
+				break;
+			case 2:
+				clearSelectedGroup();
+				
+				break;
+			case 3:
+				clearSelectedGroup();
+				
+				break;
+			default:
+			        break;
+		}
+		
+		m_longClickItemHolder = null;
+		
+		return super.onContextItemSelected(item);
+
     }
 	
 	@Override
@@ -489,4 +551,5 @@ public class HomeActivity extends ListActivity implements View.OnClickListener{
 		
 		refreshGroupCursor();		
 	}
+
 }

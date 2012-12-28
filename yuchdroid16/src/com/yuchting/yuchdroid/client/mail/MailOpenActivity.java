@@ -107,6 +107,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 	ImageView				m_nextGroupBtn;
 	
 	Button					m_replyBtn;
+	Button					m_replyAllBtn;
 	Button					m_forwardBtn;
 	Button					m_deleteBtn;
 	
@@ -289,6 +290,9 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         
         m_replyBtn	= (Button)findViewById(R.id.mail_open_mail_reply_btn);
         m_replyBtn.setOnClickListener(this);
+        
+        m_replyAllBtn	= (Button)findViewById(R.id.mail_open_mail_reply_all_btn);
+        m_replyAllBtn.setOnClickListener(this);
         
         m_forwardBtn = (Button)findViewById(R.id.mail_open_mail_forward_btn);
         m_forwardBtn.setOnClickListener(this);
@@ -586,6 +590,8 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 			}	
 		}else if(v == m_replyBtn){
 			startReplyForwardMail(fetchMail.REPLY_STYLE);
+		}else if(v == m_replyAllBtn){
+			startReplyForwardMail(fetchMail.REPLY_ALL_STYLE);
 		}else if(v == m_forwardBtn){
 			startReplyForwardMail(fetchMail.FORWORD_STYLE);
 		}else if(v == m_deleteBtn){

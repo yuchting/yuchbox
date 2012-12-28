@@ -119,6 +119,11 @@
     <string name="mail_list_menu_connect_state">状态</string>
     <string name="mail_home_read_btn">标记已读</string>
     <string name="mail_home_unread_btn">标记未读</string>
+	<string name="mail_home_item_context_menu_del">删除</string>
+    <string name="mail_home_item_context_menu_read">标记为已读</string>
+    <string name="mail_home_item_context_menu_del_former">删除之前的邮件</string>
+    <string name="mail_home_item_context_menu_read_former">标记之前的邮件为已读</string>
+    <string name="mail_home_item_context_menu_cancel">取消</string>
         
     <!-- mail open view -->
     <string name="mail_open_reply_btn">回复</string>

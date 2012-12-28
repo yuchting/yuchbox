@@ -28,6 +28,7 @@
 package com.yuchting.yuchdroid.client.mail;
 
 import java.util.Date;
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
 
 import android.content.ContentValues;
@@ -723,6 +724,11 @@ public class MailDbAdapter {
     	}
     }
     
+    
+//    public Vector<Long> fetchGroupIdList(long _time){
+//    	
+//    }
+    
     public void setMailGroupFlag(long _mailId,long _groupId,int _flag){
     	
     	ContentValues values = new ContentValues();    		
@@ -751,7 +757,6 @@ public class MailDbAdapter {
     		
     		mDb.update(DATABASE_TABLE_GROUP, v, KEY_ID + "=" + _groupId, null);
     	}
-    	
     }
     
     private ContentValues getMailContentValues(fetchMail _mail){

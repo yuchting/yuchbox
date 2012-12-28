@@ -116,7 +116,11 @@
     <string name="mail_list_menu_connect_state">State</string>
     <string name="mail_home_read_btn">Mark Read</string>
     <string name="mail_home_unread_btn">Mark Unread</string>
-    
+    <string name="mail_home_item_context_menu_del">Delete it</string>
+    <string name="mail_home_item_context_menu_read">Mark Read</string>
+    <string name="mail_home_item_context_menu_del_former">Delete all former mails</string>
+    <string name="mail_home_item_context_menu_read_former">Mark all former mails as read</string>
+    <string name="mail_home_item_context_menu_cancel">Cancel</string>
        
     <!-- mail open view -->
     <string name="mail_open_reply_btn">Reply</string>
@@ -216,3 +220,4 @@
 	    
 
 </resources>
+

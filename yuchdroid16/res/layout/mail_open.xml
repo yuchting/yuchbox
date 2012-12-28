@@ -66,6 +66,13 @@
 			android:layout_height="fill_parent"
 			android:layout_weight="1"
 			android:text="@string/mail_open_reply_btn"/>
+		
+		<Button 
+			android:id="@+id/mail_open_mail_reply_all_btn"
+			android:layout_width="0dp"
+			android:layout_height="fill_parent"
+			android:layout_weight="1"
+			android:text="@string/mail_open_reply_all_btn"/>
 			
 		<Button 
 			android:id="@+id/mail_open_mail_forward_btn"
