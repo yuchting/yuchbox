@@ -67,11 +67,16 @@ import net.rim.device.api.servicebook.ServiceBook;
 import net.rim.device.api.servicebook.ServiceRecord;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.RadioInfo;
+import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.ActiveRichTextField;
+import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.util.Arrays;
 
 import com.yuchting.yuchberry.client.screen.IUploadFileScreenCallback;
 import com.yuchting.yuchberry.client.screen.uploadFileScreen;
+import com.yuchting.yuchberry.client.ui.BrowserFieldImpl;
 import com.yuchting.yuchberry.client.ui.WeiboHeadImage;
 import com.yuchting.yuchberry.client.weibo.WeiboAccount;
 import com.yuchting.yuchberry.client.weibo.fetchWeibo;
@@ -750,6 +755,32 @@ public class connectDeamon extends Thread implements SendListener,
 	}
 	//@}
 	
+	//! get html base 64 string by attachment part
+	private String getHTMLBase64String(SupportedAttachmentPart p)throws Exception{
+		String t_url;
+		
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		try{
+			Base64OutputStream boutput = new Base64OutputStream( output );
+			try{
+				output.write( "data:text/html;base64,".getBytes("UTF-8") );
+				boutput.write( (byte[])p.getContent() );
+			}finally{
+				boutput.flush();
+				boutput.close();
+				boutput = null;
+			}
+		}finally{
+			output.flush();
+			output.close();
+			
+			t_url = output.toString();
+			
+			output = null;
+		}
+		
+		return t_url;
+	}
 	
 	//@{ AttachmentHandler
 	public void run(Message m, SupportedAttachmentPart p){
@@ -759,17 +790,7 @@ public class connectDeamon extends Thread implements SendListener,
 		if(t_attName.equals(recvMain.sm_local.getString(yblocalResource.HTML_PART_FILENAME))){
 			
 			try{
-				
-				final ByteArrayOutputStream output = new ByteArrayOutputStream();
-	            final Base64OutputStream boutput = new Base64OutputStream( output );
-	            output.write( "data:text/html;base64,".getBytes("UTF-8") );
-	            boutput.write( (byte[])p.getContent() );
-	            boutput.flush();
-	            boutput.close();
-	            output.flush();
-	            output.close();
-	            
-	            recvMain.openURL(output.toString());
+	            recvMain.openURL(getHTMLBase64String(p));
 	            
 			}catch(Exception e){
 				m_mainApp.DialogAlert("open the attachment file failed:\n" + e.getMessage());
@@ -878,10 +899,78 @@ public class connectDeamon extends Thread implements SendListener,
 	
 	
 	
+	
 	//@{ ViewListener
+	
 	public void open(MessageEvent e){
+		
 		m_mainApp.StopNotification();
 		m_mainApp.StopEmailFailedNotifaction();
+		
+		if(!m_mainApp.m_mailHtmlShow){
+			return;
+		}
+				
+		try{
+			
+			BrowserFieldImpl t_htmlShowField = null;
+			
+			Message msg = e.getMessage();
+			Object t_content = msg.getContent();
+			
+			if(t_content instanceof Multipart){
+				Multipart mp = (Multipart)t_content; 
+				
+			    for(int count=0; count < mp.getCount(); ++count){
+			    	
+			    	BodyPart bp = mp.getBodyPart(count);
+			    	
+			    	if(bp instanceof SupportedAttachmentPart){
+			    		SupportedAttachmentPart sap = (SupportedAttachmentPart)bp;
+			    		String t_htmlFilename = recvMain.sm_local.getString(yblocalResource.HTML_PART_FILENAME);
+			    		
+			    		if(sap.getFilename().equals(t_htmlFilename)){
+			    			t_htmlShowField = new BrowserFieldImpl(m_mainApp, (byte[])sap.getContent(),sap.getContentType());			    			
+			    		}
+			    	}
+			    }
+			}
+			
+			if(t_htmlShowField != null){
+				MainScreen t_screen	= (MainScreen)UiApplication.getUiApplication().getActiveScreen();
+				Manager t_manager	= t_screen.getMainManager();
+				
+				int t_count = t_manager.getFieldCount();
+				
+				open_top:
+				for(int i = 0;i < t_count;i++){
+					Field t_field = t_manager.getField(i);
+					
+					//System.out.println("Manager " + i + " :" + t_field.getClass().getName());
+					Manager vm = (Manager)t_field;
+					
+					int num = vm.getFieldCount();
+					for(int j = 0;j < num;j++){
+						
+						t_field = vm.getField(j);
+						//System.out.println("  Field " + j + " :" + t_field.getClass().getName());
+						
+						if(t_field instanceof ActiveRichTextField){
+							ActiveRichTextField a = (ActiveRichTextField)t_field;
+							a.setText("");
+							
+							//System.out.println("   ActiveRichTextField:" + a.getText());
+							t_htmlShowField.insertBrowserField(vm, j + 1);
+													
+							break open_top;
+						}
+					}
+				}
+			}
+			
+		}catch(Exception ex){
+			m_mainApp.SetErrorString("CDOP",ex);
+		}
 	}
 	
 	public void close(MessageEvent e){
@@ -947,7 +1036,12 @@ public class connectDeamon extends Thread implements SendListener,
 				t_first = t_content.indexOf(fsm_origMsgFindTag,t_first + 1);
 				
 				if(t_first != -1){
+					
 					int t_end = t_content.indexOf('\r',t_first);
+					
+					if(t_end == -1){
+						t_end = t_content.indexOf('\n',t_first);
+					}
 					
 					if(t_end != -1){
 						String ID = t_content.substring(t_first + fsm_origMsgFindTag.length(), t_end);
@@ -1786,13 +1880,8 @@ public class connectDeamon extends Thread implements SendListener,
 				}
 								
 			}
-		});
-			
+		});		
 	}
-	
-	
-	
-	
 	
 	public void ProcessMailAttach(InputStream in)throws Exception{
 		
@@ -2054,20 +2143,19 @@ public class connectDeamon extends Thread implements SendListener,
 	private void readEmailBody(MimeBodyPart mbp,fetchMail _mail)throws Exception
 	{
 	   //Extract the content of the message.
-		   Object obj = mbp.getContent();
-		   String mimeType = mbp.getContentType();
-		   String body = null;
-	   
-		   if (obj instanceof String)
-		   {
-		      body = (String)obj;
-		   }
-		   else if (obj instanceof byte[])
-		   {
-		      body = new String((byte[])obj);
-		   }else{
-			   
-			   throw new Exception("error MimeBodyPart Contain type");
+	   Object obj = mbp.getContent();
+	   String mimeType = mbp.getContentType();
+	   String body = null;
+   
+	   if (obj instanceof String)
+	   {
+	      body = (String)obj;
+	   }
+	   else if (obj instanceof byte[])
+	   {
+	      body = new String((byte[])obj);
+	   }else{
+		   throw new Exception("error MimeBodyPart Contain type");
 	   }
 	
 	   if (mimeType.indexOf(ContentType.TYPE_TEXT_PLAIN_STRING) != -1)
@@ -2091,24 +2179,25 @@ public class connectDeamon extends Thread implements SendListener,
 	  
 	   else if (mimeType.indexOf(ContentType.TYPE_TEXT_HTML_STRING) != -1)
 	   {
-		   m_plainTextContain = m_htmlTextContain.concat(body);
-		   m_htmlTextContain_type = mbp.getContentType();
-		   if(m_htmlTextContain_type == null){
-			   m_htmlTextContain_type = ""; 
-		   }
+			m_plainTextContain = m_htmlTextContain.concat(body);
+			m_htmlTextContain_type = mbp.getContentType();
+			if(m_htmlTextContain_type == null){
+				m_htmlTextContain_type = ""; 
+			}
 	
-	      //Determine if all of the HTML body part is present.
-	      if (mbp.hasMore() && !mbp.moreRequestSent())
-	      {
-	         try
-	         {
-	            Transport.more((BodyPart)mbp, true);
-	         }
-	         catch (Exception ex)
-	         { 
-	        	 m_mainApp.SetErrorString("Ex: " + ex.toString() + " " + ex.getClass().getName());
-	         }
-	      }
+			//Determine if all of the HTML body part is present.
+			if (mbp.hasMore() && !mbp.moreRequestSent())
+			{
+				try
+				{
+					Transport.more((BodyPart)mbp, true);
+				}
+				catch (Exception ex)
+				{ 
+					m_mainApp.SetErrorString("Ex: " + ex.toString() + " " + ex.getClass().getName());
+				}
+			
+			}
 	   }
 	}
 	
@@ -2178,6 +2267,17 @@ public class connectDeamon extends Thread implements SendListener,
 	    ComposeMessageContent(msg,_mail,false);
 	}
 	
+	static private String getCharsetType(String _type){ 
+		String t_type = "UTF-8";
+		
+		int t_charset = _type.toLowerCase().indexOf("charset=");
+		if(t_charset != -1){
+			t_type = _type.substring(t_charset + 8);
+		}
+		
+		return t_type;
+	}
+	
 	static private void ComposeMessageContent(Message msg,fetchMail _mail,boolean _sendCompose)throws Exception{
 		
 		 if(_mail.GetContain_html().length() != 0
@@ -2192,13 +2292,8 @@ public class connectDeamon extends Thread implements SendListener,
 	    		SupportedAttachmentPart sap = null;
 	    		String t_filename = recvMain.sm_local.getString(yblocalResource.HTML_PART_FILENAME);
 	    		
-	    		String t_type = "UTF-8";
-	    		    		
-	    		int t_charset = _mail.GetContain_html_type().indexOf("charset=");
-	    		if(t_charset != -1){
-	    			t_type = _mail.GetContain_html_type().substring(t_charset + 8);
-	    		}
-	    		
+	    		String t_type = getCharsetType(_mail.GetContain_html_type());
+	    			    		
 		    	try{
 		    		// if the UTF-8 decode sytem is NOT present in current system
 					// will throw the exception

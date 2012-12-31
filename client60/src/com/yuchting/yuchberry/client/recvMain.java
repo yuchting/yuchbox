@@ -231,6 +231,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public boolean			m_delRemoteMail		= false;
 	public boolean			m_markReadMailInSvr	= true;
 	public boolean			m_popupDlgWhenComposeNew = false;
+	public boolean			m_mailHtmlShow		= false;
 	
 	public final class APNSelector{
 		public String		m_name			= null;
@@ -374,7 +375,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	FileConnection m_logfc				= null;
 	OutputStream	m_logfcOutput		= null;
 				
-	public static void main(String[] args) {
+	public static void main(String[] args) {	
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());
 		t_theApp.enterEventDispatcher();
 	}
@@ -1373,6 +1374,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				    			m_markReadMailInSvr			= sendReceive.ReadBoolean(t_readFile);
 				    			m_popupDlgWhenDisconnect	= sendReceive.ReadBoolean(t_readFile);
 				    			m_popupDlgWhenComposeNew	= sendReceive.ReadBoolean(t_readFile);
+				    			m_mailHtmlShow				= sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
 				    		
@@ -1509,6 +1511,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		    			sendReceive.WriteBoolean(t_writeFile, m_markReadMailInSvr);
 		    			sendReceive.WriteBoolean(t_writeFile, m_popupDlgWhenDisconnect);
 		    			sendReceive.WriteBoolean(t_writeFile, m_popupDlgWhenComposeNew);
+		    			sendReceive.WriteBoolean(t_writeFile,m_mailHtmlShow);
 		    									
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -2229,8 +2232,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		});				
     }
 	
-	public void DialogAlert(int _yblocalResouce){
-		DialogAlert(sm_local.getString(_yblocalResouce));
+	public void DialogAlert(int _yblocalResource){
+		DialogAlert(sm_local.getString(_yblocalResource));
 	}
  
 	public void SetUploadingDesc(final fetchMail _mail,final int _attachmentIdx,

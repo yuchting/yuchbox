@@ -108,6 +108,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 ButtonField		m_requestMailAccountBut = new ButtonField(recvMain.sm_local.getString(yblocalResource.SETTING_REQUEST_MAIL_ACCOUNT),
 			 											Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	 CheckboxField		m_popupDlgWhenComposeNew = null;
+	 CheckboxField		m_mailHtmlShow			= null;
 	 
 	 CheckboxField		m_weiboModule	= null;
 	 NullField			m_weiboNullField = new NullField(Field.NON_FOCUSABLE);
@@ -204,6 +205,12 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 m_mailUseLocation = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_MAIL_USER_LOCATION),m_mainApp.m_mailUseLocation);
 		 add(m_mailUseLocation);
 		 
+		 if(!recvMain.fsm_OS_version.startsWith("4.")){
+			 m_mailHtmlShow			 = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_SHOW_HTML_DIRECTLY),m_mainApp.m_mailHtmlShow);
+			 add(m_mailHtmlShow);
+			 m_mailHtmlShow.setChangeListener(this);
+		 }
+		 
 		 m_closeMailSendModule = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_CLOSE_SEND_MAIL),m_mainApp.m_closeMailSendModule);
 		 add(m_closeMailSendModule);
 		 m_closeMailSendModule.setChangeListener(this);
@@ -224,8 +231,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 
 		 m_popupDlgWhenComposeNew = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_POPUP_DLG_COMPOSE_NEW),m_mainApp.m_popupDlgWhenComposeNew);
 		 add(m_popupDlgWhenComposeNew);
-		 
 		 //@}
+		 
 		 
 		 add(new SeparatorField());
 		 
@@ -392,6 +399,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				if(m_closeMailSendModule.getChecked()){
 					m_mainApp.DialogAlert(yblocalResource.SETTING_DISABLE_MAIL_PROMPT);
 				}
+			}else if(field == m_mailHtmlShow){
+				if(m_mailHtmlShow.getChecked()){
+					m_mainApp.DialogAlert(yblocalResource.SETTING_SHOW_HTML_DIRECTLY_PROMPT);
+				}
 			}
 		}else{
 			// Perform action if application changed field.
@@ -454,22 +465,26 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		m_mainApp.m_connectDisconnectPrompt = m_conDisPrompt.getChecked();
 		m_mainApp.m_popupDlgWhenDisconnect = m_popupDlgWhenDisconnect.getChecked();
 		
-		m_mainApp.m_appendString = m_appendString.getText();
-		m_mainApp.m_useWifi = m_useWifi.getChecked();
+		m_mainApp.m_appendString 		= m_appendString.getText();
+		m_mainApp.m_useWifi 			= m_useWifi.getChecked();
 		
-		m_mainApp.m_pulseIntervalIndex = m_pulseInterval.getSelectedIndex();
-		m_mainApp.m_useLocationInfo = m_useLocationInfo.getChecked();
+		m_mainApp.m_pulseIntervalIndex	= m_pulseInterval.getSelectedIndex();
+		m_mainApp.m_useLocationInfo		= m_useLocationInfo.getChecked();
 		
-		m_mainApp.m_useMDS = m_uesMDS.getChecked();
-		m_mainApp.m_fulldayPrompt	= m_fulldayPrompt.getChecked();				
+		m_mainApp.m_useMDS				= m_uesMDS.getChecked();
+		m_mainApp.m_fulldayPrompt		= m_fulldayPrompt.getChecked();				
 		
-		m_mainApp.m_discardOrgText = m_discardOrgText.getChecked();
-		m_mainApp.m_delRemoteMail	= m_delRemoteMail.getChecked();
-		m_mainApp.m_markReadMailInSvr	= m_markReadMailSvr.getChecked();
-		m_mainApp.m_recvMsgTextLengthIndex = m_recvMsgTextLength.getSelectedIndex();
-		m_mainApp.m_copyMailToSentFolder = m_copyToSentFolder.getChecked();
-		m_mainApp.m_mailUseLocation = m_mailUseLocation.getChecked();
-		m_mainApp.m_hideBackgroundIcon = m_hideBackgroundIcon.getChecked();
+		m_mainApp.m_discardOrgText 			= m_discardOrgText.getChecked();
+		m_mainApp.m_delRemoteMail			= m_delRemoteMail.getChecked();
+		m_mainApp.m_markReadMailInSvr		= m_markReadMailSvr.getChecked();
+		m_mainApp.m_recvMsgTextLengthIndex	= m_recvMsgTextLength.getSelectedIndex();
+		m_mainApp.m_copyMailToSentFolder	= m_copyToSentFolder.getChecked();
+		m_mainApp.m_mailUseLocation			= m_mailUseLocation.getChecked();
+		m_mainApp.m_hideBackgroundIcon		= m_hideBackgroundIcon.getChecked();
+		
+		if(m_mailHtmlShow != null){
+			m_mainApp.m_mailHtmlShow			= m_mailHtmlShow.getChecked();
+		}		
 		
 		boolean t_formerClose = m_mainApp.m_closeMailSendModule;
 		m_mainApp.m_closeMailSendModule = m_closeMailSendModule.getChecked();

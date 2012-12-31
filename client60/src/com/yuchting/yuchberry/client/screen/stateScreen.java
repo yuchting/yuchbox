@@ -70,7 +70,7 @@ class StateButton extends ButtonField{
 	
 	int m_width;
 	public StateButton(String _label,ImageSets _imagesets,int _width){
-		super(_label,ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
+		super(_label,ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY );
 		
 		m_width = _width;
 	}
@@ -213,8 +213,7 @@ class ConnectButton extends Field{
     protected void onUnfocus(){
     	super.onUnfocus();
     	invalidate();
-    }
-            
+    }   
             
     protected boolean keyChar( char character, int status, int time ) 
     {
@@ -791,11 +790,14 @@ public class stateScreen extends MainScreen{
 			layoutChild(m_getHostLink,getPreferredWidth(),m_getHostLink.getFont().getHeight());
 			
 			y += m_connectBut.getImageHeight();
-			t_start_x = 0;
 			
 			setExtent(getPreferredWidth(), getPreferredHeight());
 		}
-		
+
+		public int getPreferredHeight(){
+			return  Math.max(super.getPreferredHeight(),
+					(recvMain.fsm_display_height/3 + 20 + fm_inputTopBorder) + fm_inputHeight * 3 + m_connectBut.getImageHeight());
+		}
 		
 		public void subpaint(Graphics _g){
 			
@@ -826,6 +828,7 @@ public class stateScreen extends MainScreen{
 	    		paintChild(_g, getField(i));
 	    	}
 		}
+		
 		
 		public void fieldChanged(Field field, int context) {
 	        if(context != FieldChangeListener.PROGRAMMATIC){
