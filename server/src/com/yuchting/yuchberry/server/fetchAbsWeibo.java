@@ -89,6 +89,9 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	//! check number 
 	int		m_maxCheckFolderNum = 0;
 	int		m_currRemainCheckFolderNum = 0;
+	
+	//! get rid of message weibo if first pushing
+	boolean					m_firstPush				= true;
 			
 	public fetchAbsWeibo(fetchMgr _mainMgr){
 		super(_mainMgr);
@@ -267,7 +270,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	 * push the message to client
 	 */
 	public synchronized void PushMsg(sendReceive _sendReceive)throws Exception{
-		
+				
 		PrepareRepushUnconfirmMsg_impl(m_timeline);
 		PrepareRepushUnconfirmMsg_impl(m_directMessage);
 		PrepareRepushUnconfirmMsg_impl(m_atMeMessage);
@@ -276,7 +279,9 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		PushMsg_impl(m_timeline,_sendReceive);
 		PushMsg_impl(m_directMessage,_sendReceive);
 		PushMsg_impl(m_atMeMessage,_sendReceive);
-		PushMsg_impl(m_commentMessage,_sendReceive);		
+		PushMsg_impl(m_commentMessage,_sendReceive);
+		
+		m_firstPush = false;
 	}
 	
 	protected void PrepareRepushUnconfirmMsg_impl(fetchWeiboData _weiboList){
@@ -337,6 +342,12 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	protected void PushMsg_impl(fetchWeiboData _weiboList,sendReceive _sendReceive)throws Exception{
 		
 		if(_weiboList.m_counter == -1 && _weiboList.m_weiboList.isEmpty()){
+			return;
+		}
+		
+		if(m_firstPush){
+			m_mainMgr.m_logger.LogOut(GetAccountName() + " FirstWeibo push, remove <" + _weiboList.m_weiboList.size() + ">Weibo");
+			_weiboList.m_weiboList.clear();
 			return;
 		}
 		

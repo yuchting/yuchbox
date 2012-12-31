@@ -3542,6 +3542,21 @@ public class Weibo extends WeiboSupport implements java.io.Serializable {
     	return Comment.constructComments(get(getBaseURL() + "statuses/comments_by_me.json", true));
     }
 
+    /**
+     * return the current user's comment
+     * @param _since_id Returns then weibos with an ID greater than (that is, more recent than) the specified ID 
+     * @return
+     * @throws WeiboException
+     */
+    public List<Comment> getCommentsToMe(long _since_id) throws WeiboException {
+    	return Comment.constructComments(get(getBaseURL() + "statuses/comments_to_me.json?since_id="+_since_id, true));
+    }
+    
+    /**
+     * return the current user's comment 
+     * @return
+     * @throws WeiboException
+     */
     public List<Comment> getCommentsToMe() throws WeiboException {
     	return Comment.constructComments(get(getBaseURL() + "statuses/comments_to_me.json", true));
     }

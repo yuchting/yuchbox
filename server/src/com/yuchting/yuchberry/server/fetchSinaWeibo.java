@@ -119,7 +119,6 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		
 		List<Status> t_fetch = null;
 		if(m_timeline.m_fromIndex > 1){
-						
 			t_fetch = m_weibo.getHomeTimeline(new Paging(m_timeline.m_fromIndex));
 		}else{
 						
@@ -184,7 +183,12 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	}
 	
 	protected void CheckCommentMeMessage()throws Exception{
-		List<Comment> t_fetch = m_weibo.getCommentsToMe();
+		List<Comment> t_fetch;
+		if(m_commentMessage.m_fromIndex > 1){
+			t_fetch = m_weibo.getCommentsToMe(m_commentMessage.m_fromIndex);
+		}else{
+			t_fetch = m_weibo.getCommentsToMe();
+		}
 		
 		if(m_commentMessage.m_historyList == null){
 			m_commentMessage.m_historyList = new Vector<fetchWeibo>();
@@ -213,6 +217,10 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 				
 				m_commentMessage.m_historyList.add(t_weibo);
 			}
+		}
+		
+		if(!t_fetch.isEmpty()){
+			m_commentMessage.m_fromIndex = t_fetch.get(0).getId() + 1;
 		}
 	}
 	

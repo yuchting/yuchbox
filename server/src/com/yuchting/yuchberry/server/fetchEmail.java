@@ -917,7 +917,8 @@ public class fetchEmail extends fetchAccount{
 						t_mail.SetContain(t_mail.GetContain().substring(0,t_maxSignatureLength));
 					}
 					
-					FileOutputStream t_out = new FileOutputStream(m_mainMgr.GetPrefixString() + fetchEmail.fsm_signatureFilename);
+					String t_accountSignature = m_strUserNameFull + "." + fsm_signatureFilename;
+					FileOutputStream t_out = new FileOutputStream(m_mainMgr.GetPrefixString() + t_accountSignature);
 					try{
 						t_out.write(t_mail.GetContain().getBytes("UTF-8"));
 						t_out.flush();
@@ -1248,7 +1249,14 @@ public class fetchEmail extends fetchAccount{
 		String t_signature = "";
 		
 		try{
-			t_signature = fetchMgr.ReadSimpleIniFile(m_mainMgr.GetPrefixString() + fsm_signatureFilename,"UTF-8",null);
+			String t_accountSignature = m_strUserNameFull + "." + fsm_signatureFilename;
+			File t_file = new File(m_mainMgr.GetPrefixString() + t_accountSignature);
+			if(t_file.exists()){
+				t_signature = fetchMgr.ReadSimpleIniFile(t_file,"UTF-8",null);
+			}else{
+				t_signature = fetchMgr.ReadSimpleIniFile(m_mainMgr.GetPrefixString() + fsm_signatureFilename,"UTF-8",null);
+			}
+			
 		}catch(Exception e){
 			m_mainMgr.m_logger.PrinterException(e);
 		}
@@ -1948,8 +1956,7 @@ public class fetchEmail extends fetchAccount{
 						
 						// the 4.2 and 4.5 os cannot parse the <meta /> tag
 						//
-						t_contentType = fsm_defaultHTML_charset_GB;
-						
+						t_contentType = fsm_defaultHTML_charset_GB;						
 						t_conString = t_conString.replaceAll("<meta.[^>]*>", "");
 						
 					}else{
@@ -2152,7 +2159,11 @@ public class fetchEmail extends fetchAccount{
 		if(Pattern.compile(fsm_htmlRegEx).matcher(_html).find() == false){
 			
 			final String ft_meta = "<meta http-equiv=\"Content-Type\" content=\""+_type+"\" />";
-			final int t_headIdx = _html.indexOf("<head>");
+			int t_headIdx = _html.indexOf("<head>");
+			
+			if(t_headIdx == -1){
+				t_headIdx = _html.indexOf("<HEAD>");
+			}
 			
 			if(t_headIdx != -1){
 				//

@@ -1057,11 +1057,8 @@ public class fetchMgr{
 	        
 		}catch(Exception _e){}
 	}
-	
-		
-	static public String ReadSimpleIniFile(String _file,String _decodeName,Vector _lines)throws Exception{
-		
-		File t_file = new File(_file);
+
+	public static String ReadSimpleIniFile(File _file,String _decodeName,Vector<String> _lines)throws Exception{
 		
 		String t_ret = new String();
 		
@@ -1069,7 +1066,7 @@ public class fetchMgr{
 			_lines.removeAllElements();
 		}
 		
-		if(t_file.exists()){
+		if(_file.exists()){
 			BufferedReader in = new BufferedReader(
 									new InputStreamReader(
 											new FileInputStream(_file),_decodeName));
@@ -1114,6 +1111,10 @@ public class fetchMgr{
 		}
 		
 		return t_ret;
+	}
+
+	public static String ReadSimpleIniFile(String _file,String _decodeName,Vector<String> _lines)throws Exception{
+		return ReadSimpleIniFile(new File(_file),_decodeName,_lines);		
 	}
 	
 		
