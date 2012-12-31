@@ -475,7 +475,13 @@ public class fetchMgr{
 			}
 
 			//m_logger.LogOut("ValidateClient 4");
-
+			
+			// the Socket.setSoTimeout(30000) maybe make the timeout exception
+			// because SokectOutputStream.write which in SendBufferToSvr_imple() maybe block socket
+			//
+			t_tmp.m_currSocket.setSoTimeout(30000);
+			t_tmp.setThrowReadTimeoutException(false);
+			
 			return t_tmp;
 			
 		}catch(Exception _e){

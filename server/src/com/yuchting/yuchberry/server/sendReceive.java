@@ -50,19 +50,29 @@ class sendReceive extends Thread{
 	private Vector<byte[]>		m_unprocessedPackage 	= new Vector<byte[]>();
 	
 	boolean			m_closed				= false;
-		
+	
+	/**
+	 * control variable whether throw time out exception
+	 * when read from socket connect
+	 */
+	private boolean	m_bThrowReadTimeOutException = true;
+	
 	public sendReceive(Socket _socket)throws Exception{
 		m_currSocket		= _socket;
-		
-		// the Socket.setSoTimeout(30000) maybe make the timeout exception
-		// because SokectOutputStream.write which in SendBufferToSvr_imple() maybe block socket
-		//
-		m_currSocket.setSoTimeout(30000);
-		
+				
 		m_socketOutputStream = _socket.getOutputStream();
 		m_socketInputStream = _socket.getInputStream();
 				
 		start();
+	}
+	
+	
+	/**
+	 * set whether throw read timeout exception
+	 * @param _throw
+	 */
+	public void setThrowReadTimeoutException(boolean _throw){
+		m_bThrowReadTimeOutException = _throw;
 	}
 		
 	static final int	fsm_packageHeadLength = 4;
@@ -197,7 +207,7 @@ class sendReceive extends Thread{
 		
 		InputStream in = m_socketInputStream;
 
-		final int t_len = ReadInt(in);
+		final int t_len = ReadInt(in,m_bThrowReadTimeOutException);
 		if(t_len == -1){
 			throw new Exception("socket ReadInt failed.");
 		}
@@ -235,7 +245,7 @@ class sendReceive extends Thread{
 		
 		ByteArrayInputStream t_packagein = new ByteArrayInputStream(_wholePackage);
 		
-		int t_len = ReadInt(t_packagein);;
+		int t_len = ReadInt(t_packagein);
 							
 		byte[] t_ret = new byte[t_len];
 		t_packagein.read(t_ret,0,t_len);
@@ -311,6 +321,10 @@ class sendReceive extends Thread{
 	}
 	
 	static public int ReadInt(InputStream _stream)throws Exception{
+		return ReadInt(_stream,true);
+	}
+	
+	static private int ReadInt(InputStream _stream,boolean _throwTimeoutException)throws Exception{
 		
 		int[] t_byte = {0,0,0,0};
 	
@@ -326,9 +340,14 @@ class sendReceive extends Thread{
 						// SokectOutputStream.write maybe block this socket must set time out
 						//
 						t_byte[i] = _stream.read();
+						
 						break;
+						
 					}catch(SocketTimeoutException e){
-						continue;
+						
+						if(_throwTimeoutException){
+							throw e;
+						}						
 					}
 				}								
 				
