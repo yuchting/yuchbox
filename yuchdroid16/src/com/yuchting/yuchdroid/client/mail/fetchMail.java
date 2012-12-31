@@ -333,12 +333,15 @@ public class  fetchMail{
 	public void setReferenceID(String _refID){m_reference_id = _refID;}
 	
 	public boolean isOwnSendMail(){
-		
-		return m_groupFlag == GROUP_FLAG_SEND_PADDING
-			|| m_groupFlag == GROUP_FLAG_SEND_SENDING
-			|| m_groupFlag == GROUP_FLAG_SEND_SENT
-			|| m_groupFlag == GROUP_FLAG_SEND_ERROR
-			|| m_groupFlag == GROUP_FLAG_SEND_DRAFT;
+		return isOwnSendMail(m_groupFlag);
+	}
+	
+	public static boolean isOwnSendMail(int _flag){
+		return _flag == GROUP_FLAG_SEND_PADDING
+			|| _flag == GROUP_FLAG_SEND_SENDING
+			|| _flag == GROUP_FLAG_SEND_SENT
+			|| _flag == GROUP_FLAG_SEND_ERROR
+			|| _flag == GROUP_FLAG_SEND_DRAFT;
 	}
 	public String GetContain(){return m_contain;}
 	public void SetContain(String _contain){m_contain = _contain;}

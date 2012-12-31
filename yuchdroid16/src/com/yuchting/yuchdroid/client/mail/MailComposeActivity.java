@@ -289,12 +289,42 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 							}
 
 							for(String add : m_referenceMail.m_mail.GetFromVect()){
-								t_toVect.add(add);
+								boolean t_added = true;
+								
+								for(String to : t_toVect){
+									if(to.indexOf(add) != -1 || add.indexOf(to) != -1){
+										t_added = false;
+										break;
+									}
+								}
+								
+								if(t_added){
+									t_toVect.add(add);
+								}
 							}
 							
 							for(String add : m_referenceMail.m_mail.GetSendToVect()){
-								if(m_mainApp.m_config.m_sendMailAccountList.indexOf(add) == -1){
-									t_toVect.add(add);
+								
+								boolean t_added = true;
+								
+								for(String to : t_toVect){
+									if(to.indexOf(add) != -1 || add.indexOf(to) != -1){
+										t_added = false;
+										break;
+									}
+								}
+								
+								if(t_added){
+									for(String acc : m_mainApp.m_config.m_sendMailAccountList){
+										if(acc.indexOf(add) != -1 || add.indexOf(acc) != -1){
+											t_added = false;
+											break;
+										}
+									}
+									
+									if(t_added){
+										t_toVect.add(add);
+									}
 								}								
 							}
 						}else{
@@ -1029,6 +1059,20 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 		startActivityForResult(Intent.createChooser(intent, getString(R.string.mail_open_attach_select_prompt)),1);
 	}
 	
+	static final String[]	MediaDataName = 
+	{
+		MediaStore.Images.Media.DATA,
+		"dat",
+		"data"
+	};
+	
+	static final String[] MediaDataType = 
+	{
+		MediaStore.Images.Media.MIME_TYPE,
+		"typ",
+		"type",
+	};
+	
 	// To handle when an image is selected from the browser, add the following to your Activity
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) { 
@@ -1037,32 +1081,71 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 
 			if (requestCode == 1) {
 
-				// currImageURI is the global variable I'm using to hold the content:// URI of the image
-				Uri contentUri = data.getData();
-				String[] proj = { MediaStore.Images.Media.DATA };
-			    Cursor cursor = managedQuery(contentUri, proj, null, null, null);
-			    int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-			    cursor.moveToFirst();
-			    String path = cursor.getString(column_index);
-			        
-				File t_file = new File(path);
-				if(t_file.exists()){
+				try{
+					// currImageURI is the global variable I'm using to hold the content:// URI of the image
+					Uri contentUri = data.getData();
 					
-					for(fetchMail.MailAttachment att :m_attachmentList){
-						if(att.m_name.equals(path)){
-							Toast.makeText(this, getString(R.string.mail_compose_cant_add_att), Toast.LENGTH_SHORT).show();
-							return ;
+					String path = null;
+					String type = null; 
+						
+					if(contentUri.toString().startsWith("file://")){
+						
+						path = contentUri.toString();
+						type = YuchDroidApp.getFileMIMEType(path);
+						
+				    }else{
+				    	Cursor cursor	= null;
+					    int t_tryIdx	= 0;
+					    
+					    do{
+					    	cursor = managedQuery(contentUri, new String[]{ MediaDataName[t_tryIdx],MediaDataType[t_tryIdx]}, null, null, null);
+					    	t_tryIdx++;				    	
+					    }while(cursor == null && t_tryIdx < MediaDataName.length);
+					    
+					    if(cursor != null){
+					    	t_tryIdx--;				    	
+
+						    cursor.moveToFirst();
+						    
+						    path = cursor.getString(cursor.getColumnIndexOrThrow(MediaDataName[t_tryIdx]));
+						    type = cursor.getString(cursor.getColumnIndexOrThrow(MediaDataType[t_tryIdx]));
+					    }
+				    }
+					
+					if(path != null){
+						
+						File t_file = new File(path);
+						if(t_file.exists()){
+							
+							for(fetchMail.MailAttachment att :m_attachmentList){
+								if(att.m_name.equals(path)){
+									Toast.makeText(this, getString(R.string.mail_compose_cant_add_att), Toast.LENGTH_SHORT).show();
+									return ;
+								}
+							}
+							
+							fetchMail.MailAttachment t_att = new fetchMail.MailAttachment();
+							t_att.m_name = path;
+							t_att.m_size = (int)t_file.length();
+							
+							if(type == null || type.length() == 0){
+								t_att.m_type = YuchDroidApp.getFileMIMEType(t_file);
+							}else{
+								t_att.m_type = type;
+							}
+							
+							m_attachmentList.add(t_att);
+							addAttachmentItem(t_att);
 						}
-					}
-					
-					fetchMail.MailAttachment t_att = new fetchMail.MailAttachment();
-					t_att.m_name = path;
-					t_att.m_size = (int)t_file.length();
-					t_att.m_type = YuchDroidApp.getFileMIMEType(t_file);
-					
-					m_attachmentList.add(t_att);
-					addAttachmentItem(t_att);
-				}				 
+						
+					}else{
+				    	GlobalDialog.showInfo(R.string.mail_compose_add_att_failed, this);
+				    }
+				}catch(Exception e){
+					m_mainApp.setErrorString("Attachment",e);
+					GlobalDialog.showInfo(R.string.mail_compose_add_att_failed, this);
+				}
+								 
 			}
 		}
 	}

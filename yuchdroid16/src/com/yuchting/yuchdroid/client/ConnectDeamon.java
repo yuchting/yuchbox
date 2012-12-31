@@ -218,6 +218,22 @@ public class ConnectDeamon extends Service implements Runnable{
 		}
 	};
 	
+	BroadcastReceiver m_mailMarkReadBatchRecv = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent){
+
+			boolean t_markReadOrDel 	= intent.getExtras().getBoolean(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_OR_DEL);
+			List<String> t_messageId	= (List<String>)intent.getExtras().getSerializable(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID);
+			List<Integer> t_simpleHash	= (List<Integer>)intent.getExtras().getSerializable(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAIL_HASH);
+			int t_count = Math.min(t_messageId.size(), t_simpleHash.size());
+			
+			for(int i = 0;i < t_count;i++){
+				sendMailReadOrDeleteMsg(t_simpleHash.get(i), t_messageId.get(i), t_markReadOrDel);
+			}
+		}
+	};
+	
 	BroadcastReceiver m_mailSendRecv = new BroadcastReceiver() {
 		
 		@Override
@@ -283,6 +299,7 @@ public class ConnectDeamon extends Service implements Runnable{
 		m_sendingQueue = new SendingQueue(this);
 		
 		registerReceiver(m_mailMarkReadRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ));
+		registerReceiver(m_mailMarkReadBatchRecv, new IntentFilter(YuchDroidApp.FILTER_MARK_MAIL_READ_BATCH));
 		registerReceiver(m_mailSendRecv, new IntentFilter(YuchDroidApp.FILTER_SEND_MAIL));
 		registerReceiver(m_delMailRecv, new IntentFilter(YuchDroidApp.FILTER_DELETE_MAIL));
 		registerReceiver(m_reconnectRecv, new IntentFilter(FILTER_RECONNECT));
@@ -377,22 +394,7 @@ public class ConnectDeamon extends Service implements Runnable{
 				
 				int hashVal = Integer.valueOf(hash).intValue();
 				
-				if((m_mainApp.m_config.m_markReadMail && _markOrDel) || !_markOrDel){
-					try{
-						ByteArrayOutputStream os  = new ByteArrayOutputStream();
-						
-						byte t_type = _markOrDel?msg_head.msgBeenRead:msg_head.msgMailDel;
-						
-						os.write(t_type);
-						sendReceive.WriteInt(os, hashVal);
-						sendReceive.WriteString(os,id);
-						
-						m_sendingQueue.addSendingData(t_type, os.toByteArray(), true);
-					}catch(Exception e){
-						m_mainApp.setErrorString("ConnectDeamon MailMarkReadRecv", e);
-					}
-				}
-				
+				sendMailReadOrDeleteMsg(hashVal,id,_markOrDel);
 				
 				synchronized (m_vectSendAttach) {
 					for(PutAttachment att:m_vectSendAttach){
@@ -429,6 +431,26 @@ public class ConnectDeamon extends Service implements Runnable{
 			
 			
 		}
+	}
+	
+	private void sendMailReadOrDeleteMsg(int _simpleHash,String _messageId,boolean _markReadOrDel){
+		
+		if((m_mainApp.m_config.m_markReadMail && _markReadOrDel) || (m_mainApp.m_config.m_delRemoteMail && !_markReadOrDel)){
+			
+			ByteArrayOutputStream os  = new ByteArrayOutputStream();
+			try{			
+				byte t_type = _markReadOrDel?msg_head.msgBeenRead:msg_head.msgMailDel;
+				
+				os.write(t_type);
+				sendReceive.WriteInt(os, _simpleHash);
+				sendReceive.WriteString(os,_messageId);
+				
+				m_sendingQueue.addSendingData(t_type, os.toByteArray(), true);
+				
+			}catch(Exception e){
+				m_mainApp.setErrorString("ConnectDeamon MailMarkReadRecv", e);
+			}
+		}		
 	}
 	
 	private void clearSendingAttachment(){

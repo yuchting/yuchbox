@@ -78,20 +78,23 @@ public class YuchDroidApp extends Application {
 		
 	// send broadcast intent filter
 	//
-	public final static	String	FILTER_CONNECT_STATE 	= TAG + "_FILTER_CS";
-	public final static	String	FILTER_DEBUG_INFO 		= TAG + "_FILTER_DI";
-	public final static	String	FILTER_MARK_MAIL_READ	= TAG + "_FILTER_MMR";
-	public final static	String	FILTER_SEND_MAIL		= TAG + "_FILTER_SM";
-	public final static	String	FILTER_MAIL_GROUP_FLAG	= TAG + "_FILTER_MGF";
-	public final static	String	FILTER_RECV_MAIL		= TAG + "_FILTER_RM";
-	public final static	String	FILTER_DELETE_MAIL		= TAG + "_FILTER_DM";
-	public final static	String	FILTER_DOWNLOAD_ATT_DONE= TAG + "_FILTER_ATT";
+	public final static	String	FILTER_CONNECT_STATE 		= TAG + "_FILTER_CS";
+	public final static	String	FILTER_DEBUG_INFO 			= TAG + "_FILTER_DI";
+	public final static	String	FILTER_MARK_MAIL_READ		= TAG + "_FILTER_MMR";
+	public final static	String	FILTER_MARK_MAIL_READ_BATCH	= TAG + "_FILTER_MMRB";
+	public final static	String	FILTER_SEND_MAIL			= TAG + "_FILTER_SM";
+	public final static	String	FILTER_MAIL_GROUP_FLAG		= TAG + "_FILTER_MGF";
+	public final static	String	FILTER_RECV_MAIL			= TAG + "_FILTER_RM";
+	public final static	String	FILTER_DELETE_MAIL			= TAG + "_FILTER_DM";
+	public final static	String	FILTER_DOWNLOAD_ATT_DONE	= TAG + "_FILTER_ATT";
+	public final static	String	FILTER_CLOSE_WAIT_GLOBAL_DLG= TAG + "_FILTER_WAIT";
 	
 	// FILTER_MARK_MAIL_READ broadcast parameters data
 	//
 	public final static	String	DATA_FILTER_MARK_MAIL_READ_GROUPID		= "groupId";
 	public final static	String	DATA_FILTER_MARK_MAIL_READ_MAIL_HASH	= "mailHash";
 	public final static	String	DATA_FILTER_MARK_MAIL_READ_MAILID	= "messageID";
+	public final static	String	DATA_FILTER_MARK_MAIL_READ_OR_DEL	= "markReadOrDel";
 	
 	
 	// FILTER_SEND_MAIL broadcast parameters data

@@ -101,6 +101,7 @@
     <string name="dlg_info_copy">拷贝到剪切板</string>
     <string name="dlg_info_yesno_confirm">确认</string>
     <string name="dlg_info_yesno_cancel">取消</string>
+    <string name="dlg_wait_text">正在处理，请稍等片刻……</string>
     
     
     <!-- mail list view -->
@@ -178,6 +179,7 @@
     <string name="mail_compose_remove_attach_prompt">你确定要移除这个附件么？</string>
     <string name="mail_compose_cant_send_att">已经有一封带有附件的邮件正在发送，请等待。</string>
     <string name="mail_compose_cant_add_att">这个文件已经添加为附件了！</string>
+    <string name="mail_compose_add_att_failed">添加附件失败，请使用其他方式添加.</string>
     
     <!-- mail preference activity -->
 	<string name="mail_pref_title">邮件配置</string>

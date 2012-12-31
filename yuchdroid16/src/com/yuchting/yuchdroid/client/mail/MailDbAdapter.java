@@ -28,7 +28,7 @@
 package com.yuchting.yuchdroid.client.mail;
 
 import java.util.Date;
-import java.util.Vector;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import android.content.ContentValues;
@@ -52,8 +52,7 @@ public class MailDbAdapter {
 	// database index
 	//
 	private final static String DATABASE_TABLE_ID_INDEX = "yuch_mail_id_index";
-	private final static String DATABASE_TABLE_GROUP_SUB_INDEX	= "yuch_mail_group_sub_index";
-	
+	private final static String DATABASE_TABLE_GROUP_SUB_INDEX	= "yuch_mail_group_sub_index";	
 	
 	// mail sent flag
 	//	
@@ -316,6 +315,9 @@ public class MailDbAdapter {
     	"答复:",
     	"答复： ",
     	"答复：",
+    	"回覆:",
+    	"回覆：",
+    	"回覆： ",
     };
     
     /**
@@ -724,10 +726,134 @@ public class MailDbAdapter {
     	}
     }
     
-    
-//    public Vector<Long> fetchGroupIdList(long _time){
-//    	
-//    }
+    /**
+     * mark read or delete batch mail and group by from time
+     * @param _fromGroupId		from group id
+     * @param _simpleHashlist	filled mail hash list for send message to remote server
+     * @param _messageIdList	filled mail message id list for send message to remote server
+     * @param _markReadOrDelete mark read or delete style
+     * @return
+     */
+    public boolean markReadOrDelBatchMail(long _fromGroupId,List<Integer> _simpleHashlist,List<String> _messageIdList,boolean _markReadOrDelete){
+    	
+    	try{
+    		
+    		_simpleHashlist.clear();
+    		_messageIdList.clear();
+    		
+    		long t_fromMailId;
+    		Cursor t_group = fetchGroup(_fromGroupId);
+    		try{
+    			// fetch the from mail id
+    			String[] t_str = t_group.getString(t_group.getColumnIndex(GROUP_ATTR_MAIL_INDEX)).split(fetchMail.fsm_vectStringSpliter);
+    			t_fromMailId = Long.parseLong(t_str[t_str.length - 1]);
+    		}finally{
+    			t_group.close();
+    		}
+    		
+    		Cursor t_mailCursor = mDb.query(true, DATABASE_TABLE, fsm_mailfullColoumns, 
+    										KEY_ID + "<=" + t_fromMailId,
+    										null,null, null, null, null);
+    		try{
+    			if(t_mailCursor.getCount() > 0 && t_mailCursor.moveToFirst()){
+    				
+    				do{
+    					
+    					boolean t_addSendMsg = true;
+    					    					
+    					if(_markReadOrDelete){
+
+        					AtomicReference<Integer> t_flag = new AtomicReference<Integer>(t_mailCursor.getInt(t_mailCursor.getColumnIndex(ATTR_GROUP_FLAG)));
+        					
+        					if(modifiedUnreadFlag(t_flag)){
+        						
+        						long t_mailId = t_mailCursor.getInt(t_mailCursor.getColumnIndex(KEY_ID));
+        						
+        			    		ContentValues values = new ContentValues();    		
+        			    		values.put(ATTR_GROUP_FLAG,t_flag.get());
+        			    		
+        			    		mDb.update(DATABASE_TABLE, values, KEY_ID + "=" + t_mailId,null);
+        			    		
+        			    	}else{
+        			    		
+        			    		t_addSendMsg = false;
+        			    	}
+    					}
+    					
+    					if(t_addSendMsg){
+
+        					if(_simpleHashlist.size() < 256){
+
+        						if((m_mainApp.m_config.m_markReadMail && _markReadOrDelete) 
+        						|| (m_mainApp.m_config.m_delRemoteMail && !_markReadOrDelete)){
+        							
+        							int t_flag = t_mailCursor.getInt(t_mailCursor.getColumnIndex(ATTR_GROUP_FLAG));
+        							
+        							if(!fetchMail.isOwnSendMail(t_flag)){
+        								
+        								int t_mailSimpleHash = (t_mailCursor.getString(t_mailCursor.getColumnIndex(ATTR_SUBJECT)) + 
+        										t_mailCursor.getLong(t_mailCursor.getColumnIndex(ATTR_DATE))).hashCode();
+        				
+        		    					String t_messageId = t_mailCursor.getString(t_mailCursor.getColumnIndex(ATTR_MESSAGE_ID));
+        								
+        								_simpleHashlist.add(t_mailSimpleHash);
+        								_messageIdList.add(t_messageId);
+        							}
+        						}
+            					
+        					}else{
+        						if(!_markReadOrDelete){
+        							break;
+        						}
+        					}
+    					}
+    					
+    				}while(t_mailCursor.moveToNext());
+    			}
+    		}finally{
+    			t_mailCursor.close();
+    		}
+    		
+    		if(_markReadOrDelete){
+    			// mark the groups flag as read (has attachment or not)
+    			//
+    			Cursor t_groupCursor = mDb.query(true, DATABASE_TABLE_GROUP, fsm_groupfullColoumns, 
+												KEY_ID + "<=" + _fromGroupId,
+												null,null, null, null, null);
+    			try{
+    				if(t_groupCursor.getCount() > 0 && t_groupCursor.moveToFirst()){
+    					do{
+    						
+    						AtomicReference<Integer> t_flag = new AtomicReference<Integer>(t_groupCursor.getInt(t_groupCursor.getColumnIndex(GROUP_ATTR_GROUP_FLAG)));    	
+    				    	if(modifiedUnreadFlag(t_flag)){
+    				    		
+    				    		long t_groupId = t_groupCursor.getInt(t_groupCursor.getColumnIndex(KEY_ID));
+    				    		
+    				    		ContentValues values = new ContentValues();    		
+    				    		values.put(GROUP_ATTR_GROUP_FLAG,t_flag.get());
+    				    		
+    				    		mDb.update(DATABASE_TABLE_GROUP, values, KEY_ID + "=" + t_groupId, null);
+    				    	}
+    				    	
+    					}while(t_groupCursor.moveToNext());
+    				}
+    				
+    			}finally{
+    				t_groupCursor.close();
+    			}
+    		}else{
+    			// just delete the from database
+    			mDb.delete(DATABASE_TABLE_GROUP, KEY_ID + "<=" + _fromGroupId,null);
+    			mDb.delete(DATABASE_TABLE, KEY_ID + "<=" + t_fromMailId,null);
+    		}
+    		
+    		return true;
+    		
+    	}catch(Exception e){
+    		m_mainApp.setErrorString("FGIL", e);
+    		return false;
+    	}
+    }
     
     public void setMailGroupFlag(long _mailId,long _groupId,int _flag){
     	

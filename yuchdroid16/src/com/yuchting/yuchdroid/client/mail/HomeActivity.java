@@ -27,6 +27,9 @@
  */
 package com.yuchting.yuchdroid.client.mail;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -37,22 +40,23 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.View.OnCreateContextMenuListener;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.AdapterView.OnItemLongClickListener;
 
 import com.yuchting.yuchdroid.client.GlobalDialog;
 import com.yuchting.yuchdroid.client.R;
@@ -259,15 +263,46 @@ public class HomeActivity extends ListActivity implements View.OnClickListener, 
 				onClick(m_batchDelBtn);
 				break;
 			case 2:
+			case 3:
+				
+				final boolean t_markReadOrDelete	= item.getItemId() == 2;
+				final long 	t_groupId			= m_longClickItemHolder.groupId;
+				final Handler	t_refreshHandler	= new Handler();
+				
 				clearSelectedGroup();
 				
-				break;
-			case 3:
-				clearSelectedGroup();
+				GlobalDialog.showWait(null, this);
+				
+				(new Thread(){
+					public void run(){
+
+						List<Integer> t_mailSimpleHashList	= new ArrayList<Integer>();
+						List<String> t_mailMessageIdList		= new ArrayList<String>();
+						
+						if(m_mainApp.m_dba.markReadOrDelBatchMail(t_groupId, t_mailSimpleHashList, t_mailMessageIdList, t_markReadOrDelete) 
+						&& !t_mailMessageIdList.isEmpty()){
+
+							Intent t_intent = new Intent(YuchDroidApp.FILTER_MARK_MAIL_READ_BATCH);
+							t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_OR_DEL,t_markReadOrDelete);
+							t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAILID,(Serializable)t_mailMessageIdList);
+							t_intent.putExtra(YuchDroidApp.DATA_FILTER_MARK_MAIL_READ_MAIL_HASH,(Serializable)t_mailSimpleHashList);
+							
+							sendBroadcast(t_intent);
+							
+							t_refreshHandler.post(new Runnable() {
+								public void run() {
+									refreshGroupCursor();
+								}
+							});
+						}
+						
+						GlobalDialog.hideWait(HomeActivity.this);
+					}
+				}).start();
 				
 				break;
 			default:
-			        break;
+				break;
 		}
 		
 		m_longClickItemHolder = null;

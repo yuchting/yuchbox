@@ -14,7 +14,17 @@
 		android:textSize="15sp"
 		android:textStyle="bold"
 		android:gravity="center"
-		android:background="#aaa"/>	
+		android:background="#aaa"/>
+		
+	<CheckBox 
+		android:id="@+id/mail_item_checkbox" 
+   	 	android:focusable="false"
+   	 	android:layout_below="@id/mail_date_spliter"
+   	 	android:layout_height="wrap_content" 
+   	 	android:layout_width="wrap_content"
+   	 	android:gravity="center"
+   	 	android:button="@drawable/mail_item_checkbox_ui"
+   	 	android:layout_alignParentRight="true"/>
 	
 	<ImageView
 		android:id="@+id/mail_group_flag"
@@ -44,28 +54,18 @@
     <TextView
        	android:id="@+id/mail_body"
        	android:textSize="18sp"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="3sp"
         android:layout_marginTop="3sp"
         android:textColor="#888"
+        android:layout_toLeftOf="@id/mail_item_checkbox"
         android:layout_toRightOf="@id/mail_subject"
         android:layout_below="@id/mail_date_spliter"
         android:singleLine="true"
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:text="mail body "/>
-       
-    <CheckBox
-        android:id="@+id/mail_item_checkbox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginLeft="3sp"
-        android:layout_below="@id/mail_body"
-        android:layout_toLeftOf="@+id/mail_subject"
-        android:focusable="false"
-        android:button="@drawable/mail_item_checkbox_ui" />
     
    	<TextView  
 		android:id="@+id/mail_time"
@@ -80,21 +80,23 @@
 		android:textSize="12sp"
 		android:textColor="#000"
 		android:singleLine="true"
-		android:text="mail time mail time"/>
-   	
-   	 <TextView  
-		android:id="@+id/mail_from_to"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_toRightOf="@id/mail_item_checkbox"
-		android:layout_toLeftOf="@id/mail_time"
-		android:layout_below="@id/mail_body"
-		android:layout_marginTop="3sp"
-		android:maxWidth="190sp"
-		android:textSize="14sp"
-		android:textColor="#000"
-		android:singleLine="true"
-		android:text="mail address list mail address list mail address list " />  
+		android:gravity="center|left"
+		android:text="mail time mail time" />
+		   	 	
+   	 <TextView 
+   	 	android:id="@+id/mail_from_to" 
+   	 	android:text="mail address list mail address list mail address list " 
+   	 	android:layout_height="wrap_content" 
+   	 	android:maxWidth="190sp" 
+   	 	android:singleLine="true" 
+   	 	android:textSize="14sp" 
+   	 	android:gravity="center|left"
+   	 	android:layout_width="wrap_content" 
+   	 	android:textColor="#000"
+   	 	android:layout_marginLeft="5sp"
+   	 	android:layout_alignTop="@+id/mail_time" 
+   	 	android:layout_alignLeft="@+id/mail_group_flag" 
+   	 	android:layout_alignParentBottom="true"/>
    
 
 </RelativeLayout>
