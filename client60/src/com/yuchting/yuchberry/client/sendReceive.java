@@ -106,7 +106,7 @@ public class sendReceive extends Thread{
 	public synchronized void SendBufferToSvr(byte[] _write,boolean _sendImm,
 													boolean _wait)throws Exception{
 		
-		if(m_sendBufferLen + _write.length + fsm_packageHeadLength >= 65535){
+		if(m_sendBufferLen + _write.length + fsm_packageHeadLength >= 65500){
 			SendBufferToSvr_imple(PrepareOutputData());
 		}
 		

@@ -645,6 +645,20 @@ public class connectDeamon extends Thread implements SendListener,
 		"回覆：",
 		"答覆：",
 		"RE:",
+		
+		"Re : ",
+		"答复 ： ",
+		"回复 ： ",
+		"回覆 ： ",
+		"答覆 ： ",
+		"RE : ",
+		
+		"Re :",
+		"答复 ：",
+		"回复 ：",
+		"回覆 ：",
+		"答覆 ：",
+		"RE :",
 	};
 	
 	/**
@@ -1839,20 +1853,25 @@ public class connectDeamon extends Thread implements SendListener,
 			for(int i = 0;i< _files.size();i++){
 				String t_fullname = ((ComposingAttachment)_files.elementAt(i)).m_filename;
 				
-				FileConnection t_fileReader = (FileConnection) Connector.open(t_fullname,Connector.READ_WRITE);
-				
-		    	if(!t_fileReader.exists()){
-		    		throw new Exception("attachment file <" + t_fullname + "> not exsit!"); 
-		    	}
-		    	
-		    	t_vfileReader.addElement(t_fileReader);
-		    					
-				final int t_slash_rear = t_fullname.lastIndexOf('/', t_fullname.length());
-				String t_name = t_fullname.substring( t_slash_rear + 1, t_fullname.length());
-				int t_size = (int)t_fileReader.fileSize();
-				String t_type = uploadFileScreen.getMIMETypeString(t_name);
+				FileConnection t_fileReader = (FileConnection) Connector.open(t_fullname,Connector.READ);
+				try{
+
+			    	if(!t_fileReader.exists()){
+			    		throw new Exception("attachment file <" + t_fullname + "> not exsit!"); 
+			    	}
+			    	
+			    	t_vfileReader.addElement(t_fullname);
+			    					
+					final int t_slash_rear = t_fullname.lastIndexOf('/', t_fullname.length());
+					String t_name = t_fullname.substring( t_slash_rear + 1, t_fullname.length());
+					int t_size = (int)t_fileReader.fileSize();
+					String t_type = uploadFileScreen.getMIMETypeString(t_name);
+						
+					_mail.AddAttachment(t_name, t_type, t_size);
 					
-				_mail.AddAttachment(t_name, t_type, t_size);
+				}finally{
+					t_fileReader.close();
+				}
 			}
 			
 			// reset the content of mail...
