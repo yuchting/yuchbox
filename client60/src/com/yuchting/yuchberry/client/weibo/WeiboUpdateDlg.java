@@ -650,7 +650,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		
 		// some os 6 version can't display caret of edittext 
 		// so must invalidate
-		if(dx > 0 || dy > 0){			
+		if(!recvMain.fsm_OS_version.startsWith("4.") && !recvMain.fsm_OS_version.startsWith("5.")){
 			invalidate();
 		}
 		
