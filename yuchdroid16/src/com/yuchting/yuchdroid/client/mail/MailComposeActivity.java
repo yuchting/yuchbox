@@ -191,6 +191,18 @@ public class MailComposeActivity extends Activity implements View.OnClickListene
 //		processAds();		
 	}
 	
+	@Override
+	public void onStart(){
+		super.onStart();
+		YuchDroidApp.onFlurryStart(this);
+	}
+	
+	@Override
+	public void onStop(){
+		super.onStop();
+		YuchDroidApp.onFlurryStop(this);
+	}
+	
 	private void prepareData(){
 		// fetch the reference mail
 		//

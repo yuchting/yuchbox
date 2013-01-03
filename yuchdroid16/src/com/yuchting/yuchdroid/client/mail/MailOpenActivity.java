@@ -329,9 +329,7 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
         registerReceiver(m_sendMailRecv, new IntentFilter(YuchDroidApp.FILTER_MAIL_GROUP_FLAG));
         registerReceiver(m_attDownloadDone,new IntentFilter(YuchDroidApp.FILTER_DOWNLOAD_ATT_DONE));
     }
-	
-
-	
+		
 	public void onDestroy(){
 		super.onDestroy();
 		
@@ -339,6 +337,18 @@ public class MailOpenActivity extends Activity implements View.OnClickListener{
 		
 		unregisterReceiver(m_sendMailRecv);
 		unregisterReceiver(m_attDownloadDone);		
+	}
+	
+	@Override
+	public void onStart(){
+		super.onStart();
+		YuchDroidApp.onFlurryStart(this);
+	}
+	
+	@Override
+	public void onStop(){
+		super.onStop();
+		YuchDroidApp.onFlurryStop(this);
 	}
 	
 	protected void onPrepareDialog (int id, Dialog dialog){

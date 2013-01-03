@@ -196,6 +196,18 @@ public class HomeActivity extends ListActivity implements View.OnClickListener, 
 		m_mainApp.clearHistoryImm();
 	}
 	
+	@Override
+	public void onStart(){
+		super.onStart();
+		YuchDroidApp.onFlurryStart(this);
+	}
+	
+	@Override
+	public void onStop(){
+		super.onStop();
+		YuchDroidApp.onFlurryStop(this);
+	}
+	
 	private void refershTitle(){
 		int t_unread = 0;
 		

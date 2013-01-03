@@ -149,8 +149,19 @@ public class ConnectPrefActivity extends PreferenceActivity {
 				return true;
 			}
 		});
-		
-		
+	}
+	
+	@Override
+	public void onStart(){
+		super.onStart();
+		YuchDroidApp.onFlurryStart(this);
+	}
+	
+	@Override
+	public void onStop(){
+		super.onStop();
+		YuchDroidApp.onFlurryStop(this);
+		updateData(false);
 	}
 	
 	private void updateData(boolean _setOrGet){
@@ -220,10 +231,5 @@ public class ConnectPrefActivity extends PreferenceActivity {
 			
 			m_config.WriteReadIni(false);
 		}
-	}
-	
-	public void onStop(){
-		super.onStop();
-		updateData(false);
 	}
 }

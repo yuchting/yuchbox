@@ -121,6 +121,18 @@ public class YuchLogonActivity extends Activity {
         m_mainWeb.addJavascriptInterface(new JavaScriptInterface(this), "YuchDroid");
     }
     
+    @Override
+	public void onStart(){
+		super.onStart();
+		YuchDroidApp.onFlurryStart(this);
+	}
+	
+	@Override
+	public void onStop(){
+		super.onStop();
+		YuchDroidApp.onFlurryStop(this);
+	}
+    
     private void escape_impl(){
     	
     	GlobalDialog.showYesNoDialog(getString(R.string.yuch_logon_quit_ask),YuchLogonActivity.this, new GlobalDialog.YesNoListener() {

@@ -32,11 +32,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -62,6 +60,7 @@ import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
+import com.flurry.android.FlurryAgent;
 import com.yuchting.yuchdroid.client.mail.HomeActivity;
 import com.yuchting.yuchdroid.client.mail.MailDbAdapter;
 import com.yuchting.yuchdroid.client.mail.fetchMail;
@@ -157,6 +156,12 @@ public class YuchDroidApp extends Application {
 	 * will trigger database delete process if reach some value (increase every pulse)
 	 */
 	private int			m_clearHistoryDBCounter 	= 0;
+	
+	
+	/**
+	 * flurry key
+	 */
+	private static String 			sm_flurryKey			= null;
 		
 	@Override
 	public void onCreate (){
@@ -206,9 +211,57 @@ public class YuchDroidApp extends Application {
 			}
 		}).start();
 		
+		// initialize flurry
+		initFlurry();
 	}
 	
-	private  void constructMailAddrList(){
+	/**
+	 * read the key from assets
+	 */
+	private void initFlurry(){
+		try{
+			InputStream in = getResources().getAssets().open("FlurryKey.txt") ;
+			try{
+				InputStreamReader inputReader = new InputStreamReader( in );
+				try{
+					BufferedReader bufReader = new BufferedReader(inputReader);
+					try{
+						sm_flurryKey = bufReader.readLine();
+					}finally{
+						bufReader.close();
+					}
+				}finally{
+					inputReader.close();
+				}
+			}finally{
+				in.close();
+			}			
+		}catch(Exception e){
+			//e.printStackTrace(); 
+		}
+	}
+	
+	/**
+	 * on flurry start session
+	 * @param _ctx
+	 */
+	public static void onFlurryStart(Context _ctx){
+		if(sm_flurryKey != null){
+			FlurryAgent.onStartSession(_ctx, sm_flurryKey);
+		}
+	}
+	
+	/**
+	 * on flurry end session
+	 * @param _ctx
+	 */
+	public static void onFlurryStop(Context _ctx){
+		if(sm_flurryKey != null){
+			FlurryAgent.onEndSession(_ctx);
+		}
+	}
+		
+	private void constructMailAddrList(){
 	
 		m_mailAddrSearch.clear();
 		
@@ -506,7 +559,7 @@ public class YuchDroidApp extends Application {
 	@Override
 	public void onTerminate(){
 		super.onTerminate();
-		
+				
 		m_dba.close();
 	}
 	

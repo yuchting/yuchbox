@@ -92,6 +92,18 @@ public class DebugInfoActivity extends ListActivity{
 		unregisterReceiver(m_debugRecv);
 	}
 	
+	@Override
+	public void onStart(){
+		super.onStart();
+		YuchDroidApp.onFlurryStart(this);
+	}
+	
+	@Override
+	public void onStop(){
+		super.onStop();
+		YuchDroidApp.onFlurryStop(this);
+	}
+	
 	private void fillInfo(){
 		
 		// can't attach the mainApp.m_errorList because:

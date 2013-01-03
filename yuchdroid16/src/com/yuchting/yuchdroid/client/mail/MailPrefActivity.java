@@ -148,6 +148,20 @@ public class MailPrefActivity extends PreferenceActivity {
 		
 		unregisterReceiver(m_refreshOwnAccountRecv);
 	}
+	
+	@Override
+	public void onStart(){
+		super.onStart();
+		YuchDroidApp.onFlurryStart(this);
+	}
+	
+	@Override
+	public void onStop(){
+		super.onStop();
+		YuchDroidApp.onFlurryStop(this);
+		updateData(false);
+	}
+	
 	private void updateData(boolean _setOrGet){
 		
 		if(_setOrGet){
@@ -243,10 +257,5 @@ public class MailPrefActivity extends PreferenceActivity {
         }
 
         return super.onMenuItemSelected(featureId, item);
-	}
-	
-	public void onStop(){
-		super.onStop();
-		updateData(false);
 	}
 }

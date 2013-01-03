@@ -163,6 +163,27 @@ public class Yuchdroid16Activity extends Activity {
         	showPanel(PANEL_HOST);
         }
     }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // The activity is about to be destroyed.
+                
+        unregisterReceiver(m_intentRecv);
+        unregisterReceiver(m_syncOKRecv);
+    }
+    
+    @Override
+	public void onStart(){
+		super.onStart();
+		YuchDroidApp.onFlurryStart(this);
+	}
+	
+	@Override
+	public void onStop(){
+		super.onStop();
+		YuchDroidApp.onFlurryStop(this);
+	}
         
     private void initLoginLayout() {
     	
@@ -303,15 +324,6 @@ public class Yuchdroid16Activity extends Activity {
     	Intent intent = new Intent(this,ConnectDeamon.class);
         stopService(intent);
     }
-    
-    @Override
-    protected void onStart() {
-        super.onStart();
-        
-        Log.i(TAG,"onStart " + this);
-    }
-    
-
 	
 	private synchronized void setConnectState(int _state){
 		switch(_state){
@@ -360,41 +372,7 @@ public class Yuchdroid16Activity extends Activity {
         return super.onMenuItemSelected(featureId, item);
     }
     
-	
-    @Override
-    protected void onResume() {
-        super.onResume();
-        
-        Log.i(TAG,"onResume " + this);
-    }
-    
-    @Override
-    protected void onPause() {
-        super.onPause();
-        // Another activity is taking focus (this activity is about to be "paused").
-        Log.i(TAG,"onPause " + this);
-    }
-    
-    @Override
-    protected void onStop() {
-        super.onStop();
-        // The activity is no longer visible (it is now "stopped")
-        
-        Log.i(TAG,"onStop " + this);
-        
-        //Debug.stopMethodTracing();
-    }
-    
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // The activity is about to be destroyed.
-        
-        Log.i(TAG,"onDestroy " + this);
-        
-        unregisterReceiver(m_intentRecv);
-        unregisterReceiver(m_syncOKRecv);
-    }
+   
 
  
  
