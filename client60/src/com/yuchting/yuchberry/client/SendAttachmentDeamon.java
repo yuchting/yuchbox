@@ -146,29 +146,33 @@ public class SendAttachmentDeamon extends Thread{
 			return true;
 		}
 		
-		try{
-			
-			if(m_currOpenFileSize == 0 || m_fileBufferReadIdx >= fsm_fileBufferSize){
+		if(m_vFileConnection != null){
+			// open and read the file first if has file connection
+			//
+			try{
+				
+				if(m_currOpenFileSize == 0 || m_fileBufferReadIdx >= fsm_fileBufferSize){
+					openFileToRead();
+				}
+				
+			}catch(Exception _e){
+				
+				// try again...
+				//
+				m_connect.m_mainApp.SetErrorString("SA",_e);
+				
+				try{
+					sleep(5000);					
+				}catch(Exception ex){
+					if(m_closeState){
+						throw new Exception("SFS:closed");
+					}
+				}
+				
+				// try it again
 				openFileToRead();
 			}
-			
-		}catch(Exception _e){
-			
-			// try again...
-			//
-			m_connect.m_mainApp.SetErrorString("SA",_e);
-			
-			try{
-				sleep(5000);					
-			}catch(Exception ex){
-				if(m_closeState){
-					throw new Exception("SFS:closed");
-				}
-			}
-			
-			// try it again
-			openFileToRead();
-		}
+		}		
 		
 		// current upload buffer total size
 		int t_currSize = (m_vFileConnection != null)?(int)m_currOpenFileSize:m_uploadingBuffer.length;

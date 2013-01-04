@@ -9,7 +9,7 @@
   <Compile OutputCompilerMessages="true" ConvertImages="false" CreateWarningForNoExportedRoutine="true" CompressResources="false" AliasList="YuchBox_client">
     <PreprocessorDefines/>
   </Compile>
-  <Packaging OutputFileName="client" OutputFolder="deliverables" PreBuildStep="" PostBuildStep="" CleanStep="" GenerateALXFile="true">
+  <Packaging OutputFileName="yuchbox" OutputFolder="deliverables" PreBuildStep="" PostBuildStep="" CleanStep="" GenerateALXFile="true">
     <AlxFiles/>
   </Packaging>
   <HiddenProperties>
