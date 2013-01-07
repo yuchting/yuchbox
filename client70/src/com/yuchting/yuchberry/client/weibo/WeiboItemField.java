@@ -56,7 +56,7 @@ public class WeiboItemField extends Manager{
 	public final static int		fsm_weiboVIPImageSize		= 12;
 	public final static int		fsm_weiboBBerImageSize		= 12; 
 	
-	public final static int		fsm_maxWeiboAbstractLength	= 20;
+	public final static int		fsm_maxWeiboAbstractLength	= 23; //RRR:列表微博长度 20
 	
 	public final static int		fsm_textWidth				= fsm_weiboItemFieldWidth - WeiboHeadImage.fsm_headImageWidth - fsm_headImageTextInterval;
 	public final static int		fsm_editTextWidth			= fsm_weiboItemFieldWidth;
@@ -67,8 +67,23 @@ public class WeiboItemField extends Manager{
 	public final static int		fsm_promptTextBGColor		= 0xffffcc;
 	public final static int		fsm_promptTextBorderColor	= 0xc0c0c0;	
 	
-	public final static int		fsm_selectedColor			= 0x00a7e6;
+	public final static int		fsm_selectedColor			= 0x00a7e6; //RRR:选中颜色0x00a7e6;
 	
+	public final static int		fsm_timeTextColor			= recvMain.sm_standardUI?0xfb9620:0x8bc5f8;
+	
+	public final static int		fsm_extendTextColor			= recvMain.sm_standardUI?0:0xd0d0d0;
+	public final static int		fsm_extendBGColor			= recvMain.sm_standardUI?0xc1e6ff:0x1f2d39;//RRR:微博内容字体背景//
+	
+	public final static int		fsm_absTextColor			= recvMain.sm_standardUI?0x586061:0xbbc1c6;
+	public final static int		fsm_absTextColor_disable	= recvMain.sm_standardUI?0x98a0a1:0x7b8186;
+	
+	public final static int		fsm_weiboNameTextColor		= recvMain.sm_standardUI?0x073b50:0xe5e3cf;
+	public final static int		fsm_weiboNameTextColor_disable	= recvMain.sm_standardUI?0x868686:0x85836f;
+	
+	public final static int		fsm_weiboCommentFGColor		= recvMain.sm_standardUI?0x6d6f6f:0x84c3fa;
+	public final static int		fsm_weiboCommentBGColor		= recvMain.sm_standardUI?0xFFFFFF:0x2b3d4d;
+
+	/* RRR:源代码	
 	public final static int		fsm_timeTextColor			= recvMain.sm_standardUI?0xfb9620:0x8bc5f8;
 	
 	public final static int		fsm_extendTextColor			= recvMain.sm_standardUI?0:0xd0d0d0;
@@ -82,7 +97,7 @@ public class WeiboItemField extends Manager{
 
 	public final static int		fsm_weiboCommentFGColor		= recvMain.sm_standardUI?0x6d6f6f:0x84c3fa;
 	public final static int		fsm_weiboCommentBGColor		= recvMain.sm_standardUI?0xecf6fb:0x2b3d4d;
-	
+	 */	
 	
 	// BasicEditField for 4.2os
 	public static WeiboTextField 	sm_testTextArea	= new WeiboTextField(0,0){
@@ -103,7 +118,10 @@ public class WeiboItemField extends Manager{
 	public static Font		sm_timeFont					= sm_testTextArea.getFont().derive(sm_defaultFont.getStyle(),16);
 	public static Font		sm_boldFont					= sm_testTextArea.getFont().derive(sm_defaultFont.getStyle() | Font.BOLD,sm_defaultFont.getHeight());
 	public static int		sm_fontHeight				= sm_defaultFont.getHeight() + 2;
-		
+	
+	//RRR:添加sm_absFont字体定义
+	public static Font		sm_absFont					= sm_testTextArea.getFont().derive(sm_defaultFont.getStyle(),sm_defaultFont.getHeight() - 4); 	
+	
 	public static int		sm_imageAreaMinHeight		= fsm_weiboSignImageSize + WeiboHeadImage.fsm_headImageWidth + fsm_headImageTextInterval;
 	
 	public final static int	fsm_closeHeight			= sm_fontHeight * 2 + 1;
@@ -552,13 +570,36 @@ public class WeiboItemField extends Manager{
 			if(m_commentText != null){
 				// comment area
 				//
-				setPositionChild(m_parentManager.m_commentTextArea,fsm_headImageTextInterval,t_commentText_y);
+				setPositionChild(m_parentManager.m_commentTextArea,fsm_headImageTextInterval,t_commentText_y + 2); //RRR:气泡文字的上边距setPositionChild(m_parentManager.m_commentTextArea,fsm_headImageTextInterval,t_commentText_y);
 				layoutChild(m_parentManager.m_commentTextArea,fsm_commentTextWidth,m_functionButton_y - m_commentText_y);			
 			}
 			
 			if(!recvMain.sm_simpleMode){
 				// forward button
 				//
+				// RRR:按钮间距 +20,+30,+40,+50;
+				setPositionChild(m_parentManager.m_forwardBut,WeiboMainManager.sm_forwardBut_x + 20,m_functionButton_y);
+				layoutChild(m_parentManager.m_atBut,m_parentManager.m_atBut.getPreferredWidth(),m_parentManager.m_atBut.getPreferredHeight());
+				
+				
+				// at button
+				//
+				setPositionChild(m_parentManager.m_atBut,WeiboMainManager.sm_atBut_x + 30,m_functionButton_y);
+				layoutChild(m_parentManager.m_forwardBut,m_parentManager.m_forwardBut.getPreferredWidth(),m_parentManager.m_forwardBut.getPreferredHeight());
+				
+				// favorite button
+				//
+				setPositionChild(m_parentManager.m_favoriteBut,WeiboMainManager.sm_favoriteBut_x + 40,m_functionButton_y);
+				layoutChild(m_parentManager.m_favoriteBut,m_parentManager.m_favoriteBut.getPreferredWidth(),m_parentManager.m_favoriteBut.getPreferredHeight());
+				
+				if(m_weiboPic != null){
+					// open the browser to check the picture button 
+					//
+					setPositionChild(m_parentManager.m_picBut,WeiboMainManager.sm_picBut_x + 50,m_functionButton_y);
+					layoutChild(m_parentManager.m_picBut,m_parentManager.m_picBut.getPreferredWidth(),m_parentManager.m_picBut.getPreferredHeight());
+				}
+			}
+				/* RRR:源码
 				setPositionChild(m_parentManager.m_forwardBut,WeiboMainManager.sm_forwardBut_x,m_functionButton_y);
 				layoutChild(m_parentManager.m_atBut,m_parentManager.m_atBut.getPreferredWidth(),m_parentManager.m_atBut.getPreferredHeight());
 				
@@ -580,7 +621,7 @@ public class WeiboItemField extends Manager{
 					layoutChild(m_parentManager.m_picBut,m_parentManager.m_picBut.getPreferredWidth(),m_parentManager.m_picBut.getPreferredHeight());
 				}
 			}
-			
+			*/
 			int t_text_y = recvMain.sm_commentFirst?m_commentText_height:1;
 			t_text_y += fsm_weiboSignImageSize;
 			
@@ -878,7 +919,7 @@ public class WeiboItemField extends Manager{
 					m_displayName = t_final;
 				}
 				
-				_g.setFont(sm_boldFont);
+				_g.setFont(sm_defaultFont); //RRR:改为普通字体_g.setFont(sm_boldFont);
 				if(m_parentManager.getCurrExtendedItem() != null){
 					_g.setColor(fsm_weiboNameTextColor_disable);
 				}else{
@@ -915,8 +956,10 @@ public class WeiboItemField extends Manager{
 				// contain abstract
 				//
 				if(m_parentManager.getCurrExtendedItem() != null){
+					_g.setFont(sm_absFont); //RRR:增加列表微博字体显示定义
 					_g.setColor(fsm_absTextColor_disable);
 				}else{
+					_g.setFont(sm_absFont); //RRR:增加列表微博字体显示定义
 					_g.setColor(fsm_absTextColor);
 				}
 							
@@ -1043,11 +1086,11 @@ public class WeiboItemField extends Manager{
 			
 			int t_color = _g.getColor();
 			try{
-				int t_fillColor = 0xdaeaeb;
+				int t_fillColor = 0xeaf2fe;//RRR:微博列表背景0xdaeaeb;
 				
 				if(m_parentManager.getCurrExtendedItem() != null 
 				&& m_parentManager.getCurrExtendedItem() != this){
-					t_fillColor = 0xb3c8c9;
+					t_fillColor = 0xd4d7d7;//RRR:打开微博后未激活时的列表背景t_fillColor = 0xb3c8c9;
 				}
 				
 				_g.setColor(t_fillColor);

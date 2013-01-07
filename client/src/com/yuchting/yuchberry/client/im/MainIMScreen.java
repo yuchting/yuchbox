@@ -97,11 +97,14 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 			m_isYuch = m_roster.getSource().indexOf(MainIMScreen.fsm_YuchBerrySource) != -1;
 		}
 	}
-	
 	public final static int fsm_backgroundColor = 0xfafafa; //RRR:列表空白区域颜色0x1f2d39;
 	
-	public final static int fsm_groupBackgroundColor = 0xd8e7fc;//RRR:分组背景0x122030
+	public final static int fsm_groupBackgroundColor = 0xd8e7fc;//RRR:分组背景0x122030	
+	/* RRR:源码
+	public final static int fsm_backgroundColor = 0x1f2d39;
 	
+	public final static int fsm_groupBackgroundColor = 0x122030;
+	*/
 	int m_menu_label = 0;
 	
 	MenuItem	m_historyChatMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_HISTORY_MENU_LABEL),m_menu_label++,0){
@@ -425,7 +428,11 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	
 	public final static Font		fsm_defaultFont			= fsm_testTextArea.getFont();
 	public final static int		fsm_defaultFontHeight	= fsm_defaultFont.getHeight();
-	
+	//RRR:增加状态字体
+	public final static Font		fsm_statusFont			= fsm_defaultFont.derive(fsm_defaultFont.getStyle() | Font.BOLD , fsm_defaultFontHeight - 2);
+	public final static int		fsm_statusFontHeight	= fsm_defaultFont.getHeight() - 2 ;
+		
+	//
 	public final static String	fsm_YuchBerrySource		= "YuchBerry.info";
 	public final static Font		fsm_boldFont			= fsm_defaultFont.derive(fsm_defaultFont.getStyle() | Font.BOLD);
 	

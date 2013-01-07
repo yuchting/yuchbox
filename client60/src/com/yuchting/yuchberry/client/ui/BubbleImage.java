@@ -188,10 +188,10 @@ public class BubbleImage {
 			case LEFT_POINT_STYLE:
 				if(m_point[LEFT_POINT_STYLE] != null){
 					if(m_point_down){
-						m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width,
+						m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x + 1 - m_point[LEFT_POINT_STYLE].m_width, //RRR:左边小耳朵向右移动m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x  - m_point[LEFT_POINT_STYLE].m_width,
 								_y + _height - (m_point[LEFT_POINT_STYLE].getHeight() * 3 / 2) );
 					}else{
-						m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width,
+						m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x + 1 - m_point[LEFT_POINT_STYLE].m_width,//RRR:左边小耳朵向右移动m_parentSets.drawImage(_g,m_point[LEFT_POINT_STYLE],_x - m_point[LEFT_POINT_STYLE].m_width,
 								_y + (m_point[LEFT_POINT_STYLE].getHeight() / 2) );
 					}					
 				}				

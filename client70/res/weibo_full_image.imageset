@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<Imageset Name="full_weibo_image" Imagefile="/full_weibo_image.png" NativeHorzRes="512" NativeVertRes="512" >
+<Imageset Name="full_weibo_image" Imagefile="/full_weibo_image.png" NativeHorzRes="640" NativeVertRes="640" >
 	 
 	<Image Name="sinaWeibo" XPos="0" YPos="83" Width="16" Height="16" />
 	<Image Name="163Weibo" XPos="0" YPos="99" Width="16" Height="16" />
@@ -11,11 +11,11 @@
 	<Image Name="BBSign" XPos="48" YPos="83" Width="12" Height="12" />
 	<Image Name="qqVIP" XPos="60" YPos="99" Width="12" Height="12" />
 	<Image Name="sinaVIP" XPos="48" YPos="99" Width="12" Height="12" />
+	<Image Name="followState_1" XPos="88" YPos="99" Width="12" Height="12" />
+	<Image Name="followState" XPos="88" YPos="83" Width="12" Height="12" />
 	
 	<Image Name="female" XPos="72" YPos="83" Width="16" Height="16" />
 	<Image Name="male" XPos="72" YPos="99" Width="16" Height="16" />
-	<Image Name="followState_1" XPos="88" YPos="83" Width="12" Height="12" />
-	<Image Name="followState" XPos="88" YPos="99" Width="12" Height="12" />
 	
 	<Image Name="statusIM" XPos="262" YPos="110" Width="32" Height="32" />
 	<Image Name="atMe_1" XPos="230" YPos="110" Width="32" Height="32" />
@@ -27,23 +27,22 @@
 	<Image Name="headImageMask_l" XPos="0" YPos="0" Width="50" Height="50" />
 	<Image Name="headImageMask" XPos="50" YPos="0" Width="32" Height="32" />
 	
-	<Image Name="at_reply_button" XPos="0" YPos="115" Width="75" Height="32" />
-	<Image Name="at_reply_button_focus" XPos="75" YPos="115" Width="75" Height="32" />
-	<Image Name="forward_comment_button" XPos="0" YPos="147" Width="75" Height="32" />
-	<Image Name="forward_comment_button_focus" XPos="75" YPos="147" Width="75" Height="32" />
-	<Image Name="favorite_button" XPos="0" YPos="179" Width="75" Height="32" />
-	<Image Name="favorite_button_focus" XPos="75" YPos="179" Width="75" Height="32" />
-	<Image Name="picture_button" XPos="0" YPos="211" Width="75" Height="32" />
-	<Image Name="picture_button_focus" XPos="75" YPos="211" Width="75" Height="32" />
-	<Image Name="favorite_button_en" XPos="0" YPos="243" Width="75" Height="32" />
-	<Image Name="favorite_button_focus_en" XPos="75" YPos="243" Width="75" Height="32" />
-	<Image Name="picture_button_en" XPos="0" YPos="275" Width="75" Height="32" />
-	<Image Name="picture_button_focus_en" XPos="75" YPos="275" Width="75" Height="32" />
-	<Image Name="update_button" XPos="0" YPos="307" Width="75" Height="32" />
-	<Image Name="update_button_focus" XPos="75" YPos="307" Width="75" Height="32" />
-	<Image Name="update_button_en" XPos="150" YPos="115" Width="75" Height="32" />
-	<Image Name="update_button_focus_en" XPos="150" YPos="147" Width="75" Height="32" />
-	
+	<Image Name="at_reply_button" XPos="21" YPos="115" Width="38" Height="32" />
+	<Image Name="at_reply_button_focus" XPos="97" YPos="115" Width="38" Height="32" />
+	<Image Name="forward_comment_button" XPos="21" YPos="147" Width="38" Height="32" />
+	<Image Name="forward_comment_button_focus" XPos="97" YPos="147" Width="38" Height="32" />
+	<Image Name="favorite_button" XPos="21" YPos="179" Width="38" Height="32" />
+	<Image Name="favorite_button_focus" XPos="97" YPos="179" Width="38" Height="32" />
+	<Image Name="picture_button" XPos="21" YPos="211" Width="38" Height="32" />
+	<Image Name="picture_button_focus" XPos="97" YPos="211" Width="38" Height="32" />
+	<Image Name="favorite_button_en" XPos="21" YPos="243" Width="38" Height="32" />
+	<Image Name="favorite_button_focus_en" XPos="97" YPos="243" Width="38" Height="32" />
+	<Image Name="picture_button_en" XPos="21" YPos="275" Width="38" Height="32" />
+	<Image Name="picture_button_focus_en" XPos="97" YPos="275" Width="38" Height="32" />
+	<Image Name="update_button" XPos="21" YPos="307" Width="38" Height="32" />
+	<Image Name="update_button_focus" XPos="93" YPos="307" Width="38" Height="32" />
+	<Image Name="update_button_en" XPos="175" YPos="115" Width="38" Height="32" />
+	<Image Name="update_button_focus_en" XPos="170" YPos="147" Width="38" Height="32" />
 	
 	<Image Name="phiz_button_focus" XPos="150" YPos="179" Width="40" Height="24" />
 	<Image Name="phiz_button" XPos="150" YPos="203" Width="40" Height="24" />
@@ -60,6 +59,8 @@
 	<Image Name="commentSign" XPos="16" YPos="353" Width="16" Height="16" />
 	<Image Name="picSign_1" XPos="0" YPos="426" Width="16" Height="16" />
 	<Image Name="commentSign_1" XPos="16" YPos="426" Width="16" Height="16" />
+
+	<Image Name="w_updlg_header" XPos="100" YPos="0" Width="8" Height="60" />
 		
 	<Image Name="refresh" XPos="32" YPos="353" Width="24" Height="24" />
 	<Image Name="refresh_back" XPos="210" YPos="277" Width="8" Height="32" />
@@ -110,15 +111,15 @@
 
 	<Image Name="space_line_1" XPos="110" YPos="379" Width="8" Height="2" />
 	
-	<Image Name="nav_bar" XPos="118" YPos="377" Width="48" Height="54" />
+	<Image Name="nav_bar" XPos="118" YPos="377" Width="48" Height="45" />
 	<Image Name="nav_bar_block" XPos="150" YPos="277" Width="25" Height="43" />
 	<Image Name="nav_bar_block_offline" XPos="175" YPos="277" Width="25" Height="43" />
 	<Image Name="nav_bar_seg" XPos="200" YPos="277" Width="2" Height="43" />
-	<Image Name="nav_bar_point" XPos="150" YPos="322" Width="12" Height="8" />
+	<Image Name="nav_bar_point" XPos="300" YPos="322" Width="40" Height="5" />
 	
 	<Image Name="compose_nav_bar" XPos="110" YPos="381" Width="8" Height="32" />
 		
-	<Image Name="weibo_sel" XPos="0" YPos="452" Width="480" Height="60" />
+	<Image Name="weibo_sel" XPos="0" YPos="452" Width="640" Height="65" />
 	<Image Name="weibo_vert_sel" XPos="96" YPos="377" Width="14" Height="64" />
 		
 	<Image Name="selected_top_left" XPos="246" YPos="361" Width="10" Height="10" />
@@ -135,6 +136,18 @@
 	<Image Name="selected_inner_block" XPos="256" YPos="371" Width="24" Height="24" />
 	
 	<!-- im -->
+        <Image Name="im_bg" XPos="380" YPos="377" Width="8" Height="64" />
+
+        <Image Name="crown" XPos="280" YPos="276" Width="16" Height="16" />
+
+	<Image Name="im_nav_bar" XPos="241" YPos="408" Width="48" Height="45" />
+	<Image Name="im_nav_bar_block" XPos="215" YPos="408" Width="25" Height="43" />
+	<Image Name="im_nav_bar_block_offline" XPos="175" YPos="277" Width="25" Height="43" />
+	<Image Name="im_nav_bar_seg" XPos="200" YPos="277" Width="2" Height="43" />
+	<Image Name="im_nav_bar_point" XPos="300" YPos="329" Width="40" Height="5" />
+
+	<Image Name="im_chat_nav_bar" XPos="400" YPos="385" Width="48" Height="63" />
+
 	<Image Name="gtalk_sign" XPos="80" YPos="345" Width="16" Height="16" />
 	<Image Name="msn_sign" XPos="80" YPos="361" Width="16" Height="16" />
 	<Image Name="yuch_sign" XPos="128" YPos="361" Width="16" Height="16" />
@@ -157,6 +170,9 @@
 	
 	
 	<Image Name="composing_chat_state" XPos="224" YPos="345" Width="22" Height="22" />
+
+	<Image Name="input_nav_bar" XPos="400" YPos="335" Width="48" Height="43" />
+	<Image Name="input_nav_bar_seg" XPos="448" YPos="335" Width="2" Height="43" />
 	
 	<Image Name="input_top_left" XPos="144" YPos="345" Width="16" Height="10" />
 	<Image Name="input_top" XPos="160" YPos="345" Width="16" Height="10" />
@@ -172,20 +188,20 @@
 	<Image Name="input_inner_block" XPos="160" YPos="355" Width="16" Height="12" />
 	
 	<Image Name="input_phiz" XPos="214" YPos="377" Width="18" Height="18" />
-		
+	<Image Name="input_phiz_select" XPos="280" YPos="300" Width="18" Height="18" />	
 	
 	<Image Name="other_top_left" XPos="162" YPos="320" Width="8" Height="6" />
 	<Image Name="other_top" XPos="170" YPos="320" Width="30" Height="6" />
 	<Image Name="other_top_right" XPos="202" YPos="320" Width="8" Height="6" />
 	
-	<Image Name="other_left" XPos="162" YPos="326" Width="8" Height="12" />
+	<Image Name="other_left" XPos="162" YPos="326" Width="12" Height="12" />
 	<Image Name="other_bottom_left" XPos="162" YPos="338" Width="8" Height="7" />
 	<Image Name="other_bottom" XPos="170" YPos="338" Width="30" Height="7" />
 	
 	<Image Name="other_right" XPos="202" YPos="326" Width="8" Height="12" />
 	<Image Name="other_bottom_right" XPos="202" YPos="338" Width="8" Height="7" />
 	
-	<Image Name="other_inner_block" XPos="170" YPos="326" Width="32" Height="12" />
+	<Image Name="other_inner_block" XPos="170" YPos="326" Width="30" Height="12" />
 	
 	<Image Name="other_point" XPos="150" YPos="331" Width="12" Height="14" />
 	
@@ -193,7 +209,7 @@
 	<Image Name="own_top" XPos="218" YPos="320" Width="30" Height="6" />
 	<Image Name="own_top_right" XPos="248" YPos="320" Width="8" Height="6" />
 	
-	<Image Name="own_left" XPos="210" YPos="326" Width="8" Height="12" />
+	<Image Name="own_left" XPos="210" YPos="326" Width="12" Height="12" />
 	<Image Name="own_bottom_left" XPos="210" YPos="338" Width="8" Height="7" />
 	<Image Name="own_bottom" XPos="218" YPos="338" Width="30" Height="7" />
 	
@@ -225,84 +241,146 @@
 	<Image Name="voice_sign" XPos="32" YPos="426" Width="16" Height="16" />
 	
 	<!-- phiz -->
-	<Image Name="[呵呵]" XPos="84" YPos="0" Width="22" Height="22" />
-	<Image Name="[嘻嘻]" XPos="106" YPos="0" Width="22" Height="22" />
-	<Image Name="[哈哈]" XPos="128" YPos="0" Width="22" Height="22" />
-	<Image Name="[爱你]" XPos="150" YPos="0" Width="22" Height="22" />
-	<Image Name="[晕]" XPos="172" YPos="0" Width="22" Height="22" />
-	<Image Name="[泪]" XPos="194" YPos="0" Width="22" Height="22" />
-	<Image Name="[馋嘴]" XPos="216" YPos="0" Width="22" Height="22" />
-	<Image Name="[抓狂]" XPos="238" YPos="0" Width="22" Height="22" />
-	<Image Name="[哼]" XPos="260" YPos="0" Width="22" Height="22" />
-	<Image Name="[抱抱]" XPos="282" YPos="0" Width="22" Height="22" />
-	<Image Name="[可爱]" XPos="304" YPos="0" Width="22" Height="22" />
-	<Image Name="[怒]" XPos="326" YPos="0" Width="22" Height="22" />
-	<Image Name="[汗]" XPos="348" YPos="0" Width="22" Height="22" />
-	<Image Name="[困]" XPos="370" YPos="0" Width="22" Height="22" />
-	<Image Name="[害羞]" XPos="392" YPos="0" Width="22" Height="22" />
-	<Image Name="[怒骂]" XPos="414" YPos="0" Width="22" Height="22" />
-	<Image Name="[太开心]" XPos="436" YPos="0" Width="22" Height="22" />
-	<Image Name="[懒得理你]" XPos="458" YPos="0" Width="22" Height="22" />
-	<Image Name="[左哼哼]" XPos="480" YPos="22" Width="22" Height="22" />
-	<Image Name="[右哼哼]" XPos="480" YPos="0" Width="22" Height="22" />
-	
-	<Image Name="[睡觉]" XPos="84" YPos="22" Width="22" Height="22" />
-	<Image Name="[钱]" XPos="106" YPos="22" Width="22" Height="22" />
-	<Image Name="[偷笑]" XPos="128" YPos="22" Width="22" Height="22" />
-	<Image Name="[酷]" XPos="150" YPos="22" Width="22" Height="22" />
-	<Image Name="[衰]" XPos="172" YPos="22" Width="22" Height="22" />
-	<Image Name="[吃惊]" XPos="194" YPos="22" Width="22" Height="22" />
-	<Image Name="[闭嘴]" XPos="216" YPos="22" Width="22" Height="22" />
-	<Image Name="[鄙视]" XPos="238" YPos="22" Width="22" Height="22" />
-	<Image Name="[挖鼻屎]" XPos="260" YPos="22" Width="22" Height="22" />
-	<Image Name="[花心]" XPos="282" YPos="22" Width="22" Height="22" />
-	<Image Name="[鼓掌]" XPos="304" YPos="22" Width="22" Height="22" />
-	<Image Name="[失望]" XPos="326" YPos="22" Width="22" Height="22" />
-	<Image Name="[思考]" XPos="348" YPos="22" Width="22" Height="22" />
-	<Image Name="[生病]" XPos="370" YPos="22" Width="22" Height="22" />
-	<Image Name="[亲亲]" XPos="392" YPos="22" Width="22" Height="22" />
-	<Image Name="[嘘]" XPos="414" YPos="22" Width="22" Height="22" />
-	<Image Name="[委屈]" XPos="436" YPos="22" Width="22" Height="22" />
-	<Image Name="[吐]" XPos="458" YPos="22" Width="22" Height="22" />	
-	
-	<Image Name="[可怜]" XPos="260" YPos="44" Width="22" Height="22" />
-	<Image Name="[打哈气]" XPos="282" YPos="44" Width="22" Height="22" />
-	<Image Name="[顶]" XPos="304" YPos="44" Width="22" Height="22" />
-	<Image Name="[疑问]" XPos="326" YPos="44" Width="22" Height="22" />
-	<Image Name="[握手]" XPos="348" YPos="44" Width="22" Height="22" />
-	<Image Name="[耶]" XPos="370" YPos="44" Width="22" Height="22" />
-	<Image Name="[good]" XPos="392" YPos="44" Width="22" Height="22" />
-	<Image Name="[下雨]" XPos="414" YPos="44" Width="22" Height="22" />
-	<Image Name="[太阳]" XPos="436" YPos="44" Width="22" Height="22" />
-	<Image Name="[蜡烛]" XPos="458" YPos="44" Width="22" Height="22" />
-	<Image Name="[话筒]" XPos="480" YPos="44" Width="22" Height="22" />
-	
-	<Image Name="[弱]" XPos="260" YPos="66" Width="22" Height="22" />
-	<Image Name="[不要]" XPos="282" YPos="66" Width="22" Height="22" />
-	<Image Name="[ok]" XPos="304" YPos="66" Width="22" Height="22" />
-	<Image Name="[赞]" XPos="326" YPos="66" Width="22" Height="22" />
-	<Image Name="[来]" XPos="348" YPos="66" Width="22" Height="22" />
-	<Image Name="[蛋糕]" XPos="370" YPos="66" Width="22" Height="22" />
-	<Image Name="[心]" XPos="392" YPos="66" Width="22" Height="22" />
-	<Image Name="[伤心]" XPos="414" YPos="66" Width="22" Height="22" />
-	<Image Name="[钟]" XPos="436" YPos="66" Width="22" Height="22" />
-	<Image Name="[猪头]" XPos="458" YPos="66" Width="22" Height="22" />
-	<Image Name="[月亮]" XPos="480" YPos="66" Width="22" Height="22" />
-	
-	<Image Name="[男孩儿]" XPos="150" YPos="88" Width="22" Height="22" />
-	<Image Name="[女孩儿]" XPos="172" YPos="88" Width="22" Height="22" />
-	<Image Name="[风扇]" XPos="194" YPos="88" Width="22" Height="22" />
-	<Image Name="[织]" XPos="216" YPos="88" Width="22" Height="22" />
-	<Image Name="[围观]" XPos="238" YPos="88" Width="22" Height="22" />
-	<Image Name="[威武]" XPos="260" YPos="88" Width="22" Height="22" />
-	<Image Name="[给力]" XPos="282" YPos="88" Width="22" Height="22" />
-	<Image Name="[神马]" XPos="304" YPos="88" Width="22" Height="22" />
-	<Image Name="[浮云]" XPos="326" YPos="88" Width="22" Height="22" />
-	<Image Name="[奥特曼]" XPos="348" YPos="88" Width="22" Height="22" />
-	<Image Name="[兔子]" XPos="370" YPos="88" Width="22" Height="22" />
-	<Image Name="[熊猫]" XPos="392" YPos="88" Width="22" Height="22" />
-	<Image Name="[飞机]" XPos="414" YPos="88" Width="22" Height="22" />
-	<Image Name="[大巴]" XPos="436" YPos="88" Width="22" Height="22" />
-	<Image Name="[冰棍]" XPos="458" YPos="88" Width="22" Height="22" />
-	
+	<Image Name="[嘻嘻]"	XPos="350" YPos="0"		Width="28" Height="28" />
+	<Image Name="[哈哈]"	XPos="350" YPos="28"	Width="28" Height="28" />
+	<Image Name="[呵呵]"	XPos="350" YPos="56"	Width="28" Height="28" />
+	<Image Name="[疑问]"	XPos="350" YPos="84"	Width="28" Height="28" />
+	<Image Name="[可怜]"	XPos="350" YPos="112"	Width="28" Height="28" />
+	<Image Name="[睡觉]"	XPos="350" YPos="140"	Width="28" Height="28" />
+	<Image Name="[晕]"		XPos="350" YPos="168"	Width="28" Height="28" />
+	<Image Name="[围观]"	XPos="350" YPos="196"	Width="28" Height="28" />
+	<Image Name="[浮云]"	XPos="350" YPos="224"	Width="28" Height="28" />
+	<Image Name="[天使]"	XPos="350" YPos="252"	Width="28" Height="28" />
+	<Image Name="[大哭]"	XPos="350" YPos="280"	Width="28" Height="28" />
+
+	<Image Name="[委屈]"	XPos="378" YPos="0"		Width="28" Height="28" />
+	<Image Name="[抓狂]"	XPos="378" YPos="28"	Width="28" Height="28" />
+	<Image Name="[汗]"		XPos="378" YPos="56"	Width="28" Height="28" />
+	<Image Name="[害羞]"	XPos="378" YPos="84"	Width="28" Height="28" />
+	<Image Name="[开心]"	XPos="378" YPos="112"	Width="28" Height="28" />
+	<Image Name="[钱]"		XPos="378" YPos="140"	Width="28" Height="28" />
+	<Image Name="[奥特曼]"	XPos="378" YPos="168"	Width="28" Height="28" />
+	<Image Name="[蛋糕]"	XPos="378" YPos="196"	Width="28" Height="28" />
+	<Image Name="[礼物]"	XPos="378" YPos="224"	Width="28" Height="28" />
+	<Image Name="[邪恶]"	XPos="378" YPos="252"	Width="28" Height="28" />
+	<Image Name="[喇叭]"	XPos="378" YPos="280"	Width="28" Height="28" />
+
+	<Image Name="[挖鼻屎]"	XPos="406" YPos="0"		Width="28" Height="28" />
+	<Image Name="[鄙视]"	XPos="406" YPos="28"	Width="28" Height="28" />
+	<Image Name="[黑线]"	XPos="406" YPos="56"	Width="28" Height="28" />
+	<Image Name="[咒骂]"	XPos="406" YPos="84"	Width="28" Height="28" />
+	<Image Name="[失望]"	XPos="406" YPos="112"	Width="28" Height="28" />
+	<Image Name="[猪]"		XPos="406" YPos="140"	Width="28" Height="28" />
+	<Image Name="[兔子]"	XPos="406" YPos="168"	Width="28" Height="28" />
+	<Image Name="[照相机]"	XPos="406" YPos="196"	Width="28" Height="28" />
+	<Image Name="[安慰]"	XPos="406" YPos="224"	Width="28" Height="28" />
+	<Image Name="[阴险]"	XPos="406" YPos="252"	Width="28" Height="28" />
+	<Image Name="[切]"		XPos="406" YPos="280"	Width="28" Height="28" />
+
+	<Image Name="[再见]"	XPos="434" YPos="0"		Width="28" Height="28" />
+	<Image Name="[闭嘴]"	XPos="434" YPos="28"	Width="28" Height="28" />
+	<Image Name="[恨]"		XPos="434" YPos="56"	Width="28" Height="28" />
+	<Image Name="[怒]"		XPos="434" YPos="84"	Width="28" Height="28" />
+	<Image Name="[OK]"		XPos="434" YPos="112"	Width="28" Height="28" />
+	<Image Name="[耶]"		XPos="434" YPos="140"	Width="28" Height="28" />
+	<Image Name="[熊猫]"	XPos="434" YPos="168"	Width="28" Height="28" />
+	<Image Name="[音乐]"	XPos="434" YPos="196"	Width="28" Height="28" />
+	<Image Name="[帽子]"	XPos="434" YPos="224"	Width="28" Height="28" />
+	<Image Name="[语盒style]"		XPos="434" YPos="252"	Width="28" Height="28" />
+	<Image Name="[手机]"	XPos="434" YPos="280"	Width="28" Height="28" />
+
+	<Image Name="[悲伤]"	XPos="462" YPos="0"		Width="28" Height="28" />
+	<Image Name="[馋嘴]"	XPos="462" YPos="28"	Width="28" Height="28" />
+	<Image Name="[花心]"	XPos="462" YPos="56"	Width="28" Height="28" />
+	<Image Name="[泪]"		XPos="462" YPos="84"	Width="28" Height="28" />
+	<Image Name="[good]"	XPos="462" YPos="112"	Width="28" Height="28" />
+	<Image Name="[不要]"	XPos="462" YPos="140"	Width="28" Height="28" />
+	<Image Name="[囧]"		XPos="462" YPos="168"	Width="28" Height="28" />
+	<Image Name="[咖啡]"	XPos="462" YPos="196"	Width="28" Height="28" />
+	<Image Name="[汽车]"	XPos="462" YPos="224"	Width="28" Height="28" />
+	<Image Name="[威武]"	XPos="462" YPos="252"	Width="28" Height="28" />
+	<Image Name="[金元宝]"	XPos="462" YPos="280"	Width="28" Height="28" />
+	<Image Name="[对不起]"	XPos="462" YPos="308"	Width="28" Height="28" />
+	<Image Name="[龇牙]"	XPos="462" YPos="336"	Width="28" Height="28" />
+
+	<Image Name="[吃惊]"	XPos="490" YPos="0"		Width="28" Height="28" />
+	<Image Name="[顶]"		XPos="490" YPos="28"	Width="28" Height="28" />
+	<Image Name="[可爱]"	XPos="490" YPos="56"	Width="28" Height="28" />
+	<Image Name="[懒得理你]"	XPos="490" YPos="84"	Width="28" Height="28" />
+	<Image Name="[弱]"		XPos="490" YPos="112"	Width="28" Height="28" />
+	<Image Name="[爱心传递]"		XPos="490" YPos="140"	Width="28" Height="28" />
+	<Image Name="[投降]"	XPos="490" YPos="168"	Width="28" Height="28" />
+	<Image Name="[自行车]"	XPos="490" YPos="196"	Width="28" Height="28" />
+	<Image Name="[电风扇]"	XPos="490" YPos="224"	Width="28" Height="28" />
+	<Image Name="[蜡烛]"	XPos="490" YPos="252"	Width="28" Height="28" />
+	<Image Name="[女孩]"	XPos="490" YPos="280"	Width="28" Height="28" />
+	<Image Name="[强]"		XPos="490" YPos="308"	Width="28" Height="28" />
+	<Image Name="[鬼脸]"	XPos="490" YPos="336"	Width="28" Height="28" />
+	<Image Name="[核辐射]"	XPos="490" YPos="364"	Width="28" Height="28" />
+	<Image Name="[愤怒]"	XPos="490" YPos="392"	Width="28" Height="28" />
+
+	<Image Name="[打哈欠]"	XPos="518" YPos="0"		Width="28" Height="28" />
+	<Image Name="[鼓掌]"	XPos="518" YPos="28"	Width="28" Height="28" />
+	<Image Name="[衰]"		XPos="518" YPos="56"	Width="28" Height="28" />
+	<Image Name="[困]"		XPos="518" YPos="84"	Width="28" Height="28" />
+	<Image Name="[赞]"		XPos="518" YPos="112"	Width="28" Height="28" />
+	<Image Name="[心碎]"	XPos="518" YPos="140"	Width="28" Height="28" />
+	<Image Name="[冰棍]"	XPos="518" YPos="168"	Width="28" Height="28" />
+	<Image Name="[足球]"	XPos="518" YPos="196"	Width="28" Height="28" />
+	<Image Name="[飞机]"	XPos="518" YPos="224"	Width="28" Height="28" />
+	<Image Name="[给力]"	XPos="518" YPos="252"	Width="28" Height="28" />
+	<Image Name="[楼上]"	XPos="518" YPos="280"	Width="28" Height="28" />
+	<Image Name="[算账]"	XPos="518" YPos="308"	Width="28" Height="28" />
+	<Image Name="[虫子]"	XPos="518" YPos="336"	Width="28" Height="28" />
+	<Image Name="[啤酒]"	XPos="518" YPos="364"	Width="28" Height="28" />
+	<Image Name="[雷锋]"	XPos="518" YPos="392"	Width="28" Height="28" />
+
+	<Image Name="[感冒]"	XPos="546" YPos="0"		Width="28" Height="28" />
+	<Image Name="[嘘]"		XPos="546" YPos="28"	Width="28" Height="28" />
+	<Image Name="[思考]"	XPos="546" YPos="56"	Width="28" Height="28" />
+	<Image Name="[酷]"		XPos="546" YPos="84"	Width="28" Height="28" />
+	<Image Name="[最差]"	XPos="546" YPos="112"	Width="28" Height="28" />
+	<Image Name="[来]"		XPos="546" YPos="140"	Width="28" Height="28" />
+	<Image Name="[干杯]"	XPos="546" YPos="168"	Width="28" Height="28" />
+	<Image Name="[电影]"	XPos="546" YPos="196"	Width="28" Height="28" />
+	<Image Name="[雪人]"	XPos="546" YPos="224"	Width="28" Height="28" />
+	<Image Name="[互粉]"	XPos="546" YPos="252"	Width="28" Height="28" />
+	<Image Name="[保密]"	XPos="546" YPos="280"	Width="28" Height="28" />
+	<Image Name="[财神爷]"	XPos="546" YPos="308"	Width="28" Height="28" />
+	<Image Name="[潜水]"	XPos="546" YPos="336"	Width="28" Height="28" />
+	<Image Name="[被打]"	XPos="546" YPos="364"	Width="28" Height="28" />
+	<Image Name="[放马过来]"	XPos="546" YPos="392"	Width="28" Height="28" />
+
+	<Image Name="[左哼哼]"	XPos="574" YPos="0"		Width="28" Height="28" />
+	<Image Name="[眨眼]"	XPos="574" YPos="28"	Width="28" Height="28" />
+	<Image Name="[书呆子]"	XPos="574" YPos="56"	Width="28" Height="28" />
+	<Image Name="[阳光]"	XPos="574" YPos="84"	Width="28" Height="28" />
+	<Image Name="[握手]"	XPos="574" YPos="112"	Width="28" Height="28" />
+	<Image Name="[爱心]"	XPos="574" YPos="140"	Width="28" Height="28" />
+	<Image Name="[闹钟]"	XPos="574" YPos="168"	Width="28" Height="28" />
+	<Image Name="[麦克风]"	XPos="574" YPos="196"	Width="28" Height="28" />
+	<Image Name="[萌]"		XPos="574" YPos="224"	Width="28" Height="28" />
+	<Image Name="[草泥马]"	XPos="574" YPos="252"	Width="28" Height="28" />
+	<Image Name="[寒]"		XPos="574" YPos="280"	Width="28" Height="28" />
+	<Image Name="[吐]"		XPos="574" YPos="308"	Width="28" Height="28" />
+	<Image Name="[男孩]"	XPos="574" YPos="336"	Width="28" Height="28" />
+	<Image Name="[玫瑰花]"	XPos="574" YPos="364"	Width="28" Height="28" />
+	<Image Name="[恭喜]"	XPos="574" YPos="392"	Width="28" Height="28" />
+
+	<Image Name="[右哼哼]"	XPos="602" YPos="0"		Width="28" Height="28" />
+	<Image Name="[生病]"	XPos="602" YPos="28"	Width="28" Height="28" />
+	<Image Name="[亲亲]"	XPos="602" YPos="56"	Width="28" Height="28" />
+	<Image Name="[月亮]"	XPos="602" YPos="84"	Width="28" Height="28" />
+	<Image Name="[拳头]"	XPos="602" YPos="112"	Width="28" Height="28" />
+	<Image Name="[爱你]"	XPos="602" YPos="140"	Width="28" Height="28" />
+	<Image Name="[西瓜]"	XPos="602" YPos="168"	Width="28" Height="28" />
+	<Image Name="[威胁]"	XPos="602" YPos="196"	Width="28" Height="28" />
+	<Image Name="[棒球]"	XPos="602" YPos="224"	Width="28" Height="28" />
+	<Image Name="[神马]"	XPos="602" YPos="252"	Width="28" Height="28" />
+	<Image Name="[放大镜]"	XPos="602" YPos="280"	Width="28" Height="28" />
+	<Image Name="[雪花]"	XPos="602" YPos="308"	Width="28" Height="28" />
+	<Image Name="[暂停]"	XPos="602" YPos="336"	Width="28" Height="28" />
+	<Image Name="[STOP]"	XPos="602" YPos="364"	Width="28" Height="28" />	
+	<Image Name="[骷髅]"	XPos="602" YPos="392"	Width="28" Height="28" />
+
 </Imageset>

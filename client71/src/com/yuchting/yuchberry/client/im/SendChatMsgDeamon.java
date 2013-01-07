@@ -133,6 +133,7 @@ public class SendChatMsgDeamon extends Thread implements ISendAttachmentCallback
 			//
 			if(m_sendMsg.getFileContent() != null){
 				sendReceive.WriteInt(t_os,m_sendMsg.getFileContent().length);
+				sendReceive.WriteBoolean(t_os, m_sendTo.m_isYuch);
 				t_os.write(m_sendMsg.getFileContentType());
 				t_os.write(m_sendMsg.getFileContent());
 			}else{

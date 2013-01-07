@@ -41,6 +41,7 @@ import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.im.MainIMScreen;
 
 final class PhizMgr extends Manager{
 	
@@ -241,6 +242,7 @@ public class PhizSelectedScreen extends MainScreen{
 	PhizMgr		m_phizMgr;
 	String		m_promptString = recvMain.sm_local.getString(yblocalResource.WEIBO_PHIZ_SCREEN_PROMPT);
 	LabelField	m_promptLabel = new LabelField(m_promptString,Field.NON_FOCUSABLE);
+
 	
 	public PhizSelectedScreen(Vector _phizList){
 		add(m_promptLabel);
@@ -257,7 +259,9 @@ public class PhizSelectedScreen extends MainScreen{
 	}
 	
 	public void setPromptLabel(String _phizName){
-		m_promptLabel.setText(m_promptString + _phizName);
+
+		 m_promptLabel.setText(m_promptString + _phizName);
+		
 	}
 	
 	public void close(){

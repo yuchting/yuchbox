@@ -70,7 +70,7 @@ class StateButton extends ButtonField{
 	
 	int m_width;
 	public StateButton(String _label,ImageSets _imagesets,int _width){
-		super(_label,ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
+		super(_label,ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY );
 		
 		m_width = _width;
 	}
@@ -213,8 +213,7 @@ class ConnectButton extends Field{
     protected void onUnfocus(){
     	super.onUnfocus();
     	invalidate();
-    }
-            
+    }   
             
     protected boolean keyChar( char character, int status, int time ) 
     {
@@ -605,13 +604,13 @@ public class stateScreen extends MainScreen{
 		}
 		
 		public int getPreferredHeight(){
-			return recvMain.fsm_display_height;
+			return Math.max(recvMain.fsm_display_height,260);
 		}
 		
 		protected void paintBackground(Graphics _g){
-			m_mainApp.m_allImageSets.fillImageBlock(_g, m_stateBG, 0, 0, recvMain.fsm_display_width, recvMain.fsm_display_height);
+			m_mainApp.m_allImageSets.fillImageBlock(_g, m_stateBG, 0, 0, getPreferredWidth(), getPreferredHeight());
 			
-			int t_logo_x = (recvMain.fsm_display_width - m_stateLogo.getWidth()) / 2;
+			int t_logo_x = (getPreferredWidth() - m_stateLogo.getWidth()) / 2;
 			int t_logo_y = 10;
 			
 			m_mainApp.m_allImageSets.drawImage(_g, m_stateLogo, t_logo_x, t_logo_y);
@@ -791,11 +790,14 @@ public class stateScreen extends MainScreen{
 			layoutChild(m_getHostLink,getPreferredWidth(),m_getHostLink.getFont().getHeight());
 			
 			y += m_connectBut.getImageHeight();
-			t_start_x = 0;
 			
 			setExtent(getPreferredWidth(), getPreferredHeight());
 		}
-		
+
+		public int getPreferredHeight(){
+			return  Math.max(super.getPreferredHeight(),
+					(recvMain.fsm_display_height/3 + 20 + fm_inputTopBorder) + fm_inputHeight * 3 + m_connectBut.getImageHeight());
+		}
 		
 		public void subpaint(Graphics _g){
 			
@@ -827,6 +829,7 @@ public class stateScreen extends MainScreen{
 	    	}
 		}
 		
+		
 		public void fieldChanged(Field field, int context) {
 	        if(context != FieldChangeListener.PROGRAMMATIC){
 				// Perform action if user changed field. 
@@ -852,11 +855,14 @@ public class stateScreen extends MainScreen{
 						
 					}else{
 						
-						ServiceBook t_sb = ServiceBook.getSB();
-						ServiceRecord[] t_record = t_sb.findRecordsByCid("CMIME");
-						if(t_record == null || t_record.length == 0){
-							m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.NEED_CMIME_PROMPT));
-							return;
+						if(!m_mainApp.m_closeMailSendModule){
+
+							ServiceBook t_sb = ServiceBook.getSB();
+							ServiceRecord[] t_record = t_sb.findRecordsByCid("CMIME");
+							if(t_record == null || t_record.length == 0){
+								m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.NEED_CMIME_PROMPT));
+								return;
+							}
 						}
 						
 						if(m_hostName.getText().indexOf(" ") != -1){
@@ -903,7 +909,7 @@ public class stateScreen extends MainScreen{
     		m_accountName	= new EditField(recvMain.sm_local.getString(yblocalResource.STATE_ACCOUNT_LABEL),
 												m_mainApp.m_account,128, EditField.FILTER_EMAIL);
     		m_userPassword	= new PasswordEditField(recvMain.sm_local.getString(yblocalResource.USER_PASSWORD),
-    											m_mainApp.m_userPassword,128, EditField.FILTER_INTEGER | EditField.FILTER_NUMERIC | EditField.NO_COMPLEX_INPUT);
+    											m_mainApp.m_userPassword,128, EditField.NO_COMPLEX_INPUT);
     		
     		m_accountNameMgr.add(m_accountName);    		
     		m_userPasswordMgr.add(m_userPassword);
@@ -1011,18 +1017,19 @@ public class stateScreen extends MainScreen{
 		
 		private void login(){
 
-			if(!m_accountName.isDataValid()){
+			if(!m_accountName.isDataValid() || !recvMain.isValidateEmail(m_accountName.getText())){
 				m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.STATE_LOGIN_ACC_NAME_ERROR));
 				return;
 			}
 			
-			if(m_userPassword.getTextLength() < 6){
+			String t_pass = m_userPassword.getText();
+			if(!recvMain.isValidateUserPass(t_pass)){
 				m_mainApp.DialogAlert(recvMain.sm_local.getString(yblocalResource.STATE_LOGIN_ACC_PASS_ERROR));
 				return;
 			}
 			
 			m_mainApp.m_account 		= m_accountName.getText().toLowerCase();
-			m_mainApp.m_userPassword	= m_userPassword.getText();
+			m_mainApp.m_userPassword	= t_pass;
 			
 			if(m_loginAccThread == null){
 				m_loginAccThread = new LoginAccThread(m_mainApp.m_account, m_mainApp.m_userPassword);
@@ -1059,7 +1066,8 @@ public class stateScreen extends MainScreen{
 				}
 			});
 			
-			String MAIN_URL = DeviceInfo.isSimulator()?"http://192.168.10.7:8888/f/login/":"http://www.yuchs.com/f/login/";		
+			//String MAIN_URL = DeviceInfo.isSimulator()?"http://192.168.10.7:8888/f/login/":"http://www.yuchs.com/f/login/";		
+			String MAIN_URL = "http://www.yuchs.com/f/login/";
 			
 			MAIN_URL += recvMain.getHTTPAppendString();
 			

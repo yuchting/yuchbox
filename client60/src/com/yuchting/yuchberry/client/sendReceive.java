@@ -39,8 +39,11 @@ import net.rim.device.api.compress.GZIPOutputStream;
 
 public class sendReceive extends Thread{
 	
-	interface IStoreUpDownloadByte{
-		void Store(long _uploadByte,long _downloadByte);
+	public interface IStoreUpDownloadByte{
+		public void store(long _uploadByte,long _downloadByte);
+		public void debug(String _label,Exception _e);
+		public void debug(String _info);
+		
 	}
 	
 	OutputStream		m_socketOutputStream = null;
@@ -75,6 +78,18 @@ public class sendReceive extends Thread{
 		start();
 	}
 	
+	private void debugOut(String _info){
+		if(m_storeInterface != null){
+			m_storeInterface.debug(_info);
+		}
+	}
+	
+	private void debugOut(String _label,Exception _e){
+		if(m_storeInterface != null){
+			m_storeInterface.debug(_label,_e);
+		}
+	}
+	
 	public void SetKeepliveInterval(int _minutes){
 		if(_minutes >= 0){
 			m_keepliveInterval = _minutes * 60;
@@ -91,7 +106,7 @@ public class sendReceive extends Thread{
 	public synchronized void SendBufferToSvr(byte[] _write,boolean _sendImm,
 													boolean _wait)throws Exception{
 		
-		if(m_sendBufferLen + _write.length + fsm_packageHeadLength >= 65535){
+		if(m_sendBufferLen + _write.length + fsm_packageHeadLength >= 65500){
 			SendBufferToSvr_imple(PrepareOutputData());
 		}
 		
@@ -101,9 +116,8 @@ public class sendReceive extends Thread{
 		
 		if(_sendImm){
 			SendBufferToSvr_imple(PrepareOutputData());
-			m_keepliveCounter = 0;
 		}
-		
+				
 		if(_wait){
 			m_waitMoment = true;
 		}
@@ -113,7 +127,7 @@ public class sendReceive extends Thread{
 		if(m_storeInterface != null){
 			if(m_storeByteTimer++ > 5 || _force){
 				m_storeByteTimer = 0;
-				m_storeInterface.Store(m_uploadByte,m_downloadByte);
+				m_storeInterface.store(m_uploadByte,m_downloadByte);
 				m_uploadByte = 0;
 				m_downloadByte = 0;				
 			}			
@@ -131,18 +145,23 @@ public class sendReceive extends Thread{
 			m_unsendedPackage.removeAllElements();
 			m_unprocessedPackage.removeAllElements();
 			
-			interrupt();
+			if(isAlive()){
+				interrupt();
+			}
 			
 			try{
 				m_socketOutputStream.close();
 				m_socketInputStream.close();
-			}catch(Exception _e){}
-			
-	
+			}catch(Exception _e){
+				debugOut("S_CSR",_e);
+			}
+				
 			while(isAlive()){
 				try{
 					sleep(10);
-				}catch(Exception _e){};			
+				}catch(Exception _e){
+					debugOut("S_CSR1",_e);
+				};			
 			}	
 		}		
 	}
@@ -179,7 +198,11 @@ public class sendReceive extends Thread{
 		
 		if(_write == null){
 			return;
-		}	
+		}
+		
+		synchronized(this){
+			m_keepliveCounter = 0;
+		}		
 		
 		ByteArrayOutputStream zos = new ByteArrayOutputStream();
 		
@@ -235,15 +258,21 @@ public class sendReceive extends Thread{
 				}				
 				
 				synchronized (this){
-					if(m_keepliveInterval != 0 && ++m_keepliveCounter > m_keepliveInterval){
-						m_keepliveCounter = 0;
-						t_keeplive = true;
+					if(m_keepliveInterval != 0){
+												
+						m_keepliveCounter += 1;
+						
+						if(m_keepliveCounter > m_keepliveInterval){
+							m_keepliveCounter = 0;
+							t_keeplive = true;
+						}
 					}
+					
 				}				
 				
 				if(t_keeplive){
 					t_keeplive = false;
-
+										
 					SendBufferToSvr_imple(sm_keepliveMsg);
 					
 					StoreUpDownloadByteImm(false);										
@@ -251,10 +280,14 @@ public class sendReceive extends Thread{
 			}
 			
 		}catch(Exception _e){
+			debugOut("S_RUN",_e);
+			
 			try{
 				m_socketOutputStream.close();
 				m_socketInputStream.close();	
-			}catch(Exception e){}
+			}catch(Exception e){
+				debugOut("S_RUN1",_e);
+			}
 		}
 	}
 

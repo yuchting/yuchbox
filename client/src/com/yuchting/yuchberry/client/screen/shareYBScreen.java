@@ -396,7 +396,7 @@ public class shareYBScreen extends MainScreen implements FieldChangeListener{
 		
 			public boolean onClose(){
 				m_checkContentScreen = null;				
-				this.close();
+				close();
 				return true;
 			}
 			

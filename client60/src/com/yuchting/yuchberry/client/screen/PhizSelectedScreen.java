@@ -50,7 +50,7 @@ final class PhizMgr extends Manager{
 	Vector 				m_phizList	= null;
 	IPhizSelected		m_selectedCallback = null;
 	
-	final static int	fsm_phizInterval = 2;
+	final static int	fsm_phizInterval = 2; //RRR: 表情间距
 	
 	int 				m_move_x = 0;
 	int 				m_move_y = 0;
@@ -227,7 +227,7 @@ final class PhizMgr extends Manager{
 
 public class PhizSelectedScreen extends MainScreen{
 	
-	static final int BIG_PHIZ_SIZE = 64; //RRR: 表情放大 recvMain.fsm_display_width / 4; 
+	static final int BIG_PHIZ_SIZE = 48; //RRR: 表情放大 recvMain.fsm_display_width / 4; 
 
 	public static PhizSelectedScreen	sm_phizScreen 	= null;
 	
@@ -323,7 +323,7 @@ public class PhizSelectedScreen extends MainScreen{
 				
 		try{
 			
-			int t_x =  recvMain.fsm_display_width / 2 - 32;			//RRR:放大表情的X轴的坐标居中
+			int t_x =  recvMain.fsm_display_width / 2 - 24;			//RRR:放大表情的X轴的坐标居中 int t_x = 0;			
 			int t_y = recvMain.fsm_display_height - BIG_PHIZ_SIZE;
 			if(m_phizMgr.m_move_y * Phiz.fsm_phizSize > recvMain.fsm_display_height / 2){
 				t_y = m_prompt.getFont().getHeight() + 2;
@@ -332,7 +332,7 @@ public class PhizSelectedScreen extends MainScreen{
 			m_mainApp.m_weiboUIImage.getImageUnitBuffer(m_phizMgr.m_currSelected.getImage(), m_currPhizBuffer);
 			m_currPhizImage.setARGB(m_currPhizBuffer, 0, m_currPhizImage.getWidth(), 0, 0, m_currPhizImage.getWidth(),m_currPhizImage.getHeight());
 			m_currPhizImage.scaleInto(m_bigPhizImage, Bitmap.FILTER_LANCZOS);
-			
+
 			int t_color = g.getColor();
 			try{
 				g.setColor(0xffffff);
@@ -340,7 +340,7 @@ public class PhizSelectedScreen extends MainScreen{
 			}finally{
 				g.setColor(t_color);
 			}
-			
+	
 			g.drawBitmap(t_x, t_y, m_bigPhizImage.getWidth(), m_bigPhizImage.getHeight(), m_bigPhizImage, 0, 0);
 			
 		}catch(Exception e){}

@@ -39,6 +39,7 @@ import local.yblocalResource;
 import net.rim.blackberry.api.invoke.CameraArguments;
 import net.rim.blackberry.api.invoke.Invoke;
 import net.rim.device.api.system.Backlight;
+import net.rim.device.api.system.Clipboard;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.KeypadListener;
 import net.rim.device.api.ui.Field;
@@ -133,6 +134,10 @@ final class InputManager extends Manager implements FieldChangeListener{
 	public static ImageUnit	sm_background		= recvMain.sm_weiboUIImage.getImageUnit("input_nav_bar"); //RRR:输入法背景
 	public static ImageUnit	sm_split_line 		= recvMain.sm_weiboUIImage.getImageUnit("input_nav_bar_seg");//RRR:输入法分割线
 	
+	/* RRR:源码
+	public static ImageUnit	sm_background		= recvMain.sm_weiboUIImage.getImageUnit("nav_bar");
+	public static ImageUnit	sm_split_line 		= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_seg");
+	*/
 	int					m_currHeight	= fsm_minHeight;
 	
 	int					m_inputInvokeID	= -1;
@@ -216,7 +221,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 		if(_preferredHeight > sm_background.getHeight()){
 			int t_color = _g.getColor();
 			try{
-				_g.setColor(0xf8c3e4); //RRR:输入框超过两行后用此色补充
+				_g.setColor(0x212122); //RRR:输入框超过两行后用此色补充_g.setColor(0);
 				_g.fillRect(0, sm_background.getHeight(), 
 						_preferredWidth, _preferredHeight - sm_background.getHeight());
 			}finally{
@@ -436,7 +441,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 
 final class MiddleMgr extends VerticalFieldManager{
 	
-	public final static int	fsm_linespace	= 12; //RRR:聊天对话气泡间距
+	public final static int	fsm_linespace	= 16; //RRR:聊天对话气泡间距
 	VerticalFieldManager	m_chatMsgMgr = null;
 	
 	VerticalFieldManager	m_chatMsgMiddleMgr = new VerticalFieldManager(Manager.VERTICAL_SCROLL){
@@ -459,7 +464,7 @@ final class MiddleMgr extends VerticalFieldManager{
 	MainChatScreen		m_chatScreen	= null;
 	
 	public MiddleMgr(MainChatScreen _charScreen){
-		super(Manager.NO_VERTICAL_SCROLL);
+		super(Manager.NO_VERTICAL_SCROLL); //RRR:垂直滚屏(Manager.NO_VERTICAL_SCROLL);
 		
 		m_chatScreen	= _charScreen;
 		
@@ -702,7 +707,7 @@ final class MiddleMgr extends VerticalFieldManager{
 
 public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOpen{
 	
-	public final static int fsm_background = 0xeaeaea; //RRR:聊天对话背景色0x2b3d4d; 
+	public final static int fsm_background = 0xf3ecfc; //RRR:聊天对话背景色0x2b3d4d; 
 	
 	int m_menu_op = 0;
 	MenuItem m_sendMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.WEIBO_SEND_LABEL),m_menu_op++,0){
@@ -933,7 +938,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		}
 		
 		public int getPreferredHeight() {
-			return m_mainApp.m_imChatScreenShowHeadImg?52:45;//RRR:聊天对话框选择头像显示时的 Header高度 54:30
+			return m_mainApp.m_imChatScreenShowHeadImg?63:45;//RRR:聊天对话框选择头像显示时的 Header高度 54:30
 		}
 		
 		public void invalidate(){
@@ -945,26 +950,26 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		}	
 		
 		protected void paint(Graphics _g){
-			recvMain.sm_weiboUIImage.drawBitmapLine(_g, m_title, 0, 0, getPreferredWidth());
+			recvMain.sm_weiboUIImage.drawBitmapLine(_g, m_title, 0,0, getPreferredWidth());
 			
 			int t_start_x = 0;
 			
 			if(m_mainApp.m_imChatScreenShowHeadImg){
-				t_start_x += WeiboHeadImage.displayHeadImage(_g,0, 0, m_rosterImage); //RRR:微调
+				t_start_x += WeiboHeadImage.displayHeadImage(_g,0, 3, m_rosterImage);//RRR:微调 头像
 			}
 			
 			// draw roster state
 			//
-			int t_x = RosterItemField.drawRosterState(_g,t_start_x + 4,8,m_currRoster.m_roster.getPresence());//RRR:微调
+			int t_x = RosterItemField.drawRosterState(_g,t_start_x + 4,6,m_currRoster.m_roster.getPresence());//RRR:微调状态指示
 			
 			int color = _g.getColor();
 			Font font = _g.getFont();
 			try{
 				
 				_g.setColor(0xffffff);//RRR:列表名字颜色(RosterItemField.fsm_nameTextColor);
-				_g.setFont(MainIMScreen.fsm_boldFont);
+				_g.setFont(MainIMScreen.fsm_statusFont);//RRR:更换小字体_g.setFont(MainIMScreen.fsm_boldFont);
 				
-				_g.drawText(m_currRoster.m_roster.getName(),t_x,2);
+				_g.drawText(m_currRoster.m_roster.getName(),t_x + 4,2);//RRR:微调对话名称
 				
 				if(m_mainApp.m_imChatScreenShowHeadImg){
 					String t_status = m_currRoster.m_roster.getStatus();
@@ -972,7 +977,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 						t_status = m_currRoster.m_roster.getAccount();
 					}
 					_g.setFont(RosterItemField.fsm_addressFont); //RRR:聊天顶栏状态字体
-					_g.drawText(t_status,t_start_x + 4,MainIMScreen.fsm_boldFont.getHeight()); //RRR:微调
+					_g.drawText(t_status,t_x + 4,RosterItemField.fsm_addressFontHeight ); //RRR:微调用户名字体_g.drawText(t_status,t_start_x + 4,MainIMScreen.fsm_boldFont.getHeight() - 4);
 				}
 				
 			}finally{
@@ -980,7 +985,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 				_g.setFont(font);
 			}
 			
-			t_x = RosterItemField.drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch,30);
+			t_x = RosterItemField.drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch,38);//RRR:对话语盒指示器位置
 						
 			if(m_currRoster.m_currChatState == fetchChatMsg.CHAT_STATE_COMPOSING){
 				recvMain.sm_weiboUIImage.drawImage(_g, sm_composing, t_x - sm_composing.getWidth(), 3);
@@ -1054,7 +1059,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		
 		m_header 		= new ChatScreenHeader();
 		m_middleMgr		= new MiddleMgr(this);
-		m_title 		= recvMain.sm_weiboUIImage.getImageUnit("im_chat_nav_bar");//RRR:IM Header 背景 
+		m_title 		= recvMain.sm_weiboUIImage.getImageUnit("im_chat_nav_bar");//RRR:IM Header 背景 	m_title 		= recvMain.sm_weiboUIImage.getImageUnit("nav_bar");
 		m_hasImageSign	= recvMain.sm_weiboUIImage.getImageUnit("picSign");
 		m_hasVoiceSign	= recvMain.sm_weiboUIImage.getImageUnit("voice_sign");
 				
@@ -1376,7 +1381,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		m_isPrompted = false;
 		
 		int key = Keypad.key(keycode);
-		if(key == /*Keypad.KEY_CAMERA_FOCUS*/211){ // the 4.2/4.5 sdk has no Keypad.KEY_CAMERA_FOCUS
+		if(key == 211 /*Keypad.KEY_CAMERA_FOCUS*/){ // the 4.2/4.5 sdk has no Keypad.KEY_CAMERA_FOCUS
 			// camera focus shortcut key clicked
 			// canbe attach image
 			//
@@ -1391,7 +1396,167 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 				m_middleMgr.m_inputMgr.m_editTextArea.setFocus();
 				return true;				
 			}
+				
+			//RRR:--------------------------------------------------------------------------------->	
+			// hacking function for [私信] xxxx:
+				boolean isOK = false;
+				if(key == 'P' && ChatField.sm_currFocusField != null){
+					
+					if(m_middleMgr.m_inputMgr.m_editTextArea.getTextLength() == 0 ){
+						String t_message = ChatField.sm_currFocusField.m_msg.getMsg();
+						Clipboard.getClipboard().put(t_message);
+
+						int t_commaIdx = t_message.indexOf("：");
+						int t_commaIdx0 = t_message.indexOf("[T\u79C1\u4FE1]");					
+						int t_commaIdx1 = t_message.indexOf("[D]:");
+						int t_commaIdx2 = t_message.indexOf("\u56DE\u590D\u5185\u5BB9 \u3011");
+						int t_commaIdx3 = t_message.indexOf("\u8BC4\u8BBA\u5185\u5BB9 \u3011");
+						int t_commaIdx4 = t_message.indexOf("- \u53D1\u9001\u3010 /r");
+						int t_commaIdx5 = t_message.indexOf("--|[ ID: ");
+						int t_commaIdx6 = t_message.indexOf(" ]|--");
+					
+						
+						if(t_message.startsWith("[\u79C1\u4FE1]") && t_commaIdx > 4){
+								t_message = "/d" + t_message.substring(4,t_commaIdx) + " ";
+									isOK = true;}
+							else if(t_commaIdx2 > 0 && t_commaIdx4 !=-1 && (t_commaIdx2 - t_commaIdx4) > 2){
+								t_message = "/r" + t_message.substring(t_commaIdx4 + 8,t_commaIdx2) ;
+									isOK = true;}	
+							else if(t_commaIdx3 > 0 && t_commaIdx4 !=-1 && (t_commaIdx3 - t_commaIdx4) > 2){
+								t_message = "/r" + t_message.substring(t_commaIdx4 + 8,t_commaIdx3);
+									isOK = true;}
+							else if(t_commaIdx5 > 0 && t_commaIdx6 !=-1 && (t_commaIdx6 - t_commaIdx5) > 1){
+								t_message = "-r" + t_message.substring(t_commaIdx5 + 9,t_commaIdx6) + " " ;
+									isOK = true;}
+							if(t_commaIdx0 > 0 && (t_commaIdx1 - t_commaIdx0) > 6 && t_commaIdx5 ==-1 ){
+								t_message = "-d" + t_message.substring(t_commaIdx0 + 5,t_commaIdx1) + " ";
+									isOK = true;}
+							
+								if (isOK){
+											m_middleMgr.scrollToBottom(null);
+											m_middleMgr.m_inputMgr.m_editTextArea.setFocus();
+											m_middleMgr.m_inputMgr.m_editTextArea.setText(t_message);
+											m_middleMgr.m_inputMgr.m_editTextArea.setCursorPosition(t_message.length());
+											return true;
+										}
+							}
+								
+				}	
+				
+				// Hacking Twitalker克隆 Screen name
+				if(key == 'U' && ChatField.sm_currFocusField != null){
+					String t_message = ChatField.sm_currFocusField.m_msg.getMsg();
+					boolean is1OK = false; 	
+					if(m_middleMgr.m_chatMsgMgr.getFieldCount() != 0){
+						int t_commaIdx = t_message.indexOf("] @");
+						int t_commaIdx2 = t_message.indexOf(":");
+						int t_commaIdx3 = t_message.indexOf("[v]");
+						int t_commaIdx4 = t_message.indexOf("- \u53D1\u9001\u3010 /r");
+							if(t_commaIdx !=-1 && t_commaIdx2 !=-1 && (t_commaIdx2 - t_commaIdx) > 0){
+								t_message = "@" + t_message.substring(t_commaIdx + 3,t_commaIdx2) ;
+					
+								String inputmessage	= m_middleMgr.m_inputMgr.m_editTextArea.getText();
+								m_middleMgr.scrollToBottom(null);
+								m_middleMgr.m_inputMgr.m_editTextArea.setFocus();
+								m_middleMgr.m_inputMgr.m_editTextArea.setText(inputmessage + t_message);
+								m_middleMgr.m_inputMgr.m_editTextArea.setCursorPosition(inputmessage.length() + t_message.length());
+								return true;
+							}
+
+							//hacking 增加新浪微博@功能 
+							if(t_commaIdx4 !=-1 ){
+								if (!t_message.startsWith("[\u8BC4\u8BBA]")){
+									if (t_commaIdx3 ==-1)  {
+										t_message = "@" + t_message.substring(0,t_commaIdx2) + " "  ;	
+										is1OK = true;}
+									if (t_commaIdx3 !=-1 && (t_commaIdx2 - t_commaIdx3) > 0 ){
+										t_message = "@" + t_message.substring(0,t_commaIdx3) + " "  ;	
+										is1OK = true;}
+									if (t_commaIdx3 !=-1 && (t_commaIdx2 - t_commaIdx3) < 0 ){
+										t_message = "@" + t_message.substring(0,t_commaIdx2) + " "  ;	
+										is1OK = true;}
+								}
+								if (t_message.startsWith("[\u8BC4\u8BBA]")){
+									if (t_commaIdx3 ==-1){
+										t_message = "@" + t_message.substring(5,t_commaIdx2) + " " ;	
+										is1OK = true;	
+									}
+									if (t_commaIdx3 !=-1 && (t_commaIdx2 - t_commaIdx3) > 0 ){
+										t_message = "@" + t_message.substring(5,t_commaIdx3) + " " ;
+										is1OK = true;}	
+									}
+								
+								if (is1OK){
+									String inputmessage	= m_middleMgr.m_inputMgr.m_editTextArea.getText();
+									m_middleMgr.scrollToBottom(null);
+									m_middleMgr.m_inputMgr.m_editTextArea.setFocus();
+									m_middleMgr.m_inputMgr.m_editTextArea.setText(inputmessage + t_message);
+									m_middleMgr.m_inputMgr.m_editTextArea.setCursorPosition(inputmessage.length() + t_message.length());
+									return true;	
+								}
+							}
+					}	
+				}
+	// hacking function for 转发
+				 if(key == 'D' && ChatField.sm_currFocusField != null){
+					 if(m_middleMgr.m_chatMsgMgr.getFieldCount() != 0){
+						boolean is2OK = false; 
+						String t_message = ChatField.sm_currFocusField.m_msg.getMsg();
+						int t_commaIdx4 = t_message.indexOf("- \u53D1\u9001\u3010 /r");
+						int t_commaIdx5 = t_message.indexOf("--|[ ID: ");
+						int t_commaIdx6 = t_message.indexOf(" ]|--");	  
+						//RRR:Twitalker 转推
+						if(t_commaIdx5 > 0 && t_commaIdx6 !=-1 && (t_commaIdx6 - t_commaIdx5) > 1 
+													&& m_middleMgr.m_inputMgr.m_editTextArea.getTextLength() == 0){
+							t_message = "-rt" + t_message.substring(t_commaIdx5 + 9,t_commaIdx6) + " " ; 
+							m_middleMgr.scrollToBottom(null);
+							m_middleMgr.m_inputMgr.m_editTextArea.setFocus();
+							m_middleMgr.m_inputMgr.m_editTextArea.setText(t_message);
+							m_middleMgr.m_inputMgr.m_editTextArea.setCursorPosition(t_message.length());
+							return true;
+						}
+						//RRR:新浪微博 转发时去除[评论]和[回复]字样
+						if (t_commaIdx4 !=-1 ){ 
+							
+							t_message = t_message.substring(0,t_commaIdx4);	
+							if(t_message.startsWith("[\u8BC4\u8BBA]") ) {
+								t_message = "//@" + t_message.substring(5,t_commaIdx4 - 2) ;
+								if (t_message.length() >= 140){
+									t_message = t_message.substring(0,140);
+								}
+								is2OK = true;
+								m_middleMgr.m_inputMgr.m_editTextArea.setText(t_message);
+								m_middleMgr.m_inputMgr.m_editTextArea.setCursorPosition(0);	
+							 }else{
+								t_message = "//@" + t_message.substring(0,t_commaIdx4 - 2) ;
+								if (t_message.length() >= 140){
+									t_message = t_message.substring(0,140);
+								}
+								is2OK = true;
+								m_middleMgr.m_inputMgr.m_editTextArea.setText(t_message);
+								m_middleMgr.m_inputMgr.m_editTextArea.setCursorPosition(0);
+							
+							}
+								
+						}else {
+							is2OK =true;
+							m_middleMgr.m_inputMgr.m_editTextArea.setText("//" + t_message);
+							m_middleMgr.m_inputMgr.m_editTextArea.setCursorPosition(0);
+						 }
+						 if (is2OK){
+								m_middleMgr.scrollToBottom(null);
+								m_middleMgr.m_inputMgr.m_editTextArea.setFocus();
+								return true;
+						 }
+					 }
+				 }
+				
+	//RRR:--------------------------------------------------------------------------------->				
 			
+			
+			
+			
+/*		RRR:源码	
 			// hacking function for [私信] xxxx:
 			if(key == 'D' && ChatField.sm_currFocusField != null){
 				if(m_middleMgr.m_inputMgr.m_editTextArea.getTextLength() == 0){
@@ -1409,7 +1574,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 					}
 				}				
 			}
-			
+	*/		
 			if(m_middleMgr.m_chatMsgMgr.getFieldCount() != 0){
 
 				int t_topKey = m_mainApp.m_imChatScreenReverse?'B':'T';

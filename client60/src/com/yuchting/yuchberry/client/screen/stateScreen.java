@@ -604,13 +604,13 @@ public class stateScreen extends MainScreen{
 		}
 		
 		public int getPreferredHeight(){
-			return recvMain.fsm_display_height;
+			return Math.max(recvMain.fsm_display_height,260);
 		}
 		
 		protected void paintBackground(Graphics _g){
 			m_mainApp.m_allImageSets.fillImageBlock(_g, m_stateBG, 0, 0, getPreferredWidth(), getPreferredHeight());
 			
-			int t_logo_x = (recvMain.fsm_display_width - m_stateLogo.getWidth()) / 2;
+			int t_logo_x = (getPreferredWidth() - m_stateLogo.getWidth()) / 2;
 			int t_logo_y = 10;
 			
 			m_mainApp.m_allImageSets.drawImage(_g, m_stateLogo, t_logo_x, t_logo_y);
@@ -856,6 +856,7 @@ public class stateScreen extends MainScreen{
 					}else{
 						
 						if(!m_mainApp.m_closeMailSendModule){
+
 							ServiceBook t_sb = ServiceBook.getSB();
 							ServiceRecord[] t_record = t_sb.findRecordsByCid("CMIME");
 							if(t_record == null || t_record.length == 0){

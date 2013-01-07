@@ -51,21 +51,21 @@ public class ChatField extends Manager implements FocusChangeListener{
 	}
 		
 	public final static int	fsm_offsetWidth = 32;
-	public final static int	fsm_bubblePointWidth = 8;
+	public final static int	fsm_bubblePointWidth = 10; //RRR:气泡耳朵宽度public final static int	fsm_bubblePointWidth = 8; 
 	public final static int	fsm_border		= 6;
 	
 	public final static int	fsm_minTextWidth		= fsm_offsetWidth + fsm_bubblePointWidth;
 	public final static int	fsm_maxTextWidth 		= recvMain.fsm_display_width - fsm_offsetWidth - fsm_border * 2 - fsm_bubblePointWidth - 12; //RRR:修正对话时间出界
 	
-	public final static int	fsm_ownChatTextBGColor		= 0xbbe4fe; //RRR:对话字体背景
-	public final static int	fsm_otherChatTextBGColor	= 0xededff; //RRR:对话字体背景
+	public final static int	fsm_ownChatTextBGColor		= 0xbbe4fe; //RRR:对话字体背景 0x95be0d;
+	public final static int	fsm_otherChatTextBGColor	= 0xededff; //RRR: 对话字体背景0xd0d1d3;
 	
-	public final static int	fsm_ownChatTextFGColor		= 0;		//RRR:对话字体背景
-	public final static int	fsm_otherChatTextFGColor	= 0x2d3035;	//RRR:对话字体背景
-/*	
-	public final static int	fsm_timeTextBGColor			= 0xffffcc; //RRR: 去除对话时间背景
-	public final static int	fsm_timeTextBorderColor		= 0xc0c0c0;	//RRR: 去除对话时间边框
-*/	
+	public final static int	fsm_ownChatTextFGColor		= 0; //RRR: 对话字体背景0x233c01;
+	public final static int	fsm_otherChatTextFGColor	= 0x2d3035;//RRR: 对话字体背景0x565656;
+	
+	public final static int	fsm_timeTextBGColor			= 0xffffcc;//RRR: 去除对话对话时间背景
+	public final static int	fsm_timeTextBorderColor		= 0xc0c0c0;//RRR: 去除对话对话边框
+	
 	private static ObjectAllocator sm_textFieldAllocator = new ObjectAllocator("com.yuchting.yuchberry.client.ui.WeiboTextField"){
 		protected Object newInstance()throws Exception{
 			return new WeiboTextField(0,0,true);
@@ -141,7 +141,7 @@ public class ChatField extends Manager implements FocusChangeListener{
 			new ImageUnit[]{
 				null,
 				null,
-				recvMain.sm_weiboUIImage.getImageUnit("own_point"),
+				recvMain.sm_weiboUIImage.getImageUnit("own_point"), 
 				null,
 			},
 			recvMain.sm_weiboUIImage);
@@ -262,7 +262,7 @@ public class ChatField extends Manager implements FocusChangeListener{
 			MainIMScreen.fsm_testTextArea.setPreferredWidth(m_msgTextWidth);
 			
 			MainIMScreen.fsm_testTextArea.setText(t_converText);
-			m_msgTextHeight = MainIMScreen.fsm_testTextArea.getHeight();
+			m_msgTextHeight = MainIMScreen.fsm_testTextArea.getHeight()  ;
 		
 			try{
 				m_textfield = (WeiboTextField)sm_textFieldAllocator.alloc();	
@@ -330,7 +330,7 @@ public class ChatField extends Manager implements FocusChangeListener{
 /* 源代码
 			return m_msgTextHeight + fsm_border * 2 + extra;	
 */
-		}
+	}
 	
 	protected void sublayout(int _width, int _height){
 		
@@ -360,7 +360,7 @@ public class ChatField extends Manager implements FocusChangeListener{
 	}
 		
 	protected void subpaint(Graphics _g){
-		
+
 		int t_bubbleWidth = m_msgTextWidth + fsm_border * 2;
 		
 		int t_x = 0;
@@ -376,7 +376,7 @@ public class ChatField extends Manager implements FocusChangeListener{
 			sm_ownChatBubble.draw(_g, t_x, 0, t_bubbleWidth, getPreferredHeight(), 
 					BubbleImage.RIGHT_POINT_STYLE);
 			
-			t_time_x = t_x - t_time_width ; //RRR:修正时间叠在对话气泡上 + 5
+			t_time_x = t_x - t_time_width ;//RRR:修正时间叠在对话气泡上 + 5
 			
 		}else{
 			
@@ -394,7 +394,7 @@ public class ChatField extends Manager implements FocusChangeListener{
 		//
 		if(m_msg.isOwnMsg()){
 			recvMain.sm_weiboUIImage.drawImage(_g, sm_stateImage[m_msg.getSendState()], 
-							t_x - sm_stateImage[m_msg.getSendState()].getWidth(), 0);
+							t_x - sm_stateImage[m_msg.getSendState()].getWidth(), 2); //RRR: 发送状态
 		}
 		
 		if(recvMain.sm_imDisplayTime){
