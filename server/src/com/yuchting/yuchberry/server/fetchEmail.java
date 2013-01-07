@@ -411,7 +411,7 @@ public class fetchEmail extends fetchAccount{
     private boolean	m_pop3ReverseFolder		= false;
     
     //! former new message hash
-    private int		m_formerNewMessageHash	= -1; 
+    private String		m_formerNewMessageID	= null; 
         
     class MailIndexAttachment{
     	int			m_mailHashCode;
@@ -755,11 +755,12 @@ public class fetchEmail extends fetchAccount{
 					
 					fetchMail t_newMail = m_unreadMailVector.get(m_unreadMailVector.size() - 1);
 					
-					if(t_newMail.GetSimpleHashCode() == m_formerNewMessageHash 
+					if(t_newMail.getMessageID() == m_formerNewMessageID
+					&& m_formerNewMessageID != null
 					&& m_protocol.indexOf("pop") != -1
 					&& !m_pop3ReverseFolder){
 						
-						m_formerNewMessageHash = t_newMail.GetSimpleHashCode();
+						m_formerNewMessageID = t_newMail.getMessageID();
 						m_pop3ReverseFolder = true;
 						
 						m_mainMgr.m_logger.LogOut(GetAccountName() + " pop3ReverseFolder true!");
@@ -767,7 +768,7 @@ public class fetchEmail extends fetchAccount{
 						return;
 					}
 					
-					m_formerNewMessageHash = t_newMail.GetSimpleHashCode();
+					m_formerNewMessageID = t_newMail.getMessageID();
 				}
     
 				m_totalMailCount = t_totalMailCount;
