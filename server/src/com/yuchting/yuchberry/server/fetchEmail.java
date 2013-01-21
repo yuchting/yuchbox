@@ -705,16 +705,17 @@ public class fetchEmail extends fetchAccount{
 
 	 		    				m_loadMessageErrorTime = 0;
 	 		    				
-		 		    			String t_prompt = null;
+		 		    			String t_prompt = GetAccountPrefix();
+		 		    			
 		 		    			switch (m_mainMgr.GetClientLanguage()) {
 				 		   		case fetchMgr.CLIENT_LANG_ZH_S:
-				 		   			t_prompt = "\nYuchBerry服务器提示：由于网络，格式等问题，读取这封邮件的时候出现了错误，需要通过其它方式查看。\n\n\n"; 
+				 		   			t_prompt += "\nYuchBerry服务器提示：由于网络，格式等问题，读取这封邮件的时候出现了错误，需要通过其它方式查看。\n\n\n"; 
 				 		   			break;
 				 		   		case fetchMgr.CLIENT_LANG_ZH_T:
-				 		   			t_prompt = "\nYuchBerry服务器提示：由於網絡，格式等問題，讀取這封郵件的時候出現了錯誤，需要通過其他方式查看。\n\n\n";
+				 		   			t_prompt += "\nYuchBerry服务器提示：由於網絡，格式等問題，讀取這封郵件的時候出現了錯誤，需要通過其他方式查看。\n\n\n";
 				 		   			break;
 				 		   		default:
-				 		   			t_prompt = "\nYuchBerry ImportMail Error! Please read the Mail via another way!\n\n\n";
+				 		   			t_prompt += "\nYuchBerry ImportMail Error! Please read the Mail via another way!\n\n\n";
 				 		   				
 				 		   		}
 		 		    			
@@ -2238,7 +2239,7 @@ public class fetchEmail extends fetchAccount{
 			_text = _text.replace("x-unknown","gbk");
 		}
 		
-		String t_decoded = MimeUtility.decodeText(_text);		
+		String t_decoded = MimeUtility.decodeText(_text);
 		if(t_decoded.indexOf((char)0xfffd) != -1){
 			
 			// has undecode char means error decode method
@@ -2273,7 +2274,7 @@ public class fetchEmail extends fetchAccount{
 				
 		return t_decoded;
 	}
-	
+		
 	/**
 	 * decode content input stream when Part.getContent().toString() indexOf 0xfffd
 	 * @param _p Part of JavaMail message
@@ -2377,6 +2378,24 @@ public class fetchEmail extends fetchAccount{
 		
 		return t_list;
 	}
+	
+
+	/**
+	 * new right byte string
+	 * @param bytes
+	 * @return
+	 * @throws Exception
+	 */
+	public static String newRightString(byte[] bytes)throws Exception{
+		String t_result = null;
+		int t_decodeIdx = 0;
+		
+		do{
+			t_result = new String(bytes,fsm_modifiedDecodeType[t_decodeIdx++]);
+		}while(t_decodeIdx < fsm_modifiedDecodeType.length && t_result.indexOf(0xfffd) != -1);
+		
+		return t_result;
+	}
 		
 	public void ComposeMessage(MimeMessage msg,fetchMail _mail,fetchMail _forwardMail,String _sendName)throws Exception{
 		
@@ -2462,7 +2481,16 @@ public class fetchEmail extends fetchAccount{
 						t_fullname = GetAccountPrefix() + _mail.GetSendDate().getTime() + "_" + i + ".satt";
 					}
 					
-					t_filePart.setContent(ReadFileBuffer( t_fullname ), t_attachment.m_type);
+					if(t_attachment.m_type.startsWith("text/")){
+						// must convert the text/* to application/octet-stream
+						// to adapt javamail follow exception:
+						//
+						//	java.io.IOException: "text/plain" DataContentHandler requires String object, was given object of type class [B
+						//	at com.sun.mail.smtp.SMTPTransport.sendMessage(SMTPTransport.java:1177)
+						//
+						t_attachment.m_type = "application/octet-stream";
+					}
+					t_filePart.setContent(ReadFileBuffer( t_fullname ),t_attachment.m_type);
 					
 					t_mainPart.addBodyPart(t_filePart);
 				}
@@ -2487,7 +2515,17 @@ public class fetchEmail extends fetchAccount{
 						if(t_file.exists()){
 							MimeBodyPart t_filePart = new MimeBodyPart();
 							t_filePart.setFileName(MimeUtility.encodeText(t_attachment.m_name));
-							t_filePart.setContent(ReadFileBuffer(t_fullname), t_attachment.m_type);
+							
+							if(t_attachment.m_type.startsWith("text/")){
+								// must convert the text/* to application/octet-stream
+								// to adapt javamail follow exception:
+								//
+								//	java.io.IOException: "text/plain" DataContentHandler requires String object, was given object of type class [B
+								//	at com.sun.mail.smtp.SMTPTransport.sendMessage(SMTPTransport.java:1177)
+								//
+								t_attachment.m_type = "application/octet-stream";
+							}
+							t_filePart.setContent(ReadFileBuffer( t_fullname ),t_attachment.m_type);
 							
 							t_mainPart.addBodyPart(t_filePart);
 						}
