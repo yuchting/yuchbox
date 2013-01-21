@@ -1598,9 +1598,9 @@ public class fetchEmail extends fetchAccount{
 				
 				fetchMail t_confirmMail = (fetchMail)m_unreadMailVector_confirm.elementAt(i);
 								
-				if(Math.abs(t_currTime - t_confirmMail.m_sendConfirmTime) >= (5 * 60 * 1000) ){
+				if(Math.abs(t_currTime - t_confirmMail.m_sendConfirmTime) >= (3 * 60 * 1000) * t_confirmMail.m_sendConfirmNum ){
 					
-					final int t_maxConfirmNum = 5;
+					final int t_maxConfirmNum = 10;
 					
 					if(t_confirmMail.m_sendConfirmNum < t_maxConfirmNum){
 						
