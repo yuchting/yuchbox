@@ -44,8 +44,6 @@ class sendReceive extends Thread{
 	
 	Socket				m_currSocket		= null;
 	
-	int					m_sendBufferLen 		= 0;
-	
 	private Vector<byte[]>		m_unsendedPackage 		= new Vector<byte[]>();
 	private Vector<byte[]>		m_unprocessedPackage 	= new Vector<byte[]>();
 	
@@ -79,12 +77,6 @@ class sendReceive extends Thread{
 	
 	//! send buffer
 	public synchronized void SendBufferToSvr(byte[] _write,boolean _sendImm)throws Exception{	
-		
-		if(m_sendBufferLen + _write.length + fsm_packageHeadLength >= 65535){
-			SendBufferToSvr_imple(PrepareOutputData());
-		}
-		
-		m_sendBufferLen += _write.length + fsm_packageHeadLength;
 		m_unsendedPackage.addElement(_write);
 		
 		if(_sendImm){
@@ -138,11 +130,7 @@ class sendReceive extends Thread{
 			
 			m_unsendedPackage.removeAllElements();
 		}
-		
-		synchronized (this) {
-			m_sendBufferLen = 0;
-		}
-		
+				
 		return t_stream.toByteArray();
 		
 	}
@@ -168,15 +156,30 @@ class sendReceive extends Thread{
 		if(t_zipData.length > _write.length){
 			// if the ZIP data is large than original length
 			// NOT convert
-			//
-			int t_header = (_write.length << 16) & 0xffff0000;
-			WriteInt(os,t_header);
+			//			
+			if(_write.length >= 65535){
+				WriteInt(m_socketOutputStream,0); // big read flag
+				
+				WriteInt(m_socketOutputStream,_write.length);
+				WriteInt(m_socketOutputStream,0);
+			}else{								
+				int t_header = (_write.length << 16) & 0xffff0000;
+				WriteInt(os,t_header);
+			}
+						
 			os.write(_write);
 			os.flush();
 			
 		}else{
-			int t_header = ((_write.length << 16) & 0xffff0000) | t_zipData.length;
-			WriteInt(os,t_header);
+			if(_write.length >= 65535){
+				WriteInt(m_socketOutputStream,0); // big read flag
+				
+				WriteInt(m_socketOutputStream,_write.length);
+				WriteInt(m_socketOutputStream,t_zipData.length);
+			}else{
+				int t_header = ((_write.length << 16) & 0xffff0000) | t_zipData.length;
+				WriteInt(os,t_header);
+			}
 			os.write(t_zipData);
 			os.flush();
 		}				
@@ -212,8 +215,20 @@ class sendReceive extends Thread{
 			throw new Exception("socket ReadInt failed.");
 		}
 		
-		final int t_ziplen = t_len & 0x0000ffff;
-		final int t_orglen = t_len >>> 16;
+		int t_ziplen;
+		int t_orglen;
+				
+		if(t_len == 0){
+			t_orglen = ReadInt(in,m_bThrowReadTimeOutException);
+			t_ziplen = ReadInt(in,m_bThrowReadTimeOutException);
+			
+			if(t_orglen == -1 || t_ziplen == -1){
+				throw new Exception("socket ReadInt failed.");
+			}
+		}else{			
+			t_ziplen = t_len & 0x0000ffff;
+			t_orglen = t_len >>> 16;
+		}		
 				
 		byte[] t_orgdata = new byte[t_orglen];
 				
@@ -227,12 +242,17 @@ class sendReceive extends Thread{
 			
 			ForceReadByte(in, t_zipdata, t_ziplen);
 			
-			GZIPInputStream zi	= new GZIPInputStream(
-										new ByteArrayInputStream(t_zipdata));
-
-			ForceReadByte(zi,t_orgdata,t_orglen);
-			
-			zi.close();
+			ByteArrayInputStream gin = new ByteArrayInputStream(t_zipdata);
+			try{
+				GZIPInputStream zi	= new GZIPInputStream(gin);
+				try{
+					ForceReadByte(zi,t_orgdata,t_orglen);
+				}finally{
+					zi.close();
+				}
+			}finally{
+				gin.close();
+			}
 		}
 		
 		byte[] t_ret = ParsePackage(t_orgdata);

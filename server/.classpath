@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/*|Thumbs.db" kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.6.0_25"/>
 	<classpathentry kind="lib" path="libs/HTMLParser-2.0-SNAPSHOT/htmllexer.jar"/>
 	<classpathentry kind="lib" path="libs/HTMLParser-2.0-SNAPSHOT/htmlparser.jar"/>
 	<classpathentry kind="lib" path="libs/javamail-1.4.5/mail.jar">

@@ -2563,8 +2563,7 @@ public class fetchEmail extends fetchAccount{
 	
 	private String GetLocationHTML(fetchMail _mail){
 		
-		String t_ret = _mail.GetContain();
-		
+		String t_ret = _mail.GetContain().replace("\n", "<br />");		
 		try{
 			// load the location information
 			//	    	
@@ -2580,7 +2579,7 @@ public class fetchEmail extends fetchAccount{
 				t_line = t_line.replace("$map_y$",Double.toString(_mail.m_gpsInfo.m_longitude));
 				t_line = t_line.replace("$map_x$",Double.toString(_mail.m_gpsInfo.m_latitude));
 				
-				t_line = t_line.replace("$mail_content$",_mail.GetContain());
+				t_line = t_line.replace("$mail_content$",t_ret);
 				t_line = t_line.replace("$mail_sign$","YBBer:I'm Here!");
 				
 				t_stringBuffer.append(t_line).append("\n");

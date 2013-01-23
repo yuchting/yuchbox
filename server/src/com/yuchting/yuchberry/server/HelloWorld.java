@@ -45,6 +45,7 @@ import java.security.KeyStore;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Vector;
 import java.util.concurrent.Callable;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -126,6 +127,11 @@ public class HelloWorld {
 	
 
 	public static void main(String arg[])throws Exception{
+		String mailTitle = "aaa\rbbb\nccc\r\ndddd";
+		mailTitle = mailTitle.replaceAll("[\r\n]", "");
+		
+		System.out.println(mailTitle);
+		
 //		String t_test = "  =?UTF-8?B?UmU6IOWwmumCruiHquWKqOWbnuWkje+8muetlOWkje+8miBb6K+t55uSXSDogIHlpKc=?=" +
 //						"=?UTF-8?B?77+95o6S5p+l5a6Y77+95Z+f5ZCN6Kej5p6Q?=";
 //		System.out.println(fetchEmail.DecodeName(t_test, false));
@@ -144,7 +150,7 @@ public class HelloWorld {
 //		System.setProperty("proxyPort", "8088");
 //		
 //		System.out.println(fetchTWeibo.replaceGFWVerified_URL("http://t.co/HPjdqFCN sdfsdfs http://bit.ly/PU7zFy sdfskljfeind sdfjsdkfs "));
-		berryRecvTest();
+		//berryRecvTest();
 		//berrySendTest();
 		
 	}
