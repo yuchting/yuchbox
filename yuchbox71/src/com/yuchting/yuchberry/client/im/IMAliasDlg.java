@@ -29,6 +29,7 @@ package com.yuchting.yuchberry.client.im;
 
 import local.yblocalResource;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.component.EditField;
 
 import com.yuchting.yuchberry.client.screen.SimpleOKCancelDlg;
@@ -36,7 +37,7 @@ import com.yuchting.yuchberry.client.screen.SimpleOKCancelDlg;
 public class IMAliasDlg extends SimpleOKCancelDlg implements FieldChangeListener{
 	
 	RosterItemField m_currRosterField = null;
-	EditField		m_name			= null;
+	AutoTextEditField		m_name			= null;
 
 	MainIMScreen	m_mainScreen = null;		
 	
@@ -46,7 +47,7 @@ public class IMAliasDlg extends SimpleOKCancelDlg implements FieldChangeListener
 		m_mainScreen		= _mainScreen;
 		m_currRosterField	= _roster;
 		
-		m_name = new EditField("",m_currRosterField.m_currRoster.m_roster.getName(),128, EditField.FILTER_DEFAULT);
+		m_name = new AutoTextEditField("",m_currRosterField.m_currRoster.m_roster.getName(),128, EditField.FILTER_DEFAULT);
 		m_name.select(true);
 		m_name.setCursorPosition(m_name.getTextLength());
 		m_name.select(false);

@@ -39,8 +39,11 @@ import net.rim.device.api.compress.GZIPOutputStream;
 
 public class sendReceive extends Thread{
 	
-	interface IStoreUpDownloadByte{
-		void Store(long _uploadByte,long _downloadByte);
+	public interface IStoreUpDownloadByte{
+		public void store(long _uploadByte,long _downloadByte);
+		public void debug(String _label,Exception _e);
+		public void debug(String _info);
+		
 	}
 	
 	OutputStream		m_socketOutputStream = null;
@@ -48,8 +51,6 @@ public class sendReceive extends Thread{
 	
 	private Vector		m_unsendedPackage 		= new Vector();
 	private Vector		m_unprocessedPackage 	= new Vector();
-	
-	int					m_sendBufferLen 		= 0;
 	
 	boolean			m_closed				= false;
 	
@@ -75,6 +76,18 @@ public class sendReceive extends Thread{
 		start();
 	}
 	
+	private void debugOut(String _info){
+		if(m_storeInterface != null){
+			m_storeInterface.debug(_info);
+		}
+	}
+	
+	private void debugOut(String _label,Exception _e){
+		if(m_storeInterface != null){
+			m_storeInterface.debug(_label,_e);
+		}
+	}
+	
 	public void SetKeepliveInterval(int _minutes){
 		if(_minutes >= 0){
 			m_keepliveInterval = _minutes * 60;
@@ -91,19 +104,12 @@ public class sendReceive extends Thread{
 	public synchronized void SendBufferToSvr(byte[] _write,boolean _sendImm,
 													boolean _wait)throws Exception{
 		
-		if(m_sendBufferLen + _write.length + fsm_packageHeadLength >= 65535){
-			SendBufferToSvr_imple(PrepareOutputData());
-		}
-		
-		m_sendBufferLen += _write.length + fsm_packageHeadLength;
-
 		m_unsendedPackage.addElement(_write);
 		
 		if(_sendImm){
 			SendBufferToSvr_imple(PrepareOutputData());
-			m_keepliveCounter = 0;
 		}
-		
+				
 		if(_wait){
 			m_waitMoment = true;
 		}
@@ -113,7 +119,7 @@ public class sendReceive extends Thread{
 		if(m_storeInterface != null){
 			if(m_storeByteTimer++ > 5 || _force){
 				m_storeByteTimer = 0;
-				m_storeInterface.Store(m_uploadByte,m_downloadByte);
+				m_storeInterface.store(m_uploadByte,m_downloadByte);
 				m_uploadByte = 0;
 				m_downloadByte = 0;				
 			}			
@@ -131,18 +137,23 @@ public class sendReceive extends Thread{
 			m_unsendedPackage.removeAllElements();
 			m_unprocessedPackage.removeAllElements();
 			
-			interrupt();
+			if(isAlive()){
+				interrupt();
+			}
 			
 			try{
 				m_socketOutputStream.close();
 				m_socketInputStream.close();
-			}catch(Exception _e){}
-			
-	
+			}catch(Exception _e){
+				debugOut("S_CSR",_e);
+			}
+				
 			while(isAlive()){
 				try{
 					sleep(10);
-				}catch(Exception _e){};			
+				}catch(Exception _e){
+					debugOut("S_CSR1",_e);
+				};			
 			}	
 		}		
 	}
@@ -164,11 +175,7 @@ public class sendReceive extends Thread{
 			}
 		}
 		
-		m_unsendedPackage.removeAllElements();
-		
-		synchronized (this) {
-			m_sendBufferLen = 0;
-		}			
+		m_unsendedPackage.removeAllElements();		
 		
 		return t_stream.toByteArray();
 		
@@ -179,7 +186,11 @@ public class sendReceive extends Thread{
 		
 		if(_write == null){
 			return;
-		}	
+		}
+		
+		synchronized(this){
+			m_keepliveCounter = 0;
+		}		
 		
 		ByteArrayOutputStream zos = new ByteArrayOutputStream();
 		
@@ -193,8 +204,17 @@ public class sendReceive extends Thread{
 			// if the ZIP data is large than original length
 			// NOT convert
 			//
+			if(_write.length >= 65535){
+				WriteInt(m_socketOutputStream,0); // big read flag
+				
+				WriteInt(m_socketOutputStream,_write.length);
+				WriteInt(m_socketOutputStream,0);
+				
+				m_uploadByte += 8;
+			}else{
+				WriteInt(m_socketOutputStream,(_write.length << 16) & 0xffff0000);
+			}
 			
-			WriteInt(m_socketOutputStream,(_write.length << 16) & 0xffff0000);
 			m_socketOutputStream.write(_write);
 			m_socketOutputStream.flush();
 			
@@ -202,7 +222,17 @@ public class sendReceive extends Thread{
 			m_uploadByte += _write.length + 4 + 20;
 	
 		}else{
-			WriteInt(m_socketOutputStream,((_write.length << 16) & 0xffff0000) | t_zipData.length);
+			if(_write.length >= 65535){
+				WriteInt(m_socketOutputStream,0); // big read flag
+				
+				WriteInt(m_socketOutputStream,_write.length);
+				WriteInt(m_socketOutputStream,t_zipData.length);
+				
+				m_uploadByte += 8;
+			}else{
+				WriteInt(m_socketOutputStream,((_write.length << 16) & 0xffff0000) | t_zipData.length);
+			}
+			
 			m_socketOutputStream.write(t_zipData);
 			m_socketOutputStream.flush();
 				
@@ -235,15 +265,21 @@ public class sendReceive extends Thread{
 				}				
 				
 				synchronized (this){
-					if(m_keepliveInterval != 0 && ++m_keepliveCounter > m_keepliveInterval){
-						m_keepliveCounter = 0;
-						t_keeplive = true;
+					if(m_keepliveInterval != 0){
+												
+						m_keepliveCounter += 1;
+						
+						if(m_keepliveCounter > m_keepliveInterval){
+							m_keepliveCounter = 0;
+							t_keeplive = true;
+						}
 					}
+					
 				}				
 				
 				if(t_keeplive){
 					t_keeplive = false;
-
+										
 					SendBufferToSvr_imple(sm_keepliveMsg);
 					
 					StoreUpDownloadByteImm(false);										
@@ -251,10 +287,14 @@ public class sendReceive extends Thread{
 			}
 			
 		}catch(Exception _e){
+			debugOut("S_RUN",_e);
+			
 			try{
 				m_socketOutputStream.close();
 				m_socketInputStream.close();	
-			}catch(Exception e){}
+			}catch(Exception e){
+				debugOut("S_RUN1",_e);
+			}
 		}
 	}
 
@@ -279,8 +319,23 @@ public class sendReceive extends Thread{
 			throw new Exception("socket ReadInt failed.");
 		}
 		
-		final int t_ziplen = t_len & 0x0000ffff;
-		final int t_orglen = t_len >>> 16;
+		int t_ziplen;
+		int t_orglen;
+				
+		if(t_len == 0){
+			t_orglen = ReadInt(in);
+			t_ziplen = ReadInt(in);
+			
+			if(t_orglen == -1 || t_ziplen == -1){
+				throw new Exception("socket ReadInt failed.");
+			}
+			
+			m_downloadByte += 8;
+			
+		}else{			
+			t_ziplen = t_len & 0x0000ffff;
+			t_orglen = t_len >>> 16;
+		}
 				
 		byte[] t_orgdata = new byte[t_orglen];
 				
@@ -304,11 +359,17 @@ public class sendReceive extends Thread{
 				m_downloadByte += t_ziplen + 4 + 20;
 			}
 			
-			GZIPInputStream zi	= new GZIPInputStream(new ByteArrayInputStream(t_zipdata));
-
-			ForceReadByte(zi,t_orgdata,t_orglen);
-			
-			zi.close();
+			ByteArrayInputStream gin = new ByteArrayInputStream(t_zipdata);
+			try{
+				GZIPInputStream zi	= new GZIPInputStream(gin);
+				try{
+					ForceReadByte(zi,t_orgdata,t_orglen);
+				}finally{
+					zi.close();
+				}
+			}finally{
+				gin.close();
+			}
 		}
 		
 		byte[] t_ret = ParsePackage(t_orgdata);

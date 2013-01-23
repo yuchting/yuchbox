@@ -70,6 +70,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 CheckboxField		m_useWifi		= null;
 	 CheckboxField		m_autoRun		= null;
 	 CheckboxField		m_conDisPrompt 	= null;
+	 CheckboxField		m_popupDlgWhenDisconnect 	= null;
 	 ObjectChoiceField	m_pulseInterval	= null;
 	 
 	 CheckboxField		m_hideBackgroundIcon = null;
@@ -95,6 +96,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 
 	 CheckboxField		m_discardOrgText = null;
 	 CheckboxField		m_delRemoteMail	= null;
+	 CheckboxField		m_markReadMailSvr = null;
 	 CheckboxField		m_copyToSentFolder = null;
 	 CheckboxField		m_mailUseLocation = null;
 	 ObjectChoiceField	m_recvMsgTextLength	= null;
@@ -105,6 +107,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 	 VerticalFieldManager	m_sendMailAccountList = new VerticalFieldManager(Manager.VERTICAL_SCROLL);
 	 ButtonField		m_requestMailAccountBut = new ButtonField(recvMain.sm_local.getString(yblocalResource.SETTING_REQUEST_MAIL_ACCOUNT),
 			 											Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
+	 CheckboxField		m_popupDlgWhenComposeNew = null;
+	 CheckboxField		m_mailHtmlShow			= null;
+	 CheckboxField		m_mailHtmlShowOnlyWIFI	= null;
+	 NullField			m_mailHtmlShowOnlyWIFINull	= new NullField(Field.NON_FOCUSABLE);
 	 
 	 CheckboxField		m_weiboModule	= null;
 	 NullField			m_weiboNullField = new NullField(Field.NON_FOCUSABLE);
@@ -171,6 +177,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 m_conDisPrompt		= new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_CONNECT_DISCONNECT_PROMPT), m_mainApp.m_connectDisconnectPrompt);
 		 add(m_conDisPrompt);
 		 
+		 m_popupDlgWhenDisconnect = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_DISCONNECT_PROMPT), m_mainApp.m_popupDlgWhenDisconnect);
+		 add(m_popupDlgWhenDisconnect);
+		 
 		 m_hideBackgroundIcon = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_HIDE_BG_ICON), m_mainApp.m_hideBackgroundIcon);
 		 add(m_hideBackgroundIcon);
 		 
@@ -189,14 +198,32 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 m_delRemoteMail	= new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_DELETE_REMOTE_MAIL),m_mainApp.m_delRemoteMail);
 		 add(m_delRemoteMail);
 		 
+		 m_markReadMailSvr	= new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_MARK_REAE_REMOTE_MAIL),m_mainApp.m_markReadMailInSvr);
+		 add(m_markReadMailSvr);
+		 
 		 m_copyToSentFolder	= new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_COPY_MAIL_TO_SENT_FOLDER),m_mainApp.m_copyMailToSentFolder);
 		 add(m_copyToSentFolder);
 		 
 		 m_mailUseLocation = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_MAIL_USER_LOCATION),m_mainApp.m_mailUseLocation);
 		 add(m_mailUseLocation);
 		 
+		 if(!recvMain.fsm_OS_version.startsWith("4.")){
+			 m_mailHtmlShow			 = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_SHOW_HTML_DIRECTLY),m_mainApp.m_mailHtmlShow);
+			 add(m_mailHtmlShow);
+			 m_mailHtmlShow.setChangeListener(this);
+			 
+			 m_mailHtmlShowOnlyWIFI = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_SHOW_HTML_DIRECTLY_ONLY_WIFI),m_mainApp.m_mailHtmlShowOnlyWIFI);
+			 			 
+			 if(m_mainApp.m_mailHtmlShow){
+				 add(m_mailHtmlShowOnlyWIFI);
+			 }else{
+				 add(m_mailHtmlShowOnlyWIFINull);
+			 }
+		 }
+		 
 		 m_closeMailSendModule = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_CLOSE_SEND_MAIL),m_mainApp.m_closeMailSendModule);
 		 add(m_closeMailSendModule);
+		 m_closeMailSendModule.setChangeListener(this);
 		 
 		 m_recvMsgTextLength = new ObjectChoiceField(recvMain.sm_local.getString(yblocalResource.MESSAGE_CONTAIN_MAX_LENGTH),
 				 					recvMain.fsm_recvMaxTextLenghtString,m_mainApp.m_recvMsgTextLengthIndex);
@@ -212,7 +239,10 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		 
 		 refreshMailAccountList();
 		 
+		 m_popupDlgWhenComposeNew = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_POPUP_DLG_COMPOSE_NEW),m_mainApp.m_popupDlgWhenComposeNew);
+		 add(m_popupDlgWhenComposeNew);
 		 //@}
+		 
 		 
 		 add(new SeparatorField());
 		 
@@ -375,6 +405,17 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				m_mainApp.m_connectDeamon.sendRequestMailAccountMsg();
 			}else if(field == m_imModule){
 				enableIMSet(m_imModule.getChecked());
+			}else if(field == m_closeMailSendModule){
+				if(m_closeMailSendModule.getChecked()){
+					m_mainApp.DialogAlert(yblocalResource.SETTING_DISABLE_MAIL_PROMPT);
+				}
+			}else if(field == m_mailHtmlShow){
+				if(m_mailHtmlShow.getChecked()){
+					m_mainApp.DialogAlert(yblocalResource.SETTING_SHOW_HTML_DIRECTLY_PROMPT);
+					replace(m_mailHtmlShowOnlyWIFINull, m_mailHtmlShowOnlyWIFI);
+				}else{
+					replace(m_mailHtmlShowOnlyWIFI, m_mailHtmlShowOnlyWIFINull);
+				}
 			}
 		}else{
 			// Perform action if application changed field.
@@ -435,22 +476,29 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		m_mainApp.SetAPNName(m_APN.getText());
 		m_mainApp.m_autoRun = m_autoRun.getChecked();
 		m_mainApp.m_connectDisconnectPrompt = m_conDisPrompt.getChecked();
+		m_mainApp.m_popupDlgWhenDisconnect = m_popupDlgWhenDisconnect.getChecked();
 		
-		m_mainApp.m_appendString = m_appendString.getText();
-		m_mainApp.m_useWifi = m_useWifi.getChecked();
+		m_mainApp.m_appendString 		= m_appendString.getText();
+		m_mainApp.m_useWifi 			= m_useWifi.getChecked();
 		
-		m_mainApp.m_pulseIntervalIndex = m_pulseInterval.getSelectedIndex();
-		m_mainApp.m_useLocationInfo = m_useLocationInfo.getChecked();
+		m_mainApp.m_pulseIntervalIndex	= m_pulseInterval.getSelectedIndex();
+		m_mainApp.m_useLocationInfo		= m_useLocationInfo.getChecked();
 		
-		m_mainApp.m_useMDS = m_uesMDS.getChecked();
-		m_mainApp.m_fulldayPrompt	= m_fulldayPrompt.getChecked();				
+		m_mainApp.m_useMDS				= m_uesMDS.getChecked();
+		m_mainApp.m_fulldayPrompt		= m_fulldayPrompt.getChecked();				
 		
-		m_mainApp.m_discardOrgText = m_discardOrgText.getChecked();
-		m_mainApp.m_delRemoteMail	= m_delRemoteMail.getChecked();
-		m_mainApp.m_recvMsgTextLengthIndex = m_recvMsgTextLength.getSelectedIndex();
-		m_mainApp.m_copyMailToSentFolder = m_copyToSentFolder.getChecked();
-		m_mainApp.m_mailUseLocation = m_mailUseLocation.getChecked();
-		m_mainApp.m_hideBackgroundIcon = m_hideBackgroundIcon.getChecked();
+		m_mainApp.m_discardOrgText 			= m_discardOrgText.getChecked();
+		m_mainApp.m_delRemoteMail			= m_delRemoteMail.getChecked();
+		m_mainApp.m_markReadMailInSvr		= m_markReadMailSvr.getChecked();
+		m_mainApp.m_recvMsgTextLengthIndex	= m_recvMsgTextLength.getSelectedIndex();
+		m_mainApp.m_copyMailToSentFolder	= m_copyToSentFolder.getChecked();
+		m_mainApp.m_mailUseLocation			= m_mailUseLocation.getChecked();
+		m_mainApp.m_hideBackgroundIcon		= m_hideBackgroundIcon.getChecked();
+		
+		if(m_mailHtmlShow != null){
+			m_mainApp.m_mailHtmlShow			= m_mailHtmlShow.getChecked();
+			m_mainApp.m_mailHtmlShowOnlyWIFI	= m_mailHtmlShowOnlyWIFI.getChecked();
+		}		
 		
 		boolean t_formerClose = m_mainApp.m_closeMailSendModule;
 		m_mainApp.m_closeMailSendModule = m_closeMailSendModule.getChecked();
@@ -479,6 +527,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 				break;
 			}
 		}
+		
+		m_mainApp.m_popupDlgWhenComposeNew = m_popupDlgWhenComposeNew.getChecked();
 		
 		if(m_mainApp.m_enableWeiboModule != m_weiboModule.getChecked()){
 			

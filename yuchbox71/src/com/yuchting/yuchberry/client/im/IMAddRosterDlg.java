@@ -29,6 +29,7 @@ package com.yuchting.yuchberry.client.im;
 
 import local.yblocalResource;
 import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.component.RadioButtonField;
 import net.rim.device.api.ui.component.RadioButtonGroup;
@@ -45,10 +46,10 @@ public class IMAddRosterDlg extends SimpleOKCancelDlg{
 		new RadioButtonField("MSN",m_addTypeGroup,false,Field.READONLY),
 	};
 	
-	EditField		m_addr	= new EditField(recvMain.sm_local.getString(yblocalResource.IM_ADD_ROSTER_DLG_ADDR),
+	AutoTextEditField		m_addr	= new AutoTextEditField(recvMain.sm_local.getString(yblocalResource.IM_ADD_ROSTER_DLG_ADDR),
 									"",128, EditField.FILTER_DEFAULT);
 	
-	EditField		m_name	= new EditField(recvMain.sm_local.getString(yblocalResource.IM_ADD_ROSTER_DLG_NAME),
+	AutoTextEditField		m_name	= new AutoTextEditField(recvMain.sm_local.getString(yblocalResource.IM_ADD_ROSTER_DLG_NAME),
 									"",128, EditField.FILTER_DEFAULT);
 		
 	MainIMScreen	m_mainScreen = null;

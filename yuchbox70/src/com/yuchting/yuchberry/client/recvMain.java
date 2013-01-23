@@ -78,6 +78,7 @@ import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
 import net.rim.device.api.util.LongHashtable;
 
+import com.flurry.blackberry.FlurryAgent;
 import com.yuchting.yuchberry.client.connectDeamon.FetchAttachment;
 import com.yuchting.yuchberry.client.im.IMStatus;
 import com.yuchting.yuchberry.client.im.MainIMScreen;
@@ -224,11 +225,14 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public boolean			m_useWifi			= false;
 	public boolean			m_useMDS			= false;
 	public String			m_carrier			= "";
-		
-	public boolean			m_autoRun			= false;
+	public boolean			m_autoRun			= false;	
 	
 	public boolean			m_discardOrgText	= false;
 	public boolean			m_delRemoteMail		= false;
+	public boolean			m_markReadMailInSvr	= true;
+	public boolean			m_popupDlgWhenComposeNew = false;
+	public boolean			m_mailHtmlShow		= false;
+	public boolean			m_mailHtmlShowOnlyWIFI = false;
 	
 	public final class APNSelector{
 		public String		m_name			= null;
@@ -256,6 +260,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public boolean				m_closeMailSendModule = false;
 	
 	public boolean			m_connectDisconnectPrompt = false;
+	public boolean			m_popupDlgWhenDisconnect = false;
 	
 	
 	public static final String[]	fsm_recvMaxTextLenghtString = {"∞","1KB","5KB","10KB","50KB"};
@@ -298,6 +303,9 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public int				m_defaultSendMailAccountIndex_tmp = -1;
 	
 	public boolean 		m_hideBackgroundIcon = false;
+	
+	//! flurry agent key
+	private String			m_flurryKey			= null;
 	
 	public final class UploadingDesc{
 		
@@ -368,7 +376,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	FileConnection m_logfc				= null;
 	OutputStream	m_logfcOutput		= null;
 				
-	public static void main(String[] args) {
+	public static void main(String[] args) {	
 		recvMain t_theApp = new recvMain(ApplicationManager.getApplicationManager().inStartup());
 		t_theApp.enterEventDispatcher();
 	}
@@ -474,6 +482,9 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
         	}      	
         }
         
+        // initialize flurry
+        initFlurry();
+        
         addFileSystemListener(new FileSystemListener(){
         	public void rootChanged(int state,String rootName) {
         		if( state == ROOT_ADDED ) {
@@ -501,6 +512,60 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
         WeiboHeadImage.sm_mainApp = this;
         InitWeiboModule();
         initIMModule();
+	}
+	
+	/**
+	 * intialize the flurry
+	 */
+	private void initFlurry(){
+		
+		try{
+			InputStream t_file = getClass().getResourceAsStream("/FlurryKey.txt");
+			try{
+
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+				try{
+					int t_readByte;
+					while((t_readByte = t_file.read()) != -1){
+						os.write(t_readByte);
+					}
+					m_flurryKey = new String(os.toByteArray());
+					
+					// invoke later to make sure flurry run in YuchCaller context
+					invokeLater(new Runnable() {
+						public void run() {
+							FlurryAgent.onStartApp(m_flurryKey);
+						}
+					});
+					
+					// invoke a runnable for destory app every 6 hours for sending custom event
+					// check follow URL for detail
+					// http://supportforums.blackberry.com/t5/Java-Development/Create-Event-in-Flurry-Analytics/td-p/1951539
+					//
+					invokeLater(new Runnable() {
+						
+						public void run() {							
+							// emulate destory app
+							FlurryAgent.onDestroyApp();
+							
+							// restart again after 20 second
+							invokeLater(new Runnable() {		
+								public void run() {
+									FlurryAgent.onStartApp(m_flurryKey);
+								}
+							},20000,false);
+						}
+					},6 * 3600000,true);
+					
+				}finally{
+					os.close();
+				}				
+			}finally{
+				t_file.close();
+			}			
+		}catch(Exception e){
+			System.out.println("Flurry init failed!"+e.getMessage());
+		}
 	}
 	
 	/**
@@ -552,11 +617,11 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		String t_carrierName = RadioInfo.getCurrentNetworkName();
 		
 		String t_apn = null;
-		if(t_carrierName.equals("中国移动")){
+		if(t_carrierName.equals("中国移动") || t_carrierName.toLowerCase().equals("china mobile")){
 			t_apn = "cmnet";
-		}else if(t_carrierName.equals("中国联通")){
+		}else if(t_carrierName.equals("中国联通") || t_carrierName.toLowerCase().equals("china unicom")){
 			t_apn = "uninet";
-		}else if(t_carrierName.equals("中国电信")){
+		}else if(t_carrierName.equals("中国电信") || t_carrierName.toLowerCase().equals("china telecom")){
 			t_apn = "ctnet";
 		}
 		
@@ -779,12 +844,15 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		return "";
 	}
 	
+	// check follow URL for detail
+	// http://www.blackberry.com/knowledgecenterpublic/livelink.exe/fetch/2000/348583/800332/1295814/How_To_-_Programmatically_determine_if_a_microSD_card_has_been_inserted.html?nodeid=1295868&vernum=0
+	//
 	public static boolean isSDCardSupport(){
 		String modelNum = DeviceInfo.getDeviceName();
-		if ((modelNum.startsWith("8") && !modelNum.startsWith("87")) || modelNum.startsWith("9")) {
+		if ((modelNum.startsWith("8") && !modelNum.startsWith("87")) || modelNum.startsWith("9") || modelNum.startsWith("10")) {
 			return true;
 		}
-		
+				
 		return false;
 	}
 	
@@ -1053,10 +1121,9 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}catch(Exception e){
 			SetErrorString("PWRI", e);
 		}
-		
 	}
 	
-	final static int		fsm_clientVersion = 40;
+	final static int		fsm_clientVersion = 41;
 	
 	static final String fsm_initFilename_init_data = "Init.data";
 	static final String fsm_initFilename_back_init_data = "~Init.data";
@@ -1244,7 +1311,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				    			if(m_imCurrUseStatusIndex < 0 || m_imCurrUseStatusIndex >= sm_imStatusList.size()){
 				    				m_imCurrUseStatusIndex = 0;
 				    			}
-				    			
 				    		}
 				    		
 				    		if(t_currVer >= 31){
@@ -1303,6 +1369,14 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				    			m_imChatScreenShowHeadImg	= sendReceive.ReadBoolean(t_readFile);
 				    			m_account					= sendReceive.ReadString(t_readFile);
 				    			m_carrier					= sendReceive.ReadString(t_readFile);
+				    		}
+				    		
+				    		if(t_currVer >= 41){
+				    			m_markReadMailInSvr			= sendReceive.ReadBoolean(t_readFile);
+				    			m_popupDlgWhenDisconnect	= sendReceive.ReadBoolean(t_readFile);
+				    			m_popupDlgWhenComposeNew	= sendReceive.ReadBoolean(t_readFile);
+				    			m_mailHtmlShow				= sendReceive.ReadBoolean(t_readFile);
+				    			m_mailHtmlShowOnlyWIFI		= sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
 				    		
@@ -1436,6 +1510,11 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		    			sendReceive.WriteBoolean(t_writeFile,m_imChatScreenShowHeadImg);
 		    			sendReceive.WriteString(t_writeFile,m_account);
 		    			sendReceive.WriteString(t_writeFile,m_carrier);
+		    			sendReceive.WriteBoolean(t_writeFile, m_markReadMailInSvr);
+		    			sendReceive.WriteBoolean(t_writeFile, m_popupDlgWhenDisconnect);
+		    			sendReceive.WriteBoolean(t_writeFile, m_popupDlgWhenComposeNew);
+		    			sendReceive.WriteBoolean(t_writeFile,m_mailHtmlShow);
+		    			sendReceive.WriteBoolean(t_writeFile,m_mailHtmlShowOnlyWIFI);
 		    									
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1798,7 +1877,11 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public void TriggerDisconnectNotification(){
 		if(IsPromptTime() && m_connectDisconnectPrompt){
 			NotificationsManager.triggerImmediateEvent(fsm_notifyID_disconnect, 0, this, null);
-		}		
+		}
+		
+		if(m_popupDlgWhenDisconnect){
+			DialogAlert(yblocalResource.SETTING_DISCONNECT_PROMPT_DESC);
+		}
 	}
 	
 	public void StopDisconnectNotification(){
@@ -2151,6 +2234,10 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			}
 		});				
     }
+	
+	public void DialogAlert(int _yblocalResource){
+		DialogAlert(sm_local.getString(_yblocalResource));
+	}
  
 	public void SetUploadingDesc(final fetchMail _mail,final int _attachmentIdx,
 								final int _uploadedSize,final int _totalSize){
@@ -2236,8 +2323,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}			
 	}
 	
-	public void SetErrorString(String _label,Exception e){
-		SetErrorString(_label + " " + e.getMessage() + " " + e.getClass().getName());
+	public void SetErrorString(String _label,Exception _e){
+		SetErrorString(_label + " " + _e.getMessage() + " " + _e.getClass().getName());
 	}
 	
 	public synchronized String GetAllErrorString(){
@@ -2400,6 +2487,27 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		return true;
 	}
 	
+	/**
+	 * is validate user pass 
+	 * @param _str
+	 * @return
+	 */
+	public static boolean isValidateUserPass(String _str){
+		if(_str.length() < 6){
+			return false;
+		}
+		
+		
+		for(int i = 0 ;i < _str.length();i++){
+			char a = _str.charAt(i);
+			if(!Character.isDigit(a) && !Character.isLowerCase(a) && !Character.isUpperCase(a)){
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
 //	static ImageManipulator		sm_manipulator = new ImageManipulator(null);
 	public static Bitmap scaleImage(EncodedImage _image,int _width,int _height){
 		
@@ -2485,8 +2593,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	public boolean				m_weiboDontReadHistroy = false;
 	
-	public static final String[]	fsm_refreshWeiboIntervalList = {"0","10","20","30","40"};
-	public static final int[]		fsm_refreshWeiboInterval		= {0,10,20,30,40};
+	public static final String[]	fsm_refreshWeiboIntervalList = {"0","10","20","30","40","60","120","360","720","1440"};
+	public static final int[]		fsm_refreshWeiboInterval		= {0,10,20,30,40,60,120,360,720,1440};
 	public int						m_refreshWeiboIntervalIndex = 0;
 	
 	public static final String[]	fsm_weiboUploadImageSizeList = {"800×600","1280×800",sm_local.getString(yblocalResource.WEIBO_IMAGE_ORIGINAL_SIZE)};
@@ -3153,10 +3261,11 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public static final int[]		fsm_imChatMsgHistory		= {32,64,128,256};
 	public int						m_imChatMsgHistory 			= 0;
 	
-	public static final String[]	fsm_imUploadImageSizeList = {"320×240","640×480"};
+	public static final String[]	fsm_imUploadImageSizeList = {"320×240","480×360","640×480"};
 	public static final XYPoint[]	fsm_imUploadImageSize_size		= 
 	{
 		new XYPoint(320,240),
+		new XYPoint(480,360),
 		new XYPoint(640,480),
 		null,
 	};

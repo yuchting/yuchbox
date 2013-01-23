@@ -242,9 +242,6 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		
 		int t_buttons_line = (m_editTextManager.getPreferredHeight() + m_titleHeight);
 		
-		setPositionChild(m_editTextManager,2,m_titleHeight + 2);
-		layoutChild(m_editTextManager,m_editTextManager.getPreferredWidth(),m_editTextManager.getPreferredHeight());
-			
 		int t_button_x = m_timelineScreen.m_currUpdateDlg.m_hasImageSign.getWidth() + 2;
 		int t_button_y = t_buttons_line + (getPreferredHeight() - t_buttons_line - m_phizButton.getImageHeight()) / 2;
 		
@@ -275,6 +272,9 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 		
 		setPositionChild(m_sendButton,getPreferredWidth() - t_buttonWidth - 3,t_button_y);
 		layoutChild(m_sendButton,t_buttonWidth,t_buttonHeight);
+		
+		setPositionChild(m_editTextManager,2,m_titleHeight + 2);
+		layoutChild(m_editTextManager,m_editTextManager.getPreferredWidth(),m_editTextManager.getPreferredHeight());
 		
 		setExtent(getPreferredWidth(), getPreferredHeight());
 	}
@@ -636,7 +636,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 	protected boolean keyDown(int keycode,int time){
 		
 		int key = Keypad.key(keycode);
-		if(key == Keypad.KEY_CAMERA_FOCUS){
+		if(key == 211/*Keypad.KEY_CAMERA_FOCUS*/){
 			// camera focus shortcut key clicked
 			// canbe attach image
 			//
@@ -644,6 +644,17 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		}
 		
 		return super.keyDown(keycode,time);		
+	}
+	
+	protected boolean navigationMovement(int dx,int dy,int status,int time){
+		
+		// some os 6 version can't display caret of edittext 
+		// so must invalidate
+		if(!recvMain.fsm_OS_version.startsWith("4.") && !recvMain.fsm_OS_version.startsWith("5.")){
+			invalidate();
+		}
+		
+		return super.navigationMovement(dx, dy, status, time);
 	}
 	
 	public void close(){

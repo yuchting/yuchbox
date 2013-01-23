@@ -225,7 +225,10 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		setBanner(m_weiboHeader);
 		
-		m_currMgr.setFocus();	
+		m_currMgr.setFocus();
+		
+		// start auto refresh featureS
+		startAutoRefresh();
 	}
 	
 	public SliderHeader getHeader(){
@@ -272,9 +275,9 @@ public class weiboTimeLineScreen extends MainScreen{
 		if(m_mainApp.getRefreshWeiboInterval() != 0){
 			m_autoRefreshWeiboIntervalID = m_mainApp.invokeLater(new Runnable(){
 				public void run(){
-					if(!m_mainApp.m_connectDeamon.CanNotConnectSvr() && m_mainApp.IsPromptTime()){
+					//if(!m_mainApp.m_connectDeamon.CanNotConnectSvr() && m_mainApp.IsPromptTime()){
 						m_refreshItem.run();
-					}					
+					//}					
 				}
 			}, m_mainApp.getRefreshWeiboInterval() * 60 * 1000, true);
 		}
