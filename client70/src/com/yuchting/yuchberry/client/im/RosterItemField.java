@@ -112,6 +112,7 @@ public class RosterItemField extends Field{
 		if(_on){
 			// draw selected backgroud
 			//
+	
 			WeiboHeadImage.drawSelectedImage(_g, getPreferredWidth(), getPreferredHeight());
 		}
 		
@@ -130,6 +131,24 @@ public class RosterItemField extends Field{
 		
 		int color = _g.getColor();
 		Font font = _g.getFont();
+		//RRR: 选中后字体颜色
+		try{
+			if (_on){
+				_g.setColor(fsm_nameTextColor);//选中字体颜色
+				_g.setFont(font); //RRR:去除昵称字体加粗(MainIMScreen.fsm_boldFont);
+				}else{
+			_g.setColor(fsm_nameTextColor);
+			_g.setFont(font); //RRR:去除昵称字体加粗(MainIMScreen.fsm_boldFont);
+			}
+			_g.drawText(m_currRoster.m_roster.getName(),t_x + 4,3); //RRR:昵称向右偏移4 _g.drawText(m_currRoster.m_roster.getName(),t_x,2);
+			if (_on){
+				_g.setColor(fsm_statusTextColor);//选中字体颜色
+				_g.setFont(fsm_addressFont);
+			}else{
+			_g.setColor(fsm_statusTextColor);
+			_g.setFont(fsm_addressFont);
+			}
+	/* 源码
 		try{
 			_g.setColor(fsm_nameTextColor);
 			_g.setFont(font); //RRR:去除昵称字体加粗(MainIMScreen.fsm_boldFont);
@@ -138,7 +157,7 @@ public class RosterItemField extends Field{
 			
 			_g.setColor(fsm_statusTextColor);
 			_g.setFont(fsm_addressFont);
-			
+	 */
 			int t_y = getPreferredHeight() - fsm_addressFontHeight ; //RRR:微调 int t_y = getPreferredHeight() - fsm_addressFontHeight ;
 			
 			if(m_isChatHistoryItem && !m_currRoster.m_chatMsgList.isEmpty()){
