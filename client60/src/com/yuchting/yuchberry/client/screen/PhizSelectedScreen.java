@@ -332,7 +332,7 @@ public class PhizSelectedScreen extends MainScreen{
 			m_mainApp.m_weiboUIImage.getImageUnitBuffer(m_phizMgr.m_currSelected.getImage(), m_currPhizBuffer);
 			m_currPhizImage.setARGB(m_currPhizBuffer, 0, m_currPhizImage.getWidth(), 0, 0, m_currPhizImage.getWidth(),m_currPhizImage.getHeight());
 			m_currPhizImage.scaleInto(m_bigPhizImage, Bitmap.FILTER_LANCZOS);
-
+			
 			int t_color = g.getColor();
 			try{
 				g.setColor(0xffffff);
@@ -340,7 +340,7 @@ public class PhizSelectedScreen extends MainScreen{
 			}finally{
 				g.setColor(t_color);
 			}
-	
+			
 			g.drawBitmap(t_x, t_y, m_bigPhizImage.getWidth(), m_bigPhizImage.getHeight(), m_bigPhizImage, 0, 0);
 			
 		}catch(Exception e){}

@@ -39,6 +39,7 @@ import net.rim.device.api.math.Fixed32;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.system.JPEGEncodedImage;
 import net.rim.device.api.ui.XYPoint;
+import net.rim.device.api.util.MathUtilities;
 
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
@@ -125,7 +126,16 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 						int t_origWidth = t_origImage.getWidth();
 						int t_origHeight = t_origImage.getHeight();
 						
-						XYPoint t_scaleSize = _point;
+						XYPoint t_scaleSize = new XYPoint(_point);
+						
+						float t_orgRate = (float)t_origWidth / (float)t_origHeight;
+						float t_scaleRate = (float)t_scaleSize.x / (float)t_scaleSize.y;
+						
+						if(Math.abs(t_orgRate - t_scaleRate) > 1e-5){
+							// the rate is note same, convert the scale size to keep orig rate
+							//
+							t_scaleSize.y = (int)(t_scaleSize.x / t_orgRate);
+						}
 						
 						try{
 							if(t_scaleSize != null && t_origWidth > t_scaleSize.x && t_origHeight > t_scaleSize.y){
@@ -145,8 +155,7 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 								/* 源码
 								t_content = t_buffer;
 								 */
-							}
-																
+							}															
 						}finally{
 							t_origImage = null;
 							t_buffer = null;

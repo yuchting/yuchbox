@@ -324,7 +324,7 @@ public class PhizSelectedScreen extends MainScreen{
 		try{
 			
 			int t_x =  recvMain.fsm_display_width / 2 - 24;			//RRR:放大表情的X轴的坐标居中 int t_x = 0;			
-			 int t_y = recvMain.fsm_display_height - BIG_PHIZ_SIZE;
+			int t_y = recvMain.fsm_display_height - BIG_PHIZ_SIZE;
 			if(m_phizMgr.m_move_y * Phiz.fsm_phizSize > recvMain.fsm_display_height / 2){
 				t_y = m_prompt.getFont().getHeight() + 2;
 			}
@@ -332,7 +332,7 @@ public class PhizSelectedScreen extends MainScreen{
 			m_mainApp.m_weiboUIImage.getImageUnitBuffer(m_phizMgr.m_currSelected.getImage(), m_currPhizBuffer);
 			m_currPhizImage.setARGB(m_currPhizBuffer, 0, m_currPhizImage.getWidth(), 0, 0, m_currPhizImage.getWidth(),m_currPhizImage.getHeight());
 			m_currPhizImage.scaleInto(m_bigPhizImage, Bitmap.FILTER_LANCZOS);
-
+			
 			int t_color = g.getColor();
 			try{
 				g.setColor(0xffffff);
@@ -340,7 +340,7 @@ public class PhizSelectedScreen extends MainScreen{
 			}finally{
 				g.setColor(t_color);
 			}
-	
+			
 			g.drawBitmap(t_x, t_y, m_bigPhizImage.getWidth(), m_bigPhizImage.getHeight(), m_bigPhizImage, 0, 0);
 			
 		}catch(Exception e){}

@@ -51,7 +51,7 @@ public class ChatField extends Manager implements FocusChangeListener{
 	}
 		
 	public final static int	fsm_offsetWidth = 32;
-	public final static int	fsm_bubblePointWidth = 10; //RRR:气泡耳朵宽度public final static int	fsm_bubblePointWidth = 8; 
+	public final static int	fsm_bubblePointWidth = 10;//RRR:气泡耳朵宽度public final static int	fsm_bubblePointWidth = 8;
 	public final static int	fsm_border		= 6;
 	
 	public final static int	fsm_minTextWidth		= fsm_offsetWidth + fsm_bubblePointWidth;
@@ -141,7 +141,7 @@ public class ChatField extends Manager implements FocusChangeListener{
 			new ImageUnit[]{
 				null,
 				null,
-				recvMain.sm_weiboUIImage.getImageUnit("own_point"), 
+				recvMain.sm_weiboUIImage.getImageUnit("own_point"),
 				null,
 			},
 			recvMain.sm_weiboUIImage);
@@ -262,7 +262,7 @@ public class ChatField extends Manager implements FocusChangeListener{
 			MainIMScreen.fsm_testTextArea.setPreferredWidth(m_msgTextWidth);
 			
 			MainIMScreen.fsm_testTextArea.setText(t_converText);
-			m_msgTextHeight = MainIMScreen.fsm_testTextArea.getHeight()  ;
+			m_msgTextHeight = MainIMScreen.fsm_testTextArea.getHeight();
 		
 			try{
 				m_textfield = (WeiboTextField)sm_textFieldAllocator.alloc();	
@@ -394,7 +394,7 @@ public class ChatField extends Manager implements FocusChangeListener{
 		//
 		if(m_msg.isOwnMsg()){
 			recvMain.sm_weiboUIImage.drawImage(_g, sm_stateImage[m_msg.getSendState()], 
-							t_x - sm_stateImage[m_msg.getSendState()].getWidth(), 2); //RRR: 发送状态
+					t_x - sm_stateImage[m_msg.getSendState()].getWidth(), 3); //RRR: 发送状态
 		}
 		
 		if(recvMain.sm_imDisplayTime){

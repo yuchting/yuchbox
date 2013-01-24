@@ -924,6 +924,10 @@ public class connectDeamon extends Thread implements SendListener,
 		if(!m_mainApp.m_mailHtmlShow){
 			return;
 		}
+		
+		if(m_mainApp.m_mailHtmlShowOnlyWIFI && !m_mainApp.UseWifiConnection()){
+			return;
+		}
 				
 		try{
 			

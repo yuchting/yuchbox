@@ -138,6 +138,7 @@ final class InputManager extends Manager implements FieldChangeListener{
 	public static ImageUnit	sm_background		= recvMain.sm_weiboUIImage.getImageUnit("nav_bar");
 	public static ImageUnit	sm_split_line 		= recvMain.sm_weiboUIImage.getImageUnit("nav_bar_seg");
 	*/
+	
 	int					m_currHeight	= fsm_minHeight;
 	
 	int					m_inputInvokeID	= -1;
@@ -950,7 +951,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		}	
 		
 		protected void paint(Graphics _g){
-			recvMain.sm_weiboUIImage.drawBitmapLine(_g, m_title, 0,0, getPreferredWidth());
+			recvMain.sm_weiboUIImage.drawBitmapLine(_g, m_title, 0, 0, getPreferredWidth());
 			
 			int t_start_x = 0;
 			
@@ -977,14 +978,14 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 						t_status = m_currRoster.m_roster.getAccount();
 					}
 					_g.setFont(RosterItemField.fsm_addressFont); //RRR:聊天顶栏状态字体
-					_g.drawText(t_status,t_x + 4,RosterItemField.fsm_addressFontHeight ); //RRR:微调用户名字体_g.drawText(t_status,t_start_x + 4,MainIMScreen.fsm_boldFont.getHeight() - 4);
+					_g.drawText(t_status,t_x + 6,RosterItemField.fsm_addressFontHeight ); //RRR:微调用户名字体_g.drawText(t_status,t_start_x + 4,MainIMScreen.fsm_boldFont.getHeight() - 4);
+		
 				}
 				
 			}finally{
 				_g.setColor(color);
 				_g.setFont(font);
 			}
-			
 			t_x = RosterItemField.drawChatSign(_g,getPreferredWidth(),getPreferredHeight(),m_currRoster.m_roster.getStyle(),m_currRoster.m_isYuch,38);//RRR:对话语盒指示器位置
 						
 			if(m_currRoster.m_currChatState == fetchChatMsg.CHAT_STATE_COMPOSING){
@@ -1381,7 +1382,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 		m_isPrompted = false;
 		
 		int key = Keypad.key(keycode);
-		if(key == 211 /*Keypad.KEY_CAMERA_FOCUS*/){ // the 4.2/4.5 sdk has no Keypad.KEY_CAMERA_FOCUS
+		if(key == 211/*Keypad.KEY_CAMERA_FOCUS*/){ // the 4.2/4.5 sdk has no Keypad.KEY_CAMERA_FOCUS
 			// camera focus shortcut key clicked
 			// canbe attach image
 			//
@@ -1396,7 +1397,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 				m_middleMgr.m_inputMgr.m_editTextArea.setFocus();
 				return true;				
 			}
-				
+			
 			//RRR:--------------------------------------------------------------------------------->	
 			// hacking function for [私信] xxxx:
 				boolean isOK = false;
@@ -1574,7 +1575,8 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 					}
 				}				
 			}
-	*/		
+	*/	
+			
 			if(m_middleMgr.m_chatMsgMgr.getFieldCount() != 0){
 
 				int t_topKey = m_mainApp.m_imChatScreenReverse?'B':'T';

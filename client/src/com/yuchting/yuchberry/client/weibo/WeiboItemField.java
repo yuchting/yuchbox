@@ -56,7 +56,7 @@ public class WeiboItemField extends Manager{
 	public final static int		fsm_weiboVIPImageSize		= 12;
 	public final static int		fsm_weiboBBerImageSize		= 12; 
 	
-	public final static int		fsm_maxWeiboAbstractLength	= 23; //RRR:列表微博长度 20
+	public final static int		fsm_maxWeiboAbstractLength	= 25; //RRR:列表微博长度 20
 	
 	public final static int		fsm_textWidth				= fsm_weiboItemFieldWidth - WeiboHeadImage.fsm_headImageWidth - fsm_headImageTextInterval;
 	public final static int		fsm_editTextWidth			= fsm_weiboItemFieldWidth;
@@ -97,8 +97,7 @@ public class WeiboItemField extends Manager{
 
 	public final static int		fsm_weiboCommentFGColor		= recvMain.sm_standardUI?0x6d6f6f:0x84c3fa;
 	public final static int		fsm_weiboCommentBGColor		= recvMain.sm_standardUI?0xecf6fb:0x2b3d4d;
-	 */	
-	
+	 */		
 	// BasicEditField for 4.2os
 	public static WeiboTextField 	sm_testTextArea	= new WeiboTextField(0,0){
 		public void setText(String _text){
@@ -552,7 +551,7 @@ public class WeiboItemField extends Manager{
 		}else{
 			
 			if(m_absTextArea != null && recvMain.sm_showAllInList){
-				return Math.max(m_absTextHeight + 5 + sm_timeFont.getHeight() + fsm_headImageTextInterval * 2,
+				return Math.max(m_absTextHeight + 2 + sm_timeFont.getHeight() + fsm_headImageTextInterval * 2,
 									fsm_weiboSignImageSize + WeiboHeadImage.fsm_headImageWidth + 10);
 			}else{
 				return sm_fontHeight * 2 + 1;
@@ -599,29 +598,29 @@ public class WeiboItemField extends Manager{
 					layoutChild(m_parentManager.m_picBut,m_parentManager.m_picBut.getPreferredWidth(),m_parentManager.m_picBut.getPreferredHeight());
 				}
 			}
-				/* RRR:源码
-				setPositionChild(m_parentManager.m_forwardBut,WeiboMainManager.sm_forwardBut_x,m_functionButton_y);
-				layoutChild(m_parentManager.m_atBut,m_parentManager.m_atBut.getPreferredWidth(),m_parentManager.m_atBut.getPreferredHeight());
-				
-				
-				// at button
+			/* RRR:源码
+			setPositionChild(m_parentManager.m_forwardBut,WeiboMainManager.sm_forwardBut_x,m_functionButton_y);
+			layoutChild(m_parentManager.m_atBut,m_parentManager.m_atBut.getPreferredWidth(),m_parentManager.m_atBut.getPreferredHeight());
+			
+			
+			// at button
+			//
+			setPositionChild(m_parentManager.m_atBut,WeiboMainManager.sm_atBut_x,m_functionButton_y);
+			layoutChild(m_parentManager.m_forwardBut,m_parentManager.m_forwardBut.getPreferredWidth(),m_parentManager.m_forwardBut.getPreferredHeight());
+			
+			// favorite button
+			//
+			setPositionChild(m_parentManager.m_favoriteBut,WeiboMainManager.sm_favoriteBut_x,m_functionButton_y);
+			layoutChild(m_parentManager.m_favoriteBut,m_parentManager.m_favoriteBut.getPreferredWidth(),m_parentManager.m_favoriteBut.getPreferredHeight());
+			
+			if(m_weiboPic != null){
+				// open the browser to check the picture button 
 				//
-				setPositionChild(m_parentManager.m_atBut,WeiboMainManager.sm_atBut_x,m_functionButton_y);
-				layoutChild(m_parentManager.m_forwardBut,m_parentManager.m_forwardBut.getPreferredWidth(),m_parentManager.m_forwardBut.getPreferredHeight());
-				
-				// favorite button
-				//
-				setPositionChild(m_parentManager.m_favoriteBut,WeiboMainManager.sm_favoriteBut_x,m_functionButton_y);
-				layoutChild(m_parentManager.m_favoriteBut,m_parentManager.m_favoriteBut.getPreferredWidth(),m_parentManager.m_favoriteBut.getPreferredHeight());
-				
-				if(m_weiboPic != null){
-					// open the browser to check the picture button 
-					//
-					setPositionChild(m_parentManager.m_picBut,WeiboMainManager.sm_picBut_x,m_functionButton_y);
-					layoutChild(m_parentManager.m_picBut,m_parentManager.m_picBut.getPreferredWidth(),m_parentManager.m_picBut.getPreferredHeight());
-				}
+				setPositionChild(m_parentManager.m_picBut,WeiboMainManager.sm_picBut_x,m_functionButton_y);
+				layoutChild(m_parentManager.m_picBut,m_parentManager.m_picBut.getPreferredWidth(),m_parentManager.m_picBut.getPreferredHeight());
 			}
-			*/
+		}
+		*/			
 			int t_text_y = recvMain.sm_commentFirst?m_commentText_height:1;
 			t_text_y += fsm_weiboSignImageSize;
 			
@@ -1086,6 +1085,7 @@ public class WeiboItemField extends Manager{
 			
 			int t_color = _g.getColor();
 			try{
+				
 				int t_fillColor = 0xeaf2fe;//RRR:微博列表背景0xdaeaeb;
 				
 				if(m_parentManager.getCurrExtendedItem() != null 

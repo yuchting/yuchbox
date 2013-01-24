@@ -109,6 +109,8 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 			 											Field.FIELD_RIGHT | ButtonField.CONSUME_CLICK | ButtonField.NEVER_DIRTY);
 	 CheckboxField		m_popupDlgWhenComposeNew = null;
 	 CheckboxField		m_mailHtmlShow			= null;
+	 CheckboxField		m_mailHtmlShowOnlyWIFI	= null;
+	 NullField			m_mailHtmlShowOnlyWIFINull	= new NullField(Field.NON_FOCUSABLE);
 	 
 	 CheckboxField		m_weiboModule	= null;
 	 NullField			m_weiboNullField = new NullField(Field.NON_FOCUSABLE);
@@ -209,6 +211,14 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 			 m_mailHtmlShow			 = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_SHOW_HTML_DIRECTLY),m_mainApp.m_mailHtmlShow);
 			 add(m_mailHtmlShow);
 			 m_mailHtmlShow.setChangeListener(this);
+			 
+			 m_mailHtmlShowOnlyWIFI = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_SHOW_HTML_DIRECTLY_ONLY_WIFI),m_mainApp.m_mailHtmlShowOnlyWIFI);
+			 			 
+			 if(m_mainApp.m_mailHtmlShow){
+				 add(m_mailHtmlShowOnlyWIFI);
+			 }else{
+				 add(m_mailHtmlShowOnlyWIFINull);
+			 }
 		 }
 		 
 		 m_closeMailSendModule = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_CLOSE_SEND_MAIL),m_mainApp.m_closeMailSendModule);
@@ -402,6 +412,9 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 			}else if(field == m_mailHtmlShow){
 				if(m_mailHtmlShow.getChecked()){
 					m_mainApp.DialogAlert(yblocalResource.SETTING_SHOW_HTML_DIRECTLY_PROMPT);
+					replace(m_mailHtmlShowOnlyWIFINull, m_mailHtmlShowOnlyWIFI);
+				}else{
+					replace(m_mailHtmlShowOnlyWIFI, m_mailHtmlShowOnlyWIFINull);
 				}
 			}
 		}else{
@@ -484,6 +497,7 @@ public class settingScreen extends MainScreen implements FieldChangeListener,Foc
 		
 		if(m_mailHtmlShow != null){
 			m_mainApp.m_mailHtmlShow			= m_mailHtmlShow.getChecked();
+			m_mainApp.m_mailHtmlShowOnlyWIFI	= m_mailHtmlShowOnlyWIFI.getChecked();
 		}		
 		
 		boolean t_formerClose = m_mainApp.m_closeMailSendModule;

@@ -29,7 +29,6 @@ package com.yuchting.yuchberry.client.im;
 
 import local.yblocalResource;
 import net.rim.device.api.ui.Field;
-import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.LabelField;
@@ -60,7 +59,7 @@ public class RosterInfoScreen extends MainScreen {
 		m_currRoster = _roster;
 		
 		m_accName = new LabelField(_roster.m_roster.getName());
-		m_accName.setFont(MainIMScreen.fsm_statusFont);
+		m_accName.setFont(MainIMScreen.fsm_boldFont);
 		add(m_accName);
 		
 		add(new SeparatorField());

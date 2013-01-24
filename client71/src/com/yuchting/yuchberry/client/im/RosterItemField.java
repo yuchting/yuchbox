@@ -50,9 +50,8 @@ public class RosterItemField extends Field{
 	public final static int		fsm_groupTitleTextColor		= 0x878787;//RRR:分组标题字体颜色0xb0b0b0;
 	public final static int		fsm_statusTextColor			= 0x6d6f6f; //RRR:聊天状态字体颜色0xdfdfdf;
 	
-	public final static Font		fsm_addressFont			= MainIMScreen.fsm_defaultFont.derive(MainIMScreen.fsm_defaultFont.getStyle(),MainIMScreen.fsm_defaultFontHeight - 4);//RRR:第二行聊天字体
+	static Font		fsm_addressFont			= MainIMScreen.fsm_defaultFont.derive(MainIMScreen.fsm_defaultFont.getStyle(),MainIMScreen.fsm_defaultFontHeight - 4);//RRR:第二行聊天字体
 	public final static int		fsm_addressFontHeight	= fsm_addressFont.getHeight();
-
 	
 	MainIMScreen.RosterChatData		m_currRoster;
 	WeiboHeadImage					m_headImage;
@@ -123,6 +122,7 @@ public class RosterItemField extends Field{
 		// draw the IM sign and head image
 		//
 		int t_x = WeiboHeadImage.displayHeadImage(_g,sm_rosterState[0].getWidth() + 6, 3, m_headImage);//RRR:(_g,sm_rosterState[0].getWidth() + 2, 2, m_headImage)
+	
 		
 		if(m_currRoster.m_hasNewMessage){
 			recvMain.sm_weiboUIImage.drawImage(_g,SliderHeader.GetBBerSignBitmap(),2,6);//RRR:新消息(_g,SliderHeader.GetBBerSignBitmap(),1,20);
@@ -148,8 +148,8 @@ public class RosterItemField extends Field{
 				
 				String t_textMsg = MainIMScreen.getChatMsgAbsText(t_msg);
 				
-				if(t_textMsg.length() > 28){
-					t_textMsg = t_textMsg.substring(0,28);
+				if(t_textMsg.length() > 30){
+					t_textMsg = t_textMsg.substring(0,30);
 				}
 				
 				if(t_msg.isOwnMsg()){

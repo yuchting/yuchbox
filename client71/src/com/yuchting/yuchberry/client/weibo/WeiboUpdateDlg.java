@@ -646,7 +646,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		
 		return super.keyDown(keycode,time);		
 	}
-
+	
 	protected boolean navigationMovement(int dx,int dy,int status,int time){
 		
 		// some os 6 version can't display caret of edittext 
@@ -654,7 +654,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		if(!recvMain.fsm_OS_version.startsWith("4.") && !recvMain.fsm_OS_version.startsWith("5.")){
 			invalidate();
 		}
-
+		
 		return super.navigationMovement(dx, dy, status, time);
 	}
 	

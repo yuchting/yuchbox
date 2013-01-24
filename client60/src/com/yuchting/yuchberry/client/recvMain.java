@@ -232,6 +232,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public boolean			m_markReadMailInSvr	= true;
 	public boolean			m_popupDlgWhenComposeNew = false;
 	public boolean			m_mailHtmlShow		= false;
+	public boolean			m_mailHtmlShowOnlyWIFI = false;
 	
 	public final class APNSelector{
 		public String		m_name			= null;
@@ -1375,6 +1376,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				    			m_popupDlgWhenDisconnect	= sendReceive.ReadBoolean(t_readFile);
 				    			m_popupDlgWhenComposeNew	= sendReceive.ReadBoolean(t_readFile);
 				    			m_mailHtmlShow				= sendReceive.ReadBoolean(t_readFile);
+				    			m_mailHtmlShowOnlyWIFI		= sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
 				    		
@@ -1512,6 +1514,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		    			sendReceive.WriteBoolean(t_writeFile, m_popupDlgWhenDisconnect);
 		    			sendReceive.WriteBoolean(t_writeFile, m_popupDlgWhenComposeNew);
 		    			sendReceive.WriteBoolean(t_writeFile,m_mailHtmlShow);
+		    			sendReceive.WriteBoolean(t_writeFile,m_mailHtmlShowOnlyWIFI);
 		    									
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -2590,14 +2593,15 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	public boolean				m_weiboDontReadHistroy = false;
 	
-	public static final String[]	fsm_refreshWeiboIntervalList = {"0","10","20","30","40"};
-	public static final int[]		fsm_refreshWeiboInterval		= {0,10,20,30,40};
+	public static final String[]	fsm_refreshWeiboIntervalList = {"0","10","20","30","40","60","120","360","720","1440"};
+	public static final int[]		fsm_refreshWeiboInterval		= {0,10,20,30,40,60,120,360,720,1440};
 	public int						m_refreshWeiboIntervalIndex = 0;
 	
-	public static final String[]	fsm_weiboUploadImageSizeList = {"800×600","1280×800",sm_local.getString(yblocalResource.WEIBO_IMAGE_ORIGINAL_SIZE)};
+	public static final String[]	fsm_weiboUploadImageSizeList = {"800×600","1024×768","1280×800",sm_local.getString(yblocalResource.WEIBO_IMAGE_ORIGINAL_SIZE)};
 	public static final XYPoint[]	fsm_weiboUploadImageSize_size		= 
 	{
 		new XYPoint(800,600),
+		new XYPoint(1024,768),		
 		new XYPoint(1280,800),
 		null,
 	};

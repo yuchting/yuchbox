@@ -104,7 +104,7 @@ public class MainIMScreen extends MainScreen implements FieldChangeListener{
 	public final static int fsm_backgroundColor = 0x1f2d39;
 	
 	public final static int fsm_groupBackgroundColor = 0x122030;
-	*/
+	*/	
 	int m_menu_label = 0;
 	
 	MenuItem	m_historyChatMenu = new MenuItem(recvMain.sm_local.getString(yblocalResource.IM_HISTORY_MENU_LABEL),m_menu_label++,0){
