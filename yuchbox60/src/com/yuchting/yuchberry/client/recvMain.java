@@ -568,6 +568,12 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}
 	}
 	
+	private void endFlurry(){
+		if(m_flurryKey != null){
+			FlurryAgent.onDestroyApp();
+		}
+	}
+	
 	/**
 	 * prepare the APN value
 	 */
@@ -761,6 +767,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			public void run() {
 				synchronized(getEventLock()) {
 					Dialog.alert(_msg);
+					
+					endFlurry();	
 					System.exit(0);
 				}
 			}
@@ -1652,6 +1660,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 		// store the weibo item list
 		if(ReadWriteWeiboFile(false)){
+			endFlurry();
 			System.exit(0);
 		}		
 		
@@ -2901,6 +2910,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				public void run() {
 					readWriteWeiboFile_impl(_read);
 					
+					endFlurry();
 					System.exit(0);
 				}
 			},100,false);
@@ -3257,8 +3267,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_BUSY,sm_local.getString(yblocalResource.IM_STATUS_DEFAULT_BUSY)));
 	}
 	
-	public static final String[]	fsm_imChatMsgHistoryList 	= {"32","64","128","256"};
-	public static final int[]		fsm_imChatMsgHistory		= {32,64,128,256};
+	public static final String[]	fsm_imChatMsgHistoryList 	= {"32","45","64","128","256"};
+	public static final int[]		fsm_imChatMsgHistory		= {32,45,64,128,256};
 	public int						m_imChatMsgHistory 			= 0;
 	
 	public static final String[]	fsm_imUploadImageSizeList = {"320×240","480×360","640×480"};
