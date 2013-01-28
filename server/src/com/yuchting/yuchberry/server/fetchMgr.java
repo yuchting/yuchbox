@@ -1070,44 +1070,46 @@ public class fetchMgr{
 			BufferedReader in = new BufferedReader(
 									new InputStreamReader(
 											new FileInputStream(_file),_decodeName));
-			
-			StringBuffer t_stringBuffer = new StringBuffer();
-			String t_line = null;
-			
-			boolean t_firstLine = true;
-			while((t_line = in.readLine()) != null){
+			try{
+				StringBuffer t_stringBuffer = new StringBuffer();
+				String t_line = null;
 				
-				if(t_firstLine && _decodeName.equals("UTF-8")){
+				boolean t_firstLine = true;
+				while((t_line = in.readLine()) != null){
 					
-					byte[] t_bytes = t_line.getBytes("UTF-8");
-					
-					// BOM process
-					//
-					if(t_bytes.length >= 3
-						&& t_bytes[0] == -17 && t_bytes[1] == -69 && t_bytes[2] == -65){						
+					if(t_firstLine && _decodeName.equals("UTF-8")){
 						
-						if(t_bytes.length == 3){
-							t_line = "";
-						}else{
-							t_line = new String(t_bytes,3,t_bytes.length - 3,"UTF-8");
+						byte[] t_bytes = t_line.getBytes("UTF-8");
+						
+						// BOM process
+						//
+						if(t_bytes.length >= 3
+							&& t_bytes[0] == -17 && t_bytes[1] == -69 && t_bytes[2] == -65){						
+							
+							if(t_bytes.length == 3){
+								t_line = "";
+							}else{
+								t_line = new String(t_bytes,3,t_bytes.length - 3,"UTF-8");
+							}
+																
 						}
-															
+					}
+					
+					t_firstLine = false;
+									
+					if(!t_line.startsWith("#")){
+						t_stringBuffer.append(t_line + "\n");
+						
+						if(_lines != null){
+							_lines.addElement(t_line);
+						}
 					}
 				}
 				
-				t_firstLine = false;
-								
-				if(!t_line.startsWith("#")){
-					t_stringBuffer.append(t_line + "\n");
-					
-					if(_lines != null){
-						_lines.addElement(t_line);
-					}
-				}
+				t_ret = t_stringBuffer.toString();
+			}finally{
+				in.close();
 			}
-			
-			t_ret = t_stringBuffer.toString();
-			in.close();
 		}
 		
 		return t_ret;

@@ -743,7 +743,7 @@ public class YuchServer {
 					
 					final long t_lastTime = t_thread.GetLastTime(t_currTime);
 					
-					if(!t_thread.m_sendTimeupMail && t_lastTime != 0 && t_lastTime < 48 * 3600 * 1000){
+					if(!t_thread.m_sendTimeupMail && t_lastTime != 0 && t_lastTime < 5 * 24 * 3600 * 1000){
 						
 						t_thread.m_sendTimeupMail = true;
 						
@@ -769,7 +769,7 @@ public class YuchServer {
 				
 				if(t_thread.m_clientDisconnectTime != 0 && t_thread.m_usingHours != 0){
 					
-					final long t_upday = m_yuchsignFramePass == null?365:5;
+					final long t_upday = m_yuchsignFramePass == null?365:7;
 					
 					final long t_delTime = t_thread.m_pauseState?(12 * 3600 * 1000):(t_upday * 24 * 3600 * 1000);
 					
