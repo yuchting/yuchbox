@@ -1416,7 +1416,7 @@ public class weiboTimeLineScreen extends MainScreen{
 	 * Weibo 2 sms list 
 	 * 
 	 */
-	private Vector mWeibo2smsList = null;
+	public Vector mWeibo2smsList = null;
 	
 	private Vector mWeibo2SMSBufferList = null;
 	
@@ -1443,6 +1443,10 @@ public class weiboTimeLineScreen extends MainScreen{
 		try{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/weibo2sms.txt",Connector.READ);
 			try{
+				if(!fc.exists()){
+					fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/weibo2sms.txt",Connector.READ);
+				}
+				
 				if(fc.exists()){
 					if(mWeibo2smsList == null){
 						mWeibo2smsList 			= new Vector();
@@ -1594,7 +1598,7 @@ public class weiboTimeLineScreen extends MainScreen{
 					javax.wireless.messaging.Message msg = msgConn.newMessage(MessageConnection.TEXT_MESSAGE);
 					
 					TextMessage txtMsg = (TextMessage)msg;
-					txtMsg.setPayloadText(w.getShareEmailContain(""));
+					txtMsg.setPayloadText(w.getShareSMSContain());
 					msgConn.send(txtMsg);
 					
 					m_mainApp.SetErrorString("w2s send succ:" + w2s.weiboId + "->" + w2s.smsPhone);
