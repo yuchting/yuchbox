@@ -247,6 +247,7 @@
 	<Image Name="[汗]"	XPos="378" YPos="56"	Width="28" Height="28" />
 	<Image Name="[怒]"	XPos="434" YPos="84"	Width="28" Height="28" />
 	<Image Name="[可爱]"	XPos="490" YPos="56"	Width="28" Height="28" />
+	<Image Name="[偷笑]"	XPos="462" YPos="364"	Width="28" Height="28" />
 	<Image Name="[哼]"	XPos="434" YPos="56"	Width="28" Height="28" />
 	<Image Name="[抓狂]"	XPos="378" YPos="28"	Width="28" Height="28" />
 	<Image Name="[馋嘴]"	XPos="462" YPos="28"	Width="28" Height="28" />
