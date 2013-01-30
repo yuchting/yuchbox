@@ -106,6 +106,7 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 		
 		return true;
 	}
+	
 	static public byte[] resizePicFile(String _imageFile,XYPoint _point)throws Exception{
 		
 		if(_imageFile != null){
@@ -121,40 +122,7 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 						byte[] t_buffer = new byte[(int)t_file.fileSize()];
 						sendReceive.ForceReadByte(t_fileIn, t_buffer, t_buffer.length);
 						
-						EncodedImage t_origImage = EncodedImage.createEncodedImage(t_buffer, 0, t_buffer.length);
-						
-						int t_origWidth = t_origImage.getWidth();
-						int t_origHeight = t_origImage.getHeight();
-						
-						XYPoint t_scaleSize = new XYPoint(_point);
-						
-						float t_orgRate = (float)t_origWidth / (float)t_origHeight;
-						float t_scaleRate = (float)t_scaleSize.x / (float)t_scaleSize.y;
-						
-						if(Math.abs(t_orgRate - t_scaleRate) > 1e-5){
-							// the rate is note same, convert the scale size to keep orig rate
-							//
-							t_scaleSize.y = (int)(t_scaleSize.x / t_orgRate);
-						}
-						
-						try{
-							if(t_scaleSize != null && t_origWidth > t_scaleSize.x && t_origHeight > t_scaleSize.y){
-								
-								int scaleX = Fixed32.div(Fixed32.toFP(t_origWidth), Fixed32.toFP(t_scaleSize.x));
-								int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(t_scaleSize.y));
-																	
-								JPEGEncodedImage finalJPEG = JPEGEncodedImage.encode(t_origImage.scaleImage32(scaleX, scaleY).getBitmap(), 80);
-								
-								t_content = finalJPEG.getData();
-								
-							}else{
-								t_content = t_buffer;
-							}
-																
-						}finally{
-							t_origImage = null;
-							t_buffer = null;
-						}
+						t_content = resizePicBytes(t_buffer,_point);
 														
 					}finally{
 						t_fileIn.close();
@@ -169,6 +137,46 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 			}
 			
 			return t_content;			
+		}
+		
+		return null;
+	}
+	
+	static public byte[] resizePicBytes(byte[] _imageBytes,XYPoint _point)throws Exception{
+		
+		if(_imageBytes != null){
+			
+			EncodedImage t_origImage = EncodedImage.createEncodedImage(_imageBytes, 0, _imageBytes.length);
+			
+			int t_origWidth = t_origImage.getWidth();
+			int t_origHeight = t_origImage.getHeight();
+			
+			XYPoint t_scaleSize = new XYPoint(_point);
+			
+			float t_orgRate = (float)t_origWidth / (float)t_origHeight;
+			float t_scaleRate = (float)t_scaleSize.x / (float)t_scaleSize.y;
+			
+			if(Math.abs(t_orgRate - t_scaleRate) > 1e-5){
+				// the rate is note same, convert the scale size to keep orig rate
+				//
+				t_scaleSize.y = (int)(t_scaleSize.x / t_orgRate);
+			}
+			
+			try{
+				if(t_scaleSize != null && t_origWidth > t_scaleSize.x && t_origHeight > t_scaleSize.y){
+					
+					int scaleX = Fixed32.div(Fixed32.toFP(t_origWidth), Fixed32.toFP(t_scaleSize.x));
+					int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(t_scaleSize.y));
+														
+					JPEGEncodedImage finalJPEG = JPEGEncodedImage.encode(t_origImage.scaleImage32(scaleX, scaleY).getBitmap(), 80);
+					
+					_imageBytes = finalJPEG.getData();
+					
+				}
+													
+			}finally{
+				t_origImage = null;
+			}
 		}
 		
 		return null;
