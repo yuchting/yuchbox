@@ -1550,6 +1550,10 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	private void weibo2sms(fetchWeibo weibo){
 		
+		if(!m_mainApp.mEnableWeibo2SMS){
+			return;
+		}
+		
 		if(mWeibo2smsList != null){
 			
 			if(mWeibo2smsSendHandler == -1){

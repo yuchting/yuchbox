@@ -375,12 +375,12 @@ public class fetchWeibo {
 		t_content.append(recvMain.sm_local.getString(yblocalResource.WEIBO_SOURCE_PREFIX))
 				.append(GetSource());
 		
-		if(m_commentWeibo != null){
-			t_content.append("\n\n").append(_spaceLine).append(m_commentWeibo.getShareEmailContain(_spaceLine + " "));
-		}
-		
 		if(m_replyWeibo != null){
 			t_content.append("\n\n").append(_spaceLine).append(m_replyWeibo.getShareEmailContain(_spaceLine + " "));
+		}
+				
+		if(m_commentWeibo != null){
+			t_content.append("\n\n").append(_spaceLine).append(m_commentWeibo.getShareEmailContain(_spaceLine + " "));
 		}
 		
 		return t_content.toString();
@@ -401,16 +401,16 @@ public class fetchWeibo {
 				.append(GetText()).append("\n");
 		
 		if(GetOriginalPic().length() != 0){
-			t_content.append(GetOriginalPic()).append("\n");
+			t_content.append(GetOriginalPic());
+		}		
+
+		if(m_replyWeibo != null){
+			t_content.append("\n\n").append(m_replyWeibo.getShareSMSContain());
 		}
 		
 		if(m_commentWeibo != null){
 			t_content.append("\n\n").append(m_commentWeibo.getShareSMSContain());
-		}
-		
-		if(m_replyWeibo != null){
-			t_content.append("\n\n").append(m_replyWeibo.getShareSMSContain());
-		}
+		}		
 		
 		return t_content.toString();
 	}

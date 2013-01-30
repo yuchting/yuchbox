@@ -179,6 +179,7 @@ SETTING_WEIBO_OP_PUBLIC_FW#0="Public forward Weibo";
 SETTING_WEIBO_OP_PUBLIC_FW_PROMPT#0="Your forward Weibo will appear any pushed account's timeline.";
 SETTING_WEIBO_OP_UPDATE_FW#0="Add New Weibo When Comment/Forward ";
 SETTING_WEIBO_OP_UPDATE_RE#0="Add New Weibo When Mention/Reply";
+SETTING_WEIBO_OP_WEIBO2SMS#0="Weibo2Sms Enabled";
 SETTING_WEIBO_SENT_RECV_NUM#0="Weibos Sent/Recv :";
 SETTING_WEIBO_SETTING_PROMPT#0="Weibo(Twitter) detail option is in Weibo Screen. Please config Weibo account in server.";
 SETTING_WEIBO_SHOW_ALL_IN_LIST#0="Show whole Weibo in list view";
