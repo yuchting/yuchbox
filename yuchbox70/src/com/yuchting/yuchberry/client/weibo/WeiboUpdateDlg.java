@@ -64,7 +64,7 @@ import com.yuchting.yuchberry.client.ui.ImageUnit;
 
 final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 	
-	public int			m_updateDlgHeaderHeight = 32;
+	public int			m_updateDlgHeaderHeight = 60; //RRR:发微博标题框高度public int			m_updateDlgHeaderHeight = 32;
 	
 	public int			m_width 	= Display.getWidth() - 20;
 	public int			m_height 	= (Display.getHeight() - 30 > 300?300:(Display.getHeight() - 30));
@@ -119,7 +119,8 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 				if(field == m_editTextArea){
 					int t_color = _g.getColor();
 					try{
-						_g.setColor(m_weiboCommentFGColor);
+						_g.setFont(WeiboItemField.sm_absFont); //RRR: 取小一号字体
+						_g.setColor(0);//RRR: 输入文字为黑色_g.setColor(m_weiboCommentFGColor);
 						paintChild(_g, field);
 					}finally{
 						_g.setColor(t_color);
@@ -172,9 +173,9 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 				m_weiboUIImageSets,Field.FIELD_LEFT);
 		
 		if(recvMain.sm_standardUI){
-			m_updateTitle = m_weiboUIImageSets.getImageUnit("compose_nav_bar");
+			m_updateTitle = m_weiboUIImageSets.getImageUnit("w_updlg_header");
 		}else{
-			m_updateTitle = m_weiboUIImageSets.getImageUnit("nav_bar");
+			m_updateTitle = m_weiboUIImageSets.getImageUnit("compose_nav_bar");//RRR:发微博页面Header背景m_updateTitle = m_weiboUIImageSets.getImageUnit("nav_bar");
 		}
 		
 		
@@ -322,7 +323,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 			Font t_boldFont = oldFont.derive(oldFont.getStyle() | Font.BOLD);
 			
 			_g.setFont(t_boldFont);
-			_g.setColor(0xffffff);
+			_g.setColor(0);//RRR:标题字体改黑色(0xffffff);
 			String t_str = recvMain.sm_local.getString(yblocalResource.WEIBO_UPDATE_DIALOG_TITLE) 
 				+ " (" + m_editTextArea.getText().length() + ")";
 			
@@ -516,7 +517,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
 		m_hasImageSign		= m_weiboUIImageSets.getImageUnit("picSign");
 		m_hasLocation		= m_weiboUIImageSets.getImageUnit("locationSign");
 		
-		m_backgroundColor = WeiboItemField.fsm_extendBGColor;
+		m_backgroundColor = WeiboItemField.fsm_extendBGColor; //RRR:背景色
 		m_snapshotAvaiable = recvMain.fsm_snapshotAvailible;
 		
 		m_updateManager = (WeiboUpdateManager)getDelegate();		

@@ -568,12 +568,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}
 	}
 	
-	private void endFlurry(){
-		if(m_flurryKey != null){
-			FlurryAgent.onDestroyApp();
-		}
-	}
-	
 	/**
 	 * prepare the APN value
 	 */
@@ -767,8 +761,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			public void run() {
 				synchronized(getEventLock()) {
 					Dialog.alert(_msg);
-					
-					endFlurry();	
 					System.exit(0);
 				}
 			}
@@ -1660,7 +1652,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 		// store the weibo item list
 		if(ReadWriteWeiboFile(false)){
-			endFlurry();
 			System.exit(0);
 		}		
 		
@@ -2602,16 +2593,15 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	public boolean				m_weiboDontReadHistroy = false;
 	
-	public boolean 			mEnableWeibo2SMS = true;
-	
 	public static final String[]	fsm_refreshWeiboIntervalList = {"0","10","20","30","40","60","120","360","720","1440"};
 	public static final int[]		fsm_refreshWeiboInterval		= {0,10,20,30,40,60,120,360,720,1440};
 	public int						m_refreshWeiboIntervalIndex = 0;
 	
-	public static final String[]	fsm_weiboUploadImageSizeList = {"800×600","1280×800",sm_local.getString(yblocalResource.WEIBO_IMAGE_ORIGINAL_SIZE)};
+	public static final String[]	fsm_weiboUploadImageSizeList = {"800×600","1024×768","1280×800",sm_local.getString(yblocalResource.WEIBO_IMAGE_ORIGINAL_SIZE)};
 	public static final XYPoint[]	fsm_weiboUploadImageSize_size		= 
 	{
 		new XYPoint(800,600),
+		new XYPoint(1024,768),		
 		new XYPoint(1280,800),
 		null,
 	};
@@ -2912,7 +2902,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				public void run() {
 					readWriteWeiboFile_impl(_read);
 					
-					endFlurry();
 					System.exit(0);
 				}
 			},100,false);
@@ -3269,8 +3258,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		sm_imStatusList.addElement(new IMStatus(fetchChatRoster.PRESENCE_BUSY,sm_local.getString(yblocalResource.IM_STATUS_DEFAULT_BUSY)));
 	}
 	
-	public static final String[]	fsm_imChatMsgHistoryList 	= {"32","45","64","128","256"};
-	public static final int[]		fsm_imChatMsgHistory		= {32,45,64,128,256};
+	public static final String[]	fsm_imChatMsgHistoryList 	= {"32","64","128","256"};
+	public static final int[]		fsm_imChatMsgHistory		= {32,64,128,256};
 	public int						m_imChatMsgHistory 			= 0;
 	
 	public static final String[]	fsm_imUploadImageSizeList = {"320×240","480×360","640×480"};

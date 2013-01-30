@@ -57,7 +57,6 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 	 CheckboxField		m_hideWeiboHeader = null;
 	 CheckboxField		m_showAllInList	= null;
 	 CheckboxField		m_autoLoadNewTimelineWeibo = null;
-	 CheckboxField		mEnableWeibo2SMS = null;
 	 ObjectChoiceField	m_refreshWeiboInterval = null;
 	 ObjectChoiceField	m_maxWeiboNum	= null;
 	 ObjectChoiceField	m_uploadImageSize	= null;
@@ -98,11 +97,6 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 		 t_label = new LabelField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_OP_LABEL));
 		 t_label.setFont(t_label.getFont().derive(t_label.getFont().getStyle() | Font.BOLD));
 		 add(t_label);
-		 
-		 if(m_mainApp.m_weiboTimeLineScreen.mWeibo2smsList != null){
-			 mEnableWeibo2SMS = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_OP_WEIBO2SMS),m_mainApp.mEnableWeibo2SMS);
-			 add(mEnableWeibo2SMS);
-		 }
 		 
 		 m_updateOwnWhenFw = new CheckboxField(recvMain.sm_local.getString(yblocalResource.SETTING_WEIBO_OP_UPDATE_FW),m_mainApp.m_updateOwnListWhenFw);
 		 add(m_updateOwnWhenFw);
@@ -184,10 +178,15 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 		 t_label = new LabelField(recvMain.sm_local.getString(yblocalResource.WEIBO_OPTION_THEME_LABEL));
 		 add(t_label);
 		 add(m_uiStandard);
+//		 add(m_uiBlack); //RRR:屏蔽夜晚皮肤选项
+		 m_uiStandard.setChangeListener(this);
+//		 m_uiBlack.setChangeListener(this);//RRR:屏蔽夜晚皮肤选项
+
+		 /* RRR:源码		 
 		 add(m_uiBlack);
 		 m_uiStandard.setChangeListener(this);
 		 m_uiBlack.setChangeListener(this);
-		 
+*/		 
 		 if(!recvMain.sm_standardUI){
 			 m_uiBlack.setSelected(true);
 		 }
@@ -255,11 +254,7 @@ public class WeiboOptionScreen extends MainScreen implements FieldChangeListener
 			 m_mainApp.m_weiboTimeLineScreen.startAutoRefresh();
 			 m_mainApp.m_weiboDontReadHistroy = m_weiboDontReadHistroy.getChecked();
 			 m_mainApp.m_hideHeader			= m_hideWeiboHeader.getChecked();
-			 
-			 if(mEnableWeibo2SMS != null){
-				 m_mainApp.mEnableWeibo2SMS = mEnableWeibo2SMS.getChecked();
-			 }
-			 
+			
 			 recvMain.sm_displayHeadImage	= m_displayHeadImage.getChecked();
 			 recvMain.sm_simpleMode			= m_simpleMode.getChecked();
 			 recvMain.sm_showAllInList		= m_showAllInList.getChecked();

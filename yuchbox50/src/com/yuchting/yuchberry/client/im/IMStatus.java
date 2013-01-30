@@ -80,7 +80,7 @@ final class IMStatusField extends Field{
 	}
 	
 	public int getPreferredHeight() {
-		return MainIMScreen.fsm_defaultFontHeight + 5;
+		return MainIMScreen.fsm_defaultFontHeight + 8; //RRR:间距加大+ 5;
 	}
 	
 	public void invalidate(){
@@ -113,7 +113,7 @@ final class IMStatusField extends Field{
 		
 		// draw roster state
 		//
-		int t_x = RosterItemField.drawRosterState(_g,1,2,m_status.m_presence);
+		int t_x = RosterItemField.drawRosterState(_g,1,8,m_status.m_presence);//RRR:状态图标垂直居中(_g,1,2,m_status.m_presence);
 		Font font = _g.getFont();
 		int color = _g.getColor();
 		
@@ -121,11 +121,11 @@ final class IMStatusField extends Field{
 			String t_status = m_status.m_status;
 			if(IMStatus.sm_currUseStatus == m_status){
 				_g.setFont(MainIMScreen.fsm_boldFont);
-				t_status = "+ " + t_status;
+				t_status = "  (√)  " + t_status; //RRR:选中标记
 			}
 			
 			_g.setColor(RosterItemField.fsm_nameTextColor);
-			_g.drawText(t_status,t_x,2);
+			_g.drawText(t_status,t_x + 4,3); //RRR：状态与字体间隔
 			
 		}finally{
 			_g.setFont(font);

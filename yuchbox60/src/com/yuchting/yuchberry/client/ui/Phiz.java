@@ -30,7 +30,7 @@ package com.yuchting.yuchberry.client.ui;
 import net.rim.device.api.ui.Graphics;
 
 public class Phiz extends ImageButton{
-	public final static int		fsm_phizSize = 22;
+	public final static int		fsm_phizSize = 28; //RRR:表情尺寸
 	
 	public Phiz(ImageUnit _image,ImageSets _imageSets){
         super( "",_image,_image,_imageSets,0);

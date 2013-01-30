@@ -101,7 +101,7 @@ public class WeiboUpdateField extends Field{
 			recvMain.sm_weiboUIImage.drawImage(_g,m_updateBitmap,2,t_y);
         	
 			_g.setColor(fsm_textColor);
-			_g.setFont(WeiboItemField.sm_boldFont);
+			_g.setFont(WeiboItemField.sm_absFont.derive(Font.BOLD));//RRR:修改更新提示字体_g.setFont(WeiboItemField.sm_boldFont);
         	_g.drawText(m_updatePromptText + m_parentManager.m_bufferedWeiboList.size() + " Weibo",
         			m_updateBitmap.getWidth() + 2,t_y,Graphics.ELLIPSIS);
         	
