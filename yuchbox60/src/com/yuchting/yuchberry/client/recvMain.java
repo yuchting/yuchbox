@@ -2602,6 +2602,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	public boolean				m_weiboDontReadHistroy = false;
 	
+	public boolean 			mEnableWeibo2SMS = true;
+	
 	public static final String[]	fsm_refreshWeiboIntervalList = {"0","10","20","30","40","60","120","360","720","1440"};
 	public static final int[]		fsm_refreshWeiboInterval		= {0,10,20,30,40,60,120,360,720,1440};
 	public int						m_refreshWeiboIntervalIndex = 0;
