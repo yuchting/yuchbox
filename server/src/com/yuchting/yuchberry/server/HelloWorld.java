@@ -31,7 +31,10 @@ package com.yuchting.yuchberry.server;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
@@ -47,6 +50,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Vector;
 import java.util.concurrent.Callable;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -59,7 +64,6 @@ import weibo4j.http.PostParameter;
 import com.mime.qweibo.OauthKey;
 import com.mime.qweibo.QOAuth;
 import com.mime.qweibo.QParameter;
-import com.sun.xml.internal.messaging.saaj.packaging.mime.internet.MimeUtility;
 
 
 /**
@@ -125,12 +129,114 @@ public class HelloWorld {
         Params[] mParams;
     }
 	
-
-	public static void main(String arg[])throws Exception{
-		String mailTitle = "aaa\rbbb\nccc\r\ndddd";
-		mailTitle = mailTitle.replaceAll("[\r\n]", "");
+	private Vector mWeibo2smsList = null;
+	
+	private Vector mWeibo2SMSBufferList = null;
+	
+	class Weibo2SMS{
 		
-		System.out.println(mailTitle);
+		String	weiboId;
+		String	smsPhone;
+		
+		public Weibo2SMS(String _weiboId,String _smsPhone){
+			weiboId		= _weiboId;
+			smsPhone	= _smsPhone;
+		}
+	}
+	
+	private void loadWeibo2smsFile(){
+		try{
+			File fc = new File("weibo2sms.txt");
+			try{
+				if(fc.exists()){
+					if(mWeibo2smsList == null){
+						mWeibo2smsList 			= new Vector();
+						mWeibo2SMSBufferList	= new Vector();
+					}else{
+						mWeibo2smsList.removeAllElements();
+					}					
+					
+					InputStream tReadFile = new FileInputStream(fc);
+		    		try{
+		    			byte[] tBytes = new byte[(int)fc.length()];
+		    			sendReceive.ForceReadByte(tReadFile, tBytes, tBytes.length);
+		    			
+		    			String tFileContent = new String(tBytes,"UTF-8");
+		    			
+		    			String tWeiboId		= null;
+		    			String tSMSPhone	= null;
+		    			
+		    			int tIdx = 0;
+		    			while(tIdx < tFileContent.length()){
+		    				char c = tFileContent.charAt(tIdx);
+		    				
+		    				if(c == ':'){
+		    					
+		    					tWeiboId = tFileContent.substring(0,tIdx);
+		    					tFileContent = tFileContent.substring(tIdx + 1);
+		    					
+		    					tIdx = 0;
+		    					
+		    					continue;
+		    					
+		    				}else if(c == '\r' || c == '\n'){			
+		    					
+		    					tSMSPhone 		= tFileContent.substring(0,tIdx);
+		    					
+		    					while(tIdx + 1 < tFileContent.length()){
+		    						char next = tFileContent.charAt(tIdx + 1);
+		    						if(next == '\r' || next == '\n'){
+		    							tIdx++;
+		    						}else{
+		    							break;
+		    						}
+		    					}
+		    					
+		    					tFileContent 	= tFileContent.substring(tIdx + 1);		    					
+		    					tIdx = 0;
+		    					
+		    					if(tWeiboId != null && tWeiboId.length() > 0 && tSMSPhone.length() > 0){
+		    						
+		    						mWeibo2smsList.addElement(new Weibo2SMS(tWeiboId, tSMSPhone));
+		    						
+		    						//m_mainApp.SetErrorString("w2s:" + tWeiboId + "->" + tSMSPhone);
+		    						System.out.println("w2s:" + tWeiboId + "->" + tSMSPhone);
+		    					}
+		    					
+		    					tWeiboId	= null;
+		    					tSMSPhone	= null;
+		    					
+		    					continue;
+		    				}
+		    				
+		    				tIdx++;
+		    			}
+		    			
+		    			tBytes			= null;
+		    			tFileContent	= null;
+		    			
+		    		}finally{
+		    			tReadFile.close();
+		    		}
+				}
+			}finally{
+				//fc.close();
+			}
+		}catch(Exception e){
+			
+		}
+	}
+	public static void main(String arg[])throws Exception{
+		
+		
+//		String pass = "ZKX8kPEYfjtVMhs9G";
+//		
+//		if(!pass.equals("dJtdxiIrGMRYF1X") && !pass.equals("ZKX8kPEYfjtVMhs9G")){
+//			System.out.print("fun");
+//			return;
+//		}
+//		
+//		System.out.print("haha");
 		
 //		String t_test = "  =?UTF-8?B?UmU6IOWwmumCruiHquWKqOWbnuWkje+8muetlOWkje+8miBb6K+t55uSXSDogIHlpKc=?=" +
 //						"=?UTF-8?B?77+95o6S5p+l5a6Y77+95Z+f5ZCN6Kej5p6Q?=";
@@ -153,6 +259,159 @@ public class HelloWorld {
 		//berryRecvTest();
 		//berrySendTest();
 		
+		requestPOSTHTTP("http://localhost:8888",(new String("{\"return_code\":0,\"return_message\":\"success\",\"data\":{\"data\":[{\"id\":\"1\",\"question\":\"公主令牌在哪交？\"},{\"id\":\"2\",\"question\":\"公主护使有什么用？\"},{\"id\":\"3\",\"question\":\"角斗场在哪？\"},{\"id\":\"4\",\"question\":\"北部断层在哪？\"},{\"id\":\"5\",\"question\":\"欢乐令有什么用？\"},{\"id\":\"6\",\"question\":\"令牌积分有什么用？\"},{\"id\":\"7\",\"question\":\"南部断层在哪？\"},{\"id\":\"8\",\"question\":\"大妖魔令牌交给谁？\"},{\"id\":\"9\",\"question\":\"神工坊在哪？\"},{\"id\":\"10\",\"question\":\"警戒妖珠有什么用？\"}]}}")).getBytes("UTF-8"),true);
+	}
+	
+	/**
+	 * request the url via POST
+	 * @param _url
+	 * @param _paramsName
+	 * @param _paramsValue
+	 * @param _gzip
+	 * @return
+	 * @throws Exception
+	 */
+	private static String requestPOSTHTTP(String _url,String[] _paramsName,String[] _paramsValue)throws Exception{
+		
+		if(_paramsName == null || _paramsValue == null || _paramsName.length != _paramsValue.length){
+			throw new IllegalArgumentException("_paramsName == null || _paramsValue == null || _paramsName.length != _paramsValue.length");
+		}
+		
+		StringBuffer tParam = new StringBuffer();
+		for(int i = 0;i < _paramsName.length;i++){
+			if(tParam.length() != 0){
+				tParam.append('&');
+			}
+			
+			tParam.append(_paramsName[i]).append('=').append(_paramsValue);
+		}
+		
+		return requestPOSTHTTP(_url,tParam.toString().getBytes("UTF-8"),false);
+		
+	}
+	
+	/**
+	 * post the http request directly by content
+	 * @param _url
+	 * @param _content
+	 * @param _gzip
+	 * @return
+	 * @throws Exception
+	 */
+	private static String requestPOSTHTTP(String _url,byte[] _content,boolean _gzip)throws Exception{
+		
+		byte[] tParamByte = _content;
+		
+		// Attempt to gzip the data
+		if(_gzip){
+			ByteArrayOutputStream zos = new ByteArrayOutputStream();
+			try{
+				GZIPOutputStream zo = new GZIPOutputStream(zos,6);
+				try{
+					zo.write(tParamByte);
+				}finally{
+					zo.close();
+					zo = null;
+				}
+				
+				byte[] tZipByte = zos.toByteArray();
+				if(tZipByte.length < tParamByte.length){
+					tParamByte = tZipByte;
+				}else{
+					_gzip = false;
+				}
+			}finally{
+				zos.close();
+				zos = null;
+			}
+		}
+		
+		HttpURLConnection conn = (HttpURLConnection)(new URL(_url)).openConnection();
+		try{
+			
+			conn.setRequestMethod("POST");
+			//conn.setRequestProperty(HttpProtocolConstants.HEADER_CONTENT_LENGTH,String.valueOf(tParamByte.length));
+			
+			conn.setDoOutput(true);
+			
+			OutputStream out = conn.getOutputStream();
+			try{
+				out.write(tParamByte);
+				out.flush();
+			}finally{
+				out.close();
+				out = null;
+			}
+			
+			int rc = conn.getResponseCode();
+		    if(rc != 200){
+		    	throw new IOException("HTTP response code: " + rc);
+		    }
+		    
+		    InputStream in = conn.getInputStream();
+		    try{
+		    	int length = -1;
+		    	int ch;
+		    	byte[] result;
+		    	
+		    	if (length != -1){
+		    		
+		    		result = new byte[length];
+		    		in.read(result);
+		    		
+		    	}else{
+		    		
+		    		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		    		try{
+
+				        while ((ch = in.read()) != -1){
+				        	os.write(ch);
+				        }
+				        
+				        result = os.toByteArray();
+				        
+		    		}finally{
+		    			os.close();
+		    			os = null;
+		    		}
+			    }
+		    	
+		    	if(_gzip){
+		    		ByteArrayInputStream gin = new ByteArrayInputStream(result);
+					try{
+						GZIPInputStream zi	= new GZIPInputStream(gin);
+						try{
+							ByteArrayOutputStream os = new ByteArrayOutputStream();
+				    		try{
+
+								while((ch = zi.read()) != -1){
+									os.write(ch);
+								}
+								result = os.toByteArray();
+								
+				    		}finally{
+				    			os.close();
+				    			os = null;
+				    		}
+						}finally{
+							zi.close();
+						}
+					}finally{
+						gin.close();
+					}
+		        }
+		    	
+		    	return new String(result,"UTF-8");
+
+		    }finally{
+		    	in.close();
+		    	in = null;
+		    }
+
+		}finally{
+			conn.disconnect();
+			conn = null;
+		}
 	}
 		
 	public final static String	fsm_vectStringSpliter = "<>";
