@@ -568,6 +568,12 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}
 	}
 	
+	private void endFlurry(){
+		if(m_flurryKey != null){
+			FlurryAgent.onDestroyApp();
+		}
+	}
+	
 	/**
 	 * prepare the APN value
 	 */
@@ -761,6 +767,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			public void run() {
 				synchronized(getEventLock()) {
 					Dialog.alert(_msg);
+					
+					endFlurry();	
 					System.exit(0);
 				}
 			}
@@ -1056,7 +1064,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			
 			int tSlashIdx = _pathFilename.lastIndexOf('/');
 			
-			String tParentPath	= _pathFilename.substring(0,tSlashIdx);
+			String tParentPath	= _pathFilename.substring(0,tSlashIdx + 1);
 			String tOrgFilename = _pathFilename.substring(tSlashIdx + 1);
 			
 			String tBackFilename		= "~" + tOrgFilename;
@@ -1115,7 +1123,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		try{
 			int tSlashIdx = _pathFilename.lastIndexOf('/');
 			
-			String tParentPath			= _pathFilename.substring(0,tSlashIdx);
+			String tParentPath			= _pathFilename.substring(0,tSlashIdx + 1);
 			String tOrgFilename 		= _pathFilename.substring(tSlashIdx + 1);
 			
 			String tBackFilename		= "~" + tOrgFilename;
@@ -1662,6 +1670,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 		// store the weibo item list
 		if(ReadWriteWeiboFile(false)){
+			endFlurry();
 			System.exit(0);
 		}		
 		
@@ -2913,6 +2922,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				public void run() {
 					readWriteWeiboFile_impl(_read);
 					
+					endFlurry();
 					System.exit(0);
 				}
 			},100,false);
