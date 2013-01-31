@@ -739,7 +739,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
         				m_snapBuffer = _buffer;
         				m_imageType	= fetchChatMsg.FILE_TYPE_IMG;
         			}
-        		},m_mainApp.getWeiboUploadSize().x);
+        		},m_mainApp.getWeiboUploadSize());
         		
         		m_mainApp.pushScreen(m_cameraScreen);	
     		}catch(Exception e){
