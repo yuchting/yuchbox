@@ -181,11 +181,12 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 				_imageBytes = finalJPEG.getData();
 													
 			}finally{
+				
 				t_origImage = null;
 			}
 		}
 		
-		return null;
+		return _imageBytes;
 	}
 	
 	/**
