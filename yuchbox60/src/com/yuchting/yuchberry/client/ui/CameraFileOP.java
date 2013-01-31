@@ -163,16 +163,22 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 			}
 			
 			try{
-				if(t_scaleSize != null && t_origWidth > t_scaleSize.x && t_origHeight > t_scaleSize.y){
+				
+				JPEGEncodedImage finalJPEG;
+				
+				if(t_origWidth > t_scaleSize.x && t_origHeight > t_scaleSize.y){
 					
 					int scaleX = Fixed32.div(Fixed32.toFP(t_origWidth), Fixed32.toFP(t_scaleSize.x));
 					int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(t_scaleSize.y));
 														
-					JPEGEncodedImage finalJPEG = JPEGEncodedImage.encode(t_origImage.scaleImage32(scaleX, scaleY).getBitmap(), 80);
+					finalJPEG = JPEGEncodedImage.encode(t_origImage.scaleImage32(scaleX, scaleY).getBitmap(), 55);
 					
-					_imageBytes = finalJPEG.getData();
+				}else{
 					
+					finalJPEG = JPEGEncodedImage.encode(t_origImage.getBitmap(), 55);
 				}
+				
+				_imageBytes = finalJPEG.getData();
 													
 			}finally{
 				t_origImage = null;

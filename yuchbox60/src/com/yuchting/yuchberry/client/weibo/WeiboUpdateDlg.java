@@ -406,7 +406,7 @@ public class WeiboUpdateDlg extends Screen implements IUploadFileScreenCallback{
         				
         				invalidate();
         			}
-        		},m_mainApp.getWeiboUploadSize().x);
+        		},m_mainApp.getWeiboUploadSize());
         		
         		m_mainApp.pushScreen(m_cameraScreen);	
     		}catch(Exception e){
