@@ -568,12 +568,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}
 	}
 	
-	private void endFlurry(){
-		if(m_flurryKey != null){
-			FlurryAgent.onDestroyApp();
-		}
-	}
-	
 	/**
 	 * prepare the APN value
 	 */
@@ -767,8 +761,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			public void run() {
 				synchronized(getEventLock()) {
 					Dialog.alert(_msg);
-					
-					endFlurry();	
 					System.exit(0);
 				}
 			}
@@ -1058,18 +1050,24 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	 * 
 	 * Read: change back filename to original filename if back file is existed
 	 */
-	private void preWriteReadIni(boolean _read,
-			String _backPathFilename,String _orgPathFilename,
-			String _backFilename,String _orgFilename){
+	private void preWriteReadIni(boolean _read,String _pathFilename){
 		
 		try{
-
+			
+			int tSlashIdx = _pathFilename.lastIndexOf('/');
+			
+			String tParentPath	= _pathFilename.substring(0,tSlashIdx);
+			String tOrgFilename = _pathFilename.substring(tSlashIdx + 1);
+			
+			String tBackFilename		= "~" + tOrgFilename;
+			String tBackPathFilename	= tParentPath + tBackFilename;
+			
 			if(_read){
 							
-				FileConnection t_back = (FileConnection) Connector.open(_backPathFilename,Connector.READ_WRITE);
+				FileConnection t_back = (FileConnection) Connector.open(tBackPathFilename,Connector.READ_WRITE);
 				try{
 					if(t_back.exists()){
-						FileConnection t_ini	= (FileConnection) Connector.open(_orgPathFilename,Connector.READ_WRITE);
+						FileConnection t_ini	= (FileConnection) Connector.open(_pathFilename,Connector.READ_WRITE);
 						try{
 							if(t_ini.exists()){
 								t_ini.delete();
@@ -1079,7 +1077,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 							t_ini = null;
 						}
 						
-						t_back.rename(_orgFilename);
+						t_back.rename(tOrgFilename);
 					}
 				}finally{
 					t_back.close();
@@ -1088,10 +1086,10 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				
 			}else{
 				
-				FileConnection t_ini	= (FileConnection) Connector.open(_orgPathFilename,Connector.READ_WRITE);
+				FileConnection t_ini	= (FileConnection) Connector.open(_pathFilename,Connector.READ_WRITE);
 				try{
 					if(t_ini.exists()){
-						t_ini.rename(_backFilename);
+						t_ini.rename(tBackFilename);
 					}
 				}finally{
 					t_ini.close();
@@ -1112,12 +1110,20 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	 * delete the back file ~xxx.xxx
 	 * @param _backfile
 	 */
-	private void postWriteReadIni(String _backfile){
+	private void postWriteReadIni(String _pathFilename){
 		
 		try{
+			int tSlashIdx = _pathFilename.lastIndexOf('/');
+			
+			String tParentPath			= _pathFilename.substring(0,tSlashIdx);
+			String tOrgFilename 		= _pathFilename.substring(tSlashIdx + 1);
+			
+			String tBackFilename		= "~" + tOrgFilename;
+			String tBackPathFilename	= tParentPath + tBackFilename;
+			
 			// delete the back file ~xxx.data
 			//
-			FileConnection t_backFile = (FileConnection) Connector.open(_backfile,Connector.READ_WRITE);
+			FileConnection t_backFile = (FileConnection) Connector.open(tBackPathFilename,Connector.READ_WRITE);
 			try{
 				if(t_backFile.exists()){
 					t_backFile.delete();
@@ -1132,12 +1138,9 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	}
 	
 	final static int		fsm_clientVersion = 41;
-	
-	static final String fsm_initFilename_init_data = "Init.data";
-	static final String fsm_initFilename_back_init_data = "~Init.data";
-	
-	static final String fsm_initFilename = uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + fsm_initFilename_init_data;
-	static final String fsm_backInitFilename = uploadFileScreen.fsm_rootPath_back + "YuchBerry/" + fsm_initFilename_back_init_data;
+		
+	static final String fsm_initFilename = uploadFileScreen.fsm_rootPath_back + "YuchBerry/Init.data";
+
 	
 	public synchronized void WriteReadIni(boolean _read){
 		
@@ -1147,8 +1150,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		// check the issue 85 
 		// http://code.google.com/p/yuchberry/issues/detail?id=85&colspec=ID%20Type%20Status%20Priority%20Stars%20Summary
 		//
-		preWriteReadIni(_read,fsm_backInitFilename,fsm_initFilename,
-				fsm_initFilename_back_init_data,fsm_initFilename_init_data);
+		preWriteReadIni(_read,fsm_initFilename);
 		
 		try{
 			
@@ -1532,8 +1534,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 						t_writeFile.close();
 						t_writeFile = null;
 					}
-					
-					postWriteReadIni(fsm_backInitFilename);
 				}
 			}finally{
 				fc.close();
@@ -1542,7 +1542,9 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 						
 		}catch(Exception _e){
 			SetErrorString("write/read config file error :" + _e.getMessage() + _e.getClass().getName());
-		}	
+		}
+		
+		postWriteReadIni(fsm_initFilename);
 		
 		if(m_locationProvider != null){
 			if(m_useLocationInfo){
@@ -1660,7 +1662,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 		// store the weibo item list
 		if(ReadWriteWeiboFile(false)){
-			endFlurry();
 			System.exit(0);
 		}		
 		
@@ -2608,10 +2609,11 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public static final int[]		fsm_refreshWeiboInterval		= {0,10,20,30,40,60,120,360,720,1440};
 	public int						m_refreshWeiboIntervalIndex = 0;
 	
-	public static final String[]	fsm_weiboUploadImageSizeList = {"800×600","1280×800",sm_local.getString(yblocalResource.WEIBO_IMAGE_ORIGINAL_SIZE)};
+	public static final String[]	fsm_weiboUploadImageSizeList = {"800×600","1024×768","1280×800",sm_local.getString(yblocalResource.WEIBO_IMAGE_ORIGINAL_SIZE)};
 	public static final XYPoint[]	fsm_weiboUploadImageSize_size		= 
 	{
 		new XYPoint(800,600),
+		new XYPoint(1024,768),		
 		new XYPoint(1280,800),
 		null,
 	};
@@ -2885,8 +2887,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		
 	}
 	
-	static final String fsm_weiboDataName = "weibo.data";
-	static final String fsm_weiboDataBackName = "~weibo.data";
+	static final String fsm_weiboDataName = uploadFileScreen.fsm_rootPath_back + "YuchBerry/weibo.data";
 		
 	private synchronized boolean ReadWriteWeiboFile(final boolean _read){
 		
@@ -2912,7 +2913,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				public void run() {
 					readWriteWeiboFile_impl(_read);
 					
-					endFlurry();
 					System.exit(0);
 				}
 			},100,false);
@@ -2927,16 +2927,10 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	 */
 	private synchronized void readWriteWeiboFile_impl(final boolean _read){
 		
-		String t_weiboDataDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
-		
-		String t_weiboDataPathName 		= t_weiboDataDir + fsm_weiboDataName;
-		String t_weiboDataBackPathName	= t_weiboDataDir + fsm_weiboDataBackName;
-		
-		preWriteReadIni(_read, t_weiboDataBackPathName,t_weiboDataPathName,
-				fsm_weiboDataBackName, fsm_weiboDataName);		
+		preWriteReadIni(_read, fsm_weiboDataName);		
 		
 		try{
-			FileConnection t_fc = (FileConnection)Connector.open(t_weiboDataPathName);
+			FileConnection t_fc = (FileConnection)Connector.open(fsm_weiboDataName);
 			try{			
 				if(_read){
 					synchronized (m_receivedWeiboList) {
@@ -2990,8 +2984,6 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 						t_fileos.close();
 						t_fileos = null;
 					}
-					
-					postWriteReadIni(t_weiboDataBackPathName);
 				}
 				
 			}finally{
@@ -3001,6 +2993,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}catch(Exception e){
 			SetErrorString("RWWF:"+e.getMessage()+e.getClass().getName());
 		}
+		
+		postWriteReadIni(fsm_weiboDataName);
 	}
 	
 	/**
@@ -3037,34 +3031,26 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	static final int		fsm_weiboNameFile_version 	= 0;
 
-	static final String fsm_weiboNameIdxFilename		= "weiboNameIdx.data";
-	static final String fsm_weiboNameIdxBackFilename	= "~weiboNameIdx.data";
-	
-	static final String fsm_weiboNameListFilename		= "weiboNameList.data";
+	static final String fsm_weiboNameIdxFilename		= uploadFileScreen.fsm_rootPath_back + "YuchBerry/weiboNameIdx.data";	
+	static final String fsm_weiboNameListFilename		= uploadFileScreen.fsm_rootPath_back + "YuchBerry/weiboNameList.data";
 	
 	/**
 	 * read weibo name data 
 	 */
 	private synchronized void readWeiboNameList(){
 		
-		String t_weiboDataDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
-		
-		String t_weiboDataPathName 		= t_weiboDataDir + fsm_weiboNameIdxFilename;
-		String t_weiboDataBackPathName	= t_weiboDataDir + fsm_weiboNameIdxBackFilename;
-
-		String t_weiboNameListName		= t_weiboDataDir + fsm_weiboNameListFilename;
-		
-		preWriteReadIni(true, t_weiboDataBackPathName,t_weiboDataPathName,
-						fsm_weiboDataBackName, fsm_weiboDataName);
+		preWriteReadIni(true, fsm_weiboNameIdxFilename);
+		preWriteReadIni(true, fsm_weiboNameListFilename);
 		
 		synchronized (m_weiboNameList) {
+			
 			m_weiboNameList.clear();
 			
 			try{
 				
 				// read the weibo name header file
 				//
-				FileConnection t_fc = (FileConnection)Connector.open(t_weiboDataPathName);
+				FileConnection t_fc = (FileConnection)Connector.open(fsm_weiboNameIdxFilename);
 				try{
 					if(t_fc.exists()){
 						InputStream in = t_fc.openInputStream();
@@ -3085,7 +3071,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 								
 				// read the weibo name list 
 				//
-				t_fc = (FileConnection)Connector.open(t_weiboNameListName);
+				t_fc = (FileConnection)Connector.open(fsm_weiboNameListFilename);
 				try{
 					if(t_fc.exists()){
 						InputStream in = t_fc.openInputStream();
@@ -3107,11 +3093,14 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 					t_fc.close();
 					t_fc = null;
 				}
-				
+
 			}catch(Exception e){
 				SetErrorString("RWNL", e);
 			}
 		}
+		
+		postWriteReadIni(fsm_weiboNameIdxFilename);
+		postWriteReadIni(fsm_weiboNameListFilename);
 		
 	}
 	
@@ -3127,15 +3116,8 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 			return;
 		}
 
-		String t_weiboDataDir = uploadFileScreen.fsm_rootPath_back + "YuchBerry/";
-		
-		String t_weiboDataPathName 		= t_weiboDataDir + fsm_weiboNameIdxFilename;
-		String t_weiboDataBackPathName	= t_weiboDataDir + fsm_weiboNameIdxBackFilename;
-
-		String t_weiboNameListName		= t_weiboDataDir + fsm_weiboNameListFilename;
-		
-		preWriteReadIni(false, t_weiboDataBackPathName,t_weiboDataPathName,
-						fsm_weiboDataBackName, fsm_weiboDataName);
+		preWriteReadIni(false, fsm_weiboNameIdxFilename);
+		preWriteReadIni(false, fsm_weiboNameListFilename);
 		
 		synchronized (m_weiboNameList) {
 			
@@ -3143,7 +3125,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				
 				// read the weibo name list 
 				//
-				FileConnection t_fc = (FileConnection)Connector.open(t_weiboNameListName);
+				FileConnection t_fc = (FileConnection)Connector.open(fsm_weiboNameListFilename);
 				try{
 					if(!t_fc.exists()){
 						t_fc.create();
@@ -3175,7 +3157,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 				
 				// read the weibo name header file
 				//
-				t_fc = (FileConnection)Connector.open(t_weiboDataPathName);
+				t_fc = (FileConnection)Connector.open(fsm_weiboNameIdxFilename);
 				try{
 					if(!t_fc.exists()){
 						t_fc.create();						
@@ -3197,14 +3179,14 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 					t_fc.close();
 					t_fc = null;
 				}
-				
-				postWriteReadIni(fsm_weiboDataBackName);
-				
+								
 			}catch(Exception e){
 				SetErrorString("RWNL", e);
 			}
 		}
 		
+		postWriteReadIni(fsm_weiboNameIdxFilename);
+		postWriteReadIni(fsm_weiboNameListFilename);		
 	}
 	
 

@@ -397,8 +397,13 @@ public class fetchWeibo {
 			t_name = GetUserScreenName();
 		}
 				
+		//RRR:精简W2S短信字符	
+		
+		t_content.append("@").append(t_name).append("(").append(getLocalStyleName()).append("):").append(GetText());
+		/*源码
 		t_content.append("@").append(t_name).append(" ").append("(").append(getLocalStyleName()).append(")").append("\n")
 				.append(GetText()).append("\n");
+		*/
 		
 		if(GetOriginalPic().length() != 0){
 			t_content.append(GetOriginalPic());
