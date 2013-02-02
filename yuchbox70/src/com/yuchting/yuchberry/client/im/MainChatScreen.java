@@ -978,7 +978,7 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 						t_status = m_currRoster.m_roster.getAccount();
 					}
 					_g.setFont(RosterItemField.fsm_addressFont); //RRR:聊天顶栏状态字体
-					_g.drawText(t_status,t_x + 6,RosterItemField.fsm_addressFontHeight ); //RRR:微调用户名字体_g.drawText(t_status,t_start_x + 4,MainIMScreen.fsm_boldFont.getHeight() - 4);
+					_g.drawText(t_status,t_x + 6,RosterItemField.fsm_addressFontHeight + 3); //RRR:微调用户名字体_g.drawText(t_status,t_start_x + 4,MainIMScreen.fsm_boldFont.getHeight() - 4);
 		
 				}
 				

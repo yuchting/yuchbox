@@ -1441,10 +1441,10 @@ public class weiboTimeLineScreen extends MainScreen{
 	 */
 	private void loadWeibo2smsFile(){
 		try{
-			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/weibo2sms.txt",Connector.READ);
+			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back+ "YuchBerry/weibo2sms.txt",Connector.READ);
 			try{
 				if(!fc.exists()){
-					fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/weibo2sms.txt",Connector.READ);
+					fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default  + "YuchBerry/weibo2sms.txt",Connector.READ);
 				}
 				
 				if(fc.exists()){
