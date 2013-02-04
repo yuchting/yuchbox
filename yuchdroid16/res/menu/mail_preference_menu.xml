@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/mail_pref_menu_refresh_own_account"
-    	android:title="@string/mail_pref_menu_refresh_own_account"/> 
-    <item android:id="@+id/mail_pref_menu_clear_history"
-    	android:title="@string/mail_pref_menu_clear_history"/>
-</menu>
