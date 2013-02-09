@@ -42,7 +42,7 @@
 	<Image Name="update_button" XPos="21" YPos="307" Width="38" Height="32" />
 	<Image Name="update_button_focus" XPos="93" YPos="307" Width="38" Height="32" />
 	<Image Name="update_button_en" XPos="175" YPos="115" Width="38" Height="32" />
-	<Image Name="update_button_focus_en" XPos="170" YPos="147" Width="38" Height="32" />
+	<Image Name="update_button_focus_en" XPos="175" YPos="147" Width="38" Height="32" />
 	
 	<Image Name="phiz_button_focus" XPos="150" YPos="179" Width="40" Height="24" />
 	<Image Name="phiz_button" XPos="150" YPos="203" Width="40" Height="24" />
