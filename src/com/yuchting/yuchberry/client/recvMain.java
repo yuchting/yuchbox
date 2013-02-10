@@ -2618,10 +2618,11 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	public static final int[]		fsm_refreshWeiboInterval		= {0,10,20,30,40,60,120,360,720,1440};
 	public int						m_refreshWeiboIntervalIndex = 0;
 	
-	public static final String[]	fsm_weiboUploadImageSizeList = {"800×600","1280×800",sm_local.getString(yblocalResource.WEIBO_IMAGE_ORIGINAL_SIZE)};
+	public static final String[]	fsm_weiboUploadImageSizeList = {"800×600","1024×768","1280×800",sm_local.getString(yblocalResource.WEIBO_IMAGE_ORIGINAL_SIZE)};
 	public static final XYPoint[]	fsm_weiboUploadImageSize_size		= 
 	{
 		new XYPoint(800,600),
+		new XYPoint(1024,768),		
 		new XYPoint(1280,800),
 		null,
 	};
