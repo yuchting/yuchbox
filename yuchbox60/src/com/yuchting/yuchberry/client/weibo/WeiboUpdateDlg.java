@@ -173,9 +173,9 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 				m_weiboUIImageSets,Field.FIELD_LEFT);
 		
 		if(recvMain.sm_standardUI){
-			m_updateTitle = m_weiboUIImageSets.getImageUnit("compose_nav_bar");
-		}else{
 			m_updateTitle = m_weiboUIImageSets.getImageUnit("w_updlg_header");//RRR:发微博页面Header背景m_updateTitle = m_weiboUIImageSets.getImageUnit("nav_bar");
+		}else{
+			m_updateTitle = m_weiboUIImageSets.getImageUnit("compose_nav_bar");
 		}
 		
 		
