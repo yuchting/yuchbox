@@ -300,14 +300,12 @@ class sendReceive extends Thread{
 	
 	static public void WriteString(OutputStream _stream,String _string,boolean _converToSimpleChar)throws Exception{
 		
-		if(_string == null){
-			_string = "";
-		}
-		
-		final byte[] t_strByte = _converToSimpleChar?complTosimple(_string).getBytes("UTF-8"):_string.getBytes("UTF-8");
-		
-		WriteInt(_stream,t_strByte.length);
-		if(t_strByte.length != 0){
+		if(_string == null || _string.length() == 0){
+			WriteInt(_stream,0);
+		}else{
+			byte[] t_strByte = _converToSimpleChar?complTosimple(_string).getBytes("UTF-8"):_string.getBytes("UTF-8");
+			
+			WriteInt(_stream,t_strByte.length);
 			_stream.write(t_strByte);
 		}
 	}
