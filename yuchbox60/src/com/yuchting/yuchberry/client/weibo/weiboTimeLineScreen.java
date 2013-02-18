@@ -1602,7 +1602,12 @@ public class weiboTimeLineScreen extends MainScreen{
 					javax.wireless.messaging.Message msg = msgConn.newMessage(MessageConnection.TEXT_MESSAGE);
 					
 					TextMessage txtMsg = (TextMessage)msg;
-					txtMsg.setPayloadText(w.getShareSMSContain());
+					String text = w.getShareSMSContain(true);
+					if(text.length() > 140){
+						text = w.getShareSMSContain(false);
+					}
+					txtMsg.setPayloadText(text);
+					
 					msgConn.send(txtMsg);
 					
 					m_mainApp.SetErrorString("w2s send succ:" + w2s.weiboId + "->" + w2s.smsPhone);

@@ -386,7 +386,7 @@ public class fetchWeibo {
 		return t_content.toString();
 	}
 	
-	public String getShareSMSContain(){
+	public String getShareSMSContain(boolean includePic){
 		
 		StringBuffer t_content = new StringBuffer();
 		String t_name;
@@ -400,16 +400,16 @@ public class fetchWeibo {
 		t_content.append("@").append(t_name).append(" ").append("(").append(getLocalStyleName()).append(")").append("\n")
 				.append(GetText()).append("\n");
 		
-		if(GetOriginalPic().length() != 0){
+		if(includePic && GetOriginalPic().length() != 0){
 			t_content.append(GetOriginalPic());
 		}		
 
 		if(m_replyWeibo != null){
-			t_content.append("\n\n").append(m_replyWeibo.getShareSMSContain());
+			t_content.append("\n\n").append(m_replyWeibo.getShareSMSContain(includePic));
 		}
 		
 		if(m_commentWeibo != null){
-			t_content.append("\n\n").append(m_commentWeibo.getShareSMSContain());
+			t_content.append("\n\n").append(m_commentWeibo.getShareSMSContain(includePic));
 		}		
 		
 		return t_content.toString();
