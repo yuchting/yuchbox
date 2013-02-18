@@ -71,7 +71,7 @@ public class WeiboShareSMSDlg extends SimpleOKCancelDlg{
 				MessageConnection mc = (MessageConnection)Connector.open("sms://");
 				TextMessage m = (TextMessage)mc.newMessage( MessageConnection.TEXT_MESSAGE );
 				
-				String t_contain = m_shareWeibo.getShareSMSContain();
+				String t_contain = m_shareWeibo.getShareSMSContain(true);
 				
 				m.setAddress("sms://" + t_data.m_phoneNumber);
 				m.setPayloadText(t_contain);
