@@ -2188,6 +2188,11 @@ public class fetchEmail extends fetchAccount{
 			return "No Subject";
 		}
 		
+		// =?gb2312?Q?=deinvueHF?=\r\n =?utf-8?ddfdf?= 
+		// to remove addition space blank
+		//
+		_name = _name.replace("?=\r\n ", "?=");
+		
 		int t_start = _name.indexOf("=?");
 		
 		if(t_start != -1){
