@@ -2569,6 +2569,24 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		return t_append;
 	}
 	
+	/**
+	 * replace the old String in replace one with newStr
+	 * @param replaceStr
+	 * @param oldStr
+	 * @param newStr
+	 * @return
+	 */
+	public static String repleaceStr(String replaceStr,String oldStr,String newStr){
+		
+		int idx = replaceStr.indexOf(oldStr);
+		while(idx != -1){
+			replaceStr = replaceStr.substring(0,idx) + newStr + replaceStr.substring(idx + oldStr.length()); 
+			idx = replaceStr.indexOf(oldStr);
+		}
+		
+		return replaceStr;
+	}
+	
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///// weibo module
 	///////////////////////////////////////////////////////////////////////////////////////////
