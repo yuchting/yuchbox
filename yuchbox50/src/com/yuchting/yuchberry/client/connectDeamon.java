@@ -2085,7 +2085,13 @@ public class connectDeamon extends Thread implements SendListener,
 		String t_sub = m.getSubject();
 		if(t_sub == null){
 			_mail.SetSubject(fetchMail.fsm_noSubjectTile);
-		}else{	
+		}else{
+			
+			// maybe some system while contain "\r\n " string when subject is multilines
+			//
+			t_sub = recvMain.repleaceStr(t_sub, "\r\n ", "");		
+			t_sub = recvMain.repleaceStr(t_sub, "\r", "");
+			t_sub = recvMain.repleaceStr(t_sub, "\n", "");
 			
 			_mail.SetSubject(t_sub);	
 		}
