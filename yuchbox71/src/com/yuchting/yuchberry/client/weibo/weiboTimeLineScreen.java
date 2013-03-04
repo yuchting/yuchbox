@@ -1556,11 +1556,11 @@ public class weiboTimeLineScreen extends MainScreen{
 		if(!m_mainApp.mEnableWeibo2SMS){
 			return;
 		}
-		
-		if(weibo.GetText().startsWith("发表了博文")
-		|| weibo.GetText().startsWith("分享图片")){
-			return;
-		}
+//RRR:		
+//		if(weibo.GetText().startsWith("发表了博文")
+//		|| weibo.GetText().startsWith("分享图片")){
+//			return;
+//		}
 
 		if(mWeibo2smsList != null){
 			
