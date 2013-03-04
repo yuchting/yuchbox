@@ -1557,6 +1557,11 @@ public class weiboTimeLineScreen extends MainScreen{
 			return;
 		}
 		
+		if(weibo.GetText().startsWith("发表了博文")
+		|| weibo.GetText().startsWith("分享图片")){
+			return;
+		}
+
 		if(mWeibo2smsList != null){
 			
 			if(mWeibo2smsSendHandler == -1){
