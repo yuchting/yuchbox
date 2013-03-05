@@ -289,7 +289,7 @@ final class WeiboUpdateManager extends Manager implements FieldChangeListener{
 						m_timelineScreen.m_mainApp.getWeiboUploadSize());
 			}catch(Exception e){
 				m_timelineScreen.m_mainApp.DialogAlert("camera file process error:"+ e.getMessage()+ e.getClass());
-				m_timelineScreen.m_mainApp.SetErrorString("su:"+ e.getMessage()+ e.getClass());
+				m_timelineScreen.m_mainApp.SetErrorString("SU",e);
 			}
 						
 			if(t_content == null){
