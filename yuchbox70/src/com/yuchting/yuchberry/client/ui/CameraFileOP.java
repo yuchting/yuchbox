@@ -147,6 +147,10 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 		if(_imageBytes != null){
 			
 			EncodedImage t_origImage = EncodedImage.createEncodedImage(_imageBytes, 0, _imageBytes.length);
+
+			if(t_origImage == null){
+				throw new Exception("Can't createEncodedImage for this bytes!");
+			}
 			
 			int t_origWidth = t_origImage.getWidth();
 			int t_origHeight = t_origImage.getHeight();
@@ -181,7 +185,11 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 				_imageBytes = finalJPEG.getData();
 													
 			}finally{
-				
+
+				if(finalJPEG == null){
+					throw new Exception("Can't JPEGEncodedImage for this bytes!");
+				}
+
 				t_origImage = null;
 			}
 		}
