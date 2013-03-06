@@ -147,6 +147,10 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 		if(_imageBytes != null){
 			
 			EncodedImage t_origImage = EncodedImage.createEncodedImage(_imageBytes, 0, _imageBytes.length);
+
+			if(t_origImage == null){
+				throw new Exception("Can't createEncodedImage for this bytes!");
+			}
 			
 			int t_origWidth = t_origImage.getWidth();
 			int t_origHeight = t_origImage.getHeight();
@@ -171,17 +175,21 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 					int scaleX = Fixed32.div(Fixed32.toFP(t_origWidth), Fixed32.toFP(t_scaleSize.x));
 					int scaleY = Fixed32.div(Fixed32.toFP(t_origHeight), Fixed32.toFP(t_scaleSize.y));
 														
-					finalJPEG = JPEGEncodedImage.encode(t_origImage.scaleImage32(scaleX, scaleY).getBitmap(), 60);
+					finalJPEG = JPEGEncodedImage.encode(t_origImage.scaleImage32(scaleX, scaleY).getBitmap(), 55);
 					
 				}else{
 					
-					finalJPEG = JPEGEncodedImage.encode(t_origImage.getBitmap(), 60);
+					finalJPEG = JPEGEncodedImage.encode(t_origImage.getBitmap(), 55);
 				}
 				
 				_imageBytes = finalJPEG.getData();
 													
 			}finally{
-				
+
+				if(finalJPEG == null){
+					throw new Exception("Can't JPEGEncodedImage for this bytes!");
+				}
+
 				t_origImage = null;
 			}
 		}
