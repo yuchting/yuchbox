@@ -707,7 +707,7 @@ public class fetchEmail extends fetchAccount{
 		
 		POP3Folder folder = (POP3Folder)dfolder.getFolder("INBOX");
 	    if (folder == null) {
-	    	throw new Exception("Invalid INBOX folder");
+	    	throw new Exception("Invalid INBOX folder"); 
 	    }
 		
 		folder.open(Folder.READ_WRITE);
