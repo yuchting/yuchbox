@@ -834,7 +834,7 @@ public class fetchEmail extends fetchAccount{
     			
     			// prepare the marking reading vector
     			//
-	    		if(m_unreadMailVector_marking.size() > 100){
+	    		if(m_unreadMailVector_marking.size() > 256){
 	    			m_unreadMailVector_marking.removeElementAt(0);
 	    		}
 				m_unreadMailVector_marking.addElement(new UnreadMailMarkingData(t_mail,totalMessageCount));
@@ -872,7 +872,9 @@ public class fetchEmail extends fetchAccount{
     		
     		if(t_hasLoad){
     			return false;
-    		}    		
+    		}
+
+    		m_unreadMailVector.addElement(_mail);
 		}
  		
  		return true;
