@@ -46,6 +46,7 @@ import java.util.regex.Pattern;
 
 import javax.mail.Address;
 import javax.mail.BodyPart;
+import javax.mail.FetchProfile;
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Header;
@@ -55,6 +56,7 @@ import javax.mail.Multipart;
 import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.Store;
+import javax.mail.UIDFolder;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -68,6 +70,7 @@ import twitter4j.internal.org.json.JSONArray;
 import twitter4j.internal.org.json.JSONObject;
 
 import com.sun.mail.imap.IMAPInputStream;
+import com.sun.mail.pop3.POP3Folder;
 import com.sun.mail.smtp.SMTPTransport;
 
 class EmailSendAttachment extends Thread{
@@ -376,6 +379,11 @@ public class fetchEmail extends fetchAccount{
     Vector<fetchMail> m_unreadMailVector 			= new Vector<fetchMail>();
     Vector<fetchMail> m_unreadMailVector_confirm 	= new Vector<fetchMail>();
     
+    /**
+     * pop3 UID list 
+     */
+    Vector<String>		mPop3UIDList	= new Vector<String>();
+    
     Vector<EmailSendAttachment>	m_emailSendAttachList = new Vector<EmailSendAttachment>();
     
     final class UnreadMailMarkingData{
@@ -402,17 +410,7 @@ public class fetchEmail extends fetchAccount{
     boolean m_useAppendHTML			= false;    
    
     private Vector<RecvMailAttach>	m_recvMailAttach 	= new Vector<RecvMailAttach>();
-    
-    /**
-     * pop3 protocol mail inbox new message maybe appear in head index: 1 instead of rear index mailCountIdx like imap
-     * so get new message by check head of inbox
-     * please search this var to check detail of this special effection
-     */
-    private boolean	m_pop3ReverseFolder		= false;
-    
-    //! former new message hash
-    private String		m_formerNewMessageID	= null; 
-        
+            
     class MailIndexAttachment{
     	int			m_mailHashCode;
     	
@@ -520,7 +518,7 @@ public class fetchEmail extends fetchAccount{
 		if(_elem.attributeValue("pushHistoryMsg") != null){
 			m_pushHistoryMsg					= ReadBooleanAttr(_elem,"pushHistoryMsg");
 		}else{
-			if(m_protocol.indexOf("pop3") != -1){
+			if(m_protocol.startsWith("pop3")){
 				m_pushHistoryMsg = false;
 			}else{
 				m_pushHistoryMsg = true;
@@ -625,11 +623,21 @@ public class fetchEmail extends fetchAccount{
 	public void CheckFolder()throws Exception{
 		
 		if(!m_store.isConnected()){
-			
 			m_mainMgr.m_logger.LogOut("m_store is not connected, ResetSession first");
-			
 			ResetSession(true);
-		}		
+		}
+		
+		if(m_protocol.startsWith("imap")){
+			checkIMAPFolder();
+		}else{
+			checkPOP3Folder();
+		}
+	}
+	
+	/**
+	 * check the IMAP folder
+	 */
+	private void checkIMAPFolder()throws Exception{
 		
 		Folder folder = m_store.getDefaultFolder();
 		
@@ -661,117 +669,14 @@ public class fetchEmail extends fetchAccount{
  		    	int t_startIndex = Math.max(t_totalMailCount - Math.min(CHECK_NUM,t_totalMailCount) + 1,
 												Math.min(t_totalMailCount,m_beginFetchIndex));
 	 		    
-	 		    Message[] t_msgs;
-	 		    
-	 		    if(m_pop3ReverseFolder){
-	 		    	t_msgs = folder.getMessages(1, t_totalMailCount - m_totalMailCount);
-	 		    }else{
-	 		    	t_msgs = folder.getMessages(t_startIndex, t_totalMailCount);
-	 		    }
-	 		    		    
+	 		    Message[] t_msgs = folder.getMessages(t_startIndex, t_totalMailCount);
 	 		    for(int i = 0;i < t_msgs.length;i++){
 	 		    	
-	 		    	Message t_msg = t_msgs[i];
+	 		    	LoadMessage(t_msgs[i],i + t_startIndex,t_totalMailCount);
 	 		    	
-	 		    	Flags flags = t_msg.getFlags();
-	 	        	Flags.Flag[] flag = flags.getSystemFlags();  
-	 	        	
-	 	        	boolean t_isNew = true;
-	 	        	for(int j = 0; j < flag.length; j++){
-	 	                if (flag[j] == Flags.Flag.SEEN 
-	 	                	&& flag[j] != Flags.Flag.DELETED
-	 	                	&& flag[j] != Flags.Flag.DRAFT) {
-	 	                	
-	 	                    t_isNew = false;
-	 	                    break;      
-	 	                }
-	 	            }      
-	 	        	
-	 		    	if(t_isNew){
-	 		    		
-	 		    		fetchMail t_mail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
-	 		    		t_mail.SetMailIndex(i + t_startIndex);
-	 		    		try{
-	 		    			
-	 		    			ImportMail(t_msg,t_mail);
-	 		    			
-	 		    			m_loadMessageErrorTime = 0;
-	 		    			
-	 		    		}catch(Exception e){
-	 		    			
-	 		    			m_loadMessageErrorTime++;
-	 		    			
-	 		    			if(m_loadMessageErrorTime >= 2){
-
-	 		    				m_loadMessageErrorTime = 0;
-	 		    				
-		 		    			String t_prompt = GetAccountPrefix();
-		 		    			
-		 		    			switch (m_mainMgr.GetClientLanguage()) {
-				 		   		case fetchMgr.CLIENT_LANG_ZH_S:
-				 		   			t_prompt += "\nYuchBerry服务器提示：由于网络，格式等问题，读取这封邮件的时候出现了错误，需要通过其它方式查看。\n\n\n"; 
-				 		   			break;
-				 		   		case fetchMgr.CLIENT_LANG_ZH_T:
-				 		   			t_prompt += "\nYuchBerry服务器提示：由於網絡，格式等問題，讀取這封郵件的時候出現了錯誤，需要通過其他方式查看。\n\n\n";
-				 		   			break;
-				 		   		default:
-				 		   			t_prompt += "\nYuchBerry ImportMail Error! Please read the Mail via another way!\n\n\n";
-				 		   				
-				 		   		}
-		 		    			
-		 		    			t_mail.SetContain(t_mail.GetContain() + "\n\n\n" + e.getMessage() + t_prompt);
-		 		    			
-		 		    			m_mainMgr.m_logger.PrinterException(e);
-		 		    			
-	 		    			}else{
-	 		    				throw e;
-	 		    			}
-	 		    		}
-	 		    		 
-	 		    		AddMailIndexAttach(t_mail,false);
-	 		    		
-	 		    		if(!addPushListMsg(t_mail)){
-	 		    			// duplicate mail read the next message mail
-	 		    			//
-	 		    			continue;
-	 		    		}	 		    	
-	 		    			 		    		
-	 		    		synchronized (m_unreadMailVector_marking) {
-	 		    			
-	 		    			// prepare the marking reading vector
-	 		    			//
-	 			    		if(m_unreadMailVector_marking.size() > 100){
-	 			    			m_unreadMailVector_marking.removeElementAt(0);
-	 			    		}
-	 						m_unreadMailVector_marking.addElement(new UnreadMailMarkingData(t_mail,t_totalMailCount));
-	 					}
-	 		    		
-	 		    	}
-
 	 		    	m_beginFetchIndex = i + t_startIndex + 1;	 		    	
 	 		    }
-	 		    
-	 		    
-				if(!m_unreadMailVector.isEmpty()){
-					
-					fetchMail t_newMail = m_unreadMailVector.get(m_unreadMailVector.size() - 1);
-					
-					if(t_newMail.getMessageID() == m_formerNewMessageID
-					&& m_formerNewMessageID != null
-					&& m_protocol.indexOf("pop") != -1
-					&& !m_pop3ReverseFolder){
-						
-						m_formerNewMessageID = t_newMail.getMessageID();
-						m_pop3ReverseFolder = true;
-						
-						m_mainMgr.m_logger.LogOut(GetAccountName() + " pop3ReverseFolder true!");
-						
-						return;
-					}
-					
-					m_formerNewMessageID = t_newMail.getMessageID();
-				}
-    
+	 		        
 				m_totalMailCount = t_totalMailCount;
 	 	    }
 	 	    
@@ -782,9 +687,160 @@ public class fetchEmail extends fetchAccount{
 	    		}
 	    	}catch(Exception e){
 	    		//m_mainMgr.m_logger.LogOut("folder close exception:" + e.getMessage());
+	    	}	 
+	    }  
+	}
+	
+	/**
+	 * check pop3 folder by UID check following URL for detail
+	 * http://www.developer.com/java/other/article.php/3092171/JavaMail-More-Efficiently.htm
+	 * 
+	 * @throws Exception
+	 */
+	private void checkPOP3Folder()throws Exception{
+		
+		Folder dfolder = m_store.getDefaultFolder();
+		
+		if(dfolder == null) {
+			throw new Exception("Cant find default namespace");
+		}
+		
+		POP3Folder folder = (POP3Folder)dfolder.getFolder("INBOX");
+	    if (folder == null) {
+	    	throw new Exception("Invalid INBOX folder");
+	    }
+		
+		folder.open(Folder.READ_WRITE);
+		try{
+			int t_totalMailCount = folder.getMessageCount();
+			if(m_totalMailCount < 0 && !IsPushHistoryMsg()){
+				m_totalMailCount = t_totalMailCount;
+			}
+			
+			if(m_totalMailCount > t_totalMailCount){
+	    		m_totalMailCount = t_totalMailCount;
+	    		return;
 	    	}
-	    	 
-	    }	   
+			
+			if(m_totalMailCount != t_totalMailCount){
+
+				FetchProfile profile = new FetchProfile();
+				profile.add(UIDFolder.FetchProfileItem.UID);
+				
+				Message[] messages = folder.getMessages();
+				folder.fetch(messages,profile);
+				
+				for(int i = 0;i < messages.length;i++){
+					
+				   String uid = folder.getUID(messages[i]);
+				   
+				   if(!mPop3UIDList.contains(uid)){
+					   Message msg = folder.getMessage(i + 1);
+					   LoadMessage(msg,i + 1,t_totalMailCount);
+					   
+					   mPop3UIDList.add(uid);
+				   }
+				}
+				
+				m_totalMailCount = t_totalMailCount;
+			}
+		}finally{
+			try{
+	    		if(folder.isOpen()){
+	    			folder.close(false);
+	    		}
+	    	}catch(Exception e){
+	    		//m_mainMgr.m_logger.LogOut("folder close exception:" + e.getMessage());
+	    	}	
+		}
+		
+		
+	}
+	
+	/**
+	 * load a message to push
+	 * @param msg
+	 * @param mailIdx
+	 * @param totalMessageCount
+	 * @throws Exception
+	 */
+	private void LoadMessage(Message msg,int mailIdx,int totalMessageCount)throws Exception{
+		
+		Flags flags = msg.getFlags();
+     	Flags.Flag[] flag = flags.getSystemFlags();  
+     	
+     	boolean t_isNew = true;
+     	for(int j = 0; j < flag.length; j++){
+             if (flag[j] == Flags.Flag.SEEN 
+             	&& flag[j] != Flags.Flag.DELETED
+             	&& flag[j] != Flags.Flag.DRAFT) {
+             	
+                 t_isNew = false;
+                 break;      
+             }
+         }      
+     	
+    	if(t_isNew){
+    		
+    		fetchMail t_mail = new fetchMail(m_mainMgr.m_convertToSimpleChar);
+    		t_mail.SetMailIndex(mailIdx);
+    		
+    		try{
+    			
+    			ImportMail(msg,t_mail);
+    			
+    			m_loadMessageErrorTime = 0;
+    			
+    		}catch(Exception e){
+    			
+    			m_loadMessageErrorTime++;
+    			
+    			if(m_loadMessageErrorTime >= 2){
+
+    				m_loadMessageErrorTime = 0;
+    				
+	    			String t_prompt = GetAccountPrefix();
+	    			
+	    			switch (m_mainMgr.GetClientLanguage()) {
+ 		   		case fetchMgr.CLIENT_LANG_ZH_S:
+ 		   			t_prompt += "\nYuchBerry服务器提示：由于网络，格式等问题，读取这封邮件的时候出现了错误，需要通过其它方式查看。\n\n\n"; 
+ 		   			break;
+ 		   		case fetchMgr.CLIENT_LANG_ZH_T:
+ 		   			t_prompt += "\nYuchBerry服务器提示：由於網絡，格式等問題，讀取這封郵件的時候出現了錯誤，需要通過其他方式查看。\n\n\n";
+ 		   			break;
+ 		   		default:
+ 		   			t_prompt += "\nYuchBerry ImportMail Error! Please read the Mail via another way!\n\n\n";
+ 		   				
+ 		   		}
+	    			
+	    			t_mail.SetContain(t_mail.GetContain() + "\n\n\n" + e.getMessage() + t_prompt);
+	    			
+	    			m_mainMgr.m_logger.PrinterException(e);
+	    			
+    			}else{
+    				throw e;
+    			}
+    		}
+    		 
+    		AddMailIndexAttach(t_mail,false);
+    		
+    		if(!addPushListMsg(t_mail)){
+    			// duplicate mail read the next message mail
+    			//
+    			return;
+    		}	 		    	
+    			 		    		
+    		synchronized (m_unreadMailVector_marking) {
+    			
+    			// prepare the marking reading vector
+    			//
+	    		if(m_unreadMailVector_marking.size() > 100){
+	    			m_unreadMailVector_marking.removeElementAt(0);
+	    		}
+				m_unreadMailVector_marking.addElement(new UnreadMailMarkingData(t_mail,totalMessageCount));
+			}
+    		
+    	}
 	}
 	
 	/**
@@ -804,8 +860,11 @@ public class fetchEmail extends fetchAccount{
  		synchronized (m_unreadMailVector) {
  			
  			for(int index = 0;index < m_unreadMailVector.size();index++ ){
-    			fetchMail t_loadMail = (fetchMail)m_unreadMailVector.elementAt(index); 
-    			if(t_loadMail.GetMailIndex() == _mail.GetMailIndex()){
+    			
+ 				fetchMail t_loadMail = (fetchMail)m_unreadMailVector.elementAt(index);
+    			
+    			if(t_loadMail.getMessageID().equals(_mail.getMessageID())){
+    				
     				t_hasLoad = true;
     				break;
     			}
@@ -813,14 +872,7 @@ public class fetchEmail extends fetchAccount{
     		
     		if(t_hasLoad){
     			return false;
-    		}
-    		
-    		if(m_pop3ReverseFolder){
-    			m_unreadMailVector.insertElementAt(_mail, 0);
-    		}else{
-    			m_unreadMailVector.addElement(_mail);
-    		}
-    		
+    		}    		
 		}
  		
  		return true;
@@ -1303,7 +1355,7 @@ public class fetchEmail extends fetchAccount{
 					
 					// pop3 is NOT support this operating
 					//
-					&& m_protocol.indexOf("pop3") == -1){
+					&& !m_protocol.startsWith("pop3")){
 						
 						// open the Sent folder and copy mail to this
 						//
@@ -1474,23 +1526,19 @@ public class fetchEmail extends fetchAccount{
 	    	
 	    	int t_totalNum = folder.getMessageCount();
 	    	int t_orgIndex = _index;
-	    	
-	    	if(m_pop3ReverseFolder){
-				_index = _currMailNum - _index + 1 + (t_totalNum - _currMailNum);
-			}
-	    	
+	    		    	
 			if(_index <= t_totalNum){
 				
 				if(_del){
 					folder.setFlags(_index, _index, new Flags(Flags.Flag.DELETED), true);
 					
-					m_mainMgr.m_logger.LogOut(GetAccountName() + " delete mail Index<" + t_orgIndex + "> pop3ReverseFolder<" + m_pop3ReverseFolder + ">");
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " delete mail Index: " + t_orgIndex);
 					
 				}else{
 					
 					folder.setFlags(_index, _index, new Flags(Flags.Flag.SEEN), true);	
 					
-					m_mainMgr.m_logger.LogOut(GetAccountName() + " Set index<" + t_orgIndex + "> read pop3ReverseFolder<" + m_pop3ReverseFolder + ">");
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " Set index: " + t_orgIndex);
 				}
 			}			
 	 	    
@@ -1498,7 +1546,7 @@ public class fetchEmail extends fetchAccount{
 	    	
 	    	try{   		
 	    			
-    			if(m_protocol.indexOf("pop3") != -1 && _del){
+    			if(m_protocol.startsWith("pop3") && _del){
 		    		
 		    		// check the 
 		    		// http://www.oracle.com/technetwork/java/faq-135477.html#delpop3
@@ -1861,8 +1909,7 @@ public class fetchEmail extends fetchAccount{
 		Date t_date = m.getSentDate();
 		if(t_date != null){
 			_mail.SetSendDate(t_date);
-		}
-		
+		}		
 		
 		int t_flags = 0;
 		Flags.Flag[] sf = m.getFlags().getSystemFlags(); // get the system flags
