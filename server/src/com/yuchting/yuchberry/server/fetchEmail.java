@@ -674,7 +674,7 @@ public class fetchEmail extends fetchAccount{
 	 		    	
 	 		    	LoadMessage(t_msgs[i],i + t_startIndex,t_totalMailCount);
 	 		    	
-	 		    	m_beginFetchIndex = i + t_startIndex + 1;	 		    	
+	 		    	m_beginFetchIndex = i + t_startIndex + 1;
 	 		    }
 	 		        
 				m_totalMailCount = t_totalMailCount;
@@ -726,15 +726,16 @@ public class fetchEmail extends fetchAccount{
 
 				FetchProfile profile = new FetchProfile();
 				profile.add(UIDFolder.FetchProfileItem.UID);
-				
+
 				Message[] messages = folder.getMessages();
 				folder.fetch(messages,profile);
 				
-				for(int i = 0;i < messages.length;i++){
+				for(int i = messages.length - 1;i >= 0 ;i--){
 					
 				   String uid = folder.getUID(messages[i]);
 				   
 				   if(!mPop3UIDList.contains(uid)){
+					   
 					   Message msg = folder.getMessage(i + 1);
 					   LoadMessage(msg,i + 1,t_totalMailCount);
 					   
@@ -765,6 +766,11 @@ public class fetchEmail extends fetchAccount{
 	 * @throws Exception
 	 */
 	private void LoadMessage(Message msg,int mailIdx,int totalMessageCount)throws Exception{
+		
+		// must return if Mail size if more than 20
+		if(m_unreadMailVector.size() >= CHECK_NUM){
+			return;
+		}
 		
 		Flags flags = msg.getFlags();
      	Flags.Flag[] flag = flags.getSystemFlags();  
@@ -802,16 +808,16 @@ public class fetchEmail extends fetchAccount{
 	    			String t_prompt = GetAccountPrefix();
 	    			
 	    			switch (m_mainMgr.GetClientLanguage()) {
- 		   		case fetchMgr.CLIENT_LANG_ZH_S:
- 		   			t_prompt += "\nYuchBerry服务器提示：由于网络，格式等问题，读取这封邮件的时候出现了错误，需要通过其它方式查看。\n\n\n"; 
- 		   			break;
- 		   		case fetchMgr.CLIENT_LANG_ZH_T:
- 		   			t_prompt += "\nYuchBerry服务器提示：由於網絡，格式等問題，讀取這封郵件的時候出現了錯誤，需要通過其他方式查看。\n\n\n";
- 		   			break;
- 		   		default:
- 		   			t_prompt += "\nYuchBerry ImportMail Error! Please read the Mail via another way!\n\n\n";
- 		   				
- 		   		}
+	 		   		case fetchMgr.CLIENT_LANG_ZH_S:
+	 		   			t_prompt += "\nYuchBerry服务器提示：由于网络，格式等问题，读取这封邮件的时候出现了错误，需要通过其它方式查看。\n\n\n"; 
+	 		   			break;
+	 		   		case fetchMgr.CLIENT_LANG_ZH_T:
+	 		   			t_prompt += "\nYuchBerry服务器提示：由於網絡，格式等問題，讀取這封郵件的時候出現了錯誤，需要通過其他方式查看。\n\n\n";
+	 		   			break;
+	 		   		default:
+	 		   			t_prompt += "\nYuchBerry ImportMail Error! Please read the Mail via another way!\n\n\n";
+	 		   				
+	 		   		}
 	    			
 	    			t_mail.SetContain(t_mail.GetContain() + "\n\n\n" + e.getMessage() + t_prompt);
 	    			
@@ -1540,7 +1546,7 @@ public class fetchEmail extends fetchAccount{
 					
 					folder.setFlags(_index, _index, new Flags(Flags.Flag.SEEN), true);	
 					
-					m_mainMgr.m_logger.LogOut(GetAccountName() + " Set index: " + t_orgIndex);
+					m_mainMgr.m_logger.LogOut(GetAccountName() + " Read Mail index: " + t_orgIndex);
 				}
 			}			
 	 	    

@@ -47,7 +47,10 @@ import java.net.URLConnection;
 import java.security.KeyStore;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Hashtable;
+import java.util.TimeZone;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.zip.GZIPInputStream;
@@ -121,113 +124,91 @@ final class EncodeFormat{
  *  @version 0.1
  */
 public class HelloWorld {
-	/*!
-	 *  @brief main function
-	 *  @param arg  parameters
+	/**
+	 * spliter string
+	 * @param s
+	 * @param split
+	 * @return
 	 */
-	private static abstract class TaskTest<Params, Result> implements Callable<Result> {
-        Params[] mParams;
-    }
-	
-	private Vector mWeibo2smsList = null;
-	
-	private Vector mWeibo2SMSBufferList = null;
-	
-	class Weibo2SMS{
+	public static Vector splitStr(String s,char split){
 		
-		String	weiboId;
-		String	smsPhone;
+		Vector tResult = new Vector();
 		
-		public Weibo2SMS(String _weiboId,String _smsPhone){
-			weiboId		= _weiboId;
-			smsPhone	= _smsPhone;
-		}
-	}
-	
-	private void loadWeibo2smsFile(){
-		try{
-			File fc = new File("weibo2sms.txt");
-			try{
-				if(fc.exists()){
-					if(mWeibo2smsList == null){
-						mWeibo2smsList 			= new Vector();
-						mWeibo2SMSBufferList	= new Vector();
-					}else{
-						mWeibo2smsList.removeAllElements();
-					}					
-					
-					InputStream tReadFile = new FileInputStream(fc);
-		    		try{
-		    			byte[] tBytes = new byte[(int)fc.length()];
-		    			sendReceive.ForceReadByte(tReadFile, tBytes, tBytes.length);
-		    			
-		    			String tFileContent = new String(tBytes,"UTF-8");
-		    			
-		    			String tWeiboId		= null;
-		    			String tSMSPhone	= null;
-		    			
-		    			int tIdx = 0;
-		    			while(tIdx < tFileContent.length()){
-		    				char c = tFileContent.charAt(tIdx);
-		    				
-		    				if(c == ':'){
-		    					
-		    					tWeiboId = tFileContent.substring(0,tIdx);
-		    					tFileContent = tFileContent.substring(tIdx + 1);
-		    					
-		    					tIdx = 0;
-		    					
-		    					continue;
-		    					
-		    				}else if(c == '\r' || c == '\n'){			
-		    					
-		    					tSMSPhone 		= tFileContent.substring(0,tIdx);
-		    					
-		    					while(tIdx + 1 < tFileContent.length()){
-		    						char next = tFileContent.charAt(tIdx + 1);
-		    						if(next == '\r' || next == '\n'){
-		    							tIdx++;
-		    						}else{
-		    							break;
-		    						}
-		    					}
-		    					
-		    					tFileContent 	= tFileContent.substring(tIdx + 1);		    					
-		    					tIdx = 0;
-		    					
-		    					if(tWeiboId != null && tWeiboId.length() > 0 && tSMSPhone.length() > 0){
-		    						
-		    						mWeibo2smsList.addElement(new Weibo2SMS(tWeiboId, tSMSPhone));
-		    						
-		    						//m_mainApp.SetErrorString("w2s:" + tWeiboId + "->" + tSMSPhone);
-		    						System.out.println("w2s:" + tWeiboId + "->" + tSMSPhone);
-		    					}
-		    					
-		    					tWeiboId	= null;
-		    					tSMSPhone	= null;
-		    					
-		    					continue;
-		    				}
-		    				
-		    				tIdx++;
-		    			}
-		    			
-		    			tBytes			= null;
-		    			tFileContent	= null;
-		    			
-		    		}finally{
-		    			tReadFile.close();
-		    		}
+		StringBuffer sb = new StringBuffer();
+		
+		for(int i = 0;i < s.length();i++){
+			char c = s.charAt(i);		
+			if(c == split){
+				if(sb.length() == 0){
+					continue;
 				}
-			}finally{
-				//fc.close();
+				
+				tResult.addElement(sb.toString());
+				
+				sb = new StringBuffer();
+			}else{
+				sb.append(c);
 			}
-		}catch(Exception e){
+		}
+		
+		if(sb.length() > 0){
+			tResult.addElement(sb.toString());
+		}
+		
+		return tResult;
+	}
+	/**
+	 * compare the string whether equal
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	private static boolean cmpNameString(String a,String b){
+
+		if(a != null){
 			
+			if(a.length() == 0 && b == null){
+				return true;
+			}
+
+			return a.equals(b);
+			
+		}else{
+			
+			return (b == null || b.length() == 0);
 		}
 	}
-	public static void main(String arg[])throws Exception{
+	
+	/**
+	 * replace the old String in replace one with newStr
+	 * @param replaceStr
+	 * @param oldStr
+	 * @param newStr
+	 * @return
+	 */
+	public static String repleaceStr(String replaceStr,String oldStr,String newStr){
 		
+		int idx = replaceStr.indexOf(oldStr);
+		while(idx != -1){
+			replaceStr = replaceStr.substring(0,idx) + newStr + replaceStr.substring(idx + oldStr.length()); 
+			idx = replaceStr.indexOf(oldStr);
+		}
+		
+		return replaceStr;
+	}
+	
+	
+	public static void main(String arg[])throws Exception{
+		//cmpBoolean(null);
+		//System.out.println(repleaceStr("nihao buhaode wodejiushi nide","n","w"));
+		//Vector t = splitStr(",,d,,d,ddd,,",',');
+		//System.out.println(t);
+		
+		//Socket s = new Socket("localhost", 6029);
+		
+		//Thread.sleep(60000);
+		
+		//System.out.println(parseRULEDetail("AA=aa;BB=b,b;CC=c"));
 		
 //		String pass = "ZKX8kPEYfjtVMhs9G";
 //		
@@ -256,10 +237,10 @@ public class HelloWorld {
 //		System.setProperty("proxyPort", "8088");
 //		
 //		System.out.println(fetchTWeibo.replaceGFWVerified_URL("http://t.co/HPjdqFCN sdfsdfs http://bit.ly/PU7zFy sdfskljfeind sdfjsdkfs "));
-		//berryRecvTest();
+		berryRecvTest();
 		//berrySendTest();
 		
-		requestPOSTHTTP("http://localhost:8888",(new String("{\"return_code\":0,\"return_message\":\"success\",\"data\":{\"data\":[{\"id\":\"1\",\"question\":\"公主令牌在哪交？\"},{\"id\":\"2\",\"question\":\"公主护使有什么用？\"},{\"id\":\"3\",\"question\":\"角斗场在哪？\"},{\"id\":\"4\",\"question\":\"北部断层在哪？\"},{\"id\":\"5\",\"question\":\"欢乐令有什么用？\"},{\"id\":\"6\",\"question\":\"令牌积分有什么用？\"},{\"id\":\"7\",\"question\":\"南部断层在哪？\"},{\"id\":\"8\",\"question\":\"大妖魔令牌交给谁？\"},{\"id\":\"9\",\"question\":\"神工坊在哪？\"},{\"id\":\"10\",\"question\":\"警戒妖珠有什么用？\"}]}}")).getBytes("UTF-8"),true);
+		//requestPOSTHTTP("http://localhost:8888",(new String("{\"return_code\":0,\"return_message\":\"success\",\"data\":{\"data\":[{\"id\":\"1\",\"question\":\"公主令牌在哪交？\"},{\"id\":\"2\",\"question\":\"公主护使有什么用？\"},{\"id\":\"3\",\"question\":\"角斗场在哪？\"},{\"id\":\"4\",\"question\":\"北部断层在哪？\"},{\"id\":\"5\",\"question\":\"欢乐令有什么用？\"},{\"id\":\"6\",\"question\":\"令牌积分有什么用？\"},{\"id\":\"7\",\"question\":\"南部断层在哪？\"},{\"id\":\"8\",\"question\":\"大妖魔令牌交给谁？\"},{\"id\":\"9\",\"question\":\"神工坊在哪？\"},{\"id\":\"10\",\"question\":\"警戒妖珠有什么用？\"}]}}")).getBytes("UTF-8"),true);
 	}
 	
 	/**
