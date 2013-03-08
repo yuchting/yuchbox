@@ -515,16 +515,6 @@ public class fetchEmail extends fetchAccount{
 		
 		m_useAppendHTML						= ReadBooleanAttr(_elem,"appendHTML");
 
-		if(_elem.attributeValue("pushHistoryMsg") != null){
-			m_pushHistoryMsg					= ReadBooleanAttr(_elem,"pushHistoryMsg");
-		}else{
-			if(m_protocol.startsWith("pop3")){
-				m_pushHistoryMsg = false;
-			}else{
-				m_pushHistoryMsg = true;
-			}
-		}
-		
 		m_sendName		= ReadStringAttr(_elem,"sendName");
 		m_cryptPassword = ReadStringAttr(_elem,"cryptPassword");		
 		
@@ -546,7 +536,17 @@ public class fetchEmail extends fetchAccount{
     			
     			m_protocol = "pop3";
     		}   		
-	    }	
+	    }
+		
+		if(_elem.attributeValue("pushHistoryMsg") != null){
+			m_pushHistoryMsg					= ReadBooleanAttr(_elem,"pushHistoryMsg");
+		}else{
+			if(m_protocol.startsWith("pop3")){
+				m_pushHistoryMsg = false;
+			}else{
+				m_pushHistoryMsg = true;
+			}
+		}
     	
 		// Get a Properties object
 	    Properties t_sysProps 		= new Properties();
@@ -713,9 +713,6 @@ public class fetchEmail extends fetchAccount{
 		folder.open(Folder.READ_WRITE);
 		try{
 			int t_totalMailCount = folder.getMessageCount();
-			if(m_totalMailCount < 0 && !IsPushHistoryMsg()){
-				m_totalMailCount = t_totalMailCount;
-			}
 			
 			if(m_totalMailCount > t_totalMailCount){
 	    		m_totalMailCount = t_totalMailCount;
@@ -723,6 +720,8 @@ public class fetchEmail extends fetchAccount{
 	    	}
 			
 			if(m_totalMailCount != t_totalMailCount){
+				
+				boolean tDiscardFirstCheck = m_totalMailCount < 0 && !IsPushHistoryMsg();
 
 				FetchProfile profile = new FetchProfile();
 				profile.add(UIDFolder.FetchProfileItem.UID);
@@ -736,13 +735,17 @@ public class fetchEmail extends fetchAccount{
 				   
 				   if(!mPop3UIDList.contains(uid)){
 					   
-					   Message msg = folder.getMessage(i + 1);
-					   LoadMessage(msg,i + 1,t_totalMailCount);
-					   
+					   // must return if Mail size if more than 20
+					   if(m_unreadMailVector.size() < CHECK_NUM && !tDiscardFirstCheck){
+						   
+						   Message msg = folder.getMessage(i + 1);
+						   LoadMessage(msg,i + 1,t_totalMailCount);
+					   }
+					   					   
 					   mPop3UIDList.add(uid);
 				   }
 				}
-				
+
 				m_totalMailCount = t_totalMailCount;
 			}
 		}finally{
@@ -766,11 +769,6 @@ public class fetchEmail extends fetchAccount{
 	 * @throws Exception
 	 */
 	private void LoadMessage(Message msg,int mailIdx,int totalMessageCount)throws Exception{
-		
-		// must return if Mail size if more than 20
-		if(m_unreadMailVector.size() >= CHECK_NUM){
-			return;
-		}
 		
 		Flags flags = msg.getFlags();
      	Flags.Flag[] flag = flags.getSystemFlags();  
