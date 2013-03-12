@@ -182,13 +182,14 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 					finalJPEG = JPEGEncodedImage.encode(t_origImage.getBitmap(), 55);
 				}
 				
-				_imageBytes = finalJPEG.getData();
-													
-			}finally{
 
 				if(finalJPEG == null){
 					throw new Exception("Can't JPEGEncodedImage for this bytes!");
 				}
+
+				_imageBytes = finalJPEG.getData();
+													
+			}finally{
 
 				t_origImage = null;
 			}
