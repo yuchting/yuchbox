@@ -1035,14 +1035,16 @@ public class YuchServer {
 				//
 		    	storeAccountInfo();
 		    	
-		    	new Thread(){
+		    	Thread t = (new Thread(){
 		    		public void run(){
 		    			try{
 		    				sleep(1000);
 		    				System.exit(0);
 		    			}catch(Exception e){}
 		    		}
-		    	}.start();		    	
+		    	});
+		    	
+		    	t.start();
 		    	
 		    	return "Close done!";
 			}
