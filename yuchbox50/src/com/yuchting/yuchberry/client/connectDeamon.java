@@ -697,7 +697,7 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			// get rid of blank 
 			while(true){
-				if(t_subject.charAt(0) == ' ' && t_subject.length() > 0){
+				if(t_subject.length() > 0 && t_subject.charAt(0) == ' '){
 					t_subject = t_subject.substring(1);
 				}else{
 					break;
