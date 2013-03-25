@@ -429,6 +429,14 @@ public class sendReceive extends Thread{
 		if(_string == null || _string.length() == 0){
 			WriteInt(_stream,0);
 		}else{
+			
+			// get rid of '\0' char
+			//
+			int idx;
+			while((idx = _string.indexOf(0)) != -1){
+				_string = _string.substring(0,idx) + _string.substring(idx + 1);
+			}
+			
 			byte[] t_strByte;
 			
 			try{
