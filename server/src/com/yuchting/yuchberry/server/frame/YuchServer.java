@@ -63,16 +63,12 @@ class checkStateThread extends Thread{
 	public void run(){
 		
 		int t_versionDetectCounter = -1;
-		int t_backupCounter = 0;
 		
 		Vector<fetchMgr> t_mgrList = new Vector<fetchMgr>();
 		
 		final int t_sleepInterval = 240000;
-		
 		final int t_versionDetect = 12 * 3600000 / t_sleepInterval;
-		
-		final int t_backupInterval = 48 * 3600000 / t_sleepInterval;
-		
+				
 		while(true){
 			
 			try{
@@ -92,15 +88,14 @@ class checkStateThread extends Thread{
 			        URLConnection yc = is_gd.openConnection();
 			        yc.setConnectTimeout(10000);
 			        yc.setReadTimeout(50000);
-			        BufferedReader in = new BufferedReader(
-			                                new InputStreamReader(yc.getInputStream()));
+			        
 			        String t_version;
+			        BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream()));
 			        try{
 			        	t_version = in.readLine();
 			        }finally{
 			        	in.close();
 			        }
-			        
 			        
 			        t_mgrList.clear();
 			        synchronized (m_mainServer.m_accountList) {
@@ -123,23 +118,6 @@ class checkStateThread extends Thread{
 				}
 				
 				t_versionDetectCounter++;
-
-				
-				if(m_mainServer.m_needbackup && t_backupCounter > t_backupInterval){
-					
-					//m_mainServer.m_logger.LogOut("backup start");
-					 
-					t_backupCounter = 0;
-					try{
-						Runtime.getRuntime().exec(m_mainServer.m_backupShellLine);
-					}catch(Exception e){
-						m_mainServer.m_logger.PrinterException(e);
-					}
-					
-					//m_mainServer.m_logger.LogOut("backup end");
-				}
-				
-				t_backupCounter++;
 				
 			}catch(Exception ex){
 				m_mainServer.m_logger.PrinterException(ex);
@@ -749,7 +727,7 @@ public class YuchServer {
 						
 						m_logger.LogOut("到期帐户，发送邮件： " + t_thread.m_fetchMgr.GetAccountName());
 						
-						SendTimeupMail(t_thread,m_yuchsignFramePass);
+						SendTimeupMail(t_thread);
 					}
 					
 					if(t_thread.m_fetchMgr.GetClientConnected() != null){
@@ -834,56 +812,81 @@ public class YuchServer {
 		}
 	}
 	
-	public void SendTimeupMail(final fetchThread _thread,final String _officalPass){
+	private Vector<fetchThread> mSendTimeupMailList = new Vector<fetchThread>();
+	private Thread mSendTimeupMailThread			= null;
+	
+	public void SendTimeupMail(fetchThread _thread){
 		
-		new Thread(){
-			public void run(){
+		if(mSendTimeupMailThread == null){
+			mSendTimeupMailThread = new Thread(){
 				
-				int t_tryTime = 0;
-				while(t_tryTime++ < 3){
-					try{
-						if(_officalPass != null){
-							
-							String to = _thread.m_fetchMgr.GetAccountName();
-							fetchEmail t_emailAcc = _thread.m_fetchMgr.findEmailAcc();
-							if(t_emailAcc != null){
-								to = t_emailAcc.GetAccountName();
-							}
-							
-							// send the offical timeup mail
-							//
-							URL is_gd = new URL("http://api.yuchs.com/sm.php?to="+ 
-												URLEncoder.encode(to,"UTF-8") + 
-												"&pass=" + _officalPass + 
-												"&rand=" + (new Random().nextInt()) );
-							
-					        URLConnection yc = is_gd.openConnection();
-					        yc.setConnectTimeout(10000);
-					        yc.setReadTimeout(20000);
-					        BufferedReader in = new BufferedReader(
-					                                new InputStreamReader(yc.getInputStream()));
-					        try{
-					        	String result = in.readLine();
-					        	System.out.println("send timeup mail to " + to + " result:"+result);
-					        }finally{
-					        	in.close();
-					        }
-					     
-						}else{
-							
-							_thread.m_fetchMgr.SendImmMail("语盒提示", 
-									fetchMgr.ReadSimpleIniFile("timeupMail.txt","UTF-8",null),
-									"\"YuchsBox\" <yuchberry@gmail.com>");
+				public void run(){
+					
+					while(true){
+						
+						try{
+							Thread.sleep(20000);
+						}catch(Exception ex){}
+						
+						while(!mSendTimeupMailList.isEmpty()){
+							SendTimeupMailImpl(mSendTimeupMailList.get(0));
+							mSendTimeupMailList.remove(0);
 						}
-						
-						break;
-						
-					}catch(Exception e){
-						m_logger.PrinterException(e);
 					}
-				}	
+				}
+			};
+			
+			mSendTimeupMailThread.start();
+		}
+		
+		mSendTimeupMailList.add(_thread);
+	}
+	
+	private void SendTimeupMailImpl(fetchThread _thread){
+		
+		int t_tryTime = 0;
+		while(t_tryTime++ < 3){
+			
+			try{
+				if(m_yuchsignFramePass != null){
+					
+					String to = _thread.m_fetchMgr.GetAccountName();
+					fetchEmail t_emailAcc = _thread.m_fetchMgr.findEmailAcc();
+					if(t_emailAcc != null){
+						to = t_emailAcc.GetAccountName();
+					}
+					
+					// send the offical timeup mail
+					//
+					URL is_gd = new URL("http://api.yuchs.com/sm.php?to="+ 
+										URLEncoder.encode(to,"UTF-8") + 
+										"&pass=" + m_yuchsignFramePass + 
+										"&rand=" + (new Random().nextInt()) );
+					
+			        URLConnection yc = is_gd.openConnection();
+			        yc.setConnectTimeout(10000);
+			        yc.setReadTimeout(20000);
+			        BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream()));
+			        
+			        try{
+			        	System.out.println("send timeup mail to " + to + " result:" + in.readLine());
+			        }finally{
+			        	in.close();
+			        }
+			     
+				}else{
+					
+					_thread.m_fetchMgr.SendImmMail("语盒提示", 
+							fetchMgr.ReadSimpleIniFile("timeupMail.txt","UTF-8",null),
+							"\"YuchsBox\" <yuchberry@gmail.com>");
+				}
+				
+				break;
+				
+			}catch(Exception e){
+				m_logger.PrinterException(e);
 			}
-		}.start();			
+		}	
 	}
 		
 	private void LoadYuchsign(){
@@ -1056,11 +1059,7 @@ public class YuchServer {
 	}
 	
 	private String ProcessDelBberQuery(final String _bber){
-		new Thread(){
-			public void run(){
-				DelAccoutThread(_bber, true);
-			}
-		}.start();		
+		DelAccoutThread(_bber, true);
 		return "<Processed />";
 	}
 	

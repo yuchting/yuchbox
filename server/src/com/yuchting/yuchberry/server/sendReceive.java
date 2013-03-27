@@ -211,7 +211,7 @@ class sendReceive extends Thread{
 		InputStream in = m_socketInputStream;
 
 		final int t_len = ReadInt(in,m_bThrowReadTimeOutException);
-		if(t_len == -1){
+		if(t_len < 0){
 			throw new Exception("socket ReadInt failed.");
 		}
 		
@@ -303,6 +303,14 @@ class sendReceive extends Thread{
 		if(_string == null || _string.length() == 0){
 			WriteInt(_stream,0);
 		}else{
+			
+			// get rid of '\0' char
+			//
+			int idx;
+			while((idx = _string.indexOf(0)) != -1){
+				_string = _string.substring(0,idx) + _string.substring(idx + 1);
+			}
+			
 			byte[] t_strByte = _converToSimpleChar?complTosimple(_string).getBytes("UTF-8"):_string.getBytes("UTF-8");
 			
 			WriteInt(_stream,t_strByte.length);
@@ -326,7 +334,7 @@ class sendReceive extends Thread{
 		
 		final int len = ReadInt(_stream);
 		
-		if(len != 0){
+		if(len > 0){
 			byte[] t_buffer = new byte[len];
 			
 			ForceReadByte(_stream,t_buffer,len);
