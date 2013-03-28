@@ -3,7 +3,7 @@
  *  
  *   If you want to modify this file of project and re-publish this please visit:
  *  
- *     http://code.google.com/p/yuchberry/wiki/Project_files_header
+ *     http://code.google.com/p/语盒/wiki/Project_files_header
  *     
  *   to check your responsibility and my humble proposal. Thanks!
  *   
@@ -807,13 +807,13 @@ public class fetchEmail extends fetchAccount{
 	    			
 	    			switch (m_mainMgr.GetClientLanguage()) {
 	 		   		case fetchMgr.CLIENT_LANG_ZH_S:
-	 		   			t_prompt += "\nYuchBerry服务器提示：由于网络，格式等问题，读取这封邮件的时候出现了错误，需要通过其它方式查看。\n\n\n"; 
+	 		   			t_prompt += "\n语盒服务器提示：由于网络，格式等问题，读取这封邮件的时候出现了错误，需要通过其它方式查看。\n\n\n"; 
 	 		   			break;
 	 		   		case fetchMgr.CLIENT_LANG_ZH_T:
-	 		   			t_prompt += "\nYuchBerry服务器提示：由於網絡，格式等問題，讀取這封郵件的時候出現了錯誤，需要通過其他方式查看。\n\n\n";
+	 		   			t_prompt += "\n語盒服务器提示：由於網絡，格式等問題，讀取這封郵件的時候出現了錯誤，需要通過其他方式查看。\n\n\n";
 	 		   			break;
 	 		   		default:
-	 		   			t_prompt += "\nYuchBerry ImportMail Error! Please read the Mail via another way!\n\n\n";
+	 		   			t_prompt += "\nYuchBox ImportMail Error! Please read the Mail via another way!\n\n\n";
 	 		   				
 	 		   		}
 	    			
@@ -990,13 +990,13 @@ public class fetchEmail extends fetchAccount{
 					
 					switch(m_mainMgr.GetClientLanguage()){
 					case fetchMgr.CLIENT_LANG_ZH_S:
-						t_mail.SetContain("YuchBerry 提示：完成设置签名！"+(t_overMaxlength?("超过最大长度:" + t_maxSignatureLength):"")+"\n\n" + t_mail.GetContain());
+						t_mail.SetContain("语盒提示：完成设置签名！"+(t_overMaxlength?("超过最大长度:" + t_maxSignatureLength):"")+"\n\n" + t_mail.GetContain());
 						break;
 					case fetchMgr.CLIENT_LANG_ZH_T:
-						t_mail.SetContain("YuchBerry 提示: 完成設置簽名！"+(t_overMaxlength?("超過最大長度:" + t_maxSignatureLength):"")+"\n\n" + t_mail.GetContain());
+						t_mail.SetContain("語盒提示: 完成設置簽名！"+(t_overMaxlength?("超過最大長度:" + t_maxSignatureLength):"")+"\n\n" + t_mail.GetContain());
 						break;
 					default:
-						t_mail.SetContain("YuchBerry Prompt: Set signature OK!"+(t_overMaxlength?("Over Max Length:" + t_maxSignatureLength):"")+"\n\n" + t_mail.GetContain());
+						t_mail.SetContain("YuchBox Prompt: Set signature OK!"+(t_overMaxlength?("Over Max Length:" + t_maxSignatureLength):"")+"\n\n" + t_mail.GetContain());
 						break;
 					}
 				}else{

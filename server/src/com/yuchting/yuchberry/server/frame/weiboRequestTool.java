@@ -214,7 +214,7 @@ public class weiboRequestTool{
 					assert false;
 				}
 				
-				t_response.append("YuchBerry 申请"+m_subfix+" Weibo 授权成功！获得如下授权码，请按照 <a href=\"http://code.google.com/p/yuchberry/wiki/YuchBerry_Weibo#填写config.xml配置文件\" target=_blank>说明文档</a> 将其填写到config.xml里面。<br /><br />");
+				t_response.append("语盒申请"+m_subfix+" Weibo 授权成功！获得如下授权码，请按照 <a href=\"http://code.google.com/p/yuchberry/wiki/YuchBerry_Weibo#填写config.xml配置文件\" target=_blank>说明文档</a> 将其填写到config.xml里面。<br /><br />");
 				t_response.append("accessToken=\""+t_tokenString+"\"<br />");
 				t_response.append("secretToken=\""+t_tokenSecret+"\"<br />");
 				

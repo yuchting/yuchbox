@@ -119,6 +119,30 @@ public class berrySvrDeamon extends Thread{
 		start();
 				
 	}
+	
+	/**
+	 * close this by manager
+	 */
+	public void closeByMgr()throws Exception{
+		
+		m_isCloseByMgr = true;
+		
+		// kick the former client
+		//
+		synchronized (this) {
+												
+			if(m_socket != null && !m_socket.isClosed()){										
+				m_socket.close();
+			}									
+			m_socket = null;
+		}		
+										
+		// wait	quit
+		int t_counter = 200;
+		while(!m_quit && t_counter-- > 0){
+			Thread.sleep(50);
+		}
+	}
 
 	public void run(){
 		

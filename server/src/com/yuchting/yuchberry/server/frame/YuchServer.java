@@ -239,7 +239,7 @@ public class YuchServer {
 		};
 		
 		t_load.start();
-		
+				
 		if(m_mainFrame != null){
 			m_mainFrame.m_loadDialog.setVisible(true);
 		}
@@ -825,7 +825,7 @@ public class YuchServer {
 					while(true){
 						
 						try{
-							Thread.sleep(20000);
+							Thread.sleep(30000);
 						}catch(Exception ex){}
 						
 						while(!mSendTimeupMailList.isEmpty()){
@@ -845,9 +845,11 @@ public class YuchServer {
 	private void SendTimeupMailImpl(fetchThread _thread){
 		
 		int t_tryTime = 0;
+		
 		while(t_tryTime++ < 3){
 			
 			try{
+				
 				if(m_yuchsignFramePass != null){
 					
 					String to = _thread.m_fetchMgr.GetAccountName();
@@ -869,7 +871,8 @@ public class YuchServer {
 			        BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream()));
 			        
 			        try{
-			        	System.out.println("send timeup mail to " + to + " result:" + in.readLine());
+			        	String result = in.readLine();
+			        	System.out.println("send timeup mail to " + to + " result:" + result);
 			        }finally{
 			        	in.close();
 			        }
@@ -1038,16 +1041,7 @@ public class YuchServer {
 				//
 		    	storeAccountInfo();
 		    	
-		    	Thread t = (new Thread(){
-		    		public void run(){
-		    			try{
-		    				sleep(1000);
-		    				System.exit(0);
-		    			}catch(Exception e){}
-		    		}
-		    	});
-		    	
-		    	t.start();
+		    	System.exit(0);
 		    	
 		    	return "Close done!";
 			}
