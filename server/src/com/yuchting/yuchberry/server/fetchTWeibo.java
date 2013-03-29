@@ -39,8 +39,6 @@ import java.util.Vector;
 
 import org.dom4j.Element;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
-
 import twitter4j.DirectMessage;
 import twitter4j.GeoLocation;
 import twitter4j.MediaEntity;

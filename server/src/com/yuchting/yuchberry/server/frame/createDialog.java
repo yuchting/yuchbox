@@ -79,8 +79,6 @@ import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
-import sun.awt.HorizBagLayout;
-
 import com.yuchting.yuchberry.server.Logger;
 import com.yuchting.yuchberry.server.fetchAbsWeibo;
 import com.yuchting.yuchberry.server.fetchAccount;

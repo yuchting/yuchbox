@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+<project name="SeaGameServer" default="build" basedir=".">
+	<property name="build" value="." />
+	<property name="libs" value="libs" />
+	<property name="src" value="src" />
+	<property name="classes" value="classes" />
+	<property name="mainClass" value="com.yuchting.yuchberry.server.frame.mainFrame" />
+	<property name="buildfile" value="svr_ant.jar" />
+	
+	 <path id="class.path">
+		<fileset dir="${libs}">
+			<include name="**/*.jar" />
+        </fileset>
+     </path>
+	 
+	 <target name="build">
+		<delete dir="${classes}" />
+		<delete file="${buildfile}" />
+		
+		<mkdir dir="${classes}" />
+		<javac srcdir="${src}" destdir="${classes}" debug="on">
+			<compilerarg line="-encoding UTF-8 "/>
+			<classpath refid="class.path" />
+		</javac>
+		
+		<pathconvert property="mf.classPath" pathsep=" ../${libs}/">
+			<path refid="class.path" />
+			<flattenmapper />
+		</pathconvert>
+
+		<jar jarfile="${build}/${buildfile}" basedir="${classes}">
+			<manifest>
+				<attribute name="Main-Class" value="${mainClass}"/>
+				<attribute name="Class-Path" value="../${libs}/${mf.classPath}"/>
+			</manifest>
+		</jar>
+	 </target>
+
+</project>
