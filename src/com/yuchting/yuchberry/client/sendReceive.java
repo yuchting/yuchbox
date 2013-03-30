@@ -325,7 +325,7 @@ public class sendReceive extends Thread{
 		InputStream in = m_socketInputStream;
 
 		final int t_len = ReadInt(in);
-		if(t_len == -1){
+		if(t_len < 0){
 			throw new Exception("socket ReadInt failed.");
 		}
 		
@@ -536,7 +536,7 @@ public class sendReceive extends Thread{
 		
 		final int len = ReadInt(_stream);
 		
-		if(len != 0){
+		if(len > 0){
 			byte[] t_buffer = new byte[len];
 			
 			ForceReadByte(_stream,t_buffer,len);
