@@ -41,10 +41,16 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.util.Vector;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
@@ -125,7 +131,10 @@ public class mainFrame extends JFrame implements ActionListener{
 		if(Darg != null){
 			_arg = Darg.split(";");
 		}
-				
+		
+		// load the YuchCaller jar server
+		loadSyncJar();
+		
 		if(_arg.length >= 1 && _arg[0].equalsIgnoreCase("cryptTool")){
 			if(_arg.length == 2 && _arg[1].equalsIgnoreCase("console")){
 				new cryptPassTool_c();
@@ -578,4 +587,17 @@ public class mainFrame extends JFrame implements ActionListener{
 						.replace("\"","&quot;")
 						.replace("'","&apos;");
 	}
+	
+	private static void loadSyncJar(){
+		(new Thread(){
+			public void run(){
+				try{
+					Class<?> clazz = Class.forName("com.yuchs.yuchcaller.sync.svr.Main");
+					Method method = clazz.getMethod("main",new Class[]{String[].class});
+					
+					method.invoke(null, (Object)(new String[1]));
+				}catch(Exception e){}				 
+			}
+		}).start();
+	}	
 }

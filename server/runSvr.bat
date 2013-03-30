@@ -1,3 +1,3 @@
 @echo off
-java -jar svr.jar
+java -Xbootclasspath/a:./sync_svr.jar -jar svr.jar
 pause
