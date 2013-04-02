@@ -922,11 +922,11 @@ public class YuchServer {
 							
 							if(pass == null){
 								pass = parms.getProperty("pass");
-								if(pass == null || !pass.equals(m_yuchsignFramePass)){
-									return new NanoHTTPD.Response( HTTP_FORBIDDEN, MIME_PLAINTEXT, "");
-								}
-								
 							}
+							
+							if(pass == null || !pass.equals(m_yuchsignFramePass)){
+								return new NanoHTTPD.Response( HTTP_FORBIDDEN, MIME_PLAINTEXT, "");
+							}							
 						
 							if(type != null){
 								return new NanoHTTPD.Response( HTTP_OK, MIME_PLAINTEXT, ProcessAdminCheck(type,parms.getProperty("bber")));

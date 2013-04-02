@@ -595,7 +595,7 @@ public class mainFrame extends JFrame implements ActionListener{
 					Class<?> clazz = Class.forName("com.yuchs.yuchcaller.sync.svr.Main");
 					Method method = clazz.getMethod("main",new Class[]{String[].class});
 					
-					method.invoke(null, (Object)(new String[1]));
+					method.invoke(null, (Object)(new String[0]));
 				}catch(Exception e){}				 
 			}
 		}).start();
