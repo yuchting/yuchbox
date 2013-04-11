@@ -247,10 +247,7 @@ public class SendAttachmentDeamon extends Thread{
 					if(m_attachmentIndex >= m_vFileConnection.size()){
 						
 						// send over
-						//
-						//m_sendCallback.sendProgress(m_sendHashCode, -2, 0, 0);
-						//m_connect.m_mainApp.SetUploadingDesc(m_sendMail,-2,0,0);
-						
+						//						
 						m_sendCallback.sendFinish();	
 						m_closeState = true;
 					}
@@ -378,7 +375,6 @@ public class SendAttachmentDeamon extends Thread{
 				if(t_sendOver){
 					try{
 						sleep(90 * 1000);
-						
 						t_sendFileCreate = false;
 						
 					}catch(Exception e){
