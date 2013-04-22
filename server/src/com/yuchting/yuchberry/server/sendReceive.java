@@ -306,10 +306,7 @@ class sendReceive extends Thread{
 			
 			// get rid of '\0' char
 			//
-			int idx;
-			while((idx = _string.indexOf(0)) != -1){
-				_string = _string.substring(0,idx) + _string.substring(idx + 1);
-			}
+			_string = _string.replace("\0","");
 			
 			byte[] t_strByte = _converToSimpleChar?complTosimple(_string).getBytes("UTF-8"):_string.getBytes("UTF-8");
 			
