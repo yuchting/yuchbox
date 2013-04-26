@@ -572,6 +572,9 @@ public class fetchEmail extends fetchAccount{
     	t_sysProps.put("mail.pop3s.ssl.protocols","SSLv3");
     	t_sysProps.put("mail.imaps.ssl.protocols","SSLv3");
     	
+    	t_sysProps.put("mail.pop3.ssl.protocols","SSLv3");
+    	t_sysProps.put("mail.imap.ssl.protocols","SSLv3");
+    	
     	t_sysProps.put("mail.imap.timeout","10000");
     	t_sysProps.put("mail.imaps.timeout","10000");
     	
