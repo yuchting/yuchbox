@@ -34,10 +34,13 @@ import java.util.Vector;
 
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
+import javax.microedition.media.control.VolumeControl;
 
 import local.yblocalResource;
 import net.rim.blackberry.api.invoke.CameraArguments;
 import net.rim.blackberry.api.invoke.Invoke;
+import net.rim.device.api.io.IOUtilities;
+import net.rim.device.api.media.control.AudioPathControl;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.Clipboard;
 import net.rim.device.api.system.DeviceInfo;
@@ -1659,6 +1662,24 @@ public class MainChatScreen extends MainScreen implements ChatField.IChatFieldOp
 						
 			            p.realize();
 			            p.prefetch();
+			            
+			            AudioPathControl apc = null;
+			            
+			            Object[] cls = p.getControls();
+			            for(int i = 0;i < cls.length;i++){
+			            	if(cls[i] instanceof AudioPathControl){
+			            		apc = (AudioPathControl)cls[i]; 
+			            		break;
+			            	}
+			            }
+			            
+			            if(apc != null){
+			            	apc.setAudioPath(AudioPathControl.AUDIO_PATH_HANDSET);
+			            }else{
+			            	VolumeControl volume = (VolumeControl)p.getControl("VolumeControl");
+				            volume.setLevel(30);
+			            }
+			            
 			            p.start();
 			            
 			            sleep(2000);
