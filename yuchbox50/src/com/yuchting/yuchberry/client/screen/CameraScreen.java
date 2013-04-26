@@ -76,7 +76,10 @@ public class CameraScreen extends MainScreen
     public CameraScreen(ICameraScreenCallback _callback,XYPoint _maxSize)throws Exception{
     	
     	m_snapOKCallback	= _callback;
-    	m_maxSize			= _maxSize;
+    	
+    	if(_maxSize != null){
+    		m_maxSize			= _maxSize;
+    	}    	
     	
     	initializeSnapshotSize();
     	
