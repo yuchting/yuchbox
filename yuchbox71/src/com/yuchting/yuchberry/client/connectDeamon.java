@@ -1484,7 +1484,10 @@ public class connectDeamon extends Thread implements SendListener,
 					 }else{
 						 m_mainApp.SetErrorString(recvMain.sm_local.getString(yblocalResource.CONNECT_NET_BROKEN_PROMPT));
 					 }
-				 }				 
+				 }
+				 
+				 // trigger net broken notification
+				 m_mainApp.TriggerNetBrokenNotifaction();
 				 
 			 }else{
 				 // another exception information
