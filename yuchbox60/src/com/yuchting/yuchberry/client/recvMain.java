@@ -185,6 +185,15 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	    }
 	};
 	
+final static long		fsm_notifyID_net_broken = 767918509114953L;
+	
+	final static Object 	fsm_notifyEvent_net_broken = new Object() {
+	    public String toString() {
+	       return recvMain.sm_local.getString(yblocalResource.NOTIFY_NET_BROKEN_LABEL);
+	    }
+	};
+	
+	
 	public connectDeamon 		m_connectDeamon		= new connectDeamon(this);
 	
 	public aboutScreen			m_aboutScreen		= null;
@@ -465,6 +474,7 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
     	NotificationsManager.registerSource(fsm_notifyID_weibo, fsm_notifyEvent_weibo,NotificationsConstants.CASUAL);
     	NotificationsManager.registerSource(fsm_notifyID_weibo_home, fsm_notifyEvent_weibo_home,NotificationsConstants.CASUAL);
     	NotificationsManager.registerSource(fsm_notifyID_disconnect, fsm_notifyEvent_disconnect,NotificationsConstants.CASUAL);
+    	NotificationsManager.registerSource(fsm_notifyID_net_broken, fsm_notifyEvent_net_broken,NotificationsConstants.CASUAL);
     	NotificationsManager.registerSource(fsm_notifyID_im, fsm_notifyEvent_im,NotificationsConstants.CASUAL);
     	NotificationsManager.registerSource(fsm_notifyID_email_failed, fsm_notifyEvent_email_failed,NotificationsConstants.CASUAL);
     	    	    	
@@ -1899,12 +1909,13 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 		}
 		
 		if(m_popupDlgWhenDisconnect){
-			DialogAlert(yblocalResource.SETTING_DISCONNECT_PROMPT_DESC);
+			DialogAlert(yblocalResource.CONNECT_NET_BROKEN_PROMPT);
 		}
 	}
 	
 	public void StopDisconnectNotification(){
 		NotificationsManager.cancelImmediateEvent(fsm_notifyID_disconnect, 0, this, null);
+		NotificationsManager.cancelImmediateEvent(fsm_notifyID_net_broken, 0, this, null);
 	}
 	
 	public void TriggerIMNotification(){
@@ -1927,6 +1938,16 @@ public class recvMain extends UiApplication implements yblocalResource,LocationL
 	
 	public void StopEmailFailedNotifaction(){
 		NotificationsManager.cancelImmediateEvent(fsm_notifyID_email_failed, 0, this, null);
+	}
+	
+	public void TriggerNetBrokenNotifaction(){
+		if(IsPromptTime() && m_connectDisconnectPrompt){
+			NotificationsManager.triggerImmediateEvent(fsm_notifyID_net_broken, 0, this, null);
+		}
+		
+		if(m_popupDlgWhenDisconnect){
+			DialogAlert(yblocalResource.SETTING_DISCONNECT_PROMPT_DESC);
+		}
 	}
 		
 	public void PopupAboutScreen(){
