@@ -695,7 +695,7 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			// get rid of blank 
 			while(true){
-				if(t_subject.charAt(0) == ' ' && t_subject.length() > 0){
+				if(t_subject.length() > 0 && t_subject.charAt(0) == ' '){
 					t_subject = t_subject.substring(1);
 				}else{
 					break;
@@ -1482,7 +1482,10 @@ public class connectDeamon extends Thread implements SendListener,
 					 }else{
 						 m_mainApp.SetErrorString(recvMain.sm_local.getString(yblocalResource.CONNECT_NET_BROKEN_PROMPT));
 					 }
-				 }				 
+				 }
+				 
+				 // trigger net broken notification
+				 m_mainApp.TriggerNetBrokenNotifaction();
 				 
 			 }else{
 				 // another exception information
@@ -2083,7 +2086,13 @@ public class connectDeamon extends Thread implements SendListener,
 		String t_sub = m.getSubject();
 		if(t_sub == null){
 			_mail.SetSubject(fetchMail.fsm_noSubjectTile);
-		}else{	
+		}else{
+			
+			// maybe some system while contain "\r\n " string when subject is multilines
+			//
+			t_sub = recvMain.repleaceStr(t_sub, "\r\n ", "");		
+			t_sub = recvMain.repleaceStr(t_sub, "\r", "");
+			t_sub = recvMain.repleaceStr(t_sub, "\n", "");
 			
 			_mail.SetSubject(t_sub);	
 		}
@@ -2137,11 +2146,11 @@ public class connectDeamon extends Thread implements SendListener,
 	        findEmailBody(mp.getBodyPart(count),_mail);
 	      }
 	   }
-//	   else if (obj instanceof TextBodyPart)
-//	   {
-//	      TextBodyPart tbp = (TextBodyPart) obj;
-//	      readEmailBody(tbp,_mail);
-//	   }
+	   else if (obj instanceof TextBodyPart)
+	   {
+	      TextBodyPart tbp = (TextBodyPart) obj;
+	      readEmailBody(tbp,_mail);
+	   }
 //	   else if (obj instanceof MimeBodyPart)
 //	   {
 //		   MimeBodyPart mbp = (MimeBodyPart)obj;

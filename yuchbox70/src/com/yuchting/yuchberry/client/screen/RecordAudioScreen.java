@@ -144,7 +144,7 @@ public class RecordAudioScreen{
 		fsm_screenWidth = Font.getDefault().getAdvance(recvMain.sm_local.getString(yblocalResource.RECORDING_REMAIN_LABEL) + "00") + 10;
 	}
 	
-	public void startRecord(){
+	public synchronized void startRecord(){
 		
 		if(m_recordThread != null){
 			m_recordThread.stop();
@@ -155,6 +155,10 @@ public class RecordAudioScreen{
 		
 		m_remainTimer = fsm_maxRecordingTime;
 		m_remain = recvMain.sm_local.getString(yblocalResource.RECORDING_REMAIN_LABEL) + Integer.toString(m_remainTimer);
+				
+		if(m_remainTimerTheard != null && m_remainTimerTheard.isAlive()){
+			m_remainTimerTheard.interrupt();
+		}
 		
 		m_remainTimerTheard = new Thread(){
 			public void run(){
@@ -166,8 +170,7 @@ public class RecordAudioScreen{
 						break;
 					}
 			
-					m_remain = recvMain.sm_local.getString(yblocalResource.RECORDING_REMAIN_LABEL) + 
-									Integer.toString(--m_remainTimer);
+					m_remain = recvMain.sm_local.getString(yblocalResource.RECORDING_REMAIN_LABEL) + Integer.toString(--m_remainTimer);
 					if(m_remainTimer <= 0){
 						close();
 						
@@ -183,7 +186,7 @@ public class RecordAudioScreen{
 	}
 	
 	
-	public void close(){
+	public synchronized void close(){
 		
 		if(m_recordThread != null){
 			m_recordThread.stop();

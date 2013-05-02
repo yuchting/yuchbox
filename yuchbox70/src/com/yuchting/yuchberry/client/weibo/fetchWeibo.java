@@ -375,9 +375,42 @@ public class fetchWeibo {
 		t_content.append(recvMain.sm_local.getString(yblocalResource.WEIBO_SOURCE_PREFIX))
 				.append(GetSource());
 		
+		if(m_replyWeibo != null){
+			t_content.append("\n\n").append(_spaceLine).append(m_replyWeibo.getShareEmailContain(_spaceLine + " "));
+		}
+				
 		if(m_commentWeibo != null){
 			t_content.append("\n\n").append(_spaceLine).append(m_commentWeibo.getShareEmailContain(_spaceLine + " "));
 		}
+		
+		return t_content.toString();
+	}
+	
+	public String getShareSMSContain(boolean includePic){
+		
+		StringBuffer t_content = new StringBuffer();
+		String t_name;
+		
+		if(!GetUserScreenName().equals(GetUserName())){
+			t_name = GetUserScreenName() + " [" + GetUserName() + "]";
+		}else{
+			t_name = GetUserScreenName();
+		}
+				
+		t_content.append("@").append(t_name).append(" ").append("(").append(getLocalStyleName()).append(")").append("\n")
+				.append(GetText()).append("\n");
+		
+		if(includePic && GetOriginalPic().length() != 0){
+			t_content.append(GetOriginalPic());
+		}		
+
+		if(m_replyWeibo != null){
+			t_content.append("\n\n").append(m_replyWeibo.getShareSMSContain(includePic));
+		}
+		
+		if(m_commentWeibo != null){
+			t_content.append("\n\n").append(m_commentWeibo.getShareSMSContain(includePic));
+		}		
 		
 		return t_content.toString();
 	}

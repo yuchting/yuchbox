@@ -28,7 +28,13 @@
 package com.yuchting.yuchberry.client.weibo;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.Vector;
+
+import javax.microedition.io.Connector;
+import javax.microedition.io.file.FileConnection;
+import javax.wireless.messaging.MessageConnection;
+import javax.wireless.messaging.TextMessage;
 
 import local.yblocalResource;
 import net.rim.blackberry.api.invoke.Invoke;
@@ -51,6 +57,7 @@ import com.yuchting.yuchberry.client.msg_head;
 import com.yuchting.yuchberry.client.recvMain;
 import com.yuchting.yuchberry.client.sendReceive;
 import com.yuchting.yuchberry.client.screen.PhizSelectedScreen;
+import com.yuchting.yuchberry.client.screen.uploadFileScreen;
 import com.yuchting.yuchberry.client.ui.ImageSets;
 import com.yuchting.yuchberry.client.ui.ImageUnit;
 import com.yuchting.yuchberry.client.ui.SliderHeader;
@@ -229,6 +236,9 @@ public class weiboTimeLineScreen extends MainScreen{
 		
 		// start auto refresh featureS
 		startAutoRefresh();
+		
+		// load the weibo 2 sms file
+		loadWeibo2smsFile();
 	}
 	
 	public SliderHeader getHeader(){
@@ -518,6 +528,9 @@ public class weiboTimeLineScreen extends MainScreen{
 			}
 		}
 		
+		if(!_initAdd){
+			weibo2sms(_weibo);
+		}		
 	}
 	
 	public void DelWeibo(fetchWeibo _weibo){
@@ -1397,6 +1410,213 @@ public class weiboTimeLineScreen extends MainScreen{
 	
 	protected boolean navigationClick(int status, int time){
 		return m_currMgr.Clicked(status,time);		
+	}
+	
+	/**
+	 * Weibo 2 sms list 
+	 * 
+	 */
+	public Vector mWeibo2smsList = null;
+	
+	private Vector mWeibo2SMSBufferList = null;
+	
+	class Weibo2SMS{
+		
+		String	weiboId;
+		String	smsPhone;
+		
+		public Weibo2SMS(String _weiboId,String _smsPhone){
+			weiboId		= _weiboId;
+			smsPhone	= _smsPhone;
+		}
+	}
+	
+	/**
+	 * load the weibo 2 sms file resource to send the sms message to phone number
+	 * weibo2sms.txt format like the follow:
+	 * 
+	 * yuchberry:13260009999
+	 * yuchbox:15001252619
+	 * 
+	 */
+	private void loadWeibo2smsFile(){
+		try{
+			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/weibo2sms.txt",Connector.READ);
+			try{
+				if(!fc.exists()){
+					fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/weibo2sms.txt",Connector.READ);
+				}
+				
+				if(fc.exists()){
+					if(mWeibo2smsList == null){
+						mWeibo2smsList 			= new Vector();
+						mWeibo2SMSBufferList	= new Vector();
+					}else{
+						mWeibo2smsList.removeAllElements();
+					}					
+					
+					InputStream tReadFile = fc.openInputStream();
+					try{
+		    			byte[] tBytes = new byte[(int)fc.fileSize()];
+		    			sendReceive.ForceReadByte(tReadFile, tBytes, tBytes.length);
+		    			
+		    			String tFileContent;
+		    			
+		    			// BOM process
+						//
+						if(tBytes.length >= 3
+							&& tBytes[0] == -17 && tBytes[1] == -69 && tBytes[2] == -65){						
+							
+							if(tBytes.length == 3){
+								return;
+							}else{
+								tFileContent = new String(tBytes,3,tBytes.length - 3,"UTF-8");
+							}
+							
+						}else{
+							tFileContent = new String(tBytes,"UTF-8"); 
+						}
+		    			 
+		    			
+		    			String tWeiboId		= null;
+		    			String tSMSPhone	= null;
+		    			
+		    			int tIdx = 0;
+		    			while(tIdx < tFileContent.length()){
+		    				char c = tFileContent.charAt(tIdx);
+		    				
+		    				if(c == ':'){
+		    					
+		    					tWeiboId = tFileContent.substring(0,tIdx);
+		    					tFileContent = tFileContent.substring(tIdx + 1);
+		    					
+		    					tIdx = 0;
+		    					
+		    					continue;
+		    					
+		    				}else if(c == '\r' || c == '\n' || tIdx >= tFileContent.length() - 1){			
+		    					
+		    					if(tIdx >= tFileContent.length() - 1){
+		    						tSMSPhone 		= tFileContent.substring(0,tIdx + 1);
+		    					}else{
+		    						tSMSPhone 		= tFileContent.substring(0,tIdx);
+		    					}		    					
+		    					
+		    					while(tIdx + 1 < tFileContent.length()){
+		    						char next = tFileContent.charAt(tIdx + 1);
+		    						if(next == '\r' || next == '\n'){
+		    							tIdx++;
+		    						}else{
+		    							break;
+		    						}
+		    					}
+		    					
+		    					tFileContent 	= tFileContent.substring(tIdx + 1);		    					
+		    					tIdx = 0;
+		    					
+		    					if(tWeiboId != null && tWeiboId.length() > 0 && tSMSPhone.length() > 0){
+		    						
+		    						mWeibo2smsList.addElement(new Weibo2SMS(tWeiboId, tSMSPhone));
+		    						
+		    						m_mainApp.SetErrorString("w2s:" + tWeiboId + "->" + tSMSPhone);
+		    						//System.out.println("w2s:" + tWeiboId + "->" + tSMSPhone);
+		    					}
+		    					
+		    					tWeiboId	= null;
+		    					tSMSPhone	= null;
+		    					
+		    					continue;
+		    				}
+		    				
+		    				tIdx++;
+		    			}
+		    			
+		    			tBytes			= null;
+		    			tFileContent	= null;
+		    			
+		    		}finally{
+		    			tReadFile.close();
+		    		}
+				}
+			}finally{
+				fc.close();
+			}
+		}catch(Exception e){
+			m_mainApp.SetErrorString("w2slf", e);
+		}
+	}
+	
+	private int mWeibo2smsSendHandler = -1;
+	
+	private void weibo2sms(fetchWeibo weibo){
+		
+		if(!m_mainApp.mEnableWeibo2SMS){
+			return;
+		}
+		
+		if(mWeibo2smsList != null){
+			
+			if(mWeibo2smsSendHandler == -1){
+				
+				synchronized (mWeibo2smsList) {
+					mWeibo2smsSendHandler = m_mainApp.invokeLater(new Runnable(){
+						
+						public void run(){
+							(new Thread(){
+								public void run(){
+									
+									while(mWeibo2SMSBufferList.size() > 0){
+										fetchWeibo w = (fetchWeibo)mWeibo2SMSBufferList.elementAt(0);
+										mWeibo2SMSBufferList.removeElementAt(0);
+										
+										weibo2smsSend(w);									
+									}
+									synchronized (mWeibo2smsList) {
+										mWeibo2smsSendHandler = -1;
+									}
+									
+								}
+							}).start();
+						}
+						
+					}, 5000, false);
+				}			
+			}
+			
+			mWeibo2SMSBufferList.addElement(weibo);
+		}
+	}
+	
+	//! subfunction
+	private void weibo2smsSend(fetchWeibo w){
+		
+		for(int i = 0;i < mWeibo2smsList.size();i++){
+			Weibo2SMS w2s = (Weibo2SMS)mWeibo2smsList.elementAt(i);
+			
+			if(w.GetUserScreenName().equals(w2s.weiboId) || w.GetUserName().equals(w2s.weiboId)){
+				
+				try{
+
+					MessageConnection msgConn = (MessageConnection)Connector.open("sms://" + w2s.smsPhone);
+					
+					javax.wireless.messaging.Message msg = msgConn.newMessage(MessageConnection.TEXT_MESSAGE);
+					
+					TextMessage txtMsg = (TextMessage)msg;
+					String text = w.getShareSMSContain(true);
+					if(text.length() > 140){
+						text = w.getShareSMSContain(false);
+					}
+					txtMsg.setPayloadText(text);
+					
+					msgConn.send(txtMsg);
+					
+					m_mainApp.SetErrorString("w2s send succ:" + w2s.weiboId + "->" + w2s.smsPhone);
+					
+				}catch(Exception e){
+					m_mainApp.SetErrorString("w2s: send "+w2s.smsPhone+"failed: ",e);
+				}
+			}
+		}
 	}
 	
 	static public ImageUnit GetWeiboSign(int _weiboStyle){

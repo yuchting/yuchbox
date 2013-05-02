@@ -78,8 +78,8 @@ public class BrowserFieldImpl {
 		m_mainApp = _mainApp;
 		
 		if(!recvMain.fsm_OS_version.startsWith("4.")){
-			//m_browserField = new net.rim.device.api.browser.field2.BrowserField();
-			//((net.rim.device.api.browser.field2.BrowserField)m_browserField).displayContent(_htmlContent, _type,"http://localhost");
+//			m_browserField = new net.rim.device.api.browser.field2.BrowserField();
+//			((net.rim.device.api.browser.field2.BrowserField)m_browserField).displayContent(_htmlContent, _type,"http://localhost");
 		}else{
 			try{
 				//m_readApplication = new RenderingApplicationImpl();

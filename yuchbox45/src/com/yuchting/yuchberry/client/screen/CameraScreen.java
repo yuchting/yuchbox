@@ -37,10 +37,12 @@ import net.rim.device.api.system.Characters;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.MenuItem;
+import net.rim.device.api.ui.XYPoint;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.yuchting.yuchberry.client.recvMain;
+import com.yuchting.yuchberry.client.ui.CameraFileOP;
 
 final class EncodeFormat{
 	public int width = 0;
@@ -60,20 +62,24 @@ public class CameraScreen extends MainScreen
     
     private Player m_player;
             
-    private static String fsm_encoding_800 = null;
-    private static String fsm_encoding_1024 = null;
-    private static String fsm_encoding_1600 = null;
+    private static EncodeFormat fsm_encoding_low = null;
+    private static EncodeFormat fsm_encoding_mid = null;
+    private static EncodeFormat fsm_encoding_high = null;
 
     private ICameraScreenCallback m_snapOKCallback = null;
     
-    int			m_maxWidth			= 800;
+    XYPoint			m_maxSize			= new XYPoint(800,600);
+    
     /**
      * Constructor. Initializes the camera 
      */
-    public CameraScreen(ICameraScreenCallback _callback,int _maxWidth)throws Exception{
+    public CameraScreen(ICameraScreenCallback _callback,XYPoint _maxSize)throws Exception{
     	
-    	m_snapOKCallback = _callback;
-    	m_maxWidth		= _maxWidth;
+    	m_snapOKCallback	= _callback;
+    	
+    	if(_maxSize != null){
+    		m_maxSize			= _maxSize;
+    	}    	
     	
     	initializeSnapshotSize();
     	
@@ -87,7 +93,7 @@ public class CameraScreen extends MainScreen
     
     private void initializeSnapshotSize()throws Exception{
     	
-    	if(fsm_encoding_800 != null){
+    	if(fsm_encoding_low != null){
     		return;
     	}
     	
@@ -144,9 +150,9 @@ public class CameraScreen extends MainScreen
     	EncodeFormat t_mid = (EncodeFormat)t_encodings.elementAt(t_encodings.size() / 2);
     	EncodeFormat t_high = (EncodeFormat)t_encodings.elementAt(t_encodings.size() - 1);
     	
-    	fsm_encoding_800 = t_low.encode;
-    	fsm_encoding_1024 = t_mid.encode;
-    	fsm_encoding_1600 = t_high.encode;    	
+    	fsm_encoding_low	= t_low;
+    	fsm_encoding_mid	= t_mid;
+    	fsm_encoding_high	= t_high;    	
     }
 
     /**
@@ -200,13 +206,17 @@ public class CameraScreen extends MainScreen
     
     private String getEncodeSize(){
     	
-    	switch(m_maxWidth){
+    	switch(m_maxSize.x){
+    	case 320:
+    	case 480:
+    	case 640:
     	case 800:
-    		return fsm_encoding_800;
+    		return fsm_encoding_low.encode;
+    	case 1280:
     	case 1024:
-    		return fsm_encoding_1024;
+    		return fsm_encoding_mid.encode;
     	default:
-    		return fsm_encoding_1600;
+    		return fsm_encoding_high.encode;
     	}
     }
     
@@ -228,6 +238,10 @@ public class CameraScreen extends MainScreen
     
     private void createImageScreen( byte[] raw ){    
     	if(m_snapOKCallback != null){
+    		try{
+    			raw = CameraFileOP.resizePicBytes(raw, m_maxSize);
+    		}catch(Exception e){}
+    		
     		m_snapOKCallback.snapOK(raw);
     	}
     	close();

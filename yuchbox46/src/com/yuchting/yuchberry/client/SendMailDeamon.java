@@ -117,7 +117,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 				t_os.write(fetchMail.NOTHING_STYLE);
 			}
 			
-			// does want to copy tu sent folder?
+			// does want to copy to sent folder?
 			//
 			sendReceive.WriteBoolean(t_os,m_connect.m_mainApp.m_copyMailToSentFolder);
 			
@@ -188,6 +188,7 @@ public class SendMailDeamon extends Thread implements ISendAttachmentCallback{
 					//
 					if(t_resend_time++ < 3){
 						sleep(2 * 60000);
+						m_connect.m_mainApp.SetErrorString("S:resend again!");
 					}else{
 						sendError();
 						m_connect.m_mainApp.SetErrorString("S:resend 3 time,give up.");

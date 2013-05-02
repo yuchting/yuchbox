@@ -193,53 +193,63 @@ public class sendReceive extends Thread{
 		}		
 		
 		ByteArrayOutputStream zos = new ByteArrayOutputStream();
-		
-		GZIPOutputStream zo = new GZIPOutputStream(zos,6);
-		zo.write(_write);
-		zo.close();	
-		
-		byte[] t_zipData = zos.toByteArray();
-		
-		if(t_zipData.length > _write.length){
-			// if the ZIP data is large than original length
-			// NOT convert
-			//
-			if(_write.length >= 65535){
-				WriteInt(m_socketOutputStream,0); // big read flag
-				
-				WriteInt(m_socketOutputStream,_write.length);
-				WriteInt(m_socketOutputStream,0);
-				
-				m_uploadByte += 8;
-			}else{
-				WriteInt(m_socketOutputStream,(_write.length << 16) & 0xffff0000);
+		try{
+			
+			GZIPOutputStream zo = new GZIPOutputStream(zos,6);
+			try{
+				zo.write(_write);
+			}finally{
+				zo.close();
 			}
 			
-			m_socketOutputStream.write(_write);
-			m_socketOutputStream.flush();
+			byte[] t_zipData = zos.toByteArray();
 			
-			// 20 is TCP pack head length			
-			m_uploadByte += _write.length + 4 + 20;
-	
-		}else{
-			if(_write.length >= 65535){
-				WriteInt(m_socketOutputStream,0); // big read flag
+			if(t_zipData.length > _write.length){
+				// if the ZIP data is large than original length
+				// NOT convert
+				//
+				if(_write.length >= 65535){
+					WriteInt(m_socketOutputStream,0); // big read flag
+					
+					WriteInt(m_socketOutputStream,_write.length);
+					WriteInt(m_socketOutputStream,0);
+					
+					m_uploadByte += 8;
+				}else{
+					WriteInt(m_socketOutputStream,(_write.length << 16) & 0xffff0000);
+				}
 				
-				WriteInt(m_socketOutputStream,_write.length);
-				WriteInt(m_socketOutputStream,t_zipData.length);
+				m_socketOutputStream.write(_write);
+				m_socketOutputStream.flush();
 				
-				m_uploadByte += 8;
+				// 20 is TCP pack head length			
+				m_uploadByte += _write.length + 4 + 20;
+		
 			}else{
-				WriteInt(m_socketOutputStream,((_write.length << 16) & 0xffff0000) | t_zipData.length);
+				if(_write.length >= 65535){
+					WriteInt(m_socketOutputStream,0); // big read flag
+					
+					WriteInt(m_socketOutputStream,_write.length);
+					WriteInt(m_socketOutputStream,t_zipData.length);
+					
+					m_uploadByte += 8;
+				}else{
+					WriteInt(m_socketOutputStream,((_write.length << 16) & 0xffff0000) | t_zipData.length);
+				}
+				
+				m_socketOutputStream.write(t_zipData);
+				m_socketOutputStream.flush();
+					
+				// 20 is TCP pack head length
+				m_uploadByte += t_zipData.length + 4 + 20;
+				
 			}
 			
-			m_socketOutputStream.write(t_zipData);
-			m_socketOutputStream.flush();
-				
-			// 20 is TCP pack head length
-			m_uploadByte += t_zipData.length + 4 + 20;
-			
-		}	
+		}finally{
+			zos.close();
+			zos = null;
+		}
+		
 	}
 	
 	public void run(){
@@ -315,7 +325,7 @@ public class sendReceive extends Thread{
 		InputStream in = m_socketInputStream;
 
 		final int t_len = ReadInt(in);
-		if(t_len == -1){
+		if(t_len < 0){
 			throw new Exception("socket ReadInt failed.");
 		}
 		
@@ -416,24 +426,30 @@ public class sendReceive extends Thread{
 	}
 	
 	static public void WriteString(OutputStream _stream,String _string)throws Exception{
-		if(_string == null){
-			_string = "";
-		}
-		
-		byte[] t_strByte;
-		
-		try{
-			// if the UTF-8 decode sytem is NOT present in current system
-			// will throw the exception
+		if(_string == null || _string.length() == 0){
+			WriteInt(_stream,0);
+		}else{
+			
+			// get rid of '\0' char
 			//
-			t_strByte = _string.getBytes("UTF-8");
-		}catch(Exception e){
-			t_strByte = _string.getBytes();
-		}
-		
-		WriteInt(_stream,t_strByte.length);
-		if(t_strByte.length != 0){
-			_stream.write(t_strByte);
+			int idx;
+			while((idx = _string.indexOf(0)) != -1){
+				_string = _string.substring(0,idx) + _string.substring(idx + 1);
+			}
+			
+			byte[] t_strByte;
+			
+			try{
+				// if the UTF-8 decode sytem is NOT present in current system
+				// will throw the exception
+				//
+				t_strByte = _string.getBytes("UTF-8");
+			}catch(Exception e){
+				t_strByte = _string.getBytes();
+			}
+			
+			WriteInt(_stream,t_strByte.length);
+			_stream.write(t_strByte);			
 		}
 	}
 	
@@ -520,7 +536,7 @@ public class sendReceive extends Thread{
 		
 		final int len = ReadInt(_stream);
 		
-		if(len != 0){
+		if(len > 0){
 			byte[] t_buffer = new byte[len];
 			
 			ForceReadByte(_stream,t_buffer,len);
