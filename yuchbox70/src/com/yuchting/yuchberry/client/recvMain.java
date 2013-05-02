@@ -1941,12 +1941,12 @@ final static long		fsm_notifyID_net_broken = 767918509114953L;
 	}
 	
 	public void TriggerNetBrokenNotifaction(){
-		if(IsPromptTime() && m_connectDisconnectPrompt){
+		if(IsPromptTime()){
 			NotificationsManager.triggerImmediateEvent(fsm_notifyID_net_broken, 0, this, null);
 		}
 		
 		if(m_popupDlgWhenDisconnect){
-			DialogAlert(yblocalResource.SETTING_DISCONNECT_PROMPT_DESC);
+			DialogAlert(yblocalResource.CONNECT_NET_BROKEN_PROMPT);
 		}
 	}
 		
