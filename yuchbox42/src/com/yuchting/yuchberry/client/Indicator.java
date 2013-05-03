@@ -1,5 +1,5 @@
 package com.yuchting.yuchberry.client;
-//
+
 //import net.rim.blackberry.api.messagelist.ApplicationIcon;
 //import net.rim.blackberry.api.messagelist.ApplicationIndicator;
 //import net.rim.blackberry.api.messagelist.ApplicationIndicatorRegistry;

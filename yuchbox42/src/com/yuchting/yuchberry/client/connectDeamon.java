@@ -2206,7 +2206,7 @@ public class connectDeamon extends Thread implements SendListener,
 //	         }
 //	      }
 //	   }
-//	  
+	  
 //	   else if (mimeType.indexOf(ContentType.TYPE_TEXT_HTML_STRING) != -1)
 //	   {
 //			m_plainTextContain = m_htmlTextContain.concat(body);

@@ -144,28 +144,34 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 	
 	static public byte[] resizePicBytes(byte[] _imageBytes,XYPoint _point)throws Exception{
 		
-//		if(_imageBytes != null){
-//			
-//			EncodedImage t_origImage = EncodedImage.createEncodedImage(_imageBytes, 0, _imageBytes.length);
-//			
-//			if(t_origImage == null){
-//				throw new Exception("Can't createEncodedImage for this bytes!");
-//			}
-//			
-//			int t_origWidth = t_origImage.getWidth();
-//			int t_origHeight = t_origImage.getHeight();
-//			
-//			XYPoint t_scaleSize = new XYPoint(_point);
-//			
-//			float t_orgRate = (float)t_origWidth / (float)t_origHeight;
-//			float t_scaleRate = (float)t_scaleSize.x / (float)t_scaleSize.y;
-//			
-//			if(Math.abs(t_orgRate - t_scaleRate) > 1e-5){
-//				// the rate is note same, convert the scale size to keep orig rate
-//				//
-//				t_scaleSize.y = (int)(t_scaleSize.x / t_orgRate);
-//			}
-//			
+		if(_imageBytes != null){
+			
+			EncodedImage t_origImage = EncodedImage.createEncodedImage(_imageBytes, 0, _imageBytes.length);
+			
+			if(t_origImage == null){
+				throw new Exception("Can't createEncodedImage for this bytes!");
+			}
+			
+			int t_origWidth = t_origImage.getWidth();
+			int t_origHeight = t_origImage.getHeight();
+			
+			XYPoint t_scaleSize = null;
+			
+			if(_point != null){
+				t_scaleSize = new XYPoint(_point);
+			}else{
+				t_scaleSize = new XYPoint(t_origWidth,t_origHeight);
+			}			
+			
+			float t_orgRate = (float)t_origWidth / (float)t_origHeight;
+			float t_scaleRate = (float)t_scaleSize.x / (float)t_scaleSize.y;
+			
+			if(Math.abs(t_orgRate - t_scaleRate) > 1e-5){
+				// the rate is note same, convert the scale size to keep orig rate
+				//
+				t_scaleSize.y = (int)(t_scaleSize.x / t_orgRate);
+			}
+			
 //			try{
 //				
 //				JPEGEncodedImage finalJPEG;
@@ -189,10 +195,10 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 //				_imageBytes = finalJPEG.getData();
 //													
 //			}finally{
-//				
-//				t_origImage = null;
+				
+				t_origImage = null;
 //			}
-//		}
+		}
 		
 		return _imageBytes;
 	}

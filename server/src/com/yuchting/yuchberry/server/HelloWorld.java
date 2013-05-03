@@ -31,7 +31,6 @@ package com.yuchting.yuchberry.server;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,12 +46,8 @@ import java.net.URLConnection;
 import java.security.KeyStore;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.Hashtable;
-import java.util.TimeZone;
 import java.util.Vector;
-import java.util.concurrent.Callable;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -180,6 +175,34 @@ public class HelloWorld {
 	}
 	
 	/**
+	 * compare the string array 
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	private static boolean cmpNameStringArr(String[] a,String[] b){
+		if(a == null && b == null){
+			return true;
+		}
+		
+		if(a == null || b == null){
+			return false;
+		}
+		
+		if(a.length != b.length){
+			return false;
+		}
+		
+		for(int i = 0;i < a.length;i++){
+			if(!cmpNameString(a[i], b[i])){
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
 	 * replace the old String in replace one with newStr
 	 * @param replaceStr
 	 * @param oldStr
@@ -196,9 +219,33 @@ public class HelloWorld {
 		
 		return replaceStr;
 	}
-	
-	
+		
 	public static void main(String arg[])throws Exception{
+		
+		String[] arr = "RRULE:FREQ=YEARLY;;BYDAY=111213;UNTIL=11234;COUNT=11".split("\n");
+		for(String re : arr){
+			
+			if(re.indexOf("FREQ=YEARLY") != -1){
+				
+				String util = "";
+				int idx = re.indexOf(";UNTIL="); 
+				if(idx != -1){
+					int endIdx = re.indexOf(";",idx + 1);
+					if(endIdx == -1){
+						util = re.substring(idx);
+					}else{
+						util = re.substring(idx,endIdx);
+					}					
+				}
+				// Google calendar is NOT support relative date by year
+				//
+				re = "RRULE:FREQ=YEARLY;INTERVAL=1" + util;
+			}
+			
+			System.out.println(re);
+		}
+		
+		
 		//cmpBoolean(null);
 		//System.out.println(repleaceStr("nihao buhaode wodejiushi nide","n","w"));
 		//Vector t = splitStr(",,d,,d,ddd,,",',');
@@ -237,7 +284,7 @@ public class HelloWorld {
 //		System.setProperty("proxyPort", "8088");
 //		
 //		System.out.println(fetchTWeibo.replaceGFWVerified_URL("http://t.co/HPjdqFCN sdfsdfs http://bit.ly/PU7zFy sdfskljfeind sdfjsdkfs "));
-		berryRecvTest();
+		//berryRecvTest();
 		//berrySendTest();
 		
 		//requestPOSTHTTP("http://localhost:8888",(new String("{\"return_code\":0,\"return_message\":\"success\",\"data\":{\"data\":[{\"id\":\"1\",\"question\":\"公主令牌在哪交？\"},{\"id\":\"2\",\"question\":\"公主护使有什么用？\"},{\"id\":\"3\",\"question\":\"角斗场在哪？\"},{\"id\":\"4\",\"question\":\"北部断层在哪？\"},{\"id\":\"5\",\"question\":\"欢乐令有什么用？\"},{\"id\":\"6\",\"question\":\"令牌积分有什么用？\"},{\"id\":\"7\",\"question\":\"南部断层在哪？\"},{\"id\":\"8\",\"question\":\"大妖魔令牌交给谁？\"},{\"id\":\"9\",\"question\":\"神工坊在哪？\"},{\"id\":\"10\",\"question\":\"警戒妖珠有什么用？\"}]}}")).getBytes("UTF-8"),true);

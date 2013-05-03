@@ -155,7 +155,13 @@ public abstract class CameraFileOP implements FileSystemJournalListener{
 			int t_origWidth = t_origImage.getWidth();
 			int t_origHeight = t_origImage.getHeight();
 			
-			XYPoint t_scaleSize = new XYPoint(_point);
+			XYPoint t_scaleSize = null;
+			
+			if(_point != null){
+				t_scaleSize = new XYPoint(_point);
+			}else{
+				t_scaleSize = new XYPoint(t_origWidth,t_origHeight);
+			}			
 			
 			float t_orgRate = (float)t_origWidth / (float)t_origHeight;
 			float t_scaleRate = (float)t_scaleSize.x / (float)t_scaleSize.y;
