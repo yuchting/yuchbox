@@ -39,7 +39,7 @@ copy /Y .\yuchbox71\res\*.* .\yuchbox60\res\
 
 copy /Y .\yuchbox71\BlackBerry_App_Descriptor.xml .\yuchbox50\
 copy /Y .\yuchbox71\BlackBerry_App_Descriptor.xml .\yuchbox70\
-copy /Y .\yuchbox71\BlackBerry_App_Descriptor.xml .\yuchbox71\
+copy /Y .\yuchbox71\BlackBerry_App_Descriptor.xml .\yuchbox60\
 
 del /S /Q /AH .\yuchbox50\res\Thumbs.db
 del /S /Q /AH .\yuchbox60\res\Thumbs.db 
