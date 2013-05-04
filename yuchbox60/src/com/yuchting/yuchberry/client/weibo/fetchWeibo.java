@@ -354,6 +354,11 @@ public class fetchWeibo {
 		return t_style;
 	}
 	
+	/**
+	 * get the share text for Email
+	 * @param _spaceLine
+	 * @return
+	 */
 	public String getShareEmailContain(String _spaceLine){
 		
 		StringBuffer t_content = new StringBuffer(_spaceLine);
@@ -386,7 +391,13 @@ public class fetchWeibo {
 		return t_content.toString();
 	}
 	
-	public String getShareSMSContain(boolean includePic){
+	/**
+	 * get the share text for SMS
+	 * @param includePic
+	 * @param includeRefWeibo
+	 * @return
+	 */
+	public String getShareSMSContain(boolean includePic,boolean includeRefWeibo){
 		
 		StringBuffer t_content = new StringBuffer();
 		String t_name;
@@ -404,12 +415,15 @@ public class fetchWeibo {
 			t_content.append(GetOriginalPic());
 		}		
 
-		if(m_replyWeibo != null){
-			t_content.append("\n\n").append(m_replyWeibo.getShareSMSContain(includePic));
-		}
-		
-		if(m_commentWeibo != null){
-			t_content.append("\n\n").append(m_commentWeibo.getShareSMSContain(includePic));
+		if(includeRefWeibo){
+
+			if(m_replyWeibo != null){
+				t_content.append("\n\n").append(m_replyWeibo.getShareSMSContain(includePic,includeRefWeibo));
+			}
+			
+			if(m_commentWeibo != null){
+				t_content.append("\n\n").append(m_commentWeibo.getShareSMSContain(includePic,includeRefWeibo));
+			}
 		}		
 		
 		return t_content.toString();

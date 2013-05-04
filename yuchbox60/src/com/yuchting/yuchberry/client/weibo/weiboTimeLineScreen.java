@@ -1602,9 +1602,9 @@ public class weiboTimeLineScreen extends MainScreen{
 					javax.wireless.messaging.Message msg = msgConn.newMessage(MessageConnection.TEXT_MESSAGE);
 					
 					TextMessage txtMsg = (TextMessage)msg;
-					String text = w.getShareSMSContain(true);
+					String text = w.getShareSMSContain(true,false);
 					if(text.length() > 140){
-						text = w.getShareSMSContain(false);
+						text = w.getShareSMSContain(false,false);
 					}
 					txtMsg.setPayloadText(text);
 					
