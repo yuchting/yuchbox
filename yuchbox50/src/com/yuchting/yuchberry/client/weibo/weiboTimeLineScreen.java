@@ -1200,9 +1200,6 @@ public class weiboTimeLineScreen extends MainScreen{
 	    	case 'U':
 	    		m_atMeManagerItem.run();
 	    		return true;
-	    	case 'A': //RRR:增加@所有人的快捷键
-	    		m_parseUserWeiboItem.run();
-	    		return true;	
 	    	case 'I':
 	    		m_commentMeItem.run();
 	    		return true;
@@ -1447,7 +1444,7 @@ public class weiboTimeLineScreen extends MainScreen{
 			FileConnection fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_back + "YuchBerry/weibo2sms.txt",Connector.READ);
 			try{
 				if(!fc.exists()){
-					fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default  + "YuchBerry/weibo2sms.txt",Connector.READ);
+					fc = (FileConnection) Connector.open(uploadFileScreen.fsm_rootPath_default + "YuchBerry/weibo2sms.txt",Connector.READ);
 				}
 				
 				if(fc.exists()){
@@ -1571,7 +1568,7 @@ public class weiboTimeLineScreen extends MainScreen{
 									while(mWeibo2SMSBufferList.size() > 0){
 										fetchWeibo w = (fetchWeibo)mWeibo2SMSBufferList.elementAt(0);
 										mWeibo2SMSBufferList.removeElementAt(0);
-
+										
 										weibo2smsSend(w);									
 									}
 									synchronized (mWeibo2smsList) {
@@ -1605,12 +1602,12 @@ public class weiboTimeLineScreen extends MainScreen{
 					javax.wireless.messaging.Message msg = msgConn.newMessage(MessageConnection.TEXT_MESSAGE);
 					
 					TextMessage txtMsg = (TextMessage)msg;
-	//RRR:短信字数限制		
-					String text = w.getShareSMSContain(true);
+					String text = w.getShareSMSContain(true,false);
 					if(text.length() > 140){
-						text = w.getShareSMSContain(false);
+						text = w.getShareSMSContain(false,false);
 					}
 					txtMsg.setPayloadText(text);
+					
 					msgConn.send(txtMsg);
 					
 					m_mainApp.SetErrorString("w2s send succ:" + w2s.weiboId + "->" + w2s.smsPhone);
