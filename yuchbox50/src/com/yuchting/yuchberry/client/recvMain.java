@@ -2986,11 +2986,14 @@ final static long		fsm_notifyID_net_broken = 767918509114953L;
 							try{
 								
 								int t_num = sendReceive.ReadInt(t_readIn);
-								for(int i = 0 ;i < t_num;i++){
-									fetchWeibo t_weibo = new fetchWeibo();
-									t_weibo.InputWeibo(t_readIn);
+								if(t_num >= 0 && t_num <= getMaxWeiboNum()){
 									
-									m_receivedWeiboList.addElement(t_weibo);
+									for(int i = 0 ;i < t_num;i++){
+										fetchWeibo t_weibo = new fetchWeibo();
+										t_weibo.InputWeibo(t_readIn);
+										
+										m_receivedWeiboList.addElement(t_weibo);
+									}
 								}
 								
 							}finally{
