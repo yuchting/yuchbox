@@ -87,7 +87,6 @@ public class sendReceive{
 	private Vector<byte[]>		m_unsendedPackage 		= new Vector<byte[]>();
 	private Vector<byte[]>		m_unprocessedPackage 	= new Vector<byte[]>();
 	
-	int					m_sendBufferLen 		= 0;
 	
 	boolean			m_closed				= false;
 	
@@ -138,15 +137,12 @@ public class sendReceive{
 	//! send buffer
 	public void SendBufferToSvr(byte[] _write,boolean _sendImm)throws Exception{
 		
-		synchronized (m_unsendedPackage) {
-			if(m_sendBufferLen + _write.length + fsm_packageHeadLength >= 65535){
-				SendBufferToSvr_imple(PrepareOutputData());
-			}		
-			m_sendBufferLen += _write.length + fsm_packageHeadLength;
-
-			m_unsendedPackage.addElement(_write);
+		m_unsendedPackage.addElement(_write);
+		
+		if(_sendImm){
+			SendBufferToSvr_imple(PrepareOutputData());
 		}
-			
+
 		m_selector.wakeup();			
 	}
 	
@@ -251,7 +247,6 @@ public class sendReceive{
 			}
 			
 			m_unsendedPackage.removeAllElements();
-			m_sendBufferLen = 0;
 		}	
 		
 		return t_stream.toByteArray();
@@ -363,43 +358,88 @@ public class sendReceive{
 	private byte[] readDataByChn_impl()throws Exception{
 		
 		InputStream in = new ByteArrayInputStream(readData(4));
-		
-		int t_len = ReadInt(in);
-		if(t_len == -1){
-			throw new Exception("socket ReadInt failed.");
-		}
-		
-		final int t_ziplen = t_len & 0x0000ffff;
-		final int t_orglen = t_len >>> 16;
-				
-		byte[] t_orgdata;
-				
-		if(t_ziplen == 0){
-		
-			t_orgdata = readData(t_orglen);
-																		
-			synchronized (this) {
-				// 20 is TCP pack head length
-				m_downloadByte += t_orglen + 4 + 20;
+		try{
+			int t_len = ReadInt(in);
+			if(t_len < 0){
+				throw new Exception("socket ReadInt failed");
 			}
 			
-		}else{
-						
-			synchronized (this) {
-				// 20 is TCP pack head length
-				m_downloadByte += t_ziplen + 4 + 20;
-			}
+			int t_ziplen;
+			int t_orglen;
 			
-			t_orgdata = new byte[t_orglen];
-			
-			GZIPInputStream zi = new GZIPInputStream(new ByteArrayInputStream(readData(t_ziplen)));			
+			if(t_len == 0){
+				
+				InputStream lin = new ByteArrayInputStream(readData(8));
+				try{
 
-			ForceReadByte(zi,t_orgdata,t_orglen);
+					// read the long length header
+					//
+					t_orglen = ReadInt(lin);
+					t_ziplen = ReadInt(lin);
+					
+					if(t_orglen == -1 || t_ziplen == -1){
+						throw new Exception("orglen ReadInt failed");
+					}
+					
+					m_downloadByte += 8;
+					
+				}finally{
+					
+					lin.close();
+					lin = null;
+				}
+				
+			}else{			
+				// read the normal length header
+				//
+				t_ziplen = t_len & 0x0000ffff;
+				t_orglen = t_len >>> 16;
+			}
 			
-			zi.close();
+							
+			byte[] t_orgdata;
+			
+			if(t_ziplen == 0){
+			
+				t_orgdata = readData(t_orglen);
+																			
+				synchronized (this) {
+					// 20 is TCP pack head length
+					m_downloadByte += t_orglen + 4 + 20;
+				}
+				
+			}else{
+							
+				synchronized (this) {
+					// 20 is TCP pack head length
+					m_downloadByte += t_ziplen + 4 + 20;
+				}
+				
+				t_orgdata = new byte[t_orglen];
+				
+				InputStream zin = new ByteArrayInputStream(readData(t_ziplen));
+				try{
+					GZIPInputStream zi = new GZIPInputStream(zin);	
+					try{
+						ForceReadByte(zi,t_orgdata,t_orglen);
+						zi.close();
+					}finally{
+						zi.close();
+						zi = null;
+					}				
+				}finally{
+					zin.close();
+					zin = null;
+				}			
+			}
+			
+			return ParsePackage(t_orgdata);	
+			
+		}finally{
+			in.close();
+			in = null;
 		}
 		
-		return ParsePackage(t_orgdata);	
 	}
 
 	//! send buffer implement
@@ -419,11 +459,21 @@ public class sendReceive{
 		byte[] t_zipData = zos.toByteArray();
 		
 		if(t_zipData.length > _write.length){
+			
 			// if the ZIP data is large than original length
 			// NOT convert
 			//
+			if(_write.length >= 65535){
+				WriteInt(os,0); // big read flag
+				
+				WriteInt(os,_write.length);
+				WriteInt(os,0);
+				
+				m_uploadByte += 8;
+			}else{
+				WriteInt(os,(_write.length << 16) & 0xffff0000);
+			}
 			
-			WriteInt(os,(_write.length << 16) & 0xffff0000);
 			os.write(_write);
 			os.flush();
 			
@@ -433,8 +483,18 @@ public class sendReceive{
 			}
 	
 		}else{
+						
+			if(_write.length >= 65535){
+				WriteInt(os,0); // big read flag
+				
+				WriteInt(os,_write.length);
+				WriteInt(os,t_zipData.length);
+				
+				m_uploadByte += 8;
+			}else{
+				WriteInt(os,((_write.length << 16) & 0xffff0000) | t_zipData.length);
+			}
 			
-			WriteInt(os,((_write.length << 16) & 0xffff0000) | t_zipData.length);
 			os.write(t_zipData);
 			os.flush();
 			

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="com.yuchting.yuchdroid.client"
-      android:versionCode="5" android:versionName="1.15.1971">
+      android:versionCode="6" android:versionName="1.16.2085">
     <uses-sdk android:minSdkVersion="4" />
 
     <application android:icon="@drawable/icon" 
