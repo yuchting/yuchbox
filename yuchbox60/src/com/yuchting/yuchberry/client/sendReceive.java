@@ -326,18 +326,23 @@ public class sendReceive extends Thread{
 
 		final int t_len = ReadInt(in);
 		if(t_len < 0){
-			throw new Exception("socket ReadInt failed.");
+			throw new Exception("header ReadInt failed");
 		}
 		
 		int t_ziplen;
 		int t_orglen;
 				
 		if(t_len == 0){
+			
 			t_orglen = ReadInt(in);
 			t_ziplen = ReadInt(in);
 			
-			if(t_orglen == -1 || t_ziplen == -1){
-				throw new Exception("socket ReadInt failed.");
+			if(t_orglen == -1){
+				throw new Exception("origLen ReadInt failed");
+			}
+			
+			if(t_ziplen == -1){
+				throw new Exception("ziplen ReadInt failed");
 			}
 			
 			m_downloadByte += 8;
