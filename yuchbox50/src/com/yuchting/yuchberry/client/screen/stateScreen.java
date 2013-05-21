@@ -41,7 +41,6 @@ import net.rim.device.api.io.http.HttpProtocolConstants;
 import net.rim.device.api.servicebook.ServiceBook;
 import net.rim.device.api.servicebook.ServiceRecord;
 import net.rim.device.api.system.Characters;
-import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.FocusChangeListener;
@@ -94,6 +93,7 @@ class ConnectButton extends Field{
     
     int			m_connectState = 0;
     int			m_drawStateIndex = 0;
+    int m_animationId = -1;
 
     public ConnectButton(String text,ImageUnit[] _image,ImageUnit[] _image_focus,ImageSets _imageSets){
         this( text,_image,_image_focus,_imageSets,0);
@@ -106,9 +106,8 @@ class ConnectButton extends Field{
         m_image = _image;
         m_image_focus = _image_focus;
         m_imageSets = _imageSets;
-    }
+    }   
     
-    int m_animationId = -1;
     public void setConnectState(int _state,final recvMain _app){
     	if(m_connectState != _state){
     		
@@ -117,6 +116,7 @@ class ConnectButton extends Field{
     		switch(m_connectState){
     		case recvMain.CONNECTED_STATE:
     		case recvMain.CONNECTING_STATE:
+    		case recvMain.CONNECTING_WAIT_STATE:
     			m_text = recvMain.sm_local.getString(yblocalResource.DISCONNECT_BUTTON_LABEL);
     			break;
     		case recvMain.DISCONNECT_STATE:
@@ -127,45 +127,48 @@ class ConnectButton extends Field{
     		synchronized (this) {
     			
     			m_drawStateIndex = _state;
-    			
-    			if(m_connectState == recvMain.CONNECTING_STATE){
-    				
-    				if(m_animationId == -1){
-    					
-    					m_animationId = _app.invokeLater(new Runnable() {
-							public void run() {
+    			    				
+				if(m_animationId == -1){
+					
+					m_animationId = _app.invokeLater(new Runnable() {
+						public void run() {
+							
+							if(m_connectState == recvMain.CONNECTED_STATE
+							|| m_connectState == recvMain.DISCONNECT_STATE
+							|| m_connectState == recvMain.CONNECTING_WAIT_STATE){
 								
-								if(m_connectState == recvMain.CONNECTED_STATE
-									|| m_connectState == recvMain.DISCONNECT_STATE){
-									
-									synchronized (ConnectButton.this) {
-										_app.cancelInvokeLater(m_animationId);
-										m_animationId = -1;
-										m_drawStateIndex = m_connectState;
-									}
+								cancelConnectStateAni(_app);
+								
+							}else{
+								
+								if(m_drawStateIndex == recvMain.CONNECTING_STATE){
+									m_drawStateIndex = recvMain.DISCONNECT_STATE;
 								}else{
-									
-									if(m_drawStateIndex == recvMain.CONNECTING_STATE){
-										m_drawStateIndex = recvMain.DISCONNECT_STATE;
-									}else{
-										m_drawStateIndex = recvMain.CONNECTING_STATE;
-									}
-									
-									ConnectButton.this.invalidate();
+									m_drawStateIndex = recvMain.CONNECTING_STATE;
 								}
 								
+								ConnectButton.this.invalidate();
 							}
 							
-						}, 1000, true);
-    				}
-    				
-    			}else{
-    				
-    			}
+						}
+						
+					}, 1000, true);
+				}
+    			
 			}
     		
         	invalidate();	
     	}    	
+    }
+    
+    public void cancelConnectStateAni(final recvMain _app){
+    	synchronized(this){
+    		if(m_animationId != -1){
+    			_app.cancelInvokeLater(m_animationId);
+				m_animationId = -1;
+				m_drawStateIndex = m_connectState;
+    		}
+    	}
     }
     
     public int getImageWidth(){
@@ -213,7 +216,7 @@ class ConnectButton extends Field{
     protected void onUnfocus(){
     	super.onUnfocus();
     	invalidate();
-    }   
+    } 
             
     protected boolean keyChar( char character, int status, int time ) 
     {
@@ -239,20 +242,7 @@ class ConnectButton extends Field{
         }
         return super.invokeAction( action );
     }
-            
-
-    public void setDirty( boolean dirty ) 
-    {
-        // We never want to be dirty or muddy
-    }
-    
-            
-    public void setMuddy( boolean muddy ) 
-    {
-        // We never want to be dirty or muddy
-    }
-    
-    
+   
     public String getMenuText()
     {
         return m_text;
@@ -733,12 +723,14 @@ public class stateScreen extends MainScreen{
 											new ImageUnit[]{
 												m_mainApp.m_allImageSets.getImageUnit("button_disconnect"),
 												m_mainApp.m_allImageSets.getImageUnit("button_connecting"),
-												m_mainApp.m_allImageSets.getImageUnit("button_connected")
+												m_mainApp.m_allImageSets.getImageUnit("button_connected"),
+												m_mainApp.m_allImageSets.getImageUnit("button_connecting")
 											},
 											new ImageUnit[]{
 												m_mainApp.m_allImageSets.getImageUnit("button_disconnect_focus"),
 												m_mainApp.m_allImageSets.getImageUnit("button_connecting_focus"),
-												m_mainApp.m_allImageSets.getImageUnit("button_connected_focus")
+												m_mainApp.m_allImageSets.getImageUnit("button_connected_focus"),
+												m_mainApp.m_allImageSets.getImageUnit("button_connecting_focus")
 											},m_mainApp.m_allImageSets);
 			
 			m_connectBut.setConnectState(m_mainApp.GetConnectState(),m_mainApp);   
@@ -827,6 +819,11 @@ public class stateScreen extends MainScreen{
 	    	for(int i = 0 ;i < t_num;i++){
 	    		paintChild(_g, getField(i));
 	    	}
+		}
+		
+		protected void onUndisplay(){
+			super.onUndisplay();
+			m_connectBut.cancelConnectStateAni(m_mainApp);
 		}
 		
 		

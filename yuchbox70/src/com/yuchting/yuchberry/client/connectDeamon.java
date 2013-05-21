@@ -1377,7 +1377,13 @@ public class connectDeamon extends Thread implements SendListener,
 		 			 
 		 final int t_sleep = GetConnectInterval();
 		 if(t_sleep != 0){
+			 // set the connecting wait state
+			 m_mainApp.SetConnectState(recvMain.CONNECTING_WAIT_STATE);
+			 
 			 sleep(t_sleep);
+			 
+			 // set the connecting state back
+			 m_mainApp.SetConnectState(recvMain.CONNECTING_STATE);
 		 }
 		 
 		 if(m_disconnect == true){
