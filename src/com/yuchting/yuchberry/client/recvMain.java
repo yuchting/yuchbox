@@ -208,6 +208,7 @@ final static long		fsm_notifyID_net_broken = 767918509114953L;
 	public final static	int				DISCONNECT_STATE = 0;
 	public final static	int				CONNECTING_STATE = 1;
 	public final static	int				CONNECTED_STATE = 2;
+	public final static	int				CONNECTING_WAIT_STATE = 3;
 	
 	
 	public int					m_connectState		= 0; 
