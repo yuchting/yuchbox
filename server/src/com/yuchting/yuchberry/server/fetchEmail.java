@@ -283,7 +283,7 @@ class RecvMailAttach{
 							in = new BufferedReader(new StringReader(m_forwardReplyMail.GetContain()));
 						}else{
 							in = new BufferedReader(new StringReader(m_forwardReplyMail.GetContain() + "\n\n-- HTML --\n\n" +
-										fetchMgr.ParseHTMLText(m_forwardReplyMail.GetContain_html(),true)));
+										fetchMgr.ParseHTMLText(m_forwardReplyMail.GetContain_html(),false)));
 						}			
 		 
 						String line = new String();
@@ -608,7 +608,7 @@ public class fetchEmail extends fetchAccount{
     	if(m_protocol.indexOf("s") != -1){
     		t_sysProps_send.put("mail.smtp.starttls.enable","true");
     		
-    		if(m_port_send == 465){
+    		if(m_port_send == 465 || m_port_send == 25){
     			t_sysProps_send.put("mail.smtp.socketFactory.class","javax.net.ssl.SSLSocketFactory");
     		}
     		
@@ -2042,7 +2042,7 @@ public class fetchEmail extends fetchAccount{
 					}
 				    // parser HTML append the plain text
 				    //		    	
-			    	_mail.SetContain(_mail.GetContain() + t_prompt + fetchMgr.ParseHTMLText(t_conString,true));
+			    	_mail.SetContain(_mail.GetContain() + t_prompt + fetchMgr.ParseHTMLText(t_conString,false));
 		    	}
 		    	
 		    }catch(Exception e){

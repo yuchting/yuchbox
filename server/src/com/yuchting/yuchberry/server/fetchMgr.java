@@ -1221,31 +1221,27 @@ public class fetchMgr{
 	}
 	
 	public static String GetShortURL(String _longURL){
-		
-		//
-		// disable the long URL shorten function
-		//
-		
-//		if(_longURL.toLowerCase().startsWith("http")){
-//			
-//			try{
-//				URL is_gd = new URL("http://is.gd/api.php?longurl=" + _longURL);
-//				
-//		        URLConnection yc = is_gd.openConnection();
-//		        yc.setConnectTimeout(10000);
-//		        yc.setReadTimeout(50000);
-//		        BufferedReader in = new BufferedReader(
-//		                                new InputStreamReader(yc.getInputStream()));
-//		        
-//		        String inputLine = in.readLine();	        
-//		        in.close();
-//		        
-//		        return (inputLine != null && inputLine.length() < _longURL.length()) ? inputLine:_longURL ;
-//		        
-//			}catch(Exception _e){
-//				_e.printStackTrace();
-//			}
-//		}	
+	
+		if(_longURL.toLowerCase().startsWith("http")){
+			
+			try{
+				URL is_gd = new URL("http://is.gd/api.php?longurl=" + _longURL);
+				
+		        URLConnection yc = is_gd.openConnection();
+		        yc.setConnectTimeout(10000);
+		        yc.setReadTimeout(50000);
+		        BufferedReader in = new BufferedReader(
+		                                new InputStreamReader(yc.getInputStream()));
+		        
+		        String inputLine = in.readLine();	        
+		        in.close();
+		        
+		        return (inputLine != null && inputLine.length() < _longURL.length()) ? inputLine:_longURL ;
+		        
+			}catch(Exception _e){
+				_e.printStackTrace();
+			}
+		}	
 		
 		return _longURL;
 		
