@@ -48,6 +48,7 @@ import twitter4j.internal.org.json.JSONArray;
 import twitter4j.internal.org.json.JSONObject;
 
 import com.yuchting.yuchberry.server.Logger;
+import com.yuchting.yuchberry.server.fetchAccount;
 import com.yuchting.yuchberry.server.fetchEmail;
 import com.yuchting.yuchberry.server.fetchMgr;
 
@@ -1035,7 +1036,13 @@ public class YuchServer {
 				return ProcessLogQuery(_bber,true);
 				
 			}else if(_type.equals("3") && _bber != null){
+				
 				return ProcessDelBberQuery(_bber);
+				
+			}else if(_type.equals("4") && _bber != null){
+				
+				return ProcessBberState(_bber);
+				
 			}else if(_type.equals("close")){
 				// close the server
 				//
@@ -1055,6 +1062,16 @@ public class YuchServer {
 	private String ProcessDelBberQuery(final String _bber){
 		DelAccoutThread(_bber, true);
 		return "<Processed />";
+	}
+	
+	private String ProcessBberState(final String _bber){
+		
+		fetchThread ft = SearchAccountThread(_bber,0);
+		if(ft == null || ft.m_pauseState || ft.m_close){
+			return "0";
+		}else{
+			return "1";
+		}
 	}
 	
 	private String ProcessHTTPD(String method, Properties header, Properties parms){

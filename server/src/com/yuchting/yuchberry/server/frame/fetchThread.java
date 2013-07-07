@@ -38,10 +38,10 @@ public class fetchThread extends Thread{
 	fetchMgr 	m_fetchMgr = null;
 	Logger 		m_logger = null;
 	
-	boolean	m_pauseState = false;
-	boolean	m_close		= false;
+	boolean		m_pauseState = false;
+	boolean		m_close		= false;
 	
-	boolean	m_sendTimeupMail = false;
+	boolean		m_sendTimeupMail = false;
 		
 	long		m_usingHours	= 0;
 	long		m_formerTimer	= 0;

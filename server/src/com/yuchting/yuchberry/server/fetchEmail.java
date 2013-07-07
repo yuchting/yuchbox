@@ -365,6 +365,8 @@ public class fetchEmail extends fetchAccount{
 	String 	m_cryptPassword 			= "";
 	
     boolean m_pushHistoryMsg			= false;
+    
+    boolean m_disableCheckFolder		= false;
 	
 	Vector<Long> m_vectHasBeenSent		= new Vector<Long>();
 	
@@ -547,6 +549,10 @@ public class fetchEmail extends fetchAccount{
 				m_pushHistoryMsg = true;
 			}
 		}
+		
+		if(_elem.attributeValue("disableCheckFolder") != null){
+			m_disableCheckFolder				= ReadBooleanAttr(_elem,"disableCheckFolder");			
+		}
     	
 		// Get a Properties object
 	    Properties t_sysProps 		= new Properties();
@@ -624,6 +630,10 @@ public class fetchEmail extends fetchAccount{
 	
 	int m_loadMessageErrorTime = 0;
 	public void CheckFolder()throws Exception{
+		
+		if(m_disableCheckFolder){
+			return;
+		}
 		
 		if(!m_store.isConnected()){
 			m_mainMgr.m_logger.LogOut("m_store is not connected, ResetSession first");
