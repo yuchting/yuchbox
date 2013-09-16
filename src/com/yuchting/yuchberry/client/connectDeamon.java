@@ -1083,8 +1083,8 @@ public class connectDeamon extends Thread implements SendListener,
 				}
 			}
 			
-		}catch (Exception e1) {
-			e1.printStackTrace();
+		}catch (Exception e) {
+			m_mainApp.SetErrorString("FOM", e);
 		}
 		
 		return null;
@@ -1761,7 +1761,7 @@ public class connectDeamon extends Thread implements SendListener,
 			
 			
 		}catch(Exception _e){
-			m_mainApp.SetErrorString("C:" + _e.getMessage() + " " + _e.getClass().getName());
+			m_mainApp.SetErrorString("C",_e);
 		}
 		
 		// check the default account
