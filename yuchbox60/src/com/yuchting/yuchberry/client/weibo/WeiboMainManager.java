@@ -160,7 +160,7 @@ public class WeiboMainManager extends VerticalFieldManager implements FieldChang
 			sm_picBut_x			= sm_favoriteBut_x + m_favoriteBut.getImageWidth() + WeiboItemField.fsm_headImageTextInterval;
 		}
 				
-		m_editTextArea.setMaxSize(WeiboItemField.fsm_maxWeiboTextLength * 2);
+		m_editTextArea.setMaxSize(WeiboItemField.fsm_maxWeiboTextLength * 3);
 		
 		m_mainApp  			= _mainApp;
 		m_parentScreen		= _parentScreen;

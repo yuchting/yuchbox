@@ -1603,7 +1603,7 @@ public class weiboTimeLineScreen extends MainScreen{
 					
 					TextMessage txtMsg = (TextMessage)msg;
 					String text = w.getShareSMSContain(true,false);
-					if(text.length() > 140){
+					if(text.length() > WeiboItemField.fsm_maxWeiboTextLength){
 						text = w.getShareSMSContain(false,false);
 					}
 					txtMsg.setPayloadText(text);

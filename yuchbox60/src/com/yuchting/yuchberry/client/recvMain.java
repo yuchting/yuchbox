@@ -1641,8 +1641,10 @@ final static long		fsm_notifyID_net_broken = 767918509114953L;
 	
 	public void Start(){
         
-		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_addItem);
-		ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);
+		if(!m_closeMailSendModule){
+			ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_addItem);
+			ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);
+		}	
 				
 		WriteReadIni(false);
 	}
@@ -1654,10 +1656,12 @@ final static long		fsm_notifyID_net_broken = 767918509114953L;
 				m_connectDeamon.Disconnect();
 			}	
 		}catch(Exception e){}		
-		
-		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
-		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);
-		
+				
+		try{
+			ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
+			ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);	
+		}catch(Exception e){}	
+						
 		DisableWeiboModule();
 		
 		StopNotification();
