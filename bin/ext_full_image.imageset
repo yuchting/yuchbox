@@ -1,5 +1,0 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<Imageset Name="full_weibo_image" Imagefile="/ext_full_image.png" NativeHorzRes="512" NativeVertRes="512" >
-
-	<Image Name="im_sel" XPos="0" YPos="0" Width="480" Height="60" />
-</Imageset>
