@@ -1,0 +1,39 @@
+<loader version="1.0">
+	<application id="yuchbox">
+		<name >
+			
+		</name>
+		<description >
+			
+		</description>
+		<version >
+			1.16.2085
+		</version>
+		<vendor >
+			YuchTing
+		</vendor>
+		<copyright >
+			Copyright (c) 2013 YuchTing
+		</copyright>
+		<language langid="0x0009">
+			<name >
+				YuchBox(Y\u0332)
+			</name>
+			<description >
+				YuchBox - Push Personal Mail/Weibo for your BlackBerry via your own Server. Go www.YuchBox.info
+			</description>
+
+		</language>
+		<language langid="0x0004">
+			<name >
+				\u8BED\u76D2(Y\u0332)
+			</name>
+			<description >
+				\u8BED\u76D2--\u63A8\u9001\u90AE\u4EF6\uFF0C\u63A8\u9001\u5FAE\u535A\u7684\u9ED1\u8393\u8F6F\u4EF6\uFF0C\u8BE6\u60C5\u8BF7\u8BBF\u95EE\u5B98\u65B9\u7F51\u7AD9 www.yuchs.com
+			</description>
+
+		</language>
+
+	</application>
+
+</loader>
