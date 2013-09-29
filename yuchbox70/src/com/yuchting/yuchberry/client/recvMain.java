@@ -324,12 +324,13 @@ final static long		fsm_notifyID_net_broken = 767918509114953L;
 		public int				m_uploadedSize;
 		public int				m_totalSize;		
 	}
-		
+
+			
 	ApplicationMenuItem m_addItem	= new ApplicationMenuItem(20){
 						
-		public String toString(){
-			return recvMain.sm_local.getString(yblocalResource.ADD_ATTACHMENT);
-		}
+ 		public String toString(){
+ 			return recvMain.sm_local.getString(yblocalResource.ADD_ATTACHMENT);
+ 		}
 		
 		public Object run(Object context){
 			if(context instanceof Message ){
@@ -340,6 +341,7 @@ final static long		fsm_notifyID_net_broken = 767918509114953L;
 		}
 	};
 	
+
 	ApplicationMenuItem	m_delItem	= new ApplicationMenuItem(21){
 		public String toString(){
 			return recvMain.sm_local.getString(yblocalResource.CHECK_DEL_ATTACHMENT);
@@ -354,7 +356,7 @@ final static long		fsm_notifyID_net_broken = 767918509114953L;
 			return context;	
 		}
 	};
-	
+
 	ApplicationMenuItem	m_changeDefaultSenderItem	= new ApplicationMenuItem(22){
 		public String toString(){
 			return recvMain.sm_local.getString(yblocalResource.CHANGE_DEFAULT_SENDER_ACC);
@@ -1406,6 +1408,7 @@ final static long		fsm_notifyID_net_broken = 767918509114953L;
 				    			m_popupDlgWhenComposeNew	= sendReceive.ReadBoolean(t_readFile);
 				    			m_mailHtmlShow				= sendReceive.ReadBoolean(t_readFile);
 				    			m_mailHtmlShowOnlyWIFI		= sendReceive.ReadBoolean(t_readFile);
+								mEnableWeibo2SMS			= sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
 				    		
@@ -1544,6 +1547,7 @@ final static long		fsm_notifyID_net_broken = 767918509114953L;
 		    			sendReceive.WriteBoolean(t_writeFile, m_popupDlgWhenComposeNew);
 		    			sendReceive.WriteBoolean(t_writeFile,m_mailHtmlShow);
 		    			sendReceive.WriteBoolean(t_writeFile,m_mailHtmlShowOnlyWIFI);
+						sendReceive.WriteBoolean(t_writeFile,mEnableWeibo2SMS);
 		    									
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
@@ -1640,12 +1644,11 @@ final static long		fsm_notifyID_net_broken = 767918509114953L;
 	
 	
 	public void Start(){
-        
 		if(!m_closeMailSendModule){
 			ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_addItem);
 			ApplicationMenuItemRepository.getInstance().addMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);
 		}
-				
+		
 		WriteReadIni(false);
 	}
 	
@@ -1656,7 +1659,8 @@ final static long		fsm_notifyID_net_broken = 767918509114953L;
 				m_connectDeamon.Disconnect();
 			}	
 		}catch(Exception e){}		
-		
+
+
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT, m_addItem);
 		ApplicationMenuItemRepository.getInstance().removeMenuItem(ApplicationMenuItemRepository.MENUITEM_EMAIL_EDIT,m_delItem);
 		
@@ -2101,6 +2105,8 @@ final static long		fsm_notifyID_net_broken = 767918509114953L;
 	 * load the change mail sender dialog menu item or remove it
 	 * @param _load		load or remove
 	 */
+
+
 	public void loadChangeMailSenderMenu(boolean _load){
 		
 		// clear the temporary default sender
