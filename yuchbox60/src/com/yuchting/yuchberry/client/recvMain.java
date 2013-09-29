@@ -1406,6 +1406,7 @@ final static long		fsm_notifyID_net_broken = 767918509114953L;
 				    			m_popupDlgWhenComposeNew	= sendReceive.ReadBoolean(t_readFile);
 				    			m_mailHtmlShow				= sendReceive.ReadBoolean(t_readFile);
 				    			m_mailHtmlShowOnlyWIFI		= sendReceive.ReadBoolean(t_readFile);
+				    			mEnableWeibo2SMS			= sendReceive.ReadBoolean(t_readFile);
 				    		}
 				    		
 				    		
@@ -1544,6 +1545,7 @@ final static long		fsm_notifyID_net_broken = 767918509114953L;
 		    			sendReceive.WriteBoolean(t_writeFile, m_popupDlgWhenComposeNew);
 		    			sendReceive.WriteBoolean(t_writeFile,m_mailHtmlShow);
 		    			sendReceive.WriteBoolean(t_writeFile,m_mailHtmlShowOnlyWIFI);
+		    			sendReceive.WriteBoolean(t_writeFile,mEnableWeibo2SMS);
 		    									
 						if(m_connectDeamon.m_connect != null){
 							m_connectDeamon.m_connect.SetKeepliveInterval(GetPulseIntervalMinutes());
