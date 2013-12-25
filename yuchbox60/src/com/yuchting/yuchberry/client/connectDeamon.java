@@ -829,7 +829,7 @@ public class connectDeamon extends Thread implements SendListener,
 				final String t_filename = m_mainApp.GetAttachmentDir() + t_realName;
 				FileConnection t_file = (FileConnection)Connector.open(t_filename,Connector.READ_WRITE);
 				
-				if(t_file.exists()){
+				if(t_file.exists() && t_attachSize == t_file.fileSize()){
 					
 					m_mainApp.PushViewFileScreen(t_filename);
 					
