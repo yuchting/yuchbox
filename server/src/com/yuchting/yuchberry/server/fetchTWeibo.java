@@ -64,12 +64,11 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	
 	public fetchTWeibo(fetchMgr _main){
 		super(_main);
+		m_twitter.setOAuthConsumer(fsm_consumerKey, fsm_consumerSecret);
 	}
 	
 	public void InitAccount(Element _elem)throws Exception{
 		super.InitAccount(_elem);
-		
-		m_twitter.setOAuthConsumer(fsm_consumerKey, fsm_consumerSecret);
 		
 		m_accountName = m_accountName + "[TWeibo]";
 		
@@ -91,14 +90,16 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	 * @param _fullTest		: whether test the full configure( SMTP for email)
 	 */
 	public void ResetSession(boolean _fullTest)throws Exception{
-		
-		m_twitter.setOAuthAccessToken(new AccessToken(m_accessToken, m_secretToken));
-
 		m_userself = m_twitter.verifyCredentials();
 		
 		ResetCheckFolderLimit();
 		
 		m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + "> Prepare OK!");
+	}
+	
+	@Override
+	public void setAccessTokens(String _access,String _secret){
+		m_twitter.setOAuthAccessToken(new AccessToken(_access, _secret));
 	}
 	
 	protected void ResetCheckFolderLimit()throws Exception{
@@ -262,7 +263,7 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		return true;
 	}
 	
-	protected void UpdateStatus(String _text,GPSInfo _info,byte[] _filePic,String _fileType)throws Exception{
+	public void UpdateStatus(String _text,GPSInfo _info,byte[] _filePic,String _fileType)throws Exception{
 		StatusUpdate t_status = new StatusUpdate(_text);
 		
 		if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
@@ -304,8 +305,12 @@ public class fetchTWeibo extends fetchAbsWeibo{
 		m_twitter.createFavorite(_id);			
 	}
 
-	protected void FollowUser(String _screenName)throws Exception{
+	public void FollowUser(String _screenName)throws Exception{
 		m_twitter.createFriendship(_screenName);
+	}
+	
+	public void FollowUser(long _id)throws Exception{
+		m_twitter.createFriendship(_id);
 	}
 	
 	protected void UnfollowUser(String _screenName)throws Exception{
@@ -541,18 +546,15 @@ public class fetchTWeibo extends fetchAbsWeibo{
 	}
 	
 	
-	public RequestToken getRequestToken()throws Exception{	
-		m_twitter.setOAuthConsumer(fsm_consumerKey, fsm_consumerSecret);
+	public RequestToken getRequestToken()throws Exception{
 		return m_twitter.getOAuthRequestToken();
 	}
 	
 	public RequestToken getRequestToken(String _callback)throws Exception{	
-		m_twitter.setOAuthConsumer(fsm_consumerKey, fsm_consumerSecret);
 		return m_twitter.getOAuthRequestToken(_callback);
 	}
 	
 	public Twitter getTwitter(){
-		m_twitter.setOAuthConsumer(fsm_consumerKey, fsm_consumerSecret);
 		return m_twitter;
 	}
 	

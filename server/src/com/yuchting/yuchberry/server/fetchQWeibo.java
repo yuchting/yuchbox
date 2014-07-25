@@ -246,8 +246,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	 * @param _fullTest		: whether test the full configure( SMTP for email)
 	 */
 	public void ResetSession(boolean _fullTest)throws Exception{
-				
-		m_api.setAccessToken(m_accessToken, m_secretToken);		
+		
 		m_userself = m_api.verifyCredentials();
 		
 		ResetCheckFolderLimit();
@@ -258,6 +257,11 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		
 		m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + "> Prepare OK!");
 		
+	}
+	
+	@Override
+	public void setAccessTokens(String _access,String _secret){
+		m_api.setAccessToken(_access, _secret);
 	}
 	
 	/**
@@ -345,7 +349,7 @@ public class fetchQWeibo extends fetchAbsWeibo{
 	 */
 	public void DestroySession(){}	
 	
-	protected void UpdateStatus(String _text,GPSInfo _info,byte[] _filePic,String _fileType)throws Exception{
+	public void UpdateStatus(String _text,GPSInfo _info,byte[] _filePic,String _fileType)throws Exception{
 		if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
 			if(_filePic != null && _fileType != null){
 				m_api.publishMsg(_text, _info.m_longitude, _info.m_latitude,_filePic,_fileType);
@@ -415,8 +419,12 @@ public class fetchQWeibo extends fetchAbsWeibo{
 		m_api.favoriteMessage(_id);
 	}
 
-	protected void FollowUser(String _screenName)throws Exception{
+	public void FollowUser(String _screenName)throws Exception{
 		m_api.followUser(_screenName);
+	}
+	
+	public void FollowUser(long _id)throws Exception{
+		// nothing
 	}
 	
 	protected void UnfollowUser(String _screenName)throws Exception{

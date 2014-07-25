@@ -62,9 +62,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	    	System.setProperty("weibo4j.oauth.consumerSecret", Weibo.CONSUMER_SECRET);
 		}catch(Exception e){
 			
-		}
-		
-		
+		}		
 	};
 	
 	Weibo	m_weibo				= new Weibo();
@@ -78,7 +76,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	public fetchSinaWeibo(fetchMgr _mainMgr){
 		super(_mainMgr);
 	}
-	
+		
 	public void InitAccount(Element _elem)throws Exception{
 		super.InitAccount(_elem);
 		
@@ -272,8 +270,7 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 	 * @param _fullTest		: whether test the full configure( SMTP for email)
 	 */
 	public void ResetSession(boolean _fullTest)throws Exception{
-		
-		m_weibo.setToken(m_accessToken, m_secretToken);		
+				
 		m_userself = m_weibo.verifyCredentials();
 		
 		ResetCheckFolderLimit();
@@ -283,6 +280,11 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		}
 		
 		m_mainMgr.m_logger.LogOut("Weibo Account<" + GetAccountName() + "> Prepare OK!");
+	}
+	
+	@Override
+	public void setAccessTokens(String _access,String _secret){
+		m_weibo.setToken(_access, _secret);
 	}
 	
 	/**
@@ -364,10 +366,8 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		m_currRemainCheckFolderNum = limitStatus.getRemainingHits();
 		m_maxCheckFolderNum			= limitStatus.getHourlyLimit();
 	}
-	
-	
-	
-	protected void UpdateStatus(String _text,GPSInfo _info,byte[] _filePic,String _fileType)throws Exception{
+		
+	public void UpdateStatus(String _text,GPSInfo _info,byte[] _filePic,String _fileType)throws Exception{
 				
 		if(_info != null && _info.m_latitude != 0 && _info.m_longitude != 0){
 			
@@ -449,8 +449,12 @@ public class fetchSinaWeibo extends fetchAbsWeibo{
 		m_weibo.createFavorite(_id);			
 	}
 
-	protected void FollowUser(String _screenName)throws Exception{
+	public void FollowUser(String _screenName)throws Exception{
 		m_weibo.createFriendship(_screenName);
+	}
+	
+	public void FollowUser(long _id)throws Exception{
+		m_weibo.createFriendship(_id);
 	}
 	
 	protected void UnfollowUser(String _screenName)throws Exception{

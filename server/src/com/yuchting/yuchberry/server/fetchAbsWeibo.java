@@ -111,8 +111,10 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 	 */
 	public void InitAccount(Element _elem)throws Exception{
 		m_accountName			= fetchAccount.ReadStringAttr(_elem,"account");
-		m_accessToken			= fetchAccount.ReadStringAttr(_elem,"accessToken");
-		m_secretToken			= fetchAccount.ReadStringAttr(_elem,"secretToken");
+		String t_accessToken			= fetchAccount.ReadStringAttr(_elem,"accessToken");
+		String t_secretToken			= fetchAccount.ReadStringAttr(_elem,"secretToken");
+		
+		setAccessTokens(t_accessToken, t_secretToken);
 		
 		m_timeline.m_sum		= fetchAccount.ReadIntegerAttr(_elem,"timelineSum");
 		if(m_timeline.m_sum < 0){
@@ -153,7 +155,7 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 			t_file.mkdir();
 		}
 	}
-	
+		
 	public String GetHeadImageFilename(final String _id){
 		return GetHeadImageDir() + _id + ".png";
 	}
@@ -887,8 +889,9 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 		m_mainMgr.SendData(t_os, true);		
 	}
 
+	public abstract void setAccessTokens(String _accessToken,String _secretToken);
 	protected abstract int GetCurrWeiboStyle(); 
-	protected abstract void UpdateStatus(String _text,GPSInfo _info,byte[] _filePic,String _fileType)throws Exception;
+	public abstract void UpdateStatus(String _text,GPSInfo _info,byte[] _filePic,String _fileType)throws Exception;
 	protected abstract void UpdateComment(int _style,String _text,long _commentWeiboId,
 											GPSInfo _info,int _updateStyle)throws Exception;
 	
@@ -896,7 +899,8 @@ public abstract class fetchAbsWeibo extends fetchAccount{
 											GPSInfo _info,boolean _updateTimeline)throws Exception;
 	
 	protected abstract void FavoriteWeibo(long _id)throws Exception;
-	protected abstract void FollowUser(String _screenName)throws Exception;
+	public abstract void FollowUser(String _screenName)throws Exception;
+	public abstract void FollowUser(long _id)throws Exception;
 	protected abstract void UnfollowUser(String _screenName)throws Exception;
 	protected abstract void DeleteWeibo(long _id,boolean _isComment)throws Exception;
 	protected abstract void sendDirectMsg(String _screenName,String _text)throws Exception;
