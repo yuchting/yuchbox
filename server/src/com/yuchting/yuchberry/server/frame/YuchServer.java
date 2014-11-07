@@ -48,7 +48,7 @@ import twitter4j.internal.org.json.JSONArray;
 import twitter4j.internal.org.json.JSONObject;
 
 import com.yuchting.yuchberry.server.Logger;
-import com.yuchting.yuchberry.server.fetchAccount;
+import com.yuchting.yuchberry.server.cryptPassword;
 import com.yuchting.yuchberry.server.fetchEmail;
 import com.yuchting.yuchberry.server.fetchMgr;
 
@@ -1051,12 +1051,28 @@ public class YuchServer {
 		    	System.exit(0);
 		    	
 		    	return "Close done!";
+			}else if(_type.equals("passgen")){
+				return ProcessGenPass(_bber); 
 			}
 			
 			return "";
 		}finally{
 			m_logger.LogOut("ProcessAdminCheck end");
 		}
+	}
+	
+	private String ProcessGenPass(String _passCrypt){
+		
+		try{
+			String[] t_param = _passCrypt.split("_______");
+			String t_pass = t_param[0];
+			String t_key = t_param[1];
+			
+			cryptPassword t_crypt = new cryptPassword(cryptPassword.md5(t_key));
+			return t_crypt.encrypt(t_pass);
+		}catch(Exception e){
+			return "Exception :" + e.getMessage();
+		}		
 	}
 	
 	private String ProcessDelBberQuery(final String _bber){
