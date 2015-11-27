@@ -12,37 +12,37 @@ _(2015年3月14日)随着Google Code的关闭，语盒项目整体迁移到Githu
   [版本更新内容](https://github.com/yuchting/yuchbox/wiki/Promote_list) | [安装、更新方法](https://github.com/yuchting/yuchbox/wiki/Update_Method) | [历史版本下载](http://code.google.com/p/yuchberry/downloads/list)
   
   * 服务器：（自架服务器需要下载）
-[服务器-JRE环境(3.0M)](http://yuchberry.googlecode.com/files/yuchsbox_server_1.16.2085.1.zip) | <b>1.16.2085.1</b> 版本(支持Windows、GNU/Linux、MacOS) <b>需要[下载JRE](http://www.oracle.com/technetwork/java/javase/downloads/index.html)</b>
+[服务器-JRE环境(3.0M)](https://github.com/yuchting/yuchbox/releases/download/1.16.2085/yuchsbox_server_1.16.2085.1.zip) | <b>1.16.2085.1</b> 版本(支持Windows、GNU/Linux、MacOS) <b>需要[下载JRE](http://www.oracle.com/technetwork/java/javase/downloads/index.html)</b>
 
   * 客户端(<b>OTA安装</b>，请手机浏览器访问 [http://ota.yuchs.com](http://ota.yuchs.com/))。<font color='red'>（旧版本更新需要<b>卸载之前的1.12.1833版本</b>；自架服务器的朋友服务器程序需要更新到最新）</font>
 <table> 
    <tbody>
     <tr>
-     <td><a href="http://yuchberry.googlecode.com/files/yuchdroid_1.16.2085.apk">Android客户端</a> </td>
+     <td><a href="https://github.com/yuchting/yuchbox/releases/download/1.16.2085/yuchdroid_1.16.2085.apk">Android客户端</a> </td>
      <td> 1.16.2085 Android 安卓版本 Android系统1.6 以上</td>
     </tr> 
     <tr>
-     <td><a href="http://yuchberry.googlecode.com/files/yuchbox_1.16.2085.2_for_4.2os.zip">黑莓客户端-4.2系统</a> </td>
+     <td><a href="https://github.com/yuchting/yuchbox/releases/download/1.16.2085/yuchbox_1.16.2085.2_for_4.2os.zip">黑莓客户端-4.2系统</a> </td>
      <td> 1.16.2085 版本 支持黑莓<b>4.2</b>系统（不支持HTML附件、Weibo/IM桌面提醒）</td>
     </tr> 
     <tr>
-     <td><a href="http://yuchberry.googlecode.com/files/yuchbox_1.16.2085.2_for_4.5os.zip">黑莓客户端-4.5系统</a> </td>
+     <td><a href="https://github.com/yuchting/yuchbox/releases/download/1.16.2085/yuchbox_1.16.2085.2_for_4.5os.zip">黑莓客户端-4.5系统</a> </td>
      <td> 1.16.2085 版本 支持黑莓<b>4.5</b>系统（不支持Weibo/IM桌面提醒）</td>
     </tr> 
     <tr>
-     <td><a href="http://yuchberry.googlecode.com/files/yuchbox_1.16.2085.2_for_4.6os.zip">黑莓客户端-4.6系统</a> </td>
+     <td><a href="https://github.com/yuchting/yuchbox/releases/download/1.16.2085/yuchbox_1.16.2085.2_for_4.6os.zip">黑莓客户端-4.6系统</a> </td>
      <td> 1.16.2085 版本 支持黑莓<b>4.6</b>系统</td>
     </tr> 
     <tr>
-     <td><a href="http://yuchberry.googlecode.com/files/yuchbox_1.16.2085.2_for_4.7os.zip">黑莓客户端-4.7系统</a> </td>
+     <td><a href="https://github.com/yuchting/yuchbox/releases/download/1.16.2085/yuchbox_1.16.2085.2_for_4.7os.zip">黑莓客户端-4.7系统</a> </td>
      <td> 1.16.2085 版本 支持黑莓<b>4.7</b>系统</td>
     </tr> 
     <tr>
-     <td><a href="http://yuchberry.googlecode.com/files/yuchbox_1.16.2085.2_for_5.0os.zip">黑莓客户端-5.0系统</a> </td>
+     <td><a href="https://github.com/yuchting/yuchbox/releases/download/1.16.2085/yuchbox_1.16.2085.2_for_5.0os.zip">黑莓客户端-5.0系统</a> </td>
      <td> 1.16.2085 版本 支持黑莓<b>5.0</b>系统</td>
     </tr> 
     <tr>
-     <td><a href="http://yuchberry.googlecode.com/files/yuchbox_1.16.2085.2_for_6.0os.zip">黑莓客户端-6.0+系统</a> </td>
+     <td><a href="https://github.com/yuchting/yuchbox/releases/download/1.16.2085/yuchbox_1.16.2085.2_for_6.0os.zip">黑莓客户端-6.0+系统</a> </td>
      <td> 1.16.2085 版本 支持黑莓<b>6.0+</b>系统 </td>
     </tr> 
    </tbody> 
@@ -52,27 +52,27 @@ _(2015年3月14日)随着Google Code的关闭，语盒项目整体迁移到Githu
 <table class="wikitable">
    <tbody>
     <tr>
-     <td><a href="http://yuchberry.googlecode.com/files/yuchbox_1.16.2085_BBM_Mod_for_5.0os.zip">BBM皮肤-黑莓5.0系统</a> </td>
+     <td><a href="https://github.com/yuchting/yuchbox/releases/download/1.16.2085/yuchbox_1.16.2085_BBM_Mod_for_5.0os.zip">BBM皮肤-黑莓5.0系统</a> </td>
      <td> 语盒<b>1.16.2085</b> Mod版本 IM模块BBM皮肤、Weibo新皮肤Mod版本</td>
     </tr> 
     <tr>
-     <td><a href="http://yuchberry.googlecode.com/files/yuchbox_1.16.2085.1_BBM_Mod_for_6.0os.zip">BBM皮肤-黑莓6.0+系统</a> </td>
+     <td><a href="https://github.com/yuchting/yuchbox/releases/download/1.16.2085/yuchbox_1.16.2085.1_BBM_Mod_for_6.0os.zip">BBM皮肤-黑莓6.0+系统</a> </td>
      <td> 语盒<b>1.16.2085</b> Mod版本 IM模块BBM皮肤、Weibo新皮肤Mod版本</td>
     </tr> 
     <tr>
-     <td><a href="http://yuchberry.googlecode.com/files/yuchbox_1.16.2085_Girl_Mod_for_5.0os.zip">粉色女生版-黑莓5.0系统</a> </td>
+     <td><a href="https://github.com/yuchting/yuchbox/releases/download/1.16.2085/yuchbox_1.16.2085_Girl_Mod_for_5.0os.zip">粉色女生版-黑莓5.0系统</a> </td>
      <td> 语盒<b>1.16.2085</b> Mod版本 IM模块、Weibo新皮肤Mod版本（粉色女生版），含浪小花表情全套</td>
     </tr> 
     <tr>
-     <td><a href="http://yuchberry.googlecode.com/files/yuchbox_1.16.2085.1_Girl_Mod_for_6.0os.zip">粉色女生版-黑莓6.0+系统</a> </td>
+     <td><a href="https://github.com/yuchting/yuchbox/releases/download/1.16.2085/yuchbox_1.16.2085.1_Girl_Mod_for_6.0os.zip">粉色女生版-黑莓6.0+系统</a> </td>
      <td> 语盒<b>1.16.2085</b> Mod版本 IM模块、Weibo新皮肤Mod版本（粉色女生版），含浪小花表情全套</td>
     </tr> 
     <tr>
-     <td><a href="http://yuchberry.googlecode.com/files/yuchsbox_1.11.1633_mod_6_for_5.0os.zip">G+ 皮肤</a> </td>
+     <td><a href="https://github.com/yuchting/yuchbox/releases/download/1.16.2085/yuchsbox_1.11.1633_mod_6_for_5.0os.zip">G+ 皮肤</a> </td>
      <td> 1.11.1633 版本 支持黑莓<b>5.0（含）以上</b>系统 IM模块 G+ 皮肤、Weibo新皮肤Mod版本</td>
     </tr> 
     <tr>
-     <td><a href="http://yuchberry.googlecode.com/files/yuchsbox_1.11.1633_mod_7_for_5.0os.zip">炫彩皮肤</a> </td>
+     <td><a href="https://github.com/yuchting/yuchbox/releases/download/1.16.2085/yuchsbox_1.11.1633_mod_7_for_5.0os.zip">炫彩皮肤</a> </td>
      <td> 1.11.1633 版本 支持黑莓<b>5.0（含）以上</b>系统 IM模块炫彩皮肤、Weibo新皮肤Mod版本，含浪小花表情全套</td>
     </tr> 
    </tbody>
