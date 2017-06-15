@@ -9,7 +9,7 @@ _(2015年3月14日)随着Google Code的关闭，语盒项目整体迁移到Githu
   语盒开发者最新发布来电显示软件——<b>语电通（YuchCaller）</b>，用于显示来电归属地，<b>完全免费</b>，详细请访问[语电通开源项目主页](https://github.com/yuchting/yuchcaller)。
 
 # 下载
-  [版本更新内容](https://github.com/yuchting/yuchbox/wiki/Promote_list) | [安装、更新方法](https://github.com/yuchting/yuchbox/wiki/Update_Method) | [历史版本下载](http://code.google.com/p/yuchberry/downloads/list)
+  [版本更新内容](https://github.com/yuchting/yuchbox/wiki/Promote_list) | [安装、更新方法](https://github.com/yuchting/yuchbox/wiki/Update_Method) | [历史版本下载](https://github.com/yuchting/yuchbox/releases)
   
   * 服务器：（自架服务器需要下载）
 [服务器-JRE环境(3.0M)](https://github.com/yuchting/yuchbox/releases/download/1.16.2085/yuchsbox_server_1.16.2085.1.zip) | <b>1.16.2085.1</b> 版本(支持Windows、GNU/Linux、MacOS) <b>需要[下载JRE](http://www.oracle.com/technetwork/java/javase/downloads/index.html)</b>
